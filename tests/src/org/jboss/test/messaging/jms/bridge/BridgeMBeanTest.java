@@ -257,7 +257,7 @@ public class BridgeMBeanTest extends BridgeTestBase
          
       }
       finally
-      {
+      {         
          if (connSource != null)
          {
             connSource.close();
@@ -267,6 +267,15 @@ public class BridgeMBeanTest extends BridgeTestBase
          {
             connTarget.close();
          }
+         
+         try
+         {
+            ServerManagement.getServer(0).invoke(on, "destroy", new Object[0], new String[0]);
+         }
+         catch(Exception e)
+         {
+            //Ignore            
+         }
       }
    }
          
@@ -274,6 +283,8 @@ public class BridgeMBeanTest extends BridgeTestBase
    {
       ServerManagement.deployQueue("sourceQueue", 1);
       ServerManagement.deployQueue("targetQueue", 2);
+      
+      ObjectName on = null;
       
       try
       {         
@@ -289,7 +300,7 @@ public class BridgeMBeanTest extends BridgeTestBase
          
          String sprops2 = tableToString(props2);
          
-         ObjectName on = deployBridge(0, "Bridge1", "/XAConnectionFactory", "/XAConnectionFactory",
+         on = deployBridge(0, "Bridge1", "/XAConnectionFactory", "/XAConnectionFactory",
                                       "/queue/sourceQueue", "/queue/targetQueue",
                                       null, null, null, null,
                                       Bridge.QOS_ONCE_AND_ONLY_ONCE, null, 1,
@@ -588,10 +599,22 @@ public class BridgeMBeanTest extends BridgeTestBase
          
          log.trace("Checked bridge");
          
-         
       }
       finally
       {
+         try
+         {
+            if (on != null)
+            {
+               ServerManagement.getServer(0).invoke(on, "stop", new Object[0], new String[0]);
+               ServerManagement.getServer(0).invoke(on, "destroy", new Object[0], new String[0]);
+            }
+         }
+         catch(Exception e)
+         {
+            //Ignore            
+         }         
+         
          ServerManagement.undeployQueue("sourceQueue", 1);
          ServerManagement.undeployQueue("targetQueue", 2);
       }

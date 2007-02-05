@@ -460,7 +460,7 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
 
       messageQueue.remove(this); 
       
-      Dispatcher.instance.unregisterTarget(id);
+      Dispatcher.instance.unregisterTarget(id, this);
       
       // If this is a consumer of a non durable subscription then we want to unbind the
       // subscription and delete all its data.

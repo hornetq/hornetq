@@ -879,7 +879,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
       
       sp.removeSession(new Integer(id));
             
-      Dispatcher.instance.unregisterTarget(id);
+      Dispatcher.instance.unregisterTarget(id, this);
       
       closed = true;
    }            

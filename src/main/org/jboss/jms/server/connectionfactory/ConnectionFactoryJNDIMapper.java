@@ -255,7 +255,7 @@ public class ConnectionFactoryJNDIMapper
 
       }
 
-      Dispatcher.instance.unregisterTarget(endpoint.getID());
+      Dispatcher.instance.unregisterTarget(endpoint.getID(), delegate);
    }
 
    // MessagingComponent implementation ------------------------------------------------------------

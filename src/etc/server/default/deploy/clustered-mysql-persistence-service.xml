@@ -76,7 +76,7 @@ INSERT_BINDING=INSERT INTO JMS_POSTOFFICE (POSTOFFICE_NAME, NODE_ID, QUEUE_NAME,
 DELETE_BINDING=DELETE FROM JMS_POSTOFFICE WHERE POSTOFFICE_NAME=? AND NODE_ID=? AND QUEUE_NAME=?
 LOAD_BINDINGS=SELECT NODE_ID, QUEUE_NAME, COND, SELECTOR, CHANNEL_ID, IS_FAILED_OVER, FAILED_NODE_ID FROM JMS_POSTOFFICE WHERE POSTOFFICE_NAME  = ?
       ]]></attribute>
-      <attribute name="GroupName">Queue</attribute>
+      <attribute name="GroupName">DefaultPostOffice</attribute>
       <attribute name="StateTimeout">5000</attribute>
       <attribute name="CastTimeout">5000</attribute>
       <attribute name="StatsSendPeriod">10000</attribute>

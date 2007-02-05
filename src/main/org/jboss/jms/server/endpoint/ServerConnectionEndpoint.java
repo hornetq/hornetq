@@ -403,7 +403,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
    
          cm.unregisterConnection(jmsClientVMID, remotingClientSessionID);
    
-         Dispatcher.instance.unregisterTarget(id);
+         Dispatcher.instance.unregisterTarget(id, this);
 
          closed = true;
       }

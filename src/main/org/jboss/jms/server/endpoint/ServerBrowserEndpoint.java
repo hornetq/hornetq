@@ -230,7 +230,7 @@ public class ServerBrowserEndpoint implements BrowserEndpoint
       
       iterator = null;
       
-      Dispatcher.instance.unregisterTarget(id);
+      Dispatcher.instance.unregisterTarget(id, this);
       
       closed = true;
    }

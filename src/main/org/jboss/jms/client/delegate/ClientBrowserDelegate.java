@@ -33,10 +33,10 @@ import org.jboss.jms.message.JBossMessage;
 import org.jboss.jms.wireformat.BrowserHasNextMessageRequest;
 import org.jboss.jms.wireformat.BrowserNextMessageBlockRequest;
 import org.jboss.jms.wireformat.BrowserNextMessageRequest;
+import org.jboss.jms.wireformat.BrowserResetRequest;
 import org.jboss.jms.wireformat.CloseRequest;
 import org.jboss.jms.wireformat.ClosingRequest;
 import org.jboss.jms.wireformat.RequestSupport;
-import org.jboss.jms.wireformat.BrowserResetRequest;
 
 /**
  * The client-side Browser delegate class.

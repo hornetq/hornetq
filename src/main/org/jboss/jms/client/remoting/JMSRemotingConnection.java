@@ -54,6 +54,23 @@ public class JMSRemotingConnection
    public static final String CALLBACK_POLL_PERIOD_DEFAULT = "100";
 
    private static final Logger log = Logger.getLogger(JMSRemotingConnection.class);
+   
+   private static String getPropertySafely(String propName)
+   {
+      String prop = null;
+      
+      try
+      {
+         prop = System.getProperty(propName);
+      }
+      catch (Exception ignore)
+      {
+         //May get a security exception depending on security permissions, in which case
+         //we return null
+      }
+      
+      return prop;
+   }
 
    // Static ---------------------------------------------------------------------------------------
 
@@ -89,13 +106,15 @@ public class JMSRemotingConnection
          metadata.put(SocketServerInvoker.SERVER_SOCKET_CLASS_FLAG,
                       "org.jboss.jms.server.remoting.ServerSocketWrapper");
 
-         String bindAddress = System.getProperty("jboss.messaging.callback.bind.address");
+         String bindAddress = getPropertySafely("jboss.messaging.callback.bind.address");
+                  
          if (bindAddress != null)
          {
             metadata.put(Client.CALLBACK_SERVER_HOST, bindAddress);
          }
 
-         String propertyPort = System.getProperty("jboss.messaging.callback.bind.port");
+         String propertyPort = getPropertySafely("jboss.messaging.callback.bind.port");
+                  
          if (propertyPort != null)
          {
             metadata.put(Client.CALLBACK_SERVER_PORT, propertyPort);
@@ -105,7 +124,7 @@ public class JMSRemotingConnection
       {
          // "jboss.messaging.callback.pollPeriod" system property, if set, has the
          // highest priority ...
-         String callbackPollPeriod = System.getProperty("jboss.messaging.callback.pollPeriod");
+         String callbackPollPeriod = getPropertySafely("jboss.messaging.callback.pollPeriod");
 
          if (callbackPollPeriod == null)
          {
@@ -121,7 +140,7 @@ public class JMSRemotingConnection
          metadata.put(CallbackPoller.CALLBACK_POLL_PERIOD, callbackPollPeriod);
 
          String reportPollingStatistics =
-            System.getProperty("jboss.messaging.callback.reportPollingStatistics");
+            getPropertySafely("jboss.messaging.callback.reportPollingStatistics");
 
          if (reportPollingStatistics != null)
          {
@@ -333,7 +352,7 @@ public class JMSRemotingConnection
    // Protected ------------------------------------------------------------------------------------
 
    // Private --------------------------------------------------------------------------------------
-
+   
    // Inner classes --------------------------------------------------------------------------------
 
 }

@@ -23,6 +23,9 @@ package org.jboss.jms.wireformat;
 
 import java.util.Map;
 
+import org.jboss.jms.server.endpoint.advised.AdvisedSupport;
+import org.jboss.logging.Logger;
+
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentReaderHashMap;
 
 /**
@@ -36,6 +39,8 @@ import EDU.oswego.cs.dl.util.concurrent.ConcurrentReaderHashMap;
  */
 public class Dispatcher
 {
+   private static final Logger log = Logger.getLogger(Dispatcher.class);
+   
    public static Dispatcher instance = new Dispatcher();
    
    private Map targets;
@@ -65,14 +70,34 @@ public class Dispatcher
       registerTarget(new Integer(id), obj);
    }
    
-   public boolean unregisterTarget(Integer id)
+   public boolean unregisterTarget(Integer id, Object endpoint)
    {
-      return targets.remove(id) != null;
+      //Note that we pass the object id in, this is as a sanity check
+      //to ensure the object we are deregistering is the correct one
+      //since there have been bugs related to removing deregistering the wrong object
+      //This can happen if an earlier test opens a connection then the test ends without closing
+      //the connection, then on the server side the serverpeer is restarted which resets the object
+      //counter, so a different object is registered under the id of the old object.
+      //Remoting then times out the old connection and dereigsters the new object which is
+      //registered under the same id
+      //See http://jira.jboss.com/jira/browse/JBMESSAGING-812
+      
+      AdvisedSupport advised = (AdvisedSupport)(targets.get(id));
+           
+      if (advised.getEndpoint() != endpoint)
+      {
+         log.warn("The object you are trying to deregister is not the same as the one you registered!");
+         return false;
+      }
+      else
+      {      
+         return targets.remove(id) != null;
+      }
    }
    
-   public boolean unregisterTarget(int id)
-   {
-      return unregisterTarget(new Integer(id));
+   public boolean unregisterTarget(int id, Object obj)
+   {      
+      return unregisterTarget(new Integer(id), obj);
    }
    
 }
