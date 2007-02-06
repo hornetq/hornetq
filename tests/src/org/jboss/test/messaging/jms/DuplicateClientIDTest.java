@@ -84,6 +84,7 @@ public class DuplicateClientIDTest extends MessagingTestCase
 
    }
 
+   //http://jira.jboss.com/jira/browse/JBMESSAGING-816
    public void testPreconfiguredDuplicateClientID() throws Exception
    {
       Connection c1 = null;
@@ -92,12 +93,10 @@ public class DuplicateClientIDTest extends MessagingTestCase
       {
 
          c1 = cf.createConnection("john", "needle");
-         c1.setClientID("Duplicated");
 
          try
          {
             c2 = cf.createConnection("john", "needle");
-            c2.setClientID("Duplicated");
             fail("JBossMessaging is allowing duplicate clients!");
          }
          catch (InvalidClientIDException e)
