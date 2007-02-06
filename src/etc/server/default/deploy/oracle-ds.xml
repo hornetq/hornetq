@@ -14,7 +14,7 @@
 
 <datasources>
   <local-tx-datasource>
-    <jndi-name>OracleDS</jndi-name>
+    <jndi-name>DefaultDS</jndi-name>
     <connection-url>jdbc:oracle:thin:@youroraclehost:1521:yoursid</connection-url>
 	<!--
 
