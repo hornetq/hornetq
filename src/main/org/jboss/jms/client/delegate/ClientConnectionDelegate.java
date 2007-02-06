@@ -206,9 +206,9 @@ public class ClientConnectionDelegate extends DelegateSupport implements Connect
       throw new IllegalStateException("This invocation should not be handled here!");
    }
 
-   public void sendTransaction(TransactionRequest request) throws JMSException
+   public void sendTransaction(TransactionRequest request, boolean retry) throws JMSException
    {
-      RequestSupport req = new ConnectionSendTransactionRequest(id, version, request);
+      RequestSupport req = new ConnectionSendTransactionRequest(id, version, request, retry);
       
       doInvoke(client, req);
    }

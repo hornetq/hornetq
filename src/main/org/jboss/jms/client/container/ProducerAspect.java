@@ -250,7 +250,7 @@ public class ProducerAspect
               
       // we now invoke the send(Message) method on the session, which will eventually be fielded
       // by connection endpoint
-      ((SessionDelegate)sessionState.getDelegate()).send(messageToSend);
+      ((SessionDelegate)sessionState.getDelegate()).send(messageToSend, false);
       
       return null;
    }

@@ -195,7 +195,7 @@ public class ResourceManager
       
       try
       {
-         connection.sendTransaction(request);
+         connection.sendTransaction(request, false);
          
          // If we get this far we can remove the transaction
          
@@ -616,7 +616,7 @@ public class ResourceManager
    {
       try
       {
-         connection.sendTransaction(request);
+         connection.sendTransaction(request, false);
       }
       catch (Throwable t)
       {

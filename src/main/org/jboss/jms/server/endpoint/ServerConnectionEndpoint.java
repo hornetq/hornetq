@@ -418,7 +418,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
       log.trace(this + " closing (noop)");    
    }
 
-   public void sendTransaction(TransactionRequest request) throws JMSException
+   public void sendTransaction(TransactionRequest request, boolean retry) throws JMSException
    {    
       try
       {      
@@ -432,7 +432,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
             if (trace) { log.trace(this + " received ONE_PHASE_COMMIT request"); }
             
             Transaction tx = tr.createTransaction();
-            processTransaction(request.getState(), tx);
+            processTransaction(request.getState(), tx, retry);
             tx.commit();
          }        
          else if (request.getRequestType() == TransactionRequest.TWO_PHASE_PREPARE_REQUEST)
@@ -440,7 +440,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
             if (trace) { log.trace(this + " received TWO_PHASE_COMMIT prepare request"); }
             
             Transaction tx = tr.createTransaction(request.getXid());
-            processTransaction(request.getState(), tx);     
+            processTransaction(request.getState(), tx, retry);
             tx.prepare();            
          }
          else if (request.getRequestType() == TransactionRequest.TWO_PHASE_COMMIT_REQUEST)
@@ -607,7 +607,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
       return remotingClientSessionID;
    }
    
-   void sendMessage(JBossMessage msg, Transaction tx) throws Exception
+   void sendMessage(JBossMessage msg, Transaction tx, boolean retry) throws Exception
    {
       JBossDestination dest = (JBossDestination)msg.getJMSDestination();
       
@@ -616,6 +616,15 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
 
       // TODO Do we want to set this for ALL messages. Optimisation is possible here.
       msg.setConnectionID(id);
+
+      if (retry)
+      {
+         // Message is already stored... so just ignoring the call
+         if (serverPeer.getPersistenceManagerInstance().referenceExists(msg.getMessageID()))
+         {
+            return;
+         }
+      }
 
       // messages arriving over a failed-over connections will be give preferential treatment by
       // routers, which will send them directly to their corresponding failover queues, not to
@@ -695,7 +704,8 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
       }
    }   
     
-   private void processTransaction(ClientTransaction txState, Transaction tx) throws Throwable
+   private void processTransaction(ClientTransaction txState,
+                                   Transaction tx, boolean retry) throws Throwable
    {
       if (trace) { log.trace(this + " processing transaction " + tx); }
          
@@ -709,7 +719,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
             
             for (Iterator j = sessionState.getMsgs().iterator(); j.hasNext(); )
             {
-               sendMessage((JBossMessage)j.next(), tx);
+               sendMessage((JBossMessage)j.next(), tx, retry);
             }
 
             // send the acks

@@ -14,6 +14,8 @@ import org.jboss.jms.client.FailoverValve;
 import org.jboss.jms.client.FailureDetector;
 import org.jboss.jms.client.delegate.ClientConsumerDelegate;
 import org.jboss.jms.client.delegate.DelegateSupport;
+import org.jboss.jms.client.delegate.ClientSessionDelegate;
+import org.jboss.jms.client.delegate.ClientConnectionDelegate;
 import org.jboss.jms.client.remoting.JMSRemotingConnection;
 import org.jboss.jms.client.state.ConnectionState;
 import org.jboss.jms.client.state.HierarchicalState;
@@ -116,33 +118,36 @@ public class FailoverValveInterceptor implements Interceptor, FailureDetector
          remotingConnection = fcc.getRemotingConnection();
          return invocation.invokeNext();
       }
-//      catch (CannotConnectException e)
-//      {
-//         log.debug(this + " putting " + methodName + "() on hold until failover completes");
-//
-//         fcc.failureDetected(e, this, remotingConnection);
-//
-//         log.debug(this + " resuming " + methodName + "()");
-//         return invocation.invokeNext();
-//      }
-//      catch (IOException e)
-//      {
-//         log.debug(this + " putting " + methodName + "() on hold until failover completes");
-//
-//         fcc.failureDetected(e, this, remotingConnection);
-//
-//         log.debug(this + " resuming " + methodName + "()");
-//         return invocation.invokeNext();
-//      }
       catch (MessagingNetworkFailureException e)
       {
          log.debug(this + " putting " + methodName + "() on hold until failover completes");
          
-         log.info("********** CAUGHT NETWOEK FAILURE");
+         log.info("********** CAUGHT NETWORK FAILURE");
          
          fcc.failureDetected(e, this, remotingConnection);
          
          log.debug(this + " resuming " + methodName + "()");
+
+         Object target = invocation.getTargetObject();
+         
+         if (methodName.equals("send") &&
+             target instanceof ClientSessionDelegate)
+         {
+            log.debug("#### Capturing send invocation.. setting retry to true");
+            Object[] arguments = ((MethodInvocation)invocation).getArguments();
+            arguments[1] = Boolean.TRUE;
+            ((MethodInvocation)invocation).setArguments(arguments);
+         }
+         else
+         if (methodName.equals("sendTransaction") &&
+             target instanceof ClientConnectionDelegate)
+         {
+            log.debug("#### Capturing sendTransaction invocation.. setting retry to true");
+            Object[] arguments = ((MethodInvocation)invocation).getArguments();
+            arguments[1] = Boolean.TRUE;
+            ((MethodInvocation)invocation).setArguments(arguments);
+         }
+
          return invocation.invokeNext();
       }      
       catch (Throwable e)

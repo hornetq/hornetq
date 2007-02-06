@@ -295,7 +295,7 @@ public class SimpleConnectionManagerTest extends MessagingTestCase
          return null;
       }
 
-      public void sendTransaction(TransactionRequest request) throws JMSException
+      public void sendTransaction(TransactionRequest request, boolean retry) throws JMSException
       {
       }
 

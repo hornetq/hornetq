@@ -310,11 +310,11 @@ public class ServerSessionEndpoint implements SessionEndpoint
       if (trace) log.trace(this + " closing (noop)");
    }
  
-   public void send(JBossMessage message) throws JMSException
+   public void send(JBossMessage message, boolean retry) throws JMSException
    {
       try
       {       
-         connectionEndpoint.sendMessage(message, null);
+         connectionEndpoint.sendMessage(message, null, retry);
       }
       catch (Throwable t)
       {

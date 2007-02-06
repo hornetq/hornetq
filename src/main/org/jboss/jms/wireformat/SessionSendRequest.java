@@ -42,6 +42,7 @@ import org.jboss.messaging.core.message.MessageFactory;
 public class SessionSendRequest extends RequestSupport
 {
    private JBossMessage msg;
+   private boolean retry;
    
    public SessionSendRequest()
    {      
@@ -49,11 +50,12 @@ public class SessionSendRequest extends RequestSupport
    
    public SessionSendRequest(int objectId,
                              byte version,
-                             JBossMessage msg)
+                             JBossMessage msg,
+                             boolean retry)
    {
       super(objectId, PacketSupport.REQ_SESSION_SEND, version);
-      
       this.msg = msg;
+      this.retry = retry;
    }
 
    public void read(DataInputStream is) throws Exception
@@ -64,7 +66,9 @@ public class SessionSendRequest extends RequestSupport
       
       msg = (JBossMessage)MessageFactory.createMessage(messageType);
 
-      msg.read(is);   
+      msg.read(is);
+
+      retry = is.readBoolean();
    }
 
    public ResponseSupport serverInvoke() throws Exception
@@ -76,8 +80,8 @@ public class SessionSendRequest extends RequestSupport
       {
          throw new IllegalStateException("Cannot find object in dispatcher with id " + objectId);
       }
-      
-      endpoint.send(msg);
+
+      endpoint.send(msg, retry);
       
       return null;
    }
@@ -89,6 +93,8 @@ public class SessionSendRequest extends RequestSupport
       os.writeByte(msg.getType());
       
       msg.write(os);
+
+      os.writeBoolean(retry);
       
       os.flush();
    }

@@ -40,6 +40,7 @@ import org.jboss.jms.tx.TransactionRequest;
 public class ConnectionSendTransactionRequest extends RequestSupport
 {
    private TransactionRequest req;
+   private boolean retry;
    
    public ConnectionSendTransactionRequest()
    {      
@@ -47,11 +48,13 @@ public class ConnectionSendTransactionRequest extends RequestSupport
    
    public ConnectionSendTransactionRequest(int objectId,
                                            byte version,
-                                           TransactionRequest req)
+                                           TransactionRequest req,
+                                           boolean retry)
    {
       super(objectId, PacketSupport.REQ_CONNECTION_SENDTRANSACTION, version);
       
       this.req = req;
+      this.retry = retry;
    }
 
    public void read(DataInputStream is) throws Exception
@@ -61,6 +64,8 @@ public class ConnectionSendTransactionRequest extends RequestSupport
       req = new TransactionRequest();
       
       req.read(is);
+
+      retry = is.readBoolean();
    }
 
    public ResponseSupport serverInvoke() throws Exception
@@ -73,7 +78,7 @@ public class ConnectionSendTransactionRequest extends RequestSupport
          throw new IllegalStateException("Cannot find object in dispatcher with id " + objectId);
       }
       
-      endpoint.sendTransaction(req);
+      endpoint.sendTransaction(req, retry);
       
       return null;
    }
@@ -83,6 +88,8 @@ public class ConnectionSendTransactionRequest extends RequestSupport
       super.write(os);
       
       req.write(os);
+
+      os.writeBoolean(retry);
       
       os.flush();
    }

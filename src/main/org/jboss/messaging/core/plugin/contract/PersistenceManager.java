@@ -80,7 +80,11 @@ public interface PersistenceManager extends MessagingComponent
    // Clustering recovery related functionality
    
    boolean referenceExists(long channelID, long messageID) throws Exception;
-     
+
+   // Failover elated functionality (retry on send)
+
+   boolean referenceExists(long messageID) throws Exception;
+
    // Interface value classes
    //---------------------------------------------------------------
    

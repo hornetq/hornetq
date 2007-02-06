@@ -123,7 +123,7 @@ public interface SessionEndpoint extends Closeable
     * @param message The message to send
     * @throws JMSException
     */
-   void send(JBossMessage message) throws JMSException;
+   void send(JBossMessage message, boolean retry) throws JMSException;
    
    /**
     * Send delivery info to the server so the delivery lists can be repopulated. Used only in

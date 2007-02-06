@@ -430,9 +430,9 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
       throw new IllegalStateException("This invocation should not be handled here!");
    }
 
-   public void send(JBossMessage m) throws JMSException
+   public void send(JBossMessage m, boolean retry) throws JMSException
    {
-      RequestSupport req = new SessionSendRequest(id, version, m);
+      RequestSupport req = new SessionSendRequest(id, version, m, retry);
 
       doInvoke(client, req);
    }

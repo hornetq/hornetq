@@ -94,9 +94,9 @@ public class ConnectionAdvised extends AdvisedSupport implements ConnectionEndpo
       endpoint.stop();
    }
 
-   public void sendTransaction(TransactionRequest request) throws JMSException
+   public void sendTransaction(TransactionRequest request, boolean retry) throws JMSException
    {
-      endpoint.sendTransaction(request);
+      endpoint.sendTransaction(request, retry);
    }
 
    public MessagingXid[] getPreparedTransactions() throws JMSException

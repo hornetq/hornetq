@@ -516,7 +516,7 @@ public class WireFormatTest extends MessagingTestCase
          TransactionRequest tr = new TransactionRequest(TransactionRequest.ONE_PHASE_COMMIT_REQUEST, null, tx);
          
          RequestSupport req =
-            new ConnectionSendTransactionRequest(23, (byte)77, tr);
+            new ConnectionSendTransactionRequest(23, (byte)77, tr, false);
                  
          testPacket(req, PacketSupport.REQ_CONNECTION_SENDTRANSACTION);                           
       }      
@@ -636,7 +636,7 @@ public class WireFormatTest extends MessagingTestCase
          JBossMessage msg = new JBossMessage(123);
          
          RequestSupport req =
-            new SessionSendRequest(23, (byte)77, msg);
+            new SessionSendRequest(23, (byte)77, msg, false);
                  
          testPacket(req, PacketSupport.REQ_SESSION_SEND);                           
       }

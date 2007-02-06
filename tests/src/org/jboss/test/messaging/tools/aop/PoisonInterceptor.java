@@ -48,6 +48,8 @@ public class PoisonInterceptor implements Interceptor
 
    public static final int FAIL_SYNCHRONIZED_SEND_RECEIVE = 6;
 
+   public static final int FAIL_AFTER_SENDTRANSACTION = 7;
+
    // Static ---------------------------------------------------------------------------------------
    
    private static int type;
@@ -96,6 +98,14 @@ public class PoisonInterceptor implements Interceptor
             
             log.info("##### Crashing on 2PC commit!!");
             
+            crash(target);
+         }
+         else
+         if (request.getRequestType() == TransactionRequest.ONE_PHASE_COMMIT_REQUEST &&
+             type == FAIL_AFTER_SENDTRANSACTION)
+         {
+            invocation.invokeNext();
+            log.info("#### Crash after sendTransaction");
             crash(target);
          }
       }

@@ -75,9 +75,9 @@ public class SessionAdvised extends AdvisedSupport implements SessionEndpoint
       endpoint.closing();
    }
 
-   public void send(JBossMessage msg) throws JMSException
+   public void send(JBossMessage msg, boolean retry) throws JMSException
    {
-      endpoint.send(msg);
+      endpoint.send(msg, retry);
    }
    
    public ConsumerDelegate createConsumerDelegate(JBossDestination destination, String selector,

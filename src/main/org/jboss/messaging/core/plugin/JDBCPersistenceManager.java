@@ -1715,17 +1715,17 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
       PreparedStatement st = null;
       ResultSet rs = null;
       TransactionWrapper wrap = new TransactionWrapper();
-      
+
       try
       {
          conn = ds.getConnection();
-         
+
          st = conn.prepareStatement(getSQLStatement("SELECT_EXISTS_REF"));
          st.setLong(1, channelID);
          st.setLong(2, messageID);
-         
+
          rs = st.executeQuery();
-         
+
          if (rs.next())
          {
             return true;
@@ -1775,7 +1775,73 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
          wrap.end();
       }
    }
-   
+
+   public boolean referenceExists(long messageID) throws Exception
+   {
+      Connection conn = null;
+      PreparedStatement st = null;
+      ResultSet rs = null;
+      TransactionWrapper wrap = new TransactionWrapper();
+
+      try
+      {
+         conn = ds.getConnection();
+
+         st = conn.prepareStatement(getSQLStatement("SELECT_EXISTS_REF_MESSAGEID"));
+         st.setLong(1, messageID);
+
+         rs = st.executeQuery();
+
+         if (rs.next())
+         {
+            return true;
+         }
+         else
+         {
+            return false;
+         }
+      }
+      catch (Exception e)
+      {
+         wrap.exceptionOccurred();
+         throw e;
+      }
+      finally
+      {
+         if (rs != null)
+         {
+            try
+            {
+               rs.close();
+            }
+            catch (Throwable e)
+            {
+            }
+         }
+         if (st != null)
+         {
+            try
+            {
+               st.close();
+            }
+            catch (Throwable e)
+            {
+            }
+         }
+         if (conn != null)
+         {
+            try
+            {
+               conn.close();
+            }
+            catch (Throwable e)
+            {
+            }
+         }
+         wrap.end();
+      }
+   }
+
    // Public --------------------------------------------------------
    
    public String toString()
@@ -3330,6 +3396,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
       map.put("UPDATE_RELIABLE_REFS_NOT_PAGED", "UPDATE JMS_MESSAGE_REFERENCE SET PAGE_ORD = NULL WHERE PAGE_ORD BETWEEN ? AND ? AND CHANNELID=?");       
       map.put("SELECT_MIN_MAX_PAGE_ORD", "SELECT MIN(PAGE_ORD), MAX(PAGE_ORD) FROM JMS_MESSAGE_REFERENCE WHERE CHANNELID = ?");
       map.put("SELECT_EXISTS_REF", "SELECT MESSAGEID FROM JMS_MESSAGE_REFERENCE WHERE CHANNELID = ? AND MESSAGEID = ?");
+      map.put("SELECT_EXISTS_REF_MESSAGEID", "SELECT MESSAGEID FROM JMS_MESSAGE_REFERENCE WHERE MESSAGEID = ?");
       map.put("UPDATE_DELIVERYCOUNT", "UPDATE JMS_MESSAGE_REFERENCE SET DELIVERYCOUNT = ? WHERE CHANNELID = ? AND MESSAGEID = ?");
       //Message
       map.put("LOAD_MESSAGES",
