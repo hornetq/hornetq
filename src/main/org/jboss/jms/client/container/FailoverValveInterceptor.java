@@ -130,6 +130,9 @@ public class FailoverValveInterceptor implements Interceptor, FailureDetector
 
          Object target = invocation.getTargetObject();
          
+         // Set retry flag as true on send & sendTransaction
+         // more details at http://jira.jboss.org/jira/browse/JBMESSAGING-809
+
          if (methodName.equals("send") &&
              target instanceof ClientSessionDelegate)
          {
