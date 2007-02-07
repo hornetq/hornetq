@@ -101,7 +101,12 @@ public class JDBCSupport implements MessagingComponent
       while (iter.hasNext())
       {
          String statementName = (String)iter.next();
-         
+
+         if (ignoreVerificationOnStartup(statementName))
+         {
+            continue;
+         }
+
          //This will throw an exception if there is no default for the statement specified in the
          //sql properties
          getSQLStatement(statementName);
@@ -144,7 +149,6 @@ public class JDBCSupport implements MessagingComponent
       
       log.debug(this + " started");      
    }
-   
    public void stop() throws Exception
    {
       log.debug(this + " stopped");
@@ -178,7 +182,13 @@ public class JDBCSupport implements MessagingComponent
    {
       return Collections.EMPTY_MAP;
    }
-   
+
+   /** Subclasses might choose to not cross check the maps on certain statements.
+    *  An example would be POPULATE.TABLES on JDBCJMSUserManagerService */
+   protected boolean ignoreVerificationOnStartup(String statementName)
+   {
+      return false;
+   }
    // Private ----------------------------------------------------------------
               
    private void createSchema() throws Exception
