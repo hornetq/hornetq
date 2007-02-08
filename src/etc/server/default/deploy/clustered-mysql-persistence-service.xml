@@ -17,10 +17,10 @@
       <attribute name="CreateTablesOnStartup">true</attribute>
       <attribute name="UsingBatchUpdates">true</attribute>
       <attribute name="SqlProperties"><![CDATA[
-   CREATE_MESSAGE_REFERENCE=CREATE TABLE JBM_MSG_REF (CHANNEL_ID BIGINT, MESSAGE_ID BIGINT, TRANSACTION_ID BIGINT, STATE CHAR(1), ORD BIGINT, PAGE_ORD BIGINT, DELIVERY_COUNT INTEGER, LOADED CHAR(1), SCHED_DELIVERY BIGINT, PRIMARY KEY(CHANNEL_ID, MESSAGE_ID))
+   CREATE_MESSAGE_REFERENCE=CREATE TABLE JBM_MSG_REF (CHANNEL_ID BIGINT, MESSAGE_ID BIGINT, TRANSACTION_ID BIGINT, STATE CHAR(1), ORD BIGINT, PAGE_ORD BIGINT, DELIVERY_COUNT INTEGER, SCHED_DELIVERY BIGINT, PRIMARY KEY(CHANNEL_ID, MESSAGE_ID))
    CREATE_IDX_MESSAGE_REF_TX=CREATE INDEX JBM_MSG_REF_TX ON JBM_MSG_REF (TRANSACTION_ID)
    CREATE_IDX_MESSAGE_REF_ORD=CREATE INDEX JBM_MSG_REF_ORD ON JBM_MSG_REF (ORD)
-   CREATE_IDX_MESSAGE_REF_PAGE_ORD=CREATE INDEX JBM_MSG_REF_LOADED ON JBM_MSG_REF (PAGE_ORD)
+   CREATE_IDX_MESSAGE_REF_PAGE_ORD=CREATE INDEX JBM_MSG_REF_PAGE_ORD ON JBM_MSG_REF (PAGE_ORD)
    CREATE_IDX_MESSAGE_REF_MESSAGE_ID=CREATE INDEX JBM_MSG_REF_MESSAGE_ID ON JBM_MSG_REF (MESSAGE_ID)
    CREATE_IDX_MESSAGE_REF_SCHED_DELIVERY=CREATE INDEX JBM_MSG_REF_SCHED_DELIVERY ON JBM_MSG_REF (SCHED_DELIVERY)
    CREATE_MESSAGE=CREATE TABLE JBM_MSG (MESSAGE_ID BIGINT, RELIABLE CHAR(1), EXPIRATION BIGINT, TIMESTAMP BIGINT, PRIORITY TINYINT, HEADERS MEDIUMBLOB, PAYLOAD LONGBLOB, CHANNEL_COUNT INTEGER, TYPE TINYINT, PRIMARY KEY (MESSAGE_ID))
@@ -50,9 +50,9 @@
    MESSAGE_EXISTS=SELECT MESSAGE_ID FROM JBM_MSG WHERE MESSAGE_ID = ? FOR UPDATE
    INSERT_TRANSACTION=INSERT INTO JBM_TX (TRANSACTION_ID, BRANCH_QUAL, FORMAT_ID, GLOBAL_TXID) VALUES(?, ?, ?, ?)
    DELETE_TRANSACTION=DELETE FROM JBM_TX WHERE TRANSACTION_ID = ?
-   SELECT_PREPARED_TRANSACTIONS=SELECT TRANSACTION_ID, BRANCH_QUAL, FORMAT_ID, GLOBAL_TXID FROM JBM_TX   
+   SELECT_PREPARED_TRANSACTIONS=SELECT TRANSACTION_ID, BRANCH_QUAL, FORMAT_ID, GLOBAL_TXID FROM JBM_TX
    SELECT_MESSAGE_ID_FOR_REF=SELECT MESSAGE_ID, CHANNEL_ID FROM JBM_MSG_REF WHERE TRANSACTION_ID = ? AND STATE = '+' ORDER BY ORD
-   SELECT_MESSAGE_ID_FOR_ACK=SELECT MESSAGE_ID, CHANNEL_ID FROM JBM_MSG_REF WHERE TRANSACTION_ID = ? AND STATE = '-' ORDER BY ORD 
+   SELECT_MESSAGE_ID_FOR_ACK=SELECT MESSAGE_ID, CHANNEL_ID FROM JBM_MSG_REF WHERE TRANSACTION_ID = ? AND STATE = '-' ORDER BY ORD
    UPDATE_COUNTER=UPDATE JBM_COUNTER SET NEXT_ID = ? WHERE NAME=?
    SELECT_COUNTER=SELECT NEXT_ID FROM JBM_COUNTER WHERE NAME=? FOR UPDATE
    INSERT_COUNTER=INSERT INTO JBM_COUNTER (NAME, NEXT_ID) VALUES (?, ?)
@@ -98,7 +98,7 @@ LOAD_BINDINGS=SELECT NODE_ID, QUEUE_NAME, COND, SELECTOR, CHANNEL_ID, IS_FAILED_
             <PING timeout="2000" down_thread="false" num_initial_members="3" up_thread="false"/>
             <MERGE2 max_interval="10000" down_thread="false" min_interval="5000" up_thread="false"/>
             <FD_SOCK down_thread="false" up_thread="false"/>
-            <FD timeout="20000" max_tries="3" down_thread="false" up_thread="false" shun="true"/>            
+            <FD timeout="20000" max_tries="3" down_thread="false" up_thread="false" shun="true"/>
             <VERIFY_SUSPECT timeout="1500" down_thread="false" up_thread="false"/>
             <pbcast.NAKACK max_xmit_size="8192" down_thread="false" use_mcast_xmit="true" gc_lag="50" up_thread="false"
                          retransmit_timeout="100,200,600,1200,2400,4800"/>
@@ -119,7 +119,7 @@ LOAD_BINDINGS=SELECT NODE_ID, QUEUE_NAME, COND, SELECTOR, CHANNEL_ID, IS_FAILED_
             <PING timeout="2000" down_thread="false" num_initial_members="3" up_thread="false"/>
             <MERGE2 max_interval="10000" down_thread="false" min_interval="5000" up_thread="false"/>
             <FD_SOCK down_thread="false" up_thread="false"/>
-            <FD timeout="20000" max_tries="3" down_thread="false" up_thread="false" shun="true"/>            
+            <FD timeout="20000" max_tries="3" down_thread="false" up_thread="false" shun="true"/>
             <VERIFY_SUSPECT timeout="1500" down_thread="false" up_thread="false"/>
             <pbcast.NAKACK max_xmit_size="8192" down_thread="false" use_mcast_xmit="true" gc_lag="50" up_thread="false"
                          retransmit_timeout="100,200,600,1200,2400,4800"/>
