@@ -366,11 +366,9 @@
            default remoting configuration (socket)
       -->
       <antcall target="remote-tests"/>
-      <!--
       <antcall target="remote-tests">
          <param name="test.remoting" value="http"/>
       </antcall>
-      -->
       <antcall target="clustering-tests"/>
 
    </target>
@@ -638,9 +636,6 @@
             <fileset dir="${build.tests.classes}">
                <include name="**/jms/**/*Test.class"/>
                <include name="**/thirdparty/**/*Test.class"/>
-
-               <exclude name="**/jms/bridge/**/*Test.class"/>
-
                <exclude name="**/messaging/graveyard/**/*Test.class"/>
                <exclude name="**/jms/WireFormatTest.class"/>
                <exclude name="**/jms/stress/**"/>
