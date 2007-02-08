@@ -158,6 +158,15 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
    private String groupName;
 
    private volatile boolean started;
+   
+   //FIXME using a stopping flag is not a good approach and introduces a race condition
+   //http://jira.jboss.org/jira/browse/JBMESSAGING-819
+   //the code can check stopping and find it to be false, then the service can stop, setting stopping to true
+   //then actually stopping the post office, then the same thread that checked stopping continues and performs
+   //its action only to find the service stopped
+   //Should use a read-write lock instead
+   //One way to minimise the chance of the race happening is to sleep for a little while after setting stopping to true
+   //before actually stopping the service (see below)
    private volatile boolean stopping;
 
    private JChannelFactory jChannelFactory;
@@ -333,10 +342,14 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
          log.warn("Attempt to stop() but " + this + " is not started");
          return;
       }
+      
+      //Need to send this *before* stopping
+      syncSendRequest(new LeaveClusterRequest(getNodeId()));
 
       stopping = true;
-
-      syncSendRequest(new LeaveClusterRequest(getNodeId()));
+      
+      //FIXME http://jira.jboss.org/jira/browse/JBMESSAGING-819 this is a temporary kludge for now
+      Thread.sleep(1000);
 
       statsSender.stop();
 
@@ -715,6 +728,11 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
     */
    public void asyncSendRequest(ClusterRequest request) throws Exception
    {
+      if (stopping)
+      {
+         return;
+      }
+      
       if (trace) { log.trace(this + " sending asynchronously " + request + " to group"); }
 
       byte[] bytes = writeRequest(request);
@@ -726,6 +744,11 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
     */
    public void asyncSendRequest(ClusterRequest request, int nodeId) throws Exception
    {
+      if (stopping)
+      {
+         return;
+      }
+      
       Address address = this.getAddressForNodeId(nodeId, false);
 
       if (address == null)
@@ -765,12 +788,15 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
 
       if (tx == null)
       {
-         throw new IllegalStateException("Cannot find transaction transaction id: " + id);
+         //Commit can come in after the node has left - this is ok
+         if (trace) { log.trace("Cannot find transaction in map, node may have already left"); }
       }
-
-      tx.commit(this);
-
-      if (trace) { log.trace(this + " committed transaction " + id ); }
+      else
+      {
+         tx.commit(this);
+   
+         if (trace) { log.trace(this + " committed transaction " + id ); }
+      }
    }
 
    public void rollbackTransaction(TransactionId id) throws Throwable
@@ -786,12 +812,15 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
 
       if (tx == null)
       {
-         throw new IllegalStateException("Cannot find transaction transaction id: " + id);
+         // Rollback can come in after the node has left - this is ok
+         if (trace) { log.trace("Cannot find transaction in map, node may have already left"); }
       }
-
-      tx.rollback(this);
-
-      if (trace) { log.trace(this + " committed transaction " + id ); }
+      else
+      {
+         tx.rollback(this);
+   
+         if (trace) { log.trace(this + " committed transaction " + id ); }
+      }
    }
 
    public void updateQueueStats(int nodeId, List statsList) throws Exception
@@ -814,7 +843,7 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
          if (nameMap == null)
          {
             // This is ok, the node might have left
-            if (trace) { log.trace(this + " cannot find node in name map, i guess the node might have left?"); }
+            if (trace) { log.trace(this + " cannot find node in name map, the node might have left"); }
          }
          else
          {
@@ -1728,6 +1757,11 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
     */
    private void syncSendRequest(ClusterRequest request) throws Exception
    {
+      if (stopping)
+      {
+         return;
+      }
+      
       if (trace) { log.trace(this + " sending synch request " + request); }
 
       Message message = new Message(null, null, writeRequest(request));

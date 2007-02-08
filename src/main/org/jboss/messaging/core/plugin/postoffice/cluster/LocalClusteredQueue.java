@@ -395,7 +395,7 @@ public class LocalClusteredQueue extends PagingFilteredQueue implements Clustere
                                                name,
                                                del.getReference().getMessage());
                         
-               if (!del.getReference().getMessage().isReliable())
+               if (!del.getReference().getMessage().isReliable() || !recoverable)
                {
                   //We can ack it now
                   del.acknowledge(null);

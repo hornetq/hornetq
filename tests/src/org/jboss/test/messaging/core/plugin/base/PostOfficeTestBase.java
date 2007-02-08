@@ -127,6 +127,7 @@ public class PostOfficeTestBase extends MessagingTestCase
                                         "Clustered", ms, pm, tr, ff, cf, pool,
                                         groupName, jChannelFactory,
                                         stateTimeout, castTimeout, pullPolicy, rf, mapper, 1000);
+      
       postOffice.start();
 
       return postOffice;

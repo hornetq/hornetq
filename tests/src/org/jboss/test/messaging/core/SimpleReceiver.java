@@ -22,10 +22,8 @@
 package org.jboss.test.messaging.core;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Channel;
@@ -45,6 +43,7 @@ import org.jboss.util.id.GUID;
  * an "active" delivery (NACKING) undelivered, or throw unchecked exceptions.
  *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
  *
  * $Id$
@@ -62,8 +61,6 @@ public class SimpleReceiver implements Receiver
    public static final String SELECTOR_REJECTING = "SELECTOR_REJECTING";
    public static final String ACCEPTING_TO_MAX = "ACCEPTING_TO_MAX";
 
-   private static final String INVOCATION_COUNT = "INVOCATION_COUNT";
-
    // Static --------------------------------------------------------
 
    // Attributes ----------------------------------------------------
@@ -72,12 +69,14 @@ public class SimpleReceiver implements Receiver
    private List messages;
    private String state;
    private String name;
-   private Channel channel;
-   private String futureState;
-   private int invocationsToFutureStateCount;
-   private Map waitingArea;
+   private Channel channel; 
+   
    private boolean immediateAsynchronousAcknowledgment;
    private int maxRefs;
+   
+   private int count;
+   private int waitForCount = -1;
+   
 
    // Constructors --------------------------------------------------
 
@@ -113,8 +112,6 @@ public class SimpleReceiver implements Receiver
       this.state = state;
       this.channel = channel;
       messages = new ArrayList();
-      waitingArea = new HashMap();
-      waitingArea.put(INVOCATION_COUNT, new Integer(0));
       immediateAsynchronousAcknowledgment = false;
    }
 
@@ -123,7 +120,7 @@ public class SimpleReceiver implements Receiver
    public Delivery handle(DeliveryObserver observer, MessageReference ref, Transaction tx)
    {
       log.trace(this + " got routable:" + ref);
-      
+          
       try
       {
          if (ref == null)
@@ -163,7 +160,9 @@ public class SimpleReceiver implements Receiver
          log.trace("State is:" + state);
          
          boolean done = ACKING.equals(state) ? true : false;
-         log.trace(this + " is " + (done ? "ACKing" : "NACKing") +  " message " + ref);
+         
+         //NOTE! it is NOT Nacking, it is keeping - don't say NACKing - it is misleading (nack means cancel)         
+         log.trace(this + " is " + (done ? "ACKing" : "Keeping") +  " message " + ref);
          
          Message m = ref.getMessage();
          
@@ -186,18 +185,14 @@ public class SimpleReceiver implements Receiver
       }
       finally
       {
-         synchronized(waitingArea)
+         synchronized (this)
          {
-            if (futureState != null && --invocationsToFutureStateCount == 0)
+            count++;
+            if (waitForCount != -1 && count >= waitForCount)
             {
-               state = futureState;
-               futureState = null;
+               this.notify();
             }
-
-            Integer crt = (Integer)waitingArea.get(INVOCATION_COUNT);
-            waitingArea.put(INVOCATION_COUNT, new Integer(crt.intValue() + 1));
-            waitingArea.notifyAll();
-         }
+         }         
       }
    }
    
@@ -245,38 +240,34 @@ public class SimpleReceiver implements Receiver
       return l;
    }
 
-   public boolean waitForHandleInvocations(int count)
-   {
-      return waitForHandleInvocations(count, Long.MAX_VALUE);
-   }
-
    /**
     * Blocks until handle() is called for the specified number of times.
     *
     * @return true if the handle was invoked the specified number of times or false if the method
     *         exited with timeout.
     */
-   public boolean waitForHandleInvocations(int count, long timeout)
+   public boolean waitForHandleInvocations(int waitFor, long timeout)
    {
       long start = System.currentTimeMillis();
-      synchronized(waitingArea)
+      
+      synchronized(this)
       {
-         while(true)
-         {
-            Integer invocations = (Integer)waitingArea.get(INVOCATION_COUNT);
-
-            if (invocations.intValue() == count)
+         this.waitForCount = waitFor;
+         
+         while (this.count < waitForCount)
+         {      
+            if (timeout < 0)
             {
-               return true;
-            }
-            if (timeout <= 0)
-            {
+               resetInvocationCount();
                return false;
             }
+            
             try
             {
-               waitingArea.wait(timeout);
-               timeout -= System.currentTimeMillis() - start;
+               this.wait(timeout);
+               long now = System.currentTimeMillis();
+               timeout -= now - start;
+               start = now;
             }
             catch(InterruptedException e)
             {
@@ -284,15 +275,10 @@ public class SimpleReceiver implements Receiver
             }
          }
       }
-   }
-
-   public void resetInvocationCount()
-   {
-      synchronized(waitingArea)
-      {
-         waitingArea.put(INVOCATION_COUNT, new Integer(0));
-         waitingArea.notifyAll();
-      }
+      
+      resetInvocationCount();
+      
+      return true;
    }
 
    public void acknowledge(Message r, Transaction tx) throws Throwable
@@ -367,29 +353,6 @@ public class SimpleReceiver implements Receiver
       log.trace(this + " cancelled "  + r);
    }
 
-
-   public void setState(String state)
-   {
-      checkValid(state);
-      this.state = state;
-   }
-
-   /**
-    * Sets the given state on the receiver, but only after "invocationCount" handle() invocations.
-    * The state changes <i>after</i> the last invocation.
-    */
-   public void setState(String state, int invocationCount)
-   {
-      checkValid(state);
-      futureState = state;
-      invocationsToFutureStateCount = invocationCount;
-   }
-
-   public String getState()
-   {
-      return state;
-   }
-
    public String toString()
    {
       return "Receiver["+ name +"](" + state + ")";
@@ -412,6 +375,12 @@ public class SimpleReceiver implements Receiver
       {
          throw new IllegalArgumentException("Unknown receiver state: " + state);
       }
+   }
+   
+   private void resetInvocationCount()
+   {
+     this.waitForCount = -1;
+     this.count = 0;      
    }
 
    // Inner classes -------------------------------------------------

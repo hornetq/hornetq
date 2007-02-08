@@ -239,7 +239,7 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
                //Sanity check
                if (((List)param).isEmpty())
                {
-                  log.error("Got a polled callback list - but it is empty!!!");
+                  log.error("Got a polled callback list - but it is empty!!! See http://jira.jboss.org/jira/browse/JBMESSAGING-818");
                }
                
                packet = new PolledCallbacksDelivery((List)param, resp.getSessionId());             

@@ -135,18 +135,26 @@ public class PullMessagesRequest extends TransactionRequest implements ClusterTr
    {
       //We need to ack the delivery
       
+      if (trace) { log.trace(this + " committing, tx: " + this.txId); }
+      
       //We need to ack it in memory only
       //since it would have been acked on the pulling node
       LocalClusteredQueue queue = (LocalClusteredQueue)reliableDelivery.getObserver();
            
       queue.acknowledgeFromCluster(reliableDelivery);      
+      
+      if (trace) { log.trace(this + " committed, tx: " + this.txId); }
    }
 
    public void rollback(PostOfficeInternal office) throws Throwable
    {
       //We need to cancel the delivery
       
+      if (trace) { log.trace(this + " rolling back, tx: " + this.txId); }
+      
       reliableDelivery.cancel();  
+      
+      if (trace) { log.trace(this + " rolled back, tx: " + this.txId); }
    }
    
    public void read(DataInputStream in) throws Exception
