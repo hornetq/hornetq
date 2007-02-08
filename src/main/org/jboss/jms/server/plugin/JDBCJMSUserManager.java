@@ -87,11 +87,7 @@ public class JDBCJMSUserManager extends JDBCSupport implements JMSUserManager
    protected boolean ignoreVerificationOnStartup(String statementName)
    {
       // Do not cross-check on POPULATE.TABLES. as we just load the tables with them
-      if (statementName.startsWith("POPULATE.TABLES."))
-      {
-         return true;
-      }
-      return false;
+      return (statementName.startsWith("POPULATE.TABLES."));
    }
 
    // MessagingComponent overrides ---------------------------------
