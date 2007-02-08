@@ -80,7 +80,7 @@ public interface PersistenceManager extends MessagingComponent
    
    boolean referenceExists(long channelID, long messageID) throws Exception;
 
-   // Failover elated functionality (retry on send)
+   // Failover elated functionality (checkDuplicates on send)
 
    boolean referenceExists(long messageID) throws Exception;
 

@@ -46,7 +46,7 @@ public class SessionSendRequest extends RequestSupport
    
    
    private JBossMessage msg;
-   private boolean retry;
+   private boolean checkForDuplicates;
    
    public SessionSendRequest()
    {      
@@ -55,11 +55,11 @@ public class SessionSendRequest extends RequestSupport
    public SessionSendRequest(int objectId,
                              byte version,
                              JBossMessage msg,
-                             boolean retry)
+                             boolean checkForDuplicates)
    {
       super(objectId, PacketSupport.REQ_SESSION_SEND, version);
       this.msg = msg;
-      this.retry = retry;
+      this.checkForDuplicates = checkForDuplicates;
    }
 
    public void read(DataInputStream is) throws Exception
@@ -72,7 +72,7 @@ public class SessionSendRequest extends RequestSupport
 
       msg.read(is);
 
-      retry = is.readBoolean();
+      checkForDuplicates = is.readBoolean();
    }
 
    public ResponseSupport serverInvoke() throws Exception
@@ -85,7 +85,7 @@ public class SessionSendRequest extends RequestSupport
          throw new IllegalStateException("Cannot find object in dispatcher with id " + objectId);
       }
 
-      endpoint.send(msg, retry);
+      endpoint.send(msg, checkForDuplicates);
       
       return null;
    }
@@ -98,7 +98,7 @@ public class SessionSendRequest extends RequestSupport
       
       msg.write(os);
 
-      os.writeBoolean(retry);
+      os.writeBoolean(checkForDuplicates);
       
       os.flush();
    }

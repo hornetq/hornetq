@@ -136,7 +136,7 @@ public class FailoverValveInterceptor implements Interceptor, FailureDetector
          if (methodName.equals("send") &&
              target instanceof ClientSessionDelegate)
          {
-            log.debug("#### Capturing send invocation.. setting retry to true");
+            log.debug("#### Capturing send invocation.. setting check to true");
             Object[] arguments = ((MethodInvocation)invocation).getArguments();
             arguments[1] = Boolean.TRUE;
             ((MethodInvocation)invocation).setArguments(arguments);
@@ -145,7 +145,7 @@ public class FailoverValveInterceptor implements Interceptor, FailureDetector
          if (methodName.equals("sendTransaction") &&
              target instanceof ClientConnectionDelegate)
          {
-            log.debug("#### Capturing sendTransaction invocation.. setting retry to true");
+            log.debug("#### Capturing sendTransaction invocation.. setting check to true");
             Object[] arguments = ((MethodInvocation)invocation).getArguments();
             arguments[1] = Boolean.TRUE;
             ((MethodInvocation)invocation).setArguments(arguments);

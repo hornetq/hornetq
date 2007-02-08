@@ -418,7 +418,8 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
       log.trace(this + " closing (noop)");    
    }
 
-   public void sendTransaction(TransactionRequest request, boolean retry) throws JMSException
+   public void sendTransaction(TransactionRequest request,
+                               boolean checkForDuplicates) throws JMSException
    {    
       try
       {      
@@ -432,7 +433,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
             if (trace) { log.trace(this + " received ONE_PHASE_COMMIT request"); }
             
             Transaction tx = tr.createTransaction();
-            processTransaction(request.getState(), tx, retry);
+            processTransaction(request.getState(), tx, checkForDuplicates);
             tx.commit();
          }        
          else if (request.getRequestType() == TransactionRequest.TWO_PHASE_PREPARE_REQUEST)
@@ -440,7 +441,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
             if (trace) { log.trace(this + " received TWO_PHASE_COMMIT prepare request"); }
             
             Transaction tx = tr.createTransaction(request.getXid());
-            processTransaction(request.getState(), tx, retry);
+            processTransaction(request.getState(), tx, checkForDuplicates);
             tx.prepare();            
          }
          else if (request.getRequestType() == TransactionRequest.TWO_PHASE_COMMIT_REQUEST)
@@ -607,7 +608,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
       return remotingClientSessionID;
    }
    
-   void sendMessage(JBossMessage msg, Transaction tx, boolean retry) throws Exception
+   void sendMessage(JBossMessage msg, Transaction tx, boolean checkForDuplicates) throws Exception
    {
       JBossDestination dest = (JBossDestination)msg.getJMSDestination();
       
@@ -617,7 +618,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
       // TODO Do we want to set this for ALL messages. Optimisation is possible here.
       msg.setConnectionID(id);
 
-      if (retry)
+      if (checkForDuplicates)
       {
          // Message is already stored... so just ignoring the call
          if (serverPeer.getPersistenceManagerInstance().referenceExists(msg.getMessageID()))
@@ -712,7 +713,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
    }   
     
    private void processTransaction(ClientTransaction txState,
-                                   Transaction tx, boolean retry) throws Throwable
+                                   Transaction tx, boolean checkForDuplicates) throws Throwable
    {
       if (trace) { log.trace(this + " processing transaction " + tx); }
          
@@ -726,7 +727,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
             
             for (Iterator j = sessionState.getMsgs().iterator(); j.hasNext(); )
             {
-               sendMessage((JBossMessage)j.next(), tx, retry);
+               sendMessage((JBossMessage)j.next(), tx, checkForDuplicates);
             }
 
             // send the acks

@@ -94,9 +94,10 @@ public class ConnectionAdvised extends AdvisedSupport implements ConnectionEndpo
       endpoint.stop();
    }
 
-   public void sendTransaction(TransactionRequest request, boolean retry) throws JMSException
+   public void sendTransaction(TransactionRequest request,
+                               boolean checkForDuplicates) throws JMSException
    {
-      endpoint.sendTransaction(request, retry);
+      endpoint.sendTransaction(request, checkForDuplicates);
    }
 
    public MessagingXid[] getPreparedTransactions() throws JMSException
