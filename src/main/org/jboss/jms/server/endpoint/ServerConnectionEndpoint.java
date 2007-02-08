@@ -716,7 +716,11 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
                                    Transaction tx, boolean checkForDuplicates) throws Throwable
    {
       if (trace) { log.trace(this + " processing transaction " + tx); }
-         
+
+      // used on checkForDuplicates...
+      // we only check the first iteration
+      boolean firstIteration = true;
+
       synchronized (sessions)
       {         
          for (Iterator i = txState.getSessionStates().iterator(); i.hasNext(); )
@@ -724,10 +728,23 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
             SessionTxState sessionState = (SessionTxState)i.next();
 
             // send the messages
-            
+
             for (Iterator j = sessionState.getMsgs().iterator(); j.hasNext(); )
             {
-               sendMessage((JBossMessage)j.next(), tx, checkForDuplicates);
+               JBossMessage message = (JBossMessage)j.next();
+               if (checkForDuplicates && firstIteration)
+               {
+                  firstIteration = false;
+                  if (serverPeer.getPersistenceManagerInstance().
+                     referenceExists(message.getMessageID()))
+                  {
+                     // This means the transaction was previously completed...
+                     // we are done here then... no need to even check for ACKs or anything else
+                     log.debug("Transaction " + tx + " was previously completed, ignoring call");
+                     return;
+                  }
+               }
+               sendMessage(message, tx, false);
             }
 
             // send the acks
