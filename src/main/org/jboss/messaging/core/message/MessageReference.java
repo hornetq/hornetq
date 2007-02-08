@@ -19,33 +19,47 @@
   * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   */
-package org.jboss.messaging.core;
+package org.jboss.messaging.core.message;
 
-import java.io.Serializable;
 
 /**
- * A message is a routable instance that has a payload. The payload is opaque to the messaging
- * system.
- *
- * When implementing this interface, make sure you override equals() and hashCode() such that two
- * Message instances with equals IDs are equal.
- *
+ * A reference to a message.
+ * 
+ * 
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
- * @author <a href="mailto:tim.fox"jboss.com">Tim Fox</a>
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
  *
  * $Id$
  */
-public interface Message extends Routable
-{
-   Serializable getPayload();
+public interface MessageReference
+{      
+   long getPagingOrder();
    
-   byte[] getPayloadAsByteArray();
-    
-   boolean isPersisted();
+   void setPagingOrder(long order);   
    
-   void setPersisted(boolean persisted);
+   void releaseMemoryReference();
    
-   byte getType();
+   MessageReference copy();
    
+   Message getMessage();
+   
+   /**
+    * 
+    * @return The time in the future that delivery will be delayed until, or zero if
+    * no scheduled delivery will occur
+    */
+   long getScheduledDeliveryTime();
+   
+   void setScheduledDeliveryTime(long scheduledDeliveryTime);
+   
+   /**
+    * @return the number of times delivery has been attempted for this routable
+    */
+   int getDeliveryCount();
+   
+   void setDeliveryCount(int deliveryCount);
+   
+   
+
 }

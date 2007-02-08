@@ -40,7 +40,7 @@ import javax.sql.DataSource;
 import javax.transaction.TransactionManager;
 
 import org.jboss.jms.client.JBossConnectionFactory;
-import org.jboss.messaging.core.plugin.SimpleMessageStore;
+import org.jboss.messaging.core.message.SimpleMessageStore;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
 import org.jboss.tm.TransactionManagerService;
@@ -330,7 +330,7 @@ public class MessageCleanupTest extends MessagingTestCase
       mgr.begin();
 
       java.sql.Connection conn = ds.getConnection();
-      String sql = "SELECT MESSAGEID, ORD FROM JMS_MESSAGE_REFERENCE";
+      String sql = "SELECT MESSAGE_ID, ORD FROM JBM_MSG_REF";
       PreparedStatement ps = conn.prepareStatement(sql);
    
       ResultSet rs = ps.executeQuery();
@@ -368,7 +368,7 @@ public class MessageCleanupTest extends MessagingTestCase
       mgr.begin();
 
       java.sql.Connection conn = ds.getConnection();
-      String sql = "SELECT MESSAGEID FROM JMS_MESSAGE ORDER BY MESSAGEID";
+      String sql = "SELECT MESSAGE_ID FROM JBM_MSG ORDER BY MESSAGE_ID";
       PreparedStatement ps = conn.prepareStatement(sql);
       
       ResultSet rs = ps.executeQuery();

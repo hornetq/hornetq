@@ -21,6 +21,8 @@
   */
 package org.jboss.messaging.core;
 
+import org.jboss.messaging.core.message.Message;
+
 /**
  * A filter encapsulates the logic of whether to accept a message or not. Filters are used when
  * browsing to restrict the messages browsed, or when routing messages.
@@ -34,11 +36,11 @@ package org.jboss.messaging.core;
 public interface Filter
 {
 	/**
-	 * Tests whether the routable should be accepted.
+	 * Tests whether the message should be accepted.
     *
-	 * @return true if the Filter accepts the routable - i.e. let's it pass.
+	 * @return true if the Filter accepts the message - i.e. let's it pass.
 	 */
-	boolean accept(Routable routable);
+	boolean accept(Message message);
    
    String getFilterString();
 }

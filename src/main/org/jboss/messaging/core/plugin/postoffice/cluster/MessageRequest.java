@@ -25,7 +25,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.util.Map;
 
-import org.jboss.messaging.core.Message;
+import org.jboss.messaging.core.message.Message;
 import org.jboss.messaging.core.message.MessageFactory;
 import org.jboss.messaging.util.StreamUtils;
 

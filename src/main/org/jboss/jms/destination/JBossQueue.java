@@ -67,7 +67,7 @@ public class JBossQueue extends JBossDestination implements Queue
    }
 
    // Public --------------------------------------------------------
-
+   
    public String toString()
    {
       return "JBossQueue[" + name + "]";

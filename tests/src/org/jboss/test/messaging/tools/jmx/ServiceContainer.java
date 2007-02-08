@@ -1407,57 +1407,64 @@ public class ServiceContainer
 
          Connection conn = ds.getConnection();
 
-         String sql = "DELETE FROM JMS_POSTOFFICE";
+         String sql = "DELETE FROM JBM_POSTOFFICE";
          PreparedStatement ps = conn.prepareStatement(sql);
 
          int rows = ps.executeUpdate();
 
-         log.debug("JMS_POSTOFFICE: deleted " + rows);
+         log.debug("JBM_POSTOFFICE: deleted " + rows);
 
          ps.close();
 
-         sql = "DELETE FROM JMS_MESSAGE_REFERENCE";
+         sql = "DELETE FROM JBM_MSG_REF";
          ps = conn.prepareStatement(sql);
 
          rows = ps.executeUpdate();
 
-         log.debug("JMS_MESSAGE_REFERENCE: deleted " + rows);
+         log.debug("JBM_MSG_REF: deleted " + rows);
 
          ps.close();
 
-         sql = "DELETE FROM JMS_MESSAGE";
+         sql = "DELETE FROM JBM_MSG";
          ps = conn.prepareStatement(sql);
 
          rows = ps.executeUpdate();
 
-         log.debug("JMS_MESSAGE: deleted " + rows);
+         log.debug("JBM_MSG: deleted " + rows);
 
          ps.close();
 
-         sql = "DELETE FROM JMS_TRANSACTION";
+         sql = "DELETE FROM JBM_TX";
          ps = conn.prepareStatement(sql);
 
          rows = ps.executeUpdate();
 
-         log.debug("JMS_TRANSACTION: deleted " + rows);
+         log.debug("JBM_TX: deleted " + rows);
 
          ps.close();
 
-         sql = "DELETE FROM JMS_COUNTER";
+         sql = "DELETE FROM JBM_COUNTER";
          ps = conn.prepareStatement(sql);
 
          rows = ps.executeUpdate();
 
-         log.debug("JMS_COUNTER: deleted " + rows);
+         log.debug("JBM_COUNTER: deleted " + rows);
 
          ps.close();
 
-         sql = "DELETE FROM JMS_USER";
+         sql = "DELETE FROM JBM_USER";
          ps = conn.prepareStatement(sql);
 
          rows = ps.executeUpdate();
 
-         log.debug("JMS_USER: deleted " + rows);
+         log.debug("JBM_USER: deleted " + rows);
+         
+         sql = "DELETE FROM JBM_ROLE";
+         ps = conn.prepareStatement(sql);
+
+         rows = ps.executeUpdate();
+
+         log.debug("JBM_ROLE: deleted " + rows);
 
          ps.close();
          conn.close();

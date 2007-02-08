@@ -247,7 +247,7 @@ public class ClientTransaction
                JBossMessage m = (JBossMessage)iter2.next();
 
                out.writeByte(m.getType());
-
+             
                m.write(out);
             }
 
@@ -276,7 +276,7 @@ public class ClientTransaction
       state = in.readByte();
 
       int numSessions = in.readInt();
-
+      
       //Read in as a list since we don't want the extra overhead of putting into a map
       //which won't be used on the server side
       sessionStatesList = new ArrayList(numSessions);

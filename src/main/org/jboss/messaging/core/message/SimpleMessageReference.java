@@ -19,14 +19,11 @@
   * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   */
-package org.jboss.messaging.core.plugin;
+package org.jboss.messaging.core.message;
 
 import java.util.Map;
 
 import org.jboss.logging.Logger;
-import org.jboss.messaging.core.Message;
-import org.jboss.messaging.core.MessageReference;
-import org.jboss.messaging.core.message.RoutableSupport;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
 
 /**
@@ -41,7 +38,7 @@ import org.jboss.messaging.core.plugin.contract.MessageStore;
  *
  * SimpleMessageReference.java,v 1.3 2006/02/23 17:45:57 timfox Exp
  */
-public class SimpleMessageReference extends RoutableSupport implements MessageReference
+public class SimpleMessageReference implements MessageReference
 {   
    private static final Logger log = Logger.getLogger(SimpleMessageReference.class);
    
@@ -56,6 +53,11 @@ public class SimpleMessageReference extends RoutableSupport implements MessageRe
    private long pagingOrder = -1;
    
    private boolean released;
+      
+   private int deliveryCount;   
+   
+   private long scheduledDeliveryTime;
+   
    
    // Constructors --------------------------------------------------
 
@@ -67,40 +69,25 @@ public class SimpleMessageReference extends RoutableSupport implements MessageRe
       if (trace) { log.trace("Creating using default constructor"); }
    }
 
-   /**
-    * Creates a reference based on a given message.
-    */
-   public SimpleMessageReference(MessageHolder holder, MessageStore ms)
-   {
-      this(holder.getMessage().getMessageID(), holder.getMessage().isReliable(),
-           holder.getMessage().getExpiration(), holder.getMessage().getTimestamp(),
-           holder.getMessage().getHeaders(), holder.getMessage().getDeliveryCount(),
-           holder.getMessage().getPriority(), holder.getMessage().getScheduledDeliveryTime(), ms);
-
-      this.holder = holder;
-   }
-   
-   /*
-    * Creates a WeakMessageReference as a shallow copy of another
-    * TODO - By using a proxy pattern similarly to how the MessageProxies are done
-    * we can prevent unnecessary copying of MessageReference data since most of it is read only :)
-    */
    public SimpleMessageReference(SimpleMessageReference other)
    {
-      this(other.getMessageID(), other.isReliable(), other.getExpiration(),
-           other.getTimestamp(), other.getHeaders(), other.getDeliveryCount(),
-           other.getPriority(), other.getScheduledDeliveryTime(), other.ms);
+      this.ms = other.ms;
       
-      this.headers = other.headers;
       this.holder = other.holder;
+      
+      this.pagingOrder = other.pagingOrder;
+      
+      this.released = other.released;
+      
+      this.deliveryCount = other.deliveryCount;
+      
+      this.scheduledDeliveryTime = other.scheduledDeliveryTime;            
    }
    
-   protected SimpleMessageReference(long messageID, boolean reliable, long expiration,
-                                    long timestamp, Map headers, int deliveryCount,
-                                    byte priority, long scheduledDeliveryTime, MessageStore ms)
+   protected SimpleMessageReference(MessageHolder holder, MessageStore ms)
    {
-      super(messageID, reliable, expiration, timestamp, priority, 0, scheduledDeliveryTime, headers);
-      this.deliveryCount = deliveryCount;
+      this.holder = holder;
+      
       this.ms = ms;
    }
 
@@ -113,6 +100,26 @@ public class SimpleMessageReference extends RoutableSupport implements MessageRe
 
    // MessageReference implementation -------------------------------
    
+   public int getDeliveryCount()
+   {
+      return deliveryCount;
+   }
+   
+   public void setDeliveryCount(int deliveryCount)
+   {
+      this.deliveryCount = deliveryCount;
+   }
+   
+   public long getScheduledDeliveryTime()
+   {
+      return scheduledDeliveryTime;
+   }
+
+   public void setScheduledDeliveryTime(long scheduledDeliveryTime)
+   {
+      this.scheduledDeliveryTime = scheduledDeliveryTime;
+   }
+      
    public Message getMessage()
    {
       return holder.getMessage();
@@ -159,31 +166,9 @@ public class SimpleMessageReference extends RoutableSupport implements MessageRe
    
    // Public --------------------------------------------------------
 
-   public boolean equals(Object o)
-   {
-      if (this == o)
-      {
-         return true;
-      }
-
-      if (!(o instanceof SimpleMessageReference))
-      {
-         return false;
-      }
-      
-      SimpleMessageReference that = (SimpleMessageReference)o;
-      
-      return this.messageID == that.messageID;
-   }
-
-   public int hashCode()
-   {      
-      return (int)((this.messageID >>> 32) ^ this.messageID);
-   }
-
    public String toString()
    {
-      return "Reference[" + messageID + "]:" + (isReliable() ? "RELIABLE" : "NON-RELIABLE");
+      return "Reference[" + getMessage().getMessageID() + "]:" + (getMessage().isReliable() ? "RELIABLE" : "NON-RELIABLE");
    }
 
    // Package protected ---------------------------------------------

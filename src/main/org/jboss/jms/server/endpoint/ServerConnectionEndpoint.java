@@ -52,8 +52,8 @@ import org.jboss.jms.util.ExceptionUtil;
 import org.jboss.jms.util.ToString;
 import org.jboss.jms.wireformat.Dispatcher;
 import org.jboss.logging.Logger;
-import org.jboss.messaging.core.MessageReference;
-import org.jboss.messaging.core.Routable;
+import org.jboss.messaging.core.message.Message;
+import org.jboss.messaging.core.message.MessageReference;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.plugin.contract.PostOffice;
 import org.jboss.messaging.core.tx.MessagingXid;
@@ -631,7 +631,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
       // the "local" queues, to reduce clutter and unnecessary "pull policy" revving.
       if (failedNodeID != null)
       {
-         msg.putHeader(Routable.FAILED_NODE_ID, failedNodeID);
+         msg.putHeader(Message.FAILED_NODE_ID, failedNodeID);
       }
 
       // We must reference the message *before* we send it the destination to be handled. This is
@@ -644,6 +644,13 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
       try
       {         
          ref = ms.reference(msg);
+         
+         long schedDeliveryTime = msg.getScheduledDeliveryTime();
+         
+         if (schedDeliveryTime > 0)
+         {
+            ref.setScheduledDeliveryTime(schedDeliveryTime);
+         }
          
          if (dest.isQueue())
          {

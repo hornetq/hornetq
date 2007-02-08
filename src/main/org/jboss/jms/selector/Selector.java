@@ -30,8 +30,6 @@ import javax.jms.Message;
 
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Filter;
-import org.jboss.messaging.core.MessageReference;
-import org.jboss.messaging.core.Routable;
 
 
 /**
@@ -119,30 +117,17 @@ public class Selector implements Filter
       return selector;
    }
 	
-	public synchronized boolean accept(Routable routable)
+	public synchronized boolean accept(org.jboss.messaging.core.message.Message message)
    {
       try
-      {			
-         org.jboss.messaging.core.Message m;
-         
-         //FIXME - We can get rid of this nasty comparisons once we change core
-         //to only deal with MessageRefernce instances
-         if (routable.isReference())
-         {
-            m = ((MessageReference)routable).getMessage();
-         }
-         else
-         {
-            m = (org.jboss.messaging.core.Message)routable;
-         }
-         
+      {			         
          //Only accept JMS messages
-         if (!(m instanceof Message))
+         if (!(message instanceof Message))
          {
             return false;
          }
          
-         Message mess = (Message)m;
+         Message mess = (Message)message;
          			
          // Set the identifiers values
          Iterator i = identifiers.values().iterator();

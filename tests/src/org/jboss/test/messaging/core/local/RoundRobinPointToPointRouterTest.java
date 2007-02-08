@@ -23,14 +23,18 @@ package org.jboss.test.messaging.core.local;
 
 import org.jboss.messaging.core.Delivery;
 import org.jboss.messaging.core.DeliveryObserver;
-import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.Receiver;
 import org.jboss.messaging.core.Router;
 import org.jboss.messaging.core.SimpleDelivery;
 import org.jboss.messaging.core.local.RoundRobinPointToPointRouter;
-import org.jboss.messaging.core.plugin.SimpleMessageReference;
+import org.jboss.messaging.core.message.Message;
+import org.jboss.messaging.core.message.MessageReference;
+import org.jboss.messaging.core.message.SimpleMessageReference;
+import org.jboss.messaging.core.message.SimpleMessageStore;
+import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.test.messaging.MessagingTestCase;
+import org.jboss.test.messaging.util.CoreMessageFactory;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -45,6 +49,8 @@ public class RoundRobinPointToPointRouterTest extends MessagingTestCase
    // Static --------------------------------------------------------
    
    // Attributes ----------------------------------------------------
+   
+   protected MessageStore ms;
 
    // Constructors --------------------------------------------------
 
@@ -58,11 +64,17 @@ public class RoundRobinPointToPointRouterTest extends MessagingTestCase
    public void setUp() throws Exception
    {
       super.setUp();
+      
+      ms = new SimpleMessageStore();
+      
+      ms.start();
    }
 
    public void tearDown() throws Exception
    {
       super.tearDown();
+      
+      ms.stop();
    }
 
    // Public --------------------------------------------------------
@@ -82,8 +94,10 @@ public class RoundRobinPointToPointRouterTest extends MessagingTestCase
          router.add(receivers[i]);
       }
       
-      MessageReference ref = new SimpleMessageReference();
+      Message msg = CoreMessageFactory.createCoreMessage(123, true, null);
       
+      MessageReference ref = ms.reference(msg);
+            
       Delivery del = router.handle(null, ref, null);
       assertNotNull(del);
       checkReceiverGotRef(receivers, 0);
@@ -173,7 +187,9 @@ public class RoundRobinPointToPointRouterTest extends MessagingTestCase
       
       receivers[9].closed = true;
       
-      MessageReference ref = new SimpleMessageReference();
+      Message msg = CoreMessageFactory.createCoreMessage(123, true, null);
+      
+      MessageReference ref = ms.reference(msg);
       
       Delivery del = router.handle(null, ref, null);
       assertNotNull(del);
@@ -246,7 +262,9 @@ public class RoundRobinPointToPointRouterTest extends MessagingTestCase
       }
       
       
-      MessageReference ref = new SimpleMessageReference();
+      Message msg = CoreMessageFactory.createCoreMessage(123, true, null);
+      
+      MessageReference ref = ms.reference(msg);
       
       Delivery del = router.handle(null, ref, null);
       assertNull(del);
@@ -283,7 +301,9 @@ public class RoundRobinPointToPointRouterTest extends MessagingTestCase
       
       receivers[9].selectorMatches = false;
       
-      MessageReference ref = new SimpleMessageReference();
+      Message msg = CoreMessageFactory.createCoreMessage(123, true, null);
+      
+      MessageReference ref = ms.reference(msg);
       
       Delivery del = router.handle(null, ref, null);
       assertNotNull(del);
@@ -355,7 +375,9 @@ public class RoundRobinPointToPointRouterTest extends MessagingTestCase
       }
       
       
-      MessageReference ref = new SimpleMessageReference();
+      Message msg = CoreMessageFactory.createCoreMessage(123, true, null);
+      
+      MessageReference ref = ms.reference(msg);
       
       Delivery del = router.handle(null, ref, null);
       assertNotNull(del);
@@ -375,7 +397,9 @@ public class RoundRobinPointToPointRouterTest extends MessagingTestCase
    {
       Router router = new RoundRobinPointToPointRouter();
 
-      MessageReference ref = new SimpleMessageReference();
+      Message msg = CoreMessageFactory.createCoreMessage(123, true, null);
+      
+      MessageReference ref = ms.reference(msg);
       
       Delivery del = router.handle(null, ref, null);
       assertNull(del);
@@ -403,7 +427,12 @@ public class RoundRobinPointToPointRouterTest extends MessagingTestCase
          public void run()
          {
             // sends the message to the router on a separate thread
-            router.handle(null, new SimpleMessageReference(), null);
+            
+            Message msg = CoreMessageFactory.createCoreMessage(123, true, null);
+            
+            MessageReference ref = ms.reference(msg);
+            
+            router.handle(null, ref, null);
          }
       }, "Message sending thread");
 

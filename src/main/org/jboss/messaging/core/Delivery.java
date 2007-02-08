@@ -21,6 +21,7 @@
   */
 package org.jboss.messaging.core;
 
+import org.jboss.messaging.core.message.MessageReference;
 import org.jboss.messaging.core.tx.Transaction;
 
 /**

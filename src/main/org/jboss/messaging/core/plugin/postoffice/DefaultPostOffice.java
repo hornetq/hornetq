@@ -44,9 +44,10 @@ import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Delivery;
 import org.jboss.messaging.core.Filter;
 import org.jboss.messaging.core.FilterFactory;
-import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.Queue;
 import org.jboss.messaging.core.local.PagingFilteredQueue;
+import org.jboss.messaging.core.message.MessageReference;
+import org.jboss.messaging.core.message.SimpleMessageReference;
 import org.jboss.messaging.core.plugin.JDBCSupport;
 import org.jboss.messaging.core.plugin.contract.ClusteredPostOffice;
 import org.jboss.messaging.core.plugin.contract.Condition;
@@ -301,7 +302,7 @@ public class DefaultPostOffice extends JDBCSupport implements PostOffice
          {
             boolean startInternalTx = false;
 
-            if (tx == null && ref.isReliable())
+            if (tx == null && ref.getMessage().isReliable())
             {
                if (bd.getDurableCount() > 1)
                {
@@ -435,7 +436,7 @@ public class DefaultPostOffice extends JDBCSupport implements PostOffice
                        out.println("<tr><td>Reference#</td><td>Message</td></tr>");
                        for (Iterator i = undelivered.iterator();i.hasNext();)
                        {
-                           MessageReference reference = (MessageReference)i.next();
+                           SimpleMessageReference reference = (SimpleMessageReference)i.next();
                            out.println("<tr><td>" + reference.getInMemoryChannelCount() +
                               "</td><td>" + reference.getMessage() +"</td></tr>");
                        }
@@ -878,7 +879,7 @@ public class DefaultPostOffice extends JDBCSupport implements PostOffice
       Map map = new LinkedHashMap();
 
       map.put("INSERT_BINDING",
-              "INSERT INTO JMS_POSTOFFICE (" +
+              "INSERT INTO JBM_POSTOFFICE (" +
                  "POSTOFFICE_NAME, " +
                  "NODE_ID, " +
                  "QUEUE_NAME, " +
@@ -890,7 +891,7 @@ public class DefaultPostOffice extends JDBCSupport implements PostOffice
               "VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
 
       map.put("DELETE_BINDING",
-              "DELETE FROM JMS_POSTOFFICE WHERE POSTOFFICE_NAME=? AND NODE_ID=? AND QUEUE_NAME=?");
+              "DELETE FROM JBM_POSTOFFICE WHERE POSTOFFICE_NAME=? AND NODE_ID=? AND QUEUE_NAME=?");
 
       map.put("LOAD_BINDINGS",
               "SELECT " +
@@ -901,7 +902,7 @@ public class DefaultPostOffice extends JDBCSupport implements PostOffice
                  "CHANNEL_ID, " +
                  "IS_FAILED_OVER, " +
                  "FAILED_NODE_ID " +
-                 "FROM JMS_POSTOFFICE WHERE POSTOFFICE_NAME  = ?");
+                 "FROM JBM_POSTOFFICE WHERE POSTOFFICE_NAME  = ?");
 
       return map;
    }
@@ -910,7 +911,7 @@ public class DefaultPostOffice extends JDBCSupport implements PostOffice
    {
       Map map = new LinkedHashMap();
       map.put("CREATE_POSTOFFICE_TABLE",
-              "CREATE TABLE JMS_POSTOFFICE (POSTOFFICE_NAME VARCHAR(255), NODE_ID INTEGER," +
+              "CREATE TABLE JBM_POSTOFFICE (POSTOFFICE_NAME VARCHAR(255), NODE_ID INTEGER," +
               "QUEUE_NAME VARCHAR(1023), CONDITION VARCHAR(1023), " +
               "SELECTOR VARCHAR(1023), CHANNEL_ID BIGINT, IS_FAILED_OVER CHAR(1), " +
               "FAILED_NODE_ID INTEGER)");

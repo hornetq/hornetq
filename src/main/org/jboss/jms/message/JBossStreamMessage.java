@@ -23,9 +23,7 @@ package org.jboss.jms.message;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
-import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -34,7 +32,6 @@ import javax.jms.MessageEOFException;
 import javax.jms.MessageFormatException;
 import javax.jms.StreamMessage;
 
-import org.jboss.jms.destination.JBossDestination;
 import org.jboss.messaging.util.StreamUtils;
 import org.jboss.util.Primitives;
 
@@ -56,7 +53,7 @@ public class JBossStreamMessage extends JBossMessage implements StreamMessage
 
    private static final long serialVersionUID = 7469150228071568233L;
 
-   public static final byte TYPE = 4;
+   public static final byte TYPE = 6;
 
    // Attributes ----------------------------------------------------
 
@@ -93,23 +90,10 @@ public class JBossStreamMessage extends JBossMessage implements StreamMessage
    /*
     * This constructor is used to construct messages when retrieved from persistence storage
     */
-   public JBossStreamMessage(long messageID,
-         boolean reliable,
-         long expiration,
-         long timestamp,
-         byte priority,
-         Map coreHeaders,
-         byte[] payloadAsByteArray,         
-         String jmsType,
-         String correlationID,
-         byte[] correlationIDBytes,
-         JBossDestination destination,
-         JBossDestination replyTo,
-         HashMap jmsProperties)
+   public JBossStreamMessage(long messageID, boolean reliable, long expiration, long timestamp,
+                             byte priority, Map coreHeaders, byte[] payloadAsByteArray)
    {
-      super(messageID, reliable, expiration, timestamp, priority, coreHeaders, payloadAsByteArray,
-            jmsType, correlationID, correlationIDBytes, destination, replyTo, 
-            jmsProperties);
+      super(messageID, reliable, expiration, timestamp, priority, coreHeaders, payloadAsByteArray);
    }
 
    /**
@@ -155,7 +139,7 @@ public class JBossStreamMessage extends JBossMessage implements StreamMessage
       return JBossStreamMessage.TYPE;
    }
    
-   public void doAfterSend() throws JMSException
+   public void doBeforeSend() throws JMSException
    {      
       reset();
    }
@@ -682,7 +666,7 @@ public class JBossStreamMessage extends JBossMessage implements StreamMessage
 
    }
    
-   public JBossMessage doShallowCopy()
+   public JBossMessage doCopy()
    {
       return new JBossStreamMessage(this);
    }
@@ -691,12 +675,12 @@ public class JBossStreamMessage extends JBossMessage implements StreamMessage
 
    // Protected -----------------------------------------------------
 
-   protected void writePayload(DataOutputStream out, Serializable thePayload) throws Exception
+   protected void writePayload(DataOutputStream out, Object thePayload) throws Exception
    {
       StreamUtils.writeList(out, (List)thePayload);
    }
 
-   protected Serializable readPayload(DataInputStream in, int length)
+   protected Object readPayload(DataInputStream in, int length)
       throws Exception
    {
       return StreamUtils.readList(in);

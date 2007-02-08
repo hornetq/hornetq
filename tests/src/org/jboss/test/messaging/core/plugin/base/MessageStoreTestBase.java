@@ -25,11 +25,11 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-import org.jboss.messaging.core.Message;
-import org.jboss.messaging.core.MessageReference;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.jmx.ServiceContainer;
 import org.jboss.test.messaging.util.CoreMessageFactory;
+import org.jboss.messaging.core.message.Message;
+import org.jboss.messaging.core.message.MessageReference;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
 
 
@@ -66,16 +66,15 @@ public abstract class MessageStoreTestBase extends MessagingTestCase
     */
    public static void assertCorrectReference(MessageReference ref, Message m)
    {
-      assertTrue(ref.isReference());
-      assertEquals(m.getMessageID(), ref.getMessageID());
-      assertEquals(m.isReliable(), ref.isReliable());
-      assertEquals(m.getExpiration(), ref.getExpiration());
-      assertEquals(m.getTimestamp(), ref.getTimestamp());
-      assertEquals(m.getPriority(), ref.getPriority());
+      assertEquals(m.getMessageID(), ref.getMessage().getMessageID());
+      assertEquals(m.isReliable(), ref.getMessage().isReliable());
+      assertEquals(m.getExpiration(), ref.getMessage().getExpiration());
+      assertEquals(m.getTimestamp(), ref.getMessage().getTimestamp());
+      assertEquals(m.getPriority(), ref.getMessage().getPriority());
       assertEquals(0, ref.getDeliveryCount());
 
       Map messageHeaders = m.getHeaders();
-      Map refHeaders = ref.getHeaders();
+      Map refHeaders = ref.getMessage().getHeaders();
       assertEquals(messageHeaders.size(), refHeaders.size());
 
       for(Iterator i = messageHeaders.keySet().iterator(); i.hasNext(); )
@@ -322,11 +321,11 @@ public abstract class MessageStoreTestBase extends MessagingTestCase
       MessageReference ref = ms.reference(m);
       assertCorrectReference(ref, m);
       
-      MessageReference ref2 = ms.reference(ref.getMessageID());
+      MessageReference ref2 = ms.reference(ref.getMessage().getMessageID());
       assertNotNull(ref2);      
       assertCorrectReference(ref2, m);
       
-      MessageReference ref3 = ms.reference(ref.getMessageID());
+      MessageReference ref3 = ms.reference(ref.getMessage().getMessageID());
       assertNotNull(ref3);      
       assertCorrectReference(ref3, m);
       
@@ -334,7 +333,7 @@ public abstract class MessageStoreTestBase extends MessagingTestCase
       ref2.releaseMemoryReference();
       ref3.releaseMemoryReference();
       
-      MessageReference ref4 = ms.reference(ref.getMessageID());
+      MessageReference ref4 = ms.reference(ref.getMessage().getMessageID());
             
       assertNull(ref4);                
    }

@@ -23,8 +23,8 @@ package org.jboss.messaging.core.plugin.contract;
 
 import java.util.Collection;
 
-import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.Queue;
+import org.jboss.messaging.core.message.MessageReference;
 import org.jboss.messaging.core.plugin.postoffice.Binding;
 import org.jboss.messaging.core.tx.Transaction;
 

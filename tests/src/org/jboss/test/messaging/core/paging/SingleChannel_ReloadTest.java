@@ -23,12 +23,12 @@ package org.jboss.test.messaging.core.paging;
 
 import java.util.List;
 
-import org.jboss.messaging.core.Message;
-import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.local.PagingFilteredQueue;
+import org.jboss.messaging.core.message.Message;
+import org.jboss.messaging.core.message.MessageReference;
+import org.jboss.messaging.core.message.SimpleMessageStore;
 import org.jboss.messaging.core.plugin.JDBCPersistenceManager;
 import org.jboss.messaging.core.plugin.LockMap;
-import org.jboss.messaging.core.plugin.SimpleMessageStore;
 import org.jboss.messaging.core.tx.TransactionRepository;
 import org.jboss.test.messaging.util.CoreMessageFactory;
 import org.jboss.test.messaging.core.paging.base.PagingStateTestBase;

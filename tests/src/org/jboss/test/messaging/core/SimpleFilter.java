@@ -22,7 +22,7 @@
 package org.jboss.test.messaging.core;
 
 import org.jboss.messaging.core.Filter;
-import org.jboss.messaging.core.Routable;
+import org.jboss.messaging.core.message.Message;
 
 /**
  * A SimpleFilter
@@ -42,9 +42,9 @@ public class SimpleFilter implements Filter
       this.idMatch = idMatch;
    }
 
-   public boolean accept(Routable routable)
+   public boolean accept(Message message)
    {
-      return routable.getMessageID() == idMatch;
+      return message.getMessageID() == idMatch;
    }
 
    public String getFilterString()

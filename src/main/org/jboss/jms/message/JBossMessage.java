@@ -45,8 +45,8 @@ import javax.jms.TextMessage;
 
 import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.util.MessagingJMSException;
+import org.jboss.logging.Logger;
 import org.jboss.messaging.core.message.MessageSupport;
-import org.jboss.messaging.util.StreamUtils;
 import org.jboss.util.Primitives;
 import org.jboss.util.Strings;
 
@@ -68,7 +68,6 @@ import org.jboss.util.Strings;
  * @author Hiram Chirino (Cojonudo14@hotmail.com)
  * @author David Maplesden (David.Maplesden@orion.co.nz)
  * @author <a href="mailto:adrian@jboss.org">Adrian Brock</a>
- * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  *
  * $Id$
  */
@@ -77,18 +76,26 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message, S
    // Constants -----------------------------------------------------
    private static final long serialVersionUID = 2833181306818971346L;
 
-   public static final byte TYPE = 0;
+   public static final byte TYPE = 1;
    
-   private static final byte NULL = 0;
+   private static final char PROPERTY_PREFIX_CHAR = 'P';
    
-   private static final byte STRING = 1;
+   private static final String PROPERTY_PREFIX = "P";
    
-   private static final byte BYTES = 2;
+   private static final String DESTINATION_HEADER_NAME = "H.DEST";
    
-   private static final String JMSX_DELIVERY_COUNT_PROP_NAME = "JMSXDeliveryCount";   
+   private static final String REPLYTO_HEADER_NAME = "H.REPLYTO";
+   
+   private static final String CORRELATIONID_HEADER_NAME = "H.CORRELATIONID";
+   
+   private static final String CORRELATIONIDBYTES_HEADER_NAME = "H.CORRELATIONIDBYTES";
+   
+   private static final String TYPE_HEADER_NAME = "H.TYPE";
    
    public static final String JMS_JBOSS_SCHEDULED_DELIVERY_PROP_NAME = "JMS_JBOSS_SCHEDULED_DELIVERY";
    
+   private static final Logger log = Logger.getLogger(JBossMessage.class);   
+      
    // Static --------------------------------------------------------
 
    private static final HashSet reservedIdentifiers = new HashSet();
@@ -191,31 +198,59 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message, S
             sb.append(name).append(" - ").append(m.headers.get(name)).append('\n');
          }
       }
-      sb.append("              redelivered:   ").append(m.deliveryCount >= 1).append('\n');
-      sb.append("              priority:      ").append(m.priority).append('\n');
-      sb.append("              deliveryCount: ").append(m.deliveryCount).append('\n');
-
-      sb.append("              JMS ID:        ").append(m.getJMSMessageID()).append('\n');
-      sb.append("              type:          ").append(type).append('\n');
-      sb.append("              destination:   ").append(m.destination).append('\n');
-      sb.append("              replyTo:       ").append(m.replyToDestination).append('\n');
-      sb.append("              jmsType:       ").append(m.jmsType).append('\n');
-      sb.append("              properties:    ");
-
-      if (m.properties.size() == 0)
+      
+      int deliveryCount = 0;
+      try
       {
-         sb.append("NO PROPERTIES").append('\n');
+         deliveryCount = m.getIntProperty("JMSXDeliveryCount");
       }
-      else
+      catch (JMSException e)
       {
-         sb.append('\n');
-         for(Iterator i = m.properties.keySet().iterator(); i.hasNext(); )
+         log.error("Failed to get delivery count", e);
+      }
+                 
+      try
+      {
+         sb.append("              redelivered:   ").append(deliveryCount >= 1).append('\n');
+         sb.append("              priority:      ").append(m.priority).append('\n');
+         sb.append("              deliveryCount: ").append(deliveryCount).append('\n');
+   
+         sb.append("              JMS ID:        ").append(m.getJMSMessageID()).append('\n');
+         sb.append("              type:          ").append(type).append('\n');
+         sb.append("              destination:   ").append(m.getJMSDestination()).append('\n');
+         sb.append("              replyTo:       ").append(m.getJMSReplyTo()).append('\n');
+         sb.append("              jmsType:       ").append(m.getJMSType()).append('\n');
+         sb.append("              properties:    ");
+      }
+      catch (Exception e)
+      {
+         log.error("Failed to dump message", e);
+      }
+
+      Iterator iter = m.headers.entrySet().iterator();
+      
+      int count = 0;
+      
+      while (iter.hasNext())
+      {
+         Map.Entry entry = (Map.Entry)iter.next();
+         
+         String propName = (String)entry.getKey();
+         
+         if (propName.charAt(0) == PROPERTY_PREFIX_CHAR)
          {
-            String name = (String)i.next();
+            if (count == 0)
+            {
+               sb.append("\n");
+            }
+         
             sb.append("                             ");
-            sb.append(name).append(" - ").append(m.properties.get(name)).append('\n');
+            sb.append(propName).append(" - ").append(entry.getValue()).append('\n');
+            
+            count++;
          }
       }
+      
       sb.append("\n");
 
       return sb.toString();
@@ -223,70 +258,42 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message, S
 
    // Attributes ----------------------------------------------------
 
-   protected JBossDestination destination;
-   protected JBossDestination replyToDestination;
-   protected String jmsType;
-   protected Map properties;
-   protected String correlationID;
-   protected byte[] correlationIDBytes;
    protected transient int connectionID;
+   
+   protected transient String jmsMessageID;
+   
+   //Optimisation - we could just store this as a header like everything else - but we store
+   //As an attribute so we can prevent an extra lookup on the server
+   private long scheduledDeliveryTime;
+   
+   //Optimisation - we could just store this as a header like everything else - but we store
+   //As an attribute so we can prevent an extra lookup on the server
+   private JBossDestination destination;
    
    // Constructors --------------------------------------------------
  
-   /**
-    * Only deserialization should use this constructor directory
+   /*
+    * Construct a message for deserialization or streaming
     */
    public JBossMessage()
    {     
    }
    
    /*
-    * This constructor is used to construct messages prior to sending
+    * Construct a message using default values
     */
    public JBossMessage(long messageID)
    {
-      this(messageID, true, 0, System.currentTimeMillis(), (byte)4,
-           null, null, null, null, null, null, null, null);
+      super(messageID, true, 0, System.currentTimeMillis(), (byte)4, null, null);
    }
-
-   public JBossMessage(long messageID,
-                       boolean reliable,
-                       long expiration,
-                       long timestamp,
-                       byte priority,    
-                       Map coreHeaders,
-                       byte[] payloadAsByteArray,
-                       String jmsType,
-                       String correlationID,
-                       byte[] correlationIDBytes,
-                       JBossDestination destination,
-                       JBossDestination replyTo,
-                       HashMap jmsProperties)
+   
+   /*
+    * Constructor using specified values
+    */
+   public JBossMessage(long messageID, boolean reliable, long expiration, long timestamp,
+                       byte priority, Map headers, byte[] payloadAsByteArray) 
    {
-      super(messageID,
-            reliable,
-            expiration,
-            timestamp,
-            priority,
-            0, 0,
-            coreHeaders,
-            payloadAsByteArray);
-
-      this.jmsType = jmsType;      
-      this.correlationID = correlationID;
-      this.correlationIDBytes = correlationIDBytes;
-      this.connectionID = Integer.MIN_VALUE;
-      this.destination = destination;
-      this.replyToDestination = replyTo;
-
-      if (jmsProperties == null)
-      {
-         properties = new HashMap();
-      }
-      else
-      {
-         properties = jmsProperties;
-      }
+      super (messageID, reliable, expiration, timestamp, priority, headers, payloadAsByteArray);
    }
 
    /**
@@ -298,13 +305,8 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message, S
    protected JBossMessage(JBossMessage other)
    {
       super(other);
-      this.destination = other.destination;
-      this.replyToDestination = other.replyToDestination;
-      this.jmsType = other.jmsType;      
-      this.properties = other.properties;     
-      this.correlationID = other.correlationID;
-      this.correlationIDBytes = other.correlationIDBytes;
-      this.connectionID = other.connectionID;      
+      this.connectionID = other.connectionID;   
+      this.scheduledDeliveryTime = other.scheduledDeliveryTime;
    }
 
    /**
@@ -339,29 +341,17 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message, S
          setJMSDestination(foreign.getJMSDestination());
       }
       setJMSDeliveryMode(foreign.getJMSDeliveryMode());
-      setDeliveryCount(foreign.getJMSRedelivered() ? 1 : 0);
       setJMSExpiration(foreign.getJMSExpiration());
       setJMSPriority(foreign.getJMSPriority());
       setJMSType(foreign.getJMSType());
-
-      if (properties == null)
-      {
-         properties = new HashMap();
-      }
 
       for (Enumeration props = foreign.getPropertyNames(); props.hasMoreElements(); )
       {
          String name = (String)props.nextElement();
          
          Object prop = foreign.getObjectProperty(name);
-         if (JMSX_DELIVERY_COUNT_PROP_NAME.equals(name))
-         {
-            deliveryCount = foreign.getIntProperty(JMSX_DELIVERY_COUNT_PROP_NAME);
-         }
-         else
-         {
-            this.setObjectProperty(name, prop);
-         }                
+
+         this.setObjectProperty(name, prop);                       
       }
    }
    
@@ -375,8 +365,6 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message, S
 
    // javax.jmx.Message implementation ------------------------------
    
-   protected transient String jmsMessageID;
-
    public String getJMSMessageID()
    {
       if (jmsMessageID == null)
@@ -407,7 +395,7 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message, S
 
    public byte[] getJMSCorrelationIDAsBytes() throws JMSException
    {
-      return correlationIDBytes;
+      return (byte[]) headers.get(CORRELATIONIDBYTES_HEADER_NAME);
    }
 
    public void setJMSCorrelationIDAsBytes(byte[] correlationID) throws JMSException
@@ -416,24 +404,26 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message, S
       {
          throw new JMSException("Please specify a non-zero length byte[]");
       }
-      correlationIDBytes = correlationID;
-      correlationID = null;
+      headers.put(CORRELATIONIDBYTES_HEADER_NAME, correlationID);
+      
+      headers.remove(CORRELATIONID_HEADER_NAME);
    }
 
    public void setJMSCorrelationID(String correlationID) throws JMSException
    {
-      this.correlationID = correlationID;
-      correlationIDBytes = null;
+      headers.put(CORRELATIONID_HEADER_NAME, correlationID);
+      
+      headers.remove(CORRELATIONIDBYTES_HEADER_NAME);
    }
 
    public String getJMSCorrelationID() throws JMSException
    {
-      return correlationID;
+      return (String)headers.get(CORRELATIONID_HEADER_NAME);
    }
 
    public Destination getJMSReplyTo() throws JMSException
    {
-      return replyToDestination;
+      return (Destination)headers.get(REPLYTO_HEADER_NAME);
    }
 
    public void setJMSReplyTo(Destination replyTo) throws JMSException
@@ -442,12 +432,19 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message, S
       {
          throw new InvalidDestinationException("Replyto cannot be foreign");
       }
-      this.replyToDestination = (JBossDestination)replyTo;
+      headers.put(REPLYTO_HEADER_NAME, (JBossDestination)replyTo);
    }
 
    public Destination getJMSDestination() throws JMSException
    {
-      return destination;
+      if (destination != null)
+      {
+         return destination;
+      }
+      else
+      {
+         return (Destination)headers.get(DESTINATION_HEADER_NAME);
+      }
    }
 
    public void setJMSDestination(Destination destination) throws JMSException
@@ -456,7 +453,24 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message, S
       {
          throw new InvalidDestinationException("Destination cannot be foreign");
       }
-      this.destination = (JBossDestination)destination;
+      
+      //We don't store as a header when setting - this allows us to avoid a lookup on the server
+      //when routing the message
+      this.destination = (JBossDestination)destination; 
+   }
+   
+   //We need to override getHeaders - so the JMSDestination header gets persisted to the db
+   //This is called by the persistence manager
+   public Map getHeaders()
+   {
+      if (destination != null)
+      {
+         headers.put(DESTINATION_HEADER_NAME, destination);
+      }
+      
+      destination = null;
+      
+      return headers;
    }
 
    public int getJMSDeliveryMode() throws JMSException
@@ -483,19 +497,13 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message, S
 
    public boolean getJMSRedelivered() throws JMSException
    {
-      return deliveryCount >= 2;
+      throw new IllegalStateException("This should never be called directly");
    }
 
    public void setJMSRedelivered(boolean redelivered) throws JMSException
    {
-      if (deliveryCount == 1)
-      {
-         deliveryCount++;
-      }
-      else
-      {
-         //do nothing
-      }
+      //Always dealt with on the proxy
+      throw new IllegalStateException("This should never be called directly");
    }
 
    /**
@@ -505,7 +513,7 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message, S
     */
    public String getJMSType() throws JMSException
    {
-      return jmsType;
+      return (String)headers.get(TYPE_HEADER_NAME);
    }
 
    /**
@@ -515,7 +523,7 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message, S
     */
    public void setJMSType(String type) throws JMSException
    {
-      this.jmsType = type;
+      headers.put(TYPE_HEADER_NAME, type);
    }
 
    public long getJMSExpiration() throws JMSException
@@ -540,24 +548,34 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message, S
 
    public void clearProperties() throws JMSException
    {
-      properties.clear();
+      Iterator iter = headers.keySet().iterator();
+      
+      while (iter.hasNext())
+      {
+         String propName = (String)iter.next();
+         
+         if (propName.charAt(0) == PROPERTY_PREFIX_CHAR)
+         {
+            iter.remove();
+         }
+      }
    }
 
    public void clearBody() throws JMSException
    {
       this.setPayload(null);
+      
       clearPayloadAsByteArray();
    }
 
    public boolean propertyExists(String name) throws JMSException
    {
-      return properties.containsKey(name) || JMSX_DELIVERY_COUNT_PROP_NAME.equals(name) ||
-      (this.scheduledDeliveryTime != 0 && JMS_JBOSS_SCHEDULED_DELIVERY_PROP_NAME.equals(name));
+      return headers.containsKey(PROPERTY_PREFIX + name);
    }
 
    public boolean getBooleanProperty(String name) throws JMSException
    {
-      Object value = properties.get(name);
+      Object value = headers.get(PROPERTY_PREFIX + name);
       if (value == null)
          return Boolean.valueOf(null).booleanValue();
 
@@ -571,7 +589,7 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message, S
 
    public byte getByteProperty(String name) throws JMSException
    {
-      Object value = properties.get(name);
+      Object value = headers.get(PROPERTY_PREFIX + name);
       if (value == null)
          throw new NumberFormatException("Message property '" + name + "' not set.");
 
@@ -585,7 +603,7 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message, S
 
    public short getShortProperty(String name) throws JMSException
    {
-      Object value = properties.get(name);
+      Object value = headers.get(PROPERTY_PREFIX + name);
       if (value == null)
          throw new NumberFormatException("Message property '" + name + "' not set.");
 
@@ -600,13 +618,8 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message, S
    }
 
    public int getIntProperty(String name) throws JMSException
-   {
-      if (JMSX_DELIVERY_COUNT_PROP_NAME.equals(name))
-      {
-         return deliveryCount;
-      }
-               
-      Object value = properties.get(name);
+   {      
+      Object value = headers.get(PROPERTY_PREFIX + name);
 
       if (value == null)
       {
@@ -637,16 +650,19 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message, S
 
    public long getLongProperty(String name) throws JMSException
    {
-      if (JMSX_DELIVERY_COUNT_PROP_NAME.equals(name))
-      {
-         return (long)deliveryCount;
+      if (JMS_JBOSS_SCHEDULED_DELIVERY_PROP_NAME.equals(name))
+      {         
+         if (this.scheduledDeliveryTime == 0)
+         {
+            throw new NumberFormatException("Message property '" + name + "' not set.");
+         }
+         else
+         {
+            return scheduledDeliveryTime;
+         }         
       }
-      else if (JMS_JBOSS_SCHEDULED_DELIVERY_PROP_NAME.equals(name) && scheduledDeliveryTime > 0)
-      {
-         return scheduledDeliveryTime;
-      }
-
-      Object value = properties.get(name);
+      
+      Object value = headers.get(PROPERTY_PREFIX + name);
 
       if (value == null)
       {
@@ -681,7 +697,7 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message, S
 
    public float getFloatProperty(String name) throws JMSException
    {
-      Object value = properties.get(name);
+      Object value = headers.get(PROPERTY_PREFIX + name);
       if (value == null)
          return Float.valueOf(null).floatValue();
 
@@ -695,7 +711,7 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message, S
 
    public double getDoubleProperty(String name) throws JMSException
    {
-      Object value = properties.get(name);
+      Object value = headers.get(PROPERTY_PREFIX + name);
       if (value == null)
          return Double.valueOf(null).doubleValue();
 
@@ -711,16 +727,19 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message, S
 
    public String getStringProperty(String name) throws JMSException
    {
-      if (JMSX_DELIVERY_COUNT_PROP_NAME.equals(name))
-      {
-         return String.valueOf(deliveryCount);
+      if (JMS_JBOSS_SCHEDULED_DELIVERY_PROP_NAME.equals(name))
+      {         
+         if (this.scheduledDeliveryTime == 0)
+         {
+            throw new NumberFormatException("Message property '" + name + "' not set.");
+         }
+         else
+         {
+            return String.valueOf(scheduledDeliveryTime);
+         }         
       }
-      else if (JMS_JBOSS_SCHEDULED_DELIVERY_PROP_NAME.equals(name) && scheduledDeliveryTime > 0)
-      {
-         return String.valueOf(scheduledDeliveryTime);
-      }
-
-      Object value = properties.get(name);
+      
+      Object value = headers.get(PROPERTY_PREFIX + name);
       if (value == null)
          return null;
 
@@ -764,18 +783,43 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message, S
 
    public Object getObjectProperty(String name) throws JMSException                                                              
    {
-      return properties.get(name);
+      if (JMS_JBOSS_SCHEDULED_DELIVERY_PROP_NAME.equals(name))
+      {         
+         if (scheduledDeliveryTime == 0)
+         {
+            return null;
+         }
+         else
+         {
+            return new Long(scheduledDeliveryTime);
+         }         
+      }
+      
+      return headers.get(PROPERTY_PREFIX + name);
    }
 
    public Enumeration getPropertyNames() throws JMSException
    {
       HashSet set = new HashSet();
-      set.addAll(properties.keySet());
-      set.add(JMSX_DELIVERY_COUNT_PROP_NAME);
-      if (this.scheduledDeliveryTime > 0)
+      
+      Iterator iter = headers.keySet().iterator();
+      
+      while (iter.hasNext())
+      {
+         String propName = (String)iter.next();
+         
+         if (propName.charAt(0) == PROPERTY_PREFIX_CHAR)
+         {
+            String name = propName.substring(1);
+            set.add(name);
+         }
+      }
+      
+      if (scheduledDeliveryTime != 0)
       {
          set.add(JMS_JBOSS_SCHEDULED_DELIVERY_PROP_NAME);
       }
+      
       return Collections.enumeration(set);
    }
 
@@ -783,103 +827,110 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message, S
    {
       Boolean b = Primitives.valueOf(value);
       checkProperty(name, b);
-      properties.put(name, b);
+      headers.put(PROPERTY_PREFIX + name, b);
    }
 
    public void setByteProperty(String name, byte value) throws JMSException
    {
       Byte b = new Byte(value);
       checkProperty(name, b);
-      properties.put(name, b);
+      headers.put(PROPERTY_PREFIX + name, b);
    }
 
    public void setShortProperty(String name, short value) throws JMSException
    {
       Short s = new Short(value);
       checkProperty(name, s);
-      properties.put(name, s);
+      headers.put(PROPERTY_PREFIX + name, s);
    }
 
    public void setIntProperty(String name, int value) throws JMSException
    {
       Integer i = new Integer(value);
       checkProperty(name, i);
-      properties.put(name, i);
+      headers.put(PROPERTY_PREFIX + name, i);
    }
 
    public void setLongProperty(String name, long value) throws JMSException
    {
+      // Optimisation - we don't actually store this as a header - but as an attribute      
       if (JMS_JBOSS_SCHEDULED_DELIVERY_PROP_NAME.equals(name))
-      {
+      {         
          this.scheduledDeliveryTime = value;
       }
       else
-      {
+      {      
          Long l = new Long(value);
          checkProperty(name, l);
-         properties.put(name, l);
-      }
+         headers.put(PROPERTY_PREFIX + name, l);      
+      }      
    }
 
    public void setFloatProperty(String name, float value) throws JMSException
    {
       Float f = new Float(value);
       checkProperty(name, f);
-      properties.put(name, f);
+      headers.put(PROPERTY_PREFIX + name, f);
    }
 
    public void setDoubleProperty(String name, double value) throws JMSException
    {
       Double d = new Double(value);
       checkProperty(name, d);
-      properties.put(name, d);
+      headers.put(PROPERTY_PREFIX + name, d);
    }
 
    public void setStringProperty(String name, String value) throws JMSException
    {
       checkProperty(name, value);
-      this.properties.put(name, value);
+      headers.put(PROPERTY_PREFIX + name, value);
    }
 
    public void setObjectProperty(String name, Object value) throws JMSException
    {
+      if (JMS_JBOSS_SCHEDULED_DELIVERY_PROP_NAME.equals(name) && value instanceof Long)
+      {         
+         this.scheduledDeliveryTime = ((Long)value).longValue();
+         return;
+      }
+      
       checkProperty(name, value);
 
       if (value instanceof Boolean)
       {
-         properties.put(name, value);
+         headers.put(PROPERTY_PREFIX + name, value);
       }
       else if (value instanceof Byte)
       {
-         properties.put(name, value);
+         headers.put(PROPERTY_PREFIX + name, value);
       }
       else if (value instanceof Short)
       {
-         properties.put(name, value);
+         headers.put(PROPERTY_PREFIX + name, value);
       }
       else if (value instanceof Integer)
       {
-         properties.put(name, value);
+         headers.put(PROPERTY_PREFIX + name, value);
       }
       else if (value instanceof Long)
       {
-         properties.put(name, value);
+         headers.put(PROPERTY_PREFIX + name, value);
       }
       else if (value instanceof Float)
       {
-         properties.put(name, value);
+         headers.put(PROPERTY_PREFIX + name, value);
       }
       else if (value instanceof Double)
       {
-         properties.put(name, value);
+         headers.put(PROPERTY_PREFIX + name, value);
       }
       else if (value instanceof String)
       {
-         properties.put(name, value);
+         headers.put(PROPERTY_PREFIX + name, value);
       }
       else if (value == null)
       {
-         properties.put(name, null);
+         headers.put(PROPERTY_PREFIX + name, null);
       }
       else
       {
@@ -889,7 +940,7 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message, S
 
    // Public --------------------------------------------------------
    
-   public void doAfterSend() throws JMSException
+   public void doBeforeSend() throws JMSException
    {      
    }
 
@@ -897,19 +948,6 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message, S
    {
       return JBossMessage.TYPE;
    }   
-
-   /**
-    * @return a reference of the internal JMS property map.
-    */
-   public Map getJMSProperties()
-   {
-      return properties;
-   }
-   
-   public void setJMSProperties(Map props)
-   {
-      this.properties = props;
-   }
    
    public void copyPayload(Object payload) throws JMSException
    {      
@@ -935,127 +973,73 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message, S
       return sb.toString();
    }
    
-   public JBossMessage doShallowCopy() throws JMSException
+   public JBossMessage doCopy() throws JMSException
    {
       return new JBossMessage(this);
    }
-   
-   public boolean isCorrelationIDBytes()
-   {
-      return this.correlationIDBytes != null;
-   }
-   
+      
    public void acknowledge()
    {
-      //do nothing - handled in thin delegate
+      throw new IllegalStateException("Should not be handled here!");
    }
    
    public void setMessageId(long messageID)
    {
       this.messageID = messageID;
    }
+   
+   public long getScheduledDeliveryTime()
+   {
+      return scheduledDeliveryTime;
+   }
+        
+   /* Only used for testing */
+   public Map getJMSProperties()
+   {      
+      Map newHeaders = new HashMap();
+      
+      Iterator iter = headers.entrySet().iterator();
+      
+      while (iter.hasNext())
+      {
+         Map.Entry entry = (Map.Entry)iter.next();
+         
+         String key = (String)entry.getKey();
+         
+         if (key.charAt(0) == PROPERTY_PREFIX_CHAR)
+         {
+            newHeaders.put(key, entry.getValue());
+         }
+      }
+      
+      return newHeaders;
+   }
+   
+   //Only used for testing
+   public boolean isCorrelationIDBytes()
+   {
+      return headers.get(CORRELATIONIDBYTES_HEADER_NAME) != null;
+   }
+  
 
    // Streamable implementation ---------------------------------
    
    public void write(DataOutputStream out) throws Exception
    {
       super.write(out);
+                   
+      out.writeLong(scheduledDeliveryTime);
       
-      JBossDestination.writeDestination(out, destination);
-      
-      JBossDestination.writeDestination(out, replyToDestination);
-      
-      if (jmsType == null)
-      {
-         out.writeByte(NULL);
-      }
-      else
-      {
-         out.writeByte(STRING);
-         out.writeUTF(jmsType);
-      }
-            
-      StreamUtils.writeMap(out, properties, true);
-      
-      if (correlationID == null && correlationIDBytes == null)
-      {
-         out.writeByte(NULL);
-      }
-      else if (correlationIDBytes == null)
-      {
-         //String correlation id
-         out.writeByte(STRING);
-         
-         out.writeUTF(correlationID);
-      }
-      else
-      {
-         //Bytes correlation id
-         out.writeByte(BYTES);
-         
-         out.writeInt(correlationIDBytes.length);  
-         
-         out.write(correlationIDBytes);
-      }            
+      JBossDestination.writeDestination(out, destination);      
    }
 
    public void read(DataInputStream in) throws Exception
    {
       super.read(in);
-
+           
+      scheduledDeliveryTime = in.readLong();
+      
       destination = JBossDestination.readDestination(in);
-
-      replyToDestination = JBossDestination.readDestination(in);
- 
-      byte b = in.readByte();
-      if (b == NULL)
-      {
-         jmsType =  null;
-      }
-      else
-      {
-         jmsType = in.readUTF();
-      }
-      
-      Map m = StreamUtils.readMap(in, true);
-      if (!(m instanceof HashMap))
-      {
-         properties =  new HashMap(m);
-      }
-      else
-      {
-         properties = (HashMap)m;
-      }
-
-      // correlation id
-      
-      b = in.readByte();
-      
-      if (b == NULL)
-      {
-         // No correlation id
-         correlationID = null;
-         
-         correlationIDBytes = null;
-      }
-      else if (b == STRING)
-      {
-         // String correlation id
-         correlationID = in.readUTF();
-         
-         correlationIDBytes = null;
-      }
-      else
-      {
-         // Bytes correlation id
-         correlationID = null;
-         
-         int len = in.readInt();
-         
-         correlationIDBytes = new byte[len];
-         
-         in.readFully(correlationIDBytes);
-      }
    }
 
    // Package protected ---------------------------------------------
@@ -1092,9 +1076,9 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message, S
       }
 
       if (name.regionMatches(false, 0, "JMSX", 0, 4) &&
-         !name.equals("JMSXGroupID") && !name.equals("JMSXGroupSeq"))
+         !name.equals("JMSXGroupID") && !name.equals("JMSXGroupSeq") && !name.equals("JMSXDeliveryCount"))
       {
-         throw new JMSException("Can only set JMSXGroupId, JMSXGroupSeq");
+         throw new JMSException("Can only set JMSXGroupId, JMSXGroupSeq, JMSXDeliveryCount");
       }           
    }
 

@@ -35,12 +35,12 @@ import javax.transaction.TransactionManager;
 import org.jboss.messaging.core.Channel;
 import org.jboss.messaging.core.Delivery;
 import org.jboss.messaging.core.DeliveryObserver;
-import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.Receiver;
 import org.jboss.messaging.core.SimpleDelivery;
+import org.jboss.messaging.core.message.MessageReference;
+import org.jboss.messaging.core.message.SimpleMessageStore;
 import org.jboss.messaging.core.plugin.IDManager;
 import org.jboss.messaging.core.plugin.JDBCPersistenceManager;
-import org.jboss.messaging.core.plugin.SimpleMessageStore;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager;
 import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.messaging.core.tx.TransactionRepository;
@@ -138,7 +138,7 @@ public class PagingStateTestBase extends MessagingTestCase
       while (iter.hasNext())
       {
          Long id = (Long)iter.next();
-         assertEquals(refs[i].getMessageID(), id.longValue());
+         assertEquals(refs[i].getMessage().getMessageID(), id.longValue());
          i++;
       }
    }
@@ -183,7 +183,7 @@ public class PagingStateTestBase extends MessagingTestCase
             return null;
          }
          
-         assertEquals(refs[consumeCount + count].getMessageID(), ref.getMessageID());
+         assertEquals(refs[consumeCount + count].getMessage().getMessageID(), ref.getMessage().getMessageID());
          
          SimpleDelivery del = new SimpleDelivery(observer, ref);
          
@@ -429,7 +429,7 @@ public class PagingStateTestBase extends MessagingTestCase
       List msgIds = new ArrayList();
 
       String sql =
-         "SELECT MESSAGEID, ORD, PAGE_ORD FROM JMS_MESSAGE_REFERENCE WHERE CHANNELID=? ORDER BY ORD";
+         "SELECT MESSAGE_ID, ORD, PAGE_ORD FROM JBM_MSG_REF WHERE CHANNEL_ID=? ORDER BY ORD";
       PreparedStatement ps = conn.prepareStatement(sql);
       ps.setLong(1, channelId);
    
@@ -472,7 +472,7 @@ public class PagingStateTestBase extends MessagingTestCase
       List msgIds = new ArrayList();
  
       String sql =
-         "SELECT MESSAGEID, ORD, PAGE_ORD FROM JMS_MESSAGE_REFERENCE WHERE CHANNELID=? ORDER BY PAGE_ORD";
+         "SELECT MESSAGE_ID, ORD, PAGE_ORD FROM JBM_MSG_REF WHERE CHANNEL_ID=? ORDER BY PAGE_ORD";
       PreparedStatement ps = conn.prepareStatement(sql);
       ps.setLong(1, channelId);
    
@@ -512,8 +512,8 @@ public class PagingStateTestBase extends MessagingTestCase
 
       Connection conn = ds.getConnection();
       String sql =
-         "SELECT MESSAGEID FROM JMS_MESSAGE_REFERENCE WHERE " +
-         "CHANNELID=? AND PAGE_ORD IS NOT NULL ORDER BY PAGE_ORD";
+         "SELECT MESSAGE_ID FROM JBM_MSG_REF WHERE " +
+         "CHANNEL_ID=? AND PAGE_ORD IS NOT NULL ORDER BY PAGE_ORD";
 
       PreparedStatement ps = conn.prepareStatement(sql);
       ps.setLong(1, channelId);
@@ -552,7 +552,7 @@ public class PagingStateTestBase extends MessagingTestCase
       mgr.begin();
 
       Connection conn = ds.getConnection();
-      String sql = "SELECT MESSAGEID FROM JMS_MESSAGE ORDER BY MESSAGEID";
+      String sql = "SELECT MESSAGE_ID FROM JBM_MSG ORDER BY MESSAGE_ID";
       PreparedStatement ps = conn.prepareStatement(sql);
       
       ResultSet rs = ps.executeQuery();

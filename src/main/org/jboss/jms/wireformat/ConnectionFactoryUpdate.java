@@ -117,9 +117,7 @@ public class ConnectionFactoryUpdate extends CallbackSupport
    // ---------------------------------------------------------------     
 
    public void read(DataInputStream is) throws Exception
-   {
-      super.read(is);
-      
+   {    
       int len = is.readInt();
       
       delegates = new ClientConnectionFactoryDelegate[len];

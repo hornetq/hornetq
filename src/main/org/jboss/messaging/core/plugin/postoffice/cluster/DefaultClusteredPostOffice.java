@@ -55,8 +55,8 @@ import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Delivery;
 import org.jboss.messaging.core.Filter;
 import org.jboss.messaging.core.FilterFactory;
-import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.Queue;
+import org.jboss.messaging.core.message.MessageReference;
 import org.jboss.messaging.core.plugin.contract.ClusteredPostOffice;
 import org.jboss.messaging.core.plugin.contract.Condition;
 import org.jboss.messaging.core.plugin.contract.ConditionFactory;
@@ -631,7 +631,7 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
       }
    }
 
-   public void routeFromCluster(org.jboss.messaging.core.Message message,
+   public void routeFromCluster(org.jboss.messaging.core.message.Message message,
                                 String routingKeyText,
                                 Map queueNameNodeIdMap) throws Exception
    {
@@ -938,7 +938,7 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
    }
 
    public void handleMessagePullResult(int remoteNodeId, long holdingTxId,
-                                       String queueName, org.jboss.messaging.core.Message message) throws Throwable
+                                       String queueName, org.jboss.messaging.core.message.Message message) throws Throwable
    {
       if (trace) { log.trace(this.currentNodeId + " handling pull result " + message + " for " + queueName); }
 
@@ -1092,7 +1092,7 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
          {
             if (trace) { log.trace(this + " found " + cb); }
 
-            if (tx == null && ref.isReliable())
+            if (tx == null && ref.getMessage().isReliable())
             {
                if (!(cb.getDurableCount() == 0 ||
                     (cb.getDurableCount() == 1 && cb.getLocalDurableCount() == 1)))

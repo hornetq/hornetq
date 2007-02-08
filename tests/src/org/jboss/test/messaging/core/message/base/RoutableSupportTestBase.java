@@ -21,8 +21,8 @@
 */
 package org.jboss.test.messaging.core.message.base;
 
+import org.jboss.messaging.core.message.MessageSupport;
 import org.jboss.test.messaging.MessagingTestCase;
-import org.jboss.messaging.core.message.RoutableSupport;
 
 
 /**
@@ -39,7 +39,7 @@ public class RoutableSupportTestBase extends MessagingTestCase
 
    // Attributes ----------------------------------------------------
 
-   protected RoutableSupport rs;
+   protected MessageSupport ms;
 
    // Constructors --------------------------------------------------
 
@@ -52,11 +52,11 @@ public class RoutableSupportTestBase extends MessagingTestCase
 
    public void testNullAsHeaderValue() throws Exception
    {
-      rs.putHeader("someHeader", null);
-      assertTrue(rs.containsHeader("someHeader"));
-      assertNull(rs.getHeader("someHeader"));
-      assertNull(rs.removeHeader("someHeader"));
-      assertFalse(rs.containsHeader("someHeader"));
+      ms.putHeader("someHeader", null);
+      assertTrue(ms.containsHeader("someHeader"));
+      assertNull(ms.getHeader("someHeader"));
+      assertNull(ms.removeHeader("someHeader"));
+      assertFalse(ms.containsHeader("someHeader"));
    }
 
    // Package protected ---------------------------------------------

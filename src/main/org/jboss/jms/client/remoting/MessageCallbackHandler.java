@@ -37,7 +37,7 @@ import org.jboss.jms.server.endpoint.Cancel;
 import org.jboss.jms.server.endpoint.DefaultCancel;
 import org.jboss.jms.server.endpoint.DeliveryInfo;
 import org.jboss.logging.Logger;
-import org.jboss.messaging.core.Message;
+import org.jboss.messaging.core.message.Message;
 import org.jboss.messaging.util.Future;
 import org.jboss.messaging.util.prioritylinkedlist.BasicPriorityLinkedList;
 import org.jboss.messaging.util.prioritylinkedlist.PriorityLinkedList;
@@ -238,9 +238,9 @@ public class MessageCallbackHandler
     */
    public void handleMessage(Object message) throws Exception
    {
-      MessageProxy msg = (MessageProxy) message;
+      MessageProxy proxy = (MessageProxy) message;
 
-      if (trace) { log.trace(this + " receiving message " + msg + " from the remoting layer"); }
+      if (trace) { log.trace(this + " receiving message " + proxy + " from the remoting layer"); }
 
       synchronized (mainLock)
       {
@@ -251,14 +251,12 @@ public class MessageCallbackHandler
             return;
          }
 
-         msg.setSessionDelegate(sessionDelegate, isConnectionConsumer);
-                  
-         msg.setReceived();                  
-                   
+         proxy.setSessionDelegate(sessionDelegate, isConnectionConsumer);
+                        
          //Add it to the buffer
-         buffer.addLast(msg, msg.getJMSPriority());         
+         buffer.addLast(proxy, proxy.getJMSPriority());         
          
-         lastDeliveryId = msg.getDeliveryId();
+         lastDeliveryId = proxy.getDeliveryId();
          
          if (trace) { log.trace(this + " added message(s) to the buffer"); }
          

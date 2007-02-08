@@ -28,9 +28,9 @@ import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Delivery;
 import org.jboss.messaging.core.DeliveryObserver;
 import org.jboss.messaging.core.Filter;
-import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.Receiver;
 import org.jboss.messaging.core.SimpleDelivery;
+import org.jboss.messaging.core.message.MessageReference;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager;
 import org.jboss.messaging.core.tx.Transaction;
 
@@ -86,13 +86,13 @@ public class RemoteQueueStub implements ClusteredQueue
    {
       if (trace) { log.trace(this + " handling " + reference); }
 
-      if (filter != null && !filter.accept(reference))
+      if (filter != null && !filter.accept(reference.getMessage()))
       {
          if (trace) { log.trace(this + " rejecting " + reference + " because it doesn't match filter"); }
          return new SimpleDelivery(this, reference, false, false);
       }
 
-      if (recoverable && reference.isReliable())
+      if (recoverable && reference.getMessage().isReliable())
       {
          try
          {
@@ -144,7 +144,7 @@ public class RemoteQueueStub implements ClusteredQueue
 
    public void acknowledge(Delivery d, Transaction tx) throws Throwable
    {
-      if (recoverable && d.getReference().isReliable())
+      if (recoverable && d.getReference().getMessage().isReliable())
       {
          pm.removeReference(this.channelID, d.getReference(), tx);
       }

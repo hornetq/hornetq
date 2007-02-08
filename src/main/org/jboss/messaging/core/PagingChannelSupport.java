@@ -28,6 +28,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.jboss.logging.Logger;
+import org.jboss.messaging.core.message.Message;
+import org.jboss.messaging.core.message.MessageReference;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager.InitialLoadInfo;
@@ -296,7 +298,8 @@ public abstract class PagingChannelSupport extends ChannelSupport
   
       // Must flush the down cache first
       flushDownCache();
-           List refInfos = pm.getPagedReferenceInfos(channelID, firstPagingOrder, number);      
+      
+      List refInfos = pm.getPagedReferenceInfos(channelID, firstPagingOrder, number);      
       
       Map refMap = processReferences(refInfos);
 
@@ -313,7 +316,7 @@ public abstract class PagingChannelSupport extends ChannelSupport
          
          MessageReference ref = addFromRefInfo(info, refMap);
          
-         if (recoverable && ref.isReliable())
+         if (recoverable && ref.getMessage().isReliable())
          {
             loadedReliable = true;
          }
@@ -340,7 +343,7 @@ public abstract class PagingChannelSupport extends ChannelSupport
          // the store otherwise they may get loaded again, the next time we do a load
          // We can't delete them since they're reliable and haven't been acked yet
             
-         pm.updateReliableReferencesNotPagedInRange(channelID, firstPagingOrder, firstPagingOrder + number - 1, number - unreliableNumber);
+         pm.updateReferencesNotPagedInRange(channelID, firstPagingOrder, firstPagingOrder + number - 1, number - unreliableNumber);
       }
             
       firstPagingOrder += number;
@@ -420,7 +423,7 @@ public abstract class PagingChannelSupport extends ChannelSupport
    {     
       if (paging)
       {
-         if (ref.isReliable() && !acceptReliableMessages)
+         if (ref.getMessage().isReliable() && !acceptReliableMessages)
          {
             throw new IllegalStateException("Reliable reference " + ref +
                                             " cannot be added to non-recoverable state");
@@ -499,7 +502,7 @@ public abstract class PagingChannelSupport extends ChannelSupport
       {
          MessageReference ref = (MessageReference) iter.next();
            
-         if (ref.isReliable() && recoverable)
+         if (ref.getMessage().isReliable() && recoverable)
          {
             toUpdate.add(ref);
          }
@@ -549,18 +552,10 @@ public abstract class PagingChannelSupport extends ChannelSupport
       
       ref.setScheduledDeliveryTime(info.getScheduledDelivery());
       
-      //We ignore the reliable field from the message - this is because reliable might be true on the message
-      //but this is a non recoverable state
-      
-      //TODO - Really the message shouldn't have a reliable field at all,
-      //Reliability is an attribute of the message reference, not the message
-      
-      ref.setReliable(info.isReliable());
-            
       //Schedule the delivery if necessary, or just add to the in memory queue
       if (!checkAndSchedule(ref))
       {
-         messageRefs.addLast(ref, ref.getPriority());
+         messageRefs.addLast(ref, ref.getMessage().getPriority());
       }
       
       return ref;

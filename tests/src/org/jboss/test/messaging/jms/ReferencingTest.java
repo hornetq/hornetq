@@ -31,7 +31,8 @@ import javax.naming.InitialContext;
 
 import org.jboss.jms.client.JBossConnectionFactory;
 import org.jboss.jms.message.MessageProxy;
-import org.jboss.messaging.core.MessageReference;
+import org.jboss.messaging.core.message.MessageReference;
+import org.jboss.messaging.core.message.SimpleMessageReference;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
@@ -189,7 +190,7 @@ public class ReferencingTest extends MessagingTestCase
       
       MessageReference ref = store.reference(((MessageProxy)m2).getMessage().getMessageID());
       
-      assertEquals(((MessageProxy)m).getMessage().getMessageID(), ref.getMessageID());
+      assertEquals(((MessageProxy)m).getMessage().getMessageID(), ref.getMessage().getMessageID());
       
       ref.releaseMemoryReference();
           
@@ -229,7 +230,7 @@ public class ReferencingTest extends MessagingTestCase
       
       MessageReference ref = store.reference(((MessageProxy)m2).getMessage().getMessageID());
       
-      assertEquals(((MessageProxy)m).getMessage().getMessageID(), ref.getMessageID());
+      assertEquals(((MessageProxy)m).getMessage().getMessageID(), ref.getMessage().getMessageID());
       
       ref.releaseMemoryReference();
       
@@ -269,7 +270,7 @@ public class ReferencingTest extends MessagingTestCase
       
       MessageReference ref = store.reference(((MessageProxy)m2).getMessage().getMessageID());
       
-      assertEquals(((MessageProxy)m).getMessage().getMessageID(), ref.getMessageID());
+      assertEquals(((MessageProxy)m).getMessage().getMessageID(), ref.getMessage().getMessageID());
       
       ref.releaseMemoryReference();
       
@@ -282,7 +283,7 @@ public class ReferencingTest extends MessagingTestCase
       
       ref = store.reference(((MessageProxy)m2).getMessage().getMessageID());
       
-      assertEquals(((MessageProxy)m).getMessage().getMessageID(), ref.getMessageID());
+      assertEquals(((MessageProxy)m).getMessage().getMessageID(), ref.getMessage().getMessageID());
       
       ref.releaseMemoryReference();
             
@@ -319,17 +320,17 @@ public class ReferencingTest extends MessagingTestCase
       assertNotNull(m2);
       assertEquals(m.getText(), m2.getText());
       
-      MessageReference ref = store.reference(((MessageProxy)m2).getMessage().getMessageID());
+      SimpleMessageReference ref = (SimpleMessageReference)store.reference(((MessageProxy)m2).getMessage().getMessageID());
       
       assertEquals(2, ref.getInMemoryChannelCount());
       
-      assertEquals(((MessageProxy)m).getMessage().getMessageID(), ref.getMessageID());
+      assertEquals(((MessageProxy)m).getMessage().getMessageID(), ref.getMessage().getMessageID());
       
       ref.releaseMemoryReference();
       
       sess.commit();
       
-      ref = store.reference(((MessageProxy)m2).getMessage().getMessageID());
+      ref = (SimpleMessageReference)store.reference(((MessageProxy)m2).getMessage().getMessageID());
       assertNull(ref);
       
       conn.close();
@@ -360,7 +361,7 @@ public class ReferencingTest extends MessagingTestCase
       assertEquals(m.getText(), m2.getText());
       
       MessageReference ref = store.reference(((MessageProxy)m2).getMessage().getMessageID());
-      assertEquals(((MessageProxy)m).getMessage().getMessageID(), ref.getMessageID());
+      assertEquals(((MessageProxy)m).getMessage().getMessageID(), ref.getMessage().getMessageID());
       
       ref.releaseMemoryReference();
       
@@ -372,7 +373,7 @@ public class ReferencingTest extends MessagingTestCase
       assertEquals(m.getText(), m3.getText());
       
       ref = store.reference(((MessageProxy)m3).getMessage().getMessageID());
-      assertEquals(((MessageProxy)m).getMessage().getMessageID(), ref.getMessageID());
+      assertEquals(((MessageProxy)m).getMessage().getMessageID(), ref.getMessage().getMessageID());
       
       ref.releaseMemoryReference();
       

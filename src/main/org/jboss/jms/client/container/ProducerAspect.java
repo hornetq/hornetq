@@ -165,12 +165,15 @@ public class ProducerAspect
       }
 
       m.setJMSDestination(destination);
-
+      
+      // Generate the message id
+      ConnectionState connectionState = getConnectionState(invocation);
+      
+      long id = connectionState.getIdGenerator().getId();
+    
       JBossMessage messageToSend;
       boolean foreign = false;
 
-      boolean doCopy = false;
-      
       if (!(m instanceof MessageProxy))
       {
          // it's a foreign message
@@ -205,41 +208,31 @@ public class ProducerAspect
          {
             messageToSend = new JBossMessage(m, 0);
          }
-
-         messageToSend.doAfterSend();
+         
+         messageToSend.setJMSMessageID(null);
       }
       else
       {
          // get the actual message
          MessageProxy proxy = (MessageProxy)m;
-         messageToSend = proxy.getMessage();
-                  
-         if (proxy.isSent() || proxy.isReceived())
-         {           
-            doCopy = true;
-         }
+                                    
+         //The following line executed on the proxy should cause a copy to occur
+         //if it is necessary
+         proxy.setJMSMessageID(null);
          
-         messageToSend.doAfterSend();
-         proxy.setSent();
+         //Get the underlying message
+         messageToSend = proxy.getMessage();     
+         
+         proxy.beforeSend();
       }
       
-      // set the message ID
+      // Set the new id
       
-      ConnectionState connectionState = getConnectionState(invocation);
-      
-      long id = connectionState.getIdGenerator().getId();
-      
-      messageToSend.setJMSMessageID(null);
       messageToSend.setMessageId(id);
       
-      // If the message has already been sent we need to make a shallow copy since if we are invm
-      // then we do not want to change the ids of messages already sent - which would happen if we
-      // were sending the same underlying instance.
-      if (doCopy)
-      {
-         messageToSend = messageToSend.doShallowCopy();
-      }
-
+      // This only really used for BytesMessages and StreamMessages to reset their state
+      messageToSend.doBeforeSend(); 
+      
       // now that we know the messageID, set it also on the foreign message, if is the case
       if (foreign)
       {

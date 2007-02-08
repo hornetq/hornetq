@@ -30,10 +30,10 @@ import javax.transaction.xa.Xid;
 
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Delivery;
-import org.jboss.messaging.core.Message;
-import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.Queue;
 import org.jboss.messaging.core.SimpleDelivery;
+import org.jboss.messaging.core.message.Message;
+import org.jboss.messaging.core.message.MessageReference;
 import org.jboss.messaging.core.plugin.IDManager;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.plugin.contract.MessagingComponent;
@@ -315,7 +315,7 @@ public class TransactionRepository implements MessagingComponent
             
             Queue queue = binding.getQueue();
                         
-            if (trace) log.trace("Destination for message[ID=" + ref.getMessageID() + "] is: " + queue);
+            if (trace) log.trace("Destination for message[ID=" + ref.getMessage().getMessageID() + "] is: " + queue);
    
             queue.handle(null, ref, tx);
          }
@@ -367,7 +367,7 @@ public class TransactionRepository implements MessagingComponent
             
             Queue queue = binding.getQueue();
    
-            if (trace) log.trace("Destination for message[ID=" + ref.getMessageID() + "] is: " + queue);
+            if (trace) log.trace("Destination for message[ID=" + ref.getMessage().getMessageID() + "] is: " + queue);
    
             //Create a new delivery - note that it must have a delivery observer otherwise acknowledge will fail
             Delivery del = new SimpleDelivery(queue, ref);

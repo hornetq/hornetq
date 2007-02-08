@@ -26,7 +26,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.jboss.logging.Logger;
-import org.jboss.messaging.core.Message;
+import org.jboss.messaging.core.message.Message;
 import org.jboss.messaging.core.plugin.contract.Condition;
 import org.jboss.messaging.core.tx.TransactionException;
 import org.jboss.messaging.core.tx.TxCallback;

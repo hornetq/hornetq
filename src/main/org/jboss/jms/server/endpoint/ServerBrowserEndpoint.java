@@ -35,7 +35,6 @@ import org.jboss.jms.wireformat.Dispatcher;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Channel;
 import org.jboss.messaging.core.Filter;
-import org.jboss.messaging.core.Routable;
 
 /**
  * Concrete implementation of BrowserEndpoint.
@@ -139,11 +138,11 @@ public class ServerBrowserEndpoint implements BrowserEndpoint
             iterator = createIterator();
          }
 
-         Routable r = (Routable)iterator.next();
+         JBossMessage r = (JBossMessage)iterator.next();
    
          if (trace) { log.trace(this + " returning " + r); }
          
-         return (JBossMessage)r.getMessage();
+         return r;
       }   
       catch (Throwable t)
       {
@@ -179,7 +178,7 @@ public class ServerBrowserEndpoint implements BrowserEndpoint
          {
             if (iterator.hasNext())
             {
-               Message m = (Message)((Routable)iterator.next()).getMessage();
+               Message m = (Message)iterator.next();
                messages.add(m);
                i++;
             }

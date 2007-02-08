@@ -27,7 +27,6 @@ import javax.jms.JMSException;
 
 import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.message.JBossMessage;
-import org.jboss.jms.message.MessageProxy;
 import org.jboss.jms.selector.Selector;
 import org.jboss.jms.server.ConnectionManager;
 import org.jboss.jms.server.destination.TopicService;
@@ -39,11 +38,11 @@ import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Channel;
 import org.jboss.messaging.core.Delivery;
 import org.jboss.messaging.core.DeliveryObserver;
-import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.Queue;
 import org.jboss.messaging.core.Receiver;
-import org.jboss.messaging.core.Routable;
 import org.jboss.messaging.core.SimpleDelivery;
+import org.jboss.messaging.core.message.Message;
+import org.jboss.messaging.core.message.MessageReference;
 import org.jboss.messaging.core.plugin.contract.PostOffice;
 import org.jboss.messaging.core.plugin.postoffice.Binding;
 import org.jboss.messaging.core.tx.Transaction;
@@ -177,7 +176,7 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
          return null;
       }
       
-      if (ref.isExpired())
+      if (ref.getMessage().isExpired())
       {
          SimpleDelivery delivery = new SimpleDelivery(observer, ref, true);
          
@@ -206,7 +205,7 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
    
          if (trace) { log.trace(this + " has startStopLock lock, preparing the message for delivery"); }
    
-         JBossMessage message = (JBossMessage)ref.getMessage();
+         Message message = ref.getMessage();
          
          boolean selectorRejected = !this.accept(message);
    
@@ -220,20 +219,12 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
          long deliveryId =
             sessionEndpoint.addDelivery(delivery, id, dlq, expiryQueue, redeliveryDelay);
    
-         // We don't send the message as-is, instead we create a MessageProxy instance. This allows
-         // local fields such as deliveryCount to be handled by the proxy but global data to be
-         // fielded by the same underlying Message instance. This allows us to avoid expensive
-         // copying of messages
-   
-         MessageProxy mp = JBossMessage.
-            createThinDelegate(deliveryId, message, ref.getDeliveryCount());
-    
          // We send the message to the client on the current thread. The message is written onto the
          // transport and then the thread returns immediately without waiting for a response.
          
          Client callbackClient = callbackHandler.getCallbackClient();
          
-         ClientDelivery del = new ClientDelivery(mp, id);
+         ClientDelivery del = new ClientDelivery(message, id, deliveryId, ref.getDeliveryCount());
          
          Callback callback = new Callback(del);
            
@@ -296,7 +287,7 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
 
    // Filter implementation ------------------------------------------------------------------------
 
-   public boolean accept(Routable r)
+   public boolean accept(Message msg)
    {
       boolean accept = true;
       
@@ -306,7 +297,7 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
          // we do not want to do the check twice
          if (messageSelector != null)
          {
-            accept = messageSelector.accept(r);
+            accept = messageSelector.accept(msg);
    
             if (trace) { log.trace("message selector " + (accept ? "accepts " :  "DOES NOT accept ") + "the message"); }
          }
@@ -316,7 +307,7 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
       {
          if (noLocal)
          {
-            int conId = ((JBossMessage)r).getConnectionID();
+            int conId = ((JBossMessage)msg).getConnectionID();
             
             if (trace) { log.trace("message connection id: " + conId + " current connection connection id: " + sessionEndpoint.getConnectionEndpoint().getConnectionID()); }   
                  

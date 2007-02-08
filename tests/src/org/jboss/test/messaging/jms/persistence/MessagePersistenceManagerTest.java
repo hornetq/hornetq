@@ -23,9 +23,13 @@ package org.jboss.test.messaging.jms.persistence;
 
 import java.util.HashMap;
 
+import javax.jms.JMSException;
+
+import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.destination.JBossQueue;
+import org.jboss.jms.destination.JBossTopic;
 import org.jboss.jms.message.JBossMessage;
-import org.jboss.messaging.core.Message;
+import org.jboss.messaging.core.message.Message;
 import org.jboss.messaging.core.plugin.JDBCPersistenceManager;
 import org.jboss.test.messaging.core.plugin.JDBCPersistenceManagerTest;
 import org.jboss.test.messaging.tools.ServerManagement;
@@ -120,40 +124,77 @@ public class MessagePersistenceManagerTest extends JDBCPersistenceManagerTest
    protected Message createMessage(byte i, boolean reliable) throws Exception
    {
       HashMap coreHeaders = generateFilledMap(true);         
-      
-      HashMap jmsProperties = generateFilledMap(false);
-              
-      JBossMessage jbm = 
+          
+      JBossMessage m = 
          new JBossMessage(i,
             reliable,
             System.currentTimeMillis() + 1000 * 60 * 60,
             System.currentTimeMillis(),
             i,
             coreHeaders,
-            null,
-            i % 2 == 0 ? new GUID().toString() : null,
-            genCorrelationID(i),
-            i % 3 == 2 ? randByteArray(50) : null,
-            new JBossQueue("testDestination"),
-            new JBossQueue("testReplyTo"),            
-            jmsProperties);    
+            null);
       
-      jbm.setPayload(new WibblishObject());
+      setDestination(m, i);
+      setReplyTo(m, i);     
+      m.setJMSType("testType");
+      setCorrelationID(m, i);
       
-      return jbm;
+      m.setPayload(new WibblishObject());
+      
+      return m;
    }
    
-   protected String genCorrelationID(int i)
+   protected void setDestination(JBossMessage m, int i) throws JMSException
    {
-      if (i % 3 == 0)
+      JBossDestination dest = null;
+      String name =  new GUID().toString();
+      if (i % 2 == 0)
+      {         
+         dest = new JBossQueue(name);
+      }
+      else if (i % 2 == 1)
       {
-         return null;
+         dest = new JBossTopic(name);
+      }     
+      m.setJMSDestination(dest);
+   }
+   
+   protected void setReplyTo(JBossMessage m, int i) throws JMSException
+   {
+      JBossDestination dest = null;
+      String name =  new GUID().toString();
+      if (i % 3 == 0)
+      {         
+         dest = new JBossQueue(name);
       }
       else if (i % 3 == 1)
       {
-         return new GUID().toString();
+         dest = new JBossTopic(name);
+      }   
+      else if (i % 3 == 2)
+      {
+         return;
+      } 
+      m.setJMSDestination(dest);
+   }
+   
+   protected void setCorrelationID(JBossMessage m, int i) throws JMSException
+   {
+      if (i % 3 == 0)
+      {
+         // Do nothing
+         return;
+      }
+      else if (i % 3 == 1)
+      {
+         String id =  new GUID().toString();
+         m.setJMSCorrelationID(id);
       }     
-      return null;
+      else if (i % 3 == 2)
+      {
+         byte[] bytes = new GUID().toString().getBytes();
+         m.setJMSCorrelationIDAsBytes(bytes);
+      }
    }
    
  

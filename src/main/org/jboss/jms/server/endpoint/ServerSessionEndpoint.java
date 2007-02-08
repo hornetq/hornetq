@@ -66,9 +66,9 @@ import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Channel;
 import org.jboss.messaging.core.Delivery;
 import org.jboss.messaging.core.DeliveryObserver;
-import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.Queue;
 import org.jboss.messaging.core.local.PagingFilteredQueue;
+import org.jboss.messaging.core.message.MessageReference;
 import org.jboss.messaging.core.plugin.IDManager;
 import org.jboss.messaging.core.plugin.contract.ClusteredPostOffice;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
@@ -117,7 +117,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
    
    public static final String JBOSS_MESSAGING_ORIG_DESTINATION = "JBM_ORIG_DESTINATION";
 
-   public static final String JBOSS_MESSAGING_ORIG_MESSAGEID = "JBM_ORIG_MESSAGEID";
+   public static final String JBOSS_MESSAGING_ORIG_MESSAGE_ID = "JBM_ORIG_MESSAGE_ID";
    
    public static final String JBOSS_MESSAGING_ACTUAL_EXPIRY_TIME = "JBM_ACTUAL_EXPIRY";
    
@@ -973,7 +973,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
       //Note we check the flag *and* evaluate again, this is because the server and client clocks may
       //be out of synch and don't want to send back to the client a message it thought it has sent to
       //the expiry queue  
-      boolean expired = cancel.isExpired() || rec.del.getReference().isExpired();
+      boolean expired = cancel.isExpired() || rec.del.getReference().getMessage().isExpired();
       
       //Note we check the flag *and* evaluate again, this is because the server value of maxDeliveries
       //might get changed after the client has sent the cancel - and we don't want to end up cancelling
@@ -1031,22 +1031,20 @@ public class ServerSessionEndpoint implements SessionEndpoint
       
       JBossMessage msg = ((JBossMessage)del.getReference().getMessage());
       
-      JBossMessage copy = msg.doShallowCopy();
+      JBossMessage copy = msg.doCopy();
       
       long newMessageId = sp.getMessageIDManager().getID();
       
       copy.setMessageId(newMessageId);
       
-      //reset delivery count and expiry
-      copy.setDeliveryCount(0);
-      
+      //reset expiry
       copy.setExpiration(0);
       
       String origMessageId = msg.getJMSMessageID();
       
       String origDest = msg.getJMSDestination().toString();
             
-      copy.setStringProperty(JBOSS_MESSAGING_ORIG_MESSAGEID, origMessageId);
+      copy.setStringProperty(JBOSS_MESSAGING_ORIG_MESSAGE_ID, origMessageId);
       
       copy.setStringProperty(JBOSS_MESSAGING_ORIG_DESTINATION, origDest);
       

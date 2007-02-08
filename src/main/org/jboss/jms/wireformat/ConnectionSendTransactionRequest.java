@@ -26,6 +26,7 @@ import java.io.DataOutputStream;
 
 import org.jboss.jms.server.endpoint.ConnectionEndpoint;
 import org.jboss.jms.tx.TransactionRequest;
+import org.jboss.logging.Logger;
 
 /**
  * 
@@ -39,6 +40,9 @@ import org.jboss.jms.tx.TransactionRequest;
  */
 public class ConnectionSendTransactionRequest extends RequestSupport
 {
+   private static final Logger log = Logger.getLogger(ConnectionSendTransactionRequest.class);
+   
+   
    private TransactionRequest req;
    private boolean retry;
    
@@ -87,7 +91,7 @@ public class ConnectionSendTransactionRequest extends RequestSupport
    {
       super.write(os);
       
-      req.write(os);
+      req.write(os); 
 
       os.writeBoolean(retry);
       

@@ -21,9 +21,6 @@
  */
 package org.jboss.jms.wireformat;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-
 import org.jboss.jms.client.remoting.CallbackManager;
 import org.jboss.remoting.InvocationRequest;
 import org.jboss.remoting.callback.Callback;
@@ -41,13 +38,6 @@ import org.jboss.remoting.invocation.OnewayInvocation;
  */
 public abstract class CallbackSupport extends PacketSupport
 {      
-   protected String remotingSessionID;
-   
-   public void setRemotingSessionID(String sessionID)
-   {
-      this.remotingSessionID = sessionID;
-   }
-   
    public CallbackSupport()
    {      
    }
@@ -55,18 +45,6 @@ public abstract class CallbackSupport extends PacketSupport
    public CallbackSupport(int id)
    {
       super(id);
-   }
-
-   public void read(DataInputStream is) throws Exception
-   {
-      remotingSessionID = is.readUTF();
-   }
-
-   public void write(DataOutputStream os) throws Exception
-   {
-      super.write(os);
-      
-      os.writeUTF(remotingSessionID);
    }
 
    public Object getPayload()
@@ -82,7 +60,7 @@ public abstract class CallbackSupport extends PacketSupport
       OnewayInvocation oi = new OnewayInvocation(ii);
 
       InvocationRequest request
-         = new InvocationRequest(remotingSessionID, CallbackManager.JMS_CALLBACK_SUBSYSTEM,
+         = new InvocationRequest(null, CallbackManager.JMS_CALLBACK_SUBSYSTEM,
                                  oi, ONE_WAY_METADATA, null, null);
       
       return request;

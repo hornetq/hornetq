@@ -47,8 +47,8 @@
    </category>
 
    <category name="org.jboss.remoting">
-      <!-- <priority value="TRACE" class="org.jboss.logging.XLevel"/> -->
-      <priority value="DEBUG"/>
+      <priority value="TRACE" class="org.jboss.logging.XLevel"/>
+      <!-- <priority value="DEBUG"/> -->
    </category>
 
    <category name="org.jboss">
@@ -82,7 +82,8 @@
    </category>
 
    <category name="org.jboss.jms.server.remoting.JMSWireFormat">
-      <priority value="DEBUG"/>
+      <priority value="TRACE" class="org.jboss.logging.XLevel"/>
+      <!-- <priority value="DEBUG"/> -->
    </category>
 
    <root>

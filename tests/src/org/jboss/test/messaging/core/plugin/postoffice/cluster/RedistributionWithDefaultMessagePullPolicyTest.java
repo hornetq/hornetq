@@ -28,10 +28,10 @@ import java.util.List;
 import org.jboss.messaging.core.Channel;
 import org.jboss.messaging.core.Delivery;
 import org.jboss.messaging.core.DeliveryObserver;
-import org.jboss.messaging.core.Message;
-import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.Receiver;
 import org.jboss.messaging.core.SimpleDelivery;
+import org.jboss.messaging.core.message.Message;
+import org.jboss.messaging.core.message.MessageReference;
 import org.jboss.messaging.core.plugin.postoffice.cluster.DefaultClusteredPostOffice;
 import org.jboss.messaging.core.plugin.postoffice.cluster.LocalClusteredQueue;
 import org.jboss.messaging.core.plugin.postoffice.cluster.DefaultMessagePullPolicy;
@@ -146,8 +146,7 @@ public class RedistributionWithDefaultMessagePullPolicyTest extends PostOfficeTe
                                     true, true, (QueuedExecutor) pool.get(), -1, null, tr);
          office2.bindClusteredQueue(new SimpleCondition("queue1"), queue2);
 
-         Message msg = CoreMessageFactory.createCoreMessage(1);
-         msg.setReliable(true);
+         Message msg = CoreMessageFactory.createCoreMessage(1, true, null);
 
          MessageReference ref = ms.reference(msg);
 
@@ -245,8 +244,7 @@ public class RedistributionWithDefaultMessagePullPolicyTest extends PostOfficeTe
                                     true, true, (QueuedExecutor) pool.get(), -1, null, tr);
          office2.bindClusteredQueue(new SimpleCondition("queue1"), queue2);
 
-         Message msg = CoreMessageFactory.createCoreMessage(1);
-         msg.setReliable(true);
+         Message msg = CoreMessageFactory.createCoreMessage(1, true, null);
 
          MessageReference ref = ms.reference(msg);
 
@@ -350,8 +348,7 @@ public class RedistributionWithDefaultMessagePullPolicyTest extends PostOfficeTe
                                     true, true, (QueuedExecutor) pool.get(), -1, null, tr);
          office2.bindClusteredQueue(new SimpleCondition("queue1"), queue2);
 
-         Message msg = CoreMessageFactory.createCoreMessage(1);
-         msg.setReliable(true);
+         Message msg = CoreMessageFactory.createCoreMessage(1, true, null);
 
          MessageReference ref = ms.reference(msg);
 
@@ -451,8 +448,7 @@ public class RedistributionWithDefaultMessagePullPolicyTest extends PostOfficeTe
                                     true, true, (QueuedExecutor) pool.get(), -1, null, tr);
          office2.bindClusteredQueue(new SimpleCondition("queue1"), queue2);
 
-         Message msg = CoreMessageFactory.createCoreMessage(1);
-         msg.setReliable(true);
+         Message msg = CoreMessageFactory.createCoreMessage(1, true, null);
 
          MessageReference ref = ms.reference(msg);
 

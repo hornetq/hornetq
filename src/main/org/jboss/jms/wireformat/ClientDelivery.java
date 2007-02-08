@@ -24,8 +24,8 @@ package org.jboss.jms.wireformat;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 
-import org.jboss.jms.message.JBossMessage;
-import org.jboss.jms.message.MessageProxy;
+import org.jboss.logging.Logger;
+import org.jboss.messaging.core.message.Message;
 import org.jboss.messaging.core.message.MessageFactory;
 
 /**
@@ -43,13 +43,20 @@ public class ClientDelivery extends CallbackSupport
 {
    // Constants -----------------------------------------------------
    
+   private static final Logger log = Logger.getLogger(ClientDelivery.class);
+   
+   
    // Static --------------------------------------------------------
    
    // Attributes ----------------------------------------------------
    
-   private MessageProxy msg;
+   private Message msg;
          
    private int consumerId;
+   
+   private long deliveryId;
+   
+   private int deliveryCount;
     
    // Constructors --------------------------------------------------
    
@@ -57,13 +64,17 @@ public class ClientDelivery extends CallbackSupport
    {      
    }
 
-   public ClientDelivery(MessageProxy msg, int consumerId)
+   public ClientDelivery(Message msg, int consumerId, long deliveryId, int deliveryCount)
    {
       super (PacketSupport.CLIENT_DELIVERY);
       
       this.msg = msg;
       
       this.consumerId = consumerId;
+      
+      this.deliveryId = deliveryId;
+      
+      this.deliveryCount = deliveryCount;
    }
          
    // Streamable implementation
@@ -71,43 +82,41 @@ public class ClientDelivery extends CallbackSupport
    
    public void write(DataOutputStream out) throws Exception
    {
+
       super.write(out);
       
       out.writeInt(consumerId);
-      
-      out.writeByte(msg.getMessage().getType());
 
-      out.writeInt(msg.getDeliveryCount());
-      
-      out.writeLong(msg.getDeliveryId());
+      out.writeInt(deliveryCount);
+ 
+      out.writeLong(deliveryId);
+   
+      out.writeByte(msg.getType());
+  
+      msg.write(out);   
 
-      msg.getMessage().write(out);          
-      
       out.flush();
    }
 
    public void read(DataInputStream in) throws Exception
    {
-      super.read(in);
-      
       consumerId = in.readInt();
       
+
+      deliveryCount = in.readInt();
+       
+      deliveryId = in.readLong();
+      
       byte type = in.readByte();
+                
+      msg = MessageFactory.createMessage(type);
       
-      int deliveryCount = in.readInt();
-      
-      long deliveryId = in.readLong();
-      
-      JBossMessage m = (JBossMessage)MessageFactory.createMessage(type);
-
-      m.read(in);
-
-      msg = JBossMessage.createThinDelegate(deliveryId, m, deliveryCount); 
+      msg.read(in);
    }
 
    // Public --------------------------------------------------------
    
-   public MessageProxy getMessage()
+   public Message getMessage()
    {
       return msg;
    }
@@ -115,6 +124,16 @@ public class ClientDelivery extends CallbackSupport
    public int getConsumerId()
    {
       return consumerId;
+   }
+   
+   public long getDeliveryId()
+   {
+      return deliveryId;
+   }
+   
+   public int getDeliveryCount()
+   {
+      return deliveryCount;
    }
 
    public String toString()

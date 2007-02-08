@@ -23,7 +23,6 @@ package org.jboss.jms.message;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
-import java.io.Serializable;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -33,7 +32,6 @@ import javax.jms.JMSException;
 import javax.jms.MapMessage;
 import javax.jms.MessageFormatException;
 
-import org.jboss.jms.destination.JBossDestination;
 import org.jboss.messaging.util.StreamUtils;
 import org.jboss.util.Primitives;
 
@@ -55,7 +53,7 @@ public class JBossMapMessage extends JBossMessage implements MapMessage
 
    private static final long serialVersionUID = 7939593521831220924L;
    
-   public static final byte TYPE = 2;
+   public static final byte TYPE = 5;
 
    // Attributes ----------------------------------------------------
 
@@ -83,23 +81,10 @@ public class JBossMapMessage extends JBossMessage implements MapMessage
    /*
     * This constructor is used to construct messages when retrieved from persistence storage
     */
-   public JBossMapMessage(long messageID,
-         boolean reliable,
-         long expiration,
-         long timestamp,
-         byte priority,
-         Map coreHeaders,
-         byte[] payloadAsByteArray,
-         String jmsType,
-         String correlationID,
-         byte[] correlationIDBytes,
-         JBossDestination destination,
-         JBossDestination replyTo,
-         HashMap jmsProperties)
+   public JBossMapMessage(long messageID, boolean reliable, long expiration, long timestamp,
+                          byte priority, Map coreHeaders, byte[] payloadAsByteArray)
    {
-      super(messageID, reliable, expiration, timestamp, priority, coreHeaders, payloadAsByteArray,
-            jmsType, correlationID, correlationIDBytes, destination, replyTo, 
-            jmsProperties);
+      super(messageID, reliable, expiration, timestamp, priority, coreHeaders, payloadAsByteArray);
    }
 
    public JBossMapMessage(JBossMapMessage other)
@@ -490,7 +475,7 @@ public class JBossMapMessage extends JBossMessage implements MapMessage
       clearPayloadAsByteArray();
    }
    
-   public JBossMessage doShallowCopy()
+   public JBossMessage doCopy()
    {
       return new JBossMapMessage(this);
    }
@@ -499,12 +484,12 @@ public class JBossMapMessage extends JBossMessage implements MapMessage
 
    // Protected -----------------------------------------------------
 
-   protected void writePayload(DataOutputStream out, Serializable thePayload) throws Exception
+   protected void writePayload(DataOutputStream out, Object thePayload) throws Exception
    {
       StreamUtils.writeMap(out, ((Map)getPayload()), true);
    }
 
-   protected Serializable readPayload(DataInputStream in, int length)
+   protected Object readPayload(DataInputStream in, int length)
       throws Exception
    {
       HashMap m = StreamUtils.readMap(in, true);

@@ -26,12 +26,12 @@ import java.util.List;
 
 import org.jboss.jms.server.QueuedExecutorPool;
 import org.jboss.messaging.core.FilterFactory;
-import org.jboss.messaging.core.Message;
-import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.Queue;
+import org.jboss.messaging.core.message.Message;
+import org.jboss.messaging.core.message.MessageReference;
+import org.jboss.messaging.core.message.SimpleMessageStore;
 import org.jboss.messaging.core.plugin.IDManager;
 import org.jboss.messaging.core.plugin.JDBCPersistenceManager;
-import org.jboss.messaging.core.plugin.SimpleMessageStore;
 import org.jboss.messaging.core.plugin.contract.Condition;
 import org.jboss.messaging.core.plugin.contract.ConditionFactory;
 import org.jboss.messaging.core.plugin.contract.MessageStore;

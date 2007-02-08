@@ -68,7 +68,7 @@ public class JDBCJMSUserManager extends JDBCSupport implements JMSUserManager
    protected Map getDefaultDMLStatements()
    {                
       Map map = new LinkedHashMap();
-      map.put("SELECT_PRECONF_CLIENTID", "SELECT CLIENTID FROM JMS_USER WHERE USERID=?");
+      map.put("SELECT_PRECONF_CLIENTID", "SELECT CLIENTID FROM JBM_USER WHERE USER_ID=?");
       return map;
    }
    
@@ -76,11 +76,11 @@ public class JDBCJMSUserManager extends JDBCSupport implements JMSUserManager
    {
       Map map = new LinkedHashMap();
       map.put("CREATE_USER_TABLE",
-              "CREATE TABLE JMS_USER (USERID VARCHAR(32) NOT NULL, PASSWD VARCHAR(32) NOT NULL, CLIENTID VARCHAR(128)," +
-              " PRIMARY KEY(USERID))");
+              "CREATE TABLE JBM_USER (USER_ID VARCHAR(32) NOT NULL, PASSWD VARCHAR(32) NOT NULL, CLIENTID VARCHAR(128)," +
+              " PRIMARY KEY(USER_ID))");
       map.put("CREATE_ROLE_TABLE",
-              "CREATE TABLE JMS_ROLE (ROLEID VARCHAR(32) NOT NULL, USERID VARCHAR(32) NOT NULL," +
-              " PRIMARY KEY(USERID, ROLEID))");
+              "CREATE TABLE JBM_ROLE (ROLE_ID VARCHAR(32) NOT NULL, USER_ID VARCHAR(32) NOT NULL," +
+              " PRIMARY KEY(USER_ID, ROLE_ID))");
       return map;
    }
 

@@ -24,10 +24,12 @@ package org.jboss.jms.client.remoting;
 import java.util.Map;
 
 import org.jboss.jms.client.delegate.ClientConnectionDelegate;
+import org.jboss.jms.message.JBossMessage;
 import org.jboss.jms.message.MessageProxy;
 import org.jboss.jms.wireformat.ClientDelivery;
 import org.jboss.jms.wireformat.ConnectionFactoryUpdate;
 import org.jboss.logging.Logger;
+import org.jboss.messaging.core.message.Message;
 import org.jboss.remoting.callback.Callback;
 import org.jboss.remoting.callback.HandleCallbackException;
 import org.jboss.remoting.callback.InvokerCallbackHandler;
@@ -86,7 +88,11 @@ public class CallbackManager implements InvokerCallbackHandler
       if (parameter instanceof ClientDelivery)
       {
          ClientDelivery dr = (ClientDelivery)parameter;
-         MessageProxy msg = dr.getMessage();
+         
+         Message msg = dr.getMessage();
+         
+         MessageProxy proxy =
+            JBossMessage.createThinDelegate(dr.getDeliveryId(), (JBossMessage)msg, dr.getDeliveryCount());
 
          MessageCallbackHandler handler =
             (MessageCallbackHandler)callbackHandlers.get(new Integer(dr.getConsumerId()));
@@ -104,7 +110,7 @@ public class CallbackManager implements InvokerCallbackHandler
 
          try
          {
-            handler.handleMessage(msg);
+            handler.handleMessage(proxy);
          }
          catch (Exception e)
          {

@@ -82,8 +82,7 @@ public class MessageTest extends MessagingTestCase
       m.setJMSCorrelationID("correlationID777");
       m.setJMSReplyTo(new JBossQueue("ReplyToQueue"));
       m.setJMSDestination(new JBossQueue("DestinationQueue"));
-      m.setJMSDeliveryMode(DeliveryMode.PERSISTENT);
-      m.setJMSRedelivered(true);
+      m.setJMSDeliveryMode(DeliveryMode.PERSISTENT);      
       m.setJMSExpiration(987654321l);
       m.setJMSPriority(9);
       m.setBooleanProperty("booleanProperty", true);
@@ -148,7 +147,7 @@ public class MessageTest extends MessagingTestCase
       assertEquals(m1.getJMSReplyTo(), m2.getJMSReplyTo());
       assertEquals(m1.getJMSDestination(), m2.getJMSDestination());
       assertEquals(m1.getJMSDeliveryMode(), m2.getJMSDeliveryMode());
-      assertEquals(m1.getJMSRedelivered(), m2.getJMSRedelivered());
+      //We don't check redelivered since this is always dealt with on the proxy
       assertEquals(m1.getJMSType(), m2.getJMSType());
       assertEquals(m1.getJMSExpiration(), m2.getJMSExpiration());
       assertEquals(m1.getJMSPriority(), m2.getJMSPriority());
@@ -715,7 +714,7 @@ public class MessageTest extends MessagingTestCase
          propNames.add(propName);
       }
 
-      assertEquals(9, propNames.size());
+      assertEquals(8, propNames.size());
 
       assertTrue(propNames.contains("myBool"));
       assertTrue(propNames.contains("myByte"));
@@ -984,8 +983,6 @@ public class MessageTest extends MessagingTestCase
       m2.clearProperties();
 
       Enumeration en2 = m2.getPropertyNames();
-      assertTrue(en2.hasMoreElements());
-      en2.nextElement();
       assertFalse(en2.hasMoreElements());
 
 

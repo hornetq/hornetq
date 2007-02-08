@@ -27,9 +27,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import org.jboss.jms.message.JBossMessage;
-import org.jboss.jms.message.MessageProxy;
-import org.jboss.messaging.core.message.MessageFactory;
+import org.jboss.logging.Logger;
 import org.jboss.remoting.InvocationResponse;
 import org.jboss.remoting.callback.Callback;
 
@@ -44,6 +42,9 @@ import org.jboss.remoting.callback.Callback;
  */
 public class PolledCallbacksDelivery extends PacketSupport
 {
+   private static final Logger log = Logger.getLogger(PolledCallbacksDelivery.class);
+   
+   
    private List callbacks;
    
    private String sessionID;
@@ -71,21 +72,12 @@ public class PolledCallbacksDelivery extends PacketSupport
       
       for (int i = 0; i < len; i++)
       {
-         int consumerId = is.readInt();
+         //Read the method id int - we just throw it away
+         is.readInt();
          
-         byte type = is.readByte();
+         ClientDelivery delivery = new ClientDelivery();
          
-         int deliveryCount = is.readInt();
-         
-         long deliveryId = is.readLong();
-         
-         JBossMessage msg = (JBossMessage)MessageFactory.createMessage(type);
-
-         msg.read(is);
-
-         MessageProxy mp = JBossMessage.createThinDelegate(deliveryId, msg, deliveryCount); 
-         
-         ClientDelivery delivery = new ClientDelivery(mp, consumerId);
+         delivery.read(is);
          
          Callback cb = new Callback(delivery);
                   
@@ -98,9 +90,9 @@ public class PolledCallbacksDelivery extends PacketSupport
       super.write(os);
       
       os.writeUTF(sessionID);
-      
+
       os.writeInt(callbacks.size());
-      
+
       Iterator iter = callbacks.iterator();
       
       while (iter.hasNext())
@@ -109,17 +101,7 @@ public class PolledCallbacksDelivery extends PacketSupport
          
          ClientDelivery cd = (ClientDelivery)cb.getParameter();
          
-         os.writeInt(cd.getConsumerId());
-         
-         MessageProxy mp = cd.getMessage();
-         
-         os.writeByte(mp.getMessage().getType());
-
-         os.writeInt(mp.getDeliveryCount());
-         
-         os.writeLong(mp.getDeliveryId());
-
-         mp.getMessage().write(os);  
+         cd.write(os);  
       }
       
       os.flush();

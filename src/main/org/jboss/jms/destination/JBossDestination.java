@@ -54,7 +54,7 @@ public abstract class JBossDestination implements Destination, Serializable /*, 
    private static final byte TEMP_QUEUE = 3;
    
    private static final byte TEMP_TOPIC = 4;
-
+   
    // Static --------------------------------------------------------
    
    public static void writeDestination(DataOutputStream out, Destination dest) throws IOException
@@ -155,7 +155,7 @@ public abstract class JBossDestination implements Destination, Serializable /*, 
    }
 
    // Public --------------------------------------------------------
-
+   
    public String getName()
    {
       return name;

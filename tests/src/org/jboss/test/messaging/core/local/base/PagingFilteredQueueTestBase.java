@@ -28,14 +28,14 @@ import java.util.List;
 
 import org.jboss.messaging.core.Delivery;
 import org.jboss.messaging.core.Filter;
-import org.jboss.messaging.core.Message;
-import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.Receiver;
 import org.jboss.messaging.core.local.PagingFilteredQueue;
 import org.jboss.messaging.core.message.CoreMessage;
+import org.jboss.messaging.core.message.Message;
+import org.jboss.messaging.core.message.MessageReference;
+import org.jboss.messaging.core.message.SimpleMessageStore;
 import org.jboss.messaging.core.plugin.IDManager;
 import org.jboss.messaging.core.plugin.JDBCPersistenceManager;
-import org.jboss.messaging.core.plugin.SimpleMessageStore;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager;
 import org.jboss.messaging.core.tx.Transaction;
@@ -159,8 +159,7 @@ public abstract class PagingFilteredQueueTestBase extends MessagingTestCase
             Object o = j.next();
             Message m = (Message)o;
             
-
-            if (a[i].getMessageID() == m.getMessageID() &&
+            if (a[i].getMessage().getMessageID() == m.getMessageID() &&
                 m.getPayload().equals(a[i].getMessage().getPayload()))
             {
                j.remove();
@@ -187,7 +186,7 @@ public abstract class PagingFilteredQueueTestBase extends MessagingTestCase
             Delivery d = (Delivery)j.next();
             MessageReference ref = d.getReference();
 
-            if (a[i].getReference().getMessageID() == ref.getMessageID())
+            if (a[i].getReference().getMessage().getMessageID() == ref.getMessage().getMessageID())
             {
                j.remove();
                break;
@@ -541,6 +540,8 @@ public abstract class PagingFilteredQueueTestBase extends MessagingTestCase
 
       MessageReference ref = createReference(0, true, "payload");
       SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
+      
+      log.info("ref is reliable:" + ref.getMessage().isReliable());
 
       // non-transacted send, reliable message, one message
       Delivery delivery = queue.handle(observer, ref, null);

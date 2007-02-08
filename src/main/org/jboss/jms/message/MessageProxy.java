@@ -23,7 +23,6 @@ package org.jboss.jms.message;
 
 import java.io.Serializable;
 import java.util.Enumeration;
-import java.util.HashMap;
 
 import javax.jms.Destination;
 import javax.jms.JMSException;
@@ -31,6 +30,7 @@ import javax.jms.Message;
 import javax.jms.MessageNotWriteableException;
 
 import org.jboss.jms.delegate.SessionDelegate;
+import org.jboss.logging.Logger;
 
 /**
  * 
@@ -57,11 +57,9 @@ public class MessageProxy implements Message, Serializable
 
    private static final long serialVersionUID = 5903095946142192468L;
    
+   private static final Logger log = Logger.getLogger(MessageProxy.class);   
+   
    // Static --------------------------------------------------------
-
-   protected static final int STATE_NEW = 0;
-   protected static final int STATE_SENT = 1;
-   protected static final int STATE_RECEIVED = 2;
 
    // Attributes ----------------------------------------------------
 
@@ -71,24 +69,31 @@ public class MessageProxy implements Message, Serializable
    
    private transient boolean cc;
    
-   private transient boolean messageCopied;
-   
-   private transient boolean propertiesCopied;
-   
-   private transient boolean bodyCopied;
-
-   private transient int state;
-
-   private transient boolean propertiesReadOnly;   
-
    private int deliveryCount;
    
    private long deliveryId;
+             
+   private transient boolean needToCopyHeader;
    
+   private transient boolean needToCopyBody;
+    
+   public void beforeSend()
+   {
+      this.needToCopyHeader = true;
+      
+      this.needToCopyBody = true;           
+      
+      this.propertiesReadOnly = false;
+      
+      this.bodyReadOnly = false;
+   }
+   
+   private transient boolean propertiesReadOnly;   
+
    protected transient boolean bodyReadOnly;
+      
    
    protected JBossMessage message;
-
 
    // Constructors --------------------------------------------------
 
@@ -96,20 +101,36 @@ public class MessageProxy implements Message, Serializable
    {
    }
    
+   /*
+    * Constructor for a new message
+    */
    public MessageProxy(JBossMessage message)
    {
-      this.deliveryId = -1;
       this.message = message;
-      this.state = STATE_NEW;
-      this.deliveryCount = 0;
+      
+      this.needToCopyHeader = false;
+      
+      this.needToCopyBody = false;
    }
 
+   /*
+    * COnstructor for a message received by  a consumer
+    */
    public MessageProxy(long deliveryId, JBossMessage message, int deliveryCount)
    {
       this.deliveryId = deliveryId;
+      
       this.message = message;
-      this.state = STATE_NEW;
+      
       this.deliveryCount = deliveryCount;
+      
+      this.needToCopyHeader = true;
+      
+      this.needToCopyBody = true;
+      
+      this.propertiesReadOnly = true;
+      
+      this.bodyReadOnly = true;
    }
 
    // Message implementation ----------------------------------------
@@ -249,7 +270,7 @@ public class MessageProxy implements Message, Serializable
 
    public void clearProperties() throws JMSException
    {
-      propertiesClear();
+      headerChange();
       message.clearProperties();
       propertiesReadOnly = false;
    }
@@ -276,6 +297,7 @@ public class MessageProxy implements Message, Serializable
 
    public int getIntProperty(String name) throws JMSException
    {
+      //JMSDeliveryCount is always dealt within inside the proxy
       if ("JMSXDeliveryCount".equals(name))
       {
          return deliveryCount;
@@ -285,6 +307,7 @@ public class MessageProxy implements Message, Serializable
 
    public long getLongProperty(String name) throws JMSException
    {
+      //JMSDeliveryCount is always dealt within inside the proxy
       if ("JMSXDeliveryCount".equals(name))
       {
          return deliveryCount;
@@ -304,6 +327,7 @@ public class MessageProxy implements Message, Serializable
 
    public String getStringProperty(String name) throws JMSException
    {
+      //JMSDeliveryCount is always dealt within inside the proxy
       if ("JMSXDeliveryCount".equals(name))
       {
          return Integer.toString(deliveryCount);
@@ -325,7 +349,7 @@ public class MessageProxy implements Message, Serializable
    {
       if (propertiesReadOnly)
          throw new MessageNotWriteableException("Properties are read-only");
-      propertyChange();
+      headerChange();
       message.setBooleanProperty(name, value);
    }
 
@@ -333,7 +357,7 @@ public class MessageProxy implements Message, Serializable
    {
       if (propertiesReadOnly)
          throw new MessageNotWriteableException("Properties are read-only");
-      propertyChange();
+      headerChange();
       message.setByteProperty(name, value);
    }
 
@@ -341,7 +365,7 @@ public class MessageProxy implements Message, Serializable
    {
       if (propertiesReadOnly)
          throw new MessageNotWriteableException("Properties are read-only");
-      propertyChange();
+      headerChange();
       message.setShortProperty(name, value);
    }
 
@@ -349,7 +373,7 @@ public class MessageProxy implements Message, Serializable
    {
       if (propertiesReadOnly)
          throw new MessageNotWriteableException("Properties are read-only");
-      propertyChange();
+      headerChange();
       message.setIntProperty(name, value);
    }
 
@@ -357,7 +381,7 @@ public class MessageProxy implements Message, Serializable
    {
       if (propertiesReadOnly)
          throw new MessageNotWriteableException("Properties are read-only");
-      propertyChange();
+      headerChange();
       message.setLongProperty(name, value);
    }
 
@@ -365,7 +389,7 @@ public class MessageProxy implements Message, Serializable
    {
       if (propertiesReadOnly)
          throw new MessageNotWriteableException("Properties are read-only");
-      propertyChange();
+      headerChange();
       message.setFloatProperty(name, value);
    }
 
@@ -373,7 +397,7 @@ public class MessageProxy implements Message, Serializable
    {
       if (propertiesReadOnly)
          throw new MessageNotWriteableException("Properties are read-only");
-      propertyChange();
+      headerChange();
       message.setDoubleProperty(name, value);
    }
 
@@ -381,7 +405,7 @@ public class MessageProxy implements Message, Serializable
    {
       if (propertiesReadOnly)
          throw new MessageNotWriteableException("Properties are read-only");
-      propertyChange();
+      headerChange();
       message.setStringProperty(name, value);
    }
 
@@ -389,7 +413,7 @@ public class MessageProxy implements Message, Serializable
    {
       if (propertiesReadOnly)
          throw new MessageNotWriteableException("Properties are read-only");
-      propertyChange();
+      headerChange();
       message.setObjectProperty(name, value);
    }
 
@@ -404,7 +428,7 @@ public class MessageProxy implements Message, Serializable
 
    public void clearBody() throws JMSException
    {
-      bodyClear();
+      bodyChange();
       message.clearBody();
       bodyReadOnly = false;
    }
@@ -421,20 +445,6 @@ public class MessageProxy implements Message, Serializable
    public SessionDelegate getSessionDelegate()
    {
       return delegate;
-   }
-
-   public void setSent()
-   {
-      state = STATE_SENT;
-   }
-
-   public void setReceived()
-   {
-      state = STATE_RECEIVED;
-
-      propertiesReadOnly = true;
-
-      bodyReadOnly = true;
    }
 
    public JBossMessage getMessage()
@@ -468,93 +478,33 @@ public class MessageProxy implements Message, Serializable
 
    protected void headerChange() throws JMSException
    {
-      if ((isSent() || isReceived()))
-      {
-         // A header value is to be changed - we must make a shallow copy of the message.
-         // This basically only copies the headers
-         copyMessage();
-      }
-   }
-
-   protected void copyMessage() throws JMSException
-   {
-      if (!messageCopied)
-      {
-         message = message.doShallowCopy();
-         messageCopied = true;
-      }
-   }
-
-   public boolean isSent()
-   {
-      return state == STATE_SENT;
-   }
-
-   public boolean isReceived()
-   {
-      return state == STATE_RECEIVED;
-   }
-
-   protected void propertyChange() throws JMSException
-   {
-      if (!propertiesCopied)
-      {
-         if (isSent())
-         {
-            //The message has been sent - we need to copy properties to avoid changing the properties
-            //of the sent message
-            copyMessage();
-            message.setJMSProperties(new HashMap(message.getJMSProperties()));
-
-         }
-         else if (isReceived())
-         {
-            //No need to copy - any attempt to set read only props will throw an exception
-         }
-      }
-   }
-
-   protected void propertiesClear() throws JMSException
-   {
-      if (isSent() || isReceived())
+      if (needToCopyHeader)
       {
          copyMessage();
-         message.setJMSProperties(new HashMap());
-         propertiesCopied = true;
-      }
-   }
-
-   protected void bodyClear() throws JMSException
-   {
-      if (isSent() || isReceived())
-      {
-         copyMessage();
-         bodyCopied = true;
       }
    }
 
    protected void bodyChange() throws JMSException
-   {
-      if (isSent())
+   {  
+      if (needToCopyBody)
       {
-         // The message has been sent - make a copy of the message to avoid changing the sent
-         // messages payload
-         copyMessage();
-
-         if (!bodyCopied)
-         {
-            message.copyPayload(message.getPayload());
-            bodyCopied = true;
-         }
-      }
-      else if (isReceived())
-      {
-         // Do nothing - any attempt to change the payload of the message should throw an exception
-         // (readonly)
+         headerChange();
+                  
+         message.copyPayload(message.getPayload());
+         
+         needToCopyBody = false;
       }
    }
 
    // Private -------------------------------------------------------
+   
+   private void copyMessage() throws JMSException
+   {
+      message = message.doCopy();
+         
+      needToCopyHeader = false;      
+   }
+
 
    // Inner classes -------------------------------------------------
    

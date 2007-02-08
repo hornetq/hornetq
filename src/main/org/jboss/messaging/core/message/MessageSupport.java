@@ -26,9 +26,11 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
-import org.jboss.messaging.core.Message;
+import org.jboss.logging.Logger;
 import org.jboss.messaging.util.StreamUtils;
 
 
@@ -41,14 +43,31 @@ import org.jboss.messaging.util.StreamUtils;
  *
  * $Id$
  */
-public abstract class MessageSupport extends RoutableSupport implements Message
+public abstract class MessageSupport implements Message
 {
    // Constants -----------------------------------------------------
+   
+   private static final Logger log = Logger.getLogger(MessageSupport.class);   
     
    // Attributes ----------------------------------------------------
    
+   private boolean trace = log.isTraceEnabled();
+   
+   protected long messageID;
+   
+   protected boolean reliable;
+   
+   /** GMT milliseconds at which this message expires. 0 means never expires **/
+   protected long expiration;
+   
+   protected long timestamp;
+   
+   protected Map headers;
+   
+   protected byte priority;
+   
    // Must be hidden from subclasses
-   private transient Serializable payload;
+   private transient Object payload;
    
    // Must be hidden from subclasses
    private byte[] payloadAsByteArray;
@@ -57,84 +76,138 @@ public abstract class MessageSupport extends RoutableSupport implements Message
    
    // Constructors --------------------------------------------------
 
-   /**
-    * Required by externalization.
+   /*
+    * Construct a message for deserialization or streaming
     */
    public MessageSupport()
    {
    }
 
-   /**
-    * @param messageID
+   /*
+    * Construct a message using default values
     */
    public MessageSupport(long messageID)
    {
-      super(messageID);
-   }
-
-   public MessageSupport(long messageID, Serializable payload)
-   {
-      super(messageID);
-      this.payload = payload;
-   }
-   
-   public MessageSupport(long messageID, boolean reliable, Serializable payload)
-   {
-      this(messageID, reliable, Long.MAX_VALUE, payload);
-   }
-
-   public MessageSupport(long messageID, boolean reliable)
-   {
-      this(messageID, reliable, Long.MAX_VALUE, null);
-   }
-
-   public MessageSupport(long messageID, boolean reliable, long timeToLive)
-   {
-      this(messageID, reliable, timeToLive, null);
-   }
-
-   public MessageSupport(long messageID,
-                         boolean reliable,
-                         long timeToLive,
-                         Serializable payload)
-   {
-      super(messageID, reliable, timeToLive);
-      this.payload = payload;
+      this(messageID, false, 0, System.currentTimeMillis(), (byte)4, null, null);
    }
 
    /*
-    * This constructor is used to create a message from persistent storage
+    * Construct a message using specified values
     */
    public MessageSupport(long messageID,
                          boolean reliable,
                          long expiration,
                          long timestamp,
                          byte priority,
-                         int deliveryCount,  
-                         long scheduledDeliveryTime,
                          Map headers,
                          byte[] payloadAsByteArray)                         
    {
-      super(messageID, reliable, expiration, timestamp, priority, deliveryCount, scheduledDeliveryTime, headers);
+      this.messageID = messageID;
+      this.reliable = reliable;
+      this.expiration = expiration;
+      this.timestamp = timestamp;
+      this.priority = priority;
+      if (headers == null)
+      {
+         this.headers = new HashMap();
+      }
+      else
+      {
+         this.headers = new HashMap(headers);
+      }
+            
       this.payloadAsByteArray = payloadAsByteArray;
    }
 
+   /*
+    * Copy constructor
+    * 
+    * Does a shallow copy of the payload
+    */
    protected MessageSupport(MessageSupport that)
    {
-      super(that);
+      this.messageID = that.messageID;
+      this.reliable = that.reliable;
+      this.expiration = that.expiration;
+      this.timestamp = that.timestamp;
+      this.headers = new HashMap(that.headers);
+      this.priority = that.priority;  
       this.payload = that.payload;
       this.payloadAsByteArray = that.payloadAsByteArray;
    }
 
-   // Routable implementation ---------------------------------------
-
-   public Message getMessage()
-   {
-      return this;
-   }
-
    // Message implementation ----------------------------------------
 
+   public long getMessageID()
+   {
+      return messageID;
+   }
+
+   public boolean isReliable()
+   {
+      return reliable;
+   }
+
+   public long getExpiration()
+   {
+      return expiration;
+   }
+   
+   public void setExpiration(long expiration)
+   {
+      this.expiration = expiration;
+   }
+
+   public long getTimestamp()
+   {
+      return timestamp;
+   }
+   
+   public Object putHeader(String name, Object value)
+   {
+      return headers.put(name, value);
+   }
+
+   public Object getHeader(String name)
+   {
+      return headers.get(name);
+   }
+
+   public Object removeHeader(String name)
+   {
+      return headers.remove(name);
+   }
+
+   public boolean containsHeader(String name)
+   {
+      return headers.containsKey(name);
+   }
+
+   public Set getHeaderNames()
+   {
+      return headers.keySet();
+   }
+   
+   public Map getHeaders()
+   {
+      return headers;
+   }
+   
+   public void setHeaders(Map headers)
+   {
+      this.headers = headers;
+   }
+   
+   public byte getPriority()
+   {
+      return priority;
+   }
+   
+   public void setPriority(byte priority)
+   {
+      this.priority = priority;
+   }
+   
    public boolean isReference()
    {
       return false;
@@ -181,7 +254,7 @@ public abstract class MessageSupport extends RoutableSupport implements Message
     * Warning! Calling getPayload will cause the payload to be deserialized so should not be called
     *          on the server.
     */
-   public synchronized Serializable getPayload()
+   public synchronized Object getPayload()
    {
       if (payload != null)
       {
@@ -235,6 +308,23 @@ public abstract class MessageSupport extends RoutableSupport implements Message
       this.persisted = persisted;
    }
    
+   public boolean isExpired()
+   {
+      if (expiration == 0)
+      {
+         return false;
+      }
+      long overtime = System.currentTimeMillis() - expiration;
+      if (overtime >= 0)
+      {
+         // discard it
+         if (trace) { log.trace(this + " expired by " + overtime + " ms"); }
+         
+         return true;
+      }
+      return false;
+   }
+   
 
    // Public --------------------------------------------------------
 
@@ -252,15 +342,6 @@ public abstract class MessageSupport extends RoutableSupport implements Message
       return that.messageID == this.messageID;
    }
 
-   /**
-    * @return a reference of the internal header map.
-    */
-   public Map getHeaders()
-   {
-      return headers;
-   }
-
-
    public int hashCode()
    {
       return (int)((this.messageID >>> 32) ^ this.messageID);
@@ -271,17 +352,30 @@ public abstract class MessageSupport extends RoutableSupport implements Message
       return "M["+messageID+"]";
    }
    
+   
+   
    // Streamable implementation ---------------------------------
-
+   
    public void write(DataOutputStream out) throws Exception
    {
-      super.write(out);
+      out.writeLong(messageID);
+      
+      out.writeBoolean(reliable);
+      
+      out.writeLong(expiration);
+      
+      out.writeLong(timestamp);
+      
+      StreamUtils.writeMap(out, headers, true);
+      
+      out.writeByte(priority);
       
       byte[] bytes = getPayloadAsByteArray();
             
       if (bytes != null)
       {
          out.writeInt(bytes.length);
+         
          out.write(bytes);
       }
       else
@@ -292,7 +386,17 @@ public abstract class MessageSupport extends RoutableSupport implements Message
 
    public void read(DataInputStream in) throws Exception
    {
-      super.read(in);
+      messageID = in.readLong();
+          
+      reliable = in.readBoolean();
+      
+      expiration = in.readLong();
+      
+      timestamp = in.readLong();
+      
+      headers = StreamUtils.readMap(in, true);
+
+      priority = in.readByte();
       
       int length = in.readInt();
       
@@ -304,6 +408,7 @@ public abstract class MessageSupport extends RoutableSupport implements Message
       else
       {
          payloadAsByteArray = new byte[length];
+         
          in.readFully(payloadAsByteArray);
       }     
    }
@@ -316,7 +421,7 @@ public abstract class MessageSupport extends RoutableSupport implements Message
     * Override this if you want more sophisticated payload externalization.
     * @throws Exception TODO
     */
-   protected void writePayload(DataOutputStream out, Serializable thePayload) throws Exception
+   protected void writePayload(DataOutputStream out, Object thePayload) throws Exception
    {
       StreamUtils.writeObject(out, thePayload, true, true);
    }
@@ -325,10 +430,10 @@ public abstract class MessageSupport extends RoutableSupport implements Message
     * Override this if you want more sophisticated payload externalization.
     * @throws Exception TODO
     */
-   protected Serializable readPayload(DataInputStream in, int length)
+   protected Object readPayload(DataInputStream in, int length)
       throws Exception
    {
-      return (Serializable)StreamUtils.readObject(in, true);
+      return StreamUtils.readObject(in, true);
    }
 
    /**

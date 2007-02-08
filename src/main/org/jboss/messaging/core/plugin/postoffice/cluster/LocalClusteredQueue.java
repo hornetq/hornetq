@@ -25,6 +25,8 @@ import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.*;
 import org.jboss.messaging.core.local.PagingFilteredQueue;
+import org.jboss.messaging.core.message.Message;
+import org.jboss.messaging.core.message.MessageReference;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager;
 import org.jboss.messaging.core.plugin.contract.PostOffice;
@@ -146,7 +148,7 @@ public class LocalClusteredQueue extends PagingFilteredQueue implements Clustere
    {
       if (trace) { log.trace(this + " handling " + ref + " from cluster"); }
 
-      if (filter != null && !filter.accept(ref))
+      if (filter != null && !filter.accept(ref.getMessage()))
       {
          Delivery del = new SimpleDelivery(this, ref, true, false);
          
@@ -393,7 +395,7 @@ public class LocalClusteredQueue extends PagingFilteredQueue implements Clustere
                                                name,
                                                del.getReference().getMessage());
                         
-               if (!del.getReference().isReliable())
+               if (!del.getReference().getMessage().isReliable())
                {
                   //We can ack it now
                   del.acknowledge(null);

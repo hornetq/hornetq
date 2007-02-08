@@ -28,9 +28,9 @@ import java.util.List;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Delivery;
 import org.jboss.messaging.core.DeliveryObserver;
-import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.Receiver;
-import org.jboss.messaging.core.Routable;
+import org.jboss.messaging.core.message.Message;
+import org.jboss.messaging.core.message.MessageReference;
 import org.jboss.messaging.core.tx.Transaction;
 
 /**
@@ -91,7 +91,7 @@ public class DefaultRouter implements ClusterRouter
          // If the message arrived over a failed-over connection, try to send the message to its
          // corresponding "failed-over" queue.
 
-         Integer failedNodeID = (Integer)ref.getHeader(Routable.FAILED_NODE_ID);
+         Integer failedNodeID = (Integer)ref.getMessage().getHeader(Message.FAILED_NODE_ID);
 
          if (failedNodeID != null)
          {

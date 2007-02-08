@@ -24,10 +24,8 @@ package org.jboss.test.messaging.jms.persistence;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import org.jboss.jms.destination.JBossQueue;
 import org.jboss.jms.message.JBossStreamMessage;
-import org.jboss.messaging.core.Message;
-import org.jboss.util.id.GUID;
+import org.jboss.messaging.core.message.Message;
 
 
 /**
@@ -62,8 +60,6 @@ public class StreamMessagePersistenceManagerTest extends MessagePersistenceManag
    {
       HashMap coreHeaders = generateFilledMap(true);         
       
-      HashMap jmsProperties = generateFilledMap(false);
-               
       JBossStreamMessage m = 
          new JBossStreamMessage(i,
                reliable,
@@ -71,13 +67,13 @@ public class StreamMessagePersistenceManagerTest extends MessagePersistenceManag
                System.currentTimeMillis(),
                i,
                coreHeaders,
-               null,
-               i % 2 == 0 ? new GUID().toString() : null,
-               genCorrelationID(i),
-               i % 3 == 2 ? randByteArray(50) : null,
-               new JBossQueue("testDestination"),
-               new JBossQueue("testReplyTo"),           
-               jmsProperties); 
+               null); 
+      
+      setDestination(m, i);
+      setReplyTo(m, i);     
+      m.setJMSType("testType");
+      setCorrelationID(m, i);
+      
       m.setPayload(new ArrayList());
       m.writeBoolean(randBool().booleanValue());
       m.writeByte(randByte().byteValue());

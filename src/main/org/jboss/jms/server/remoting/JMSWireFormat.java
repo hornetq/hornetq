@@ -195,15 +195,11 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
                         
                         packet = (ClientDelivery)callback.getParameter();
                         
-                        ((ClientDelivery)packet).setRemotingSessionID(req.getSessionId());
-                        
                         if (trace) { log.trace("Message delivery callback"); }
                      }
                      else if (callback.getParameter() instanceof ConnectionFactoryUpdate)
                      {
                         packet = (ConnectionFactoryUpdate)callback.getParameter();
-                        
-                        ((ConnectionFactoryUpdate)packet).setRemotingSessionID(req.getSessionId());
                         
                         if (trace) { log.trace("Connection factory update callback"); }
                      }
@@ -239,6 +235,12 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
             {
                // List of polled Callbacks, this is how messages are delivered when using
                // polled callbacks e.g. the HTTP transport
+               
+               //Sanity check
+               if (((List)param).isEmpty())
+               {
+                  log.error("Got a polled callback list - but it is empty!!!");
+               }
                
                packet = new PolledCallbacksDelivery((List)param, resp.getSessionId());             
             }

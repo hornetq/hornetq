@@ -34,6 +34,7 @@ import javax.jms.Session;
 import javax.naming.InitialContext;
 
 import org.jboss.jms.client.JBossConnectionFactory;
+import org.jboss.jms.destination.JBossQueue;
 import org.jboss.jms.message.JBossMessage;
 import org.jboss.jms.message.MessageProxy;
 import org.jboss.test.messaging.MessagingTestCase;
@@ -213,119 +214,149 @@ public class MessageProxyTest extends MessagingTestCase
                 
    }
    
-   public void testCopyAfterSend() throws Exception
+   
+   private void checkSameUnderlyingMessage(JBossMessage m1, JBossMessage m2, boolean same)
    {
-      if (ServerManagement.isRemote())
-      {
-         return;
+      if ((m1 == m2) && (m1.getHeaders() == m2.getHeaders()) && !same)
+      {         
+         fail("Underlying message not same");
       }
-      
-      Connection conn = null;
-      
-      try
-      {
-         conn = cf.createConnection();
-         
-         conn.start();
-         
-         Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         
-         MessageProducer prod = sess.createProducer(queue);
-         prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
-         
-         MessageConsumer cons = sess.createConsumer(queue);
-         
-         MapMessage msent = sess.createMapMessage();
-         msent.setString("map_entry", "map_value");         
-         msent.setStringProperty("property_entry", "property_value");
-         
-         prod.send(msent);
-         
-         MapMessage mrec = (MapMessage)cons.receive();
-                  
-         //Underlying messages
-         JBossMessage usent_1 = ((MessageProxy)msent).getMessage();         
-         JBossMessage urec_1 = ((MessageProxy)mrec).getMessage();
-         
-         //The underlying message should be the same since we haven't changed it after sending or receiving
-         assertTrue(usent_1 == urec_1);
-         
-         //Now change a header in the sent message
-         //The should cause the underlying message to be copied
-         msent.setJMSDeliveryMode(DeliveryMode.NON_PERSISTENT);
-         
-         JBossMessage usent_2 = ((MessageProxy)msent).getMessage();
-         JBossMessage urec_2 = ((MessageProxy)mrec).getMessage();
-         
-         assertFalse(usent_2 == usent_1);
-         assertTrue(usent_1 == urec_2);
-         assertTrue(urec_1 == urec_2);
-                  
-         //But the properties shouldn't be copied since we didn't change them         
-         assertTrue(usent_2.getJMSProperties() == usent_1.getJMSProperties());
-         assertTrue(urec_2.getJMSProperties() == urec_1.getJMSProperties());
-         assertTrue(usent_1.getJMSProperties() == urec_1.getJMSProperties());
-         
-
-         //And the bodies shouldn't be copied since we didn't change it either
-         assertTrue(usent_2.getPayload() == usent_1.getPayload());
-         assertTrue(urec_2.getPayload() == urec_1.getPayload());
-         assertTrue(usent_1.getPayload() == urec_1.getPayload());
-         
-         //Now we change a property
-         msent.setIntProperty("my_int_prop", 123);
-         
-         JBossMessage usent_3 = ((MessageProxy)msent).getMessage();
-         JBossMessage urec_3 = ((MessageProxy)mrec).getMessage();
-                  
-         //It shouldn't cause a copy of the whole message again
-         assertTrue(usent_3 == usent_2);
-         assertTrue(urec_3 == urec_2);
-         
-         //But the properties should be copied in the sent message but not the received
-         
-         Map sentProps = usent_3.getJMSProperties();
-         Map recProps = urec_3.getJMSProperties();
-         
-         assertFalse (sentProps == usent_1.getJMSProperties());
-         assertTrue (recProps == urec_1.getJMSProperties());
-         
-         
-         
-         //Body should be the same
-         assertTrue(usent_3.getPayload() == usent_1.getPayload());
-         assertTrue(urec_3.getPayload() == urec_1.getPayload());
-         
-         //Now we change the body
-         msent.setString("new_map_prop", "hello");
-         
-         JBossMessage usent_4 = ((MessageProxy)msent).getMessage();
-         JBossMessage urec_4 = ((MessageProxy)mrec).getMessage();
-         
-         //It shouldn't cause a copy of the whole message again
-         assertTrue(usent_4 == usent_3);
-         assertTrue(urec_4 == urec_3);
-         
-         //The properties should not be copied again
-         assertTrue (usent_4.getJMSProperties() == sentProps);
-         assertTrue (urec_4.getJMSProperties() == recProps);
-         
-         //Body should be copied in the sent but not the received
-         assertFalse(usent_4.getPayload() == usent_1.getPayload());
-         assertTrue(urec_4.getPayload() == urec_1.getPayload());
-                     
-      }
-      finally
-      {      
-         if (conn != null)
-         {
-            conn.close();
-         }
-      }
-      
    }
    
-   public void testCopyAfterReceive() throws Exception
+   private void checkSameBody(JBossMessage m1, JBossMessage m2, boolean same)
+   {
+      if ((m1.getPayload() == m2.getPayload()) && !same)
+      {         
+         fail("Body not same");
+      }
+   }
+      
+   
+   public void testNewMessage() throws Exception
+   {
+      if (ServerManagement.isRemote())
+      {
+         return;
+      }
+      
+      Connection conn = null;
+      
+      try
+      {
+         conn = cf.createConnection();
+         
+         Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         
+         MessageProducer prod = sess.createProducer(queue);
+         
+         prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+          
+         MapMessage m = sess.createMapMessage();
+         
+         JBossMessage check1 = ((MessageProxy)m).getMessage();
+         
+         m.setString("map_entry", "map_value");         
+         m.setStringProperty("property_entry", "property_value");   
+         
+         m.setJMSReplyTo(new JBossQueue("wibble"));
+         
+         JBossMessage check2 = ((MessageProxy)m).getMessage();
+         
+         checkSameUnderlyingMessage(check1, check2, true);
+         checkSameBody(check1, check2, true);
+         
+         prod.send(m);
+         
+         JBossMessage check3 = ((MessageProxy)m).getMessage();
+         
+         //Underlying message should be the same before and after
+         checkSameUnderlyingMessage(check2, check3, true);
+         checkSameBody(check2, check3, true);
+         
+         prod.send(m);
+         
+         JBossMessage check4 = ((MessageProxy)m).getMessage();
+         
+         assertFalse(check3.getMessageID() == check4.getMessageID());
+         
+         //The underlying message should now be different
+         checkSameUnderlyingMessage(check3, check4, false);
+         
+         //But the body should be the same
+         checkSameBody(check3, check4, true);
+         
+         prod.send(m);
+         
+         JBossMessage check5 = ((MessageProxy)m).getMessage();
+         
+         // The message should be different
+         assertFalse(check4.getMessageID() == check5.getMessageID());
+         
+         checkSameUnderlyingMessage(check4, check5, false);
+         
+         //But the body should be the same
+         checkSameBody(check4, check5, true);
+         
+         //Now set another header
+         
+         m.setJMSType("type123");
+         
+         JBossMessage check6 = ((MessageProxy)m).getMessage();
+         
+         
+         //The message should be different
+         checkSameUnderlyingMessage(check5, check6, false);
+         
+         //But the body should be the same
+         checkSameBody(check5, check6, true);
+         
+         prod.send(m);
+         
+         JBossMessage check7 = ((MessageProxy)m).getMessage();
+                  
+         //The message should be the same
+         
+         checkSameUnderlyingMessage(check6, check7, true);
+         
+         // But the body should be the same
+         checkSameBody(check6, check7, true);
+         
+         // Set the body
+         m.setString("key1", "blah");
+         
+         JBossMessage check8 = ((MessageProxy)m).getMessage();
+         
+         //The message should be the same
+         
+         checkSameUnderlyingMessage(check7, check8, true);
+         
+         // But the body should not be the same
+         checkSameBody(check7, check8, false);
+         
+         //And the body not the same
+         
+         checkSameUnderlyingMessage(check7, check8, false);
+         
+         prod.send(m);
+         
+         JBossMessage check9 = ((MessageProxy)m).getMessage();
+         
+         //The message should be the same
+         
+         checkSameUnderlyingMessage(check8, check9, true);
+         
+      }
+      finally
+      {      
+         if (conn != null)
+         {
+            conn.close();
+         }
+      }
+   }
+   
+   
+   public void testReceivedMessage() throws Exception
    {
       if (ServerManagement.isRemote())
       {
@@ -345,87 +376,99 @@ public class MessageProxyTest extends MessagingTestCase
          MessageProducer prod = sess.createProducer(queue);
          
          prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+          
+         MapMessage m = sess.createMapMessage();
          
          MessageConsumer cons = sess.createConsumer(queue);
          
-         MapMessage msent = sess.createMapMessage();
-         msent.setString("map_entry", "map_value");         
-         msent.setStringProperty("property_entry", "property_value");
+         prod.send(m);
          
-         prod.send(msent);
+         m = (MapMessage)cons.receive(2000);
          
-         MapMessage mrec = (MapMessage)cons.receive();
+         assertNotNull(m);
+                           
+         JBossMessage check1 = ((MessageProxy)m).getMessage();         
+         
+         prod.send(m);
+         
+         JBossMessage check3 = ((MessageProxy)m).getMessage();
+         
+         //Underlying message should be different
+         checkSameUnderlyingMessage(check1, check3, true);
+         checkSameBody(check1, check3, true);
+         
+         prod.send(m);
+         
+         JBossMessage check4 = ((MessageProxy)m).getMessage();
+         
+         assertFalse(check3.getMessageID() == check4.getMessageID());
+         
+         //The underlying message should now be different
+         checkSameUnderlyingMessage(check3, check4, false);
+         
+         //But the body should be the same
+         checkSameBody(check3, check4, true);
+         
+         prod.send(m);
+         
+         JBossMessage check5 = ((MessageProxy)m).getMessage();
+         
+         // The message should be different
+         assertFalse(check4.getMessageID() == check5.getMessageID());
+         
+         checkSameUnderlyingMessage(check4, check5, false);
+         
+         //But the body should be the same
+         checkSameBody(check4, check5, true);
+         
+         //Now set another header
+         
+         m.setJMSType("type123");
+         
+         JBossMessage check6 = ((MessageProxy)m).getMessage();
+         
+         
+         //The message should be different
+         checkSameUnderlyingMessage(check5, check6, false);
+         
+         //But the body should be the same
+         checkSameBody(check5, check6, true);
+         
+         prod.send(m);
+         
+         JBossMessage check7 = ((MessageProxy)m).getMessage();
                   
-         //Underlying messages
-         JBossMessage usent_1 = ((MessageProxy)msent).getMessage();         
-         JBossMessage urec_1 = ((MessageProxy)mrec).getMessage();
+         //The message should be the same
          
-         //The underlying message should be the same since we haven't changed it after sending or receiving
-         assertTrue(usent_1 == urec_1);
+         checkSameUnderlyingMessage(check6, check7, true);
          
-         //Now change a header in the received message
-         //The should cause the underlying message to be copied
-         mrec.setJMSDeliveryMode(DeliveryMode.NON_PERSISTENT);
+         // But the body should be the same
+         checkSameBody(check6, check7, true);
          
-         JBossMessage usent_2 = ((MessageProxy)msent).getMessage();
-         JBossMessage urec_2 = ((MessageProxy)mrec).getMessage();
+         // Set the body
+         m.setString("key1", "blah");
          
-         assertTrue(usent_2 == usent_1);
-         assertFalse(urec_1 == urec_2);
-                  
-         //But the properties shouldn't be copied since we didn't change them         
-         assertTrue(usent_2.getJMSProperties() == usent_1.getJMSProperties());
-         assertTrue(urec_2.getJMSProperties() == urec_1.getJMSProperties());
-         assertTrue(usent_1.getJMSProperties() == urec_1.getJMSProperties());
+         JBossMessage check8 = ((MessageProxy)m).getMessage();
          
-         //And the bodies shouldn't be copied since we didn't change it either
-         assertTrue(usent_2.getPayload() == usent_1.getPayload());
+         //The message should be the same
          
-         assertTrue(urec_2.getPayload() == urec_1.getPayload());
-         assertTrue(usent_1.getPayload() == urec_1.getPayload());
+         checkSameUnderlyingMessage(check7, check8, true);
          
-         //Now we change a property
-         mrec.clearProperties();
-         mrec.setIntProperty("my_int_prop", 123);
+         // But the body should not be the same
+         checkSameBody(check7, check8, false);
          
-         JBossMessage usent_3 = ((MessageProxy)msent).getMessage();
-         JBossMessage urec_3 = ((MessageProxy)mrec).getMessage();
-                  
-         //It shouldn't cause a copy of the whole message again
-         assertTrue(usent_3 == usent_2);
-         assertTrue(urec_3 == urec_2);
+         //And the body not the same
          
-         //But the properties should be copied in the received message but not the sent
+         checkSameUnderlyingMessage(check7, check8, false);
          
-         Map sentProps = usent_3.getJMSProperties();
-         Map recProps = urec_3.getJMSProperties();
+         prod.send(m);
          
-         assertTrue (sentProps == usent_1.getJMSProperties());
-         assertFalse (recProps == urec_1.getJMSProperties());
+         JBossMessage check9 = ((MessageProxy)m).getMessage();
          
-         //Body should be the same
-         assertTrue(usent_3.getPayload() == usent_1.getPayload());
-         assertTrue(urec_3.getPayload() == urec_1.getPayload());
+         //The message should be the same
          
-         //Now we change the body
-         mrec.clearBody();
-         mrec.setString("new_map_prop", "hello");
+         checkSameUnderlyingMessage(check8, check9, true);
          
-         JBossMessage usent_4 = ((MessageProxy)msent).getMessage();
-         JBossMessage urec_4 = ((MessageProxy)mrec).getMessage();
-         
-         //It shouldn't cause a copy of the whole message again
-         assertTrue(usent_4 == usent_3);
-         assertTrue(urec_4 == urec_3);
-         
-         //The properties should not be copied again
-         assertTrue (usent_4.getJMSProperties() == sentProps);
-         assertTrue (urec_4.getJMSProperties() == recProps);
-         
-         //Body should be copied in the received but not the sent
-         assertTrue(usent_4.getPayload() == usent_1.getPayload());
-         assertFalse(urec_4.getPayload() == urec_1.getPayload());
-                       
       }
       finally
       {      
@@ -434,7 +477,6 @@ public class MessageProxyTest extends MessagingTestCase
             conn.close();
          }
       }
-      
    }
    
    

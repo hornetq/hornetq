@@ -24,7 +24,7 @@ package org.jboss.test.messaging.core.message;
 import org.jboss.jms.message.JBossMessage;
 import org.jboss.messaging.core.message.MessageFactory;
 import org.jboss.messaging.core.message.MessageSupport;
-import org.jboss.test.messaging.core.message.base.MessageSupportTestBase;
+import org.jboss.test.messaging.core.message.base.RoutableSupportTestBase;
 
 
 /**
@@ -33,7 +33,7 @@ import org.jboss.test.messaging.core.message.base.MessageSupportTestBase;
  *
  * $Id$
  */
-public class JBossMessageTest extends MessageSupportTestBase
+public class JBossMessageTest extends RoutableSupportTestBase
 {
    // Constants -----------------------------------------------------
 
@@ -56,9 +56,8 @@ public class JBossMessageTest extends MessageSupportTestBase
 
    protected void setUp() throws Exception
    {
-      rs = (MessageSupport)MessageFactory.createMessage(0, false, 0, 0, (byte)4, null,
-                                                             null, JBossMessage.TYPE,
-                                                             null, null, null, null, null, 0, null);
+      ms = (MessageSupport)MessageFactory.createMessage(0, false, 0, 0, (byte)4, null,
+                                                             null, JBossMessage.TYPE);
       super.setUp();
       log.debug("setup done");
    }
@@ -66,7 +65,7 @@ public class JBossMessageTest extends MessageSupportTestBase
    protected void tearDown() throws Exception
    {
       super.tearDown();
-      rs = null;
+      ms = null;
    }
 
    // Private -------------------------------------------------------

@@ -19,54 +19,37 @@
   * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   */
-package org.jboss.messaging.core;
+package org.jboss.messaging.core.message;
 
-import java.io.Serializable;
 import java.util.Map;
 import java.util.Set;
 
 import org.jboss.messaging.util.Streamable;
 
 /**
- * An atomic, self containted unit of data that is being routed by the messaging system.
+ * A message is a routable instance that has a payload. The payload is opaque to the messaging
+ * system.
  *
- * Each routable maintains a set of headers. Various messaging components can attach or remove
- * headers, primarily for message flow management purposes.
- *
- * @see org.jboss.messaging.core.Message
- * @see org.jboss.messaging.core.MessageReference
+ * When implementing this interface, make sure you override equals() and hashCode() such that two
+ * Message instances with equals IDs are equal.
  *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
- * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @author <a href="mailto:tim.fox"jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
  *
  * $Id$
  */
-public interface Routable extends Streamable
+public interface Message extends Streamable
 {
-   static final String REMOTE_ROUTABLE = "REMOTE_ROUTABLE";
-   static final String REPLICATOR_ID = "REPLICATOR_ID";
-   static final String COLLECTOR_ID = "COLLECTOR_ID";
-
    static final String FAILED_NODE_ID = "FAILED_NODE_ID";
 
    long getMessageID();
 
    /**
-    * If it is a Message instance, then it returns itself, otherwise it will return the Message
-    * corresponding to this MessageReference.
-    */
-   Message getMessage(); // TODO 55 Shouldn't this method be on MessageReference interface rather than this interface??
-
-   boolean isReference();
-
-   /**
-    * @return true if the delivery must be guaranteed for this routable, false othewise.
+    * @return true if the delivery must be guaranteed for this routable, false otherwise.
     */
    boolean isReliable();
    
-   void setReliable(boolean reliable);
-
    /**
     * @return the time (in GMT milliseconds) when this routable expires and must be removed
     *         from the system. A zero value means this routable never expires.
@@ -77,17 +60,6 @@ public interface Routable extends Streamable
    
    void setExpiration(long expiration);
    
-   
-   /**
-    * 
-    * @return The time in the future that delivery will be delayed until, or zero if
-    * no scheduled delivery will occur
-    */
-   long getScheduledDeliveryTime();
-   
-   void setScheduledDeliveryTime(long scheduledDeliveryTime);
-   
-
    /**
     * @return the time (in GMT milliseconds) when this routable was delivered to the provider.
     */
@@ -98,13 +70,6 @@ public interface Routable extends Streamable
    void setPriority(byte priority);
 
    /**
-    * @return the number of times delivery has been attempted for this routable
-    */
-   int getDeliveryCount();
-   
-   void setDeliveryCount(int deliveryCount);
-   
-   /**
     * Binds a header. If the header map previously contained a mapping for this name, the old value
     * is replaced by the specified value.
     *
@@ -112,7 +77,7 @@ public interface Routable extends Streamable
     *         can also indicate that the header map previously associated null with the specified
     *         name.
     */
-   Serializable putHeader(String name, Serializable value);
+   Object putHeader(String name, Object value);
 
    /**
     * Returns the value corresponding to the header name. Returns null if the map contains no
@@ -122,19 +87,21 @@ public interface Routable extends Streamable
     *
     * @return the value associated with the header, or null if there is no mapping for the header.
     */
-   Serializable getHeader(String name);
+   Object getHeader(String name);
 
    /**
     * Removes the header.
     *
     * @return previous value associated with the header, or null if there was no mapping.
     */
-   Serializable removeHeader(String name);
+   Object removeHeader(String name);
 
    /**
     * Returns true if the Routable contains the specified header.
     */
    boolean containsHeader(String name);
+   
+   void setHeaders(Map headers);
 
    /**
     * Returns a copy of the header name set.
@@ -142,5 +109,15 @@ public interface Routable extends Streamable
    Set getHeaderNames();
    
    Map getHeaders();
-
+   
+   Object getPayload();
+   
+   byte[] getPayloadAsByteArray();
+    
+   boolean isPersisted();
+   
+   void setPersisted(boolean persisted);
+   
+   byte getType();
+   
 }

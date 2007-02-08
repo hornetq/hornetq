@@ -27,9 +27,9 @@ import java.util.List;
 
 import org.jboss.messaging.core.Delivery;
 import org.jboss.messaging.core.DeliveryObserver;
-import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.Receiver;
 import org.jboss.messaging.core.SimpleDelivery;
+import org.jboss.messaging.core.message.MessageReference;
 import org.jboss.messaging.core.tx.Transaction;
 
 

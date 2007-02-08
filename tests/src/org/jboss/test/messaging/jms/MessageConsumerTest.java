@@ -2455,13 +2455,11 @@ public class MessageConsumerTest extends MessagingTestCase
    //Check messages have correct type after being resurrected from persistent storage
    public void testPersistedMessageType() throws Exception
    {
-
       Connection theConn = null;
       Connection theOtherConn = null;
 
       try
       {
-
          theConn = cf.createConnection();
          theConn.start();
 
@@ -2470,7 +2468,6 @@ public class MessageConsumerTest extends MessagingTestCase
 
          MessageProducer theProducer = sessSend.createProducer(queue2);
          theProducer.setDeliveryMode(DeliveryMode.PERSISTENT);
-
 
          Message m = sessSend.createMessage();
          m.setStringProperty("p1", "aardvark");
@@ -2489,7 +2486,6 @@ public class MessageConsumerTest extends MessagingTestCase
 
          TextMessage tm = sessSend.createTextMessage("aardvark");
 
-
          theProducer.send(m);
          theProducer.send(bm);
          theProducer.send(mm);
@@ -2498,7 +2494,6 @@ public class MessageConsumerTest extends MessagingTestCase
          theProducer.send(tm);
 
          theConn.close();
-
 
          theOtherConn = cf.createConnection();
          theOtherConn.start();
@@ -2512,7 +2507,6 @@ public class MessageConsumerTest extends MessagingTestCase
          log.trace("m2 is " + m2);
 
          assertNotNull(m2);
-
 
          assertEquals("aardvark", m2.getStringProperty("p1"));
 

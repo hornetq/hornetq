@@ -6,8 +6,8 @@
  */
 package org.jboss.messaging.core.plugin.contract;
 
-import org.jboss.messaging.core.Message;
-import org.jboss.messaging.core.MessageReference;
+import org.jboss.messaging.core.message.Message;
+import org.jboss.messaging.core.message.MessageReference;
 
 /**
  * An interface to a referencing/dereferencing message store.

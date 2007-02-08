@@ -23,8 +23,8 @@ package org.jboss.test.messaging.core.paging;
 
 import org.jboss.messaging.core.local.PagingFilteredQueue;
 import org.jboss.messaging.core.message.CoreMessage;
+import org.jboss.messaging.core.message.SimpleMessageStore;
 import org.jboss.messaging.core.plugin.JDBCPersistenceManager;
-import org.jboss.messaging.core.plugin.SimpleMessageStore;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager;
 import org.jboss.test.messaging.MessagingTestCase;

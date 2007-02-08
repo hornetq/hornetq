@@ -25,7 +25,7 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
-import org.jboss.messaging.core.Message;
+import org.jboss.messaging.core.message.Message;
 import org.jboss.messaging.core.plugin.contract.ClusteredPostOffice;
 
 /**

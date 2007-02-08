@@ -23,8 +23,8 @@ package org.jboss.test.messaging.core.plugin.postoffice.cluster;
 
 import java.util.List;
 
-import org.jboss.messaging.core.Message;
-import org.jboss.messaging.core.MessageReference;
+import org.jboss.messaging.core.message.Message;
+import org.jboss.messaging.core.message.MessageReference;
 import org.jboss.messaging.core.plugin.postoffice.cluster.DefaultClusteredPostOffice;
 import org.jboss.messaging.core.plugin.postoffice.cluster.LocalClusteredQueue;
 import org.jboss.messaging.core.tx.Transaction;
@@ -117,8 +117,7 @@ public class RecoveryTest extends PostOfficeTestBase
 
          for (int i = 0; i < NUM_MESSAGES; i++)
          {
-            Message msg = CoreMessageFactory.createCoreMessage(i);
-            msg.setReliable(true);
+            Message msg = CoreMessageFactory.createCoreMessage(i, true, null);
 
             MessageReference ref = ms.reference(msg);
 
@@ -256,8 +255,7 @@ public class RecoveryTest extends PostOfficeTestBase
 
          for (int i = 0; i < NUM_MESSAGES; i++)
          {
-            Message msg = CoreMessageFactory.createCoreMessage(i);
-            msg.setReliable(true);
+            Message msg = CoreMessageFactory.createCoreMessage(i, true, null);
 
             MessageReference ref = ms.reference(msg);
 

@@ -119,7 +119,7 @@ public class PullMessagesRequest extends TransactionRequest implements ClusterTr
       //We store the channelID of one of the channels that the message was persisted in
       //it doesn't matter which one since they were all inserted in the same tx
       
-      if (office.referenceExistsInStorage(checkChannelID, reliableDelivery.getReference().getMessageID()))
+      if (office.referenceExistsInStorage(checkChannelID, reliableDelivery.getReference().getMessage().getMessageID()))
       {
          //We should rollback
          return false;

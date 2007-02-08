@@ -459,7 +459,7 @@ public class DLQTest extends MessagingTestCase
             //Check the headers
             String origDest = tm.getStringProperty(ServerSessionEndpoint.JBOSS_MESSAGING_ORIG_DESTINATION);
             
-            String origMessageId = tm.getStringProperty(ServerSessionEndpoint.JBOSS_MESSAGING_ORIG_MESSAGEID);
+            String origMessageId = tm.getStringProperty(ServerSessionEndpoint.JBOSS_MESSAGING_ORIG_MESSAGE_ID);
             
             assertEquals(queue.toString(), origDest);
             

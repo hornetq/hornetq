@@ -25,10 +25,10 @@ import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Delivery;
 import org.jboss.messaging.core.DeliveryObserver;
 import org.jboss.messaging.core.Filter;
-import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.PagingChannelSupport;
 import org.jboss.messaging.core.Queue;
 import org.jboss.messaging.core.SimpleDelivery;
+import org.jboss.messaging.core.message.MessageReference;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager;
 import org.jboss.messaging.core.tx.Transaction;
@@ -123,7 +123,7 @@ public class PagingFilteredQueue extends PagingChannelSupport implements Queue
    
    public Delivery handle(DeliveryObserver sender, MessageReference ref, Transaction tx)
    {
-      if (filter == null || filter.accept(ref))
+      if (filter == null || filter.accept(ref.getMessage()))
       {
          return super.handle(sender, ref, tx);
       }

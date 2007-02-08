@@ -22,10 +22,9 @@
 package org.jboss.messaging.core.plugin.contract;
 
 import java.util.List;
-import java.util.Map;
 
-import org.jboss.messaging.core.Message;
-import org.jboss.messaging.core.MessageReference;
+import org.jboss.messaging.core.message.Message;
+import org.jboss.messaging.core.message.MessageReference;
 import org.jboss.messaging.core.tx.Transaction;
 
 /**
@@ -65,7 +64,7 @@ public interface PersistenceManager extends MessagingComponent
     
    void updatePageOrder(long channelID, List references) throws Exception;
    
-   void updateReliableReferencesNotPagedInRange(long channelID, long orderStart, long orderEnd, long num) throws Exception;
+   void updateReferencesNotPagedInRange(long channelID, long orderStart, long orderEnd, long num) throws Exception;
             
    List getPagedReferenceInfos(long channelID, long orderStart, long number) throws Exception;
    
@@ -118,17 +117,13 @@ public interface PersistenceManager extends MessagingComponent
       
       private int deliveryCount;
       
-      private boolean reliable;
-      
       private long scheduledDelivery;
       
-      public ReferenceInfo(long msgId, int deliveryCount, boolean reliable, long scheduledDelivery)
+      public ReferenceInfo(long msgId, int deliveryCount, long scheduledDelivery)
       {
          this.messageId = msgId;
          
          this.deliveryCount = deliveryCount;
-         
-         this.reliable = reliable;
          
          this.scheduledDelivery = scheduledDelivery;
       }    
@@ -142,11 +137,6 @@ public interface PersistenceManager extends MessagingComponent
       {
          return deliveryCount;
       }      
-      
-      public boolean isReliable()
-      {
-         return reliable;
-      }
       
       public long getScheduledDelivery()
       {

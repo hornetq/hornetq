@@ -27,7 +27,6 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.EOFException;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Map;
 
 import javax.jms.BytesMessage;
@@ -35,7 +34,6 @@ import javax.jms.JMSException;
 import javax.jms.MessageEOFException;
 import javax.jms.MessageFormatException;
 
-import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.util.MessagingJMSException;
 import org.jboss.logging.Logger;
 
@@ -59,7 +57,7 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage
 
    private static final Logger log = Logger.getLogger(JBossBytesMessage.class);
 
-   public static final byte TYPE = 1;
+   public static final byte TYPE = 4;
 
    // Attributes ----------------------------------------------------
 
@@ -99,17 +97,9 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage
                             long timestamp,
                             byte priority,
                             Map coreHeaders,
-                            byte[] payloadAsByteArray,
-                            String jmsType,
-                            String correlationID,
-                            byte[] correlationIDBytes,
-                            JBossDestination destination,
-                            JBossDestination replyTo,
-                            HashMap jmsProperties)
+                            byte[] payloadAsByteArray)
    {
-      super(messageID, reliable, expiration, timestamp, priority, coreHeaders, payloadAsByteArray,
-            jmsType, correlationID, correlationIDBytes, destination, replyTo,
-            jmsProperties);
+      super(messageID, reliable, expiration, timestamp, priority, coreHeaders, payloadAsByteArray);            
       
       baos = new ByteArrayOutputStream();
       dos = new DataOutputStream(baos);
@@ -604,7 +594,7 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage
 
    // JBossMessage overrides ----------------------------------------
 
-   public void doAfterSend() throws JMSException
+   public void doBeforeSend() throws JMSException
    {
       reset();
    }
@@ -656,7 +646,7 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage
       return JBossBytesMessage.TYPE;
    }
 
-   public JBossMessage doShallowCopy() throws JMSException
+   public JBossMessage doCopy() throws JMSException
    {
       reset();
       

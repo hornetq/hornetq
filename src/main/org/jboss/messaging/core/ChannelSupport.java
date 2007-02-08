@@ -30,6 +30,7 @@ import java.util.Set;
 
 import org.jboss.jms.server.MyTimeoutFactory;
 import org.jboss.logging.Logger;
+import org.jboss.messaging.core.message.MessageReference;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager;
 import org.jboss.messaging.core.tx.Transaction;
@@ -205,7 +206,7 @@ public abstract class ChannelSupport implements Channel
       
       MessageReference ref = del.getReference();
       
-      if (ref.isReliable())
+      if (ref.getMessage().isReliable())
       {
          pm.updateDeliveryCount(this.channelID, ref);
       }
@@ -504,7 +505,7 @@ public abstract class ChannelSupport implements Channel
                
                MessageReference ref = (MessageReference)liter.next();
                
-               if (ref.getMessageID() == id.longValue())
+               if (ref.getMessage().getMessageID() == id.longValue())
                {
                   liter.remove();
                   
@@ -598,7 +599,7 @@ public abstract class ChannelSupport implements Channel
 
       synchronized (refLock)
       {
-         messageRefs.addFirst(ref, ref.getPriority());
+         messageRefs.addFirst(ref, ref.getMessage().getPriority());
       }
                   
       if (trace) { log.trace(this + " added " + ref + " back into state"); }
@@ -748,17 +749,7 @@ public abstract class ChannelSupport implements Channel
       ref = ref.copy();
 
       try
-      {
-         if (ref.isReliable() && !recoverable)
-         {
-            // Reliable reference in a non recoverable channel. We handle it as a non reliable
-            // reference. It's important that we set it to non reliable otherwise if the channel
-            // pages and is non recoverable a reliable ref will be paged in the database as reliable
-            // which makes them hard to remove on server restart. If we always page them as
-            // unreliable then it is easy to remove them.
-            ref.setReliable(false);               
-         }
-         
+      {  
          if (tx == null)
          {
             // Don't even attempt synchronous delivery for a reliable message when we have an
@@ -766,14 +757,14 @@ public abstract class ChannelSupport implements Channel
             // into the situation where we need to reliably store an active delivery of a reliable
             // message, which in these conditions cannot be done.
 
-            if (ref.isReliable() && !acceptReliableMessages)
+            if (ref.getMessage().isReliable() && !acceptReliableMessages)
             {
                log.error("Cannot handle reliable message " + ref +
                   " because the channel has a non-recoverable state!");
                return null;
             }
         
-            if (persist && ref.isReliable() && recoverable)
+            if (persist && ref.getMessage().isReliable() && recoverable)
             {
                // Reliable message in a recoverable state - also add to db
                if (trace) { log.trace(this + " adding " + ref + " to database non-transactionally"); }
@@ -805,7 +796,7 @@ public abstract class ChannelSupport implements Channel
          {
             if (trace) { log.trace(this + " adding " + ref + " to state " + (tx == null ? "non-transactionally" : "in transaction: " + tx)); }
 
-            if (ref.isReliable() && !acceptReliableMessages)
+            if (ref.getMessage().isReliable() && !acceptReliableMessages)
             {
                // this transaction has no chance to succeed, since a reliable
                // message cannot be
@@ -823,7 +814,7 @@ public abstract class ChannelSupport implements Channel
                if (trace) { log.trace(this + " added transactionally " + ref + " in memory"); }
             }
 
-            if (persist && ref.isReliable() && recoverable)
+            if (persist && ref.getMessage().isReliable() && recoverable)
             {
                // Reliable message in a recoverable state - also add to db
                if (trace) { log.trace(this + " adding " + ref + (tx == null ? " to database non-transactionally" : " in transaction: " + tx)); }
@@ -880,7 +871,7 @@ public abstract class ChannelSupport implements Channel
    {   
       if (tx == null)
       {                  
-         if (persist && recoverable && d.getReference().isReliable())
+         if (persist && recoverable && d.getReference().getMessage().isReliable())
          {
             pm.removeReference(channelID, d.getReference(), null);
          }
@@ -895,7 +886,7 @@ public abstract class ChannelSupport implements Channel
    
          if (trace) { log.trace(this + " added " + d + " to memory on transaction " + tx); }
    
-         if (recoverable && d.getReference().isReliable())
+         if (recoverable && d.getReference().getMessage().isReliable())
          {
             pm.removeReference(channelID, d.getReference(), tx);
          }
@@ -933,13 +924,13 @@ public abstract class ChannelSupport implements Channel
    
    protected void addReferenceInMemory(MessageReference ref) throws Exception
    {
-      if (ref.isReliable() && !acceptReliableMessages)
+      if (ref.getMessage().isReliable() && !acceptReliableMessages)
       {
          throw new IllegalStateException("Reliable reference " + ref +
                                          " cannot be added to non-recoverable state");
       }
 
-      messageRefs.addLast(ref, ref.getPriority());
+      messageRefs.addLast(ref, ref.getMessage().getPriority());
 
       if (trace){ log.trace(this + " added " + ref + " non-transactionally in memory"); }      
    }    

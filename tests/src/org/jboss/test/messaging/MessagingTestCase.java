@@ -181,7 +181,7 @@ public class MessagingTestCase extends TestCase
       try
       {
          conn = ds.getConnection();
-         String sql = "SELECT * FROM JMS_POSTOFFICE";
+         String sql = "SELECT * FROM JBM_POSTOFFICE";
          ps = conn.prepareStatement(sql);
          
          rs = ps.executeQuery();
@@ -232,7 +232,7 @@ public class MessagingTestCase extends TestCase
       try
       {
          conn = ds.getConnection();
-         String sql = "SELECT * FROM JMS_MESSAGE_REFERENCE";
+         String sql = "SELECT * FROM JBM_MSG_REF";
          ps = conn.prepareStatement(sql);
          
          rs = ps.executeQuery();
@@ -245,7 +245,7 @@ public class MessagingTestCase extends TestCase
             
             ps.close();
             
-            ps = conn.prepareStatement("SELECT * FROM JMS_MESSAGE");
+            ps = conn.prepareStatement("SELECT * FROM JBM_MSG");
             
             rs = ps.executeQuery();
            

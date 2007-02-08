@@ -21,17 +21,14 @@
   */
 package org.jboss.messaging.core.message;
 
-import java.util.HashMap;
 import java.util.Map;
 
-import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.message.JBossBytesMessage;
 import org.jboss.jms.message.JBossMapMessage;
 import org.jboss.jms.message.JBossMessage;
 import org.jboss.jms.message.JBossObjectMessage;
 import org.jboss.jms.message.JBossStreamMessage;
 import org.jboss.jms.message.JBossTextMessage;
-import org.jboss.messaging.core.Message;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -50,33 +47,37 @@ public class MessageFactory
    {
       Message m = null;
       
-      if (type == JBossMessage.TYPE)
+      if (type == JBossMessage.TYPE) //1
       {
          m = new JBossMessage();
       }
-      else if (type == JBossObjectMessage.TYPE)
+      else if (type == JBossObjectMessage.TYPE) //2
       {
          m = new JBossObjectMessage();
       }
-      else if (type == JBossTextMessage.TYPE)
+      else if (type == JBossTextMessage.TYPE)  //3
       {
          m = new JBossTextMessage();
       }
-      else if (type == JBossBytesMessage.TYPE)
+      else if (type == JBossBytesMessage.TYPE)  //4
       {
          m = new JBossBytesMessage();
       }
-      else if (type == JBossMapMessage.TYPE)
+      else if (type == JBossMapMessage.TYPE)  //5
       {
          m = new JBossMapMessage();
       }
-      else if (type == JBossStreamMessage.TYPE)
+      else if (type == JBossStreamMessage.TYPE) //6
       {
          m = new JBossStreamMessage();
       }
-      else if (type == CoreMessage.TYPE)
+      else if (type == CoreMessage.TYPE) //127
       {
          m = new CoreMessage();
+      }
+      else
+      {
+         throw new IllegalArgumentException("Invalid type " + type);
       }
      
       return m;
@@ -90,16 +91,9 @@ public class MessageFactory
                                        long expiration, 
                                        long timestamp,
                                        byte priority,
-                                       Map coreHeaders,
-                                       byte[] payloadAsByteArray,                                                                                    
-                                       byte type,
-                                       String jmsType,                                       
-                                       String correlationID,
-                                       byte[] correlationIDBytes,
-                                       JBossDestination destination,
-                                       JBossDestination replyTo, 
-                                       long scheduledDeliveryTime,
-                                       HashMap jmsProperties)
+                                       Map headers,
+                                       byte[] payload,                                                                                    
+                                       byte type)
 
    {
       Message m = null;
@@ -108,49 +102,43 @@ public class MessageFactory
       {
          case JBossMessage.TYPE:
          {
-            m = new JBossMessage(messageID, reliable, expiration, timestamp, priority, coreHeaders,
-                     payloadAsByteArray, jmsType, correlationID, correlationIDBytes,
-                     destination, replyTo, jmsProperties);
+            m = new JBossMessage(messageID, reliable, expiration, timestamp, priority, headers,
+                     payload);
             break;
          }
          case JBossObjectMessage.TYPE:
          {
-            m = new JBossObjectMessage(messageID, reliable, expiration, timestamp, priority, coreHeaders,
-                     payloadAsByteArray, jmsType, correlationID, correlationIDBytes,
-                     destination, replyTo, jmsProperties);
+            m = new JBossObjectMessage(messageID, reliable, expiration, timestamp, priority, headers,
+                     payload);
             break;
          }
          case JBossTextMessage.TYPE:
          {
-            m = new JBossTextMessage(messageID, reliable, expiration, timestamp, priority, coreHeaders,
-                     payloadAsByteArray, jmsType, correlationID, correlationIDBytes,
-                     destination, replyTo, jmsProperties);
+            m = new JBossTextMessage(messageID, reliable, expiration, timestamp, priority, headers,
+                     payload);
             break;
          }
          case JBossBytesMessage.TYPE:
          {
-            m = new JBossBytesMessage(messageID, reliable, expiration, timestamp, priority, coreHeaders,
-                     payloadAsByteArray, jmsType, correlationID, correlationIDBytes,
-                     destination, replyTo, jmsProperties);
+            m = new JBossBytesMessage(messageID, reliable, expiration, timestamp, priority, headers,
+                     payload);
             break;
          }
          case JBossMapMessage.TYPE:
          {
-            m = new JBossMapMessage(messageID, reliable, expiration, timestamp, priority, coreHeaders,
-                     payloadAsByteArray, jmsType, correlationID, correlationIDBytes,
-                     destination, replyTo, jmsProperties);
+            m = new JBossMapMessage(messageID, reliable, expiration, timestamp, priority, headers,
+                     payload);
             break;
          }
          case JBossStreamMessage.TYPE:
          {
-            m = new JBossStreamMessage(messageID, reliable, expiration, timestamp, priority, coreHeaders,
-                     payloadAsByteArray, jmsType, correlationID, correlationIDBytes,
-                     destination, replyTo, jmsProperties);
+            m = new JBossStreamMessage(messageID, reliable, expiration, timestamp, priority, headers,
+                     payload);
             break;
          }
          case CoreMessage.TYPE:
          {
-            m = new CoreMessage(messageID, reliable, expiration, timestamp, priority, coreHeaders, payloadAsByteArray);
+            m = new CoreMessage(messageID, reliable, expiration, timestamp, priority, headers, payload);
             break;
          }
          default:

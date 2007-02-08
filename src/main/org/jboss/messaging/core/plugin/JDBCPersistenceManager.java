@@ -49,21 +49,16 @@ import javax.sql.DataSource;
 import javax.transaction.TransactionManager;
 import javax.transaction.xa.Xid;
 
-import org.jboss.jms.destination.JBossDestination;
-import org.jboss.jms.destination.JBossQueue;
-import org.jboss.jms.destination.JBossTopic;
-import org.jboss.jms.message.JBossMessage;
 import org.jboss.logging.Logger;
-import org.jboss.messaging.core.Message;
-import org.jboss.messaging.core.MessageReference;
-import org.jboss.messaging.core.message.CoreMessage;
+import org.jboss.messaging.core.message.Message;
 import org.jboss.messaging.core.message.MessageFactory;
+import org.jboss.messaging.core.message.MessageReference;
 import org.jboss.messaging.core.message.MessageSupport;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager;
+import org.jboss.messaging.core.tx.MessagingXid;
 import org.jboss.messaging.core.tx.PreparedTxInfo;
 import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.messaging.core.tx.TxCallback;
-import org.jboss.messaging.core.tx.MessagingXid;
 import org.jboss.messaging.util.JDBCUtil;
 import org.jboss.messaging.util.StreamUtils;
 import org.jboss.messaging.util.Util;
@@ -158,10 +153,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
          }
          wrap.end();
       }
-        
-      //We can't remnove unreliable data since it might introduce holes into the paging order
-      //removeUnreliableMessageData();
-         
+             
       log.debug(this + " started");
    }
    
@@ -177,13 +169,13 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
    
    public List getMessageChannelPairRefsForTx(long transactionId) throws Exception
    {
-      String sql = this.getSQLStatement("SELECT_MESSAGEID_FOR_REF");
+      String sql = this.getSQLStatement("SELECT_MESSAGE_ID_FOR_REF");
       return getMessageChannelPair(sql, transactionId);
    }
    
    public List getMessageChannelPairAcksForTx(long transactionId) throws Exception
    {
-      String sql = this.getSQLStatement("SELECT_MESSAGEID_FOR_ACK");
+      String sql = this.getSQLStatement("SELECT_MESSAGE_ID_FOR_ACK");
       return getMessageChannelPair(sql, transactionId);
    }
    
@@ -425,7 +417,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
                   numParams = size % maxParams;
                }
                StringBuffer buff = new StringBuffer(getSQLStatement("LOAD_MESSAGES"));
-               buff.append(" WHERE ").append(getSQLStatement("MESSAGEID_COLUMN")).append(" IN (");
+               buff.append(" WHERE ").append(getSQLStatement("MESSAGE_ID_COLUMN")).append(" IN (");
                for (int i = 0; i < numParams; i++)
                {
                   buff.append("?");
@@ -454,83 +446,27 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
                rs = ps.executeQuery();
                
                while (rs.next())
-               {
-                  
-//                  "SELECT MESSAGEID, RELIABLE, EXPIRATION, TIMESTAMP, " +
-//                  "PRIORITY, COREHEADERS, PAYLOAD, CHANNELCOUNT, TYPE, JMSTYPE, CORRELATIONID, " +
-//                  "CORRELATIONID_BYTES, DESTINATION, REPLYTO, JMSPROPERTIES " +
-//                  "FROM JMS_MESSAGE"
-                  
-                  
+               {       
                   long messageId = rs.getLong(1);
-                  boolean reliable = rs.getString(2).equals("Y");
-                  long expiration = rs.getLong(3);
-                  long timestamp = rs.getLong(4);
-                  byte priority = rs.getByte(5);                  
-                  byte[] bytes = getBytes(rs, 6);
-                  HashMap coreHeaders = bytesToMap(bytes);
-                  byte[] payload = getBytes(rs, 7);
                   
-
-                  //TODO - We are mixing concerns here
-                  //The basic JDBCPersistencManager should *only* know about core messages - not 
-                  //JBossMessages - we should subclass JBDCPersistenceManager and the JBossMessage
-                  //specific code in a subclass
+                  boolean reliable = rs.getString(2).equals("Y");
+                  
+                  long expiration = rs.getLong(3);
+                  
+                  long timestamp = rs.getLong(4);
+                  
+                  byte priority = rs.getByte(5);        
+                  
+                  byte[] bytes = getBytes(rs, 6);
+                  
+                  HashMap headers = bytesToMap(bytes);
+                  
+                  byte[] payload = getBytes(rs, 7);
                   
                   byte type = rs.getByte(8);
                   
-                  Message m;
-                  
-                  if (type != CoreMessage.TYPE)
-                  {
-                     //JBossMessage
-                     String jmsType = rs.getString(9);
-                     String correlationID = rs.getString(10);
-                     byte[] correlationIDBytes = rs.getBytes(11);
-                     String destination = rs.getString(12);
-                     String replyTo = rs.getString(13);
-                     boolean replyToExists = !rs.wasNull();
-                     bytes = getBytes(rs, 14);
-                     HashMap jmsProperties = bytesToMap(bytes);
-                     
-                     JBossDestination dest;
-                     if (destination.charAt(0) == 'Q')
-                     {
-                        dest = new JBossQueue(destination.substring(1, destination.length()));
-                     }
-                     else
-                     {
-                        dest = new JBossTopic(destination.substring(1, destination.length()));
-                     }
-                     
-                     JBossDestination replyToDest = null;
-                     
-                     if (replyToExists)
-                     {
-                        if (replyTo.charAt(0) == 'Q')
-                        {
-                           replyToDest = new JBossQueue(replyTo.substring(1, replyTo.length()));
-                        }
-                        else
-                        {
-                           replyToDest = new JBossTopic(replyTo.substring(1, replyTo.length()));
-                        }
-                     }
-                         
-                     m = MessageFactory.createMessage(messageId, reliable, expiration, timestamp, priority,
-                                                      coreHeaders, payload,
-                                                      type, jmsType, correlationID, correlationIDBytes,
-                                                      dest, replyToDest, 0,
-                                                      jmsProperties);
-                  }
-                  else
-                  {
-                     m = MessageFactory.createMessage(messageId, reliable, expiration, timestamp, priority,
-                                                          coreHeaders, payload, type,
-                                                          null, null, null, null, null, 0, null);
-                  }
-                  
-                  
+                  Message m = MessageFactory.createMessage(messageId, reliable, expiration, timestamp, priority,
+                                                           headers, payload, type);
                   msgs.add(m);
                }
                
@@ -620,7 +556,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
          {
             psInsertReference = conn.prepareStatement(getSQLStatement("INSERT_MESSAGE_REF"));
             psInsertMessage = conn.prepareStatement(getSQLStatement("INSERT_MESSAGE"));
-            psUpdateMessage = conn.prepareStatement(getSQLStatement("INC_CHANNELCOUNT"));
+            psUpdateMessage = conn.prepareStatement(getSQLStatement("INC_CHANNEL_COUNT"));
          }
          
          while (iter.hasNext())
@@ -658,7 +594,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
             if (!usingBatchUpdates)
             {
                psInsertMessage = conn.prepareStatement(getSQLStatement("INSERT_MESSAGE"));
-               psUpdateMessage = conn.prepareStatement(getSQLStatement("INC_CHANNELCOUNT"));
+               psUpdateMessage = conn.prepareStatement(getSQLStatement("INC_CHANNEL_COUNT"));
             }
                                                                                      
             //Maybe we need to persist the message itself
@@ -765,7 +701,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
             {
                int[] rowsMessage = updateWithRetryBatch(psUpdateMessage);
                
-               if (trace) { logBatchUpdate(getSQLStatement("INC_CHANNELCOUNT"), rowsMessage, "updated"); }
+               if (trace) { logBatchUpdate(getSQLStatement("INC_CHANNEL_COUNT"), rowsMessage, "updated"); }
             }
             
             psInsertReference.close();
@@ -861,7 +797,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
          {
             psDeleteReference = conn.prepareStatement(getSQLStatement("DELETE_MESSAGE_REF"));
             psDeleteMessage = conn.prepareStatement(getSQLStatement("DELETE_MESSAGE"));
-            psUpdateMessage = conn.prepareStatement(getSQLStatement("DEC_CHANNELCOUNT"));
+            psUpdateMessage = conn.prepareStatement(getSQLStatement("DEC_CHANNEL_COUNT"));
          }
          
          while (iter.hasNext())
@@ -892,7 +828,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
             if (!usingBatchUpdates)
             {
                psDeleteMessage = conn.prepareStatement(getSQLStatement("DELETE_MESSAGE"));
-               psUpdateMessage = conn.prepareStatement(getSQLStatement("DEC_CHANNELCOUNT"));
+               psUpdateMessage = conn.prepareStatement(getSQLStatement("DEC_CHANNEL_COUNT"));
             }
                
             Message m = ref.getMessage();
@@ -938,7 +874,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
             
             rowsReference = updateWithRetryBatch(psUpdateMessage);
             
-            if (trace) { logBatchUpdate(getSQLStatement("DEC_CHANNELCOUNT"), rowsReference, "updated"); }
+            if (trace) { logBatchUpdate(getSQLStatement("DEC_CHANNEL_COUNT"), rowsReference, "updated"); }
             
             rowsReference = updateWithRetryBatch(psDeleteMessage);
             
@@ -1011,9 +947,9 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
       }      
    }
    
-   public void updateReliableReferencesNotPagedInRange(long channelID, long orderStart, long orderEnd, long num) throws Exception
+   public void updateReferencesNotPagedInRange(long channelID, long orderStart, long orderEnd, long num) throws Exception
    {
-      if (trace) { log.trace("Updating reliable references for channel " + channelID + " between " + orderStart + " and " + orderEnd); }
+      if (trace) { log.trace("Updating paaged references for channel " + channelID + " between " + orderStart + " and " + orderEnd); }
       
       Connection conn = null;
       PreparedStatement ps = null;
@@ -1025,7 +961,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
       {
          conn = ds.getConnection();
          
-         ps = conn.prepareStatement(getSQLStatement("UPDATE_RELIABLE_REFS_NOT_PAGED"));
+         ps = conn.prepareStatement(getSQLStatement("UPDATE_REFS_NOT_PAGED"));
                  
          ps.setLong(1, orderStart);
          
@@ -1041,7 +977,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
             {
                int rows = updateWithRetry(ps);
                  
-               if (trace) { log.trace(JDBCUtil.statementToString(getSQLStatement("UPDATE_RELIABLE_REFS_NOT_PAGED"), new Long(channelID),
+               if (trace) { log.trace(JDBCUtil.statementToString(getSQLStatement("UPDATE_REFS_NOT_PAGED"), new Long(channelID),
                                       new Long(orderStart), new Long(orderEnd)) + " updated " + rows + " rows"); }
                if (tries > 0)
                {
@@ -1137,7 +1073,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
             
             psUpdateReference.setLong(1, ref.getPagingOrder());
 
-            psUpdateReference.setLong(2, ref.getMessageID());
+            psUpdateReference.setLong(2, ref.getMessage().getMessageID());
             
             psUpdateReference.setLong(3, channelID);
             
@@ -1229,8 +1165,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
             long msgId = rs.getLong(1);     
             int deliveryCount = rs.getInt(2);
             int pageOrd = rs.getInt(3);
-            boolean reliable = rs.getString(4).equals("Y");
-            long sched = rs.getLong(5);
+            long sched = rs.getLong(4);
             
             //Sanity check
             if (pageOrd != ord)
@@ -1238,7 +1173,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
                throw new IllegalStateException("Unexpected pageOrd: " + pageOrd + " expected: " + ord);
             }
             
-            ReferenceInfo ri = new ReferenceInfo(msgId, deliveryCount, reliable, sched);
+            ReferenceInfo ri = new ReferenceInfo(msgId, deliveryCount, sched);
             
             refs.add(ri);
             ord++;
@@ -1352,10 +1287,9 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
          {
             long msgId = rs.getLong(1);            
             int deliveryCount = rs.getInt(2);
-            boolean reliable = rs.getString(3).equals("Y");
-            long sched = rs.getLong(4);
+            long sched = rs.getLong(3);
             
-            ReferenceInfo ri = new ReferenceInfo(msgId, deliveryCount, reliable, sched);
+            ReferenceInfo ri = new ReferenceInfo(msgId, deliveryCount, sched);
             
             if (count < fullSize)
             {
@@ -1470,7 +1404,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
             else
             {
                //Update the message's channel count
-               psMessage = conn.prepareStatement(getSQLStatement("INC_CHANNELCOUNT"));
+               psMessage = conn.prepareStatement(getSQLStatement("INC_CHANNEL_COUNT"));
                
                incrementChannelCount(m, psMessage);
             }
@@ -1541,13 +1475,13 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
        
       try
       {                                    
-         psReference = conn.prepareStatement(getSQLStatement("UPDATE_DELIVERYCOUNT"));
+         psReference = conn.prepareStatement(getSQLStatement("UPDATE_DELIVERY_COUNT"));
          
          psReference.setInt(1, ref.getDeliveryCount());
          
          psReference.setLong(2, channelID);
          
-         psReference.setLong(3, ref.getMessageID());
+         psReference.setLong(3, ref.getMessage().getMessageID());
          
          int rows = updateWithRetry(psReference);
 
@@ -1630,7 +1564,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
             
             //Update the messages channel count
             
-            psUpdate = conn.prepareStatement(getSQLStatement("DEC_CHANNELCOUNT"));
+            psUpdate = conn.prepareStatement(getSQLStatement("DEC_CHANNEL_COUNT"));
             
             decrementChannelCount(m, psUpdate);
             
@@ -1787,7 +1721,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
       {
          conn = ds.getConnection();
 
-         st = conn.prepareStatement(getSQLStatement("SELECT_EXISTS_REF_MESSAGEID"));
+         st = conn.prepareStatement(getSQLStatement("SELECT_EXISTS_REF_MESSAGE_ID"));
          st.setLong(1, messageID);
 
          rs = st.executeQuery();
@@ -1928,7 +1862,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
          {
             psReference = conn.prepareStatement(getSQLStatement("INSERT_MESSAGE_REF"));
             psInsertMessage = conn.prepareStatement(getSQLStatement("INSERT_MESSAGE"));
-            psIncMessage = conn.prepareStatement(getSQLStatement("INC_CHANNELCOUNT"));
+            psIncMessage = conn.prepareStatement(getSQLStatement("INC_CHANNEL_COUNT"));
          }
 
          for(Iterator i = refsToAdd.iterator(); i.hasNext(); )
@@ -1963,7 +1897,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
             if (!batch)
             {
                psInsertMessage = conn.prepareStatement(getSQLStatement("INSERT_MESSAGE"));
-               psIncMessage = conn.prepareStatement(getSQLStatement("INC_CHANNELCOUNT"));
+               psIncMessage = conn.prepareStatement(getSQLStatement("INC_CHANNEL_COUNT"));
             }
                          
             boolean added;
@@ -2030,7 +1964,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
             if (messageUpdatesInBatch)
             {
                int[] rowsMessage = updateWithRetryBatch(psIncMessage);
-               if (trace) { logBatchUpdate(getSQLStatement("INC_CHANNELCOUNT"), rowsMessage, "updated"); }
+               if (trace) { logBatchUpdate(getSQLStatement("INC_CHANNEL_COUNT"), rowsMessage, "updated"); }
             }
             
             psReference.close();
@@ -2051,7 +1985,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
          {
             psReference = conn.prepareStatement(getSQLStatement("DELETE_MESSAGE_REF"));
             psDeleteMessage = conn.prepareStatement(getSQLStatement("DELETE_MESSAGE"));
-            psDecMessage = conn.prepareStatement(getSQLStatement("DEC_CHANNELCOUNT"));
+            psDecMessage = conn.prepareStatement(getSQLStatement("DEC_CHANNEL_COUNT"));
          }
 
          
@@ -2081,7 +2015,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
             if (!batch)
             {
                psDeleteMessage = conn.prepareStatement(getSQLStatement("DELETE_MESSAGE"));
-               psDecMessage = conn.prepareStatement(getSQLStatement("DEC_CHANNELCOUNT"));
+               psDecMessage = conn.prepareStatement(getSQLStatement("DEC_CHANNEL_COUNT"));
             }
             
             Message m = pair.ref.getMessage();
@@ -2124,7 +2058,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
             
             rows = updateWithRetryBatch(psDecMessage);
             
-            if (trace) { logBatchUpdate(getSQLStatement("DEC_CHANNELCOUNT"), rows, "updated"); }
+            if (trace) { logBatchUpdate(getSQLStatement("DEC_CHANNEL_COUNT"), rows, "updated"); }
 
             rows = updateWithRetryBatch(psDeleteMessage);
             
@@ -2256,7 +2190,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
          if (batch)
          {
             psDeleteMessage = conn.prepareStatement(getSQLStatement("DELETE_MESSAGE"));
-            psUpdateMessage = conn.prepareStatement(getSQLStatement("DEC_CHANNELCOUNT"));
+            psUpdateMessage = conn.prepareStatement(getSQLStatement("DEC_CHANNEL_COUNT"));
          }
                   
          iter = refsToRemove.iterator();
@@ -2269,7 +2203,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
             if (!batch)
             {
                psDeleteMessage = conn.prepareStatement(getSQLStatement("DELETE_MESSAGE"));
-               psUpdateMessage = conn.prepareStatement(getSQLStatement("DEC_CHANNELCOUNT"));
+               psUpdateMessage = conn.prepareStatement(getSQLStatement("DEC_CHANNEL_COUNT"));
             }
             
             Message m = ref.getMessage();
@@ -2311,7 +2245,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
          {
             int[] rows = updateWithRetryBatch(psUpdateMessage);
             
-            if (trace) { logBatchUpdate(getSQLStatement("DEC_CHANNELCOUNT"), rows, "updated"); }
+            if (trace) { logBatchUpdate(getSQLStatement("DEC_CHANNEL_COUNT"), rows, "updated"); }
             
             psUpdateMessage.close();
             psUpdateMessage = null;
@@ -2420,7 +2354,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
          {
             psReference = conn.prepareStatement(getSQLStatement("INSERT_MESSAGE_REF"));
             psInsertMessage = conn.prepareStatement(getSQLStatement("INSERT_MESSAGE"));
-            psUpdateMessage = conn.prepareStatement(getSQLStatement("INC_CHANNELCOUNT"));
+            psUpdateMessage = conn.prepareStatement(getSQLStatement("INC_CHANNEL_COUNT"));
          }
          
          while (iter.hasNext())
@@ -2451,7 +2385,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
             if (!batch)
             {
                psInsertMessage = conn.prepareStatement(getSQLStatement("INSERT_MESSAGE"));
-               psUpdateMessage = conn.prepareStatement(getSQLStatement("INC_CHANNELCOUNT"));
+               psUpdateMessage = conn.prepareStatement(getSQLStatement("INC_CHANNEL_COUNT"));
             }
             
             Message m = pair.ref.getMessage();
@@ -2525,7 +2459,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
             {
                int[] rowsMessage = updateWithRetryBatch(psUpdateMessage);
                
-               if (trace) { logBatchUpdate(getSQLStatement("INC_CHANNELCOUNT"), rowsMessage, "updated"); }
+               if (trace) { logBatchUpdate(getSQLStatement("INC_CHANNEL_COUNT"), rowsMessage, "updated"); }
             }
             
             psReference.close();
@@ -2679,7 +2613,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
          if (batch)
          {
             psDeleteMessage = conn.prepareStatement(getSQLStatement("DELETE_MESSAGE"));
-            psUpdateMessage = conn.prepareStatement(getSQLStatement("DEC_CHANNELCOUNT"));
+            psUpdateMessage = conn.prepareStatement(getSQLStatement("DEC_CHANNEL_COUNT"));
          }
                                  
          while (iter.hasNext())
@@ -2689,7 +2623,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
             if (!batch)
             {
                psDeleteMessage = conn.prepareStatement(getSQLStatement("DELETE_MESSAGE"));
-               psUpdateMessage = conn.prepareStatement(getSQLStatement("DEC_CHANNELCOUNT"));
+               psUpdateMessage = conn.prepareStatement(getSQLStatement("DEC_CHANNEL_COUNT"));
             }
             
             Message m = pair.ref.getMessage();
@@ -2731,7 +2665,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
          {
             int[] rows = updateWithRetryBatch(psUpdateMessage);
             
-            if (trace) { logBatchUpdate(getSQLStatement("DEC_CHANNELCOUNT"), rows, "updated"); }
+            if (trace) { logBatchUpdate(getSQLStatement("DEC_CHANNEL_COUNT"), rows, "updated"); }
             
             rows = updateWithRetryBatch(psDeleteMessage);
             
@@ -2882,7 +2816,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
       if (trace) { log.trace("adding " + ref + " to channel " + channelID); }
       
       ps.setLong(1, channelID);
-      ps.setLong(2, ref.getMessageID());
+      ps.setLong(2, ref.getMessage().getMessageID());
       ps.setNull(3, Types.BIGINT);
       ps.setString(4, "C");
       ps.setLong(5, getOrdering());
@@ -2895,8 +2829,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
          ps.setNull(6, Types.BIGINT);
       }
       ps.setInt(7, ref.getDeliveryCount());
-      ps.setString(8, ref.isReliable() ? "Y" : "N");
-      ps.setLong(9, ref.getScheduledDeliveryTime());
+      ps.setLong(8, ref.getScheduledDeliveryTime());
    }
    
    protected void removeReference(long channelID, MessageReference ref, PreparedStatement ps)
@@ -2904,7 +2837,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
    {
       if (trace) { log.trace("removing " + ref + " from channel " + channelID); }
       
-      ps.setLong(1, ref.getMessageID());
+      ps.setLong(1, ref.getMessage().getMessageID());
       ps.setLong(2, channelID);      
    }
    
@@ -2914,14 +2847,13 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
       if (trace) { log.trace("adding " + ref + " to channel " + channelID + (tx == null ? " non-transactionally" : " on transaction: " + tx)); }
       
       ps.setLong(1, channelID);
-      ps.setLong(2, ref.getMessageID());
+      ps.setLong(2, ref.getMessage().getMessageID());
       ps.setLong(3, tx.getId());
       ps.setString(4, "+");
       ps.setLong(5, getOrdering());
       ps.setNull(6, Types.BIGINT);      
       ps.setInt(7, ref.getDeliveryCount());
-      ps.setString(8, ref.isReliable() ? "Y" : "N");
-      ps.setLong(9, ref.getScheduledDeliveryTime());
+      ps.setLong(8, ref.getScheduledDeliveryTime());
    }
    
    protected void prepareToRemoveReference(long channelID, MessageReference ref, Transaction tx, PreparedStatement ps)
@@ -2934,7 +2866,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
       }
       
       ps.setLong(1, tx.getId()); 
-      ps.setLong(2, ref.getMessageID());
+      ps.setLong(2, ref.getMessage().getMessageID());
       ps.setLong(3, channelID);           
    }
    
@@ -3064,20 +2996,10 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
       
       DataInputStream dais = new DataInputStream(bis);
       
-      Map m = StreamUtils.readMap(dais, true);
+      HashMap map = StreamUtils.readMap(dais, true);
       
       dais.close();
-      
-      HashMap map;
-      if (!(m instanceof HashMap))
-      {
-         map = new HashMap(m);
-      }
-      else
-      {
-         map = (HashMap) m;
-      }
-      
+            
       return map;
    }
    
@@ -3106,7 +3028,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
       ps.setLong(4, m.getTimestamp());
       ps.setByte(5, m.getPriority());
       
-      //Core headers
+      //headers
       byte[] bytes = mapToBytes(((MessageSupport) m).getHeaders());
       if (bytes != null)
       {
@@ -3116,8 +3038,6 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
       {
          ps.setNull(6, Types.LONGVARBINARY);
       }
-      
-      // now set the fields from org.jboss.messaging.core.Message
       
       byte[] payload = m.getPayloadAsByteArray();
       if (payload != null)
@@ -3130,79 +3050,9 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
       }
       
       //The number of channels that hold a reference to the message - initially always 1
-      ps.setInt(8, 1);
+      ps.setInt(8, 1);     
       
-      //Now set the fields from org.joss.jms.message.JBossMessage if appropriate
-      
-      //TODO - We are mixing concerns here
-      //The basic JDBCPersistencManager should *only* know about core messages - not 
-      //JBossMessages - we should subclass JBDCPersistenceManager and the JBossMessage
-      //specific code in a subclass
-      if (m instanceof JBossMessage)
-      {
-         JBossMessage jbm = (JBossMessage) m;
-         
-         ps.setByte(9, jbm.getType());
-         if (jbm.getJMSType() != null)
-         {
-            ps.setString(10, jbm.getJMSType());
-         }
-         else
-         {
-            ps.setNull(10, Types.VARCHAR);
-         }
-         if (jbm.getJMSCorrelationID() != null)
-         {
-            ps.setString(11, jbm.getJMSCorrelationID());
-         }
-         else
-         {
-            ps.setNull(11, Types.VARCHAR);
-         }
-         if (jbm.getJMSCorrelationIDAsBytes() != null)
-         {
-            ps.setBytes(12, jbm.getJMSCorrelationIDAsBytes());
-         }
-         else
-         {
-            ps.setNull(12, Types.BINARY);
-         }
-         
-         JBossDestination jbd = (JBossDestination) jbm.getJMSDestination();
-        
-         ps.setString(13, (jbd.isQueue() ? "Q" : "T") + jbd);
-         
-         JBossDestination replyTo = (JBossDestination) jbm.getJMSReplyTo();
-         if (replyTo == null)
-         {
-            ps.setNull(14, Types.BIGINT);
-         }
-         else
-         {            
-            ps.setString(14, (replyTo.isQueue() ? "Q" : "T") + replyTo);
-         }
-         
-         //jms properties
-         bytes = mapToBytes(jbm.getJMSProperties());
-         if (bytes != null)
-         {
-            setBytes(ps, 15, bytes);
-         }
-         else
-         {
-            ps.setNull(15, Types.LONGVARBINARY);
-         }
-      }
-      else
-      {
-         ps.setByte(9, m.getType());
-         ps.setNull(10, Types.VARCHAR);
-         ps.setNull(11, Types.VARCHAR);
-         ps.setNull(12, Types.BINARY);
-         ps.setNull(13, Types.BIGINT);
-         ps.setNull(14, Types.BIGINT);
-         ps.setNull(15, Types.LONGVARBINARY);
-      }
+      ps.setByte(9, m.getType());
    }
    
    /**
@@ -3343,31 +3193,28 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
       Map map = new LinkedHashMap();
       //Message reference
       map.put("CREATE_MESSAGE_REFERENCE",
-              "CREATE TABLE JMS_MESSAGE_REFERENCE (CHANNELID BIGINT, " +
-              "MESSAGEID BIGINT, TRANSACTIONID BIGINT, STATE CHAR(1), ORD BIGINT, PAGE_ORD BIGINT, " +
-              "DELIVERYCOUNT INTEGER, RELIABLE CHAR(1), LOADED CHAR(1), SCHED_DELIVERY BIGINT, PRIMARY KEY(CHANNELID, MESSAGEID))"); //CHANGED
-      map.put("CREATE_IDX_MESSAGE_REF_TX", "CREATE INDEX JMS_MESSAGE_REF_TX ON JMS_MESSAGE_REFERENCE (TRANSACTIONID)");
-      map.put("CREATE_IDX_MESSAGE_REF_ORD", "CREATE INDEX JMS_MESSAGE_REF_ORD ON JMS_MESSAGE_REFERENCE (ORD)");
-      map.put("CREATE_IDX_MESSAGE_REF_PAGE_ORD", "CREATE INDEX JMS_MESSAGE_REF__PAGE_ORD ON JMS_MESSAGE_REFERENCE (PAGE_ORD)");
-      map.put("CREATE_IDX_MESSAGE_REF_MESSAGEID", "CREATE INDEX JMS_MESSAGE_REF_MESSAGEID ON JMS_MESSAGE_REFERENCE (MESSAGEID)");
-      map.put("CREATE_IDX_MESSAGE_REF_RELIABLE", "CREATE INDEX JMS_MESSAGE_REF_RELIABLE ON JMS_MESSAGE_REFERENCE (RELIABLE)");
-      map.put("CREATE_IDX_MESSAGE_REF_SCHED_DELIVERY", "CREATE INDEX JMS_MESSAGE_REF_SCHED_DELIVERY ON JMS_MESSAGE_REFERENCE (SCHED_DELIVERY)");
+              "CREATE TABLE JBM_MSG_REF (CHANNEL_ID BIGINT, " +
+              "MESSAGE_ID BIGINT, TRANSACTION_ID BIGINT, STATE CHAR(1), ORD BIGINT, PAGE_ORD BIGINT, " +
+              "DELIVERY_COUNT INTEGER, LOADED CHAR(1), SCHED_DELIVERY BIGINT, PRIMARY KEY(CHANNEL_ID, MESSAGE_ID))"); //CHANGED
+      map.put("CREATE_IDX_MESSAGE_REF_TX", "CREATE INDEX JBM_MSG_REF_TX ON JBM_MSG_REF (TRANSACTION_ID)");
+      map.put("CREATE_IDX_MESSAGE_REF_ORD", "CREATE INDEX JBM_MSG_REF_ORD ON JBM_MSG_REF (ORD)");
+      map.put("CREATE_IDX_MESSAGE_REF_PAGE_ORD", "CREATE INDEX JBM_MSG_REF__PAGE_ORD ON JBM_MSG_REF (PAGE_ORD)");
+      map.put("CREATE_IDX_MESSAGE_REF_MESSAGE_ID", "CREATE INDEX JBM_MSG_REF_MESSAGE_ID ON JBM_MSG_REF (MESSAGE_ID)");      
+      map.put("CREATE_IDX_MESSAGE_REF_SCHED_DELIVERY", "CREATE INDEX JBM_MSG_REF_SCHED_DELIVERY ON JBM_MSG_REF (SCHED_DELIVERY)");
       //Message
       map.put("CREATE_MESSAGE",
-              "CREATE TABLE JMS_MESSAGE (MESSAGEID BIGINT, RELIABLE CHAR(1), " +
-              "EXPIRATION BIGINT, TIMESTAMP BIGINT, PRIORITY TINYINT, COREHEADERS LONGVARBINARY, " +
-              "PAYLOAD LONGVARBINARY, CHANNELCOUNT INTEGER, TYPE TINYINT, JMSTYPE VARCHAR(255), CORRELATIONID VARCHAR(255), " +
-              "CORRELATIONID_BYTES VARBINARY(254), DESTINATION VARCHAR(255), REPLYTO VARCHAR(255), " +
-              "JMSPROPERTIES LONGVARBINARY, " +
-              "PRIMARY KEY (MESSAGEID))"); 
+              "CREATE TABLE JBM_MSG (MESSAGE_ID BIGINT, RELIABLE CHAR(1), " +
+              "EXPIRATION BIGINT, TIMESTAMP BIGINT, PRIORITY TINYINT, HEADERS LONGVARBINARY, " +
+              "PAYLOAD LONGVARBINARY, CHANNEL_COUNT INTEGER, TYPE TINYINT, " +
+              "PRIMARY KEY (MESSAGE_ID))"); 
       //Transaction
       map.put("CREATE_TRANSACTION",
-              "CREATE TABLE JMS_TRANSACTION (" +
-              "TRANSACTIONID BIGINT, BRANCH_QUAL VARBINARY(254), " +
-              "FORMAT_ID INTEGER, GLOBAL_TXID VARBINARY(254), PRIMARY KEY (TRANSACTIONID))");
+              "CREATE TABLE JBM_TX (" +
+              "TRANSACTION_ID BIGINT, BRANCH_QUAL VARBINARY(254), " +
+              "FORMAT_ID INTEGER, GLOBAL_TXID VARBINARY(254), PRIMARY KEY (TRANSACTION_ID))");
       //Counter
       map.put("CREATE_COUNTER",
-              "CREATE TABLE JMS_COUNTER (NAME VARCHAR(255), NEXT_ID BIGINT, PRIMARY KEY(NAME))");
+              "CREATE TABLE JBM_COUNTER (NAME VARCHAR(255), NEXT_ID BIGINT, PRIMARY KEY(NAME))");
       return map;
    }
       
@@ -3376,59 +3223,58 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
       Map map = new LinkedHashMap();
       //Message reference
       map.put("INSERT_MESSAGE_REF",
-              "INSERT INTO JMS_MESSAGE_REFERENCE (CHANNELID, MESSAGEID, TRANSACTIONID, STATE, ORD, PAGE_ORD, DELIVERYCOUNT, RELIABLE, SCHED_DELIVERY) " +
-              "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"); //CHANGED
-      map.put("DELETE_MESSAGE_REF", "DELETE FROM JMS_MESSAGE_REFERENCE WHERE MESSAGEID=? AND CHANNELID=? AND STATE='C'");
+              "INSERT INTO JBM_MSG_REF (CHANNEL_ID, MESSAGE_ID, TRANSACTION_ID, STATE, ORD, PAGE_ORD, DELIVERY_COUNT, SCHED_DELIVERY) " +
+              "VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+      map.put("DELETE_MESSAGE_REF", "DELETE FROM JBM_MSG_REF WHERE MESSAGE_ID=? AND CHANNEL_ID=? AND STATE='C'");
       map.put("UPDATE_MESSAGE_REF",
-              "UPDATE JMS_MESSAGE_REFERENCE SET TRANSACTIONID=?, STATE='-' " +
-              "WHERE MESSAGEID=? AND CHANNELID=? AND STATE='C'");
-      map.put("UPDATE_PAGE_ORDER", "UPDATE JMS_MESSAGE_REFERENCE SET PAGE_ORD = ? WHERE MESSAGEID=? AND CHANNELID=?");
-      map.put("COMMIT_MESSAGE_REF1", "UPDATE JMS_MESSAGE_REFERENCE SET STATE='C', TRANSACTIONID = NULL WHERE TRANSACTIONID=? AND STATE='+'");
-      map.put("COMMIT_MESSAGE_REF2", "DELETE FROM JMS_MESSAGE_REFERENCE WHERE TRANSACTIONID=? AND STATE='-'");
-      map.put("ROLLBACK_MESSAGE_REF1", "DELETE FROM JMS_MESSAGE_REFERENCE WHERE TRANSACTIONID=? AND STATE='+'");
-      map.put("ROLLBACK_MESSAGE_REF2", "UPDATE JMS_MESSAGE_REFERENCE SET STATE='C', TRANSACTIONID = NULL WHERE TRANSACTIONID=? AND STATE='-'");
+              "UPDATE JBM_MSG_REF SET TRANSACTION_ID=?, STATE='-' " +
+              "WHERE MESSAGE_ID=? AND CHANNEL_ID=? AND STATE='C'");
+      map.put("UPDATE_PAGE_ORDER", "UPDATE JBM_MSG_REF SET PAGE_ORD = ? WHERE MESSAGE_ID=? AND CHANNEL_ID=?");
+      map.put("COMMIT_MESSAGE_REF1", "UPDATE JBM_MSG_REF SET STATE='C', TRANSACTION_ID = NULL WHERE TRANSACTION_ID=? AND STATE='+'");
+      map.put("COMMIT_MESSAGE_REF2", "DELETE FROM JBM_MSG_REF WHERE TRANSACTION_ID=? AND STATE='-'");
+      map.put("ROLLBACK_MESSAGE_REF1", "DELETE FROM JBM_MSG_REF WHERE TRANSACTION_ID=? AND STATE='+'");
+      map.put("ROLLBACK_MESSAGE_REF2", "UPDATE JBM_MSG_REF SET STATE='C', TRANSACTION_ID = NULL WHERE TRANSACTION_ID=? AND STATE='-'");
       map.put("LOAD_PAGED_REFS",
-              "SELECT MESSAGEID, DELIVERYCOUNT, PAGE_ORD, RELIABLE, SCHED_DELIVERY FROM JMS_MESSAGE_REFERENCE " +
-              "WHERE CHANNELID = ? AND PAGE_ORD BETWEEN ? AND ? ORDER BY PAGE_ORD"); //CHANGED
+              "SELECT MESSAGE_ID, DELIVERY_COUNT, PAGE_ORD, SCHED_DELIVERY FROM JBM_MSG_REF " +
+              "WHERE CHANNEL_ID = ? AND PAGE_ORD BETWEEN ? AND ? ORDER BY PAGE_ORD");
       map.put("LOAD_UNPAGED_REFS",
-              "SELECT MESSAGEID, DELIVERYCOUNT, RELIABLE, SCHED_DELIVERY FROM JMS_MESSAGE_REFERENCE WHERE STATE = 'C' " +
-              "AND CHANNELID = ? AND PAGE_ORD IS NULL ORDER BY ORD"); //CHANGED
-      map.put("UPDATE_RELIABLE_REFS_NOT_PAGED", "UPDATE JMS_MESSAGE_REFERENCE SET PAGE_ORD = NULL WHERE PAGE_ORD BETWEEN ? AND ? AND CHANNELID=?");       
-      map.put("SELECT_MIN_MAX_PAGE_ORD", "SELECT MIN(PAGE_ORD), MAX(PAGE_ORD) FROM JMS_MESSAGE_REFERENCE WHERE CHANNELID = ?");
-      map.put("SELECT_EXISTS_REF", "SELECT MESSAGEID FROM JMS_MESSAGE_REFERENCE WHERE CHANNELID = ? AND MESSAGEID = ?");
-      map.put("SELECT_EXISTS_REF_MESSAGEID", "SELECT MESSAGEID FROM JMS_MESSAGE_REFERENCE WHERE MESSAGEID = ?");
-      map.put("UPDATE_DELIVERYCOUNT", "UPDATE JMS_MESSAGE_REFERENCE SET DELIVERYCOUNT = ? WHERE CHANNELID = ? AND MESSAGEID = ?");
+              "SELECT MESSAGE_ID, DELIVERY_COUNT, SCHED_DELIVERY FROM JBM_MSG_REF WHERE STATE = 'C' " +
+              "AND CHANNEL_ID = ? AND PAGE_ORD IS NULL ORDER BY ORD");
+      
+      map.put("UPDATE_REFS_NOT_PAGED", "UPDATE JBM_MSG_REF SET PAGE_ORD = NULL WHERE PAGE_ORD BETWEEN ? AND ? AND CHANNEL_ID=?");       
+      map.put("SELECT_MIN_MAX_PAGE_ORD", "SELECT MIN(PAGE_ORD), MAX(PAGE_ORD) FROM JBM_MSG_REF WHERE CHANNEL_ID = ?");
+      map.put("SELECT_EXISTS_REF", "SELECT MESSAGE_ID FROM JBM_MSG_REF WHERE CHANNEL_ID = ? AND MESSAGE_ID = ?");
+      map.put("SELECT_EXISTS_REF_MESSAGE_ID", "SELECT MESSAGE_ID FROM JBM_MSG_REF WHERE MESSAGE_ID = ?");
+      map.put("UPDATE_DELIVERY_COUNT", "UPDATE JBM_MSG_REF SET DELIVERY_COUNT = ? WHERE CHANNEL_ID = ? AND MESSAGE_ID = ?");
       //Message
       map.put("LOAD_MESSAGES",
-              "SELECT MESSAGEID, RELIABLE, EXPIRATION, TIMESTAMP, " +
-              "PRIORITY, COREHEADERS, PAYLOAD, TYPE, JMSTYPE, CORRELATIONID, " +
-              "CORRELATIONID_BYTES, DESTINATION, REPLYTO, JMSPROPERTIES " +
-              "FROM JMS_MESSAGE");
+              "SELECT MESSAGE_ID, RELIABLE, EXPIRATION, TIMESTAMP, " +
+              "PRIORITY, HEADERS, PAYLOAD, TYPE " +
+              "FROM JBM_MSG");
       map.put("INSERT_MESSAGE",
-              "INSERT INTO JMS_MESSAGE (MESSAGEID, RELIABLE, EXPIRATION, " +
-              "TIMESTAMP, PRIORITY, COREHEADERS, PAYLOAD, CHANNELCOUNT, TYPE, JMSTYPE, CORRELATIONID, " +
-              "CORRELATIONID_BYTES, DESTINATION, REPLYTO, JMSPROPERTIES) " +
-              "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)" );
-      map.put("INC_CHANNELCOUNT", "UPDATE JMS_MESSAGE SET CHANNELCOUNT = CHANNELCOUNT + 1 WHERE MESSAGEID=?");
-      map.put("DEC_CHANNELCOUNT", "UPDATE JMS_MESSAGE SET CHANNELCOUNT = CHANNELCOUNT - 1 WHERE MESSAGEID=?");
-      map.put("DELETE_MESSAGE", "DELETE FROM JMS_MESSAGE WHERE MESSAGEID=? AND CHANNELCOUNT = 0");
-      map.put("MESSAGEID_COLUMN", "MESSAGEID");
-      map.put("MESSAGE_EXISTS", "SELECT MESSAGEID FROM JMS_MESSAGE WHERE MESSAGEID = ?");
+              "INSERT INTO JBM_MSG (MESSAGE_ID, RELIABLE, EXPIRATION, " +
+              "TIMESTAMP, PRIORITY, HEADERS, PAYLOAD, CHANNEL_COUNT, TYPE) " +           
+              "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)" );
+      map.put("INC_CHANNEL_COUNT", "UPDATE JBM_MSG SET CHANNEL_COUNT = CHANNEL_COUNT + 1 WHERE MESSAGE_ID=?");
+      map.put("DEC_CHANNEL_COUNT", "UPDATE JBM_MSG SET CHANNEL_COUNT = CHANNEL_COUNT - 1 WHERE MESSAGE_ID=?");
+      map.put("DELETE_MESSAGE", "DELETE FROM JBM_MSG WHERE MESSAGE_ID=? AND CHANNEL_COUNT = 0");
+      map.put("MESSAGE_ID_COLUMN", "MESSAGE_ID");
+      map.put("MESSAGE_EXISTS", "SELECT MESSAGE_ID FROM JBM_MSG WHERE MESSAGE_ID = ?");
       //Transaction
       map.put("INSERT_TRANSACTION",
-              "INSERT INTO JMS_TRANSACTION (TRANSACTIONID, BRANCH_QUAL, FORMAT_ID, GLOBAL_TXID) " +
+              "INSERT INTO JBM_TX (TRANSACTION_ID, BRANCH_QUAL, FORMAT_ID, GLOBAL_TXID) " +
               "VALUES(?, ?, ?, ?)");
-      map.put("DELETE_TRANSACTION", "DELETE FROM JMS_TRANSACTION WHERE TRANSACTIONID = ?");
-      map.put("SELECT_PREPARED_TRANSACTIONS", "SELECT TRANSACTIONID, BRANCH_QUAL, FORMAT_ID, GLOBAL_TXID FROM JMS_TRANSACTION");
-      map.put("SELECT_MESSAGEID_FOR_REF", "SELECT MESSAGEID, CHANNELID FROM JMS_MESSAGE_REFERENCE WHERE TRANSACTIONID = ? AND STATE = '+' ORDER BY ORD");
-      map.put("SELECT_MESSAGEID_FOR_ACK", "SELECT MESSAGEID, CHANNELID FROM JMS_MESSAGE_REFERENCE WHERE TRANSACTIONID = ? AND STATE = '-' ORDER BY ORD");
+      map.put("DELETE_TRANSACTION", "DELETE FROM JBM_TX WHERE TRANSACTION_ID = ?");
+      map.put("SELECT_PREPARED_TRANSACTIONS", "SELECT TRANSACTION_ID, BRANCH_QUAL, FORMAT_ID, GLOBAL_TXID FROM JBM_TX");
+      map.put("SELECT_MESSAGE_ID_FOR_REF", "SELECT MESSAGE_ID, CHANNEL_ID FROM JBM_MSG_REF WHERE TRANSACTION_ID = ? AND STATE = '+' ORDER BY ORD");
+      map.put("SELECT_MESSAGE_ID_FOR_ACK", "SELECT MESSAGE_ID, CHANNEL_ID FROM JBM_MSG_REF WHERE TRANSACTION_ID = ? AND STATE = '-' ORDER BY ORD");
       
       //Counter
-      map.put("UPDATE_COUNTER", "UPDATE JMS_COUNTER SET NEXT_ID = ? WHERE NAME=?");
-      map.put("SELECT_COUNTER", "SELECT NEXT_ID FROM JMS_COUNTER WHERE NAME=?");
-      map.put("INSERT_COUNTER", "INSERT INTO JMS_COUNTER (NAME, NEXT_ID) VALUES (?, ?)");
+      map.put("UPDATE_COUNTER", "UPDATE JBM_COUNTER SET NEXT_ID = ? WHERE NAME=?");
+      map.put("SELECT_COUNTER", "SELECT NEXT_ID FROM JBM_COUNTER WHERE NAME=?");
+      map.put("INSERT_COUNTER", "INSERT INTO JBM_COUNTER (NAME, NEXT_ID) VALUES (?, ?)");
       //Other
-      map.put("SELECT_ALL_CHANNELS", "SELECT DISTINCT(CHANNELID) FROM JMS_MESSAGE_REFERENCE");      
+      map.put("SELECT_ALL_CHANNELS", "SELECT DISTINCT(CHANNEL_ID) FROM JBM_MSG_REF");      
       return map;
    }
    
@@ -3740,8 +3586,8 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
          MessageReference ref1 = (MessageReference)o1;
          MessageReference ref2 = (MessageReference)o2;
 
-         long id1 = ref1.getMessageID();         
-         long id2 = ref2.getMessageID(); 
+         long id1 = ref1.getMessage().getMessageID();         
+         long id2 = ref2.getMessage().getMessageID(); 
          
          return (id1 < id2 ? -1 : (id1 == id2 ? 0 : 1));
       }      

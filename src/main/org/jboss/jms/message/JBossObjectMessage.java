@@ -22,13 +22,10 @@
 package org.jboss.jms.message;
 
 import java.io.Serializable;
-import java.util.HashMap;
 import java.util.Map;
 
 import javax.jms.JMSException;
 import javax.jms.ObjectMessage;
-
-import org.jboss.jms.destination.JBossDestination;
 
 /**
  * This class implements javax.jms.ObjectMessage
@@ -46,7 +43,7 @@ public class JBossObjectMessage extends JBossMessage implements ObjectMessage
 
    private static final long serialVersionUID = -2374448267737763502L;
    
-   public static final byte TYPE = 3;
+   public static final byte TYPE = 2;
 
    // Attributes ----------------------------------------------------
 
@@ -72,23 +69,10 @@ public class JBossObjectMessage extends JBossMessage implements ObjectMessage
    /*
     * This constructor is used to construct messages when retrieved from persistence storage
     */
-   public JBossObjectMessage(long messageID,
-         boolean reliable,
-         long expiration,
-         long timestamp,
-         byte priority,
-         Map coreHeaders,
-         byte[] payloadAsByteArray,         
-         String jmsType,
-         String correlationID,
-         byte[] correlationIDBytes,
-         JBossDestination destination,
-         JBossDestination replyTo,
-         HashMap jmsProperties)
+   public JBossObjectMessage(long messageID, boolean reliable, long expiration, long timestamp,
+                             byte priority, Map coreHeaders, byte[] payloadAsByteArray)
    {
-      super(messageID, reliable, expiration, timestamp, priority, coreHeaders, payloadAsByteArray,
-            jmsType, correlationID, correlationIDBytes, destination, replyTo, 
-            jmsProperties);
+      super(messageID, reliable, expiration, timestamp, priority, coreHeaders, payloadAsByteArray);
    }
 
 
@@ -132,12 +116,12 @@ public class JBossObjectMessage extends JBossMessage implements ObjectMessage
 
    public Serializable getObject() throws JMSException
    {
-      return getPayload();     
+      return (Serializable)getPayload();     
    }
 
    // JBossMessage overrides ----------------------------------------
 
-   public JBossMessage doShallowCopy()
+   public JBossMessage doCopy()
    {
       return new JBossObjectMessage(this);
    }

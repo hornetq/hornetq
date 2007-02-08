@@ -21,7 +21,7 @@
  */
 package org.jboss.messaging.core.plugin.contract;
 
-import org.jboss.messaging.core.MessageReference;
+import org.jboss.messaging.core.message.MessageReference;
 
 /**
  * A Condition

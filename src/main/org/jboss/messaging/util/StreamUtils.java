@@ -36,10 +36,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.jboss.jms.destination.JBossDestination;
 import org.jboss.serial.io.JBossObjectInputStream;
 import org.jboss.serial.io.JBossObjectOutputStream;
-
-
 
 /**
  * A StreamUtils
@@ -82,6 +81,8 @@ public class StreamUtils
    
    public static final byte SERIALIZABLE = 12;
    
+   public static final byte DESTINATION = 13;
+   
    private static boolean useJBossSerialization = false;
    
    public static void setUseJBossSerialization(boolean use)
@@ -114,6 +115,11 @@ public class StreamUtils
                value = in.readUTF();
             }
             break;
+         case DESTINATION:
+         {
+            value = JBossDestination.readDestination(in);
+            break;
+         }
          case MAP:
          {
             value = readMap(in, false);
@@ -164,7 +170,6 @@ public class StreamUtils
             }
                         
             value = (Serializable)ois.readObject();
-            ois.close();
             break;
          }              
          default :
@@ -196,6 +201,11 @@ public class StreamUtils
             //Limited to < 64K Strings
             out.writeUTF((String)object);
          }
+      }
+      else if (object instanceof JBossDestination)
+      {
+         out.writeByte(DESTINATION);
+         JBossDestination.writeDestination(out, (JBossDestination)object);
       }
       else if (containerTypes && object instanceof Map)
       {
@@ -264,7 +274,7 @@ public class StreamUtils
          }
                   
          oos.writeObject(object);
-         oos.close();
+         oos.flush();
       }
       else
       {
@@ -310,21 +320,11 @@ public class StreamUtils
          }
          else
          {
-            if (!(me.getKey() instanceof Serializable))
-            {
-               throw new IOException("Key in map must be Serializable: " + me.getKey());
-            }
-            writeObject(out, (Serializable)me.getKey(), false, false);
+            writeObject(out, me.getKey(), false, false);
          }
-
-         Object value = me.getValue();
-         if (value != null && !(value instanceof Serializable))
-         {
-            throw new IOException("Value in map must be Serializable: " + value);
-         }
-         
+        
          // write the value
-         writeObject(out, (Serializable)value, false, false);
+         writeObject(out, me.getValue(), false, false);
       }      
    }
    

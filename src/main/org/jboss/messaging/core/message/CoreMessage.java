@@ -46,7 +46,7 @@ public class CoreMessage extends MessageSupport
    public CoreMessage()
    {
    }
-
+   
    public CoreMessage(long messageID,
                       boolean reliable,
                       long expiration,
@@ -55,7 +55,7 @@ public class CoreMessage extends MessageSupport
                       Map headers,
                       byte[] payload)
    {
-      super(messageID, reliable, expiration, timestamp, priority, 0, 0, headers, payload);
+      super(messageID, reliable, expiration, timestamp, priority, headers, payload);
    }
 
    // Public --------------------------------------------------------

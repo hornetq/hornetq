@@ -23,14 +23,11 @@ package org.jboss.jms.message;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
-import java.io.Serializable;
-import java.util.HashMap;
 import java.util.Map;
 
 import javax.jms.JMSException;
 import javax.jms.TextMessage;
 
-import org.jboss.jms.destination.JBossDestination;
 import org.jboss.messaging.util.SafeUTF;
 
 /**
@@ -52,7 +49,7 @@ public class JBossTextMessage extends JBossMessage implements TextMessage
 
    private static final long serialVersionUID = -5661567664746852006L;
    
-   public static final byte TYPE = 5;
+   public static final byte TYPE = 3;
 
    // Attributes ----------------------------------------------------
 
@@ -78,23 +75,10 @@ public class JBossTextMessage extends JBossMessage implements TextMessage
    /*
     * This constructor is used to construct messages when retrieved from persistence storage
     */
-   public JBossTextMessage(long messageID,
-         boolean reliable,
-         long expiration,
-         long timestamp,
-         byte priority,
-         Map coreHeaders,
-         byte[] payloadAsByteArray,         
-         String jmsType,
-         String correlationID,
-         byte[] correlationIDBytes,
-         JBossDestination destination,
-         JBossDestination replyTo,
-         HashMap jmsProperties)
+   public JBossTextMessage(long messageID, boolean reliable, long expiration, long timestamp,
+                           byte priority, Map coreHeaders, byte[] payloadAsByteArray)
    {
-      super(messageID, reliable, expiration, timestamp, priority, coreHeaders, payloadAsByteArray,
-            jmsType, correlationID, correlationIDBytes, destination, replyTo, 
-            jmsProperties);
+      super(messageID, reliable, expiration, timestamp, priority, coreHeaders, payloadAsByteArray);
    }
 
    /**
@@ -144,7 +128,7 @@ public class JBossTextMessage extends JBossMessage implements TextMessage
 
    // JBossMessage override -----------------------------------------
    
-   public JBossMessage doShallowCopy()
+   public JBossMessage doCopy()
    {
       return new JBossTextMessage(this);
    }
@@ -153,12 +137,12 @@ public class JBossTextMessage extends JBossMessage implements TextMessage
 
    // Protected -----------------------------------------------------
 
-   protected void writePayload(DataOutputStream out, Serializable thePayload) throws Exception
+   protected void writePayload(DataOutputStream out, Object thePayload) throws Exception
    {
       SafeUTF.instance.safeWriteUTF(out, (String)thePayload);
    }
 
-   protected Serializable readPayload(DataInputStream in, int length)
+   protected Object readPayload(DataInputStream in, int length)
       throws Exception
    {
       return SafeUTF.instance.safeReadUTF(in);
