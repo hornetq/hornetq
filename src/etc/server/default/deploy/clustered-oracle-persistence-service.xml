@@ -3,7 +3,7 @@
 <!--
      Oracle clustered persistence deployment descriptor.
 
-     $Id: mysql-persistence-service.xml 1364 2006-09-26 15:39:53Z timfox $
+     $Id$
  -->
 
 <server>
