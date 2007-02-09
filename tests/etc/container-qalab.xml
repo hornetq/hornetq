@@ -1,0 +1,102 @@
+<!--
+     Service Container persistence configuration file
+
+     Use this one for testing in the QA lab against different databases
+
+     $Id: container.xml 2223 2007-02-09 00:13:24Z timfox $
+-->
+
+<container>
+
+   <!--
+        The value of "test.database" system property, if set, takes precedence.
+   -->
+   <database>sybase</database>
+
+   <database-configurations>
+
+      <database-configuration name="hsqldb">
+         <url>jdbc:hsqldb:mem:test</url>
+         <driver>org.hsqldb.jdbcDriver</driver>
+         <username>sa</username>
+      </database-configuration>
+
+      <database-configuration name="hsqldb2">
+         <url>jdbc:hsqldb:mem:test2</url>
+         <driver>org.hsqldb.jdbcDriver</driver>
+         <username>sa</username>
+      </database-configuration>
+
+      <database-configuration name="mysql">
+         <url>jdbc:mysql://dev01-priv:3306/messaging</url>
+         <driver>com.mysql.jdbc.Driver</driver>
+         <isolation>TRANSACTION_READ_COMMITTED</isolation>
+         <username>messaging</username>
+         <password>messaging</password>
+      </database-configuration>
+
+
+      <database-configuration name="oracle">
+         <url>jdbc:oracle:thin:@dev01-priv:1521/qadb01</url>
+         <driver>oracle.jdbc.driver.OracleDriver</driver>
+         <isolation>TRANSACTION_READ_COMMITTED</isolation>
+         <username>messaging</username>
+         <password>messaging</password>
+      </database-configuration>
+
+      <database-configuration name="postgresql">
+         <url>jdbc:postgresql://dev01-priv:5432/messaging</url>
+         <driver>org.postgresql.Driver</driver>
+         <isolation>TRANSACTION_READ_COMMITTED</isolation>
+         <username>messaging</username>
+         <password>messaging</password>
+      </database-configuration>
+
+      <database-configuration name="mssql">
+          <url>jdbc:jtds:sqlserver://dev16-priv:3918/messaging</url>
+          <driver>net.sourceforge.jtds.jdbc.Driver</driver>
+          <isolation>TRANSACTION_READ_COMMITTED</isolation>
+          <username>messaging</username>
+          <password>messaging</password>
+      </database-configuration>
+
+      <database-configuration name="sybase">
+          <url>jdbc:sybase:Tds:dev01-priv:4100/messaging</url>
+          <driver>com.sybase.jdbc3.jdbc.SybDriver</driver>
+          <isolation>TRANSACTION_READ_COMMITTED</isolation>
+          <username>messaging</username>
+          <password>messaging</password>
+      </database-configuration>
+
+   </database-configurations>
+
+   <!--
+      The serialization type to start the container with. If "test.serialization" is set, it takes
+      precedence. Supported values: "jboss" and "java".
+   -->
+
+   <!-- Must ALWAYS be jms -->
+
+   <serialization-type>jms</serialization-type>
+
+   <!--
+       Supported values: "socket", "http"
+   -->
+   <remoting-transport>socket</remoting-transport>
+
+   <!--
+      Specifies whether to start a clustered messaging server or not. If "test.clustered" is set,
+      the value of the system property takes precedence. Supported values are "true" or "false".
+
+      Setting "clustered" to "true" doesn't guarantee that the test will be actually run in
+      clustered mode, the test database must be also permitting sharing over a LAN. "mysql" allows
+      this, "hsqldb" doesn't. The test will quickly fail in such a situation.
+   -->
+
+   <!--
+   <clustered>true</clustered>
+   -->
+
+</container>
+
+
