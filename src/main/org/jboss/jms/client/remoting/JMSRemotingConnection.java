@@ -55,10 +55,12 @@ public class JMSRemotingConnection
 
    private static final Logger log = Logger.getLogger(JMSRemotingConnection.class);
    
+   // Static ---------------------------------------------------------------------------------------
+
    private static String getPropertySafely(String propName)
    {
       String prop = null;
-      
+
       try
       {
          prop = System.getProperty(propName);
@@ -68,11 +70,9 @@ public class JMSRemotingConnection
          //May get a security exception depending on security permissions, in which case
          //we return null
       }
-      
+
       return prop;
    }
-
-   // Static ---------------------------------------------------------------------------------------
 
    /**
     * Build the configuration we need to use to make sure a callback server works the way we want.
