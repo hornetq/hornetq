@@ -92,7 +92,7 @@ public class ConnectionFactoryTest extends MessagingTestCase
 
       String mbeanConfig =
          "<mbean code=\"org.jboss.jms.server.connectionfactory.ConnectionFactory\"\n" +
-         "       name=\"jboss.messaging.destination:service=TestConnectionFactory\"\n" +
+         "       name=\"jboss.messaging.connectionfactory:service=TestConnectionFactory\"\n" +
          "       xmbean-dd=\"xmdesc/ConnectionFactory-xmbean.xml\">\n" +
          "       <constructor>\n" +
          "           <arg type=\"java.lang.String\" value=\"sofiavergara\"/>\n" +
@@ -130,7 +130,7 @@ public class ConnectionFactoryTest extends MessagingTestCase
       
       mbeanConfig =
          "<mbean code=\"org.jboss.jms.server.connectionfactory.ConnectionFactory\"\n" +
-         "       name=\"jboss.messaging.destination:service=TestConnectionFactory2\"\n" +
+         "       name=\"jboss.messaging.connectionfactory:service=TestConnectionFactory2\"\n" +
          "       xmbean-dd=\"xmdesc/ConnectionFactory-xmbean.xml\">\n" +
          "       <constructor>\n" +
          "           <arg type=\"java.lang.String\" value=\"sofiavergara\"/>\n" +

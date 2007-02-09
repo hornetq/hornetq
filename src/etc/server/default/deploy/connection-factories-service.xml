@@ -9,7 +9,7 @@
 <server>
 
    <mbean code="org.jboss.jms.server.connectionfactory.ConnectionFactory"
-      name="jboss.messaging.destination:service=ConnectionFactory"
+      name="jboss.messaging.connectionfactory:service=ConnectionFactory"
       xmbean-dd="xmdesc/ConnectionFactory-xmbean.xml">
       <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
       <depends optional-attribute-name="Connector">jboss.messaging:service=Connector,transport=socket</depends>
@@ -23,7 +23,7 @@
             <binding>java:/XAConnectionFactory</binding>
          </bindings>
       </attribute>
-      
+
       <attribute name="Clustered">true</attribute>
       <attribute name="LoadBalancingFactory">org.jboss.jms.client.plugin.RoundRobinLoadBalancingFactory</attribute>
    </mbean>
