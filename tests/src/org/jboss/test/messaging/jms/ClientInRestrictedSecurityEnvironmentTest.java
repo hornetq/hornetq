@@ -21,10 +21,6 @@
  */
 package org.jboss.test.messaging.jms;
 
-import java.net.SocketPermission;
-import java.security.Permission;
-import java.util.Hashtable;
-
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.MessageConsumer;
@@ -37,56 +33,31 @@ import javax.naming.InitialContext;
 import org.jboss.jms.client.JBossConnectionFactory;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
+import org.jboss.test.messaging.tools.misc.ConfigurableSecurityManager;
+
+import java.net.SocketPermission;
 
 /**
- * A ClientInRestrictedSecurityEnvironmentTest
- * 
- * This test runs the JMS client in a restricted security environment to ensure it works.
- * 
- * Currently we just check that no socket connections are listened for or accepted on the client side
- * (which would be true for the socket transport)
- * 
- * Therefore this test will fail until the bisocket transport is integrated.
- * 
- * The test can be easily extended for other security requirements, e.g. getting system properties
- * might be prohibited.
+ * This test runs the JMS client in a restricted security environments.
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision: 1.1 $</tt>
  *
  * $Id$
- *
  */
 public class ClientInRestrictedSecurityEnvironmentTest extends MessagingTestCase
-{   
-   // MessagingTestCase overrides ------------------------------------------------------------------
-   
-   protected void setUp() throws Exception
-   {
-      super.setUp();
-      
-      ServerManagement.start("all");                  
-   }
-
-   protected void tearDown() throws Exception
-   {            
-      try
-      {
-         super.tearDown();
-      }
-      catch (Exception e)
-      {
-         //Ignore - this will probably faail because the new security manager won't allow something
-         //that is done in tearDown()
-      }
-   }
-   
+{
    // Constants ------------------------------------------------------------------------------------
 
    // Static ---------------------------------------------------------------------------------------
 
    // Attributes -----------------------------------------------------------------------------------
-   
+
+   private InitialContext ic;
+   private SecurityManager oldSM;
+   private ConfigurableSecurityManager configurableSecurityManager;
+
    // Constructors ---------------------------------------------------------------------------------
 
    public ClientInRestrictedSecurityEnvironmentTest(String name)
@@ -94,146 +65,151 @@ public class ClientInRestrictedSecurityEnvironmentTest extends MessagingTestCase
       super(name);
    }
 
-   
    // Public ---------------------------------------------------------------------------------------
-   
+
+   /**
+    * Test case for http://jira.jboss.org/jira/browse/JBMESSAGING-806
+    */
+   public void testGetSystemProperties() throws Exception
+   {
+      // TODO (ovidiu) Will be uncommented in 1.0.1.SP5 and 1.2.0.CR1
+      //      See http://jira.jboss.org/jira/browse/JBMESSAGING-806
+
+//      if (ServerManagement.isRemote())
+//      {
+//         // don't run in a remote configuration, so we won't have to open server sockets and
+//         // interfere with those permissions (or lack of)
+//         return;
+//      }
+//
+//      // make sure our security manager disallows getProperty()
+//      configurableSecurityManager.dissalow(new PropertyPermission("does not matter", "read"));
+//
+//      ConnectionFactory cf = (JBossConnectionFactory)ic.lookup("/ConnectionFactory");
+//      Queue queue = (Queue)ic.lookup("/queue/TestQueue");
+//
+//      Connection conn = null;
+//
+//      try
+//      {
+//         conn = cf.createConnection();
+//
+//         Session s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+//
+//         MessageProducer p = s.createProducer(queue);
+//         MessageConsumer c = s.createConsumer(queue);
+//
+//         conn.start();
+//
+//         p.send(s.createTextMessage("payload"));
+//
+//         TextMessage m = (TextMessage)c.receive();
+//
+//         assertEquals("payload", m.getText());
+//
+//      }
+//      finally
+//      {
+//         if (conn != null)
+//         {
+//            conn.close();
+//         }
+//      }
+   }
+
+   /**
+    * This test would make no sense on the 1.0 branch, since we won't backport the bisocket support
+    * there.
+    */
    public void testSendReceiveWithSecurityManager() throws Exception
    {
-      if (!ServerManagement.isRemote())
+      if (ServerManagement.isLocal())
       {
          return;
       }
-      
-      ServerManagement.undeployQueue("TestQueue");
-      
-      ServerManagement.deployQueue("TestQueue");
-      
-      InitialContext ic = null;
-      
-      Connection conn = null;
-      
-      Hashtable env = ServerManagement.getJNDIEnvironment();
-      
-      ServerManagement.undeployQueue("TestQueue");
-      
-      ServerManagement.deployQueue("TestQueue");
-      
-      ic = new InitialContext(env);
-      
+
+      // make sure our security manager disallows "listen" and "accept" on a socket
+      configurableSecurityManager.dissalow(SocketPermission.class, "listen");
+      configurableSecurityManager.dissalow(SocketPermission.class, "accept");
+
       ConnectionFactory cf = (JBossConnectionFactory)ic.lookup("/ConnectionFactory");
-      
       Queue queue = (Queue)ic.lookup("/queue/TestQueue");
-      
-      SecurityManager oldSm = System.getSecurityManager();
-                  
-      SecurityManager sm = new MySecurityManager();
-      
-      System.setSecurityManager(sm);
-      
-      log.info("Security Manager is now " + System.getSecurityManager());
-      
-      
+
+      Connection conn = null;
+
       try
       {
          conn = cf.createConnection();
- 
+
          Session s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         
+
          MessageProducer p = s.createProducer(queue);
-         
          MessageConsumer c = s.createConsumer(queue);
-         
+
          conn.start();
 
          p.send(s.createTextMessage("payload"));
-         
+
          TextMessage m = (TextMessage)c.receive();
 
          assertEquals("payload", m.getText());
-         
-         conn.close();
-         conn = null;
-         
-         ic.close();
-         ic = null;
-      }
-      catch (Exception e)
-      {
-         e.printStackTrace();
-         
-         throw e;
+
       }
       finally
       {
-         System.setSecurityManager(oldSm);
-         
          if (conn != null)
          {
-            try
-            {
-               conn.close();
-            }
-            catch (Exception ignore)
-            {               
-            }
-         }
-         if (ic != null)
-         {
-            try
-            {
-               ic.close();
-            }
-            catch (Exception ignore)
-            {               
-            }
-         }
-         
-         try
-         {
-            ServerManagement.undeployQueue("TestQueue");
-         }
-         catch (Exception ignore)
-         {            
+            conn.close();
          }
       }
    }
 
    // Package protected ----------------------------------------------------------------------------
 
-   // Package protected ----------------------------------------------------------------------------
+   // MessagingTestCase overrides ------------------------------------------------------------------
+
+   protected void setUp() throws Exception
+   {
+      super.setUp();
+      ServerManagement.start("all");
+
+      ServerManagement.undeployQueue("TestQueue");
+      ServerManagement.deployQueue("TestQueue");
+
+      ic = new InitialContext(ServerManagement.getJNDIEnvironment());
+
+      // install our own security manager
+
+      configurableSecurityManager = new ConfigurableSecurityManager();
+
+      oldSM = System.getSecurityManager();
+      System.setSecurityManager(configurableSecurityManager);
+
+      log.info("SecurityManager is now " + System.getSecurityManager());
+      log.debug("setup done");
+   }
+
+   protected void tearDown() throws Exception
+   {
+      configurableSecurityManager.clear();
+      configurableSecurityManager = null;
+
+      System.setSecurityManager(oldSM);
+
+      if (ic != null)
+      {
+         ic.close();
+      }
+
+      ServerManagement.undeployQueue("TestQueue");
+
+      ServerManagement.stop();
+      super.tearDown();
+   }
 
    // Protected ------------------------------------------------------------------------------------
-   
-   protected class MySecurityManager extends SecurityManager
-   {
-
-      public void checkPermission(Permission perm, Object context)
-      {         
-         checkPermission(perm);
-      }
-
-      public void checkPermission(Permission perm)
-      {
-         if (perm instanceof SocketPermission)
-         {
-            if (perm.getActions().indexOf("listen") != -1 ||
-                perm.getActions().indexOf("accept") != -1)
-            {
-
-               //We disallow listening or accepting sockets in the client
-               //This should test whether the bisocket is working properly
-               
-               throw new SecurityException("Client shouldn't listen/accept");
-            }
-         }                                  
-      }
-
-   }
 
    // Private --------------------------------------------------------------------------------------
 
    // Inner classes --------------------------------------------------------------------------------
 }
-
-
-  
