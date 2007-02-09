@@ -73,13 +73,26 @@ public class PolledCallbacksDelivery extends PacketSupport
       for (int i = 0; i < len; i++)
       {
          //Read the method id int - we just throw it away
-         is.readInt();
+         CallbackSupport cs;
+
+         int id = is.readInt();
+
+         switch (id)
+         {
+            case PacketSupport.CLIENT_DELIVERY:
+               cs = new ClientDelivery();
+               break;
+            case PacketSupport.CONNECTIONFACTORY_UPDATE:
+               cs = new ConnectionFactoryUpdate();
+               break;
+            default:
+               // sanity check.. it shouldn't happen
+               throw new IllegalStateException(("Can't deal with methodId=" + id));
+         }
          
-         ClientDelivery delivery = new ClientDelivery();
+         cs.read(is);
          
-         delivery.read(is);
-         
-         Callback cb = new Callback(delivery);
+         Callback cb = new Callback(cs);
                   
          callbacks.add(cb);
       }      
@@ -98,10 +111,10 @@ public class PolledCallbacksDelivery extends PacketSupport
       while (iter.hasNext())
       {
          Callback cb = (Callback)iter.next();
+
+         CallbackSupport cs = (CallbackSupport) cb.getParameter();
          
-         ClientDelivery cd = (ClientDelivery)cb.getParameter();
-         
-         cd.write(os);  
+         cs.write(os);  
       }
       
       os.flush();
