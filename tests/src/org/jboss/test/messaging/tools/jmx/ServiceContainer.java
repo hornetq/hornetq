@@ -1428,7 +1428,7 @@ log.info("password:" + config.getDatabasePassword());
       }
       catch (SQLException e)
       {
-         log.debug("Failed to drop table", e);
+         //Ignore
       }
 
       try
@@ -1445,7 +1445,7 @@ log.info("password:" + config.getDatabasePassword());
       }
       catch (SQLException e)
       {
-         log.debug("Failed to drop table", e);
+         // Ignore
       }
 
       try
@@ -1461,7 +1461,7 @@ log.info("password:" + config.getDatabasePassword());
       }
       catch (SQLException e)
       {
-         log.debug("Failed to drop table", e);
+         // Ignore
       }
 
       try
@@ -1477,7 +1477,7 @@ log.info("password:" + config.getDatabasePassword());
       }
       catch (SQLException e)
       {
-         log.debug("Failed to drop table", e);
+         // Ignore
       }
 
       try
@@ -1493,7 +1493,7 @@ log.info("password:" + config.getDatabasePassword());
       }
       catch (SQLException e)
       {
-         log.debug("Failed to drop table", e);
+         // Ignore
       }
 
       try
@@ -1508,7 +1508,7 @@ log.info("password:" + config.getDatabasePassword());
       }
       catch (SQLException e)
       {
-         log.debug("Failed to drop table", e);
+         // Ignore
       }
       
       try
@@ -1524,7 +1524,7 @@ log.info("password:" + config.getDatabasePassword());
       }
       catch (SQLException e)
       {
-         log.debug("Failed to drop table", e);
+         // Ignore
       }
       
       conn.close();
