@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+     Messaging Connection Factories deployment descriptor for HTTP.
+
+     $Id$
+ -->
+
+<server>
+
+
+   <mbean code="org.jboss.jms.server.connectionfactory.ConnectionFactory"
+      name="jboss.messaging.destination:service=HTTPConnectionFactory"
+      xmbean-dd="xmdesc/ConnectionFactory-xmbean.xml">
+      <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
+      <depends optional-attribute-name="Connector">jboss.messaging:service=Connector,transport=http</depends>
+      <depends>jboss.messaging:service=PostOffice</depends>
+
+      <attribute name="JNDIBindings">
+         <bindings>
+            <binding>/HTTPConnectionFactory</binding>
+            <binding>/HTTPXAConnectionFactory</binding>
+            <binding>java:/HTTPConnectionFactory</binding>
+            <binding>java:/HTTPXAConnectionFactory</binding>
+         </bindings>
+      </attribute>
+
+      <attribute name="Clustered">true</attribute>
+      <attribute name="LoadBalancingFactory">org.jboss.jms.client.plugin.RoundRobinLoadBalancingFactory</attribute>
+   </mbean>
+
+</server>

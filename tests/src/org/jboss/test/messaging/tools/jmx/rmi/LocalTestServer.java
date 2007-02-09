@@ -91,9 +91,6 @@ public class LocalTestServer implements Server
    // the server MBean itself
    private ObjectName serverPeerObjectName;
 
-   // List<ObjectName>
-   private List connFactoryObjectNames;
-
    private int serverIndex;
 
    // Constructors ---------------------------------------------------------------------------------
@@ -101,8 +98,6 @@ public class LocalTestServer implements Server
    public LocalTestServer()
    {
       super();
-
-      connFactoryObjectNames = new ArrayList();
    }
 
    public LocalTestServer(int serverIndex)
@@ -345,21 +340,10 @@ public class LocalTestServer implements Server
             throw new Exception("Cannot find " + persistenceConfigFile + " in the classpath");
          }
 
-         String connFactoryConfigFile = "server/default/deploy/connection-factories-service.xml";
-         URL connFactoryConfigFileURL =
-            getClass().getClassLoader().getResource(connFactoryConfigFile);
-
-         if (connFactoryConfigFileURL == null)
-         {
-            throw new Exception("Cannot find " + connFactoryConfigFile + " in the classpath");
-         }
-
          ServiceDeploymentDescriptor mdd =
             new ServiceDeploymentDescriptor(mainConfigFileURL);
          ServiceDeploymentDescriptor pdd =
             new ServiceDeploymentDescriptor(persistenceConfigFileURL);
-         ServiceDeploymentDescriptor cfdd =
-            new ServiceDeploymentDescriptor(connFactoryConfigFileURL);
 
          MBeanConfigurationElement persistenceManagerConfig =
             (MBeanConfigurationElement)pdd.query("service", "PersistenceManager").iterator().next();
@@ -415,23 +399,7 @@ public class LocalTestServer implements Server
 
          log.debug("deploying connection factories");
 
-         List connFactoryElements = cfdd.query("service", "ConnectionFactory");
-         connFactoryObjectNames.clear();
-         for(Iterator i = connFactoryElements.iterator(); i.hasNext(); )
-         {
-            MBeanConfigurationElement connFactoryElement = (MBeanConfigurationElement)i.next();
-            ObjectName on = sc.registerAndConfigureService(connFactoryElement);
-            overrideAttributes(on, attrOverrides);
-            // dependencies have been automatically injected already
-            sc.invoke(on, "create", new Object[0], new String[0]);
-            sc.invoke(on, "start", new Object[0], new String[0]);
-            connFactoryObjectNames.add(on);
-         }
-
-         // bind the default JMS provider
-         sc.bindDefaultJMSProvider();
-         // bind the JCA ConnectionFactory
-         sc.bindJCAJMSConnectionFactory();
+         sc.startDataSources(attrOverrides);
       }
       catch (Exception e)
       {
@@ -464,24 +432,7 @@ public class LocalTestServer implements Server
 
          log.debug("stopping connection factories");
 
-         for(Iterator i = connFactoryObjectNames.iterator(); i.hasNext(); )
-         {
-            try
-            {
-               ObjectName on = (ObjectName)i.next();
-               sc.invoke(on, "stop", new Object[0], new String[0]);
-               sc.invoke(on, "destroy", new Object[0], new String[0]);
-               sc.unregisterService(on);
-            }
-            catch (Exception ignore)
-            {
-               //If the serverpeer failed when starting up previously, then only some of the
-               //services may be started. The ones that didn't start will fail when attempting to shut
-               //them down.
-               //Hence we must catch and ignore or we won't shut everything down
-            }
-         }
-         connFactoryObjectNames.clear();
+         sc.stopDatasources();
 
          log.debug("stopping all destinations");
 

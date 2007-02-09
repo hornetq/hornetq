@@ -27,8 +27,10 @@ import org.jboss.test.messaging.tools.ServerManagement;
 import org.jboss.jms.client.JBossConnectionFactory;
 import org.jboss.jms.client.state.ConnectionState;
 import org.jboss.jms.client.delegate.ClientClusteredConnectionFactoryDelegate;
+import org.jboss.jms.client.delegate.ClientConnectionFactoryDelegate;
 import javax.jms.Connection;
 import javax.jms.Session;
+import javax.jms.ConnectionFactory;
 
 /**
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
@@ -91,6 +93,63 @@ public class ClusterViewUpdateTest extends ClusteringTestBase
 
    }
 
+   public void testUpdateMixedConnectionFactory() throws Exception
+   {
+      Connection conn = cf.createConnection();
+      JBossConnectionFactory jbcf = (JBossConnectionFactory)cf;
+
+      ClientClusteredConnectionFactoryDelegate cfDelegate =
+         (ClientClusteredConnectionFactoryDelegate)jbcf.getDelegate();
+
+      assertEquals(3, cfDelegate.getDelegates().length);
+
+      ConnectionFactory httpCF = (ConnectionFactory)ic[0].lookup("/HTTPConnectionFactory");
+      JBossConnectionFactory jbhttpCF = (JBossConnectionFactory) httpCF;
+      
+      Connection httpConn = httpCF.createConnection();
+
+      ClientClusteredConnectionFactoryDelegate httpcfDelegate =
+         (ClientClusteredConnectionFactoryDelegate)jbhttpCF.getDelegate();
+
+      assertEquals(3, httpcfDelegate.getDelegates().length);
+
+
+      validateCFs(cfDelegate, httpcfDelegate);
+
+      Connection conn1 = cf.createConnection();
+      Connection httpConn1 = httpCF.createConnection();
+
+      assertEquals(1, getServerId(conn1));
+      assertEquals(1, getServerId(httpConn1));
+
+      ServerManagement.killAndWait(1);
+
+      log.info("sleeping 5 secs ...");
+      Thread.sleep(5000);
+
+      // first part of the test, verifies if the CF was updated
+      assertEquals(2, cfDelegate.getDelegates().length);
+      assertEquals(2, httpcfDelegate.getDelegates().length);
+
+      validateCFs(cfDelegate, httpcfDelegate);
+
+      conn.close();
+      httpConn.close();
+
+      log.info("sleeping 25 secs ...");
+      Thread.sleep(25000);
+
+      // Second part, verifies a possible racing condition on failoverMap and handleFilover
+
+      log.info("ServerId=" + getServerId(conn1));
+      assertTrue(1 != getServerId(conn1));
+
+      //Session sess = conn1.createSession(true, Session.SESSION_TRANSACTED);
+      conn1.close();
+      httpConn.close();
+
+   }
+
    /**
     * Test if an update on failoverMap on the connectionFactory would
     * cause any problems during failover
@@ -127,7 +186,6 @@ public class ClusterViewUpdateTest extends ClusteringTestBase
       // first part of the test, verifies if the CF was updated
       assertEquals(2, cfDelegate.getDelegates().length);
 
-      log.info("ServerId=" + getServerId(conn1));
       assertTrue(1 != getServerId(conn1));
 
       conn.close();
@@ -142,6 +200,7 @@ public class ClusterViewUpdateTest extends ClusteringTestBase
 
    protected void setUp() throws Exception
    {
+      config = "all+http";
       nodeCount = 3;
       super.setUp();
    }
@@ -149,9 +208,32 @@ public class ClusterViewUpdateTest extends ClusteringTestBase
    protected void tearDown() throws Exception
    {
       super.tearDown();
+      config="all";
    }
 
    // Private --------------------------------------------------------------------------------------
+
+   // Validate if two distinct CFs are valid
+   private void validateCFs(ClientClusteredConnectionFactoryDelegate cfDelegate,
+                            ClientClusteredConnectionFactoryDelegate httpcfDelegate)
+   {
+      ClientConnectionFactoryDelegate delegatesSocket[] = cfDelegate.getDelegates();
+      ClientConnectionFactoryDelegate delegatesHTTP[] = httpcfDelegate.getDelegates();
+
+      log.info("ValidateCFs:");
+
+      assertEquals(delegatesSocket.length, delegatesHTTP.length);
+      for (int i=0;i<delegatesSocket.length;i++)
+      {
+         log.info("DelegateSocket[" + i + "]=" + delegatesSocket[i].getServerLocatorURI());
+         log.info("DelegateHttp[" + i + "]=" + delegatesHTTP[i].getServerLocatorURI());
+         for (int j=0;j<delegatesHTTP.length;j++)
+         {
+            assertFalse(delegatesSocket[i].getServerLocatorURI().
+               equals(delegatesHTTP[j].getServerLocatorURI()));
+         }
+      }
+   }
 
    // Inner classes --------------------------------------------------------------------------------
 

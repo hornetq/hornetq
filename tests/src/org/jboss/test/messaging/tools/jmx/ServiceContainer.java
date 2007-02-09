@@ -130,12 +130,19 @@ public class ServiceContainer
 
    public static ObjectName REMOTING_OBJECT_NAME;
 
+   // Used only on testcases where Socket and HTTP are deployed at the same time
+   public static ObjectName HTTP_REMOTING_OBJECT_NAME;
+
    public static String DATA_SOURCE_JNDI_NAME = "java:/DefaultDS";
    public static String TRANSACTION_MANAGER_JNDI_NAME = "java:/TransactionManager";
    public static String USER_TRANSACTION_JNDI_NAME = "UserTransaction";
    public static String JCA_JMS_CONNECTION_FACTORY_JNDI_NAME = "java:/JCAConnectionFactory";
 
    public static long HTTP_CONNECTOR_CALLBACK_POLL_PERIOD = 102;
+
+   // List<ObjectName>
+   private List connFactoryObjectNames = new ArrayList();
+
 
    static
    {
@@ -170,6 +177,9 @@ public class ServiceContainer
 
          REMOTING_OBJECT_NAME =
          new ObjectName("jboss.messaging:service=Connector,transport=socket");
+
+         HTTP_REMOTING_OBJECT_NAME =
+         new ObjectName("jboss.messaging:service=Connector,transport=http");
       }
       catch(Exception e)
       {
@@ -208,6 +218,7 @@ public class ServiceContainer
    private boolean jca;
    private boolean remoting;
    private boolean security;
+   private boolean httpDatasource;
    private boolean multiplexer; // the JGroups channels multiplexer
 
    private List toUnbindAtExit;
@@ -436,7 +447,7 @@ public class ServiceContainer
 
          if (remoting)
          {
-            startRemoting(attrOverrides);
+            startRemoting(attrOverrides, config.getRemotingTransport(), REMOTING_OBJECT_NAME);
          }
 
          if (security)
@@ -471,12 +482,59 @@ public class ServiceContainer
       }
    }
 
+   public void startDataSources(ServiceAttributeOverrides attrOverrides) throws Exception
+   {
+      deployDatasource("server/default/deploy/connection-factories-service.xml", attrOverrides);
+
+      log.info("httpDatasource=" + httpDatasource);
+      if (httpDatasource)
+      {
+         log.info("Installing HTTP datasource");
+         ServiceAttributeOverrides httpOverride = new ServiceAttributeOverrides();
+         startRemoting(httpOverride, "http", HTTP_REMOTING_OBJECT_NAME);
+         deployDatasource("server/default/deploy/connection-factory-http.xml", attrOverrides);
+      }
+
+      // bind the default JMS provider
+      bindDefaultJMSProvider();
+      // bind the JCA ConnectionFactory
+      bindJCAJMSConnectionFactory();
+   }
+
+   public void stopDatasources() throws Exception
+   {
+      for(Iterator i = connFactoryObjectNames.iterator(); i.hasNext(); )
+      {
+         try
+         {
+            ObjectName on = (ObjectName)i.next();
+            invoke(on, "stop", new Object[0], new String[0]);
+            invoke(on, "destroy", new Object[0], new String[0]);
+            unregisterService(on);
+         }
+         catch (Exception ignore)
+         {
+            //If the serverpeer failed when starting up previously, then only some of the
+            //services may be started. The ones that didn't start will fail when attempting to shut
+            //them down.
+            //Hence we must catch and ignore or we won't shut everything down
+         }
+      }
+      connFactoryObjectNames.clear();
+
+   }
+
    public void stop() throws Exception
    {
 
       unloadJNDIContexts();
 
       stopService(REMOTING_OBJECT_NAME);
+
+      if (httpDatasource)
+      {
+         stopService(HTTP_REMOTING_OBJECT_NAME);
+      }
 
       if (jbossjta)
       {
@@ -1265,8 +1323,11 @@ log.info("password:" + config.getDatabasePassword());
       stopService(managedConnFactoryObjectName);
    }
 
-   private void startRemoting(ServiceAttributeOverrides attrOverrides) throws Exception
+   private void startRemoting(ServiceAttributeOverrides attrOverrides,
+                              String transport,
+                              ObjectName objectName) throws Exception
    {
+      log.debug("Starting remoting transport=" + transport + " objectName=" + objectName);
       RemotingJMXWrapper mbean;
       String locatorURI = null;
 
@@ -1276,7 +1337,7 @@ log.info("password:" + config.getDatabasePassword());
 
       if (attrOverrides != null)
       {
-         overrideMap = attrOverrides.get(REMOTING_OBJECT_NAME);
+         overrideMap = attrOverrides.get(objectName);
 
          if (overrideMap != null)
          {
@@ -1294,8 +1355,6 @@ log.info("password:" + config.getDatabasePassword());
          //       into the marshaller and don't use serialization apart from one specific case with
          //       a JMS ObjectMessage in which case Java serialization is always currently used -
          //       (we could make this configurable)
-
-         String transport = config.getRemotingTransport();
 
          long clientLeasePeriod = 20000;
 
@@ -1352,17 +1411,17 @@ log.info("password:" + config.getDatabasePassword());
       log.debug("Started remoting connector on uri:" + locator.getLocatorURI());
 
       mbean = new RemotingJMXWrapper(locator);
-      mbeanServer.registerMBean(mbean, REMOTING_OBJECT_NAME);
-      mbeanServer.invoke(REMOTING_OBJECT_NAME, "start", new Object[0], new String[0]);
+      mbeanServer.registerMBean(mbean, objectName);
+      mbeanServer.invoke(objectName, "start", new Object[0], new String[0]);
 
       ServerInvocationHandler handler = new JMSServerInvocationHandler();
 
-      mbeanServer.invoke(REMOTING_OBJECT_NAME, "addInvocationHandler",
+      mbeanServer.invoke(objectName, "addInvocationHandler",
                          new Object[] { ServerPeer.REMOTING_JMS_SUBSYSTEM, handler},
                          new String[] { "java.lang.String",
                                         "org.jboss.remoting.ServerInvocationHandler"});
 
-      log.debug("started " + REMOTING_OBJECT_NAME);
+      log.debug("started " + objectName);
    }
 
 
@@ -1574,6 +1633,60 @@ log.info("password:" + config.getDatabasePassword());
       invoke(nameMultiplexer,"start", new Object[0], new String[0]);
    }
 
+   private void overrideAttributes(ObjectName on, ServiceAttributeOverrides attrOverrides)
+      throws Exception
+   {
+      if (attrOverrides == null)
+      {
+         return;
+      }
+
+      Map sao = attrOverrides.get(on);
+
+      for(Iterator i = sao.entrySet().iterator(); i.hasNext();)
+      {
+         Map.Entry entry = (Map.Entry)i.next();
+         String attrName = (String)entry.getKey();
+         Object attrValue = entry.getValue();
+         setAttribute(on, attrName, attrValue.toString());
+
+      }
+   }
+
+   public void deployDatasource(String connFactoryConfigFile,
+                                ServiceAttributeOverrides attrOverrides) throws Exception
+   {
+
+      URL connFactoryConfigFileURL =
+         getClass().getClassLoader().getResource(connFactoryConfigFile);
+
+      if (connFactoryConfigFileURL == null)
+      {
+         throw new Exception("Cannot find " + connFactoryConfigFile + " in the classpath");
+      }
+
+      ServiceDeploymentDescriptor cfdd =
+         new ServiceDeploymentDescriptor(connFactoryConfigFileURL);
+      List connFactoryElements = cfdd.query("service", "ConnectionFactory");
+      if (connFactoryElements.isEmpty())
+      {
+         connFactoryElements = cfdd.query("service", "HTTPConnectionFactory");
+      }
+      connFactoryObjectNames.clear();
+      for (Iterator i = connFactoryElements.iterator(); i.hasNext();)
+      {
+         MBeanConfigurationElement connFactoryElement = (MBeanConfigurationElement) i.next();
+         ObjectName on = registerAndConfigureService(connFactoryElement);
+         overrideAttributes(on, attrOverrides);
+         // dependencies have been automatically injected already
+         invoke(on, "create", new Object[0], new String[0]);
+         invoke(on, "start", new Object[0], new String[0]);
+         connFactoryObjectNames.add(on);
+      }
+   }
+
+
+
    private void parseConfig(String config)
    {
       config = config.toLowerCase();
@@ -1595,6 +1708,16 @@ log.info("password:" + config.getDatabasePassword());
             jca = true;
             remoting = true;
             security = true;
+         }
+         else
+         if ("all+http".equals(tok))
+         {
+            transaction = true;
+            database = true;
+            jca = true;
+            remoting = true;
+            security = true;
+            httpDatasource = true;
          }
          else if ("transaction".equals(tok))
          {

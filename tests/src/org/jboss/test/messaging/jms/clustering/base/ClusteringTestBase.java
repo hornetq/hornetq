@@ -53,6 +53,7 @@ public class ClusteringTestBase extends MessagingTestCase
    // Attributes -----------------------------------------------------------------------------------
 
    protected int nodeCount;
+   protected String config = "all";
 
    protected Context[] ic;
    protected Queue queue[];
@@ -94,7 +95,7 @@ public class ClusteringTestBase extends MessagingTestCase
          // make sure all servers are created and started; make sure that database is zapped
          // ONLY for the first server, the others rely on values they expect to find in shared
          // tables; don't clear the database for those.
-         ServerManagement.start(i, "all", i == 0);
+         ServerManagement.start(i, config, i == 0);
 
          ServerManagement.deployQueue("testDistributedQueue", i);
          ServerManagement.deployTopic("testDistributedTopic", i);
