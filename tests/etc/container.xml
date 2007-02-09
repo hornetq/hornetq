@@ -26,12 +26,12 @@
       </database-configuration>
 
       <database-configuration name="mysql">
-         <url>jdbc:mysql://dev01-priv/messaging</url>
+         <url>jdbc:mysql://localhost/messaging</url>
          <driver>com.mysql.jdbc.Driver</driver>
          <isolation>TRANSACTION_READ_COMMITTED</isolation>
-         <username>messaging</username>
-         <password>messaging</password>
+         <username>sa</username>
       </database-configuration>
+
 
       <database-configuration name="oracle">
          <url>jdbc:oracle:thin:@dev01-priv:1521/qadb01</url>

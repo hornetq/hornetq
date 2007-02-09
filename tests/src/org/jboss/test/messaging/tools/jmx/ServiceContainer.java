@@ -426,7 +426,7 @@ public class ServiceContainer
          {
             // We make sure the database is clean (only if we have all dependencies the database,
             // othewise we'll get an access error)
-            deleteAllData();
+            dropAllTables();
          }
 
          if (xarecovery)
@@ -1396,11 +1396,11 @@ log.info("password:" + config.getDatabasePassword());
       ic.close();
    }
 
-   protected void deleteAllData() throws Exception
+   protected void dropAllTables() throws Exception
    {
       try
       {
-         log.info("DELETING ALL DATA FROM DATABASE!");
+         log.info("DROPPING ALL TABLES FROM DATABASE!");
 
          InitialContext ctx = new InitialContext();
 
@@ -1415,61 +1415,61 @@ log.info("password:" + config.getDatabasePassword());
          String sql = "DROP TABLE JBM_POSTOFFICE";
          PreparedStatement ps = conn.prepareStatement(sql);
 
-         int rows = ps.executeUpdate();
+         ps.executeUpdate();
 
-         log.debug("JBM_POSTOFFICE: deleted " + rows);
+         log.debug("JBM_POSTOFFICE: dropped ");
 
          ps.close();
 
          sql = "DROP TABLE JBM_MSG_REF";
          ps = conn.prepareStatement(sql);
 
-         rows = ps.executeUpdate();
+         ps.executeUpdate();
 
-         log.debug("JBM_MSG_REF: deleted " + rows);
+         log.debug("JBM_MSG_REF: dropped ");
 
          ps.close();
 
          sql = "DROP TABLE JBM_MSG";
          ps = conn.prepareStatement(sql);
 
-         rows = ps.executeUpdate();
+         ps.executeUpdate();
 
-         log.debug("JBM_MSG: deleted " + rows);
+         log.debug("JBM_MSG: dropped ");
 
          ps.close();
 
          sql = "DROP TABLE JBM_TX";
          ps = conn.prepareStatement(sql);
 
-         rows = ps.executeUpdate();
+         ps.executeUpdate();
 
-         log.debug("JBM_TX: deleted " + rows);
+         log.debug("JBM_TX: dropped ");
 
          ps.close();
 
          sql = "DROP TABLE JBM_COUNTER";
          ps = conn.prepareStatement(sql);
 
-         rows = ps.executeUpdate();
+         ps.executeUpdate();
 
-         log.debug("JBM_COUNTER: deleted " + rows);
+         log.debug("JBM_COUNTER: dropped ");
 
          ps.close();
 
          sql = "DROP TABLE JBM_USER";
          ps = conn.prepareStatement(sql);
 
-         rows = ps.executeUpdate();
+         ps.executeUpdate();
 
-         log.debug("JBM_USER: deleted " + rows);
+         log.debug("JBM_USER: dropped ");
          
          sql = "DROP TABLE JBM_ROLE";
          ps = conn.prepareStatement(sql);
 
-         rows = ps.executeUpdate();
+         ps.executeUpdate();
 
-         log.debug("JBM_ROLE: deleted " + rows);
+         log.debug("JBM_ROLE: dropped ");
 
          ps.close();
          conn.close();
