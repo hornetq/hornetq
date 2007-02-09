@@ -1398,97 +1398,147 @@ log.info("password:" + config.getDatabasePassword());
 
    protected void dropAllTables() throws Exception
    {
+      log.info("DROPPING ALL TABLES FROM DATABASE!");
+
+      InitialContext ctx = new InitialContext();
+
+      TransactionManager mgr = (TransactionManager)ctx.lookup(TransactionManagerService.JNDI_NAME);
+      DataSource ds = (DataSource)ctx.lookup("java:/DefaultDS");
+
+      javax.transaction.Transaction txOld = mgr.suspend();
+      mgr.begin();
+
+      Connection conn = ds.getConnection();
+      
+      String sql = null;
+      
+      PreparedStatement ps = null;
+
       try
-      {
-         log.info("DROPPING ALL TABLES FROM DATABASE!");
-
-         InitialContext ctx = new InitialContext();
-
-         TransactionManager mgr = (TransactionManager)ctx.lookup(TransactionManagerService.JNDI_NAME);
-         DataSource ds = (DataSource)ctx.lookup("java:/DefaultDS");
-
-         javax.transaction.Transaction txOld = mgr.suspend();
-         mgr.begin();
-
-         Connection conn = ds.getConnection();
-
-         String sql = "DROP TABLE JBM_POSTOFFICE";
-         PreparedStatement ps = conn.prepareStatement(sql);
-
-         ps.executeUpdate();
-
-         log.debug("JBM_POSTOFFICE: dropped ");
-
-         ps.close();
-
-         sql = "DROP TABLE JBM_MSG_REF";
-         ps = conn.prepareStatement(sql);
-
-         ps.executeUpdate();
-
-         log.debug("JBM_MSG_REF: dropped ");
-
-         ps.close();
-
-         sql = "DROP TABLE JBM_MSG";
-         ps = conn.prepareStatement(sql);
-
-         ps.executeUpdate();
-
-         log.debug("JBM_MSG: dropped ");
-
-         ps.close();
-
-         sql = "DROP TABLE JBM_TX";
-         ps = conn.prepareStatement(sql);
-
-         ps.executeUpdate();
-
-         log.debug("JBM_TX: dropped ");
-
-         ps.close();
-
-         sql = "DROP TABLE JBM_COUNTER";
-         ps = conn.prepareStatement(sql);
-
-         ps.executeUpdate();
-
-         log.debug("JBM_COUNTER: dropped ");
-
-         ps.close();
-
-         sql = "DROP TABLE JBM_USER";
-         ps = conn.prepareStatement(sql);
-
-         ps.executeUpdate();
-
-         log.debug("JBM_USER: dropped ");
+      {         
+         sql = "DROP TABLE JBM_POSTOFFICE";
          
-         sql = "DROP TABLE JBM_ROLE";
          ps = conn.prepareStatement(sql);
-
+   
          ps.executeUpdate();
-
-         log.debug("JBM_ROLE: dropped ");
-
+   
+         log.debug("JBM_POSTOFFICE: dropped ");
+   
          ps.close();
-         conn.close();
-
-         mgr.commit();
-
-         log.debug("committed");
-
-         if (txOld != null)
-         {
-            mgr.resume(txOld);
-         }
-
-         log.debug("done with the database");
       }
       catch (SQLException e)
       {
-         // Ignore - tables might not exist
+         log.error("Failed to drop table", e);
       }
+
+      try
+      {
+         sql = "DROP TABLE JBM_MSG_REF";
+         
+         ps = conn.prepareStatement(sql);
+   
+         ps.executeUpdate();
+   
+         log.debug("JBM_MSG_REF: dropped ");
+   
+         ps.close();
+      }
+      catch (SQLException e)
+      {
+         log.error("Failed to drop table", e);
+      }
+
+      try
+      {
+         sql = "DROP TABLE JBM_MSG";
+         ps = conn.prepareStatement(sql);
+   
+         ps.executeUpdate();
+   
+         log.debug("JBM_MSG: dropped ");
+   
+         ps.close();
+      }
+      catch (SQLException e)
+      {
+         log.error("Failed to drop table", e);
+      }
+
+      try
+      {
+         sql = "DROP TABLE JBM_TX";
+         ps = conn.prepareStatement(sql);
+   
+         ps.executeUpdate();
+   
+         log.debug("JBM_TX: dropped ");
+   
+         ps.close();
+      }
+      catch (SQLException e)
+      {
+         log.error("Failed to drop table", e);
+      }
+
+      try
+      {
+         sql = "DROP TABLE JBM_COUNTER";
+         ps = conn.prepareStatement(sql);
+   
+         ps.executeUpdate();
+   
+         log.debug("JBM_COUNTER: dropped ");
+   
+         ps.close();
+      }
+      catch (SQLException e)
+      {
+         log.error("Failed to drop table", e);
+      }
+
+      try
+      {
+         sql = "DROP TABLE JBM_USER";
+         ps = conn.prepareStatement(sql);
+   
+         ps.executeUpdate();
+   
+         log.debug("JBM_USER: dropped ");
+         ps.close();
+      }
+      catch (SQLException e)
+      {
+         log.error("Failed to drop table", e);
+      }
+      
+      try
+      {
+         sql = "DROP TABLE JBM_ROLE";
+         ps = conn.prepareStatement(sql);
+   
+         ps.executeUpdate();
+   
+         log.debug("JBM_ROLE: dropped ");
+   
+         ps.close();
+      }
+      catch (SQLException e)
+      {
+         log.error("Failed to drop table", e);
+      }
+      
+      conn.close();
+
+      mgr.commit();
+
+      log.debug("committed");
+
+      if (txOld != null)
+      {
+         mgr.resume(txOld);
+      }
+
+      log.debug("done with the database");
    }
 
    private void startMultiplexer() throws Exception
