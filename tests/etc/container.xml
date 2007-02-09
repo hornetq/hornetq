@@ -9,7 +9,7 @@
    <!--
         The value of "test.database" system property, if set, takes precedence.
    -->
-   <database>mysql</database>
+   <database>sybase</database>
 
    <database-configurations>
 
@@ -26,36 +26,44 @@
       </database-configuration>
 
       <database-configuration name="mysql">
-         <url>jdbc:mysql://localhost:3306/messaging</url>
+         <url>jdbc:mysql://dev01-priv/messaging</url>
          <driver>com.mysql.jdbc.Driver</driver>
          <isolation>TRANSACTION_READ_COMMITTED</isolation>
-         <username>sa</username>
+         <username>messaging</username>
+         <password>messaging</password>
       </database-configuration>
 
       <database-configuration name="oracle">
-         <url>jdbc:oracle:thin:@localhost:1521/XE</url>
+         <url>jdbc:oracle:thin:@dev01-priv:1521/qadb01</url>
          <driver>oracle.jdbc.driver.OracleDriver</driver>
          <isolation>TRANSACTION_READ_COMMITTED</isolation>
          <username>messaging</username>
          <password>messaging</password>
       </database-configuration>
 
-      <database-configuration name="postgres">
-         <url>jdbc:postgresql://localhost:5432/jboss</url>
+      <database-configuration name="postgresql">
+         <url>jdbc:postgresql://dev01-priv:5432/messaging</url>
          <driver>org.postgresql.Driver</driver>
          <isolation>TRANSACTION_READ_COMMITTED</isolation>
-         <username>jboss</username>
-         <password>jboss</password>
+         <username>messaging</username>
+         <password>messaging</password>
       </database-configuration>
 
       <database-configuration name="mssql">
-          <url>jdbc:jtds:sqlserver://localhost:1433/messaging</url>
+          <url>jdbc:jtds:sqlserver://dev16-priv:3918/messaging</url>
           <driver>net.sourceforge.jtds.jdbc.Driver</driver>
           <isolation>TRANSACTION_READ_COMMITTED</isolation>
           <username>messaging</username>
           <password>messaging</password>
       </database-configuration>
 
+      <database-configuration name="sybase">
+          <url>jdbc:sybase:Tds:dev01-priv:4100/messaging</url>
+          <driver>com.sybase.jdbc3.jdbc.SybDriver</driver>
+          <isolation>TRANSACTION_READ_COMMITTED</isolation>
+          <username>messaging</username>
+          <password>messaging</password>
+      </database-configuration>
 
    </database-configurations>
 

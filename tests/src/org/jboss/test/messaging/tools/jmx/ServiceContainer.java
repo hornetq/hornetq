@@ -1133,6 +1133,11 @@ public class ServiceContainer
    {
       LocalManagedConnectionFactory mcf = new LocalManagedConnectionFactory();
 
+
+log.info("connection url:" + config.getDatabaseConnectionURL());
+log.info("driver:" + config.getDatabaseConnectionURL());
+log.info("username:" + config.getDatabaseUserName());
+log.info("password:" + config.getDatabasePassword());
       mcf.setConnectionURL(config.getDatabaseConnectionURL());
       mcf.setDriverClass(config.getDatabaseDriverClass());
       mcf.setUserName(config.getDatabaseUserName());
@@ -1407,7 +1412,7 @@ public class ServiceContainer
 
          Connection conn = ds.getConnection();
 
-         String sql = "DELETE FROM JBM_POSTOFFICE";
+         String sql = "DROP TABLE JBM_POSTOFFICE";
          PreparedStatement ps = conn.prepareStatement(sql);
 
          int rows = ps.executeUpdate();
@@ -1416,7 +1421,7 @@ public class ServiceContainer
 
          ps.close();
 
-         sql = "DELETE FROM JBM_MSG_REF";
+         sql = "DROP TABLE JBM_MSG_REF";
          ps = conn.prepareStatement(sql);
 
          rows = ps.executeUpdate();
@@ -1425,7 +1430,7 @@ public class ServiceContainer
 
          ps.close();
 
-         sql = "DELETE FROM JBM_MSG";
+         sql = "DROP TABLE JBM_MSG";
          ps = conn.prepareStatement(sql);
 
          rows = ps.executeUpdate();
@@ -1434,7 +1439,7 @@ public class ServiceContainer
 
          ps.close();
 
-         sql = "DELETE FROM JBM_TX";
+         sql = "DROP TABLE JBM_TX";
          ps = conn.prepareStatement(sql);
 
          rows = ps.executeUpdate();
@@ -1443,7 +1448,7 @@ public class ServiceContainer
 
          ps.close();
 
-         sql = "DELETE FROM JBM_COUNTER";
+         sql = "DROP TABLE JBM_COUNTER";
          ps = conn.prepareStatement(sql);
 
          rows = ps.executeUpdate();
@@ -1452,14 +1457,14 @@ public class ServiceContainer
 
          ps.close();
 
-         sql = "DELETE FROM JBM_USER";
+         sql = "DROP TABLE JBM_USER";
          ps = conn.prepareStatement(sql);
 
          rows = ps.executeUpdate();
 
          log.debug("JBM_USER: deleted " + rows);
          
-         sql = "DELETE FROM JBM_ROLE";
+         sql = "DROP TABLE JBM_ROLE";
          ps = conn.prepareStatement(sql);
 
          rows = ps.executeUpdate();
