@@ -29,7 +29,6 @@ import org.jboss.messaging.core.SimpleDelivery;
 import org.jboss.messaging.core.local.RoundRobinPointToPointRouter;
 import org.jboss.messaging.core.message.Message;
 import org.jboss.messaging.core.message.MessageReference;
-import org.jboss.messaging.core.message.SimpleMessageReference;
 import org.jboss.messaging.core.message.SimpleMessageStore;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.tx.Transaction;
@@ -486,41 +485,11 @@ public class RoundRobinPointToPointRouterTest extends MessagingTestCase
          r.gotRef = false;
       }
    }
-
-
    
    // Private -------------------------------------------------------
    
-   // Inner classes -------------------------------------------------   
+   // Inner classes -------------------------------------------------  
    
-   class SimpleReceiver implements Receiver
-   {
-      boolean selectorMatches = true;
-      
-      boolean closed;
-      
-      boolean gotRef;
-
-      public Delivery handle(DeliveryObserver observer, MessageReference ref, Transaction tx)
-      {
-         if (closed)
-         {
-            return null;
-         }
-         
-         Delivery del = new SimpleDelivery(null, null, true, selectorMatches);
-         
-         if (selectorMatches)
-         {
-            gotRef = true;
-         }
-                  
-         return del;
-      }
-      
-   }
-
-
    class LockingReceiver implements Receiver
    {
       private Object lock;
@@ -558,6 +527,36 @@ public class RoundRobinPointToPointRouterTest extends MessagingTestCase
          return lock;
       }
    }
+   
+   class SimpleReceiver implements Receiver
+   {
+      boolean selectorMatches = true;
+      
+      boolean closed;
+      
+      boolean gotRef;
+
+      public Delivery handle(DeliveryObserver observer, MessageReference ref, Transaction tx)
+      {
+         if (closed)
+         {
+            return null;
+         }
+         
+         Delivery del = new SimpleDelivery(null, null, true, selectorMatches);
+         
+         if (selectorMatches)
+         {
+            gotRef = true;
+         }
+                  
+         return del;
+      }
+      
+   }
+
+
+   
 
 }
 

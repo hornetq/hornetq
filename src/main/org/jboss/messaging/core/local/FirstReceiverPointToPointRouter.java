@@ -58,36 +58,41 @@ public class FirstReceiverPointToPointRouter implements Router
    
    private boolean trace = log.isTraceEnabled();
 
-   List receivers;
+   private List receivers;
+   
+   private volatile boolean makeCopy;
+   
+   private ArrayList receiversCopy;
 
    // Constructors --------------------------------------------------
 
    public FirstReceiverPointToPointRouter()
    {
       receivers = new ArrayList();
+      
+      makeCopy = true;
    }
 
    // Router implementation -----------------------------------------
 
    public Delivery handle(DeliveryObserver observer, MessageReference ref, Transaction tx)
    {
-      ArrayList receiversCopy;
-
-      synchronized(receivers)
+      if (makeCopy)
       {
-         if (receivers.isEmpty())
-         {
-            return null;
+         synchronized (this)
+         {         
+            //We make a copy of the receivers to avoid a race condition:
+            //http://jira.jboss.org/jira/browse/JBMESSAGING-505
+            //Note that we do not make a copy every time - only when the receivers have changed
+         
+            receiversCopy = new ArrayList(receivers);
+            
+            makeCopy = false;
          }
-
-         // try to release the lock as quickly as possible and make a copy of the receivers array
-         // to avoid deadlock
-
-         receiversCopy = new ArrayList(receivers.size());
-         receiversCopy.addAll(receivers);
-      }
-
+      }    
+      
       Delivery del = null;
+      
       boolean selectorRejected = false;
 
       for(Iterator i = receiversCopy.iterator(); i.hasNext(); )
@@ -130,58 +135,53 @@ public class FirstReceiverPointToPointRouter implements Router
    }
 
 
-   public boolean add(Receiver r)
+   public synchronized boolean add(Receiver r)
    {
-      synchronized(receivers)
+      if (receivers.contains(r))
       {
-         if (receivers.contains(r))
-         {
-            return false;
-         }
-         receivers.add(r);
+         return false;
       }
+      
+      receivers.add(r);
+      
+      makeCopy = true;
+      
       return true;
    }
 
 
-   public boolean remove(Receiver r)
-   {
-      synchronized(receivers)
+   public synchronized boolean remove(Receiver r)
+   {            
+      boolean removed = receivers.remove(r);      
+      
+      if (removed)
       {
-         return receivers.remove(r);
+         makeCopy = true;
       }
+      
+      return removed;
    }
 
-   public void clear()
+   public synchronized void clear()
    {
-      synchronized(receivers)
-      {
-         receivers.clear();
-      }
+      receivers.clear();
+      
+      makeCopy = true;
    }
 
-   public boolean contains(Receiver r)
+   public synchronized boolean contains(Receiver r)
    {
-      synchronized(receivers)
-      {
-         return receivers.contains(r);
-      }
+      return receivers.contains(r);      
    }
 
-   public Iterator iterator()
+   public synchronized Iterator iterator()
    {
-      synchronized(receivers)
-      {
-         return receivers.iterator();
-      }
+      return receivers.iterator();      
    }
    
-   public int getNumberOfReceivers()
+   public synchronized int getNumberOfReceivers()
    {
-      synchronized(receivers)
-      {
-         return receivers.size();
-      }
+      return receivers.size();      
    }
 
 

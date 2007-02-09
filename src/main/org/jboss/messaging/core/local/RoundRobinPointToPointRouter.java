@@ -58,50 +58,62 @@ public class RoundRobinPointToPointRouter implements Router
    private boolean trace = log.isTraceEnabled();
 
    // it's important that we're actually using an ArrayList for fast array access
-   protected ArrayList receivers;
+   private ArrayList receivers;
    
-   protected int target;
-
+   private int target;
+   
+   private volatile boolean makeCopy;
+   
+   private ArrayList receiversCopy;
+   
    // Constructors --------------------------------------------------
 
    public RoundRobinPointToPointRouter()
    {
       receivers = new ArrayList();
+      
       target = 0;
+      
+      makeCopy = true;
    }
 
    // Router implementation -----------------------------------------
    
    public Delivery handle(DeliveryObserver observer, MessageReference ref, Transaction tx)
-   {
-      int initial, current;
-      ArrayList receiversCopy;
-
-      synchronized(receivers)
+   {             
+      if (makeCopy)
       {
-         if (receivers.isEmpty())
-         {
-            return null;
-         }
-
-         // try to release the lock as quickly as possible and make a copy of the receivers array
-         // to avoid deadlock (http://jira.jboss.org/jira/browse/JBMESSAGING-491)
+         synchronized (this)
+         {         
+            //We make a copy of the receivers to avoid a race condition:
+            //http://jira.jboss.org/jira/browse/JBMESSAGING-505
+            //Note that we do not make a copy every time - only when the receivers have changed
          
-         //TODO - we shouldn't be cloning an ArrayList for the delivery of each message
-         //on the primary execution path! 
-
-         receiversCopy = new ArrayList(receivers.size());
-         receiversCopy.addAll(receivers);
-         initial = target;
-         current = initial;
+            receiversCopy = new ArrayList(receivers);
+            
+            if (target >= receiversCopy.size())
+            {
+               target = 0;
+            }
+         
+            makeCopy = false;
+         }
+      }      
+      
+      if (receiversCopy.isEmpty())
+      {
+         return null;
       }
 
       Delivery del = null;
+      
       boolean selectorRejected = false;
+      
+      int initial = target;
 
       while (true)
       {
-         Receiver r = (Receiver)receiversCopy.get(current);
+         Receiver r = (Receiver)receiversCopy.get(target);
 
          try
          {
@@ -115,7 +127,9 @@ public class RoundRobinPointToPointRouter implements Router
                {
                   // deliver to the first receiver that accepts
                   del = d;
-                  shiftTarget(current);
+                  
+                  incTarget();
+                                                     
                   break;
                }
                else
@@ -130,10 +144,10 @@ public class RoundRobinPointToPointRouter implements Router
             log.error("The receiver " + r + " is broken", t);
          }
 
-         current = (current + 1) % receiversCopy.size();
+         incTarget();
 
          // if we've tried them all then we break
-         if (current == initial)
+         if (target == initial)
          {
             break;
          }
@@ -144,70 +158,55 @@ public class RoundRobinPointToPointRouter implements Router
          del = new SimpleDelivery(null, null, true, false);
       }
 
-      return del;
-   }
-
-   public boolean add(Receiver r)
-   {
-      synchronized(receivers)
-      {
-         if (receivers.contains(r))
-         {
-            return false;
-         }
-
-         receivers.add(r);
-         target = 0;
-      }
-      return true;
-   }
-
-   public boolean remove(Receiver r)
-   {
-      synchronized(receivers)
-      {
-         boolean removed = receivers.remove(r);
-         
-         if (removed)
-         {
-            target = 0;
-         }
-         
-         return removed;
-      }
-   }
-
-   public void clear()
-   {
-      synchronized(receivers)
-      {
-         receivers.clear();
-         target = 0;
-      }
-   }
-
-   public boolean contains(Receiver r)
-   {
-      synchronized(receivers)
-      {
-         return receivers.contains(r);
-      }
-   }
-
-   public Iterator iterator()
-   {
-      synchronized(receivers)
-      {
-         return receivers.iterator();
-      }
+      return del;      
    }
    
-   public int getNumberOfReceivers()
+   public synchronized boolean add(Receiver r)
    {
-      synchronized(receivers)
+      if (receivers.contains(r))
       {
-         return receivers.size();
+         return false;
       }
+
+      receivers.add(r);
+      
+      makeCopy = true;
+      
+      return true;      
+   }
+
+   public synchronized boolean remove(Receiver r)
+   {
+      boolean removed = receivers.remove(r);
+      
+      if (removed)
+      {
+         makeCopy = true;
+      }
+      
+      return removed;      
+   }
+
+   public synchronized void clear()
+   {
+      receivers.clear();
+      
+      makeCopy = true;    
+   }
+
+   public synchronized boolean contains(Receiver r)
+   {
+      return receivers.contains(r);     
+   }
+
+   public synchronized Iterator iterator()
+   {
+      return receivers.iterator();      
+   }
+   
+   public synchronized int getNumberOfReceivers()
+   {
+      return receivers.size();      
    }
 
    // Public --------------------------------------------------------
@@ -216,21 +215,17 @@ public class RoundRobinPointToPointRouter implements Router
    
    // Protected -----------------------------------------------------
 
-   protected void shiftTarget(int currentTarget)
+   // Private -------------------------------------------------------
+   
+   private void incTarget()
    {
-      synchronized(receivers)
+      target++;
+      
+      if (target == receiversCopy.size())
       {
-         int size = receivers.size();
-         if (size == 0)
-         {
-            // target has already been reset by remove()
-            return;
-         }
-         target = Math.max((target + 1) % size, (currentTarget + 1) % size);
+         target = 0;
       }
    }
-   
-   // Private -------------------------------------------------------
    
    // Inner classes -------------------------------------------------   
 }
