@@ -99,10 +99,6 @@ class ServiceContainerConfiguration
    {
       DatabaseConfiguration dbc = (DatabaseConfiguration)dbConfigurations.get(database);
       String databaseType = dbc.getDatabaseType();
-      if (databaseType.equals("jtds"))
-      {
-    	  databaseType="mssql";
-      }
       return databaseType;
    }
 
