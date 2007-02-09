@@ -120,7 +120,8 @@ public abstract class XATestBase extends MessagingTestCase
             sc = new ServiceContainer("transaction");
          }
          
-         sc.start();
+         //Don't drop the tables again!
+         sc.start(false);
       }
       
       initialContext = new InitialContext(ServerManagement.getJNDIEnvironment());

@@ -97,7 +97,11 @@ public class DuplicateClientIDTest extends MessagingTestCase
          try
          {
             c2 = cf.createConnection("john", "needle");
-            fail("JBossMessaging is allowing duplicate clients!");
+            
+            if (c1 != null & c2 != null && c1.getClientID().equals(c2.getClientID()))
+            {            
+               fail("JBossMessaging is allowing duplicate clients!");
+            }
          }
          catch (InvalidClientIDException e)
          {

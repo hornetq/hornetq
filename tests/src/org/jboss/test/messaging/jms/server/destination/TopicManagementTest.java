@@ -245,6 +245,8 @@ public class TopicManagementTest extends DestinationManagementTestBase
          // Now close the connection
          conn.close();
          
+         Thread.sleep(1000);
+         
          count = ((Integer)ServerManagement.getAttribute(destObjectName, "AllMessageCount")).intValue();
          
          assertEquals(0, count);
