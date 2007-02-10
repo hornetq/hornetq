@@ -162,7 +162,6 @@ public class SecurityMetadataStore implements SecurityManager
 
       if (authenticationManager.isValid(principal, passwordChars, subject))
       {
-         SecurityActions.pushSubjectContext(principal, passwordChars, subject);
          return subject;
       }
       else

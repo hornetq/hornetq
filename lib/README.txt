@@ -1,1 +1,1 @@
-jboss-remoting.jar - Feb 03 2007 snapshot of Remoting 2.2.0 remoting_2_x branch
+jbosssx.jar	4.0.5.GA
