@@ -83,6 +83,13 @@ public class Dispatcher
       //See http://jira.jboss.com/jira/browse/JBMESSAGING-812
       
       AdvisedSupport advised = (AdvisedSupport)(targets.get(id));
+      
+      if (advised == null)
+      {
+         //This can happen due to See http://jira.jboss.com/jira/browse/JBMESSAGING-812         
+         log.warn("Cannot find object with id " + id + " to register");
+         return false;
+      }
            
       if (advised.getEndpoint() != endpoint)
       {
