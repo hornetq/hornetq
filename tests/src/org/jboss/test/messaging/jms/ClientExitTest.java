@@ -87,8 +87,8 @@ public class ClientExitTest extends MessagingTestCase
       {
          localServer = new LocalTestServer();
 
-         localServer.start("all");
-         localServer.deployQueue("Queue", null);
+         localServer.start("all", true);
+         localServer.deployQueue("Queue", null, false);
 
          // lookup the connection factory and the queue which we'll send to the client VM via a
          // serialized instances saved in file
