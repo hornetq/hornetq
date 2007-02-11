@@ -48,6 +48,8 @@ public class JDBCPersistenceManagerService extends JDBCServiceSupport
    
    private boolean usingBinaryStream = true;
    
+   private boolean usingTrailingByte = false;
+   
    private int maxParams = 100;
    
    // Constructors --------------------------------------------------------
@@ -81,7 +83,7 @@ public class JDBCPersistenceManagerService extends JDBCServiceSupport
          persistenceManager =
             new JDBCPersistenceManager(ds, tm, sqlProperties,
                                        createTablesOnStartup, usingBatchUpdates,
-                                       usingBinaryStream, maxParams);
+                                       usingBinaryStream, usingTrailingByte, maxParams);
          
          persistenceManager.start();
          
@@ -146,5 +148,15 @@ public class JDBCPersistenceManagerService extends JDBCServiceSupport
    public void setUsingBinaryStream(boolean b)
    {
       usingBinaryStream = b;
+   }
+   
+   public boolean isUsingTrailingByte()
+   {
+      return usingTrailingByte;
+   }
+   
+   public void setUsingTrailingByte(boolean b)
+   {
+      usingTrailingByte = b;
    }
 }

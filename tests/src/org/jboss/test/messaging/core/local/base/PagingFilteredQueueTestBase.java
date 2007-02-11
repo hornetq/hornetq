@@ -116,7 +116,7 @@ public abstract class PagingFilteredQueueTestBase extends MessagingTestCase
 
       pm = new JDBCPersistenceManager(sc.getDataSource(), sc.getTransactionManager(),
                                       sc.getPersistenceManagerSQLProperties(),
-                                      true, true, true, 100);
+                                      true, true, true, false, 100);
       pm.start();
       
       idm = new IDManager("TRANSACTION_ID", 10, pm);

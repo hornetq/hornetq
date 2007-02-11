@@ -3029,7 +3029,7 @@ public class XARecoveryTest extends MessagingTestCase
          }    
       }
    }
-
+     
 
    public void testMockCoordinatorRecovery3() throws Exception
    {

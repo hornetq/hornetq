@@ -92,6 +92,8 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
    
    private boolean usingBinaryStream = true;
    
+   private boolean usingTrailingByte = false;
+   
    private int maxParams;
    
    private short orderCount;
@@ -101,13 +103,15 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
     
    public JDBCPersistenceManager(DataSource ds, TransactionManager tm, Properties sqlProperties,
                                  boolean createTablesOnStartup, boolean usingBatchUpdates,
-                                 boolean usingBinaryStream, int maxParams)
+                                 boolean usingBinaryStream, boolean usingTrailingByte, int maxParams)
    {
       super(ds, tm, sqlProperties, createTablesOnStartup);
       
       this.usingBatchUpdates = usingBatchUpdates;
       
       this.usingBinaryStream = usingBinaryStream;
+      
+      this.usingTrailingByte = usingTrailingByte;
       
       this.maxParams = maxParams;      
    }
@@ -207,13 +211,17 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
             //get the existing tx id --MK START
             long txId = rs.getLong(1);
             
-            byte[] branchQual = rs.getBytes(2);
+            byte[] branchQual = getVarBinaryColumn(rs, 2);
+            
             int formatId = rs.getInt(3);
-            byte[] globalTxId = rs.getBytes(4);
+            
+            byte[] globalTxId = getVarBinaryColumn(rs, 4);
+            
             Xid xid = new MessagingXid(branchQual, formatId, globalTxId);
             
             // create a tx info object with the result set detailsdetails
             txInfo = new PreparedTxInfo(txId, xid);
+            
             transactions.add(txInfo);
          }
          
@@ -2748,10 +2756,14 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
          ps.setLong(1, tx.getId());
          
          Xid xid = tx.getXid();
+         
          formatID = xid.getFormatId();
-         ps.setBytes(2, xid.getBranchQualifier());
+         
+         setVarBinaryColumn(2, ps, xid.getBranchQualifier());
+         
          ps.setInt(3, formatID);
-         ps.setBytes(4, xid.getGlobalTransactionId());
+         
+         setVarBinaryColumn(4, ps, xid.getGlobalTransactionId());
          
          rows = updateWithRetry(ps);
          
@@ -3063,7 +3075,52 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
       // physically delete the row in the database
       ps.setLong(1, message.getMessageID());      
    }
+   
+   protected void setVarBinaryColumn(int column, PreparedStatement ps, byte[] bytes) throws Exception
+   {
+      if (usingTrailingByte)
+      {
+         // Sybase has the stupid characteristic of truncating all trailing in zeros
+         // in varbinary columns
+         // So we add an extra byte on the end when we store the varbinary data
+         // otherwise we might lose data
+         // http://jira.jboss.org/jira/browse/JBMESSAGING-825
+         
+         byte[] res = new byte[bytes.length + 1];
+         
+         System.arraycopy(bytes, 0, res, 0, bytes.length);
+         
+         res[bytes.length] = 127;
+
+         bytes = res;
+      }
+      
+      ps.setBytes(column, bytes);            
+      
+      if (trace) { log.trace("Setting varbinary column of length: " + bytes.length); }
+   }
+   
+   protected byte[] getVarBinaryColumn(ResultSet rs, int columnIndex) throws Exception
+   {
+      byte[] bytes = rs.getBytes(columnIndex);
+      
+      if (usingTrailingByte)
+      {
+         // Get rid of the trailing byte
+         
+         // http://jira.jboss.org/jira/browse/JBMESSAGING-825
+         
+         byte[] newBytes = new byte[bytes.length - 1];
+         
+         System.arraycopy(bytes, 0, newBytes, 0, bytes.length - 1);
+         
+         bytes = newBytes;
+      }
+      
+      return bytes;
+   }
      
+   // Used for storing message headers and bodies
    protected void setBytes(PreparedStatement ps, int columnIndex, byte[] bytes) throws Exception
    {
       if (usingBinaryStream)
@@ -3089,7 +3146,8 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
       else
       {
          //Set the bytes using setBytes() - likely to be better for smaller byte[]
-         ps.setBytes(columnIndex, bytes);
+         
+         setVarBinaryColumn(columnIndex, ps, bytes);
       }
    }
    
@@ -3140,7 +3198,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
       else
       {
          //Get the bytes using getBytes() - better for smaller byte[]
-         return rs.getBytes(columnIndex);
+         return getVarBinaryColumn(rs, columnIndex);
       }
    }
    
@@ -3279,6 +3337,8 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
    }
    
    // Private -------------------------------------------------------
+   
+
    
    private int[] updateWithRetry(PreparedStatement ps, boolean batch) throws Exception
    {

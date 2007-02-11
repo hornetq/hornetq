@@ -44,6 +44,7 @@ import org.jboss.jms.client.delegate.ClientConnectionDelegate;
 import org.jboss.jms.client.state.ConnectionState;
 import org.jboss.jms.tx.MessagingXAResource;
 import org.jboss.jms.tx.ResourceManager;
+import org.jboss.messaging.core.tx.MessagingXid;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
 import org.jboss.test.messaging.tools.jmx.ServiceContainer;
@@ -198,6 +199,8 @@ public abstract class XATestBase extends MessagingTestCase
 
 
    // Public --------------------------------------------------------
+   
+   
    
    //See http://jira.jboss.com/jira/browse/JBMESSAGING-638
    public void testResourceManagerMemoryLeakOnCommit() throws Exception
@@ -659,7 +662,94 @@ public abstract class XATestBase extends MessagingTestCase
 
    }
    
+   // See http://jira.jboss.org/jira/browse/JBMESSAGING-825
+   // Need to test that ids with trailing zeros are dealt with properly - sybase has the habit
+   // of truncating trailing zeros in varbinary columns
+   public void testXidsWithTrailingZeros() throws Exception
+   {
+      if (!ServerManagement.isRemote())
+      {
+         return;
+      }
+      
+      XAConnection conn1 = null;
+      
+      try
+      {      
+         conn1 = cf.createXAConnection();
+   
+         XASession sess1 = conn1.createXASession();
+   
+         XAResource res1 = sess1.getXAResource();
          
+         byte[] branchQualifier = new byte[] { 1, 2, 3, 4, 5, 6, 0, 0, 0, 0 };
+         
+         byte[] globalTxId = new byte[] { 6, 5, 4, 3, 2, 1, 0, 0, 0, 0 };
+                  
+         Xid trailing = new MessagingXid(branchQualifier, 12435, globalTxId);
+         
+         res1.start(trailing, XAResource.TMNOFLAGS);
+   
+         MessageProducer prod1 = sess1.createProducer(queue);
+   
+         TextMessage tm1 = sess1.createTextMessage("testing1");
+   
+         prod1.send(tm1);
+   
+         res1.end(trailing, XAResource.TMSUCCESS);
+   
+   
+         res1.prepare(trailing);
+
+   
+         //Now "crash" the server
+   
+         ServerManagement.stopServerPeer();
+   
+         ServerManagement.startServerPeer();
+   
+         ServerManagement.deployQueue("Queue");
+   
+   
+         XAResource res = cf.createXAConnection().createXASession().getXAResource();
+   
+         Xid[] xids = res.recover(XAResource.TMSTARTRSCAN);
+         assertEquals(1, xids.length);
+   
+         Xid[] xids2 = res.recover(XAResource.TMENDRSCAN);
+         assertEquals(0, xids2.length);
+         
+         Xid trailing2 = xids[0];
+         
+         assertTrue(trailing.getFormatId() == trailing2.getFormatId());
+         
+         assertEqualByteArrays(trailing.getGlobalTransactionId(), trailing2.getGlobalTransactionId());
+         
+         assertEqualByteArrays(trailing.getBranchQualifier(), trailing2.getBranchQualifier());
+   
+         res.commit(trailing, false);
+            
+         if (checkNoMessageData())
+         {
+            fail("Data remains in database");
+         }
+      }
+      finally
+      {
+         if (conn1 != null)
+         {
+            try
+            {
+               conn1.close();
+            }
+            catch (Exception e)
+            {
+               //Ignore
+            }
+         }                  
+      }
+   }
+   
    public void test2PCSendCommit1PCOptimization() throws Exception
    {
       //Since both resources have some RM, TM will probably use 1PC optimization
@@ -2802,6 +2892,24 @@ public abstract class XATestBase extends MessagingTestCase
    // Protected -----------------------------------------------------
    
    // Private -------------------------------------------------------
+   
+   private void assertEqualByteArrays(byte[] b1, byte[] b2)
+   {
+      log.info("b1 length: " + b1.length + " b2 length " + b2.length);
+      
+      if (b1.length != b2.length)
+      {
+         fail("Lengths not the same");
+      }
+      
+      for (int i = 0; i < b1.length; i++)
+      {
+         if (b1[i] != b2[i])
+         {
+            fail("Not same at index " + i);
+         }
+      }
+   }
    
    // Inner classes -------------------------------------------------
    

@@ -47,6 +47,12 @@
       <type>boolean</type>
    </attribute>    
    
+   <attribute access="read-write" getMethod="isUsingTrailingByte" setMethod="setUsingTrailingByte">
+      <description>Should a trailing byte be added to VARBINARY columns - this would be true for databases such as Sybase which would otherwise truncate trailing zeros</description>
+      <name>UsingTrailingByte</name>
+      <type>boolean</type>
+   </attribute>    
+   
    <attribute access="read-write" getMethod="getSqlProperties" setMethod="setSqlProperties">
       <description>DML and DDL overrides</description>
       <name>SqlProperties</name>
