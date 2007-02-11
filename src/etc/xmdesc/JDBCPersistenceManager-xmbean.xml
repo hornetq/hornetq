@@ -41,6 +41,12 @@
       <type>boolean</type>
    </attribute>  
    
+   <attribute access="read-write" getMethod="isUsingBinaryStream" setMethod="setUsingBinaryStream">
+      <description>Should binary stream be used for accessing message headers / body ?</description>
+      <name>UsingBinaryStream</name>
+      <type>boolean</type>
+   </attribute>    
+   
    <attribute access="read-write" getMethod="getSqlProperties" setMethod="setSqlProperties">
       <description>DML and DDL overrides</description>
       <name>SqlProperties</name>
