@@ -44,7 +44,9 @@ public class JDBCPersistenceManagerService extends JDBCServiceSupport
    
    private boolean started;
    
-   private boolean usingBatchUpdates = false;
+   private boolean usingBatchUpdates;
+   
+   private boolean usingBinaryStream = true;
    
    private int maxParams = 100;
    
@@ -79,7 +81,7 @@ public class JDBCPersistenceManagerService extends JDBCServiceSupport
          persistenceManager =
             new JDBCPersistenceManager(ds, tm, sqlProperties,
                                        createTablesOnStartup, usingBatchUpdates,
-                                       true, maxParams);
+                                       usingBinaryStream, maxParams);
          
          persistenceManager.start();
          
@@ -134,5 +136,15 @@ public class JDBCPersistenceManagerService extends JDBCServiceSupport
    public void setMaxParams(int maxParams)
    {
       this.maxParams = maxParams;
+   }
+   
+   public boolean isUsingBinaryStream()
+   {
+      return usingBinaryStream;
+   }
+   
+   public void setUsingBinaryStream(boolean b)
+   {
+      usingBinaryStream = b;
    }
 }
