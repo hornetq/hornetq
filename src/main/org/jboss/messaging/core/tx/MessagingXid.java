@@ -124,9 +124,27 @@ public class MessagingXid implements Xid, Serializable, Streamable
 
    public String toString()
    {
-      return getClass().getName() + "(GID: " + new String(getGlobalTransactionId()) +
-                                    ", Branch: " + new String(getBranchQualifier()) +
+      return getClass().getName() + "(GID: " + stringRep(getGlobalTransactionId()) +
+                                    ", Branch: " + stringRep(getBranchQualifier()) +
                                     ", Format: " + getFormatId() + ")";
+   }
+   
+   private String stringRep(byte[] bytes)
+   {
+      StringBuffer buff = new StringBuffer();
+      for (int i = 0; i < bytes.length; i++)
+      {
+         byte b = bytes[i];
+         
+         buff.append(b);
+         
+         if (i != bytes.length - 1)
+         {
+            buff.append('.');
+         }
+      }
+      
+      return buff.toString();
    }
 
    public void read(DataInputStream in) throws Exception
