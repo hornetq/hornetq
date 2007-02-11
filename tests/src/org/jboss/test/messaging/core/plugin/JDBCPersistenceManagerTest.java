@@ -93,18 +93,18 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       
    }
    
-   protected void doSetup(boolean batch, int maxParams) throws Throwable
+   protected void doSetup(boolean batch, boolean useBinaryStream, boolean trailingByte, int maxParams) throws Throwable
    {
-      pm = createPM(batch, maxParams);         
+      pm = createPM(batch, useBinaryStream, trailingByte, maxParams);         
       ms = new SimpleMessageStore();      
    }
    
-   protected JDBCPersistenceManager createPM(boolean batch, int maxParams) throws Throwable
+   protected JDBCPersistenceManager createPM(boolean batch, boolean useBinaryStream, boolean trailingByte, int maxParams) throws Throwable
    {      
       JDBCPersistenceManager p =
          new JDBCPersistenceManager(sc.getDataSource(), sc.getTransactionManager(),
                   sc.getPersistenceManagerSQLProperties(),
-                  true, batch, true, false, maxParams);
+                  true, batch, useBinaryStream, trailingByte, maxParams);
       p.start();
       return p;
    }
@@ -137,7 +137,7 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
          
    public void testAddRemoveReference() throws Throwable
    {
-      doSetup(false, 100);
+      doSetup(false, false, false, 100);
       
       Channel channel1 = new SimpleChannel(0, ms);
       Channel channel2 = new SimpleChannel(1, ms);
@@ -249,57 +249,208 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
             
       }
    }
-       
    
+   // Trailing zero
+   // -----------------
+   
+   // Binary Stream
    
    //non batch
    
-   public void testCommit_NotXA_Long_NB() throws Throwable
+   public void testCommit_NotXA_Long_NB_BS_TZ() throws Throwable
    {
-      doTransactionCommit(false, false);
+      doTransactionCommit(false, false, true, true);
    }
    
-   public void testCommit_XA_Long_NB() throws Throwable
+   public void testCommit_XA_Long_NB_BS_TZ() throws Throwable
    {
-      doTransactionCommit(true, false);
+      doTransactionCommit(true, false, true, true);
    }
 
-   public void testRollback_NotXA_Long_NB() throws Throwable
+   public void testRollback_NotXA_Long_NB_BS_TZ() throws Throwable
    {
-      doTransactionRollback(false, false);
+      doTransactionRollback(false, false, true, true);
    }
        
-   public void testRollback_XA_Long_NB() throws Throwable
+   public void testRollback_XA_Long_NB_BS_TZ() throws Throwable
    {
-      doTransactionRollback(true, false);
+      doTransactionRollback(true, false, true, true);
    }
    
 
    //batch
    
-   public void testCommit_NotXA_Long_B() throws Throwable
+   public void testCommit_NotXA_Long_B_BS_TZ() throws Throwable
    {
-      doTransactionCommit(false, true);
+      doTransactionCommit(false, true, true, true);
    }
      
-   public void testCommit_XA_Long_B() throws Throwable
+   public void testCommit_XA_Long_B_BS_TZ() throws Throwable
    {
-      doTransactionCommit(true, true);
+      doTransactionCommit(true, true, true, true);
    }
 
-   public void testRollback_NotXA_Long_B() throws Throwable
+   public void testRollback_NotXA_Long_B_BS_TZ() throws Throwable
    {
-      doTransactionRollback(false, true);
+      doTransactionRollback(false, true, true, true);
    }
         
-   public void testRollback_XA_Long_B() throws Throwable
+   public void testRollback_XA_Long_B_BS_TZ() throws Throwable
    {
-      doTransactionRollback(true, true);
+      doTransactionRollback(true, true, true, true);
    }
+   
+   // No binary stream
+   
+   //non batch
+   
+   public void testCommit_NotXA_Long_NB_BNS_TZ() throws Throwable
+   {
+      doTransactionCommit(false, false, false, true);
+   }
+   
+   public void testCommit_XA_Long_NB_NBS_TZ() throws Throwable
+   {
+      doTransactionCommit(true, false, false, true);
+   }
+
+   public void testRollback_NotXA_Long_NB_NBS_TZ() throws Throwable
+   {
+      doTransactionRollback(false, false, false, true);
+   }
+       
+   public void testRollback_XA_Long_NB_NBS_TZ() throws Throwable
+   {
+      doTransactionRollback(true, false, false, true);
+   }
+   
+
+   //batch
+   
+   public void testCommit_NotXA_Long_B_NBS_TZ() throws Throwable
+   {
+      doTransactionCommit(false, true, false, true);
+   }
+     
+   public void testCommit_XA_Long_B_NBS_TZ() throws Throwable
+   {
+      doTransactionCommit(true, true, false, true);
+   }
+
+   public void testRollback_NotXA_Long_B_NBS_TZ() throws Throwable
+   {
+      doTransactionRollback(false, true, false, true);
+   }
+        
+   public void testRollback_XA_Long_B_NBS_TZ() throws Throwable
+   {
+      doTransactionRollback(true, true, false, true);
+   }
+   
+       
+   // Non trailing zero
+   // -----------------
+   
+   // Binary Stream
+   
+   //non batch
+   
+   public void testCommit_NotXA_Long_NB_BS_NTZ() throws Throwable
+   {
+      doTransactionCommit(false, false, true, false);
+   }
+   
+   public void testCommit_XA_Long_NB_BS_NTZ() throws Throwable
+   {
+      doTransactionCommit(true, false, true, false);
+   }
+
+   public void testRollback_NotXA_Long_NB_BS_NTZ() throws Throwable
+   {
+      doTransactionRollback(false, false, true, false);
+   }
+       
+   public void testRollback_XA_Long_NB_BS_NTZ() throws Throwable
+   {
+      doTransactionRollback(true, false, true, false);
+   }
+   
+
+   //batch
+   
+   public void testCommit_NotXA_Long_B_BS_NTZ() throws Throwable
+   {
+      doTransactionCommit(false, true, true, false);
+   }
+     
+   public void testCommit_XA_Long_B_BS_NTZ() throws Throwable
+   {
+      doTransactionCommit(true, true, true, false);
+   }
+
+   public void testRollback_NotXA_Long_B_BS_NTZ() throws Throwable
+   {
+      doTransactionRollback(false, true, true, false);
+   }
+        
+   public void testRollback_XA_Long_B_BS_NTZ() throws Throwable
+   {
+      doTransactionRollback(true, true, true, false);
+   }
+   
+   // No binary stream
+   
+   //non batch
+   
+   public void testCommit_NotXA_Long_NB_BNS_NTZ() throws Throwable
+   {
+      doTransactionCommit(false, false, false, false);
+   }
+   
+   public void testCommit_XA_Long_NB_NBS_NTZ() throws Throwable
+   {
+      doTransactionCommit(true, false, false, false);
+   }
+
+   public void testRollback_NotXA_Long_NB_NBS_NTZ() throws Throwable
+   {
+      doTransactionRollback(false, false, false, false);
+   }
+       
+   public void testRollback_XA_Long_NB_NBS_NTZ() throws Throwable
+   {
+      doTransactionRollback(true, false, false, false);
+   }
+   
+
+   //batch
+   
+   public void testCommit_NotXA_Long_B_NBS_NTZ() throws Throwable
+   {
+      doTransactionCommit(false, true, false, false);
+   }
+     
+   public void testCommit_XA_Long_B_NBS_NTZ() throws Throwable
+   {
+      doTransactionCommit(true, true, false, false);
+   }
+
+   public void testRollback_NotXA_Long_B_NBS_NTZ() throws Throwable
+   {
+      doTransactionRollback(false, true, false, false);
+   }
+        
+   public void testRollback_XA_Long_B_NBS_NTZ() throws Throwable
+   {
+      doTransactionRollback(true, true, false, false);
+   }
+   
+   
+   
    
    protected void addRemoveGetReferences(boolean batch) throws Throwable
    {
-      doSetup(false, 100);
+      doSetup(false, false, false, 100);
       
       Channel channel1 = new SimpleChannel(0, ms);
       
@@ -483,7 +634,7 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
    
    public void testPageOrders() throws Throwable
    {
-      doSetup(false, 100);
+      doSetup(false, false, false, 100);
       
       Channel channel = new SimpleChannel(0, ms);
       
@@ -574,7 +725,7 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
      
    public void testGetMessages() throws Throwable
    {
-      doSetup(false, 100);
+      doSetup(false, false, false, 100);
       
       Channel channel = new SimpleChannel(0, ms);
       
@@ -651,7 +802,7 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
    
    public void testGetInitialRefInfos() throws Throwable
    {
-      doSetup(false, 100);
+      doSetup(false, false, false, 100);
       
       Channel channel = new SimpleChannel(0, ms);
       
@@ -723,7 +874,7 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
    
    public void testGetMessagesMaxParams() throws Throwable
    {
-      doSetup(false, 5);
+      doSetup(false, false, false, 5);
       
       Channel channel = new SimpleChannel(0, ms);
       
@@ -1152,9 +1303,9 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       
    }
    
-   protected void doTransactionCommit(boolean xa, boolean batch) throws Throwable
+   protected void doTransactionCommit(boolean xa, boolean batch, boolean useBinaryStream, boolean trailingByte) throws Throwable
    {
-      doSetup(batch, 100);
+      doSetup(batch, useBinaryStream, trailingByte, 100);
 
       Channel channel = new SimpleChannel(0, ms);
       
@@ -1263,9 +1414,9 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       assertTrue(msgs.contains(new Long(ref5.getMessage().getMessageID())));
    }
          
-   protected void doTransactionRollback(boolean xa, boolean batch) throws Throwable
+   protected void doTransactionRollback(boolean xa, boolean batch, boolean useBinaryStream, boolean trailingByte) throws Throwable
    {
-      doSetup(batch, 100);
+      doSetup(batch, useBinaryStream, trailingByte, 100);
 
       Channel channel = new SimpleChannel(0, ms);
       

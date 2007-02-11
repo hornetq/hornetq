@@ -63,11 +63,6 @@ public class MessagePersistenceManagerTest extends JDBCPersistenceManagerTest
       super.setUp();              
    }
    
-   protected void doSetup(boolean batch, int maxParams) throws Throwable
-   {
-      super.doSetup(batch, maxParams);
-   }
-
    public void tearDown() throws Exception
    {
       super.tearDown();
