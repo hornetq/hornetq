@@ -120,7 +120,7 @@ public class MessagingXAResource implements XAResource
 
       if (!(xid instanceof MessagingXid))
       {
-         xid = new MessagingXid(xid.getBranchQualifier(), xid.getFormatId(), xid.getGlobalTransactionId());
+         xid = new MessagingXid(xid);
       }
 
       boolean convertTx = false;
@@ -182,7 +182,7 @@ public class MessagingXAResource implements XAResource
 
       if (!(xid instanceof MessagingXid))
       {
-         xid = new MessagingXid(xid.getBranchQualifier(), xid.getFormatId(), xid.getGlobalTransactionId());
+         xid = new MessagingXid(xid);
       }
 
       //TODO - why do we need this synchronized block?
@@ -215,7 +215,7 @@ public class MessagingXAResource implements XAResource
 
       if (!(xid instanceof MessagingXid))
       {
-         xid = new MessagingXid(xid.getBranchQualifier(), xid.getFormatId(), xid.getGlobalTransactionId());
+         xid = new MessagingXid(xid);
       }
 
       return rm.prepare(xid, connection);
@@ -229,7 +229,7 @@ public class MessagingXAResource implements XAResource
 
       if (!(xid instanceof MessagingXid))
       {
-         xid = new MessagingXid(xid.getBranchQualifier(), xid.getFormatId(), xid.getGlobalTransactionId());
+         xid = new MessagingXid(xid);
       }
 
       rm.commit(xid, onePhase, connection);
@@ -243,7 +243,7 @@ public class MessagingXAResource implements XAResource
 
       if (!(xid instanceof MessagingXid))
       {
-         xid = new MessagingXid(xid.getBranchQualifier(), xid.getFormatId(), xid.getGlobalTransactionId());
+         xid = new MessagingXid(xid);
       }
 
       rm.rollback(xid, connection);

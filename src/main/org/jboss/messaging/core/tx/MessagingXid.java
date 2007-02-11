@@ -79,6 +79,14 @@ public class MessagingXid implements Xid, Serializable, Streamable
       calcHash();     
    }
    
+   //Copy constructor
+   public MessagingXid(Xid other)
+   {
+      this.branchQualifier = copyBytes(other.getBranchQualifier());
+      this.formatId = other.getFormatId();
+      this.globalTransactionId = copyBytes(other.getGlobalTransactionId());
+   }
+      
    public int hashCode()
    {
       return hash;
@@ -184,6 +192,15 @@ public class MessagingXid implements Xid, Serializable, Streamable
       System.arraycopy(intBytes, 0, hashBytes, branchQualifier.length + globalTransactionId.length, 4);
       String s = new String(hashBytes);
       hash = s.hashCode();
+   }
+   
+   private byte[] copyBytes(byte[] other)
+   {
+      byte[] bytes = new byte[other.length];
+      
+      System.arraycopy(other, 0, bytes, 0, other.length);
+      
+      return bytes;
    }
 
 }
