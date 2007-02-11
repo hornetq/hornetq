@@ -40,6 +40,7 @@ import org.jboss.logging.Logger;
 import org.jboss.messaging.core.plugin.IDBlock;
 import org.jboss.remoting.callback.Callback;
 import org.jboss.remoting.callback.ServerInvokerCallbackHandler;
+import org.jboss.security.SecurityAssociation;
 
 /**
  * Concrete implementation of ConnectionFactoryEndpoint
@@ -186,8 +187,15 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
    {
       log.debug("creating a new connection for user " + username);
 
-      // authenticate the user
+      // Authenticate. Successful autentication will place a new SubjectContext on thread local,
+      // which will be used in the authorization process. However, we need to make sure we clean
+      // up thread local immediately after we used the information, otherwise some other people
+      // security my be screwed up, on account of thread local security stack being corrupted.
+
       serverPeer.getSecurityManager().authenticate(username, password);
+
+      // We don't need the SubjectContext on thread local anymore, clean it up
+      SecurityAssociation.popSubjectContext();
 
       // see if there is a preconfigured client id for the user
       if (username != null)

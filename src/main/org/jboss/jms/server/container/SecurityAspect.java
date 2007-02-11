@@ -39,6 +39,7 @@ import org.jboss.jms.server.endpoint.advised.ConsumerAdvised;
 import org.jboss.jms.server.endpoint.advised.SessionAdvised;
 import org.jboss.jms.server.security.SecurityMetadata;
 import org.jboss.logging.Logger;
+import org.jboss.security.SecurityAssociation;
 
 /**
  * This aspect enforces the JBossMessaging JMS security policy.
@@ -53,6 +54,7 @@ import org.jboss.logging.Logger;
  * milliseconds later.
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision 1.1 $</tt>
  *
  * $Id$
@@ -218,7 +220,7 @@ public class SecurityAspect
       
       if (checkCached(dest, checkType))
       {
-         //Ok
+         // OK
          return;
       }
 
@@ -234,25 +236,36 @@ public class SecurityAspect
          throw new JMSSecurityException("No security configuration avaliable for " + name);
       }
 
-      // Authenticate
+      // Authenticate. Successful autentication will place a new SubjectContext on thread local,
+      // which will be used in the authorization process. However, we need to make sure we clean up
+      // thread local immediately after we used the information, otherwise some other people
+      // security my be screwed up, on account of thread local security stack being corrupted.
+
       sm.authenticate(conn.getUsername(), conn.getPassword());
 
       // Authorize
       Set principals = checkType == CheckType.READ ? securityMetadata.getReadPrincipals() :
                        checkType == CheckType.WRITE ? securityMetadata.getWritePrincipals() :
                        securityMetadata.getCreatePrincipals();
-                       
-      if (!sm.authorize(conn.getUsername(), principals))
+      try
       {
-         String msg = "User: " + conn.getUsername() + 
-            " is not authorized to " +
-            (checkType == CheckType.READ ? "read from" : 
-             checkType == CheckType.WRITE ? "write to" : "create durable sub on") +
-            " destination " + name;
-             
-         throw new JMSSecurityException(msg);                        
+         if (!sm.authorize(conn.getUsername(), principals))
+         {
+            String msg = "User: " + conn.getUsername() +
+               " is not authorized to " +
+               (checkType == CheckType.READ ? "read from" :
+                  checkType == CheckType.WRITE ? "write to" : "create durable sub on") +
+               " destination " + name;
+
+            throw new JMSSecurityException(msg);
+         }
       }
-      
+      finally
+      {
+         // pop the Messaging SecurityContext, it did its job
+         SecurityAssociation.popSubjectContext();
+      }
+
       // if we get here we're granted, add to the cache
       
       switch (checkType.type)

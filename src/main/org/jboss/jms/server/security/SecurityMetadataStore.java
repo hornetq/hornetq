@@ -162,6 +162,9 @@ public class SecurityMetadataStore implements SecurityManager
 
       if (authenticationManager.isValid(principal, passwordChars, subject))
       {
+         // Warning! This "taints" thread local. Make sure you pop it off the stack as soon as
+         //          you're done with it.
+         SecurityActions.pushSubjectContext(principal, passwordChars, subject);
          return subject;
       }
       else

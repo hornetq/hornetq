@@ -23,6 +23,7 @@ package org.jboss.test.thirdparty.jbosssx;
 
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
+import org.jboss.test.messaging.tools.jmx.MockJBossSecurityManager;
 import org.jboss.security.SecurityAssociation;
 import org.jboss.security.SimplePrincipal;
 
@@ -44,6 +45,8 @@ import java.util.Collections;
  * Set of tests to insure consistent behavior relative to the JBoss AS security infrastructure.
  * This is just a safety layer, full fledged security tests should be present in the integration
  * test suite.
+ *
+ * Tests contained by this class are supposed to run only in local environment.
  *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
@@ -73,6 +76,11 @@ public class SecurityAssociationTest extends MessagingTestCase
     */
    public void testSecurityAssociation() throws Exception
    {
+      if(ServerManagement.isRemote())
+      {
+         fail("This test is supposed to be run in a local configuration");
+      }
+
       ConnectionFactory cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
       Queue queue = (Queue)ic.lookup("/queue/TestQueue");
 
@@ -134,12 +142,176 @@ public class SecurityAssociationTest extends MessagingTestCase
       }
    }
 
+   /**
+    * Test for http://jira.jboss.org/jira/browse/JBMESSAGING-824
+    *
+    * Send a message to a queue that requires write permissions, and make sure the thread local
+    * SecurityContext stack is correctly cleaned up after that. We're using a test security
+    * manager that simulates a JBoss JaasSecurityManager.
+    *
+    */
+   public void testGuestAuthorizedSend() throws Exception
+   {
+      if(ServerManagement.isRemote())
+      {
+         fail("This test is supposed to be run in a local configuration");
+      }
+
+      MockJBossSecurityManager sm =
+         (MockJBossSecurityManager)ic.lookup(MockJBossSecurityManager.TEST_SECURITY_DOMAIN);
+      assertTrue(sm.isSimulateJBossJaasSecurityManager());
+
+      ConnectionFactory cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
+      Queue queue = (Queue)ic.lookup("/queue/SecureTestQueue");
+
+      Principal nabopolassar = new SimplePrincipal("nabopolassar");
+      Set principals = new HashSet();
+      principals.add(nabopolassar);
+      Subject subject =
+         new Subject(false, principals, Collections.EMPTY_SET, Collections.EMPTY_SET);
+      Principal nebuchadrezzar = new SimplePrincipal("nebuchadrezzar");
+
+      SecurityAssociation.pushSubjectContext(subject, nebuchadrezzar, "xexe");
+
+      Connection conn = null;
+
+      try
+      {
+         conn = cf.createConnection();
+         conn.start();
+
+         Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+         MessageProducer prod = session.createProducer(queue);
+         MessageConsumer cons = session.createConsumer(queue);
+
+         TextMessage m = session.createTextMessage("floccinaucinihilipilification");
+
+         prod.send(m);
+
+         TextMessage rm = (TextMessage)cons.receive(5000);
+
+         assertEquals("floccinaucinihilipilification", rm.getText());
+
+         SecurityAssociation.SubjectContext context = SecurityAssociation.popSubjectContext();
+
+         Subject s = context.getSubject();
+         assertNotNull(s);
+         Set ps = s.getPrincipals();
+         assertNotNull(ps);
+         assertEquals(1, ps.size());
+         Principal p = (Principal)ps.iterator().next();
+         assertTrue(p instanceof SimplePrincipal);
+         assertEquals("nabopolassar", ((SimplePrincipal)p).getName());
+
+         p = context.getPrincipal();
+         assertNotNull(p);
+         assertTrue(p instanceof SimplePrincipal);
+         assertEquals("nebuchadrezzar", ((SimplePrincipal)p).getName());
+
+         Object o = context.getCredential();
+         assertNotNull(o);
+         assertEquals("xexe", o);
+      }
+      finally
+      {
+         if (conn != null)
+         {
+            conn.close();
+         }
+      }
+   }
+
+   /**
+    * Test for http://jira.jboss.org/jira/browse/JBMESSAGING-824
+    *
+    * Send a message to a queue that requires write permissions, and make sure the thread local
+    * SecurityContext stack is correctly cleaned up after that. We're using a test security
+    * manager that simulates a JBoss JaasSecurityManager.
+    */
+   public void testAuthorizedSend() throws Exception
+   {
+      if(ServerManagement.isRemote())
+      {
+         fail("This test is supposed to be run in a local configuration");
+      }
+
+      MockJBossSecurityManager sm =
+         (MockJBossSecurityManager)ic.lookup(MockJBossSecurityManager.TEST_SECURITY_DOMAIN);
+      assertTrue(sm.isSimulateJBossJaasSecurityManager());
+
+      ConnectionFactory cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
+      Queue queue = (Queue)ic.lookup("/queue/SecureTestQueue");
+
+      Principal nabopolassar = new SimplePrincipal("nabopolassar");
+      Set principals = new HashSet();
+      principals.add(nabopolassar);
+      Subject subject =
+         new Subject(false, principals, Collections.EMPTY_SET, Collections.EMPTY_SET);
+      Principal nebuchadrezzar = new SimplePrincipal("nebuchadrezzar");
+
+      SecurityAssociation.pushSubjectContext(subject, nebuchadrezzar, "xexe");
+
+      Connection conn = null;
+
+      try
+      {
+         conn = cf.createConnection("john", "needle");
+         conn.start();
+
+         Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+         MessageProducer prod = session.createProducer(queue);
+         MessageConsumer cons = session.createConsumer(queue);
+
+         TextMessage m = session.createTextMessage("floccinaucinihilipilification");
+
+         prod.send(m);
+
+         TextMessage rm = (TextMessage)cons.receive(5000);
+
+         assertEquals("floccinaucinihilipilification", rm.getText());
+
+         SecurityAssociation.SubjectContext context = SecurityAssociation.popSubjectContext();
+
+         Subject s = context.getSubject();
+         assertNotNull(s);
+         Set ps = s.getPrincipals();
+         assertNotNull(ps);
+         assertEquals(1, ps.size());
+         Principal p = (Principal)ps.iterator().next();
+         assertTrue(p instanceof SimplePrincipal);
+         assertEquals("nabopolassar", ((SimplePrincipal)p).getName());
+
+         p = context.getPrincipal();
+         assertNotNull(p);
+         assertTrue(p instanceof SimplePrincipal);
+         assertEquals("nebuchadrezzar", ((SimplePrincipal)p).getName());
+
+         Object o = context.getCredential();
+         assertNotNull(o);
+         assertEquals("xexe", o);
+      }
+      finally
+      {
+         if (conn != null)
+         {
+            conn.close();
+         }
+      }
+   }
+
    // Package protected ----------------------------------------------------------------------------
 
    // Protected ------------------------------------------------------------------------------------
 
    protected void setUp() throws Exception
    {
+      if(ServerManagement.isRemote())
+      {
+         fail("This test is supposed to be run in a local configuration");
+      }
+
       super.setUp();
 
       ServerManagement.start("all");
@@ -148,12 +320,38 @@ public class SecurityAssociationTest extends MessagingTestCase
 
       ServerManagement.deployQueue("TestQueue");
 
+      ServerManagement.deployQueue("SecureTestQueue");
+
+      final String secureQueueConfig =
+         "<security>" +
+            "<role name=\"publisher\" read=\"true\" write=\"true\" create=\"false\"/>" +
+            "<role name=\"guest\" read=\"true\" write=\"true\" create=\"false\"/>" +
+         "</security>";
+      ServerManagement.configureSecurityForDestination("SecureTestQueue", secureQueueConfig);
+
+      // make MockSecurityManager simulate JaasSecurityManager behavior. This is the whole point
+      // of this test, to catch JBoss AS integreation failure before the integration test suite
+      // does. However, this MUST NOT be a replacement for integration tests, it's just an
+      // additional safety layer.
+
+      MockJBossSecurityManager sm =
+         (MockJBossSecurityManager)ic.lookup(MockJBossSecurityManager.TEST_SECURITY_DOMAIN);
+
+      sm.setSimulateJBossJaasSecurityManager(true);
+
       log.debug("setup done");
    }
 
    protected void tearDown() throws Exception
    {
       ServerManagement.undeployQueue("TestQueue");
+
+      ServerManagement.undeployQueue("SecureTestQueue");
+
+      MockJBossSecurityManager sm =
+         (MockJBossSecurityManager)ic.lookup(MockJBossSecurityManager.TEST_SECURITY_DOMAIN);
+
+      sm.setSimulateJBossJaasSecurityManager(false);
 
       ic.close();
 

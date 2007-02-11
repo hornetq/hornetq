@@ -650,6 +650,7 @@
                <exclude name="**/jms/manual/**/*Test.class"/>
                <exclude name="**/jms/clustering/*Test.class"/>
                <exclude name="**/thirdparty/remoting/ServerAddressTest.class"/>
+               <exclude name="org/jboss/test/thirdparty/jbosssx/SecurityAssociationTest.class"/>
             </fileset>
          </batchtest>
       </junit>

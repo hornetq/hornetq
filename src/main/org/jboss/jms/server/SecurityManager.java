@@ -49,6 +49,11 @@ public interface SecurityManager
     * Authenticate the specified user with the given password. Implementations are most likely to
     * delegates to a JBoss AuthenticationManager.
     *
+    * Successful autentication will place a new SubjectContext on thread local, which will be used
+    * in the authorization process. However, we need to make sure we clean up thread local
+    * immediately after we used the information, otherwise some other people security my be screwed
+    * up, on account of thread local security stack being corrupted.
+    *
     * @throws JMSSecurityException if the user is not authenticated
     */
    Subject authenticate(String user, String password) throws JMSSecurityException;
