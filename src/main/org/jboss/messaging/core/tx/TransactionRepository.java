@@ -205,7 +205,7 @@ public class TransactionRepository implements MessagingComponent
 
 
    public Transaction getPreparedTx(Xid xid) throws Exception
-   {
+   {            
       Transaction tx = (Transaction)globalToLocalMap.get(xid);
 
       if (tx == null)

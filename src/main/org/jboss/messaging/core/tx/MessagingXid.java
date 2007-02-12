@@ -50,6 +50,8 @@ public class MessagingXid implements Xid, Serializable, Streamable
    private byte[] globalTransactionId;
    
    private int hash;
+   
+   private boolean hashCalculated;
 
    public byte[] getBranchQualifier()
    {
@@ -75,8 +77,7 @@ public class MessagingXid implements Xid, Serializable, Streamable
    {
       this.branchQualifier = branchQualifier;
       this.formatId = formatId;
-      this.globalTransactionId = globalTransactionId;      
-      calcHash();     
+      this.globalTransactionId = globalTransactionId;          
    }
    
    //Copy constructor
@@ -89,6 +90,10 @@ public class MessagingXid implements Xid, Serializable, Streamable
       
    public int hashCode()
    {
+      if (!hashCalculated)
+      {
+         calcHash();
+      }
       return hash;
    }
    
@@ -117,7 +122,7 @@ public class MessagingXid implements Xid, Serializable, Streamable
          if (this.branchQualifier[i] != otherBQ[i])
          {
             return false;
-         }
+         }         
       }
       for (int i = 0; i < this.globalTransactionId.length; i++)
       {
@@ -192,6 +197,7 @@ public class MessagingXid implements Xid, Serializable, Streamable
       System.arraycopy(intBytes, 0, hashBytes, branchQualifier.length + globalTransactionId.length, 4);
       String s = new String(hashBytes);
       hash = s.hashCode();
+      hashCalculated = true;
    }
    
    private byte[] copyBytes(byte[] other)
