@@ -3,6 +3,8 @@
 <!--
      Postgresql non-clustered persistence deployment descriptor.
 
+     UNTESTED
+
      $Id$
  -->
 

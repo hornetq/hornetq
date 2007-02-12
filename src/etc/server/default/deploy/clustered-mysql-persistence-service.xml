@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <!--
-     MySql persistence deployment descriptor.
+     MySql clustered persistence deployment descriptor.
+
+     UNTESTED
 
      $Id$
  -->
