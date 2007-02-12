@@ -114,6 +114,18 @@ public class MockJBossSecurityManager implements AuthenticationManager, RealmMap
             addRole(activeSubject, "def");
          }
       }
+      // We use this user with pre-configured clientIds
+      else if ("dilbert".equals(username))
+      {
+         isValid = "dogbert".equals(password);
+
+         if (isValid && simulateJBossJaasSecurityManager)
+         {
+            addRole(activeSubject, "publisher");
+            addRole(activeSubject, "durpublisher");
+            addRole(activeSubject, "def");
+         }
+      }
       else if ("nobody".equals(username))
       {
          isValid = "nobody".equals(password);

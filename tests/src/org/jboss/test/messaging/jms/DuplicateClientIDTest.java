@@ -89,16 +89,21 @@ public class DuplicateClientIDTest extends MessagingTestCase
    {
       Connection c1 = null;
       Connection c2 = null;
+
       try
       {
 
-         c1 = cf.createConnection("john", "needle");
+         c1 = cf.createConnection("dilbert", "dogbert");
+         assertNotNull(c1);
+         assertNotNull(c1.getClientID());
 
          try
          {
-            c2 = cf.createConnection("john", "needle");
-            
-            if (c1 != null & c2 != null && c1.getClientID().equals(c2.getClientID()))
+            c2 = cf.createConnection("dilbert", "dogbert");
+            assertNotNull(c2);
+            assertNotNull(c2.getClientID());
+
+            if (c1.getClientID().equals(c2.getClientID()))
             {            
                fail("JBossMessaging is allowing duplicate clients!");
             }
@@ -116,17 +121,19 @@ public class DuplicateClientIDTest extends MessagingTestCase
 
    public void testNotDuplicateClientID() throws Exception
    {
+      // Validates if there is anything dirty on the session that could damage a regular connection
+      Connection c0 = null;
       Connection c1 = null;
       Connection c2 = null;
       try
       {
-
+         c0 = cf.createConnection("dilbert", "dogbert");
          c1 = cf.createConnection();
-
          c2 = cf.createConnection();
       }
       finally
       {
+         if (c0 != null) c0.close();
          if (c1 != null) c1.close();
          if (c2 != null) c2.close();
       }
