@@ -116,7 +116,7 @@ public class JDBCJMSUserManager extends JDBCSupport implements JMSUserManager
       try
       {
          conn = ds.getConnection();
-         
+
          ps = conn.prepareStatement(getSQLStatement("SELECT_PRECONF_CLIENTID"));
          
          ps.setString(1, username);
@@ -129,7 +129,7 @@ public class JDBCJMSUserManager extends JDBCSupport implements JMSUserManager
          {
             clientID = rs.getString(1);
          }
-         
+
          return clientID;
       }
       catch (SQLException e)
@@ -168,8 +168,8 @@ public class JDBCJMSUserManager extends JDBCSupport implements JMSUserManager
          {
             populateTables.add(entry.getValue());
          }
-      }      
-      
+      }
+
       if (!populateTables.isEmpty())
       {         
          Connection conn = null;      
@@ -193,7 +193,7 @@ public class JDBCJMSUserManager extends JDBCSupport implements JMSUserManager
                }
                catch (SQLException e) 
                {
-                  log.debug("Failed to execute: " + statement, e);
+                  log.warn("Failed to execute: " + statement, e);
                }  
             }      
          }

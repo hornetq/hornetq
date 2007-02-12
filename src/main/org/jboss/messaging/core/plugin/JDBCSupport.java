@@ -94,28 +94,35 @@ public class JDBCSupport implements MessagingComponent
       defaultDMLStatements.putAll(getDefaultDMLStatements());
       
       defaultDDLStatements.putAll(getDefaultDDLStatements());
-               
+
+      // Make a copy without startup statements
+      Properties sqlPropertiesCopy = new Properties();
+
+      for (Iterator iterSQL = sqlProperties.entrySet().iterator(); iterSQL.hasNext();)
+      {
+         Map.Entry entry = (Map.Entry) iterSQL.next();
+         if (!this.ignoreVerificationOnStartup((String)entry.getKey()))
+         {
+            sqlPropertiesCopy.put(entry.getKey(), entry.getValue());
+         }
+      }
+
       //Validate the SQL properties
-      Iterator iter = this.sqlProperties.keySet().iterator();
-      
+      Iterator iter = sqlPropertiesCopy.keySet().iterator();
+
       while (iter.hasNext())
       {
          String statementName = (String)iter.next();
-
-         if (ignoreVerificationOnStartup(statementName))
-         {
-            continue;
-         }
 
          //This will throw an exception if there is no default for the statement specified in the
          //sql properties
          getSQLStatement(statementName);
       }
-      
+
       //Also we validate the other way - if there are any sql properties specified then there should be one for every
       //default property
       //This allows us to catch subtle errors in the persistence manager configuration
-      if (!sqlProperties.isEmpty())
+      if (!sqlPropertiesCopy.isEmpty())
       {
          iter = defaultDMLStatements.keySet().iterator();
          
@@ -135,7 +142,7 @@ public class JDBCSupport implements MessagingComponent
          {
             String statementName = (String)iter.next();
             
-            if (sqlProperties.get(statementName) == null)
+            if (sqlPropertiesCopy.get(statementName) == null)
             {
                throw new IllegalStateException("SQL statement " + statementName + " is not specified in the SQL properties");
             }
