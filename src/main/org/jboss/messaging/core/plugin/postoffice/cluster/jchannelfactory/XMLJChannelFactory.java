@@ -28,22 +28,21 @@ import org.jgroups.JChannel;
 /**
  * A JChannelFactory that will use Elements to create channels.
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- * @version <tt>$Revision$</tt>
- *          <p/>
- *          $Id$
+ * @version <tt>$Revision:1909 $</tt>
+ * $Id:XMLJChannelFactory.java 1909 2007-01-06 06:08:03Z clebert.suconic@jboss.com $
  */
 public class XMLJChannelFactory implements JChannelFactory
 {
 
-   // Constants
+   // Constants ------------------------------------------------------------------------------------
 
-   // Attributes
+   // Attributes -----------------------------------------------------------------------------------
    Element syncConfig;
    Element asyncConfig;
 
-   // Static
+   // Static ---------------------------------------------------------------------------------------
 
-   // Constructors
+   // Constructors ---------------------------------------------------------------------------------
 
    public XMLJChannelFactory(Element syncConfig, Element asyncConfig)
    {
@@ -51,7 +50,7 @@ public class XMLJChannelFactory implements JChannelFactory
       this.asyncConfig = asyncConfig;
    }
 
-   // Public
+   // Public ---------------------------------------------------------------------------------------
 
    public Element getSyncConfig()
    {
@@ -73,7 +72,7 @@ public class XMLJChannelFactory implements JChannelFactory
       this.asyncConfig = asyncConfig;
    }
 
-   // implementation of JChannelFactory
+   // implementation of JChannelFactory ------------------------------------------------------------
    public JChannel createSyncChannel() throws Exception
    {
       return new JChannel(syncConfig);
@@ -84,12 +83,12 @@ public class XMLJChannelFactory implements JChannelFactory
       return new JChannel(asyncConfig);
    }
 
-   // Package protected
+   // Package protected ----------------------------------------------------------------------------
 
-   // Protected
+   // Protected ------------------------------------------------------------------------------------
 
-   // Private
+   // Private --------------------------------------------------------------------------------------
 
-   // Inner classes
+   // Inner classes --------------------------------------------------------------------------------
 
 }

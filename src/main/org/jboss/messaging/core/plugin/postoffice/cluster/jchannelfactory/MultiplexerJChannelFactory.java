@@ -31,16 +31,17 @@ import org.jgroups.JChannel;
  *
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  * @version <tt>$Revision$</tt>
- * 
  * $Id$
  */
 public class MultiplexerJChannelFactory implements JChannelFactory
 {
 
-   // Constants
-   private static final String[] MUX_SIGNATURE = new String[]{"java.lang.String", "java.lang.String", "boolean", "java.lang.String"};
+   // Constants ------------------------------------------------------------------------------------
 
-   // Attributes
+   private static final String[] MUX_SIGNATURE = new String[]{"java.lang.String",
+      "java.lang.String", "boolean", "java.lang.String"};
+
+   // Attributes -----------------------------------------------------------------------------------
    MBeanServer server;
    ObjectName channelFactory;
    String asyncStack;
@@ -48,9 +49,9 @@ public class MultiplexerJChannelFactory implements JChannelFactory
    String uniqueID;
    private static final String MUX_OPERATION = "createMultiplexerChannel";
 
-   // Static
+   // Static ---------------------------------------------------------------------------------------
 
-   // Constructors
+   // Constructors ---------------------------------------------------------------------------------
 
    public MultiplexerJChannelFactory(MBeanServer server,
                                     ObjectName channelFactory,
@@ -65,7 +66,7 @@ public class MultiplexerJChannelFactory implements JChannelFactory
       this.syncStack = syncStack;
    }
 
-   // Public
+   // Public ---------------------------------------------------------------------------------------
 
    public MBeanServer getServer()
    {
@@ -119,20 +120,22 @@ public class MultiplexerJChannelFactory implements JChannelFactory
 
    public JChannel createSyncChannel() throws Exception
    {
-      return (JChannel) server.invoke(this.channelFactory, MUX_OPERATION, new Object[]{syncStack, uniqueID, Boolean.TRUE, uniqueID}, MUX_SIGNATURE);
+      return (JChannel) server.invoke(this.channelFactory, MUX_OPERATION,
+         new Object[]{syncStack, uniqueID, Boolean.TRUE, uniqueID}, MUX_SIGNATURE);
    }
 
    public JChannel createASyncChannel() throws Exception
    {
-      return (JChannel) server.invoke(this.channelFactory, MUX_OPERATION, new Object[]{asyncStack, uniqueID, Boolean.TRUE, uniqueID}, MUX_SIGNATURE);
+      return (JChannel) server.invoke(this.channelFactory, MUX_OPERATION,
+         new Object[]{asyncStack, uniqueID, Boolean.TRUE, uniqueID}, MUX_SIGNATURE);
    }
 
-   // Package protected
+   // Package protected ----------------------------------------------------------------------------
 
-   // Protected
+   // Protected ------------------------------------------------------------------------------------
 
-   // Private
+   // Private  -------------------------------------------------------------------------------------
 
-   // Inner classes
+   // Inner classes  -------------------------------------------------------------------------------
 
 }
