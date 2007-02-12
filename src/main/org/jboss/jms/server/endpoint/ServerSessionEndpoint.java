@@ -927,7 +927,8 @@ public class ServerSessionEndpoint implements SessionEndpoint
          
          if (rec == null)
          {
-            throw new IllegalStateException("Cannot find delivery to acknowledge " + ack);
+            log.warn("Cannot find delivery to acknowledge " + ack);
+            continue;
          }
                            
          deliveryCallback.addDeliveryId(id);
