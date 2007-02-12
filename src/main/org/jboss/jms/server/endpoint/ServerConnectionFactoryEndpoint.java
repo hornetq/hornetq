@@ -197,6 +197,8 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
       // We don't need the SubjectContext on thread local anymore, clean it up
       SecurityAssociation.popSubjectContext();
 
+      String clientIDUsed = clientID;
+
       // see if there is a preconfigured client id for the user
       if (username != null)
       {
@@ -205,16 +207,19 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
 
          if (preconfClientID != null)
          {
-            clientID = preconfClientID;
+            clientIDUsed = preconfClientID;
          }                  
       }
 
-      serverPeer.checkClientID(clientID);
+      if (clientIDUsed!=null)
+      {
+         serverPeer.checkClientID(clientIDUsed);
+      }
       
       // create the corresponding "server-side" connection endpoint and register it with the
       // server peer's ClientManager
       ServerConnectionEndpoint endpoint =
-         new ServerConnectionEndpoint(serverPeer, clientID, username, password, prefetchSize,
+         new ServerConnectionEndpoint(serverPeer, clientIDUsed, username, password, prefetchSize,
                                       defaultTempQueueFullSize, defaultTempQueuePageSize,
                                       defaultTempQueueDownCacheSize, failedNodeID, this,
                                       remotingSessionID, clientVMID, versionToUse,
