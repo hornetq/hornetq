@@ -407,6 +407,11 @@ class ServiceContainerConfiguration
          {
             throw new IllegalArgumentException("Invalid connection URL: " + s);
          }
+         
+         //FIXME - why the heck try and infer the database name from the connection URL
+         //this is not correct
+         //Different databases could be using the same url (this can be the case with sybase and mssql)
+         //why not just get the database name from the system property??
          this.type = st.nextToken();
          this.connectionURL = s;
       }
@@ -418,7 +423,22 @@ class ServiceContainerConfiguration
 
       String getDatabaseType()
       {
-         return type;
+         //Temporary kludge so I can run the test suite
+         //FIXME - why the heck try and infer the database name from the connection URL
+         //this is not correct
+         //Different databases could be using the same url (this can be the case with sybase and mssql)
+         //why not just get the database name from the system property??
+         
+         String theType = System.getProperty("test.database");
+         
+         if (theType != null)
+         {
+            return theType;
+         }
+         else
+         {         
+            return type;
+         }
       }
 
       void setDatabaseDriverClass(String s)

@@ -153,8 +153,10 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
       // adding the consumer to the queue
       this.messageQueue.add(this);
       
+      //We don't need to prompt delivery - this will come from the client in a changeRate request
+      
       // prompt delivery
-      promptDelivery();
+      //promptDelivery();
 
       log.debug(this + " constructed");
    }
