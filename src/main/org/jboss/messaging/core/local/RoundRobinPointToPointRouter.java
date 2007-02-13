@@ -35,9 +35,9 @@ import org.jboss.messaging.core.tx.Transaction;
 
 /**
  *  
- * The router will always first try the next receiver in the list to the one it tried last time
- * This gives a more balanced distribution than the FirstReceiverPointToPointRouter and is
- * better suited when batching messages to consumers since we will end up with messages interleaved amongst
+ * The router will always first try the next receiver in the list to the one it tried last time.
+ * This gives a more balanced distribution than the FirstReceiverPointToPointRouter and is better
+ * suited when batching messages to consumers since we will end up with messages interleaved amongst
  * consumers rather than in contiguous blocks.
  *  
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -47,13 +47,13 @@ import org.jboss.messaging.core.tx.Transaction;
  */
 public class RoundRobinPointToPointRouter implements Router
 {
-   // Constants -----------------------------------------------------
+   // Constants ------------------------------------------------------------------------------------
 
    private static final Logger log = Logger.getLogger(RoundRobinPointToPointRouter.class);
 
-   // Static --------------------------------------------------------
+   // Static ---------------------------------------------------------------------------------------
    
-   // Attributes ----------------------------------------------------
+   // Attributes -----------------------------------------------------------------------------------
    
    private boolean trace = log.isTraceEnabled();
 
@@ -66,7 +66,7 @@ public class RoundRobinPointToPointRouter implements Router
    
    private ArrayList receiversCopy;
    
-   // Constructors --------------------------------------------------
+   // Constructors ---------------------------------------------------------------------------------
 
    public RoundRobinPointToPointRouter()
    {
@@ -77,7 +77,7 @@ public class RoundRobinPointToPointRouter implements Router
       makeCopy = true;
    }
 
-   // Router implementation -----------------------------------------
+   // Router implementation ------------------------------------------------------------------------
    
    public Delivery handle(DeliveryObserver observer, MessageReference ref, Transaction tx)
    {             
@@ -85,9 +85,9 @@ public class RoundRobinPointToPointRouter implements Router
       {
          synchronized (this)
          {         
-            //We make a copy of the receivers to avoid a race condition:
-            //http://jira.jboss.org/jira/browse/JBMESSAGING-505
-            //Note that we do not make a copy every time - only when the receivers have changed
+            // We make a copy of the receivers to avoid a race condition:
+            // http://jira.jboss.org/jira/browse/JBMESSAGING-505
+            // Note that we do not make a copy every time - only when the receivers have changed
          
             receiversCopy = new ArrayList(receivers);
             
@@ -209,13 +209,13 @@ public class RoundRobinPointToPointRouter implements Router
       return receivers.size();      
    }
 
-   // Public --------------------------------------------------------
+   // Public ---------------------------------------------------------------------------------------
 
-   // Package protected ---------------------------------------------
+   // Package protected ----------------------------------------------------------------------------
    
-   // Protected -----------------------------------------------------
+   // Protected ------------------------------------------------------------------------------------
 
-   // Private -------------------------------------------------------
+   // Private --------------------------------------------------------------------------------------
    
    private void incTarget()
    {
@@ -227,6 +227,6 @@ public class RoundRobinPointToPointRouter implements Router
       }
    }
    
-   // Inner classes -------------------------------------------------   
+   // Inner classes --------------------------------------------------------------------------------
 }
 

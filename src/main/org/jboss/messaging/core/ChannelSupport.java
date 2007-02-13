@@ -47,15 +47,14 @@ import EDU.oswego.cs.dl.util.concurrent.SynchronizedInt;
 
 /**
  * 
- * This class provides much of the functionality needed to implement a channel.
+ * This class provides much of the functionality needed to implement a channel. This partial
+ * implementation supports atomicity, isolation and recoverability of reliable messages.
  * 
- * This partial implementation supports atomicity, isolation and recoverability of reliable messages.
+ * It uses a "SEDA-type" approach, where requests to handle messages, and deliver to receivers are
+ * not executed concurrently but placed on an event queue and executed serially by a single thread.
  * 
- * It uses a "SEDA-type" approach, where requests to handle messages,
- * and deliver to receivers are not executed concurrently but placed on an event
- * queue and executed serially by a single thread.
- * 
- * Currently remoting does not support a non blocking API so a full SEDA approach is not possible at this stage.
+ * Currently remoting does not support a non blocking API so a full SEDA approach is not possible
+ * at this stage.
  * 
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>

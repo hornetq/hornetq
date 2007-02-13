@@ -30,7 +30,6 @@ import javax.jms.Message;
 import javax.jms.MessageNotWriteableException;
 
 import org.jboss.jms.delegate.SessionDelegate;
-import org.jboss.logging.Logger;
 
 /**
  * 
@@ -56,8 +55,6 @@ public class MessageProxy implements Message, Serializable
    // Constants -----------------------------------------------------
 
    private static final long serialVersionUID = 5903095946142192468L;
-   
-   private static final Logger log = Logger.getLogger(MessageProxy.class);   
    
    // Static --------------------------------------------------------
 

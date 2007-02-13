@@ -159,7 +159,7 @@ public class SimpleReceiver implements Receiver
 
          log.trace("State is:" + state);
          
-         boolean done = ACKING.equals(state) ? true : false;
+         boolean done = ACKING.equals(state);
          
          //NOTE! it is NOT Nacking, it is keeping - don't say NACKing - it is misleading (nack means cancel)         
          log.trace(this + " is " + (done ? "ACKing" : "Keeping") +  " message " + ref);

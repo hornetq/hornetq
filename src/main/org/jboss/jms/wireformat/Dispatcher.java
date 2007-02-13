@@ -72,21 +72,20 @@ public class Dispatcher
    
    public boolean unregisterTarget(Integer id, Object endpoint)
    {
-      //Note that we pass the object id in, this is as a sanity check
-      //to ensure the object we are deregistering is the correct one
-      //since there have been bugs related to removing deregistering the wrong object
-      //This can happen if an earlier test opens a connection then the test ends without closing
-      //the connection, then on the server side the serverpeer is restarted which resets the object
-      //counter, so a different object is registered under the id of the old object.
-      //Remoting then times out the old connection and dereigsters the new object which is
-      //registered under the same id
-      //See http://jira.jboss.com/jira/browse/JBMESSAGING-812
+      // Note that we pass the object id in, this is as a sanity check to ensure the object we are
+      // deregistering is the correct one since there have been bugs related to deregistering the
+      // wrong object. This can happen if an earlier test opens a connection then the test ends
+      // without closing the connection, then on the server side the serverpeer is restarted which
+      // resets the object counter, so a different object is registered under the id of the old
+      // object. Remoting then times out the old connection and dereigsters the new object which is
+      // registered under the same id.
+      // See http://jira.jboss.com/jira/browse/JBMESSAGING-812
       
       AdvisedSupport advised = (AdvisedSupport)(targets.get(id));
       
       if (advised == null)
       {
-         //This can happen due to See http://jira.jboss.com/jira/browse/JBMESSAGING-812         
+         // This can happen due to http://jira.jboss.com/jira/browse/JBMESSAGING-812
          log.warn("Cannot find object with id " + id + " to register");
          return false;
       }

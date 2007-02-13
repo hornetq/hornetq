@@ -440,8 +440,8 @@ public class DLQTest extends MessagingTestCase
          
          assertNull(m);
          
-         //So let's try and consume them - this should cause them to go to the DLQ - since they will then exceed max
-         //delivery attempts
+         // So let's try and consume them - this should cause them to go to the DLQ - since they
+         // will then exceed max delivery attempts
          m = cons.receive(1000);
          
          assertNull(m);
@@ -456,10 +456,12 @@ public class DLQTest extends MessagingTestCase
 
             assertEquals("Message:" + i, tm.getText());
             
-            //Check the headers
-            String origDest = tm.getStringProperty(ServerSessionEndpoint.JBOSS_MESSAGING_ORIG_DESTINATION);
+            // Check the headers
+            String origDest =
+               tm.getStringProperty(ServerSessionEndpoint.JBOSS_MESSAGING_ORIG_DESTINATION);
             
-            String origMessageId = tm.getStringProperty(ServerSessionEndpoint.JBOSS_MESSAGING_ORIG_MESSAGE_ID);
+            String origMessageId =
+               tm.getStringProperty(ServerSessionEndpoint.JBOSS_MESSAGING_ORIG_MESSAGE_ID);
             
             assertEquals(queue.toString(), origDest);
             

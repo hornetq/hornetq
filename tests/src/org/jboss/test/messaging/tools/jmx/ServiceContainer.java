@@ -218,7 +218,7 @@ public class ServiceContainer
    private boolean jca;
    private boolean remoting;
    private boolean security;
-   private boolean httpDatasource;
+   private boolean httpConnectionFactory;
    private boolean multiplexer; // the JGroups channels multiplexer
 
    private List toUnbindAtExit;
@@ -482,17 +482,17 @@ public class ServiceContainer
       }
    }
 
-   public void startDataSources(ServiceAttributeOverrides attrOverrides) throws Exception
+   public void startConnectionFactories(ServiceAttributeOverrides attrOverrides) throws Exception
    {
-      deployDatasource("server/default/deploy/connection-factories-service.xml", attrOverrides);
+      deployConnectionFactories("server/default/deploy/connection-factories-service.xml", attrOverrides);
 
-      log.info("httpDatasource=" + httpDatasource);
-      if (httpDatasource)
+      log.info("HTTP ConnectionFactory " + httpConnectionFactory);
+      if (httpConnectionFactory)
       {
-         log.info("Installing HTTP datasource");
+         log.info("Installing HTTP connection factory");
          ServiceAttributeOverrides httpOverride = new ServiceAttributeOverrides();
          startRemoting(httpOverride, "http", HTTP_REMOTING_OBJECT_NAME);
-         deployDatasource("server/default/deploy/connection-factory-http.xml", attrOverrides);
+         deployConnectionFactories("server/default/deploy/connection-factory-http.xml", attrOverrides);
       }
 
       // bind the default JMS provider
@@ -501,7 +501,7 @@ public class ServiceContainer
       bindJCAJMSConnectionFactory();
    }
 
-   public void stopDatasources() throws Exception
+   public void stopConnectionFactories() throws Exception
    {
       for(Iterator i = connFactoryObjectNames.iterator(); i.hasNext(); )
       {
@@ -531,7 +531,7 @@ public class ServiceContainer
 
       stopService(REMOTING_OBJECT_NAME);
 
-      if (httpDatasource)
+      if (httpConnectionFactory)
       {
          stopService(HTTP_REMOTING_OBJECT_NAME);
       }
@@ -1653,8 +1653,8 @@ log.info("password:" + config.getDatabasePassword());
       }
    }
 
-   public void deployDatasource(String connFactoryConfigFile,
-                                ServiceAttributeOverrides attrOverrides) throws Exception
+   public void deployConnectionFactories(String connFactoryConfigFile,
+                                         ServiceAttributeOverrides attrOverrides) throws Exception
    {
 
       URL connFactoryConfigFileURL =
@@ -1717,7 +1717,7 @@ log.info("password:" + config.getDatabasePassword());
             jca = true;
             remoting = true;
             security = true;
-            httpDatasource = true;
+            httpConnectionFactory = true;
          }
          else if ("transaction".equals(tok))
          {

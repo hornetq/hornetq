@@ -114,8 +114,14 @@ public class DuplicateClientIDTest extends MessagingTestCase
       }
       finally
       {
-         if (c1 != null) c1.close();
-         if (c2 != null) c2.close();
+         if (c1 != null)
+         {
+            c1.close();
+         }
+         if (c2 != null)
+         {
+            c2.close();
+         }
       }
    }
 
@@ -133,9 +139,18 @@ public class DuplicateClientIDTest extends MessagingTestCase
       }
       finally
       {
-         if (c0 != null) c0.close();
-         if (c1 != null) c1.close();
-         if (c2 != null) c2.close();
+         if (c0 != null)
+         {
+            c0.close();
+         }
+         if (c1 != null)
+         {
+            c1.close();
+         }
+         if (c2 != null)
+         {
+            c2.close();
+         }
       }
    }
 

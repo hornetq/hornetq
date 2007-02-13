@@ -24,7 +24,6 @@ package org.jboss.jms.wireformat;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 
-import org.jboss.logging.Logger;
 import org.jboss.messaging.core.message.Message;
 import org.jboss.messaging.core.message.MessageFactory;
 
@@ -41,14 +40,11 @@ import org.jboss.messaging.core.message.MessageFactory;
  */
 public class ClientDelivery extends CallbackSupport
 {
-   // Constants -----------------------------------------------------
+   // Constants ------------------------------------------------------------------------------------
    
-   private static final Logger log = Logger.getLogger(ClientDelivery.class);
+   // Static ---------------------------------------------------------------------------------------
    
-   
-   // Static --------------------------------------------------------
-   
-   // Attributes ----------------------------------------------------
+   // Attributes -----------------------------------------------------------------------------------
    
    private Message msg;
          
@@ -58,7 +54,7 @@ public class ClientDelivery extends CallbackSupport
    
    private int deliveryCount;
     
-   // Constructors --------------------------------------------------
+   // Constructors ---------------------------------------------------------------------------------
    
    public ClientDelivery()
    {      
@@ -77,9 +73,8 @@ public class ClientDelivery extends CallbackSupport
       this.deliveryCount = deliveryCount;
    }
          
-   // Streamable implementation
-   // ---------------------------------------------------------------
-   
+   // Streamable implementation --------------------------------------------------------------------
+
    public void write(DataOutputStream out) throws Exception
    {
 
@@ -114,7 +109,7 @@ public class ClientDelivery extends CallbackSupport
       msg.read(in);
    }
 
-   // Public --------------------------------------------------------
+   // Public ---------------------------------------------------------------------------------------
    
    public Message getMessage()
    {
@@ -141,11 +136,11 @@ public class ClientDelivery extends CallbackSupport
       return "ClientDelivery[" + msg + "]";
    }
 
-   // Package protected ---------------------------------------------
+   // Package protected ----------------------------------------------------------------------------
    
-   // Protected -----------------------------------------------------
+   // Protected ------------------------------------------------------------------------------------
    
-   // Private -------------------------------------------------------
+   // Private --------------------------------------------------------------------------------------
    
-   // Inner classes -------------------------------------------------   
+   // Inner classes --------------------------------------------------------------------------------   
 }

@@ -209,8 +209,8 @@ public class ClientConnectionDelegate extends DelegateSupport implements Connect
    public void sendTransaction(TransactionRequest request,
                                boolean checkForDuplicates) throws JMSException
    {
-      RequestSupport req = new ConnectionSendTransactionRequest(id, version, request,
-         checkForDuplicates);
+      RequestSupport req =
+         new ConnectionSendTransactionRequest(id, version, request, checkForDuplicates);
       
       doInvoke(client, req);
    }

@@ -22,7 +22,6 @@
 package org.jboss.test.messaging.tools.jmx.rmi;
 
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -399,7 +398,7 @@ public class LocalTestServer implements Server
 
          log.debug("deploying connection factories");
 
-         sc.startDataSources(attrOverrides);
+         sc.startConnectionFactories(attrOverrides);
       }
       catch (Exception e)
       {
@@ -432,7 +431,7 @@ public class LocalTestServer implements Server
 
          log.debug("stopping connection factories");
 
-         sc.stopDatasources();
+         sc.stopConnectionFactories();
 
          log.debug("stopping all destinations");
 

@@ -1076,7 +1076,9 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message, S
       }
 
       if (name.regionMatches(false, 0, "JMSX", 0, 4) &&
-         !name.equals("JMSXGroupID") && !name.equals("JMSXGroupSeq") && !name.equals("JMSXDeliveryCount"))
+         !name.equals("JMSXGroupID") &&
+         !name.equals("JMSXGroupSeq") &&
+         !name.equals("JMSXDeliveryCount"))
       {
          throw new JMSException("Can only set JMSXGroupId, JMSXGroupSeq, JMSXDeliveryCount");
       }           

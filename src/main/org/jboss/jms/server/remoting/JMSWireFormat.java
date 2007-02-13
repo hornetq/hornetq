@@ -28,7 +28,6 @@ import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -40,7 +39,6 @@ import org.jboss.jms.wireformat.RequestSupport;
 import org.jboss.jms.wireformat.ResponseSupport;
 import org.jboss.jms.wireformat.SerializedPacket;
 import org.jboss.logging.Logger;
-import org.jboss.remoting.Client;
 import org.jboss.remoting.InvocationRequest;
 import org.jboss.remoting.InvocationResponse;
 import org.jboss.remoting.callback.Callback;
@@ -79,14 +77,6 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
    private static final Logger log = Logger.getLogger(JMSWireFormat.class);
    
    // Static ---------------------------------------------------------------------------------------
-
-   private static Map ONE_WAY_METADATA;
-   
-   static
-   {
-      ONE_WAY_METADATA = new HashMap();
-      ONE_WAY_METADATA.put(Client.ONEWAY_FLAG, "true");
-   }
 
    // Attributes -----------------------------------------------------------------------------------
 
@@ -236,10 +226,11 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
                // List of polled Callbacks, this is how messages are delivered when using
                // polled callbacks e.g. the HTTP transport
                
-               //Sanity check
+               // Sanity check
                if (((List)param).isEmpty())
                {
-                  log.error("Got a polled callback list - but it is empty!!! See http://jira.jboss.org/jira/browse/JBMESSAGING-818");
+                  log.error("Got a polled callback list - but it is empty!!! " +
+                     "See http://jira.jboss.org/jira/browse/JBMESSAGING-818");
                }
                
                packet = new PolledCallbacksDelivery((List)param, resp.getSessionId());             

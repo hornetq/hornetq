@@ -38,7 +38,6 @@ import javax.naming.InitialContext;
 import org.jboss.jms.server.bridge.Bridge;
 import org.jboss.logging.Logger;
 import org.jboss.test.messaging.tools.ServerManagement;
-import org.jboss.test.messaging.tools.jmx.ServiceContainer;
 
 /**
  * A BridgeMBeanTest

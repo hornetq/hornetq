@@ -406,12 +406,15 @@ public class ExpiryQueueTest extends MessagingTestCase
                break;
             }
             
-            //Check the headers
-            String origDest = tm.getStringProperty(ServerSessionEndpoint.JBOSS_MESSAGING_ORIG_DESTINATION);
+            // Check the headers
+            String origDest =
+               tm.getStringProperty(ServerSessionEndpoint.JBOSS_MESSAGING_ORIG_DESTINATION);
             
-            String origMessageId = tm.getStringProperty(ServerSessionEndpoint.JBOSS_MESSAGING_ORIG_MESSAGE_ID);
+            String origMessageId =
+               tm.getStringProperty(ServerSessionEndpoint.JBOSS_MESSAGING_ORIG_MESSAGE_ID);
             
-            long actualExpiryTime = tm.getLongProperty(ServerSessionEndpoint.JBOSS_MESSAGING_ACTUAL_EXPIRY_TIME);
+            long actualExpiryTime =
+               tm.getLongProperty(ServerSessionEndpoint.JBOSS_MESSAGING_ACTUAL_EXPIRY_TIME);
             
             assertEquals(topic.toString(), origDest);
             

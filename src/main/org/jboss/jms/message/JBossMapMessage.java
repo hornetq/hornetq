@@ -492,8 +492,7 @@ public class JBossMapMessage extends JBossMessage implements MapMessage
    protected Object readPayload(DataInputStream in, int length)
       throws Exception
    {
-      HashMap m = StreamUtils.readMap(in, true);
-      return m;
+      return StreamUtils.readMap(in, true);
    }
 
    // Private -------------------------------------------------------

@@ -63,7 +63,9 @@ public class PagingTest extends MessagingTestCase
 
    public void testPaging() throws Exception
    {
-      PagingFilteredQueue p = new PagingFilteredQueue("queue0", 1, ms, pm, true, true, new QueuedExecutor(), -1, null, 100, 20, 10);
+      PagingFilteredQueue p =
+         new PagingFilteredQueue("queue0", 1, ms, pm, true, true,
+                                 new QueuedExecutor(), -1, null, 100, 20, 10);
            
       CoreMessage m = null;
 

@@ -98,8 +98,7 @@ class ServiceContainerConfiguration
    public String getDatabaseType()
    {
       DatabaseConfiguration dbc = (DatabaseConfiguration)dbConfigurations.get(database);
-      String databaseType = dbc.getDatabaseType();
-      return databaseType;
+      return dbc.getDatabaseType();
    }
 
    public String getDatabaseConnectionURL()

@@ -43,8 +43,8 @@ public interface Delivery
 
    DeliveryObserver getObserver();
 
-   // TODO this doesn't actually belong in the delivery, the selector should be moved "inside" the channel
-   //      See http://jira.jboss.org/jira/browse/JBMESSAGING-275
+   // TODO this doesn't actually belong in the delivery, the selector should be moved "inside"
+   //      the channel. See http://jira.jboss.org/jira/browse/JBMESSAGING-275
 
    boolean isSelectorAccepted();
    

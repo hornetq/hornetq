@@ -56,8 +56,8 @@ public class JBossMessageTest extends RoutableSupportTestBase
 
    protected void setUp() throws Exception
    {
-      ms = (MessageSupport)MessageFactory.createMessage(0, false, 0, 0, (byte)4, null,
-                                                             null, JBossMessage.TYPE);
+      ms = (MessageSupport)MessageFactory.
+         createMessage(0, false, 0, 0, (byte)4, null, null, JBossMessage.TYPE);
       super.setUp();
       log.debug("setup done");
    }

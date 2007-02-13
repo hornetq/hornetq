@@ -21,8 +21,6 @@
   */
 package org.jboss.test.messaging.jms;
 
-import java.util.Map;
-
 import javax.jms.Connection;
 import javax.jms.DeliveryMode;
 import javax.jms.Destination;

@@ -93,13 +93,15 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       
    }
    
-   protected void doSetup(boolean batch, boolean useBinaryStream, boolean trailingByte, int maxParams) throws Throwable
+   protected void doSetup(boolean batch, boolean useBinaryStream,
+                          boolean trailingByte, int maxParams) throws Throwable
    {
       pm = createPM(batch, useBinaryStream, trailingByte, maxParams);         
       ms = new SimpleMessageStore();      
    }
    
-   protected JDBCPersistenceManager createPM(boolean batch, boolean useBinaryStream, boolean trailingByte, int maxParams) throws Throwable
+   protected JDBCPersistenceManager createPM(boolean batch, boolean useBinaryStream,
+                                             boolean trailingByte, int maxParams) throws Throwable
    {      
       JDBCPersistenceManager p =
          new JDBCPersistenceManager(sc.getDataSource(), sc.getTransactionManager(),

@@ -91,8 +91,8 @@ public class CallbackManager implements InvokerCallbackHandler
          
          Message msg = dr.getMessage();
          
-         MessageProxy proxy =
-            JBossMessage.createThinDelegate(dr.getDeliveryId(), (JBossMessage)msg, dr.getDeliveryCount());
+         MessageProxy proxy = JBossMessage.
+            createThinDelegate(dr.getDeliveryId(), (JBossMessage)msg, dr.getDeliveryCount());
 
          MessageCallbackHandler handler =
             (MessageCallbackHandler)callbackHandlers.get(new Integer(dr.getConsumerId()));

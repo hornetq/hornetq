@@ -39,9 +39,9 @@ import org.jboss.jms.message.JBossTextMessage;
  */
 public class MessageFactory
 {
-   // Constants -----------------------------------------------------
+   // Constants ------------------------------------------------------------------------------------
 
-   // Static --------------------------------------------------------
+   // Static ---------------------------------------------------------------------------------------
 
    public static Message createMessage(byte type)
    {
@@ -102,43 +102,44 @@ public class MessageFactory
       {
          case JBossMessage.TYPE:
          {
-            m = new JBossMessage(messageID, reliable, expiration, timestamp, priority, headers,
-                     payload);
+            m = new JBossMessage(messageID, reliable, expiration,
+                                 timestamp, priority, headers, payload);
             break;
          }
          case JBossObjectMessage.TYPE:
          {
-            m = new JBossObjectMessage(messageID, reliable, expiration, timestamp, priority, headers,
-                     payload);
+            m =  new JBossObjectMessage(messageID, reliable, expiration,
+                                        timestamp, priority, headers, payload);
             break;
          }
          case JBossTextMessage.TYPE:
          {
-            m = new JBossTextMessage(messageID, reliable, expiration, timestamp, priority, headers,
-                     payload);
+            m = new JBossTextMessage(messageID, reliable, expiration,
+                                     timestamp, priority, headers, payload);
             break;
          }
          case JBossBytesMessage.TYPE:
          {
-            m = new JBossBytesMessage(messageID, reliable, expiration, timestamp, priority, headers,
-                     payload);
+            m = new JBossBytesMessage(messageID, reliable, expiration,
+                                      timestamp, priority, headers, payload);
             break;
          }
          case JBossMapMessage.TYPE:
          {
-            m = new JBossMapMessage(messageID, reliable, expiration, timestamp, priority, headers,
-                     payload);
+            m = new JBossMapMessage(messageID, reliable, expiration,
+                                    timestamp, priority, headers, payload);
             break;
          }
          case JBossStreamMessage.TYPE:
          {
-            m = new JBossStreamMessage(messageID, reliable, expiration, timestamp, priority, headers,
-                     payload);
+            m = new JBossStreamMessage(messageID, reliable, expiration,
+                                       timestamp, priority, headers, payload);
             break;
          }
          case CoreMessage.TYPE:
          {
-            m = new CoreMessage(messageID, reliable, expiration, timestamp, priority, headers, payload);
+            m = new CoreMessage(messageID, reliable, expiration,
+                                timestamp, priority, headers, payload);
             break;
          }
          default:
@@ -152,18 +153,18 @@ public class MessageFactory
       return m;
    }
 
-   // Attributes ----------------------------------------------------
+   // Attributes -----------------------------------------------------------------------------------
    
-   // Constructors --------------------------------------------------
+   // Constructors ---------------------------------------------------------------------------------
    
-   // Public --------------------------------------------------------
+   // Public ---------------------------------------------------------------------------------------
 
-   // Package protected ---------------------------------------------
+   // Package protected ----------------------------------------------------------------------------
    
-   // Protected -----------------------------------------------------
+   // Protected ------------------------------------------------------------------------------------
    
-   // Private -------------------------------------------------------
+   // Private --------------------------------------------------------------------------------------
    
-   // Inner classes -------------------------------------------------   
+   // Inner classes --------------------------------------------------------------------------------   
 }
 

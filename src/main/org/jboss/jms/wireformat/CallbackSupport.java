@@ -59,11 +59,8 @@ public abstract class CallbackSupport extends PacketSupport
 
       OnewayInvocation oi = new OnewayInvocation(ii);
 
-      InvocationRequest request
-         = new InvocationRequest(null, CallbackManager.JMS_CALLBACK_SUBSYSTEM,
-                                 oi, ONE_WAY_METADATA, null, null);
-      
-      return request;
+      return new InvocationRequest(null, CallbackManager.JMS_CALLBACK_SUBSYSTEM, oi,
+                                   ONE_WAY_METADATA, null, null);
    }
    
 }
