@@ -200,9 +200,6 @@ public class JDBCSupport implements MessagingComponent
               
    private void createSchema() throws Exception
    {      
-      Connection conn = null;      
-      TransactionWrapper tx = new TransactionWrapper();
-      
       // Postgresql will not process any further commands in a transaction
       // after a create table fails:
       // org.postgresql.util.PSQLException: ERROR: current transaction is aborted, commands ignored until end of transaction block
@@ -212,8 +209,12 @@ public class JDBCSupport implements MessagingComponent
       
       while (iter.hasNext())
       {
+         Connection conn = null;      
+                  
+         TransactionWrapper tx = new TransactionWrapper();
+                  
          try
-         {            
+         {                        
             conn = ds.getConnection();
                         
             String statementName = (String)iter.next();
@@ -231,6 +232,8 @@ public class JDBCSupport implements MessagingComponent
                catch (SQLException e) 
                {
                   log.debug("Failed to execute: " + statement, e);
+                  
+                  tx.exceptionOccurred();
                }  
             }
          }

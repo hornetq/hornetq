@@ -1454,144 +1454,82 @@ log.info("password:" + config.getDatabasePassword());
       }
       ic.close();
    }
+   
+   private void executeStatement(TransactionManager mgr, DataSource ds, String statement) throws Exception
+   {
+      Connection conn = null;
+      boolean exception = false;
+   
+      try
+      {
+         try
+         {
+            mgr.begin();            
+            
+            conn = ds.getConnection();
+            
+            PreparedStatement ps = conn.prepareStatement(statement);
+      
+            ps.executeUpdate();
+      
+            log.debug(statement + ": dropped ");
+      
+            ps.close();           
+         }
+         catch (SQLException e)
+         {
+            //Ignore
+            exception = true;
+         }
+      }
+      finally
+      {
+         if (conn != null)
+         {
+            conn.close();
+         }         
+         
+         if (exception)
+         {
+            mgr.rollback();
+         }
+         else
+         {
+            mgr.commit();
+         }
+      }
+      
+     
+   }
 
    protected void dropAllTables() throws Exception
    {
       log.info("DROPPING ALL TABLES FROM DATABASE!");
 
       InitialContext ctx = new InitialContext();
+      
+      //We need to execute each drop in its own transaction otherwise postgresql will
+      //not execute further commands after one fails
 
       TransactionManager mgr = (TransactionManager)ctx.lookup(TransactionManagerService.JNDI_NAME);
       DataSource ds = (DataSource)ctx.lookup("java:/DefaultDS");
 
       javax.transaction.Transaction txOld = mgr.suspend();
-      mgr.begin();
-
-      Connection conn = ds.getConnection();
+                  
+      executeStatement(mgr, ds, "JBM_POSTOFFICE");
       
-      String sql = null;
+      executeStatement(mgr, ds, "JBM_MSG_REF");
+
+      executeStatement(mgr, ds, "JBM_MSG");
+     
+      executeStatement(mgr, ds, "JBM_TX");
       
-      PreparedStatement ps = null;
-
-      try
-      {         
-         sql = "DROP TABLE JBM_POSTOFFICE";
-         
-         ps = conn.prepareStatement(sql);
-   
-         ps.executeUpdate();
-   
-         log.debug("JBM_POSTOFFICE: dropped ");
-   
-         ps.close();
-      }
-      catch (SQLException e)
-      {
-         //Ignore
-      }
-
-      try
-      {
-         sql = "DROP TABLE JBM_MSG_REF";
-         
-         ps = conn.prepareStatement(sql);
-   
-         ps.executeUpdate();
-   
-         log.debug("JBM_MSG_REF: dropped ");
-   
-         ps.close();
-      }
-      catch (SQLException e)
-      {
-         // Ignore
-      }
-
-      try
-      {
-         sql = "DROP TABLE JBM_MSG";
-         ps = conn.prepareStatement(sql);
-   
-         ps.executeUpdate();
-   
-         log.debug("JBM_MSG: dropped ");
-   
-         ps.close();
-      }
-      catch (SQLException e)
-      {
-         // Ignore
-      }
-
-      try
-      {
-         sql = "DROP TABLE JBM_TX";
-         ps = conn.prepareStatement(sql);
-   
-         ps.executeUpdate();
-   
-         log.debug("JBM_TX: dropped ");
-   
-         ps.close();
-      }
-      catch (SQLException e)
-      {
-         // Ignore
-      }
-
-      try
-      {
-         sql = "DROP TABLE JBM_COUNTER";
-         ps = conn.prepareStatement(sql);
-   
-         ps.executeUpdate();
-   
-         log.debug("JBM_COUNTER: dropped ");
-   
-         ps.close();
-      }
-      catch (SQLException e)
-      {
-         // Ignore
-      }
-
-      try
-      {
-         sql = "DROP TABLE JBM_USER";
-         ps = conn.prepareStatement(sql);
-   
-         ps.executeUpdate();
-   
-         log.debug("JBM_USER: dropped ");
-         ps.close();
-      }
-      catch (SQLException e)
-      {
-         // Ignore
-      }
+      executeStatement(mgr, ds, "JBM_COUNTER");
       
-      try
-      {
-         sql = "DROP TABLE JBM_ROLE";
-         ps = conn.prepareStatement(sql);
-   
-         ps.executeUpdate();
-   
-         log.debug("JBM_ROLE: dropped ");
-   
-         ps.close();
-      }
-      catch (SQLException e)
-      {
-         // Ignore
-      }
+      executeStatement(mgr, ds, "JBM_USER");
       
-      conn.close();
-
-      mgr.commit();
-
-      log.debug("committed");
-
+      executeStatement(mgr, ds, "JBM_ROLE");
+      
       if (txOld != null)
       {
          mgr.resume(txOld);
