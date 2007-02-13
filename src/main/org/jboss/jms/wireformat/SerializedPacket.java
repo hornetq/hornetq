@@ -26,6 +26,9 @@ import java.io.DataOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
+import org.jboss.logging.Logger;
+import org.jboss.remoting.loading.ObjectInputStreamWithClassLoader;
+
 /**
  * For carrying a remoting non JBM invocation across the wire
  * 
@@ -41,6 +44,9 @@ import java.io.ObjectOutputStream;
  */
 public class SerializedPacket extends PacketSupport
 {
+   private static final Logger log = Logger.getLogger(SerializedPacket.class);
+
+   
    private Object payload;
    
    public SerializedPacket()
@@ -71,11 +77,11 @@ public class SerializedPacket extends PacketSupport
 //      
 //      ObjectInputStream ois = new ObjectInputStream(bais);
 //      
-//      payload = ois.readObject();         
+//      payload = ois.readObject();     
+           
+      ObjectInputStream ois = new ObjectInputStreamWithClassLoader(is, Thread.currentThread().getContextClassLoader());
       
-      ObjectInputStream ois = new ObjectInputStream(is);
-      
-      payload = ois.readObject();   
+      payload = ois.readObject();
    }
 
    public void write(DataOutputStream os) throws Exception
@@ -103,8 +109,8 @@ public class SerializedPacket extends PacketSupport
       ObjectOutputStream oos = new ObjectOutputStream(os);
       
       oos.writeObject(payload);
-    
-      oos.flush();
+      
+      os.flush();
    }
 
 }
