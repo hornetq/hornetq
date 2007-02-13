@@ -203,14 +203,19 @@ public class JDBCSupport implements MessagingComponent
       Connection conn = null;      
       TransactionWrapper tx = new TransactionWrapper();
       
-      try
+      // Postgresql will not process any further commands in a transaction
+      // after a create table fails:
+      // org.postgresql.util.PSQLException: ERROR: current transaction is aborted, commands ignored until end of transaction block
+      // Therefore we need to ensure each CREATE is executed in its own transaction
+                              
+      Iterator iter = defaultDDLStatements.keySet().iterator();
+      
+      while (iter.hasNext())
       {
-         conn = ds.getConnection();
-         
-         Iterator iter = defaultDDLStatements.keySet().iterator();
-         
-         while (iter.hasNext())
-         {
+         try
+         {            
+            conn = ds.getConnection();
+                        
             String statementName = (String)iter.next();
              
             String statement = getSQLStatement(statementName);
@@ -228,21 +233,21 @@ public class JDBCSupport implements MessagingComponent
                   log.debug("Failed to execute: " + statement, e);
                }  
             }
-         }      
-      }
-      finally
-      {
-         if (conn != null)
-         {
-            try
-            {
-               conn.close();
-            }
-            catch (Throwable t)
-            {}
          }
-         tx.end();
-      }      
+         finally
+         {
+            if (conn != null)
+            {
+               try
+               {
+                  conn.close();
+               }
+               catch (Throwable t)
+               {}
+            }
+            tx.end();
+         } 
+      }                 
    }      
    
    // Innner classes ---------------------------------------------------------
