@@ -27,8 +27,6 @@ import java.io.DataOutputStream;
 import org.jboss.jms.server.endpoint.ConnectionFactoryEndpoint;
 
 /**
- * A ConnectionFactoryCreateConnectionDelegateRequest
- *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision: 1.1 $</tt>
  *
@@ -37,40 +35,64 @@ import org.jboss.jms.server.endpoint.ConnectionFactoryEndpoint;
  */
 public class ConnectionFactoryGetClientAOPStackRequest extends RequestSupport
 {
+   // Constants ------------------------------------------------------------------------------------
+
+   // Static ---------------------------------------------------------------------------------------
+
+   // Attributes -----------------------------------------------------------------------------------
+
+   // Constructors ---------------------------------------------------------------------------------
+
    public ConnectionFactoryGetClientAOPStackRequest()
-   {      
+   {
    }
-   
-   public ConnectionFactoryGetClientAOPStackRequest(int objectId,
-                                                    byte version)
+
+   public ConnectionFactoryGetClientAOPStackRequest(int objectId, byte version)
    {
       super(objectId, PacketSupport.REQ_CONNECTIONFACTORY_GETCLIENTAOPSTACK, version);
    }
 
+   // RequestSupport overrides ---------------------------------------------------------------------
+
    public void read(DataInputStream is) throws Exception
    {
-      super.read(is);  
-   }
-
-   public ResponseSupport serverInvoke() throws Exception
-   {
-      ConnectionFactoryEndpoint endpoint = 
-         (ConnectionFactoryEndpoint)Dispatcher.instance.getTarget(objectId);
-      
-      if (endpoint == null)
-      {
-         throw new IllegalStateException("Cannot find object in dispatcher with id " + objectId);
-      }
-      
-      return new ConnectionFactoryGetClientAOPStackResponse(endpoint.getClientAOPStack());          
+      super.read(is);
    }
 
    public void write(DataOutputStream os) throws Exception
    {
-      super.write(os);                   
-      
+      super.write(os);
       os.flush();
    }
+
+   public ResponseSupport serverInvoke() throws Exception
+   {
+      ConnectionFactoryEndpoint endpoint =
+         (ConnectionFactoryEndpoint)Dispatcher.instance.getTarget(objectId);
+
+      if (endpoint == null)
+      {
+         throw new IllegalStateException("Cannot find object with ID " + objectId + " in dispatcher");
+      }
+
+      return new ConnectionFactoryGetClientAOPStackResponse(endpoint.getClientAOPStack());
+   }
+
+   // Public ---------------------------------------------------------------------------------------
+
+   public String toString()
+   {
+      return "ConnectionFactoryGetClientAOPStackRequest[" +
+         Integer.toHexString(System.identityHashCode(this)) + "]";
+   }
+
+   // Package protected ----------------------------------------------------------------------------
+
+   // Protected ------------------------------------------------------------------------------------
+
+   // Private --------------------------------------------------------------------------------------
+
+   // Inner classes --------------------------------------------------------------------------------
 
 }
 

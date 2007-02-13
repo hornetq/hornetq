@@ -200,14 +200,12 @@ public class JDBCSupport implements MessagingComponent
               
    private void createSchema() throws Exception
    {      
-      // Postgresql will not process any further commands in a transaction
-      // after a create table fails:
-      // org.postgresql.util.PSQLException: ERROR: current transaction is aborted, commands ignored until end of transaction block
-      // Therefore we need to ensure each CREATE is executed in its own transaction
+      // Postgresql will not process any further commands in a transaction after a create table
+      // fails: org.postgresql.util.PSQLException: ERROR: current transaction is aborted, commands
+      // ignored until end of transaction block. Therefore we need to ensure each CREATE is executed
+      // in its own transaction
                               
-      Iterator iter = defaultDDLStatements.keySet().iterator();
-      
-      while (iter.hasNext())
+      for(Iterator i = defaultDDLStatements.keySet().iterator(); i.hasNext(); )
       {
          Connection conn = null;      
                   
@@ -217,7 +215,7 @@ public class JDBCSupport implements MessagingComponent
          {                        
             conn = ds.getConnection();
                         
-            String statementName = (String)iter.next();
+            String statementName = (String)i.next();
              
             String statement = getSQLStatement(statementName);
             

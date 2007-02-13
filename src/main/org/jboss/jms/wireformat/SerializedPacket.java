@@ -26,60 +26,81 @@ import java.io.DataOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
-import org.jboss.logging.Logger;
 import org.jboss.remoting.loading.ObjectInputStreamWithClassLoader;
 
 /**
- * For carrying a remoting non JBM invocation across the wire
- * 
- * Also used for internal invocation request return values e.g. PONG
- *
- * This would be used for pings, disconnect, addlistener, removelistener etc
+ * For carrying a remoting non JBM invocation across the wire. Also used for internal invocation
+ * request return values e.g. PONG. This would be used for pings, disconnect, addlistener,
+ * removelistener etc.
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision: 1.1 $</tt>
  *
  * $Id$
- *
  */
 public class SerializedPacket extends PacketSupport
 {
-   private static final Logger log = Logger.getLogger(SerializedPacket.class);
-   
+   // Constants ------------------------------------------------------------------------------------
+
+   // Static ---------------------------------------------------------------------------------------
+
+   // Attributes -----------------------------------------------------------------------------------
+
    private Object payload;
-   
+
+   // Constructors ---------------------------------------------------------------------------------
+
    public SerializedPacket()
-   {      
+   {
    }
-   
+
    public SerializedPacket(Object payload)
    {
       super(PacketSupport.SERIALIZED);
-      
       this.payload = payload;
    }
-   
-   public Object getPayload()
-   {      
-      return payload;           
-   }
+
+   // Streamable implementation --------------------------------------------------------------------
 
    public void read(DataInputStream is) throws Exception
    {
-      ObjectInputStream ois = new ObjectInputStreamWithClassLoader(is, Thread.currentThread().getContextClassLoader());
-      
+      // need to use the thread context class loader, otherwise deserialization of various
+      // remoting and messaging things will fail in a scoped domain
+      ObjectInputStream ois =
+         new ObjectInputStreamWithClassLoader(is, Thread.currentThread().getContextClassLoader());
+
       payload = ois.readObject();
    }
 
    public void write(DataOutputStream os) throws Exception
    {
       super.write(os);
-   
+
       ObjectOutputStream oos = new ObjectOutputStream(os);
-      
       oos.writeObject(payload);
-      
       os.flush();
    }
+
+   // PacketSupport overrides ----------------------------------------------------------------------
+
+   public Object getPayload()
+   {
+      return payload;
+   }
+
+   // Public ---------------------------------------------------------------------------------------
+
+   public String toString()
+   {
+      return "SerializedPacket[" + payload + "]";
+   }
+
+   // Package protected ----------------------------------------------------------------------------
+
+   // Protected ------------------------------------------------------------------------------------
+
+   // Private --------------------------------------------------------------------------------------
+
+   // Inner classes --------------------------------------------------------------------------------
 
 }

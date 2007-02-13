@@ -1468,20 +1468,20 @@ log.info("password:" + config.getDatabasePassword());
             
             conn = ds.getConnection();
             
-            log.debug("Dropping table:" + statement);
+            log.debug("executing " + statement);
             
             PreparedStatement ps = conn.prepareStatement(statement);
       
             ps.executeUpdate();
       
-            log.debug(statement + ": dropped ");
+            log.debug(statement + " executed");
       
             ps.close();           
          }
          catch (SQLException e)
          {
-            //Ignore
-            log.debug("Failed to drop table:", e);
+            // Ignore
+            log.debug("Failed to execute statement", e);
             exception = true;
          }
       }
@@ -1511,8 +1511,8 @@ log.info("password:" + config.getDatabasePassword());
 
       InitialContext ctx = new InitialContext();
       
-      //We need to execute each drop in its own transaction otherwise postgresql will
-      //not execute further commands after one fails
+      // We need to execute each drop in its own transaction otherwise postgresql will not execute
+      // further commands after one fails
 
       TransactionManager mgr = (TransactionManager)ctx.lookup(TransactionManagerService.JNDI_NAME);
       DataSource ds = (DataSource)ctx.lookup("java:/DefaultDS");

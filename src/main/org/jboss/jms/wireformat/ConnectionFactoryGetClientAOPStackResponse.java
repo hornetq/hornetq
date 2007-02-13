@@ -36,43 +36,64 @@ import java.io.DataOutputStream;
  */
 public class ConnectionFactoryGetClientAOPStackResponse extends ResponseSupport
 {
+   // Constants ------------------------------------------------------------------------------------
+
+   // Static ---------------------------------------------------------------------------------------
+
+   // Attributes -----------------------------------------------------------------------------------
+
    private byte[] stack;
-   
+
+   // Constructors ---------------------------------------------------------------------------------
+
    public ConnectionFactoryGetClientAOPStackResponse()
-   {      
+   {
    }
-   
+
+   public ConnectionFactoryGetClientAOPStackResponse(byte[] stack)
+   {
+      super(PacketSupport.RESP_CONNECTIONFACTORY_GETCLIENTAOPSTACK);
+      this.stack = stack;
+   }
+
+   // ResponseSupport overrides --------------------------------------------------------------------
+
+   public void write(DataOutputStream os) throws Exception
+   {
+      super.write(os);
+
+      os.writeInt(stack.length);
+      os.write(stack);
+      os.flush();
+   }
+
+   public void read(DataInputStream is) throws Exception
+   {
+      int len = is.readInt();
+      stack = new byte[len];
+      is.readFully(stack);
+   }
+
    public Object getResponse()
    {
       return stack;
    }
-   
-   public ConnectionFactoryGetClientAOPStackResponse(byte[] stack)
+
+   // Public ---------------------------------------------------------------------------------------
+
+   public String toString()
    {
-      super(PacketSupport.RESP_CONNECTIONFACTORY_GETCLIENTAOPSTACK);
-      
-      this.stack = stack;
+      return "ConnectionFactoryGetClientAOPStackResponse[" +
+         (stack == null ? "null" : stack.length + " bytes") + "]";
    }
-   
-   public void write(DataOutputStream os) throws Exception
-   {
-      super.write(os);
-      
-      os.writeInt(stack.length);
-      
-      os.write(stack);
-      
-      os.flush();
-   }
-   
-   public void read(DataInputStream is) throws Exception
-   {
-      int len = is.readInt();      
-      
-      stack = new byte[len];      
-      
-      is.readFully(stack);
-   }
+
+   // Package protected ----------------------------------------------------------------------------
+
+   // Protected ------------------------------------------------------------------------------------
+
+   // Private --------------------------------------------------------------------------------------
+
+   // Inner classes --------------------------------------------------------------------------------
 
 }
 
