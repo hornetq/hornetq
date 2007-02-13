@@ -138,13 +138,16 @@ public class QueueTest extends MessagingTestCase
             p.send(s.createTextMessage("payload " + i));
          }
 
+         conn.close();
+
          //ServerManagement.undeployQueue("TestQueue");
 
          log.info("Stopping server");
-         ServerManagement.stopServerPeer();
+         ServerManagement.stop(0);
 
          log.info("Starting server");
-         ServerManagement.startServerPeer();
+         ServerManagement.start(0, "all", false);
+
          ServerManagement.deployQueue("TestQueue");
 
          ic = new InitialContext(ServerManagement.getJNDIEnvironment());
