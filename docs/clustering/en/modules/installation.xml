@@ -15,15 +15,40 @@
       ant -f release-admin.xml [-Did=node-id] [-Dports=port-config-label] cluster-node
    </programlisting>
 
-
    <para>
       where:
       <itemizedlist>
          <listitem>
-            <filename>node-id</filename> is the unique node ID, an integer that must be unique per cluster.
+            <filename>node-id</filename> is the unique node ID, an integer that must be unique per
+            cluster. If not specified, it defaults to 0.
          </listitem>
          <listitem>
             <filename>port-config-label</filename> is a binding manager server configuration label.
+
+            The short story behind this parameter is the following: multiple application servers
+            running on the same physical machine need to use different service port ranges to avoid
+            port conflicts. You can configure the whole port range used by a server instance
+            by enabling a special service, the binding management service, and specifiying a
+            "server" configuration in the binding manager's configuration file, which will determine
+            specific port values to use when starting that instance.
+
+            The Messaging installation script can enable the service binding manager and performs
+            all configuration changes automatically. You only need to specify the "server"
+            configuration you want to use, as 'port-config-label'.
+
+            If you plan to run your clustering nodes on different physical machines, this parameter
+            is irrelevant, and you should not use it. However, if you install two (or more) nodes of
+            your cluster on the same physical machine, you need to give the value corresponding to
+            a specific "server" configurations in the binding manager configuration file. JBoss AS
+            ships "out-of-the-box" with several pre-configured port ranges: 'ports-default',
+            'ports-01', 'ports-02', 'ports-03'. Use one of these.
+
+            If -Dports is not specified, the clustered instance so created will fall over to the
+            default port range for a JBoss instace.
+
+            More details about the binding management service can be found in the Application Server
+            documentation, at the following address
+            <ulink url="http://docs.jboss.com/jbossas/guides/j2eeguide/r2/en/html_single/#ch10.bindingmanager">http://docs.jboss.com/jbossas/guides/j2eeguide/r2/en/html_single/#ch10.bindingmanager</ulink>
          </listitem>
       </itemizedlist>
    </para>
@@ -34,16 +59,20 @@
    </para>
 
    <programlisting>
-      ant -f release-admin.xml -Did=0 cluster-node
+      ant -f release-admin.xml cluster-node
       ant -f release-admin.xml -Did=1 -Dports=ports-01 cluster-node
       ant -f release-admin.xml -Did=2 -Dports=ports-02 cluster-node
       ant -f release-admin.xml -Did=3 -Dports=ports-03 cluster-node
    </programlisting>
 
-
    <para>
       The sequence will create four cluster node configurations ("messaging-node0",
       "messaging-node1", "messaging-node2" and "messaging-node3").
+   </para>
+
+   <para>
+      The first command will create a cluster node with ID equals to '0' and using the
+      default JBoss AS port assignments.
    </para>
 
    <para>
@@ -83,44 +112,120 @@
 
 
    <para>
-      A successful node startup produces a log similar to:
+      A successful two node cluster startup produces a log similar to:
+   </para>
+
+
+   <para>
+      Node 0:
    </para>
 
 
    <programlisting>
-      04:48:49,663 INFO  [ConnectionFactoryBindingService] Bound ConnectionManager 'jboss.jca:name=DefaultDS,service=DataSourceBinding' to JNDI name 'java:DefaultDS'
-      04:48:50,257 INFO  [ServerPeer] JBoss Messaging 1.2.0.Beta2 server [0] started
-      04:48:50,569 INFO  [STDOUT]
+      ...
+
+      00:24:04,796 WARN  [JDBCPersistenceManager]
+
+      JBoss Messaging Warning: DataSource connection transaction isolation should be READ_COMMITTED, but it is currently REPEATABLE_READ.
+                               Using an isolation level less strict than READ_COMMITTED may lead to data consistency problems.
+                               Using an isolation level more strict than READ_COMMITTED may lead to deadlock.
+
+      00:24:05,718 INFO  [ServerPeer] JBoss Messaging 1.2.0.CR1 server [0] started
+      00:24:06,328 INFO  [STDOUT]
       -------------------------------------------------------
-      GMS: address is 127.0.0.1:1473
+      GMS: address is 127.0.0.1:2452
       -------------------------------------------------------
-      04:48:52,616 INFO  [STDOUT]
+      00:24:08,406 INFO  [DefaultClusteredPostOffice] ClusteredPostOffice[0:Clustered JMS:127.0.0.1:2452] got new view [127.0.0.1:2452|0] [127.0.0.1:2452]
+      00:24:08,468 INFO  [STDOUT]
       -------------------------------------------------------
-      GMS: address is 127.0.0.1:1475
+      GMS: address is 127.0.0.1:2455
       -------------------------------------------------------
-      04:48:54,694 INFO  [QueueService] Queue[/queue/DLQ] started, fullSize=75000, pageSize=2000, downCacheSize=2000
-      04:48:54,694 INFO  [QueueService] Queue[/queue/testQueue] started, fullSize=75000, pageSize=2000, downCacheSize=2000
-      04:48:54,694 INFO  [QueueService] Queue[/queue/A] started, fullSize=75000, pageSize=2000, downCacheSize=2000
-      04:48:54,710 INFO  [QueueService] Queue[/queue/B] started, fullSize=75000, pageSize=2000, downCacheSize=2000
-      04:48:54,710 INFO  [QueueService] Queue[/queue/C] started, fullSize=75000, pageSize=2000, downCacheSize=2000
-      04:48:54,710 INFO  [QueueService] Queue[/queue/D] started, fullSize=75000, pageSize=2000, downCacheSize=2000
-      04:48:54,710 INFO  [QueueService] Queue[/queue/ex] started, fullSize=75000, pageSize=2000, downCacheSize=2000
-      04:48:54,726 INFO  [QueueService] Queue[/queue/testDistributedQueue] started, fullSize=75000, pageSize=2000, downCacheSize=2000
-      04:48:54,772 INFO  [STDOUT]
-      -------------------------------------------------------
-      GMS: address is 127.0.0.1:1485
-      -------------------------------------------------------
-      04:48:56,788 INFO  [STDOUT]
-      -------------------------------------------------------
-      GMS: address is 127.0.0.1:1487
-      -------------------------------------------------------
-      04:48:58,804 INFO  [TopicService] Topic[/topic/testTopic] started, fullSize=75000, pageSize=2000, downCacheSize=2000
-      04:48:58,804 INFO  [TopicService] Topic[/topic/securedTopic] started, fullSize=75000, pageSize=2000, downCacheSize=2000
-      04:48:58,804 INFO  [TopicService] Topic[/topic/testDurableTopic] started, fullSize=75000, pageSize=2000, downCacheSize=2000
-      04:48:58,804 INFO  [TopicService] Topic[/topic/testDistributedTopic] started, fullSize=75000, pageSize=2000, downCacheSize=2000
-      04:48:59,335 INFO  [ConnectionFactory] Connector socket://192.168.1.101:4457 has leasing enabled, lease period 20000 milliseconds
-      04:48:59,335 INFO  [ConnectionFactory] [/ConnectionFactory, /XAConnectionFactory, java:/ConnectionFactory, java:/XAConnectionFactory] deployed
-      04:48:59,366 INFO  [ConnectionFactoryBindingService] Bound ConnectionManager 'jboss.jca:name=JmsXA,service=ConnectionFactoryBinding' to JNDI name 'java:JmsXA'
+      00:24:10,906 INFO  [ConnectionFactory] Connector socket://10.11.14.105:4457 has leasing enabled, lease period 10000 milliseconds
+      00:24:10,921 INFO  [ConnectionFactory] [/ConnectionFactory, /XAConnectionFactory, java:/ConnectionFactory, java:/XAConnectionFactory] started
+      00:24:10,953 INFO  [QueueService] Queue[/queue/DLQ] started, fullSize=75000, pageSize=2000, downCacheSize=2000
+      00:24:10,953 INFO  [QueueService] Queue[/queue/ExpiryQueue] started, fullSize=75000, pageSize=2000, downCacheSize=2000
+      00:24:10,953 INFO  [TopicService] Topic[/topic/testTopic] started, fullSize=75000, pageSize=2000, downCacheSize=2000
+      00:24:10,953 INFO  [TopicService] Topic[/topic/securedTopic] started, fullSize=75000, pageSize=2000, downCacheSize=2000
+      00:24:10,968 INFO  [TopicService] Topic[/topic/testDurableTopic] started, fullSize=75000, pageSize=2000, downCacheSize=2000
+      00:24:10,968 INFO  [QueueService] Queue[/queue/testQueue] started, fullSize=75000, pageSize=2000, downCacheSize=2000
+      00:24:10,968 INFO  [QueueService] Queue[/queue/A] started, fullSize=75000, pageSize=2000, downCacheSize=2000
+      00:24:10,968 INFO  [QueueService] Queue[/queue/B] started, fullSize=75000, pageSize=2000, downCacheSize=2000
+      00:24:10,968 INFO  [QueueService] Queue[/queue/C] started, fullSize=75000, pageSize=2000, downCacheSize=2000
+      00:24:10,968 INFO  [QueueService] Queue[/queue/D] started, fullSize=75000, pageSize=2000, downCacheSize=2000
+      00:24:10,968 INFO  [QueueService] Queue[/queue/ex] started, fullSize=75000, pageSize=2000, downCacheSize=2000
+      00:24:10,984 INFO  [QueueService] Queue[/queue/PrivateDLQ] started, fullSize=75000, pageSize=2000, downCacheSize=2000
+      00:24:10,984 INFO  [QueueService] Queue[/queue/PrivateExpiryQueue] started, fullSize=75000, pageSize=2000, downCacheSize=2000
+      00:24:10,984 INFO  [QueueService] Queue[/queue/QueueWithOwnDLQAndExpiryQueue] started, fullSize=75000, pageSize=2000, downCacheSize=2000
+      00:24:10,984 INFO  [TopicService] Topic[/topic/TopicWithOwnDLQAndExpiryQueue] started, fullSize=75000, pageSize=2000, downCacheSize=2000
+      00:24:10,984 INFO  [QueueService] Queue[/queue/QueueWithOwnRedeliveryDelay] started, fullSize=75000, pageSize=2000, downCacheSize=2000
+      00:24:10,984 INFO  [TopicService] Topic[/topic/TopicWithOwnRedeliveryDelay] started, fullSize=75000, pageSize=2000, downCacheSize=2000
+      00:24:11,000 INFO  [QueueService] Queue[/queue/testDistributedQueue] started, fullSize=75000, pageSize=2000, downCacheSize=2000
+      00:24:11,000 INFO  [TopicService] Topic[/topic/testDistributedTopic] started, fullSize=75000, pageSize=2000, downCacheSize=2000
+      00:24:11,093 INFO  [ConnectionFactoryBindingService] Bound ConnectionManager 'jboss.jca:name=JmsXA,service=ConnectionFactoryBinding' to JNDI name 'java:JmsXA'
+      00:24:11,375 INFO  [TomcatDeployer] deploy, ctxPath=/jmx-console, warUrl=.../deploy/jmx-console.war/
+      00:24:12,171 INFO  [Http11BaseProtocol] Starting Coyote HTTP/1.1 on http-0.0.0.0-8080
+      00:24:12,421 INFO  [ChannelSocket] JK: ajp13 listening on /0.0.0.0:8009
+      00:24:12,453 INFO  [JkMain] Jk running ID=0 time=0/47  config=null
+      00:24:12,515 INFO  [Server] JBoss (MX MicroKernel) [4.0.5.GA (build: CVSTag=Branch_4_0 date=200611221632)] Started in 30s:375ms
+
+      00:27:21,343 INFO  [DefaultClusteredPostOffice] ClusteredPostOffice[0:Clustered JMS:127.0.0.1:2452] got new view [127.0.0.1:2452|1] [127.0.0.1:2452, 127.0.0.1:2474]
+
 </programlisting>
+
+   <para>
+      Node 1:
+   </para>
+
+   <programlisting>
+
+      ...
+
+      00:33:54,468 WARN  [JDBCPersistenceManager]
+
+      JBoss Messaging Warning: DataSource connection transaction isolation should be READ_COMMITTED, but it is currently REPEATABLE_READ.
+                               Using an isolation level less strict than READ_COMMITTED may lead to data consistency problems.
+                               Using an isolation level more strict than READ_COMMITTED may lead to deadlock.
+
+      00:33:55,062 INFO  [ServerPeer] JBoss Messaging 1.2.0.CR1 server [1] started
+      00:33:55,609 INFO  [STDOUT]
+      -------------------------------------------------------
+      GMS: address is 127.0.0.1:2514
+      -------------------------------------------------------
+      00:33:57,734 INFO  [DefaultClusteredPostOffice] ClusteredPostOffice[1:Clustered JMS:127.0.0.1:2514] got new view [127.0.0.1:2452|3] [127.0.0.1:2452, 127.0.0.1:2514]
+      00:33:57,765 INFO  [STDOUT]
+      -------------------------------------------------------
+      GMS: address is 127.0.0.1:2519
+      -------------------------------------------------------
+      00:34:00,203 INFO  [ConnectionFactory] Connector socket://10.11.14.105:4557 has leasing enabled, lease period 20000 milliseconds
+      00:34:00,203 INFO  [ConnectionFactory] [/ConnectionFactory, /XAConnectionFactory, java:/ConnectionFactory, java:/XAConnectionFactory] started
+      00:34:00,234 INFO  [QueueService] Queue[/queue/DLQ] started, fullSize=75000, pageSize=2000, downCacheSize=2000
+      00:34:00,234 INFO  [QueueService] Queue[/queue/ExpiryQueue] started, fullSize=75000, pageSize=2000, downCacheSize=2000
+      00:34:00,234 INFO  [TopicService] Topic[/topic/testTopic] started, fullSize=75000, pageSize=2000, downCacheSize=2000
+      00:34:00,250 INFO  [TopicService] Topic[/topic/securedTopic] started, fullSize=75000, pageSize=2000, downCacheSize=2000
+      00:34:00,250 INFO  [TopicService] Topic[/topic/testDurableTopic] started, fullSize=75000, pageSize=2000, downCacheSize=2000
+      00:34:00,250 INFO  [QueueService] Queue[/queue/testQueue] started, fullSize=75000, pageSize=2000, downCacheSize=2000
+      00:34:00,250 INFO  [QueueService] Queue[/queue/A] started, fullSize=75000, pageSize=2000, downCacheSize=2000
+      00:34:00,250 INFO  [QueueService] Queue[/queue/B] started, fullSize=75000, pageSize=2000, downCacheSize=2000
+      00:34:00,250 INFO  [QueueService] Queue[/queue/C] started, fullSize=75000, pageSize=2000, downCacheSize=2000
+      00:34:00,250 INFO  [QueueService] Queue[/queue/D] started, fullSize=75000, pageSize=2000, downCacheSize=2000
+      00:34:00,250 INFO  [QueueService] Queue[/queue/ex] started, fullSize=75000, pageSize=2000, downCacheSize=2000
+      00:34:00,265 INFO  [QueueService] Queue[/queue/PrivateDLQ] started, fullSize=75000, pageSize=2000, downCacheSize=2000
+      00:34:00,265 INFO  [QueueService] Queue[/queue/PrivateExpiryQueue] started, fullSize=75000, pageSize=2000, downCacheSize=2000
+      00:34:00,265 INFO  [QueueService] Queue[/queue/QueueWithOwnDLQAndExpiryQueue] started, fullSize=75000, pageSize=2000, downCacheSize=2000
+      00:34:00,265 INFO  [TopicService] Topic[/topic/TopicWithOwnDLQAndExpiryQueue] started, fullSize=75000, pageSize=2000, downCacheSize=2000
+      00:34:00,265 INFO  [QueueService] Queue[/queue/QueueWithOwnRedeliveryDelay] started, fullSize=75000, pageSize=2000, downCacheSize=2000
+      00:34:00,265 INFO  [TopicService] Topic[/topic/TopicWithOwnRedeliveryDelay] started, fullSize=75000, pageSize=2000, downCacheSize=2000
+      00:34:00,296 INFO  [QueueService] Queue[/queue/testDistributedQueue] started, fullSize=75000, pageSize=2000, downCacheSize=2000
+      00:34:00,296 INFO  [TopicService] Topic[/topic/testDistributedTopic] started, fullSize=75000, pageSize=2000, downCacheSize=2000
+      00:34:00,343 INFO  [ConnectionFactoryBindingService] Bound ConnectionManager 'jboss.jca:name=JmsXA,service=ConnectionFactoryBinding' to JNDI name 'java:JmsXA'
+      00:34:00,453 INFO  [TomcatDeployer] deploy, ctxPath=/jmx-console, warUrl=.../deploy/jmx-console.war/
+      00:34:00,796 INFO  [Http11BaseProtocol] Starting Coyote HTTP/1.1 on http-0.0.0.0-8180
+      00:34:01,078 INFO  [ChannelSocket] JK: ajp13 listening on /0.0.0.0:8109
+      00:34:01,125 INFO  [JkMain] Jk running ID=0 time=0/125  config=null
+      00:34:01,125 INFO  [Server] JBoss (MX MicroKernel) [4.0.5.GA (build: CVSTag=Branch_4_0 date=200611221632)] Started in 22s:547ms
+
+
+   </programlisting>
+
 
 </chapter>

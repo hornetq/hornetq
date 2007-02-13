@@ -463,7 +463,7 @@
    <target name="configure-service-binding-manager" if="ports">
 
       <!--
-          Enable the service binding manager.
+          Enable the service binding manager, by deleting XML comment tags.
       -->
       <replaceregexp file="${jboss.home}/server/${config.name}/conf/jboss-service.xml" flags="s">
          <regexp pattern="(\x3cmbean[ \t]*code=\x22org.jboss.services.binding.ServiceBindingManager\x22.+org.jboss.services.binding.XMLServicesStoreFactory[ \t\n\r]*\x3c/attribute\x3e[ \t\n\r]*\x3c/mbean\x3e[ \t\n\r]*)--\x3e"/>

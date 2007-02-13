@@ -92,7 +92,7 @@
       <componentref name="jboss/common-logging-spi" version="2.0.2.GA"/>
       <componentref name="jboss/aop" version="1.5.0.GA"/>
       <componentref name="jboss/serialization" version="1.0.3.GA"/>
-      <componentref name="jboss/remoting" version="2.2.0.Alpha6"/>
+      <componentref name="jboss/remoting" version="2.2.0.Alpha7"/>
       <componentref name="jboss/jbossts" version="4.2.2.GA"/>
 
       <!-- Need this otherwise project doesn't build in Eclipse -->
