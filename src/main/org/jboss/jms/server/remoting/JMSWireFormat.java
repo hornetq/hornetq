@@ -33,6 +33,7 @@ import java.util.Map;
 
 import org.jboss.jms.wireformat.ClientDelivery;
 import org.jboss.jms.wireformat.ConnectionFactoryUpdate;
+import org.jboss.jms.wireformat.NullResponse;
 import org.jboss.jms.wireformat.PacketSupport;
 import org.jboss.jms.wireformat.PolledCallbacksDelivery;
 import org.jboss.jms.wireformat.RequestSupport;
@@ -234,6 +235,13 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
                }
                
                packet = new PolledCallbacksDelivery((List)param, resp.getSessionId());             
+            }
+            else if (param == null)
+            {
+               // Null response
+               packet = new NullResponse();
+               
+               if (trace) { log.trace("Null Response"); }
             }
             else
             {
