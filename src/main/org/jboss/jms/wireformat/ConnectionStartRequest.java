@@ -33,7 +33,7 @@ import org.jboss.jms.server.endpoint.ConnectionEndpoint;
  * A ConnectionStartRequest
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * @version <tt>$Revision: 1.1 $</tt>
+ * @version <tt>$Revision$</tt>
  *
  * $Id$
  *

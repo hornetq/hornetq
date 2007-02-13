@@ -36,9 +36,9 @@ import org.jboss.jms.client.delegate.ClientConnectionFactoryDelegate;
  *
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  * @author <a href="mailto:tim.fox@jboss.org">Tim Fox</a>
- * @version <tt>$Revision: 1998 $</tt>
+ * @version <tt>$Revision$</tt>
  *
- * $Id: ConnectionFactoryUpdateMessage.java 1998 2007-01-19 20:19:05Z clebert.suconic@jboss.com $
+ * $Id$
  */
 public class ConnectionFactoryUpdate extends CallbackSupport
 {
