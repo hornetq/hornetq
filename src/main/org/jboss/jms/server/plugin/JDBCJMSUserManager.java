@@ -193,7 +193,7 @@ public class JDBCJMSUserManager extends JDBCSupport implements JMSUserManager
                }
                catch (SQLException e) 
                {
-                  log.warn("Failed to execute " + statement, e);
+                  log.debug("Failed to execute " + statement, e);
                }  
             }      
          }
