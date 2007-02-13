@@ -1468,6 +1468,8 @@ log.info("password:" + config.getDatabasePassword());
             
             conn = ds.getConnection();
             
+            log.debug("Dropping table:" + statement);
+            
             PreparedStatement ps = conn.prepareStatement(statement);
       
             ps.executeUpdate();
@@ -1479,6 +1481,7 @@ log.info("password:" + config.getDatabasePassword());
          catch (SQLException e)
          {
             //Ignore
+            log.debug("Failed to drop table:", e);
             exception = true;
          }
       }
@@ -1516,19 +1519,19 @@ log.info("password:" + config.getDatabasePassword());
 
       javax.transaction.Transaction txOld = mgr.suspend();
                   
-      executeStatement(mgr, ds, "JBM_POSTOFFICE");
+      executeStatement(mgr, ds, "DROP TABLE JBM_POSTOFFICE");
       
-      executeStatement(mgr, ds, "JBM_MSG_REF");
+      executeStatement(mgr, ds, "DROP TABLE JBM_MSG_REF");
 
-      executeStatement(mgr, ds, "JBM_MSG");
+      executeStatement(mgr, ds, "DROP TABLE JBM_MSG");
      
-      executeStatement(mgr, ds, "JBM_TX");
+      executeStatement(mgr, ds, "DROP TABLE JBM_TX");
       
-      executeStatement(mgr, ds, "JBM_COUNTER");
+      executeStatement(mgr, ds, "DROP TABLE JBM_COUNTER");
       
-      executeStatement(mgr, ds, "JBM_USER");
+      executeStatement(mgr, ds, "DROP TABLE JBM_USER");
       
-      executeStatement(mgr, ds, "JBM_ROLE");
+      executeStatement(mgr, ds, "DROP TABLE JBM_ROLE");
       
       if (txOld != null)
       {
