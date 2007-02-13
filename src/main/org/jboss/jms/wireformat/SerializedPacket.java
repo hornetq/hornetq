@@ -45,7 +45,6 @@ import org.jboss.remoting.loading.ObjectInputStreamWithClassLoader;
 public class SerializedPacket extends PacketSupport
 {
    private static final Logger log = Logger.getLogger(SerializedPacket.class);
-
    
    private Object payload;
    
@@ -67,18 +66,6 @@ public class SerializedPacket extends PacketSupport
 
    public void read(DataInputStream is) throws Exception
    {
-//      int len = is.readInt();
-//      
-//      byte[] bytes = new byte[len];
-//      
-//      is.readFully(bytes);
-//      
-//      ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
-//      
-//      ObjectInputStream ois = new ObjectInputStream(bais);
-//      
-//      payload = ois.readObject();     
-           
       ObjectInputStream ois = new ObjectInputStreamWithClassLoader(is, Thread.currentThread().getContextClassLoader());
       
       payload = ois.readObject();
@@ -87,25 +74,7 @@ public class SerializedPacket extends PacketSupport
    public void write(DataOutputStream os) throws Exception
    {
       super.write(os);
-      
-//      ByteArrayOutputStream baos = new ByteArrayOutputStream();
-//      
-//      ObjectOutputStream oos = new ObjectOutputStream(baos);
-//      
-//      log.info("writing payload " + payload);
-//      
-//      oos.writeObject(payload);
-//      
-//      oos.flush();
-//      
-//      byte[] bytes = baos.toByteArray();
-//      
-//      os.writeInt(bytes.length);
-//      
-//      os.write(bytes);
-//            
-//      os.flush();
-      
+   
       ObjectOutputStream oos = new ObjectOutputStream(os);
       
       oos.writeObject(payload);
