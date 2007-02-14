@@ -533,6 +533,8 @@ public class ResourceManager
          {
             Xid[] txs = conn.getPreparedTransactions();
             
+            if (trace) { log.trace("Got " + txs.length + " transactions from server"); }
+            
             //populate with TxState --MK
             for (int i = 0; i < txs.length;i++)
             {

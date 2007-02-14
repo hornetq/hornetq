@@ -102,6 +102,11 @@ public class FailoverStatus implements Serializable
    {
       return failingOver && currentlyFailingOverForNode == nodeId;
    }
+   
+   public boolean isFailingOver()
+   {
+      return failingOver;
+   }
 
    public String toString()
    {

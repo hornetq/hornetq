@@ -1444,15 +1444,32 @@ public class ServerPeer extends ServiceMBeanSupport implements ServerPeerMBean
       {
          if (key.equals(DefaultClusteredPostOffice.FAILED_OVER_FOR_KEY))
          {
-            // We have a failover status change - notify anyone waiting
-
-            log.debug(ServerPeer.this + ".FailoverListener got failover event, notifying those waiting on lock");
-
+            if (updatedReplicantMap != null && originatingNodeId == serverPeerID)
+            {
+               FailoverStatus status = (FailoverStatus)updatedReplicantMap.get(new Integer(serverPeerID));
+               
+               if (status != null && status.isFailingOver())
+               {                     
+                  //We prompt txRepository to load any prepared txs - so we can take over responsibility for
+                  //in doubt transactions from other nodes
+                  try
+                  {
+                     txRepository.loadPreparedTransactions();
+                  }
+                  catch (Exception e)
+                  {
+                     log.error("Failed to load prepared transactions", e);
+                  }
+               }
+            }
+            
             synchronized (failoverStatusLock)
             {
+               log.debug(ServerPeer.this + ".FailoverListener got failover event, notifying those waiting on lock");
+               
                failoverStatusLock.notifyAll();
             }
-         }
+         }         
       }      
    }
 }

@@ -31,11 +31,16 @@ import javax.jms.Session;
 import javax.jms.Topic;
 import javax.naming.Context;
 import javax.naming.InitialContext;
+
+import org.jboss.jms.client.FailoverEvent;
+import org.jboss.jms.client.FailoverListener;
 import org.jboss.jms.client.JBossConnection;
 import org.jboss.jms.client.delegate.DelegateSupport;
 import org.jboss.jms.client.state.ConnectionState;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
+
+import EDU.oswego.cs.dl.util.concurrent.LinkedQueue;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.org">Tim Fox</a>
@@ -276,5 +281,36 @@ public class ClusteringTestBase extends MessagingTestCase
    }
 
    // Inner classes --------------------------------------------------------------------------------
+   
+   protected class SimpleFailoverListener implements FailoverListener
+   {
+      private LinkedQueue buffer;
+
+      public SimpleFailoverListener()
+      {
+         buffer = new LinkedQueue();
+      }
+
+      public void failoverEventOccured(FailoverEvent event)
+      {
+         try
+         {
+            buffer.put(event);
+         }
+         catch(InterruptedException e)
+         {
+            throw new RuntimeException("Putting thread interrupted while trying to add event " +
+               "to buffer", e);
+         }
+      }
+
+      /**
+       * Blocks until a FailoverEvent is available or timeout occurs, in which case returns null.
+       */
+      public FailoverEvent getEvent(long timeout) throws InterruptedException
+      {
+         return (FailoverEvent)buffer.poll(timeout);
+      }
+   }
 
 }

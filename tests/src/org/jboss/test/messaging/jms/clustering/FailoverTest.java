@@ -1926,36 +1926,5 @@ public class FailoverTest extends ClusteringTestBase
    }
 
    // Inner classes --------------------------------------------------------------------------------
-
-   private class SimpleFailoverListener implements FailoverListener
-   {
-      private LinkedQueue buffer;
-
-      public SimpleFailoverListener()
-      {
-         buffer = new LinkedQueue();
-      }
-
-      public void failoverEventOccured(FailoverEvent event)
-      {
-         try
-         {
-            buffer.put(event);
-         }
-         catch(InterruptedException e)
-         {
-            throw new RuntimeException("Putting thread interrupted while trying to add event " +
-               "to buffer", e);
-         }
-      }
-
-      /**
-       * Blocks until a FailoverEvent is available or timeout occurs, in which case returns null.
-       */
-      public FailoverEvent getEvent(long timeout) throws InterruptedException
-      {
-         return (FailoverEvent)buffer.poll(timeout);
-      }
-   }
-
+   
 }

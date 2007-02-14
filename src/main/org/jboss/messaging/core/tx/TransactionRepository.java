@@ -128,11 +128,11 @@ public class TransactionRepository implements MessagingComponent
       ArrayList prepared = new ArrayList();
 
       Iterator iter = globalToLocalMap.values().iterator();
-
+      
       while (iter.hasNext())
       {
          Transaction tx = (Transaction) iter.next();
-
+         
          if (tx.getXid() != null && tx.getState() == Transaction.STATE_PREPARED)
          {
             try
@@ -143,13 +143,10 @@ public class TransactionRepository implements MessagingComponent
                //in which case the tx will already have the references and acks in them
                //in this case we DO NOT want to replay them again, since they will end up in the transaction state
                //twice
-               //In other words we only want to replay acks and sends if this tx was loaded at startup
-               if (tx.isLoadedAtStartup())
+               //In other words we only want to replay acks and sends if this tx was recovered from the db
+               if (tx.isRecoveredFromStorage())
                {
-                  handleReferences(tx);
-                  handleAcks(tx);
-                  
-                  tx.setLoadedAtStartup(false);
+                  tx.loadState();
                }
             }
             catch (Exception e)
@@ -160,6 +157,8 @@ public class TransactionRepository implements MessagingComponent
             prepared.add(tx.getXid());
          }
       }
+      
+      if (trace) { log.trace("Returning " + prepared.size() + " transactions"); }
 
       return prepared;
    }
@@ -186,16 +185,26 @@ public class TransactionRepository implements MessagingComponent
          {
             PreparedTxInfo txInfo = (PreparedTxInfo) iter.next();
 
-            if (trace) log.trace("reinstating TX(XID: " + txInfo.getXid() + ", LocalId " + txInfo.getTxId() +")");
+            //This method may be called more than once - e.g. when failover occurs so we don't want to add the
+            //prepared tx if it is already in memory
             
-            Transaction tx = createTransaction(txInfo);
-            
-            tx.setState(Transaction.STATE_PREPARED);
-            
-            tx.setLoadedAtStartup(true);
-            
+            if (!globalToLocalMap.containsKey(txInfo.getXid()))
+            {
+               Transaction tx = createTransaction(txInfo);
+               
+               tx.setState(Transaction.STATE_PREPARED);
+               
+               tx.setRecoveredFromStorage(true);
+               
+               if (trace) log.trace("reinstating TX(XID: " + txInfo.getXid() + ", LocalId " + txInfo.getTxId() +")");
+               
+            }  
+            else
+            {
+               if (trace) log.trace("Not adding to map since it's already in map");
+            }
          }
-      }
+      }     
    }
    
    public List getPreparedTransactions()
@@ -272,22 +281,20 @@ public class TransactionRepository implements MessagingComponent
 	  return this.globalToLocalMap.size();   
    }
    
+   
+   
    // Package protected ---------------------------------------------
    
-   // Protected -----------------------------------------------------         
-   
-   // Private -------------------------------------------------------
-
-	/**
-	 * Load the references and invoke the channel to handle those refs
-	 */
-	private void handleReferences(Transaction tx) throws Exception
+   /**
+    * Load the references and invoke the channel to handle those refs
+    */
+   void handleReferences(Transaction tx) throws Exception
    {
       if (trace) log.trace("Handle references for TX(XID: " + tx.getXid() + ", LocalID: " + tx.getId()+ "):");
 
       long txId = tx.getId();
 
-		List pairs = persistenceManager.getMessageChannelPairRefsForTx(txId);
+      List pairs = persistenceManager.getMessageChannelPairRefsForTx(txId);
 
       if (trace) log.trace("Found " + pairs.size() + " unhandled references.");
 
@@ -327,13 +334,13 @@ public class TransactionRepository implements MessagingComponent
                ref.releaseMemoryReference();
             }
          }
-		}
-	}
+      }
+   }
 
-	/**
-	 * Load the acks and acknowledge them
-	 */
-	private void handleAcks(Transaction tx) throws Exception
+   /**
+    * Load the acks and acknowledge them
+    */
+   void handleAcks(Transaction tx) throws Exception
    {
       long txId = tx.getId();
       
@@ -401,7 +408,13 @@ public class TransactionRepository implements MessagingComponent
          tx.addCallback(new CancelCallback(dels), this);
       }
       
-   }         
+   }
+   
+   // Protected -----------------------------------------------------         
+   
+   // Private -------------------------------------------------------
+
+	         
       
 	/**
 	 * Creates a prepared transaction

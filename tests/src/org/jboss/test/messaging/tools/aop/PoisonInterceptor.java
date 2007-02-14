@@ -94,14 +94,13 @@ public class PoisonInterceptor implements Interceptor
          if (request.getRequestType() == TransactionRequest.TWO_PHASE_COMMIT_REQUEST
              && type == TYPE_2PC_COMMIT)
          {
-            //Crash on 2pc commit - used in message bridge tests
+            //Crash before 2pc commit (after prepare)- used in message bridge tests
             
             log.info("##### Crashing on 2PC commit!!");
             
             crash(target);
          }
-         else
-         if (request.getRequestType() == TransactionRequest.ONE_PHASE_COMMIT_REQUEST &&
+         else if (request.getRequestType() == TransactionRequest.ONE_PHASE_COMMIT_REQUEST &&
              type == FAIL_AFTER_SENDTRANSACTION)
          {
             invocation.invokeNext();

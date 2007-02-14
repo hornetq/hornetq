@@ -62,9 +62,8 @@ public class Transaction
    
    private Map callbackMap;
    
-   private boolean loadedAtStartup;
-      
-   
+   private boolean recoveredFromStorage;
+         
    /**
     * If this is a XA transaction, when a commit is executed the transaction has to be removed from the transaction repository.
     * This reference will guarantee the reference back to the repository where the transaction was created
@@ -182,6 +181,14 @@ public class Transaction
       {
          throw new TransactionException("Transaction already rolled back, cannot commit");
       }
+      
+      if (recoveredFromStorage)
+      {
+         //Commit can come in for an in doubt tx that has been recovered from storage
+         //but for which recover() has not yet been called
+         //therefore we might need to load it's state
+         loadState();
+      }
 
       if (trace) { log.trace(this + " executing before commit hooks"); }
        
@@ -292,6 +299,14 @@ public class Transaction
          throw new TransactionException("Transaction already rolled back, cannot rollback");
       }
       
+      if (recoveredFromStorage)
+      {
+         //Commit can come in for an in doubt tx that has been recovered from storage
+         //but for which recover() has not yet been called
+         //therefore we might need to load it's state
+         loadState();
+      }
+      
       if (trace) { log.trace(this + " executing before rollback hooks"); }
       
       boolean onePhase = state != STATE_PREPARED;
@@ -335,6 +350,15 @@ public class Transaction
       if (trace) { log.trace(this + " rollback process complete"); }
    }
 
+   public void loadState() throws Exception
+   {
+      repository.handleReferences(this);
+      
+      repository.handleAcks(this);
+      
+      recoveredFromStorage = false;
+   }
+   
    public synchronized void setRollbackOnly() throws Exception
    {
       if (trace) { log.trace("setting ROLLBACK_ONLY on " + this); }
@@ -347,14 +371,14 @@ public class Transaction
       return id;
    }
    
-   public boolean isLoadedAtStartup()
+   public boolean isRecoveredFromStorage()
    {
-      return this.loadedAtStartup;
+      return this.recoveredFromStorage;
    }
    
-   public void setLoadedAtStartup(boolean loadedAtStartup)
+   public void setRecoveredFromStorage(boolean recoveredFromStorage)
    {
-      this.loadedAtStartup = loadedAtStartup;
+      this.recoveredFromStorage = recoveredFromStorage;
    }
    
    public void setState(int state)
