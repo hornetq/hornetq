@@ -37,7 +37,9 @@ import org.jboss.example.jms.common.ExampleSupport;
  * The example creates two connections to two distinct cluster nodes on which we have previously
  * deployed a distributed queue. The example creates and sends a message using a connection, and
  * attempts to receive the message using the other connection. This is an example of message
- * redistribution in clustered environment at work.
+ * redistribution in clustered environment at work. The JBoss Messaging clustered Post Offices
+ * need to be configured with a default message redistribution policy for this example to work
+ * correctly.
  *
  * Since this example is also used as a smoke test, it is essential that the VM exits with exit
  * code 0 in case of successful execution and a non-zero value on failure.
@@ -76,11 +78,11 @@ public class DistributedQueueExample extends ExampleSupport
          // ... so this is a connection to a cluster node
          connection0 = cf.createConnection();
 
-//         // ... and this is a connection to a different cluster node
-//         connection1 = cf.createConnection();
-//
-//         // Let's make sure that (this example is also a smoke test)
-//         assertNotEquals(getServerID(connection0), getServerID(connection1));
+         // ... and this is a connection to a different cluster node
+         connection1 = cf.createConnection();
+
+         // Let's make sure that (this example is also a smoke test)
+         assertNotEquals(getServerID(connection0), getServerID(connection1));
 
          // Create a session and a producer on the first connection
 
@@ -88,16 +90,16 @@ public class DistributedQueueExample extends ExampleSupport
          MessageProducer publisher = session0.createProducer(distributedQueue);
 
 
-//         // Create another session and a consumer on the second connection
-//
-//         Session session1 = connection1.createSession(false, Session.AUTO_ACKNOWLEDGE);
-//         MessageConsumer consumer = session1.createConsumer(distributedQueue);
-//         ExampleListener messageListener = new ExampleListener("MessageListener");
-//         consumer.setMessageListener(messageListener);
-//
-//         // Start connection1, so we can receive the message
-//
-//         connection1.start();
+         // Create another session and a consumer on the second connection
+
+         Session session1 = connection1.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         MessageConsumer consumer = session1.createConsumer(distributedQueue);
+         ExampleListener messageListener = new ExampleListener("MessageListener");
+         consumer.setMessageListener(messageListener);
+
+         // Start connection1, so we can receive the message
+
+         connection1.start();
 
          // Sendi the message
 
@@ -107,12 +109,12 @@ public class DistributedQueueExample extends ExampleSupport
          log("The message was successfully sent to the distributed queue");
 
 
-//         messageListener.waitForMessage();
-//
-//
-//         message = (TextMessage)messageListener.getMessage();
-//         log(messageListener.getName() + " received message: " + message.getText());
-//         assertEquals("Hello!", message.getText());
+         messageListener.waitForMessage();
+
+
+         message = (TextMessage)messageListener.getMessage();
+         log(messageListener.getName() + " received message: " + message.getText());
+         assertEquals("Hello!", message.getText());
 
          displayProviderInfo(connection0.getMetaData());
 
