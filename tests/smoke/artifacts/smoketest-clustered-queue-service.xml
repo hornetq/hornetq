@@ -8,9 +8,9 @@
    </loader-repository>
    -->
 
-   <mbean code="org.jboss.jms.server.destination.TopicService"
-      name="jboss.messaging.destination:service=Topic,name=DistributedSmokeTestTopic"
-      xmbean-dd="xmdesc/Topic-xmbean.xml">
+   <mbean code="org.jboss.jms.server.destination.QueueService"
+      name="jboss.messaging.destination:service=Queue,name=DistributedSmokeTestQueue"
+      xmbean-dd="xmdesc/Queue-xmbean.xml">
       <attribute name="Clustered">true</attribute>
       <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
       <depends>jboss.messaging:service=PostOffice</depends>

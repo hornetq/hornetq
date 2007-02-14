@@ -13,8 +13,8 @@ $Revision$
 <br>
 This example creates a JMS Connection to a JBoss Messaging instance
 and uses it to create a session and a message producer, which sends a
-message to a queue. The first connection is closed, and a second
-connection is created and used to create a message consumer that reads
+message to the queue "queue/testQueue".&nbsp; Then, the example uses
+the same connection to create a consumer that that reads
 a single message from the queue. The example is considered successful
 if the message consumer receives without any error the message that was
 sent by the producer. <br>

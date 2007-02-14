@@ -49,7 +49,7 @@ public class ExampleListener implements MessageListener
       return message;
    }
 
-   public synchronized void waitForMessage()
+   public synchronized void waitForMessage(long timeout)
    {
       if (message != null)
       {
@@ -58,7 +58,7 @@ public class ExampleListener implements MessageListener
 
       try
       {
-         wait(5000);
+         wait(timeout);
       }
       catch(InterruptedException e)
       {

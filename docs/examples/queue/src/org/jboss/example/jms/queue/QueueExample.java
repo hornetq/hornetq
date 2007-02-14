@@ -34,10 +34,12 @@ import javax.naming.InitialContext;
 import org.jboss.example.jms.common.ExampleSupport;
 
 /**
- * The example creates a connection to the default provider and uses the connection to send a
- * message to the queue "queue/testQueue". Then, the example creates a second connection to the
- * provider and uses it to receive the message.
- *
+ * This example creates a JMS Connection to a JBoss Messaging instance and uses it to create a
+ * session and a message producer, which sends a message to the queue "queue/testQueue".  Then, the
+ * example uses the same connection to create a consumer that that reads a single message from the
+ * queue. The example is considered successful if the message consumer receives without any error
+ * the message that was sent by the producer.
+ * 
  * Since this example is also used by the smoke test, it is essential that the VM exits with exit
  * code 0 in case of successful execution and a non-zero value on failure.
  *
@@ -58,8 +60,7 @@ public class QueueExample extends ExampleSupport
       InitialContext ic = null;
       ConnectionFactory cf = null;
       Connection connection =  null;
-      Connection connection2 =  null;
-      
+
       try
       {         
          ic = new InitialContext();
@@ -76,17 +77,15 @@ public class QueueExample extends ExampleSupport
          sender.send(message);
          log("The message was successfully sent to the " + queue.getQueueName() + " queue");
          
-         connection2 = cf.createConnection();
-         Session session2 = connection2.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageConsumer consumer =  session2.createConsumer(queue);
+         MessageConsumer consumer =  session.createConsumer(queue);
          
-         connection2.start();
+         connection.start();
          
          message = (TextMessage)consumer.receive(2000);
          log("Received message: " + message.getText());
          assertEquals("Hello!", message.getText());
          
-         displayProviderInfo(connection2.getMetaData());
+         displayProviderInfo(connection.getMetaData());
                  
       }
       finally
@@ -103,16 +102,13 @@ public class QueueExample extends ExampleSupport
             }
          }
          
-         //ALWAYS close your connection in a finally block to avoid leaks
-         //Closing connection also takes care of closing its related objects e.g. sessions
+         // ALWAYS close your connection in a finally block to avoid leaks.
+         // Closing connection also takes care of closing its related objects e.g. sessions.
          closeConnection(connection);
-         
-         closeConnection(connection2);
-         
-      }      
+      }
    }
    
-   private void closeConnection(Connection con) throws JMSException
+   private void closeConnection(Connection con)
    {      
       try
       {

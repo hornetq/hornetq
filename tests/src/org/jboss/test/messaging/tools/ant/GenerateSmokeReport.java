@@ -252,8 +252,35 @@ public class GenerateSmokeReport
             }
             String exampleName = line.substring(bi + 13, ei);
 
+            bi = line.indexOf("CLUSTERED=");
+            if (bi == -1)
+            {
+               throw new Exception("CLUSTERED= not found in \"" + line + "\"");
+            }
+            ei = line.indexOf(' ', bi);
+            if (ei == -1)
+            {
+               ei = line.length();
+            }
+            String clusteredValue = line.substring(bi + 10, ei);
+            clusteredValue = clusteredValue.toLowerCase();
+            boolean clustered;
+            if ("true".equals(clusteredValue))
+            {
+               clustered = true;
+            }
+            else if ("false".equals(clusteredValue))
+            {
+               clustered = false;
+            }
+            else
+            {
+               throw new Exception(
+                  "CLUSTERED must be either 'true' or 'false' but it's " + clusteredValue);
+            }
+
             result.addTestRun(testType, jbossHome, jbossConfiguration, clientVersion,
-                              installationType, serverArtifactName, exampleName);
+                              installationType, serverArtifactName, exampleName, clustered);
          }
       }
       finally
@@ -478,11 +505,13 @@ public class GenerateSmokeReport
 
       public void addTestRun(String testType, String jbossHome, String jbossConfiguration,
                              String clientVersion, String installationType,
-                             String serverArtifactName, String exampleName) throws Exception
+                             String serverArtifactName, String exampleName,
+                             boolean clustered) throws Exception
       {
          if ("installation".equals(testType))
          {
-            addInstallationTestRun(jbossHome, installationType, serverArtifactName, exampleName);
+            addInstallationTestRun(jbossHome, installationType,
+                                   serverArtifactName, exampleName, clustered);
          }
          else if ("client.compatibility".equals(testType))
          {
@@ -546,8 +575,8 @@ public class GenerateSmokeReport
       }
 
       private void addInstallationTestRun(String jbossHome, String installationType,
-                                          String serverArtifactName, String exampleName)
-         throws Exception
+                                          String serverArtifactName, String exampleName,
+                                          boolean clustered) throws Exception
       {
          String jbossVersion;
          boolean installerGenerated = false;
@@ -586,7 +615,7 @@ public class GenerateSmokeReport
          scoped = serverArtifactName.indexOf("-scoped") != -1;
 
          JBossInstallation jbi =
-            new JBossInstallation(jbossVersion, installerGenerated, standalone, scoped);
+            new JBossInstallation(jbossVersion, installerGenerated, standalone, scoped, clustered);
 
          Set examples = (Set)installationTests.get(jbi);
 
@@ -655,16 +684,19 @@ public class GenerateSmokeReport
       private boolean installerGenerated;
       private boolean standalone;
       private boolean scoped;
+      private boolean clustered;
 
       private JBossInstallation(String version,
                                 boolean installerGenerated,
                                 boolean standalone,
-                                boolean scoped)
+                                boolean scoped,
+                                boolean clustered)
       {
          this.version = version;
          this.installerGenerated = installerGenerated;
          this.standalone = standalone;
          this.scoped = scoped;
+         this.clustered = clustered;
       }
 
       public int compareTo(Object o)
@@ -679,11 +711,13 @@ public class GenerateSmokeReport
          }
 
          int thisScore =
+            (this.isClustered() ? 1000 : 0) +
             (this.isStandalone() ? 100 : 0) +
             (this.isInstallerGenerated() ? 10 : 0) +
             (this.isScoped() ? 1 : 0);
 
          int thatScore =
+            (that.isClustered() ? 1000 : 0) +
             (that.isStandalone() ? 100 : 0) +
             (that.isInstallerGenerated() ? 10 : 0) +
             (that.isScoped() ? 1 : 0);
@@ -711,6 +745,11 @@ public class GenerateSmokeReport
          return scoped;
       }
 
+      public boolean isClustered()
+      {
+         return clustered;
+      }
+
       public boolean equals(Object o)
       {
          if (this == o)
@@ -729,7 +768,8 @@ public class GenerateSmokeReport
             this.version.equals(that.version) &&
             this.installerGenerated == that.installerGenerated &&
             this.standalone == that.standalone &&
-            this.scoped == that.scoped;
+            this.scoped == that.scoped &&
+            this.clustered == that.clustered;
       }
 
       public int hashCode()
@@ -738,7 +778,8 @@ public class GenerateSmokeReport
             version.hashCode() +
             (installerGenerated ? 17 : 0) +
             (standalone ? 37 : 0) +
-            (scoped ? 57 : 0);
+            (scoped ? 57 : 0) +
+            (clustered ? 129 : 0);
       }
 
       public String toString()
@@ -767,6 +808,16 @@ public class GenerateSmokeReport
          {
             sb.append(", installer generated");
          }
+
+         if (clustered)
+         {
+            sb.append(", CLUSTERED");
+         }
+         else
+         {
+            sb.append(", not clustered");
+         }
+
          sb.append(")");
 
          return sb.toString();

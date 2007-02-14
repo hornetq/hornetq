@@ -109,7 +109,8 @@ public class DistributedQueueExample extends ExampleSupport
          log("The message was successfully sent to the distributed queue");
 
 
-         messageListener.waitForMessage();
+         // Wait longer than clustered Post Office's "StatsSendPeriod", which is usually 10 secs
+         messageListener.waitForMessage(15000);
 
 
          message = (TextMessage)messageListener.getMessage();
