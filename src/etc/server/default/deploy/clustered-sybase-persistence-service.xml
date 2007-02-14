@@ -83,7 +83,7 @@ LOAD_BINDINGS=SELECT NODE_ID, QUEUE_NAME, COND, SELECTOR, CHANNEL_ID, IS_FAILED_
       <attribute name="StateTimeout">5000</attribute>
       <attribute name="CastTimeout">5000</attribute>
       <attribute name="StatsSendPeriod">10000</attribute>
-      <attribute name="MessagePullPolicy">org.jboss.messaging.core.plugin.postoffice.cluster.NullMessagePullPolicy</attribute>
+      <attribute name="MessagePullPolicy">org.jboss.messaging.core.plugin.postoffice.cluster.DefaultMessagePullPolicy</attribute>
       <attribute name="ClusterRouterFactory">org.jboss.messaging.core.plugin.postoffice.cluster.DefaultRouterFactory</attribute>
 
 
