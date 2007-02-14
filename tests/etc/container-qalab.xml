@@ -3,7 +3,7 @@
 
      Use this one for testing in the QA lab against different databases
 
-     $Id: container.xml 2223 2007-02-09 00:13:24Z timfox $
+     $Id: container.xml 2283 2007-02-13 05:43:22Z ovidiu.feodorov@jboss.com $
 -->
 
 <container>
@@ -11,7 +11,7 @@
    <!--
         The value of "test.database" system property, if set, takes precedence.
    -->
-   <database>sybase</database>
+   <database>mysql</database>
 
    <database-configurations>
 
@@ -66,6 +66,14 @@
           <isolation>TRANSACTION_READ_COMMITTED</isolation>
           <username>messaging</username>
           <password>messaging</password>
+      </database-configuration>
+
+      <database-configuration name="db2">
+         <url>jdbc:db2://dev32-priv:50000/jms</url>
+         <driver>com.ibm.db2.jcc.DB2Driver</driver>
+         <isolation>TRANSACTION_READ_COMMITTED</isolation>
+         <username>jms</username>
+         <password>jms</password>
       </database-configuration>
 
    </database-configurations>
