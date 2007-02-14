@@ -3,7 +3,7 @@
 <!--
      Postgresql non-clustered persistence deployment descriptor.
 
-     UNTESTED
+     Tested with PostgresSQL 8.1.5
 
      $Id$
  -->

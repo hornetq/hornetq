@@ -3,7 +3,7 @@
 <!--
      Sybase clustered persistence deployment descriptor.
 
-     UNTESTED
+     Tested with Sybase Adaptive Server Enterprise 12.5.2
 
      $Id$
  -->

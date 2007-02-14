@@ -3,7 +3,7 @@
 <!--
      Oracle clustered persistence deployment descriptor.
 
-     UNTESTED
+     Tested with Oracle 10.1.0.3
 
      $Id$
  -->

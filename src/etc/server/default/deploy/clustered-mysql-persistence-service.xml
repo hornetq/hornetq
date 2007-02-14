@@ -3,7 +3,7 @@
 <!--
      MySql clustered persistence deployment descriptor.
 
-     UNTESTED
+     Tested with MySQL 4.1.22
 
      $Id$
  -->

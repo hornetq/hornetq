@@ -3,7 +3,7 @@
 <!--
      MS SQL Server non-clustered persistence deployment descriptor.
 
-     UNTESTED
+     Tested with SQL Server 2005
 
      $Id$
  -->
