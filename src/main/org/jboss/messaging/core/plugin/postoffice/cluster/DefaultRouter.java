@@ -34,9 +34,6 @@ import org.jboss.messaging.core.message.MessageReference;
 import org.jboss.messaging.core.tx.Transaction;
 
 /**
- * 
- * A DefaultRouter
- * 
  * This router always favours the local queue.
  * 
  * If there is no local queue, then it will round robin between the non local queues.

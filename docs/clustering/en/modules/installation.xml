@@ -43,8 +43,8 @@
             ships "out-of-the-box" with several pre-configured port ranges: 'ports-default',
             'ports-01', 'ports-02', 'ports-03'. Use one of these.
 
-            If -Dports is not specified, the clustered instance so created will fall over to the
-            default port range for a JBoss instace.
+            If -Dports is not specified, the clustered instance created this way will fall over to
+            the default port range for a JBoss instace.
 
             More details about the binding management service can be found in the Application Server
             documentation, at the following address
