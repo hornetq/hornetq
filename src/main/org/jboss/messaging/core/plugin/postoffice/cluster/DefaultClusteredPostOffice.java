@@ -1505,7 +1505,6 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
    protected void addToConditionMap(Binding binding)
    {
       Condition condition = binding.getCondition();
-
       ClusteredBindings bindings = (ClusteredBindings)conditionMap.get(condition);
 
       if (bindings == null)
@@ -1539,7 +1538,8 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
 
       if (bindings == null)
       {
-         throw new IllegalStateException("Cannot find condition bindings for " + binding.getCondition());
+         throw new IllegalStateException(
+            "Cannot find condition bindings for " + binding.getCondition());
       }
 
       boolean removed = bindings.removeBinding(binding);
@@ -1555,7 +1555,6 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
       }
 
       String queueName = binding.getQueue().getName();
-
       ClusterRouter router = (ClusterRouter)routerMap.get(queueName);
 
       if (router == null)
