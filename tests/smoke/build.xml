@@ -91,25 +91,25 @@
       <!--
            4.0.1sp1
       -->
-                                                                                                <!--
+
       <antcall target="installation-test">
          <param name="jboss.home" value="${jboss401sp1.home}"/>
          <param name="run.secure-socket.example" value="false"/>
       </antcall>
-                                                                                                 -->
+                                                                                                
       <!--
            4.0.2
       -->
-                                                                                                <!--
+
       <antcall target="installation-test">
          <param name="jboss.home" value="${jboss402.home}"/>
          <param name="run.secure-socket.example" value="false"/>
       </antcall>
-                                                                                                 -->
+
       <!--
            4.0.3
       -->
-                                                                                                <!--
+
       <antcall target="installation-test">
          <param name="jboss.home" value="${jboss403.home}"/>
          <param name="run.secure-socket.example" value="false"/>
@@ -119,11 +119,11 @@
          <param name="jboss.home" value="${jboss403-installer.home}"/>
          <param name="run.secure-socket.example" value="false"/>
       </antcall>
-                                                                                                 -->
+
       <!--
            4.0.3SP1
       -->
-                                                                                                <!--
+
       <antcall target="installation-test">
          <param name="jboss.home" value="${jboss403SP1.home}"/>
          <param name="run.secure-socket.example" value="false"/>
@@ -141,7 +141,7 @@
          <param name="run.stateless.example" value="false"/>
          <param name="run.secure-socket.example" value="false"/>
       </antcall>
-                                                                                                 -->
+
       <!--
            4.0.4.GA
       -->
@@ -153,7 +153,7 @@
       <antcall target="installation-test">
          <param name="jboss.home" value="${jboss404GA-installer.home}"/>
       </antcall>
-                                                                                                <!--
+
       <antcall target="installation-test">
          <param name="jboss.home" value="${jboss404GA.home}"/>
          <param name="release.admin.target" value="standalone"/>
@@ -161,7 +161,7 @@
          <param name="run.stateless.example" value="false"/>
          <param name="run.secure-socket.example" value="false"/>
       </antcall>
-                                                                                                 -->
+                                                                                                
       <!--
            4.0.5.GA
       -->
@@ -173,7 +173,7 @@
       <antcall target="installation-test">
          <param name="jboss.home" value="${jboss405GA-installer.home}"/>
       </antcall>
-                                                                                                <!--
+
       <antcall target="installation-test">
          <param name="jboss.home" value="${jboss405GA.home}"/>
          <param name="release.admin.target" value="standalone"/>
@@ -187,7 +187,7 @@
          <param name="no.java4" value="true"/>
          <param name="run.ejb3mdb.example" value="true"/>
       </antcall>
-                                                                                                 -->
+
       <!--
          Stateless Session Bean installation test will fail on this because the client talks to
          Messaging's remoting and to Unified Invoker's remoting and runs into compatibility
@@ -297,7 +297,7 @@
 
       <antcall target="start"/>
       <antcall target="record-running-jboss-instance"/>
-      <antcall target="sleep"><param name="sleep.interval" value="25"/></antcall>
+      <antcall target="sleep"><param name="sleep.interval" value="40"/></antcall>
 
       <antcall target="ping-jms-server"/>
 
@@ -328,7 +328,7 @@
          <param name="example.name" value="topic"/>
          <param name="example.topic.name" value="SmokeTestTopic"/>
       </antcall>
-                                                                                                <!--
+
       <antcall target="run-example">
          <param name="example.name" value="mdb"/>
          <param name="example.queue.name" value="SmokeTestQueue"/>
@@ -346,7 +346,7 @@
          <param name="example.queue.name" value="SmokeTestQueue"/>
          <param name="jboss.home" value="${jboss.home}"/>
       </antcall>
-                                                                                                 -->
+
       <antcall target="run-example">
          <param name="example.name" value="secure-socket"/>
          <param name="example.queue.name" value="SmokeTestQueue"/>
@@ -383,7 +383,7 @@
       <antcall target="record-running-jboss-instance">
          <param name="jboss.configuration" value="${jboss.configuration}-node0"/>
       </antcall>
-      <antcall target="sleep"><param name="sleep.interval" value="25"/></antcall>
+      <antcall target="sleep"><param name="sleep.interval" value="40"/></antcall>
       <antcall target="ping-jms-server"/>
 
       <!--
@@ -446,7 +446,7 @@
       <antcall target="record-running-jboss-instance1">
          <param name="jboss.configuration" value="${jboss.configuration}-node1"/>
       </antcall>
-      <antcall target="sleep"><param name="sleep.interval" value="25"/></antcall>
+      <antcall target="sleep"><param name="sleep.interval" value="40"/></antcall>
       <antcall target="ping-jms-server">
          <param name="jnpPort" value="1199"/>
       </antcall>
@@ -501,7 +501,7 @@
          <param name="jboss.configuration" value="${jboss.configuration}-node0"/>
          <param name="clustered" value="true"/>
       </antcall>
-                                                                                                <!--
+
       <antcall target="run-example">
          <param name="example.name" value="mdb"/>
          <param name="example.queue.name" value="SmokeTestQueue"/>
@@ -522,7 +522,7 @@
          <param name="jboss.configuration" value="${jboss.configuration}-node0"/>
          <param name="clustered" value="true"/>
       </antcall>
-                                                                                                 -->
+
       <antcall target="run-example">
          <param name="example.name" value="secure-socket"/>
          <param name="example.queue.name" value="SmokeTestQueue"/>
@@ -666,7 +666,7 @@
       <antcall target="create-clustered-messaging-config"/>
       <antcall target="run-all-clustered-examples"/>
       <antcall target="clean-clustered-messaging-config"/>
-
+                                                                                                 
    </target>
 
    <target name="check-java-version">

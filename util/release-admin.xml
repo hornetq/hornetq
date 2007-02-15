@@ -487,6 +487,15 @@
       </replaceregexp>
 
       <!--
+          The above regular expression won't match some older JBoss configurations (such as
+          4.0.1sp1), so trying with an alternate expression.
+      -->
+      <replaceregexp file="${jboss.home}/server/${config.name}/conf/jboss-service.xml" flags="s">
+         <regexp pattern="(\x3cattribute[ \t]*name=\x22StoreURL\x22\x3e)../docs/examples/binding-manager/sample-bindings.xml(\x3c/attribute\x3e)"/>
+         <substitution expression="\1../server/${config.name}/conf/binding-manager.xml\2"/>
+      </replaceregexp>
+
+      <!--
           Actually copy the file
       -->
       <copy file="${jboss.home}/docs/examples/binding-manager/sample-bindings.xml"
