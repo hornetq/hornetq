@@ -28,4 +28,28 @@
       <attribute name="LoadBalancingFactory">org.jboss.jms.client.plugin.RoundRobinLoadBalancingFactory</attribute>
    </mbean>
 
+   <!--
+        A "local" non-clustered ConnectionFactory that doesn't have neither load balancing nor
+        failover capabilities. It creates connections to the server node that deployed it.
+   -->
+
+   <mbean code="org.jboss.jms.server.connectionfactory.ConnectionFactory"
+      name="jboss.messaging.connectionfactory:service=NonClusteredConnectionFactory"
+      xmbean-dd="xmdesc/ConnectionFactory-xmbean.xml">
+      <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
+      <depends optional-attribute-name="Connector">jboss.messaging:service=Connector,transport=socket</depends>
+      <depends>jboss.messaging:service=PostOffice</depends>
+
+      <attribute name="JNDIBindings">
+         <bindings>
+            <binding>/NonClusteredConnectionFactory</binding>
+            <binding>/NonClusteredXAConnectionFactory</binding>
+            <binding>java:/NonClusteredConnectionFactory</binding>
+            <binding>java:/NonClusteredXAConnectionFactory</binding>
+         </bindings>
+      </attribute>
+
+      <attribute name="Clustered">false</attribute>
+   </mbean>
+
 </server>

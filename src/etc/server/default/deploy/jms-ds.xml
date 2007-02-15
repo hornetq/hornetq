@@ -6,14 +6,18 @@
   <!-- JMS Stuff                                                            -->
   <!-- ==================================================================== -->
 
-  <!-- The JMS provider loader -->
+   <!--
+       The JMS provider loader. Currently pointing to a non-clustered ConnectionFactory. Need to
+       be replaced with a clustered non-load-balanced ConnectionFactory when it becomes available.
+       See http://jira.jboss.org/jira/browse/JBMESSAGING-843. 
+   -->
    <mbean code="org.jboss.jms.jndi.JMSProviderLoader"
           name="jboss.messaging:service=JMSProviderLoader,name=JMSProvider">
       <attribute name="ProviderName">DefaultJMSProvider</attribute>
       <attribute name="ProviderAdapterClass">org.jboss.jms.jndi.JNDIProviderAdapter</attribute>
-      <attribute name="FactoryRef">java:/XAConnectionFactory</attribute>
-      <attribute name="QueueFactoryRef">java:/XAConnectionFactory</attribute>
-      <attribute name="TopicFactoryRef">java:/XAConnectionFactory</attribute>
+      <attribute name="FactoryRef">java:/NonClusteredXAConnectionFactory</attribute>
+      <attribute name="QueueFactoryRef">java:/NonClusteredXAConnectionFactory</attribute>
+      <attribute name="TopicFactoryRef">java:/NonClusteredXAConnectionFactory</attribute>
    </mbean>
 
    <mbean code="org.jboss.jms.asf.ServerSessionPoolLoader"

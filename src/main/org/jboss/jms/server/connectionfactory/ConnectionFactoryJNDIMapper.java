@@ -315,15 +315,18 @@ public class ConnectionFactoryJNDIMapper
                Map.Entry entry = (Map.Entry)i.next();
                String uniqueName = (String)entry.getKey();
 
-               ClientClusteredConnectionFactoryDelegate del =
-                  (ClientClusteredConnectionFactoryDelegate)delegates.get(uniqueName);
+               Object del = delegates.get(uniqueName);
 
                if (del == null)
                {
-                  throw new IllegalStateException("Cannot find cf with name " + uniqueName);
+                  throw new IllegalStateException(
+                     "Cannot find connection factory with name " + uniqueName);
                }
 
-               del.setFailoverMap(failoverMap);
+               if (del instanceof ClientClusteredConnectionFactoryDelegate)
+               {
+                  ((ClientClusteredConnectionFactoryDelegate)del).setFailoverMap(failoverMap);
+               }
             }
          }
          else if (sKey.startsWith(CF_PREFIX) && originatorNodeID != serverPeer.getServerPeerID())

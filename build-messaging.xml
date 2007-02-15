@@ -493,6 +493,11 @@
                  required by 4.0.1sp1 and lower
             -->
             <include name="org/jboss/util/propertyeditor/**"/>
+            <!--
+                Need by 4.0.1sp1 (and maybe others).
+                http://jira.jboss.org/jira/browse/JBMESSAGING-840
+            -->
+            <include name="org/jboss/util/timeout/**"/>
          </patternset>
       </unjar>
 
