@@ -25,8 +25,6 @@ import org.jboss.messaging.core.Queue;
 import org.jboss.messaging.core.plugin.contract.Condition;
 
 /**
- * A Binding
- *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  *

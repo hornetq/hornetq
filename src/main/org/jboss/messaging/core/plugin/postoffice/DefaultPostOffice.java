@@ -187,7 +187,7 @@ public class DefaultPostOffice extends JDBCSupport implements PostOffice
 
       try
       {
-         //We currently only allow one binding per name per node
+         // We currently only allow one binding per name per node
          Map nameMap = (Map)nameMaps.get(new Integer(currentNodeId));
 
          Binding binding = null;
@@ -208,7 +208,7 @@ public class DefaultPostOffice extends JDBCSupport implements PostOffice
 
          if (queue.isRecoverable())
          {
-            //Need to write the binding to the db
+            // Need to write the binding to the database
             insertBinding(binding);
          }
 
@@ -808,7 +808,6 @@ public class DefaultPostOffice extends JDBCSupport implements PostOffice
       if (bindings == null)
       {
          bindings = new DefaultBindings();
-
          conditionMap.put(condition, bindings);
       }
 

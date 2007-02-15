@@ -28,9 +28,6 @@ import org.jboss.messaging.core.plugin.postoffice.cluster.LocalClusteredQueue;
 import org.jboss.messaging.core.plugin.postoffice.cluster.Peer;
 
 /**
- * 
- * A ClusteredPostOffice
- *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  * @version <tt>$Revision$</tt>
@@ -44,20 +41,17 @@ public interface ClusteredPostOffice extends PostOffice, Peer
    public static final String FAILOVER_COMPLETED_NOTIFICATION = "FAILOVER_COMPLETED";
 
    /**
-    * Bind a queue to the post office under a specific condition
-    * such that it is available across the cluster
-    * @param condition The condition to be used when routing references
-    * @param queue
-    * @return
-    * @throws Exception
+    * Bind a queue to the post office under a specific condition such that it is available across
+    * the cluster.
+    *
+    * @param condition - the condition to be used when routing references.
     */
    Binding bindClusteredQueue(Condition condition, LocalClusteredQueue queue) throws Exception;
 
    /**
-    * Unbind a clustered queue from the post office
-    * @param queueName The unique name of the queue
-    * @return
-    * @throws Throwable
+    * Unbind a clustered queue from the post office.
+    *
+    * @param queueName - the unique name of the queue.
     */
    Binding unbindClusteredQueue(String queueName) throws Throwable;
 

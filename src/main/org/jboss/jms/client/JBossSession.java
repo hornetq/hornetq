@@ -401,10 +401,10 @@ public class JBossSession implements
 
    public TemporaryQueue createTemporaryQueue() throws JMSException
    {
-      //As per spec. section 4.11
+      // As per spec. section 4.11
       if (sessionType == TYPE_TOPIC_SESSION)
       {
-         throw new IllegalStateException("Cannot create a temp. queue using a TopicSession");
+         throw new IllegalStateException("Cannot create a temporary queue using a TopicSession");
       }
       JBossTemporaryQueue queue = new JBossTemporaryQueue(delegate);
       delegate.addTemporaryDestination(queue);
@@ -413,7 +413,7 @@ public class JBossSession implements
 
    public TemporaryTopic createTemporaryTopic() throws JMSException
    {
-      //As per spec. section 4.11
+      // As per spec. section 4.11
       if (sessionType == TYPE_QUEUE_SESSION)
       {
          throw new IllegalStateException("Cannot create a temporary topic on a QueueSession");
@@ -425,7 +425,7 @@ public class JBossSession implements
 
    public void unsubscribe(String name) throws JMSException
    {
-      //As per spec. section 4.11
+      // As per spec. section 4.11
       if (sessionType == TYPE_QUEUE_SESSION)
       {
          throw new IllegalStateException("Cannot unsubscribe using a QueueSession");

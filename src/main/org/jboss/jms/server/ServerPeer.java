@@ -331,7 +331,7 @@ public class ServerPeer extends ServiceMBeanSupport implements ServerPeerMBean
 
          queuedExecutorPool.shutdown();
          
-         MyTimeoutFactory.instance.reset();
+         MessagingTimeoutFactory.instance.reset();
 
          log.info("JMS " + this + " stopped");
       }

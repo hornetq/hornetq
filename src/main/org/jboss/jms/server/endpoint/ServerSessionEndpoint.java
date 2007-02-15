@@ -528,9 +528,10 @@ public class ServerSessionEndpoint implements SessionEndpoint
             throw new InvalidDestinationException("Destination:" + dest +
                " is not a temporary destination");
          }
+
          connectionEndpoint.addTemporaryDestination(dest);
          
-         //Register with the destination manager
+         // Register with the destination manager
          
          ManagedDestination mDest;
          
@@ -553,20 +554,20 @@ public class ServerSessionEndpoint implements SessionEndpoint
          {
             QueuedExecutor executor = (QueuedExecutor)pool.get();
             
-            PagingFilteredQueue q = 
+            PagingFilteredQueue coreQueue =
                new PagingFilteredQueue(dest.getName(), idm.getID(), ms, pm, true, false,
                                        executor, -1, null, fullSize, pageSize, downCacheSize);     
                         
             String counterName = TEMP_QUEUE_MESSAGECOUNTER_PREFIX + dest.getName();
             
             MessageCounter counter =
-               new MessageCounter(counterName, null, q, false, false,
+               new MessageCounter(counterName, null, coreQueue, false, false,
                                   sp.getDefaultMessageCounterHistoryDayLimit());
             
             sp.getMessageCounterManager().registerMessageCounter(counterName, counter);
                                  
-            //Make a binding for this queue
-            postOffice.bindQueue(new JMSCondition(true, dest.getName()), q);
+            // Make a binding for this queue
+            postOffice.bindQueue(new JMSCondition(true, dest.getName()), coreQueue);
          }         
       }
       catch (Throwable t)

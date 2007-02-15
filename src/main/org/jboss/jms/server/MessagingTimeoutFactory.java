@@ -26,43 +26,56 @@ import org.jboss.util.threadpool.ThreadPool;
 import org.jboss.util.timeout.TimeoutFactory;
 
 /**
- * A TimeoutFactory
- *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
  *
  * $Id$
  *
  */
-public class MyTimeoutFactory
+public class MessagingTimeoutFactory
 {
-   public static MyTimeoutFactory instance = new MyTimeoutFactory();
-   
-   private ThreadPool threadPool;
-   
+   // Constants ------------------------------------------------------------------------------------
+
+   // Static ---------------------------------------------------------------------------------------
+
+   public static MessagingTimeoutFactory instance = new MessagingTimeoutFactory();
+
+   // Attributes -----------------------------------------------------------------------------------
+
    private TimeoutFactory factory;
-   
-   private MyTimeoutFactory()
+
+   // Constructors ---------------------------------------------------------------------------------
+
+   private MessagingTimeoutFactory()
    {
       createFactory();
    }
-   
+
+   // Public ---------------------------------------------------------------------------------------
+
    public TimeoutFactory getFactory()
    {
       return factory;
    }
-   
+
    public synchronized void reset()
    {
       factory.cancel();
-      
       createFactory();
    }
-   
+
+   // Package protected ----------------------------------------------------------------------------
+
+   // Protected ------------------------------------------------------------------------------------
+
+   // Private --------------------------------------------------------------------------------------
+
    private void createFactory()
    {
-      threadPool = new BasicThreadPool();
-      
+      ThreadPool threadPool = new BasicThreadPool("Messaging Timeout");
       factory = new TimeoutFactory(threadPool);
    }
+
+   // Inner classes --------------------------------------------------------------------------------
+
 }

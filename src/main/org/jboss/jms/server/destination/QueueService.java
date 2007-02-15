@@ -36,15 +36,15 @@ import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
  */
 public class QueueService extends DestinationServiceSupport implements QueueMBean
 {
-   // Constants -----------------------------------------------------
+   // Constants ------------------------------------------------------------------------------------
    
    private static final String QUEUE_MESSAGECOUNTER_PREFIX = "Queue.";
 
-   // Static --------------------------------------------------------
+   // Static ---------------------------------------------------------------------------------------
    
-   // Attributes ----------------------------------------------------
+   // Attributes -----------------------------------------------------------------------------------
    
-   // Constructors --------------------------------------------------
+   // Constructors ---------------------------------------------------------------------------------
    
    public QueueService()
    {
@@ -58,7 +58,7 @@ public class QueueService extends DestinationServiceSupport implements QueueMBea
       destination = new ManagedQueue();      
    }
    
-   // ServiceMBeanSupport overrides --------------------------------
+   // ServiceMBeanSupport overrides ----------------------------------------------------------------
    
    public synchronized void startService() throws Exception
    {
@@ -70,11 +70,9 @@ public class QueueService extends DestinationServiceSupport implements QueueMBea
          
          destination.setServerPeer(serverPeer);
 
-         //Binding must be added before destination is registered in JNDI
-         //otherwise the user could get a reference to the destination and use it
-         //while it is still being loaded
-             
-         //Binding might already exist
+         // Binding must be added before destination is registered in JNDI otherwise the user could
+         // get a reference to the destination and use it while it is still being loaded. Also,
+         // binding might already exist.
             
          Binding binding = postOffice.getBindingForQueueName(destination.getName());
          
@@ -84,37 +82,39 @@ public class QueueService extends DestinationServiceSupport implements QueueMBea
          {     
             queue = (PagingFilteredQueue)binding.getQueue();
                 
-            queue.setPagingParams(destination.getFullSize(), destination.getPageSize(), destination.getDownCacheSize());
+            queue.setPagingParams(destination.getFullSize(),
+                                  destination.getPageSize(),
+                                  destination.getDownCacheSize());
             queue.load();
             
-            //Must be done after load
+            // Must be done after load
             queue.setMaxSize(destination.getMaxSize());
-            
             queue.activate();
          }
          else
          {         
             QueuedExecutor executor = (QueuedExecutor)pool.get();
             
-            //Create a new queue       
+            // Create a new queue
             
             JMSCondition queueCond = new JMSCondition(true, destination.getName());
             
             if (postOffice.isLocal())
             {
-               queue = new PagingFilteredQueue(destination.getName(), idm.getID(), ms, pm, true, true,
-                                               executor, destination.getMaxSize(), null,
-                                               destination.getFullSize(), destination.getPageSize(), destination.getDownCacheSize());
-               
-               
-               
+               queue = new PagingFilteredQueue(destination.getName(),
+                                               idm.getID(), ms, pm, true, true, executor,
+                                               destination.getMaxSize(), null,
+                                               destination.getFullSize(), destination.getPageSize(),
+                                               destination.getDownCacheSize());
                postOffice.bindQueue(queueCond, queue);
             }
             else
             {               
-               queue = new LocalClusteredQueue(postOffice, nodeId, destination.getName(), idm.getID(), ms, pm, true, true,
-                                               executor, destination.getMaxSize(), null, tr, 
-                                               destination.getFullSize(), destination.getPageSize(), destination.getDownCacheSize());
+               queue = new LocalClusteredQueue(postOffice, nodeId, destination.getName(),
+                                               idm.getID(), ms, pm, true, true, executor,
+                                               destination.getMaxSize(), null, tr,
+                                               destination.getFullSize(), destination.getPageSize(),
+                                               destination.getDownCacheSize());
                
                ClusteredPostOffice cpo = (ClusteredPostOffice)postOffice;
                
@@ -193,9 +193,8 @@ public class QueueService extends DestinationServiceSupport implements QueueMBea
          ExceptionUtil.handleJMXInvocation(t, this + " stopService");
       }
    }
-   
-   
-   // JMX managed attributes ----------------------------------------
+
+   // JMX managed attributes -----------------------------------------------------------------------
    
    public int getMessageCount() throws Exception
    {
@@ -258,7 +257,7 @@ public class QueueService extends DestinationServiceSupport implements QueueMBea
       return ((ManagedQueue)destination).getConsumersCount();
    }
      
-   // JMX managed operations ----------------------------------------
+   // JMX managed operations -----------------------------------------------------------------------
       
    public void removeAllMessages() throws Exception
    {
@@ -401,18 +400,18 @@ public class QueueService extends DestinationServiceSupport implements QueueMBea
       ((ManagedQueue)destination).getMessageCounter().resetHistory();
    }
        
-   // Public --------------------------------------------------------
+   // Public ---------------------------------------------------------------------------------------
 
-   // Package protected ---------------------------------------------
+   // Package protected ----------------------------------------------------------------------------
 
-   // Protected -----------------------------------------------------
+   // Protected ------------------------------------------------------------------------------------
 
    protected boolean isQueue()
    {
       return true;
    }
 
-   // Private -------------------------------------------------------
+   // Private --------------------------------------------------------------------------------------
 
-   // Inner classes -------------------------------------------------
+   // Inner classes --------------------------------------------------------------------------------
 }

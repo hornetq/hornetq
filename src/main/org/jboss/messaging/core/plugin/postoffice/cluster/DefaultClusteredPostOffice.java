@@ -434,15 +434,16 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
 
    // ClusteredPostOffice implementation -----------------------------------------------------------
 
-   public Binding bindClusteredQueue(Condition condition, LocalClusteredQueue queue) throws Exception
+   public Binding bindClusteredQueue(Condition condition, LocalClusteredQueue queue)
+      throws Exception
    {
-      if (trace) { log.trace(this.currentNodeId + " binding clustered queue: " + queue + " with condition: " + condition); }
+      if (trace) { log.trace(this.currentNodeId + " binding clustered queue " + queue + " with condition " + condition); }
 
       if (queue.getNodeId() != this.currentNodeId)
       {
           log.warn("queue.getNodeId is not this node");
          //throw new IllegalArgumentException("Queue node id does not match office node id");
-         // todo what to do when HA failing?
+         // TODO what to do when HA failing?
       }
 
       Binding binding = (Binding)super.bindQueue(condition, queue);
@@ -1523,14 +1524,13 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
       if (router == null)
       {
          router = routerFactory.createRouter();
-
          routerMap.put(queueName, router);
-
          bindings.addRouter(queueName, router);
       }
 
-      // todo: Maybe we should have isFailed as a property of Queue instead of Binding, so we won't need to change this signature.
-      router.add(binding.getQueue(),binding.isFailed());
+      // TODO Maybe we should have isFailed as a property of Queue instead of Binding, so we won't
+      //      need to change this signature.
+      router.add(binding.getQueue(), binding.isFailed());
    }
 
    protected void removeFromConditionMap(Binding binding)

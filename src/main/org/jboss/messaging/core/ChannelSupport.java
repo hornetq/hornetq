@@ -28,7 +28,7 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Set;
 
-import org.jboss.jms.server.MyTimeoutFactory;
+import org.jboss.jms.server.MessagingTimeoutFactory;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.message.MessageReference;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
@@ -845,14 +845,13 @@ public abstract class ChannelSupport implements Channel
       {      
          if (trace) { log.trace("Scheduling delivery for " + ref + " to occur at " + ref.getScheduledDeliveryTime()); }
          
-         //Schedule the cancel to actually occur at the specified time
-         
-         //Need to synchronize to prevent timeout being removed before it is added
+         // Schedule the cancel to actually occur at the specified time. Need to synchronize to
+         // prevent timeout being removed before it is added.
          synchronized (scheduledDeliveries)
          {            
             Timeout timeout =
-               MyTimeoutFactory.instance.getFactory().schedule(ref.getScheduledDeliveryTime(),
-                        new DeliverRefTimeoutTarget(ref));
+               MessagingTimeoutFactory.instance.getFactory().
+                  schedule(ref.getScheduledDeliveryTime(), new DeliverRefTimeoutTarget(ref));
             
             scheduledDeliveries.add(timeout);
          }      

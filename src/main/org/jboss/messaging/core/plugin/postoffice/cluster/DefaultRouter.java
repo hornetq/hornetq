@@ -187,7 +187,7 @@ public class DefaultRouter implements ClusterRouter
 
    public boolean add(Receiver receiver)
    {
-      return add(receiver,false);
+      return add(receiver, false);
    }
 
    public boolean remove(Receiver queue)
@@ -195,7 +195,6 @@ public class DefaultRouter implements ClusterRouter
       if (localQueue == queue)
       {
          localQueue = null;
-
          return true;
       }
       else
@@ -226,7 +225,6 @@ public class DefaultRouter implements ClusterRouter
    {
       return nonLocalQueues.size() + (localQueue != null ? 1 : 0);
    }
-
 
    // ClusterRouter implementation -----------------------------------------------------------------
 
@@ -268,7 +266,7 @@ public class DefaultRouter implements ClusterRouter
          {
             if (localQueue != null)
             {
-               throw new IllegalStateException("Already has local queue");
+               throw new IllegalStateException(this + " already has local queue");
             }
             localQueue = queue;
          }
