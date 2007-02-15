@@ -190,7 +190,19 @@ public class JBossSession implements
    public void setMessageListener(MessageListener listener) throws JMSException
    {
       if (log.isTraceEnabled()) { log.trace("setMessageListener(" + listener + ") called"); }
-      delegate.setMessageListener(listener);
+
+      ThreadContextClassLoaderChanger tccc = new ThreadContextClassLoaderChanger();
+
+      try
+      {
+         tccc.set(getClass().getClassLoader());
+
+         delegate.setMessageListener(listener);
+      }
+      finally
+      {
+         tccc.restore();
+      }
    }
 
    public void run()
