@@ -29,6 +29,7 @@ import java.io.Serializable;
 import java.util.Enumeration;
 
 import org.jboss.jms.delegate.BrowserDelegate;
+import org.jboss.jms.util.ThreadContextClassLoaderChanger;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -47,8 +48,8 @@ public class JBossQueueBrowser implements QueueBrowser, Serializable
 
    private BrowserDelegate delegate;
    private Queue queue;
-   private String messageSelector; 
-   
+   private String messageSelector;
+
    // Constructors ---------------------------------------------------------------------------------
 
    JBossQueueBrowser(Queue queue, String messageSelector, BrowserDelegate delegate)
@@ -63,15 +64,26 @@ public class JBossQueueBrowser implements QueueBrowser, Serializable
    public void close() throws JMSException
    {
       delegate.closing();
-	   delegate.close();
+      delegate.close();
    }
- 
+
    public Enumeration getEnumeration() throws JMSException
    {
-      delegate.reset();
+      ThreadContextClassLoaderChanger tccc = new ThreadContextClassLoaderChanger();
+
+      try
+      {
+         tccc.set(getClass().getClassLoader());
+         delegate.reset();
+      }
+      finally
+      {
+         tccc.restore();
+      }
+      
       return new BrowserEnumeration();
    }
-  
+
    public String getMessageSelector() throws JMSException
    {
       return messageSelector;
@@ -81,7 +93,7 @@ public class JBossQueueBrowser implements QueueBrowser, Serializable
    {
       return queue;
    }
-   
+
    // Public ---------------------------------------------------------------------------------------
 
    public String toString()
@@ -103,7 +115,7 @@ public class JBossQueueBrowser implements QueueBrowser, Serializable
    // Inner classes --------------------------------------------------------------------------------
 
    private class BrowserEnumeration implements Enumeration
-   {            
+   {
       public boolean hasMoreElements()
       {
          try
@@ -115,7 +127,7 @@ public class JBossQueueBrowser implements QueueBrowser, Serializable
             throw new IllegalStateException(e.getMessage());
          }
       }
-     
+
       public Object nextElement()
       {
          try
