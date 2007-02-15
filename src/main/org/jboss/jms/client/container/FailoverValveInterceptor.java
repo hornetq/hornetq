@@ -120,9 +120,8 @@ public class FailoverValveInterceptor implements Interceptor, FailureDetector
       }
       catch (MessagingNetworkFailureException e)
       {
-         log.debug(this + " putting " + methodName + "() on hold until failover completes");
-         
-         log.info("********** CAUGHT NETWORK FAILURE");
+         log.debug(this + " detected network failure, putting " + methodName +
+            "() on hold until failover completes");
          
          fcc.failureDetected(e, this, remotingConnection);
          

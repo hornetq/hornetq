@@ -610,6 +610,8 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
    
    void sendMessage(JBossMessage msg, Transaction tx, boolean checkForDuplicates) throws Exception
    {
+      if (trace) { log.trace(this + " sending " + msg + (tx == null ? " non-transactionally" : " in " + tx)); }
+
       JBossDestination dest = (JBossDestination)msg.getJMSDestination();
       
       // This allows the no-local consumers to filter out the messages that come from the same
@@ -657,7 +659,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
          {
             if (!postOffice.route(ref, new JMSCondition(true, dest.getName()), tx))
             {
-               throw new JMSException("Failed to route message");
+               throw new JMSException("Failed to route " + ref + " to " + dest.getName());
             }
          }
          else
