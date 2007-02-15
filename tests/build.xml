@@ -74,7 +74,7 @@
    <!--
         Default remoting configuration (must be overrided by tasks that need it set otherwise).
    -->
-   <property name="test.remoting" value="socket"/>
+   <property name="test.remoting" value="bisocket"/>
 
 
    <!--
@@ -363,7 +363,7 @@
       <antcall target="crash-tests"/>
       <antcall target="invm-tests"/>
       <!--
-           default remoting configuration (socket)
+           default remoting configuration (bisocket)
       -->
       <antcall target="remote-tests"/>
       <antcall target="remote-tests">
@@ -381,7 +381,7 @@
 
    <target name="stress-tests" depends="tests-jar, prepare-testdirs, clear-test-logs">
       <antcall target="invm-stress-tests"/>
-      <antcall target="remote-stress-tests"/> <!-- default remoting configuration (socket) -->
+      <antcall target="remote-stress-tests"/> <!-- default remoting configuration (bisocket) -->
       <antcall target="remote-stress-tests">
          <param name="test.remoting" value="http"/>
       </antcall>
@@ -962,7 +962,7 @@
       <antcall target="stop-rmi-server"/>
 
       <!--
-          ClientCrashTest over "socket"
+          ClientCrashTest over "bisocket"
       -->
 
       <antcall target="start-rmi-server">
@@ -988,7 +988,7 @@
       </antcall>
 
       <!--
-          ClientCrashTwoConnectionsTest over "socket"
+          ClientCrashTwoConnectionsTest over "bisocket"
       -->
 
       <antcall target="start-rmi-server">
@@ -1014,7 +1014,7 @@
       </antcall>
 
       <!--
-          ClientCrashNegativeLeaseTest over "socket"
+          ClientCrashNegativeLeaseTest over "bisocket"
       -->
 
       <antcall target="start-rmi-server">
@@ -1041,7 +1041,7 @@
       </antcall>
 
       <!--
-          ClientCrashZeroLeaseTest over "socket"
+          ClientCrashZeroLeaseTest over "bisocket"
       -->
 
       <antcall target="start-rmi-server">
@@ -1068,7 +1068,7 @@
       </antcall>
 
       <!--
-          ClientCrashLargeLeaseTest over "socket"
+          ClientCrashLargeLeaseTest over "bisocket"
       -->
 
       <antcall target="start-rmi-server">
@@ -1095,7 +1095,7 @@
       </antcall>
 
       <!--
-          CallbackFailureTest over "socket"
+          CallbackFailureTest over "bisocket"
       -->
 
       <antcall target="start-rmi-server">

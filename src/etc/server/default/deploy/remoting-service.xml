@@ -13,7 +13,7 @@
           display-name="Socket transport Connector">
       <attribute name="Configuration">
          <config>
-            <invoker transport="socket">
+            <invoker transport="bisocket">
                <attribute name="marshaller" isParam="true">org.jboss.jms.server.remoting.JMSWireFormat</attribute>
                <attribute name="unmarshaller" isParam="true">org.jboss.jms.server.remoting.JMSWireFormat</attribute>
                <!-- Serialization type must be jms - do not change! -->

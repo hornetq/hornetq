@@ -32,8 +32,10 @@ import org.jboss.remoting.InvokerLocator;
 import org.jboss.remoting.ServerInvoker;
 import org.jboss.remoting.callback.CallbackPoller;
 import org.jboss.remoting.callback.InvokerCallbackHandler;
+import org.jboss.remoting.transport.bisocket.Bisocket;
 import org.jboss.remoting.transport.socket.MicroSocketClientInvoker;
 import org.jboss.remoting.transport.socket.SocketServerInvoker;
+import org.jboss.util.id.GUID;
 
 
 /**
@@ -119,6 +121,16 @@ public class JMSRemotingConnection
          {
             metadata.put(Client.CALLBACK_SERVER_PORT, propertyPort);
          }
+         
+         String protocol = serverLocator.getProtocol();
+         if ("bisocket".equals(protocol) || "sslbisocket".equals(protocol))
+         {
+            metadata.put(Bisocket.IS_CALLBACK_SERVER, "true");
+            // Setting the port prevents the Remoting Client from using PortUtil.findPort(),
+            // which creates ServerSockets.  The actual value of the port shouldn't matter.
+            if (propertyPort == null)
+               metadata.put(Client.CALLBACK_SERVER_PORT, Integer.toString(new GUID().hashCode()));
+         }
       }
       else
       {
@@ -166,9 +178,12 @@ public class JMSRemotingConnection
       throws Throwable
    {
 
-      // For socket transport allow true push callbacks, with callback Connector.
-      // For http transport, simulate push callbacks.
-      boolean doPushCallbacks = "socket".equals(serverLocator.getProtocol());
+      // For transports derived from the socket transport, allow true push callbacks,
+      // with callback Connector.   For http transport, simulate push callbacks.
+      String protocol = serverLocator.getProtocol();
+      boolean isBisocket = "bisocket".equals(protocol) || "sslbisocket".equals(protocol);
+      boolean isSocket   = "socket".equals(protocol)   || "sslsocket".equals(protocol);
+      boolean doPushCallbacks = isBisocket || isSocket;
       Map metadata = createCallbackMetadata(doPushCallbacks, initialMetadata, serverLocator);
 
       if (doPushCallbacks)

@@ -116,6 +116,14 @@ public class RemotingConnectionFailureTest extends MessagingTestCase
          // if the client throws CannotConnectException, we're fine, this is our
          // FailoverValveInteceptor is looking after
       }
+      catch(IOException e)
+      {
+         // This happens for bisocket clients - if the client throws IOException subclass, we're fine,
+         // this is what our FailoverValveInteceptor is looking after
+         
+         // Note.  The bisocket transport can make internal invocations and therefore have a
+         // pooled connectin available.
+      }
    }
 
    public void testInvocationAfterDeathDetectedByPinger() throws Throwable

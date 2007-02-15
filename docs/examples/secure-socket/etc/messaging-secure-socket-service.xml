@@ -18,7 +18,7 @@
           display-name="SSL Socket Transport Connector">
       <attribute name="Configuration">
          <config>
-            <invoker transport="sslsocket">
+            <invoker transport="sslbisocket">
                <attribute name="marshaller" isParam="true">org.jboss.jms.server.remoting.JMSWireFormat</attribute>
                <attribute name="unmarshaller" isParam="true">org.jboss.jms.server.remoting.JMSWireFormat</attribute>
                <attribute name="serializationtype" isParam="true">jms</attribute>

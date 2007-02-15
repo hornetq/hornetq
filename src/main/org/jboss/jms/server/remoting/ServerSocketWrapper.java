@@ -61,6 +61,26 @@ public class ServerSocketWrapper extends ClientSocketWrapper
    {
       super(socket, metadata, timeout);
    }
+   
+   // SocketWrapper overrides ----------------------------------------------------------------------
+
+   public void close() throws IOException
+   {
+      if(getSocket() != null)
+      {
+         try
+         {
+            getOutputStream().write(CLOSING);
+            getOutputStream().flush();
+            log.debug("wrote CLOSING byte");
+         }
+         catch (IOException e)
+         {
+            log.debug("cannot write CLOSING byte", e);
+         }
+         super.close();
+      }
+   }
 
    // Public --------------------------------------------------------
 

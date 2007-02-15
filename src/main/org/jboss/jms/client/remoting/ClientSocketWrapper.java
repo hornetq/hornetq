@@ -33,6 +33,8 @@ import java.io.OutputStream;
 import java.net.Socket;
 import java.util.Map;
 
+import org.jboss.logging.Logger;
+import org.jboss.remoting.transport.socket.OpenConnectionChecker;
 import org.jboss.remoting.transport.socket.SocketWrapper;
 
 /**
@@ -41,9 +43,11 @@ import org.jboss.remoting.transport.socket.SocketWrapper;
  *
  * $Id$
  */
-public class ClientSocketWrapper extends SocketWrapper
+public class ClientSocketWrapper extends SocketWrapper implements OpenConnectionChecker
 {
    // Constants ------------------------------------------------------------------------------------
+   final static private Logger log = Logger.getLogger(ClientSocketWrapper.class);
+   final static protected int CLOSING = 1;
    
    // Static ---------------------------------------------------------------------------------------
 
@@ -87,7 +91,17 @@ public class ClientSocketWrapper extends SocketWrapper
       out.flush();
       in.readByte();
    }
+   // OpenConnectionChecker implementation ---------------------------------------------------------
 
+   public void checkOpenConnection() throws IOException
+   {
+      if (in.available() > 0)
+      {
+         log.trace("remote endpoint has closed");
+         throw new IOException("remote endpoint has closed");
+      }
+   }
+   
    // Public ---------------------------------------------------------------------------------------
 
    public String toString()

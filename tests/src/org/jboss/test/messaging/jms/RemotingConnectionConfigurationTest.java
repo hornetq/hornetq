@@ -152,12 +152,17 @@ public class RemotingConnectionConfigurationTest extends MessagingTestCase
 
       try
       {
+         String address = InetAddress.getLocalHost().getHostAddress();
+         System.setProperty("jboss.messaging.callback.bind.address", address);
+         
          int freePort = PortUtil.findFreePort(InetAddress.getLocalHost().getHostName());
          System.setProperty("jboss.messaging.callback.bind.port", Integer.toString(freePort));
 
          String pollPeriod = "654";
          System.setProperty("jboss.messaging.callback.pollPeriod", pollPeriod);
 
+         System.setProperty("jboss.messaging.callback.reportPollingStatistics", "true");
+         
          connection = (JBossConnection)cf.createConnection();
          connection.start();
 
@@ -170,7 +175,10 @@ public class RemotingConnectionConfigurationTest extends MessagingTestCase
          InvokerLocator locator = (InvokerLocator)field.get(remotingConnection);
          String transport = locator.getProtocol();
 
-         if ("socket".equals(transport))
+         if ("socket".equals(transport)
+               || "sslsocket".equals(transport)
+               || "bisocket".equals(transport)
+               || "sslbisocket".equals(transport))
          {
             field = Client.class.getDeclaredField("callbackConnectors");
             field.setAccessible(true);
@@ -179,6 +187,7 @@ public class RemotingConnectionConfigurationTest extends MessagingTestCase
             InvokerCallbackHandler callbackHandler = remotingConnection.getCallbackManager();
             Connector connector = (Connector)callbackConnectors.get(callbackHandler);
             locator = new InvokerLocator(connector.getInvokerLocator());
+            assertEquals(address, locator.getHost());
             assertEquals(freePort, locator.getPort());
          }
          else if ("http".equals(transport))
@@ -195,6 +204,10 @@ public class RemotingConnectionConfigurationTest extends MessagingTestCase
             field.setAccessible(true);
 
             assertEquals(pollPeriod, ((Long)field.get(callbackPoller)).toString());
+            
+            field = CallbackPoller.class.getDeclaredField("reportStatistics");
+            field.setAccessible(true);
+            assertEquals(true, ((Boolean) field.get(callbackPoller)).booleanValue());
          }
          else
          {

@@ -1398,9 +1398,17 @@ log.info("password:" + config.getDatabasePassword());
          {
             params += "&timeout=0";
          }
-
+         
+         if ("sslbisocket".equals(transport) || "sslsocket".equals(transport))
+         {
+            System.setProperty("javax.net.ssl.keyStorePassword", "secureexample");
+            String keyStoreFilePath = this.getClass().getResource("../../../../../../../etc/messaging.keystore").getFile();
+            System.setProperty("javax.net.ssl.keyStore", keyStoreFilePath);
+         }
+         
          int freePort = PortUtil.findFreePort(ipAddressOrHostName);
          locatorURI = transport + "://" + ipAddressOrHostName + ":" + freePort + params;
+         log.info("creating server for: " + locatorURI);
       }
 
 

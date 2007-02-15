@@ -77,9 +77,9 @@
    <serialization-type>jms</serialization-type>
 
    <!--
-       Supported values: "socket", "http"
+       Supported values: "bisocket", "sslbisocket", "socket", "sslsocket", "http"
    -->
-   <remoting-transport>socket</remoting-transport>
+   <remoting-transport>bisocket</remoting-transport>
 
    <!--
       Specifies whether to start a clustered messaging server or not. If "test.clustered" is set,
