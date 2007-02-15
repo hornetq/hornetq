@@ -356,17 +356,22 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
             return;
          }
    
+         //We clone to avoid deadlock http://jira.jboss.org/jira/browse/JBMESSAGING-836
+         Map sessionsClone;
          synchronized (sessions)
          {
-            for(Iterator i = sessions.values().iterator(); i.hasNext(); )
-            {
-               ServerSessionEndpoint sess = (ServerSessionEndpoint)i.next();
-      
-               sess.localClose();
-            }
-            
-            sessions.clear();
+            sessionsClone = new HashMap(sessions);
          }
+         
+         for(Iterator i = sessionsClone.values().iterator(); i.hasNext(); )
+         {
+            ServerSessionEndpoint sess = (ServerSessionEndpoint)i.next();
+   
+            sess.localClose();
+         }
+         
+         sessions.clear();
+         
          
          synchronized (temporaryDestinations)
          {
@@ -702,16 +707,21 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
    
    private void setStarted(boolean s) throws Throwable
    {
+      //We clone to avoid deadlock http://jira.jboss.org/jira/browse/JBMESSAGING-836
+      Map sessionsClone = null;
+      
       synchronized(sessions)
       {
-         for (Iterator i = sessions.values().iterator(); i.hasNext(); )
-         {
-            ServerSessionEndpoint sd = (ServerSessionEndpoint)i.next();
-            
-            sd.setStarted(s);
-         }
-         started = s;
+         sessionsClone = new HashMap(sessions);
       }
+      
+      for (Iterator i = sessionsClone.values().iterator(); i.hasNext(); )
+      {
+         ServerSessionEndpoint sd = (ServerSessionEndpoint)i.next();
+         
+         sd.setStarted(s);
+      }
+      started = s;      
    }   
     
    private void processTransaction(ClientTransaction txState,

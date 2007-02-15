@@ -826,25 +826,35 @@ public class ServerSessionEndpoint implements SessionEndpoint
       
       if (trace) log.trace(this + " close()");
             
+      //We clone to avoid deadlock http://jira.jboss.org/jira/browse/JBMESSAGING-836
+      Map consumersClone;
       synchronized (consumers)
-      {            
-         for( Iterator i = consumers.values().iterator(); i.hasNext(); )
-         {
-            ((ServerConsumerEndpoint)i.next()).localClose();
-         }  
-         
-         consumers.clear();
+      {
+         consumersClone = new HashMap(consumers);
       }
       
+      for( Iterator i = consumersClone.values().iterator(); i.hasNext(); )
+      {
+         ((ServerConsumerEndpoint)i.next()).localClose();
+      }  
+      
+      consumers.clear();
+      
+      
+      //We clone to avoid deadlock http://jira.jboss.org/jira/browse/JBMESSAGING-836
+      Map browsersClone;
       synchronized (browsers)
-      {            
-         for( Iterator i = browsers.values().iterator(); i.hasNext(); )
-         {
-            ((ServerBrowserEndpoint)i.next()).localClose();
-         }  
-         
-         browsers.clear();
+      {
+         browsersClone = new HashMap(browsers);
       }
+      
+      for( Iterator i = browsersClone.values().iterator(); i.hasNext(); )
+      {
+         ((ServerBrowserEndpoint)i.next()).localClose();
+      }  
+      
+      browsers.clear();
+      
       
       //Now cancel any remaining deliveries in reverse delivery order
       //Note we don't maintain order using a LinkedHashMap since then we lose
@@ -953,21 +963,25 @@ public class ServerSessionEndpoint implements SessionEndpoint
     */
    void setStarted(boolean s) throws Throwable
    {
+      //We clone to prevent deadlock http://jira.jboss.org/jira/browse/JBMESSAGING-836
+      Map consumersClone;
       synchronized(consumers)
       {
-         for(Iterator i = consumers.values().iterator(); i.hasNext(); )
-         {
-            ServerConsumerEndpoint sce = (ServerConsumerEndpoint)i.next();
-            if (s)
-            {
-               sce.start();
-            }
-            else
-            {
-               sce.stop();
-            }
-         }
+         consumersClone = new HashMap(consumers);
       }
+      
+      for(Iterator i = consumersClone.values().iterator(); i.hasNext(); )
+      {
+         ServerConsumerEndpoint sce = (ServerConsumerEndpoint)i.next();
+         if (s)
+         {
+            sce.start();
+         }
+         else
+         {
+            sce.stop();
+         }
+      }      
    } 
 
    // Protected ------------------------------------------------------------------------------------
