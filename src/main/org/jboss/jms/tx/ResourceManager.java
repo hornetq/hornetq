@@ -336,7 +336,7 @@ public class ResourceManager
       
       ClientTransaction tx = removeTxInternal(xid);
       
-      if (trace) { log.trace("Got tx: " + tx + " state " + tx.getState()); }
+      if (trace) { log.trace("got tx: " + tx + " state " + tx.getState()); }
           
       if (onePhase)
       {

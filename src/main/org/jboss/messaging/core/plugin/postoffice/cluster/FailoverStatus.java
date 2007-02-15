@@ -27,9 +27,7 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 
 /**
- * A FailoverStatus
- *
- * This class is a state machine for failover state for a node
+ * This class is a state machine for failover state for a node.
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>

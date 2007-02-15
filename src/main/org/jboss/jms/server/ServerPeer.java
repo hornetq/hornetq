@@ -1446,12 +1446,13 @@ public class ServerPeer extends ServiceMBeanSupport implements ServerPeerMBean
          {
             if (updatedReplicantMap != null && originatingNodeId == serverPeerID)
             {
-               FailoverStatus status = (FailoverStatus)updatedReplicantMap.get(new Integer(serverPeerID));
+               FailoverStatus status =
+                  (FailoverStatus)updatedReplicantMap.get(new Integer(serverPeerID));
                
                if (status != null && status.isFailingOver())
                {                     
-                  //We prompt txRepository to load any prepared txs - so we can take over responsibility for
-                  //in doubt transactions from other nodes
+                  // We prompt txRepository to load any prepared txs - so we can take over
+                  // responsibility for in doubt transactions from other nodes
                   try
                   {
                      txRepository.loadPreparedTransactions();
@@ -1465,7 +1466,8 @@ public class ServerPeer extends ServiceMBeanSupport implements ServerPeerMBean
             
             synchronized (failoverStatusLock)
             {
-               log.debug(ServerPeer.this + ".FailoverListener got failover event, notifying those waiting on lock");
+               log.debug(ServerPeer.this +
+                  ".FailoverListener got failover event, notifying those waiting on lock");
                
                failoverStatusLock.notifyAll();
             }

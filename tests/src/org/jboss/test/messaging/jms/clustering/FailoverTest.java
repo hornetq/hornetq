@@ -10,7 +10,6 @@ import org.jboss.test.messaging.jms.clustering.base.ClusteringTestBase;
 import org.jboss.test.messaging.tools.ServerManagement;
 import org.jboss.test.messaging.tools.aop.PoisonInterceptor;
 import org.jboss.jms.client.JBossConnection;
-import org.jboss.jms.client.FailoverListener;
 import org.jboss.jms.client.FailoverEvent;
 import org.jboss.jms.client.remoting.JMSRemotingConnection;
 import org.jboss.jms.client.state.ConnectionState;
@@ -25,8 +24,6 @@ import javax.jms.QueueBrowser;
 import javax.jms.TextMessage;
 import javax.jms.DeliveryMode;
 import javax.jms.Message;
-
-import EDU.oswego.cs.dl.util.concurrent.LinkedQueue;
 
 import java.util.Enumeration;
 import java.util.Set;
