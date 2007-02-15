@@ -609,11 +609,11 @@ public class ServerPeer extends ServiceMBeanSupport implements ServerPeerMBean
    
    // JMX Operations -------------------------------------------------------------------------------
 
-   public String createQueue(String name, String jndiName) throws Exception
+   public String deployQueue(String name, String jndiName) throws Exception
    {
       try
       {
-         return createDestinationDefault(true, name, jndiName);
+         return deployDestinationDefault(true, name, jndiName);
       }
       catch (Throwable t)
       {
@@ -621,11 +621,11 @@ public class ServerPeer extends ServiceMBeanSupport implements ServerPeerMBean
       }
    }
 
-   public String createQueue(String name, String jndiName, int fullSize, int pageSize, int downCacheSize) throws Exception
+   public String deployQueue(String name, String jndiName, int fullSize, int pageSize, int downCacheSize) throws Exception
    {
       try
       {
-         return createDestination(true, name, jndiName, fullSize, pageSize, downCacheSize);
+         return deployDestination(true, name, jndiName, fullSize, pageSize, downCacheSize);
       }
       catch (Throwable t)
       {
@@ -637,7 +637,19 @@ public class ServerPeer extends ServiceMBeanSupport implements ServerPeerMBean
    {
       try
       {
-         return destroyDestination(true, name);
+         return destroyDestination(true, name);        
+      }
+      catch (Throwable t)
+      {
+         throw ExceptionUtil.handleJMXInvocation(t, this + " destroyQueue");
+      }
+   }
+   
+   public boolean undeployQueue(String name) throws Exception
+   {
+      try
+      {
+         return undeployDestination(true, name);
       }
       catch (Throwable t)
       {
@@ -645,11 +657,11 @@ public class ServerPeer extends ServiceMBeanSupport implements ServerPeerMBean
       }
    }
 
-   public String createTopic(String name, String jndiName) throws Exception
+   public String deployTopic(String name, String jndiName) throws Exception
    {
       try
       {
-         return createDestinationDefault(false, name, jndiName);
+         return deployDestinationDefault(false, name, jndiName);
       }
       catch (Throwable t)
       {
@@ -657,11 +669,11 @@ public class ServerPeer extends ServiceMBeanSupport implements ServerPeerMBean
       }
    }
 
-   public String createTopic(String name, String jndiName, int fullSize, int pageSize, int downCacheSize) throws Exception
+   public String deployTopic(String name, String jndiName, int fullSize, int pageSize, int downCacheSize) throws Exception
    {
       try
       {
-         return createDestination(false, name, jndiName, fullSize, pageSize, downCacheSize);
+         return deployDestination(false, name, jndiName, fullSize, pageSize, downCacheSize);
       }
       catch (Throwable t)
       {
@@ -674,6 +686,18 @@ public class ServerPeer extends ServiceMBeanSupport implements ServerPeerMBean
       try
       {
          return destroyDestination(false, name);
+      }
+      catch (Throwable t)
+      {
+         throw ExceptionUtil.handleJMXInvocation(t, this + " destroyTopic");
+      }
+   }
+   
+   public boolean undeployTopic(String name) throws Exception
+   {
+      try
+      {
+         return undeployDestination(false, name);
       }
       catch (Throwable t)
       {
@@ -1330,7 +1354,7 @@ public class ServerPeer extends ServiceMBeanSupport implements ServerPeerMBean
       }
    }
 
-   private String createDestinationDefault(boolean isQueue, String name, String jndiName)
+   private String deployDestinationDefault(boolean isQueue, String name, String jndiName)
       throws Exception
    {
       //
@@ -1357,10 +1381,41 @@ public class ServerPeer extends ServiceMBeanSupport implements ServerPeerMBean
          "    </constructor>" +
          "</mbean>";
 
-      return createDestinationInternal(destinationMBeanConfig, on, jndiName, false, -1, -1, -1);
+      return deployDestinationInternal(destinationMBeanConfig, on, jndiName, false, -1, -1, -1);
+   }
+   
+   private String deployDestination(boolean isQueue, String name, String jndiName, int fullSize,
+            int pageSize, int downCacheSize) throws Exception
+   {
+      //    
+      //    TODO - THIS IS A TEMPORARY IMPLEMENTATION; WILL BE REPLACED WITH INTEGRATION-CONSISTENT ONE
+      //    TODO - if I find a way not using UnifiedClassLoader3 directly, then get rid of
+      //    <path refid="jboss.jmx.classpath"/> from jms/build.xml dependentmodule.classpath
+      //    
+      
+      String destType = isQueue ? "Queue" : "Topic";
+      String className = "org.jboss.jms.server.destination." + destType + "Service";
+      
+      String ons ="jboss.messaging.destination:service="+ destType + ",name=" + name;
+      ObjectName on = new ObjectName(ons);
+      
+      String destinationMBeanConfig =
+         "<mbean code=\"" + className + "\" " +
+         "       name=\"" + ons + "\" " +
+         "       xmbean-dd=\"xmdesc/" + destType + "-xmbean.xml\">\n" +
+         "    <constructor>" +
+         "        <arg type=\"boolean\" value=\"true\"/>" +
+         "    </constructor>" +
+         "    <attribute name=\"FullSize\">" + fullSize + "</attribute>" +
+         "    <attribute name=\"PageSize\">" + pageSize + "</attribute>" +
+         "    <attribute name=\"DownCacheSize\">" + downCacheSize + "</attribute>" +
+         "</mbean>";
+      
+      return deployDestinationInternal(destinationMBeanConfig, on, jndiName, true, fullSize,
+               pageSize, downCacheSize);
    }
 
-   private String createDestinationInternal(String destinationMBeanConfig, ObjectName on,
+   private String deployDestinationInternal(String destinationMBeanConfig, ObjectName on,
                                             String jndiName, boolean params, int fullSize,
                                             int pageSize, int downCacheSize) throws Exception
    {
@@ -1398,37 +1453,39 @@ public class ServerPeer extends ServiceMBeanSupport implements ServerPeerMBean
       //
    }
 
-   private String createDestination(boolean isQueue, String name, String jndiName, int fullSize,
-                                    int pageSize, int downCacheSize) throws Exception
+   
+
+   /*
+    * Undeploy the MBean but don't delete the underlying data
+    */
+   private boolean undeployDestination(boolean isQueue, String name) throws Exception
    {
-      //
-      // TODO - THIS IS A TEMPORARY IMPLEMENTATION; WILL BE REPLACED WITH INTEGRATION-CONSISTENT ONE
-      // TODO - if I find a way not using UnifiedClassLoader3 directly, then get rid of
-      //        <path refid="jboss.jmx.classpath"/> from jms/build.xml dependentmodule.classpath
-      //
-
       String destType = isQueue ? "Queue" : "Topic";
-      String className = "org.jboss.jms.server.destination." + destType + "Service";
-
-      String ons ="jboss.messaging.destination:service="+ destType + ",name=" + name;
+      String ons ="jboss.messaging.destination:service=" + destType + ",name=" + name;
       ObjectName on = new ObjectName(ons);
 
-      String destinationMBeanConfig =
-         "<mbean code=\"" + className + "\" " +
-         "       name=\"" + ons + "\" " +
-         "       xmbean-dd=\"xmdesc/" + destType + "-xmbean.xml\">\n" +
-         "    <constructor>" +
-         "        <arg type=\"boolean\" value=\"true\"/>" +
-         "    </constructor>" +
-         "    <attribute name=\"FullSize\">" + fullSize + "</attribute>" +
-         "    <attribute name=\"PageSize\">" + pageSize + "</attribute>" +
-         "    <attribute name=\"DownCacheSize\">" + downCacheSize + "</attribute>" +
-         "</mbean>";
+      MBeanServer mbeanServer = getServer();
 
-      return createDestinationInternal(destinationMBeanConfig, on, jndiName, true, fullSize,
-                                       pageSize, downCacheSize);
+      // we can only undeploy destinations that exist AND that have been created programatically
+      if (!mbeanServer.isRegistered(on))
+      {
+         return false;
+      }
+      Boolean b = (Boolean)mbeanServer.getAttribute(on, "CreatedProgrammatically");
+      if (!b.booleanValue())
+      {
+         log.warn("Cannot undeploy a destination that has not been created programatically");
+         return false;
+      }
+      mbeanServer.invoke(on, "stop", new Object[0], new String[0]);
+      mbeanServer.invoke(on, "destroy", new Object[0], new String[0]);
+      mbeanServer.unregisterMBean(on);
+      return true;
    }
-
+   
+   /*
+    * Undeploy the MBean and delete the underlying data
+    */
    private boolean destroyDestination(boolean isQueue, String name) throws Exception
    {
       String destType = isQueue ? "Queue" : "Topic";
@@ -1442,17 +1499,85 @@ public class ServerPeer extends ServiceMBeanSupport implements ServerPeerMBean
       {
          return false;
       }
-      Boolean b = (Boolean)mbeanServer.getAttribute(on, "CreatedProgrammatically");
-      if (!b.booleanValue())
+                  
+      //First deactivate
+      
+      if (isQueue)
       {
-         log.warn("Cannot destroy a destination that has not been created programatically");
+         Binding binding = postOffice.getBindingForQueueName(name);
+         
+         if (binding != null)
+         {
+            binding.getQueue().deactivate();
+         }
+      }
+      else
+      {
+         JMSCondition topicCond = new JMSCondition(false, name);    
+         
+         Collection bindings = postOffice.getBindingsForCondition(topicCond);
+         
+         Iterator iter = bindings.iterator();
+         while (iter.hasNext())            
+         {
+            Binding binding = (Binding)iter.next();
+            
+            binding.getQueue().deactivate();
+         }
+      }
+            
+      //Delete any message data
+      
+      mbeanServer.invoke(on, "removeAllMessages", null, null);
+      
+      //undeploy the mbean
+      if (!undeployDestination(isQueue, name))
+      {
          return false;
       }
-      mbeanServer.invoke(on, "stop", new Object[0], new String[0]);
-      mbeanServer.invoke(on, "destroy", new Object[0], new String[0]);
-      mbeanServer.unregisterMBean(on);
+            
+      //Unbind from the post office
+      
+      if (isQueue)
+      {
+         Binding binding = postOffice.getBindingForQueueName(name);
+         
+         if (binding != null)
+         {
+            try
+            {
+               postOffice.unbindQueue(binding.getQueue().getName());
+            }
+            catch (Throwable t)
+            {
+               throw new Exception("Failed to unbind queue", t);
+            }
+         }
+      }
+      else
+      {
+         JMSCondition topicCond = new JMSCondition(false, name);    
+         
+         Collection bindings = postOffice.getBindingsForCondition(topicCond);
+         
+         Iterator iter = bindings.iterator();
+         while (iter.hasNext())            
+         {
+            Binding binding = (Binding)iter.next();
+            
+            try
+            {
+               postOffice.unbindQueue(binding.getQueue().getName());
+            }
+            catch (Throwable t)
+            {
+               throw new Exception("Failed to unbind queue", t);
+            }
+         }
+      }
       return true;
    }
+   
 
    // Inner classes --------------------------------------------------------------------------------
    

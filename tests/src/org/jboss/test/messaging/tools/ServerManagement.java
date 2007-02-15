@@ -884,7 +884,7 @@ public class ServerManagement
    public static void createTopic(String name, String jndiName) throws Exception
    {
       insureStarted();
-      servers[0].getServer().createTopic(name, jndiName);
+      servers[0].getServer().deployTopicProgrammatically(name, jndiName);
    }
 
    /**
@@ -892,7 +892,7 @@ public class ServerManagement
     */
    public static boolean destroyTopic(String name) throws Exception
    {
-      return servers[0].getServer().destroyDestination(false, name);
+      return servers[0].getServer().undeployDestinationProgrammatically(false, name);
    }
 
    /**
@@ -962,7 +962,7 @@ public class ServerManagement
    public static void createQueue(String name, String jndiName) throws Exception
    {
       insureStarted();
-      servers[0].getServer().createQueue(name, jndiName);
+      servers[0].getServer().deployQueueProgrammatically(name, jndiName);
    }
 
    /**
@@ -970,7 +970,7 @@ public class ServerManagement
     */
    public static boolean destroyQueue(String name) throws Exception
    {
-      return servers[0].getServer().destroyDestination(true, name);
+      return servers[0].getServer().undeployDestinationProgrammatically(true, name);
    }
 
    /**

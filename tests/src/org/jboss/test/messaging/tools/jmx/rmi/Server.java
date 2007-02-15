@@ -186,7 +186,7 @@ public interface Server extends Remote
    /**
     * Creates a topic programatically.
     */
-   void createTopic(String name, String jndiName) throws Exception;
+   void deployTopicProgrammatically(String name, String jndiName) throws Exception;
 
    /**
     * Simulates a queue deployment (copying the queue descriptor in the deploy directory).
@@ -202,7 +202,7 @@ public interface Server extends Remote
    /**
     * Creates a queue programatically.
     */
-   void createQueue(String name, String jndiName) throws Exception;
+   void deployQueueProgrammatically(String name, String jndiName) throws Exception;
 
    /**
     * Simulates a destination un-deployment (deleting the destination descriptor from the deploy
@@ -213,7 +213,7 @@ public interface Server extends Remote
    /**
     * Destroys a programatically created destination.
     */
-   boolean destroyDestination(boolean isQueue, String name) throws Exception;
+   boolean undeployDestinationProgrammatically(boolean isQueue, String name) throws Exception;
 
    void deployConnectionFactory(String objectName,
                                 String[] jndiBindings,

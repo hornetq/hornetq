@@ -126,19 +126,23 @@ public interface ServerPeerMBean
    
    // JMX operations
    
-   String createQueue(String name, String jndiName) throws Exception;
+   String deployQueue(String name, String jndiName) throws Exception;
 
-   String createQueue(String name, String jndiName, int fullSize, int pageSize, int downCacheSize)
+   String deployQueue(String name, String jndiName, int fullSize, int pageSize, int downCacheSize)
       throws Exception;
 
    boolean destroyQueue(String name) throws Exception;
+   
+   boolean undeployQueue(String name) throws Exception;
 
-   String createTopic(String name, String jndiName) throws Exception;
+   String deployTopic(String name, String jndiName) throws Exception;
 
-   String createTopic(String name, String jndiName, int fullSize, int pageSize, int downCacheSize)
+   String deployTopic(String name, String jndiName, int fullSize, int pageSize, int downCacheSize)
       throws Exception;
 
    boolean destroyTopic(String name) throws Exception;
+   
+   boolean undeployTopic(String name) throws Exception;
 
    String listMessageCountersAsHTML() throws Exception;
    

@@ -605,9 +605,9 @@ public class LocalTestServer implements Server
       deployDestination(false, name, jndiName, fullSize, pageSize, downCacheSize, clustered);
    }
 
-   public void createTopic(String name, String jndiName) throws Exception
+   public void deployTopicProgrammatically(String name, String jndiName) throws Exception
    {
-      sc.invoke(serverPeerObjectName, "createTopic",
+      sc.invoke(serverPeerObjectName, "deployTopic",
                 new Object[] { name, jndiName },
                 new String[] { "java.lang.String", "java.lang.String"} );
    }
@@ -623,9 +623,9 @@ public class LocalTestServer implements Server
       deployDestination(true, name, jndiName, fullSize, pageSize, downCacheSize, clustered);
    }
 
-   public void createQueue(String name, String jndiName) throws Exception
+   public void deployQueueProgrammatically(String name, String jndiName) throws Exception
    {
-      sc.invoke(serverPeerObjectName, "createQueue",
+      sc.invoke(serverPeerObjectName, "deployQueue",
                 new Object[] { name, jndiName },
                 new String[] { "java.lang.String", "java.lang.String"} );
    }
@@ -698,17 +698,17 @@ public class LocalTestServer implements Server
       sc.unregisterService(destinationObjectName);
    }
 
-   public boolean destroyDestination(boolean isQueue, String name) throws Exception
+   public boolean undeployDestinationProgrammatically(boolean isQueue, String name) throws Exception
    {
       if (isQueue)
       {
-         return  ((Boolean)sc.invoke(serverPeerObjectName, "destroyQueue",
+         return  ((Boolean)sc.invoke(serverPeerObjectName, "undeployQueue",
                                     new Object[] { name },
                                     new String[] { "java.lang.String"})).booleanValue();
       }
       else
       {
-         return  ((Boolean)sc.invoke(serverPeerObjectName, "destroyTopic",
+         return  ((Boolean)sc.invoke(serverPeerObjectName, "undeployTopic",
                                     new Object[] { name },
                                     new String[] { "java.lang.String"})).booleanValue();
       }

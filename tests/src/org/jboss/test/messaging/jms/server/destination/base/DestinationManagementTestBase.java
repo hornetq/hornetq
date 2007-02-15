@@ -27,8 +27,12 @@ import java.util.Set;
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
+import javax.jms.Message;
+import javax.jms.MessageConsumer;
+import javax.jms.MessageProducer;
 import javax.jms.Queue;
 import javax.jms.Session;
+import javax.jms.TextMessage;
 import javax.jms.Topic;
 import javax.management.ObjectName;
 import javax.naming.InitialContext;
@@ -302,8 +306,8 @@ public abstract class DestinationManagementTestBase extends MessagingTestCase
       ObjectName serverPeerObjectName = ServerManagement.getServerPeerObjectName();
 
       String destinationType = isQueue() ? "Queue" : "Topic";
-      String createMethod = "create" + destinationType;
-      String destroyMethod = "destroy" + destinationType;
+      String deployMethod = "deploy" + destinationType;
+      String undeployMethod = "undeploy" + destinationType;
       String destinationName = "BlahBlah";
       String expectedJNDIName = (isQueue() ? "/queue/" : "/topic/") + destinationName;
       ObjectName destObjectName = new ObjectName("jboss.messaging.destination:service=" +
@@ -312,7 +316,7 @@ public abstract class DestinationManagementTestBase extends MessagingTestCase
       // deploy it
 
       String jndiName = (String)ServerManagement.
-         invoke(serverPeerObjectName, createMethod,
+         invoke(serverPeerObjectName, deployMethod,
                 new Object[] { destinationName, null },
                 new String[] { "java.lang.String", "java.lang.String" });
 
@@ -337,7 +341,7 @@ public abstract class DestinationManagementTestBase extends MessagingTestCase
 
       // undeploy it
 
-      Boolean b = (Boolean)ServerManagement.invoke(serverPeerObjectName, destroyMethod,
+      Boolean b = (Boolean)ServerManagement.invoke(serverPeerObjectName, undeployMethod,
                                                    new Object[] { destinationName },
                                                    new String[] { "java.lang.String" });
 
@@ -370,8 +374,8 @@ public abstract class DestinationManagementTestBase extends MessagingTestCase
       ObjectName serverPeerObjectName = ServerManagement.getServerPeerObjectName();
 
       String destinationType = isQueue() ? "Queue" : "Topic";
-      String createMethod = "create" + destinationType;
-      String destroyMethod = "destroy" + destinationType;
+      String deployMethod = "deploy" + destinationType;
+      String undeployMethod = "undeploy" + destinationType;
       String destinationName = "BlahBlah";
       String expectedJNDIName = (isQueue() ? "/queue/" : "/topic/") + destinationName;
       ObjectName destObjectName = new ObjectName("jboss.messaging.destination:service=" +
@@ -386,7 +390,7 @@ public abstract class DestinationManagementTestBase extends MessagingTestCase
       // deploy it
 
       String jndiName = (String)ServerManagement.
-         invoke(serverPeerObjectName, createMethod,
+         invoke(serverPeerObjectName, deployMethod,
                 new Object[] { destinationName, null, new Integer(fullSize), new Integer(pageSize), new Integer(downCacheSize)},
                 new String[] { "java.lang.String", "java.lang.String", "int", "int", "int"});
 
@@ -416,7 +420,7 @@ public abstract class DestinationManagementTestBase extends MessagingTestCase
 
       // undeploy it
 
-      Boolean b = (Boolean)ServerManagement.invoke(serverPeerObjectName, destroyMethod,
+      Boolean b = (Boolean)ServerManagement.invoke(serverPeerObjectName, undeployMethod,
                                                    new Object[] { destinationName },
                                                    new String[] { "java.lang.String" });
 
@@ -439,6 +443,143 @@ public abstract class DestinationManagementTestBase extends MessagingTestCase
 
 
       assertTrue(set.isEmpty());
+
+      ic.close();
+
+   }
+   
+   public void testDestroyDestinationProgrammatically() throws Exception
+   {
+      ObjectName serverPeerObjectName = ServerManagement.getServerPeerObjectName();
+
+      String destinationType = isQueue() ? "Queue" : "Topic";
+      String deployMethod = "deploy" + destinationType;
+      String destroyMethod = "destroy" + destinationType;
+      String destinationName = "BlahBlah";
+      String expectedJNDIName = (isQueue() ? "/queue/" : "/topic/") + destinationName;
+      ObjectName destObjectName = new ObjectName("jboss.messaging.destination:service=" +
+                                                 destinationType +",name=" + destinationName);
+
+      // deploy it
+
+      String jndiName = (String)ServerManagement.
+         invoke(serverPeerObjectName, deployMethod,
+                new Object[] { destinationName, null },
+                new String[] { "java.lang.String", "java.lang.String" });
+
+      assertEquals(expectedJNDIName, jndiName);
+
+      InitialContext ic = new InitialContext(ServerManagement.getJNDIEnvironment());
+
+      if (isQueue())
+      {
+         Queue q = (Queue)ic.lookup(jndiName);
+         assertEquals(destinationName, q.getQueueName());
+      }
+      else
+      {
+         Topic t = (Topic)ic.lookup(jndiName);
+         assertEquals(destinationName, t.getTopicName());
+      }
+
+      assertEquals(destinationName, ServerManagement.getAttribute(destObjectName, "Name"));
+      assertEquals(expectedJNDIName,
+                   (String)ServerManagement.getAttribute(destObjectName, "JNDIName"));
+      
+      ConnectionFactory cf = (ConnectionFactory)this.initialContext.lookup("/ConnectionFactory");
+      
+      Connection conn = cf.createConnection();
+      
+      conn.setClientID("wibble456");
+      
+      Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      
+      conn.start();
+      
+      Destination dest;
+      
+      if (!isQueue())
+      {
+         dest = (Destination)ic.lookup("/topic/" + destinationName);
+         
+         //Create a durable sub
+         sess.createDurableSubscriber((Topic)dest, "sub1");
+      }
+      else
+      {
+         dest = (Destination)ic.lookup("/queue/" + destinationName);
+      }
+      
+      //Send a message
+      
+      TextMessage tm = sess.createTextMessage("uuuuuuuuurrrrrrrrgggggggggghhhhh");
+      
+      MessageProducer prod = sess.createProducer(dest);
+      
+      prod.send(tm);
+      
+      conn.close();
+            
+      // destroy it
+
+      Boolean b = (Boolean)ServerManagement.invoke(serverPeerObjectName, destroyMethod,
+                                                   new Object[] { destinationName },
+                                                   new String[] { "java.lang.String" });
+
+      assertTrue(b.booleanValue());
+
+      try
+      {
+         ic.lookup(expectedJNDIName);
+         fail("should throw exception");
+      }
+      catch(NamingException e)
+      {
+         // OK
+      }
+      
+      //Make sure no bindings exist
+      //ServerManagement.gets
+
+      Set set = ServerManagement.query(destObjectName);
+      assertTrue(set.isEmpty());
+ 
+      set = (Set)ServerManagement.getAttribute(serverPeerObjectName, "Destinations");
+
+
+      assertTrue(set.isEmpty());
+      
+      // Deploy it again
+      jndiName = (String)ServerManagement.
+      invoke(serverPeerObjectName, deployMethod,
+             new Object[] { destinationName, null },
+             new String[] { "java.lang.String", "java.lang.String" });
+      
+      conn = cf.createConnection();
+      
+      conn.setClientID("wibble456");
+      
+      sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      
+      conn.start();
+      
+      MessageConsumer cons;
+      
+      if (isQueue())
+      {
+         cons = sess.createConsumer((Queue)dest);
+      }
+      else
+      {
+         cons = sess.createDurableSubscriber((Topic)dest, "sub1");
+      }
+      
+      Message m = cons.receive(2000);
+      
+      assertNull(m);
+      
+      conn.close();
+      
 
       ic.close();
 

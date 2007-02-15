@@ -152,6 +152,9 @@ public class TopicService extends DestinationServiceSupport implements TopicMBea
             if (!queue.isRecoverable())
             {
                queue.removeAllReferences();
+               
+               // Unbind
+               postOffice.unbindQueue(queue.getName());
             }
                         
             queue.deactivate();
@@ -160,7 +163,7 @@ public class TopicService extends DestinationServiceSupport implements TopicMBea
             //unregister counter
             String counterName = SUBSCRIPTION_MESSAGECOUNTER_PREFIX + queue.getName();
             
-            serverPeer.getMessageCounterManager().unregisterMessageCounter(counterName);
+            serverPeer.getMessageCounterManager().unregisterMessageCounter(counterName);                        
          }
           
          started = false;

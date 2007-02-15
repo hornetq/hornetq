@@ -346,9 +346,9 @@ public class RMITestServer extends UnicastRemoteObject implements Server
       server.deployTopic(name, jndiName, fullSize, pageSize, downCacheSize, clustered);
    }
 
-   public void createTopic(String name, String jndiName) throws Exception
+   public void deployTopicProgrammatically(String name, String jndiName) throws Exception
    {
-      server.createTopic(name, jndiName);
+      server.deployTopicProgrammatically(name, jndiName);
    }
 
    public void deployQueue(String name, String jndiName, boolean clustered) throws Exception
@@ -366,9 +366,9 @@ public class RMITestServer extends UnicastRemoteObject implements Server
       server.deployQueue(name, jndiName, fullSize, pageSize, downCacheSize, clustered);
    }
 
-   public void createQueue(String name, String jndiName) throws Exception
+   public void deployQueueProgrammatically(String name, String jndiName) throws Exception
    {
-      server.createQueue(name, jndiName);
+      server.deployQueueProgrammatically(name, jndiName);
    }
 
    public void undeployDestination(boolean isQueue, String name) throws Exception
@@ -376,9 +376,9 @@ public class RMITestServer extends UnicastRemoteObject implements Server
       server.undeployDestination(isQueue, name);
    }
 
-   public boolean destroyDestination(boolean isQueue, String name) throws Exception
+   public boolean undeployDestinationProgrammatically(boolean isQueue, String name) throws Exception
    {
-      return server.destroyDestination(isQueue, name);
+      return server.undeployDestinationProgrammatically(isQueue, name);
    }
 
    public void deployConnectionFactory(String objectName, String[] jndiBindings)

@@ -60,12 +60,12 @@ public class Dispatcher
       return targets.get(id);
    }
    
-   public void registerTarget(Integer id, Object obj)
+   public void registerTarget(Integer id, AdvisedSupport obj)
    {
       targets.put(id, obj);
    }
    
-   public void registerTarget(int id, Object obj)
+   public void registerTarget(int id, AdvisedSupport obj)
    {
       registerTarget(new Integer(id), obj);
    }
@@ -80,7 +80,7 @@ public class Dispatcher
       // object. Remoting then times out the old connection and dereigsters the new object which is
       // registered under the same id.
       // See http://jira.jboss.com/jira/browse/JBMESSAGING-812
-      
+          
       AdvisedSupport advised = (AdvisedSupport)(targets.get(id));
       
       if (advised == null)

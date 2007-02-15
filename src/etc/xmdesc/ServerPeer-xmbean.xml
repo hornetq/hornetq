@@ -224,9 +224,9 @@
 
    <operation>
       <description>
-         Creates a queue with the specified name/JNDI name. The corresponding destination service will be instantiated, created and started.
+         Deploys a queue with the specified name/JNDI name. The corresponding destination service will be instantiated, created and started.
       </description>
-      <name>createQueue</name>
+      <name>deployQueue</name>
       <parameter>
          <name>name</name>
          <type>java.lang.String</type>
@@ -240,9 +240,9 @@
    
    <operation>
       <description>
-         Creates a queue with the specified name/JNDI name and paging parameters. The corresponding destination service will be instantiated, created and started.
+         Deploys a queue with the specified name/JNDI name and paging parameters. The corresponding destination service will be instantiated, created and started.
       </description>
-      <name>createQueue</name>
+      <name>deployQueue</name>
       <parameter>
          <name>name</name>
          <type>java.lang.String</type>
@@ -268,21 +268,33 @@
 
    <operation>
       <description>
-         Stops, destroys and unregisters from the MBean server the corresponding destination service, but only if the destination in question was created programatically with createQueue(). Returns true on success. Returns false if the destination does not exist or was not created programatically. A deployed destination must be undeployed to achieve the same effect.
+         Undeploys the queue, but does not delete its data from storage.
+      </description>
+      <name>undeployQueue</name>
+      <parameter>
+         <name>name</name>
+         <type>java.lang.String</type>
+      </parameter>
+      <return-type>boolean</return-type>
+   </operation>
+   
+   <operation>
+      <description>
+         Undeploys the queue, and deletes its data from storage
       </description>
       <name>destroyQueue</name>
       <parameter>
          <name>name</name>
          <type>java.lang.String</type>
       </parameter>
-       <return-type>boolean</return-type>
-   </operation>
+      <return-type>boolean</return-type>
+   </operation>   
 
    <operation>
       <description>
-         Creates a topic with the specified name/JNDI name. The corresponding destination service will be instantiated, created and started.
+         Deploys a topic with the specified name/JNDI name. The corresponding destination service will be instantiated, created and started.
       </description>
-      <name>createTopic</name>
+      <name>deployTopic</name>
       <parameter>
          <name>name</name>
          <type>java.lang.String</type>
@@ -308,9 +320,9 @@
    
    <operation>
       <description>
-         Creates a topic with the specified name/JNDI name and paging parameters. The corresponding destination service will be instantiated, created and started.
+         Deploys a topic with the specified name/JNDI name and paging parameters. The corresponding destination service will be instantiated, created and started.
       </description>
-      <name>createTopic</name>
+      <name>deployTopic</name>
       <parameter>
          <name>name</name>
          <type>java.lang.String</type>
@@ -324,7 +336,19 @@
 
    <operation>
       <description>
-         Stops, destroys and unregisters from the MBean server the corresponding destination service, but only if the destination in question was created programatically with createTopic(). Returns true on success. Returns false if the destination does not exist or was not created programatically. A deployed destination must be undeployed to achieve the same effect.
+         Undeploys the topic, but does not delete all its data from storage
+      </description>
+      <name>undeployTopic</name>
+      <parameter>
+         <name>name</name>
+         <type>java.lang.String</type>
+      </parameter>
+      <return-type>boolean</return-type>
+   </operation>
+   
+   <operation>
+      <description>
+      	Undeploys the topic and deletes all its data
       </description>
       <name>destroyTopic</name>
       <parameter>
@@ -332,7 +356,7 @@
          <type>java.lang.String</type>
       </parameter>
       <return-type>boolean</return-type>
-   </operation>
+   </operation>   
    
    <operation>
       <description>
