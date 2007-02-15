@@ -17,20 +17,20 @@
       <type>org.jboss.messaging.core.plugin.contract.MessagingComponent</type>
    </attribute>
 
-	<attribute access="read-write" getMethod="getSourceConnectionFactoryLookup"
-	   setMethod="setSourceConnectionFactoryLookup">
-	   <description>The source connection factory lookup</description>
-	   <name>SourceConnectionFactoryLookup</name>
+	<attribute access="read-write" getMethod="getSourceProviderAdaptorLookup"
+	   setMethod="setSourceProviderAdaptorLookup">
+	   <description>JNDI lookup for the source JMS provider Adaptor</description>
+	   <name>SourceProviderAdaptorLookup</name>
 	   <type>java.lang.String</type>
 	</attribute>
 	
-	<attribute access="read-write" getMethod="getTargetConnectionFactoryLookup"
-	   setMethod="setTargetConnectionFactoryLookup">
-	   <description>The target connection factory lookup</description>
-	   <name>TargetConnectionFactoryLookup</name>
+	<attribute access="read-write" getMethod="getTargetProviderAdaptorLookup"
+	   setMethod="setTargetProviderAdaptorLookup">
+	   <description>JNDI lookup for the target JMS provider Adaptor</description>
+	   <name>TargetProviderAdaptorLookup</name>
 	   <type>java.lang.String</type>
 	</attribute>	
-	
+		
 	<attribute access="read-write" getMethod="getSourceDestinationLookup"
 	   setMethod="setSourceDestinationLookup">
 	   <description>The source destination lookup</description>
@@ -147,18 +147,6 @@
 	   <type>boolean</type>
 	</attribute>	
 	
-	<attribute access="read-write" getMethod="getSourceJNDIProperties" setMethod="setSourceJNDIProperties">
-	   <description>The JNDI properties to use to lookup the source destination, or null if a local JNDI initial context should be used</description>
-	   <name>SourceJNDIProperties</name>
-	   <type>java.lang.String</type>
-	</attribute>	
-	
-	<attribute access="read-write" getMethod="getTargetJNDIProperties" setMethod="setTargetJNDIProperties">
-	   <description>The JNDI properties to use to lookup the target destination, or null if a local JNDI initial context should be used</description>
-	   <name>TargetJNDIProperties</name>
-	   <type>java.lang.String</type>
-	</attribute>			
-
    <!-- Managed operations -->
 
    <operation>

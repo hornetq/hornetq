@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <!-- Arjuna JTA config for JBoss Messaging test suite
-This config has some quicker settings (lik recovery period) than you would
+This config has some quicker settings (like recovery period) than you would
 probably have in a real production config, this is so the tests don't take aeons to run -->
 
 <transaction-service>
@@ -248,12 +248,9 @@ probably have in a real production config, this is so the tests don't take aeons
         provider2.xaconnectionfactorylookup=xyz
         -->
 
-        <property name="com.arjuna.ats.jta.recovery.XAResourceRecovery.JBMESSAGINGBRIDGE_SERVER0" value="org.jboss.jms.recovery.BridgeXAResourceRecovery;server0,bridge-recovery.properties"/>
-        <property name="com.arjuna.ats.jta.recovery.XAResourceRecovery.JBMESSAGINGBRIDGE_SERVER1" value="org.jboss.jms.recovery.BridgeXAResourceRecovery;server1,bridge-recovery.properties"/>
+        <property name="com.arjuna.ats.jta.recovery.XAResourceRecovery.JBMESSAGINGBRIDGE_SERVER0" value="org.jboss.jms.recovery.MessagingXAResourceRecovery;adaptor1"/>
+        <property name="com.arjuna.ats.jta.recovery.XAResourceRecovery.JBMESSAGINGBRIDGE_SERVER1" value="org.jboss.jms.recovery.MessagingXAResourceRecovery;adaptor2"/>
 
-        <!--
-        <property name="com.arjuna.ats.jta.recovery.XAResourceRecovery.JBM_BRIDGE_TEST" value="org.jboss.test.messaging.jms.bridge.NullXAResourceRecovery"/>
-        -->
         <!--
         Support subtransactions in the JTA layer?
         Default is NO.

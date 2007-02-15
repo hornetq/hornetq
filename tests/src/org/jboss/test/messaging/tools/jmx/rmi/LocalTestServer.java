@@ -35,6 +35,7 @@ import javax.management.ObjectName;
 import javax.transaction.UserTransaction;
 
 import org.jboss.aop.AspectXmlLoader;
+import org.jboss.jms.jndi.JMSProviderAdapter;
 import org.jboss.jms.server.DestinationManager;
 import org.jboss.jms.server.ServerPeer;
 import org.jboss.jms.util.XMLUtil;
@@ -847,6 +848,16 @@ public class LocalTestServer implements Server
 //      AspectXmlLoader.undeployXML(url);
       
       PoisonInterceptor.setType(type);
+   }
+   
+   public void installJMSProviderAdaptor(String jndi, JMSProviderAdapter adaptor) throws Exception
+   {
+      sc.installJMSProviderAdaptor(jndi, adaptor);
+   }
+
+   public void uninstallJMSProviderAdaptor(String jndi) throws Exception
+   {
+      sc.uninstallJMSProviderAdaptor(jndi);
    }
 
    // Public ---------------------------------------------------------------------------------------

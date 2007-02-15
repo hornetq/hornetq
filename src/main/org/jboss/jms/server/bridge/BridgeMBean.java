@@ -33,13 +33,15 @@ package org.jboss.jms.server.bridge;
  */
 public interface BridgeMBean
 {
-   String getSourceConnectionFactoryLookup();
+   // JMX attributes
    
-   String getTargetConnectionFactoryLookup();
+   void setSourceProviderAdaptorLookup(String lookup);
    
-   void setSourceConnectionFactoryLookup(String lookup);
+   String getSourceProviderAdaptorLookup();
    
-   void setTargetConnectionFactoryLookup(String lookup);
+   void setTargetProviderAdaptorLookup(String lookup);
+   
+   String getTargetProviderAdaptorLookup();
    
    String getSourceDestinationLookup();
 
@@ -101,15 +103,7 @@ public interface BridgeMBean
 
    boolean isPaused();
 
-   String getSourceJNDIProperties();
-   
-   void setSourceJNDIProperties(String props);
-   
-   String getTargetJNDIProperties();
-   
-   void setTargetJNDIProperties(String props);
-   
-   // JMX attributes
+   // JMX operations
    
    void pause() throws Exception;
    

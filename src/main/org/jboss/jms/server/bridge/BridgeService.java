@@ -21,12 +21,11 @@
  */
 package org.jboss.jms.server.bridge;
 
-import java.io.ByteArrayInputStream;
-import java.util.Properties;
-
 import javax.jms.Destination;
+import javax.naming.Context;
 import javax.naming.InitialContext;
 
+import org.jboss.jms.jndi.JMSProviderAdapter;
 import org.jboss.messaging.core.plugin.contract.MessagingComponent;
 import org.jboss.messaging.core.plugin.contract.ServerPlugin;
 import org.jboss.system.ServiceMBeanSupport;
@@ -45,17 +44,14 @@ public class BridgeService extends ServiceMBeanSupport
 {
    private Bridge bridge;
    
-   private String sourceJNDIProperties;
-   
-   private String targetJNDIProperties;
-   
-   private String sourceConnectionFactoryLookup;
-   
-   private String targetConnectionFactoryLookup;
-   
    private String sourceDestinationLookup;
    
    private String targetDestinationLookup;
+   
+   private String sourceProviderAdaptorLookup;
+   
+   private String targetProviderAdaptorLookup;
+   
       
    public BridgeService()
    {
@@ -64,34 +60,34 @@ public class BridgeService extends ServiceMBeanSupport
    
    // JMX attributes ----------------------------------------------------------------
    
-   public synchronized String getSourceConnectionFactoryLookup()
+   public synchronized String getSourceProviderAdaptorLookup()
    {
-      return this.sourceConnectionFactoryLookup;
+      return sourceProviderAdaptorLookup;
    }
    
-   public synchronized String getTargetConnectionFactoryLookup()
-   {
-      return this.targetConnectionFactoryLookup;
-   }
-   
-   public synchronized void setSourceConnectionFactoryLookup(String lookup)
+   public synchronized void setSourceProviderAdaptorLookup(String lookup)
    {
       if (bridge.isStarted())
       {
-         log.warn("Cannot set SourceConnectionFactoryLookup when bridge is started");
-         return;
+          log.warn("Cannot set SourceProviderAdaptorLookup when bridge is started");
+          return;
       }
-      this.sourceConnectionFactoryLookup = checkAndTrim(lookup);
-   }      
+      sourceProviderAdaptorLookup = checkAndTrim(lookup);
+   }
    
-   public synchronized void setTargetConnectionFactoryLookup(String lookup)
+   public synchronized String getTargetProviderAdaptorLookup()
+   {
+      return targetProviderAdaptorLookup;
+   }
+   
+   public synchronized void setTargetProviderAdaptorLookup(String lookup)
    {
       if (bridge.isStarted())
       {
-         log.warn("Cannot set DestConnectionFactoryLookup when bridge is started");
-         return;
+          log.warn("Cannot set TargetProviderAdaptorLookup when bridge is started");
+          return;
       }
-      this.targetConnectionFactoryLookup = checkAndTrim(lookup);
+      targetProviderAdaptorLookup = checkAndTrim(lookup);
    }
    
    public String getSourceDestinationLookup()
@@ -259,36 +255,6 @@ public class BridgeService extends ServiceMBeanSupport
       return bridge.isStarted();
    }
 
-   public synchronized String getSourceJNDIProperties()
-   {
-      return sourceJNDIProperties;
-   }
-   
-   public synchronized void setSourceJNDIProperties(String props)
-   {
-      if (bridge.isStarted())
-      {
-         log.warn("Cannot set SourceJNDIProperties when bridge is started");
-         return;
-      }
-      this.sourceJNDIProperties = checkAndTrim(props);
-   }
-   
-   public synchronized String getTargetJNDIProperties()
-   {
-      return targetJNDIProperties;
-   }
-   
-   public synchronized void setTargetJNDIProperties(String props)
-   {
-      if (bridge.isStarted())
-      {
-         log.warn("Cannot set TargetJNDIProperties when bridge is started");
-         return;
-      }
-      this.targetJNDIProperties = checkAndTrim(props);
-   }
-
    public MessagingComponent getInstance()
    {
       return bridge;
@@ -314,64 +280,60 @@ public class BridgeService extends ServiceMBeanSupport
       
       super.startService();
       
-      Properties sourceProps = null;
-      
-      if (sourceJNDIProperties != null)
+      if (this.sourceProviderAdaptorLookup == null)
       {
-         sourceProps = createProps(sourceJNDIProperties);
+         throw new IllegalArgumentException("sourceProviderAdaptorLookup cannot be null");
       }
       
-      Properties targetProps = null;
-      
-      if (targetJNDIProperties != null)
+      if (this.targetProviderAdaptorLookup == null)
       {
-         targetProps = createProps(targetJNDIProperties);
-      }
-      
-      InitialContext icSource = null;
-      
-      if (sourceProps == null)
-      {
-         icSource = new InitialContext();
-      }
-      else
-      {
-         icSource = new InitialContext(sourceProps);
+         throw new IllegalArgumentException("targetProviderAdaptorLookup cannot be null");
       }
       
       if (sourceDestinationLookup == null)
       {
          throw new IllegalArgumentException("Source destination lookup cannot be null");
       }
-      Destination sourceDest = (Destination)icSource.lookup(sourceDestinationLookup);
-      
-      InitialContext icDest = null;
-      
-      if (targetProps == null)
-      {
-         icDest = new InitialContext();
-      }
-      else
-      {
-         icDest = new InitialContext(targetProps);
-      }
       
       if (targetDestinationLookup == null)
       {
          throw new IllegalArgumentException("Target destination lookup cannot be null");
       }
-      Destination targetDest = (Destination)icDest.lookup(targetDestinationLookup);
-            
-      if (sourceConnectionFactoryLookup == null)
+      
+      InitialContext ic = new InitialContext();
+      
+      JMSProviderAdapter sourceAdaptor = (JMSProviderAdapter)ic.lookup(sourceProviderAdaptorLookup);
+
+      boolean sameSourceAndTarget = sourceProviderAdaptorLookup.equals(targetProviderAdaptorLookup);
+      
+      JMSProviderAdapter targetAdaptor;
+      
+      if (sameSourceAndTarget)
       {
-         throw new IllegalArgumentException("Source connection factory lookup cannot be null");
+         targetAdaptor = sourceAdaptor;
+      }
+      else
+      {
+         targetAdaptor = (JMSProviderAdapter)ic.lookup(targetProviderAdaptorLookup);
       }
       
+      Context icSource = sourceAdaptor.getInitialContext();
+      
+      Context icTarget = targetAdaptor.getInitialContext();
+      
+      Destination sourceDest = (Destination)icSource.lookup(sourceDestinationLookup);
+      
+      Destination targetDest = (Destination)icTarget.lookup(targetDestinationLookup);
+            
+      String sourceCFRef = sourceAdaptor.getFactoryRef();
+      
+      String targetCFRef = targetAdaptor.getFactoryRef();
+      
       ConnectionFactoryFactory sourceCff =
-         new JNDIConnectionFactoryFactory(sourceProps, sourceConnectionFactoryLookup);
+         new JNDIConnectionFactoryFactory(sourceAdaptor.getProperties(), sourceCFRef);
       
       ConnectionFactoryFactory destCff =
-         new JNDIConnectionFactoryFactory(targetProps, targetConnectionFactoryLookup);
+         new JNDIConnectionFactoryFactory(targetAdaptor.getProperties(), targetCFRef);
       
       bridge.setSourceDestination(sourceDest);
       
@@ -409,19 +371,5 @@ public class BridgeService extends ServiceMBeanSupport
          }
       }
       return s;
-   }
-   
-   private Properties createProps(String propsString) throws Exception
-   {
-      ByteArrayInputStream is = new ByteArrayInputStream(propsString.getBytes());
-      
-      Properties props = new Properties();
-      
-      props.load(is);   
-      
-      return props;
-   }
-
-
-
+   }   
 }

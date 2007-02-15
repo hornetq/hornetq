@@ -21,7 +21,6 @@
  */
 package org.jboss.test.messaging.jms.bridge;
 
-import java.io.ByteArrayOutputStream;
 import java.util.Properties;
 
 import javax.jms.Connection;
@@ -35,9 +34,11 @@ import javax.jms.TextMessage;
 import javax.management.ObjectName;
 import javax.naming.InitialContext;
 
+import org.jboss.jms.jndi.JMSProviderAdapter;
 import org.jboss.jms.server.bridge.Bridge;
 import org.jboss.logging.Logger;
 import org.jboss.test.messaging.tools.ServerManagement;
+import org.jboss.test.messaging.tools.TestJMSProviderAdaptor;
 
 /**
  * A BridgeMBeanTest
@@ -67,8 +68,6 @@ public class BridgeMBeanTest extends BridgeTestBase
       
       nodeCount = 3;
       
-      useArjuna = true;
-
       super.setUp();
    }
    
@@ -89,18 +88,26 @@ public class BridgeMBeanTest extends BridgeTestBase
       Properties props2 = new Properties();
       props2.putAll(ServerManagement.getJNDIEnvironment(2));
       
-      String sprops1 = tableToString(props1);
+      JMSProviderAdapter sourceAdaptor = new TestJMSProviderAdaptor(props1, "/XAConnectionFactory", "adaptor1");
       
-      String sprops2 = tableToString(props2);
+      JMSProviderAdapter targetAdaptor = new TestJMSProviderAdaptor(props2, "/XAConnectionFactory", "adaptor2");
       
-      ObjectName on = deployBridge(0, "Bridge1", "/XAConnectionFactory", "/XAConnectionFactory",
+      ServerManagement.installJMSProviderAdaptor(0, "adaptor1", sourceAdaptor);
+      
+      ServerManagement.installJMSProviderAdaptor(0, "adaptor2", targetAdaptor);
+      
+      log.info("Deploying bridge");
+      
+      ObjectName on = deployBridge(0, "Bridge1", "adaptor1", "adaptor2",
                                    "/queue/sourceQueue", "/queue/targetQueue",
                                    null, null, null, null,
                                    Bridge.QOS_AT_MOST_ONCE, null, 1,
-                                   -1, null, null, 5000, -1,
-                                   sprops1, sprops2);
+                                   -1, null, null, 5000, -1);
+      log.info("Deployed bridge");
       
       ServerManagement.getServer(0).invoke(on, "create", new Object[0], new String[0]);
+      
+      log.info("Created bridge");
       
       Connection connSource = null;
       
@@ -152,7 +159,9 @@ public class BridgeMBeanTest extends BridgeTestBase
          
          //Start it
          
+         log.info("Starting bridge");
          ServerManagement.getServer(0).invoke(on, "start", new Object[0], new String[0]);
+         log.info("Started bridge");
          
          //Now should receive the messages
                   
@@ -275,6 +284,10 @@ public class BridgeMBeanTest extends BridgeTestBase
          {
             //Ignore            
          }
+         
+         ServerManagement.uninstallJMSProviderAdaptor(0, "adaptor1");
+         
+         ServerManagement.uninstallJMSProviderAdaptor(0, "adaptor2");
       }
    }
          
@@ -295,16 +308,19 @@ public class BridgeMBeanTest extends BridgeTestBase
          Properties props2 = new Properties();
          props2.putAll(ServerManagement.getJNDIEnvironment(2));
          
-         String sprops1 = tableToString(props1);
+         JMSProviderAdapter sourceAdaptor = new TestJMSProviderAdaptor(props1, "/XAConnectionFactory", "adaptor1");
          
-         String sprops2 = tableToString(props2);
+         JMSProviderAdapter targetAdaptor = new TestJMSProviderAdaptor(props2, "/XAConnectionFactory", "adaptor2");
          
-         on = deployBridge(0, "Bridge1", "/XAConnectionFactory", "/XAConnectionFactory",
-                                      "/queue/sourceQueue", "/queue/targetQueue",
-                                      null, null, null, null,
-                                      Bridge.QOS_ONCE_AND_ONLY_ONCE, null, 1,
-                                      -1, null, null, 5000, -1,
-                                      sprops1, sprops2);
+         ServerManagement.installJMSProviderAdaptor(0, "adaptor1", sourceAdaptor);
+         
+         ServerManagement.installJMSProviderAdaptor(0, "adaptor2", targetAdaptor);
+         
+         on = deployBridge(0, "Bridge1", "adaptor1", "adaptor2",
+                           "/queue/sourceQueue", "/queue/targetQueue",
+                           null, null, null, null,
+                           Bridge.QOS_ONCE_AND_ONLY_ONCE, null, 1,
+                           -1, null, null, 5000, -1);
          
          log.trace("Constructed bridge");
          
@@ -313,21 +329,21 @@ public class BridgeMBeanTest extends BridgeTestBase
          log.trace("Created bridge");
             
          {
-            String cfLookup = (String)ServerManagement.getAttribute(on, "SourceConnectionFactoryLookup");
-            assertEquals("/XAConnectionFactory", cfLookup);
-            ServerManagement.setAttribute(on, "SourceConnectionFactoryLookup", "/Wibble");
-            cfLookup = (String)ServerManagement.getAttribute(on, "SourceConnectionFactoryLookup");
-            assertEquals("/Wibble", cfLookup);
-            ServerManagement.setAttribute(on, "SourceConnectionFactoryLookup", "/XAConnectionFactory");
+            String lookup = (String)ServerManagement.getAttribute(on, "SourceProviderAdaptorLookup");
+            assertEquals("adaptor1", lookup);
+            ServerManagement.setAttribute(on, "SourceProviderAdaptorLookup", "blah");
+            lookup = (String)ServerManagement.getAttribute(on, "SourceProviderAdaptorLookup");
+            assertEquals("blah", lookup);
+            ServerManagement.setAttribute(on, "SourceProviderAdaptorLookup", "adaptor1");
          }
               
          {
-            String cfLookup = (String)ServerManagement.getAttribute(on, "TargetConnectionFactoryLookup");
-            assertEquals("/XAConnectionFactory", cfLookup);
-            ServerManagement.setAttribute(on, "TargetConnectionFactoryLookup", "/Wibble");
-            cfLookup = (String)ServerManagement.getAttribute(on, "TargetConnectionFactoryLookup");
-            assertEquals("/Wibble", cfLookup);
-            ServerManagement.setAttribute(on, "TargetConnectionFactoryLookup", "/XAConnectionFactory");
+            String lookup = (String)ServerManagement.getAttribute(on, "TargetProviderAdaptorLookup");
+            assertEquals("adaptor2", lookup);
+            ServerManagement.setAttribute(on, "TargetProviderAdaptorLookup", "blah");
+            lookup = (String)ServerManagement.getAttribute(on, "TargetProviderAdaptorLookup");
+            assertEquals("blah", lookup);
+            ServerManagement.setAttribute(on, "TargetProviderAdaptorLookup", "adaptor2");
          }
          
          {
@@ -461,19 +477,19 @@ public class BridgeMBeanTest extends BridgeTestBase
          //Should not be able to change attributes when bridge is started - need to stop first         
          
          {
-            String cfLookup = (String)ServerManagement.getAttribute(on, "SourceConnectionFactoryLookup");
-            assertEquals("/XAConnectionFactory", cfLookup);
-            ServerManagement.setAttribute(on, "SourceConnectionFactoryLookup", "/Wibble");
-            cfLookup = (String)ServerManagement.getAttribute(on, "SourceConnectionFactoryLookup");
-            assertEquals("/XAConnectionFactory", cfLookup);            
+            String cfLookup = (String)ServerManagement.getAttribute(on, "SourceProviderAdaptorLookup");
+            assertEquals("adaptor1", cfLookup);
+            ServerManagement.setAttribute(on, "SourceProviderAdaptorLookup", "blah");
+            cfLookup = (String)ServerManagement.getAttribute(on, "SourceProviderAdaptorLookup");
+            assertEquals("adaptor1", cfLookup);            
          }
          
          {
-            String cfLookup = (String)ServerManagement.getAttribute(on, "TargetConnectionFactoryLookup");
-            assertEquals("/XAConnectionFactory", cfLookup);
-            ServerManagement.setAttribute(on, "TargetConnectionFactoryLookup", "/Wibble");
-            cfLookup = (String)ServerManagement.getAttribute(on, "TargetConnectionFactoryLookup");
-            assertEquals("/XAConnectionFactory", cfLookup);
+            String cfLookup = (String)ServerManagement.getAttribute(on, "TargetProviderAdaptorLookup");
+            assertEquals("adaptor2", cfLookup);
+            ServerManagement.setAttribute(on, "TargetProviderAdaptorLookup", "blah");
+            cfLookup = (String)ServerManagement.getAttribute(on, "TargetProviderAdaptorLookup");
+            assertEquals("adaptor2", cfLookup); 
          }
          
          {
@@ -616,35 +632,29 @@ public class BridgeMBeanTest extends BridgeTestBase
          
          ServerManagement.undeployQueue("sourceQueue", 1);
          ServerManagement.undeployQueue("targetQueue", 2);
+         
+         ServerManagement.uninstallJMSProviderAdaptor(0, "adaptor1");
+         ServerManagement.uninstallJMSProviderAdaptor(0, "adaptor2");
       }
             
    }
    
-   private String tableToString(Properties t) throws Exception
-   {
-      ByteArrayOutputStream boa = new ByteArrayOutputStream();      
-      
-      t.store(boa, "");
-      
-      return new String(boa.toByteArray());
-   }
    
-   private ObjectName deployBridge(int server, String bridgeName, String sourceCFLookup, String targetCFLookup,
+   private ObjectName deployBridge(int server, String bridgeName,
+            String sourceProviderAdaptorLookup, String targetProviderAdaptorLookup,
             String sourceDestLookup, String targetDestLookup,
             String sourceUsername, String sourcePassword,
             String targetUsername, String targetPassword,
             int qos, String selector, int maxBatchSize,
             long maxBatchTime, String subName, String clientID,
-            long failureRetryInterval, int maxRetries,
-            String sourceJNDIProperties,
-            String targetJNDIProperties) throws Exception
+            long failureRetryInterval, int maxRetries) throws Exception
    {
       String config = 
          "<mbean code=\"org.jboss.jms.server.bridge.BridgeService\" " +
          "name=\"jboss.messaging:service=Bridge,name=" + bridgeName + "\" " +
          "xmbean-dd=\"xmdesc/Bridge-xmbean.xml\">" +      
-         "<attribute name=\"SourceConnectionFactoryLookup\">" + sourceCFLookup + "</attribute>"+      
-         "<attribute name=\"TargetConnectionFactoryLookup\">" + targetCFLookup + "</attribute>"+     
+         "<attribute name=\"SourceProviderAdaptorLookup\">" + sourceProviderAdaptorLookup + "</attribute>"+      
+         "<attribute name=\"TargetProviderAdaptorLookup\">" + targetProviderAdaptorLookup + "</attribute>"+     
          "<attribute name=\"SourceDestinationLookup\">" + sourceDestLookup + "</attribute>"+     
          "<attribute name=\"TargetDestinationLookup\">" + targetDestLookup + "</attribute>";
       if (sourceUsername != null)
@@ -680,20 +690,6 @@ public class BridgeMBeanTest extends BridgeTestBase
       }
       config += "<attribute name=\"FailureRetryInterval\">" + failureRetryInterval + "</attribute>"+      
       "<attribute name=\"MaxRetries\">" + maxRetries +"</attribute>";
-      if (sourceJNDIProperties != null)
-      {
-         config += "<attribute name=\"SourceJNDIProperties\"><![CDATA["+
-         sourceJNDIProperties +
-         "]]>"+
-         "</attribute>";
-      }
-      if (targetJNDIProperties != null)
-      {
-         config += "<attribute name=\"TargetJNDIProperties\"><![CDATA["+
-         targetJNDIProperties +
-         "]]>"+
-         "</attribute>";
-      }
       config += "</mbean>";
       
       return ServerManagement.getServer(server).deploy(config);            

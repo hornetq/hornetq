@@ -32,6 +32,8 @@ import java.util.Collections;
 import javax.management.ObjectName;
 import javax.management.NotificationListener;
 import javax.transaction.UserTransaction;
+
+import org.jboss.jms.jndi.JMSProviderAdapter;
 import org.jboss.jms.server.DestinationManager;
 import org.jboss.jms.server.ServerPeer;
 import org.jboss.logging.Logger;
@@ -457,6 +459,16 @@ public class RMITestServer extends UnicastRemoteObject implements Server
    public void poisonTheServer(int type) throws Exception
    {
       server.poisonTheServer(type);
+   }
+   
+   public void installJMSProviderAdaptor(String jndi, JMSProviderAdapter adaptor) throws Exception
+   {
+      server.installJMSProviderAdaptor(jndi, adaptor);
+   }
+
+   public void uninstallJMSProviderAdaptor(String jndi) throws Exception
+   {
+      server.uninstallJMSProviderAdaptor(jndi);
    }
 
    // Public --------------------------------------------------------

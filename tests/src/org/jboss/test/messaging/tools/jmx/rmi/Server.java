@@ -29,6 +29,7 @@ import javax.management.NotificationListener;
 import javax.management.ObjectName;
 import javax.transaction.UserTransaction;
 
+import org.jboss.jms.jndi.JMSProviderAdapter;
 import org.jboss.jms.server.DestinationManager;
 import org.jboss.jms.server.ServerPeer;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
@@ -273,5 +274,9 @@ public interface Server extends Remote
    List pollNotificationListener(long listenerID) throws Exception;
 
    void poisonTheServer(int type) throws Exception;
+   
+   void installJMSProviderAdaptor(String jndi, JMSProviderAdapter adaptor) throws Exception;
+   
+   void uninstallJMSProviderAdaptor(String jndi) throws Exception;
 
 }

@@ -79,136 +79,125 @@ public class BridgeTestBase extends MessagingTestCase
 
    protected void setUp() throws Exception
    {
+      if (!ServerManagement.isRemote())
+      {
+         throw new IllegalStateException("This test should only be run in remote mode");
+      }
+      
       super.setUp();
        
       log.info("Starting " + nodeCount + " servers");
+                     
+      for (int i = 0; i < nodeCount; i++)
+      {
+         // make sure all servers are created and started; make sure that database is zapped
+         // ONLY for the first server, the others rely on values they expect to find in shared
+         // tables; don't clear the database for those.
+            ServerManagement.start(i, "all", i == 0);
+      }
       
-      if (ServerManagement.isRemote())
-      {                 
-         for (int i = 0; i < nodeCount; i++)
-         {
-            // make sure all servers are created and started; make sure that database is zapped
-            // ONLY for the first server, the others rely on values they expect to find in shared
-            // tables; don't clear the database for those.
-            if (useArjuna)
-            {
-               ServerManagement.start(i, "all,-transaction,jbossjta,xarecovery", i == 0);
-            }
-            else
-            {
-               ServerManagement.start(i, "all", i == 0);
-            }
-         }
+      //We need a local transaction and recovery manager
+      //We must start this after the remote servers have been created or it won't
+      //have deleted the database and the recovery manager may attempt to recover transactions
+      if (useArjuna)
+      {
+         sc = new ServiceContainer("jbossjta");   
+      }
+      else
+      {
+         sc = new ServiceContainer("transaction");
+      }
+      sc.start(false);
+      
+      ServerManagement.undeployQueue("sourceQueue", 0);
+      
+      ServerManagement.undeployTopic("sourceTopic", 0);  
+      
+      ServerManagement.undeployQueue("localDestQueue", 0);
          
-         //We need a local transaction and recovery manager
-         //We must start this after the remote servers have been created or it won't
-         //have deleted the database and the recovery manager may attempt to recover transactions
-         if (useArjuna)
-         {
-            sc = new ServiceContainer("jbossjta");            
-         }
-         else
-         {
-            sc = new ServiceContainer("transaction");
-         }
-         sc.start(false);
+      ServerManagement.undeployQueue("destQueue", 1); 
+      
+      ServerManagement.deployQueue("sourceQueue", 0);
+      
+      ServerManagement.deployTopic("sourceTopic", 0);  
+      
+      ServerManagement.deployQueue("localDestQueue", 0);
          
-         ServerManagement.undeployQueue("sourceQueue", 0);
-         
-         ServerManagement.undeployTopic("sourceTopic", 0);  
-         
-         ServerManagement.undeployQueue("localDestQueue", 0);
-            
-         ServerManagement.undeployQueue("destQueue", 1); 
-         
-         ServerManagement.deployQueue("sourceQueue", 0);
-         
-         ServerManagement.deployTopic("sourceTopic", 0);  
-         
-         ServerManagement.deployQueue("localDestQueue", 0);
-            
-         ServerManagement.deployQueue("destQueue", 1);         
-      }                  
+      ServerManagement.deployQueue("destQueue", 1);                        
    }
 
    protected void tearDown() throws Exception
-   { 
-      if (ServerManagement.isRemote())
-      {         
-         try
-         {
-            ServerManagement.undeployQueue("sourceQueue", 0);
-         }
-         catch (Exception e)
-         {
-            log.error("Failed to undeploy", e);
-         }
-         
-         try
-         {
-            ServerManagement.undeployTopic("sourceTopic", 0);
-         }
-         catch (Exception e)
-         {
-            log.error("Failed to undeploy", e);
-         }
-         
-         try
-         {
-            ServerManagement.undeployQueue("destQueue", 1);
-         }
-         catch (Exception e)
-         {
-            log.error("Failed to undeploy", e);
-         }
-         
-         try
-         {
-            ServerManagement.undeployQueue("localDestQueue", 0);
-         }
-         catch (Exception e)
-         {
-            log.error("Failed to undeploy", e);
-         }
-         
-         
-         
-         for (int i = 0; i < nodeCount; i++)
-         {
-            try
-            {
-               if (ServerManagement.isStarted(i))
-               {
-                  ServerManagement.log(ServerManagement.INFO, "Undeploying Server " + i, i);
-                  
-                  ServerManagement.stop(i);
-               }
-            }
-            catch (Exception e)
-            {
-               log.error("Failed to stop server", e);
-            }
-         }
-         
-         for (int i = 1; i < nodeCount; i++)
-         {
-            try
-            {
-               ServerManagement.kill(i);
-            }
-            catch (Exception e)
-            {
-               log.error("Failed to kill server", e);
-            }
-         }
-         
-         sc.stop();
+   {       
+      try
+      {
+         ServerManagement.undeployQueue("sourceQueue", 0);
+      }
+      catch (Exception e)
+      {
+         log.error("Failed to undeploy", e);
+      }
+      
+      try
+      {
+         ServerManagement.undeployTopic("sourceTopic", 0);
+      }
+      catch (Exception e)
+      {
+         log.error("Failed to undeploy", e);
+      }
+      
+      try
+      {
+         ServerManagement.undeployQueue("destQueue", 1);
+      }
+      catch (Exception e)
+      {
+         log.error("Failed to undeploy", e);
+      }
+      
+      try
+      {
+         ServerManagement.undeployQueue("localDestQueue", 0);
+      }
+      catch (Exception e)
+      {
+         log.error("Failed to undeploy", e);
       }
       
       
       
-      super.tearDown();
+      for (int i = 0; i < nodeCount; i++)
+      {
+         try
+         {
+            if (ServerManagement.isStarted(i))
+            {
+               ServerManagement.log(ServerManagement.INFO, "Undeploying Server " + i, i);
+               
+               ServerManagement.stop(i);
+            }
+         }
+         catch (Exception e)
+         {
+            log.error("Failed to stop server", e);
+         }
+      }
       
+      for (int i = 1; i < nodeCount; i++)
+      {
+         try
+         {
+            ServerManagement.kill(i);
+         }
+         catch (Exception e)
+         {
+            log.error("Failed to kill server", e);
+         }
+      }
+      
+      sc.stop();
+      
+      super.tearDown();      
    }
    
    protected void setUpAdministeredObjects() throws Exception
@@ -414,7 +403,7 @@ public class BridgeTestBase extends MessagingTestCase
             TextMessage tm = (TextMessage)cons.receive(5000);
             
             assertNotNull(tm);
-            
+              
             assertEquals("message" + (i + start), tm.getText());
          } 
 

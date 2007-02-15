@@ -21,9 +21,13 @@
  */
 package org.jboss.test.messaging.jms.bridge;
 
+import java.util.Properties;
+
+import org.jboss.jms.jndi.JMSProviderAdapter;
 import org.jboss.jms.server.bridge.Bridge;
 import org.jboss.logging.Logger;
 import org.jboss.test.messaging.tools.ServerManagement;
+import org.jboss.test.messaging.tools.TestJMSProviderAdaptor;
 import org.jboss.test.messaging.tools.aop.PoisonInterceptor;
 
 /**
@@ -55,12 +59,36 @@ public class ReconnectTest extends BridgeTestBase
       
       useArjuna = true;
       
-      super.setUp();                
+      super.setUp();         
+      
+      //Now install local JMSProviderAdaptor classes
+      
+      Properties props0 = new Properties();
+      props0.putAll(ServerManagement.getJNDIEnvironment(0));
+      
+      Properties props1 = new Properties();
+      props1.putAll(ServerManagement.getJNDIEnvironment(1));
+        
+      JMSProviderAdapter sourceAdaptor = new TestJMSProviderAdaptor(props0, "/XAConnectionFactory", "adaptor1");
+      
+      JMSProviderAdapter targetAdaptor = new TestJMSProviderAdaptor(props1, "/XAConnectionFactory", "adaptor2");
+      
+      sc.installJMSProviderAdaptor("adaptor1", sourceAdaptor);
+      
+      sc.installJMSProviderAdaptor("adaptor2", targetAdaptor);
+      
+      sc.startRecoveryManager();      
    }
 
    protected void tearDown() throws Exception
-   {      
-      super.tearDown();      
+   {            
+      sc.stopRecoveryManager();
+      
+      sc.uninstallJMSProviderAdaptor("adaptor1");
+      
+      sc.uninstallJMSProviderAdaptor("adaptor2");
+      
+      super.tearDown();            
    }
       
    // Crash and reconnect
@@ -157,7 +185,7 @@ public class ReconnectTest extends BridgeTestBase
          
          //Send some messages
          
-         sendMessages(cf0, sourceQueue, 0, NUM_MESSAGES /2 , persistent);
+         sendMessages(cf0, sourceQueue, 0, NUM_MESSAGES / 2 , persistent);
          
          //Verify none are received
          

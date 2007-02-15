@@ -59,6 +59,7 @@ import javax.transaction.UserTransaction;
 
 import org.hsqldb.Server;
 import org.hsqldb.persist.HsqlProperties;
+import org.jboss.jms.jndi.JMSProviderAdapter;
 import org.jboss.jms.jndi.JNDIProviderAdapter;
 import org.jboss.jms.server.ServerPeer;
 import org.jboss.jms.server.remoting.JMSServerInvocationHandler;
@@ -213,7 +214,6 @@ public class ServiceContainer
 
    private boolean transaction;
    private boolean jbossjta; //To use the ex-Arjuna tx mgr
-   private boolean xarecovery; //To use the ex-Arjuna recovery manager
    private boolean database;
    private boolean jca;
    private boolean remoting;
@@ -402,7 +402,7 @@ public class ServiceContainer
 
          registerClassLoader();
 
-         if (jbossjta || xarecovery)
+         if (jbossjta)
          {
             deleteObjectStore();
          }
@@ -438,11 +438,6 @@ public class ServiceContainer
             // We make sure the database is clean (only if we have all dependencies the database,
             // othewise we'll get an access error)
             dropAllTables();
-         }
-
-         if (xarecovery)
-         {
-            startRecoveryManager();
          }
 
          if (remoting)
@@ -534,14 +529,6 @@ public class ServiceContainer
       if (httpConnectionFactory)
       {
          stopService(HTTP_REMOTING_OBJECT_NAME);
-      }
-
-      if (jbossjta)
-      {
-         if (recoveryManager != null)
-         {
-            recoveryManager.stop();
-         }
       }
 
       if (jca)
@@ -926,6 +913,39 @@ public class ServiceContainer
    {
       return config.isClustered();
    }
+   
+   public void installJMSProviderAdaptor(String jndi, JMSProviderAdapter adaptor) throws Exception
+   {
+      log.info("Binding adaptor " + adaptor + " in JNDI: " + jndi);
+      initialContext.bind(jndi, adaptor);
+
+   }
+
+   public void uninstallJMSProviderAdaptor(String jndi) throws Exception
+   {
+      initialContext.unbind(jndi);
+   }
+   
+   public void startRecoveryManager()
+   {
+      log.info("Starting arjuna recovery manager");
+
+      //Need to start the recovery manager manually - if deploying
+      //inside JBoss this wouldn't be necessary - since you would use
+      //the TransactionManagerService MBean which would start the recovery manager
+      //for you
+      recoveryManager = RecoveryManager.manager(RecoveryManager.INDIRECT_MANAGEMENT);
+
+      log.info("Started recovery manager");
+   }
+   
+   public void stopRecoveryManager()
+   {
+      if (recoveryManager != null)
+      {
+         recoveryManager.stop();
+      }      
+   }
 
    public String toString()
    {
@@ -1158,18 +1178,7 @@ public class ServiceContainer
       }
    }
 
-   private void startRecoveryManager()
-   {
-      log.info("Starting arjuna recovery manager");
 
-      //Need to start the recovery manager manually - if deploying
-      //inside JBoss this wouldn't be necessary - since you would use
-      //the TransactionManagerService MBean which would start the recovery manager
-      //for you
-      recoveryManager = RecoveryManager.manager(RecoveryManager.INDIRECT_MANAGEMENT);
-
-      log.info("Started recovery manager");
-   }
 
    private void startCachedConnectionManager(ObjectName on) throws Exception
    {
@@ -1688,14 +1697,6 @@ log.info("password:" + config.getDatabasePassword());
             if (minus)
             {
                jbossjta = false;
-            }
-         }
-         else if ("xarecovery".equals(tok))
-         {           
-            xarecovery = true;
-            if (minus)
-            {
-               xarecovery = false;
             }
          }
          else if ("database".equals(tok))

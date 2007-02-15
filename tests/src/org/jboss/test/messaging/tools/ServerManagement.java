@@ -21,30 +21,33 @@
 */
 package org.jboss.test.messaging.tools;
 
-import java.rmi.Naming;
-import java.util.Hashtable;
-import java.util.Set;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.List;
-import java.util.Iterator;
-import java.util.ArrayList;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
-import javax.management.ObjectName;
-import javax.management.NotificationListener;
+import java.rmi.Naming;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import javax.management.Notification;
+import javax.management.NotificationListener;
+import javax.management.ObjectName;
 import javax.transaction.UserTransaction;
+
+import org.jboss.jms.jndi.JMSProviderAdapter;
 import org.jboss.jms.server.DestinationManager;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager;
 import org.jboss.remoting.ServerInvocationHandler;
+import org.jboss.test.messaging.tools.jmx.ServiceAttributeOverrides;
 import org.jboss.test.messaging.tools.jmx.rmi.LocalTestServer;
+import org.jboss.test.messaging.tools.jmx.rmi.NotificationListenerID;
 import org.jboss.test.messaging.tools.jmx.rmi.RMITestServer;
 import org.jboss.test.messaging.tools.jmx.rmi.Server;
-import org.jboss.test.messaging.tools.jmx.rmi.NotificationListenerID;
-import org.jboss.test.messaging.tools.jmx.ServiceAttributeOverrides;
 import org.jboss.test.messaging.tools.jndi.InVMInitialContextFactory;
 import org.jboss.test.messaging.tools.jndi.RemoteInitialContextFactory;
 
@@ -1099,6 +1102,22 @@ public class ServerManagement
    {
       insureStarted(serverIndex);
       return servers[serverIndex].getServer().getRemotingTransport();
+   }
+   
+   public static void installJMSProviderAdaptor(int serverIndex, String jndi, JMSProviderAdapter adaptor)
+      throws Exception
+   {
+      insureStarted(serverIndex);
+      
+      servers[serverIndex].getServer().installJMSProviderAdaptor(jndi, adaptor);
+   }
+   
+   public static void uninstallJMSProviderAdaptor(int serverIndex, String jndi)
+      throws Exception
+   {
+      insureStarted(serverIndex);
+      
+      servers[serverIndex].getServer().uninstallJMSProviderAdaptor(jndi);
    }
 
    // Attributes ----------------------------------------------------

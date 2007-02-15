@@ -21,26 +21,31 @@
 */
 package org.jboss.jms.recovery;
 
-import java.io.InputStream;
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Properties;
 import java.util.StringTokenizer;
 
 import javax.jms.XAConnection;
 import javax.jms.XAConnectionFactory;
 import javax.jms.XASession;
+import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.transaction.xa.XAResource;
 
+import org.jboss.jms.jndi.JMSProviderAdapter;
 import org.jboss.logging.Logger;
 
 import com.arjuna.ats.jta.recovery.XAResourceRecovery;
 
 /**
  * 
- * A BridgeXAResourceRecovery
+ * A XAResourceRecovery instance that can be used to recover any JMS provider.
+ * 
+ * 
+ * This class will create a new XAConnection/XASession/XAResource on each sweep from the recovery manager.
+ * 
+ * It can probably be optimised to keep the same XAResource between sweeps and only recreate if
+ * a problem with the connection to the provider is detected, but considering that typical sweep periods
+ * are of the order of 10s of seconds to several minutes, then the extra complexity of the code required
+ * for that does not seem to be a good tradeoff.
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision: 1.1 $</tt>
@@ -48,16 +53,16 @@ import com.arjuna.ats.jta.recovery.XAResourceRecovery;
  * $Id$
  *
  */
-public class BridgeXAResourceRecovery implements XAResourceRecovery
+public class MessagingXAResourceRecovery implements XAResourceRecovery
 {
    private boolean trace = log.isTraceEnabled();
 
-   private static final Logger log = Logger.getLogger(BridgeXAResourceRecovery.class);
+   private static final Logger log = Logger.getLogger(MessagingXAResourceRecovery.class);
+   
+   private String providerAdaptorName;
+   
+   private JMSProviderAdapter providerAdaptor;
 
-   private Hashtable jndiProperties;
-   
-   private String connectionFactoryLookup;
-   
    private boolean hasMore;
    
    private String username;
@@ -68,9 +73,9 @@ public class BridgeXAResourceRecovery implements XAResourceRecovery
    
    private XAResource res;
 
-   public BridgeXAResourceRecovery()
+   public MessagingXAResourceRecovery()
    {
-      if(trace) log.trace("Constructing BridgeXAResourceRecovery2..");
+      if(trace) log.trace("Constructing BridgeXAResourceRecovery");
    }
 
    public boolean initialise(String config)
@@ -79,106 +84,73 @@ public class BridgeXAResourceRecovery implements XAResourceRecovery
       
       StringTokenizer tok = new StringTokenizer(config, ",");
       
-      if (tok.countTokens() != 2)
+      //First (mandatory) param is the provider adaptor name
+      
+      if (!tok.hasMoreTokens())
       {
-         log.error("Invalid config: " + config);
-         return false;
+         throw new IllegalArgumentException("Must specify provider adaptor name in config");
       }
       
-      String provider = tok.nextToken();
+      providerAdaptorName = tok.nextToken();
       
-      String propsFile = tok.nextToken();
+      InitialContext ic = null;
       
       try
       {
-         //The config should point to a properties file on the classpath that holds the actual config
-         InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream(propsFile);
+         ic = new InitialContext();
          
-         Properties props = new Properties();
-         
-         props.load(is);
-         
-         /*
-          * provider1.jndi.prop1=xxxx
-          * provider1.jndi.prop2=yyyy
-          * provider1.jndi.prop3=zzzz
-          * 
-          * provider1.xaconnectionfactorylookup=xyz
-          * provider1.username=bob
-          * provider1.password=blah
-          * 
-          * provider2.jndi.prop1=xxxx
-          * provider2.jndi.prop2=yyyy
-          * provider2.jndi.prop3=zzzz
-          * 
-          * provider2.xaconnectionfactorylookup=xyz
-          * provider2.username=xyz
-          * provider2.password=blah
-          *           
-          */
-         
-         Iterator iter = props.entrySet().iterator();
-         
-         String jndiPrefix = provider + ".jndi.";
-         
-         String cfKey = provider + ".xaconnectionfactorylookup";
-         
-         String usernameKey = provider + ".username";
-         
-         String passwordKey = provider + ".password";
-         
-         jndiProperties = new Hashtable();
-         
-         while (iter.hasNext())
-         {
-            Map.Entry entry = (Map.Entry)iter.next();
-            
-            String key = (String)entry.getKey();
-            String value = (String)entry.getValue();
-            
-            if (key.startsWith(jndiPrefix))
-            {
-               String actualKey = key.substring(jndiPrefix.length());
-               
-               jndiProperties.put(actualKey, value);
-            }
-            else if (key.equals(cfKey))
-            {
-               connectionFactoryLookup = value;
-            }
-            else if (key.equals(usernameKey))
-            {
-               username = value;
-            }
-            else if (key.equals(passwordKey))
-            {
-               password = value;
-            }
-         }
-         
-         if (connectionFactoryLookup == null)
-         {
-            log.error("Key " + cfKey + " does not exist in config");
-            return false;
-         }
-         
-         if (log.isTraceEnabled()) { log.trace(this + " initialised"); }
-         
-         hasMore = true;
-         
-         return true;
+         providerAdaptor = (JMSProviderAdapter)ic.lookup(providerAdaptorName);         
       }
       catch (Exception e)
       {
-         log.error("Failed to load config file: " + config, e);
+         log.error("Failed to look up provider adaptor", e);
          
          return false;
       }
+      finally
+      {
+         if (ic != null)
+         {
+            try
+            {
+               ic.close();
+            }
+            catch (Exception ignore)
+            {               
+            }
+         }
+      }
+      
+      //Next two (optional) parameters are the username and password to use for creating the connection
+      //for recovery
+      
+      if (tok.hasMoreTokens())
+      {
+         username = tok.nextToken();
+         
+         if (!tok.hasMoreTokens())
+         {
+            throw new IllegalArgumentException("If username is specified, password must be specified too");
+         }
+         
+         password = tok.nextToken();
+      }
+         
+      hasMore = true;
+      
+      if (log.isTraceEnabled()) { log.trace(this + " initialised"); }      
+      
+      return true;      
    }
 
    public boolean hasMoreResources()
    {
       if (log.isTraceEnabled()) { log.trace(this + " hasMoreResources"); }
+      
+      if (providerAdaptor == null)
+      {
+         return false;
+      }
             
       /*
        * The way hasMoreResources is supposed to work is as follows:
@@ -196,8 +168,8 @@ public class BridgeXAResourceRecovery implements XAResourceRecovery
        * between the XAResource and it's server, on the next pass a new one will
        * be create and if the server is back up it will work.
        * This means there is no need for an XAResourceWrapper which is a technique used in the 
-       * JMSProviderXAResourceRecovery
-       * The recovery manager will throw away the XAResource anyway after every sweep.
+       * old JMSProviderXAResourceRecovery
+       * The recovery manager will throw away the XAResource after every sweep.
        * 
        */
         
@@ -216,13 +188,20 @@ public class BridgeXAResourceRecovery implements XAResourceRecovery
          {         
          }
          
-         InitialContext ic = null;
+         Context ic = null;
          
          try
          {
-            ic = new InitialContext(jndiProperties);
+            ic = providerAdaptor.getInitialContext();
             
-            XAConnectionFactory connectionFactory = (XAConnectionFactory)ic.lookup(connectionFactoryLookup);
+            Object obj = ic.lookup(providerAdaptor.getFactoryRef());
+            
+            if (!(obj instanceof XAConnectionFactory))
+            {
+               throw new IllegalArgumentException("Connection factory from jms provider is not a XAConnectionFactory");
+            }
+            
+            XAConnectionFactory connectionFactory = (XAConnectionFactory)obj;
             
             if (username == null)
             {
