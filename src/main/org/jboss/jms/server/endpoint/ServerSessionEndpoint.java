@@ -553,11 +553,22 @@ public class ServerSessionEndpoint implements SessionEndpoint
          if (dest.isQueue())
          {
             QueuedExecutor executor = (QueuedExecutor)pool.get();
-            
-            PagingFilteredQueue coreQueue =
-               new PagingFilteredQueue(dest.getName(), idm.getID(), ms, pm, true, false,
-                                       executor, -1, null, fullSize, pageSize, downCacheSize);     
-                        
+            Queue coreQueue;
+
+            if (postOffice.isLocal())
+            {
+               coreQueue = new PagingFilteredQueue(dest.getName(),
+                                                   idm.getID(), ms, pm, true, false, executor,
+                                                   -1, null, fullSize, pageSize, downCacheSize);
+            }
+            else
+            {
+               // uniformly handle the temporary queue as LocalClusteredQueue
+               coreQueue = new LocalClusteredQueue(postOffice, nodeId, dest.getName(),
+                                                   idm.getID(), ms, pm, true, false, executor,
+                                                   -1, null, tr, fullSize, pageSize, downCacheSize);
+            }
+
             String counterName = TEMP_QUEUE_MESSAGECOUNTER_PREFIX + dest.getName();
             
             MessageCounter counter =
@@ -566,7 +577,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
             
             sp.getMessageCounterManager().registerMessageCounter(counterName, counter);
                                  
-            // Make a binding for this queue
+            // make a binding for this queue
             postOffice.bindQueue(new JMSCondition(true, dest.getName()), coreQueue);
          }         
       }
