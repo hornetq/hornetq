@@ -13,86 +13,8 @@
       </layout>
    </appender>
 
-   <appender name="FILE" class="org.jboss.logging.appender.DailyRollingFileAppender">
-
-      <errorHandler class="org.jboss.logging.util.OnlyOnceErrorHandler"/>
-      <!--
-          Normally "test.logfile.suffix" takes on of the values: "invm", "remote-client",
-          "remote-server", "clustering-client", "clustering-server<index>", "crash-client",
-          "crash-server", etc.
-      -->
-      <param name="File" value="./client.trace.log"/>
-      <param name="DatePattern" value="'.'yyyy-MM-dd"/>
-      <param name="Threshold" value="TRACE#org.jboss.logging.XLevel"/>
-
-      <!-- since majority of the tests are ran in fork mode by ant, the log file is overwritten
-           for each test. We need to append if we want to preserve a full testsuite run log.
-           Make sure the build script clears this log at the beginning of each run.
-      -->
-      <param name="Append" value="true"/>
-
-      <layout class="org.apache.log4j.PatternLayout">
-         <param name="ConversionPattern" value="%d{ABSOLUTE} %-5p @%t [%c{1}] %m%n"/>
-      </layout>
-   </appender>
-
-   <category name="org.apache">
-      <priority value="INFO"/>
-   </category>
-
-   <category name="org.jgroups">
-      <priority value="WARN"/>
-   </category>
-
-   <category name="org.jboss.remoting">
-      <priority value="TRACE" class="org.jboss.logging.XLevel"/>
-      <!-- <priority value="DEBUG"/> -->
-   </category>
-
-   <category name="org.jboss">
-      <priority value="INFO"/>
-   </category>
-
-   <category name="org.jboss.messaging">
-      <priority value="TRACE" class="org.jboss.logging.XLevel"/>
-      <!-- <priority value="DEBUG"/> -->
-   </category>
-
-   <category name="org.jboss.jms">
-      <priority value="TRACE" class="org.jboss.logging.XLevel"/>
-      <!-- <priority value="DEBUG"/> -->
-   </category>
-
-   <category name="org.jboss.test">
-      <priority value="TRACE" class="org.jboss.logging.XLevel"/>
-      <!-- <priority value="DEBUG"/> -->
-   </category>
-
-   <!-- Ignoring trace from these: -->
-
-   <category name="org.jboss.jms.server.remoting.JMSServerInvocationHandler">
-      <priority value="DEBUG"/>
-   </category>
-
-   <category name="org.jboss.messaging.core.plugin.JDBCSupport">
-      <priority value="INFO"/>
-   </category>
-
-   <category name="org.jboss.test.messaging.tools.jmx.MockJBossSecurityManager">
-      <priority value="DEBUG"/>
-   </category>
-
-   <category name="org.jboss.jms.server.remoting.JMSWireFormat">
-      <!-- <priority value="TRACE" class="org.jboss.logging.XLevel"/> -->
-      <priority value="DEBUG"/>
-   </category>
-
-
-
-
   <root>
       <appender-ref ref="CONSOLE"/>
-      <appender-ref ref="FILE"/>
    </root>
 
 </log4j:configuration>
