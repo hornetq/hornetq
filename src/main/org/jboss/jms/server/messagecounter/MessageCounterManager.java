@@ -87,6 +87,8 @@ public class MessageCounterManager implements MessagingComponent
       if (!started)
       {
          log.warn(this + " isn't started");
+         
+         return;
       }
       
       //Wait for timer task to stop
@@ -102,11 +104,19 @@ public class MessageCounterManager implements MessagingComponent
    
    public synchronized void reschedule(long newPeriod)
    {
-      stop();
+      boolean wasStarted = this.started;
+      
+      if (wasStarted)
+      {
+         stop();
+      }
       
       period = newPeriod;
       
-      start();
+      if (wasStarted)
+      {
+         start();
+      }
    }
    
    public void registerMessageCounter(String name, MessageCounter counter)

@@ -162,21 +162,27 @@ public class ClusteringAspect
                // client side network fails temporarily so the client connection breaks but the
                // server cluster is still up and running - in this case we don't perform failover.
 
-               // TODO Is this the right thing to do?
+               // In this case we should try back on the original server
 
                log.warn("Client attempted failover, but no failover attempt " +
-                        "has been detected on the server side.");
-
-               return null;
+                        "has been detected on the server side. We will now try again on the original server " +
+                        "in case there was a temporary glitch on the client--server network");
+               
+               delegate = getDelegateForNode(failedNodeID.intValue());
+               
+               //Pause a little to avoid hammering the same node in quick succession
+               
+               //Currently hardcoded
+               Thread.sleep(2000);
             }
-
-            // Server side failover has occurred / is occurring but trying to go to the 'default'
-            // failover node did not succeed. Retry with the node suggested by the cluster.
-
-            attemptCount++;
-
-            delegate = getDelegateForNode(actualServerID);
-
+            else
+            {   
+               // Server side failover has occurred / is occurring but trying to go to the 'default'
+               // failover node did not succeed. Retry with the node suggested by the cluster.
+   
+               delegate = getDelegateForNode(actualServerID);                  
+            }
+            
             if (delegate == null)
             {
                // the delegate corresponding to the actualServerID not found among the cached
@@ -185,6 +191,8 @@ public class ClusteringAspect
                throw new JMSException("Cannot find a cached connection factory delegate for " +
                   "node " + actualServerID);
             }
+            
+            attemptCount++;
          }
       }
 

@@ -358,6 +358,20 @@
    
    <operation>
       <description>
+         Enable message counters
+      </description>
+      <name>enableMessageCounters</name>
+   </operation> 
+   
+   <operation>
+      <description>
+         Disable message counters
+      </description>
+      <name>disableMessageCounters</name>
+   </operation>       
+   
+   <operation>
+      <description>
          Retrieve list of all prepared transaction ids
       </description>
       <name>retrievePreparedTransactions</name>

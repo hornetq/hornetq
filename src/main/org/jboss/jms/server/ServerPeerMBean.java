@@ -149,4 +149,8 @@ public interface ServerPeerMBean
    List retrievePreparedTransactions();
 
    String showPreparedTransactionsAsHTML();
+   
+   void enableMessageCounters();
+   
+   void disableMessageCounters();
 }

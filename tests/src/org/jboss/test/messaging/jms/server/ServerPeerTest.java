@@ -322,6 +322,8 @@ public class ServerPeerTest extends MessagingTestCase
          ServerManagement.startServerPeer();
       }
       
+      ServerManagement.invoke(ServerManagement.getServerPeerObjectName(), "enableMessageCounters", null, null);
+      
       ConnectionFactory cf = (ConnectionFactory)initialContext.lookup("/ConnectionFactory");
       
       ServerManagement.deployQueue("Queue1");
@@ -593,6 +595,8 @@ public class ServerPeerTest extends MessagingTestCase
          ServerManagement.undeployTopic("Topic1");
          
          ServerManagement.undeployTopic("Topic2");
+         
+         ServerManagement.invoke(ServerManagement.getServerPeerObjectName(), "disableMessageCounters", null, null);
       }
    }
    

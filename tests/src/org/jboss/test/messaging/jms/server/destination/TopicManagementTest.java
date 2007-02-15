@@ -291,6 +291,8 @@ public class TopicManagementTest extends DestinationManagementTestBase
  
       ServerManagement.deployTopic("TopicGetAllMessageCount");
       
+      ServerManagement.invoke(ServerManagement.getServerPeerObjectName(), "enableMessageCounters", null, null);
+      
       TopicConnection conn = null;
       
       
@@ -389,6 +391,8 @@ public class TopicManagementTest extends DestinationManagementTestBase
             conn.close();
          }
          ServerManagement.undeployTopic("TopicGetAllMessageCount");
+         
+         ServerManagement.invoke(ServerManagement.getServerPeerObjectName(), "disableMessageCounters", null, null);
       }
    }
    

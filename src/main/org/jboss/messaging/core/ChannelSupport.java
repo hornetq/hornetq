@@ -497,7 +497,12 @@ public abstract class ChannelSupport implements Channel
                {
                   // TODO we need to look in paging state too - currently not supported
 
+                  
+                  // Clebert - why did you add a link to 808 here?
+                  // I don't think 808 has anything to do with this.
                   // http://jira.jboss.org/jira/browse/JBMESSAGING-808
+                  
+                  //http://jira.jboss.com/jira/browse/JBMESSAGING-839
                   log.warn(this + " cannot find reference " + id + " (Might be paged!)");
                   break;
                }

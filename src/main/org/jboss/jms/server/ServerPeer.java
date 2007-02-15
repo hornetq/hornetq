@@ -269,7 +269,12 @@ public class ServerPeer extends ServiceMBeanSupport implements ServerPeerMBean
          messageStore.start();
          securityStore.start();
          txRepository.start();
-         messageCounterManager.start();
+         
+         //Note we do not start the message counter manager by default
+         //This must be done explicitly by the user by calling enableMessageCounters()
+         //This is because message counter history takes up growing memory to store the stats
+         //and could theoretically eventually cause the server to run out of RAM
+         
          txRepository.loadPreparedTransactions();
          
          initializeRemoting(mbeanServer);
@@ -586,6 +591,20 @@ public class ServerPeer extends ServiceMBeanSupport implements ServerPeerMBean
       }
       
       this.defaultMessageCounterHistoryDayLimit = limit;
+   }
+   
+   public void enableMessageCounters()
+   {      
+      messageCounterManager.start();
+   }
+   
+   public void disableMessageCounters()
+   {
+      messageCounterManager.stop();
+      
+      messageCounterManager.resetAllCounters();
+      
+      messageCounterManager.resetAllCounterHistories();
    }
    
    // JMX Operations -------------------------------------------------------------------------------

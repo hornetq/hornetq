@@ -182,6 +182,8 @@ public class QueueManagementTest extends DestinationManagementTestBase
       ConnectionFactory cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
 
       ServerManagement.deployQueue("QueueMessageCount");
+      
+      ServerManagement.invoke(ServerManagement.getServerPeerObjectName(), "enableMessageCounters", null, null);
 
       try
       {
@@ -227,8 +229,9 @@ public class QueueManagementTest extends DestinationManagementTestBase
       }
       finally
       {
-
          ServerManagement.undeployQueue("QueueMessageCount");
+         
+         ServerManagement.invoke(ServerManagement.getServerPeerObjectName(), "disableMessageCounters", null, null);
       }
    }
    
@@ -238,6 +241,8 @@ public class QueueManagementTest extends DestinationManagementTestBase
       ConnectionFactory cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
 
       ServerManagement.deployQueue("QueueMessageCount");
+      
+      ServerManagement.invoke(ServerManagement.getServerPeerObjectName(), "enableMessageCounters", null, null);
 
       try
       {
@@ -291,8 +296,9 @@ public class QueueManagementTest extends DestinationManagementTestBase
       }
       finally
       {
-
          ServerManagement.undeployQueue("QueueMessageCount");
+         
+         ServerManagement.invoke(ServerManagement.getServerPeerObjectName(), "enableMessageCounters", null, null);
       }
    }
 
@@ -307,6 +313,8 @@ public class QueueManagementTest extends DestinationManagementTestBase
 
       ServerManagement.deployQueue("QueueMessageCount2", fullSize, fullSize / 2, fullSize / 2 - 1);
 
+      ServerManagement.invoke(ServerManagement.getServerPeerObjectName(), "enableMessageCounters", null, null);
+      
       ObjectName destObjectName =
          new ObjectName("jboss.messaging.destination:service=Queue,name=QueueMessageCount2");
 
@@ -363,6 +371,8 @@ public class QueueManagementTest extends DestinationManagementTestBase
       finally
       {
          ServerManagement.undeployQueue("QueueMessageCount2");
+         
+         ServerManagement.invoke(ServerManagement.getServerPeerObjectName(), "disableMessageCounters", null, null);
 
          if (conn != null)
          {
@@ -377,7 +387,7 @@ public class QueueManagementTest extends DestinationManagementTestBase
       ConnectionFactory cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
 
       ServerManagement.deployQueue("QueueMaxSize");
-
+      
       try
       {
          Queue queue = (Queue)ic.lookup("/queue/QueueMaxSize");
@@ -701,7 +711,8 @@ public class QueueManagementTest extends DestinationManagementTestBase
       
       ServerManagement.setAttribute(ServerManagement.getServerPeerObjectName(), "QueueStatsSamplePeriod", String.valueOf(1000));
       
-
+      ServerManagement.invoke(ServerManagement.getServerPeerObjectName(), "enableMessageCounters", null, null);
+      
       ServerManagement.deployQueue("QueueMessageCounter");
       
       Queue queue = (Queue)ic.lookup("/queue/QueueMessageCounter");      
@@ -771,10 +782,10 @@ public class QueueManagementTest extends DestinationManagementTestBase
       assertNotNull(html);
       
       assertTrue(html.indexOf("QueueMessageCounter") != -1);
-            
-      
+                  
       ServerManagement.undeployQueue("QueueMessageCounter");
-
+      
+      ServerManagement.invoke(ServerManagement.getServerPeerObjectName(), "disableMessageCounters", null, null);
    }
    
    public void testConsumersCount() throws Exception

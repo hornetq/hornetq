@@ -945,7 +945,7 @@ public class RedistributionWithDefaultMessagePullPolicyTest extends PostOfficeTe
          queue5.deliver(false);
          receiver5.waitForHandleInvocations(5, 20000);
          
-         Thread.sleep(2000);
+         Thread.sleep(4000);
 
          log.trace("Here are the sizes 4:");
          log.trace("queue1, refs:" + queue1.memoryRefCount() + " dels:" + queue1.getDeliveringCount());
