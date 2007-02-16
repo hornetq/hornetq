@@ -30,6 +30,7 @@
    <property name="run.queue.example" value="true"/>
    <property name="run.topic.example" value="true"/>
    <property name="run.mdb.example" value="true"/>
+   <property name="run.mdb-failure.example" value="true"/>
    <property name="run.http.example" value="true"/>
    <property name="run.stateless.example" value="true"/>
    <property name="run.ejb3mdb.example" value="false"/>
@@ -144,6 +145,7 @@
          <param name="jboss.home" value="${jboss403SP1.home}"/>
          <param name="release.admin.target" value="standalone"/>
          <param name="run.mdb.example" value="false"/>
+         <param name="run.mdb-failure.example" value="false"/>
          <param name="run.stateless.example" value="false"/>
          <param name="run.secure-socket.example" value="false"/>
       </antcall>
@@ -165,6 +167,7 @@
          <param name="jboss.home" value="${jboss404GA.home}"/>
          <param name="release.admin.target" value="standalone"/>
          <param name="run.mdb.example" value="false"/>
+         <param name="run.mdb-failure.example" value="false"/>
          <param name="run.stateless.example" value="false"/>
          <param name="run.secure-socket.example" value="false"/>
       </antcall>
@@ -185,6 +188,7 @@
          <param name="jboss.home" value="${jboss405GA.home}"/>
          <param name="release.admin.target" value="standalone"/>
          <param name="run.mdb.example" value="false"/>
+         <param name="run.mdb-failure.example" value="false"/>
          <param name="run.stateless.example" value="false"/>
          <param name="run.secure-socket.example" value="false"/>
       </antcall>
@@ -204,7 +208,6 @@
       <!--  Add here other old server versions to test:          -->
       <!--                                                       -->
       <!-- ====================================================  -->
-
 
       <!--
 
@@ -315,6 +318,12 @@
 
       <antcall target="run-example">
          <param name="example.name" value="mdb"/>
+         <param name="example.queue.name" value="SmokeTestQueue"/>
+         <param name="jboss.home" value="${jboss.home}"/>
+      </antcall>
+
+      <antcall target="run-example">
+         <param name="example.name" value="mdb-failure"/>
          <param name="example.queue.name" value="SmokeTestQueue"/>
          <param name="jboss.home" value="${jboss.home}"/>
       </antcall>
@@ -494,6 +503,13 @@
       </antcall>
 
       <antcall target="run-example">
+         <param name="example.name" value="mdb-failure"/>
+         <param name="example.queue.name" value="SmokeTestQueue"/>
+         <param name="jboss.configuration" value="${jboss.configuration}-node0"/>
+         <param name="clustered" value="true"/>
+      </antcall>
+
+      <antcall target="run-example">
          <param name="example.name" value="stateless"/>
          <param name="example.queue.name" value="SmokeTestQueue"/>
          <param name="jboss.configuration" value="${jboss.configuration}-node0"/>
@@ -580,6 +596,10 @@
             <and>
                <equals arg1="${example.name}" arg2="mdb"/>
                <istrue value="${run.mdb.example}"/>
+            </and>
+            <and>
+               <equals arg1="${example.name}" arg2="mdb-failure"/>
+               <istrue value="${run.mdb-failure.example}"/>
             </and>
             <and>
                <equals arg1="${example.name}" arg2="stateless"/>
