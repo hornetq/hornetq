@@ -171,7 +171,7 @@
          <param name="run.stateless.example" value="false"/>
          <param name="run.secure-socket.example" value="false"/>
       </antcall>
-                                                                                                
+
       <!--
            4.0.5.GA
       -->
@@ -1058,6 +1058,8 @@
          <arg value="WARN  [org.jboss.system.ServiceController] Problem creating service jboss.aop:service=AspectManager"/>
          <arg value="ERROR [org.jboss.deployment.scanner.URLDeploymentScanner] Incomplete Deployment listing:"/>
          <arg value="ERROR [org.jboss.aop.deployment.AspectDeployer] failed to stop"/>
+         <arg value="ERROR [org.jboss.ejb.plugins.LogInterceptor] TransactionRolledbackLocalException in method: public abstract void javax.jms.MessageListener.onMessage(javax.jms.Message), causedBy:"/>
+         <arg value="ERROR [org.jboss.ejb.plugins.jms.JMSContainerInvoker] Exception in JMSCI message listener"/>
          <arg value="restart will delete it"/>
          <arg value="web-console.war/"/> <!-- Only on JBoss 5 -->
          <arg value="jmx-console.war/"/> <!-- Only on JBoss 5 -->
