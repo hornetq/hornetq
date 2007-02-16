@@ -96,7 +96,7 @@
          <param name="jboss.home" value="${jboss401sp1.home}"/>
          <param name="run.secure-socket.example" value="false"/>
       </antcall>
-                                                                                                
+
       <!--
            4.0.2
       -->
@@ -134,6 +134,12 @@
          <param name="run.secure-socket.example" value="false"/>
       </antcall>
 
+
+      <!--
+           Temporarily removed from the supported configurations list.
+           See http://jira.jboss.org/jira/browse/JBMESSAGING-848
+      -->
+      <!--
       <antcall target="installation-test">
          <param name="jboss.home" value="${jboss403SP1.home}"/>
          <param name="release.admin.target" value="standalone"/>
@@ -141,6 +147,7 @@
          <param name="run.stateless.example" value="false"/>
          <param name="run.secure-socket.example" value="false"/>
       </antcall>
+      -->
 
       <!--
            4.0.4.GA
@@ -188,29 +195,6 @@
          <param name="run.ejb3mdb.example" value="true"/>
       </antcall>
 
-      <!--
-         Stateless Session Bean installation test will fail on this because the client talks to
-         Messaging's remoting and to Unified Invoker's remoting and runs into compatibility
-         problems.
-      -->
-      <!-- DISABLED
-           <antcall target="installation-test">
-              <param name="jboss.home" value="${jboss500Alpha.home}"/>
-              <param name="run.stateless.example" value="false"/>
-           </antcall>
-      -->
-      <!--
-           Unscoped deployment in JBoss 5. Special precautions need to be taken to replace the
-           jboss-remoting.jar and jboss-serialization.jar with Messaging's versions.
-           TODO the 'replace.jboss.dependencies' flag and task should go away when http://jira.jboss.org/jira/browse/JBMESSAGING-319 is done.
-      -->
-      <!-- DISABLED
-           <antcall target="installation-test">
-              <param name="jboss.home" value="${jboss500Alpha.home}"/>
-              <param name="messaging.server.artifact.name" value="jboss-messaging.jar"/>
-              <param name="replace.jboss.dependencies" value="true"/>
-           </antcall>
-      -->
    </target>
 
    <target name="old-server-compatibility-tests">
