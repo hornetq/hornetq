@@ -36,6 +36,7 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Collection;
+import java.util.StringTokenizer;
 
 
 /**
@@ -47,7 +48,7 @@ import java.util.Collection;
  */
 public class GenerateSmokeReport
 {
-   // Constants -----------------------------------------------------
+   // Constants ------------------------------------------------------------------------------------
 
    public static final String DEFAULT_OUTPUT_BASENAME="smoke-tes-report";
 
@@ -55,21 +56,49 @@ public class GenerateSmokeReport
    private static final byte CLIENT_COMPATIBILITY_TEST = 1;
    private static final byte SERVER_COMPATIBILITY_TEST = 2;
 
-   // Static --------------------------------------------------------
+   // Static ---------------------------------------------------------------------------------------
 
    public static void main(String[] args) throws Exception
    {
       new GenerateSmokeReport(args).run();
    }
 
-   // Attributes ----------------------------------------------------
+   /**
+    * The method generates a new example list in which examples are ordered according to the
+    * ordered name list.
+    *
+    * @param exampleNames - a List<String>.
+    * @param orderedNameList - comma (and space) separated ordered example name list
+    *
+    * @return a copy of the original list.
+    */
+   public static List order(List exampleNames, String orderedNameList)
+   {
+      List originalList = new ArrayList(exampleNames);
+      List orderedList = new ArrayList();
+      for(StringTokenizer st = new StringTokenizer(orderedNameList, ", "); st.hasMoreTokens(); )
+      {
+         String ordn = st.nextToken();
+         if (originalList.contains(ordn))
+         {
+            originalList.remove(ordn);
+            orderedList.add(ordn);
+         }
+      }
+
+      orderedList.addAll(originalList);
+      return orderedList;
+   }
+
+   // Attributes -----------------------------------------------------------------------------------
 
    private File inputFile;
    private File outputDir;
    private String outputFileName;
    private File installerDir;
+   private String orderedNameList;
 
-   // Constructors --------------------------------------------------
+   // Constructors ---------------------------------------------------------------------------------
 
    private GenerateSmokeReport(String[] args) throws Exception
    {
@@ -109,6 +138,14 @@ public class GenerateSmokeReport
             }
             installerDir = new File(args[++i]);
          }
+         else if ("-order".equals(args[i]))
+         {
+            if (i == args.length - 1)
+            {
+               throw new Exception("Example name list must follow -order");
+            }
+            orderedNameList = args[++i];
+         }
          else
          {
             throw new Exception("Unknown argument: " + args[i]);
@@ -144,13 +181,13 @@ public class GenerateSmokeReport
       outputFileName = baseName + ".java-" + System.getProperty("java.version") + ".html";
    }
 
-   // Public --------------------------------------------------------
+   // Public ---------------------------------------------------------------------------------------
 
-   // Package protected ---------------------------------------------
+   // Package protected ----------------------------------------------------------------------------
 
-   // Protected -----------------------------------------------------
+   // Protected ------------------------------------------------------------------------------------
 
-   // Private -------------------------------------------------------
+   // Private --------------------------------------------------------------------------------------
 
    private void run() throws Exception
    {
@@ -314,7 +351,14 @@ public class GenerateSmokeReport
          List installations = new ArrayList(data.getInstallations());
          Collections.sort(installations);
          List examples = new ArrayList(data.getExamples(INSTALLATION_TEST));
-         Collections.sort(examples);
+         if (orderedNameList != null)
+         {
+            examples = order(examples, orderedNameList);
+         }
+         else
+         {
+            Collections.sort(examples);
+         }
 
          pw.println("<h2>Installation Test Results</h2>");
 

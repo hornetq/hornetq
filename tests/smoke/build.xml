@@ -137,7 +137,7 @@
 
 
       <!--
-           Temporarily removed from the supported configurations list.
+           4.0.3SP1 standalone. Temporarily removed from the supported configurations list.
            See http://jira.jboss.org/jira/browse/JBMESSAGING-848
       -->
       <!--
@@ -1092,6 +1092,8 @@
          <arg value="smoke-test-report"/>
          <arg value="-installerdir"/>
          <arg value="C:\work\jnlp"/>
+         <arg value="-order"/>
+         <arg value="queue,topic,http,secure-socket,mdb,mdb-failure,stateless,distributed-queue,distributed-topic,queue-failover"/>
          <classpath>
             <pathelement location="../output/classes"/>
          </classpath>
