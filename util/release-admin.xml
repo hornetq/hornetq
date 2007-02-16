@@ -496,6 +496,19 @@
       </replaceregexp>
 
       <!--
+          Some installer-generated installations (JBoss 4.0.3, JBoss 4.0.3.SP1) do not contain
+          a BindingManager declaration at all, so we need to insert it by ourselves.
+      -->
+      <loadfile property="jboss-service.xml-content"
+                srcFile="${jboss.home}/server/${config.name}/conf/jboss-service.xml"/>
+
+      <condition property="binding.manager.declared">
+         <contains string="${jboss-service.xml-content}" substring="org.jboss.services.binding.ServiceBindingManager"/>
+      </condition>
+
+      <antcall target="insert-service-binding-manager-configuration"/>
+
+      <!--
           Actually copy the file
       -->
       <copy file="${jboss.home}/docs/examples/binding-manager/sample-bindings.xml"
@@ -547,6 +560,24 @@
          &lt;/delegate-config&gt;&#010;
          &lt;binding port=&quot;4757&quot;/&gt;&#010;
       &lt;/service-config&gt;\3"/>
+      </replaceregexp>
+
+   </target>
+
+   <target name="insert-service-binding-manager-configuration" unless="binding.manager.declared">
+
+      <replaceregexp file="${jboss.home}/server/${config.name}/conf/jboss-service.xml" flags="s">
+         <regexp pattern="(\x3cmbean[ \t]*code=\x22org.jboss.logging.Log4jService\x22.*?\x3c/mbean\x3e)"/>
+         <substitution expression="\1
+&#013;&#010;&#013;&#010;
+  &lt;mbean code=&quot;org.jboss.services.binding.ServiceBindingManager&quot;&#013;&#010;
+         name=&quot;jboss.system:service=ServiceBindingManager&quot;&gt;&#013;&#010;
+     &lt;attribute name=&quot;ServerName&quot;&gt;${ports}&lt;/attribute&gt;&#013;&#010;
+     &lt;attribute name=&quot;StoreURL&quot;&gt;${jboss.server.config.url}/binding-manager.xml&lt;/attribute&gt;&#013;&#010;
+     &lt;attribute name=&quot;StoreFactoryClassName&quot;&gt;&#013;&#010;
+        org.jboss.services.binding.XMLServicesStoreFactory&#013;&#010;
+     &lt;/attribute&gt;&#013;&#010;
+  &lt;/mbean&gt;"/>
       </replaceregexp>
 
    </target>
