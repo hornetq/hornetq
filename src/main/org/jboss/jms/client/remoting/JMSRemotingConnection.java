@@ -46,7 +46,6 @@ import org.jboss.util.id.GUID;
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
- *
  * $Id$
  */
 public class JMSRemotingConnection
@@ -69,8 +68,8 @@ public class JMSRemotingConnection
       }
       catch (Exception ignore)
       {
-         //May get a security exception depending on security permissions, in which case
-         //we return null
+         // May get a security exception depending on security permissions, in which case we
+         // return null
       }
 
       return prop;
@@ -179,7 +178,7 @@ public class JMSRemotingConnection
    {
 
       // For transports derived from the socket transport, allow true push callbacks,
-      // with callback Connector.   For http transport, simulate push callbacks.
+      // with callback Connector. For http transport, simulate push callbacks.
       String protocol = serverLocator.getProtocol();
       boolean isBisocket = "bisocket".equals(protocol) || "sslbisocket".equals(protocol);
       boolean isSocket   = "socket".equals(protocol)   || "sslsocket".equals(protocol);

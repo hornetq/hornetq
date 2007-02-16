@@ -118,11 +118,11 @@ public class RemotingConnectionFailureTest extends MessagingTestCase
       }
       catch(IOException e)
       {
-         // This happens for bisocket clients - if the client throws IOException subclass, we're fine,
-         // this is what our FailoverValveInteceptor is looking after
+         // This happens for bisocket clients - if the client throws IOException subclass, we're
+         // fine, this is what our FailoverValveInteceptor is looking after
          
-         // Note.  The bisocket transport can make internal invocations and therefore have a
-         // pooled connectin available.
+         // Note. The bisocket transport can make internal invocations and therefore have a pooled
+         // connection available.
       }
    }
 

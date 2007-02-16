@@ -239,8 +239,8 @@ public class ServerPeer extends ServiceMBeanSupport implements ServerPeerMBean
          jmsUserManager = (JMSUserManager)mbeanServer.
             getAttribute(jmsUserManagerObjectName, "Instance");
 
-         //We get references to some plugins lazily to avoid problems with circular
-         //MBean dependencies
+         // We get references to some plugins lazily to avoid problems with circular MBean
+         // dependencies
 
          // Create the wired components
          messageIDManager = new IDManager("MESSAGE_ID", 4096, persistenceManager);
@@ -270,10 +270,10 @@ public class ServerPeer extends ServiceMBeanSupport implements ServerPeerMBean
          securityStore.start();
          txRepository.start();
          
-         //Note we do not start the message counter manager by default
-         //This must be done explicitly by the user by calling enableMessageCounters()
-         //This is because message counter history takes up growing memory to store the stats
-         //and could theoretically eventually cause the server to run out of RAM
+         // Note we do not start the message counter manager by default. This must be done
+         // explicitly by the user by calling enableMessageCounters(). This is because message
+         // counter history takes up growing memory to store the stats and could theoretically
+         // eventually cause the server to run out of RAM
          
          txRepository.loadPreparedTransactions();
          

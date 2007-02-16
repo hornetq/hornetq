@@ -113,10 +113,9 @@ public class CallbackServerTimeoutTest extends MessagingTestCase
       {
          if (client != null)
          {
-            // Note.  Calling Client.disconnect() does remove the InvokerCallbackHandler
-            // registered above.  For the http transport, the CallbackPoller will continue 
-            // running, which will generate a lot of ERROR log messages after the server
-            // has shut down.
+            // Note. Calling Client.disconnect() does remove the InvokerCallbackHandler registered
+            // above. For the http transport, the CallbackPoller will continue running, which will
+            // generate a lot of ERROR log messages after the server has shut down.
             client.removeListener(callbackHandler);
             client.disconnect();
          }
