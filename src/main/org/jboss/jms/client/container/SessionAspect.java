@@ -234,9 +234,9 @@ public class SessionAspect
    
             if (trace) { log.trace("sending acknowlegment transactionally, queueing on resource manager"); }
    
-            //If the ack is for a delivery that came through via a connection consumer then we
-            //use the connectionConsumer session as the session id, otherwise we use this sessions'
-            //session id
+            // If the ack is for a delivery that came through via a connection consumer then we use
+            // the connectionConsumer session as the session id, otherwise we use this sessions'
+            // session ID
             
             ClientSessionDelegate connectionConsumerDelegate =
                (ClientSessionDelegate)info.getConnectionConsumerSession();
@@ -261,15 +261,13 @@ public class SessionAspect
       if (ackMode == Session.AUTO_ACKNOWLEDGE ||
           ackMode == Session.DUPS_OK_ACKNOWLEDGE)
       {
-         //We auto acknowledge
-         //Currently DUPS_OK is treated the same as AUTO_ACKNOWLDGE
+         // We auto acknowledge. Currently DUPS_OK is treated the same as AUTO_ACKNOWLDGE.
 
          SessionDelegate sd = (SessionDelegate)mi.getTargetObject();
 
-         //It is possible that session.recover() is called inside a message listener onMessage
-         //method - i.e. between the invocations of preDeliver and postDeliver.
-         //In this case we don't want to acknowledge the last delivered messages - since it
-         //will be redelivered
+         // It is possible that session.recover() is called inside a message listener onMessage
+         // method - i.e. between the invocations of preDeliver and postDeliver. In this case we
+         // don't want to acknowledge the last delivered messages - since it will be redelivered.
          if (!state.isRecoverCalled())
          {
             DeliveryInfo delivery = state.getAutoAckInfo();
@@ -281,10 +279,9 @@ public class SessionAspect
                                  
             if (trace) { log.trace(this + " auto acknowledging delivery " + delivery); }
               
-            //We clear the state before so if the ackfails then
-            //we don't get a knock on exception on the next ack since we haven't
-            //cleared the state:
-            //http://jira.jboss.org/jira/browse/JBMESSAGING-852
+            // We clear the state before so if the acknowledgment fails then we don't get a knock on
+            // exception on the next ack since we haven't cleared the state. See
+            // http://jira.jboss.org/jira/browse/JBMESSAGING-852
             
             state.setAutoAckInfo(null);
             
@@ -301,7 +298,9 @@ public class SessionAspect
       return null;
    }
    
-   /* Used for client acknowledge */
+   /**
+    * Used for client acknowledge.
+    */
    public Object handleAcknowledgeAll(Invocation invocation) throws Throwable
    {    
       MethodInvocation mi = (MethodInvocation)invocation;
