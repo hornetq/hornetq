@@ -376,13 +376,14 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
          
          // No need to synchronize - clientAccepting is volatile
          
-         if (newRate == 0)
+         // We need to deal with the fact that one way invocations may arrive in a different order
+         // to that which they arrived in
+         // So we just toggle on / off
+         
+         clientAccepting = !clientAccepting;
+         
+         if (clientAccepting)
          {
-            clientAccepting = false;
-         }
-         else
-         {
-            clientAccepting = true;
             promptDelivery();
          }            
       }   
