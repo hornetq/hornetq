@@ -84,16 +84,19 @@
       <componentref name="sun-javacc" version="3.2"/>
       <componentref name="oswego-concurrent" version="1.3.4"/>
       <componentref name="apache-log4j" version="1.2.8"/>
-      <componentref name="javassist" version="3.2.0.GA"/>
+      <componentref name="javassist" version="3.3.0.GA"/>
       <componentref name="jgroups" version="2.4.1"/>
       <componentref name="trove" version="1.0.2"/>
       <componentref name="jboss/common-core" version="2.0.2.GA"/>
       <componentref name="jboss/common-logging-log4j" version="2.0.2.GA"/>
       <componentref name="jboss/common-logging-spi" version="2.0.2.GA"/>
-      <componentref name="jboss/aop" version="1.5.0.GA"/>
+      <componentref name="jboss/aop" version="1.5.3.GA"/>
       <componentref name="jboss/serialization" version="1.0.3.GA"/>
       <componentref name="jboss/remoting" version="2.2.0.Alpha7"/>
       <componentref name="jboss/jbossts" version="4.2.2.GA"/>
+      <componentref name="jboss/test14" version="snapshot"/>
+      <componentref name="jboss/jbossretro-rt" version="1.0.4.GA"/>
+      <componentref name="jboss/backport-concurrent" version="2.1.0.GA"/>
 
       <!-- Need this otherwise project doesn't build in Eclipse -->
       <componentref name="apache-logging" version="1.0.4.1jboss"/>
