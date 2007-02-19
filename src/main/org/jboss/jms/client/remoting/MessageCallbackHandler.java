@@ -478,36 +478,28 @@ public class MessageCallbackHandler
       return m;
    } 
    
-   //We can optimise so it just uses one int to store both flags
-   
-   private volatile boolean sentStop;
-   
-   private volatile boolean sentStart = true;
+   private volatile boolean serverSending = true;
    
    private void checkBufferSize()
    {
       int size = buffer.size();
       
-      if (!sentStart && size <= minBufferSize)
+      if (!serverSending && size <= minBufferSize)
       {
          //We need more messages - we need to tell the server this if we haven't done so already
          
          sendChangeRateMessage(1.0f);
          
-         sentStart = true;
-         
-         sentStop = false;
+         serverSending = true;
       }
-      else if (!sentStop && size >= maxBufferSize)
+      else if (serverSending && size >= maxBufferSize)
       {
          //Our buffer is full - we need to tell the server to stop sending if we haven't
          //done so already
          
          sendChangeRateMessage(0f);
          
-         sentStop = true;
-         
-         sentStart = false;
+         serverSending = false;
       }
    }
    

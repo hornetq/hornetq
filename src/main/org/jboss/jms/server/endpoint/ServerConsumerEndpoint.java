@@ -384,13 +384,8 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
          
          if (clientAccepting)
          {
-            log.info(this + "Toggle on");
             promptDelivery();
          }            
-         else
-         {
-            log.info(this + "Toggle off");
-         }
       }   
       catch (Throwable t)
       {
