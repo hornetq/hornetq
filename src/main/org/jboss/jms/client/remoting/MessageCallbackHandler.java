@@ -262,7 +262,7 @@ public class MessageCallbackHandler
          
          messageAdded(); 
          
-         checkBufferSize();         
+         checkStop();         
       }
    }
          
@@ -471,7 +471,7 @@ public class MessageCallbackHandler
       } 
       
       //This needs to be outside the lock
-      checkBufferSize();
+      checkStart();
       
       if (trace) { log.trace(this + " receive() returning " + m); }
       
@@ -480,7 +480,22 @@ public class MessageCallbackHandler
    
    private volatile boolean serverSending = true;
    
-   private void checkBufferSize()
+   private void checkStop()
+   {
+      int size = buffer.size();
+      
+      if (serverSending && size >= maxBufferSize)
+      {
+         //Our buffer is full - we need to tell the server to stop sending if we haven't
+         //done so already
+         
+         sendChangeRateMessage(0f);
+         
+         serverSending = false;
+      }
+   }
+   
+   private void checkStart()
    {
       int size = buffer.size();
       
@@ -491,16 +506,7 @@ public class MessageCallbackHandler
          sendChangeRateMessage(1.0f);
          
          serverSending = true;
-      }
-      else if (serverSending && size >= maxBufferSize)
-      {
-         //Our buffer is full - we need to tell the server to stop sending if we haven't
-         //done so already
-         
-         sendChangeRateMessage(0f);
-         
-         serverSending = false;
-      }
+      }      
    }
    
    private void sendChangeRateMessage(float newRate) 
@@ -804,7 +810,7 @@ public class MessageCallbackHandler
             } 
          }
                   
-         checkBufferSize();
+         checkStart();
          
          if (again)
          {
