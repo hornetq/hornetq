@@ -198,8 +198,9 @@ public class MessageCallbackHandler
    private boolean listenerRunning;
    private int maxDeliveries;
    private long channelID;
-   private boolean startSendingMessageSent;
    private long lastDeliveryId = -1;
+   //private volatile boolean sentFull;
+   //private volatile boolean sentEmpty;
         
    // Constructors ---------------------------------------------------------------------------------
 
@@ -226,7 +227,6 @@ public class MessageCallbackHandler
       mainLock = new Object();
       this.sessionExecutor = sessionExecutor;
       this.maxDeliveries = maxDeliveries;
-      this.startSendingMessageSent = true;
    }
         
    // Public ---------------------------------------------------------------------------------------
@@ -260,18 +260,9 @@ public class MessageCallbackHandler
          
          if (trace) { log.trace(this + " added message(s) to the buffer"); }
          
-         messageAdded();
+         messageAdded(); 
          
-         if (buffer.size() >= maxBufferSize)
-         {
-            if (trace) { log.trace(this + " is full"); }
-            
-            //We are full. Send message to server to tell it to stop sending
-            
-            startSendingMessageSent = false;
-            
-            sendChangeRateMessage(0);
-         }
+         checkBufferSize();         
       }
    }
          
@@ -480,21 +471,59 @@ public class MessageCallbackHandler
       } 
       
       //This needs to be outside the lock
-      if (!startSendingMessageSent && buffer.size() <= minBufferSize)
-      {
-         //Tell the server we need more messages - but we don't want to keep sending the message
-         //if we've already sent it - hence the check
-         startSendingMessageSent = true;
-            
-         if (trace) { log.trace("telling server to start resume sending messages, buffer size is " + buffer.size()); }
-         
-         sendChangeRateMessage(1);                    
-      }
+      checkBufferSize();
       
       if (trace) { log.trace(this + " receive() returning " + m); }
       
       return m;
-   }    
+   } 
+   
+   //We can optimise so it just uses one int to store both flags
+   
+   private volatile boolean sentStop;
+   
+   private volatile boolean sentStart = true;
+   
+   private void checkBufferSize()
+   {
+      int size = buffer.size();
+      
+      if (!sentStart && size <= minBufferSize)
+      {
+         //We need more messages - we need to tell the server this if we haven't done so already
+         
+         sendChangeRateMessage(1.0f);
+         
+         sentStart = true;
+         
+         sentStop = false;
+      }
+      else if (!sentStop && size >= maxBufferSize)
+      {
+         //Our buffer is full - we need to tell the server to stop sending if we haven't
+         //done so already
+         
+         sendChangeRateMessage(0f);
+         
+         sentStop = true;
+         
+         sentStart = false;
+      }
+   }
+   
+   private void sendChangeRateMessage(float newRate) 
+   {
+      try
+      {
+         // this invocation will be sent asynchronously to the server; it's DelegateSupport.invoke()
+         // job to detect it and turn it into a remoting one way invocation.
+         consumerDelegate.changeRate(newRate);
+      }
+      catch (JMSException e)
+      {
+         log.error("Failed to send changeRate message", e);
+      }
+   }
    
    public MessageListener getMessageListener()
    {
@@ -584,19 +613,7 @@ public class MessageCallbackHandler
       }
    }
    
-   private void sendChangeRateMessage(float newRate) 
-   {
-      try
-      {
-         // this invocation will be sent asynchronously to the server; it's DelegateSupport.invoke()
-         // job to detect it and turn it into a remoting one way invocation.
-         consumerDelegate.changeRate(newRate);
-      }
-      catch (JMSException e)
-      {
-         log.error("Failed to send changeRate message", e);
-      }
-   }
+
    
    private void queueRunner(ListenerRunner runner)
    {
@@ -794,18 +811,8 @@ public class MessageCallbackHandler
                log.error("Failed to deliver message", e);
             } 
          }
-         
-         
-         // Tell the server we need more messages - but we don't want to keep sending the message
-         // if we've already sent it - hence the check
-         if (!startSendingMessageSent && buffer.size() <= minBufferSize)
-         {                    
-            startSendingMessageSent = true;
-            
-            if (trace) { log.trace("Telling server to start resume sending messages, buffer size is " + buffer.size()); }            
-            
-            sendChangeRateMessage(1);
-         } 
+                  
+         checkBufferSize();
          
          if (again)
          {
