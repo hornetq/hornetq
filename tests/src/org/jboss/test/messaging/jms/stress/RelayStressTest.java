@@ -8,6 +8,7 @@ package org.jboss.test.messaging.jms.stress;
 
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
+import javax.jms.DeliveryMode;
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
@@ -213,6 +214,8 @@ public class RelayStressTest extends MessagingTestCase
       Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
       
       MessageProducer prod = sess.createProducer(topic);
+      
+      prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
       
       for (int i = 0; i < numMessages; i++)
       {
