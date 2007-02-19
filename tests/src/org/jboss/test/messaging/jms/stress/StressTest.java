@@ -341,7 +341,7 @@ public class StressTest extends StressTestBase
       Session sessReceive = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
       
       MessageProducer prod = sessSend.createProducer(queue1);
-      prod.setDeliveryMode(DeliveryMode.PERSISTENT);
+      prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
       
       Runner[] runners = new Runner[] { new Sender("prod1", sessSend, prod, 100000),
                                         new Receiver(conn, sessReceive, 100000, queue1) };
