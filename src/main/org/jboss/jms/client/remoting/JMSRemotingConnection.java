@@ -125,15 +125,10 @@ public class JMSRemotingConnection
          if ("bisocket".equals(protocol) || "sslbisocket".equals(protocol))
          {
             metadata.put(Bisocket.IS_CALLBACK_SERVER, "true");
-            // Setting the port prevents the Remoting Client from using PortUtil.findPort(),
-            // which creates ServerSockets.  The actual value of the port shouldn't matter.
-            if (propertyPort == null)
-               metadata.put(Client.CALLBACK_SERVER_PORT, Integer.toString(new GUID().hashCode()));
- 
-            // Setting the port prevents the Remoting Client from using PortUtil.findPort(),
-            // which creates ServerSockets.  The actual value of the port shouldn't matter.
-            // To "guarantee" that each InvokerLocator is unique, a GUID is appended to
-            // the InvokerLocator.
+
+            // Setting the port prevents the Remoting Client from using PortUtil.findPort(), which
+            // creates ServerSockets. The actual value of the port shouldn't matter. To "guarantee"
+            // that each InvokerLocator is unique, a GUID is appended to the InvokerLocator.
             if (propertyPort == null)
             {
                String guid = new GUID().toString();
