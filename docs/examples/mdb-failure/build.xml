@@ -105,7 +105,7 @@
 
    <target name="run" depends="deploy">
       <antcall target="send"/>
-      <antcall target="sleep"><param name="sleep.interval" value="15"/></antcall>
+      <antcall target="sleep"><param name="sleep.interval" value="25"/></antcall>
       <antcall target="undeploy">
          <param name="undeploy.quiet" value="false"/>
          <param name="undeploy.failonerror" value="true"/>
