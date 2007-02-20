@@ -205,7 +205,7 @@ public class CallbackServerTimeoutTest extends MessagingTestCase
          ServerManagement.start(0, "remoting", null, true, false);
          ServerManagement.stop();
       }
-      
+
       // start a "standard" (messaging-enabled) remoting, we need to strip off the
       // marshaller/unmarshaller, though, since it can only bring trouble to this test ...
       ServiceAttributeOverrides sao = new ServiceAttributeOverrides();
