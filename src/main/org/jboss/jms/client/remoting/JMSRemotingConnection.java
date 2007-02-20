@@ -129,6 +129,17 @@ public class JMSRemotingConnection
             // which creates ServerSockets.  The actual value of the port shouldn't matter.
             if (propertyPort == null)
                metadata.put(Client.CALLBACK_SERVER_PORT, Integer.toString(new GUID().hashCode()));
+ 
+            // Setting the port prevents the Remoting Client from using PortUtil.findPort(),
+            // which creates ServerSockets.  The actual value of the port shouldn't matter.
+            // To "guarantee" that each InvokerLocator is unique, a GUID is appended to
+            // the InvokerLocator.
+            if (propertyPort == null)
+            {
+               String guid = new GUID().toString();
+               metadata.put(Client.CALLBACK_SERVER_PORT, Integer.toString(guid.hashCode()));
+               metadata.put("guid", guid);
+            }
          }
       }
       else
