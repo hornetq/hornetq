@@ -48,6 +48,7 @@ public class CallbackServerTimeoutTest extends MessagingTestCase
    // Attributes -----------------------------------------------------------------------------------
 
    private InvokerLocator serverLocator;
+   private boolean firstTime = true;
 
    // Constructors ---------------------------------------------------------------------------------
 
@@ -197,6 +198,14 @@ public class CallbackServerTimeoutTest extends MessagingTestCase
    {
       super.setUp();
 
+      // This test needs a special server, so make sure no other test left a server running.
+      if (firstTime)
+      {
+         firstTime = false;
+         ServerManagement.start(0, "remoting", null, true, false);
+         ServerManagement.stop();
+      }
+      
       // start a "standard" (messaging-enabled) remoting, we need to strip off the
       // marshaller/unmarshaller, though, since it can only bring trouble to this test ...
       ServiceAttributeOverrides sao = new ServiceAttributeOverrides();
@@ -209,6 +218,7 @@ public class CallbackServerTimeoutTest extends MessagingTestCase
          getAttribute(ServiceContainer.REMOTING_OBJECT_NAME, "InvokerLocator");
 
       serverLocator = new InvokerLocator(s);
+      log.info("InvokerLocator: " + serverLocator);
 
       log.debug("setup done");
    }
