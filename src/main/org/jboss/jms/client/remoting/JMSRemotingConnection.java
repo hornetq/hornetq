@@ -134,20 +134,25 @@ public class JMSRemotingConnection
                String guid = new GUID().toString();
                int hash = guid.hashCode();
                
-               // Make sure the hash code is > 0.  See JBMESSAGING-863.
-               if (hash < 0)
+               // Make sure the hash code is > 0.
+               // See http://jira.jboss.org/jira/browse/JBMESSAGING-863.
+               while(hash <= 0)
                {
-                  if (hash == Integer.MIN_VALUE)
-                     hash = Integer.MAX_VALUE;
-                  else
-                     hash = -hash;
-               }
-               else
-               {
-                  while (hash == 0)
+                  if (hash == 0)
                   {
                      guid = new GUID().toString();
                      hash = guid.hashCode();
+                  }
+                  if (hash < 0)
+                  {
+                     if (hash == Integer.MIN_VALUE)
+                     {
+                        hash = Integer.MAX_VALUE;
+                     }
+                     else
+                     {
+                        hash = -hash;
+                     }
                   }
                }
                
