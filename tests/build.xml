@@ -208,8 +208,6 @@
       <path refid="postgres.jdbc.driver.classpath"/>
       <path refid="apache.tomcat.classpath"/>
       <path refid="apache.logging.classpath"/>
-      <path refid="jboss.test14.classpath"/>
-      <path refid="jboss.jbossretro.rt.classpath"/>
    </path>
 
    <path id="stress.test.execution.classpath">
@@ -681,7 +679,7 @@
          </classpath>
 
          <sysproperty key="jboss-junit-configuration" value="StressRemote-${test.remoting}"/>
-         <formatter classname="org.jboss.ant.taskdefs.XMLJUnitMultipleResultFormatte"
+         <formatter classname="org.jboss.ant.taskdefs.XMLJUnitMultipleResultFormatter"
                     usefile="${junit.formatter.usefile}" extension="-StressRemote-${test.remoting}.xml"/>
 
          <batchtest fork="${junit.batchtest.fork}"
