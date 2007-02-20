@@ -132,7 +132,26 @@ public class JMSRemotingConnection
             if (propertyPort == null)
             {
                String guid = new GUID().toString();
-               metadata.put(Client.CALLBACK_SERVER_PORT, Integer.toString(guid.hashCode()));
+               int hash = guid.hashCode();
+               
+               // Make sure the hash code is > 0.  See JBMESSAGING-863.
+               if (hash < 0)
+               {
+                  if (hash == Integer.MIN_VALUE)
+                     hash = Integer.MAX_VALUE;
+                  else
+                     hash = -hash;
+               }
+               else
+               {
+                  while (hash == 0)
+                  {
+                     guid = new GUID().toString();
+                     hash = guid.hashCode();
+                  }
+               }
+               
+               metadata.put(Client.CALLBACK_SERVER_PORT, Integer.toString(hash));
                metadata.put("guid", guid);
             }
          }
