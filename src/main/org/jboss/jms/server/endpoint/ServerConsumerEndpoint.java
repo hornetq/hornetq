@@ -374,11 +374,10 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
          // the newRate value so this is basically a placeholder for the future so we don't have to
          // change the wire format when we support it.
          
-         // No need to synchronize - clientAccepting is volatile
+         // No need to synchronize - clientAccepting is volatile.
          
          // We need to deal with the fact that one way invocations may arrive in a different order
-         // to that which they arrived in
-         // So we just toggle on / off
+         // to that which they arrived in. So we just toggle on / off.
          
          clientAccepting = !clientAccepting;
          

@@ -23,11 +23,8 @@ import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
 
 /**
- * 
- * A RelayTest
- * 
- * Send messages to a topic with selector1, consumer them with multiple consumers
- * and relay them back to the topic with a different selector, then consume that with more consumers
+ * Send messages to a topic with selector1, consumer them with multiple consumers and relay them
+ * back to the topic with a different selector, then consume that with more consumers.
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
