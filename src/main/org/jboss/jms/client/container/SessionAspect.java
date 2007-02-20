@@ -279,13 +279,14 @@ public class SessionAspect
                                  
             if (trace) { log.trace(this + " auto acknowledging delivery " + delivery); }
               
-            // We clear the state before so if the acknowledgment fails then we don't get a knock on
-            // exception on the next ack since we haven't cleared the state. See
-            // http://jira.jboss.org/jira/browse/JBMESSAGING-852
-            
-            state.setAutoAckInfo(null);
-            
-            ackDelivery(sd, delivery);            
+            try
+            {
+               ackDelivery(sd, delivery);
+            }
+            finally
+            {
+               state.setAutoAckInfo(null);
+            }
          }
          else
          {
