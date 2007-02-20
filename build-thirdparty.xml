@@ -94,7 +94,7 @@
       <componentref name="jboss/serialization" version="1.0.3.GA"/>
       <componentref name="jboss/remoting" version="2.2.0.Alpha7"/>
       <componentref name="jboss/jbossts" version="4.2.2.GA"/>
-      <componentref name="jboss/test14" version="snapshot"/>
+      <componentref name="jboss/test14" version="1.0.0.GA"/>
       <componentref name="jboss/jbossretro-rt" version="1.0.4.GA"/>
       <componentref name="jboss/backport-concurrent" version="2.1.0.GA"/>
 
