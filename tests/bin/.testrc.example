@@ -12,7 +12,7 @@ DEBUG_OPTS=$DEBUG_OPTS_SHMEM
 # The database to run tests with.
 # (the database configuration definition MUST exist in tests/etc/container.xml)
 #
-TEST_DATABASE=hsqldb
+TEST_DATABASE=mysql
 
 #
 # The transport to run tests with. Valid values: "socket", "http". The value specified here
@@ -32,7 +32,7 @@ TEST_SPAWN_VERBOSE=false
 # It is also possible to configure a test to run in clustered mode by using the "-clustered"
 # switch.
 #
-CLUSTERED=true
+CLUSTERED=false
 
 
 
