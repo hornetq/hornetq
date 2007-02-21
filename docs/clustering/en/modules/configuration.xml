@@ -62,7 +62,7 @@
       </para>
 
       <para>
-         Please note that the elements of clustering configuration are likely to change before the 1.2 final release.
+         Please note that some elements of clustering configuration are likely to change before the 1.2 final release.
          In particular we will try to add the ability for JBoss Messaging to use a pre-configured JGroups
          multiplex channel when used inside JBoss Application Server, but this is subject to availability of a
          AS clustering service supporting a multiplexed JGroups channel; such a service is currently being

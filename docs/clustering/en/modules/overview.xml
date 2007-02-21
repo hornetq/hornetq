@@ -105,7 +105,7 @@
       </para>
 
       <para>
-      Another feature (not available in Beta 2) that will enable very fast, very scalable reliable
+      Another feature (not available in CR1) that will enable very fast, very scalable reliable
       messaging without using databases is in memory replication of reliable messages.
       </para>
 
