@@ -7,19 +7,16 @@
    <interceptor class="org.jboss.jms.client.container.ExceptionInterceptor" scope="PER_VM"/>
    <interceptor class="org.jboss.jms.client.container.ClientLogInterceptor" scope="PER_VM"/>
    <interceptor class="org.jboss.jms.client.container.ClosedInterceptor" scope="PER_INSTANCE"/>                  	
-   <interceptor class="org.jboss.jms.client.container.ConcurrencyInterceptor" scope="PER_INSTANCE"/>
    <interceptor class="org.jboss.jms.client.container.FailoverValveInterceptor" scope="PER_INSTANCE"/>
 
    <aspect class="org.jboss.jms.client.container.StateCreationAspect" scope="PER_VM"/>
    <aspect class="org.jboss.jms.client.container.ConsumerAspect" scope="PER_VM"/>
-   <aspect class="org.jboss.jms.client.container.ProducerAspect" scope="PER_INSTANCE"/>
+   <aspect class="org.jboss.jms.client.container.ProducerAspect" scope="PER_VM"/>
    <aspect class="org.jboss.jms.client.container.SessionAspect" scope="PER_VM"/>
-   <aspect class="org.jboss.jms.client.container.AsfAspect" scope="PER_INSTANCE"/>
    <aspect class="org.jboss.jms.client.container.BrowserAspect" scope="PER_INSTANCE"/>
    <aspect class="org.jboss.jms.client.container.ConnectionAspect" scope="PER_INSTANCE"/>
    <aspect class="org.jboss.jms.client.container.ClusteringAspect" scope="PER_INSTANCE"/>
-   <aspect class="org.jboss.jms.client.container.FactoryAspect" scope="PER_INSTANCE"/>
-
+ 
    <!--
        Clustered ConnectionFactory Stack
    -->
@@ -61,7 +58,7 @@
        <advice name="handleStop" aspect="org.jboss.jms.client.container.ConnectionAspect"/>
     </bind>
    <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientConnectionDelegate->createConnectionConsumer(..))">
-      <advice name="handleCreateConnectionConsumer" aspect="org.jboss.jms.client.container.AsfAspect"/>
+      <advice name="handleCreateConnectionConsumer" aspect="org.jboss.jms.client.container.SessionAspect"/>
    </bind>
    <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientConnectionDelegate->getClientID())">
       <advice name="handleGetClientID" aspect="org.jboss.jms.client.container.ConnectionAspect"/>
@@ -105,34 +102,34 @@
       <interceptor-ref name="org.jboss.jms.client.container.ClosedInterceptor"/>       
    </bind>
    <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientSessionDelegate->createMessage())">
-      <advice name="handleCreateMessage" aspect="org.jboss.jms.client.container.FactoryAspect"/>
+      <advice name="handleCreateMessage" aspect="org.jboss.jms.client.container.SessionAspect"/>
    </bind>
    <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientSessionDelegate->createBytesMessage())">
-      <advice name="handleCreateBytesMessage" aspect="org.jboss.jms.client.container.FactoryAspect"/>
+      <advice name="handleCreateBytesMessage" aspect="org.jboss.jms.client.container.SessionAspect"/>
    </bind>
    <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientSessionDelegate->createMapMessage())">
-      <advice name="handleCreateMapMessage" aspect="org.jboss.jms.client.container.FactoryAspect"/>
+      <advice name="handleCreateMapMessage" aspect="org.jboss.jms.client.container.SessionAspect"/>
    </bind>
    <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientSessionDelegate->createObjectMessage(..))">
-      <advice name="handleCreateObjectMessage" aspect="org.jboss.jms.client.container.FactoryAspect"/>
+      <advice name="handleCreateObjectMessage" aspect="org.jboss.jms.client.container.SessionAspect"/>
    </bind>
    <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientSessionDelegate->createStreamMessage())">
-      <advice name="handleCreateStreamMessage" aspect="org.jboss.jms.client.container.FactoryAspect"/>
+      <advice name="handleCreateStreamMessage" aspect="org.jboss.jms.client.container.SessionAspect"/>
    </bind>
    <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientSessionDelegate->createTextMessage(..))">
-      <advice name="handleCreateTextMessage" aspect="org.jboss.jms.client.container.FactoryAspect"/>
+      <advice name="handleCreateTextMessage" aspect="org.jboss.jms.client.container.SessionAspect"/>
    </bind>
    <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientSessionDelegate->setMessageListener(..))">
-      <advice name="handleSetMessageListener" aspect="org.jboss.jms.client.container.AsfAspect"/>
+      <advice name="handleSetMessageListener" aspect="org.jboss.jms.client.container.SessionAspect"/>
    </bind>
    <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientSessionDelegate->getMessageListener())">
-      <advice name="handleGetMessageListener" aspect="org.jboss.jms.client.container.AsfAspect"/>
+      <advice name="handleGetMessageListener" aspect="org.jboss.jms.client.container.SessionAspect"/>
    </bind>
    <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientSessionDelegate->addAsfMessage(..))">
-      <advice name="handleAddAsfMessage" aspect="org.jboss.jms.client.container.AsfAspect"/>
+      <advice name="handleAddAsfMessage" aspect="org.jboss.jms.client.container.SessionAspect"/>
    </bind>   
    <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientSessionDelegate->run())">
-      <advice name="handleRun" aspect="org.jboss.jms.client.container.AsfAspect"/>
+      <advice name="handleRun" aspect="org.jboss.jms.client.container.SessionAspect"/>
    </bind>      
    <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientSessionDelegate->getAcknowledgeMode())">
       <advice name="handleGetAcknowledgeMode" aspect="org.jboss.jms.client.container.SessionAspect"/>

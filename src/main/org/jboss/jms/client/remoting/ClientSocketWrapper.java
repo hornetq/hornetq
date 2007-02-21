@@ -124,7 +124,12 @@ public class ClientSocketWrapper extends SocketWrapper implements OpenConnection
    protected DataInputStream createInputStream(Socket socket)
          throws IOException
    {
-      BufferedInputStream bin = new BufferedInputStream(socket.getInputStream());
+      //We make sure the buffer is big (default is 8192)- remember we flush after every request
+      //or response so this is ok.
+      //We want to avoid flushes at other times
+      //TODO this could be made configurable
+      
+      BufferedInputStream bin = new BufferedInputStream(socket.getInputStream(), 65536);
       
       return new DataInputStream(bin);
    }
@@ -132,7 +137,12 @@ public class ClientSocketWrapper extends SocketWrapper implements OpenConnection
    protected DataOutputStream createOutputStream(Socket socket)
          throws IOException
    {
-      BufferedOutputStream bout = new BufferedOutputStream(socket.getOutputStream());
+      //We make sure the buffer is big (default is 8192)- remember we flush after every request
+      //or response so this is ok.
+      //We want to avoid flushes at other times
+      //TODO this could be made configurable
+      
+      BufferedOutputStream bout = new BufferedOutputStream(socket.getOutputStream(), 65536);
       
       return new DataOutputStream(bout);
    }

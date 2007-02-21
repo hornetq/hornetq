@@ -35,8 +35,6 @@ import org.jboss.messaging.core.plugin.contract.PersistenceManager;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager.InitialLoadInfo;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager.ReferenceInfo;
 
-import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
-
 /**
  * A PagingChannel
  * 
@@ -62,7 +60,7 @@ public abstract class PagingChannelSupport extends ChannelSupport
    /**
     * The maximum number of references this channel will hold before going into paging mode
     */
-   protected int fullSize = 75000;
+   protected int fullSize = 200000;
 
    /**
     * The maximum number of references to load from storage in one go when unpaging
@@ -104,9 +102,9 @@ public abstract class PagingChannelSupport extends ChannelSupport
     */
    public PagingChannelSupport(long channelID, MessageStore ms, PersistenceManager pm,
                                boolean acceptReliableMessages, boolean recoverable,                        
-                               QueuedExecutor executor, int maxSize)
+                               int maxSize)
    {
-      super(channelID, ms, pm, acceptReliableMessages, recoverable, executor, maxSize);
+      super(channelID, ms, pm, acceptReliableMessages, recoverable, maxSize);
       
       downCache = new ArrayList(downCacheSize);    
       
@@ -127,10 +125,10 @@ public abstract class PagingChannelSupport extends ChannelSupport
     */
    public PagingChannelSupport(long channelID, MessageStore ms, PersistenceManager pm,
                                boolean acceptReliableMessages, boolean recoverable,                        
-                               QueuedExecutor executor, int maxSize,
+                               int maxSize,
                                int fullSize, int pageSize, int downCacheSize)
    {
-      super(channelID, ms, pm, acceptReliableMessages, recoverable, executor, maxSize);
+      super(channelID, ms, pm, acceptReliableMessages, recoverable, maxSize);
       
       if (pageSize >= fullSize)
       {

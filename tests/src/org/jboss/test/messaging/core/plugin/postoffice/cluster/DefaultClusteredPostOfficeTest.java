@@ -38,8 +38,6 @@ import org.jboss.test.messaging.core.SimpleReceiver;
 import org.jboss.test.messaging.core.plugin.postoffice.DefaultPostOfficeTest;
 import org.jboss.test.messaging.util.CoreMessageFactory;
 
-import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
-
 /**
  * 
  * A DefaultClusteredPostOfficeTest
@@ -57,7 +55,7 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
    // Static ---------------------------------------------------------------------------------------
    
    // Attributes -----------------------------------------------------------------------------------
-   
+    
    // Constructors ---------------------------------------------------------------------------------
 
    public DefaultClusteredPostOfficeTest(String name)
@@ -76,12 +74,12 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
       try
       {         
          log.trace("Starting office 1");
-         office1 = createClusteredPostOffice(1, "testgroup", sc, ms, pm, tr, pool);
+         office1 = createClusteredPostOffice(1, "testgroup", sc, ms, pm, tr);
 
          log.trace("starting office 2");
-         office2 = createClusteredPostOffice(2, "testgroup", sc, ms, pm, tr, pool);
+         office2 = createClusteredPostOffice(2, "testgroup", sc, ms, pm, tr);
                   
-         office3 = createClusteredPostOffice(3, "testgroup", sc, ms, pm, tr, pool);
+         office3 = createClusteredPostOffice(3, "testgroup", sc, ms, pm, tr);
          
          Thread.sleep(2000);
          
@@ -129,7 +127,7 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
       {         
          // Start one office
          
-         office1 = createClusteredPostOffice(1, "testgroup", sc, ms, pm, tr, pool);
+         office1 = createClusteredPostOffice(1, "testgroup", sc, ms, pm, tr);
          
          log.info("Created office1");
          
@@ -137,7 +135,7 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
          
          LocalClusteredQueue queue1 =
             new LocalClusteredQueue(office1, 1, "sub1", channelIDManager.getID(), ms, pm,
-                                    true, false, (QueuedExecutor)pool.get(), -1, null, tr);
+                                    true, false, -1, null, tr);
 
          Binding binding1 =
             office1.bindClusteredQueue(new SimpleCondition("topic1"), queue1);
@@ -146,7 +144,7 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
          
          LocalClusteredQueue queue2 =
             new LocalClusteredQueue(office1, 1, "sub2", channelIDManager.getID(), ms, pm,
-                                    true, false, (QueuedExecutor)pool.get(), -1, null, tr);
+                                    true, false, -1, null, tr);
 
          Binding binding2 =
             office1.bindClusteredQueue(new SimpleCondition("topic1"), queue2);
@@ -155,7 +153,7 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
          
          // Start another office - make sure it picks up the bindings from the first node
          
-         office2 = createClusteredPostOffice(2, "testgroup", sc, ms, pm, tr, pool);
+         office2 = createClusteredPostOffice(2, "testgroup", sc, ms, pm, tr);
          
          log.info("Created office 2");
          
@@ -171,7 +169,7 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
          
          LocalClusteredQueue queue3 =
             new LocalClusteredQueue(office2, 2, "sub3", channelIDManager.getID(), ms, pm,
-                                    true, false, (QueuedExecutor)pool.get(), -1, null, tr);
+                                    true, false, -1, null, tr);
 
          Binding binding3 =
             office2.bindClusteredQueue(new SimpleCondition("topic1"), queue3);
@@ -200,7 +198,7 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
          
          LocalClusteredQueue queue4 =
             new LocalClusteredQueue(office2, 2, "sub4", channelIDManager.getID(), ms, pm,
-                                    true, false, (QueuedExecutor)pool.get(), -1, null, tr);
+                                    true, false, -1, null, tr);
 
          Binding binding4 =
             office2.bindClusteredQueue(new SimpleCondition("topic1"), queue4);
@@ -251,7 +249,7 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
 
          // Add a third office
                   
-         office3 = createClusteredPostOffice(3, "testgroup", sc, ms, pm, tr, pool);
+         office3 = createClusteredPostOffice(3, "testgroup", sc, ms, pm, tr);
          
          // Maks sure it picks up the bindings
          
@@ -267,7 +265,7 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
                   
          LocalClusteredQueue queue5 =
             new LocalClusteredQueue(office3, 3, "sub5", channelIDManager.getID(), ms, pm,
-                                    true, false, (QueuedExecutor)pool.get(), -1, null, tr);
+                                    true, false, -1, null, tr);
          
          Binding binding5 =
             office3.bindClusteredQueue(new SimpleCondition("topic1"), queue5);
@@ -305,14 +303,14 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
          
          LocalClusteredQueue queue6 =
             new LocalClusteredQueue(office1, 1, "sub6", channelIDManager.getID(), ms, pm,
-                                    true, true, (QueuedExecutor)pool.get(), -1, null, tr);
+                                    true, true, -1, null, tr);
          
          Binding binding6 =
             office1.bindClusteredQueue(new SimpleCondition("topic1"), queue6);
          
          LocalClusteredQueue queue7 =
             new LocalClusteredQueue(office1, 1, "sub7", channelIDManager.getID(), ms, pm,
-                                    true, false, (QueuedExecutor)pool.get(), -1, null, tr);
+                                    true, false, -1, null, tr);
          
          Binding binding7 =
             office1.bindClusteredQueue(new SimpleCondition("topic1"), queue7);
@@ -395,9 +393,9 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
          assertEquivalent(binding6, (Binding)iter.next());
          
          // Restart office 1 and office 2
-         office1 = createClusteredPostOffice(1, "testgroup", sc, ms, pm, tr, pool);
+         office1 = createClusteredPostOffice(1, "testgroup", sc, ms, pm, tr);
          
-         office2 = createClusteredPostOffice(2, "testgroup", sc, ms, pm, tr, pool);
+         office2 = createClusteredPostOffice(2, "testgroup", sc, ms, pm, tr);
          
          bindings = office1.listAllBindingsForCondition(new SimpleCondition("topic1"));
          assertNotNull(bindings);
@@ -430,9 +428,9 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
          office3.stop();
          
          // Start them all
-         office1 = createClusteredPostOffice(1, "testgroup", sc, ms, pm, tr, pool);
-         office2 = createClusteredPostOffice(2, "testgroup", sc, ms, pm, tr, pool);
-         office3 = createClusteredPostOffice(3, "testgroup", sc, ms, pm, tr, pool);
+         office1 = createClusteredPostOffice(1, "testgroup", sc, ms, pm, tr);
+         office2 = createClusteredPostOffice(2, "testgroup", sc, ms, pm, tr);
+         office3 = createClusteredPostOffice(3, "testgroup", sc, ms, pm, tr);
          
          // Only the durable queue should survive
          
@@ -593,25 +591,25 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
           
       try
       {   
-         office1 = createClusteredPostOffice(1, "testgroup", sc, ms, pm, tr, pool);
+         office1 = createClusteredPostOffice(1, "testgroup", sc, ms, pm, tr);
          
-         office2 = createClusteredPostOffice(2, "testgroup", sc, ms, pm, tr, pool);
+         office2 = createClusteredPostOffice(2, "testgroup", sc, ms, pm, tr);
          
          LocalClusteredQueue queue1 =
             new LocalClusteredQueue(office1, 1, "queue1", channelIDManager.getID(), ms, pm,
-                                    true, false, (QueuedExecutor)pool.get(), -1, null, tr);
+                                    true, false, -1, null, tr);
          
          office1.bindClusteredQueue(new SimpleCondition("queue1"), queue1);
 
          LocalClusteredQueue queue2 =
             new LocalClusteredQueue(office2, 2, "queue1", channelIDManager.getID(), ms, pm,
-                                    true, false, (QueuedExecutor)pool.get(), -1, null, tr);
+                                    true, false, -1, null, tr);
 
          office2.bindClusteredQueue(new SimpleCondition("queue1"), queue2);
 
          LocalClusteredQueue queue3 =
             new LocalClusteredQueue(office1, 1, "queue1", channelIDManager.getID(), ms, pm,
-                                    true, false, (QueuedExecutor)pool.get(), -1, null, tr);
+                                    true, false, -1, null, tr);
          
          try
          {
@@ -625,7 +623,7 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
 
          LocalClusteredQueue queue4 =
             new LocalClusteredQueue(office2, 2, "queue1", channelIDManager.getID(), ms, pm,
-                                    true, false, (QueuedExecutor)pool.get(), -1, null, tr);
+                                    true, false, -1, null, tr);
          
          try
          {
@@ -643,13 +641,13 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
 
          LocalClusteredQueue queue5 =
             new LocalClusteredQueue(office1, 1, "queue1", channelIDManager.getID(), ms, pm,
-                                    true, false, (QueuedExecutor)pool.get(), -1, null, tr);
+                                    true, false, -1, null, tr);
          
          office1.bindClusteredQueue(new SimpleCondition("queue1"), queue5);
          
          PagingFilteredQueue queue6 =
             new PagingFilteredQueue("queue1", channelIDManager.getID(), ms, pm,
-                                    true, false, (QueuedExecutor)pool.get(), -1, null);
+                                    true, false, -1, null);
          try
          {
             office1.bindQueue(new SimpleCondition("queue1"), queue6);
@@ -665,19 +663,19 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
          // It should be possible to bind queues locally into a clustered post office
          LocalClusteredQueue queue7 =
             new LocalClusteredQueue(office1, 1, "queue1", channelIDManager.getID(), ms, pm,
-                                    true, false, (QueuedExecutor)pool.get(), -1, null, tr);
+                                    true, false, -1, null, tr);
 
          office1.bindQueue(new SimpleCondition("queue1"), queue7);
          
          LocalClusteredQueue queue8 =
             new LocalClusteredQueue(office2, 2, "queue1", channelIDManager.getID(), ms, pm,
-                                    true, false, (QueuedExecutor)pool.get(), -1, null, tr);
+                                    true, false, -1, null, tr);
 
          office2.bindQueue(new SimpleCondition("queue1"), queue8);
          
          LocalClusteredQueue queue9 =
             new LocalClusteredQueue(office2, 2, "queue1", channelIDManager.getID(), ms, pm,
-                                    true, false, (QueuedExecutor)pool.get(), -1, null, tr);
+                                    true, false, -1, null, tr);
 
          try
          {
@@ -717,27 +715,27 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
           
       try
       {   
-         office1 = createClusteredPostOffice(1, "testgroup", sc, ms, pm, tr, pool);
-         office2 = createClusteredPostOffice(2, "testgroup", sc, ms, pm, tr, pool);
+         office1 = createClusteredPostOffice(1, "testgroup", sc, ms, pm, tr);
+         office2 = createClusteredPostOffice(2, "testgroup", sc, ms, pm, tr);
          
          SimpleFilter filter1 = new SimpleFilter(2);
          SimpleFilter filter2 = new SimpleFilter(3);
       
          LocalClusteredQueue queue1 =
             new LocalClusteredQueue(office1, 1, "queue1", channelIDManager.getID(), ms, pm,
-                                    true, recoverable, (QueuedExecutor)pool.get(), -1, filter1, tr);
+                                    true, recoverable, -1, filter1, tr);
 
          office1.bindClusteredQueue(new SimpleCondition("topic1"), queue1);
          
          LocalClusteredQueue queue2 =
             new LocalClusteredQueue(office2, 2, "queue2", channelIDManager.getID(), ms, pm,
-                                    true, recoverable, (QueuedExecutor)pool.get(), -1, filter2, tr);
+                                    true, recoverable, -1, filter2, tr);
 
          office2.bindClusteredQueue(new SimpleCondition("topic1"), queue2);
          
          LocalClusteredQueue queue3 =
             new LocalClusteredQueue(office2, 2, "queue3", channelIDManager.getID(), ms, pm, true,
-                                    recoverable, (QueuedExecutor)pool.get(), -1, null, tr);
+                                    recoverable, -1, null, tr);
 
          office2.bindClusteredQueue(new SimpleCondition("topic1"), queue3);
          
@@ -763,6 +761,7 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
          MessageReference ref2 = ms.reference(msg2);         
          routed = office1.route(ref2, new SimpleCondition("topic1"), null);      
          assertTrue(routed);
+         
          Message msg3 = CoreMessageFactory.createCoreMessage(3);      
          MessageReference ref3 = ms.reference(msg3);         
          routed = office1.route(ref3, new SimpleCondition("topic1"), null);      
@@ -835,60 +834,60 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
           
       try
       {   
-         office1 = createClusteredPostOffice(1, "testgroup", sc, ms, pm, tr, pool);
-         office2 = createClusteredPostOffice(2, "testgroup", sc, ms, pm, tr, pool);
+         office1 = createClusteredPostOffice(1, "testgroup", sc, ms, pm, tr);
+         office2 = createClusteredPostOffice(2, "testgroup", sc, ms, pm, tr);
       
          //Two topics with a mixture of durable and non durable subscriptions
          
          LocalClusteredQueue[] queues = new LocalClusteredQueue[16];
          Binding[] bindings = new Binding[16];
          
-         queues[0] = new LocalClusteredQueue(office1, 1, "sub1", channelIDManager.getID(), ms, pm, true, false, (QueuedExecutor)pool.get(), -1, null, tr);
+         queues[0] = new LocalClusteredQueue(office1, 1, "sub1", channelIDManager.getID(), ms, pm, true, false, -1, null, tr);
          bindings[0] = office1.bindClusteredQueue(new SimpleCondition("topic1"), queues[0]);
          
-         queues[1] = new LocalClusteredQueue(office1, 1, "sub2", channelIDManager.getID(), ms, pm, true, false, (QueuedExecutor)pool.get(), -1, null, tr);
+         queues[1] = new LocalClusteredQueue(office1, 1, "sub2", channelIDManager.getID(), ms, pm, true, false, -1, null, tr);
          bindings[1] = office1.bindClusteredQueue(new SimpleCondition("topic1"), queues[1]);
          
-         queues[2] = new LocalClusteredQueue(office2, 2, "sub3", channelIDManager.getID(), ms, pm, true, false, (QueuedExecutor)pool.get(), -1, null, tr);
+         queues[2] = new LocalClusteredQueue(office2, 2, "sub3", channelIDManager.getID(), ms, pm, true, false, -1, null, tr);
          bindings[2] = office2.bindClusteredQueue(new SimpleCondition("topic1"), queues[2]);
          
-         queues[3] = new LocalClusteredQueue(office2, 2, "sub4", channelIDManager.getID(), ms, pm, true, false, (QueuedExecutor)pool.get(), -1, null, tr);
+         queues[3] = new LocalClusteredQueue(office2, 2, "sub4", channelIDManager.getID(), ms, pm, true, false, -1, null, tr);
          bindings[3] = office2.bindClusteredQueue(new SimpleCondition("topic1"), queues[3]);
          
-         queues[4] = new LocalClusteredQueue(office2, 2, "sub5", channelIDManager.getID(), ms, pm, true, true, (QueuedExecutor)pool.get(), -1, null, tr);
+         queues[4] = new LocalClusteredQueue(office2, 2, "sub5", channelIDManager.getID(), ms, pm, true, true, -1, null, tr);
          bindings[4] = office2.bindClusteredQueue(new SimpleCondition("topic1"), queues[4]);
          
-         queues[5] = new LocalClusteredQueue(office1, 1, "sub6", channelIDManager.getID(), ms, pm, true, false, (QueuedExecutor)pool.get(), -1, null, tr);
+         queues[5] = new LocalClusteredQueue(office1, 1, "sub6", channelIDManager.getID(), ms, pm, true, false, -1, null, tr);
          bindings[5] = office1.bindClusteredQueue(new SimpleCondition("topic1"), queues[5]);
          
-         queues[6] = new LocalClusteredQueue(office1, 1, "sub7", channelIDManager.getID(), ms, pm, true, true, (QueuedExecutor)pool.get(), -1, null, tr);
+         queues[6] = new LocalClusteredQueue(office1, 1, "sub7", channelIDManager.getID(), ms, pm, true, true, -1, null, tr);
          bindings[6] = office1.bindClusteredQueue(new SimpleCondition("topic1"), queues[6]);
          
-         queues[7] = new LocalClusteredQueue(office1, 1, "sub8", channelIDManager.getID(), ms, pm, true, true, (QueuedExecutor)pool.get(), -1, null, tr);
+         queues[7] = new LocalClusteredQueue(office1, 1, "sub8", channelIDManager.getID(), ms, pm, true, true, -1, null, tr);
          bindings[7] = office1.bindClusteredQueue(new SimpleCondition("topic1"), queues[7]);
          
-         queues[8] = new LocalClusteredQueue(office1, 1, "sub9", channelIDManager.getID(), ms, pm, true, false, (QueuedExecutor)pool.get(), -1, null, tr);
+         queues[8] = new LocalClusteredQueue(office1, 1, "sub9", channelIDManager.getID(), ms, pm, true, false, -1, null, tr);
          bindings[8] = office1.bindClusteredQueue(new SimpleCondition("topic2"), queues[8]);
          
-         queues[9] = new LocalClusteredQueue(office1, 1, "sub10", channelIDManager.getID(), ms, pm, true, false, (QueuedExecutor)pool.get(), -1, null, tr);
+         queues[9] = new LocalClusteredQueue(office1, 1, "sub10", channelIDManager.getID(), ms, pm, true, false, -1, null, tr);
          bindings[9] = office1.bindClusteredQueue(new SimpleCondition("topic2"), queues[9]);
          
-         queues[10] = new LocalClusteredQueue(office2, 2, "sub11", channelIDManager.getID(), ms, pm, true, false, (QueuedExecutor)pool.get(), -1, null, tr);
+         queues[10] = new LocalClusteredQueue(office2, 2, "sub11", channelIDManager.getID(), ms, pm, true, false, -1, null, tr);
          bindings[10] = office2.bindClusteredQueue(new SimpleCondition("topic2"), queues[10]);
          
-         queues[11] = new LocalClusteredQueue(office2, 2, "sub12", channelIDManager.getID(), ms, pm, true, false, (QueuedExecutor)pool.get(), -1, null, tr);
+         queues[11] = new LocalClusteredQueue(office2, 2, "sub12", channelIDManager.getID(), ms, pm, true, false, -1, null, tr);
          bindings[11] = office2.bindClusteredQueue(new SimpleCondition("topic2"), queues[11]);
          
-         queues[12] = new LocalClusteredQueue(office2, 2, "sub13", channelIDManager.getID(), ms, pm, true, true, (QueuedExecutor)pool.get(), -1, null, tr);
+         queues[12] = new LocalClusteredQueue(office2, 2, "sub13", channelIDManager.getID(), ms, pm, true, true, -1, null, tr);
          bindings[12] = office2.bindClusteredQueue(new SimpleCondition("topic2"), queues[12]);
          
-         queues[13] = new LocalClusteredQueue(office1, 1, "sub14", channelIDManager.getID(), ms, pm, true, false, (QueuedExecutor)pool.get(), -1, null, tr);
+         queues[13] = new LocalClusteredQueue(office1, 1, "sub14", channelIDManager.getID(), ms, pm, true, false, -1, null, tr);
          bindings[13] = office1.bindClusteredQueue(new SimpleCondition("topic2"), queues[13]);
          
-         queues[14] = new LocalClusteredQueue(office1, 1, "sub15", channelIDManager.getID(), ms, pm, true, true, (QueuedExecutor)pool.get(), -1, null, tr);
+         queues[14] = new LocalClusteredQueue(office1, 1, "sub15", channelIDManager.getID(), ms, pm, true, true, -1, null, tr);
          bindings[14] = office1.bindClusteredQueue(new SimpleCondition("topic2"), queues[14]);
          
-         queues[15] = new LocalClusteredQueue(office1, 1, "sub16", channelIDManager.getID(), ms, pm, true, true, (QueuedExecutor)pool.get(), -1, null, tr);
+         queues[15] = new LocalClusteredQueue(office1, 1, "sub16", channelIDManager.getID(), ms, pm, true, true, -1, null, tr);
          bindings[15] = office1.bindClusteredQueue(new SimpleCondition("topic2"), queues[15]);
        
          SimpleReceiver[] receivers = new SimpleReceiver[16];
@@ -1024,19 +1023,19 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
         
       try
       {   
-         office1 = createClusteredPostOffice(1, "testgroup", sc, ms, pm, tr, pool);
-         office2 = createClusteredPostOffice(2, "testgroup", sc, ms, pm, tr, pool);
-         office3 = createClusteredPostOffice(3, "testgroup", sc, ms, pm, tr, pool);
-         office4 = createClusteredPostOffice(4, "testgroup", sc, ms, pm, tr, pool);
-         office5 = createClusteredPostOffice(5, "testgroup", sc, ms, pm, tr, pool);
-         office6 = createClusteredPostOffice(6, "testgroup", sc, ms, pm, tr, pool);
+         office1 = createClusteredPostOffice(1, "testgroup", sc, ms, pm, tr);
+         office2 = createClusteredPostOffice(2, "testgroup", sc, ms, pm, tr);
+         office3 = createClusteredPostOffice(3, "testgroup", sc, ms, pm, tr);
+         office4 = createClusteredPostOffice(4, "testgroup", sc, ms, pm, tr);
+         office5 = createClusteredPostOffice(5, "testgroup", sc, ms, pm, tr);
+         office6 = createClusteredPostOffice(6, "testgroup", sc, ms, pm, tr);
     
          // We deploy the queue on nodes 1, 2, 3, 4 and 5
          // We don't deploy on node 6
          
          LocalClusteredQueue queue1 =
             new LocalClusteredQueue(office1, 1, "queue1", channelIDManager.getID(), ms, pm, true,
-                                    recoverable, (QueuedExecutor)pool.get(), -1, null, tr);
+                                    recoverable, -1, null, tr);
 
          office1.bindClusteredQueue(new SimpleCondition("queue1"), queue1);
 
@@ -1045,7 +1044,7 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
          
          LocalClusteredQueue queue2 =
             new LocalClusteredQueue(office2, 2, "queue1", channelIDManager.getID(), ms, pm, true,
-                                    recoverable, (QueuedExecutor)pool.get(), -1, null, tr);
+                                    recoverable, -1, null, tr);
 
          office2.bindClusteredQueue(new SimpleCondition("queue1"), queue2);
 
@@ -1054,7 +1053,7 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
          
          LocalClusteredQueue queue3 =
             new LocalClusteredQueue(office3, 3, "queue1", channelIDManager.getID(), ms, pm, true,
-                                    recoverable, (QueuedExecutor)pool.get(), -1, null, tr);
+                                    recoverable, -1, null, tr);
 
          office3.bindClusteredQueue(new SimpleCondition("queue1"), queue3);
 
@@ -1063,7 +1062,7 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
          
          LocalClusteredQueue queue4 =
             new LocalClusteredQueue(office4, 4, "queue1", channelIDManager.getID(), ms, pm,
-                                    true, recoverable, (QueuedExecutor)pool.get(), -1, null, tr);
+                                    true, recoverable, -1, null, tr);
 
          office4.bindClusteredQueue(new SimpleCondition("queue1"), queue4);
 
@@ -1072,7 +1071,7 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
          
          LocalClusteredQueue queue5 =
             new LocalClusteredQueue(office5, 5, "queue1", channelIDManager.getID(), ms, pm, true,
-                                    recoverable, (QueuedExecutor)pool.get(), -1, null, tr);
+                                    recoverable, -1, null, tr);
 
          office5.bindClusteredQueue(new SimpleCondition("queue1"), queue5);
          SimpleReceiver receiver5 = new SimpleReceiver("blah", SimpleReceiver.ACCEPTING);
@@ -1201,13 +1200,13 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
                     
       try
       {   
-         office1 = createClusteredPostOffice(1, "testgroup", sc, ms, pm, tr, pool);
-         office2 = createClusteredPostOffice(2, "testgroup", sc, ms, pm, tr, pool);
-         office3 = createClusteredPostOffice(3, "testgroup", sc, ms, pm, tr, pool);
+         office1 = createClusteredPostOffice(1, "testgroup", sc, ms, pm, tr);
+         office2 = createClusteredPostOffice(2, "testgroup", sc, ms, pm, tr);
+         office3 = createClusteredPostOffice(3, "testgroup", sc, ms, pm, tr);
 
          LocalClusteredQueue sub1 =
             new LocalClusteredQueue(office1, 1, "sub1", channelIDManager.getID(), ms, pm, true,
-                                    recoverable, (QueuedExecutor)pool.get(), -1, null, tr);
+                                    recoverable, -1, null, tr);
 
          office1.bindQueue(new SimpleCondition("topic"), sub1);
 
@@ -1216,7 +1215,7 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
          
          LocalClusteredQueue sub2 =
             new LocalClusteredQueue(office2, 2, "sub2", channelIDManager.getID(), ms, pm, true,
-                                    recoverable, (QueuedExecutor)pool.get(), -1, null, tr);
+                                    recoverable, -1, null, tr);
 
          office2.bindQueue(new SimpleCondition("topic"), sub2);
          SimpleReceiver receiver2 = new SimpleReceiver("blah", SimpleReceiver.ACCEPTING);
@@ -1224,7 +1223,7 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
          
          LocalClusteredQueue sub3 =
             new LocalClusteredQueue(office3, 3, "sub3", channelIDManager.getID(), ms, pm, true,
-                                    recoverable, (QueuedExecutor)pool.get(), -1, null, tr);
+                                    recoverable, -1, null, tr);
 
          office3.bindQueue(new SimpleCondition("topic"), sub3);
          SimpleReceiver receiver3 = new SimpleReceiver("blah", SimpleReceiver.ACCEPTING);
@@ -1313,13 +1312,13 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
         
       try
       {   
-         office1 = createClusteredPostOffice(1, "testgroup", sc, ms, pm, tr, pool);
-         office2 = createClusteredPostOffice(2, "testgroup", sc, ms, pm, tr, pool);
-         office3 = createClusteredPostOffice(3, "testgroup", sc, ms, pm, tr, pool);
-         office4 = createClusteredPostOffice(4, "testgroup", sc, ms, pm, tr, pool);
-         office5 = createClusteredPostOffice(5, "testgroup", sc, ms, pm, tr, pool);
-         office6 = createClusteredPostOffice(6, "testgroup", sc, ms, pm, tr, pool);
-         office7 = createClusteredPostOffice(7, "testgroup", sc, ms, pm, tr, pool);
+         office1 = createClusteredPostOffice(1, "testgroup", sc, ms, pm, tr);
+         office2 = createClusteredPostOffice(2, "testgroup", sc, ms, pm, tr);
+         office3 = createClusteredPostOffice(3, "testgroup", sc, ms, pm, tr);
+         office4 = createClusteredPostOffice(4, "testgroup", sc, ms, pm, tr);
+         office5 = createClusteredPostOffice(5, "testgroup", sc, ms, pm, tr);
+         office6 = createClusteredPostOffice(6, "testgroup", sc, ms, pm, tr);
+         office7 = createClusteredPostOffice(7, "testgroup", sc, ms, pm, tr);
          
          //Node 2
          //======
@@ -1327,7 +1326,7 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
          // Non durable 1 on node 2
          LocalClusteredQueue nonDurable1 =
             new LocalClusteredQueue(office2, 2, "nondurable1", channelIDManager.getID(), ms, pm,
-                                    true, false, (QueuedExecutor)pool.get(), -1, null, tr);
+                                    true, false, -1, null, tr);
 
          office2.bindClusteredQueue(new SimpleCondition("topic"), nonDurable1);
          SimpleReceiver receiver1 = new SimpleReceiver("blah", SimpleReceiver.ACCEPTING);
@@ -1336,7 +1335,7 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
          // Non durable 2 on node 2
          LocalClusteredQueue nonDurable2 =
             new LocalClusteredQueue(office2, 2, "nondurable2", channelIDManager.getID(), ms, pm,
-                                    true, false, (QueuedExecutor)pool.get(), -1, null, tr);
+                                    true, false, -1, null, tr);
 
          office2.bindClusteredQueue(new SimpleCondition("topic"), nonDurable2);
          SimpleReceiver receiver2 = new SimpleReceiver("blah", SimpleReceiver.ACCEPTING);
@@ -1348,7 +1347,7 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
          // Non shared durable
          LocalClusteredQueue nonSharedDurable1 =
             new LocalClusteredQueue(office3, 3, "nonshareddurable1", channelIDManager.getID(), ms,
-                                    pm, true, true, (QueuedExecutor)pool.get(), -1, null, tr);
+                                    pm, true, true, -1, null, tr);
 
          office3.bindClusteredQueue(new SimpleCondition("topic"), nonSharedDurable1);
          SimpleReceiver receiver3 = new SimpleReceiver("blah", SimpleReceiver.ACCEPTING);
@@ -1357,7 +1356,7 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
          // Non durable
          LocalClusteredQueue nonDurable3 =
             new LocalClusteredQueue(office3, 3, "nondurable3", channelIDManager.getID(), ms, pm,
-                                    true, false, (QueuedExecutor)pool.get(), -1, null, tr);
+                                    true, false, -1, null, tr);
 
          office3.bindClusteredQueue(new SimpleCondition("topic"), nonDurable3);
          SimpleReceiver receiver4 = new SimpleReceiver("blah", SimpleReceiver.ACCEPTING);
@@ -1369,7 +1368,7 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
          // Shared durable
          LocalClusteredQueue sharedDurable1 =
             new LocalClusteredQueue(office4, 4, "shareddurable1", channelIDManager.getID(), ms, pm,
-                                    true, true, (QueuedExecutor)pool.get(), -1, null, tr);
+                                    true, true, -1, null, tr);
 
          office4.bindClusteredQueue(new SimpleCondition("topic"), sharedDurable1);
          SimpleReceiver receiver5 = new SimpleReceiver("blah", SimpleReceiver.ACCEPTING);
@@ -1378,7 +1377,7 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
          // Non shared durable
          LocalClusteredQueue nonSharedDurable2 =
             new LocalClusteredQueue(office4, 4, "nonshareddurable2", channelIDManager.getID(), ms,
-                                    pm, true, true, (QueuedExecutor)pool.get(), -1, null, tr);
+                                    pm, true, true, -1, null, tr);
 
          office4.bindClusteredQueue(new SimpleCondition("topic"), nonSharedDurable2);
          SimpleReceiver receiver6 = new SimpleReceiver("blah", SimpleReceiver.ACCEPTING);
@@ -1387,7 +1386,7 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
          // Non durable
          LocalClusteredQueue nonDurable4 =
             new LocalClusteredQueue(office4, 4, "nondurable4", channelIDManager.getID(), ms, pm,
-                                    true, false, (QueuedExecutor)pool.get(), -1, null, tr);
+                                    true, false, -1, null, tr);
 
          office4.bindClusteredQueue(new SimpleCondition("topic"), nonDurable4);
          SimpleReceiver receiver7 = new SimpleReceiver("blah", SimpleReceiver.ACCEPTING);
@@ -1396,7 +1395,7 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
          // Non durable
          LocalClusteredQueue nonDurable5 =
             new LocalClusteredQueue(office4, 4, "nondurable5", channelIDManager.getID(), ms, pm,
-                                    true, false, (QueuedExecutor)pool.get(), -1, null, tr);
+                                    true, false, -1, null, tr);
          office4.bindClusteredQueue(new SimpleCondition("topic"), nonDurable5);
          SimpleReceiver receiver8 = new SimpleReceiver("blah", SimpleReceiver.ACCEPTING);
          nonDurable5.add(receiver8);
@@ -1404,7 +1403,7 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
          // Non durable
          LocalClusteredQueue nonDurable6 =
             new LocalClusteredQueue(office4, 4, "nondurable6", channelIDManager.getID(), ms, pm,
-                                    true, false, (QueuedExecutor)pool.get(), -1, null, tr);
+                                    true, false, -1, null, tr);
          office4.bindClusteredQueue(new SimpleCondition("topic"), nonDurable6);
          SimpleReceiver receiver9 = new SimpleReceiver("blah", SimpleReceiver.ACCEPTING);
          nonDurable6.add(receiver9);
@@ -1414,7 +1413,7 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
          // Shared durable
          LocalClusteredQueue sharedDurable2 =
             new LocalClusteredQueue(office5, 5, "shareddurable1", channelIDManager.getID(), ms, pm,
-                                    true, true, (QueuedExecutor)pool.get(), -1, null, tr);
+                                    true, true, -1, null, tr);
 
          office5.bindClusteredQueue(new SimpleCondition("topic"), sharedDurable2);
          SimpleReceiver receiver10 = new SimpleReceiver("blah", SimpleReceiver.ACCEPTING);
@@ -1423,7 +1422,7 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
          // Shared durable
          LocalClusteredQueue sharedDurable3 =
             new LocalClusteredQueue(office5, 5, "shareddurable2", channelIDManager.getID(), ms, pm,
-                                    true, true, (QueuedExecutor)pool.get(), -1, null, tr);
+                                    true, true, -1, null, tr);
 
          office5.bindClusteredQueue(new SimpleCondition("topic"), sharedDurable3);
          SimpleReceiver receiver11 = new SimpleReceiver("blah", SimpleReceiver.ACCEPTING);
@@ -1433,7 +1432,7 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
          //=========
          LocalClusteredQueue sharedDurable4 =
             new LocalClusteredQueue(office6, 6, "shareddurable2", channelIDManager.getID(), ms, pm,
-                                    true, true, (QueuedExecutor)pool.get(), -1, null, tr);
+                                    true, true, -1, null, tr);
 
          office6.bindClusteredQueue(new SimpleCondition("topic"), sharedDurable4);
          SimpleReceiver receiver12 = new SimpleReceiver("blah", SimpleReceiver.ACCEPTING);
@@ -1441,7 +1440,7 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
          
          LocalClusteredQueue nonDurable7 =
             new LocalClusteredQueue(office6, 6, "nondurable7", channelIDManager.getID(), ms, pm,
-                                    true, false, (QueuedExecutor)pool.get(), -1, null, tr);
+                                    true, false, -1, null, tr);
          office6.bindClusteredQueue(new SimpleCondition("topic"), nonDurable7);
          SimpleReceiver receiver13 = new SimpleReceiver("blah", SimpleReceiver.ACCEPTING);
          nonDurable7.add(receiver13);
@@ -1450,7 +1449,7 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
          //=======
          LocalClusteredQueue sharedDurable5 =
             new LocalClusteredQueue(office7, 7, "shareddurable2", channelIDManager.getID(), ms, pm,
-                                    true, true, (QueuedExecutor)pool.get(), -1, null, tr);
+                                    true, true, -1, null, tr);
 
          office7.bindClusteredQueue(new SimpleCondition("topic"), sharedDurable5);
          SimpleReceiver receiver14 = new SimpleReceiver("blah", SimpleReceiver.ACCEPTING);
@@ -1777,90 +1776,90 @@ public class DefaultClusteredPostOfficeTest extends DefaultPostOfficeTest
       {   
          //Start two offices
          
-         office1 = createClusteredPostOffice(1, "testgroup", sc, ms, pm, tr, pool);
-         office2 = createClusteredPostOffice(2, "testgroup", sc, ms, pm, tr, pool);
+         office1 = createClusteredPostOffice(1, "testgroup", sc, ms, pm, tr);
+         office2 = createClusteredPostOffice(2, "testgroup", sc, ms, pm, tr);
      
          LocalClusteredQueue[] queues = new LocalClusteredQueue[16];
          Binding[] bindings = new Binding[16];
          
          queues[0] =
             new LocalClusteredQueue(office1, 1, "sub1", channelIDManager.getID(), ms, pm,
-                                    true, false, (QueuedExecutor)pool.get(), -1, null, tr);
+                                    true, false, -1, null, tr);
          bindings[0] = office1.bindClusteredQueue(new SimpleCondition("topic1"), queues[0]);
          
          queues[1] =
             new LocalClusteredQueue(office1, 1, "sub2", channelIDManager.getID(), ms, pm,
-                                    true, false, (QueuedExecutor)pool.get(), -1, null, tr);
+                                    true, false, -1, null, tr);
          bindings[1] = office1.bindClusteredQueue(new SimpleCondition("topic1"), queues[1]);
          
          queues[2] =
             new LocalClusteredQueue(office2, 2, "sub3", channelIDManager.getID(), ms, pm,
-                                    true, false, (QueuedExecutor)pool.get(), -1, null, tr);
+                                    true, false, -1, null, tr);
          bindings[2] = office2.bindClusteredQueue(new SimpleCondition("topic1"), queues[2]);
          
          queues[3] =
             new LocalClusteredQueue(office2, 2, "sub4", channelIDManager.getID(), ms, pm,
-                                    true, false, (QueuedExecutor)pool.get(), -1, null, tr);
+                                    true, false, -1, null, tr);
          bindings[3] = office2.bindClusteredQueue(new SimpleCondition("topic1"), queues[3]);
          
          queues[4] =
             new LocalClusteredQueue(office2, 2, "sub5", channelIDManager.getID(), ms, pm,
-                                    true, true, (QueuedExecutor)pool.get(), -1, null, tr);
+                                    true, true, -1, null, tr);
          bindings[4] = office2.bindClusteredQueue(new SimpleCondition("topic1"), queues[4]);
          
          queues[5] =
             new LocalClusteredQueue(office1, 1, "sub6", channelIDManager.getID(), ms, pm,
-                                    true, false, (QueuedExecutor)pool.get(), -1, null, tr);
+                                    true, false, -1, null, tr);
          bindings[5] = office1.bindClusteredQueue(new SimpleCondition("topic1"), queues[5]);
          
          queues[6] =
             new LocalClusteredQueue(office1, 1, "sub7", channelIDManager.getID(), ms, pm,
-                                    true, true, (QueuedExecutor)pool.get(), -1, null, tr);
+                                    true, true, -1, null, tr);
          bindings[6] = office1.bindClusteredQueue(new SimpleCondition("topic1"), queues[6]);
          
          queues[7] =
             new LocalClusteredQueue(office1, 1, "sub8", channelIDManager.getID(), ms, pm,
-                                    true, true, (QueuedExecutor)pool.get(), -1, null, tr);
+                                    true, true, -1, null, tr);
          bindings[7] = office1.bindClusteredQueue(new SimpleCondition("topic1"), queues[7]);
          
          queues[8] =
             new LocalClusteredQueue(office1, 1, "sub9", channelIDManager.getID(), ms, pm,
-                                    true, false, (QueuedExecutor)pool.get(), -1, null, tr);
+                                    true, false, -1, null, tr);
          bindings[8] = office1.bindClusteredQueue(new SimpleCondition("topic2"), queues[8]);
          
          queues[9] =
             new LocalClusteredQueue(office1, 1, "sub10", channelIDManager.getID(), ms, pm,
-                                    true, false, (QueuedExecutor)pool.get(), -1, null, tr);
+                                    true, false, -1, null, tr);
          bindings[9] = office1.bindClusteredQueue(new SimpleCondition("topic2"), queues[9]);
          
          queues[10] =
             new LocalClusteredQueue(office2, 2, "sub11", channelIDManager.getID(), ms, pm,
-                                    true, false, (QueuedExecutor)pool.get(), -1, null, tr);
+                                    true, false, -1, null, tr);
          bindings[10] = office2.bindClusteredQueue(new SimpleCondition("topic2"), queues[10]);
          
          queues[11] =
             new LocalClusteredQueue(office2, 2, "sub12", channelIDManager.getID(), ms, pm,
-                                    true, false, (QueuedExecutor)pool.get(), -1, null, tr);
+                                    true, false, -1, null, tr);
          bindings[11] = office2.bindClusteredQueue(new SimpleCondition("topic2"), queues[11]);
          
          queues[12] =
             new LocalClusteredQueue(office2, 2, "sub13", channelIDManager.getID(), ms, pm,
-                                    true, true, (QueuedExecutor)pool.get(), -1, null, tr);
+                                    true, true, -1, null, tr);
          bindings[12] = office2.bindClusteredQueue(new SimpleCondition("topic2"), queues[12]);
          
          queues[13] =
             new LocalClusteredQueue(office1, 1, "sub14", channelIDManager.getID(), ms, pm,
-                                    true, false, (QueuedExecutor)pool.get(), -1, null, tr);
+                                    true, false, -1, null, tr);
          bindings[13] = office1.bindClusteredQueue(new SimpleCondition("topic2"), queues[13]);
          
          queues[14] =
             new LocalClusteredQueue(office1, 1, "sub15", channelIDManager.getID(), ms, pm,
-                                    true, true, (QueuedExecutor)pool.get(), -1, null, tr);
+                                    true, true, -1, null, tr);
          bindings[14] = office1.bindClusteredQueue(new SimpleCondition("topic2"), queues[14]);
          
          queues[15] =
             new LocalClusteredQueue(office1, 1, "sub16", channelIDManager.getID(), ms, pm,
-                                    true, true, (QueuedExecutor)pool.get(), -1, null, tr);
+                                    true, true, -1, null, tr);
          bindings[15] = office1.bindClusteredQueue(new SimpleCondition("topic2"), queues[15]);
 
          SimpleReceiver[] receivers = new SimpleReceiver[16];

@@ -159,7 +159,7 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
                
                if (param instanceof RequestSupport)
                {
-                  //A JBM invocation being sent one way (e.g. changeRate)
+                  //A JBM invocation being sent one way (e.g. changeRate, send)
                   
                   if (trace) { log.trace("JBM oneway request"); }
                   
@@ -180,10 +180,7 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
                      if (trace) { log.trace("It's a callback: " + callback); }
                      
                      if (callback.getParameter() instanceof ClientDelivery)
-                     {
-                        // Whooooppee!! found the callback. Hurrah for remoting!
-                        // What a simple and intuitive API ;)
-                        
+                     {                        
                         packet = (ClientDelivery)callback.getParameter();
                         
                         if (trace) { log.trace("Message delivery callback"); }
@@ -226,13 +223,6 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
             {
                // List of polled Callbacks, this is how messages are delivered when using
                // polled callbacks e.g. the HTTP transport
-               
-               // Sanity check
-               if (((List)param).isEmpty())
-               {
-                  log.warn("Got a polled callback list - but it is empty!!! " +
-                     "See http://jira.jboss.org/jira/browse/JBMESSAGING-818");
-               }
                
                packet = new PolledCallbacksDelivery((List)param, resp.getSessionId());             
             }

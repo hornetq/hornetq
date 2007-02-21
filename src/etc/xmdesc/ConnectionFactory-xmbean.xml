@@ -65,6 +65,12 @@
       <name>DefaultTempQueueDownCacheSize</name>
       <type>int</type>
    </attribute>
+   
+   <attribute access="read-write" getMethod="getDupsOKBatchSize" setMethod="setDupsOKBatchSize">
+      <description>The value of the DUPS_OK_ACKNOWLEDGE batch size to use for sessions created from this connection factory</description>
+      <name>DupsOKBatchSize</name>
+      <type>int</type>
+   </attribute>   
 
    <!-- ServerPeer ObjectName is configured as a dependency optional-attribute-name, this is the
         only reason for this attribute to be writable. Any write attempt on this attribute after

@@ -177,7 +177,7 @@ public class ServiceContainer
          new ObjectName("jboss.jca:service=ConnectionFactoryBinding,name=JCAConnectionFactory");
 
          REMOTING_OBJECT_NAME =
-         new ObjectName("jboss.messaging:service=Connector,transport=socket");
+         new ObjectName("jboss.messaging:service=Connector,transport=bisocket");
 
          HTTP_REMOTING_OBJECT_NAME =
          new ObjectName("jboss.messaging:service=Connector,transport=http");
@@ -1381,6 +1381,9 @@ log.info("password:" + config.getDatabasePassword());
             dataType = "";
             serializationType = "java";
          }
+         
+         // Note that we DO NOT want the direct thread pool on the server side - since that can lead
+         // to deadlocks
 
          String params =
             "/?" +
@@ -1394,9 +1397,10 @@ log.info("password:" + config.getDatabasePassword());
             "serverSocketClass=org.jboss.jms.server.remoting.ServerSocketWrapper&" +
             "NumberOfRetries=1&" +
             "NumberOfCallRetries=2&" +
-            "callbackErrorsAllowed=1&" +
-            "onewayThreadPool=org.jboss.jms.server.remoting.DirectThreadPool";
-
+            "callbackErrorsAllowed=1";
+         
+         
+         
          // specific parameters per transport
 
          if ("http".equals(transport))

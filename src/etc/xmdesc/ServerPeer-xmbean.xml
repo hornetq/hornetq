@@ -145,12 +145,6 @@
       <name>DefaultSecurityConfig</name>
       <type>org.w3c.dom.Element</type>
    </attribute>
-   
-   <attribute access="read-write" getMethod="getQueuedExecutorPoolSize" setMethod="setQueuedExecutorPoolSize">
-      <description>The size of the rotating pool from which to allocate QueuedExecutors</description>
-      <name>QueuedExecutorPoolSize</name>
-      <type>int</type>
-   </attribute>
          
    <attribute access="read-write" getMethod="getDefaultMaxDeliveryAttempts" setMethod="setDefaultMaxDeliveryAttempts">
       <description>The default maximum delivery attempts for destinations, unless overridden on the destination</description>

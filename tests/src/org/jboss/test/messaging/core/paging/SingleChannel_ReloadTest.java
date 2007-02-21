@@ -30,10 +30,8 @@ import org.jboss.messaging.core.message.SimpleMessageStore;
 import org.jboss.messaging.core.plugin.JDBCPersistenceManager;
 import org.jboss.messaging.core.plugin.LockMap;
 import org.jboss.messaging.core.tx.TransactionRepository;
-import org.jboss.test.messaging.util.CoreMessageFactory;
 import org.jboss.test.messaging.core.paging.base.PagingStateTestBase;
-
-import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
+import org.jboss.test.messaging.util.CoreMessageFactory;
 
 /**
  * 
@@ -70,7 +68,7 @@ public class SingleChannel_ReloadTest extends PagingStateTestBase
    {
       PagingFilteredQueue queue =
          new PagingFilteredQueue("queue1", 1, ms, pm, true, true,
-                                 new QueuedExecutor(), -1, null, 100, 20, 10);
+                                 -1, null, 100, 20, 10);
 
       Message[] msgs = new Message[200];
       
@@ -133,7 +131,7 @@ public class SingleChannel_ReloadTest extends PagingStateTestBase
          
       PagingFilteredQueue queue2 =
          new PagingFilteredQueue("queue1", 1, ms, pm, true, true,
-                                 new QueuedExecutor(), -1, null, 100, 20, 10);
+                                 -1, null, 100, 20, 10);
       queue2.deactivate();
       queue2.load();
       
@@ -170,7 +168,7 @@ public class SingleChannel_ReloadTest extends PagingStateTestBase
       
       PagingFilteredQueue queue =
          new PagingFilteredQueue("queue1", 1, ms, pm, true, true,
-                                 new QueuedExecutor(), -1, null, 100, 20, 10);
+                                 -1, null, 100, 20, 10);
       
       Message[] msgs = new Message[200];
       
@@ -233,7 +231,7 @@ public class SingleChannel_ReloadTest extends PagingStateTestBase
 
       PagingFilteredQueue queue2 =
          new PagingFilteredQueue("queue1", 1, ms, pm, true, true,
-                                 new QueuedExecutor(), -1, null, 100, 20, 10);
+                                 -1, null, 100, 20, 10);
       queue2.deactivate();
       queue2.load();
       
@@ -264,7 +262,7 @@ public class SingleChannel_ReloadTest extends PagingStateTestBase
       
       PagingFilteredQueue queue =
          new PagingFilteredQueue("queue1", 1, ms, pm, true, true,
-                                 new QueuedExecutor(), -1, null, 100, 20, 10);
+                                 -1, null, 100, 20, 10);
   
       Message[] msgs = new Message[200];
       

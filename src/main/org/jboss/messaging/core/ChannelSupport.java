@@ -36,25 +36,18 @@ import org.jboss.messaging.core.plugin.contract.PersistenceManager;
 import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.messaging.core.tx.TransactionException;
 import org.jboss.messaging.core.tx.TxCallback;
-import org.jboss.messaging.util.Future;
 import org.jboss.messaging.util.prioritylinkedlist.BasicPriorityLinkedList;
 import org.jboss.messaging.util.prioritylinkedlist.PriorityLinkedList;
 import org.jboss.util.timeout.Timeout;
 import org.jboss.util.timeout.TimeoutTarget;
 
-import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
 import EDU.oswego.cs.dl.util.concurrent.SynchronizedInt;
 
 /**
  * 
- * This class provides much of the functionality needed to implement a channel. This partial
- * implementation supports atomicity, isolation and recoverability of reliable messages.
+ * This class provides much of the functionality needed to implement a channel.
  * 
- * It uses a "SEDA-type" approach, where requests to handle messages, and deliver to receivers are
- * not executed concurrently but placed on an event queue and executed serially by a single thread.
- * 
- * Currently remoting does not support a non blocking API so a full SEDA approach is not possible
- * at this stage.
+ * This partial implementation supports atomicity, isolation and recoverability of reliable messages.
  * 
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -79,9 +72,7 @@ public abstract class ChannelSupport implements Channel
 
    protected MessageStore ms;
 
-   protected QueuedExecutor executor;
-
-   protected volatile boolean receiversReady;
+   protected boolean receiversReady;
 
    protected PriorityLinkedList messageRefs;
 
@@ -115,7 +106,7 @@ public abstract class ChannelSupport implements Channel
    protected ChannelSupport(long channelID, MessageStore ms,
                             PersistenceManager pm,
                             boolean acceptReliableMessages, boolean recoverable,
-                            QueuedExecutor executor, int maxSize)
+                            int maxSize)
    {
       if (trace) { log.trace("creating " + (pm != null ? "recoverable " : "non-recoverable ") + "channel[" + channelID + "]"); }
 
@@ -134,8 +125,6 @@ public abstract class ChannelSupport implements Channel
       this.pm = pm;
 
       this.channelID = channelID;
-
-      this.executor = executor;
 
       this.acceptReliableMessages = acceptReliableMessages;
 
@@ -165,29 +154,7 @@ public abstract class ChannelSupport implements Channel
 
       checkClosed();
 
-      Future result = new Future();
-
-      if (tx == null)
-      {
-         try
-         {
-            // Instead of executing directly, we add the handle request to the event queue.
-            // Since remoting doesn't currently handle non blocking IO, we still have to wait for the
-            // result, but when remoting does, we can use a full SEDA approach and get even better
-            // throughput.
-            this.executor.execute(new HandleRunnable(result, sender, ref, true));
-         }
-         catch (InterruptedException e)
-         {
-            log.warn("Thread interrupted", e);
-         }
-
-         return (Delivery)result.getResult();
-      }
-      else
-      {
-         return handleInternal(sender, ref, tx, true, false);
-      }
+      return handleInternal(sender, ref, tx, true);      
    }
 
    // DeliveryObserver implementation --------------------------------------------------------------
@@ -196,7 +163,7 @@ public abstract class ChannelSupport implements Channel
    {
       if (trace) { log.trace("acknowledging " + d + (tx == null ? " non-transactionally" : " transactionally in " + tx)); }
 
-      acknowledgeInternal(d, tx, true, false);
+      acknowledgeInternal(d, tx, true);
    }
 
    public void cancel(Delivery del) throws Throwable
@@ -214,8 +181,7 @@ public abstract class ChannelSupport implements Channel
       
       if (!checkAndSchedule(ref))
       {
-         // We put the cancellation on the event queue if it's not a scheduled delivery
-         this.executor.execute(new CancelRunnable(ref));     
+         cancelInternal(ref);
       }
    }      
         
@@ -229,7 +195,10 @@ public abstract class ChannelSupport implements Channel
 
       if (trace) { log.trace("receiver " + r + (added ? "" : " NOT") + " added"); }
 
-      receiversReady = true;
+      synchronized (refLock)
+      {
+         receiversReady = true;
+      }
 
       return added;
    }
@@ -240,7 +209,10 @@ public abstract class ChannelSupport implements Channel
 
       if (removed && !router.iterator().hasNext())
       {
-         receiversReady = false;
+         synchronized (refLock)
+         {
+            receiversReady = false;
+         }
       }
 
       if (trace) { log.trace(this + (removed ? " removed " : " did NOT remove ") + r); }
@@ -251,6 +223,11 @@ public abstract class ChannelSupport implements Channel
    public void clear()
    {
       router.clear();
+      
+      synchronized (refLock)
+      {
+         receiversReady = false;
+      }
    }
 
    public boolean contains(Receiver r)
@@ -315,35 +292,19 @@ public abstract class ChannelSupport implements Channel
          return messages;
       }      
    }
-
-   public void deliver(boolean synchronous)
+ 
+   public void deliver()
    {
       checkClosed();
 
-      // We put a delivery request on the event queue.
-      try
-      {
-         Future future = null;
-
-         if (synchronous)
+      if (router.getNumberOfReceivers() > 0)
+      {                
+         synchronized (refLock)
          {
-            future = new Future();
+            receiversReady = true;
+            
+            deliverInternal();
          }
-
-         //TODO we should keep track of how many deliveries are currently in the queue so we don't
-         //     execute another delivery when one is in the queue, since this is pointless.
-
-         executor.execute(new DeliveryRunnable(future));
-
-         if (synchronous)
-         {
-            // Wait to complete
-            future.getResult();
-         }
-      }
-      catch (InterruptedException e)
-      {
-         log.warn("Thread interrupted", e);
       }
    }      
 
@@ -495,13 +456,11 @@ public abstract class ChannelSupport implements Channel
             {               
                if (!liter.hasNext())
                {
-                  // TODO we need to look in paging state too - currently not supported
-
-                  
                   // Clebert - why did you add a link to 808 here?
                   // I don't think 808 has anything to do with this.
                   // http://jira.jboss.org/jira/browse/JBMESSAGING-808
                   
+                  // TODO we need to look in paging state too - currently not supported                  
                   //http://jira.jboss.com/jira/browse/JBMESSAGING-839
                   log.warn(this + " cannot find reference " + id + " (Might be paged!)");
                   break;
@@ -626,14 +585,16 @@ public abstract class ChannelSupport implements Channel
          ListIterator iter = null;
          
          MessageReference ref = null;
-
+         
+         if (!receiversReady)
+         {
+            return;
+         }
+         
          while (true)
          {           
-            synchronized (refLock)
-            {
-               ref = nextReference(iter);               
-            }
-            
+            ref = nextReference(iter);               
+                     
             if (ref != null)
             {
                // Attempt to push the ref to a receiver
@@ -648,6 +609,7 @@ public abstract class ChannelSupport implements Channel
                {
                   // No receiver, broken receiver or full receiver so we stop delivering
                   if (trace) { log.trace(this + " got no delivery for " + ref + " so no receiver got the message. Stopping delivery."); }
+                  
                   break;
                }
                else if (!del.isSelectorAccepted())
@@ -678,8 +640,8 @@ public abstract class ChannelSupport implements Channel
                if (trace) { log.trace(this + " no more refs to deliver "); }
                
                break;
-            }
-         }
+            }            
+         }         
       }
       catch (Throwable t)
       {
@@ -731,7 +693,7 @@ public abstract class ChannelSupport implements Channel
    }
       
    protected Delivery handleInternal(DeliveryObserver sender, MessageReference ref,
-                                     Transaction tx, boolean persist, boolean synchronous)
+                                     Transaction tx, boolean persist)
    {
       if (ref == null)
       {
@@ -785,15 +747,9 @@ public abstract class ChannelSupport implements Channel
                synchronized (refLock)
                {
                   addReferenceInMemory(ref);
-               }
-               
-               // We only do delivery if there are receivers that haven't said they don't want any
-               // more references.
-               if (receiversReady)
-               {
-                  // Prompt delivery
+                  
                   deliverInternal();
-               }
+               }            
             }
          }
          else
@@ -813,7 +769,7 @@ public abstract class ChannelSupport implements Channel
             else
             {
                // add to post commit callback
-               getCallback(tx, synchronous).addRef(ref);
+               getCallback(tx).addRef(ref);
                
                if (trace) { log.trace(this + " added transactionally " + ref + " in memory"); }
             }
@@ -838,8 +794,6 @@ public abstract class ChannelSupport implements Channel
          return null;
       }
 
-      // I might as well return null, the sender shouldn't care
-      
       return new SimpleDelivery(this, ref, true);
    }
 
@@ -869,8 +823,7 @@ public abstract class ChannelSupport implements Channel
       }
    }
    
-   protected void acknowledgeInternal(Delivery d, Transaction tx, boolean persist,
-                                      boolean synchronous) throws Exception
+   protected void acknowledgeInternal(Delivery d, Transaction tx, boolean persist) throws Exception
    {   
       if (tx == null)
       {                  
@@ -885,7 +838,7 @@ public abstract class ChannelSupport implements Channel
       }
       else
       {
-         this.getCallback(tx, synchronous).addDelivery(d);
+         this.getCallback(tx).addDelivery(d);
    
          if (trace) { log.trace(this + " added " + d + " to memory on transaction " + tx); }
    
@@ -896,23 +849,15 @@ public abstract class ChannelSupport implements Channel
       }
    }
 
-   protected InMemoryCallback getCallback(Transaction tx, boolean synchronous)
+   protected InMemoryCallback getCallback(Transaction tx)
    {
       InMemoryCallback callback = (InMemoryCallback) tx.getCallback(this);            
 
       if (callback == null)
       {
-         callback = new InMemoryCallback(synchronous);
+         callback = new InMemoryCallback();
 
          tx.addCallback(callback, this);
-      }
-      else
-      {
-         //Sanity
-         if (callback.isSynchronous() != synchronous)
-         {
-            throw new IllegalStateException("Callback synchronousness status doesn't match");
-         }
       }
 
       return callback;
@@ -989,32 +934,19 @@ public abstract class ChannelSupport implements Channel
 
    // Inner classes --------------------------------------------------------------------------------
 
-   private class InMemoryCallback implements TxCallback, Runnable
+   private class InMemoryCallback implements TxCallback
    {
       private List refsToAdd;
 
       private List deliveriesToRemove;
       
-      private boolean synchronous;
-          
-      private boolean committing;
-
-      private Future result;
-
-      private InMemoryCallback(boolean synchronous)
+      private InMemoryCallback()
       {
          refsToAdd = new ArrayList();
 
          deliveriesToRemove = new ArrayList();
-         
-         this.synchronous = synchronous;
       }
       
-      private boolean isSynchronous()
-      {
-         return synchronous;
-      }
-
       private void addRef(MessageReference ref)
       {
          refsToAdd.add(ref);
@@ -1045,156 +977,59 @@ public abstract class ChannelSupport implements Channel
          // NOOP
       }
       
-      public void run()
-      {
+      public void afterCommit(boolean onePhase) throws Exception
+      {         
          try
          {
-            if (committing)
+            // We add the references to the state
+            
+            for(Iterator i = refsToAdd.iterator(); i.hasNext(); )
             {
-               doAfterCommit();
+               MessageReference ref = (MessageReference)i.next();
+
+               if (trace) { log.trace(this + ": adding " + ref + " to non-recoverable state"); }
+
+               try
+               {
+                  synchronized (refLock)
+                  {
+                     addReferenceInMemory(ref);
+                  }
+               }
+               catch (Throwable t)
+               {
+                  throw new TransactionException("Failed to add reference", t);
+               }
             }
-            else
+
+            // Remove deliveries
+            
+            for(Iterator i = deliveriesToRemove.iterator(); i.hasNext(); )
             {
-               doAfterRollback();
+               Delivery del = (Delivery)i.next();
+
+               if (trace) { log.trace(this + " removing " + del + " after commit"); }
+
+               del.getReference().releaseMemoryReference();
+               
+               deliveringCount.decrement();
             }
             
-            result.setResult(null);
+            // prompt delivery
+            synchronized (refLock)
+            {
+               deliverInternal();
+            }
          }
          catch (Throwable t)
          {
-            log.debug(this + "'s execution generated exception", t);
-            result.setException(t);
+            log.error("failed to commit", t);
+            throw new Exception("Failed to commit", t);
          }
-      }
-
-      public void afterCommit(boolean onePhase) throws Exception
-      {
-         if (synchronous)
-         {
-            try
-            {
-               doAfterCommit();
-            }
-            catch (Throwable t)
-            {
-               //TODO Sort out exception handling!!
-               throw new TransactionException("Failed to commit", t);
-            }
-         }
-         else
-         {            
-            // We don't execute the commit directly, we add it to the event queue of the channel
-            // so it is executed in turn
-            committing = true;
-            executeAndWaitForResult();
-         }
+         
       }
 
       public void afterRollback(boolean onePhase) throws Exception
-      {
-         if (synchronous)            
-         {
-            doAfterRollback();
-         }
-         else
-         {                     
-            // We don't execute the commit directly, we add it to the event queue
-            // of the channel
-            // so it is executed in turn
-            committing = false;
-   
-            executeAndWaitForResult();
-         }
-      }
-
-      public String toString()
-      {
-         return ChannelSupport.this + ".InMemoryCallback[" +
-                Integer.toHexString(InMemoryCallback.this.hashCode()) + "]";
-      }
-
-      private void executeAndWaitForResult() throws TransactionException
-      {
-         result = new Future();
-
-         try
-         {
-            if (trace) { log.trace("adding " + this + " to " + ChannelSupport.this + "'s executor"); }
-            executor.execute(this);
-         }
-         catch (InterruptedException e)
-         {
-            log.error("Thread interrupted", e);
-         }
-
-         // Wait for it to complete
-
-         if (trace) { log.trace("waiting for " + this + " to complete"); }
-         Throwable t = (Throwable)result.getResult();
-         if (trace) { log.trace(InMemoryCallback.this + " completed"); }
-
-         if (t != null)
-         {
-            if (t instanceof RuntimeException)
-            {
-               throw (RuntimeException) t;
-            }
-            if (t instanceof Error)
-            {
-               throw (Error) t;
-            }
-            if (t instanceof TransactionException)
-            {
-               throw (TransactionException) t;
-            }
-            throw new IllegalStateException("Unknown Throwable " + t);
-         }
-      }
-
-      private void doAfterCommit() throws Throwable
-      {
-         // We add the references to the state
-         
-         for(Iterator i = refsToAdd.iterator(); i.hasNext(); )
-         {
-            MessageReference ref = (MessageReference)i.next();
-
-            if (trace) { log.trace(this + ": adding " + ref + " to non-recoverable state"); }
-
-            try
-            {
-               synchronized (refLock)
-               {
-                  addReferenceInMemory(ref);
-               }
-            }
-            catch (Throwable t)
-            {
-               throw new TransactionException("Failed to add reference", t);
-            }
-         }
-
-         // Remove deliveries
-         
-         for(Iterator i = deliveriesToRemove.iterator(); i.hasNext(); )
-         {
-            Delivery del = (Delivery)i.next();
-
-            if (trace) { log.trace(this + " removing " + del + " after commit"); }
-
-            del.getReference().releaseMemoryReference();
-            
-            deliveringCount.decrement();
-         }
-         
-         // prompt delivery
-         if (receiversReady)
-         {
-            deliverInternal();
-         }
-      }
-
-      private void doAfterRollback()
       {
          for(Iterator i = refsToAdd.iterator(); i.hasNext(); )
          {
@@ -1203,6 +1038,12 @@ public abstract class ChannelSupport implements Channel
             if (trace) { log.trace(this + " releasing memory " + ref + " after rollback"); }
             ref.releaseMemoryReference();
          }
+      }
+
+      public String toString()
+      {
+         return ChannelSupport.this + ".InMemoryCallback[" +
+                Integer.toHexString(InMemoryCallback.this.hashCode()) + "]";
       }
    }
 
@@ -1224,126 +1065,9 @@ public abstract class ChannelSupport implements Channel
    }
 
    // Private --------------------------------------------------------------------------------------
- 
-
-  
+   
    // Inner classes --------------------------------------------------------------------------------
 
-   private class DeliveryRunnable implements Runnable
-   {
-      Future result;
-      
-      public DeliveryRunnable(Future result)
-      {
-         this.result = result;
-      }
-      
-      public void run()
-      {
-         try
-         {
-            if (router.getNumberOfReceivers() > 0)
-            {               
-               deliverInternal();                     
-            }
-            if (result != null)
-            {
-               result.setResult(null);
-            }
-         }
-         catch (Throwable t)
-         {
-            log.error("Failed to deliver", t);
-            if (result != null)
-            {
-               result.setException(t);
-            }
-         }
-      }
-   } 
-   
-   private class DeliverScheduledRunnable implements Runnable
-   {
-      private MessageReference ref;
-      
-      private Future result;
-      
-      public DeliverScheduledRunnable(Future result, MessageReference ref)
-      {
-         this.ref = ref;
-         
-         this.result = result;
-      }
-      
-      public void run()
-      {
-         try         
-         {
-            if (router.getNumberOfReceivers() > 0)
-            {               
-               boolean delivered = deliverScheduled(ref);     
-               
-               result.setResult(Boolean.valueOf(delivered));
-            }
-            else
-            {
-               result.setResult(Boolean.valueOf(false));
-            }
-         }
-         catch (Throwable t)
-         {
-            log.error("Failed to deliver scheduled", t);            
-         }
-      }
-   } 
-   
-   private class CancelRunnable implements Runnable
-   {
-      MessageReference ref;
-      
-      CancelRunnable(MessageReference ref)
-      {
-         this.ref = ref;
-      }
-      
-      public void run()
-      {
-         try
-         {
-            cancelInternal(ref);
-         }
-         catch (Exception e)
-         {
-            log.error("Failed to cancel delivery", e);
-         }
-      }
-   }
-   
-   protected class HandleRunnable implements Runnable
-   {
-      Future result;
-
-      DeliveryObserver sender;
-
-      MessageReference ref;
-      
-      boolean persist;
-
-      public HandleRunnable(Future result, DeliveryObserver sender, MessageReference ref, boolean persist)
-      {
-         this.result = result;
-         this.sender = sender;
-         this.ref = ref;
-         this.persist = persist;
-      }
-
-      public void run()
-      {
-         Delivery d = handleInternal(sender, ref, null, persist, false);
-         result.setResult(d);
-      }
-   }   
-   
    private class DeliverRefTimeoutTarget implements TimeoutTarget
    {
       private MessageReference ref;
@@ -1368,33 +1092,23 @@ public abstract class ChannelSupport implements Channel
          }
               
          ref.setScheduledDeliveryTime(0);
-           
-         Future result = new Future();
          
-         DeliverScheduledRunnable runnable = new DeliverScheduledRunnable(result, ref);
+         boolean delivered = false;
          
-         try
-         {
-            executor.execute(runnable);
+         if (router.getNumberOfReceivers() > 0)
+         {               
+            delivered = deliverScheduled(ref);     
          }
-         catch (InterruptedException e)
-         {
-            log.error("Thread interrupted", e);
-         }
-         
-         Boolean b = (Boolean)result.getResult();
-         boolean delivered = b.booleanValue();
-         
+
          if (!delivered)
          {
-            //add to front of queue
             try
             {
-               executor.execute(new CancelRunnable(ref));
+               cancelInternal(ref);
             }
-            catch (InterruptedException e)
+            catch (Exception e)
             {
-               log.error("Thread interrupted", e);
+               log.error("Failed to cancel", e);
             }
          }
          else

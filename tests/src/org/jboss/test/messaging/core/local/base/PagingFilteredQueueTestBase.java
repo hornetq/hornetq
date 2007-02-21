@@ -48,8 +48,6 @@ import org.jboss.test.messaging.core.SimpleReceiver;
 import org.jboss.test.messaging.tools.jmx.ServiceContainer;
 import org.jboss.test.messaging.util.CoreMessageFactory;
 
-import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
-
 /**
  * The QueueTest test strategy is to try as many combination as it makes sense of the following
  * variables:
@@ -208,7 +206,7 @@ public abstract class PagingFilteredQueueTestBase extends MessagingTestCase
    {
       Filter f = new SimpleFilter(3);
             
-      PagingFilteredQueue queue = new PagingFilteredQueue("queue1", 1, ms, pm, true, false, new QueuedExecutor(), -1, f);
+      PagingFilteredQueue queue = new PagingFilteredQueue("queue1", 1, ms, pm, true, false, -1, f);
       
       Message m1 = new CoreMessage(1, false, 0, 0, (byte)0, null, null);
       Message m2 = new CoreMessage(2, false, 0, 0, (byte)0, null, null);
@@ -413,11 +411,11 @@ public abstract class PagingFilteredQueueTestBase extends MessagingTestCase
 
       SimpleReceiver receiver = new SimpleReceiver("ACKING", SimpleReceiver.ACKING);
       queue.add(receiver);
-      queue.deliver(true);
+      queue.deliver();
       assertEquals(1, receiver.getMessages().size());
       assertEquals(0, ((Message)receiver.getMessages().get(0)).getMessageID());
 
-      queue.deliver(true);
+      queue.deliver();
       assertEquals(1, receiver.getMessages().size());
 
 
@@ -456,7 +454,7 @@ public abstract class PagingFilteredQueueTestBase extends MessagingTestCase
 
       SimpleReceiver receiver = new SimpleReceiver("ACKING", SimpleReceiver.ACKING);
       queue.add(receiver);
-      queue.deliver(true);
+      queue.deliver();
       assertEquals(10, receiver.getMessages().size());
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
@@ -464,7 +462,7 @@ public abstract class PagingFilteredQueueTestBase extends MessagingTestCase
       }
       receiver.clear();
 
-      queue.deliver(true);
+      queue.deliver();
       assertEquals(0, receiver.getMessages().size());
    }
 
@@ -508,13 +506,13 @@ public abstract class PagingFilteredQueueTestBase extends MessagingTestCase
 
       assertTrue(queue.browse().isEmpty());
 
-      queue.deliver(true);
+      queue.deliver();
       
       Receiver r = new SimpleReceiver("ACKING", SimpleReceiver.ACKING);
       
       queue.add(r);
       
-      queue.deliver(true);
+      queue.deliver();
    }
 
    ///////////
@@ -555,15 +553,15 @@ public abstract class PagingFilteredQueueTestBase extends MessagingTestCase
       assertTrue(sm.isReliable());
       assertEquals(0, sm.getMessageID());
 
-      queue.deliver(true);
+      queue.deliver();
 
       SimpleReceiver receiver = new SimpleReceiver("ACKING", SimpleReceiver.ACKING);
       queue.add(receiver);
-      queue.deliver(true);
+      queue.deliver();
       assertEquals(1, receiver.getMessages().size());
       assertEquals(0, ((Message)receiver.getMessages().get(0)).getMessageID());
 
-      queue.deliver(true);
+      queue.deliver();
       assertEquals(1, receiver.getMessages().size());
    }
 
@@ -605,13 +603,13 @@ public abstract class PagingFilteredQueueTestBase extends MessagingTestCase
          // the channel must not accept the message
          assertNull(delivery);
 
-         queue.deliver(true);
+         queue.deliver();
          
          Receiver r = new SimpleReceiver("ACKING", SimpleReceiver.ACKING);
          
          queue.add(r);
          
-         queue.deliver(true);
+         queue.deliver();
       }
 
       assertTrue(queue.browse().isEmpty());
@@ -655,7 +653,7 @@ public abstract class PagingFilteredQueueTestBase extends MessagingTestCase
 
       SimpleReceiver receiver = new SimpleReceiver("ACKING", SimpleReceiver.ACKING);
       queue.add(receiver);
-      queue.deliver(true);
+      queue.deliver();
       assertEquals(10, receiver.getMessages().size());
       for(int i = 0; i < NUMBER_OF_MESSAGES; i++)
       {
@@ -663,7 +661,7 @@ public abstract class PagingFilteredQueueTestBase extends MessagingTestCase
       }
       receiver.clear();
 
-      queue.deliver(true);
+      queue.deliver();
       assertEquals(0, receiver.getMessages().size());
    }
 

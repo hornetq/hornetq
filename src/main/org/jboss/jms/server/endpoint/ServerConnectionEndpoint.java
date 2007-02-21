@@ -116,6 +116,8 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
    private int defaultTempQueueFullSize;
    private int defaultTempQueuePageSize;
    private int defaultTempQueueDownCacheSize;
+   private int dupsOKBatchSize;
+   
    private ServerConnectionFactoryEndpoint cfendpoint;
 
    private byte usingVersion;
@@ -139,7 +141,8 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
                                    String remotingSessionID,
                                    String clientVMID,
                                    byte versionToUse,
-                                   ServerInvokerCallbackHandler callbackHandler) throws Exception
+                                   ServerInvokerCallbackHandler callbackHandler,
+                                   int dupsOKBatchSize) throws Exception
    {
       this.serverPeer = serverPeer;
 
@@ -160,6 +163,8 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
       this.defaultTempQueueFullSize = defaultTempQueueFullSize;
       this.defaultTempQueuePageSize = defaultTempQueuePageSize;
       this.defaultTempQueueDownCacheSize = defaultTempQueueDownCacheSize;
+      
+      this.dupsOKBatchSize = dupsOKBatchSize;
 
       sessions = new HashMap();
       temporaryDestinations = new HashSet();
@@ -254,7 +259,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
 
          log.debug("created and registered " + ep);
 
-         ClientSessionDelegate d = new ClientSessionDelegate(sessionID);
+         ClientSessionDelegate d = new ClientSessionDelegate(sessionID, dupsOKBatchSize);
 
          log.debug("created " + d);
          

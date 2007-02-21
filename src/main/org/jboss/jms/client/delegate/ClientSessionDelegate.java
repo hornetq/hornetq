@@ -21,6 +21,8 @@
   */
 package org.jboss.jms.client.delegate;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.Serializable;
 import java.util.List;
 
@@ -63,6 +65,7 @@ import org.jboss.jms.wireformat.SessionDeleteTemporaryDestinationRequest;
 import org.jboss.jms.wireformat.SessionRecoverDeliveriesRequest;
 import org.jboss.jms.wireformat.SessionSendRequest;
 import org.jboss.jms.wireformat.SessionUnsubscribeRequest;
+import org.jboss.logging.Logger;
 
 /**
  * The client-side Session delegate class.
@@ -80,16 +83,23 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
    // Constants ------------------------------------------------------------------------------------
 
    private static final long serialVersionUID = -8096852898620279131L;
+   
+   private static final Logger log = Logger.getLogger(ClientSessionDelegate.class);
+   
 
    // Attributes -----------------------------------------------------------------------------------
+   
+   private int dupsOKBatchSize;
 
    // Static ---------------------------------------------------------------------------------------
 
    // Constructors ---------------------------------------------------------------------------------
 
-   public ClientSessionDelegate(int objectID)
+   public ClientSessionDelegate(int objectID, int dupsOKBatchSize)
    {
       super(objectID);
+      
+      this.dupsOKBatchSize = dupsOKBatchSize;
    }
 
    public ClientSessionDelegate()
@@ -457,13 +467,35 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
 
       doInvoke(client, req);
    }
+   
+   // Streamable overrides -------------------------------------------------------------------------
+
+   public void read(DataInputStream in) throws Exception
+   {
+      super.read(in);
+      
+      dupsOKBatchSize = in.readInt();
+   }
+
+   public void write(DataOutputStream out) throws Exception
+   {
+      super.write(out);
+      
+      out.writeInt(dupsOKBatchSize);
+   }
 
    // Public ---------------------------------------------------------------------------------------
 
+   public int getDupsOKBatchSize()
+   {
+      return dupsOKBatchSize;
+   }
+   
    public String toString()
    {
       return "SessionDelegate[" + id + "]";
    }
+   
 
    // Protected ------------------------------------------------------------------------------------
 

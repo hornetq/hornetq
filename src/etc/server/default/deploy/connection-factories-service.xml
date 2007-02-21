@@ -12,7 +12,7 @@
       name="jboss.messaging.connectionfactory:service=ConnectionFactory"
       xmbean-dd="xmdesc/ConnectionFactory-xmbean.xml">
       <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
-      <depends optional-attribute-name="Connector">jboss.messaging:service=Connector,transport=socket</depends>
+      <depends optional-attribute-name="Connector">jboss.messaging:service=Connector,transport=bisocket</depends>
       <depends>jboss.messaging:service=PostOffice</depends>
 
       <attribute name="JNDIBindings">
@@ -37,7 +37,7 @@
       name="jboss.messaging.connectionfactory:service=NonClusteredConnectionFactory"
       xmbean-dd="xmdesc/ConnectionFactory-xmbean.xml">
       <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
-      <depends optional-attribute-name="Connector">jboss.messaging:service=Connector,transport=socket</depends>
+      <depends optional-attribute-name="Connector">jboss.messaging:service=Connector,transport=bisocket</depends>
       <depends>jboss.messaging:service=PostOffice</depends>
 
       <attribute name="JNDIBindings">

@@ -118,6 +118,7 @@ public class ConnectionFactoryJNDIMapper
                                                       int defaultTempQueueFullSize,
                                                       int defaultTempQueuePageSize,
                                                       int defaultTempQueueDownCacheSize,
+                                                      int dupsOKBatchSize,
                                                       boolean clustered,
                                                       LoadBalancingFactory loadBalancingFactory)
       throws Exception
@@ -140,7 +141,8 @@ public class ConnectionFactoryJNDIMapper
                                              jndiBindings, prefetchSize,
                                              defaultTempQueueFullSize,
                                              defaultTempQueuePageSize,
-                                             defaultTempQueueDownCacheSize);
+                                             defaultTempQueueDownCacheSize,
+                                             dupsOKBatchSize);
       endpoints.put(uniqueName, endpoint);
 
       ConnectionFactoryDelegate delegate = null;

@@ -9,8 +9,8 @@
 <server>
 
    <mbean code="org.jboss.remoting.transport.Connector"
-          name="jboss.messaging:service=Connector,transport=socket"
-          display-name="Socket transport Connector">
+          name="jboss.messaging:service=Connector,transport=bisocket"
+          display-name="Bisocket transport Connector">
       <attribute name="Configuration">
          <config>
             <invoker transport="bisocket">
@@ -27,10 +27,10 @@
                <attribute name="callbackStore">org.jboss.remoting.callback.CallbackStore</attribute>
                <attribute name="clientSocketClass" isParam="true">org.jboss.jms.client.remoting.ClientSocketWrapper</attribute>
                <attribute name="serverSocketClass">org.jboss.jms.server.remoting.ServerSocketWrapper</attribute>
-               <attribute name="NumberOfRetries">1</attribute>
-               <attribute name="NumberOfCallRetries">2</attribute>
-               <attribute name="callbackErrorsAllowed">1</attribute>
-               <attribute name="onewayThreadPool">org.jboss.jms.server.remoting.DirectThreadPool</attribute>
+               <attribute name="callbackErrorsAllowed">1</attribute>  
+               <attribute name="numberOfRetries" isParam="true">1</attribute>
+               <attribute name="NumberOfCallRetries" isParam="true">2</attribute>
+               <attribute name="clientMaxPoolSize" isParam="true">50</attribute>
             </invoker>
             <handlers>
                <handler subsystem="JMS">org.jboss.jms.server.remoting.JMSServerInvocationHandler</handler>
@@ -59,8 +59,8 @@
                <attribute name="serverBindPort">4458</attribute>
                <attribute name="leasePeriod">20000</attribute>
                <attribute name="callbackStore">org.jboss.remoting.callback.CallbackStore</attribute>
-               <attribute name="callbackPollPeriod" isParam="true">100</attribute>
-               <attribute name="onewayThreadPool">org.jboss.jms.server.remoting.DirectThreadPool</attribute>
+               <attribute name="callbackPollPeriod" isParam="true">100</attribute>  
+               <attribute name="onewayThreadPool">org.jboss.jms.server.remoting.DirectThreadPool</attribute>             
             </invoker>
             <handlers>
                <handler subsystem="JMS">org.jboss.jms.server.remoting.JMSServerInvocationHandler</handler>

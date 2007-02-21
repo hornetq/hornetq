@@ -50,7 +50,9 @@ import org.jboss.logging.Logger;
  * Handles sending of messages plus handles get and set methods for Producer - 
  * returning state from local cache
  * 
- * This aspect is PER_INSTANCE.
+ * This aspect is PER_VM.
+ * 
+ * Remember! PER_INSTANCE aspects are very expensive so we avoid them.
  *
  * @author <a href="mailto:tim.fox@jboss.com>Tim Fox</a>
  * @version <tt>$Revision$</tt>
@@ -67,11 +69,11 @@ public class ProducerAspect
    
    private boolean trace = log.isTraceEnabled();
    
-   protected ProducerState producerState;
+   //protected ProducerState producerState;
    
-   protected ConnectionState connectionState;
+   //protected ConnectionState connectionState;
    
-   protected SessionState sessionState;
+   //protected SessionState sessionState;
    
    // Static --------------------------------------------------------      
    
@@ -166,8 +168,10 @@ public class ProducerAspect
 
       m.setJMSDestination(destination);
       
+      SessionState sessionState = (SessionState)producerState.getParent();
+                  
       // Generate the message id
-      ConnectionState connectionState = getConnectionState(invocation);
+      ConnectionState connectionState = (ConnectionState)sessionState.getParent();
       
       long id = connectionState.getIdGenerator().getId();
     
@@ -238,9 +242,7 @@ public class ProducerAspect
       {
          m.setJMSMessageID(messageToSend.getJMSMessageID());
       }
-      
-      SessionState sessionState = getSessionState(invocation);
-              
+            
       // we now invoke the send(Message) method on the session, which will eventually be fielded
       // by connection endpoint
       ((SessionDelegate)sessionState.getDelegate()).send(messageToSend, false);
@@ -352,31 +354,9 @@ public class ProducerAspect
    
    private ProducerState getProducerState(Invocation inv)
    {
-      if (producerState == null)
-      {
-         producerState = (ProducerState)((DelegateSupport)inv.getTargetObject()).getState();
-      }
+      ProducerState producerState = (ProducerState)((DelegateSupport)inv.getTargetObject()).getState();
+      
       return producerState;
-   }
-   
-   private ConnectionState getConnectionState(Invocation inv)
-   {
-      if (connectionState == null)
-      {
-         connectionState = 
-            (ConnectionState)((DelegateSupport)inv.getTargetObject()).getState().getParent().getParent();
-      }
-      return connectionState;
-   }
-   
-   private SessionState getSessionState(Invocation inv)
-   {
-      if (sessionState == null)
-      {
-         sessionState = 
-            (SessionState)((DelegateSupport)inv.getTargetObject()).getState().getParent();
-      }
-      return sessionState;
    }
    
    // Inner Classes -------------------------------------------------

@@ -182,7 +182,7 @@ public class RemoteQueueStub implements ClusteredQueue
       throw new UnsupportedOperationException();
    }
 
-   public void deliver(boolean synchronous)
+   public void deliver()
    {
       throw new UnsupportedOperationException();
    }

@@ -50,7 +50,6 @@ import org.jboss.jms.message.JBossMessage;
 import org.jboss.jms.selector.Selector;
 import org.jboss.jms.server.DestinationManager;
 import org.jboss.jms.server.JMSCondition;
-import org.jboss.jms.server.QueuedExecutorPool;
 import org.jboss.jms.server.ServerPeer;
 import org.jboss.jms.server.destination.ManagedDestination;
 import org.jboss.jms.server.destination.ManagedQueue;
@@ -83,7 +82,6 @@ import org.jboss.messaging.core.tx.TxCallback;
 import org.jboss.util.id.GUID;
 
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
-import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
 import EDU.oswego.cs.dl.util.concurrent.SynchronizedLong;
 
 /**
@@ -143,7 +141,6 @@ public class ServerSessionEndpoint implements SessionEndpoint
 
    private DestinationManager dm;
    private IDManager idm;
-   private QueuedExecutorPool pool;
    private TransactionRepository tr;
    private PostOffice postOffice;
    private int nodeId;
@@ -173,7 +170,6 @@ public class ServerSessionEndpoint implements SessionEndpoint
       dm = sp.getDestinationManager();
       postOffice = sp.getPostOfficeInstance();     
       idm = sp.getChannelIDManager();
-      pool = sp.getQueuedExecutorPool();
       nodeId = sp.getServerPeerID();
       tr = sp.getTxRepository();
 
@@ -313,8 +309,8 @@ public class ServerSessionEndpoint implements SessionEndpoint
    public void send(JBossMessage message, boolean checkForDuplicates) throws JMSException
    {
       try
-      {       
-         connectionEndpoint.sendMessage(message, null, checkForDuplicates);
+      {                
+         connectionEndpoint.sendMessage(message, null, checkForDuplicates);         
       }
       catch (Throwable t)
       {
@@ -364,7 +360,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
          Delivery del = cancelDeliveryInternal(cancel);
          
          //Prompt delivery
-         ((Channel)del.getObserver()).deliver(false);
+         ((Channel)del.getObserver()).deliver();
       }
       catch (Throwable t)
       {
@@ -551,22 +547,21 @@ public class ServerSessionEndpoint implements SessionEndpoint
          dm.registerDestination(mDest);
          
          if (dest.isQueue())
-         {
-            QueuedExecutor executor = (QueuedExecutor)pool.get();
+         {            
             Queue coreQueue;
 
             if (postOffice.isLocal())
             {
                coreQueue = new PagingFilteredQueue(dest.getName(),
-                                                   idm.getID(), ms, pm, true, false, executor,
+                                                   idm.getID(), ms, pm, true, false,
                                                    -1, null, fullSize, pageSize, downCacheSize);
             }
             else
             {
                // uniformly handle the temporary queue as LocalClusteredQueue
-               coreQueue = new LocalClusteredQueue(postOffice, nodeId, dest.getName(),
-                                                   idm.getID(), ms, pm, true, false, executor,
-                                                   -1, null, tr, fullSize, pageSize, downCacheSize);
+               coreQueue = new LocalClusteredQueue((ClusteredPostOffice)postOffice, nodeId, dest.getName(),
+                                                   idm.getID(), ms, pm, true, false,
+                                                   -1, null, tr, fullSize, pageSize, downCacheSize);                             
             }
 
             String counterName = TEMP_QUEUE_MESSAGECOUNTER_PREFIX + dest.getName();
@@ -1126,7 +1121,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
       //TODO - are we sure this is the right place to prompt delivery?
       if (queue != null)
       {
-         queue.deliver(false);
+         queue.deliver();
       }
    }
    
@@ -1144,6 +1139,8 @@ public class ServerSessionEndpoint implements SessionEndpoint
       }
       
       rec.del.acknowledge(null);    
+      
+      if (trace) { log.trace(this + " acknowledged delivery " + ack); }
    }
 
    /**
@@ -1321,14 +1318,13 @@ public class ServerSessionEndpoint implements SessionEndpoint
             if (log.isTraceEnabled()) { log.trace(this + " creating new non-durable subscription on " + jmsDestination); }
             
             // Create the non durable sub
-            QueuedExecutor executor = (QueuedExecutor)pool.get();
-            
+                        
             PagingFilteredQueue q;
             
             if (postOffice.isLocal())
             {
                q = new PagingFilteredQueue(new GUID().toString(), idm.getID(), ms, pm, true, false,
-                        executor, mDest.getMaxSize(), selector,
+                        mDest.getMaxSize(), selector,
                         mDest.getFullSize(),
                         mDest.getPageSize(),
                         mDest.getDownCacheSize());
@@ -1336,10 +1332,10 @@ public class ServerSessionEndpoint implements SessionEndpoint
                binding = postOffice.bindQueue(topicCond, q);
             }
             else
-            {
-               q = new LocalClusteredQueue(postOffice, nodeId, new GUID().toString(),
+            {  
+               q = new LocalClusteredQueue((ClusteredPostOffice)postOffice, nodeId, new GUID().toString(),
                                            idm.getID(), ms, pm, true, false,
-                                           executor, mDest.getMaxSize(), selector, tr,
+                                           mDest.getMaxSize(), selector, tr,
                                            mDest.getFullSize(),
                                            mDest.getPageSize(),
                                            mDest.getDownCacheSize());
@@ -1395,14 +1391,13 @@ public class ServerSessionEndpoint implements SessionEndpoint
                // Does not already exist
                
                if (trace) { log.trace(this + " creating new durable subscription on " + jmsDestination); }
-               
-               QueuedExecutor executor = (QueuedExecutor)pool.get();
+                              
                PagingFilteredQueue q;
 
                if (postOffice.isLocal())
                {
                   q = new PagingFilteredQueue(name, idm.getID(), ms, pm, true, true,
-                                              executor, mDest.getMaxSize(), selector,
+                                              mDest.getMaxSize(), selector,
                                               mDest.getFullSize(),
                                               mDest.getPageSize(),
                                               mDest.getDownCacheSize());
@@ -1411,9 +1406,9 @@ public class ServerSessionEndpoint implements SessionEndpoint
                }
                else
                {
-                  q = new LocalClusteredQueue(postOffice, nodeId, name, idm.getID(),
+                  q = new LocalClusteredQueue((ClusteredPostOffice)postOffice, nodeId, name, idm.getID(),
                                               ms, pm, true, true,
-                                              executor, mDest.getMaxSize(), selector, tr,
+                                              mDest.getMaxSize(), selector, tr,
                                               mDest.getFullSize(),
                                               mDest.getPageSize(),
                                               mDest.getDownCacheSize());
@@ -1485,14 +1480,13 @@ public class ServerSessionEndpoint implements SessionEndpoint
                   }
                   
                   // create a fresh new subscription
-                  
-                  QueuedExecutor executor = (QueuedExecutor)pool.get();
+                                    
                   PagingFilteredQueue q;
                   
                   if (postOffice.isLocal())
                   {
                      q = new PagingFilteredQueue(name, idm.getID(), ms, pm, true, true,
-                              executor, mDest.getMaxSize(), selector,
+                              mDest.getMaxSize(), selector,
                               mDest.getFullSize(),
                               mDest.getPageSize(),
                               mDest.getDownCacheSize());
@@ -1500,8 +1494,8 @@ public class ServerSessionEndpoint implements SessionEndpoint
                   }
                   else
                   {
-                     q = new LocalClusteredQueue(postOffice, nodeId, name, idm.getID(), ms, pm, true, true,
-                              executor, mDest.getMaxSize(), selector, tr,
+                     q = new LocalClusteredQueue((ClusteredPostOffice)postOffice, nodeId, name, idm.getID(), ms, pm, true, true,
+                              mDest.getMaxSize(), selector, tr,
                               mDest.getFullSize(),
                               mDest.getPageSize(),
                               mDest.getDownCacheSize());
@@ -1719,7 +1713,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
       {
          DeliveryObserver observer = (DeliveryObserver)iter.next();
          
-         ((Channel)observer).deliver(false);
+         ((Channel)observer).deliver();
       }
    }
    

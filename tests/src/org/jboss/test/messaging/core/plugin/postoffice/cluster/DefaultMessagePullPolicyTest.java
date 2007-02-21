@@ -274,7 +274,7 @@ public class DefaultMessagePullPolicyTest extends MessagingTestCase
          
       }
 
-      public void deliver(boolean synchronous)
+      public void deliver()
       {
          // TODO Auto-generated method stub
          

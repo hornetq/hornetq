@@ -85,7 +85,7 @@ public class SimpleChannel implements Channel
       return ms;
    }
 
-   public void deliver(boolean synch)
+   public void deliver()
    {
       log.debug("deliver()");
       deliveryNotification = true;

@@ -26,7 +26,6 @@ import javax.transaction.TransactionManager;
 
 import org.jboss.jms.selector.SelectorFactory;
 import org.jboss.jms.server.JMSConditionFactory;
-import org.jboss.jms.server.QueuedExecutorPool;
 import org.jboss.jms.server.ServerPeer;
 import org.jboss.jms.util.ExceptionUtil;
 import org.jboss.messaging.core.FilterFactory;
@@ -130,8 +129,6 @@ public class DefaultPostOfficeService extends JDBCServiceSupport
          
          PersistenceManager pm = serverPeer.getPersistenceManagerInstance();
          
-         QueuedExecutorPool pool = serverPeer.getQueuedExecutorPool();
-         
          TransactionRepository tr = serverPeer.getTxRepository();
          
          int nodeId = serverPeer.getServerPeerID();
@@ -142,7 +139,7 @@ public class DefaultPostOfficeService extends JDBCServiceSupport
                
          postOffice = new DefaultPostOffice(ds, tm, sqlProperties,
                                          createTablesOnStartup,
-                                         nodeId, officeName, ms, pm, tr, ff, cf, pool);
+                                         nodeId, officeName, ms, pm, tr, ff, cf);
          
          postOffice.start();
          

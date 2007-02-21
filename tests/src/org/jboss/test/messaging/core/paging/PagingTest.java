@@ -31,8 +31,6 @@ import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.jmx.ServiceContainer;
 import org.jboss.test.messaging.util.CoreMessageFactory;
 
-import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
-
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -65,7 +63,7 @@ public class PagingTest extends MessagingTestCase
    {
       PagingFilteredQueue p =
          new PagingFilteredQueue("queue0", 1, ms, pm, true, true,
-                                 new QueuedExecutor(), -1, null, 100, 20, 10);
+                                 -1, null, 100, 20, 10);
            
       CoreMessage m = null;
 

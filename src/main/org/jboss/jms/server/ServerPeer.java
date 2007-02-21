@@ -112,8 +112,6 @@ public class ServerPeer extends ServiceMBeanSupport implements ServerPeerMBean
    private String defaultQueueJNDIContext;
    private String defaultTopicJNDIContext;
 
-   private int queuedExecutorPoolSize = 200;
-
    private boolean started;
 
    private int objectIDSequence = 1;
@@ -147,8 +145,7 @@ public class ServerPeer extends ServiceMBeanSupport implements ServerPeerMBean
    private IDManager messageIDManager;
    private IDManager channelIDManager;
    private IDManager transactionIDManager;
-   private MemoryManager memoryManager;
-   private QueuedExecutorPool queuedExecutorPool;
+   private MemoryManager memoryManager;  
    private MessageStore messageStore;
    private MessageCounterManager messageCounterManager;
 
@@ -216,12 +213,6 @@ public class ServerPeer extends ServiceMBeanSupport implements ServerPeerMBean
          }
 
          log.debug(this + " starting");
-
-         if (queuedExecutorPoolSize < 1)
-         {
-            throw new IllegalArgumentException("queuedExecutorPoolSize must be > 0");
-         }
-         queuedExecutorPool = new QueuedExecutorPool(queuedExecutorPoolSize);
 
          loadClientAOPConfig();
 
@@ -334,8 +325,6 @@ public class ServerPeer extends ServiceMBeanSupport implements ServerPeerMBean
 
          // TODO unloadClientAOPConfig();
 
-         queuedExecutorPool.shutdown();
-         
          MessagingTimeoutFactory.instance.reset();
 
          log.info("JMS " + this + " stopped");
@@ -503,21 +492,6 @@ public class ServerPeer extends ServiceMBeanSupport implements ServerPeerMBean
       return securityStore.getDefaultSecurityConfig();
    }
         
-   public synchronized int getQueuedExecutorPoolSize()
-   {
-      return queuedExecutorPoolSize;
-   }
-
-   public synchronized void setQueuedExecutorPoolSize(int poolSize)
-   {
-      if (started)
-      {
-         log.warn("Cannot set jms queued executor pool size on server peer when server peer is started");
-         return;         
-      }
-      this.queuedExecutorPoolSize = poolSize;
-   }
-   
    public synchronized long getFailoverStartTimeout()
    {
       return this.failoverStartTimeout;
@@ -1145,11 +1119,6 @@ public class ServerPeer extends ServiceMBeanSupport implements ServerPeerMBean
       return objectIDSequence++;
    }
 
-   public QueuedExecutorPool getQueuedExecutorPool()
-   {
-      return queuedExecutorPool;
-   }
-   
    /*
     * Wait for failover from the specified node to complete.
     */

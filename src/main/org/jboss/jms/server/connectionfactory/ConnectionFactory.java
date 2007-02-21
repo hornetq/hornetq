@@ -7,12 +7,13 @@
 package org.jboss.jms.server.connectionfactory;
 
 import javax.management.ObjectName;
+
+import org.jboss.jms.client.plugin.LoadBalancingFactory;
 import org.jboss.jms.server.ConnectionFactoryManager;
 import org.jboss.jms.server.ConnectionManager;
 import org.jboss.jms.server.ConnectorManager;
 import org.jboss.jms.server.ServerPeer;
 import org.jboss.jms.util.ExceptionUtil;
-import org.jboss.jms.client.plugin.LoadBalancingFactory;
 import org.jboss.remoting.InvokerLocator;
 import org.jboss.system.ServiceMBeanSupport;
 import org.w3c.dom.Element;
@@ -40,9 +41,11 @@ public class ConnectionFactory extends ServiceMBeanSupport
    protected boolean clustered;
    protected LoadBalancingFactory loadBalancingFactory;
    
-   protected int defaultTempQueueFullSize = 75000;
+   protected int defaultTempQueueFullSize = 200000;
    protected int defaultTempQueuePageSize = 2000;
    protected int defaultTempQueueDownCacheSize = 2000;
+   
+   protected int dupsOKBatchSize = 1000;
 
    protected ObjectName serverPeerObjectName;
    protected ConnectionFactoryManager connectionFactoryManager;
@@ -124,8 +127,8 @@ public class ConnectionFactory extends ServiceMBeanSupport
          connectionFactoryManager.
             registerConnectionFactory(getServiceName().getCanonicalName(), clientID, jndiBindings,
                                       locatorURI, enablePing, prefetchSize,
-                                      defaultTempQueueFullSize, defaultTempQueuePageSize,
-                                      defaultTempQueueDownCacheSize, clustered,
+                                      defaultTempQueueFullSize, defaultTempQueuePageSize,                                      
+                                      defaultTempQueueDownCacheSize, dupsOKBatchSize, clustered,
                                       loadBalancingFactory);
       
          InvokerLocator locator = new InvokerLocator(locatorURI);
@@ -295,6 +298,22 @@ public class ConnectionFactory extends ServiceMBeanSupport
       Class clz = Class.forName(factoryName);
       
       loadBalancingFactory = (LoadBalancingFactory)clz.newInstance();
+   }
+   
+   public void setDupsOKBatchSize(int size) throws Exception
+   {
+      if (started)
+      {
+         log.warn("DupsOKBatchSize can only be changed when connection factory is stopped");
+         return;
+      }
+      
+      this.dupsOKBatchSize = size;
+   }
+   
+   public int getDupsOKBatchSize()
+   {
+      return this.dupsOKBatchSize;
    }
 
    // JMX managed operations -----------------------------------------------------------------------

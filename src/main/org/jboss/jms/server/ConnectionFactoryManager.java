@@ -21,8 +21,8 @@
   */
 package org.jboss.jms.server;
 
-import org.jboss.jms.server.connectionfactory.JNDIBindings;
 import org.jboss.jms.client.plugin.LoadBalancingFactory;
+import org.jboss.jms.server.connectionfactory.JNDIBindings;
 import org.jboss.messaging.core.plugin.contract.MessagingComponent;
 
 /**
@@ -44,6 +44,7 @@ public interface ConnectionFactoryManager extends MessagingComponent
                                  int defaultTempQueueFullSize,
                                  int defaultTempQueuePageSize,
                                  int defaultTempQueueDownCacheSize,
+                                 int dupsOKBatchSize,
                                  boolean clustered,
                                  LoadBalancingFactory loadBalancingPolicy) throws Exception;
 

@@ -33,8 +33,6 @@ import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager;
 import org.jboss.messaging.core.tx.Transaction;
 
-import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
-
 /**
  * 
  * A PagingFilteredQueue
@@ -74,10 +72,9 @@ public class PagingFilteredQueue extends PagingChannelSupport implements Queue
 
    public PagingFilteredQueue(String name, long id, MessageStore ms, PersistenceManager pm,             
                               boolean acceptReliableMessages, boolean recoverable,
-                              QueuedExecutor executor, int maxSize,
-                              Filter filter)
+                              int maxSize, Filter filter)
    {
-      super(id, ms, pm, acceptReliableMessages, recoverable, executor, maxSize);
+      super(id, ms, pm, acceptReliableMessages, recoverable, maxSize);
       
       router = new RoundRobinPointToPointRouter();
       
@@ -88,11 +85,10 @@ public class PagingFilteredQueue extends PagingChannelSupport implements Queue
    
    public PagingFilteredQueue(String name, long id, MessageStore ms, PersistenceManager pm,             
                               boolean acceptReliableMessages, boolean recoverable,
-                              QueuedExecutor executor, int maxSize,
-                              Filter filter,
+                              int maxSize, Filter filter,
                               int fullSize, int pageSize, int downCacheSize)
    {
-      super(id, ms, pm, acceptReliableMessages, recoverable, executor, maxSize, fullSize, pageSize, downCacheSize);
+      super(id, ms, pm, acceptReliableMessages, recoverable, maxSize, fullSize, pageSize, downCacheSize);
       
       router = new RoundRobinPointToPointRouter();
       

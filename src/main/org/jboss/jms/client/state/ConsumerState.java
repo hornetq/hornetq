@@ -25,11 +25,12 @@ import java.util.Collections;
 
 import javax.jms.Destination;
 
-import org.jboss.jms.client.delegate.DelegateSupport;
 import org.jboss.jms.client.delegate.ClientConnectionDelegate;
-import org.jboss.jms.client.remoting.MessageCallbackHandler;
+import org.jboss.jms.client.delegate.DelegateSupport;
 import org.jboss.jms.client.remoting.CallbackManager;
+import org.jboss.jms.client.remoting.MessageCallbackHandler;
 import org.jboss.jms.delegate.ConsumerDelegate;
+import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.server.Version;
 
 /**
@@ -60,6 +61,8 @@ public class ConsumerState extends HierarchicalStateSupport
    private int bufferSize;
    private int maxDeliveries;
 
+   private boolean storingDeliveries;
+   
    // Needed for failover
    private long channelID;
 
@@ -68,7 +71,7 @@ public class ConsumerState extends HierarchicalStateSupport
 
    // Constructors ---------------------------------------------------------------------------------
 
-   public ConsumerState(SessionState parent, ConsumerDelegate delegate, Destination dest,
+   public ConsumerState(SessionState parent, ConsumerDelegate delegate, JBossDestination dest,
                         String selector, boolean noLocal, String subscriptionName, int consumerID,
                         boolean isCC, int bufferSize, int maxDeliveries, long channelID)
    {
@@ -83,6 +86,17 @@ public class ConsumerState extends HierarchicalStateSupport
       this.subscriptionName=subscriptionName;
       this.maxDeliveries = maxDeliveries;
       this.channelID = channelID;
+      
+      //We don't store deliveries if this a non durable subscriber
+      
+      if (dest.isTopic() && subscriptionName == null)
+      {
+         storingDeliveries = false;
+      }
+      else
+      {
+         storingDeliveries = true;
+      }
    }
 
    // HierarchicalState implementation -------------------------------------------------------------
@@ -196,6 +210,11 @@ public class ConsumerState extends HierarchicalStateSupport
    public long getChannelID()
    {
       return channelID;
+   }
+   
+   public boolean isStoringDeliveries()
+   {
+      return storingDeliveries;
    }
 
    // Package protected ----------------------------------------------------------------------------

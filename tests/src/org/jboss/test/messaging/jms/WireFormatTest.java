@@ -755,7 +755,7 @@ public class WireFormatTest extends MessagingTestCase
       
       public void testConnectionCreateSessionDelegateResponse() throws Exception
       { 
-         ClientSessionDelegate del = new ClientSessionDelegate(786);
+         ClientSessionDelegate del = new ClientSessionDelegate(786, 1000);
          
          ResponseSupport resp =
             new ConnectionCreateSessionDelegateResponse(del);

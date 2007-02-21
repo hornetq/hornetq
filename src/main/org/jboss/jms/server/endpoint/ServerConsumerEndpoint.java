@@ -105,6 +105,8 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
 
    // Must be volatile
    private volatile boolean clientAccepting;
+   
+   private boolean storeDeliveries;
 
    // Constructors ---------------------------------------------------------------------------------
 
@@ -141,6 +143,20 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
       
       this.startStopLock = new Object();
       
+      if (dest.isTopic() && !messageQueue.isRecoverable())
+      {
+         //This is a consumer of a non durable topic subscription
+         //We don't need to store deliveries since if the consumer is closed or
+         //dies the refs go too
+         this.storeDeliveries = false;
+      }
+      else
+      {
+         this.storeDeliveries = true;
+      }
+      
+      storeDeliveries = true;
+      
       if (selector != null)
       {
          if (trace) log.trace("creating selector:" + selector);
@@ -155,9 +171,6 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
       
       //We don't need to prompt delivery - this will come from the client in a changeRate request
       
-      // prompt delivery
-      //promptDelivery();
-
       log.debug(this + " constructed");
    }
 
@@ -211,15 +224,23 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
          
          boolean selectorRejected = !this.accept(message);
    
-         SimpleDelivery delivery = new SimpleDelivery(observer, ref, false, !selectorRejected);
+         SimpleDelivery delivery = new SimpleDelivery(observer, ref, !storeDeliveries, !selectorRejected);
          
          if (selectorRejected)
          {
             return delivery;
          }
                  
-         long deliveryId =
-            sessionEndpoint.addDelivery(delivery, id, dlq, expiryQueue, redeliveryDelay);
+         long deliveryId;
+         
+         if (storeDeliveries)
+         {
+            deliveryId = sessionEndpoint.addDelivery(delivery, id, dlq, expiryQueue, redeliveryDelay);
+         }
+         else
+         {
+            deliveryId = -1;
+         }
    
          // We send the message to the client on the current thread. The message is written onto the
          // transport and then the thread returns immediately without waiting for a response.
@@ -259,7 +280,7 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
             {
                // one way invocation, no acknowledgment sent back by the client
                if (trace) { log.trace(this + " submitting message " + message + " to the remoting layer to be sent asynchronously"); }
-               callbackHandler.handleCallbackOneway(callback);
+               callbackHandler.handleCallbackOneway(callback);               
             }
          }
          catch (HandleCallbackException e)
@@ -356,7 +377,6 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
            
    // ConsumerEndpoint implementation --------------------------------------------------------------
    
-   
    public void changeRate(float newRate) throws JMSException
    {
       if (trace) { log.trace(this + " changing rate to " + newRate); }
@@ -376,8 +396,13 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
          
          // No need to synchronize - clientAccepting is volatile.
          
-         // We need to deal with the fact that one way invocations may arrive in a different order
-         // to that which they arrived in. So we just toggle on / off.
+         // Important note - this invocations can arrive in a different order to which they were
+         // sent - this is inherent in one way invocations where a client side pool is used.
+         // Therefore we just toggle the clientAccepting flag - if we actually looked at the newRate
+         // value we might end up turning off the consumer when it should be on
+         // (since a off-on, arrives as on-off)
+         // Toggling is safe, but when we start to look at the actual rate value we will
+         // have to be a bit cleverer
          
          clientAccepting = !clientAccepting;
          
@@ -391,6 +416,8 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
          throw ExceptionUtil.handleJMSInvocation(t, this + " changeRate");
       }
    }
+   
+   
    
    /*
     * This method is always called between closing() and close() being called
@@ -551,7 +578,7 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
    
    private void promptDelivery()
    {
-      messageQueue.deliver(Channel.ASYNCRHONOUS);
+      messageQueue.deliver();
    }
    
    // Inner classes --------------------------------------------------------------------------------

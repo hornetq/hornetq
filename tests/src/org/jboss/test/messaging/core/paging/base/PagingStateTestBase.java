@@ -42,9 +42,9 @@ import org.jboss.messaging.core.message.SimpleMessageStore;
 import org.jboss.messaging.core.plugin.IDManager;
 import org.jboss.messaging.core.plugin.JDBCPersistenceManager;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager;
+import org.jboss.messaging.core.tx.MessagingXid;
 import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.messaging.core.tx.TransactionRepository;
-import org.jboss.messaging.core.tx.MessagingXid;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.jmx.ServiceContainer;
 import org.jboss.tm.TransactionManagerService;
@@ -351,7 +351,7 @@ public class PagingStateTestBase extends MessagingTestCase
    {
       ConsumingReceiver r = new ConsumingReceiver(num, refs, consumeCount, false, false);
       channel.add(r);
-      channel.deliver(false);
+      channel.deliver();
       r.acknowledge();
       channel.remove(r);
       //Need to give enough time for the call to handle to complete and return
@@ -365,7 +365,7 @@ public class PagingStateTestBase extends MessagingTestCase
    {
       ConsumingReceiver r = new ConsumingReceiver(num, refs, consumeCount, true, false);
       channel.add(r);
-      channel.deliver(false);
+      channel.deliver();
       r.acknowledge();
       channel.remove(r);
       //Need to give enough time for the call to handle to complete and return
@@ -379,7 +379,7 @@ public class PagingStateTestBase extends MessagingTestCase
    {
       ConsumingReceiver r = new ConsumingReceiver(num, refs, consumeCount, true, true);
       channel.add(r);
-      channel.deliver(false);
+      channel.deliver();
       r.acknowledge();
       channel.remove(r);
       //Need to give enough time for the call to handle to complete and return
@@ -391,7 +391,7 @@ public class PagingStateTestBase extends MessagingTestCase
    {
       CancellingReceiver r1 = new CancellingReceiver(number);
       channel.add(r1);
-      channel.deliver(false);   
+      channel.deliver();   
       SimpleDelivery[] dels = r1.getToCancel();
       channel.remove(r1);
       //Need to give enough time for the call to handle to complete and return
@@ -405,7 +405,7 @@ public class PagingStateTestBase extends MessagingTestCase
    {
       CancellingReceiver r1 = new CancellingReceiver(number);
       channel.add(r1);
-      channel.deliver(false);   
+      channel.deliver();   
       r1.cancel();
       channel.remove(r1);
       //Need to give enough time for the call to handle to complete and return

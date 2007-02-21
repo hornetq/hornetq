@@ -21,18 +21,21 @@
  */
 package org.jboss.messaging.core.plugin.postoffice.cluster;
 
-import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
 import org.jboss.logging.Logger;
-import org.jboss.messaging.core.*;
+import org.jboss.messaging.core.Delivery;
+import org.jboss.messaging.core.Filter;
+import org.jboss.messaging.core.SimpleDelivery;
 import org.jboss.messaging.core.local.PagingFilteredQueue;
 import org.jboss.messaging.core.message.Message;
 import org.jboss.messaging.core.message.MessageReference;
+import org.jboss.messaging.core.plugin.contract.ClusteredPostOffice;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager;
-import org.jboss.messaging.core.plugin.contract.PostOffice;
 import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.messaging.core.tx.TransactionRepository;
 import org.jboss.messaging.util.Future;
+
+import EDU.oswego.cs.dl.util.concurrent.Executor;
 
 /**
  * 
@@ -60,33 +63,39 @@ public class LocalClusteredQueue extends PagingFilteredQueue implements Clustere
    
    private TransactionRepository tr;
    
+   private Executor executor;
+   
    //TODO - we shouldn't have to specify office AND nodeId
-   public LocalClusteredQueue(PostOffice office, int nodeId, String name, long id,
+   public LocalClusteredQueue(ClusteredPostOffice office, int nodeId, String name, long id,
                               MessageStore ms, PersistenceManager pm,
                               boolean acceptReliableMessages, boolean recoverable,
-                              QueuedExecutor executor, int maxSize,
+                              int maxSize,
                               Filter filter, TransactionRepository tr,
                               int fullSize, int pageSize, int downCacheSize)
    {
       super(name, id, ms, pm, acceptReliableMessages, recoverable, 
-            executor, maxSize, filter, fullSize, pageSize, downCacheSize);
+            maxSize, filter, fullSize, pageSize, downCacheSize);
      
       this.nodeId = nodeId;
       this.tr = tr;
       this.office = (PostOfficeInternal)office; //TODO - This cast is potentially unsafe - handle better
+      
+      this.executor = this.office.getPooledExecutor();
    }
    
-   public LocalClusteredQueue(PostOffice office, int nodeId, String name, long id,
+   public LocalClusteredQueue(ClusteredPostOffice office, int nodeId, String name, long id,
                               MessageStore ms, PersistenceManager pm,
                               boolean acceptReliableMessages, boolean recoverable,
-                              QueuedExecutor executor, int maxSize,
+                              int maxSize,
                               Filter filter, TransactionRepository tr)
    {
-      super(name, id, ms, pm, acceptReliableMessages, recoverable, executor, maxSize, filter);
+      super(name, id, ms, pm, acceptReliableMessages, recoverable, maxSize, filter);
       
       this.nodeId = nodeId;
       this.tr = tr;
       this.office = (PostOfficeInternal)office; //TODO - This cast is potentially unsafe - handle better
+      
+      this.executor = this.office.getPooledExecutor();
    }
    
    public void setPullQueue(RemoteQueueStub queue)
@@ -159,20 +168,12 @@ public class LocalClusteredQueue extends PagingFilteredQueue implements Clustere
       
       checkClosed();
       
-      Future result = new Future();
-      
-      // Instead of executing directly, we add the handle request to the event queue.
-      // Since remoting doesn't currently handle non blocking IO, we still have to wait for the
-      // result, but when remoting does, we can use a full SEDA approach and get even better
-      // throughput.
-      this.executor.execute(new HandleRunnable(result, null, ref, false));
-
-      return (Delivery)result.getResult();
+      return handleInternal(null, ref, null, false);
    }
    
    public void acknowledgeFromCluster(Delivery d) throws Throwable
    {
-      acknowledgeInternal(d, null, false, false);      
+      acknowledgeInternal(d, null, false);      
    }
    
    public void handlePullMessagesResult(RemoteQueueStub remoteQueue, Message message,
@@ -203,12 +204,10 @@ public class LocalClusteredQueue extends PagingFilteredQueue implements Clustere
         
    public int getRefCount()
    {
-      //We are only interested in getting the reference count when delivery is not in progress
-      //since we don't want mid delivery transient spurious values, so we execute the request
-      //on the same thread.
-      
       Future result = new Future();
       
+      //This needs to be run on a different thread to the one used by JGroups to deliver the message
+      //to avoid deadlock
       try
       {
          this.executor.execute(new GetRefCountRunnable(result));
@@ -470,8 +469,7 @@ public class LocalClusteredQueue extends PagingFilteredQueue implements Clustere
             {
                ref = ms.reference(message);
                
-               //Should be executed synchronously since we already in the event queue
-               Delivery delRet = handleInternal(null, ref, tx, true, true);
+               Delivery delRet = handleInternal(null, ref, tx, true);
 
                if (delRet == null || !delRet.isSelectorAccepted())
                {

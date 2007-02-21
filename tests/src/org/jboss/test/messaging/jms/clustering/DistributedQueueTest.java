@@ -6,21 +6,21 @@
  */
 package org.jboss.test.messaging.jms.clustering;
 
+import javax.jms.Connection;
+import javax.jms.ConnectionFactory;
+import javax.jms.DeliveryMode;
+import javax.jms.MessageConsumer;
+import javax.jms.MessageProducer;
+import javax.jms.Queue;
+import javax.jms.Session;
+import javax.jms.TextMessage;
+import javax.management.ObjectName;
+import javax.naming.InitialContext;
+
+import org.jboss.jms.client.JBossConnection;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
 import org.jboss.test.messaging.tools.jmx.ServiceAttributeOverrides;
-import org.jboss.jms.client.JBossConnection;
-
-import javax.jms.Connection;
-import javax.jms.Session;
-import javax.jms.MessageProducer;
-import javax.jms.DeliveryMode;
-import javax.jms.MessageConsumer;
-import javax.jms.TextMessage;
-import javax.jms.ConnectionFactory;
-import javax.jms.Queue;
-import javax.naming.InitialContext;
-import javax.management.ObjectName;
 
 /**
  * Extending MessagingTestCase and not ClusteringTestBase because I want to start the messaging

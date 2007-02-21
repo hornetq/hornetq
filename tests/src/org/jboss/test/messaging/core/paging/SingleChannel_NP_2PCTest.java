@@ -29,10 +29,8 @@ import org.jboss.messaging.core.message.Message;
 import org.jboss.messaging.core.message.MessageReference;
 import org.jboss.messaging.core.plugin.LockMap;
 import org.jboss.messaging.core.tx.Transaction;
-import org.jboss.test.messaging.util.CoreMessageFactory;
 import org.jboss.test.messaging.core.paging.base.PagingStateTestBase;
-
-import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
+import org.jboss.test.messaging.util.CoreMessageFactory;
 
 /**
  * 
@@ -67,7 +65,7 @@ public class SingleChannel_NP_2PCTest extends PagingStateTestBase
    
    public void test1() throws Throwable
    {
-      PagingFilteredQueue queue = new PagingFilteredQueue("queue1", 1, ms, pm, true, true, new QueuedExecutor(), -1, null, 100, 20, 10);
+      PagingFilteredQueue queue = new PagingFilteredQueue("queue1", 1, ms, pm, true, true, -1, null, 100, 20, 10);
             
       Message[] msgs = new Message[241];
       

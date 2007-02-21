@@ -39,7 +39,6 @@ import java.util.Properties;
 import javax.sql.DataSource;
 import javax.transaction.TransactionManager;
 
-import org.jboss.jms.server.QueuedExecutorPool;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Delivery;
 import org.jboss.messaging.core.Filter;
@@ -58,7 +57,6 @@ import org.jboss.messaging.core.plugin.contract.PostOffice;
 import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.messaging.core.tx.TransactionRepository;
 
-import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
 import EDU.oswego.cs.dl.util.concurrent.ReadWriteLock;
 import EDU.oswego.cs.dl.util.concurrent.ReentrantWriterPreferenceReadWriteLock;
 
@@ -88,7 +86,6 @@ public class DefaultPostOffice extends JDBCSupport implements PostOffice
    protected TransactionRepository tr;
    protected FilterFactory filterFactory;
    protected ConditionFactory conditionFactory;
-   protected QueuedExecutorPool pool;
    protected int currentNodeId;
 
    // Map <NodeID, Map<queueName, Binding>>
@@ -113,8 +110,7 @@ public class DefaultPostOffice extends JDBCSupport implements PostOffice
                          int nodeId, String officeName, MessageStore ms,
                          PersistenceManager pm,
                          TransactionRepository tr, FilterFactory filterFactory,
-                         ConditionFactory conditionFactory,
-                         QueuedExecutorPool pool)
+                         ConditionFactory conditionFactory)
    {
       super (ds, tm, sqlProperties, createTablesOnStartup);
 
@@ -130,7 +126,6 @@ public class DefaultPostOffice extends JDBCSupport implements PostOffice
       this.tr = tr;
       this.filterFactory = filterFactory;
       this.conditionFactory = conditionFactory;
-      this.pool = pool;
       this.officeName = officeName;
 
    }
@@ -662,10 +657,9 @@ public class DefaultPostOffice extends JDBCSupport implements PostOffice
       Queue queue;
 
       if (nodeID == currentNodeId)
-      {
-         QueuedExecutor executor = (QueuedExecutor)pool.get();
+      {         
          queue =
-            new PagingFilteredQueue(queueName, channelID, ms, pm, true, true, executor, -1, filter);
+            new PagingFilteredQueue(queueName, channelID, ms, pm, true, true, -1, filter);
       }
       else
       {

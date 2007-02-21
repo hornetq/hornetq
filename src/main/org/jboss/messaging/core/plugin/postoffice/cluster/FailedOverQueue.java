@@ -6,12 +6,11 @@
  */
 package org.jboss.messaging.core.plugin.postoffice.cluster;
 
-import org.jboss.messaging.core.tx.TransactionRepository;
-import org.jboss.messaging.core.plugin.contract.PostOffice;
+import org.jboss.messaging.core.Filter;
+import org.jboss.messaging.core.plugin.contract.ClusteredPostOffice;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager;
-import org.jboss.messaging.core.Filter;
-import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
+import org.jboss.messaging.core.tx.TransactionRepository;
 
 /**
  *
@@ -35,25 +34,25 @@ public class FailedOverQueue extends LocalClusteredQueue
 
    // Constructors ---------------------------------------------------------------------------------
 
-   public FailedOverQueue(PostOffice office, int nodeID, String name, long id, MessageStore ms,
+   public FailedOverQueue(ClusteredPostOffice office, int nodeID, String name, long id, MessageStore ms,
                           PersistenceManager pm, boolean acceptReliableMessages,
-                          boolean recoverable, QueuedExecutor executor, Filter filter,
+                          boolean recoverable, Filter filter,
                           TransactionRepository tr, int fullSize, int pageSize, int downCacheSize,
                           int failedNodeID)
    {
       super(office, nodeID, name, id, ms, pm, acceptReliableMessages, recoverable,
-            executor, -1, filter, tr, fullSize, pageSize, downCacheSize);
+            -1, filter, tr, fullSize, pageSize, downCacheSize);
 
       this.failedNodeID = failedNodeID;
    }
 
-   public FailedOverQueue(PostOffice office, int nodeID, String name, long id, MessageStore ms,
+   public FailedOverQueue(ClusteredPostOffice office, int nodeID, String name, long id, MessageStore ms,
                           PersistenceManager pm, boolean acceptReliableMessages,
-                          boolean recoverable, QueuedExecutor executor, Filter filter,
+                          boolean recoverable, Filter filter,
                           TransactionRepository tr, int failedNodeID)
    {
       super(office, nodeID, name, id, ms, pm, acceptReliableMessages, recoverable,
-            executor, -1, filter, tr);
+            -1, filter, tr);
 
       this.failedNodeID = failedNodeID;
    }

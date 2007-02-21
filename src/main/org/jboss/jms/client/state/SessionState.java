@@ -22,32 +22,34 @@
 package org.jboss.jms.client.state;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Iterator;
-import java.util.Collections;
 
-import org.jboss.jms.client.delegate.ClientSessionDelegate;
-import org.jboss.jms.client.delegate.DelegateSupport;
+import javax.jms.MessageListener;
+import javax.jms.Session;
+
+import org.jboss.jms.client.delegate.ClientBrowserDelegate;
 import org.jboss.jms.client.delegate.ClientConsumerDelegate;
 import org.jboss.jms.client.delegate.ClientProducerDelegate;
-import org.jboss.jms.client.delegate.ClientBrowserDelegate;
+import org.jboss.jms.client.delegate.ClientSessionDelegate;
+import org.jboss.jms.client.delegate.DelegateSupport;
 import org.jboss.jms.client.remoting.MessageCallbackHandler;
 import org.jboss.jms.delegate.SessionDelegate;
+import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.server.Version;
 import org.jboss.jms.server.endpoint.DeliveryInfo;
 import org.jboss.jms.server.endpoint.DeliveryRecovery;
 import org.jboss.jms.tx.MessagingXAResource;
 import org.jboss.jms.tx.ResourceManager;
-import org.jboss.jms.destination.JBossDestination;
 import org.jboss.logging.Logger;
 
 import EDU.oswego.cs.dl.util.concurrent.LinkedQueue;
 import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
-
-import javax.jms.Session;
 
 /**
  * State corresponding to a session. This state is acessible inside aspects/interceptors.
@@ -85,18 +87,25 @@ public class SessionState extends HierarchicalStateSupport
    private QueuedExecutor executor;
 
    private boolean recoverCalled;
-
+   
    // List<DeliveryInfo>
    private List clientAckList;
 
    private DeliveryInfo autoAckInfo;
    private Map callbackHandlers;
-
-
+   
+   private int dupsOKBatchSize;
+   
+   private LinkedList asfMessages = new LinkedList();
+   
+   //The distinguished message listener - for ASF
+   private MessageListener sessionListener;
+      
    // Constructors ---------------------------------------------------------------------------------
 
    public SessionState(ConnectionState parent, ClientSessionDelegate delegate,
-                       boolean transacted, int ackMode, boolean xa)
+                       boolean transacted, int ackMode, boolean xa,
+                       int dupsOKBatchSize)
    {
       super(parent, (DelegateSupport)delegate);
 
@@ -106,6 +115,8 @@ public class SessionState extends HierarchicalStateSupport
       this.acknowledgeMode = ackMode;
       this.transacted = transacted;
       this.xa = xa;
+      
+      this.dupsOKBatchSize = dupsOKBatchSize;
 
       if (xa)
       {
@@ -156,6 +167,26 @@ public class SessionState extends HierarchicalStateSupport
    public Version getVersionToUse()
    {
       return parent.getVersionToUse();
+   }
+   
+   public int getDupsOKBatchSize()
+   {
+      return dupsOKBatchSize;
+   }
+   
+   public MessageListener getDistinguishedListener()
+   {
+      return this.sessionListener;
+   }
+   
+   public void setDistinguishedListener(MessageListener listener)
+   {
+      this.sessionListener = listener;
+   }
+   
+   public LinkedList getASFMessages()
+   {
+      return asfMessages;
    }
 
    // HierarchicalStateSupport overrides -----------------------------------------------------------
@@ -316,6 +347,11 @@ public class SessionState extends HierarchicalStateSupport
    {
       return clientAckList;
    }
+   
+   public void setClientAckList(List list)
+   {
+      this.clientAckList = list;
+   }
 
    public DeliveryInfo getAutoAckInfo()
    {
@@ -395,7 +431,7 @@ public class SessionState extends HierarchicalStateSupport
    {
       return sessionID;
    }
-
+   
    public String toString()
    {
       return "SessionState[" + sessionID + "]";

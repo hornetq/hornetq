@@ -51,7 +51,7 @@ public abstract class ManagedDestination implements MessagingComponent
    protected static final int NON_DURABLE = 2;
    
       
-   private static final int DEFAULT_FULL_SIZE = 75000;
+   private static final int DEFAULT_FULL_SIZE = 200000;
    
    private static final int DEFAULT_PAGE_SIZE = 2000;
    

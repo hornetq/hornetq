@@ -136,6 +136,12 @@
       <name>ChannelPartitionName</name>
       <type>java.lang.String</type>
    </attribute>
+   
+   <attribute access="read-write" getMethod="getThreadPoolSize" setMethod="setThreadPoolSize">
+      <description>The size of the thread pool used to perform various asynchronous clustering operations</description>
+      <name>ThreadPoolSize</name>
+      <type>int</type>
+   </attribute>   
 
    <!-- Managed operations -->
 

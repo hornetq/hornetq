@@ -24,7 +24,6 @@ package org.jboss.test.messaging.core.plugin.base;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.jboss.jms.server.QueuedExecutorPool;
 import org.jboss.messaging.core.FilterFactory;
 import org.jboss.messaging.core.Queue;
 import org.jboss.messaging.core.message.Message;
@@ -32,20 +31,20 @@ import org.jboss.messaging.core.message.MessageReference;
 import org.jboss.messaging.core.message.SimpleMessageStore;
 import org.jboss.messaging.core.plugin.IDManager;
 import org.jboss.messaging.core.plugin.JDBCPersistenceManager;
+import org.jboss.messaging.core.plugin.contract.ClusteredPostOffice;
 import org.jboss.messaging.core.plugin.contract.Condition;
 import org.jboss.messaging.core.plugin.contract.ConditionFactory;
+import org.jboss.messaging.core.plugin.contract.FailoverMapper;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager;
 import org.jboss.messaging.core.plugin.contract.PostOffice;
-import org.jboss.messaging.core.plugin.contract.ClusteredPostOffice;
-import org.jboss.messaging.core.plugin.contract.FailoverMapper;
 import org.jboss.messaging.core.plugin.postoffice.DefaultPostOffice;
+import org.jboss.messaging.core.plugin.postoffice.cluster.ClusterRouterFactory;
+import org.jboss.messaging.core.plugin.postoffice.cluster.DefaultClusteredPostOffice;
+import org.jboss.messaging.core.plugin.postoffice.cluster.DefaultFailoverMapper;
+import org.jboss.messaging.core.plugin.postoffice.cluster.DefaultRouterFactory;
 import org.jboss.messaging.core.plugin.postoffice.cluster.MessagePullPolicy;
 import org.jboss.messaging.core.plugin.postoffice.cluster.NullMessagePullPolicy;
-import org.jboss.messaging.core.plugin.postoffice.cluster.ClusterRouterFactory;
-import org.jboss.messaging.core.plugin.postoffice.cluster.DefaultRouterFactory;
-import org.jboss.messaging.core.plugin.postoffice.cluster.DefaultFailoverMapper;
-import org.jboss.messaging.core.plugin.postoffice.cluster.DefaultClusteredPostOffice;
 import org.jboss.messaging.core.plugin.postoffice.cluster.jchannelfactory.JChannelFactory;
 import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.messaging.core.tx.TransactionRepository;
@@ -80,12 +79,11 @@ public class PostOfficeTestBase extends MessagingTestCase
                                                                   ServiceContainer sc,
                                                                   MessageStore ms,
                                                                   PersistenceManager pm,
-                                                                  TransactionRepository tr,
-                                                                  QueuedExecutorPool pool)
+                                                                  TransactionRepository tr)
       throws Exception
    {
       return createClusteredPostOffice(nodeID, groupName, 5000, 5000, new NullMessagePullPolicy(),
-                                       sc, ms, pm, tr, pool);
+                                       sc, ms, pm, tr);
    }
 
 
@@ -97,8 +95,7 @@ public class PostOfficeTestBase extends MessagingTestCase
                                                                   ServiceContainer sc,
                                                                   MessageStore ms,
                                                                   PersistenceManager pm,
-                                                                  TransactionRepository tr,
-                                                                  QueuedExecutorPool pool)
+                                                                  TransactionRepository tr)
       throws Exception
    {
       FilterFactory ff = new SimpleFilterFactory();
@@ -124,9 +121,9 @@ public class PostOfficeTestBase extends MessagingTestCase
       DefaultClusteredPostOffice postOffice =
          new DefaultClusteredPostOffice(sc.getDataSource(), sc.getTransactionManager(),
                                         sc.getClusteredPostOfficeSQLProperties(), true, nodeID,
-                                        "Clustered", ms, pm, tr, ff, cf, pool,
+                                        "Clustered", ms, pm, tr, ff, cf,
                                         groupName, jChannelFactory,
-                                        stateTimeout, castTimeout, pullPolicy, rf, mapper, 1000);
+                                        stateTimeout, castTimeout, pullPolicy, rf, mapper, 1000, 10);
       
       postOffice.start();
 
@@ -147,8 +144,6 @@ public class PostOfficeTestBase extends MessagingTestCase
    
    protected TransactionRepository tr;
    
-   protected QueuedExecutorPool pool;
-   
    protected ConditionFactory conditionFactory;
    
    // Constructors --------------------------------------------------
@@ -168,7 +163,7 @@ public class PostOfficeTestBase extends MessagingTestCase
       
       DefaultPostOffice postOffice = 
          new DefaultPostOffice(sc.getDataSource(), sc.getTransactionManager(),
-                            sc.getPostOfficeSQLProperties(), true, 1, "Simple", ms, pm, tr, ff, cf, pool);
+                               sc.getPostOfficeSQLProperties(), true, 1, "Simple", ms, pm, tr, ff, cf);
       
       postOffice.start();      
       
@@ -266,8 +261,6 @@ public class PostOfficeTestBase extends MessagingTestCase
 
       tr = new TransactionRepository(pm, ms, transactionIDManager);
       tr.start();
-
-      pool = new QueuedExecutorPool(10);
 
       channelIDManager = new IDManager("CHANNEL_ID", 10, pm);
       channelIDManager.start();

@@ -88,11 +88,7 @@ public interface ServerPeerMBean
    ObjectName getDefaultExpiryQueue();
 
    void setDefaultExpiryQueue(ObjectName on);
-
-   int getQueuedExecutorPoolSize();
-
-   void setQueuedExecutorPoolSize(int poolSize);
-   
+ 
    long getFailoverStartTimeout();
    
    void setFailoverStartTimeout(long timeout);

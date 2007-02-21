@@ -21,17 +21,22 @@
   */
 package org.jboss.jms.client.container;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 
 import javax.jms.IllegalStateException;
 import javax.jms.Message;
+import javax.jms.MessageListener;
+import javax.jms.ServerSessionPool;
 import javax.jms.Session;
 import javax.jms.TransactionInProgressException;
 
 import org.jboss.aop.joinpoint.Invocation;
 import org.jboss.aop.joinpoint.MethodInvocation;
+import org.jboss.jms.client.JBossConnectionConsumer;
 import org.jboss.jms.client.delegate.ClientSessionDelegate;
 import org.jboss.jms.client.delegate.DelegateSupport;
 import org.jboss.jms.client.remoting.MessageCallbackHandler;
@@ -39,8 +44,19 @@ import org.jboss.jms.client.state.ConnectionState;
 import org.jboss.jms.client.state.SessionState;
 import org.jboss.jms.delegate.ConnectionDelegate;
 import org.jboss.jms.delegate.SessionDelegate;
+import org.jboss.jms.destination.JBossDestination;
+import org.jboss.jms.message.BytesMessageProxy;
+import org.jboss.jms.message.JBossBytesMessage;
+import org.jboss.jms.message.JBossMapMessage;
 import org.jboss.jms.message.JBossMessage;
+import org.jboss.jms.message.JBossObjectMessage;
+import org.jboss.jms.message.JBossStreamMessage;
+import org.jboss.jms.message.JBossTextMessage;
+import org.jboss.jms.message.MapMessageProxy;
 import org.jboss.jms.message.MessageProxy;
+import org.jboss.jms.message.ObjectMessageProxy;
+import org.jboss.jms.message.StreamMessageProxy;
+import org.jboss.jms.message.TextMessageProxy;
 import org.jboss.jms.server.endpoint.DefaultCancel;
 import org.jboss.jms.server.endpoint.DeliveryInfo;
 import org.jboss.jms.tx.LocalTx;
@@ -112,8 +128,7 @@ public class SessionAspect
       //any deliveries - this is because the message listener might have closed
       //before on message had finished executing
       
-      if (ackMode == Session.AUTO_ACKNOWLEDGE ||
-          ackMode == Session.DUPS_OK_ACKNOWLEDGE)
+      if (ackMode == Session.AUTO_ACKNOWLEDGE)
       {
          //Acknowledge or cancel any outstanding auto ack
          
@@ -123,11 +138,34 @@ public class SessionAspect
          {
             if (trace) { log.trace(this + " handleClosing(). Found remaining auto ack. Will ack " + remainingAutoAck); }
             
-            ackDelivery(del, remainingAutoAck);            
-                        
-            if (trace) { log.trace(this + " acked it"); }
-            
-            state.setAutoAckInfo(null);
+            try
+            {
+               ackDelivery(del, remainingAutoAck);
+               
+               if (trace) { log.trace(this + " acked it"); }               
+            }
+            finally
+            {                        
+               state.setAutoAckInfo(null);
+            }
+         }
+      }
+      else if (ackMode == Session.DUPS_OK_ACKNOWLEDGE)
+      {
+         //Ack any remaining deliveries
+                          
+         if (!state.getClientAckList().isEmpty())
+         {               
+            try
+            {
+               del.acknowledgeDeliveries(state.getClientAckList());
+            }
+            finally
+            {            
+               state.getClientAckList().clear();
+               
+               state.setAutoAckInfo(null);
+            }
          }
       }
       else if (ackMode == Session.CLIENT_ACKNOWLEDGE)
@@ -210,15 +248,22 @@ public class SessionAspect
                   
          state.getClientAckList().add(info);
       }
-      else if (ackMode == Session.AUTO_ACKNOWLEDGE ||
-               ackMode == Session.DUPS_OK_ACKNOWLEDGE)
+      else if (ackMode == Session.AUTO_ACKNOWLEDGE)
       {
-         // We collect the single acknowledgement in the state. Currently DUPS_OK is treated the
-         // same as AUTO_ACKNOWLDGE.
+         // We collect the single acknowledgement in the state. 
                            
          if (trace) { log.trace(this + " added " + info + " to session state"); }
          
          state.setAutoAckInfo(info);         
+      }
+      else if (ackMode == Session.DUPS_OK_ACKNOWLEDGE)
+      {
+         if (trace) { log.trace(this + " added to DUPS_OK_ACKNOWLEDGE list delivery " + info); }
+         
+         state.getClientAckList().add(info);
+         
+         //Also set here - this would be used for recovery in a message listener
+         state.setAutoAckInfo(info);
       }
       else
       {             
@@ -258,10 +303,9 @@ public class SessionAspect
       
       int ackMode = state.getAcknowledgeMode();
       
-      if (ackMode == Session.AUTO_ACKNOWLEDGE ||
-          ackMode == Session.DUPS_OK_ACKNOWLEDGE)
+      if (ackMode == Session.AUTO_ACKNOWLEDGE)
       {
-         // We auto acknowledge. Currently DUPS_OK is treated the same as AUTO_ACKNOWLDGE.
+         // We auto acknowledge.
 
          SessionDelegate sd = (SessionDelegate)mi.getTargetObject();
 
@@ -279,14 +323,53 @@ public class SessionAspect
                                  
             if (trace) { log.trace(this + " auto acknowledging delivery " + delivery); }
               
+
+            // We clear the state in a finally so then we don't get a knock on
+            // exception on the next ack since we haven't cleared the state. See
+            // http://jira.jboss.org/jira/browse/JBMESSAGING-852
+
+            //This is ok since the message is acked after delivery, then the client
+            //could get duplicates anyway
+            
             try
             {
                ackDelivery(sd, delivery);
             }
             finally
             {
-               state.setAutoAckInfo(null);
+               state.setAutoAckInfo(null);               
             }
+         }         
+         else
+         {
+            if (trace) { log.trace(this + " recover called, so NOT acknowledging"); }
+
+            state.setRecoverCalled(false);
+         }
+      }
+      else if (ackMode == Session.DUPS_OK_ACKNOWLEDGE)
+      {
+         List acks = state.getClientAckList();
+         
+         if (!state.isRecoverCalled())
+         {
+            if (acks.size() >= state.getDupsOKBatchSize())
+            {
+               // We clear the state in a finally
+               // http://jira.jboss.org/jira/browse/JBMESSAGING-852
+   
+               SessionDelegate sd = (SessionDelegate)mi.getTargetObject();
+                                          
+               try
+               {
+                  sd.acknowledgeDeliveries(acks);
+               }
+               finally
+               {                  
+                  acks.clear();
+                  state.setAutoAckInfo(null);
+               }
+            }    
          }
          else
          {
@@ -294,6 +377,8 @@ public class SessionAspect
 
             state.setRecoverCalled(false);
          }
+         state.setAutoAckInfo(null);
+                  
       }
 
       return null;
@@ -341,16 +426,18 @@ public class SessionAspect
       //Call redeliver
       SessionDelegate del = (SessionDelegate)mi.getTargetObject();
       
-      if (state.getAcknowledgeMode() == Session.CLIENT_ACKNOWLEDGE)
+      int ackMode = state.getAcknowledgeMode();
+      
+      if (ackMode == Session.CLIENT_ACKNOWLEDGE)
       {
-         del.redeliver(state.getClientAckList());
+         List dels = state.getClientAckList();
          
-         state.getClientAckList().clear();
+         state.setClientAckList(new ArrayList());
+         
+         del.redeliver(dels);
       }
-      else
+      else if (ackMode == Session.AUTO_ACKNOWLEDGE || ackMode == Session.DUPS_OK_ACKNOWLEDGE)
       {
-         //auto_ack or dups_ok
-         
          DeliveryInfo info = state.getAutoAckInfo();
          
          //Don't recover if it's already to cancel
@@ -365,8 +452,8 @@ public class SessionAspect
             
             state.setAutoAckInfo(null);            
          }
-      }            
-
+      }   
+        
       state.setRecoverCalled(true);
       
       return null;  
@@ -550,6 +637,169 @@ public class SessionAspect
    {
       return new Integer(getState(invocation).getAcknowledgeMode());
    }
+   
+   public Object handleCreateMessage(Invocation invocation) throws Throwable
+   {
+      JBossMessage jbm = new JBossMessage(0);
+       
+      return new MessageProxy(jbm);
+   }
+   
+   public Object handleCreateBytesMessage(Invocation invocation) throws Throwable
+   {
+      JBossBytesMessage jbm = new JBossBytesMessage(0);
+         
+      return new BytesMessageProxy(jbm);
+   }
+   
+   public Object handleCreateMapMessage(Invocation invocation) throws Throwable
+   {
+      JBossMapMessage jbm = new JBossMapMessage(0);
+       
+      return new MapMessageProxy(jbm);      
+   }
+   
+   public Object handleCreateObjectMessage(Invocation invocation) throws Throwable
+   {
+      JBossObjectMessage jbm = new JBossObjectMessage(0);
+       
+      MethodInvocation mi = (MethodInvocation)invocation;
+      
+      if (mi.getArguments() != null)
+      {
+         jbm.setObject((Serializable)mi.getArguments()[0]);
+      }
+      
+      return new ObjectMessageProxy(jbm);
+   }
+   
+   public Object handleCreateStreamMessage(Invocation invocation) throws Throwable
+   {
+      JBossStreamMessage jbm = new JBossStreamMessage(0);
+      
+      return new StreamMessageProxy(jbm);
+   }
+   
+   public Object handleCreateTextMessage(Invocation invocation) throws Throwable
+   {  
+      JBossTextMessage jbm = new JBossTextMessage(0);
+      
+      MethodInvocation mi = (MethodInvocation)invocation;
+      
+      if (mi.getArguments() != null)
+      {
+         jbm.setText((String)mi.getArguments()[0]);
+      }
+      
+      return new TextMessageProxy(jbm);
+   }   
+   
+   
+   
+   public Object handleSetMessageListener(Invocation invocation) throws Throwable
+   {
+      if (trace) { log.trace("setMessageListener()"); }
+      
+      MethodInvocation mi = (MethodInvocation)invocation;
+      
+      MessageListener listener = (MessageListener)mi.getArguments()[0];
+      
+      if (listener == null)
+      {
+         throw new IllegalStateException("Cannot set a null MessageListener on the session");
+      }
+      
+      getState(invocation).setDistinguishedListener(listener);
+      
+      return null;
+   }
+   
+   public Object handleGetMessageListener(Invocation invocation) throws Throwable
+   {
+      if (trace) { log.trace("getMessageListener()"); }
+      
+      return getState(invocation).getDistinguishedListener();
+   }
+   
+   public Object handleCreateConnectionConsumer(Invocation invocation) throws Throwable
+   {
+      if (trace) { log.trace("createConnectionConsumer()"); }
+      
+      MethodInvocation mi = (MethodInvocation)invocation;
+      
+      JBossDestination dest = (JBossDestination)mi.getArguments()[0];
+      String subscriptionName = (String)mi.getArguments()[1];
+      String messageSelector = (String)mi.getArguments()[2];
+      ServerSessionPool sessionPool = (ServerSessionPool)mi.getArguments()[3];
+      int maxMessages = ((Integer)mi.getArguments()[4]).intValue();
+      
+      return new JBossConnectionConsumer((ConnectionDelegate)mi.getTargetObject(), dest,
+                                         subscriptionName, messageSelector, sessionPool,
+                                         maxMessages);
+   }
+   
+   public Object handleAddAsfMessage(Invocation invocation) throws Throwable
+   {
+      if (trace) { log.trace("addAsfMessage()"); }
+      
+      MethodInvocation mi = (MethodInvocation)invocation;
+      
+      // Load the session with a message to be processed during a subsequent call to run()
+
+      MessageProxy m = (MessageProxy)mi.getArguments()[0];
+      int theConsumerID = ((Integer)mi.getArguments()[1]).intValue();
+      long channelID = ((Long)mi.getArguments()[2]).longValue();
+      int maxDeliveries = ((Integer)mi.getArguments()[3]).intValue();
+      SessionDelegate connectionConsumerDelegate = ((SessionDelegate)mi.getArguments()[4]);
+      
+      if (m == null)
+      {
+         throw new IllegalStateException("Cannot add a null message to the session");
+      }
+
+      AsfMessageHolder holder = new AsfMessageHolder();
+      holder.msg = m;
+      holder.consumerID = theConsumerID;
+      holder.channelID = channelID;
+      holder.maxDeliveries = maxDeliveries;
+      holder.connectionConsumerDelegate = connectionConsumerDelegate;
+      
+      getState(invocation).getASFMessages().add(holder);
+      
+      return null;
+   }
+
+   public Object handleRun(Invocation invocation) throws Throwable
+   {
+      if (trace) { log.trace("run()"); }
+      
+      MethodInvocation mi = (MethodInvocation)invocation;
+            
+      //This is the delegate for the session from the pool
+      SessionDelegate del = (SessionDelegate)mi.getTargetObject();
+      
+      SessionState state = getState(invocation);
+      
+      int ackMode = state.getAcknowledgeMode();
+
+      LinkedList msgs = state.getASFMessages();
+      
+      while (msgs.size() > 0)
+      {
+         AsfMessageHolder holder = (AsfMessageHolder)msgs.removeFirst();
+
+         if (trace) { log.trace("sending " + holder.msg + " to the message listener" ); }
+         
+         MessageCallbackHandler.callOnMessage(del, state.getDistinguishedListener(), holder.consumerID,
+                                              holder.channelID, false,
+                                              holder.msg, ackMode, holder.maxDeliveries,
+                                              holder.connectionConsumerDelegate);                          
+      }
+      
+      return null;
+   }
+   
+   
 
    public String toString()
    {
@@ -618,6 +868,15 @@ public class SessionAspect
    }
 
    // Inner Classes -------------------------------------------------
+   
+   private static class AsfMessageHolder
+   {
+      private MessageProxy msg;
+      private int consumerID;
+      private long channelID;
+      private int maxDeliveries;
+      private SessionDelegate connectionConsumerDelegate;
+   }
    
 }
 

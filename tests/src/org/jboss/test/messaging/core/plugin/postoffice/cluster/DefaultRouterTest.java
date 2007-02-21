@@ -436,7 +436,7 @@ public class DefaultRouterTest extends PostOfficeTestBase
          
       }
 
-      public void deliver(boolean synchronous)
+      public void deliver()
       {
          // TODO Auto-generated method stub
          
@@ -604,6 +604,7 @@ public class DefaultRouterTest extends PostOfficeTestBase
          // TODO Auto-generated method stub
          return 0;
       }
+
       
    }
    

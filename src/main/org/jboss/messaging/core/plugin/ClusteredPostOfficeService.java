@@ -21,15 +21,18 @@
  */
 package org.jboss.messaging.core.plugin;
 
-import javax.management.ObjectName;
-import javax.management.NotificationListener;
-import javax.management.NotificationFilter;
+import java.util.Collections;
+import java.util.Set;
+
 import javax.management.ListenerNotFoundException;
 import javax.management.MBeanNotificationInfo;
+import javax.management.NotificationFilter;
+import javax.management.NotificationListener;
+import javax.management.ObjectName;
 import javax.transaction.TransactionManager;
+
 import org.jboss.jms.selector.SelectorFactory;
 import org.jboss.jms.server.JMSConditionFactory;
-import org.jboss.jms.server.QueuedExecutorPool;
 import org.jboss.jms.server.ServerPeer;
 import org.jboss.jms.util.ExceptionUtil;
 import org.jboss.messaging.core.FilterFactory;
@@ -48,9 +51,6 @@ import org.jboss.messaging.core.plugin.postoffice.cluster.jchannelfactory.Multip
 import org.jboss.messaging.core.plugin.postoffice.cluster.jchannelfactory.XMLJChannelFactory;
 import org.jboss.messaging.core.tx.TransactionRepository;
 import org.w3c.dom.Element;
-
-import java.util.Set;
-import java.util.Collections;
 
 /**
  * A ClusteredPostOfficeService
@@ -91,6 +91,7 @@ public class ClusteredPostOfficeService extends JDBCServiceSupport implements Pe
    private long statsSendPeriod = 1000;
    private String clusterRouterFactory;
    private String messagePullPolicy;
+   private int threadPoolSize = 50;
 
    private DefaultClusteredPostOffice postOffice;
 
@@ -175,6 +176,11 @@ public class ClusteredPostOfficeService extends JDBCServiceSupport implements Pe
 
    public void setChannelFactoryName(ObjectName channelFactoryName)
    {
+      if (started)
+      {
+         log.warn("Cannot set attribute when service is started");
+         return;
+      }
       this.channelFactoryName = channelFactoryName;
    }
 
@@ -185,6 +191,11 @@ public class ClusteredPostOfficeService extends JDBCServiceSupport implements Pe
 
    public void setSyncChannelName(String syncChannelName)
    {
+      if (started)
+      {
+         log.warn("Cannot set attribute when service is started");
+         return;
+      }
       this.syncChannelName = syncChannelName;
    }
 
@@ -195,6 +206,11 @@ public class ClusteredPostOfficeService extends JDBCServiceSupport implements Pe
 
    public void setAsyncChannelName(String asyncChannelName)
    {
+      if (started)
+      {
+         log.warn("Cannot set attribute when service is started");
+         return;
+      }
       this.asyncChannelName = asyncChannelName;
    }
 
@@ -205,11 +221,21 @@ public class ClusteredPostOfficeService extends JDBCServiceSupport implements Pe
 
    public void setChannelPartitionName(String channelPartitionName)
    {
+      if (started)
+      {
+         log.warn("Cannot set attribute when service is started");
+         return;
+      }
       this.channelPartitionName = channelPartitionName;
    }
 
    public void setSyncChannelConfig(Element config) throws Exception
    {
+      if (started)
+      {
+         log.warn("Cannot set attribute when service is started");
+         return;
+      }
       syncChannelConfig = config;
    }
 
@@ -220,6 +246,11 @@ public class ClusteredPostOfficeService extends JDBCServiceSupport implements Pe
 
    public void setAsyncChannelConfig(Element config) throws Exception
    {
+      if (started)
+      {
+         log.warn("Cannot set attribute when service is started");
+         return;
+      }
       asyncChannelConfig = config;
    }
 
@@ -230,6 +261,11 @@ public class ClusteredPostOfficeService extends JDBCServiceSupport implements Pe
 
    public void setStateTimeout(long timeout)
    {
+      if (started)
+      {
+         log.warn("Cannot set attribute when service is started");
+         return;
+      }
       this.stateTimeout = timeout;
    }
 
@@ -240,6 +276,11 @@ public class ClusteredPostOfficeService extends JDBCServiceSupport implements Pe
 
    public void setCastTimeout(long timeout)
    {
+      if (started)
+      {
+         log.warn("Cannot set attribute when service is started");
+         return;
+      }
       this.castTimeout = timeout;
    }
 
@@ -260,6 +301,11 @@ public class ClusteredPostOfficeService extends JDBCServiceSupport implements Pe
 
    public void setStatsSendPeriod(long period)
    {
+      if (started)
+      {
+         log.warn("Cannot set attribute when service is started");
+         return;
+      }
       this.statsSendPeriod = period;
    }
 
@@ -280,6 +326,11 @@ public class ClusteredPostOfficeService extends JDBCServiceSupport implements Pe
 
    public void setClusterRouterFactory(String clusterRouterFactory)
    {
+      if (started)
+      {
+         log.warn("Cannot set attribute when service is started");
+         return;
+      }
       this.clusterRouterFactory = clusterRouterFactory;
    }
 
@@ -291,6 +342,21 @@ public class ClusteredPostOfficeService extends JDBCServiceSupport implements Pe
    public String listBindings()
    {
       return postOffice.printBindingInformation();
+   }
+   
+   public int getThreadPoolSize()
+   {
+      return this.threadPoolSize;
+   }
+   
+   public void setThreadPoolSize(int size)
+   {
+      if (started)
+      {
+         log.warn("Cannot set attribute when service is started");
+         return;
+      }
+      this.threadPoolSize = size;
    }
 
    // Public --------------------------------------------------------
@@ -316,7 +382,6 @@ public class ClusteredPostOfficeService extends JDBCServiceSupport implements Pe
          MessageStore ms = serverPeer.getMessageStore();
          TransactionRepository tr = serverPeer.getTxRepository();
          PersistenceManager pm = serverPeer.getPersistenceManagerInstance();
-         QueuedExecutorPool pool = serverPeer.getQueuedExecutorPool();
          int nodeId = serverPeer.getServerPeerID();
 
          Class clazz = Class.forName(messagePullPolicy);
@@ -369,13 +434,14 @@ public class ClusteredPostOfficeService extends JDBCServiceSupport implements Pe
          postOffice =  new DefaultClusteredPostOffice(ds, tm, sqlProperties,
                                                       createTablesOnStartup,
                                                       nodeId, officeName, ms,
-                                                      pm, tr, ff, cf, pool,
+                                                      pm, tr, ff, cf,
                                                       groupName,
                                                       jChannelFactory,
                                                       stateTimeout, castTimeout,
                                                       pullPolicy, rf,
                                                       mapper,
-                                                      statsSendPeriod);
+                                                      statsSendPeriod,
+                                                      threadPoolSize);
 
          postOffice.start();
 

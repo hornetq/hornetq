@@ -33,8 +33,8 @@ import org.jboss.messaging.core.SimpleDelivery;
 import org.jboss.messaging.core.message.Message;
 import org.jboss.messaging.core.message.MessageReference;
 import org.jboss.messaging.core.plugin.postoffice.cluster.DefaultClusteredPostOffice;
-import org.jboss.messaging.core.plugin.postoffice.cluster.LocalClusteredQueue;
 import org.jboss.messaging.core.plugin.postoffice.cluster.DefaultMessagePullPolicy;
+import org.jboss.messaging.core.plugin.postoffice.cluster.LocalClusteredQueue;
 import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.test.messaging.core.SimpleCondition;
 import org.jboss.test.messaging.core.SimpleReceiver;
@@ -129,21 +129,21 @@ public class RedistributionWithDefaultMessagePullPolicyTest extends PostOfficeTe
       {
          office1 = (DefaultClusteredPostOffice)
             createClusteredPostOffice(1, "testgroup", 10000, 10000, new DefaultMessagePullPolicy(),
-                                      sc, ms, pm, tr, pool);
+                                      sc, ms, pm, tr);
 
          office2 = (DefaultClusteredPostOffice)
             createClusteredPostOffice(2, "testgroup", 10000, 10000, new DefaultMessagePullPolicy(),
-                                      sc, ms, pm, tr, pool);
+                                      sc, ms, pm, tr);
 
          LocalClusteredQueue queue1 =
             new LocalClusteredQueue(office1, 1, "queue1", channelIDManager.getID(), ms, pm,
-                                    true, true, (QueuedExecutor) pool.get(), -1, null, tr);
+                                    true, true, -1, null, tr);
 
          office1.bindClusteredQueue(new SimpleCondition("queue1"), queue1);
 
          LocalClusteredQueue queue2 =
             new LocalClusteredQueue(office2, 2, "queue1", channelIDManager.getID(), ms, pm,
-                                    true, true, (QueuedExecutor) pool.get(), -1, null, tr);
+                                    true, true, -1, null, tr);
          office2.bindClusteredQueue(new SimpleCondition("queue1"), queue2);
 
          Message msg = CoreMessageFactory.createCoreMessage(1, true, null);
@@ -170,7 +170,7 @@ public class RedistributionWithDefaultMessagePullPolicyTest extends PostOfficeTe
          queue2.add(receiver2);
 
          //Prompt delivery so the channels know if the receivers are ready
-         queue1.deliver(false);
+         queue1.deliver();
          Thread.sleep(2000);
 
          //Pull from 1 to 2
@@ -178,7 +178,7 @@ public class RedistributionWithDefaultMessagePullPolicyTest extends PostOfficeTe
          receiver2.setMaxRefs(1);
 
          log.trace("delivering");
-         queue2.deliver(false);
+         queue2.deliver();
 
          Thread.sleep(3000);
 
@@ -228,20 +228,20 @@ public class RedistributionWithDefaultMessagePullPolicyTest extends PostOfficeTe
       {
          office1 = (DefaultClusteredPostOffice)
             createClusteredPostOffice(1, "testgroup", 10000, 10000, new DefaultMessagePullPolicy(),
-                                      sc, ms, pm, tr, pool);
+                                      sc, ms, pm, tr);
 
          office2 = (DefaultClusteredPostOffice)
             createClusteredPostOffice(2, "testgroup", 10000, 10000, new DefaultMessagePullPolicy(),
-                                      sc, ms, pm, tr, pool);
+                                      sc, ms, pm, tr);
 
          LocalClusteredQueue queue1 =
             new LocalClusteredQueue(office1, 1, "queue1", channelIDManager.getID(), ms, pm,
-                                    true, true, (QueuedExecutor) pool.get(), -1, null, tr);
+                                    true, true, -1, null, tr);
          office1.bindClusteredQueue(new SimpleCondition("queue1"), queue1);
 
          LocalClusteredQueue queue2 =
             new LocalClusteredQueue(office2, 2, "queue1", channelIDManager.getID(), ms, pm,
-                                    true, true, (QueuedExecutor) pool.get(), -1, null, tr);
+                                    true, true, -1, null, tr);
          office2.bindClusteredQueue(new SimpleCondition("queue1"), queue2);
 
          Message msg = CoreMessageFactory.createCoreMessage(1, true, null);
@@ -268,7 +268,7 @@ public class RedistributionWithDefaultMessagePullPolicyTest extends PostOfficeTe
          queue2.add(receiver2);
 
          //Prompt delivery so the channels know if the receivers are ready
-         queue1.deliver(false);
+         queue1.deliver();
          Thread.sleep(2000);
 
          //Pull from 1 to 2
@@ -279,7 +279,7 @@ public class RedistributionWithDefaultMessagePullPolicyTest extends PostOfficeTe
          office2.setFail(true, false, false);
 
          log.trace("delivering");
-         queue2.deliver(false);
+         queue2.deliver();
 
          Thread.sleep(3000);
 
@@ -332,20 +332,20 @@ public class RedistributionWithDefaultMessagePullPolicyTest extends PostOfficeTe
       {
          office1 = (DefaultClusteredPostOffice)
             createClusteredPostOffice(1, "testgroup", 10000, 10000, new DefaultMessagePullPolicy(),
-                                      sc, ms, pm, tr, pool);
+                                      sc, ms, pm, tr);
 
          office2 = (DefaultClusteredPostOffice)
             createClusteredPostOffice(2, "testgroup", 10000, 10000, new DefaultMessagePullPolicy(),
-                                      sc, ms, pm, tr, pool);
+                                      sc, ms, pm, tr);
 
          LocalClusteredQueue queue1 =
             new LocalClusteredQueue(office1, 1, "queue1", channelIDManager.getID(), ms, pm,
-                                    true, true, (QueuedExecutor) pool.get(), -1, null, tr);
+                                    true, true, -1, null, tr);
          office1.bindClusteredQueue(new SimpleCondition("queue1"), queue1);
 
          LocalClusteredQueue queue2 =
             new LocalClusteredQueue(office2, 2, "queue1", channelIDManager.getID(), ms, pm,
-                                    true, true, (QueuedExecutor) pool.get(), -1, null, tr);
+                                    true, true, -1, null, tr);
          office2.bindClusteredQueue(new SimpleCondition("queue1"), queue2);
 
          Message msg = CoreMessageFactory.createCoreMessage(1, true, null);
@@ -372,7 +372,7 @@ public class RedistributionWithDefaultMessagePullPolicyTest extends PostOfficeTe
          queue2.add(receiver2);
 
          //Prompt delivery so the channels know if the receivers are ready
-         queue1.deliver(false);
+         queue1.deliver();
          Thread.sleep(2000);
 
          //Pull from 1 to 2
@@ -383,7 +383,7 @@ public class RedistributionWithDefaultMessagePullPolicyTest extends PostOfficeTe
          office2.setFail(false, true, false);
 
          log.trace("delivering");
-         queue2.deliver(false);
+         queue2.deliver();
 
          Thread.sleep(3000);
 
@@ -432,20 +432,20 @@ public class RedistributionWithDefaultMessagePullPolicyTest extends PostOfficeTe
       {
          office1 = (DefaultClusteredPostOffice)
             createClusteredPostOffice(1, "testgroup", 10000, 10000, new DefaultMessagePullPolicy(),
-                                      sc, ms, pm, tr, pool);
+                                      sc, ms, pm, tr);
 
          office2 = (DefaultClusteredPostOffice)
             createClusteredPostOffice(2, "testgroup", 10000, 10000, new DefaultMessagePullPolicy(),
-                                      sc, ms, pm, tr, pool);
+                                      sc, ms, pm, tr);
 
          LocalClusteredQueue queue1 =
             new LocalClusteredQueue(office1, 1, "queue1", channelIDManager.getID(), ms, pm,
-                                    true, true, (QueuedExecutor) pool.get(), -1, null, tr);
+                                    true, true, -1, null, tr);
          office1.bindClusteredQueue(new SimpleCondition("queue1"), queue1);
 
          LocalClusteredQueue queue2 =
             new LocalClusteredQueue(office2, 2, "queue1", channelIDManager.getID(), ms, pm,
-                                    true, true, (QueuedExecutor) pool.get(), -1, null, tr);
+                                    true, true, -1, null, tr);
          office2.bindClusteredQueue(new SimpleCondition("queue1"), queue2);
 
          Message msg = CoreMessageFactory.createCoreMessage(1, true, null);
@@ -472,7 +472,7 @@ public class RedistributionWithDefaultMessagePullPolicyTest extends PostOfficeTe
          queue2.add(receiver2);
 
          //Prompt delivery so the channels know if the receivers are ready
-         queue1.deliver(false);
+         queue1.deliver();
          Thread.sleep(2000);
 
          //Pull from 1 to 2
@@ -482,7 +482,7 @@ public class RedistributionWithDefaultMessagePullPolicyTest extends PostOfficeTe
          office2.setFail(false, false, true);
 
          log.trace("delivering");
-         queue2.deliver(false);
+         queue2.deliver();
 
          Thread.sleep(3000);
 
@@ -528,49 +528,49 @@ public class RedistributionWithDefaultMessagePullPolicyTest extends PostOfficeTe
          
          office1 = (DefaultClusteredPostOffice)
             createClusteredPostOffice(1, "testgroup", 10000, 10000, new DefaultMessagePullPolicy(),
-                                      sc, ms, pm, tr, pool);
+                                      sc, ms, pm, tr);
 
          office2 = (DefaultClusteredPostOffice)
             createClusteredPostOffice(2, "testgroup", 10000, 10000, new DefaultMessagePullPolicy(),
-                                      sc, ms, pm, tr, pool);
+                                      sc, ms, pm, tr);
 
          office3 = (DefaultClusteredPostOffice)
             createClusteredPostOffice(3, "testgroup", 10000, 10000, new DefaultMessagePullPolicy(),
-                                      sc, ms, pm, tr, pool);
+                                      sc, ms, pm, tr);
 
          office4 = (DefaultClusteredPostOffice)
             createClusteredPostOffice(4, "testgroup", 10000, 10000, new DefaultMessagePullPolicy(),
-                                      sc, ms, pm, tr, pool);
+                                      sc, ms, pm, tr);
 
          office5 = (DefaultClusteredPostOffice)
             createClusteredPostOffice(5, "testgroup", 10000, 10000, new DefaultMessagePullPolicy(),
-                                      sc, ms, pm, tr, pool);
+                                      sc, ms, pm, tr);
          
          log.trace("Created postoffices");
 
          LocalClusteredQueue queue1 =
             new LocalClusteredQueue(office1, 1, "queue1", channelIDManager.getID(), ms, pm,
-                                    true, recoverable, (QueuedExecutor) pool.get(), -1, null, tr);
+                                    true, recoverable, -1, null, tr);
          office1.bindClusteredQueue(new SimpleCondition("queue1"), queue1);
 
          LocalClusteredQueue queue2 =
             new LocalClusteredQueue(office2, 2, "queue1", channelIDManager.getID(), ms, pm,
-                                    true, recoverable, (QueuedExecutor) pool.get(), -1, null, tr);
+                                    true, recoverable, -1, null, tr);
          office2.bindClusteredQueue(new SimpleCondition("queue1"), queue2);
 
          LocalClusteredQueue queue3 =
             new LocalClusteredQueue(office3, 3, "queue1", channelIDManager.getID(), ms, pm,
-                                    true, recoverable, (QueuedExecutor) pool.get(), -1, null, tr);
+                                    true, recoverable, -1, null, tr);
          office3.bindClusteredQueue(new SimpleCondition("queue1"), queue3);
 
          LocalClusteredQueue queue4 =
             new LocalClusteredQueue(office4, 4, "queue1", channelIDManager.getID(), ms, pm,
-                                    true, recoverable, (QueuedExecutor) pool.get(), -1, null, tr);
+                                    true, recoverable, -1, null, tr);
          office4.bindClusteredQueue(new SimpleCondition("queue1"), queue4);
 
          LocalClusteredQueue queue5 =
             new LocalClusteredQueue(office5, 5, "queue1", channelIDManager.getID(), ms, pm,
-                                    true, recoverable, (QueuedExecutor) pool.get(), -1, null, tr);
+                                    true, recoverable, -1, null, tr);
          office5.bindClusteredQueue(new SimpleCondition("queue1"), queue5);
          
          log.trace("Created and bound queues");
@@ -625,7 +625,7 @@ public class RedistributionWithDefaultMessagePullPolicyTest extends PostOfficeTe
          
          log.trace("Added receiver");
 
-         queue1.deliver(false);
+         queue1.deliver();
          
          log.trace("Called deliver");
 
@@ -736,47 +736,47 @@ public class RedistributionWithDefaultMessagePullPolicyTest extends PostOfficeTe
       {
          office1 = (DefaultClusteredPostOffice)
             createClusteredPostOffice(1, "testgroup", 10000, 10000, new DefaultMessagePullPolicy(),
-                                      sc, ms, pm, tr, pool);
+                                      sc, ms, pm, tr);
 
          office2 = (DefaultClusteredPostOffice)
             createClusteredPostOffice(2, "testgroup", 10000, 10000, new DefaultMessagePullPolicy(),
-                                      sc, ms, pm, tr, pool);
+                                      sc, ms, pm, tr);
 
          office3 = (DefaultClusteredPostOffice)
             createClusteredPostOffice(3, "testgroup", 10000, 10000, new DefaultMessagePullPolicy(),
-                                      sc, ms, pm, tr, pool);
+                                      sc, ms, pm, tr);
 
          office4 = (DefaultClusteredPostOffice)
             createClusteredPostOffice(4, "testgroup", 10000, 10000, new DefaultMessagePullPolicy(),
-                                      sc, ms, pm, tr, pool);
+                                      sc, ms, pm, tr);
 
          office5 = (DefaultClusteredPostOffice)
             createClusteredPostOffice(5, "testgroup", 10000, 10000, new DefaultMessagePullPolicy(),
-                                      sc, ms, pm, tr, pool);
+                                      sc, ms, pm, tr);
 
          LocalClusteredQueue queue1 =
             new LocalClusteredQueue(office1, 1, "queue1", channelIDManager.getID(), ms, pm,
-                                    true, recoverable, (QueuedExecutor) pool.get(), -1, null, tr);
+                                    true, recoverable, -1, null, tr);
          office1.bindClusteredQueue(new SimpleCondition("queue1"), queue1);
 
          LocalClusteredQueue queue2 =
             new LocalClusteredQueue(office2, 2, "queue1", channelIDManager.getID(), ms, pm,
-                                    true, recoverable, (QueuedExecutor) pool.get(), -1, null, tr);
+                                    true, recoverable, -1, null, tr);
          office2.bindClusteredQueue(new SimpleCondition("queue1"), queue2);
 
          LocalClusteredQueue queue3 =
             new LocalClusteredQueue(office3, 3, "queue1", channelIDManager.getID(), ms, pm,
-                                    true, recoverable, (QueuedExecutor) pool.get(), -1, null, tr);
+                                    true, recoverable, -1, null, tr);
          office3.bindClusteredQueue(new SimpleCondition("queue1"), queue3);
 
          LocalClusteredQueue queue4 =
             new LocalClusteredQueue(office4, 4, "queue1", channelIDManager.getID(), ms, pm,
-                                    true, recoverable, (QueuedExecutor) pool.get(), -1, null, tr);
+                                    true, recoverable, -1, null, tr);
          office4.bindClusteredQueue(new SimpleCondition("queue1"), queue4);
 
          LocalClusteredQueue queue5 =
             new LocalClusteredQueue(office5, 5, "queue1", channelIDManager.getID(), ms, pm,
-                                    true, recoverable, (QueuedExecutor) pool.get(), -1, null, tr);
+                                    true, recoverable, -1, null, tr);
          office5.bindClusteredQueue(new SimpleCondition("queue1"), queue5);
 
          final int NUM_MESSAGES = 100;
@@ -831,7 +831,7 @@ public class RedistributionWithDefaultMessagePullPolicyTest extends PostOfficeTe
          queue5.add(receiver5);
 
          receiver1.setMaxRefs(5);
-         queue1.deliver(false);         
+         queue1.deliver();         
          receiver1.waitForHandleInvocations(5, 20000);
          Thread.sleep(1000);
          assertEquals(NUM_MESSAGES - 5, queue1.memoryRefCount());
@@ -842,7 +842,7 @@ public class RedistributionWithDefaultMessagePullPolicyTest extends PostOfficeTe
          receiver1.setMaxRefs(0);
 
          receiver2.setMaxRefs(10);
-         queue2.deliver(false);         
+         queue2.deliver();         
          receiver2.waitForHandleInvocations(10, 20000);
          Thread.sleep(1000);
          assertEquals(NUM_MESSAGES - 10, queue2.memoryRefCount());
@@ -851,7 +851,7 @@ public class RedistributionWithDefaultMessagePullPolicyTest extends PostOfficeTe
          receiver2.setMaxRefs(0);
 
          receiver3.setMaxRefs(15);
-         queue3.deliver(false);         
+         queue3.deliver();         
          receiver3.waitForHandleInvocations(15, 20000);
          Thread.sleep(1000);
          assertEquals(NUM_MESSAGES - 15, queue3.memoryRefCount());
@@ -860,7 +860,7 @@ public class RedistributionWithDefaultMessagePullPolicyTest extends PostOfficeTe
          receiver3.setMaxRefs(0);
 
          receiver4.setMaxRefs(20);
-         queue4.deliver(false);         
+         queue4.deliver();         
          receiver4.waitForHandleInvocations(20, 20000);
          Thread.sleep(1000);
          assertEquals(NUM_MESSAGES - 20, queue4.memoryRefCount());
@@ -869,7 +869,7 @@ public class RedistributionWithDefaultMessagePullPolicyTest extends PostOfficeTe
          receiver4.setMaxRefs(0);
 
          receiver5.setMaxRefs(25);
-         queue5.deliver(false);         
+         queue5.deliver();         
          receiver5.waitForHandleInvocations(25, 20000);
          Thread.sleep(1000);
          assertEquals(NUM_MESSAGES - 25, queue5.memoryRefCount());
@@ -892,7 +892,7 @@ public class RedistributionWithDefaultMessagePullPolicyTest extends PostOfficeTe
 
          //Consume the rest from queue 5
          receiver5.setMaxRefs(NUM_MESSAGES - 25);
-         queue5.deliver(false);
+         queue5.deliver();
          receiver5.waitForHandleInvocations(NUM_MESSAGES - 25, 20000);
          
          Thread.sleep(2000);
@@ -942,7 +942,7 @@ public class RedistributionWithDefaultMessagePullPolicyTest extends PostOfficeTe
          log.trace("Consume 5 more from queue 5");
 
          receiver5.setMaxRefs(5);
-         queue5.deliver(false);
+         queue5.deliver();
          receiver5.waitForHandleInvocations(5, 20000);
          
          Thread.sleep(4000);
@@ -985,7 +985,7 @@ public class RedistributionWithDefaultMessagePullPolicyTest extends PostOfficeTe
          //Consume 1 more - should pull one from queue2
 
          receiver5.setMaxRefs(1);
-         queue5.deliver(false);
+         queue5.deliver();
          receiver5.waitForHandleInvocations(1, 20000);
          
          Thread.sleep(2000);
@@ -1028,7 +1028,7 @@ public class RedistributionWithDefaultMessagePullPolicyTest extends PostOfficeTe
 
          int num = NUM_MESSAGES - 15 + NUM_MESSAGES - 20 + NUM_MESSAGES - 11 + NUM_MESSAGES - 11 + 1;
          receiver4.setMaxRefs(num);
-         queue4.deliver(false);
+         queue4.deliver();
          receiver4.waitForHandleInvocations(num, 20000);
          
          Thread.sleep(2000);
@@ -1207,7 +1207,7 @@ public class RedistributionWithDefaultMessagePullPolicyTest extends PostOfficeTe
 
          full = false;
 
-         queue.deliver(false);
+         queue.deliver();
       }
 
    }

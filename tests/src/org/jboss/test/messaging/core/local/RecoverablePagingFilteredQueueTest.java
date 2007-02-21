@@ -24,8 +24,6 @@ package org.jboss.test.messaging.core.local;
 import org.jboss.messaging.core.local.PagingFilteredQueue;
 import org.jboss.test.messaging.core.local.base.PagingFilteredQueueTestBase;
 
-import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
-
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -55,7 +53,7 @@ public class RecoverablePagingFilteredQueueTest extends PagingFilteredQueueTestB
    {
       super.setUp();
       
-      queue = new PagingFilteredQueue("queue1", 1, ms, pm, true, true, new QueuedExecutor(), -1, null);
+      queue = new PagingFilteredQueue("queue1", 1, ms, pm, true, true, -1, null);
    }
 
    public void tearDown() throws Exception
@@ -71,7 +69,7 @@ public class RecoverablePagingFilteredQueueTest extends PagingFilteredQueueTestB
 
    public void recoverChannel() throws Exception
    {
-      queue = new PagingFilteredQueue("queue1", 1, ms, pm, true, true, new QueuedExecutor(), -1, null);
+      queue = new PagingFilteredQueue("queue1", 1, ms, pm, true, true, -1, null);
    }
 
    // Public --------------------------------------------------------

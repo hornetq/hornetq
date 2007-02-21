@@ -25,7 +25,7 @@
       
       <depends optional-attribute-name="JMSUserManager">jboss.messaging:service=JMSUserManager</depends>
       
-      <depends>jboss.messaging:service=Connector,transport=socket</depends>
+      <depends>jboss.messaging:service=Connector,transport=bisocket</depends>
 
 	   <attribute name="PostOffice">jboss.messaging:service=PostOffice</attribute>
 

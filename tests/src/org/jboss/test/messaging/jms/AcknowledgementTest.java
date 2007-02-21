@@ -21,8 +21,8 @@
   */
 package org.jboss.test.messaging.jms;
 
-import EDU.oswego.cs.dl.util.concurrent.Latch;
 import javax.jms.Connection;
+import javax.jms.ConnectionFactory;
 import javax.jms.DeliveryMode;
 import javax.jms.Destination;
 import javax.jms.Message;
@@ -38,9 +38,14 @@ import javax.jms.TopicSession;
 import javax.jms.TopicSubscriber;
 import javax.management.ObjectName;
 import javax.naming.InitialContext;
+
 import org.jboss.jms.client.JBossConnectionFactory;
+import org.jboss.jms.client.JBossSession;
+import org.jboss.jms.client.delegate.ClientSessionDelegate;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
+
+import EDU.oswego.cs.dl.util.concurrent.Latch;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -698,6 +703,101 @@ public class AcknowledgementTest extends MessagingTestCase
 		conn.close();
 
    }
+   
+   public void testDupsOKBatchDefault() throws Exception
+   {
+      //test default
+      Connection conn = cf.createConnection();
+      
+      JBossSession sess = (JBossSession)conn.createSession(false, Session.DUPS_OK_ACKNOWLEDGE);
+      
+      ClientSessionDelegate del = (ClientSessionDelegate)sess.getDelegate();
+      
+      assertEquals(1000, del.getDupsOKBatchSize());
+      
+      conn.close();
+   }
+      
+   public void testDupsOKAcknowledge() throws Exception
+   { 
+      
+      final int BATCH_SIZE = 10;
+      
+      String mbeanConfig =
+         "<mbean code=\"org.jboss.jms.server.connectionfactory.ConnectionFactory\"\n" +
+         "       name=\"jboss.messaging.destination:service=MyConnectionFactory\"\n" +
+         "       xmbean-dd=\"xmdesc/ConnectionFactory-xmbean.xml\">\n" +
+         "       <depends optional-attribute-name=\"ServerPeer\">jboss.messaging:service=ServerPeer</depends>\n" +
+         "       <depends optional-attribute-name=\"Connector\">jboss.messaging:service=Connector,transport=bisocket</depends>\n" +
+         "       <attribute name=\"JNDIBindings\">\n" +
+         "          <bindings>\n" +
+         "            <binding>/mycf</binding>\n" +
+         "          </bindings>\n" +
+         "       </attribute>\n" +
+         "       <attribute name=\"DupsOKBatchSize\">" + BATCH_SIZE  + "</attribute>" +
+         " </mbean>";
+
+      ObjectName on = ServerManagement.deploy(mbeanConfig);
+      ServerManagement.invoke(on, "create", new Object[0], new String[0]);
+      ServerManagement.invoke(on, "start", new Object[0], new String[0]);
+      
+      ConnectionFactory myCF = (ConnectionFactory)initialContext.lookup("/mycf");
+      
+      Connection conn = myCF.createConnection();
+
+      Session producerSess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      MessageProducer producer = producerSess.createProducer(queue);
+
+      Session consumerSess = conn.createSession(false, Session.DUPS_OK_ACKNOWLEDGE);
+      MessageConsumer consumer = consumerSess.createConsumer(queue);
+      conn.start();
+
+      //Send some messages
+      for (int i = 0; i < 19; i++)
+      {
+         Message m = producerSess.createMessage();
+         producer.send(m);
+      }
+      
+      assertRemainingMessages(19);
+
+      log.trace("Sent messages");
+
+      Message m = null;
+      for (int i = 0; i < 10; i++)
+      {
+         m = consumer.receive(200);
+         
+         assertNotNull(m);
+          
+         if (i == 9)
+         {
+            assertRemainingMessages(9);
+         }
+         else
+         {
+            assertRemainingMessages(19);
+         }
+      }
+      
+      for (int i = 0; i < 9; i++)
+      {
+         m = consumer.receive(200);
+         
+         assertNotNull(m);
+         
+         assertRemainingMessages(9);
+      }
+      
+      //Make sure the last are acked on close
+      
+      consumerSess.close();
+      
+      assertRemainingMessages(0);
+      
+      conn.close();
+
+   }
 
 
 	/*
@@ -739,9 +839,9 @@ public class AcknowledgementTest extends MessagingTestCase
 			count++;
 		}
       
-      assertRemainingMessages(0);
-      
 		assertNotNull(m);
+      
+      assertRemainingMessages(NUM_MESSAGES);
 
 		log.trace("Received " + count +  " messages");
 
@@ -806,6 +906,56 @@ public class AcknowledgementTest extends MessagingTestCase
       assertRemainingMessages(0);
       
       conn.close();
+      assertFalse(listener.failed);
+   }
+   
+   public void testMessageListenerDupsOK() throws Exception
+   {
+      Connection conn = cf.createConnection();
+      Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      MessageProducer prod = sessSend.createProducer(queue);
+      prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+      
+      log.trace("Sending messages");
+      
+      TextMessage tm1 = sessSend.createTextMessage("a");
+      TextMessage tm2 = sessSend.createTextMessage("b");
+      TextMessage tm3 = sessSend.createTextMessage("c");
+      prod.send(tm1);
+      prod.send(tm2);
+      prod.send(tm3);
+      
+      log.trace("Sent messages");
+      
+      sessSend.close();
+      
+      assertRemainingMessages(3);
+   
+      conn.start();
+
+      Session sessReceive = conn.createSession(false, Session.DUPS_OK_ACKNOWLEDGE);
+      
+      log.trace("Creating consumer");
+      
+      MessageConsumer cons = sessReceive.createConsumer(queue);
+      
+      log.trace("Created consumer");
+      
+      MessageListenerDupsOK listener = new MessageListenerDupsOK(sessReceive);
+      
+      log.trace("Setting message listener");
+      
+      cons.setMessageListener(listener);
+      
+      log.trace("Set message listener");
+
+      listener.waitForMessages();
+      
+      assertRemainingMessages(3);
+      
+      conn.close();
+      
+      assertRemainingMessages(0);
       assertFalse(listener.failed);
    }
    
@@ -949,6 +1099,93 @@ public class AcknowledgementTest extends MessagingTestCase
             if (count == 4)
             {
                assertRemainingMessages(1);
+               
+               if (!"c".equals(tm.getText()))
+               {
+                  failed = true;
+                  latch.release();
+               }               
+               latch.release();
+            }            
+               
+         }
+         catch (Exception e)
+         {
+            failed = true;
+            latch.release();
+         }
+      }
+            
+   }
+   
+   private class MessageListenerDupsOK implements MessageListener
+   {
+      
+      private Latch latch = new Latch();
+      
+      private Session sess;
+      
+      private int count = 0;
+      
+      boolean failed;
+      
+      MessageListenerDupsOK(Session sess)
+      {
+         this.sess = sess;
+      }
+      
+      public void waitForMessages() throws InterruptedException
+      {
+         latch.acquire();
+         Thread.sleep(500);
+      }
+
+      public void onMessage(Message m)
+      {
+         try
+         {
+            count++;
+                  
+            TextMessage tm = (TextMessage)m;
+            
+            log.info("Got message: " + tm.getText());            
+                      
+            // Receive first three messages then recover() session
+            // Only last message should be redelivered
+            if (count == 1)
+            {
+               assertRemainingMessages(3);
+               
+               if (!"a".equals(tm.getText()))
+               {
+                  failed = true;
+                  latch.release();
+               }
+            }
+            if (count == 2)
+            {
+               assertRemainingMessages(3);
+               
+               if (!"b".equals(tm.getText()))
+               {
+                  failed = true;
+                  latch.release();
+               }
+            }
+            if (count == 3)
+            {
+               assertRemainingMessages(3);
+               
+               if (!"c".equals(tm.getText()))
+               {
+                  failed = true;
+                  latch.release();
+               }
+               sess.recover();
+            }
+            if (count == 4)
+            {
+               assertRemainingMessages(3);
                
                if (!"c".equals(tm.getText()))
                {

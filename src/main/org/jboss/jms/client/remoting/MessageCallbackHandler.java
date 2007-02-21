@@ -199,8 +199,8 @@ public class MessageCallbackHandler
    private int maxDeliveries;
    private long channelID;
    private long lastDeliveryId = -1;
-   //private volatile boolean sentFull;
-   //private volatile boolean sentEmpty;
+   private volatile boolean serverSending = true;
+   
         
    // Constructors ---------------------------------------------------------------------------------
 
@@ -471,58 +471,14 @@ public class MessageCallbackHandler
       } 
       
       //This needs to be outside the lock
+
       checkStart();
       
       if (trace) { log.trace(this + " receive() returning " + m); }
       
       return m;
    } 
-   
-   private volatile boolean serverSending = true;
-   
-   private void checkStop()
-   {
-      int size = buffer.size();
-      
-      if (serverSending && size >= maxBufferSize)
-      {
-         //Our buffer is full - we need to tell the server to stop sending if we haven't
-         //done so already
          
-         sendChangeRateMessage(0f);
-         
-         serverSending = false;
-      }
-   }
-   
-   private void checkStart()
-   {
-      int size = buffer.size();
-      
-      if (!serverSending && size <= minBufferSize)
-      {
-         //We need more messages - we need to tell the server this if we haven't done so already
-         
-         sendChangeRateMessage(1.0f);
-         
-         serverSending = true;
-      }      
-   }
-   
-   private void sendChangeRateMessage(float newRate) 
-   {
-      try
-      {
-         // this invocation will be sent asynchronously to the server; it's DelegateSupport.invoke()
-         // job to detect it and turn it into a remoting one way invocation.
-         consumerDelegate.changeRate(newRate);
-      }
-      catch (JMSException e)
-      {
-         log.error("Failed to send changeRate message", e);
-      }
-   }
-   
    public MessageListener getMessageListener()
    {
       return listener;      
@@ -582,6 +538,53 @@ public class MessageCallbackHandler
    // Protected ------------------------------------------------------------------------------------
             
    // Private --------------------------------------------------------------------------------------
+   
+   private void checkStop()
+   {
+      int size = buffer.size();
+      
+      if (serverSending && size >= maxBufferSize)
+      {
+         //Our buffer is full - we need to tell the server to stop sending if we haven't
+         //done so already
+         
+         sendChangeRateMessage(0f);
+         
+         if (trace) { log.trace("Sent changeRate 0 message"); }
+         
+         serverSending = false;
+      }
+   }
+   
+   private void checkStart()
+   {
+      int size = buffer.size();
+      
+      if (!serverSending && size <= minBufferSize)
+      {
+         //We need more messages - we need to tell the server this if we haven't done so already
+         
+         sendChangeRateMessage(1.0f);
+         
+         if (trace) { log.trace("Sent changeRate 1.0 message"); }
+         
+         serverSending = true;
+      }      
+   }
+   
+   private void sendChangeRateMessage(float newRate) 
+   {
+      try
+      {
+         // this invocation will be sent asynchronously to the server; it's DelegateSupport.invoke()
+         // job to detect it and turn it into a remoting one way invocation.
+         consumerDelegate.changeRate(newRate);
+      }
+      catch (JMSException e)
+      {
+         log.error("Failed to send changeRate message", e);
+      }
+   }
    
    private void waitForOnMessageToComplete()
    {

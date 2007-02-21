@@ -22,8 +22,6 @@ import org.jboss.messaging.core.plugin.contract.ClusteredPostOffice;
 import org.jboss.messaging.core.plugin.postoffice.Binding;
 import org.jboss.messaging.core.plugin.postoffice.cluster.LocalClusteredQueue;
 
-import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
-
 /**
  * MBean wrapper around a ManagedQueue
  *
@@ -92,9 +90,7 @@ public class QueueService extends DestinationServiceSupport implements QueueMBea
             queue.activate();
          }
          else
-         {         
-            QueuedExecutor executor = (QueuedExecutor)pool.get();
-            
+         {                                 
             // Create a new queue
             
             JMSCondition queueCond = new JMSCondition(true, destination.getName());
@@ -102,16 +98,16 @@ public class QueueService extends DestinationServiceSupport implements QueueMBea
             if (postOffice.isLocal())
             {
                queue = new PagingFilteredQueue(destination.getName(),
-                                               idm.getID(), ms, pm, true, true, executor,
+                                               idm.getID(), ms, pm, true, true,
                                                destination.getMaxSize(), null,
                                                destination.getFullSize(), destination.getPageSize(),
                                                destination.getDownCacheSize());
                postOffice.bindQueue(queueCond, queue);
             }
             else
-            {               
-               queue = new LocalClusteredQueue(postOffice, nodeId, destination.getName(),
-                                               idm.getID(), ms, pm, true, true, executor,
+            {                      
+               queue = new LocalClusteredQueue((ClusteredPostOffice)postOffice, nodeId, destination.getName(),
+                                               idm.getID(), ms, pm, true, true,
                                                destination.getMaxSize(), null, tr,
                                                destination.getFullSize(), destination.getPageSize(),
                                                destination.getDownCacheSize());

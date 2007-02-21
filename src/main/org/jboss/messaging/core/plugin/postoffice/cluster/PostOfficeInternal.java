@@ -28,6 +28,8 @@ import java.util.Map;
 import org.jboss.messaging.core.message.Message;
 import org.jboss.messaging.core.plugin.contract.ClusteredPostOffice;
 
+import EDU.oswego.cs.dl.util.concurrent.PooledExecutor;
+
 /**
  * 
  * A PostOfficeInternal
@@ -75,4 +77,6 @@ interface PostOfficeInternal extends ClusteredPostOffice
    boolean referenceExistsInStorage(long channelID, long messageID) throws Exception;
    
    void handleMessagePullResult(int remoteNodeId, long holdingTxId, String queueName, Message message) throws Throwable;
+   
+   PooledExecutor getPooledExecutor();
 }

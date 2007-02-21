@@ -138,7 +138,7 @@ public class StateCreationAspect
       boolean xa = ((Boolean)mi.getArguments()[2]).booleanValue();
 
       SessionState sessionState =
-         new SessionState(connectionState, sessionDelegate, transacted, ackMode, xa);
+         new SessionState(connectionState, sessionDelegate, transacted, ackMode, xa, sessionDelegate.getDupsOKBatchSize());
 
       delegate.setState(sessionState);
       return delegate;
@@ -152,7 +152,7 @@ public class StateCreationAspect
       SessionState sessionState = (SessionState)getState(invocation);
 
       MethodInvocation mi = (MethodInvocation)invocation;
-      Destination dest = (Destination)mi.getArguments()[0];
+      JBossDestination dest = (JBossDestination)mi.getArguments()[0];
       String selector = (String)mi.getArguments()[1];
       boolean noLocal = ((Boolean)mi.getArguments()[2]).booleanValue();
       String subscriptionName = (String)mi.getArguments()[3];

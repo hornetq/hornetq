@@ -98,7 +98,7 @@ public class ConnectionFactoryTest extends MessagingTestCase
          "           <arg type=\"java.lang.String\" value=\"sofiavergara\"/>\n" +
          "       </constructor>\n" +
          "       <depends optional-attribute-name=\"ServerPeer\">jboss.messaging:service=ServerPeer</depends>\n" +
-         "       <depends optional-attribute-name=\"Connector\">jboss.messaging:service=Connector,transport=socket</depends>\n" +
+         "       <depends optional-attribute-name=\"Connector\">jboss.messaging:service=Connector,transport=bisocket</depends>\n" +
          "       <attribute name=\"JNDIBindings\">\n" +
          "          <bindings>\n" +
          "            <binding>/TestConnectionFactory</binding>\n" +
@@ -136,7 +136,7 @@ public class ConnectionFactoryTest extends MessagingTestCase
          "           <arg type=\"java.lang.String\" value=\"sofiavergara\"/>\n" +
          "       </constructor>\n" +
          "       <depends optional-attribute-name=\"ServerPeer\">jboss.messaging:service=ServerPeer</depends>\n" +
-         "       <depends optional-attribute-name=\"Connector\">jboss.messaging:service=Connector,transport=socket</depends>\n" +
+         "       <depends optional-attribute-name=\"Connector\">jboss.messaging:service=Connector,transport=bisocket</depends>\n" +
          "       <attribute name=\"JNDIBindings\">\n" +
          "          <bindings>\n" +
          "            <binding>/TestConnectionFactory2</binding>\n" +
@@ -177,11 +177,11 @@ public class ConnectionFactoryTest extends MessagingTestCase
    public void testAdministrativelyConfiguredConnectors() throws Exception
    {
       //Deploy a few connectors
-      String name1 = "jboss.messaging:service=Connector1,transport=socket";
+      String name1 = "jboss.messaging:service=Connector1,transport=bisocket";
       
-      String name2 = "jboss.messaging:service=Connector2,transport=socket";
+      String name2 = "jboss.messaging:service=Connector2,transport=bisocket";
       
-      String name3 = "jboss.messaging:service=Connector3,transport=socket";
+      String name3 = "jboss.messaging:service=Connector3,transport=bisocket";
       
       ObjectName c1 = deployConnector(1234, name1);
       ObjectName c2 = deployConnector(1235, name2);

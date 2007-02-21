@@ -77,7 +77,8 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
 
    protected int defaultTempQueueDownCacheSize;
 
-
+   protected int dupsOKBatchSize;
+   
    // Constructors ---------------------------------------------------------------------------------
 
    /**
@@ -90,7 +91,8 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
                                           int preFetchSize,
                                           int defaultTempQueueFullSize,
                                           int defaultTempQueuePageSize,
-                                          int defaultTempQueueDownCacheSize)
+                                          int defaultTempQueueDownCacheSize,
+                                          int dupsOKBatchSize)
    {
       this.serverPeer = serverPeer;
       this.clientID = defaultClientID;
@@ -100,6 +102,7 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
       this.defaultTempQueueFullSize = defaultTempQueueFullSize;
       this.defaultTempQueuePageSize = defaultTempQueuePageSize;
       this.defaultTempQueueDownCacheSize = defaultTempQueueDownCacheSize;
+      this.dupsOKBatchSize = dupsOKBatchSize;
    }
 
    // ConnectionFactoryDelegate implementation -----------------------------------------------------
@@ -223,7 +226,7 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
                                       defaultTempQueueFullSize, defaultTempQueuePageSize,
                                       defaultTempQueueDownCacheSize, failedNodeID, this,
                                       remotingSessionID, clientVMID, versionToUse,
-                                      callbackHandler);
+                                      callbackHandler, dupsOKBatchSize);
 
       int connectionID = endpoint.getConnectionID();
 

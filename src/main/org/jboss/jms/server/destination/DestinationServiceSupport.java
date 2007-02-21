@@ -12,7 +12,6 @@ import javax.management.InstanceNotFoundException;
 import javax.management.ObjectName;
 
 import org.jboss.jms.server.DestinationManager;
-import org.jboss.jms.server.QueuedExecutorPool;
 import org.jboss.jms.server.SecurityManager;
 import org.jboss.jms.server.ServerPeer;
 import org.jboss.jms.server.messagecounter.MessageCounter;
@@ -68,8 +67,6 @@ public abstract class DestinationServiceSupport extends ServiceMBeanSupport
    
    protected PersistenceManager pm;
    
-   protected QueuedExecutorPool pool;
-   
    protected MessageStore ms;
    
    protected TransactionRepository tr;
@@ -114,9 +111,7 @@ public abstract class DestinationServiceSupport extends ServiceMBeanSupport
          sm = serverPeer.getSecurityManager();
          
          pm = serverPeer.getPersistenceManagerInstance(); 
-         
-         pool = serverPeer.getQueuedExecutorPool();
-         
+           
          ms = serverPeer.getMessageStore();
          
          tr = serverPeer.getTxRepository();

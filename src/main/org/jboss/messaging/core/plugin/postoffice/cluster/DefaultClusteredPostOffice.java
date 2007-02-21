@@ -41,16 +41,15 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
+import javax.management.ListenerNotFoundException;
+import javax.management.MBeanNotificationInfo;
+import javax.management.Notification;
+import javax.management.NotificationBroadcasterSupport;
+import javax.management.NotificationFilter;
+import javax.management.NotificationListener;
 import javax.sql.DataSource;
 import javax.transaction.TransactionManager;
-import javax.management.NotificationBroadcasterSupport;
-import javax.management.NotificationListener;
-import javax.management.MBeanNotificationInfo;
-import javax.management.NotificationFilter;
-import javax.management.ListenerNotFoundException;
-import javax.management.Notification;
 
-import org.jboss.jms.server.QueuedExecutorPool;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Delivery;
 import org.jboss.messaging.core.Filter;
@@ -83,6 +82,8 @@ import org.jgroups.blocks.GroupRequest;
 import org.jgroups.blocks.MessageDispatcher;
 import org.jgroups.blocks.RequestHandler;
 
+import EDU.oswego.cs.dl.util.concurrent.LinkedQueue;
+import EDU.oswego.cs.dl.util.concurrent.PooledExecutor;
 import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
 
 /**
@@ -217,8 +218,9 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
    private NotificationBroadcasterSupport nbSupport;
 
    private QueuedExecutor viewExecutor;
-
-
+   
+   private PooledExecutor pooledExecutor;
+   
    // Constructors ---------------------------------------------------------------------------------
 
    /*
@@ -235,18 +237,18 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
                                      TransactionRepository tr,
                                      FilterFactory filterFactory,
                                      ConditionFactory conditionFactory,
-                                     QueuedExecutorPool pool,
                                      String groupName,
                                      JChannelFactory JChannelFactory,
                                      long stateTimeout, long castTimeout,
                                      MessagePullPolicy redistributionPolicy,
                                      ClusterRouterFactory rf,
                                      FailoverMapper failoverMapper,
-                                     long statsSendPeriod)
+                                     long statsSendPeriod,
+                                     int poolSize)
       throws Exception
    {
       super (ds, tm, sqlProperties, createTablesOnStartup, nodeId, officeName, ms, pm, tr,
-             filterFactory, conditionFactory, pool);
+             filterFactory, conditionFactory);
 
       this.groupName = groupName;
 
@@ -281,6 +283,10 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
       viewExecutor = new QueuedExecutor();
 
       this.jChannelFactory = JChannelFactory;
+      
+      this.pooledExecutor = new PooledExecutor(new LinkedQueue(), poolSize);
+      
+      this.pooledExecutor.setMinimumPoolSize(poolSize);
    }
 
    // MessagingComponent overrides -----------------------------------------------------------------
@@ -888,7 +894,7 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
                         // We now trigger delivery - this may cause a pull event
                         // We only do this if there are no refs in the local queue
 
-                        localQueue.deliver(false);
+                        localQueue.deliver();
 
                         if (trace) { log.trace(this + " triggered delivery for " + localQueue.getName()); }
                      }
@@ -1022,6 +1028,11 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
             if (trace) { log.trace(this.currentNodeId + " send rollback pull request"); }
          }
       }
+   }
+   
+   public PooledExecutor getPooledExecutor()
+   {
+      return pooledExecutor;
    }
 
    // Replicator implementation --------------------------------------------------------------------
@@ -1201,22 +1212,38 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
             {
                if (tx == null)
                {
-                  if (numberRemote == 1)
-                  {
-                     if (trace) { log.trace(this + " unicasting message to " + lastNodeId); }
-
-                     // Unicast - only one node is interested in the message
-                     asyncSendRequest(new MessageRequest(condition.toText(),
-                                                         ref.getMessage(), null), lastNodeId);
-                  }
-                  else
-                  {
-                     if (trace) { log.trace(this + " multicasting message to group"); }
-
-                     // Multicast - more than one node is interested
-                     asyncSendRequest(new MessageRequest(condition.toText(),
-                                                         ref.getMessage(), queueNameNodeIdMap));
-                  }
+                  //TODO temporarily commented out since if we some messages are unicast and others
+                  //are multicast then later sent messages can overtake earlier sent messages
+                  //(ordering is only guaranteed for messages sent in one of the two different ways)
+                  //which can result in messaged being received at their destinations out of order
+                  //To resolve this we use multicast always for now
+                  //http://jira.jboss.org/jira/browse/JBMESSAGING-868
+                  
+//                  if (numberRemote == 1)
+//                  {
+//                     if (trace) { log.trace(this + " unicasting message to " + lastNodeId); }
+//
+//                     // Unicast - only one node is interested in the message
+//                     asyncSendRequest(new MessageRequest(condition.toText(),
+//                                                         ref.getMessage(), null), lastNodeId);
+//                  }
+//                  else
+//                  {
+//                     if (trace) { log.trace(this + " multicasting message to group"); }
+//
+//                     // Multicast - more than one node is interested
+//                     asyncSendRequest(new MessageRequest(condition.toText(),
+//                                                         ref.getMessage(), queueNameNodeIdMap));
+//                  }
+                  
+                  if (trace) { log.trace(this + " multicasting message to group"); }
+                                                     
+                  // Multicast - more than one node is interested
+                  asyncSendRequest(new MessageRequest(condition.toText(),
+                                                      ref.getMessage(), queueNameNodeIdMap));
+                  
+                  
+                  
                }
                else
                {
@@ -1628,17 +1655,15 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
 
       if (nodeID == currentNodeId)
       {
-         QueuedExecutor executor = (QueuedExecutor)pool.get();
-
          if (failedNodeID == null)
          {
             queue = new LocalClusteredQueue(this, nodeID, queueName, channelId, ms, pm, true,
-                                            durable, executor, -1, filter, tr);
+                                            durable, -1, filter, tr);
          }
          else
          {
             queue = new FailedOverQueue(this, nodeID, queueName, channelId, ms, pm, true,
-                                        durable, executor, filter, tr, failedNodeID.intValue());
+                                        durable, filter, tr, failedNodeID.intValue());
          }
       }
       else

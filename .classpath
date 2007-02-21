@@ -46,7 +46,6 @@
 	<classpathentry kind="lib" path="thirdparty/jboss/aop/lib/common-softvaluehashmap.jar"/>
 	<classpathentry kind="lib" path="thirdparty/jboss/aop/lib/jboss-aop-jdk50.jar"/>
 	<classpathentry kind="lib" path="thirdparty/jboss/aop/lib/jboss-aop-jdk50-client.jar"/>
-	<classpathentry kind="lib" path="thirdparty/jboss/aop/lib/jboss-aspect-jdk50-client.jar"/>
 	<classpathentry kind="lib" path="thirdparty/jboss/aop/lib/jdk14-pluggable-instrumentor.jar"/>
 	<classpathentry kind="lib" path="thirdparty/jboss/aop/lib/jrockit-pluggable-instrumentor.jar"/>
 	<classpathentry kind="lib" path="thirdparty/jboss/aop/lib/pluggable-instrumentor.jar"/>
