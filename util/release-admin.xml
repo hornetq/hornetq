@@ -83,7 +83,7 @@
         <condition property="supported.database">
             <or>
                 <equals arg1="${database}" arg2="mysql"/>
-                <equals arg1="${database}" arg2="postgres"/>
+                <equals arg1="${database}" arg2="postgresql"/>
                 <equals arg1="${database}" arg2="oracle"/>
                 <equals arg1="${database}" arg2="mssql"/>
                 <equals arg1="${database}" arg2="sybase"/>
