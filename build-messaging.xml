@@ -81,6 +81,12 @@
    <property environment="ENV"/>
 
    <!--
+        Other local properties.
+   -->
+
+   <property name="require.test.results" value="true"/>
+
+   <!--
         Project paths.
    -->
 
@@ -736,7 +742,7 @@
            basedir="${project.root}/tests/src" includes="org/jboss/test/**" excludes="**/CVS,*.iml"/>
    </target>
 
-   <target name="bundle-test-results" depends="release-structure">
+   <target name="bundle-test-results" depends="release-structure" if="require.test.results">
 
       <available file="${release.output}/test-results/jboss-messaging-functional-test-results-${module.version}.zip"
                  property="functional.test.results.present" value="true"/>
