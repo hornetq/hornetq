@@ -98,7 +98,7 @@
       <componentref name="jboss/jbossretro-rt" version="1.0.4.GA"/>
       <componentref name="jboss/backport-concurrent" version="2.1.0.GA"/>
 
-      <componentref name="apache-tomcat" version="5.5.20"/>
+      <componentref name="apache-tomcat" version="5.5.15"/>
 
       <!-- Need this otherwise project doesn't build in Eclipse -->
       <componentref name="apache-logging" version="1.0.4.1jboss"/>
