@@ -34,10 +34,14 @@
    <property name="auxiliary.lib.location" value="./lib"/>
    <property name="messaging.artifact.name" value="jboss-messaging-scoped.sar"/>
 
+   <!-- ======================================================================================== -->
+   <!-- Top level targets. These are the "modes" this script is supposed to work in.             -->
+   <!-- ======================================================================================== -->
+
    <!--
         A default scoped installation for JBoss 4.x.
    -->
-   <target name="default">
+   <target name="default" depends="validate-ant, validate-database">
       <set-config-name base="${messaging.config.name}" suffix=""/>
       <antcall target="create-server-config"/>
    </target>
@@ -45,7 +49,7 @@
    <!--
         A "standalone" (non-scoped minimal configuration) installation for JBoss 4.x.
    -->
-   <target name="standalone">
+   <target name="standalone" depends="validate-ant, validate-database">
       <condition property="config.name" value="${standalone.messaging.config.name}">
           <isset property="standalone.messaging.config.name"/>
       </condition>
@@ -56,14 +60,47 @@
    <!--
         A cluster node installation for JBoss 4.x.
    -->
-   <target name="cluster-node">
+   <target name="cluster-node" depends="validate-ant, validate-database">
       <set-config-name base="${messaging.config.name}" suffix="node${id}"/>
       <antcall target="create-cluster-node-server-config"/>
    </target>
 
-   <!--
-        Targets
-   -->
+   <!-- ======================================================================================== -->
+   <!-- Internal targets                                                                         -->
+   <!-- ======================================================================================== -->
+
+   <target name="validate-ant">
+        <!--
+        <condition property="ant.ok">
+            <antversion atleast="1.7.0"/>
+        </condition>
+        <fail unless="ant.ok" message="The ant you're using (${ant.version}) is too old!"/>
+        -->
+   </target>
+
+    <target name="validate-database">
+
+        <condition property="supported.database">
+            <or>
+                <equals arg1="${database}" arg2="mysql"/>
+                <equals arg1="${database}" arg2="postgres"/>
+                <equals arg1="${database}" arg2="oracle"/>
+                <equals arg1="${database}" arg2="mssql"/>
+                <equals arg1="${database}" arg2="sybase"/>
+            </or>
+        </condition>
+
+        <fail unless="supported.database" message="Database type '${database}' not supported!"/>
+
+        <!--
+             We only provide database drivers for MySQL, for the time being.
+        -->
+        <condition property="database.drivers.provided.by.us">
+            <equals arg1="${database}" arg2="mysql"/>
+        </condition>
+
+    </target>
+
    <target name="validate-jboss">
       <fail unless="jboss.home" message="JBOSS_HOME environment variable not set! Set it and try again."/>
       <available property="default-config" type="dir" file="${jboss.home}/server/default"/>
@@ -139,18 +176,18 @@
             todir="${jboss.home}/server/${messaging.config.name}/lib"/>
       <copy file="${lib.jbossts.home}/jbossjta-properties.xml"
             todir="${jboss.home}/server/${messaging.config.name}/conf"/>
-      <copy overwrite="true" 
+      <copy overwrite="true"
             file="${lib.jbossts.home}/jboss-service.xml"
             todir="${jboss.home}/server/${messaging.config.name}/conf"/>
       <copy file="${output.lib.home}/jboss-messaging-integration.jar"
             todir="${jboss.home}/server/${messaging.config.name}/lib"/>
       -->
-            
+
       <!-- copy the scoped sar
       <copy todir="${jboss.home}/server/${config.name}/deploy"
             file="${relative.sar.location}/${messaging.sar.name}"/>
       -->
-      
+
       <!-- we deploy the archive exploded so that users can easily access the configuration files -->
       <condition property="is.sar" value="true">
          <contains substring=".sar" string="${messaging.artifact.name}"/>
@@ -196,7 +233,6 @@
       </move>
       <delete dir="${jboss.home}/server/${config.name}/deploy/jboss-messaging/xmdesc"/>
    </target>
-
 
    <target name="enable-jndi-call-by-reference" if="naming.service.config.present">
       <replaceregexp file="${naming.config.file}" flags="s">
@@ -417,6 +453,11 @@
 
       <delete file="${jboss.home}/server/${config.name}/deploy/hsqldb-ds.xml" quiet="false" failonerror="true"/>
       <copy file="${auxiliary.artifacts.location}/${database}-ds.xml" todir="${jboss.home}/server/${config.name}/deploy/"/>
+
+      <!--
+           We may not distribute the driver for availability or copyright reasons, so the driver
+           may not be under lib. We need to check and issue a warning if it isn't.
+      -->
       <copy todir="${jboss.home}/server/${config.name}/lib">
          <fileset dir="${auxiliary.lib.location}">
             <include name="${database}-driver*.jar"/>
@@ -430,8 +471,14 @@
       <delete file="${jboss.home}/server/${config.name}/deploy/jboss-messaging.sar/hsqldb-persistence-service.xml" quiet="false" failonerror="true"/>
       <copy file="${auxiliary.artifacts.location}/clustered-${database}-persistence-service.xml" todir="${jboss.home}/server/${config.name}/deploy/jboss-messaging.sar/"/>
 
+      <antcall target="warn-check-database-drivers"/>
+      <antcall target="warn-no-database-drivers"/>
+   </target>
 
+   <target name="warn-check-database-drivers" if="database.drivers.provided.by.us">
 <echo>
+
+
 
                     ##########################
                     #                        #
@@ -451,13 +498,57 @@
  1. Your database is indeed ${database}.
  2. It is accessible from every physical node you installed Messaging on.
  3. Contains a schema (database/tablespace) named 'messaging'.
- 4. The URL (hostname and port), username and password are correct.
+ 4. The URL (hostname and port), username and password and other connect information are correct.
  5. The installed ${database}-driver.jar's version maches your database.
 
 
 
-</echo>
 
+</echo>
+   </target>
+
+   <target name="warn-no-database-drivers" unless="database.drivers.provided.by.us">
+<echo>
+
+
+
+                    ##########################
+                    #                        #
+                    #        WARNING!        #
+                    #                        #
+                    ##########################
+
+
+ The configuration that has just been created uses a generic ${database} service descriptor!
+
+ Check
+
+      ${jboss.home}/server/${config.name}/deploy/${database}-ds.xml
+
+ and make sure that:
+
+ 1. Your database is indeed ${database}.
+ 2. It is accessible from every physical node you installed Messaging on.
+ 3. Contains a schema (database/tablespace) named 'messaging'.
+ 4. The URL (hostname and port), username and password and other connect information are correct.
+
+
+                    ##########################
+                    #                        #
+                    #    ANOTHER WARNING!    #
+                    #                        #
+                    ##########################
+
+
+
+       NO DATABASE DRIVERS HAVE BEEN INSTALLED! YOU STILL NEED
+       T0 INSTALL THE APROPRIATE ${database} DATABASE DRIVERS IN
+       ${jboss.home}/server/${config.name}/lib
+
+
+
+
+</echo>
    </target>
 
    <target name="configure-service-binding-manager" if="ports">
@@ -599,8 +690,6 @@
    </target>
 
    <target name="test">
-      <delete file="./x.xml"/>
-      <copy file="./x.xml.orig" tofile="./x.xml"/>
    </target>
 
 </project>
