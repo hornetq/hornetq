@@ -94,12 +94,34 @@ public class JBossConnection implements
 
    public String getClientID() throws JMSException
    {
-      return delegate.getClientID();
+      ThreadContextClassLoaderChanger tccc = new ThreadContextClassLoaderChanger();
+
+      try
+      {
+         tccc.set(getClass().getClassLoader());
+
+         return delegate.getClientID();
+      }
+      finally
+      {
+         tccc.restore();
+      }
    }
 
    public void setClientID(String clientID) throws JMSException
    {
-      delegate.setClientID(clientID);
+      ThreadContextClassLoaderChanger tccc = new ThreadContextClassLoaderChanger();
+
+      try
+      {
+         tccc.set(getClass().getClassLoader());
+
+         delegate.setClientID(clientID);
+      }
+      finally
+      {
+         tccc.restore();
+      }
    }
 
    public ConnectionMetaData getMetaData() throws JMSException
