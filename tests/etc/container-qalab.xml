@@ -37,7 +37,7 @@
 
 
       <database-configuration name="oracle">
-         <url>jdbc:oracle:thin:@dev01-priv:1521/qadb01</url>
+         <url>jdbc:oracle:thin:@dev01-priv:1521:qadb01</url>
          <driver>oracle.jdbc.driver.OracleDriver</driver>
          <isolation>TRANSACTION_READ_COMMITTED</isolation>
          <username>messaging</username>
