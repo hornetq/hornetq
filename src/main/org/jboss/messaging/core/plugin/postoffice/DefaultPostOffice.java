@@ -548,7 +548,7 @@ public class DefaultPostOffice extends JDBCSupport implements PostOffice
       }
    }
 
-   //FIXME - this is not quite right
+   // FIXME - this is not quite right
    // We should not load any bindings at startup - since then we do not have to create any queues
    // internally. Creating queues is problematic since there are params we do not know until
    // destination deploy time e.g. paging params, maxsize etc. This means we have to load the queues

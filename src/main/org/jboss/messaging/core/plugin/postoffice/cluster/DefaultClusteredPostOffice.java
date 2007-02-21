@@ -360,6 +360,8 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
       statsSender.stop();
 
       super.stop(sendNotification);
+      
+      pooledExecutor.shutdownAfterProcessingCurrentlyQueuedTasks();
 
       //  TODO in case of shared channels, we should have some sort of unsetReceiver(r)
       asyncChannel.setReceiver(null);
@@ -371,7 +373,7 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
 
       // TODO - what happens if we share the channel? Don't we mess up the other applications this way?
       asyncChannel.close();
-
+      
       started = false;
 
       log.debug(this + " stopped");
@@ -1159,7 +1161,7 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
             long lastChannelId = -1;
             Map queueNameNodeIdMap = null;
 
-            for(Iterator i = cb.getRouters().iterator(); i.hasNext(); )
+            for (Iterator i = cb.getRouters().iterator(); i.hasNext(); )
             {
                ClusterRouter router = (ClusterRouter)i.next();
 
