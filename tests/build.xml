@@ -651,14 +651,6 @@
                <exclude name="**/jms/clustering/*Test.class"/>
                <exclude name="**/thirdparty/remoting/ServerAddressTest.class"/>
                <exclude name="org/jboss/test/thirdparty/jbosssx/SecurityAssociationTest.class"/>
-
-               <!--
-                    org.jboss.test.messaging.jms.bridge.ReconnectTest temporarily commented out
-                    http://jira.jboss.org/jira/browse/JBMESSAGING-858
-               -->
-               <exclude name="org/jboss/test/messaging/jms/bridge/ReconnectTest.class"/>
-
-
             </fileset>
          </batchtest>
       </junit>
