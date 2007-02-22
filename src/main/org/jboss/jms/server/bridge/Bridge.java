@@ -27,6 +27,7 @@ import java.util.LinkedList;
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
+import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageListener;
@@ -295,6 +296,10 @@ public class Bridge implements MessagingComponent
       
       if (ok)
       {         
+         //start the source connection
+         
+         sourceConn.start();
+         
          started = true;
          
          if (maxBatchTime != -1)
@@ -1022,8 +1027,6 @@ public class Bridge implements MessagingComponent
                           
          consumer.setMessageListener(new SourceListener());
          
-         sourceConn.start();
-         
          return true;
       }
       catch (Exception e)
@@ -1255,7 +1258,7 @@ public class Bridge implements MessagingComponent
          
          if (maxRetries > 0 || maxRetries == -1)
          {
-            log.warn( "Will retry after a pause of " + failureRetryInterval);
+            log.warn("Will retry after a pause of " + failureRetryInterval);
             
             pause(failureRetryInterval);
             
@@ -1283,6 +1286,18 @@ public class Bridge implements MessagingComponent
             synchronized (lock)
             {
                failed = false;
+               
+               //Start the source connection - note the source connection must not be started before
+               //otherwise messages will be received and ignored
+               
+               try
+               {
+                  sourceConn.start();
+               }
+               catch (JMSException e)
+               {
+                  log.error("Failed to start source connection", e);
+               }
             }
          }    
       }
