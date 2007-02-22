@@ -1119,7 +1119,7 @@ public class Bridge implements MessagingComponent
             break;
          }
          
-         log.warn("Failed to set up connections, will retry after a pause of " + failureRetryInterval);
+         log.warn("Failed to set up connections, will retry after a pause of " + failureRetryInterval + " ms");
          
          pause(failureRetryInterval);
       }
@@ -1258,7 +1258,7 @@ public class Bridge implements MessagingComponent
          
          if (maxRetries > 0 || maxRetries == -1)
          {
-            log.warn("Will retry after a pause of " + failureRetryInterval);
+            log.warn("Will retry after a pause of " + failureRetryInterval + " ms");
             
             pause(failureRetryInterval);
             
