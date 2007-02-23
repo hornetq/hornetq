@@ -49,19 +49,14 @@ import org.jboss.remoting.marshal.Marshaller;
 import org.jboss.remoting.marshal.UnMarshaller;
 
 /**
+ * We do not use Java or JBoss serialization to send data over the wire. Serialization adds
+ * considerable overhead in terms of the amount of data sent (it adds class information plus block
+ * data information) which significantly degrades performance.
  * 
- * A JMSWireFormat.
+ * Instead we define a customer wire format that minimises the amount of data sent.
  * 
- * We do not use Java or JBoss serialization to send data over the wire.
- * Serialization adds considerable overhead in terms of the amount of data sent (it adds class information
- * plus block data information) which significantly degrades performance.
- * 
- * Instead we define a customer wire format that minimises the
- * amount of data sent.
- * 
- * The only exception to this rule is when sending an ObjectMessage which contains a user
- * defined object whose type is only known at run-time. In this case we use serialization.
- * 
+ * The only exception to this rule is when sending an ObjectMessage which contains a user defined
+ * object whose type is only known at run-time. In this case we use serialization.
  * 
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="ovidiu@jboss.org">Ovidiu Feodorov</a>

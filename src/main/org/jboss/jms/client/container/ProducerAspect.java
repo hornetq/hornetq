@@ -46,9 +46,8 @@ import org.jboss.jms.message.MessageProxy;
 import org.jboss.logging.Logger;
 
 /**
- * 
- * Handles sending of messages plus handles get and set methods for Producer - 
- * returning state from local cache
+ * Handles sending of messages plus handles get and set methods for Producer returning state from
+ * local cache.
  * 
  * This aspect is PER_VM.
  * 
@@ -61,25 +60,19 @@ import org.jboss.logging.Logger;
  */
 public class ProducerAspect
 {   
-   // Constants -----------------------------------------------------
+   // Constants ------------------------------------------------------------------------------------
    
    private static final Logger log = Logger.getLogger(ProducerAspect.class);
    
-   // Attributes ----------------------------------------------------     
+   // Attributes -----------------------------------------------------------------------------------
    
    private boolean trace = log.isTraceEnabled();
    
-   //protected ProducerState producerState;
+   // Static ---------------------------------------------------------------------------------------
    
-   //protected ConnectionState connectionState;
+   // Constructors ---------------------------------------------------------------------------------
    
-   //protected SessionState sessionState;
-   
-   // Static --------------------------------------------------------      
-   
-   // Constructors --------------------------------------------------
-   
-   // Public --------------------------------------------------------
+   // Public ---------------------------------------------------------------------------------------
 
    public Object handleSend(Invocation invocation) throws Throwable
    { 
@@ -344,22 +337,20 @@ public class ProducerAspect
       return null;
    }
    
-   // Class YYY overrides -------------------------------------------
+   // Class YYY overrides --------------------------------------------------------------------------
 
-   // Protected -----------------------------------------------------
+   // Protected ------------------------------------------------------------------------------------
 
-   // Package Private -----------------------------------------------
+   // Package Private ------------------------------------------------------------------------------
 
-   // Private -------------------------------------------------------
+   // Private --------------------------------------------------------------------------------------
    
    private ProducerState getProducerState(Invocation inv)
    {
-      ProducerState producerState = (ProducerState)((DelegateSupport)inv.getTargetObject()).getState();
-      
-      return producerState;
+      return (ProducerState)((DelegateSupport)inv.getTargetObject()).getState();
    }
    
-   // Inner Classes -------------------------------------------------
+   // Inner Classes --------------------------------------------------------------------------------
    
 }
 

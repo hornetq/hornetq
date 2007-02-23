@@ -138,16 +138,15 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
       
       this.expiryQueue = expiryQueue;
       
-      //Always start as false - wait for consumer to initiate
+      // Always start as false - wait for consumer to initiate.
       this.clientAccepting = false;
       
       this.startStopLock = new Object();
       
       if (dest.isTopic() && !messageQueue.isRecoverable())
       {
-         //This is a consumer of a non durable topic subscription
-         //We don't need to store deliveries since if the consumer is closed or
-         //dies the refs go too
+         // This is a consumer of a non durable topic subscription. We don't need to store
+         // deliveries since if the consumer is closed or dies the refs go too.
          this.storeDeliveries = false;
       }
       else

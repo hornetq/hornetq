@@ -21,7 +21,6 @@
   */
 package org.jboss.messaging.core.local;
 
-import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Delivery;
 import org.jboss.messaging.core.DeliveryObserver;
 import org.jboss.messaging.core.Filter;
@@ -50,16 +49,6 @@ public class PagingFilteredQueue extends PagingChannelSupport implements Queue
 {
    // Constants -----------------------------------------------------
    
-   private static final Logger log;
-   
-   private static final boolean trace;
-   
-   static
-   {
-      log = Logger.getLogger(PagingFilteredQueue.class);
-      trace = log.isTraceEnabled();
-   }
-
    // Static --------------------------------------------------------
    
    // Attributes ----------------------------------------------------
@@ -88,7 +77,8 @@ public class PagingFilteredQueue extends PagingChannelSupport implements Queue
                               int maxSize, Filter filter,
                               int fullSize, int pageSize, int downCacheSize)
    {
-      super(id, ms, pm, acceptReliableMessages, recoverable, maxSize, fullSize, pageSize, downCacheSize);
+      super(id, ms, pm, acceptReliableMessages, recoverable,
+            maxSize, fullSize, pageSize, downCacheSize);
       
       router = new RoundRobinPointToPointRouter();
       
@@ -125,9 +115,7 @@ public class PagingFilteredQueue extends PagingChannelSupport implements Queue
       }
       else
       {
-         Delivery del = new SimpleDelivery(this, ref, true, false);
-         
-         return del;
+         return new SimpleDelivery(this, ref, true, false);
       }
    }
    

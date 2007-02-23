@@ -65,19 +65,19 @@ import org.jboss.logging.Logger;
  */
 public class StateCreationAspect
 {
-   // Constants -----------------------------------------------------
+   // Constants ------------------------------------------------------------------------------------
 
    private static final Logger log = Logger.getLogger(StateCreationAspect.class);
 
-   // Attributes ----------------------------------------------------
+   // Attributes -----------------------------------------------------------------------------------
 
    private boolean trace = log.isTraceEnabled();
 
-   // Static --------------------------------------------------------
+   // Static ---------------------------------------------------------------------------------------
 
-   // Constructors --------------------------------------------------
+   // Constructors ---------------------------------------------------------------------------------
 
-   // Public --------------------------------------------------------
+   // Public ---------------------------------------------------------------------------------------
 
    public Object handleCreateConnectionDelegate(Invocation inv) throws Throwable
    {
@@ -138,7 +138,8 @@ public class StateCreationAspect
       boolean xa = ((Boolean)mi.getArguments()[2]).booleanValue();
 
       SessionState sessionState =
-         new SessionState(connectionState, sessionDelegate, transacted, ackMode, xa, sessionDelegate.getDupsOKBatchSize());
+         new SessionState(connectionState, sessionDelegate, transacted,
+                          ackMode, xa, sessionDelegate.getDupsOKBatchSize());
 
       delegate.setState(sessionState);
       return delegate;
@@ -217,17 +218,17 @@ public class StateCreationAspect
       return browserDelegate;
    }
 
-   // Protected ------------------------------------------------------
+   // Protected ------------------------------------------------------------------------------------
 
-   // Package Private ------------------------------------------------
+   // Package Private ------------------------------------------------------------------------------
 
-   // Private --------------------------------------------------------
+   // Private --------------------------------------------------------------------------------------
 
    private HierarchicalState getState(Invocation inv)
    {
       return ((DelegateSupport)inv.getTargetObject()).getState();
    }
 
-   // Inner Classes --------------------------------------------------
+   // Inner Classes --------------------------------------------------------------------------------
 }
 

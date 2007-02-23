@@ -65,7 +65,6 @@ import org.jboss.jms.wireformat.SessionDeleteTemporaryDestinationRequest;
 import org.jboss.jms.wireformat.SessionRecoverDeliveriesRequest;
 import org.jboss.jms.wireformat.SessionSendRequest;
 import org.jboss.jms.wireformat.SessionUnsubscribeRequest;
-import org.jboss.logging.Logger;
 
 /**
  * The client-side Session delegate class.
@@ -84,9 +83,6 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
 
    private static final long serialVersionUID = -8096852898620279131L;
    
-   private static final Logger log = Logger.getLogger(ClientSessionDelegate.class);
-   
-
    // Attributes -----------------------------------------------------------------------------------
    
    private int dupsOKBatchSize;
@@ -389,7 +385,6 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
    /**
     * This invocation should either be handled by the client-side interceptor chain or by the
     * server-side endpoint.
-    * @see org.jboss.jms.client.container.AsfAspect#handleSetMessageListener(org.jboss.aop.joinpoint.Invocation)
     */
    public void setMessageListener(MessageListener listener) throws JMSException
    {
@@ -496,7 +491,6 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
       return "SessionDelegate[" + id + "]";
    }
    
-
    // Protected ------------------------------------------------------------------------------------
 
    // Package Private ------------------------------------------------------------------------------
