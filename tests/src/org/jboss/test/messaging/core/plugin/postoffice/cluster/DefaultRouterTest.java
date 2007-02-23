@@ -44,6 +44,8 @@ import org.jboss.test.messaging.util.CoreMessageFactory;
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
+ * 
+ * TODO Need to add tests for failed over queues to this
  *
  * $Id$
  *
@@ -304,32 +306,6 @@ public class DefaultRouterTest extends PostOfficeTestBase
       receiver.clear();
    }
    
-//   private void sendAndCheck(ClusterRouter router, Queue queue) throws Throwable
-//   {
-//      Message msg = CoreMessageFactory.createCoreMessage(nextId++, false, null);
-//
-//      MessageReference ref = ms.reference(msg);
-//
-//      Delivery del = router.handle(null, ref, null);
-//
-//      assertNotNull(del);
-//
-//      assertTrue(del.isSelectorAccepted());
-//
-//      Thread.sleep(250);
-//
-//      List msgs = queue.browse();
-//
-//      assertNotNull(msgs);
-//
-//      assertEquals(1, msgs.size());
-//
-//      Message msgRec = (Message)msgs.get(0);
-//
-//      assertTrue(msg == msgRec);
-//
-//      queue.removeAllReferences();
-//   }
 
    // Private -------------------------------------------------------
    

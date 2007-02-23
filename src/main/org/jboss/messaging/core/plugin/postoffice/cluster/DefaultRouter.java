@@ -34,9 +34,14 @@ import org.jboss.messaging.core.message.MessageReference;
 import org.jboss.messaging.core.tx.Transaction;
 
 /**
- * This router always favours the local queue.
+ * 
+ * This router first favours the failed over queue (if there is one) TODO revisit this
+ * 
+ * Then it favours the local queue.
  * 
  * If there is no local queue, then it will round robin between the non local queues.
+ * 
+ * FIXME - none of the new failed over functionality has been tested!!
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -72,6 +77,7 @@ public class DefaultRouter implements ClusterRouter
    public DefaultRouter()
    {
       nonLocalQueues = new ArrayList();
+      
       failedOverQueues = new ArrayList();
    }
 
@@ -83,6 +89,7 @@ public class DefaultRouter implements ClusterRouter
 
       // Favour the local queue or the failedOver queue in round robin
 
+      //TODO - revisit all of this - it doesn't look right to me - Tim
       if (!failedOverQueues.isEmpty())
       {
          // If the message arrived over a failed-over connection, try to send the message to its
@@ -105,29 +112,9 @@ public class DefaultRouter implements ClusterRouter
 
             return del;
          }
-         else
-         {
-            LocalClusteredQueue queueToUse = null;
-
-            if (target == -1)
-            {
-               queueToUse = (LocalClusteredQueue)localQueue;
-            }
-            else
-            {
-               queueToUse = (LocalClusteredQueue)failedOverQueues.get(target);
-            }
-
-            incTargetFailedOver();
-
-            Delivery del = queueToUse.handle(observer, ref, tx);
-
-            if (trace) { log.trace(this + " routed message to failed queue, using failed-over round robbing, returned " + del); }
-
-            return del;
-         }
       }
-      else if (localQueue != null)
+      
+      if (localQueue != null)
       {
          // The only time the local queue won't accept is if the selector doesn't match, in which
          // case it won't match at any other nodes too so no point in trying them
@@ -168,11 +155,14 @@ public class DefaultRouter implements ClusterRouter
 
    public boolean contains(Receiver queue)
    {
+      //FIXME - what about failed over queues??
       return localQueue == queue || nonLocalQueues.contains(queue);
    }
 
    public Iterator iterator()
    {
+      //FIXME - this is broken - where are the failed over queuues?
+      
       List queues = new ArrayList();
 
       if (localQueue != null)
@@ -195,6 +185,7 @@ public class DefaultRouter implements ClusterRouter
       if (localQueue == queue)
       {
          localQueue = null;
+         
          return true;
       }
       else
@@ -209,7 +200,15 @@ public class DefaultRouter implements ClusterRouter
          }
          else
          {
-            return false;
+            //Maybe it's a failed over queue
+            if (this.failedOverQueues.remove(queue))
+            {
+               return true;
+            }
+            else
+            {
+               return false;
+            }
          }
       }
    }
@@ -217,12 +216,17 @@ public class DefaultRouter implements ClusterRouter
    public void clear()
    {
       nonLocalQueues.clear();
+      
+      failedOverQueues.clear();
+      
       localQueue = null;
+      
       target = 0;
    }
 
    public int getNumberOfReceivers()
    {
+      //FIXME - what about failed over queues????
       return nonLocalQueues.size() + (localQueue != null ? 1 : 0);
    }
 
@@ -297,17 +301,6 @@ public class DefaultRouter implements ClusterRouter
 
    // Private --------------------------------------------------------------------------------------
 
-   private void incTargetFailedOver()
-   {
-      target++;
-
-      if (target == failedOverQueues.size())
-      {
-         target = -1; // use the local queue
-      }
-   }
-
-
    private void incTarget()
    {
       target++;
@@ -322,6 +315,9 @@ public class DefaultRouter implements ClusterRouter
    {
       // TODO - this is a VERY slow sequential pass; I am sure we can come with a smarter way to
       //        locate the queue
+      
+      // This is rubbish - should be using a Map for the failed over queues
+      // or better still rethink the whole way this failed over queue routing works - it is a mess!
       for(int i = 0; i < failedOverQueues.size(); i++)
       {
          if (((FailedOverQueue)failedOverQueues.get(i)).getFailedNodeID() == failedNodeID)

@@ -45,6 +45,7 @@ import org.jboss.messaging.core.plugin.postoffice.cluster.DefaultFailoverMapper;
 import org.jboss.messaging.core.plugin.postoffice.cluster.DefaultRouterFactory;
 import org.jboss.messaging.core.plugin.postoffice.cluster.MessagePullPolicy;
 import org.jboss.messaging.core.plugin.postoffice.cluster.NullMessagePullPolicy;
+import org.jboss.messaging.core.plugin.postoffice.cluster.RoundRobinRouterFactory;
 import org.jboss.messaging.core.plugin.postoffice.cluster.jchannelfactory.JChannelFactory;
 import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.messaging.core.tx.TransactionRepository;
@@ -83,9 +84,35 @@ public class PostOfficeTestBase extends MessagingTestCase
       throws Exception
    {
       return createClusteredPostOffice(nodeID, groupName, 5000, 5000, new NullMessagePullPolicy(),
-                                       sc, ms, pm, tr);
+                                       sc, ms, pm, tr, new DefaultRouterFactory());
    }
-
+   
+   protected static ClusteredPostOffice createClusteredPostOfficeWithRRR(int nodeID,
+            String groupName,
+            ServiceContainer sc,
+            MessageStore ms,
+            PersistenceManager pm,
+            TransactionRepository tr)
+       throws Exception
+   {
+      return createClusteredPostOffice(nodeID, groupName, 5000, 5000, new NullMessagePullPolicy(),
+               sc, ms, pm, tr, new RoundRobinRouterFactory());
+   }
+   
+   protected static ClusteredPostOffice createClusteredPostOffice(int nodeID,
+            String groupName,
+            long stateTimeout,
+            long castTimeout,
+            MessagePullPolicy pullPolicy,
+            ServiceContainer sc,
+            MessageStore ms,
+            PersistenceManager pm,
+            TransactionRepository tr) throws Exception
+   {
+      return createClusteredPostOffice(nodeID, groupName, stateTimeout, castTimeout, pullPolicy, sc, ms, pm, tr,
+            new DefaultRouterFactory());
+   }
+   
 
    protected static ClusteredPostOffice createClusteredPostOffice(int nodeID,
                                                                   String groupName,
@@ -95,11 +122,11 @@ public class PostOfficeTestBase extends MessagingTestCase
                                                                   ServiceContainer sc,
                                                                   MessageStore ms,
                                                                   PersistenceManager pm,
-                                                                  TransactionRepository tr)
+                                                                  TransactionRepository tr,
+                                                                  ClusterRouterFactory rf)
       throws Exception
    {
       FilterFactory ff = new SimpleFilterFactory();
-      ClusterRouterFactory rf = new DefaultRouterFactory();
       FailoverMapper mapper = new DefaultFailoverMapper();
       ConditionFactory cf = new SimpleConditionFactory();
 
