@@ -68,8 +68,7 @@ public class FailoverValveInterceptor implements Interceptor, FailureDetector
    }
 
    public Object invoke(Invocation invocation) throws Throwable
-   {
-
+   {      
       // maintain a reference to connectionState, so we can ensure we have already tested for fcc.
       // As fcc can be null on non-clustered connections we have to cache connectionState instead
       if (connectionState == null)
@@ -121,17 +120,17 @@ public class FailoverValveInterceptor implements Interceptor, FailureDetector
       catch (MessagingNetworkFailureException e)
       {
          log.debug(this + " detected network failure, putting " + methodName +
-            "() on hold until failover completes");
-         
+         "() on hold until failover completes");
+      
          fcc.failureDetected(e, this, remotingConnection);
          
          log.debug(this + " resuming " + methodName + "()");
-
+      
          Object target = invocation.getTargetObject();
          
          // Set retry flag as true on send & sendTransaction
          // more details at http://jira.jboss.org/jira/browse/JBMESSAGING-809
-
+      
          if (methodName.equals("send") &&
              target instanceof ClientSessionDelegate)
          {
@@ -151,7 +150,7 @@ public class FailoverValveInterceptor implements Interceptor, FailureDetector
          }
 
          return invocation.invokeNext();
-      }      
+      } 
       catch (Throwable e)
       {
          // not failover-triggering, rethrow
@@ -162,7 +161,7 @@ public class FailoverValveInterceptor implements Interceptor, FailureDetector
          valve.leave();
       }
    }
-
+   
    // Public ---------------------------------------------------------------------------------------
 
    public String toString()

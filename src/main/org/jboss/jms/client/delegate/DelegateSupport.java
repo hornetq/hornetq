@@ -209,6 +209,15 @@ public abstract class DelegateSupport implements Streamable, Serializable
       {
          return new MessagingNetworkFailureException((Exception)t);
       }
+//      else if (t instanceof Exception && t.getMessage().startsWith("Can not make remoting client invocation"))
+//      {
+//
+//         log.info("********** caught exception ", t);
+//            
+//         //FIXME Temporary HACK until http://jira.jboss.org/jira/browse/JBMESSAGING-891 is
+//         //fixed
+//         return new MessagingNetworkFailureException((Exception)t);
+//      }
       else         
       {
          log.error("Failed", t);

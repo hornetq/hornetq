@@ -7,6 +7,8 @@
 package org.jboss.jms.server.destination;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 
 import javax.jms.IllegalStateException;
@@ -20,6 +22,7 @@ import org.jboss.messaging.core.Queue;
 import org.jboss.messaging.core.local.PagingFilteredQueue;
 import org.jboss.messaging.core.plugin.contract.ClusteredPostOffice;
 import org.jboss.messaging.core.plugin.postoffice.Binding;
+import org.jboss.messaging.core.plugin.postoffice.cluster.FailedOverQueue;
 import org.jboss.messaging.core.plugin.postoffice.cluster.LocalClusteredQueue;
 
 /**
@@ -71,26 +74,53 @@ public class QueueService extends DestinationServiceSupport implements QueueMBea
          // Binding must be added before destination is registered in JNDI otherwise the user could
          // get a reference to the destination and use it while it is still being loaded. Also,
          // binding might already exist.
-            
-         Binding binding = postOffice.getBindingForQueueName(destination.getName());
          
-         PagingFilteredQueue queue;
+         JMSCondition topicCond = new JMSCondition(true, destination.getName());
          
-         if (binding != null)
-         {     
-            queue = (PagingFilteredQueue)binding.getQueue();
-                
-            queue.setPagingParams(destination.getFullSize(),
-                                  destination.getPageSize(),
-                                  destination.getDownCacheSize());
-            queue.load();
+         // There may be many bindings since there maybe failed over queues
+         Collection bindings = postOffice.getBindingsForCondition(topicCond);
+         Iterator iter = bindings.iterator();
+         
+         PagingFilteredQueue queue = null;
+         
+         while (iter.hasNext())
+         {
+            Binding binding = (Binding)iter.next();
             
-            // Must be done after load
-            queue.setMaxSize(destination.getMaxSize());
-            queue.activate();
+            PagingFilteredQueue q = (PagingFilteredQueue)binding.getQueue();
+            
+            q.setPagingParams(destination.getFullSize(),
+                     destination.getPageSize(),
+                     destination.getDownCacheSize());
+            q.load();
+            
+            if (q instanceof FailedOverQueue && queue.getMessageCount() == 0)
+            {
+               //If there are no refs in the queue we can safely delete it
+               //We don't want empty queues from previous failed nodes clogging up
+               //the database
+               
+               //TODO - commented out for now
+               
+//               ClusteredPostOffice cpo = (ClusteredPostOffice)postOffice;
+//                  
+//               cpo.unbindClusteredQueue(q.getName());               
+            }
+            else
+            {            
+               // Must be done after load
+               q.setMaxSize(destination.getMaxSize());
+               q.activate();
+               
+               if (!(queue instanceof FailedOverQueue))
+               {
+                  queue = q;
+               }
+            }            
          }
-         else
-         {                                 
+            
+         if (queue == null)
+         {
             // Create a new queue
             
             JMSCondition queueCond = new JMSCondition(true, destination.getName());

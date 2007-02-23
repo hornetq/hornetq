@@ -598,12 +598,13 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
    public void putReplicantLocally(int originatorNodeID, Serializable key, Serializable replicant)
       throws Exception
    {
-
+      Map m = null;
+      
       synchronized (replicatedData)
       {
          log.debug(this + " puts replicant locally: " + key + "->" + replicant);
 
-         Map m = (Map)replicatedData.get(key);
+         m = (Map)replicatedData.get(key);
 
          if (m == null)
          {
@@ -614,10 +615,10 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
 
          m.put(new Integer(originatorNodeID), replicant);
 
-         notifyListeners(key, m, true, originatorNodeID);
-
          if (trace) { log.trace(this + " putReplicantLocally completed"); }
       }
+      
+      notifyListeners(key, m, true, originatorNodeID);
    }
 
    /**
@@ -625,11 +626,13 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
     */
    public boolean removeReplicantLocally(int originatorNodeID, Serializable key) throws Exception
    {
+      Map m = null;
+      
       synchronized (replicatedData)
       {
          if (trace) { log.trace(this + " removes " + originatorNodeID + "'s replicant locally for key " + key); }
 
-         Map m = (Map)replicatedData.get(key);
+         m = (Map)replicatedData.get(key);
 
          if (m == null)
          {
@@ -647,10 +650,11 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
          {
             replicatedData.remove(key);
          }
-         notifyListeners(key, m, false, originatorNodeID);
-
-         return true;
       }
+      
+      notifyListeners(key, m, false, originatorNodeID);
+
+      return true;
    }
 
    public void routeFromCluster(org.jboss.messaging.core.message.Message message,
@@ -1740,10 +1744,12 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
          lock.writeLock().release();
       }
 
+      Map toNotify = new HashMap();
+      
       synchronized (replicatedData)
       {
          // We need to remove any replicant data for the node. This includes the node-address info.
-         for(Iterator i = replicatedData.entrySet().iterator(); i.hasNext(); )
+         for (Iterator i = replicatedData.entrySet().iterator(); i.hasNext(); )
          {
             Map.Entry entry = (Map.Entry)i.next();
             String key = (String)entry.getKey();
@@ -1756,8 +1762,18 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
                i.remove();
             }
 
-            notifyListeners(key, replicants, false, nodeToRemove.intValue());
+            toNotify.put(key, replicants);           
          }
+      }
+      
+      //Notify outside the lock to prevent deadlock
+      
+      for (Iterator i = toNotify.entrySet().iterator(); i.hasNext(); )
+      {
+         Map.Entry entry = (Map.Entry)i.next();
+         String key = (String)entry.getKey();
+         Map replicants = (Map)entry.getValue();
+         notifyListeners(key, replicants, false, nodeToRemove.intValue());
       }
    }
 
@@ -2153,6 +2169,8 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
                }
 
                ClusteredQueue queue = (ClusteredQueue)binding.getQueue();
+               
+               log.info("queue is:" + queue.getName());
 
                // Sanity check
                if (queue.isLocal())
