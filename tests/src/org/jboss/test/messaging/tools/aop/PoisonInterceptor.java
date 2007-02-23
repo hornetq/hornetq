@@ -49,6 +49,8 @@ public class PoisonInterceptor implements Interceptor
    public static final int FAIL_SYNCHRONIZED_SEND_RECEIVE = 6;
 
    public static final int FAIL_AFTER_SENDTRANSACTION = 7;
+   
+   public static final int LONG_SEND = 8;
 
    // Static ---------------------------------------------------------------------------------------
    
@@ -170,6 +172,17 @@ public class PoisonInterceptor implements Interceptor
             // lets sleep until the server is killed
             log.info("Waiting the synchronized send to kill this invocation.");
             Thread.sleep(60000);
+         }
+      }
+      else if (type == LONG_SEND)
+      {
+         if ("send".equals(methodName))
+         {
+            //Pause for 2 mins before processing send
+            log.info("Sleeping for 2 minutes before sending....");
+            Thread.sleep(120000);
+            
+            invocation.invokeNext();
          }
       }
 
