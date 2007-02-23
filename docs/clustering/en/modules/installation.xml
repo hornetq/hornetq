@@ -2,6 +2,11 @@
 
    <title>JBoss Messaging Clustering Installation</title>
 
+   <note>
+      You need at least ant 1.6.3 installed in order for the installation procedure to work
+      correctly.
+   </note>
+
    <para>
       Use the <filename>release-admin.xml</filename> ant script shipped with the release to
       create individual cluster node configurations.

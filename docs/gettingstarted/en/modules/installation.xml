@@ -26,6 +26,11 @@
     <section id="install4.automated">
      <title>Installation procedure</title>
 
+       <note>
+          You need at least ant 1.6.3 installed in order for the installation procedure to work
+          correctly.
+       </note>
+
       <para>
          Set up the <literal>JBOSS_HOME</literal> environment variable to point to
          the JBoss 4.x installation you
