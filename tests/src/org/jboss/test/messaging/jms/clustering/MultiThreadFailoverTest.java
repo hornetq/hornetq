@@ -279,7 +279,7 @@ public class MultiThreadFailoverTest extends ClusteringTestBase
 
    // I kept this method on public area on purpose.. just to be easier to read the code
    // As this is the real test being executed by test methods here.
-   private void   multiThreadFailover(int producerThread, int consumerThread, boolean transacted,
+   private void multiThreadFailover(int producerThread, int consumerThread, boolean transacted,
                                     boolean persistent)
       throws Exception
    {
@@ -298,6 +298,7 @@ public class MultiThreadFailoverTest extends ClusteringTestBase
 
          checkConnectionsDifferentServers(new Connection[]{conn1, conn2, conn3});
 
+         // picking connection to server 1
          Connection conn = getConnection(new Connection[]{conn1, conn2, conn3}, 1);
 
          conn.start();
@@ -358,7 +359,7 @@ public class MultiThreadFailoverTest extends ClusteringTestBase
             semaphore.notifyAll();
          }
 
-         Thread.sleep(10000); // 15 seconds generating / consuming messages
+         Thread.sleep(10000); // 10 seconds generating / consuming messages
 
          log.info("Killing server 1");
 
