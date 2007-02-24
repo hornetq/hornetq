@@ -207,6 +207,7 @@ public abstract class DelegateSupport implements Streamable, Serializable
       }
       else if ((t instanceof CannotConnectException) || (t instanceof IOException))
       {
+         log.warn("Captured Exception:" + t, t);
          return new MessagingNetworkFailureException((Exception)t);
       }
 //      else if (t instanceof Exception && t.getMessage().startsWith("Can not make remoting client invocation"))
