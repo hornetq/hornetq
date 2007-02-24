@@ -70,12 +70,11 @@ public class FailoverStatus implements Serializable
          throw new IllegalStateException("Already failing over for node " + currentlyFailingOverForNode);
       }
 
-      //Remove from failedOverNodes in case its failed over for the same node before      
+      // Remove from failedOverNodes in case its failed over for the same node before.
       failedOverForNodes.remove(nodeID);
       
       currentlyFailingOverForNode = nodeID.intValue();
-      
-      failingOver = true; 
+      failingOver = true;
    }
 
    public void finishFailingOver()
@@ -86,7 +85,6 @@ public class FailoverStatus implements Serializable
       }
 
       failedOverForNodes.add(new Integer(currentlyFailingOverForNode));
-
       failingOver = false;
    }
 

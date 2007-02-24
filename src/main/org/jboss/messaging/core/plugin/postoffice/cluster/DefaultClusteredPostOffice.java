@@ -2170,8 +2170,6 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
 
                ClusteredQueue queue = (ClusteredQueue)binding.getQueue();
                
-               log.info("queue is:" + queue.getName());
-
                // Sanity check
                if (queue.isLocal())
                {

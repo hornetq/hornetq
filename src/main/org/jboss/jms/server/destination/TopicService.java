@@ -18,7 +18,6 @@ import org.jboss.jms.util.ExceptionUtil;
 import org.jboss.jms.util.MessageQueueNameHelper;
 import org.jboss.jms.util.XMLUtil;
 import org.jboss.messaging.core.local.PagingFilteredQueue;
-import org.jboss.messaging.core.plugin.contract.ClusteredPostOffice;
 import org.jboss.messaging.core.plugin.postoffice.Binding;
 import org.jboss.messaging.core.plugin.postoffice.cluster.FailedOverQueue;
 
@@ -91,14 +90,12 @@ public class TopicService extends DestinationServiceSupport implements TopicMBea
             
             if (queue instanceof FailedOverQueue && queue.getMessageCount() == 0)
             {
-               //If there are no refs in the queue we can safely delete it
-               //We don't want empty queues from previous failed nodes clogging up
-               //the database
+               // If there are no message references in the queue we can safely delete it. We don't
+               // want empty queues from previous failed nodes clogging up the database.
                
-               //Commented out for now
+               //TODO - commented out for now
                
 //               ClusteredPostOffice cpo = (ClusteredPostOffice)postOffice;
-//               
 //               cpo.unbindClusteredQueue(queue.getName());
             }
             else
