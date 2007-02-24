@@ -24,6 +24,7 @@ package org.jboss.test.messaging.jms.clustering;
 
 import org.jboss.jms.client.FailoverValve;
 import org.jboss.test.messaging.MessagingTestCase;
+import EDU.oswego.cs.dl.util.concurrent.Slot;
 
 
 /**
@@ -120,6 +121,170 @@ public class FailoverValveTest extends MessagingTestCase
       }
 
    }
+
+   public void testSimpleClose() throws Exception
+   {
+      final FailoverValve valve = new FailoverValve(2000);
+      final Slot slot = new Slot();
+
+      // prevent the valve from being possible to close
+
+      valve.enter();
+
+      new Thread(new Runnable()
+      {
+         public void run()
+         {
+            try
+            {
+               valve.close();
+               slot.put("CLOSED");
+            }
+            catch(InterruptedException e)
+            {
+               log.error(e);
+            }
+         }
+      }, "Closer").start();
+
+      log.info("attempting to close for 5 secs ...");
+
+      // valve cannot be closed at this time
+      Object o = slot.poll(5000);
+      assertNull(o);
+
+      // exit the valve
+      valve.leave();
+      o = slot.take();
+      assertNotNull(o);
+      assertEquals("CLOSED", o);
+   }
+
+   public void testSimpleClose2() throws Exception
+   {
+      final FailoverValve valve = new FailoverValve(2000);
+      final Slot slot = new Slot();
+
+      // flip-flop the valve
+
+      valve.enter();
+      valve.leave();
+
+      new Thread(new Runnable()
+      {
+         public void run()
+         {
+            try
+            {
+               valve.close();
+               slot.put("CLOSED");
+            }
+            catch(InterruptedException e)
+            {
+               log.error(e);
+            }
+         }
+      }, "Closer").start();
+
+      log.info("attempting to close ...");
+
+      // valve cannot be closed at this time
+      Object o = slot.poll(5000);
+      assertNotNull(o);
+      assertEquals("CLOSED", o);
+   }
+
+
+   public void testConcurrentClose() throws Exception
+   {
+      int THREAD_COUNT = 10;
+      final FailoverValve valve = new FailoverValve(10000);
+      final Slot[] slot = new Slot[THREAD_COUNT];
+
+      // prevent the valve from being possible to close
+
+      log.info("entering the valve");
+
+      valve.enter();
+
+      // attempt to close the valve from 10 concurrent threads
+      for(int i = 0; i < THREAD_COUNT; i++)
+      {
+         slot[i] = new Slot();
+         final int ii = i;
+
+         new Thread(new Runnable()
+         {
+            public void run()
+            {
+               try
+               {
+                  log.info("attempting to close");
+
+                  valve.close();
+                  slot[ii].put("CLOSED");
+               }
+               catch(InterruptedException e)
+               {
+                  log.error(e);
+               }
+            }
+         }, "Closer" + i).start();
+
+      }
+
+      // wait a second so they'll attempt closing
+      log.info("sleeping for 2 seconds");
+      Thread.sleep(2000);
+      log.info("slept");
+
+      // make sure none closed the valve
+
+      for(int i = 0; i < THREAD_COUNT; i++)
+      {
+         Object o = slot[i].peek();
+         assertNull(o);
+      }
+
+      log.info("leaving the valve");
+      valve.leave();
+
+      // the valve should be "closeable", so all waiting threads, plus a new one, should be able
+      // to close it
+
+      final Slot loneSlot = new Slot();
+
+      new Thread(new Runnable()
+      {
+         public void run()
+         {
+            try
+            {
+               log.info("attempting to close");
+               valve.close();
+               loneSlot.put("CLOSED");
+            }
+            catch(InterruptedException e)
+            {
+               log.error(e);
+            }
+         }
+      }, "LoneCloser").start();
+
+
+      log.info("valve should be closed by now ...");
+      Object o = loneSlot.poll(3000);
+      assertNotNull(o);
+      assertEquals("CLOSED", o);
+
+      for(int i = 0; i < THREAD_COUNT; i++)
+      {
+         o = slot[i].poll(3000);
+         assertNull(o);
+         assertEquals("CLOSED", o);
+      }
+   }
+
 
    // Package protected ----------------------------------------------------------------------------
 
