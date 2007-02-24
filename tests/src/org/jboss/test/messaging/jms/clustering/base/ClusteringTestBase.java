@@ -182,9 +182,10 @@ public class ClusteringTestBase extends MessagingTestCase
       }
    }
 
-   // lookup for the connection with the right serverID
-   // I'm using this method to find the proper serverId so I won't relay on loadBalancing policies
-   // on testcases.
+   /**
+    * Lookup for the connection with the right serverID. I'm using this method to find the proper
+    * serverId so I won't relay on loadBalancing policies on testcases.
+    */
    protected Connection getConnection(Connection[] conn, int serverId) throws Exception
    {
       for(int i = 0; i < conn.length; i++)
