@@ -41,6 +41,8 @@ public class FailoverValve
 
    private static final Logger log = Logger.getLogger(FailoverValve.class);
 
+   public static final long DEFAULT_ATTEMPT_TIMEOUT = 5000;
+
    // Static ---------------------------------------------------------------------------------------
 
    private static boolean trace = log.isTraceEnabled();
@@ -64,17 +66,29 @@ public class FailoverValve
 
    private FailoverCommandCenter fcc;
 
+   private long writeLockAttemptTimeout;
+
    // Constructors ---------------------------------------------------------------------------------
 
    public FailoverValve()
    {
-      this(null);
+      this(null, DEFAULT_ATTEMPT_TIMEOUT);
+   }
+
+   public FailoverValve(long attemptTiemout)
+   {
+      this(null, attemptTiemout);
+   }
+
+   public FailoverValve(FailoverCommandCenter fcc)
+   {
+      this(fcc, DEFAULT_ATTEMPT_TIMEOUT);
    }
 
    /**
     * @param fcc - can be null, for an uninitialized valve.
     */
-   public FailoverValve(FailoverCommandCenter fcc)
+   public FailoverValve(FailoverCommandCenter fcc, long attemptTiemout)
    {
       this.fcc = fcc;
 
@@ -83,6 +97,8 @@ public class FailoverValve
       // writeLock when a failover occurs; using reentrant locks will make this usage transparent
       // for the API, we just close the valve and the read lock is promoted to write lock.
       lock = new ReentrantWriterPreferenceReadWriteLock();
+
+      this.writeLockAttemptTimeout = attemptTiemout;
 
       if (trace)
       {
@@ -153,7 +169,7 @@ public class FailoverValve
 
       do
       {
-         acquired = lock.writeLock().attempt(5000);
+         acquired = lock.writeLock().attempt(writeLockAttemptTimeout);
 
          if (!acquired)
          {
@@ -211,6 +227,11 @@ public class FailoverValve
       log.debug(this + " opened");
    }
 
+   public long getWriteLockAttemptTimeout()
+   {
+      return writeLockAttemptTimeout;
+   }
+
    public String toString()
    {
       return "FailoverValve[" +
@@ -231,7 +252,7 @@ public class FailoverValve
     */
    private Counter getCounter()
    {
-      Counter localCounter = (Counter) counterLocal.get();
+      Counter localCounter = (Counter)counterLocal.get();
 
       if (localCounter == null)
       {
@@ -279,7 +300,7 @@ public class FailoverValve
       for (Iterator iter = debugCloses.entrySet().iterator(); iter.hasNext();)
       {
          Map.Entry entry = (Map.Entry) iter.next();
-         writer.println("Thread that own a close =" + entry.getValue());
+         writer.println("Thread that owns a close =" + entry.getValue());
          writer.println("StackTrace:");
          Exception e = (Exception) entry.getKey();
          e.printStackTrace(writer);
@@ -289,7 +310,7 @@ public class FailoverValve
       for (Iterator iter = debugEnters.entrySet().iterator(); iter.hasNext();)
       {
          Map.Entry entry = (Map.Entry) iter.next();
-         writer.println("Thread that own valve =" + entry.getValue());
+         writer.println("Thread that owns valve =" + entry.getValue());
          writer.println("StackTrace:");
          Exception e = (Exception) entry.getKey();
          e.printStackTrace(writer);
