@@ -195,13 +195,7 @@ public class FailoverValveTest extends MessagingTestCase
    }
 
 
-   // This testcase is invalid!
-   // You can't close the valve until all the threads are completed...
-   // or all threads are trying to close the valve.
-   //
-   // You can call close whenever you want.. .but you can't complete that execution
-   //   if there is a thread holding a readLock.
-   /*public void testConcurrentClose() throws Exception
+   public void testConcurrentClose() throws Exception
    {
       int THREAD_COUNT = 10;
       final FailoverValve valve = new FailoverValve(10000);
@@ -226,16 +220,18 @@ public class FailoverValveTest extends MessagingTestCase
                try
                {
                   log.info("attempting to close");
-
                   valve.close();
+                  log.info("First thread could close the valve");
                   slot[ii].put("CLOSED");
+                  valve.open();
+                  log.info("Firs thread opened the Valve");
                }
                catch(InterruptedException e)
                {
                   log.error(e);
                }
             }
-         }, "Closer" + i).start();
+         }, "Closer(" + i + ")").start();
 
       }
 
@@ -268,6 +264,7 @@ public class FailoverValveTest extends MessagingTestCase
             {
                log.info("attempting to close");
                valve.close();
+               log.info("Second thread could close the valve");
                loneSlot.put("CLOSED");
             }
             catch(InterruptedException e)
@@ -278,6 +275,7 @@ public class FailoverValveTest extends MessagingTestCase
       }, "LoneCloser").start();
 
 
+      Thread.sleep(5000);
       log.info("valve should be closed by now ...");
       Object o = loneSlot.poll(3000);
       assertNotNull(o);
@@ -286,10 +284,10 @@ public class FailoverValveTest extends MessagingTestCase
       for(int i = 0; i < THREAD_COUNT; i++)
       {
          o = slot[i].poll(3000);
-         assertNull(o);
+         assertNotNull(o);
          assertEquals("CLOSED", o);
       }
-   }  TODO: Delete this TestCase... I'm keeping it for now! */
+   }
 
 
    // Package protected ----------------------------------------------------------------------------
