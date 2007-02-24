@@ -839,13 +839,6 @@
             <fileset dir="${build.tests.classes}">
                <include name="**/jms/clustering/${test-mask}.class"/>
                <exclude name="**/*LeakTest.class"/>
-
-                <!--
-                    org.jboss.test.messaging.jms.clustering.MultiThreadFailoverTest temporarily commented out
-                    http://jira.jboss.org/jira/browse/JBMESSAGING-859
-               -->
-               <exclude name="org/jboss/test/messaging/jms/clustering/MultiThreadFailoverTest.class"/>
-
             </fileset>
          </batchtest>
       </junit>
