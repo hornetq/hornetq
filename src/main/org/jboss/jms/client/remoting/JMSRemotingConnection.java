@@ -313,7 +313,7 @@ public class JMSRemotingConnection
       return callbackManager;
    }
 
-   public boolean isFailed()
+   public synchronized boolean isFailed()
    {
       return failed;
    }
@@ -322,7 +322,7 @@ public class JMSRemotingConnection
     * Used by the FailoverCommandCenter to mark this remoting connection as "condemned", following
     * a failure detected by either a failed invocation, or the ConnectionListener.
     */
-   public void setFailed()
+   public synchronized void setFailed()
    {
       failed = true;
 

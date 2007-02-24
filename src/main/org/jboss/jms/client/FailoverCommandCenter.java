@@ -65,9 +65,7 @@ public class FailoverCommandCenter
       log.debug("failure detected by " + source);
 
       // generate a FAILURE_DETECTED event
-      broadcastFailoverEvent(new FailoverEvent(FailoverEvent.FAILURE_DETECTED, this));
-
-      log.debug(this + " initiating client-side failover");
+      broadcastFailoverEvent(new FailoverEvent(FailoverEvent.FAILURE_DETECTED, source));
 
       CreateConnectionResult res = null;
       boolean failoverSuccessful = false;
@@ -79,14 +77,22 @@ public class FailoverCommandCenter
 
          valve.close();
 
-         if (remotingConnection.isFailed())
+         synchronized(this)
          {
-            log.debug(this + " ignoring failure detection notification, as failover was " +
-               "already performed on this connection");
-            return;
+            // testing for failed connection and setting the failed flag need to be done in one
+            // atomic operation, otherwise multiple threads can get to perform the client-side
+            // failover concurrently
+            if (remotingConnection.isFailed())
+            {
+               log.debug(this + " ignoring failure detection notification, as failover was " +
+                  "already (or is in process of being) performed on this connection");
+               return;
+            }
+
+            remotingConnection.setFailed();
          }
 
-         remotingConnection.setFailed();
+         log.debug(this + " starting client-side failover");
 
          // generate a FAILOVER_STARTED event. The event must be broadcasted AFTER valve closure,
          // to insure the client-side stack is in a deterministic state
