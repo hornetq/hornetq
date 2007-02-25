@@ -1695,11 +1695,7 @@ public class FailoverTest extends ClusteringTestBase
 
          assertEquals(0, ((JBossConnection)conn0).getServerID());
 
-         Session session0 = conn0.createSession(true, Session.SESSION_TRANSACTED);
-
-         MessageConsumer consumer0 = session0.createConsumer(queue[0]);
-
-         conn0.start();
+         conn0.close();
 
          conn = cf.createConnection();
 
@@ -1741,7 +1737,6 @@ public class FailoverTest extends ClusteringTestBase
          }
 
          assertNull(consumer.receive(1000));
-         assertNull(consumer0.receive(5000));
 
       }
       finally
