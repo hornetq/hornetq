@@ -1146,31 +1146,53 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
                {
                   routed = true;
 
-                  ClusteredQueue queue = (ClusteredQueue)del.getObserver();
+                  Queue queue = (Queue)del.getObserver();
 
-                  if (trace) { log.trace(this + " successfully routed message to " + (queue.isLocal() ? "LOCAL"  : "REMOTE") + " destination '" + queue.getName() + "' on node " + queue.getNodeId()); }
-
-                  if (router.getNumberOfReceivers() > 1)
+                  if (trace)
                   {
-                     // We have now chosen which one will receive the message so we need to add this
-                     // information to a map which will get sent when casting - so the the queue on
-                     // the receiving node knows whether to receive the message.
-
-                     if (queueNameNodeIdMap == null)
+                     if (queue.isClustered())
                      {
-                        queueNameNodeIdMap = new HashMap();
+                        ClusteredQueue cq = (ClusteredQueue)queue;
+                        log.trace(this + " successfully routed message to " + (cq.isLocal() ? "LOCAL"  : "REMOTE") + " destination '" + cq.getName() + "' on node " + cq.getNodeId());
                      }
-
-                     queueNameNodeIdMap.put(queue.getName(), new Integer(queue.getNodeId()));
+                     else
+                     {
+                        
+                     }
                   }
 
-                  if (!queue.isLocal())
+                  if (queue.isClustered())
                   {
-                     // We need to send the message remotely, count recipients so we know whether
-                     // to unicast or multicast
-                     numberRemote++;
-                     lastNodeId = queue.getNodeId();
-                     lastChannelId = queue.getChannelID();
+                     ClusteredQueue cq = (ClusteredQueue)queue;
+                     
+                     if (trace) { log.trace(this + " successfully routed message to " + (cq.isLocal() ? "LOCAL"  : "REMOTE") + " destination '" + cq.getName() + "' on node " + cq.getNodeId()); }
+                     
+                     if (router.getNumberOfReceivers() > 1)
+                     {
+                        // We have now chosen which one will receive the message so we need to add this
+                        // information to a map which will get sent when casting - so the the queue on
+                        // the receiving node knows whether to receive the message.
+   
+                        if (queueNameNodeIdMap == null)
+                        {
+                           queueNameNodeIdMap = new HashMap();
+                        }
+   
+                        queueNameNodeIdMap.put(queue.getName(), new Integer(cq.getNodeId()));
+                     }
+   
+                     if (!cq.isLocal())
+                     {
+                        // We need to send the message remotely, count recipients so we know whether
+                        // to unicast or multicast
+                        numberRemote++;
+                        lastNodeId = cq.getNodeId();
+                        lastChannelId = queue.getChannelID();
+                     }
+                  }
+                  else
+                  {
+                     if (trace) { log.trace(this + " successfully routed message to non clustered destination '" + queue.getName()); }
                   }
                }
             }
