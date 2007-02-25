@@ -235,7 +235,7 @@ public class ClientConnectionDelegate extends DelegateSupport implements Connect
    {
       RequestSupport req = new ConnectionStartRequest(id, version);
       
-      doInvoke(client, req);
+      doInvokeOneway(client, req);
    }
 
    public void stop() throws JMSException

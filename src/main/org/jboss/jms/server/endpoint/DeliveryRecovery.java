@@ -48,7 +48,7 @@ public class DeliveryRecovery implements Streamable
 
    private long deliveryID;
    private long messageID;
-   private long channelID;
+   private String queueName;
 
    // Constructors ---------------------------------------------------------------------------------
 
@@ -56,11 +56,11 @@ public class DeliveryRecovery implements Streamable
    {
    }
 
-   public DeliveryRecovery(long deliveryID, long messageID, long channelID)
+   public DeliveryRecovery(long deliveryID, long messageID, String queueName)
    {
       this.deliveryID = deliveryID;
       this.messageID = messageID;
-      this.channelID = channelID;
+      this.queueName = queueName;
    }
 
    // Streamable implementation --------------------------------------------------------------------
@@ -69,14 +69,14 @@ public class DeliveryRecovery implements Streamable
    {
       deliveryID = in.readLong();
       messageID = in.readLong();
-      channelID = in.readLong();
+      queueName = in.readUTF();
    }
 
    public void write(DataOutputStream out) throws Exception
    {
       out.writeLong(deliveryID);
       out.writeLong(messageID);
-      out.writeLong(channelID);
+      out.writeUTF(queueName);
    }
 
    // Public ---------------------------------------------------------------------------------------
@@ -91,14 +91,14 @@ public class DeliveryRecovery implements Streamable
       return messageID;
    }
 
-   public long getChannelID()
+   public String getQueueName()
    {
-      return channelID;
+      return queueName;
    }
 
    public String toString()
    {
-      return "DeliveryRecovery[ID=" + deliveryID + ", MID=" + messageID + ", CID=" + channelID + "]";
+      return "DeliveryRecovery[ID=" + deliveryID + ", MID=" + messageID + ", Queue name=" + queueName + "]";
    }
 
    // Package protected ----------------------------------------------------------------------------

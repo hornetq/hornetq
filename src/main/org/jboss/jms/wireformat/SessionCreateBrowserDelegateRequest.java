@@ -44,8 +44,7 @@ public class SessionCreateBrowserDelegateRequest extends RequestSupport
 {
    private JBossDestination dest;
    private String selector; 
-   private long failoverChannelID;
-   
+
    public SessionCreateBrowserDelegateRequest()
    {      
    }
@@ -53,14 +52,12 @@ public class SessionCreateBrowserDelegateRequest extends RequestSupport
    public SessionCreateBrowserDelegateRequest(int objectId,
                                                byte version,
                                                JBossDestination destination,
-                                               String selector,
-                                               long failoverChannelID)
+                                               String selector)
    {
       super(objectId, PacketSupport.REQ_SESSION_CREATEBROWSERDELEGATE, version);
       
       this.dest = destination;
       this.selector = selector;
-      this.failoverChannelID = failoverChannelID;
    }
 
    public void read(DataInputStream is) throws Exception
@@ -70,8 +67,6 @@ public class SessionCreateBrowserDelegateRequest extends RequestSupport
       dest = JBossDestination.readDestination(is);
       
       selector = readNullableString(is);
-                 
-      failoverChannelID = is.readLong();
    }
 
    public ResponseSupport serverInvoke() throws Exception
@@ -84,7 +79,7 @@ public class SessionCreateBrowserDelegateRequest extends RequestSupport
          throw new IllegalStateException("Cannot find object in dispatcher with id " + objectId);
       }
       
-      return new SessionCreateBrowserDelegateResponse((ClientBrowserDelegate)endpoint.createBrowserDelegate(dest, selector, failoverChannelID));
+      return new SessionCreateBrowserDelegateResponse((ClientBrowserDelegate)endpoint.createBrowserDelegate(dest, selector));
    }
 
    public void write(DataOutputStream os) throws Exception
@@ -95,8 +90,6 @@ public class SessionCreateBrowserDelegateRequest extends RequestSupport
       
       writeNullableString(selector, os);
 
-      os.writeLong(failoverChannelID);
-      
       os.flush();
    }
 

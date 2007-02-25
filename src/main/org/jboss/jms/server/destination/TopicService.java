@@ -18,8 +18,8 @@ import org.jboss.jms.util.ExceptionUtil;
 import org.jboss.jms.util.MessageQueueNameHelper;
 import org.jboss.jms.util.XMLUtil;
 import org.jboss.messaging.core.local.PagingFilteredQueue;
+import org.jboss.messaging.core.plugin.contract.ClusteredPostOffice;
 import org.jboss.messaging.core.plugin.postoffice.Binding;
-import org.jboss.messaging.core.plugin.postoffice.cluster.FailedOverQueue;
 
 /**
  * A deployable JBoss Messaging topic.
@@ -87,42 +87,29 @@ public class TopicService extends DestinationServiceSupport implements TopicMBea
             queue.setPagingParams(destination.getFullSize(), destination.getPageSize(), destination.getDownCacheSize());
             
             queue.load();
+                        
+            queue.activate();  
+               
+            //Must be done after load
+            queue.setMaxSize(destination.getMaxSize());  
             
-            if (queue instanceof FailedOverQueue && queue.getMessageCount() == 0)
+            //Create a counter
+            String counterName = SUBSCRIPTION_MESSAGECOUNTER_PREFIX + queue.getName();
+            
+            String subName = MessageQueueNameHelper.createHelper(queue.getName()).getSubName();
+            
+            int dayLimitToUse = destination.getMessageCounterHistoryDayLimit();
+            if (dayLimitToUse == -1)
             {
-               // If there are no message references in the queue we can safely delete it. We don't
-               // want empty queues from previous failed nodes clogging up the database.
-               
-               //TODO - commented out for now
-               
-//               ClusteredPostOffice cpo = (ClusteredPostOffice)postOffice;
-//               cpo.unbindClusteredQueue(queue.getName());
+               //Use override on server peer
+               dayLimitToUse = serverPeer.getDefaultMessageCounterHistoryDayLimit();
             }
-            else
-            {
-               queue.activate();  
-               
-               //Must be done after load
-               queue.setMaxSize(destination.getMaxSize());  
-               
-               //Create a counter
-               String counterName = SUBSCRIPTION_MESSAGECOUNTER_PREFIX + queue.getName();
-               
-               String subName = MessageQueueNameHelper.createHelper(queue.getName()).getSubName();
-               
-               int dayLimitToUse = destination.getMessageCounterHistoryDayLimit();
-               if (dayLimitToUse == -1)
-               {
-                  //Use override on server peer
-                  dayLimitToUse = serverPeer.getDefaultMessageCounterHistoryDayLimit();
-               }
-               
-               MessageCounter counter =
-                  new MessageCounter(counterName, subName, queue, true, true,
-                                     dayLimitToUse);
-               
-               serverPeer.getMessageCounterManager().registerMessageCounter(counterName, counter);
-            }   
+            
+            MessageCounter counter =
+               new MessageCounter(counterName, subName, queue, true, true,
+                                  dayLimitToUse);
+            
+            serverPeer.getMessageCounterManager().registerMessageCounter(counterName, counter);            
          }
 
          dm.registerDestination(destination);
@@ -169,7 +156,14 @@ public class TopicService extends DestinationServiceSupport implements TopicMBea
                queue.removeAllReferences();
                
                // Unbind
-               postOffice.unbindQueue(queue.getName());
+               if (!queue.isClustered())
+               {
+                  postOffice.unbindQueue(queue.getName());
+               }
+               else
+               {
+                  ((ClusteredPostOffice)postOffice).unbindClusteredQueue(queue.getName());
+               }
             }
                         
             queue.deactivate();

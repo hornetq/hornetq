@@ -837,7 +837,7 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       pm.pageReferences(channel.getChannelID(), refs, false); 
       
       //First load exactly 10
-      PersistenceManager.InitialLoadInfo info = pm.getInitialReferenceInfos(channel.getChannelID(), 10);
+      PersistenceManager.InitialLoadInfo info = pm.loadFromStart(channel.getChannelID(), 10);
       
       assertNull(info.getMinPageOrdering());
       assertNull(info.getMaxPageOrdering());

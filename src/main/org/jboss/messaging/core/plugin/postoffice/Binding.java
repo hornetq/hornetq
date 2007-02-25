@@ -40,11 +40,4 @@ public interface Binding
    Condition getCondition();
    
    Queue getQueue();
-
-   boolean isFailed();
-
-   void setFailed(boolean failed);
-
-   Integer getFailedNodeID();
-
 }

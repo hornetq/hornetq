@@ -21,10 +21,11 @@
  */
 package org.jboss.messaging.core.plugin.postoffice.cluster;
 
+import java.util.List;
+
+import org.jboss.messaging.core.Queue;
 import org.jboss.messaging.core.Receiver;
 import org.jboss.messaging.core.Router;
-
-import java.util.List;
 
 /**
  * A ClusterRouter
@@ -39,10 +40,7 @@ public interface ClusterRouter extends Router
 {
    List getQueues();
 
-   List getFailedQueues();
+   Queue getLocalQueue();
 
-   ClusteredQueue getLocalQueue();
-
-   boolean add(Receiver receiver, boolean failedOver);
-
+   boolean add(Receiver receiver);
 }

@@ -82,6 +82,7 @@ import org.jboss.messaging.core.tx.TxCallback;
 import org.jboss.util.id.GUID;
 
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
+import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
 import EDU.oswego.cs.dl.util.concurrent.SynchronizedLong;
 
 /**
@@ -153,6 +154,8 @@ public class ServerSessionEndpoint implements SessionEndpoint
    
    private SynchronizedLong deliveryIdSequence;
    
+   //Temporary until we have our own NIO transport   
+   QueuedExecutor executor = new QueuedExecutor();
    
    // Constructors ---------------------------------------------------------------------------------
 
@@ -192,23 +195,22 @@ public class ServerSessionEndpoint implements SessionEndpoint
                                                   String selector,
                                                   boolean noLocal,
                                                   String subscriptionName,
-                                                  boolean isCC,
-                                                  long failoverChannelID) throws JMSException
+                                                  boolean isCC) throws JMSException
    {
       try
       {
-         if (!connectionEndpoint.isFailoverConnection())
-         {
+//         if (!connectionEndpoint.isFailoverConnection())
+//         {
             // regular consumer
             return createConsumerDelegateInternal(jmsDestination, selector,
                                                   noLocal, subscriptionName);
-         }
+  //       }
 
-         // we're child of a failover connection. Favor failover channels when creating new
-         // consumers
-         return createFailoverConsumerDelegateInternal(jmsDestination, selector,
-                                                       noLocal, subscriptionName,
-                                                       failoverChannelID);
+//         // we're child of a failover connection. Favor failover channels when creating new
+//         // consumers
+//         return createFailoverConsumerDelegateInternal(jmsDestination, selector,
+//                                                       noLocal, subscriptionName,
+//                                                       failoverChannelID);
       }
       catch (Throwable t)
       {
@@ -217,20 +219,20 @@ public class ServerSessionEndpoint implements SessionEndpoint
    }
       
 	public BrowserDelegate createBrowserDelegate(JBossDestination jmsDestination,
-                                                String selector, long failoverChannelID)
+                                                String selector)
       throws JMSException
 	{
       try
       {
-         if (!connectionEndpoint.isFailoverConnection())
-         {
+//         if (!connectionEndpoint.isFailoverConnection())
+//         {
             // regular browser
             return createBrowserDelegateInternal(jmsDestination, selector);
-         }
-
-         // we're child of a failover connection. Favor failover channels when creating new
-         // browsers
-         return createFailoverBrowserDelegateInternal(jmsDestination, selector, failoverChannelID);
+//         }
+//
+//         // we're child of a failover connection. Favor failover channels when creating new
+//         // browsers
+//         return createFailoverBrowserDelegateInternal(jmsDestination, selector, failoverChannelID);
       }
       catch (Throwable t)
       {
@@ -360,7 +362,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
          Delivery del = cancelDeliveryInternal(cancel);
          
          //Prompt delivery
-         ((Channel)del.getObserver()).deliver();
+         promptDelivery((Channel)del.getObserver());
       }
       catch (Throwable t)
       {
@@ -419,15 +421,15 @@ public class ServerSessionEndpoint implements SessionEndpoint
          {
             DeliveryRecovery deliveryInfo = (DeliveryRecovery)iter.next();
                 
-            Long channelId = new Long(deliveryInfo.getChannelID());
-            
-            List acks = (List)ackMap.get(channelId);
+            String queueName = deliveryInfo.getQueueName();
+
+            List acks = (List)ackMap.get(queueName);
             
             if (acks == null)
             {
                acks = new ArrayList();
                
-               ackMap.put(channelId, acks);
+               ackMap.put(queueName, acks);
             }
             
             acks.add(deliveryInfo);
@@ -439,14 +441,14 @@ public class ServerSessionEndpoint implements SessionEndpoint
          {
             Map.Entry entry = (Map.Entry)iter.next();
             
-            Long channelId = (Long)entry.getKey();
+            String queueName = (String)entry.getKey();
             
             //Look up channel
-            Binding binding = postOffice.getBindingforChannelId(channelId.longValue());
+            Binding binding = postOffice.getBindingForQueueName(queueName);
             
             if (binding == null)
             {
-               throw new IllegalStateException("Cannot find channel with id: " + channelId);
+               throw new IllegalStateException("Cannot find channel with queue name: " + queueName);
             }
             
             List acks = (List)entry.getValue();
@@ -550,19 +552,9 @@ public class ServerSessionEndpoint implements SessionEndpoint
          {            
             Queue coreQueue;
 
-            if (postOffice.isLocal())
-            {
-               coreQueue = new PagingFilteredQueue(dest.getName(),
-                                                   idm.getID(), ms, pm, true, false,
-                                                   -1, null, fullSize, pageSize, downCacheSize);
-            }
-            else
-            {
-               // uniformly handle the temporary queue as LocalClusteredQueue
-               coreQueue = new LocalClusteredQueue((ClusteredPostOffice)postOffice, nodeId, dest.getName(),
-                                                   idm.getID(), ms, pm, true, false,
-                                                   -1, null, tr, fullSize, pageSize, downCacheSize);                             
-            }
+            coreQueue = new PagingFilteredQueue(dest.getName(),
+                                                idm.getID(), ms, pm, true, false,
+                                                -1, null, fullSize, pageSize, downCacheSize);
 
             String counterName = TEMP_QUEUE_MESSAGECOUNTER_PREFIX + dest.getName();
             
@@ -978,6 +970,24 @@ public class ServerSessionEndpoint implements SessionEndpoint
          }
       }      
    } 
+   
+   void promptDelivery(final Channel channel)
+   {
+      try
+      {
+         //Prompting delivery must be asynchronous to avoid deadlock
+         //but we cannot use one way invocations on cancelDelivery and
+         //cancelDeliveries because remoting one way invocations can 
+         //overtake each other in flight - this problem will
+         //go away when we have our own transport and our dedicated connection
+         this.executor.execute(new Runnable() { public void run() { channel.deliver(); } } );
+      }
+      catch (Throwable t)
+      {
+         log.error("Failed to prompt delivery", t);
+      }
+   }
+   
 
    // Protected ------------------------------------------------------------------------------------
 
@@ -1121,7 +1131,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
       //TODO - are we sure this is the right place to prompt delivery?
       if (queue != null)
       {
-         queue.deliver();
+         promptDelivery(queue);
       }
    }
    
@@ -1143,116 +1153,6 @@ public class ServerSessionEndpoint implements SessionEndpoint
       if (trace) { log.trace(this + " acknowledged delivery " + ack); }
    }
 
-   /**
-    * @param oldChannelID - old channel ID. It may be null when creating consumer subsequently to
-    *        the actual failover, so it's our responsibility to look the proper channel.
-    * @return
-    * @throws Exception
-    */
-   private ConsumerDelegate createFailoverConsumerDelegateInternal(JBossDestination jmsDestination,
-                                                                   String selectorString,
-                                                                   boolean noLocal,
-                                                                   String subscriptionName,
-                                                                   long oldChannelID)
-      throws Exception
-   {
-      log.debug(this + " creating FAILOVER consumer for failed channel " +
-         oldChannelID + " for " + jmsDestination +
-         (selectorString == null ? "" : ", selector '" + selectorString + "'") +
-         (subscriptionName == null ? "" : ", subscription '" + subscriptionName + "'") +
-         (noLocal ? ", noLocal" : ""));
-
-      // fail over channel
-      if (postOffice.isLocal())
-      {
-         throw new IllegalStateException("Cannot failover on a non-clustered post office!");
-      }
-
-      Binding binding = null;
-
-      if (oldChannelID != -1)
-      {
-         binding = postOffice.getBindingforChannelId(oldChannelID);
-      }
-      else
-      {
-         // locate the binding based on destination name and the failed node ID
-         Collection c = postOffice.
-            getBindingsForCondition(new JMSCondition(true, jmsDestination.getName()));
-
-         for(Iterator i = c.iterator(); i.hasNext(); )
-         {
-            Binding b = (Binding)i.next();
-            if (connectionEndpoint.getFailedNodeID().equals(b.getFailedNodeID()))
-            {
-               binding = b;
-               break;
-            }
-         }
-      }
-
-      if (binding == null)
-      {
-         throw new IllegalStateException("Can't find failed over " +
-            (oldChannelID != -1 ?
-               "channel " +  oldChannelID : "queue " + jmsDestination.getName()));
-      }
-
-      Queue newQueue = binding.getQueue();
-      long newChannelID = newQueue.getChannelID();
-
-      int consumerID = connectionEndpoint.getServerPeer().getNextObjectID();
-      int prefetchSize = connectionEndpoint.getPrefetchSize();
-      
-      ManagedDestination dest = sp.getDestinationManager().
-         getDestination(jmsDestination.getName(), jmsDestination.isQueue());
-      
-      if (dest == null)
-      {
-         throw new IllegalStateException("Cannot find managed destination for " + jmsDestination);
-      }
-      
-      Queue dlqToUse =
-         dest.getDLQ() == null ? defaultDLQ : dest.getDLQ();
-      
-      Queue expiryQueueToUse =
-         dest.getExpiryQueue() == null ? defaultExpiryQueue : dest.getExpiryQueue();
-      
-      long redeliveryDelay = dest.getRedeliveryDelay();
-      
-      if (redeliveryDelay == 0)
-      {
-         redeliveryDelay = sp.getDefaultRedeliveryDelay();
-      }
-            
-      ServerConsumerEndpoint ep =
-
-         new ServerConsumerEndpoint(consumerID, binding.getQueue(),
-                                    binding.getQueue().getName(), this, selectorString, noLocal,
-                                    jmsDestination, dlqToUse, expiryQueueToUse, redeliveryDelay);
-
-      ConsumerAdvised advised;
-      
-      // Need to synchronized to prevent a deadlock
-      // See http://jira.jboss.com/jira/browse/JBMESSAGING-797
-      synchronized (AspectManager.instance())
-      {       
-         advised = new ConsumerAdvised(ep);
-      }      
-            
-      Dispatcher.instance.registerTarget(consumerID, advised);
-
-      ClientConsumerDelegate stub =
-         new ClientConsumerDelegate(consumerID, newChannelID, prefetchSize, maxDeliveryAttempts);
-            
-      synchronized (consumers)
-      {      
-         consumers.put(new Integer(consumerID), ep);
-      }
-      
-      return stub;
-   }
-   
    private ConsumerDelegate createConsumerDelegateInternal(JBossDestination jmsDestination,
                                                            String selectorString,
                                                            boolean noLocal,
@@ -1321,7 +1221,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
                         
             PagingFilteredQueue q;
             
-            if (postOffice.isLocal())
+            if (postOffice.isLocal() || !mDest.isClustered())
             {
                q = new PagingFilteredQueue(new GUID().toString(), idm.getID(), ms, pm, true, false,
                         mDest.getMaxSize(), selector,
@@ -1341,15 +1241,8 @@ public class ServerSessionEndpoint implements SessionEndpoint
                                            mDest.getDownCacheSize());
                
                ClusteredPostOffice cpo = (ClusteredPostOffice)postOffice;
-               
-               if (mDest.isClustered())
-               {
-                  binding = cpo.bindClusteredQueue(topicCond, (LocalClusteredQueue)q);
-               }
-               else
-               {
-                  binding = cpo.bindQueue(topicCond, q);
-               }
+
+               binding = cpo.bindClusteredQueue(topicCond, (LocalClusteredQueue)q);
             }
             String counterName = TopicService.SUBSCRIPTION_MESSAGECOUNTER_PREFIX + q.getName();
   
@@ -1565,7 +1458,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
       Dispatcher.instance.registerTarget(consumerID, advised);
       
       ClientConsumerDelegate stub =
-         new ClientConsumerDelegate(consumerID, binding.getQueue().getChannelID(),
+         new ClientConsumerDelegate(consumerID,
                                     prefetchSize, maxDeliveryAttempts);
       
       synchronized (consumers)
@@ -1577,73 +1470,6 @@ public class ServerSessionEndpoint implements SessionEndpoint
       
       return stub;
    }   
-
-   private BrowserDelegate createFailoverBrowserDelegateInternal(JBossDestination jmsDestination,
-                                                                 String selector,
-                                                                 long oldChannelID) throws Throwable
-   {
-      log.debug(this + " creating FAILOVER browser for failed channel " + oldChannelID + " for " +
-         jmsDestination + (selector == null ? "" : ", selector '" + selector + "'"));
-
-      if (postOffice.isLocal())
-      {
-         throw new IllegalStateException("Cannot failover on a non-clustered post office!");
-      }
-
-      Binding binding = null;
-
-      if (oldChannelID != -1)
-      {
-         binding = postOffice.getBindingforChannelId(oldChannelID);
-      }
-      else
-      {
-         // locate the binding based on destination name and the failed node ID
-         Collection c = postOffice.
-            getBindingsForCondition(new JMSCondition(true, jmsDestination.getName()));
-
-         for(Iterator i = c.iterator(); i.hasNext(); )
-         {
-            Binding b = (Binding)i.next();
-            if (connectionEndpoint.getFailedNodeID().equals(b.getFailedNodeID()))
-            {
-               binding = b;
-               break;
-            }
-         }
-      }
-
-      if (binding == null)
-      {
-         throw new IllegalStateException("Can't find failed over " +
-            (oldChannelID != -1 ?
-               "channel " +  oldChannelID : "queue " + jmsDestination.getName()));
-      }
-
-      Channel newChannel = binding.getQueue();
-
-      int browserID = connectionEndpoint.getServerPeer().getNextObjectID();
-
-      ServerBrowserEndpoint ep = new ServerBrowserEndpoint(this, browserID, newChannel, selector);
-      
-      BrowserAdvised advised;
-      
-      // Need to synchronized to prevent a deadlock
-      // See http://jira.jboss.com/jira/browse/JBMESSAGING-797
-      synchronized (AspectManager.instance())
-      {       
-         advised = new BrowserAdvised(ep);
-      }
-      
-      Dispatcher.instance.registerTarget(browserID, advised);
-
-      // still need to synchronized since close() can come in on a different thread
-      synchronized (browsers)
-      {
-         browsers.put(new Integer(browserID), ep);
-      }
-      return new ClientBrowserDelegate(browserID, newChannel.getChannelID());
-   }
 
    private BrowserDelegate createBrowserDelegateInternal(JBossDestination jmsDestination,
                                                          String selector) throws Throwable
@@ -1696,8 +1522,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
       
       Dispatcher.instance.registerTarget(browserID, advised);
 
-      ClientBrowserDelegate stub =
-         new ClientBrowserDelegate(browserID, binding.getQueue().getChannelID());
+      ClientBrowserDelegate stub = new ClientBrowserDelegate(browserID);
 
       log.debug(this + " created and registered " + ep);
 
@@ -1713,7 +1538,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
       {
          DeliveryObserver observer = (DeliveryObserver)iter.next();
          
-         ((Channel)observer).deliver();
+         promptDelivery((Channel)observer);
       }
    }
    

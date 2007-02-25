@@ -32,6 +32,7 @@ import org.jboss.jms.client.remoting.MessageCallbackHandler;
 import org.jboss.jms.delegate.ConsumerDelegate;
 import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.server.Version;
+import org.jboss.jms.util.MessageQueueNameHelper;
 
 /**
  * State corresponding to a Consumer. This state is acessible inside aspects/interceptors.
@@ -52,7 +53,7 @@ public class ConsumerState extends HierarchicalStateSupport
    // Attributes -----------------------------------------------------------------------------------
 
    private int consumerID;
-   private Destination destination;
+   private JBossDestination destination;
    private String selector;
    private String subscriptionName;
    private boolean noLocal;
@@ -63,17 +64,14 @@ public class ConsumerState extends HierarchicalStateSupport
 
    private boolean storingDeliveries;
    
-   // Needed for failover
-   private long channelID;
-
    private SessionState parent;
    private ConsumerDelegate delegate;
-
+   
    // Constructors ---------------------------------------------------------------------------------
 
    public ConsumerState(SessionState parent, ConsumerDelegate delegate, JBossDestination dest,
                         String selector, boolean noLocal, String subscriptionName, int consumerID,
-                        boolean isCC, int bufferSize, int maxDeliveries, long channelID)
+                        boolean isCC, int bufferSize, int maxDeliveries)
    {
       super(parent, (DelegateSupport)delegate);
       children = Collections.EMPTY_SET;
@@ -85,18 +83,17 @@ public class ConsumerState extends HierarchicalStateSupport
       this.bufferSize = bufferSize;
       this.subscriptionName=subscriptionName;
       this.maxDeliveries = maxDeliveries;
-      this.channelID = channelID;
-      
+    
       //We don't store deliveries if this a non durable subscriber
       
       if (dest.isTopic() && subscriptionName == null)
       {
-         storingDeliveries = false;
+         storingDeliveries = false;                 
       }
       else
       {
          storingDeliveries = true;
-      }
+      }      
    }
 
    // HierarchicalState implementation -------------------------------------------------------------
@@ -134,8 +131,7 @@ public class ConsumerState extends HierarchicalStateSupport
 
       int oldConsumerID = consumerID;
       consumerID = newState.consumerID;
-      channelID = newState.channelID;
-
+      
       CallbackManager oldCallbackManager = ((ClientConnectionDelegate)getParent().getParent().
          getDelegate()).getRemotingConnection().getCallbackManager();
       CallbackManager newCallbackManager = ((ClientConnectionDelegate)ns.getParent().getParent().
@@ -152,7 +148,7 @@ public class ConsumerState extends HierarchicalStateSupport
 
    // Public ---------------------------------------------------------------------------------------
 
-   public Destination getDestination()
+   public JBossDestination getDestination()
    {
       return destination;
    }
@@ -207,11 +203,6 @@ public class ConsumerState extends HierarchicalStateSupport
       return maxDeliveries;
    }
 
-   public long getChannelID()
-   {
-      return channelID;
-   }
-   
    public boolean isStoringDeliveries()
    {
       return storingDeliveries;

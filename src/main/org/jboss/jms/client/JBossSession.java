@@ -264,7 +264,7 @@ public class JBossSession implements
          tccc.set(getClass().getClassLoader());
 
          ConsumerDelegate cd = delegate.
-            createConsumerDelegate((JBossDestination)d, messageSelector, noLocal, null, false, -1);
+            createConsumerDelegate((JBossDestination)d, messageSelector, noLocal, null, false);
          
          return new JBossMessageConsumer(cd);
       }
@@ -317,7 +317,7 @@ public class JBossSession implements
          tccc.set(getClass().getClassLoader());
 
          ConsumerDelegate cd =
-            delegate.createConsumerDelegate((JBossTopic)topic, null, false, name, false, -1);
+            delegate.createConsumerDelegate((JBossTopic)topic, null, false, name, false);
 
          return new JBossMessageConsumer(cd);
       }
@@ -352,7 +352,7 @@ public class JBossSession implements
       }
 
       ConsumerDelegate cd = delegate.
-         createConsumerDelegate((JBossTopic)topic, messageSelector, noLocal, name, false, -1);
+         createConsumerDelegate((JBossTopic)topic, messageSelector, noLocal, name, false);
 
       return new JBossMessageConsumer(cd);
    }
@@ -389,7 +389,7 @@ public class JBossSession implements
          tccc.set(getClass().getClassLoader());
 
          BrowserDelegate del =
-            delegate.createBrowserDelegate((JBossQueue)queue, messageSelector, -1);
+            delegate.createBrowserDelegate((JBossQueue)queue, messageSelector);
          
          return new JBossQueueBrowser(queue, messageSelector, del);
       }
@@ -518,10 +518,10 @@ public class JBossSession implements
     * This method is used by the JBossConnectionConsumer to load up the session
     * with messages to be processed by the session's run() method
     */
-   void addAsfMessage(MessageProxy m, int consumerID, long channelID, int maxDeliveries,
+   void addAsfMessage(MessageProxy m, int consumerID, String queueName, int maxDeliveries,
                       SessionDelegate connectionConsumerSession)
    {
-      delegate.addAsfMessage(m, consumerID, channelID, maxDeliveries, connectionConsumerSession);
+      delegate.addAsfMessage(m, consumerID, queueName, maxDeliveries, connectionConsumerSession);
    }
       
    // Protected -----------------------------------------------------

@@ -21,6 +21,9 @@
  */
 package org.jboss.messaging.core.plugin.postoffice.cluster;
 
+import java.util.Iterator;
+import java.util.Map;
+
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Delivery;
 import org.jboss.messaging.core.Filter;
@@ -31,6 +34,7 @@ import org.jboss.messaging.core.message.MessageReference;
 import org.jboss.messaging.core.plugin.contract.ClusteredPostOffice;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager;
+import org.jboss.messaging.core.plugin.contract.PersistenceManager.ReferenceInfo;
 import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.messaging.core.tx.TransactionRepository;
 import org.jboss.messaging.util.Future;
@@ -218,6 +222,27 @@ public class LocalClusteredQueue extends PagingFilteredQueue implements Clustere
       }
 
       return ((Integer)result.getResult()).intValue();
+   }
+   
+   /*
+    * Merge the contents of one queue with another - this happens at failover when
+    * a queue is failed over to another node, but a queue with the same name already exists
+    * In this case we merge the two queues
+    */
+   public void mergeIn(RemoteQueueStub remoteQueue) throws Exception
+   {
+      if (trace) { log.trace("Merging queue " + remoteQueue + " into " + this); }
+           
+      synchronized (refLock)
+      {
+         flushDownCache();
+                  
+         PersistenceManager.InitialLoadInfo ili =
+            pm.mergeAndLoad(remoteQueue.getChannelID(), this.channelID, fullSize - messageRefs.size());
+            
+         doLoad(ili);
+         
+      }
    }
    
    protected void deliverInternal()

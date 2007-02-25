@@ -227,36 +227,17 @@ public abstract class PagingChannelSupport extends ChannelSupport
          unload();
          
          //Load the unpaged references
-         InitialLoadInfo ili = pm.getInitialReferenceInfos(channelID, fullSize);
+         InitialLoadInfo ili = pm.loadFromStart(channelID, fullSize);
          
-         if (ili.getMaxPageOrdering() != null)            
-         {
-            firstPagingOrder = ili.getMinPageOrdering().longValue();
-            
-            nextPagingOrder = ili.getMaxPageOrdering().longValue() + 1;
-            
-            paging = true;
-         }
-         else
-         {
-            firstPagingOrder = nextPagingOrder = 0;
-         }
-         
-         Map refMap = processReferences(ili.getRefInfos());
-         
-         Iterator iter = ili.getRefInfos().iterator();
-         while (iter.hasNext())
-         {
-            ReferenceInfo info = (ReferenceInfo)iter.next();
-            
-            addFromRefInfo(info, refMap);
-         }
+         doLoad(ili);
          
          //Maybe we need to load some paged refs
          
          while (checkLoad()) {}
       }
    }
+   
+   
    
       
    public void unload() throws Exception
@@ -290,7 +271,7 @@ public abstract class PagingChannelSupport extends ChannelSupport
    
    // Protected ------------------------------------------------------------------------------------
    
-   protected void loadPagedReferences(long number) throws Exception
+   protected void loadPagedReferences(int number) throws Exception
    {
       if (trace) { log.trace(this + " Loading " + number + " paged references from storage"); }
   
@@ -395,7 +376,7 @@ public abstract class PagingChannelSupport extends ChannelSupport
       
       if (refNum > 0)
       {
-         long numberLoadable = Math.min(refNum, pageSize);
+         int numberLoadable = (int)Math.min(refNum, pageSize);
          
          if (messageRefs.size() <= fullSize - numberLoadable)
          {
@@ -535,10 +516,40 @@ public abstract class PagingChannelSupport extends ChannelSupport
 
       if (trace) { log.trace(this + " cleared downcache"); }
    }
+   
+
+   
+   protected void doLoad(InitialLoadInfo ili) throws Exception
+   {
+      if (ili.getMaxPageOrdering() != null)            
+      {
+         firstPagingOrder = ili.getMinPageOrdering().longValue();
+         
+         nextPagingOrder = ili.getMaxPageOrdering().longValue() + 1;
+         
+         paging = true;
+      }
+      else
+      {
+         firstPagingOrder = nextPagingOrder = 0;
+         
+         paging = false;
+      }
+      
+      Map refMap = processReferences(ili.getRefInfos());
+      
+      Iterator iter = ili.getRefInfos().iterator();
+      while (iter.hasNext())
+      {
+         ReferenceInfo info = (ReferenceInfo)iter.next();
+         
+         addFromRefInfo(info, refMap);
+      }
+   }
         
    // Private --------------------------------------------------------------------------------------
    
-   private MessageReference addFromRefInfo(ReferenceInfo info, Map refMap)
+   protected MessageReference addFromRefInfo(ReferenceInfo info, Map refMap)
    {
       long msgId = info.getMessageId();
 
@@ -559,7 +570,8 @@ public abstract class PagingChannelSupport extends ChannelSupport
       return ref;
    }
    
-   private Map processReferences(List refInfos) throws Exception
+
+   protected Map processReferences(List refInfos) throws Exception
    {
       Map refMap = new HashMap(refInfos.size());
 
@@ -620,5 +632,6 @@ public abstract class PagingChannelSupport extends ChannelSupport
       }
       
       return refMap;
-   }
+   }  
+  
 }

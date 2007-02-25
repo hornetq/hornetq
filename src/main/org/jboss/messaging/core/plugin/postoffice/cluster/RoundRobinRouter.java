@@ -28,8 +28,8 @@ import java.util.List;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Delivery;
 import org.jboss.messaging.core.DeliveryObserver;
+import org.jboss.messaging.core.Queue;
 import org.jboss.messaging.core.Receiver;
-import org.jboss.messaging.core.message.Message;
 import org.jboss.messaging.core.message.MessageReference;
 import org.jboss.messaging.core.tx.Transaction;
 
@@ -63,9 +63,6 @@ public class RoundRobinRouter implements ClusterRouter
    // ArrayList<>; MUST be an arraylist for fast index access
    private ArrayList queues;
 
-   // ArrayList<FailedOverQueue>; MUST be an arraylist for fast index access
-   private ArrayList failedOverQueues;
-   
    private ClusteredQueue localQueue;
 
    private int target;
@@ -75,9 +72,6 @@ public class RoundRobinRouter implements ClusterRouter
    public RoundRobinRouter()
    {
       queues = new ArrayList();
-      
-      //FIXME - this should be a map not an arraylist
-      failedOverQueues = new ArrayList();
    }
 
    // Receiver implementation ----------------------------------------------------------------------
@@ -85,33 +79,6 @@ public class RoundRobinRouter implements ClusterRouter
    public Delivery handle(DeliveryObserver observer, MessageReference ref, Transaction tx)
    {
       if (trace) { log.trace(this + " routing " + ref); }
-
-      //TODO - revisit all of this - it doesn't look right to me - Tim
-      if (!failedOverQueues.isEmpty())
-      {
-         // If the message arrived over a failed-over connection, try to send the message to its
-         // corresponding "failed-over" queue.
-
-         Integer failedNodeID = (Integer)ref.getMessage().getHeader(Message.FAILED_NODE_ID);
-
-         if (failedNodeID != null)
-         {
-            Delivery del = null;
-
-            LocalClusteredQueue targetFailoverQueue = locateFailoverQueue(failedNodeID.intValue());
-
-            if (targetFailoverQueue != null)
-            {
-               del = targetFailoverQueue.handle(observer, ref, tx);
-            }
-
-            if (trace) { log.trace(this + " routed message to fail-over queue " + targetFailoverQueue + ", returned " + del) ;}
-
-            return del;
-         }
-      }
-      
-      // We round robin among the rest.
 
       if (!queues.isEmpty())
       {
@@ -169,25 +136,13 @@ public class RoundRobinRouter implements ClusterRouter
          }
          return true;
       }
-      else
-      {
-         //Maybe it's a failed over queue
-         if (this.failedOverQueues.remove(queue))
-         {
-            return true;
-         }
-         else
-         {
-            return false;
-         }
-      }      
+      
+      return false;
    }
 
    public void clear()
    {
       queues.clear();
-      
-      failedOverQueues.clear();
       
       localQueue = null;
       
@@ -207,11 +162,6 @@ public class RoundRobinRouter implements ClusterRouter
       return queues;
    }
 
-   public List getFailedQueues()
-   {
-      return failedOverQueues;
-   }
-
    public boolean add(Receiver receiver, boolean failedOver)
    {
       ClusteredQueue queue = (ClusteredQueue)receiver;
@@ -228,18 +178,12 @@ public class RoundRobinRouter implements ClusterRouter
          }
       }
       
-      if (failedOver)
-      {
-         failedOverQueues.add(receiver);
-      }
-      else
-      {
-         queues.add(receiver);
-      }
+      queues.add(receiver);
+      
       return true;
    }
    
-   public ClusteredQueue getLocalQueue()
+   public Queue getLocalQueue()
    {
       return localQueue;
    }
@@ -270,23 +214,6 @@ public class RoundRobinRouter implements ClusterRouter
       {
          target = 0;
       }
-   }
-
-   private FailedOverQueue locateFailoverQueue(int failedNodeID)
-   {
-      // TODO - this is a VERY slow sequential pass; I am sure we can come with a smarter way to
-      //        locate the queue
-      
-      // This is rubbish - should be using a Map for the failed over queues
-      // or better still rethink the whole way this failed over queue routing works - it is a mess!
-      for(int i = 0; i < failedOverQueues.size(); i++)
-      {
-         if (((FailedOverQueue)failedOverQueues.get(i)).getFailedNodeID() == failedNodeID)
-         {
-            return (FailedOverQueue)failedOverQueues.get(i);
-         }
-      }
-      return null;
    }
 
    // Inner classes --------------------------------------------------------------------------------

@@ -23,7 +23,6 @@ package org.jboss.messaging.core.plugin.postoffice;
 
 import org.jboss.messaging.core.Queue;
 import org.jboss.messaging.core.plugin.contract.Condition;
-import org.jboss.messaging.core.plugin.postoffice.cluster.FailedOverQueue;
 
 /**
  * 
@@ -51,8 +50,6 @@ public class DefaultBinding implements Binding
 
    private Queue queue;
 
-   private boolean failed;
-
    // this only works if we keep DefautlBinding immutable
    private String toString;
 
@@ -62,12 +59,11 @@ public class DefaultBinding implements Binding
    {
    }
 
-   public DefaultBinding(int nodeID, Condition condition, Queue queue, boolean failed)
+   public DefaultBinding(int nodeID, Condition condition, Queue queue)
    {
       this.nodeID = nodeID;
       this.condition = condition;
       this.queue = queue;
-      this.failed = failed;
    }
 
    // Binding implementation -----------------------------------------------------------------------
@@ -87,25 +83,6 @@ public class DefaultBinding implements Binding
       return queue;
    }
 
-   public boolean isFailed()
-   {
-      return failed;
-   }
-
-   public void setFailed(boolean failed)
-   {
-      this.failed = failed;
-   }
-
-   public Integer getFailedNodeID()
-   {
-      if (queue instanceof FailedOverQueue)
-      {
-         return new Integer(((FailedOverQueue)queue).getFailedNodeID());
-      }
-      return null;
-   }
-
    // Public ---------------------------------------------------------------------------------------
 
    public String toString()
@@ -116,13 +93,6 @@ public class DefaultBinding implements Binding
 
          sb.append(nodeID).append(',');
          sb.append(queue);
-//         sb.append('(');
-//         sb.append(queue.getClass().getName()).append(')');
-//
-//         if (condition != null)
-//         {
-//            sb.append(", condition: ").append(condition);
-//         }
          sb.append("]");
          toString = sb.toString();
       }

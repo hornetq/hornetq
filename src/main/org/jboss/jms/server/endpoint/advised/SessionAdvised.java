@@ -82,17 +82,15 @@ public class SessionAdvised extends AdvisedSupport implements SessionEndpoint
    
    public ConsumerDelegate createConsumerDelegate(JBossDestination destination, String selector,
                                                   boolean noLocal, String subscriptionName,
-                                                  boolean connectionConsumer,
-                                                  long failoverChannelID) throws JMSException
+                                                  boolean connectionConsumer) throws JMSException
    {
       return endpoint.createConsumerDelegate(destination, selector, noLocal, subscriptionName,
-                                             connectionConsumer, failoverChannelID);
+                                             connectionConsumer);
    }
    
-   public BrowserDelegate createBrowserDelegate(JBossDestination queue, String messageSelector,
-                                                long failoverChannelID) throws JMSException                                                 
+   public BrowserDelegate createBrowserDelegate(JBossDestination queue, String messageSelector) throws JMSException                                                 
    {
-      return endpoint.createBrowserDelegate(queue, messageSelector, failoverChannelID);
+      return endpoint.createBrowserDelegate(queue, messageSelector);
    }
 
    public JBossQueue createQueue(String queueName) throws JMSException

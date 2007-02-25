@@ -39,6 +39,7 @@ import org.jboss.jms.delegate.ConsumerDelegate;
 import org.jboss.jms.delegate.SessionDelegate;
 import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.message.MessageProxy;
+import org.jboss.jms.util.MessageQueueNameHelper;
 import org.jboss.jms.util.ThreadContextClassLoaderChanger;
 import org.jboss.logging.Logger;
 
@@ -98,7 +99,7 @@ public class JBossConnectionConsumer implements ConnectionConsumer, Runnable
    
    private int maxDeliveries;
    
-   private long channelID;
+   private String queueName;
    
    // Static --------------------------------------------------------
    
@@ -126,7 +127,7 @@ public class JBossConnectionConsumer implements ConnectionConsumer, Runnable
          // not call pre or postDeliver so messages won't be acked, or stored in session/tx.
          sess = conn.createSessionDelegate(false, Session.CLIENT_ACKNOWLEDGE, false);
 
-         cons = sess.createConsumerDelegate(dest, messageSelector, false, subName, true, -1);
+         cons = sess.createConsumerDelegate(dest, messageSelector, false, subName, true);
       }
       finally
       {
@@ -136,10 +137,17 @@ public class JBossConnectionConsumer implements ConnectionConsumer, Runnable
       ConsumerState state = (ConsumerState)((DelegateSupport)cons).getState();
 
       this.consumerID = state.getConsumerID();      
-      
-      this.channelID = state.getChannelID();
-      
+        
       this.maxDeliveries = state.getMaxDeliveries();
+      
+      if (subName != null)
+      {
+         queueName = MessageQueueNameHelper.createSubscriptionName(conn.getClientID(), subName);
+      }
+      else
+      {
+         queueName = dest.getName();
+      }
 
       id = threadId.increment();
       internalThread = new Thread(this, "Connection Consumer for dest " + dest + " id=" + id);
@@ -287,7 +295,7 @@ public class JBossConnectionConsumer implements ConnectionConsumer, Runnable
                for (int i = 0; i < mesList.size(); i++)
                {
                   MessageProxy m = (MessageProxy)mesList.get(i);
-                  session.addAsfMessage(m, consumerID, channelID, maxDeliveries, sess);
+                  session.addAsfMessage(m, consumerID, queueName, maxDeliveries, sess);
                   if (trace) { log.trace("added " + m + " to session"); }
                }
 

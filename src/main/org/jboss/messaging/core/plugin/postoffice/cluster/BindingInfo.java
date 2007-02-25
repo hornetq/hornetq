@@ -50,14 +50,12 @@ class BindingInfo implements Streamable
    
    private boolean durable;
 
-   private boolean failed;
-   
    BindingInfo()
    {      
    }
    
    BindingInfo(int nodeId, String queueName, String conditionText, String filterString,
-               long channelId, boolean durable, boolean failed)
+               long channelId, boolean durable)
    {
       this.nodeId = nodeId;
       
@@ -70,14 +68,12 @@ class BindingInfo implements Streamable
       this.channelId = channelId;
       
       this.durable = durable;
-
-      this.failed = failed;
    }
 
    public void execute(PostOfficeInternal office) throws Exception
    {
       office.addBindingFromCluster(nodeId, queueName, conditionText,
-                                   filterString, channelId, durable, failed);
+                                   filterString, channelId, durable);
       
    }
    
@@ -139,15 +135,5 @@ class BindingInfo implements Streamable
    String getQueueName()
    {
       return queueName;
-   }
-
-   public boolean isFailed()
-   {
-      return failed;
-   }
-
-   public void setFailed(boolean failed)
-   {
-      this.failed = failed;
    }
 }

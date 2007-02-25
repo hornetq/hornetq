@@ -54,16 +54,13 @@ public class ClientBrowserDelegate extends DelegateSupport implements BrowserDel
 
    // Attributes -----------------------------------------------------------------------------------
 
-   private long channelID;
-
    // Static ---------------------------------------------------------------------------------------
 
    // Constructors ---------------------------------------------------------------------------------
 
-   public ClientBrowserDelegate(int objectID, long channelID)
+   public ClientBrowserDelegate(int objectID)
    {
       super(objectID);
-      this.channelID = channelID;
    }
 
    public ClientBrowserDelegate()
@@ -147,15 +144,11 @@ public class ClientBrowserDelegate extends DelegateSupport implements BrowserDel
    public void read(DataInputStream in) throws Exception
    {
       super.read(in);
-
-      channelID = in.readLong();
    }
 
    public void write(DataOutputStream out) throws Exception
    {
       super.write(out);
-
-      out.writeLong(channelID);
    }
 
    // Public ---------------------------------------------------------------------------------------
@@ -163,11 +156,6 @@ public class ClientBrowserDelegate extends DelegateSupport implements BrowserDel
    public String getStackName()
    {
       return "BrowserStack";
-   }
-
-   public long getChannelID()
-   {
-      return channelID;
    }
 
    public String toString()

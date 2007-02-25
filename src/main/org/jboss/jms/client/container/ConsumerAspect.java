@@ -33,6 +33,7 @@ import org.jboss.jms.client.state.ConsumerState;
 import org.jboss.jms.client.state.SessionState;
 import org.jboss.jms.delegate.ConsumerDelegate;
 import org.jboss.jms.delegate.SessionDelegate;
+import org.jboss.jms.util.MessageQueueNameHelper;
 
 import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
 
@@ -75,15 +76,24 @@ public class ConsumerAspect
       SessionDelegate sessionDelegate = (SessionDelegate)invocation.getTargetObject();
       ConsumerState consumerState = (ConsumerState)((DelegateSupport)consumerDelegate).getState();
       int consumerID = consumerState.getConsumerID();
-      long channelID = consumerState.getChannelID();
       int prefetchSize = consumerState.getBufferSize();
       QueuedExecutor sessionExecutor = sessionState.getExecutor();
       int maxDeliveries = consumerState.getMaxDeliveries();
       
+      //We need the queue name for recovering any deliveries after failover
+      String queueName = null;
+      if (consumerState.getSubscriptionName() != null)
+      {
+         queueName = MessageQueueNameHelper.createSubscriptionName(connectionState.getClientID(), consumerState.getSubscriptionName());
+      }
+      else if (consumerState.getDestination().isQueue())
+      {
+         queueName = consumerState.getDestination().getName();
+      }
+      
       MessageCallbackHandler messageHandler =
          new MessageCallbackHandler(isCC, sessionState.getAcknowledgeMode(),
-                                    sessionDelegate, consumerDelegate, consumerID,
-                                    channelID,
+                                    sessionDelegate, consumerDelegate, consumerID, queueName,
                                     prefetchSize, sessionExecutor, maxDeliveries);
       
       sessionState.addCallbackHandler(messageHandler);

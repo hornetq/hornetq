@@ -47,8 +47,7 @@ public class SessionCreateConsumerDelegateRequest extends RequestSupport
    private boolean noLocal;
    private String subName;
    private boolean connectionConsumer;
-   private long failoverChannelID;
-   
+
    public SessionCreateConsumerDelegateRequest()
    {      
    }
@@ -57,8 +56,7 @@ public class SessionCreateConsumerDelegateRequest extends RequestSupport
                                                byte version,
                                                JBossDestination destination,
                                                String selector, boolean noLocal,
-                                               String subName, boolean connectionConsumer,
-                                               long failoverChannelID)
+                                               String subName, boolean connectionConsumer)
    {
       super(objectId, PacketSupport.REQ_SESSION_CREATECONSUMERDELEGATE, version);
       
@@ -67,7 +65,6 @@ public class SessionCreateConsumerDelegateRequest extends RequestSupport
       this.noLocal = noLocal;
       this.subName = subName;
       this.connectionConsumer = connectionConsumer;
-      this.failoverChannelID = failoverChannelID;
    }
 
    public void read(DataInputStream is) throws Exception
@@ -83,8 +80,6 @@ public class SessionCreateConsumerDelegateRequest extends RequestSupport
       subName = readNullableString(is);
       
       connectionConsumer = is.readBoolean();
-      
-      failoverChannelID = is.readLong();
    }
 
    public ResponseSupport serverInvoke() throws Exception
@@ -97,7 +92,7 @@ public class SessionCreateConsumerDelegateRequest extends RequestSupport
          throw new IllegalStateException("Cannot find object in dispatcher with id " + objectId);
       }
       
-      return new SessionCreateConsumerDelegateResponse((ClientConsumerDelegate)endpoint.createConsumerDelegate(dest, selector, noLocal, subName, connectionConsumer, failoverChannelID));
+      return new SessionCreateConsumerDelegateResponse((ClientConsumerDelegate)endpoint.createConsumerDelegate(dest, selector, noLocal, subName, connectionConsumer));
    }
 
    public void write(DataOutputStream os) throws Exception
@@ -113,8 +108,6 @@ public class SessionCreateConsumerDelegateRequest extends RequestSupport
       writeNullableString(subName, os);
       
       os.writeBoolean(connectionConsumer);
-      
-      os.writeLong(failoverChannelID);
       
       os.flush();
    }

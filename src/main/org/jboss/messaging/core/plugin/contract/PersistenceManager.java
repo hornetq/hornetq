@@ -65,11 +65,13 @@ public interface PersistenceManager extends MessagingComponent
    void updatePageOrder(long channelID, List references) throws Exception;
    
    void updateReferencesNotPagedInRange(long channelID, long orderStart, long orderEnd, long num) throws Exception;
-            
-   List getPagedReferenceInfos(long channelID, long orderStart, long number) throws Exception;
    
-   InitialLoadInfo getInitialReferenceInfos(long channelID, int fullSize) throws Exception;
-      
+   List getPagedReferenceInfos(long channelID, long orderStart, int number) throws Exception;
+   
+   InitialLoadInfo loadFromStart(long channelID, int fullSize) throws Exception;
+   
+   InitialLoadInfo mergeAndLoad(long fromChannelID, long toChannelID, int fullSize) throws Exception;
+     
    List getMessages(List messageIds) throws Exception;
          
    //Counter related functionality - TODO we should split this out into its own interface
@@ -143,6 +145,7 @@ public interface PersistenceManager extends MessagingComponent
          return scheduledDelivery;
       }
    }
+   
    class InitialLoadInfo
    {
       private Long minPageOrdering;

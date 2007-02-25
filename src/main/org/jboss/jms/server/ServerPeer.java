@@ -60,6 +60,7 @@ import org.jboss.messaging.core.memory.MemoryManager;
 import org.jboss.messaging.core.memory.SimpleMemoryManager;
 import org.jboss.messaging.core.message.SimpleMessageStore;
 import org.jboss.messaging.core.plugin.IDManager;
+import org.jboss.messaging.core.plugin.contract.ClusteredPostOffice;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager;
 import org.jboss.messaging.core.plugin.contract.PostOffice;
@@ -1515,7 +1516,15 @@ public class ServerPeer extends ServiceMBeanSupport implements ServerPeerMBean
          {
             try
             {
-               postOffice.unbindQueue(binding.getQueue().getName());
+               Queue queue = binding.getQueue();
+               if (!queue.isClustered())
+               {
+                  postOffice.unbindQueue(queue.getName());
+               }
+               else
+               {
+                  ((ClusteredPostOffice)postOffice).unbindClusteredQueue(queue.getName());
+               }
             }
             catch (Throwable t)
             {

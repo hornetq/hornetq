@@ -46,7 +46,7 @@ import EDU.oswego.cs.dl.util.concurrent.PooledExecutor;
 interface PostOfficeInternal extends ClusteredPostOffice
 {
    void addBindingFromCluster(int nodeId, String queueName, String conditionText,
-                              String filterString, long channelId, boolean durable, boolean failed)
+                              String filterString, long channelId, boolean durable)
       throws Exception;
    
    void removeBindingFromCluster(int nodeId, String queueName)

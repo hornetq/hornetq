@@ -962,9 +962,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
       Connection conn = null;
       PreparedStatement ps = null;
       TransactionWrapper wrap = new TransactionWrapper();
-
-      final int MAX_TRIES = 25;      
-      
+    
       try
       {
          conn = ds.getConnection();
@@ -977,48 +975,16 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
          
          ps.setLong(3, channelID);
          
-         int tries = 0;
-         
-         while (true)
+         int rows = updateWithRetry(ps);
+           
+         if (trace) { log.trace(JDBCUtil.statementToString(getSQLStatement("UPDATE_REFS_NOT_PAGED"), new Long(channelID),
+                                new Long(orderStart), new Long(orderEnd)) + " updated " + rows + " rows"); }
+
+         //Sanity check
+         if (rows != num)
          {
-            try
-            {
-               int rows = updateWithRetry(ps);
-                 
-               if (trace) { log.trace(JDBCUtil.statementToString(getSQLStatement("UPDATE_REFS_NOT_PAGED"), new Long(channelID),
-                                      new Long(orderStart), new Long(orderEnd)) + " updated " + rows + " rows"); }
-               if (tries > 0)
-               {
-                  log.warn("Update worked after retry");
-               }
-               
-               //Sanity check
-               if (rows != num)
-               {
-                  throw new IllegalStateException("Did not update correct number of rows");
-               }
-               
-               break;
-            }
-            catch (SQLException e)
-            {
-               log.warn("SQLException caught - assuming deadlock detected, try:" + (tries + 1), e);
-               
-               tries++;
-               
-               if (tries == MAX_TRIES)
-               {
-                  log.error("Retried " + tries + " times, now giving up");
-                  
-                  throw new IllegalStateException("Failed to update references");
-               }
-               
-               log.warn("Trying again after a pause");
-               
-               //Now we wait for a random amount of time to minimise risk of deadlock occurring again
-               Thread.sleep((long)(Math.random() * 500));
-            }  
-         }
+            throw new IllegalStateException("Did not update correct number of rows");
+         }            
       }
       catch (Exception e)
       {
@@ -1032,6 +998,152 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
             try
             {
                ps.close();
+            }
+            catch (Throwable e)
+            {
+            }
+         }
+         if (conn != null)
+         {
+            try
+            {
+               conn.close();
+            }
+            catch (Throwable e)
+            {
+            }
+         }
+         wrap.end();
+      }
+   }
+   
+   public InitialLoadInfo mergeAndLoad(long fromChannelID, long toChannelID, int fullSize) throws Exception
+   {
+      if (trace) { log.trace("Merging channel from " + fromChannelID + " to " + toChannelID); }
+      
+      Connection conn = null;
+      PreparedStatement ps = null;
+      ResultSet rs = null;
+      TransactionWrapper wrap = new TransactionWrapper();
+      PreparedStatement ps2 = null;
+    
+      try
+      {
+         conn = ds.getConnection();
+         
+         // First swap the channel id
+         
+         ps = conn.prepareStatement(getSQLStatement("UPDATE_CHANNEL_ID"));
+         
+         ps.setLong(1, toChannelID);
+         
+         ps.setLong(2, fromChannelID);
+         
+         int rows = updateWithRetry(ps);
+         
+         if (trace) { log.trace("Update channel id updated " + rows + " rows"); }
+         
+         //Now set any pages refs to not paged
+         
+         ps = conn.prepareStatement(getSQLStatement("UPDATE_REFS_NOT_PAGED"));
+                 
+         ps.setLong(1, 0);
+         
+         ps.setLong(2, Integer.MAX_VALUE);
+         
+         ps.setLong(3, toChannelID);
+         
+         rows = updateWithRetry(ps);
+         
+         if (trace) { log.trace(" Set paged refs updated " + rows + " rows"); }
+         
+         //Now load the refs
+         
+         ps = conn.prepareStatement(getSQLStatement("LOAD_UNPAGED_REFS"));
+         
+         ps.setLong(1, toChannelID);
+                 
+         rs = ps.executeQuery();
+         
+         List refs = new ArrayList();
+                          
+         int count = 0;
+         int pageOrd = 0;
+         
+         boolean arePaged = false;
+         
+         while (rs.next())
+         {
+            long msgId = rs.getLong(1);            
+            int deliveryCount = rs.getInt(2);
+            long sched = rs.getLong(3);
+            
+            ReferenceInfo ri = new ReferenceInfo(msgId, deliveryCount, sched);
+            
+            if (count < fullSize)
+            {
+               refs.add(ri);
+            }   
+            else
+            {
+               //These ones need to be made paged
+                              
+               if (ps2 == null)
+               {
+                  ps2 = conn.prepareStatement(getSQLStatement("UPDATE_PAGE_ORDER"));
+                   
+                  ps2.setLong(1, pageOrd);
+                  
+                  ps2.setLong(2, msgId);
+                  
+                  ps2.setLong(3, toChannelID);
+                  
+                  rows = updateWithRetry(ps2);
+                  
+                  if (trace) { log.trace("Update page ord updated " + rows + " rows"); }
+                  
+                  pageOrd++;
+                  
+                  arePaged = true;
+                           
+               }
+            }
+            
+            count++;
+         }
+         
+         if (arePaged)
+         {
+            return new InitialLoadInfo(new Long(0), new Long(pageOrd - 1), refs);
+         }
+         else
+         {
+            return new InitialLoadInfo(null, null, refs);
+         }
+         
+      }
+      catch (Exception e)
+      {
+         wrap.exceptionOccurred();
+         throw e;
+      }
+      finally
+      {
+         if (ps != null)
+         {
+            try
+            {
+               ps.close();
+            }
+            catch (Throwable e)
+            {
+            }
+         }
+         if (ps2 != null)
+         {
+            try
+            {
+               ps2.close();
             }
             catch (Throwable e)
             {
@@ -1141,7 +1253,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
       }    
    }
       
-   public List getPagedReferenceInfos(long channelID, long orderStart, long number) throws Exception
+   public List getPagedReferenceInfos(long channelID, long orderStart, int number) throws Exception
    {
       if (trace) { log.trace("loading message reference info for channel " + channelID + " from " + orderStart + " number " + number);      }
                  
@@ -1240,12 +1352,10 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
    /*
     * Load the initial, non paged refs
     */
-   public InitialLoadInfo getInitialReferenceInfos(long channelID, int fullSize) throws Exception
+   public InitialLoadInfo loadFromStart(long channelID, int number) throws Exception
    {
       if (trace) { log.trace("loading initial reference infos for channel " + channelID);  }
                     
-      List refs = new ArrayList();
- 
       Connection conn = null;
       PreparedStatement ps = null;
       ResultSet rs = null;
@@ -1277,18 +1387,17 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
          {
             maxOrdering = null;
          }
+         conn.close();
          
-         //For unpaged refs we must make sure we only load refs with state='C' - i.e.
-         //they're not part of an XA transactions.
-         //Otherwise we could end up loading message that hadn't be committed
-         //or end up loading refs which are due to be acked by a transaction that's yet
-         //to be recovered.
+         conn = ds.getConnection();         
          
          ps = conn.prepareStatement(getSQLStatement("LOAD_UNPAGED_REFS"));
          
          ps.setLong(1, channelID);
                  
          rs = ps.executeQuery();
+         
+         List refs = new ArrayList();
          
          int count = 0;
          while (rs.next())
@@ -1299,7 +1408,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
             
             ReferenceInfo ri = new ReferenceInfo(msgId, deliveryCount, sched);
             
-            if (count < fullSize)
+            if (count < number)
             {
                refs.add(ri);
             }            
@@ -1309,10 +1418,10 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
                   
          //No refs paged
             
-         if (count > fullSize)
+         if (count > number)
          {
             throw new IllegalStateException("Cannot load channel " + channelID + " since the fullSize parameter is too small to load " +
-                     " all the required references, fullSize needs to be at least " + count + " it is currently " + fullSize);
+                     " all the required references, fullSize needs to be at least " + count + " it is currently " + number);
          }
                          
          return new InitialLoadInfo(minOrdering, maxOrdering, refs);
@@ -1357,7 +1466,6 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
          wrap.end();
       }      
    }   
-   
    
    
    // End of paging functionality
@@ -3304,6 +3412,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
       map.put("SELECT_EXISTS_REF", "SELECT MESSAGE_ID FROM JBM_MSG_REF WHERE CHANNEL_ID = ? AND MESSAGE_ID = ?");
       map.put("SELECT_EXISTS_REF_MESSAGE_ID", "SELECT MESSAGE_ID FROM JBM_MSG_REF WHERE MESSAGE_ID = ?");
       map.put("UPDATE_DELIVERY_COUNT", "UPDATE JBM_MSG_REF SET DELIVERY_COUNT = ? WHERE CHANNEL_ID = ? AND MESSAGE_ID = ?");
+      map.put("UPDATE_CHANNEL_ID", "UPDATE JBM_MSG_REF SET CHANNEL_ID = ? WHERE CHANNEL_ID = ?");
       //Message
       map.put("LOAD_MESSAGES",
               "SELECT MESSAGE_ID, RELIABLE, EXPIRATION, TIMESTAMP, " +
@@ -3524,13 +3633,17 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
    private synchronized long getOrdering()
    {
       //We generate the ordering for the message reference by taking the lowest 48 bits of the current time and
-      //concetaning with a 15 bit rotating counter to form a string of 63 bits which we then place
+      //concatenating with a 15 bit rotating counter to form a string of 63 bits which we then place
       //in the right most bits of a long, giving a positive signed 63 bit integer.
+      
+      //Having a time element in the ordering means we don't have to maintain a counter in the database
+      //It also helps with failover since if two queues merge after failover then, the ordering will mean
+      //their orderings interleave nicely and they still get consumed in pretty much time order
       
       //We only have to guarantee ordering per session, so having slight differences of time on different nodes is
       //not a problem
       
-      //This is good for about 8919 years - if you're still running JBoss Messaging then, I suggest you need an
+      //The time element is good for about 8919 years - if you're still running JBoss Messaging then, I suggest you need an
       //upgrade!
       
       long order = System.currentTimeMillis();

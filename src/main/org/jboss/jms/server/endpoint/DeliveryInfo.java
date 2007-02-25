@@ -39,9 +39,7 @@ public class DeliveryInfo implements Ack
    
    // Attributes ----------------------------------------------------
    
-   //This is needed on failover when recreating delivery list on the server session
-   //we need to know the channel id so we can recreate the deliveries
-   private long channelID;
+   private String queueName;
    
    //This is needed when doing local redelivery of messages, since we need to know which
    //consumer gets the message
@@ -58,31 +56,27 @@ public class DeliveryInfo implements Ack
    //to the connection consumer's session, otherwise it will be null
    private SessionDelegate connectionConsumerSession;
    
-  // private boolean exceedDeliveryAttempts;
-   
-  // private boolean expired;
-   
    // Static --------------------------------------------------------
    
    // Constructors --------------------------------------------------
    
-   public DeliveryInfo(MessageProxy msg, int consumerId, long channelID,
+   public DeliveryInfo(MessageProxy msg, int consumerId, String queueName,
                        SessionDelegate connectionConsumerSession)
    {      
       this.msg = msg;
       
       this.consumerId = consumerId;
       
-      this.channelID = channelID;
+      this.queueName = queueName;
       
       this.connectionConsumerSession = connectionConsumerSession;
    }
 
    // Public --------------------------------------------------------
    
-   public long getChannelId()
+   public String getQueueName()
    {
-      return channelID;
+      return queueName;
    }
    
    public int getConsumerId()
@@ -100,31 +94,6 @@ public class DeliveryInfo implements Ack
       return connectionConsumerSession;
    }
    
-//   public void setExceededDeliveryAttempts()
-//   {
-//      exceedDeliveryAttempts = true;
-//   }
-//   
-//   public void setExpired()
-//   {
-//      expired = true;
-//   }
-//        
-//   public boolean exceededDeliveryAttempts()
-//   {
-//      return exceedDeliveryAttempts;
-//   }
-//   
-//   public boolean isExpired()
-//   {
-//      return expired;
-//   }
-//   
-//   public boolean isToCancel()
-//   {
-//      return exceedDeliveryAttempts || expired;
-//   }
-
    public String toString()
    {
       return "Delivery[" + getDeliveryID() + ", " + msg + "]";

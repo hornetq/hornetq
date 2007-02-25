@@ -215,8 +215,7 @@ public class SessionState extends HierarchicalStateSupport
                                       consState.getSelector(),
                                       consState.isNoLocal(),
                                       consState.getSubscriptionName(),
-                                      consState.isConnectionConsumer(),
-                                      consState.getChannelID());
+                                      consState.isConnectionConsumer());
             log.debug(this + " created new consumer " + newConsDelegate);
 
             consDelegate.synchronizeWith(newConsDelegate);
@@ -244,8 +243,7 @@ public class SessionState extends HierarchicalStateSupport
             // create a new browser over the new session for each browser on the old session
             ClientBrowserDelegate newBrowserDelegate = (ClientBrowserDelegate)newDelegate.
                createBrowserDelegate(browserState.getJmsDestination(),
-                                     browserState.getMessageSelector(),
-                                     browserState.getChannelID());
+                                     browserState.getMessageSelector());
             log.debug(this + " created new browser " + newBrowserDelegate);
 
             browserDelegate.synchronizeWith(newBrowserDelegate);
@@ -324,7 +322,7 @@ public class SessionState extends HierarchicalStateSupport
             DeliveryRecovery recInfo =
                new DeliveryRecovery(del.getMessageProxy().getDeliveryId(),
                                     del.getMessageProxy().getMessage().getMessageID(),
-                                    del.getChannelId());
+                                    del.getQueueName());
 
             recoveryInfos.add(recInfo);
          }

@@ -44,17 +44,16 @@ class BindRequest extends ClusterRequest
    }
    
    BindRequest(int nodeId, String queueName, String conditionText, String filterString,
-               long channelId, boolean durable, boolean failed)
+               long channelId, boolean durable)
    {
       bindingInfo = new BindingInfo(nodeId, queueName, conditionText, filterString,
-                                    channelId, durable, failed);
+                                    channelId, durable);
    }
 
    Object execute(PostOfficeInternal office) throws Exception
    {
       office.addBindingFromCluster(bindingInfo.getNodeId(), bindingInfo.getQueueName(), bindingInfo.getConditionText(),
-                                   bindingInfo.getFilterString(), bindingInfo.getChannelId(), bindingInfo.isDurable(),
-                                   bindingInfo.isFailed());
+                                   bindingInfo.getFilterString(), bindingInfo.getChannelId(), bindingInfo.isDurable());
       return null;
    }
    

@@ -114,7 +114,7 @@ public class MessageCallbackHandler
    public static void callOnMessage(SessionDelegate sess,
                                     MessageListener listener,
                                     int consumerID,
-                                    long channelID,
+                                    String queueName,
                                     boolean isConnectionConsumer,
                                     MessageProxy m,
                                     int ackMode,
@@ -129,7 +129,7 @@ public class MessageCallbackHandler
       }
       
       DeliveryInfo deliveryInfo =
-         new DeliveryInfo(m, consumerID, channelID, connectionConsumerSession);
+         new DeliveryInfo(m, consumerID, queueName, connectionConsumerSession);
             
       m.incDeliveryCount();
       
@@ -197,7 +197,7 @@ public class MessageCallbackHandler
    private QueuedExecutor sessionExecutor;
    private boolean listenerRunning;
    private int maxDeliveries;
-   private long channelID;
+   private String queueName;
    private long lastDeliveryId = -1;
    private volatile boolean serverSending = true;
    
@@ -206,7 +206,7 @@ public class MessageCallbackHandler
 
    public MessageCallbackHandler(boolean isCC, int ackMode,                                
                                  SessionDelegate sess, ConsumerDelegate cons, int consumerID,
-                                 long channelID,
+                                 String queueName,
                                  int bufferSize, QueuedExecutor sessionExecutor,
                                  int maxDeliveries)
    {
@@ -223,7 +223,7 @@ public class MessageCallbackHandler
       this.sessionDelegate = sess;
       this.consumerDelegate = cons;
       this.consumerID = consumerID;
-      this.channelID = channelID;
+      this.queueName = queueName;
       mainLock = new Object();
       this.sessionExecutor = sessionExecutor;
       this.maxDeliveries = maxDeliveries;
@@ -436,7 +436,7 @@ public class MessageCallbackHandler
                
                if (!isConnectionConsumer && !ignore)
                {
-                  DeliveryInfo info = new DeliveryInfo(m, consumerID, channelID, null);
+                  DeliveryInfo info = new DeliveryInfo(m, consumerID, queueName, null);
                                                     
                   m.incDeliveryCount();           
  
@@ -804,7 +804,7 @@ public class MessageCallbackHandler
          {
             try
             {
-               callOnMessage(sessionDelegate, listener, consumerID, channelID,
+               callOnMessage(sessionDelegate, listener, consumerID, queueName,
                              false, mp, ackMode, maxDeliveries, null);
             }
             catch (JMSException e)

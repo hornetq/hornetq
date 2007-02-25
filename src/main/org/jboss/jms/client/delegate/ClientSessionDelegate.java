@@ -194,11 +194,10 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
       throw new IllegalStateException("This invocation should not be handled here!");
    }
 
-   public BrowserDelegate createBrowserDelegate(JBossDestination queue, String messageSelector,
-                                                long failoverChannelID) throws JMSException
+   public BrowserDelegate createBrowserDelegate(JBossDestination queue, String messageSelector) throws JMSException
    {
       RequestSupport req = new SessionCreateBrowserDelegateRequest(id, version, queue,
-                                                  messageSelector, failoverChannelID);
+                                                  messageSelector);
 
       Object res = doInvoke(client, req);
       
@@ -217,11 +216,10 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
 
    public ConsumerDelegate createConsumerDelegate(JBossDestination destination, String selector,
             boolean noLocal, String subscriptionName,
-            boolean connectionConsumer,
-            long failoverChannelID) throws JMSException
+            boolean connectionConsumer) throws JMSException
    {
       RequestSupport req = new SessionCreateConsumerDelegateRequest(id, version, destination,
-               selector, noLocal, subscriptionName, connectionConsumer, failoverChannelID);
+               selector, noLocal, subscriptionName, connectionConsumer);
 
       return (ConsumerDelegate)doInvoke(client, req);
    }
@@ -429,7 +427,7 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
     * This invocation should either be handled by the client-side interceptor chain or by the
     * server-side endpoint.
     */
-   public void addAsfMessage(MessageProxy m, int consumerID, long channelId, int maxDeliveries,
+   public void addAsfMessage(MessageProxy m, int consumerID, String queueName, int maxDeliveries,
                              SessionDelegate connectionConsumerSession)
    {
       throw new IllegalStateException("This invocation should not be handled here!");

@@ -52,18 +52,14 @@ public class BrowserState extends HierarchicalStateSupport
    private JBossDestination jmsDestination;
    private String messageSelector;
 
-   // Needed for failover
-   private long channelID;
-
    // Constructors ---------------------------------------------------------------------------------
 
    public BrowserState(SessionState parent, BrowserDelegate delegate,
-                       JBossDestination jmsDestination, String selector, long channelID)
+                       JBossDestination jmsDestination, String selector)
    {
       super(parent, (DelegateSupport)delegate);
       this.jmsDestination = jmsDestination;
       this.messageSelector = selector;
-      this.channelID = channelID;
    }
 
    // HierarchicalState implementation -------------------------------------------------------------
@@ -95,9 +91,7 @@ public class BrowserState extends HierarchicalStateSupport
    // HierarchicalStateSupport overrides -----------------------------------------------------------
 
    public void synchronizeWith(HierarchicalState ns) throws Exception
-   {
-      BrowserState newState = (BrowserState)ns;
-      channelID = newState.channelID;
+   {      
    }
 
    // Public ---------------------------------------------------------------------------------------
@@ -110,11 +104,6 @@ public class BrowserState extends HierarchicalStateSupport
    public String getMessageSelector()
    {
       return messageSelector;
-   }
-
-   public long getChannelID()
-   {
-      return channelID;
    }
 
    // Package protected ----------------------------------------------------------------------------

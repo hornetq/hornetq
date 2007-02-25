@@ -534,7 +534,7 @@ public class WireFormatTest extends MessagingTestCase
       public void testSessionCreateConsumerDelegateRequest() throws Exception
       {
          RequestSupport req =
-            new SessionCreateConsumerDelegateRequest(23, (byte)77, new JBossQueue("wibble"), null, false, null, false, -1);
+            new SessionCreateConsumerDelegateRequest(23, (byte)77, new JBossQueue("wibble"), null, false, null, false);
                  
          testPacket(req, PacketSupport.REQ_SESSION_CREATECONSUMERDELEGATE);                           
       } 
@@ -542,7 +542,7 @@ public class WireFormatTest extends MessagingTestCase
       public void testSessionCreateBrowserDelegateRequest() throws Exception
       {
          RequestSupport req =
-            new SessionCreateBrowserDelegateRequest(23, (byte)77, new JBossQueue("wibble"), null, -1);
+            new SessionCreateBrowserDelegateRequest(23, (byte)77, new JBossQueue("wibble"), null);
                  
          testPacket(req, PacketSupport.REQ_SESSION_CREATEBROWSERDELEGATE);                           
       }
@@ -787,7 +787,7 @@ public class WireFormatTest extends MessagingTestCase
       
       public void testSessionCreateConsumerDelegateResponse() throws Exception
       { 
-         ClientConsumerDelegate del = new ClientConsumerDelegate(786, 13123, 213, 123);
+         ClientConsumerDelegate del = new ClientConsumerDelegate(786, 13123, 213);
          
          ResponseSupport resp =
             new SessionCreateConsumerDelegateResponse(del);
@@ -798,7 +798,7 @@ public class WireFormatTest extends MessagingTestCase
       
       public void testSessionCreateBrowserDelegateResponse() throws Exception
       { 
-         ClientBrowserDelegate del = new ClientBrowserDelegate(786, 12);
+         ClientBrowserDelegate del = new ClientBrowserDelegate(786);
          
          ResponseSupport resp =
             new SessionCreateBrowserDelegateResponse(del);

@@ -162,12 +162,11 @@ public class StateCreationAspect
       int consumerID = consumerDelegate.getID();
       int bufferSize = consumerDelegate.getBufferSize();
       int maxDeliveries = consumerDelegate.getMaxDeliveries();
-      long channelID = consumerDelegate.getChannelID();
 
       ConsumerState consumerState =
          new ConsumerState(sessionState, consumerDelegate, dest, selector, noLocal,
                            subscriptionName, consumerID, connectionConsumer, bufferSize,
-                           maxDeliveries, channelID);
+                           maxDeliveries);
 
       delegate.setState(consumerState);
       return consumerDelegate;
@@ -209,10 +208,8 @@ public class StateCreationAspect
       JBossDestination destination = (JBossDestination)mi.getArguments()[0];
       String selector = (String)mi.getArguments()[1];
 
-      long channelID = browserDelegate.getChannelID();
-
       BrowserState state =
-         new BrowserState(sessionState, browserDelegate, destination, selector, channelID);
+         new BrowserState(sessionState, browserDelegate, destination, selector);
 
       delegate.setState(state);
       return browserDelegate;

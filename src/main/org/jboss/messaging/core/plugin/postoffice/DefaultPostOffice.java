@@ -138,7 +138,7 @@ public class DefaultPostOffice extends JDBCSupport implements PostOffice
 
       super.start();
 
-      loadBindings();
+      loadBindings(false);
 
       log.debug(this + " started");
    }
@@ -197,7 +197,7 @@ public class DefaultPostOffice extends JDBCSupport implements PostOffice
             throw new IllegalArgumentException("Binding already exists for name " + queue.getName());
          }
 
-         binding = new DefaultBinding(currentNodeId, condition, queue, false);
+         binding = new DefaultBinding(currentNodeId, condition, queue);
 
          addBinding(binding);
 
@@ -553,7 +553,7 @@ public class DefaultPostOffice extends JDBCSupport implements PostOffice
    // internally. Creating queues is problematic since there are params we do not know until
    // destination deploy time e.g. paging params, maxsize etc. This means we have to load the queues
    // disabled and then set the params and re-activate them which is not clean.
-   protected void loadBindings() throws Exception
+   protected void loadBindings(boolean nonClusteredOnly) throws Exception
    {
       lock.writeLock().acquire();
 
@@ -562,6 +562,8 @@ public class DefaultPostOffice extends JDBCSupport implements PostOffice
       ResultSet rs = null;
       TransactionWrapper wrap = new TransactionWrapper();
 
+      log.info("loading bindings, non cliustered only " + nonClusteredOnly);
+      
       try
       {
          conn = ds.getConnection();
@@ -585,33 +587,41 @@ public class DefaultPostOffice extends JDBCSupport implements PostOffice
             }
 
             long channelID = rs.getLong(5);
-            boolean failed = rs.getString(6).equals("Y");
-
-            Integer failedNodeID = null;
-            int i = rs.getInt(7);
-
-            if(!rs.wasNull())
-            {
-               failedNodeID = new Integer(i);
-            }
+                       
+            boolean isClustered = rs.getString(6).equals("Y");
 
             Condition condition = conditionFactory.createCondition(conditionText);
-
-            //Temp hack
-            //For non clustered po don't want to load other nodes bindings!
-            if (!(this instanceof ClusteredPostOffice) && (nodeID != this.currentNodeId))
+            
+            if (nonClusteredOnly && isClustered)
             {
-               //Don't load other nodes binding
+               // Don't want to load clustered bindings
+               
+               log.info("it's a clustered binding not loading it since non clustered only");
             }
             else
             {
-               Binding binding = createBinding(nodeID, condition, queueName, channelID,
-                                               selector, true, failed, failedNodeID);
-
-               log.debug(this + " loaded from database " + binding);
-
-               binding.getQueue().deactivate();
-               addBinding(binding);
+               
+               //Temp hack
+               //For non clustered po don't want to load other nodes bindings!
+               if (!(this instanceof ClusteredPostOffice) && (nodeID != this.currentNodeId))
+               {
+                  //Don't load other nodes binding
+               }
+               else if ((this instanceof ClusteredPostOffice) && (nodeID != this.currentNodeId) &&
+                        !isClustered)
+               {
+                  //We don't load non clustered bindings on other nodes
+               }
+               else
+               {
+                  Binding binding = createBinding(nodeID, condition, queueName, channelID,
+                                                  selector, true, isClustered);
+   
+                  log.debug(this + " loaded from database " + binding);
+   
+                  binding.getQueue().deactivate();
+                  addBinding(binding);
+               }
             }
          }
       }
@@ -640,11 +650,11 @@ public class DefaultPostOffice extends JDBCSupport implements PostOffice
     */
    protected Binding createBinding(int nodeID, Condition condition, String queueName,
                                    long channelID, String filterString, boolean durable,
-                                   boolean failed, Integer failedNodeID) throws Exception
+                                   boolean isClustered) throws Exception
    {
       Filter filter = filterFactory.createFilter(filterString);
       return createBinding(nodeID, condition, queueName, channelID,
-                           filter, durable, failed, failedNodeID);
+                           filter, durable, isClustered);
    }
 
    /**
@@ -652,7 +662,7 @@ public class DefaultPostOffice extends JDBCSupport implements PostOffice
     */
    protected Binding createBinding(int nodeID, Condition condition, String queueName,
                                    long channelID, Filter filter, boolean durable,
-                                   boolean failed, Integer failedNodeID)
+                                   boolean isClustered)
    {
       Queue queue;
 
@@ -664,10 +674,10 @@ public class DefaultPostOffice extends JDBCSupport implements PostOffice
       else
       {
          throw new IllegalStateException("This is a non clustered post office - should not " +
-            "have bindings from different nodes!");
+                                         "have bindings from different nodes!");
       }
 
-      return new DefaultBinding(nodeID, condition, queue, failed);
+      return new DefaultBinding(nodeID, condition, queue);
    }
 
    protected void insertBinding(Binding binding) throws Exception
@@ -698,17 +708,14 @@ public class DefaultPostOffice extends JDBCSupport implements PostOffice
          {
             ps.setNull(5, Types.VARCHAR);
          }
-         ps.setLong(6, binding.getQueue().getChannelID());
-         ps.setString(7,binding.isFailed() ? "Y":"N");
-
-         Integer failedNodeID = binding.getFailedNodeID();
-         if (failedNodeID == null)
+         ps.setLong(6, binding.getQueue().getChannelID());        
+         if (binding.getQueue().isClustered())
          {
-            ps.setNull(8, Types.INTEGER);
+            ps.setString(7, "Y");
          }
          else
          {
-            ps.setInt(8, failedNodeID.intValue());
+            ps.setString(7, "N");
          }
 
          ps.executeUpdate();
@@ -879,9 +886,8 @@ public class DefaultPostOffice extends JDBCSupport implements PostOffice
                  "CONDITION, " +
                  "SELECTOR, " +
                  "CHANNEL_ID, " +
-                 "IS_FAILED_OVER, " +
-                 "FAILED_NODE_ID) " +
-              "VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+                 "CLUSTERED) " +
+              "VALUES (?, ?, ?, ?, ?, ?, ?)");
 
       map.put("DELETE_BINDING",
               "DELETE FROM JBM_POSTOFFICE WHERE POSTOFFICE_NAME=? AND NODE_ID=? AND QUEUE_NAME=?");
@@ -893,8 +899,7 @@ public class DefaultPostOffice extends JDBCSupport implements PostOffice
                  "CONDITION, " +
                  "SELECTOR, " +
                  "CHANNEL_ID, " +
-                 "IS_FAILED_OVER, " +
-                 "FAILED_NODE_ID " +
+                 "CLUSTERED " +
                  "FROM JBM_POSTOFFICE WHERE POSTOFFICE_NAME  = ?");
 
       return map;
@@ -906,8 +911,8 @@ public class DefaultPostOffice extends JDBCSupport implements PostOffice
       map.put("CREATE_POSTOFFICE_TABLE",
               "CREATE TABLE JBM_POSTOFFICE (POSTOFFICE_NAME VARCHAR(255), NODE_ID INTEGER," +
               "QUEUE_NAME VARCHAR(1023), CONDITION VARCHAR(1023), " +
-              "SELECTOR VARCHAR(1023), CHANNEL_ID BIGINT, IS_FAILED_OVER CHAR(1), " +
-              "FAILED_NODE_ID INTEGER)");
+              "SELECTOR VARCHAR(1023), CHANNEL_ID BIGINT, " +
+              "CLUSTERED CHAR(1))");
       return map;
    }
 

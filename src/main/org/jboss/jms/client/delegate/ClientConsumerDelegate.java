@@ -56,18 +56,16 @@ public class ClientConsumerDelegate extends DelegateSupport implements ConsumerD
    
    private int bufferSize;
    private int maxDeliveries;
-   private long channelID;
-   
+
    // Static ---------------------------------------------------------------------------------------
 
    // Constructors ---------------------------------------------------------------------------------
 
-   public ClientConsumerDelegate(int objectID, long channelID, int bufferSize, int maxDeliveries)
+   public ClientConsumerDelegate(int objectID, int bufferSize, int maxDeliveries)
    {
       super(objectID);
       this.bufferSize = bufferSize;
       this.maxDeliveries = maxDeliveries;
-      this.channelID = channelID;
    }
    
    public ClientConsumerDelegate()
@@ -92,7 +90,6 @@ public class ClientConsumerDelegate extends DelegateSupport implements ConsumerD
 
       bufferSize = newDelegate.getBufferSize();
       maxDeliveries = newDelegate.getMaxDeliveries();
-      channelID = newDelegate.getChannelID();
 
       client = ((ConnectionState)state.getParent().getParent()).getRemotingConnection().
          getRemotingClient();
@@ -202,8 +199,6 @@ public class ClientConsumerDelegate extends DelegateSupport implements ConsumerD
       bufferSize = in.readInt();
       
       maxDeliveries = in.readInt();
-      
-      channelID = in.readLong();
    }
 
    public void write(DataOutputStream out) throws Exception
@@ -213,15 +208,13 @@ public class ClientConsumerDelegate extends DelegateSupport implements ConsumerD
       out.writeInt(bufferSize);
       
       out.writeInt(maxDeliveries);
-      
-      out.writeLong(channelID);
    }
 
    // Public ---------------------------------------------------------------------------------------
 
    public String toString()
    {
-      return "ConsumerDelegate[" + id + ", ChID=" + channelID + "]";
+      return "ConsumerDelegate[" + id + "]";
    }
    
    public int getBufferSize()
@@ -232,11 +225,6 @@ public class ClientConsumerDelegate extends DelegateSupport implements ConsumerD
    public int getMaxDeliveries()
    {
       return maxDeliveries;
-   }
-   
-   public long getChannelID()
-   {
-      return channelID;
    }
 
    // Protected ------------------------------------------------------------------------------------
