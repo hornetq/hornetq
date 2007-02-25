@@ -174,13 +174,7 @@
    <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientSessionDelegate->createConsumerDelegate(..))">
       <advice name="handleCreateConsumerDelegate" aspect="org.jboss.jms.client.container.ConsumerAspect"/>         
    </bind>   
-   <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientSessionDelegate->failOverConsumer(..))">
-      <advice name="handleCreateConsumerDelegate" aspect="org.jboss.jms.client.container.ConsumerAspect"/>
-   </bind>
    <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientSessionDelegate->createConsumerDelegate(..))">
-      <advice name="handleCreateConsumerDelegate" aspect="org.jboss.jms.client.container.StateCreationAspect"/>
-   </bind>
-   <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientSessionDelegate->failOverConsumer(..))">
       <advice name="handleCreateConsumerDelegate" aspect="org.jboss.jms.client.container.StateCreationAspect"/>
    </bind>
    <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientSessionDelegate->createProducerDelegate(..))">
