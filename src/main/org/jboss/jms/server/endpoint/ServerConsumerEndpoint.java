@@ -475,19 +475,14 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
 
          // No need to synchronize - clientAccepting is volatile.
 
-         // Important note - this invocations can arrive in a different order to
-         // which they were
-         // sent - this is inherent in one way invocations where a client side
-         // pool is used.
-         // Therefore we just toggle the clientAccepting flag - if we actually
-         // looked at the newRate
-         // value we might end up turning off the consumer when it should be on
-         // (since a off-on, arrives as on-off)
-         // Toggling is safe, but when we start to look at the actual rate value
-         // we will
-         // have to be a bit cleverer
-
-         clientAccepting = !clientAccepting;
+         if (newRate > 0)
+         {
+            clientAccepting = true;
+         }
+         else
+         {
+            clientAccepting = false;
+         }
 
          if (clientAccepting)
          {

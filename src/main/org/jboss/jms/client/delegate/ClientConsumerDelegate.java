@@ -136,7 +136,7 @@ public class ClientConsumerDelegate extends DelegateSupport implements ConsumerD
    {
       RequestSupport req = new ConsumerChangeRateRequest(id, version, newRate);
       
-      doInvokeOneway(client, req);
+      doInvoke(client, req);
    }
 
    /**

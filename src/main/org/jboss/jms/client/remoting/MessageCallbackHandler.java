@@ -240,6 +240,10 @@ public class MessageCallbackHandler
 
    public void handleMessage(final Object message) throws Exception
    {
+      //TODO - we temporarily need to execute on a different thread to 
+      //avoid a deadlock situation in failover
+      //where a message is sent then the valve is locked, and the message send cause a message
+      //delivery back to the same client which tries to ack but can't get through the valve
       this.sessionExecutor.execute(
                new Runnable() { public void run()
                {
@@ -541,6 +545,10 @@ public class MessageCallbackHandler
       // TODO If we don't zap this buffer, we may be able to salvage some non-persistent messages
 
       buffer.clear();
+      
+      //need to reset toggle state
+      serverSending = true;
+      
    }
    
    public long getLastDeliveryId()

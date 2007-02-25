@@ -88,16 +88,19 @@ public class ConsumerChangeRateRequest extends RequestSupport
       os.flush();
    }
    
-   public Object getPayload()
-   {
-      OnewayInvocation oi = new OnewayInvocation(this);
-
-      InvocationRequest request =
-         new InvocationRequest(null, ServerPeer.REMOTING_JMS_SUBSYSTEM,
-                               oi, ONE_WAY_METADATA, null, null);
-      
-      return request;     
-   }
+   //Until we have NBIO transport this needs to be synchronous otherwise we can get out of sync
+   //due to earlier invocations overtaking later invocations
+   
+//   public Object getPayload()
+//   {
+//      OnewayInvocation oi = new OnewayInvocation(this);
+//
+//      InvocationRequest request =
+//         new InvocationRequest(null, ServerPeer.REMOTING_JMS_SUBSYSTEM,
+//                               oi, ONE_WAY_METADATA, null, null);
+//      
+//      return request;     
+//   }
 
 }
 
