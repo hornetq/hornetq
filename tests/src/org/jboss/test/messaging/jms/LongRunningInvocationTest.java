@@ -36,9 +36,6 @@ import org.jboss.test.messaging.tools.ServerManagement;
 import org.jboss.test.messaging.tools.aop.PoisonInterceptor;
 
 /**
- * 
- * A LongRunningInvocationTest
- *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision: 1.1 $</tt>
  *
@@ -91,6 +88,8 @@ public class LongRunningInvocationTest extends MessagingTestCase
       }
       
       ic.close();
+
+      ServerManagement.kill(0);
 
       super.tearDown();
    }
