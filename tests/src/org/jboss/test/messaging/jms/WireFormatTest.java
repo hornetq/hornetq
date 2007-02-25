@@ -645,7 +645,7 @@ public class WireFormatTest extends MessagingTestCase
       { 
          List dels = new ArrayList();
          
-         DeliveryRecovery info = new DeliveryRecovery();
+         DeliveryRecovery info = new DeliveryRecovery(1,1,"someQueue");
          
          dels.add(info);
          
