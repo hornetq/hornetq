@@ -64,8 +64,6 @@ public class QueueService extends DestinationServiceSupport implements QueueMBea
       
       try
       {                           
-         log.info("Starting queue " + destination.getName());
-         
          postOffice = serverPeer.getPostOfficeInstance();
          
          destination.setServerPeer(serverPeer);
@@ -89,14 +87,11 @@ public class QueueService extends DestinationServiceSupport implements QueueMBea
                
             // Must be done after load
             queue.setMaxSize(destination.getMaxSize());
-            queue.activate();
-            
-            log.info("Activated queue " + queue);             
+            queue.activate();           
          }
                      
          if (queue == null)
-         {
-            log.info("Queue was null so creating a new one");
+         {           
             // Create a new queue
             
             JMSCondition queueCond = new JMSCondition(true, destination.getName());

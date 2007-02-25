@@ -236,7 +236,25 @@ public class MessageCallbackHandler
     * Handles a message sent from the server
     * @param message The message
     */
-   public void handleMessage(Object message) throws Exception
+   
+
+   public void handleMessage(final Object message) throws Exception
+   {
+      this.sessionExecutor.execute(
+               new Runnable() { public void run()
+               {
+                  try
+                  {
+                     handleMessageInternal(message);
+                  }
+                  catch (Exception e)
+                  {
+                     log.error("Failed to handle message", e);
+                  }
+               } });
+   }
+   
+   public void handleMessageInternal(Object message) throws Exception
    {
       MessageProxy proxy = (MessageProxy) message;
 

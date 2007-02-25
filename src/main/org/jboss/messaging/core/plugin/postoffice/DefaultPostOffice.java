@@ -562,8 +562,6 @@ public class DefaultPostOffice extends JDBCSupport implements PostOffice
       ResultSet rs = null;
       TransactionWrapper wrap = new TransactionWrapper();
 
-      log.info("loading bindings, non cliustered only " + nonClusteredOnly);
-      
       try
       {
          conn = ds.getConnection();
@@ -595,8 +593,6 @@ public class DefaultPostOffice extends JDBCSupport implements PostOffice
             if (nonClusteredOnly && isClustered)
             {
                // Don't want to load clustered bindings
-               
-               log.info("it's a clustered binding not loading it since non clustered only");
             }
             else
             {

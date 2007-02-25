@@ -132,21 +132,22 @@ public class FailoverTest extends TestCase
 //      catch (Exception e)
 //      {
 //         log.error("Failed", e);
+//         throw e;
 //      }
 //      finally
 //      {      
-//         if (conn != null)
-//         {
-//            log.info("closing connetion");
-//            try
-//            {
-//               conn.close();
-//            }
-//            catch (Exception ignore)
-//            {               
-//            }
-//            log.info("closed connection");
-//         }
+////         if (conn != null)
+////         {
+////            log.info("closing connetion");
+////            try
+////            {
+////               conn.close();
+////            }
+////            catch (Exception ignore)
+////            {               
+////            }
+////            log.info("closed connection");
+////         }
 //      }     
 //   }
    

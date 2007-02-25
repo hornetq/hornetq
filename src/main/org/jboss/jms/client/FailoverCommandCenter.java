@@ -6,16 +6,17 @@
  */
 package org.jboss.jms.client;
 
-import org.jboss.logging.Logger;
-import org.jboss.jms.client.state.ConnectionState;
-import org.jboss.jms.client.remoting.JMSRemotingConnection;
-import org.jboss.jms.client.delegate.ClientConnectionDelegate;
-import org.jboss.jms.server.endpoint.CreateConnectionResult;
-import org.jboss.jms.delegate.ConnectionFactoryDelegate;
-
-import java.util.List;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
+
+import org.jboss.jms.client.container.FailoverValveInterceptor;
+import org.jboss.jms.client.delegate.ClientConnectionDelegate;
+import org.jboss.jms.client.remoting.JMSRemotingConnection;
+import org.jboss.jms.client.state.ConnectionState;
+import org.jboss.jms.delegate.ConnectionFactoryDelegate;
+import org.jboss.jms.server.endpoint.CreateConnectionResult;
+import org.jboss.logging.Logger;
 
 /**
  * The class in charge with performing the failover.
@@ -39,21 +40,27 @@ public class FailoverCommandCenter
 
    private ConnectionState state;
 
-   private FailoverValve valve;
+   private FailoverValve2 valve;
 
    private List failoverListeners;
-
+   
    // Constructors ---------------------------------------------------------------------------------
 
    public FailoverCommandCenter(ConnectionState state)
    {
       this.state = state;
       failoverListeners = new ArrayList();
-      valve = new FailoverValve(this);
+      
+      valve = new FailoverValve2();
    }
 
    // Public ---------------------------------------------------------------------------------------
-
+   
+   public void setState(ConnectionState state)
+   {
+      this.state = state;
+   }
+   
    /**
     * Method called by failure detection components (FailoverValveInterceptors and
     * ConnectionListeners) when they have reasons to believe that a server failure occured.
@@ -69,13 +76,17 @@ public class FailoverCommandCenter
 
       CreateConnectionResult res = null;
       boolean failoverSuccessful = false;
-
+      
+      boolean valveOpened = false;
+      
       try
       {
          // block any other invocations ariving to any delegate from the hierarchy while we're
          // doing failover
 
          valve.close();
+         
+         log.debug(this + " starting client-side failover");
 
          synchronized(this)
          {
@@ -91,21 +102,19 @@ public class FailoverCommandCenter
 
             remotingConnection.setFailed();
          }
-
-         log.debug(this + " starting client-side failover");
-
+         
          // generate a FAILOVER_STARTED event. The event must be broadcasted AFTER valve closure,
          // to insure the client-side stack is in a deterministic state
          broadcastFailoverEvent(new FailoverEvent(FailoverEvent.FAILOVER_STARTED, this));
-
+         
          int failedNodeID = state.getServerID();
          ConnectionFactoryDelegate clusteredDelegate =
             state.getClusteredConnectionFactoryDelegate();
-
+         
          // re-try creating the connection
          res = clusteredDelegate.
             createConnectionDelegate(state.getUsername(), state.getPassword(), failedNodeID);
-
+         
          if (res == null)
          {
             // No failover attempt was detected on the server side; this might happen if the
@@ -114,16 +123,39 @@ public class FailoverCommandCenter
             failoverSuccessful = false;
          }
          else
-         {
+         {      
             // recursively synchronize state
             ClientConnectionDelegate newDelegate = (ClientConnectionDelegate)res.getDelegate();
+            
             state.getDelegate().synchronizeWith(newDelegate);
-            failoverSuccessful = true;
+            
+            valve.open();
+            valveOpened = true;
+            
+            //Now start the connection - note! this can't be done while the valve is closed
+            //or it will block itself
+            
+            // start the connection again on the serverEndpoint if necessary
+            if (state.isStarted())
+            {
+               newDelegate.start();
+            }
+            
+            failoverSuccessful = true;                        
          }
+      }
+      catch (Exception e)
+      {
+         log.error("Failover failed", e);
+         
+         throw e;
       }
       finally
       {
-         valve.open();
+         if (!valveOpened)
+         {
+            valve.open();
+         }
 
          if (failoverSuccessful)
          {
@@ -152,7 +184,7 @@ public class FailoverCommandCenter
       }
    }
 
-   public FailoverValve getValve()
+   public FailoverValve2 getValve()
    {
       return valve;
    }

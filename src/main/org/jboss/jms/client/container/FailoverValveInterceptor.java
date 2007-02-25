@@ -10,12 +10,11 @@ import org.jboss.aop.advice.Interceptor;
 import org.jboss.aop.joinpoint.Invocation;
 import org.jboss.aop.joinpoint.MethodInvocation;
 import org.jboss.jms.client.FailoverCommandCenter;
-import org.jboss.jms.client.FailoverValve;
+import org.jboss.jms.client.FailoverValve2;
 import org.jboss.jms.client.FailureDetector;
-import org.jboss.jms.client.delegate.ClientConsumerDelegate;
-import org.jboss.jms.client.delegate.DelegateSupport;
-import org.jboss.jms.client.delegate.ClientSessionDelegate;
 import org.jboss.jms.client.delegate.ClientConnectionDelegate;
+import org.jboss.jms.client.delegate.ClientSessionDelegate;
+import org.jboss.jms.client.delegate.DelegateSupport;
 import org.jboss.jms.client.remoting.JMSRemotingConnection;
 import org.jboss.jms.client.state.ConnectionState;
 import org.jboss.jms.client.state.HierarchicalState;
@@ -52,11 +51,10 @@ public class FailoverValveInterceptor implements Interceptor, FailureDetector
 
    private DelegateSupport delegate;
 
-   // We need to cache connectionState here, as FailureCommandCenter instance could be null for
-   // non-clustered connections
+   // We need to cache connectionState here
+   // IMPORTANT - We must not cache the fcc or valve since these need to be replaced when failover occurs
+   // and if we cache them we wil end up using the old ones
    private ConnectionState connectionState;
-   private FailoverCommandCenter fcc;
-   private FailoverValve valve;
 
    // Constructors ---------------------------------------------------------------------------------
 
@@ -66,7 +64,7 @@ public class FailoverValveInterceptor implements Interceptor, FailureDetector
    {
       return "FailoverValveInterceptor";
    }
-
+   
    public Object invoke(Invocation invocation) throws Throwable
    {      
       // maintain a reference to connectionState, so we can ensure we have already tested for fcc.
@@ -82,25 +80,23 @@ public class FailoverValveInterceptor implements Interceptor, FailureDetector
          }
          
          connectionState = (ConnectionState)hs;
-
-         // maintain a reference to the FailoverCommandCenter instance.
-         fcc = connectionState.getFailoverCommandCenter();
-         
-         if (fcc != null)
-         {
-            valve = fcc.getValve();
-         }
       }
-
+      
+      FailoverCommandCenter fcc = connectionState.getFailoverCommandCenter();
+            
       // non clustered, send the invocation forward
       if (fcc == null)
       {
          return invocation.invokeNext();
       }
-
+      
+      FailoverValve2 valve = fcc.getValve();
+      
       JMSRemotingConnection remotingConnection = null;
       String methodName = ((MethodInvocation)invocation).getMethod().getName();
 
+      boolean left = false;
+      
       try
       {
          valve.enter();
@@ -111,6 +107,9 @@ public class FailoverValveInterceptor implements Interceptor, FailureDetector
       }
       catch (MessagingNetworkFailureException e)
       {
+         valve.leave();
+         left = true;
+         
          log.debug(this + " detected network failure, putting " + methodName +
          "() on hold until failover completes");
       
@@ -150,7 +149,10 @@ public class FailoverValveInterceptor implements Interceptor, FailureDetector
       }
       finally
       {
-         valve.leave();
+         if (!left)
+         {
+            valve.leave();
+         }
       }
    }
    

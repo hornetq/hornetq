@@ -37,6 +37,7 @@ import org.jboss.jms.wireformat.ClosingRequest;
 import org.jboss.jms.wireformat.ConsumerCancelInflightMessagesRequest;
 import org.jboss.jms.wireformat.ConsumerChangeRateRequest;
 import org.jboss.jms.wireformat.RequestSupport;
+import org.jboss.logging.Logger;
 
 /**
  * The client-side Consumer delegate class.
@@ -51,6 +52,9 @@ import org.jboss.jms.wireformat.RequestSupport;
 public class ClientConsumerDelegate extends DelegateSupport implements ConsumerDelegate
 {
    // Constants ------------------------------------------------------------------------------------
+   
+   private static final Logger log = Logger.getLogger(ClientConsumerDelegate.class);
+
 
    // Attributes -----------------------------------------------------------------------------------
    
@@ -92,8 +96,7 @@ public class ClientConsumerDelegate extends DelegateSupport implements ConsumerD
       maxDeliveries = newDelegate.getMaxDeliveries();
 
       client = ((ConnectionState)state.getParent().getParent()).getRemotingConnection().
-         getRemotingClient();
-      
+         getRemotingClient();      
    }
    
    public void setState(HierarchicalState state)
@@ -214,7 +217,7 @@ public class ClientConsumerDelegate extends DelegateSupport implements ConsumerD
 
    public String toString()
    {
-      return "ConsumerDelegate[" + id + "]";
+      return "ConsumerDelegate[" + id + "] " + System.identityHashCode(this);
    }
    
    public int getBufferSize()

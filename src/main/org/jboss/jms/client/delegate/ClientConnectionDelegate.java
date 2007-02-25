@@ -30,6 +30,7 @@ import javax.jms.ExceptionListener;
 import javax.jms.JMSException;
 import javax.jms.ServerSessionPool;
 
+import org.jboss.jms.client.FailoverCommandCenter;
 import org.jboss.jms.client.FailoverListener;
 import org.jboss.jms.client.JBossConnectionConsumer;
 import org.jboss.jms.client.remoting.JMSRemotingConnection;
@@ -50,6 +51,7 @@ import org.jboss.jms.wireformat.ConnectionSetClientIDRequest;
 import org.jboss.jms.wireformat.ConnectionStartRequest;
 import org.jboss.jms.wireformat.ConnectionStopRequest;
 import org.jboss.jms.wireformat.RequestSupport;
+import org.jboss.logging.Logger;
 import org.jboss.messaging.core.tx.MessagingXid;
 
 /**
@@ -66,6 +68,9 @@ import org.jboss.messaging.core.tx.MessagingXid;
 public class ClientConnectionDelegate extends DelegateSupport implements ConnectionDelegate
 {
    // Constants ------------------------------------------------------------------------------------
+   
+   private static final Logger log = Logger.getLogger(ClientConnectionDelegate.class);
+
 
    // Attributes -----------------------------------------------------------------------------------
 
@@ -97,7 +102,7 @@ public class ClientConnectionDelegate extends DelegateSupport implements Connect
       super.synchronizeWith(nd);
 
       ClientConnectionDelegate newDelegate = (ClientConnectionDelegate)nd;
-
+      
       // synchronize the server endpoint state
 
       // this is a bit counterintuitve, as we're not copying from new delegate, but modifying its
@@ -105,7 +110,7 @@ public class ClientConnectionDelegate extends DelegateSupport implements Connect
       // server
 
       ConnectionState thisState = (ConnectionState)state;
-
+      
       if (thisState.getClientID() != null)
       {
          newDelegate.setClientID(thisState.getClientID());
@@ -119,23 +124,19 @@ public class ClientConnectionDelegate extends DelegateSupport implements Connect
 
       remotingConnection = newDelegate.getRemotingConnection();
       versionToUse = newDelegate.getVersionToUse();
-
+      
       // There is one RM per server, so we need to merge the rms if necessary
       ResourceManagerFactory.instance.handleFailover(serverID, newDelegate.getServerID());
       
       client = thisState.getRemotingConnection().getRemotingClient();
-
-      // start the connection again on the serverEndpoint if necessary
-      if (thisState.isStarted())
-      {
-         this.start();
-      }
+      
+      serverID = newDelegate.getServerID();
    }
    
    public void setState(HierarchicalState state)
    {
       super.setState(state);
-      
+                 
       client = ((ConnectionState)state).getRemotingConnection().getRemotingClient();
    }
 
@@ -297,7 +298,7 @@ public class ClientConnectionDelegate extends DelegateSupport implements Connect
 
    public String toString()
    {
-      return "ConnectionDelegate[" + id + ", SID=" + serverID + "]";
+      return "ConnectionDelegate[" + id + ", SID=" + serverID + "] " + System.identityHashCode(this);
    }
 
    // Protected ------------------------------------------------------------------------------------

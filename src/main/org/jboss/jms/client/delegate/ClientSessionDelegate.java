@@ -65,6 +65,7 @@ import org.jboss.jms.wireformat.SessionDeleteTemporaryDestinationRequest;
 import org.jboss.jms.wireformat.SessionRecoverDeliveriesRequest;
 import org.jboss.jms.wireformat.SessionSendRequest;
 import org.jboss.jms.wireformat.SessionUnsubscribeRequest;
+import org.jboss.logging.Logger;
 
 /**
  * The client-side Session delegate class.
@@ -89,6 +90,9 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
 
    // Static ---------------------------------------------------------------------------------------
 
+   private static final Logger log = Logger.getLogger(ClientSessionDelegate.class);
+
+   
    // Constructors ---------------------------------------------------------------------------------
 
    public ClientSessionDelegate(int objectID, int dupsOKBatchSize)
@@ -486,7 +490,7 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
    
    public String toString()
    {
-      return "SessionDelegate[" + id + "]";
+      return "SessionDelegate[" + id + "] " + System.identityHashCode(this);
    }
    
    // Protected ------------------------------------------------------------------------------------

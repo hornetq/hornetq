@@ -169,6 +169,10 @@ public class ConnectionState extends HierarchicalStateSupport
 
          sessionDelegate.synchronizeWith(newSessionDelegate);
       }
+      
+      //We weren't picking up the new fcc before so new delegates were using the old fcc!!
+      fcc = newState.fcc;
+      fcc.setState(this);
    }
 
    // Public ---------------------------------------------------------------------------------------

@@ -51,10 +51,11 @@ public class MultiThreadFailoverTest extends ClusteringTestBase
    // Constants ------------------------------------------------------------------------------------
 
    // Attributes -----------------------------------------------------------------------------------
-   int messageCounterConsumer = 0;
-   int messageCounterProducer = 0;
-   boolean started = false;
-   boolean shouldStop = false;
+  
+   volatile int messageCounterConsumer = 0;
+   volatile int messageCounterProducer = 0;
+   volatile boolean started = false;
+   volatile boolean shouldStop = false;
 
    Object lockReader = new Object();
    Object lockWriter = new Object();
@@ -361,7 +362,7 @@ public class MultiThreadFailoverTest extends ClusteringTestBase
             t.start();
          }
 
-         Thread.sleep(1000); // time to everybody line up
+         Thread.sleep(2000); // time to everybody line up
          synchronized (semaphore)
          {
             started = true;
@@ -412,6 +413,7 @@ public class MultiThreadFailoverTest extends ClusteringTestBase
 
          for (Iterator iter = threadList.iterator(); iter.hasNext();)
          {
+            log.info("Waiting to join");
 
             LocalThread t = (LocalThread) iter.next();
 
@@ -565,7 +567,7 @@ public class MultiThreadFailoverTest extends ClusteringTestBase
             int counter = 0;
             while (true)
             {
-               Message message = consumer.receive(1000);
+               Message message = consumer.receive(5000);
                if (message == null && shouldStop)
                {
                   log.info("Finished execution of thread as shouldStop was true");

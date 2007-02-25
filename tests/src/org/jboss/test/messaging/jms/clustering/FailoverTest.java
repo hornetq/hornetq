@@ -1684,7 +1684,7 @@ public class FailoverTest extends ClusteringTestBase
       failureOnInvocation(PoisonInterceptor.FAIL_AFTER_SEND);
    }
 
-   public void testFailureRightAFterSendTransaction() throws Exception
+   public void testFailureRightAfterSendTransaction() throws Exception
    {
       Connection conn = null;
       Connection conn0 = null;
