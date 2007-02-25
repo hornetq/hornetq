@@ -29,6 +29,8 @@ import org.jboss.test.messaging.tools.ServerManagement;
 import org.jboss.test.messaging.tools.aop.PoisonInterceptor;
 import org.jboss.test.messaging.tools.jmx.ServiceContainer;
 import org.jboss.test.messaging.tools.jndi.InVMInitialContextFactory;
+import java.util.ArrayList;
+import java.util.HashSet;
 
 /**
  * 
@@ -451,10 +453,7 @@ public class XAFailoverTest extends ClusteringTestBase
       
       XAConnectionFactory xaCF = (XAConnectionFactory)cf;
       
-      Connection conn0 = null;
-      
-      Connection conn1 = null;
-      
+
       try
       {
          xaConn0 = xaCF.createXAConnection();
@@ -465,14 +464,47 @@ public class XAFailoverTest extends ClusteringTestBase
          
          assertEquals(1, ((JBossConnection)xaConn1).getServerID());
 
-         conn0 = cf.createConnection();
-         
-         assertEquals(0, ((JBossConnection)conn0).getServerID());
-                           
-         conn1 = cf.createConnection();         
-         
-         assertEquals(1, ((JBossConnection)conn1).getServerID());
-         
+         TextMessage sent0 = null;
+
+         TextMessage sent1 = null;
+
+         // Sending two messages.. on each server
+         {
+            Connection conn0 = null;
+
+            Connection conn1 = null;
+
+            conn0 = cf.createConnection();
+
+            assertEquals(0, ((JBossConnection)conn0).getServerID());
+
+            conn1 = cf.createConnection();
+
+            assertEquals(1, ((JBossConnection)conn1).getServerID());
+
+            //Send a message to each queue
+
+            Session sess = conn0.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+            MessageProducer prod = sess.createProducer(queue[0]);
+
+            sent0 = sess.createTextMessage("plop0");
+
+            prod.send(sent0);
+
+            sess.close();
+
+            sess = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+            prod = sess.createProducer(queue[1]);
+
+            sent1 = sess.createTextMessage("plop1");
+
+            prod.send(sent1);
+
+            sess.close();
+         }
+
          xaConn0.start();
          
          xaConn1.start();
@@ -481,31 +513,6 @@ public class XAFailoverTest extends ClusteringTestBase
          // register a failover listener
          SimpleFailoverListener failoverListener = new SimpleFailoverListener();
          ((JBossConnection)xaConn1).registerFailoverListener(failoverListener);
-         
-         //Send a message to each queue
-         
-         Session sess = conn0.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         
-         MessageProducer prod = sess.createProducer(queue[0]);
-         
-         TextMessage sent0 = sess.createTextMessage("plop0");
-         
-         prod.send(sent0);
-         
-         sess.close();
-         
-         sess = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         
-         prod = sess.createProducer(queue[1]);
-         
-         TextMessage sent1 = sess.createTextMessage("plop1");
-         
-         prod.send(sent1);
-         
-         sess.close();
-         
-         
-         
          
          XASession sess0 = xaConn0.createXASession();
          
@@ -603,43 +610,58 @@ public class XAFailoverTest extends ClusteringTestBase
          cons1.close();
          
          // Message should now be receivable
-         
-         conn0.start();
-         
-         Session sessRec0 = conn0.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         
-         cons0 = sessRec0.createConsumer(queue[0]);
-         
-         TextMessage mrec = (TextMessage)cons0.receive(2000);
-         
-         assertNotNull(mrec);
-         
-         assertEquals(msg0.getText(), mrec.getText());
-         
-         Message m = cons0.receive(2000);
-         
-         //And the other message should be acked
-         assertNull(m);                
-         
-         
-         conn1.start();
-                  
-         Session sessRec1 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         
-         cons1 = sessRec1.createConsumer(queue[0]);
-         
-         mrec = (TextMessage)cons1.receive(2000);
-         
-         assertNotNull(mrec);
-         
-         assertEquals(msg1.getText(), mrec.getText());
-         
-         m = cons1.receive(2000);
-         
-         //And the other message should be acked
-         assertNull(m);   
-         
-         assertEquals(0, ((JBossConnection)xaConn1).getServerID());
+
+         Connection conn = null;
+         try
+         {
+            conn = cf.createConnection();
+
+            conn.start();
+
+            Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+            MessageConsumer cons = session.createConsumer(queue[0]);
+
+            HashSet receivedMessages = new HashSet();
+
+            int numberOfReceivedMessages = 0;
+
+            while(true)
+            {
+               TextMessage message = (TextMessage)cons.receive(2000);
+               if (message == null)
+               {
+                  break;
+               }
+               log.info("Message = (" + message.getText() + ")");
+               receivedMessages.add(message.getText());
+               numberOfReceivedMessages++;
+            }
+
+
+            assertFalse("\"plop0\" message was duplicated",
+               receivedMessages.contains("plop0"));
+
+            assertFalse("\"plop1\" message was duplicated",
+               receivedMessages.contains("plop0"));
+
+            assertTrue("\"Cupid stunt0\" message wasn't received",
+               receivedMessages.contains("Cupid stunt0"));
+
+            assertTrue("\"Cupid stunt1\" message wasn't received",
+               receivedMessages.contains("Cupid stunt1"));
+
+            assertEquals(2, numberOfReceivedMessages);
+
+            assertEquals(0, ((JBossConnection)xaConn1).getServerID());
+         }
+         finally
+         {
+            if (conn != null)
+            {
+               conn.close();
+            }
+         }
 
       }
       finally
@@ -648,13 +670,9 @@ public class XAFailoverTest extends ClusteringTestBase
          {
             xaConn1.close();
          }
-         if (conn0 != null)
+         if (xaConn0 != null)
          {
-            conn0.close();
-         }
-         if (conn1 != null)
-         {
-            conn1.close();
+            xaConn0.close();
          }
       }
    }
@@ -670,10 +688,48 @@ public class XAFailoverTest extends ClusteringTestBase
       
       XAConnectionFactory xaCF = (XAConnectionFactory)cf;
       
-      Connection conn0 = null;
-      
-      Connection conn1 = null;
-      
+      TextMessage sent0 = null;
+
+      TextMessage sent1 = null;
+
+      // Sending two messages.. on each server
+      {
+         Connection conn0 = null;
+
+         Connection conn1 = null;
+
+         conn0 = cf.createConnection();
+
+         assertEquals(0, ((JBossConnection)conn0).getServerID());
+
+         conn1 = cf.createConnection();
+
+         assertEquals(1, ((JBossConnection)conn1).getServerID());
+
+         //Send a message to each queue
+
+         Session sess = conn0.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+         MessageProducer prod = sess.createProducer(queue[0]);
+
+         sent0 = sess.createTextMessage("plop0");
+
+         prod.send(sent0);
+
+         sess.close();
+
+         sess = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+         prod = sess.createProducer(queue[1]);
+
+         sent1 = sess.createTextMessage("plop1");
+
+         prod.send(sent1);
+
+         sess.close();
+      }
+
+
       try
       {
          xaConn0 = xaCF.createXAConnection();
@@ -684,14 +740,6 @@ public class XAFailoverTest extends ClusteringTestBase
          
          assertEquals(1, ((JBossConnection)xaConn1).getServerID());
 
-         conn0 = cf.createConnection();
-         
-         assertEquals(0, ((JBossConnection)conn0).getServerID());
-                           
-         conn1 = cf.createConnection();         
-         
-         assertEquals(1, ((JBossConnection)conn1).getServerID());
-         
          xaConn0.start();
          
          xaConn1.start();
@@ -700,30 +748,6 @@ public class XAFailoverTest extends ClusteringTestBase
          // register a failover listener
          SimpleFailoverListener failoverListener = new SimpleFailoverListener();
          ((JBossConnection)xaConn1).registerFailoverListener(failoverListener);
-         
-         //Send a message to each queue
-         
-         Session sess = conn0.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         
-         MessageProducer prod = sess.createProducer(queue[0]);
-         
-         TextMessage sent0 = sess.createTextMessage("plop0");
-         
-         prod.send(sent0);
-         
-         sess.close();
-         
-         sess = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         
-         prod = sess.createProducer(queue[1]);
-         
-         TextMessage sent1 = sess.createTextMessage("plop1");
-         
-         prod.send(sent1);
-         
-         sess.close();
-         
-         
          
          
          XASession sess0 = xaConn0.createXASession();
@@ -827,41 +851,59 @@ public class XAFailoverTest extends ClusteringTestBase
                            
 
          // Message should now be receivable
+         Connection conn = null;
+         try
+         {
+            conn = cf.createConnection();
+
+            conn.start();
+
+            Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+            MessageConsumer cons = session.createConsumer(queue[0]);
+
+            HashSet receivedMessages = new HashSet();
+
+            int numberOfReceivedMessages = 0;
+
+            while(true)
+            {
+               TextMessage message = (TextMessage)cons.receive(2000);
+               if (message == null)
+               {
+                  break;
+               }
+               log.info("Message = (" + message.getText() + ")");
+               receivedMessages.add(message.getText());
+               numberOfReceivedMessages++;
+            }
+
+
+            assertFalse("\"plop0\" message was duplicated",
+               receivedMessages.contains("plop0"));
+
+            assertFalse("\"plop1\" message was duplicated",
+               receivedMessages.contains("plop0"));
+
+            assertTrue("\"Cupid stunt0\" message wasn't received",
+               receivedMessages.contains("Cupid stunt0"));
+
+            assertTrue("\"Cupid stunt1\" message wasn't received",
+               receivedMessages.contains("Cupid stunt1"));
+
+            assertEquals(2, numberOfReceivedMessages);
+
+            assertEquals(0, ((JBossConnection)xaConn1).getServerID());
+         }
+         finally
+         {
+            if (conn != null)
+            {
+               conn.close();
+            }
+         }
+
          
-         conn0.start();
-         
-         Session sessRec0 = conn0.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         
-         cons0 = sessRec0.createConsumer(queue[0]);
-         
-         TextMessage mrec = (TextMessage)cons0.receive(2000);
-         
-         assertNotNull(mrec);
-         
-         assertEquals(msg0.getText(), mrec.getText());
-         
-         Message m = cons0.receive(2000);
-         
-         //And the other message should be acked
-         assertNull(m);                
-         
-         
-         conn1.start();
-                  
-         Session sessRec1 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         
-         cons1 = sessRec1.createConsumer(queue[0]);
-         
-         mrec = (TextMessage)cons1.receive(2000);
-         
-         assertNotNull(mrec);
-         
-         assertEquals(msg1.getText(), mrec.getText());
-         
-         m = cons1.receive(2000);
-         
-         //And the other message should be acked
-         assertNull(m);   
          
          assertEquals(0, ((JBossConnection)xaConn1).getServerID());
 
@@ -872,13 +914,9 @@ public class XAFailoverTest extends ClusteringTestBase
          {
             xaConn1.close();
          }
-         if (conn0 != null)
+         if (xaConn0 != null)
          {
-            conn0.close();
-         }
-         if (conn1 != null)
-         {
-            conn1.close();
+            xaConn0.close();
          }
       }
    }
