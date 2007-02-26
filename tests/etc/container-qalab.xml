@@ -28,7 +28,7 @@
       </database-configuration>
 
       <database-configuration name="mysql">
-         <url>jdbc:mysql://dev01-priv:3306/messaging</url>
+         <url>jdbc:mysql://dev02-priv:3306/messaging</url>
          <driver>com.mysql.jdbc.Driver</driver>
          <isolation>TRANSACTION_READ_COMMITTED</isolation>
          <username>messaging</username>
