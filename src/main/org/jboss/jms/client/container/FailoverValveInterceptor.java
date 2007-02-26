@@ -47,6 +47,8 @@ public class FailoverValveInterceptor implements Interceptor, FailureDetector
 
    // Static ---------------------------------------------------------------------------------------
 
+   private static boolean trace = log.isTraceEnabled();
+
    // Attributes -----------------------------------------------------------------------------------
 
    private DelegateSupport delegate;
@@ -145,6 +147,8 @@ public class FailoverValveInterceptor implements Interceptor, FailureDetector
       catch (Throwable e)
       {
          // not failover-triggering, rethrow
+
+         if (trace) { log.trace(this + " caught not failover-triggering throwable, rethrowing " + e); }
          throw e;
       }
       finally
@@ -160,7 +164,7 @@ public class FailoverValveInterceptor implements Interceptor, FailureDetector
 
    public String toString()
    {
-      return "FailoverValve." + (delegate == null ? "UNITIALIZED" : delegate.toString());
+      return "FailoverValveInterceptor." + (delegate == null ? "UNITIALIZED" : delegate.toString());
    }
 
    // Package protected ----------------------------------------------------------------------------

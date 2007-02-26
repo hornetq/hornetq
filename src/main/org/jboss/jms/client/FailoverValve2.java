@@ -27,8 +27,6 @@ import java.util.Set;
 import org.jboss.logging.Logger;
 
 /**
- * A FailoverValve2
- *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision: 1.1 $</tt>
  *
@@ -37,20 +35,28 @@ import org.jboss.logging.Logger;
  */
 public class FailoverValve2
 {
+   // Constants ------------------------------------------------------------------------------------
+
    private static final Logger log = Logger.getLogger(FailoverValve2.class);
 
-   private Set threads = new HashSet();
-   
+   // Static ---------------------------------------------------------------------------------------
+
+   private static boolean trace = log.isTraceEnabled();
+
+   // Attributes -----------------------------------------------------------------------------------
+
    private int count;
-   
    private boolean locked;
-   
-   private boolean trace = log.isTraceEnabled();
+   private Set threads = new HashSet();
+
+   // Constructors ---------------------------------------------------------------------------------
+
+   // Public ---------------------------------------------------------------------------------------
 
    public synchronized void enter()
    {
       if (trace) { log.trace(this + " entering"); }
-      
+
       while (locked)
       {
          try
@@ -58,66 +64,63 @@ public class FailoverValve2
             wait();
          }
          catch (InterruptedException ignore)
-         {            
+         {
          }
       }
       count++;
-      
+
       if (trace)
       {
          threads.add(Thread.currentThread());
+         log.trace(this + " entered");
       }
-      
-      if (trace) { log.trace(this + " entered"); }
    }
 
    public synchronized void leave()
    {
       if (trace) { log.trace(this + " leaving"); }
-      
+
       count--;
-      
-      if (trace)
-      {
-         threads.remove(Thread.currentThread());
-      }
+
+      if (trace) { threads.remove(Thread.currentThread()); }
 
       notifyAll();
-      
+
       if (trace) { log.trace(this + " left"); }
    }
 
    public synchronized void close()
    {
-      if (trace) { log.trace(this + " Closing valve " + locked); }
-      
+      if (trace) { log.trace(this + " closing " + (locked ? "LOCKED" : "UNLOCKED") + " valve"); }
+
       if (trace && threads.contains(Thread.currentThread()))
       {
          // Sanity check
          throw new IllegalStateException("Cannot close valve from inside valve");
       }
-      
-      //If the valve is already closed then any more invocations of close must block until the valve is opened
-      
+
+      // If the valve is already closed then any more invocations of close must block until the
+      // valve is opened.
+
       while (locked)
       {
-         if (trace) { log.trace("valve is already closed - blocking until its opened"); }
-         
+         if (trace) { log.trace(this + " is already closed, blocking until its opened"); }
+
          try
          {
             wait();
          }
          catch (InterruptedException ignore)
-         {            
+         {
          }
-         
+
          if (!locked)
          {
             //If it was locked when we tried to close but is not now locked - then return immediately
             return;
          }
       }
-      
+
 
       locked = true;
 
@@ -128,22 +131,39 @@ public class FailoverValve2
             wait();
          }
          catch (InterruptedException ignore)
-         {            
+         {
          }
-      } 
-      
-      if (trace) { log.trace("Valve closed"); }
+      }
+
+      if (trace) { log.trace(this + " closed"); }
    }
 
    public synchronized void open()
    {
-      if (trace) { log.trace(this + " Opening valve " + locked); }
-      
-      if (!locked) return;
+      if (trace) { log.trace(this + " opening " + (locked ? "LOCKED" : "UNLOCKED") + " valve"); }
+
+      if (!locked)
+      {
+         return;
+      }
 
       locked = false;
 
       notifyAll();
-   } 
+   }
+
+   public String toString()
+   {
+      return "FailoverValve[" + System.identityHashCode(this) + "]";
+   }
+
+   // Package protected ----------------------------------------------------------------------------
+
+   // Protected ------------------------------------------------------------------------------------
+
+   // Private --------------------------------------------------------------------------------------
+
+   // Inner classes --------------------------------------------------------------------------------
+
 }
 

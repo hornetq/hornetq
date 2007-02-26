@@ -487,7 +487,7 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
    
    public String toString()
    {
-      return "SessionDelegate[" + id + "]." + System.identityHashCode(this);
+      return "SessionDelegate[" + System.identityHashCode(this) + ", ID=" + id + "]";
    }
    
    // Protected ------------------------------------------------------------------------------------

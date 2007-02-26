@@ -160,7 +160,7 @@ public class ClientBrowserDelegate extends DelegateSupport implements BrowserDel
 
    public String toString()
    {
-      return "BrowserDelegate[" + id + "]";
+      return "BrowserDelegate[" + System.identityHashCode(this) + ", ID=" + id + "]";
    }
 
    // Protected ------------------------------------------------------------------------------------

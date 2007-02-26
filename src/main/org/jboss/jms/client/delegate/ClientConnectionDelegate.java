@@ -294,7 +294,8 @@ public class ClientConnectionDelegate extends DelegateSupport implements Connect
 
    public String toString()
    {
-      return "ConnectionDelegate[" + id + ", SID=" + serverID + "]." + System.identityHashCode(this);
+      return "ConnectionDelegate[" + System.identityHashCode(this) + ", ID=" + id +
+         ", SID=" + serverID + "]";
    }
 
    // Protected ------------------------------------------------------------------------------------

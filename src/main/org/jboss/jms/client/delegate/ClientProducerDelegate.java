@@ -221,7 +221,7 @@ public class ClientProducerDelegate extends DelegateSupport implements ProducerD
 
    public String toString()
    {
-      return "ProducerDelegate[" + id + "]";
+      return "ProducerDelegate[" + System.identityHashCode(this) + ", ID=" + id + "]";
    }
 
    // Protected ------------------------------------------------------------------------------------

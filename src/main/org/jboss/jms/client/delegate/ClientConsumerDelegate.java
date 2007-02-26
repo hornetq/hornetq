@@ -213,7 +213,7 @@ public class ClientConsumerDelegate extends DelegateSupport implements ConsumerD
 
    public String toString()
    {
-      return "ConsumerDelegate[" + id + "]." + System.identityHashCode(this);
+      return "ConsumerDelegate[" + System.identityHashCode(this) + ", ID=" + id + "]";
    }
    
    public int getBufferSize()

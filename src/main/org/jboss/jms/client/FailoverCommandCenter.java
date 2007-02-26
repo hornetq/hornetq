@@ -10,7 +10,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import org.jboss.jms.client.container.FailoverValveInterceptor;
 import org.jboss.jms.client.delegate.ClientConnectionDelegate;
 import org.jboss.jms.client.remoting.JMSRemotingConnection;
 import org.jboss.jms.client.state.ConnectionState;
@@ -159,10 +158,12 @@ public class FailoverCommandCenter
 
          if (failoverSuccessful)
          {
+            log.debug(this + " completed successful failover");
             broadcastFailoverEvent(new FailoverEvent(FailoverEvent.FAILOVER_COMPLETED, this));
          }
          else
          {
+            log.debug(this + " aborted failover");
             broadcastFailoverEvent(new FailoverEvent(FailoverEvent.FAILOVER_FAILED, this));
          }
       }

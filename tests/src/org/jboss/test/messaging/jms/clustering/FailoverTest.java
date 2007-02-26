@@ -1754,7 +1754,7 @@ public class FailoverTest extends ClusteringTestBase
       try
       {
          conn1 = cf.createConnection();
-         
+
          // Objects Server1
          conn1 = cf.createConnection();
 
@@ -1774,14 +1774,13 @@ public class FailoverTest extends ClusteringTestBase
       }
       finally
       {
-         if (conn1!=null)
+         if (conn1 != null)
          {
             conn1.close();
          }
       }
-      
    }
-   
+
    public void testMergeQueue() throws Exception
    {
       Connection conn0 = null;
@@ -1962,7 +1961,7 @@ public class FailoverTest extends ClusteringTestBase
          TextMessage msgAfterKill = (TextMessage)consumer1.receive(1000);
          assertNotNull(msgAfterKill);
          session1.commit();
-         
+
          consumer1.close();
 
          consumer0 = session0.createConsumer(queue[0]);
