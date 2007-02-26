@@ -30,7 +30,6 @@ import javax.jms.ExceptionListener;
 import javax.jms.JMSException;
 import javax.jms.ServerSessionPool;
 
-import org.jboss.jms.client.FailoverCommandCenter;
 import org.jboss.jms.client.FailoverListener;
 import org.jboss.jms.client.JBossConnectionConsumer;
 import org.jboss.jms.client.remoting.JMSRemotingConnection;
@@ -51,7 +50,6 @@ import org.jboss.jms.wireformat.ConnectionSetClientIDRequest;
 import org.jboss.jms.wireformat.ConnectionStartRequest;
 import org.jboss.jms.wireformat.ConnectionStopRequest;
 import org.jboss.jms.wireformat.RequestSupport;
-import org.jboss.logging.Logger;
 import org.jboss.messaging.core.tx.MessagingXid;
 
 /**
@@ -69,9 +67,6 @@ public class ClientConnectionDelegate extends DelegateSupport implements Connect
 {
    // Constants ------------------------------------------------------------------------------------
    
-   private static final Logger log = Logger.getLogger(ClientConnectionDelegate.class);
-
-
    // Attributes -----------------------------------------------------------------------------------
 
    private int serverID;
@@ -161,7 +156,6 @@ public class ClientConnectionDelegate extends DelegateSupport implements Connect
    /**
     * This invocation should either be handled by the client-side interceptor chain or by the
     * server-side endpoint.
-    * @see org.jboss.jms.client.container.AsfAspect#handleCreateConnectionConsumer(org.jboss.aop.joinpoint.Invocation)
     */
    public JBossConnectionConsumer createConnectionConsumer(Destination dest,
                                                            String subscriptionName,
@@ -176,8 +170,10 @@ public class ClientConnectionDelegate extends DelegateSupport implements Connect
                                                 int acknowledgmentMode,
                                                 boolean isXA) throws JMSException
    {
-      RequestSupport req = new ConnectionCreateSessionDelegateRequest(id, version,
-                                                                      transacted, acknowledgmentMode, isXA);      
+      RequestSupport req =
+         new ConnectionCreateSessionDelegateRequest(id, version, transacted,
+                                                    acknowledgmentMode, isXA);
+
       return (SessionDelegate)doInvoke(client, req);     
    }
   
@@ -298,7 +294,7 @@ public class ClientConnectionDelegate extends DelegateSupport implements Connect
 
    public String toString()
    {
-      return "ConnectionDelegate[" + id + ", SID=" + serverID + "] " + System.identityHashCode(this);
+      return "ConnectionDelegate[" + id + ", SID=" + serverID + "]." + System.identityHashCode(this);
    }
 
    // Protected ------------------------------------------------------------------------------------

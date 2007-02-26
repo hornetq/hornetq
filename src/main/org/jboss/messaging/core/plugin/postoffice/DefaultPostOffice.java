@@ -641,9 +641,6 @@ public class DefaultPostOffice extends JDBCSupport implements PostOffice
       }
    }
 
-   /**
-    * @param failedNodeID - ignored for non-clustered bindings.
-    */
    protected Binding createBinding(int nodeID, Condition condition, String queueName,
                                    long channelID, String filterString, boolean durable,
                                    boolean isClustered) throws Exception
@@ -653,9 +650,6 @@ public class DefaultPostOffice extends JDBCSupport implements PostOffice
                            filter, durable, isClustered);
    }
 
-   /**
-    * @param failedNodeID - ignored for non-clustered bindings.
-    */
    protected Binding createBinding(int nodeID, Condition condition, String queueName,
                                    long channelID, Filter filter, boolean durable,
                                    boolean isClustered)

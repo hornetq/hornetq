@@ -230,32 +230,33 @@ public class MessageCallbackHandler
    }
         
    // Public ---------------------------------------------------------------------------------------
-      
 
    /**
-    * Handles a message sent from the server
+    * Handles a message sent from the server.
+    *
     * @param message The message
     */
-   
-
    public void handleMessage(final Object message) throws Exception
    {
-      //TODO - we temporarily need to execute on a different thread to 
-      //avoid a deadlock situation in failover
-      //where a message is sent then the valve is locked, and the message send cause a message
-      //delivery back to the same client which tries to ack but can't get through the valve
+      //TODO - we temporarily need to execute on a different thread to avoid a deadlock situation in
+      //       failover where a message is sent then the valve is locked, and the message send cause
+      //       a message delivery back to the same client which tries to ack but can't get through
+      //       the valve.
       this.sessionExecutor.execute(
-               new Runnable() { public void run()
+         new Runnable()
+         {
+            public void run()
+            {
+               try
                {
-                  try
-                  {
-                     handleMessageInternal(message);
-                  }
-                  catch (Exception e)
-                  {
-                     log.error("Failed to handle message", e);
-                  }
-               } });
+                  handleMessageInternal(message);
+               }
+               catch (Exception e)
+               {
+                  log.error("Failed to handle message", e);
+               }
+            }
+         });
    }
    
    public void handleMessageInternal(Object message) throws Exception
@@ -546,7 +547,7 @@ public class MessageCallbackHandler
 
       buffer.clear();
       
-      //need to reset toggle state
+      // need to reset toggle state
       serverSending = true;
       
    }

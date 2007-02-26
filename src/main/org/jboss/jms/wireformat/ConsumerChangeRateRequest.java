@@ -25,10 +25,7 @@ package org.jboss.jms.wireformat;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 
-import org.jboss.jms.server.ServerPeer;
 import org.jboss.jms.server.endpoint.ConsumerEndpoint;
-import org.jboss.remoting.InvocationRequest;
-import org.jboss.remoting.invocation.OnewayInvocation;
 
 /**
  * 
@@ -88,8 +85,8 @@ public class ConsumerChangeRateRequest extends RequestSupport
       os.flush();
    }
    
-   //Until we have NBIO transport this needs to be synchronous otherwise we can get out of sync
-   //due to earlier invocations overtaking later invocations
+   // Until we have NBIO transport this needs to be synchronous otherwise we can get out of sync
+   // due to earlier invocations overtaking later invocations.
    
 //   public Object getPayload()
 //   {

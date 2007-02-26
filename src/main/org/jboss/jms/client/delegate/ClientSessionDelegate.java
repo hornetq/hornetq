@@ -65,7 +65,6 @@ import org.jboss.jms.wireformat.SessionDeleteTemporaryDestinationRequest;
 import org.jboss.jms.wireformat.SessionRecoverDeliveriesRequest;
 import org.jboss.jms.wireformat.SessionSendRequest;
 import org.jboss.jms.wireformat.SessionUnsubscribeRequest;
-import org.jboss.logging.Logger;
 
 /**
  * The client-side Session delegate class.
@@ -90,9 +89,6 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
 
    // Static ---------------------------------------------------------------------------------------
 
-   private static final Logger log = Logger.getLogger(ClientSessionDelegate.class);
-
-   
    // Constructors ---------------------------------------------------------------------------------
 
    public ClientSessionDelegate(int objectID, int dupsOKBatchSize)
@@ -198,7 +194,8 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
       throw new IllegalStateException("This invocation should not be handled here!");
    }
 
-   public BrowserDelegate createBrowserDelegate(JBossDestination queue, String messageSelector) throws JMSException
+   public BrowserDelegate createBrowserDelegate(JBossDestination queue, String messageSelector)
+      throws JMSException
    {
       RequestSupport req = new SessionCreateBrowserDelegateRequest(id, version, queue,
                                                   messageSelector);
@@ -490,7 +487,7 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
    
    public String toString()
    {
-      return "SessionDelegate[" + id + "] " + System.identityHashCode(this);
+      return "SessionDelegate[" + id + "]." + System.identityHashCode(this);
    }
    
    // Protected ------------------------------------------------------------------------------------

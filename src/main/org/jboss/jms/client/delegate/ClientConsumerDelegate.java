@@ -37,7 +37,6 @@ import org.jboss.jms.wireformat.ClosingRequest;
 import org.jboss.jms.wireformat.ConsumerCancelInflightMessagesRequest;
 import org.jboss.jms.wireformat.ConsumerChangeRateRequest;
 import org.jboss.jms.wireformat.RequestSupport;
-import org.jboss.logging.Logger;
 
 /**
  * The client-side Consumer delegate class.
@@ -53,9 +52,6 @@ public class ClientConsumerDelegate extends DelegateSupport implements ConsumerD
 {
    // Constants ------------------------------------------------------------------------------------
    
-   private static final Logger log = Logger.getLogger(ClientConsumerDelegate.class);
-
-
    // Attributes -----------------------------------------------------------------------------------
    
    private int bufferSize;
@@ -217,7 +213,7 @@ public class ClientConsumerDelegate extends DelegateSupport implements ConsumerD
 
    public String toString()
    {
-      return "ConsumerDelegate[" + id + "] " + System.identityHashCode(this);
+      return "ConsumerDelegate[" + id + "]." + System.identityHashCode(this);
    }
    
    public int getBufferSize()

@@ -28,9 +28,7 @@ import java.io.Serializable;
 
 import javax.jms.JMSException;
 
-import org.jboss.jms.client.state.ConnectionState;
 import org.jboss.jms.client.state.HierarchicalState;
-import org.jboss.jms.client.state.SessionState;
 import org.jboss.jms.util.MessagingJMSException;
 import org.jboss.jms.util.MessagingNetworkFailureException;
 import org.jboss.jms.wireformat.RequestSupport;

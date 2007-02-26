@@ -51,9 +51,9 @@ public class FailoverValveInterceptor implements Interceptor, FailureDetector
 
    private DelegateSupport delegate;
 
-   // We need to cache connectionState here
-   // IMPORTANT - We must not cache the fcc or valve since these need to be replaced when failover occurs
-   // and if we cache them we wil end up using the old ones
+   // We need to cache connectionState here.
+   // IMPORTANT - We must not cache the fcc or valve since these need to be replaced when failover
+   //             occurs and if we cache them we wil end up using the old ones.
    private ConnectionState connectionState;
 
    // Constructors ---------------------------------------------------------------------------------

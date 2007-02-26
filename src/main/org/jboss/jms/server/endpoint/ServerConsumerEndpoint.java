@@ -52,8 +52,6 @@ import org.jboss.remoting.callback.Callback;
 import org.jboss.remoting.callback.HandleCallbackException;
 import org.jboss.remoting.callback.ServerInvokerCallbackHandler;
 
-import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
-
 /**
  * Concrete implementation of ConsumerEndpoint. Lives on the boundary between
  * Messaging Core and the JMS Facade. Handles delivery of messages from the
