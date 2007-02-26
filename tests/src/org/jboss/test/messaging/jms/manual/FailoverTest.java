@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.test.messaging.jms;
+package org.jboss.test.messaging.jms.manual;
 
 import java.util.Hashtable;
 
@@ -64,92 +64,92 @@ public class FailoverTest extends TestCase
       
    }
    
-//   public void testSendReceive() throws Exception
-//   {
-//      Hashtable properties = new Hashtable();
-//
-//      properties.put("java.naming.factory.initial", "org.jnp.interfaces.NamingContextFactory");
-//
-//      properties.put("java.naming.provider.url", "jnp://192.168.1.11:1199");
-//
-//      properties.put("java.naming.factory.url", "org.jnp.interfaces");
-//
-//      log.info("Creaing ic");
-//
-//      InitialContext ic = new InitialContext(properties);
-//
-//      log.info("************ REMOTE");
-//
-//      Connection conn = null;
-//
-//      try
-//      {
-//         log.info("Created ic");
-//
-//         Queue queue = (Queue)ic.lookup("/queue/testDistributedQueue");
-//
-//         log.info("Looked up queue");
-//
-//         ConnectionFactory cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
-//
-//         log.info("Looked up cf");
-//
-//         conn = cf.createConnection();
-//
-//         Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-//
-//         Session sessCons = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-//
-//         MessageConsumer cons = sessCons.createConsumer(queue);
-//
-//         MessageListener list = new MyListener();
-//
-//         cons.setMessageListener(list);
-//
-//         conn.start();
-//
-//         MessageProducer prod = sessSend.createProducer(queue);
-//
-//         prod.setDeliveryMode(DeliveryMode.PERSISTENT);
-//
-//         int count = 0;
-//
-//         while (true)
-//         {
-//            TextMessage tm = sessSend.createTextMessage("message " + count);
-//
-//            prod.send(tm);
-//
-//            log.info("sent " + count);
-//
-//            count++;
-//
-//            //Thread.sleep(250);
-//         }
-//
-//
-//      }
-//      catch (Exception e)
-//      {
-//         log.error("Failed", e);
-//         throw e;
-//      }
-//      finally
-//      {
-////         if (conn != null)
-////         {
-////            log.info("closing connetion");
-////            try
-////            {
-////               conn.close();
-////            }
-////            catch (Exception ignore)
-////            {
-////            }
-////            log.info("closed connection");
-////         }
-//      }
-//   }
+   public void testSendReceive() throws Exception
+   {
+      Hashtable properties = new Hashtable();
+
+      properties.put("java.naming.factory.initial", "org.jnp.interfaces.NamingContextFactory");
+
+      properties.put("java.naming.provider.url", "jnp://192.168.1.11:1199");
+
+      properties.put("java.naming.factory.url", "org.jnp.interfaces");
+
+      log.info("Creaing ic");
+
+      InitialContext ic = new InitialContext(properties);
+
+      log.info("************ REMOTE");
+
+      Connection conn = null;
+
+      try
+      {
+         log.info("Created ic");
+
+         Queue queue = (Queue)ic.lookup("/queue/testDistributedQueue");
+
+         log.info("Looked up queue");
+
+         ConnectionFactory cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
+
+         log.info("Looked up cf");
+
+         conn = cf.createConnection();
+
+         Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+         Session sessCons = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+         MessageConsumer cons = sessCons.createConsumer(queue);
+
+         MessageListener list = new MyListener();
+
+         cons.setMessageListener(list);
+
+         conn.start();
+
+         MessageProducer prod = sessSend.createProducer(queue);
+
+         prod.setDeliveryMode(DeliveryMode.PERSISTENT);
+
+         int count = 0;
+
+         while (true)
+         {
+            TextMessage tm = sessSend.createTextMessage("message " + count);
+
+            prod.send(tm);
+
+            log.info("sent " + count);
+
+            count++;
+
+            //Thread.sleep(250);
+         }
+
+
+      }
+      catch (Exception e)
+      {
+         log.error("Failed", e);
+         throw e;
+      }
+      finally
+      {
+         if (conn != null)
+         {
+            log.info("closing connetion");
+            try
+            {
+               conn.close();
+            }
+            catch (Exception ignore)
+            {
+            }
+            log.info("closed connection");
+         }
+      }
+   }
    
    class MyListener implements MessageListener
    {

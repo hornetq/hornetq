@@ -34,6 +34,7 @@ import org.jboss.jms.client.state.SessionState;
 import org.jboss.jms.delegate.ConsumerDelegate;
 import org.jboss.jms.delegate.SessionDelegate;
 import org.jboss.jms.util.MessageQueueNameHelper;
+import org.jboss.logging.Logger;
 
 import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
 
@@ -52,6 +53,8 @@ import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
 public class ConsumerAspect
 {
    // Constants -----------------------------------------------------
+   
+   private static final Logger log = Logger.getLogger(ConsumerAspect.class);
    
    // Static --------------------------------------------------------
 
@@ -114,21 +117,10 @@ public class ConsumerAspect
    {      
       ConsumerState consumerState = getState(invocation);
         
-      
       // First we call close on the messagecallbackhandler which waits for onMessage invocations      
       // to complete any further messages received will be ignored
       consumerState.getMessageCallbackHandler().close();
-      
-      long lastDeliveryId = consumerState.getMessageCallbackHandler().getLastDeliveryId();
-      
-      SessionState sessionState = (SessionState)consumerState.getParent();
-      ConnectionState connectionState = (ConnectionState)sessionState.getParent();
-                 
-      sessionState.removeCallbackHandler(consumerState.getMessageCallbackHandler());
-
-      CallbackManager cm = connectionState.getRemotingConnection().getCallbackManager();
-      cm.unregisterHandler(consumerState.getConsumerID());
-            
+                        
       // Then we make sure closing is called on the ServerConsumerEndpoint.
 
       Object res = invocation.invokeNext();
@@ -139,6 +131,16 @@ public class ConsumerAspect
       //maybe it can be combined with closing
       
       ConsumerDelegate del = (ConsumerDelegate)invocation.getTargetObject();
+      
+      long lastDeliveryId = consumerState.getMessageCallbackHandler().getLastDeliveryId();
+      
+      SessionState sessionState = (SessionState)consumerState.getParent();
+      ConnectionState connectionState = (ConnectionState)sessionState.getParent();
+                 
+      sessionState.removeCallbackHandler(consumerState.getMessageCallbackHandler());
+
+      CallbackManager cm = connectionState.getRemotingConnection().getCallbackManager();
+      cm.unregisterHandler(consumerState.getConsumerID());
          
       //Now we need to cancel any inflight messages - this must be done before
       //cancelling the message callback handler buffer, so that messages end up back in the channel

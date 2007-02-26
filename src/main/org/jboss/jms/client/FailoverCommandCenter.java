@@ -85,8 +85,6 @@ public class FailoverCommandCenter
 
          valve.close();
          
-         log.debug(this + " starting client-side failover");
-
          synchronized(this)
          {
             // testing for failed connection and setting the failed flag need to be done in one
@@ -101,6 +99,9 @@ public class FailoverCommandCenter
 
             remotingConnection.setFailed();
          }
+         
+         //Note - failover doesn't occur until _after_ the above check - so the next comment belongs here
+         log.debug(this + " starting client-side failover");
          
          // generate a FAILOVER_STARTED event. The event must be broadcasted AFTER valve closure,
          // to insure the client-side stack is in a deterministic state

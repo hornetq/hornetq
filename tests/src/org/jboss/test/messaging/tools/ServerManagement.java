@@ -939,6 +939,16 @@ public class ServerManagement
       insureStarted();
       servers[0].getServer().deployQueue(name, jndiName, fullSize, pageSize, downCacheSize, false);
    }
+   
+   /**
+    * Simulates a queue deployment (copying the queue descriptor in the deploy directory).
+    */
+   public static void deployQueue(String name, String jndiName, int fullSize, int pageSize,
+                                  int downCacheSize, int serverIndex, boolean clustered) throws Exception
+   {
+      insureStarted();
+      servers[serverIndex].getServer().deployQueue(name, jndiName, fullSize, pageSize, downCacheSize, clustered);
+   }
 
    /**
     * Simulates a queue un-deployment (deleting the queue descriptor from the deploy directory).

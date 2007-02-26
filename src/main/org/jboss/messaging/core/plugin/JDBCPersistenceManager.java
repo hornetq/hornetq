@@ -1017,9 +1017,9 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
       }
    }
    
-   public InitialLoadInfo mergeAndLoad(long fromChannelID, long toChannelID, int fullSize) throws Exception
+   public InitialLoadInfo mergeAndLoad(long fromChannelID, long toChannelID, int numberToLoad, long firstPagingOrder, long nextPagingOrder) throws Exception
    {
-      if (trace) { log.trace("Merging channel from " + fromChannelID + " to " + toChannelID); }
+      if (trace) { log.trace("Merging channel from " + fromChannelID + " to " + toChannelID + " numberToLoad:" + numberToLoad + " firstPagingOrder:" + firstPagingOrder + " nextPagingOrder:" + nextPagingOrder); }
       
       Connection conn = null;
       PreparedStatement ps = null;
@@ -1031,7 +1031,120 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
       {
          conn = ds.getConnection();
          
-         // First swap the channel id
+         /*
+          * If channel is paging and has full size f
+          * 
+          * then we don't need to load any refs but we need to:
+          * 
+          * make sure the page ord is correct across the old paged and new refs
+          * 
+          * we know the max page ord (from the channel) for the old refs so we just need to:
+          * 
+          * 1) Iterate through the failed channel and update page_ord = max + 1, max + 2 etc
+          * 
+          * 2) update channel id
+          * 
+          * 
+          * If channel is not paging and the total refs before and after <=f
+          * 
+          * 1) Load all refs from failed channel
+          * 
+          * 2) Update channel id
+          * 
+          * return those refs
+          * 
+          * 
+          * If channel is not paging but total new refs > f
+          * 
+          * 1) Iterate through failed channel refs and take the first x to make the channel full
+          * 
+          * 2) Update the others with page_ord starting at zero 
+          * 
+          * 3) Update channel id
+          * 
+          * In general:
+          * 
+          * We have number to load n, max page size p
+          * 
+          * 1) Iterate through failed channel refs in page_ord order
+          * 
+          * 2) Put the first n in a List.
+          * 
+          * 3) Initialise page_ord_count to be p or 0 depending on whether it was specified
+          * 
+          * 4) Update the page_ord of the remaining refs accordiningly
+          * 
+          * 5) Update the channel id
+          * 
+          */
+         
+         //First load the refs from the failed channel
+
+         List refs = new ArrayList();
+         
+         ps = conn.prepareStatement(getSQLStatement("LOAD_REFS"));
+         
+         ps.setLong(1, fromChannelID);
+                 
+         rs = ps.executeQuery();
+         
+         int count = 0;
+         
+         boolean arePaged = false;
+         
+         long pageOrd = nextPagingOrder;
+         
+         while (rs.next())
+         {
+            long msgId = rs.getLong(1);            
+            int deliveryCount = rs.getInt(2);
+            long sched = rs.getLong(3);
+            
+            if (count < numberToLoad)
+            {           
+               ReferenceInfo ri = new ReferenceInfo(msgId, deliveryCount, sched);
+               
+               refs.add(ri);
+            }
+            
+            // Set page ord
+            
+            if (ps2 == null)
+            {
+               ps2 = conn.prepareStatement(getSQLStatement("UPDATE_PAGE_ORDER"));
+            }
+                
+            if (count < numberToLoad)
+            {
+               ps2.setNull(1, Types.BIGINT);
+               
+               if (trace) { log.trace("Set page ord to null"); }
+            }
+            else
+            {                                 
+               ps2.setLong(1, pageOrd);
+               
+               if (trace) { log.trace("Set page ord to " + pageOrd); }
+               
+               arePaged = true; 
+               
+               pageOrd++;                      
+            }
+            
+            ps2.setLong(2, msgId);
+            
+            ps2.setLong(3, fromChannelID);
+            
+            int rows = updateWithRetry(ps2);
+            
+            if (trace) { log.trace("Update page ord updated " + rows + " rows"); }
+
+            count++;            
+         }
+         
+         ps.close();
+         
+         // Now swap the channel id
          
          ps = conn.prepareStatement(getSQLStatement("UPDATE_CHANNEL_ID"));
          
@@ -1042,85 +1155,15 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
          int rows = updateWithRetry(ps);
          
          if (trace) { log.trace("Update channel id updated " + rows + " rows"); }
-         
-         //Now set any pages refs to not paged
-         
-         ps = conn.prepareStatement(getSQLStatement("UPDATE_REFS_NOT_PAGED"));
-                 
-         ps.setLong(1, 0);
-         
-         ps.setLong(2, Integer.MAX_VALUE);
-         
-         ps.setLong(3, toChannelID);
-         
-         rows = updateWithRetry(ps);
-         
-         if (trace) { log.trace(" Set paged refs updated " + rows + " rows"); }
-         
-         //Now load the refs
-         
-         ps = conn.prepareStatement(getSQLStatement("LOAD_UNPAGED_REFS"));
-         
-         ps.setLong(1, toChannelID);
-                 
-         rs = ps.executeQuery();
-         
-         List refs = new ArrayList();
-                          
-         int count = 0;
-         int pageOrd = 0;
-         
-         boolean arePaged = false;
-         
-         while (rs.next())
-         {
-            long msgId = rs.getLong(1);            
-            int deliveryCount = rs.getInt(2);
-            long sched = rs.getLong(3);
-            
-            ReferenceInfo ri = new ReferenceInfo(msgId, deliveryCount, sched);
-            
-            if (count < fullSize)
-            {
-               refs.add(ri);
-            }   
-            else
-            {
-               //These ones need to be made paged
-                              
-               if (ps2 == null)
-               {
-                  ps2 = conn.prepareStatement(getSQLStatement("UPDATE_PAGE_ORDER"));
-                   
-                  ps2.setLong(1, pageOrd);
-                  
-                  ps2.setLong(2, msgId);
-                  
-                  ps2.setLong(3, toChannelID);
-                  
-                  rows = updateWithRetry(ps2);
-                  
-                  if (trace) { log.trace("Update page ord updated " + rows + " rows"); }
-                  
-                  pageOrd++;
-                  
-                  arePaged = true;
                            
-               }
-            }
-            
-            count++;
-         }
-         
          if (arePaged)
-         {
-            return new InitialLoadInfo(new Long(0), new Long(pageOrd - 1), refs);
+         {            
+            return new InitialLoadInfo(new Long(firstPagingOrder), new Long(pageOrd - 1), refs);
          }
          else
          {
             return new InitialLoadInfo(null, null, refs);
-         }
-         
+         }         
       }
       catch (Exception e)
       {
@@ -3406,6 +3449,9 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
       map.put("LOAD_UNPAGED_REFS",
               "SELECT MESSAGE_ID, DELIVERY_COUNT, SCHED_DELIVERY FROM JBM_MSG_REF WHERE STATE = 'C' " +
               "AND CHANNEL_ID = ? AND PAGE_ORD IS NULL ORDER BY ORD");
+      map.put("LOAD_REFS",
+              "SELECT MESSAGE_ID, DELIVERY_COUNT, SCHED_DELIVERY FROM JBM_MSG_REF WHERE STATE = 'C' " +
+              "AND CHANNEL_ID = ? ORDER BY ORD");      
       
       map.put("UPDATE_REFS_NOT_PAGED", "UPDATE JBM_MSG_REF SET PAGE_ORD = NULL WHERE PAGE_ORD BETWEEN ? AND ? AND CHANNEL_ID=?");       
       map.put("SELECT_MIN_MAX_PAGE_ORD", "SELECT MIN(PAGE_ORD), MAX(PAGE_ORD) FROM JBM_MSG_REF WHERE CHANNEL_ID = ?");

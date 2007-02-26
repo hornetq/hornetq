@@ -241,7 +241,7 @@ public class MessageCallbackHandler
       //TODO - we temporarily need to execute on a different thread to avoid a deadlock situation in
       //       failover where a message is sent then the valve is locked, and the message send cause
       //       a message delivery back to the same client which tries to ack but can't get through
-      //       the valve.
+      //       the valve. This won't be necessary when we move to a non blocking transport
       this.sessionExecutor.execute(
          new Runnable()
          {
@@ -259,7 +259,7 @@ public class MessageCallbackHandler
          });
    }
    
-   public void handleMessageInternal(Object message) throws Exception
+   private void handleMessageInternal(Object message) throws Exception
    {
       MessageProxy proxy = (MessageProxy) message;
 

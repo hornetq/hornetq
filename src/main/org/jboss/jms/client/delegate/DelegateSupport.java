@@ -150,7 +150,7 @@ public abstract class DelegateSupport implements Streamable, Serializable
    // Protected ------------------------------------------------------------------------------------     
    
    protected Object doInvoke(Client client, RequestSupport req) throws JMSException
-   {
+   {      
       return doInvoke(client, req, false);
    }
    
@@ -177,6 +177,7 @@ public abstract class DelegateSupport implements Streamable, Serializable
          }
          else
          {
+
             if (trace) { log.trace(this + " invoking " + req + " synchronously on server using " + client); }
 
             resp = client.invoke(req);

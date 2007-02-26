@@ -233,15 +233,24 @@ public class LocalClusteredQueue extends PagingFilteredQueue implements Clustere
    {
       if (trace) { log.trace("Merging queue " + remoteQueue + " into " + this); }
            
+      log.info("queue is paging:" + this.paging + " message refs size " +
+               this.messageRefs.size() + " fullsize:" + this.fullSize +
+               " delivering:" + this.deliveringCount.get());
+      
       synchronized (refLock)
       {
          flushDownCache();
                   
          PersistenceManager.InitialLoadInfo ili =
-            pm.mergeAndLoad(remoteQueue.getChannelID(), this.channelID, fullSize - messageRefs.size());
+            pm.mergeAndLoad(remoteQueue.getChannelID(), channelID, fullSize - messageRefs.size(), firstPagingOrder, nextPagingOrder);
             
-         doLoad(ili);
+         if (trace) { log.trace("Loaded " + ili.getRefInfos().size() + " refs"); }            
+                           
+         log.info("firstpageord:" + ili.getMinPageOrdering() + " lastpageord:" + ili.getMaxPageOrdering());
          
+         doLoad(ili);         
+         
+         deliverInternal();
       }
    }
    

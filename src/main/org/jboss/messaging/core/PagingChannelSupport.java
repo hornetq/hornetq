@@ -526,8 +526,10 @@ public abstract class PagingChannelSupport extends ChannelSupport
          firstPagingOrder = ili.getMinPageOrdering().longValue();
          
          nextPagingOrder = ili.getMaxPageOrdering().longValue() + 1;
-         
+                           
          paging = true;
+         
+         log.info("set paging to true");
       }
       else
       {

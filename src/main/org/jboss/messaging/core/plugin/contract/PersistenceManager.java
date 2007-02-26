@@ -70,7 +70,7 @@ public interface PersistenceManager extends MessagingComponent
    
    InitialLoadInfo loadFromStart(long channelID, int fullSize) throws Exception;
    
-   InitialLoadInfo mergeAndLoad(long fromChannelID, long toChannelID, int fullSize) throws Exception;
+   InitialLoadInfo mergeAndLoad(long fromChannelID, long toChannelID, int numberToLoad, long firstPagingOrder, long nextPagingOrder) throws Exception;  
      
    List getMessages(List messageIds) throws Exception;
          

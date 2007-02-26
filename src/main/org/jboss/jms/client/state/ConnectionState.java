@@ -153,12 +153,13 @@ public class ConnectionState extends HierarchicalStateSupport
       idGenerator = newState.idGenerator;
       serverID = newState.serverID;
       versionToUse = newState.versionToUse;
-
+      
       ConnectionDelegate newDelegate = (ConnectionDelegate)newState.getDelegate();
-
+      
       for(Iterator i = getChildren().iterator(); i.hasNext(); )
-      {
+      {                 
          SessionState sessionState = (SessionState)i.next();
+         
          ClientSessionDelegate sessionDelegate = (ClientSessionDelegate)sessionState.getDelegate();
 
          // create a new session on the new connection for each session on the old connection

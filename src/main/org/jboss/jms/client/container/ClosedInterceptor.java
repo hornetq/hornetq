@@ -171,9 +171,15 @@ public class ClosedInterceptor implements Interceptor
          return invocation.invokeNext();
       }
       finally
-      {
+      {                  
          if (isClosing)
          {
+            //We make sure we remove ourself AFTER the invocation has been made
+            //otherwise in a failover situation we would end up divorced from the hierarchy
+            //and failover will not occur properly since failover would not be able to
+            //traverse the hierarchy and update the delegates properly
+            removeSelf(invocation);
+            
             closing();
          }
          else if (isClose)
@@ -297,11 +303,20 @@ public class ClosedInterceptor implements Interceptor
             }
          }
       }
-      
-      // Remove from the parent
+   }
+   
+   /**
+    * Remove from parent
+    * 
+    * @param invocation the invocation
+    */
+   protected void removeSelf(Invocation invocation)
+   {                  
+      HierarchicalState state = ((DelegateSupport)invocation.getTargetObject()).getState();
+            
       HierarchicalState parent = state.getParent();
       if (parent != null)
-      {         
+      {                  
          parent.getChildren().remove(state);
       }
    }

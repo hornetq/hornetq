@@ -39,15 +39,29 @@ public class FailoverValve2
 
    private static final Logger log = Logger.getLogger(FailoverValve2.class);
 
+
    // Static ---------------------------------------------------------------------------------------
 
    private static boolean trace = log.isTraceEnabled();
 
    // Attributes -----------------------------------------------------------------------------------
 
+   // Only use this in trace mode
+   private Set threads;
+
    private int count;
+   
    private boolean locked;
-   private Set threads = new HashSet();
+
+   public FailoverValve2()
+   {
+      trace = log.isTraceEnabled();
+      
+      if (trace)
+      {
+         threads = new HashSet();
+      }
+   }
 
    // Constructors ---------------------------------------------------------------------------------
 
