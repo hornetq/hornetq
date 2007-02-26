@@ -37,6 +37,7 @@ import org.jboss.jms.wireformat.ClosingRequest;
 import org.jboss.jms.wireformat.ConsumerCancelInflightMessagesRequest;
 import org.jboss.jms.wireformat.ConsumerChangeRateRequest;
 import org.jboss.jms.wireformat.RequestSupport;
+import org.jboss.logging.Logger;
 
 /**
  * The client-side Consumer delegate class.
@@ -51,9 +52,11 @@ import org.jboss.jms.wireformat.RequestSupport;
 public class ClientConsumerDelegate extends DelegateSupport implements ConsumerDelegate
 {
    // Constants ------------------------------------------------------------------------------------
-   
+
+   private static final Logger log = Logger.getLogger(ClientConsumerDelegate.class);
+
    // Attributes -----------------------------------------------------------------------------------
-   
+
    private int bufferSize;
    private int maxDeliveries;
 
@@ -67,15 +70,17 @@ public class ClientConsumerDelegate extends DelegateSupport implements ConsumerD
       this.bufferSize = bufferSize;
       this.maxDeliveries = maxDeliveries;
    }
-   
+
    public ClientConsumerDelegate()
-   {      
+   {
    }
 
    // DelegateSupport overrides --------------------------------------------------------------------
 
    public void synchronizeWith(DelegateSupport nd) throws Exception
    {
+      log.debug(this + " synchronizing with " + nd);
+
       super.synchronizeWith(nd);
 
       ClientConsumerDelegate newDelegate = (ClientConsumerDelegate)nd;
@@ -92,46 +97,46 @@ public class ClientConsumerDelegate extends DelegateSupport implements ConsumerD
       maxDeliveries = newDelegate.getMaxDeliveries();
 
       client = ((ConnectionState)state.getParent().getParent()).getRemotingConnection().
-         getRemotingClient();      
+         getRemotingClient();
    }
-   
+
    public void setState(HierarchicalState state)
    {
       super.setState(state);
-      
+
       client = ((ConnectionState)state.getParent().getParent()).getRemotingConnection().
                   getRemotingClient();
    }
 
    // Closeable implementation ---------------------------------------------------------------------
-   
+
    public void close() throws JMSException
    {
       RequestSupport req = new CloseRequest(id, version);
-      
+
       doInvoke(client, req);
    }
-   
+
    public void closing() throws JMSException
    {
       RequestSupport req = new ClosingRequest(id, version);
-      
+
       doInvoke(client, req);
    }
-   
+
    // ConsumerDelegate implementation --------------------------------------------------------------
-   
+
    public void cancelInflightMessages(long lastDeliveryId) throws JMSException
    {
       RequestSupport req = new ConsumerCancelInflightMessagesRequest(id, version, lastDeliveryId);
-      
+
       doInvoke(client, req);
    }
-   
+
    public void changeRate(float newRate) throws JMSException
    {
       RequestSupport req = new ConsumerChangeRateRequest(id, version, newRate);
-      
+
       doInvoke(client, req);
    }
 
@@ -151,7 +156,7 @@ public class ClientConsumerDelegate extends DelegateSupport implements ConsumerD
    public Message receive(long timeout) throws JMSException
    {
       throw new IllegalStateException("This invocation should not be handled here!");
-   }   
+   }
 
    /**
     * This invocation should either be handled by the client-side interceptor chain or by the
@@ -160,8 +165,8 @@ public class ClientConsumerDelegate extends DelegateSupport implements ConsumerD
    public void setMessageListener(MessageListener listener)
    {
       throw new IllegalStateException("This invocation should not be handled here!");
-   }  
-   
+   }
+
    /**
     * This invocation should either be handled by the client-side interceptor chain or by the
     * server-side endpoint.
@@ -170,7 +175,7 @@ public class ClientConsumerDelegate extends DelegateSupport implements ConsumerD
    {
       throw new IllegalStateException("This invocation should not be handled here!");
    }
-   
+
    /**
     * This invocation should either be handled by the client-side interceptor chain or by the
     * server-side endpoint.
@@ -179,7 +184,7 @@ public class ClientConsumerDelegate extends DelegateSupport implements ConsumerD
    {
       throw new IllegalStateException("This invocation should not be handled here!");
    }
-   
+
    /**
     * This invocation should either be handled by the client-side interceptor chain or by the
     * server-side endpoint.
@@ -188,24 +193,24 @@ public class ClientConsumerDelegate extends DelegateSupport implements ConsumerD
    {
       throw new IllegalStateException("This invocation should not be handled here!");
    }
-   
+
    // Streamable implementation ----------------------------------------------------------
 
    public void read(DataInputStream in) throws Exception
    {
       super.read(in);
-      
+
       bufferSize = in.readInt();
-      
+
       maxDeliveries = in.readInt();
    }
 
    public void write(DataOutputStream out) throws Exception
    {
       super.write(out);
-      
+
       out.writeInt(bufferSize);
-      
+
       out.writeInt(maxDeliveries);
    }
 
@@ -215,12 +220,12 @@ public class ClientConsumerDelegate extends DelegateSupport implements ConsumerD
    {
       return "ConsumerDelegate[" + System.identityHashCode(this) + ", ID=" + id + "]";
    }
-   
+
    public int getBufferSize()
    {
       return bufferSize;
    }
-   
+
    public int getMaxDeliveries()
    {
       return maxDeliveries;

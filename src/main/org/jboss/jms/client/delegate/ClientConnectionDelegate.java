@@ -51,6 +51,7 @@ import org.jboss.jms.wireformat.ConnectionStartRequest;
 import org.jboss.jms.wireformat.ConnectionStopRequest;
 import org.jboss.jms.wireformat.RequestSupport;
 import org.jboss.messaging.core.tx.MessagingXid;
+import org.jboss.logging.Logger;
 
 /**
  * The client-side Connection delegate class.
@@ -66,15 +67,17 @@ import org.jboss.messaging.core.tx.MessagingXid;
 public class ClientConnectionDelegate extends DelegateSupport implements ConnectionDelegate
 {
    // Constants ------------------------------------------------------------------------------------
-   
+
+   private static final Logger log = Logger.getLogger(ClientConnectionDelegate.class);
+
    // Attributes -----------------------------------------------------------------------------------
 
    private int serverID;
-   
+
    private transient JMSRemotingConnection remotingConnection;
-   
+
    private transient Version versionToUse;
-   
+
    // Static ---------------------------------------------------------------------------------------
 
    // Constructors ---------------------------------------------------------------------------------
@@ -82,7 +85,7 @@ public class ClientConnectionDelegate extends DelegateSupport implements Connect
    public ClientConnectionDelegate(int objectID, int serverID)
    {
       super(objectID);
-      
+
       this.serverID = serverID;
    }
 
@@ -94,10 +97,12 @@ public class ClientConnectionDelegate extends DelegateSupport implements Connect
 
    public void synchronizeWith(DelegateSupport nd) throws Exception
    {
+      log.debug(this + " synchronizing with " + nd);
+
       super.synchronizeWith(nd);
 
       ClientConnectionDelegate newDelegate = (ClientConnectionDelegate)nd;
-      
+
       // synchronize the server endpoint state
 
       // this is a bit counterintuitve, as we're not copying from new delegate, but modifying its
@@ -105,7 +110,7 @@ public class ClientConnectionDelegate extends DelegateSupport implements Connect
       // server
 
       ConnectionState thisState = (ConnectionState)state;
-      
+
       if (thisState.getClientID() != null)
       {
          newDelegate.setClientID(thisState.getClientID());
@@ -119,38 +124,38 @@ public class ClientConnectionDelegate extends DelegateSupport implements Connect
 
       remotingConnection = newDelegate.getRemotingConnection();
       versionToUse = newDelegate.getVersionToUse();
-      
+
       // There is one RM per server, so we need to merge the rms if necessary
       ResourceManagerFactory.instance.handleFailover(serverID, newDelegate.getServerID());
-      
+
       client = thisState.getRemotingConnection().getRemotingClient();
-      
+
       serverID = newDelegate.getServerID();
    }
-   
+
    public void setState(HierarchicalState state)
    {
       super.setState(state);
-                 
+
       client = ((ConnectionState)state).getRemotingConnection().getRemotingClient();
    }
 
    // Closeable implementation ---------------------------------------------------------------------
-   
+
    public void close() throws JMSException
    {
       RequestSupport req = new CloseRequest(id, version);
-      
+
       doInvoke(client, req);
    }
-   
+
    public void closing() throws JMSException
    {
       RequestSupport req = new ClosingRequest(id, version);
-      
+
       doInvoke(client, req);
    }
-   
+
    // ConnectionDelegate implementation ------------------------------------------------------------
 
    /**
@@ -174,15 +179,15 @@ public class ClientConnectionDelegate extends DelegateSupport implements Connect
          new ConnectionCreateSessionDelegateRequest(id, version, transacted,
                                                     acknowledgmentMode, isXA);
 
-      return (SessionDelegate)doInvoke(client, req);     
+      return (SessionDelegate)doInvoke(client, req);
    }
-  
+
 
    public String getClientID() throws JMSException
    {
       RequestSupport req = new ConnectionGetClientIDRequest(id, version);
-                     
-      return (String)doInvoke(client, req);      
+
+      return (String)doInvoke(client, req);
    }
 
    /**
@@ -208,14 +213,14 @@ public class ClientConnectionDelegate extends DelegateSupport implements Connect
    {
       RequestSupport req =
          new ConnectionSendTransactionRequest(id, version, request, checkForDuplicates);
-      
+
       doInvoke(client, req);
    }
 
    public void setClientID(String clientID) throws JMSException
    {
       RequestSupport req = new ConnectionSetClientIDRequest(id, version, clientID);
-      
+
       doInvoke(client, req);
    }
 
@@ -231,22 +236,22 @@ public class ClientConnectionDelegate extends DelegateSupport implements Connect
    public void start() throws JMSException
    {
       RequestSupport req = new ConnectionStartRequest(id, version);
-      
+
       doInvokeOneway(client, req);
    }
 
    public void stop() throws JMSException
    {
       RequestSupport req = new ConnectionStopRequest(id, version);
-      
+
       doInvoke(client, req);
    }
 
    public MessagingXid[] getPreparedTransactions() throws JMSException
    {
       RequestSupport req = new ConnectionGetPreparedTransactionsRequest(id, version);
-      
-      return (MessagingXid[])doInvoke(client, req);    
+
+      return (MessagingXid[])doInvoke(client, req);
    }
 
    /**
@@ -276,17 +281,17 @@ public class ClientConnectionDelegate extends DelegateSupport implements Connect
    {
       return remotingConnection;
    }
-   
+
    public int getServerID()
    {
       return serverID;
    }
-   
+
    public Version getVersionToUse()
    {
       return versionToUse;
    }
-   
+
    public void setVersionToUse(Version versionToUse)
    {
       this.versionToUse = versionToUse;
@@ -301,18 +306,18 @@ public class ClientConnectionDelegate extends DelegateSupport implements Connect
    // Protected ------------------------------------------------------------------------------------
 
    // Streamable implementation -------------------------------------------------------------------
-   
+
    public void read(DataInputStream in) throws Exception
    {
       super.read(in);
-      
+
       serverID = in.readInt();
    }
 
    public void write(DataOutputStream out) throws Exception
    {
       super.write(out);
-      
+
       out.writeInt(serverID);
    }
 

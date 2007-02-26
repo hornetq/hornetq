@@ -65,6 +65,7 @@ import org.jboss.jms.wireformat.SessionDeleteTemporaryDestinationRequest;
 import org.jboss.jms.wireformat.SessionRecoverDeliveriesRequest;
 import org.jboss.jms.wireformat.SessionSendRequest;
 import org.jboss.jms.wireformat.SessionUnsubscribeRequest;
+import org.jboss.logging.Logger;
 
 /**
  * The client-side Session delegate class.
@@ -81,10 +82,12 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
 {
    // Constants ------------------------------------------------------------------------------------
 
+   private static final Logger log = Logger.getLogger(ClientSessionDelegate.class);
+
    private static final long serialVersionUID = -8096852898620279131L;
-   
+
    // Attributes -----------------------------------------------------------------------------------
-   
+
    private int dupsOKBatchSize;
 
    // Static ---------------------------------------------------------------------------------------
@@ -94,7 +97,7 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
    public ClientSessionDelegate(int objectID, int dupsOKBatchSize)
    {
       super(objectID);
-      
+
       this.dupsOKBatchSize = dupsOKBatchSize;
    }
 
@@ -106,6 +109,8 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
 
    public void synchronizeWith(DelegateSupport nd) throws Exception
    {
+      log.debug(this + " synchronizing with " + nd);
+
       super.synchronizeWith(nd);
 
       ClientSessionDelegate newDelegate = (ClientSessionDelegate)nd;
@@ -115,7 +120,7 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
       // synchronize (recursively) the client-side state
 
       state.synchronizeWith(newDelegate.getState());
-      
+
       client = ((ConnectionState)state.getParent()).getRemotingConnection().
          getRemotingClient();
    }
@@ -127,20 +132,20 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
       client = ((ConnectionState)state.getParent()).getRemotingConnection().
                   getRemotingClient();
    }
-   
+
    // Closeable implementation ---------------------------------------------------------------------
-   
+
    public void close() throws JMSException
    {
       RequestSupport req = new CloseRequest(id, version);
-      
+
       doInvoke(client, req);
    }
-   
+
    public void closing() throws JMSException
    {
       RequestSupport req = new ClosingRequest(id, version);
-      
+
       doInvoke(client, req);
    }
 
@@ -198,10 +203,10 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
       throws JMSException
    {
       RequestSupport req = new SessionCreateBrowserDelegateRequest(id, version, queue,
-                                                  messageSelector);
+                                                                   messageSelector);
 
       Object res = doInvoke(client, req);
-      
+
       return (BrowserDelegate)res;
    }
 
@@ -216,11 +221,11 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
 
 
    public ConsumerDelegate createConsumerDelegate(JBossDestination destination, String selector,
-            boolean noLocal, String subscriptionName,
-            boolean connectionConsumer) throws JMSException
+                                                  boolean noLocal, String subscriptionName,
+                                                  boolean connectionConsumer) throws JMSException
    {
       RequestSupport req = new SessionCreateConsumerDelegateRequest(id, version, destination,
-               selector, noLocal, subscriptionName, connectionConsumer);
+                                                                    selector, noLocal, subscriptionName, connectionConsumer);
 
       return (ConsumerDelegate)doInvoke(client, req);
    }
@@ -461,20 +466,20 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
 
       doInvoke(client, req);
    }
-   
+
    // Streamable overrides -------------------------------------------------------------------------
 
    public void read(DataInputStream in) throws Exception
    {
       super.read(in);
-      
+
       dupsOKBatchSize = in.readInt();
    }
 
    public void write(DataOutputStream out) throws Exception
    {
       super.write(out);
-      
+
       out.writeInt(dupsOKBatchSize);
    }
 
@@ -484,12 +489,12 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
    {
       return dupsOKBatchSize;
    }
-   
+
    public String toString()
    {
       return "SessionDelegate[" + System.identityHashCode(this) + ", ID=" + id + "]";
    }
-   
+
    // Protected ------------------------------------------------------------------------------------
 
    // Package Private ------------------------------------------------------------------------------

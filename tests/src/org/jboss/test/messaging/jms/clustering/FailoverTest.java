@@ -1787,6 +1787,47 @@ public class FailoverTest extends ClusteringTestBase
       }
    }
 
+   public void testCloseBrowser() throws Exception
+   {
+      Connection conn0 = null;
+      Connection conn1 = null;
+
+      try
+      {
+         conn0 = cf.createConnection();
+
+         // Objects Server1
+         conn1 = cf.createConnection();
+
+         assertEquals(1, ((JBossConnection)conn1).getServerID());
+
+         JMSRemotingConnection rc = ((ClientConnectionDelegate)((JBossConnection)conn1).
+            getDelegate()).getRemotingConnection();
+         rc.removeConnectionListener();
+
+         Session session1 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+         QueueBrowser browser = session1.createBrowser(queue[1]);
+
+         ServerManagement.killAndWait(1);
+
+         browser.close();
+      }
+      finally
+      {
+         if (conn1 != null)
+         {
+            conn1.close();
+         }
+
+         if (conn0 != null)
+         {
+            conn0.close();
+         }
+      }
+   }
+
+
    public void testCloseSession() throws Exception
    {
       Connection conn0 = null;
