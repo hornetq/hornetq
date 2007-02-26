@@ -119,24 +119,12 @@ public class FailoverValveInterceptor implements Interceptor, FailureDetector
          
          log.debug(this + " resuming " + methodName + "()");
       
-         Object target = invocation.getTargetObject();
-         
-         // Set retry flag as true on send & sendTransaction
+         // Set retry flag as true on send() and sendTransaction()
          // more details at http://jira.jboss.org/jira/browse/JBMESSAGING-809
-      
-         if (methodName.equals("send") &&
-             target instanceof ClientSessionDelegate)
+         if (invocation.getTargetObject() instanceof ClientSessionDelegate &&
+            (methodName.equals("send") || methodName.equals("sendTransaction")))
          {
-            log.debug("#### Capturing send invocation.. setting check to true");
-            Object[] arguments = ((MethodInvocation)invocation).getArguments();
-            arguments[1] = Boolean.TRUE;
-            ((MethodInvocation)invocation).setArguments(arguments);
-         }
-         else
-         if (methodName.equals("sendTransaction") &&
-             target instanceof ClientConnectionDelegate)
-         {
-            log.debug("#### Capturing sendTransaction invocation.. setting check to true");
+            log.debug(this + " caught " + methodName + "() invocation, enabling check for duplicates");
             Object[] arguments = ((MethodInvocation)invocation).getArguments();
             arguments[1] = Boolean.TRUE;
             ((MethodInvocation)invocation).setArguments(arguments);
@@ -147,7 +135,6 @@ public class FailoverValveInterceptor implements Interceptor, FailureDetector
       catch (Throwable e)
       {
          // not failover-triggering, rethrow
-
          if (trace) { log.trace(this + " caught not failover-triggering throwable, rethrowing " + e); }
          throw e;
       }
