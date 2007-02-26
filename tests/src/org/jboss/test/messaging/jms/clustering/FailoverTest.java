@@ -477,11 +477,6 @@ public class FailoverTest extends ClusteringTestBase
       }
    }
 
-   /**
-    * TODO - Must double check if this is desired browser behavior - currently, once
-    *        getEnumeration() was called once, all subsequent getEnumeration() calls return
-    *        the same depleted iterator.
-    */
    public void testBrowserFailoverSendMessagesPostFailure() throws Exception
    {
       Connection conn = null;
