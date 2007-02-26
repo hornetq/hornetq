@@ -1746,6 +1746,41 @@ public class FailoverTest extends ClusteringTestBase
          }
       }
    }
+
+   public void testFailureOnClose() throws Exception
+   {
+      Connection conn1 = null;
+
+      try
+      {
+         conn1 = cf.createConnection();
+         
+         // Objects Server1
+         conn1 = cf.createConnection();
+
+         assertEquals(1, ((JBossConnection)conn1).getServerID());
+
+         JMSRemotingConnection rc = ((ClientConnectionDelegate)((JBossConnection)conn1).
+            getDelegate()).getRemotingConnection();
+         rc.removeConnectionListener();
+
+         Session session1 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+         MessageConsumer consumer = session1.createConsumer(queue[1]);
+
+         ServerManagement.killAndWait(1);
+
+         consumer.close();
+      }
+      finally
+      {
+         if (conn1!=null)
+         {
+            conn1.close();
+         }
+      }
+      
+   }
    
    public void testMergeQueue() throws Exception
    {
@@ -1846,8 +1881,117 @@ public class FailoverTest extends ClusteringTestBase
             conn1.close();
          }
       }
+   }
+
+   public void testMergeQueue2() throws Exception
+   {
+      Connection conn0 = null;
+      Connection conn1 = null;
+
+      int numberOfMessagesReceived = 0;
+
+      try
+      {
+
+         // Objects Server0
+         conn0 = cf.createConnection();
+
+         assertEquals(0, ((JBossConnection)conn0).getServerID());
+
+         Session session0 = conn0.createSession(true, Session.SESSION_TRANSACTED);
+
+         conn0.start();
+
+         MessageProducer producer0 = session0.createProducer(queue[0]);
+
+         producer0.setDeliveryMode(DeliveryMode.PERSISTENT);
+
+         MessageConsumer consumer0 = session0.createConsumer(queue[0]);
+
+         for (int i=0; i<10; i++)
+         {
+            producer0.send(session0.createTextMessage("message " + i));
+         }
+
+         session0.commit();
+
+         TextMessage msg;
+
+         do
+         {
+            msg = (TextMessage)consumer0.receive(5000);
+            if (msg!=null)
+            {
+               log.info("msg = " + msg.getText());
+               numberOfMessagesReceived++;
+            }
+            if (numberOfMessagesReceived==5)
+            {
+               break;
+            }
+         } while (msg!=null);
+
+         session0.commit();
+         consumer0.close();
 
 
+         // Objects Server1
+         conn1 = cf.createConnection();
+
+         assertEquals(1, ((JBossConnection)conn1).getServerID());
+
+         conn1.start();
+
+         Session session1 = conn1.createSession(true, Session.SESSION_TRANSACTED);
+
+         MessageProducer producer1 = session1.createProducer(this.queue[1]);
+
+         producer1.setDeliveryMode(DeliveryMode.PERSISTENT);
+
+         for (int i=10; i<20; i++)
+         {
+            producer1.send(session0.createTextMessage("message " + i));
+         }
+
+         session1.commit();
+
+         MessageConsumer consumer1 = session1.createConsumer(queue[0]);
+
+         ServerManagement.killAndWait(1);
+
+         TextMessage msgAfterKill = (TextMessage)consumer1.receive(1000);
+         assertNotNull(msgAfterKill);
+         session1.commit();
+         
+         consumer1.close();
+
+         consumer0 = session0.createConsumer(queue[0]);
+         do
+         {
+            msg = (TextMessage)consumer0.receive(5000);
+            if (msg!=null)
+            {
+               log.info("msg = " + msg.getText());
+               numberOfMessagesReceived++;
+            }
+         } while (msg!=null);
+
+         session0.commit();
+
+         assertEquals(19, numberOfMessagesReceived);
+      }
+      finally
+      {
+         if (conn0!=null)
+         {
+            conn0.close();
+         }
+
+         if (conn1!=null)
+         {
+            conn1.close();
+         }
+      }
    }
 
 
