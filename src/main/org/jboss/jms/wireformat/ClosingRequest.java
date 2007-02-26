@@ -28,9 +28,6 @@ import java.io.DataOutputStream;
 import org.jboss.jms.client.Closeable;
 
 /**
- * 
- * A ClosingRequest
- *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
  *
@@ -55,8 +52,7 @@ public class ClosingRequest extends RequestSupport
 
    public ResponseSupport serverInvoke() throws Exception
    {
-      Closeable endpoint = 
-         (Closeable)Dispatcher.instance.getTarget(objectId);
+      Closeable endpoint = (Closeable)Dispatcher.instance.getTarget(objectId);
       
       if (endpoint == null)
       {
@@ -64,15 +60,18 @@ public class ClosingRequest extends RequestSupport
       }
       
       endpoint.closing();
-      
       return null;
    }
 
    public void write(DataOutputStream os) throws Exception
    {
       super.write(os);
-      
       os.flush();
+   }
+
+   public String toString()
+   {
+      return "ClosingRequest[ID=" + objectId + ", ver=" + version + "]";
    }
 }
 
