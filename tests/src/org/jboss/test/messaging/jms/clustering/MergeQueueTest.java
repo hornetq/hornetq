@@ -15,6 +15,7 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 
 import org.jboss.jms.client.JBossConnection;
+import org.jboss.jms.client.FailoverEvent;
 import org.jboss.test.messaging.jms.clustering.base.ClusteringTestBase;
 import org.jboss.test.messaging.tools.ServerManagement;
 
@@ -355,8 +356,7 @@ public class MergeQueueTest extends ClusteringTestBase
          
          
          //Now kill the server
-    
-         ServerManagement.killAndWait(1);
+         waitForFailoverComplete(1, conn1);
 
          //Messages should all be available on node 0
          
@@ -392,7 +392,6 @@ public class MergeQueueTest extends ClusteringTestBase
          }
       }
    }
-   
    // Fil consumer
    
    /*
@@ -602,8 +601,8 @@ public class MergeQueueTest extends ClusteringTestBase
          cons1 = null;
                  
          //Now kill the server
-    
-         ServerManagement.killAndWait(1);
+
+         waitForFailoverComplete(1, conn1);
 
          //Messages should all be available on node 0
          

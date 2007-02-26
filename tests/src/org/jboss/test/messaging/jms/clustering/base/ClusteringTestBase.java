@@ -182,6 +182,46 @@ public class ClusteringTestBase extends MessagingTestCase
       }
    }
 
+
+   protected void waitForFailoverComplete(int serverID, Connection conn1)
+      throws Exception
+   {
+
+      assertEquals(serverID, ((JBossConnection)conn1).getServerID());
+
+      // register a failover listener
+      SimpleFailoverListener failoverListener = new SimpleFailoverListener();
+      ((JBossConnection)conn1).registerFailoverListener(failoverListener);
+
+      log.debug("killing node " + serverID + " ....");
+
+      ServerManagement.kill(serverID);
+
+      log.info("########");
+      log.info("######## KILLED NODE " + serverID);
+      log.info("########");
+
+      // wait for the client-side failover to complete
+
+      while(true)
+         {
+            FailoverEvent event = failoverListener.getEvent(120000);
+         if (event != null && FailoverEvent.FAILOVER_COMPLETED == event.getType())
+         {
+            break;
+         }
+         if (event == null)
+         {
+            fail("Did not get expected FAILOVER_COMPLETED event");
+         }
+      }
+
+      // failover complete
+      log.info("failover completed");
+   }
+
+
+
    /**
     * Lookup for the connection with the right serverID. I'm using this method to find the proper
     * serverId so I won't relay on loadBalancing policies on testcases.
