@@ -12,7 +12,6 @@ import org.jboss.aop.joinpoint.MethodInvocation;
 import org.jboss.jms.client.FailoverCommandCenter;
 import org.jboss.jms.client.FailoverValve2;
 import org.jboss.jms.client.FailureDetector;
-import org.jboss.jms.client.delegate.ClientConnectionDelegate;
 import org.jboss.jms.client.delegate.ClientSessionDelegate;
 import org.jboss.jms.client.delegate.DelegateSupport;
 import org.jboss.jms.client.remoting.JMSRemotingConnection;
