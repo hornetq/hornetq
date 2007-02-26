@@ -120,7 +120,7 @@ public class ResourceManager
     */
    public void addMessage(Object xid, int sessionId, JBossMessage m)
    {
-      if (trace) { log.trace("addding message for xid " + xid); }
+      if (trace) { log.trace("addding message " + m + " for xid " + xid); }
       
       ClientTransaction tx = getTxInternal(xid);
       
