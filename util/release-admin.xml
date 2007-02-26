@@ -70,12 +70,10 @@
    <!-- ======================================================================================== -->
 
    <target name="validate-ant">
-        <!--
         <condition property="ant.ok">
             <antversion atleast="1.7.0"/>
         </condition>
-        <fail unless="ant.ok" message="The ant you're using (${ant.version}) is too old!"/>
-        -->
+        <fail unless="ant.ok" message="The ant you're using (${ant.version}) is too old, you need at least 1.7.0!"/>
    </target>
 
     <target name="validate-database">
@@ -608,50 +606,10 @@
       <!--
           Add remoting binding manager overrides in ${config.name}/conf/binding-manager.xml
       -->
-
-      <replaceregexp file="${jboss.home}/server/${config.name}/conf/binding-manager.xml" flags="s">
-         <regexp pattern="(\x3cserver[ \t]*name=\x22ports-default\x22\x3e)(.*?)(\x3c/server\x3e)"/>
-         <substitution expression="\1\2&#013;&#010;      &lt;service-config name=&quot;jboss.messaging:service=Connector,transport=socket&quot;&#013;&#010;
-                     delegateClass=&quot;org.jboss.services.binding.AttributeMappingDelegate&quot;&gt;&#013;&#010;
-         &lt;delegate-config&gt;&#013;&#010;
-            &lt;attribute name=&quot;InvokerLocator&quot;&gt;socket://${jboss.bind.address}:4457/?dataType=jms&#038;amp;serializationtype=jms&#038;amp;timeout=0&#038;amp;leasePeriod=20000&#038;amp;socket.check_connection=false&#038;amp;marshaller=org.jboss.jms.server.remoting.JMSWireFormat&#038;amp;unmarshaller=org.jboss.jms.server.remoting.JMSWireFormat&lt;/attribute&gt;&#010;
-         &lt;/delegate-config&gt;&#010;
-         &lt;binding port=&quot;4457&quot;/&gt;&#010;
-      &lt;/service-config&gt;\3"/>
-      </replaceregexp>
-
-      <replaceregexp file="${jboss.home}/server/${config.name}/conf/binding-manager.xml" flags="s">
-         <regexp pattern="(\x3cserver[ \t]*name=\x22ports-01\x22\x3e)(.*?)(\x3c/server\x3e)"/>
-         <substitution expression="\1\2&#013;&#010;      &lt;service-config name=&quot;jboss.messaging:service=Connector,transport=socket&quot;&#013;&#010;
-                     delegateClass=&quot;org.jboss.services.binding.AttributeMappingDelegate&quot;&gt;&#013;&#010;
-         &lt;delegate-config&gt;&#013;&#010;
-            &lt;attribute name=&quot;InvokerLocator&quot;&gt;socket://${jboss.bind.address}:4557/?dataType=jms&#038;amp;serializationtype=jms&#038;amp;timeout=0&#038;amp;leasePeriod=20000&#038;amp;socket.check_connection=false&#038;amp;marshaller=org.jboss.jms.server.remoting.JMSWireFormat&#038;amp;unmarshaller=org.jboss.jms.server.remoting.JMSWireFormat&lt;/attribute&gt;&#010;
-         &lt;/delegate-config&gt;&#010;
-         &lt;binding port=&quot;4557&quot;/&gt;&#010;
-      &lt;/service-config&gt;\3"/>
-      </replaceregexp>
-
-      <replaceregexp file="${jboss.home}/server/${config.name}/conf/binding-manager.xml" flags="s">
-         <regexp pattern="(\x3cserver[ \t]*name=\x22ports-02\x22\x3e)(.*?)(\x3c/server\x3e)"/>
-         <substitution expression="\1\2&#013;&#010;      &lt;service-config name=&quot;jboss.messaging:service=Connector,transport=socket&quot;&#013;&#010;
-                     delegateClass=&quot;org.jboss.services.binding.AttributeMappingDelegate&quot;&gt;&#013;&#010;
-         &lt;delegate-config&gt;&#013;&#010;
-            &lt;attribute name=&quot;InvokerLocator&quot;&gt;socket://${jboss.bind.address}:4657/?dataType=jms&#038;amp;serializationtype=jms&#038;amp;timeout=0&#038;amp;leasePeriod=20000&#038;amp;socket.check_connection=false&#038;amp;marshaller=org.jboss.jms.server.remoting.JMSWireFormat&#038;amp;unmarshaller=org.jboss.jms.server.remoting.JMSWireFormat&lt;/attribute&gt;&#010;
-         &lt;/delegate-config&gt;&#010;
-         &lt;binding port=&quot;4657&quot;/&gt;&#010;
-      &lt;/service-config&gt;\3"/>
-      </replaceregexp>
-
-      <replaceregexp file="${jboss.home}/server/${config.name}/conf/binding-manager.xml" flags="s">
-         <regexp pattern="(\x3cserver[ \t]*name=\x22ports-03\x22\x3e)(.*?)(\x3c/server\x3e)"/>
-         <substitution expression="\1\2&#013;&#010;      &lt;service-config name=&quot;jboss.messaging:service=Connector,transport=socket&quot;&#013;&#010;
-                     delegateClass=&quot;org.jboss.services.binding.AttributeMappingDelegate&quot;&gt;&#013;&#010;
-         &lt;delegate-config&gt;&#013;&#010;
-            &lt;attribute name=&quot;InvokerLocator&quot;&gt;socket://${jboss.bind.address}:4757/?dataType=jms&#038;amp;serializationtype=jms&#038;amp;timeout=0&#038;amp;leasePeriod=20000&#038;amp;socket.check_connection=false&#038;amp;marshaller=org.jboss.jms.server.remoting.JMSWireFormat&#038;amp;unmarshaller=org.jboss.jms.server.remoting.JMSWireFormat&lt;/attribute&gt;&#010;
-         &lt;/delegate-config&gt;&#010;
-         &lt;binding port=&quot;4757&quot;/&gt;&#010;
-      &lt;/service-config&gt;\3"/>
-      </replaceregexp>
+      <replace-messaging-connector-override server-name="ports-default" port="4457" binding-manager-file="${jboss.home}/server/${config.name}/conf/binding-manager.xml"/>
+      <replace-messaging-connector-override server-name="ports-01" port="4557" binding-manager-file="${jboss.home}/server/${config.name}/conf/binding-manager.xml"/>
+      <replace-messaging-connector-override server-name="ports-02" port="4657" binding-manager-file="${jboss.home}/server/${config.name}/conf/binding-manager.xml"/>
+      <replace-messaging-connector-override server-name="ports-03" port="4757" binding-manager-file="${jboss.home}/server/${config.name}/conf/binding-manager.xml"/>
 
    </target>
 
@@ -673,6 +631,76 @@
 
    </target>
 
+   <macrodef name="replace-messaging-connector-override">
+      <attribute name="server-name"/>
+      <attribute name="port"/>
+      <attribute name="binding-manager-file"/>
+      <sequential>
+         <!--
+             If configuration override already exists, replace it with the correct one.
+         -->
+         <replaceregexp file="@{binding-manager-file}" flags="s">
+            <regexp pattern="(\x3cserver[ \t]*name=\x22@{server-name}\x22\x3e)(.*?)(\x3cservice-config[ \t]*name=\x22jboss.messaging:service=Connector,transport=)(.*?)(\x3c/service-config\x3e)(.*?)(\x3c/server\x3e)"/>
+            <substitution expression="\1\2&#013;&#010;      &lt;service-config name=&quot;jboss.messaging:service=Connector,transport=bisocket&quot;&#013;&#010;
+                     delegateClass=&quot;org.jboss.services.binding.AttributeMappingDelegate&quot;&gt;&#013;&#010;
+        &lt;delegate-config&gt;&#013;&#010;
+           &lt;attribute name=&quot;InvokerLocator&quot;&gt;bisocket://${jboss.bind.address}:@{port}/?NumberOfCallRetries=2&#038;amp;clientMaxPoolSize=50&#038;amp;clientSocketClass=org.jboss.jms.client.remoting.ClientSocketWrapper&#038;amp;dataType=jms&#038;amp;marshaller=org.jboss.jms.server.remoting.JMSWireFormat&#038;amp;numberOfRetries=1&#038;amp;serializationtype=jms&#038;amp;socket.check_connection=false&#038;amp;unmarshaller=org.jboss.jms.server.remoting.JMSWireFormat&lt;/attribute&gt;&#010;
+        &lt;/delegate-config&gt;&#013;&#010;
+        &lt;binding port=&quot;@{port}&quot;/&gt;&#013;&#010;
+    &lt;/service-config&gt;\6\7"/>
+         </replaceregexp>
+
+         <!--
+             If we don't find any configuration after replacement, then it means it didn't exist
+             in the first place, so add a new one
+         -->
+
+         <loadfile property="binding.manager.xml.content"
+                   srcFile="@{binding-manager-file}"/>
+
+         <condition property="messaging.connector.override.exists">
+            <matches string="${binding.manager.xml.content}" singleline="true">
+               <regexp pattern="(\x3cserver[ \t]*name=\x22@{server-name}\x22\x3e)(.*?)(\x3cservice-config[ \t]*name=\x22jboss.messaging:service=Connector,transport=)(.*?)@{port}(.*?)(\x3c/service-config\x3e)(.*?)(\x3c/server\x3e)"/>
+            </matches>
+         </condition>
+         <echo message="override exists: ${messaging.connector.override.exists}"/>
+
+         <antcall target="add-messaging-connector-override-if-not-already-there">
+            <param name="local.server.name" value="@{server-name}"/>
+            <param name="local.port" value="@{port}"/>
+            <param name="local.binding.manager.file" value="@{binding-manager-file}"/>
+         </antcall>
+
+      </sequential>
+   </macrodef>
+
+   <macrodef name="add-messaging-connector-override">
+      <attribute name="server-name"/>
+      <attribute name="port"/>
+      <attribute name="binding-manager-file"/>
+      <sequential>
+         <replaceregexp file="@{binding-manager-file}" flags="s">
+            <regexp pattern="(\x3cserver[ \t]*name=\x22@{server-name}\x22\x3e)(.*?)(\x3c/server\x3e)"/>
+            <!--
+                 note: substitution expression mst be identical with the one in
+                 replace-messaging-connector-override, with &#013;&#010;   \3 at the end instead of
+                 \6\7
+            -->
+            <substitution expression="\1\2&#013;&#010;      &lt;service-config name=&quot;jboss.messaging:service=Connector,transport=bisocket&quot;&#013;&#010;
+                     delegateClass=&quot;org.jboss.services.binding.AttributeMappingDelegate&quot;&gt;&#013;&#010;
+        &lt;delegate-config&gt;&#013;&#010;
+           &lt;attribute name=&quot;InvokerLocator&quot;&gt;bisocket://${jboss.bind.address}:@{port}/?NumberOfCallRetries=2&#038;amp;clientMaxPoolSize=50&#038;amp;clientSocketClass=org.jboss.jms.client.remoting.ClientSocketWrapper&#038;amp;dataType=jms&#038;amp;marshaller=org.jboss.jms.server.remoting.JMSWireFormat&#038;amp;numberOfRetries=1&#038;amp;serializationtype=jms&#038;amp;socket.check_connection=false&#038;amp;unmarshaller=org.jboss.jms.server.remoting.JMSWireFormat&lt;/attribute&gt;&#010;
+        &lt;/delegate-config&gt;&#013;&#010;
+        &lt;binding port=&quot;@{port}&quot;/&gt;&#013;&#010;
+    &lt;/service-config&gt;&#013;&#010;   \3"/>
+         </replaceregexp>
+      </sequential>
+   </macrodef>
+
+   <target name="add-messaging-connector-override-if-not-already-there" unless="messaging.connector.override.exists">
+      <add-messaging-connector-override server-name="${local.server.name}" port="${local.port}" binding-manager-file="${local.binding.manager.file}"/>
+   </target>
+
    <macrodef name="set-config-name">
       <attribute name="base"/>
       <attribute name="suffix"/>
@@ -689,7 +717,7 @@
       <echo message="main.artifact.location=${main.artifact.location}"/>
    </target>
 
-   <target name="test">
+   <target name="test" depends="validate-ant">
    </target>
 
 </project>
