@@ -17,6 +17,7 @@
    </para>
 
    <programlisting>
+      cd util
       ant -f release-admin.xml [-Did=node-id] [-Dports=port-config-label] cluster-node
    </programlisting>
 
@@ -58,6 +59,11 @@
       </itemizedlist>
    </para>
 
+   <para>
+      Notice that you should have environment variable JBOSS_HOME correctly set to point to your JBoss AS distribution directory before executing any of the
+      scripts.
+   </para>
+   
    <para>
       For example, in order to create the configuration for a four-node cluster intended to run
       on the same physical machine, use the following sequence:
