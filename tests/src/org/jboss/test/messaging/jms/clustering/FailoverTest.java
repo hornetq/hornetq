@@ -1747,13 +1747,14 @@ public class FailoverTest extends ClusteringTestBase
       }
    }
 
-   public void testFailureOnClose() throws Exception
+   public void testCloseConsumer() throws Exception
    {
+      Connection conn0 = null;
       Connection conn1 = null;
 
       try
       {
-         conn1 = cf.createConnection();
+         conn0 = cf.createConnection();
 
          // Objects Server1
          conn1 = cf.createConnection();
@@ -1777,6 +1778,78 @@ public class FailoverTest extends ClusteringTestBase
          if (conn1 != null)
          {
             conn1.close();
+         }
+
+         if (conn0 != null)
+         {
+            conn0.close();
+         }
+      }
+   }
+
+   public void testCloseSession() throws Exception
+   {
+      Connection conn0 = null;
+      Connection conn1 = null;
+
+      try
+      {
+         conn0 = cf.createConnection();
+
+         conn1 = cf.createConnection();
+
+         assertEquals(1, ((JBossConnection)conn1).getServerID());
+
+         JMSRemotingConnection rc = ((ClientConnectionDelegate)((JBossConnection)conn1).
+            getDelegate()).getRemotingConnection();
+         rc.removeConnectionListener();
+
+         Session session = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+         ServerManagement.killAndWait(1);
+
+         session.close();
+      }
+      finally
+      {
+         if (conn1 != null)
+         {
+            conn1.close();
+         }
+
+         if (conn0 != null)
+         {
+            conn0.close();
+         }
+      }
+   }
+
+   public void testCloseConnection() throws Exception
+   {
+      Connection conn0 = null;
+      Connection conn1 = null;
+
+      try
+      {
+         conn0 = cf.createConnection();
+
+         conn1 = cf.createConnection();
+
+         assertEquals(1, ((JBossConnection)conn1).getServerID());
+
+         JMSRemotingConnection rc = ((ClientConnectionDelegate)((JBossConnection)conn1).
+            getDelegate()).getRemotingConnection();
+         rc.removeConnectionListener();
+
+         ServerManagement.killAndWait(1);
+
+         conn1.close();
+      }
+      finally
+      {
+         if (conn0 != null)
+         {
+            conn0.close();
          }
       }
    }
