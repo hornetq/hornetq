@@ -184,6 +184,8 @@ public class ResourceManager
       
       ClientTransaction tx = this.getTxInternal(xid);
       
+      checkAndRollbackJMS(tx, xid);
+      
       // Invalid xid
       if (tx == null)
       {
@@ -307,6 +309,8 @@ public class ResourceManager
       state.setState(ClientTransaction.TX_ENDED);
    }
    
+   
+   
    int prepare(Xid xid, ConnectionDelegate connection) throws XAException
    {
       if (trace) { log.trace("preparing " + xid); }
@@ -317,6 +321,8 @@ public class ResourceManager
       { 
          throw new MessagingXAException(XAException.XAER_NOTA, "Cannot find transaction with xid:" + xid);
       } 
+      
+      checkAndRollbackXA(state, xid);
       
       TransactionRequest request =
          new TransactionRequest(TransactionRequest.TWO_PHASE_PREPARE_REQUEST, xid, state);
@@ -346,6 +352,8 @@ public class ResourceManager
             throw new MessagingXAException(XAException.XAER_NOTA, "Cannot find transaction with xid:" + xid);
          }
          
+         checkAndRollbackXA(tx, xid);
+         
          TransactionRequest request =
             new TransactionRequest(TransactionRequest.ONE_PHASE_COMMIT_REQUEST, null, tx);
          
@@ -368,7 +376,7 @@ public class ResourceManager
             //may happen if we have recovered from failure and the transaction manager
             //is calling commit on the transaction as part of the recovery process.
          }
-         
+                           
          TransactionRequest request =
             new TransactionRequest(TransactionRequest.TWO_PHASE_COMMIT_REQUEST, xid, null);
          
@@ -636,6 +644,50 @@ public class ResourceManager
          
          throw new MessagingXAException(XAException.XA_RETRY, "A Throwable was caught in sending the transaction", t);
       }
+   }
+   
+   private void checkAndRollbackJMS(ClientTransaction state, Object xid) throws JMSException
+   {
+      Exception e = checkAndRollback(state, xid, false);
+      if (e != null)
+      {
+         throw (JMSException)e;
+      }
+   }
+   
+   private void checkAndRollbackXA(ClientTransaction state, Object xid) throws XAException
+   {
+      Exception e = checkAndRollback(state, xid, true);
+      if (e != null)
+      {
+         throw (XAException)e;
+      }
+   }
+   
+   private Exception checkAndRollback(ClientTransaction state, Object xid, boolean xa)
+   {
+      if (state.isFailedOver() && state.hasPersistentAcks())
+      {
+         // http://jira.jboss.org/jira/browse/JBMESSAGING-883
+         // If a transaction has persistent acks in it and it has failed over from another server
+         // then it's possible that on failover another consumer got the messages that we have already
+         // received. Therfore to be strict and avoid any possibility of duplicate delivery we must
+         // doom the transaction
+         removeTx(xid);
+         
+         final String msg = "Rolled back tx branch to avoid possibility of duplicates http://jira.jboss.org/jira/browse/JBMESSAGING-883";
+         
+         if (xa)
+         {
+            return new MessagingXAException(XAException.XA_HEURRB, msg);
+         }
+         else
+         {
+            return new MessagingTransactionRolledBackException(msg);
+         }            
+      }
+      
+      return null;
    }
    
    // Inner Classes --------------------------------------------------------------------------------

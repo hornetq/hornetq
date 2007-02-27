@@ -6,28 +6,29 @@
  */
 package org.jboss.test.messaging.jms.clustering;
 
+import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.Set;
+
+import javax.jms.Connection;
+import javax.jms.DeliveryMode;
+import javax.jms.Message;
+import javax.jms.MessageConsumer;
+import javax.jms.MessageProducer;
+import javax.jms.QueueBrowser;
+import javax.jms.Session;
+import javax.jms.TextMessage;
+
+import org.jboss.jms.client.FailoverEvent;
+import org.jboss.jms.client.JBossConnection;
+import org.jboss.jms.client.delegate.ClientConnectionDelegate;
+import org.jboss.jms.client.delegate.DelegateSupport;
+import org.jboss.jms.client.remoting.JMSRemotingConnection;
+import org.jboss.jms.client.state.ConnectionState;
+import org.jboss.jms.util.MessagingTransactionRolledBackException;
 import org.jboss.test.messaging.jms.clustering.base.ClusteringTestBase;
 import org.jboss.test.messaging.tools.ServerManagement;
 import org.jboss.test.messaging.tools.aop.PoisonInterceptor;
-import org.jboss.jms.client.JBossConnection;
-import org.jboss.jms.client.FailoverEvent;
-import org.jboss.jms.client.remoting.JMSRemotingConnection;
-import org.jboss.jms.client.state.ConnectionState;
-import org.jboss.jms.client.delegate.DelegateSupport;
-import org.jboss.jms.client.delegate.ClientConnectionDelegate;
-
-import javax.jms.Connection;
-import javax.jms.Session;
-import javax.jms.MessageProducer;
-import javax.jms.MessageConsumer;
-import javax.jms.QueueBrowser;
-import javax.jms.TextMessage;
-import javax.jms.DeliveryMode;
-import javax.jms.Message;
-
-import java.util.Enumeration;
-import java.util.Set;
-import java.util.HashSet;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -1125,95 +1126,98 @@ public class FailoverTest extends ClusteringTestBase
       }
    }
 
-   public void testTransactedSessionWithAcknowledgmentsCommitOnFailover() throws Exception
-   {
-      Connection conn = null;
-
-      try
-      {
-         // skip connection to node 0
-         conn = cf.createConnection();
-         conn.close();
-
-         // create a connection to node 1
-         conn = cf.createConnection();
-
-         conn.start();
-
-         assertEquals(1, ((JBossConnection)conn).getServerID());
-
-         Session session = conn.createSession(true, Session.SESSION_TRANSACTED);
-
-         // send 2 messages (one persistent and one non-persistent)
-
-         MessageProducer prod = session.createProducer(queue[1]);
-
-         prod.setDeliveryMode(DeliveryMode.PERSISTENT);
-         prod.send(session.createTextMessage("clik-persistent"));
-         prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
-         prod.send(session.createTextMessage("clak-non-persistent"));
-
-         session.commit();
-
-         // close the producer
-         prod.close();
-
-         // create a consumer and receive messages, but don't acknowledge
-
-         MessageConsumer cons = session.createConsumer(queue[1]);
-         TextMessage clik = (TextMessage)cons.receive(2000);
-         assertEquals("clik-persistent", clik.getText());
-         TextMessage clak = (TextMessage)cons.receive(2000);
-         assertEquals("clak-non-persistent", clak.getText());
-
-         // register a failover listener
-         SimpleFailoverListener failoverListener = new SimpleFailoverListener();
-         ((JBossConnection)conn).registerFailoverListener(failoverListener);
-
-         log.debug("killing node 1 ....");
-
-         ServerManagement.kill(1);
-
-         log.info("########");
-         log.info("######## KILLED NODE 1");
-         log.info("########");
-
-         // wait for the client-side failover to complete
-
-         while(true)
-         {
-            FailoverEvent event = failoverListener.getEvent(120000);
-            if (event != null && FailoverEvent.FAILOVER_COMPLETED == event.getType())
-            {
-               break;
-            }
-            if (event == null)
-            {
-               fail("Did not get expected FAILOVER_COMPLETED event");
-            }
-         }
-
-         // failover complete
-         log.info("failover completed");
-
-         assertEquals(0, ((JBossConnection)conn).getServerID());
-
-         // acknowledge the messages
-         session.commit();
-
-         // make sure no messages are left in the queue
-         Message m = cons.receive(1000);
-         assertNull(m);
-      }
-      finally
-      {
-         if (conn != null)
-         {
-            conn.close();
-         }
-      }
-   }
-
+   // Commented out until http://jira.jboss.org/jira/browse/JBMESSAGING-883
+//   public void testTransactedSessionWithAcknowledgmentsCommitOnFailover() throws Exception
+//   {
+//      Connection conn = null;
+//
+//      try
+//      {
+//         // skip connection to node 0
+//         conn = cf.createConnection();
+//         conn.close();
+//
+//         // create a connection to node 1
+//         conn = cf.createConnection();
+//
+//         conn.start();
+//
+//         assertEquals(1, ((JBossConnection)conn).getServerID());
+//
+//         Session session = conn.createSession(true, Session.SESSION_TRANSACTED);
+//
+//         // send 2 messages (one persistent and one non-persistent)
+//
+//         MessageProducer prod = session.createProducer(queue[1]);
+//
+//         prod.setDeliveryMode(DeliveryMode.PERSISTENT);
+//         prod.send(session.createTextMessage("clik-persistent"));
+//         prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+//         prod.send(session.createTextMessage("clak-non-persistent"));
+//
+//         session.commit();
+//
+//         // close the producer
+   
+//         prod.close();
+//
+//         // create a consumer and receive messages, but don't acknowledge
+//
+//         MessageConsumer cons = session.createConsumer(queue[1]);
+//         TextMessage clik = (TextMessage)cons.receive(2000);
+//         assertEquals("clik-persistent", clik.getText());
+//         TextMessage clak = (TextMessage)cons.receive(2000);
+//         assertEquals("clak-non-persistent", clak.getText());
+//
+//         // register a failover listener
+//         SimpleFailoverListener failoverListener = new SimpleFailoverListener();
+//         ((JBossConnection)conn).registerFailoverListener(failoverListener);
+//
+//         log.debug("killing node 1 ....");
+//
+//         ServerManagement.kill(1);
+//
+//         log.info("########");
+//         log.info("######## KILLED NODE 1");
+//         log.info("########");
+//
+//         // wait for the client-side failover to complete
+//
+//         while(true)
+//         {
+//            FailoverEvent event = failoverListener.getEvent(120000);
+//            if (event != null && FailoverEvent.FAILOVER_COMPLETED == event.getType())
+//            {
+//               break;
+//            }
+//            if (event == null)
+//            {
+//               fail("Did not get expected FAILOVER_COMPLETED event");
+//            }
+//         }
+//
+//         // failover complete
+//         log.info("failover completed");
+//
+//         assertEquals(0, ((JBossConnection)conn).getServerID());
+//
+//         // acknowledge the messages
+//         session.commit();
+//
+//         // make sure no messages are left in the queue
+//         Message m = cons.receive(1000);
+//         assertNull(m);
+//      }
+//      finally
+//      {
+//         if (conn != null)
+//         {
+//            conn.close();
+//         }
+//      }
+//   }
+   
+  
    public void testTransactedSessionWithAcknowledgmentsRollbackOnFailover() throws Exception
    {
       Connection conn = null;
@@ -1679,73 +1683,75 @@ public class FailoverTest extends ClusteringTestBase
       failureOnInvocation(PoisonInterceptor.FAIL_AFTER_SEND);
    }
 
-   public void testFailureRightAfterSendTransaction() throws Exception
-   {
-      Connection conn = null;
-      Connection conn0 = null;
-
-      try
-      {
-         conn0 = cf.createConnection();
-
-         assertEquals(0, ((JBossConnection)conn0).getServerID());
-
-         conn0.close();
-
-         conn = cf.createConnection();
-
-         assertEquals(1, ((JBossConnection)conn).getServerID());
-
-         // we "cripple" the remoting connection by removing ConnectionListener. This way, failures
-         // cannot be "cleanly" detected by the client-side pinger, and we'll fail on an invocation
-         JMSRemotingConnection rc = ((ClientConnectionDelegate)((JBossConnection)conn).
-            getDelegate()).getRemotingConnection();
-         rc.removeConnectionListener();
-
-         // poison the server
-         ServerManagement.poisonTheServer(1, PoisonInterceptor.FAIL_AFTER_SENDTRANSACTION);
-
-         Session session = conn.createSession(true, Session.SESSION_TRANSACTED);
-
-         conn.start();
-
-         MessageProducer producer = session.createProducer(queue[0]);
-
-         producer.setDeliveryMode(DeliveryMode.PERSISTENT);
-
-         MessageConsumer consumer = session.createConsumer(queue[0]);
-
-         producer.send(session.createTextMessage("before-poison1"));
-         producer.send(session.createTextMessage("before-poison2"));
-         producer.send(session.createTextMessage("before-poison3"));
-         session.commit();
-
-         Thread.sleep(2000);
-
-         for (int i = 1; i <= 3; i++)
-         {
-            TextMessage tm = (TextMessage) consumer.receive(5000);
-
-            assertNotNull(tm);
-
-            assertEquals("before-poison" + i, tm.getText());
-         }
-
-         assertNull(consumer.receive(1000));
-
-      }
-      finally
-      {
-         if (conn != null)
-         {
-            conn.close();
-         }
-         if (conn0 != null)
-         {
-            conn0.close();
-         }
-      }
-   }
+   // Commented out until this is complete:
+   // http://jira.jboss.org/jira/browse/JBMESSAGING-604
+//   public void testFailureRightAfterSendTransaction() throws Exception
+//   {
+//      Connection conn = null;
+//      Connection conn0 = null;
+//
+//      try
+//      {
+//         conn0 = cf.createConnection();
+//
+//         assertEquals(0, ((JBossConnection)conn0).getServerID());
+//
+//         conn0.close();
+//
+//         conn = cf.createConnection();
+//
+//         assertEquals(1, ((JBossConnection)conn).getServerID());
+//
+//         // we "cripple" the remoting connection by removing ConnectionListener. This way, failures
+//         // cannot be "cleanly" detected by the client-side pinger, and we'll fail on an invocation
+//         JMSRemotingConnection rc = ((ClientConnectionDelegate)((JBossConnection)conn).
+//            getDelegate()).getRemotingConnection();
+//         rc.removeConnectionListener();
+//
+//         // poison the server
+//         ServerManagement.poisonTheServer(1, PoisonInterceptor.FAIL_AFTER_SENDTRANSACTION);
+//
+//         Session session = conn.createSession(true, Session.SESSION_TRANSACTED);
+//
+//         conn.start();
+//
+//         MessageProducer producer = session.createProducer(queue[0]);
+//
+//         producer.setDeliveryMode(DeliveryMode.PERSISTENT);
+//
+//         MessageConsumer consumer = session.createConsumer(queue[0]);
+//
+//         producer.send(session.createTextMessage("before-poison1"));
+//         producer.send(session.createTextMessage("before-poison2"));
+//         producer.send(session.createTextMessage("before-poison3"));
+//         session.commit();
+//
+//         Thread.sleep(2000);
+//
+//         for (int i = 1; i <= 10; i++)
+//         {
+//            TextMessage tm = (TextMessage) consumer.receive(5000);
+//
+//            assertNotNull(tm);
+//
+//            assertEquals("before-poison" + i, tm.getText());
+//         }
+//
+//         assertNull(consumer.receive(1000));
+//
+//      }
+//      finally
+//      {
+//         if (conn != null)
+//         {
+//            conn.close();
+//         }
+//         if (conn0 != null)
+//         {
+//            conn0.close();
+//         }
+//      }
+//   }
 
    public void testCloseConsumer() throws Exception
    {
@@ -1895,7 +1901,272 @@ public class FailoverTest extends ClusteringTestBase
       }
    }
 
+   //See http://jira.jboss.org/jira/browse/JBMESSAGING-883
+   //This is commented out until we have a better fix in 1.2.1
+//   public void testFailoverDeliveryRecoveryTransacted() throws Exception
+//   {
+//      Connection conn0 = null;
+//      Connection conn1 = null;
+//
+//      try
+//      {
+//         conn0 = cf.createConnection();
+//
+//         // Objects Server1
+//         conn1 = cf.createConnection();
+//
+//         assertEquals(1, ((JBossConnection)conn1).getServerID());
+//
+//         Session session1 = conn1.createSession(true, Session.SESSION_TRANSACTED);
+//         
+//         Session session2 = conn1.createSession(true, Session.SESSION_TRANSACTED);
+//
+//         MessageConsumer cons1 = session1.createConsumer(queue[1]);
+//         
+//         MessageConsumer cons2 = session2.createConsumer(queue[1]);
+//         
+//         MessageProducer prod = session1.createProducer(queue[1]);
+//         
+//         conn1.start();
+//                  
+//         TextMessage tm1 = session1.createTextMessage("message1");
+//         
+//         TextMessage tm2 = session1.createTextMessage("message2");
+//         
+//         TextMessage tm3 = session1.createTextMessage("message3");
+//         
+//         prod.send(tm1);
+//         
+//         prod.send(tm2);
+//         
+//         prod.send(tm3);
+//         
+//         session1.commit();
+//                           
+//         TextMessage rm1 = (TextMessage)cons1.receive(1000);
+//         
+//         assertNotNull(rm1);
+//         
+//         assertEquals(tm1.getText(), rm1.getText());
+//                                    
+//         TextMessage rm2 = (TextMessage)cons2.receive(1000);
+//         
+//         assertNotNull(rm2);
+//         
+//         assertEquals(tm2.getText(), rm2.getText());
+//         
+//         SimpleFailoverListener failoverListener = new SimpleFailoverListener();
+//         ((JBossConnection)conn1).registerFailoverListener(failoverListener);
+//
+//         log.debug("killing node 1 ....");
+//
+//         ServerManagement.kill(1);
+//
+//         log.info("########");
+//         log.info("######## KILLED NODE 1");
+//         log.info("########");
+//
+//         // wait for the client-side failover to complete
+//
+//         while(true)
+//         {
+//            FailoverEvent event = failoverListener.getEvent(120000);
+//            if (event != null && FailoverEvent.FAILOVER_COMPLETED == event.getType())
+//            {
+//               break;
+//            }
+//            if (event == null)
+//            {
+//               fail("Did not get expected FAILOVER_COMPLETED event");
+//            }
+//         }
+//
+//         // failover complete
+//         log.info("failover completed");
+//         
+//
+//         //now commit
+//         
+//         session1.commit();
+//         
+//         session2.commit();
+//         
+//         session1.close();
+//         
+//         session2.close();;
+//         
+//         Session session3 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
+//         
+//         MessageConsumer cons3 = session3.createConsumer(queue[0]);
+//         
+//         TextMessage rm3 = (TextMessage)cons3.receive(2000);
+//         
+//         assertNotNull(rm3);
+//         
+//         assertEquals(tm3.getText(), rm3.getText());
+//         
+//         rm3 = (TextMessage)cons3.receive(2000);
+//         
+//         assertNull(rm3);
+//
+//         
+//      }
+//      finally
+//      {
+//         if (conn1 != null)
+//         {
+//            conn1.close();
+//         }
+//
+//         if (conn0 != null)
+//         {
+//            conn0.close();
+//         }
+//      }
+//   }
    
+   // See http://jira.jboss.org/jira/browse/JBMESSAGING-883
+   // This tests our current behaviour - which is throwing an exception
+   // This will change in 1.2.1
+   public void testFailoverDeliveryRecoveryTransacted() throws Exception
+   {
+      Connection conn0 = null;
+      Connection conn1 = null;
+
+      try
+      {
+         conn0 = cf.createConnection();
+
+         // Objects Server1
+         conn1 = cf.createConnection();
+
+         assertEquals(1, ((JBossConnection)conn1).getServerID());
+
+         Session session1 = conn1.createSession(true, Session.SESSION_TRANSACTED);
+         
+         Session session2 = conn1.createSession(true, Session.SESSION_TRANSACTED);
+
+         MessageConsumer cons1 = session1.createConsumer(queue[1]);
+         
+         MessageConsumer cons2 = session2.createConsumer(queue[1]);
+         
+         MessageProducer prod = session1.createProducer(queue[1]);
+         
+         conn1.start();
+                  
+         TextMessage tm1 = session1.createTextMessage("message1");
+         
+         TextMessage tm2 = session1.createTextMessage("message2");
+         
+         TextMessage tm3 = session1.createTextMessage("message3");
+         
+         prod.send(tm1);
+         
+         prod.send(tm2);
+         
+         prod.send(tm3);
+         
+         session1.commit();
+                           
+         TextMessage rm1 = (TextMessage)cons1.receive(1000);
+         
+         assertNotNull(rm1);
+         
+         assertEquals(tm1.getText(), rm1.getText());
+                                    
+         TextMessage rm2 = (TextMessage)cons2.receive(1000);
+         
+         assertNotNull(rm2);
+         
+         assertEquals(tm2.getText(), rm2.getText());
+         
+         SimpleFailoverListener failoverListener = new SimpleFailoverListener();
+         ((JBossConnection)conn1).registerFailoverListener(failoverListener);
+
+         log.debug("killing node 1 ....");
+
+         ServerManagement.kill(1);
+
+         log.info("########");
+         log.info("######## KILLED NODE 1");
+         log.info("########");
+
+         // wait for the client-side failover to complete
+
+         while(true)
+         {
+            FailoverEvent event = failoverListener.getEvent(120000);
+            if (event != null && FailoverEvent.FAILOVER_COMPLETED == event.getType())
+            {
+               break;
+            }
+            if (event == null)
+            {
+               fail("Did not get expected FAILOVER_COMPLETED event");
+            }
+         }
+
+         // failover complete
+         log.info("failover completed");
+         
+
+         //now commit
+         
+         try
+         {
+            session1.commit();
+            
+            fail();
+         }
+         catch (MessagingTransactionRolledBackException e)
+         {
+            //Ok
+         }
+         
+         try
+         {
+            session2.commit();
+            
+            fail();
+         }
+         catch (MessagingTransactionRolledBackException e)
+         {
+            //Ok
+         }
+         
+         session1.close();
+         
+         session2.close();;
+         
+         Session session3 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         
+         MessageConsumer cons3 = session3.createConsumer(queue[0]);
+         
+         TextMessage rm3 = (TextMessage)cons3.receive(2000);
+         
+         assertNotNull(rm3);
+         
+         assertEquals(tm3.getText(), rm3.getText());
+         
+         rm3 = (TextMessage)cons3.receive(2000);
+         
+         assertNull(rm3);
+
+         
+      }
+      finally
+      {
+         if (conn1 != null)
+         {
+            conn1.close();
+         }
+
+         if (conn0 != null)
+         {
+            conn0.close();
+         }
+      }
+   }
 
    // Package protected ----------------------------------------------------------------------------
 
@@ -2055,6 +2326,8 @@ public class FailoverTest extends ClusteringTestBase
          }
       }
    }
+   
+   
 
    // Inner classes --------------------------------------------------------------------------------
    

@@ -145,27 +145,10 @@
 
    <!-- Managed operations -->
 
-    <operation>
-       <description>JBoss Service lifecycle operation</description>
-       <name>create</name>
-    </operation>
-
-    <operation>
-       <description>Prepares a failover from a given node</description>
-       <name>failOver</name>
-        <parameter>
-          <description>The Failed ID </description>
-          <name>failedId</name>
-          <type>int</type>
-        </parameter>
-
-    </operation>
-
-    <operation>
-       <description>List Defined Bindings</description>
-       <name>listBindings</name>
-       <return-type>java.lang.String</return-type>
-    </operation>
+   <operation>
+      <description>JBoss Service lifecycle operation</description>
+      <name>create</name>
+   </operation>
 
    <operation>
       <description>JBoss Service lifecycle operation</description>
@@ -175,16 +158,6 @@
    <operation>
       <description>JBoss Service lifecycle operation</description>
       <name>stop</name>
-   </operation>
-
-   <operation>
-      <description></description>
-      <name>stop</name>
-      <parameter>
-        <description>Should we send a notification about leaving cluster</description>
-        <name>sendNotification</name>
-        <type>boolean</type>
-      </parameter>
    </operation>
 
    <operation>

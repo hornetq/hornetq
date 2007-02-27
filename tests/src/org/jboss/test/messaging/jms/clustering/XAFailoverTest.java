@@ -453,7 +453,6 @@ public class XAFailoverTest extends ClusteringTestBase
       
       XAConnectionFactory xaCF = (XAConnectionFactory)cf;
       
-
       try
       {
          xaConn0 = xaCF.createXAConnection();
@@ -609,7 +608,7 @@ public class XAFailoverTest extends ClusteringTestBase
          
          cons1.close();
          
-         // Message should now be receivable
+         // Messages should now be receivable
 
          Connection conn = null;
          try
@@ -638,13 +637,16 @@ public class XAFailoverTest extends ClusteringTestBase
                numberOfReceivedMessages++;
             }
 
-
+            //These two should be acked
+            
             assertFalse("\"plop0\" message was duplicated",
                receivedMessages.contains("plop0"));
 
             assertFalse("\"plop1\" message was duplicated",
-               receivedMessages.contains("plop0"));
+               receivedMessages.contains("plop1"));
 
+            //And these should be receivable
+            
             assertTrue("\"Cupid stunt0\" message wasn't received",
                receivedMessages.contains("Cupid stunt0"));
 

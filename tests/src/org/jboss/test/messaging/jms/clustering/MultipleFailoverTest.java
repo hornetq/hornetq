@@ -189,72 +189,7 @@ public class MultipleFailoverTest extends ClusteringTestBase
       }
    }
    
-   class Killer implements Runnable
-   { 
-      boolean failed;
-      
-      public void run()
-      {
-         try
-         {                                     
-            Thread.sleep(10000);
-               
-            log.info("Killing server 0");
-            ServerManagement.kill(0);
-            
-            Thread.sleep(10000);
-            
-            log.info("starting server 0");
-            ServerManagement.start(0, "all");
-            
-            Thread.sleep(10000);
-            
-            log.info("Killing server 1");
-            ServerManagement.kill(1);
-            
-            Thread.sleep(10000);
-            
-            log.info("Starting server 1");
-            ServerManagement.start(1, "all");
-            
-            Thread.sleep(10000);
-            
-            log.info("Killing server 0");
-            ServerManagement.kill(0);
-            
-            Thread.sleep(10000);
-            
-            log.info("Starting server 0");
-            ServerManagement.start(0, "all");
-            
-            Thread.sleep(10000);
-            
-            log.info("Killing server 1");
-            ServerManagement.kill(1);
-            
-            Thread.sleep(10000);
-            
-            log.info("Starting server 1");
-            ServerManagement.start(1, "all");
-            
-            Thread.sleep(10000);
-            
-            log.info("Killing server 0");
-            ServerManagement.kill(0);
-            
-            Thread.sleep(10000);
-            
-            log.info("Starting server 0");
-            ServerManagement.start(0, "all");
-
-         }
-         catch (Exception e)
-         {               
-            failed = true;
-         }
-      }
-      
-   }
+   
    
    public void testFailoverFloodTwoServers() throws Exception
    {
@@ -272,9 +207,7 @@ public class MultipleFailoverTest extends ClusteringTestBase
 
          Latch latch = new Latch();
          
-         final int NUM_MESSAGES = 10000;         
-         
-         MessageListener list = new MyListener(latch, NUM_MESSAGES);
+         MyListener list = new MyListener(latch);
 
          cons.setMessageListener(list);
 
@@ -286,26 +219,43 @@ public class MultipleFailoverTest extends ClusteringTestBase
 
          int count = 0;
          
-         Thread t = new Thread(new Killer());
+         Killer killer = new Killer();
+         
+         Thread t = new Thread(killer);
          
          t.start();
-
-         for (int i = 0; i < NUM_MESSAGES; i++)
+         
+         while (!killer.isDone())
          {
             TextMessage tm = sessSend.createTextMessage("message " + count);
 
             prod.send(tm);
             
-            Thread.sleep(250);
+            Thread.sleep(10);
 
-            log.info("sent " + count);
+            if (count % 100 == 0)
+            {
+               log.info("sent " + count);
+            }
 
             count++;
          }
          
+         log.info("sending done");
+         
          t.join();
          
-         latch.acquire();
+         log.info("stopping listener");
+         
+         if (killer.failed)
+         {
+            fail();
+         }
+         
+         if (list.failed)
+         {
+            fail();
+         }
       }
       catch (Exception e)
       {
@@ -351,21 +301,99 @@ public class MultipleFailoverTest extends ClusteringTestBase
 
    // Inner classes --------------------------------------------------------------------------------
 
+   class Killer implements Runnable
+   { 
+      volatile boolean failed;
+      
+      volatile boolean done;
+      
+      public boolean isDone()
+      {
+         return done;
+      }
+      
+      public void run()
+      {
+         try
+         {                                     
+            Thread.sleep(10000);
+               
+            log.info("Killing server 0");
+            ServerManagement.kill(0);
+            
+            Thread.sleep(5000);
+            
+            log.info("starting server 0");
+            ServerManagement.start(0, "all", false);
+            ServerManagement.deployQueue("testDistributedQueue", 0);
+            
+            Thread.sleep(5000);
+            
+            log.info("Killing server 1");
+            ServerManagement.kill(1);
+            
+            Thread.sleep(5000);
+            
+            log.info("Starting server 1");
+            ServerManagement.start(1, "all", false);
+            ServerManagement.deployQueue("testDistributedQueue", 1);
+            
+            Thread.sleep(5000);
+            
+            log.info("Killing server 0");
+            ServerManagement.kill(0);
+            
+            Thread.sleep(5000);
+            
+            log.info("Starting server 0");
+            ServerManagement.start(0, "all", false);
+            ServerManagement.deployQueue("testDistributedQueue", 0);
+            
+            Thread.sleep(5000);
+            
+            log.info("Killing server 1");
+            ServerManagement.kill(1);
+            
+            Thread.sleep(5000);
+            
+            log.info("Starting server 1");
+            ServerManagement.start(1, "all", false);
+            ServerManagement.deployQueue("testDistributedQueue", 1);
+            
+            Thread.sleep(5000);
+            
+            log.info("Killing server 0");
+            ServerManagement.kill(0);
+            
+            Thread.sleep(5000);
+            
+            log.info("Starting server 0");
+            ServerManagement.start(0, "all", false);
+            ServerManagement.deployQueue("testDistributedQueue", 0);
+            
+            log.info("killer DONE");
+         }
+         catch (Exception e)
+         {               
+            failed = true;
+         }
+         
+         done = true;
+      }
+      
+   }
+   
    class MyListener implements MessageListener
    {
       int count = 0;
       
       Latch latch;
       
-      boolean failed;
+      volatile boolean failed;
       
-      int num;
-      
-      MyListener(Latch latch, int num)
+      MyListener(Latch latch)
       {
          this.latch = latch;
-         
-         this.num = num;
       }
            
       public void onMessage(Message msg)
@@ -374,7 +402,10 @@ public class MultipleFailoverTest extends ClusteringTestBase
          {
             TextMessage tm = (TextMessage)msg;
             
-            log.info("Received message " + tm.getText());
+            if (count % 100 == 0)
+            {
+               log.info("Received message " + tm.getText());
+            }
             
             if (!tm.getText().equals("message " + count))
             {
@@ -384,15 +415,11 @@ public class MultipleFailoverTest extends ClusteringTestBase
             }
             
             count++;
-            
-            if (count == num)
-            {
-               latch.release();
-            }
          }
          catch (Exception e)
          {
             log.error("Failed to receive", e);
+            failed = true;
          }
       }
       

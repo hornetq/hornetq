@@ -67,6 +67,10 @@ public class ClientTransaction
    private List sessionStatesList;
 
    private boolean clientSide;
+   
+   private boolean hasPersistentAcks;
+   
+   private boolean failedOver;
 
    // Static --------------------------------------------------------
 
@@ -104,6 +108,21 @@ public class ClientTransaction
       SessionTxState sessionTxState = getSessionTxState(sessionId);
 
       sessionTxState.addAck(info);
+      
+      if (info.getMessageProxy().getMessage().isReliable())
+      {
+         hasPersistentAcks = true;
+      }
+   }
+   
+   public boolean hasPersistentAcks()
+   {
+      return hasPersistentAcks;
+   }
+   
+   public boolean isFailedOver()
+   {
+      return failedOver;
    }
 
    public void clearMessages()
@@ -156,7 +175,7 @@ public class ClientTransaction
       {
          throw new IllegalStateException("Cannot call this method on the server side");
       }
-
+      
       // Note we have to do this in one go since there may be overlap between old and new session
       // IDs and we don't want to overwrite keys in the map.
 
@@ -183,6 +202,8 @@ public class ClientTransaction
          // swap
          sessionStatesMap = tmpMap;
       }
+      
+      failedOver = true;
    }
 
    /**
