@@ -42,7 +42,7 @@ import org.jboss.test.messaging.tools.ServerManagement;
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  * @version <tt>$Revision$</tt>
  *
- * 
+ *
  * $Id$
  */
 public class MultiThreadFailoverTest extends ClusteringTestBase
@@ -51,7 +51,7 @@ public class MultiThreadFailoverTest extends ClusteringTestBase
    // Constants ------------------------------------------------------------------------------------
 
    // Attributes -----------------------------------------------------------------------------------
-  
+
    volatile int messageCounterConsumer = 0;
    volatile int messageCounterProducer = 0;
    volatile boolean started = false;
@@ -102,7 +102,7 @@ public class MultiThreadFailoverTest extends ClusteringTestBase
       // Just give some time to line up the thread on receive
       Thread.sleep(1000);
 
-      Session session = conn.createSession(false,Session.AUTO_ACKNOWLEDGE); 
+      Session session = conn.createSession(false,Session.AUTO_ACKNOWLEDGE);
 
       MessageProducer producer = session.createProducer(queue[1]);
 
@@ -259,14 +259,10 @@ public class MultiThreadFailoverTest extends ClusteringTestBase
       multiThreadFailover(1, 1, true, true);
    }
 
-   // TODO TEST TEMPORARILY COMMENTED OUT.
-   //      MUST BE UNCOMMENTED FOR  1.2.1!
-   //      See http://jira.jboss.org/jira/browse/JBMESSAGING-883
-
-//   public void testMultiThreadFailoverSingleThreadNonPersistent() throws Exception
-//   {
-//      multiThreadFailover(1, 1, false, false);
-//   }
+   public void testMultiThreadFailoverSingleThreadNonPersistent() throws Exception
+   {
+      multiThreadFailover(1, 1, false, false);
+   }
 
    // TODO TEST TEMPORARILY COMMENTED OUT.
    //      MUST BE UNCOMMENTED FOR  1.2.1!
