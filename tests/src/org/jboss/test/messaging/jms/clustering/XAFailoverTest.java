@@ -29,7 +29,6 @@ import org.jboss.test.messaging.tools.ServerManagement;
 import org.jboss.test.messaging.tools.aop.PoisonInterceptor;
 import org.jboss.test.messaging.tools.jmx.ServiceContainer;
 import org.jboss.test.messaging.tools.jndi.InVMInitialContextFactory;
-import java.util.ArrayList;
 import java.util.HashSet;
 
 /**
