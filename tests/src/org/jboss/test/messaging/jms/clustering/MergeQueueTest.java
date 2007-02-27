@@ -144,8 +144,6 @@ public class MergeQueueTest extends ClusteringTestBase
       Connection conn0 = null;
       Connection conn1 = null;
 
-      int numberOfMessagesReceived = 0;
-
       try
       {
 
@@ -209,7 +207,9 @@ public class MergeQueueTest extends ClusteringTestBase
          MessageConsumer consumer1 = session1.createConsumer(queue[1]);
 
          ServerManagement.killAndWait(1);
-         waitForFailoverComplete(1, conn1);
+
+         // close the consumer .. .and this should cause failover to kick in
+         consumer1.close();
 
          consumer0 = session0.createConsumer(queue[0]);
          for (int i = 5; i < 20; i++)
