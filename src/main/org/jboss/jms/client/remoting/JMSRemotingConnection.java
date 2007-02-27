@@ -331,9 +331,11 @@ public class JMSRemotingConnection
       // thus silencing both the connection validator and the lease pinger, and also locally
       // cleaning up the callback listener
 
+      client.setDisconnectTimeout(0);
+
       try
       {
-         client.removeListenerLocal(callbackManager);
+         client.removeListener(callbackManager);
       }
       catch(Throwable t)
       {
@@ -342,8 +344,7 @@ public class JMSRemotingConnection
          log.debug(this + " failed to cleanly remove callback manager from the client", t);
       }
 
-      client.disconnectLocal();
-
+      client.disconnect();
    }
 
    /**

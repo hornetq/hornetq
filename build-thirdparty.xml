@@ -92,15 +92,22 @@
       <componentref name="jboss/common-logging-spi" version="2.0.2.GA"/>
       <componentref name="jboss/aop" version="1.5.3.GA"/>
       <componentref name="jboss/serialization" version="1.0.3.GA"/>
-      <componentref name="jboss/remoting" version="2.2.0.Alpha7"/>
+      <componentref name="jboss/remoting" version="2.2.0.Beta1"/>
       <componentref name="jboss/jbossts" version="4.2.2.GA"/>
       <componentref name="jboss/test14" version="1.0.0.GA"/>
       <componentref name="jboss/jbossretro-rt" version="1.0.4.GA"/>
       <componentref name="jboss/backport-concurrent" version="2.1.0.GA"/>
 
+      <!--
+          Totally unapropriate here, but this is what we need to do for the time being if we
+          want HTTP.
+          See http://www.jboss.com/index.html?module=bb&op=viewtopic&p=4022727 for more details.
+      -->
       <componentref name="apache-tomcat" version="5.5.15"/>
 
-      <!-- Need this otherwise project doesn't build in Eclipse -->
+      <!--
+          Need this otherwise project doesn't build in Eclipse. TODO Really?
+      -->
       <componentref name="apache-logging" version="1.0.4.1jboss"/>
 
       <!--
