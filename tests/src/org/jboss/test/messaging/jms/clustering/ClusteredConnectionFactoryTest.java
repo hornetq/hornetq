@@ -86,6 +86,9 @@ public class ClusteredConnectionFactoryTest extends ClusteringTestBase
          {
             conn.close();
          }
+
+         // need to re-start 0, it's the RMI server the other servers use
+         ServerManagement.start(0, "all");
       }
    }
 
