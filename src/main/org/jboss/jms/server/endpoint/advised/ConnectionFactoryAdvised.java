@@ -66,11 +66,6 @@ public class ConnectionFactoryAdvised extends AdvisedSupport implements Connecti
       return endpoint.createConnectionDelegate(username, password, failedNodeId);
    }
 
-   public IDBlock getIdBlock(int size) throws JMSException
-   {
-      return endpoint.getIdBlock(size);
-   }
-   
    public byte[] getClientAOPStack() throws JMSException
    {
       return endpoint.getClientAOPStack();

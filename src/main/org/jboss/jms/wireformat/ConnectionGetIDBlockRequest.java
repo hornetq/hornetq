@@ -24,52 +24,51 @@ package org.jboss.jms.wireformat;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 
-import org.jboss.messaging.core.plugin.IDBlock;
+import org.jboss.jms.server.endpoint.ConnectionEndpoint;
 
-/**
- * 
- * A ConnectionFactoryGetIDBlockResponse
- *
- * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * @version <tt>$Revision$</tt>
- *
- * $Id$
- *
- */
-public class ConnectionFactoryGetIDBlockResponse extends ResponseSupport
+public class ConnectionGetIDBlockRequest extends RequestSupport
 {
-   private IDBlock idBlock;
+   private int size;
    
-   public ConnectionFactoryGetIDBlockResponse()
+   public ConnectionGetIDBlockRequest()
    {      
    }
-   
-   public ConnectionFactoryGetIDBlockResponse(IDBlock block)
+
+   public ConnectionGetIDBlockRequest(int objectId,
+                                      byte version,
+                                      int size)
    {
-      super(PacketSupport.RESP_CONNECTIONFACTORY_GETIDBLOCK);
+      super(objectId, PacketSupport.REQ_CONNECTIONFACTORY_GETIDBLOCK, version);
       
-      this.idBlock = block;
+      this.size = size;
    }
 
-   public Object getResponse()
+   public void read(DataInputStream is) throws Exception
    {
-      return idBlock;
+      super.read(is);
+      
+      size = is.readInt();
    }
-   
+
+   public ResponseSupport serverInvoke() throws Exception
+   {
+      ConnectionEndpoint endpoint = 
+         (ConnectionEndpoint)Dispatcher.instance.getTarget(objectId);
+      
+      if (endpoint == null)
+      {
+         throw new IllegalStateException("Cannot find object in dispatcher with id " + objectId);
+      }
+      return new ConnectionGetIDBlockResponse(endpoint.getIdBlock(size));           
+   }
+
    public void write(DataOutputStream os) throws Exception
    {
       super.write(os);
       
-      idBlock.write(os);
+      os.writeInt(size);  
       
       os.flush();
-   }
-   
-   public void read(DataInputStream is) throws Exception
-   {
-      idBlock = new IDBlock();
-      
-      idBlock.read(is);
    }
 
 }

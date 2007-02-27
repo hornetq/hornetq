@@ -14,6 +14,7 @@ import org.jboss.jms.client.delegate.ClientConnectionDelegate;
 import org.jboss.jms.client.remoting.JMSRemotingConnection;
 import org.jboss.jms.client.state.ConnectionState;
 import org.jboss.jms.delegate.ConnectionFactoryDelegate;
+import org.jboss.jms.message.MessageIdGenerator;
 import org.jboss.jms.server.endpoint.CreateConnectionResult;
 import org.jboss.logging.Logger;
 
@@ -106,7 +107,7 @@ public class FailoverCommandCenter
          
          // generate a FAILOVER_STARTED event. The event must be broadcasted AFTER valve closure,
          // to insure the client-side stack is in a deterministic state
-         broadcastFailoverEvent(new FailoverEvent(FailoverEvent.FAILOVER_STARTED, this));
+         broadcastFailoverEvent(new FailoverEvent(FailoverEvent.FAILOVER_STARTED, this));        
          
          int failedNodeID = state.getServerID();
          ConnectionFactoryDelegate clusteredDelegate =
@@ -129,7 +130,7 @@ public class FailoverCommandCenter
             ClientConnectionDelegate newDelegate = (ClientConnectionDelegate)res.getDelegate();
             
             state.getDelegate().synchronizeWith(newDelegate);
-            
+                           
             valve.open();
             valveOpened = true;
             

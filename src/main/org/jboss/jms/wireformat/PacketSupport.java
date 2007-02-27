@@ -201,7 +201,7 @@ public abstract class PacketSupport implements Streamable
             packet = new ConnectionFactoryCreateConnectionDelegateRequest();
             break;         
          case REQ_CONNECTIONFACTORY_GETIDBLOCK:         
-            packet = new ConnectionFactoryGetIDBlockRequest();
+            packet = new ConnectionGetIDBlockRequest();
             break;
          case REQ_CONNECTIONFACTORY_GETCLIENTAOPSTACK:
             packet = new ConnectionFactoryGetClientAOPStackRequest();
@@ -301,7 +301,7 @@ public abstract class PacketSupport implements Streamable
             packet = new ConnectionFactoryCreateConnectionDelegateResponse();
             break;
          case RESP_CONNECTIONFACTORY_GETIDBLOCK:
-            packet = new ConnectionFactoryGetIDBlockResponse();
+            packet = new ConnectionGetIDBlockResponse();
             break;
          case RESP_CONNECTIONFACTORY_GETCLIENTAOPSTACK:
             packet = new ConnectionFactoryGetClientAOPStackResponse();

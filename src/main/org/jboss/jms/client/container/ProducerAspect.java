@@ -35,6 +35,7 @@ import org.jboss.jms.client.delegate.DelegateSupport;
 import org.jboss.jms.client.state.ConnectionState;
 import org.jboss.jms.client.state.ProducerState;
 import org.jboss.jms.client.state.SessionState;
+import org.jboss.jms.delegate.ConnectionDelegate;
 import org.jboss.jms.delegate.SessionDelegate;
 import org.jboss.jms.message.JBossBytesMessage;
 import org.jboss.jms.message.JBossMapMessage;
@@ -166,7 +167,7 @@ public class ProducerAspect
       // Generate the message id
       ConnectionState connectionState = (ConnectionState)sessionState.getParent();
       
-      long id = connectionState.getIdGenerator().getId();
+      long id = connectionState.getIdGenerator().getId((ConnectionDelegate)connectionState.getDelegate());
     
       JBossMessage messageToSend;
       boolean foreign = false;

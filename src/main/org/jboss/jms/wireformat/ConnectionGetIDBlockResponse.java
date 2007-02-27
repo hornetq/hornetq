@@ -24,51 +24,52 @@ package org.jboss.jms.wireformat;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 
-import org.jboss.jms.server.endpoint.ConnectionFactoryEndpoint;
+import org.jboss.messaging.core.plugin.IDBlock;
 
-public class ConnectionFactoryGetIDBlockRequest extends RequestSupport
+/**
+ * 
+ * A ConnectionFactoryGetIDBlockResponse
+ *
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @version <tt>$Revision$</tt>
+ *
+ * $Id$
+ *
+ */
+public class ConnectionGetIDBlockResponse extends ResponseSupport
 {
-   private int size;
+   private IDBlock idBlock;
    
-   public ConnectionFactoryGetIDBlockRequest()
+   public ConnectionGetIDBlockResponse()
    {      
    }
-
-   public ConnectionFactoryGetIDBlockRequest(int objectId,
-                                             byte version,
-                                             int size)
+   
+   public ConnectionGetIDBlockResponse(IDBlock block)
    {
-      super(objectId, PacketSupport.REQ_CONNECTIONFACTORY_GETIDBLOCK, version);
+      super(PacketSupport.RESP_CONNECTIONFACTORY_GETIDBLOCK);
       
-      this.size = size;
+      this.idBlock = block;
    }
 
-   public void read(DataInputStream is) throws Exception
+   public Object getResponse()
    {
-      super.read(is);
-      
-      size = is.readInt();
+      return idBlock;
    }
-
-   public ResponseSupport serverInvoke() throws Exception
-   {
-      ConnectionFactoryEndpoint endpoint = 
-         (ConnectionFactoryEndpoint)Dispatcher.instance.getTarget(objectId);
-      
-      if (endpoint == null)
-      {
-         throw new IllegalStateException("Cannot find object in dispatcher with id " + objectId);
-      }
-      return new ConnectionFactoryGetIDBlockResponse(endpoint.getIdBlock(size));           
-   }
-
+   
    public void write(DataOutputStream os) throws Exception
    {
       super.write(os);
       
-      os.writeInt(size);  
+      idBlock.write(os);
       
       os.flush();
+   }
+   
+   public void read(DataInputStream is) throws Exception
+   {
+      idBlock = new IDBlock();
+      
+      idBlock.read(is);
    }
 
 }

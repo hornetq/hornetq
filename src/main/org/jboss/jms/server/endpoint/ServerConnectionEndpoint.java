@@ -54,6 +54,7 @@ import org.jboss.jms.wireformat.Dispatcher;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.message.Message;
 import org.jboss.messaging.core.message.MessageReference;
+import org.jboss.messaging.core.plugin.IDBlock;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.plugin.contract.PostOffice;
 import org.jboss.messaging.core.tx.MessagingXid;
@@ -500,6 +501,18 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
       catch (Throwable t)
       {
          throw ExceptionUtil.handleJMSInvocation(t, this + " getPreparedTransactions");
+      }
+   }
+   
+   public IDBlock getIdBlock(int size) throws JMSException
+   {
+      try
+      {
+         return serverPeer.getMessageIDManager().getIDBlock(size);
+      }
+      catch (Throwable t)
+      {
+         throw ExceptionUtil.handleJMSInvocation(t, this + " getIdBlock");
       }
    }
    

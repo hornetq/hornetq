@@ -204,7 +204,7 @@ public class ClusteringAspect
          catch (MessagingNetworkFailureException e)
          {
             delegate = null;
-            log.warn("Exception captured on createConnection... hopping a new connection", e);
+            log.warn("Exception captured on createConnection... hopping to a new connection factory", e);
             //Currently hardcoded
             Thread.sleep(2000);
          }

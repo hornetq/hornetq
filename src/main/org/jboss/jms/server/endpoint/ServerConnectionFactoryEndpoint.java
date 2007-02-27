@@ -250,19 +250,7 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
          return new ClientConnectionDelegate(connectionID, serverPeer.getServerPeerID());
       }
    }
-   
-   public IDBlock getIdBlock(int size) throws JMSException
-   {
-      try
-      {
-         return serverPeer.getMessageIDManager().getIDBlock(size);
-      }
-      catch (Throwable t)
-      {
-         throw ExceptionUtil.handleJMSInvocation(t, this + " getIdBlock");
-      }
-   }
-   
+      
    public byte[] getClientAOPStack() throws JMSException
    {
       try

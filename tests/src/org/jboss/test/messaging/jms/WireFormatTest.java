@@ -60,8 +60,8 @@ import org.jboss.jms.wireformat.ConnectionFactoryCreateConnectionDelegateRequest
 import org.jboss.jms.wireformat.ConnectionFactoryCreateConnectionDelegateResponse;
 import org.jboss.jms.wireformat.ConnectionFactoryGetClientAOPStackRequest;
 import org.jboss.jms.wireformat.ConnectionFactoryGetClientAOPStackResponse;
-import org.jboss.jms.wireformat.ConnectionFactoryGetIDBlockRequest;
-import org.jboss.jms.wireformat.ConnectionFactoryGetIDBlockResponse;
+import org.jboss.jms.wireformat.ConnectionGetIDBlockRequest;
+import org.jboss.jms.wireformat.ConnectionGetIDBlockResponse;
 import org.jboss.jms.wireformat.ConnectionGetClientIDRequest;
 import org.jboss.jms.wireformat.ConnectionGetClientIDResponse;
 import org.jboss.jms.wireformat.ConnectionGetPreparedTransactionsRequest;
@@ -454,7 +454,7 @@ public class WireFormatTest extends MessagingTestCase
       public void testConnectionFactoryGetIDBlock() throws Exception
       {
          RequestSupport req =
-            new ConnectionFactoryGetIDBlockRequest(23, (byte)77, 66);;
+            new ConnectionGetIDBlockRequest(23, (byte)77, 66);;
                  
          testPacket(req, PacketSupport.REQ_CONNECTIONFACTORY_GETIDBLOCK);                           
       }
@@ -734,7 +734,7 @@ public class WireFormatTest extends MessagingTestCase
          IDBlock block = new IDBlock(1, 76);
          
          ResponseSupport resp =
-            new ConnectionFactoryGetIDBlockResponse(block);
+            new ConnectionGetIDBlockResponse(block);
                  
          testPacket(resp, PacketSupport.RESP_CONNECTIONFACTORY_GETIDBLOCK);                           
       }

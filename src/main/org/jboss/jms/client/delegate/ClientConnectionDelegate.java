@@ -44,14 +44,16 @@ import org.jboss.jms.wireformat.CloseRequest;
 import org.jboss.jms.wireformat.ClosingRequest;
 import org.jboss.jms.wireformat.ConnectionCreateSessionDelegateRequest;
 import org.jboss.jms.wireformat.ConnectionGetClientIDRequest;
+import org.jboss.jms.wireformat.ConnectionGetIDBlockRequest;
 import org.jboss.jms.wireformat.ConnectionGetPreparedTransactionsRequest;
 import org.jboss.jms.wireformat.ConnectionSendTransactionRequest;
 import org.jboss.jms.wireformat.ConnectionSetClientIDRequest;
 import org.jboss.jms.wireformat.ConnectionStartRequest;
 import org.jboss.jms.wireformat.ConnectionStopRequest;
 import org.jboss.jms.wireformat.RequestSupport;
-import org.jboss.messaging.core.tx.MessagingXid;
 import org.jboss.logging.Logger;
+import org.jboss.messaging.core.plugin.IDBlock;
+import org.jboss.messaging.core.tx.MessagingXid;
 
 /**
  * The client-side Connection delegate class.
@@ -268,6 +270,13 @@ public class ClientConnectionDelegate extends DelegateSupport implements Connect
    public boolean unregisterFailoverListener(FailoverListener l)
    {
       throw new IllegalStateException("This invocation should not be handled here!");
+   }
+   
+   public IDBlock getIdBlock(int size) throws JMSException
+   {
+      RequestSupport req = new ConnectionGetIDBlockRequest(id, version, size);
+
+      return (IDBlock)doInvoke(client, req);
    }
 
    // Public ---------------------------------------------------------------------------------------

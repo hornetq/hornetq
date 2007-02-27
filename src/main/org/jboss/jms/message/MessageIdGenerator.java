@@ -23,7 +23,7 @@ package org.jboss.jms.message;
 
 import javax.jms.JMSException;
 
-import org.jboss.jms.delegate.ConnectionFactoryDelegate;
+import org.jboss.jms.server.endpoint.ConnectionEndpoint;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.plugin.IDBlock;
 
@@ -53,28 +53,18 @@ public class MessageIdGenerator
    protected long nextID;
    protected int blockSize;
 
-   protected ConnectionFactoryDelegate cfd;
-
-   public ConnectionFactoryDelegate getDelegate()
-   {
-       return cfd;
-   }
-
    // Constructors --------------------------------------------------
 
-   public MessageIdGenerator(ConnectionFactoryDelegate cfd, int blockSize)  throws JMSException
+   public MessageIdGenerator(int blockSize)  throws JMSException
    {
-      this.cfd = cfd;
       this.blockSize = blockSize;
-
-      getNextBlock();
    }
 
    // Public --------------------------------------------------------
 
-   protected void getNextBlock() throws JMSException
+   protected void getNextBlock(ConnectionEndpoint connection) throws JMSException
    {
-      IDBlock block = cfd.getIdBlock(blockSize);
+      IDBlock block = connection.getIdBlock(blockSize);
 
       nextID = block.getLow();
       high = block.getHigh();
@@ -82,16 +72,18 @@ public class MessageIdGenerator
       if (trace) { log.trace("Got block of IDs from server, low=" + nextID + " high=" + high); }
    }
 
-   public synchronized long getId() throws JMSException
+   public synchronized long getId(ConnectionEndpoint connection) throws JMSException
    {
-      long id = nextID++;
-
       if (nextID == high)
       {
-         getNextBlock();
+         getNextBlock(connection);
       }
 
+      long id = nextID;
+      
       if (log.isTraceEnabled()) { log.trace("Getting next message id=" + id); }
+      
+      nextID++;
 
       return id;
    }

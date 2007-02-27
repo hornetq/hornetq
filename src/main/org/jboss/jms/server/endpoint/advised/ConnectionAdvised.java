@@ -26,6 +26,7 @@ import javax.jms.JMSException;
 import org.jboss.jms.delegate.SessionDelegate;
 import org.jboss.jms.server.endpoint.ConnectionEndpoint;
 import org.jboss.jms.tx.TransactionRequest;
+import org.jboss.messaging.core.plugin.IDBlock;
 import org.jboss.messaging.core.tx.MessagingXid;
 
 /**
@@ -103,6 +104,11 @@ public class ConnectionAdvised extends AdvisedSupport implements ConnectionEndpo
    public MessagingXid[] getPreparedTransactions() throws JMSException
    {
       return endpoint.getPreparedTransactions();
+   }
+   
+   public IDBlock getIdBlock(int size) throws JMSException
+   {
+      return endpoint.getIdBlock(size);
    }
    
    // Public --------------------------------------------------------

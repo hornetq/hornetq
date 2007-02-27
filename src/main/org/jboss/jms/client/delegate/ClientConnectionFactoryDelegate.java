@@ -39,9 +39,7 @@ import org.jboss.jms.server.remoting.JMSWireFormat;
 import org.jboss.jms.util.MessagingJMSException;
 import org.jboss.jms.wireformat.ConnectionFactoryCreateConnectionDelegateRequest;
 import org.jboss.jms.wireformat.ConnectionFactoryGetClientAOPStackRequest;
-import org.jboss.jms.wireformat.ConnectionFactoryGetIDBlockRequest;
 import org.jboss.jms.wireformat.ResponseSupport;
-import org.jboss.messaging.core.plugin.IDBlock;
 import org.jboss.remoting.Client;
 import org.jboss.remoting.InvokerLocator;
 
@@ -206,20 +204,6 @@ public class ClientConnectionFactoryDelegate
       }
 
       return res;
-   }
-   
-   public IDBlock getIdBlock(int size) throws JMSException
-   {
-      Version version = getVersionToUse(serverVersion);
-      
-      byte v = version.getProviderIncrementingVersion();
-      
-      Client theClient = createClient();
-      
-      ConnectionFactoryGetIDBlockRequest req =
-         new ConnectionFactoryGetIDBlockRequest(id, v, size);
-      
-      return (IDBlock)doInvoke(theClient, req);    
    }
    
    public byte[] getClientAOPStack() throws JMSException

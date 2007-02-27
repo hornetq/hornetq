@@ -81,8 +81,6 @@ public class StateCreationAspect
 
    public Object handleCreateConnectionDelegate(Invocation inv) throws Throwable
    {
-      ConnectionFactoryDelegate cfd = (ConnectionFactoryDelegate)inv.getTargetObject();
-
       CreateConnectionResult res = (CreateConnectionResult)inv.invokeNext();
 
       ClientConnectionDelegate connectionDelegate = (ClientConnectionDelegate)res.getDelegate();
@@ -112,7 +110,7 @@ public class StateCreationAspect
 
          // We have one message id generator per unique server
          MessageIdGenerator idGenerator =
-            MessageIdGeneratorFactory.instance.checkOutGenerator(serverID, cfd);
+            MessageIdGeneratorFactory.instance.checkOutGenerator(serverID);
 
          ConnectionState connectionState =
             new ConnectionState(serverID, connectionDelegate,

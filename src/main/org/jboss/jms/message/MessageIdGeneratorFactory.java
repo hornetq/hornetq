@@ -26,7 +26,6 @@ import java.util.Map;
 
 import javax.jms.JMSException;
 
-import org.jboss.jms.delegate.ConnectionFactoryDelegate;
 import org.jboss.logging.Logger;
 
 /**
@@ -47,7 +46,7 @@ public class MessageIdGeneratorFactory
    public static MessageIdGeneratorFactory instance = new MessageIdGeneratorFactory();
 
    //TODO Make configurable
-   private static final int BLOCK_SIZE = 256;
+   private static final int BLOCK_SIZE = 512;
 
    // Static --------------------------------------------------------
 
@@ -69,8 +68,7 @@ public class MessageIdGeneratorFactory
       return holders.containsKey(new Integer(serverId));
    }
 
-   public synchronized MessageIdGenerator checkOutGenerator(int serverId,
-                                                            ConnectionFactoryDelegate cfd)
+   public synchronized MessageIdGenerator checkOutGenerator(int serverId)
       throws JMSException
    {
       Integer in = new Integer(serverId);
@@ -79,7 +77,7 @@ public class MessageIdGeneratorFactory
 
       if (h == null)
       {
-         h = new Holder(new MessageIdGenerator(cfd, BLOCK_SIZE));
+         h = new Holder(new MessageIdGenerator(BLOCK_SIZE));
          holders.put(in, h);
       }
       else

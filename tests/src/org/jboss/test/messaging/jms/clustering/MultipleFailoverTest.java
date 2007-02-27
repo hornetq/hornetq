@@ -231,7 +231,7 @@ public class MultipleFailoverTest extends ClusteringTestBase
 
             prod.send(tm);
             
-            Thread.sleep(10);
+            //Thread.sleep(10);
 
             if (count % 100 == 0)
             {
@@ -409,6 +409,8 @@ public class MultipleFailoverTest extends ClusteringTestBase
             
             if (!tm.getText().equals("message " + count))
             {
+               log.error("Expected message " + count + " but got " + tm.getText());
+               
                failed = true;
                
                latch.release();

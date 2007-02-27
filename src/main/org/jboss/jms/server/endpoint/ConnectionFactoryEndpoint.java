@@ -23,8 +23,6 @@ package org.jboss.jms.server.endpoint;
 
 import javax.jms.JMSException;
 
-import org.jboss.messaging.core.plugin.IDBlock;
-
 /**
  * Represents the set of methods from the ConnectionFactoryDelegate that are handled on the server.
  * The rest of the methods are handled in the advice stack.
@@ -46,7 +44,7 @@ public interface ConnectionFactoryEndpoint
                                                    int failedNodeID)
       throws JMSException;
    
-   IDBlock getIdBlock(int size) throws JMSException;
+   //IDBlock getIdBlock(int size) throws JMSException;
    
    byte[] getClientAOPStack() throws JMSException;
 }
