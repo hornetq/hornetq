@@ -276,8 +276,7 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
 
          Client callbackClient = callbackHandler.getCallbackClient();
 
-         ClientDelivery del = new ClientDelivery(message, id, deliveryId, ref
-                  .getDeliveryCount());
+         ClientDelivery del = new ClientDelivery(message, id, deliveryId, ref.getDeliveryCount());
 
          Callback callback = new Callback(del);
 

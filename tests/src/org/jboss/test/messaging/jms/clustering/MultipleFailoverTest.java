@@ -228,11 +228,10 @@ public class MultipleFailoverTest extends ClusteringTestBase
          while (!killer.isDone())
          {
             TextMessage tm = sessSend.createTextMessage("message " + count);
+            tm.setIntProperty("cnt", count);
 
             prod.send(tm);
             
-            //Thread.sleep(10);
-
             if (count % 100 == 0)
             {
                log.info("sent " + count);
@@ -240,12 +239,8 @@ public class MultipleFailoverTest extends ClusteringTestBase
 
             count++;
          }
-         
-         log.info("sending done");
-         
+              
          t.join();
-         
-         log.info("stopping listener");
          
          if (killer.failed)
          {
@@ -264,9 +259,19 @@ public class MultipleFailoverTest extends ClusteringTestBase
       }
       finally
       {
+         if (!ServerManagement.isStarted(0))
+         {
+            ServerManagement.start(0, "all");
+         }
+         
+         if (!ServerManagement.isStarted(1))
+         {
+            ServerManagement.start(1, "all");
+         }
+         
          if (conn != null)
          {
-            log.info("closing connetion");
+            log.info("closing connection");
             try
             {
                conn.close();
@@ -395,7 +400,8 @@ public class MultipleFailoverTest extends ClusteringTestBase
       {
          this.latch = latch;
       }
-           
+      
+   
       public void onMessage(Message msg)
       {
          try
@@ -404,17 +410,14 @@ public class MultipleFailoverTest extends ClusteringTestBase
             
             if (count % 100 == 0)
             {
-               log.info("Received message " + tm.getText());
+               log.info("Received message " + tm.getText() + " (" + tm + ")");
             }
             
-            if (!tm.getText().equals("message " + count))
+            if (tm.getIntProperty("cnt") != count)
             {
-               log.error("Expected message " + count + " but got " + tm.getText());
-               
+               log.error("Wrong message received " + tm.getIntProperty("cnt"));
                failed = true;
-               
-               latch.release();
-            }
+            }            
             
             count++;
          }

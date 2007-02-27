@@ -133,7 +133,7 @@ public class SessionState extends HierarchicalStateSupport
          currentTxId = parent.getResourceManager().createLocalTx();
       }
 
-      executor = new QueuedExecutor(new LinkedQueue());
+      createExecutor();
 
       clientAckList = new ArrayList();
 
@@ -197,6 +197,12 @@ public class SessionState extends HierarchicalStateSupport
 
       int oldSessionID = sessionID;
       sessionID = newState.sessionID;
+      
+      // We need to clear anything waiting in the session executor - since there may be messages
+      // from before failover waiting in there and we don't want them to get delivered after failover
+      executor.shutdownAfterProcessingCurrentTask();
+      
+      createExecutor();
 
       ClientSessionDelegate newDelegate = (ClientSessionDelegate)newState.getDelegate();
 
@@ -333,9 +339,9 @@ public class SessionState extends HierarchicalStateSupport
       else
       {
          log.debug(this + " no delivery recovery info to send on failover");
-      }
+      }           
    }
-
+   
    // Public ---------------------------------------------------------------------------------------
 
    /**
@@ -441,6 +447,12 @@ public class SessionState extends HierarchicalStateSupport
 
    // Private --------------------------------------------------------------------------------------
 
+   private void createExecutor()
+   {
+      executor = new QueuedExecutor(new LinkedQueue());
+   }
+
+   
    // Inner classes --------------------------------------------------------------------------------
 
 }

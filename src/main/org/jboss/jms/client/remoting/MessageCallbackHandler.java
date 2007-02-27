@@ -42,6 +42,7 @@ import org.jboss.messaging.util.Future;
 import org.jboss.messaging.util.prioritylinkedlist.BasicPriorityLinkedList;
 import org.jboss.messaging.util.prioritylinkedlist.PriorityLinkedList;
 
+import EDU.oswego.cs.dl.util.concurrent.Executor;
 import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
 
 /**
@@ -505,7 +506,7 @@ public class MessageCallbackHandler
    /**
     * Needed for failover
     */
-   public void synchronizeWith(MessageCallbackHandler newHandler)
+   public void synchronizeWith(MessageCallbackHandler newHandler, QueuedExecutor sessionExecutor)
    {
       consumerID = newHandler.consumerID;
 
@@ -516,6 +517,8 @@ public class MessageCallbackHandler
       // TODO If we don't zap this buffer, we may be able to salvage some non-persistent messages
 
       buffer.clear();
+      
+      this.sessionExecutor = sessionExecutor;
       
       // need to reset toggle state
       serverSending = true;

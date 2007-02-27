@@ -88,7 +88,7 @@ public class CallbackManager implements InvokerCallbackHandler
       if (parameter instanceof ClientDelivery)
       {
          ClientDelivery dr = (ClientDelivery)parameter;
-         
+          
          Message msg = dr.getMessage();
          
          MessageProxy proxy = JBossMessage.
