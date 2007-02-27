@@ -920,6 +920,8 @@ public class HATest extends ClusteringTestBase
    }
 
    
+   /*
+   TODO: Reactivate this test when http://jira.jboss.org/jira/browse/JBMESSAGING-883 is done
    public void testFailoverWithUnackedMessagesTransactional() throws Exception
    {
       JBossConnectionFactory factory =  (JBossConnectionFactory )ic[0].lookup("/ConnectionFactory");
@@ -1107,7 +1109,7 @@ public class HATest extends ClusteringTestBase
          }
       }
 
-   }
+   } */
 
    public void testTopicSubscriber() throws Exception
    {
