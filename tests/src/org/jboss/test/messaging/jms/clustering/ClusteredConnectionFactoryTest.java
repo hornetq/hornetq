@@ -57,6 +57,38 @@ public class ClusteredConnectionFactoryTest extends ClusteringTestBase
 
    // Public ---------------------------------------------------------------------------------------
 
+   public void testGetAOPBroken() throws Exception
+   {
+      Connection conn = null;
+
+      try
+      {
+
+         resetAOP();
+
+         ServerManagement.killAndWait(2);
+         ServerManagement.killAndWait(1);
+         ServerManagement.killAndWait(0);
+
+         try
+         {
+            conn = cf.createConnection();
+            fail ("This should try an exception as every server is down");
+         }
+         catch (RuntimeException e)
+         {
+            log.error(e.toString(), e);
+         }
+      }
+      finally
+      {
+         if (conn != null)
+         {
+            conn.close();
+         }
+      }
+   }
+
    public void testCreateConnectionOnBrokenServer() throws Exception
    {
       Connection conn = null;
@@ -177,6 +209,17 @@ public class ClusteredConnectionFactoryTest extends ClusteringTestBase
    }
 
    // Private --------------------------------------------------------------------------------------
+
+   private void resetAOP()
+      throws NoSuchFieldException, IllegalAccessException
+   {
+
+      // Using reflection to cleanup AOP status and force to load AOP again
+      Field field = ClientAOPStackLoader.class.getDeclaredField("instance");
+      field.setAccessible(true);
+      log.info("Reseting AOP");
+      field.set(null,null);
+   }
 
    // Inner classes --------------------------------------------------------------------------------
 
