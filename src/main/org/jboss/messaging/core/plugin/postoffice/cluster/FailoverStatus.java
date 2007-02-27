@@ -53,6 +53,8 @@ public class FailoverStatus implements Serializable
 
    // Is the server currently failing over?
    private boolean failingOver;
+   
+   private boolean failedOver;
 
    // Constructors --------------------------------------------------
 
@@ -75,6 +77,7 @@ public class FailoverStatus implements Serializable
       
       currentlyFailingOverForNode = nodeID.intValue();
       failingOver = true;
+      failedOver = false;
    }
 
    public void finishFailingOver()
@@ -86,6 +89,7 @@ public class FailoverStatus implements Serializable
 
       failedOverForNodes.add(new Integer(currentlyFailingOverForNode));
       failingOver = false;
+      failedOver = true;
    }
 
    public Set getFailedOverForNodes()
@@ -106,6 +110,11 @@ public class FailoverStatus implements Serializable
    public boolean isFailingOver()
    {
       return failingOver;
+   }
+   
+   public boolean isFailedOver()
+   {
+      return failedOver;
    }
 
    public String toString()

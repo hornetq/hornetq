@@ -579,11 +579,9 @@ public class SessionAspect
       
       ConnectionState connState = (ConnectionState)state.getParent();
       ResourceManager rm = connState.getResourceManager();
-      ConnectionDelegate conn = (ConnectionDelegate)connState.getDelegate();
-
       try
       {
-         rm.rollbackLocal((LocalTx)state.getCurrentTxId(), conn);
+         rm.rollbackLocal((LocalTx)state.getCurrentTxId());
       }
       finally
       {

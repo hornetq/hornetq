@@ -1573,7 +1573,7 @@ public class ServerPeer extends ServiceMBeanSupport implements ServerPeerMBean
                FailoverStatus status =
                   (FailoverStatus)updatedReplicantMap.get(new Integer(serverPeerID));
                
-               if (status != null && status.isFailingOver())
+               if (status != null && status.isFailedOver())
                {                     
                   // We prompt txRepository to load any prepared txs - so we can take over
                   // responsibility for in doubt transactions from other nodes

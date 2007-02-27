@@ -116,8 +116,6 @@ public class FailoverValveInterceptor implements Interceptor, FailureDetector
       
          fcc.failureDetected(e, this, remotingConnection);
          
-         log.debug(this + " resuming " + methodName + "()");
-      
          // Set retry flag as true on send() and sendTransaction()
          // more details at http://jira.jboss.org/jira/browse/JBMESSAGING-809
          if (invocation.getTargetObject() instanceof ClientSessionDelegate &&
@@ -129,7 +127,21 @@ public class FailoverValveInterceptor implements Interceptor, FailureDetector
             ((MethodInvocation)invocation).setArguments(arguments);
          }
 
-         return invocation.invokeNext();
+         //We don't retry the following invocations:
+         //cancelDelivery, cancelDeliveries, cancelInflightMessages - the deliveries will already be cancelled after failover
+         if (methodName.equals("cancelDelivery") || methodName.equals("cancelDeliveries")
+                  || methodName.equals("cancelInflightMessages"))
+         {
+            log.debug(this + " NOT resuming " + methodName + "()");
+            
+            return null;
+         }
+         else
+         {            
+            log.debug(this + " resuming " + methodName + "()");
+            
+            return invocation.invokeNext();
+         }
       } 
       catch (Throwable e)
       {

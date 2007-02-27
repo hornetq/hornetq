@@ -264,10 +264,6 @@ public class MultipleFailoverTest extends ClusteringTestBase
             ServerManagement.start(0, "all");
          }
          
-         if (!ServerManagement.isStarted(1))
-         {
-            ServerManagement.start(1, "all");
-         }
          
          if (conn != null)
          {

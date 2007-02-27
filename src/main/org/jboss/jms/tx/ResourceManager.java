@@ -209,7 +209,7 @@ public class ResourceManager
       catch (Throwable t)
       {
          // If a problem occurs during commit processing the session should be rolled back
-         rollbackLocal(xid, connection);
+         rollbackLocal(xid);
          
          JMSException e = new MessagingTransactionRolledBackException(t.getMessage());
          e.initCause(t);
@@ -217,7 +217,7 @@ public class ResourceManager
       }
    }
    
-   public void rollbackLocal(LocalTx xid, ConnectionDelegate connection) throws JMSException
+   public void rollbackLocal(Object xid) throws JMSException
    {
       if (trace) { log.trace("rolling back local xid " + xid); }
       
@@ -672,6 +672,16 @@ public class ResourceManager
          // received. Therfore to be strict and avoid any possibility of duplicate delivery we must
          // doom the transaction
          removeTx(xid);
+         
+         try
+         {
+            redeliverMessages(state);
+         }
+         catch (JMSException e)
+         {
+            log.error("Failed to redeliver messages", e);
+         }
+          
          
          final String msg = "Rolled back tx branch to avoid possibility of duplicates http://jira.jboss.org/jira/browse/JBMESSAGING-883";
          
