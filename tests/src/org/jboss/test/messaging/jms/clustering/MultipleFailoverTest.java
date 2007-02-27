@@ -21,14 +21,19 @@
 */
 package org.jboss.test.messaging.jms.clustering;
 
+import javax.jms.Connection;
+import javax.jms.DeliveryMode;
+import javax.jms.Message;
+import javax.jms.MessageConsumer;
+import javax.jms.MessageListener;
+import javax.jms.MessageProducer;
+import javax.jms.Session;
+import javax.jms.TextMessage;
+
 import org.jboss.test.messaging.jms.clustering.base.ClusteringTestBase;
 import org.jboss.test.messaging.tools.ServerManagement;
 
-import javax.jms.Connection;
-import javax.jms.Session;
-import javax.jms.TextMessage;
-import javax.jms.MessageProducer;
-import javax.jms.MessageConsumer;
+import EDU.oswego.cs.dl.util.concurrent.Latch;
 
 /**
  * A test where we kill multiple nodes and make sure the failover works correctly in these condtions
@@ -183,6 +188,146 @@ public class MultipleFailoverTest extends ClusteringTestBase
          }
       }
    }
+   
+   class Killer implements Runnable
+   { 
+      boolean failed;
+      
+      public void run()
+      {
+         try
+         {                                     
+            Thread.sleep(10000);
+               
+            log.info("Killing server 0");
+            ServerManagement.kill(0);
+            
+            Thread.sleep(10000);
+            
+            log.info("starting server 0");
+            ServerManagement.start(0, "all");
+            
+            Thread.sleep(10000);
+            
+            log.info("Killing server 1");
+            ServerManagement.kill(1);
+            
+            Thread.sleep(10000);
+            
+            log.info("Starting server 1");
+            ServerManagement.start(1, "all");
+            
+            Thread.sleep(10000);
+            
+            log.info("Killing server 0");
+            ServerManagement.kill(0);
+            
+            Thread.sleep(10000);
+            
+            log.info("Starting server 0");
+            ServerManagement.start(0, "all");
+            
+            Thread.sleep(10000);
+            
+            log.info("Killing server 1");
+            ServerManagement.kill(1);
+            
+            Thread.sleep(10000);
+            
+            log.info("Starting server 1");
+            ServerManagement.start(1, "all");
+            
+            Thread.sleep(10000);
+            
+            log.info("Killing server 0");
+            ServerManagement.kill(0);
+            
+            Thread.sleep(10000);
+            
+            log.info("Starting server 0");
+            ServerManagement.start(0, "all");
+
+         }
+         catch (Exception e)
+         {               
+            failed = true;
+         }
+      }
+      
+   }
+   
+   public void testFailoverFloodTwoServers() throws Exception
+   {
+      Connection conn = null;
+
+      try
+      {
+         conn = cf.createConnection();
+
+         Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+         Session sessCons = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+         MessageConsumer cons = sessCons.createConsumer(queue[0]);
+
+         Latch latch = new Latch();
+         
+         final int NUM_MESSAGES = 10000;         
+         
+         MessageListener list = new MyListener(latch, NUM_MESSAGES);
+
+         cons.setMessageListener(list);
+
+         conn.start();
+
+         MessageProducer prod = sessSend.createProducer(queue[0]);
+
+         prod.setDeliveryMode(DeliveryMode.PERSISTENT);
+
+         int count = 0;
+         
+         Thread t = new Thread(new Killer());
+         
+         t.start();
+
+         for (int i = 0; i < NUM_MESSAGES; i++)
+         {
+            TextMessage tm = sessSend.createTextMessage("message " + count);
+
+            prod.send(tm);
+            
+            Thread.sleep(250);
+
+            log.info("sent " + count);
+
+            count++;
+         }
+         
+         t.join();
+         
+         latch.acquire();
+      }
+      catch (Exception e)
+      {
+         log.error("Failed", e);
+         throw e;
+      }
+      finally
+      {
+         if (conn != null)
+         {
+            log.info("closing connetion");
+            try
+            {
+               conn.close();
+            }
+            catch (Exception ignore)
+            {
+            }
+            log.info("closed connection");
+         }
+      }
+   }
 
    // Package protected ----------------------------------------------------------------------------
 
@@ -206,4 +351,50 @@ public class MultipleFailoverTest extends ClusteringTestBase
 
    // Inner classes --------------------------------------------------------------------------------
 
+   class MyListener implements MessageListener
+   {
+      int count = 0;
+      
+      Latch latch;
+      
+      boolean failed;
+      
+      int num;
+      
+      MyListener(Latch latch, int num)
+      {
+         this.latch = latch;
+         
+         this.num = num;
+      }
+           
+      public void onMessage(Message msg)
+      {
+         try
+         {
+            TextMessage tm = (TextMessage)msg;
+            
+            log.info("Received message " + tm.getText());
+            
+            if (!tm.getText().equals("message " + count))
+            {
+               failed = true;
+               
+               latch.release();
+            }
+            
+            count++;
+            
+            if (count == num)
+            {
+               latch.release();
+            }
+         }
+         catch (Exception e)
+         {
+            log.error("Failed to receive", e);
+         }
+      }
+      
+   }
 }
