@@ -578,24 +578,27 @@ public class MergeQueueTest extends ClusteringTestBase
          cons1.close();
          
          cons1 = null;
+         
+         if (fillConsumer)
+         {
+            //Creating the consumer immediately after kill should ensure that all the messages are in the consumer and
+            //not paged to disk
+            cons0 = session0.createConsumer(queue0);
+         }
                  
          //Now kill the server
 
          waitForFailoverComplete(1, conn1);
+         
+         if (!fillConsumer)
+         {
+            cons0 = session0.createConsumer(queue0);
+         }
 
          //Messages should all be available on node 0
          
-         conn0.start();
-                  
-         if (!fillConsumer)
-         {
-            Thread.sleep(5000);
-         }
-         
-         //Creating the consumer immediately after kill should ensure that all the messages are in the consumer and
-         //not paged to disk
-         cons0 = session0.createConsumer(queue0);
-                           
+         conn0.start();                 
+                                    
          log.info("now consuming");
          for (int i = 0; i < messages0 + messages1; i++)
          {
