@@ -64,8 +64,7 @@ import org.jboss.messaging.util.StreamUtils;
 import org.jboss.messaging.util.Util;
 
 /**
- *  
- * JDBC implementation of PersistenceManager 
+ * JDBC implementation of PersistenceManager.
  *  
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>

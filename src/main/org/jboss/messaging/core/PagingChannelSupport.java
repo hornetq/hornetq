@@ -36,18 +36,16 @@ import org.jboss.messaging.core.plugin.contract.PersistenceManager.InitialLoadIn
 import org.jboss.messaging.core.plugin.contract.PersistenceManager.ReferenceInfo;
 
 /**
- * A PagingChannel
+ * This channel implementation automatically pages message references to and from storage to prevent
+ * more than a maximum number of references being stored in memory at once.
  * 
- * This channel implementation automatically pages message references to and from storage to prevent more
- * than a maximum number of references being stored in memory at once.
- * 
- * This allows us to support logical channels holding many millions of messages without running out of memory.
+ * This allows us to support logical channels holding many millions of messages without running out
+ * of memory.
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
  *
  * $Id$
- *
  */
 public abstract class PagingChannelSupport extends ChannelSupport
 {
@@ -88,17 +86,7 @@ public abstract class PagingChannelSupport extends ChannelSupport
    protected long nextPagingOrder;
    
    /**
-    * Constructor with default paging params
-    * @param channelID
-    * @param ms
-    * @param pm
-    * @param mm
-    * @param acceptReliableMessages
-    * @param recoverable
-    * @param fullSize
-    * @param pageSize
-    * @param downCacheSize
-    * @param executor
+    * Constructor with default paging params.
     */
    public PagingChannelSupport(long channelID, MessageStore ms, PersistenceManager pm,
                                boolean acceptReliableMessages, boolean recoverable,                        
@@ -112,16 +100,7 @@ public abstract class PagingChannelSupport extends ChannelSupport
    }
    
    /**
-    * Constructor specifying paging params
-    * @param channelID
-    * @param ms
-    * @param pm
-    * @param acceptReliableMessages
-    * @param recoverable
-    * @param executor
-    * @param fullSize
-    * @param pageSize
-    * @param downCacheSize
+    * Constructor specifying paging params.
     */
    public PagingChannelSupport(long channelID, MessageStore ms, PersistenceManager pm,
                                boolean acceptReliableMessages, boolean recoverable,                        
@@ -528,8 +507,6 @@ public abstract class PagingChannelSupport extends ChannelSupport
          nextPagingOrder = ili.getMaxPageOrdering().longValue() + 1;
                            
          paging = true;
-         
-         log.info("set paging to true");
       }
       else
       {

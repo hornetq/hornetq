@@ -53,17 +53,17 @@ public class FailoverValve2
    
    private boolean locked;
 
+   // Constructors ---------------------------------------------------------------------------------
+
    public FailoverValve2()
    {
       trace = log.isTraceEnabled();
-      
+
       if (trace)
       {
          threads = new HashSet();
       }
    }
-
-   // Constructors ---------------------------------------------------------------------------------
 
    // Public ---------------------------------------------------------------------------------------
 

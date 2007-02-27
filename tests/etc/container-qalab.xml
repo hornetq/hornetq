@@ -35,7 +35,6 @@
          <password>messaging</password>
       </database-configuration>
 
-
       <database-configuration name="oracle">
          <url>jdbc:oracle:thin:@dev01-priv:1521:qadb01</url>
          <driver>oracle.jdbc.driver.OracleDriver</driver>

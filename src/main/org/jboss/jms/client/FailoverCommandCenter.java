@@ -100,7 +100,8 @@ public class FailoverCommandCenter
             remotingConnection.setFailed();
          }
          
-         //Note - failover doesn't occur until _after_ the above check - so the next comment belongs here
+         // Note - failover doesn't occur until _after_ the above check - so the next comment
+         // belongs here
          log.debug(this + " starting client-side failover");
          
          // generate a FAILOVER_STARTED event. The event must be broadcasted AFTER valve closure,

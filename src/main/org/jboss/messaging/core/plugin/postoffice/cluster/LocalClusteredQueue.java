@@ -21,9 +21,6 @@
  */
 package org.jboss.messaging.core.plugin.postoffice.cluster;
 
-import java.util.Iterator;
-import java.util.Map;
-
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Delivery;
 import org.jboss.messaging.core.Filter;
@@ -34,7 +31,6 @@ import org.jboss.messaging.core.message.MessageReference;
 import org.jboss.messaging.core.plugin.contract.ClusteredPostOffice;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager;
-import org.jboss.messaging.core.plugin.contract.PersistenceManager.ReferenceInfo;
 import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.messaging.core.tx.TransactionRepository;
 import org.jboss.messaging.util.Future;
@@ -114,11 +110,10 @@ public class LocalClusteredQueue extends PagingFilteredQueue implements Clustere
       
    public QueueStats getStats()
    {      
-      //Currently we only return the current message reference count for the channel
-      //Note we are only interested in the number of refs in the main queue, not
-      //in any deliveries
-      //Also we are only interested in the value obtained after delivery is complete.
-      //This is so we don't end up with transient values since delivery is half way through
+      // Currently we only return the current message reference count for the channel. Note we are
+      // only interested in the number of refs in the main queue, not in any deliveries. Also we are
+      // only interested in the value obtained after delivery is complete. This is so we don't end
+      // up with transient values since delivery is half way through.
       
       int cnt = getRefCount();
       
@@ -126,8 +121,8 @@ public class LocalClusteredQueue extends PagingFilteredQueue implements Clustere
       {
          lastCount = cnt;
          
-         //We only return stats if it has changed since last time - this is so when we only
-         //broadcast data when necessary
+         // We only return stats if it has changed since last time - this is so when we only
+         // broadcast data when necessary.
          return new QueueStats(name, cnt);
       }
       else
@@ -181,7 +176,8 @@ public class LocalClusteredQueue extends PagingFilteredQueue implements Clustere
    }
    
    public void handlePullMessagesResult(RemoteQueueStub remoteQueue, Message message,
-                                        long holdingTxId, boolean failBeforeCommit, boolean failAfterCommit) throws Exception
+                                        long holdingTxId, boolean failBeforeCommit,
+                                        boolean failAfterCommit) throws Exception
    { 
       //This needs to be run on a different thread to the one used by JGroups to deliver the message
       //to avoid deadlock
@@ -192,7 +188,8 @@ public class LocalClusteredQueue extends PagingFilteredQueue implements Clustere
    }
    
    //TODO it's not ideal that we need to pass in a PullMessagesRequest
-   public void handleGetDeliveriesRequest(int returnNodeId, int number, TransactionId txId, PullMessagesRequest tx) throws Exception
+   public void handleGetDeliveriesRequest(int returnNodeId, int number, TransactionId txId,
+                                          PullMessagesRequest tx) throws Exception
    {
       //This needs to be run on a different thread to the one used by JGroups to deliver the message
       //to avoid deadlock
@@ -224,30 +221,25 @@ public class LocalClusteredQueue extends PagingFilteredQueue implements Clustere
       return ((Integer)result.getResult()).intValue();
    }
    
-   /*
-    * Merge the contents of one queue with another - this happens at failover when
-    * a queue is failed over to another node, but a queue with the same name already exists
-    * In this case we merge the two queues
+   /**
+    * Merge the contents of one queue with another - this happens at failover when a queue is failed
+    * over to another node, but a queue with the same name already exists. In this case we merge the
+    * two queues.
     */
    public void mergeIn(RemoteQueueStub remoteQueue) throws Exception
    {
       if (trace) { log.trace("Merging queue " + remoteQueue + " into " + this); }
            
-      log.info("queue is paging:" + this.paging + " message refs size " +
-               this.messageRefs.size() + " fullsize:" + this.fullSize +
-               " delivering:" + this.deliveringCount.get());
-      
       synchronized (refLock)
       {
          flushDownCache();
                   
          PersistenceManager.InitialLoadInfo ili =
-            pm.mergeAndLoad(remoteQueue.getChannelID(), channelID, fullSize - messageRefs.size(), firstPagingOrder, nextPagingOrder);
+            pm.mergeAndLoad(remoteQueue.getChannelID(), channelID, fullSize - messageRefs.size(),
+                            firstPagingOrder, nextPagingOrder);
             
          if (trace) { log.trace("Loaded " + ili.getRefInfos().size() + " refs"); }            
-                           
-         log.info("firstpageord:" + ili.getMinPageOrdering() + " lastpageord:" + ili.getMaxPageOrdering());
-         
+
          doLoad(ili);         
          
          deliverInternal();

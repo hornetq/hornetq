@@ -28,7 +28,7 @@ import org.jboss.messaging.core.message.MessageReference;
 import org.jboss.messaging.core.tx.Transaction;
 
 /**
- * The interface to the persistence manager
+ * The interface to the persistence manager.
  *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -64,13 +64,15 @@ public interface PersistenceManager extends MessagingComponent
     
    void updatePageOrder(long channelID, List references) throws Exception;
    
-   void updateReferencesNotPagedInRange(long channelID, long orderStart, long orderEnd, long num) throws Exception;
+   void updateReferencesNotPagedInRange(long channelID, long orderStart, long orderEnd, long num)
+      throws Exception;
    
    List getPagedReferenceInfos(long channelID, long orderStart, int number) throws Exception;
    
    InitialLoadInfo loadFromStart(long channelID, int fullSize) throws Exception;
    
-   InitialLoadInfo mergeAndLoad(long fromChannelID, long toChannelID, int numberToLoad, long firstPagingOrder, long nextPagingOrder) throws Exception;  
+   InitialLoadInfo mergeAndLoad(long fromChannelID, long toChannelID, int numberToLoad,
+                                long firstPagingOrder, long nextPagingOrder) throws Exception;
      
    List getMessages(List messageIds) throws Exception;
          
@@ -86,9 +88,8 @@ public interface PersistenceManager extends MessagingComponent
 
    boolean referenceExists(long messageID) throws Exception;
 
-   // Interface value classes
-   //---------------------------------------------------------------
-   
+   // Interface value classes ----------------------------------------------------------------------
+
    class MessageChannelPair
    {
       private Message message;

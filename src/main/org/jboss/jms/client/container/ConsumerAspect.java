@@ -34,7 +34,6 @@ import org.jboss.jms.client.state.SessionState;
 import org.jboss.jms.delegate.ConsumerDelegate;
 import org.jboss.jms.delegate.SessionDelegate;
 import org.jboss.jms.util.MessageQueueNameHelper;
-import org.jboss.logging.Logger;
 
 import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
 
@@ -52,17 +51,15 @@ import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
  */
 public class ConsumerAspect
 {
-   // Constants -----------------------------------------------------
+   // Constants ------------------------------------------------------------------------------------
    
-   private static final Logger log = Logger.getLogger(ConsumerAspect.class);
-   
-   // Static --------------------------------------------------------
+   // Static ---------------------------------------------------------------------------------------
 
-   // Attributes ----------------------------------------------------
+   // Attributes -----------------------------------------------------------------------------------
 
-   // Constructors --------------------------------------------------
+   // Constructors ---------------------------------------------------------------------------------
 
-   // Public --------------------------------------------------------
+   // Public ---------------------------------------------------------------------------------------
 
    public Object handleCreateConsumerDelegate(Invocation invocation) throws Throwable
    {
@@ -87,7 +84,9 @@ public class ConsumerAspect
       String queueName = null;
       if (consumerState.getSubscriptionName() != null)
       {
-         queueName = MessageQueueNameHelper.createSubscriptionName(connectionState.getClientID(), consumerState.getSubscriptionName());
+         queueName = MessageQueueNameHelper.
+            createSubscriptionName(connectionState.getClientID(),
+                                   consumerState.getSubscriptionName());
       }
       else if (consumerState.getDestination().isQueue())
       {
@@ -198,11 +197,11 @@ public class ConsumerAspect
       return getState(invocation).getSelector();
    }
    
-   // Package protected ---------------------------------------------
+   // Package protected ----------------------------------------------------------------------------
 
-   // Protected -----------------------------------------------------
+   // Protected ------------------------------------------------------------------------------------
 
-   // Private -------------------------------------------------------
+   // Private --------------------------------------------------------------------------------------
    
    private ConsumerState getState(Invocation inv)
    {
@@ -215,5 +214,5 @@ public class ConsumerAspect
       return state.getMessageCallbackHandler();      
    }
    
-   // Inner classes -------------------------------------------------
+   // Inner classes --------------------------------------------------------------------------------
 }

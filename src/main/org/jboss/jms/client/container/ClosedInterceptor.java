@@ -174,10 +174,10 @@ public class ClosedInterceptor implements Interceptor
       {                  
          if (isClosing)
          {
-            //We make sure we remove ourself AFTER the invocation has been made
-            //otherwise in a failover situation we would end up divorced from the hierarchy
-            //and failover will not occur properly since failover would not be able to
-            //traverse the hierarchy and update the delegates properly
+            // We make sure we remove ourself AFTER the invocation has been made otherwise in a
+            // failover situation we would end up divorced from the hierarchy and failover will not
+            // occur properly since failover would not be able to traverse the hierarchy and update
+            // the delegates properly
             removeSelf(invocation);
             
             closing();

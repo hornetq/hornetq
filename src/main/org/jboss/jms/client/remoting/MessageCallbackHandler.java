@@ -259,36 +259,6 @@ public class MessageCallbackHandler
          });
    }
    
-   private void handleMessageInternal(Object message) throws Exception
-   {
-      MessageProxy proxy = (MessageProxy) message;
-
-      if (trace) { log.trace(this + " receiving message " + proxy + " from the remoting layer"); }
-
-      synchronized (mainLock)
-      {
-         if (closed)
-         {             
-            // Ignore
-            if (trace) { log.trace(this + " is closed, so ignore message"); }
-            return;
-         }
-
-         proxy.setSessionDelegate(sessionDelegate, isConnectionConsumer);
-                        
-         //Add it to the buffer
-         buffer.addLast(proxy, proxy.getJMSPriority());         
-         
-         lastDeliveryId = proxy.getDeliveryId();
-         
-         if (trace) { log.trace(this + " added message(s) to the buffer"); }
-         
-         messageAdded(); 
-         
-         checkStop();         
-      }
-   }
-         
    public void setMessageListener(MessageListener listener) throws JMSException
    {     
       synchronized (mainLock)
@@ -565,7 +535,37 @@ public class MessageCallbackHandler
    // Protected ------------------------------------------------------------------------------------
             
    // Private --------------------------------------------------------------------------------------
-   
+
+   private void handleMessageInternal(Object message) throws Exception
+   {
+      MessageProxy proxy = (MessageProxy) message;
+
+      if (trace) { log.trace(this + " receiving message " + proxy + " from the remoting layer"); }
+
+      synchronized (mainLock)
+      {
+         if (closed)
+         {
+            // Ignore
+            if (trace) { log.trace(this + " is closed, so ignore message"); }
+            return;
+         }
+
+         proxy.setSessionDelegate(sessionDelegate, isConnectionConsumer);
+
+         //Add it to the buffer
+         buffer.addLast(proxy, proxy.getJMSPriority());
+
+         lastDeliveryId = proxy.getDeliveryId();
+
+         if (trace) { log.trace(this + " added message(s) to the buffer"); }
+
+         messageAdded();
+
+         checkStop();
+      }
+   }
+
    private void checkStop()
    {
       int size = buffer.size();
@@ -640,9 +640,7 @@ public class MessageCallbackHandler
          log.warn("Thread interrupted", e);
       }
    }
-   
 
-   
    private void queueRunner(ListenerRunner runner)
    {
       try
