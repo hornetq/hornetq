@@ -52,8 +52,6 @@ public class MergeQueueTest extends ClusteringTestBase
       Connection conn0 = null;
       Connection conn1 = null;
 
-      int numberOfMessagesReceived = 0;
-
       try
       {
 
@@ -81,19 +79,13 @@ public class MergeQueueTest extends ClusteringTestBase
 
          TextMessage msg;
 
-         do
+         for (int i = 0; i < 5; i++)
          {
             msg = (TextMessage)consumer0.receive(5000);
-            if (msg!=null)
-            {
-               log.info("msg = " + msg.getText());
-               numberOfMessagesReceived++;
-            }
-            if (numberOfMessagesReceived==5)
-            {
-               break;
-            }
-         } while (msg!=null);
+            assertNotNull(msg);
+            log.info("msg = " + msg.getText());
+            assertEquals("message " + i, msg.getText());
+         }
 
          session0.commit();
          consumer0.close();
@@ -112,7 +104,7 @@ public class MergeQueueTest extends ClusteringTestBase
 
          producer1.setDeliveryMode(DeliveryMode.PERSISTENT);
 
-         for (int i=10; i<20; i++)
+         for (int i = 10; i < 20; i++)
          {
             producer1.send(session0.createTextMessage("message " + i));
          }
@@ -120,19 +112,18 @@ public class MergeQueueTest extends ClusteringTestBase
          ServerManagement.killAndWait(1);
 
          consumer0 = session0.createConsumer(queue[0]);
-         do
+
+         for (int i=5;i<20;i++)
          {
             msg = (TextMessage)consumer0.receive(5000);
-            if (msg!=null)
-            {
-               log.info("msg = " + msg.getText());
-               numberOfMessagesReceived++;
-            }
-         } while (msg!=null);
+            assertNotNull(msg);
+            log.info("msg = " + msg.getText());
+            assertEquals("message " + i,msg.getText());
+         }
+
+         assertNull(consumer0.receive(5000));
 
          session0.commit();
-
-         assertEquals(20, numberOfMessagesReceived);
       }
       finally
       {
@@ -182,19 +173,13 @@ public class MergeQueueTest extends ClusteringTestBase
 
          TextMessage msg;
 
-         do
+         for (int i = 0; i < 5; i++)
          {
             msg = (TextMessage)consumer0.receive(5000);
-            if (msg!=null)
-            {
-               log.info("msg = " + msg.getText());
-               numberOfMessagesReceived++;
-            }
-            if (numberOfMessagesReceived==5)
-            {
-               break;
-            }
-         } while (msg!=null);
+            assertNotNull(msg);
+            log.info("msg = " + msg.getText());
+            assertEquals("message " + i, msg.getText());
+         }
 
          session0.commit();
          consumer0.close();
@@ -220,30 +205,24 @@ public class MergeQueueTest extends ClusteringTestBase
 
          session1.commit();
 
-         MessageConsumer consumer1 = session1.createConsumer(queue[0]);
+         // creates another consumer... before killing the server
+         MessageConsumer consumer1 = session1.createConsumer(queue[1]);
 
          ServerManagement.killAndWait(1);
-
-         TextMessage msgAfterKill = (TextMessage)consumer1.receive(1000);
-         assertNotNull(msgAfterKill);
-         session1.commit();
-
-         consumer1.close();
+         waitForFailoverComplete(1, conn1);
 
          consumer0 = session0.createConsumer(queue[0]);
-         do
+         for (int i = 5; i < 20; i++)
          {
             msg = (TextMessage)consumer0.receive(5000);
-            if (msg!=null)
-            {
-               log.info("msg = " + msg.getText());
-               numberOfMessagesReceived++;
-            }
-         } while (msg!=null);
+            assertNotNull(msg);
+            log.info("msg = " + msg.getText());
+            assertEquals("message " + i, msg.getText());
+         }
+
+         assertNull(consumer0.receive(5000));
 
          session0.commit();
-
-         assertEquals(19, numberOfMessagesReceived);
       }
       finally
       {
