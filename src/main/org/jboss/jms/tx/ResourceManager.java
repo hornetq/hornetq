@@ -309,8 +309,6 @@ public class ResourceManager
       state.setState(ClientTransaction.TX_ENDED);
    }
    
-   
-   
    int prepare(Xid xid, ConnectionDelegate connection) throws XAException
    {
       if (trace) { log.trace("preparing " + xid); }
