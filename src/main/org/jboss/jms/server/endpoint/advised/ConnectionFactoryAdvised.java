@@ -24,8 +24,10 @@ package org.jboss.jms.server.endpoint.advised;
 import javax.jms.JMSException;
 
 import org.jboss.jms.server.endpoint.ConnectionFactoryEndpoint;
+import org.jboss.jms.server.endpoint.ConnectionFactoryInternalEndpoint;
 import org.jboss.jms.server.endpoint.CreateConnectionResult;
-import org.jboss.messaging.core.plugin.IDBlock;
+import org.jboss.jms.server.endpoint.ServerConnectionFactoryEndpoint;
+import org.jboss.remoting.callback.ServerInvokerCallbackHandler;
 
 /**
  *
@@ -35,7 +37,7 @@ import org.jboss.messaging.core.plugin.IDBlock;
  *
  * ConnectionFactoryAdvised.java,v 1.3 2006/03/01 22:56:51 ovidiu Exp
  */
-public class ConnectionFactoryAdvised extends AdvisedSupport implements ConnectionFactoryEndpoint
+public class ConnectionFactoryAdvised extends AdvisedSupport implements ConnectionFactoryInternalEndpoint
 {
    // Constants -----------------------------------------------------
 
@@ -69,6 +71,21 @@ public class ConnectionFactoryAdvised extends AdvisedSupport implements Connecti
    public byte[] getClientAOPStack() throws JMSException
    {
       return endpoint.getClientAOPStack();
+   }
+   
+   // ConnectionFactoryInternalEndpoint implementation -----------------------
+   public CreateConnectionResult createConnectionDelegate(String username,
+                                                          String password,
+                                                          int failedNodeID,
+                                                          String remotingSessionID,
+                                                          String clientVMID,
+                                                          byte versionToUse,
+                                                          ServerInvokerCallbackHandler callbackHandler)
+      throws JMSException
+   {
+      return ((ServerConnectionFactoryEndpoint)endpoint).createConnectionDelegate(username, password, failedNodeID,
+                                                      remotingSessionID, clientVMID,
+                                                      versionToUse, callbackHandler);
    }
 
    // AdvisedSupport override ---------------------------------------

@@ -1572,8 +1572,7 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
 
          // The state will give us the clustered bindings - but not the non clustered ones - so we load these
          // explicitly
-         log.info(" not first member of group, so waiting for state to arrive....");
-         
+
          synchronized (setStateLock)
          {
             //TODO we should implement a timeout on this
@@ -1583,10 +1582,8 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
             }
          }
          
-         log.info("loading non clustered bindings from db");
          super.loadBindings(true);
-         
-         
+                  
          if (trace) { log.trace(this + " received state"); }
       }
    }

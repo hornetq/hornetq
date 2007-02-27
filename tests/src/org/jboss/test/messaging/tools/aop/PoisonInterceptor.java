@@ -56,7 +56,7 @@ public class PoisonInterceptor implements Interceptor
    
    public static final int LONG_SEND = 8;
 
-   public static final int CF_GET_ID_BLOCK = 9;
+   public static final int CF_CREATE_CONNECTION= 9;
 
    public static final int CF_GET_CLIENT_AOP_STACK = 10;
    // Static ---------------------------------------------------------------------------------------
@@ -201,8 +201,8 @@ public class PoisonInterceptor implements Interceptor
          }
       }
       else if (target instanceof ConnectionFactoryAdvised &&
-               (type == CF_GET_ID_BLOCK && "getIdBlock".equals(methodName) ||
-                type == CF_GET_CLIENT_AOP_STACK && "getClientAOPStack".equals(methodName)))
+               (type == CF_GET_CLIENT_AOP_STACK && "getClientAOPStack".equals(methodName))
+               || (type == CF_CREATE_CONNECTION && "createConnectionDelegate".equals(methodName)))
       {
          crash(target);
       }

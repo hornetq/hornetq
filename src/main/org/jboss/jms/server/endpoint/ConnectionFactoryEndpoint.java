@@ -44,8 +44,6 @@ public interface ConnectionFactoryEndpoint
                                                    int failedNodeID)
       throws JMSException;
    
-   //IDBlock getIdBlock(int size) throws JMSException;
-   
-   byte[] getClientAOPStack() throws JMSException;
+   byte[] getClientAOPStack() throws JMSException;     
 }
 

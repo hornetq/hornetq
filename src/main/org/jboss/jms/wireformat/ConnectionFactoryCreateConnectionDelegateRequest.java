@@ -101,11 +101,8 @@ public class ConnectionFactoryCreateConnectionDelegateRequest extends RequestSup
          throw new IllegalStateException("Cannot find object in dispatcher with id " + objectId);
       }
       
-      ServerConnectionFactoryEndpoint endpoint =
-         (ServerConnectionFactoryEndpoint)advised.getEndpoint();
-                     
       CreateConnectionResult del = 
-         endpoint.createConnectionDelegate(username, password, failedNodeId,
+         advised.createConnectionDelegate(username, password, failedNodeId,
                                            remotingSessionId, clientVMId, version,
                                            callbackHandler);
       

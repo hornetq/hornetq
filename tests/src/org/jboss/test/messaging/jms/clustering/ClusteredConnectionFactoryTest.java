@@ -22,13 +22,15 @@
 
 package org.jboss.test.messaging.jms.clustering;
 
+import java.lang.reflect.Field;
+
 import javax.jms.Connection;
-import org.jboss.jms.client.JBossConnection;
+
 import org.jboss.jms.client.ClientAOPStackLoader;
+import org.jboss.jms.client.JBossConnection;
+import org.jboss.test.messaging.jms.clustering.base.ClusteringTestBase;
 import org.jboss.test.messaging.tools.ServerManagement;
 import org.jboss.test.messaging.tools.aop.PoisonInterceptor;
-import org.jboss.test.messaging.jms.clustering.base.ClusteringTestBase;
-import java.lang.reflect.Field;
 
 /**
  * TODO: Is it possible to move tests I added on ClusteredConnectionFactoryGraveyardTest?
@@ -125,7 +127,7 @@ public class ClusteredConnectionFactoryTest extends ClusteringTestBase
       {
 
          // Poison each server with a different pointcut crash
-         ServerManagement.poisonTheServer(1, PoisonInterceptor.CF_GET_ID_BLOCK);
+         ServerManagement.poisonTheServer(1, PoisonInterceptor.CF_CREATE_CONNECTION);
 
          conn = cf.createConnection();
          assertEquals(0, ((JBossConnection)conn).getServerID());
@@ -133,6 +135,7 @@ public class ClusteredConnectionFactoryTest extends ClusteringTestBase
          conn = null;
 
          // this should break on server1
+         log.info("creating connection on server 1");
          conn = cf.createConnection();
 
          assertEquals(2, ((JBossConnection)conn).getServerID());
