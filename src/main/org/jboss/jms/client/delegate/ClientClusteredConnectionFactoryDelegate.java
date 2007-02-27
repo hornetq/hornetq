@@ -27,6 +27,7 @@ import java.io.Serializable;
 import org.jboss.jms.server.endpoint.CreateConnectionResult;
 import org.jboss.jms.delegate.ConnectionFactoryDelegate;
 import org.jboss.jms.client.plugin.LoadBalancingPolicy;
+import org.jboss.jms.util.MessagingNetworkFailureException;
 import org.jboss.messaging.core.plugin.IDBlock;
 import org.jboss.logging.Logger;
 
@@ -81,16 +82,28 @@ public class ClientClusteredConnectionFactoryDelegate
 
    // ConnectionFactoryDelegate implementation -----------------------------------------------------
 
-   public byte[] getClientAOPStack() throws JMSException
+   public synchronized byte[] getClientAOPStack() throws JMSException
    {
       // Use one of the non-clustered ConnectionFactory delegates to retrieve the client AOP stack
       // from one of the nodes.
 
-      ConnectionFactoryDelegate aopStackProvider = delegates[0];
+      for (int server = 0; server < delegates.length; server++)
+      {
+         try
+         {
+            ConnectionFactoryDelegate aopStackProvider = delegates[server];
 
-      log.debug("getting AOP stack from " + aopStackProvider);
-      
-      return aopStackProvider.getClientAOPStack();
+            log.debug("getting AOP stack from " + aopStackProvider);
+
+            return aopStackProvider.getClientAOPStack();
+         }
+         catch (MessagingNetworkFailureException e)
+         {
+            log.warn("Server" + 0 + " was broken, loading AOP from next delegate", e);
+         }
+      }
+
+      throw new MessagingNetworkFailureException("Failed to download and/or install client side AOP stack");
    }
 
    /**

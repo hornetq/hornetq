@@ -14,8 +14,10 @@ import org.jboss.aop.joinpoint.Invocation;
 import org.jboss.aop.joinpoint.MethodInvocation;
 import org.jboss.jms.server.endpoint.ServerConnectionEndpoint;
 import org.jboss.jms.server.endpoint.ServerSessionEndpoint;
+import org.jboss.jms.server.endpoint.ServerConnectionFactoryEndpoint;
 import org.jboss.jms.server.endpoint.advised.ConnectionAdvised;
 import org.jboss.jms.server.endpoint.advised.SessionAdvised;
+import org.jboss.jms.server.endpoint.advised.ConnectionFactoryAdvised;
 import org.jboss.jms.server.ServerPeer;
 import org.jboss.jms.tx.TransactionRequest;
 import org.jboss.logging.Logger;
@@ -34,6 +36,8 @@ public class PoisonInterceptor implements Interceptor
 
    private static final Logger log = Logger.getLogger(PoisonInterceptor.class);
    
+   public static final int NULL = -1;
+
    public static final int TYPE_CREATE_SESSION = 0;
    
    public static final int TYPE_2PC_COMMIT = 1;
@@ -52,9 +56,12 @@ public class PoisonInterceptor implements Interceptor
    
    public static final int LONG_SEND = 8;
 
+   public static final int CF_GET_ID_BLOCK = 9;
+
+   public static final int CF_GET_CLIENT_AOP_STACK = 10;
    // Static ---------------------------------------------------------------------------------------
    
-   private static int type;
+   private static int type = NULL;
 
    private static Object sync = new Object();
    
@@ -76,9 +83,17 @@ public class PoisonInterceptor implements Interceptor
 
    public Object invoke(Invocation invocation) throws Throwable
    {
+
+      if (type==NULL)
+      {
+         return invocation.invokeNext();
+      }
+      
       MethodInvocation mi = (MethodInvocation)invocation;
       String methodName = mi.getMethod().getName();
       Object target = mi.getTargetObject();
+
+      log.info("Invoke target=" + target.getClass().getName() + " method = " + methodName);
 
       if (target instanceof ConnectionAdvised && "createSessionDelegate".equals(methodName)
              && type == TYPE_CREATE_SESSION)
@@ -185,6 +200,12 @@ public class PoisonInterceptor implements Interceptor
             invocation.invokeNext();
          }
       }
+      else if (target instanceof ConnectionFactoryAdvised &&
+               (type == CF_GET_ID_BLOCK && "getIdBlock".equals(methodName) ||
+                type == CF_GET_CLIENT_AOP_STACK && "getClientAOPStack".equals(methodName)))
+      {
+         crash(target);
+      }
 
       return invocation.invokeNext();
    }
@@ -212,6 +233,12 @@ public class PoisonInterceptor implements Interceptor
          ServerSessionEndpoint endpoint = (ServerSessionEndpoint)adv.getEndpoint();
          return endpoint.getConnectionEndpoint().getServerPeer();
       }
+      else if (obj instanceof ConnectionFactoryAdvised)
+      {
+         ConnectionFactoryAdvised adv = (ConnectionFactoryAdvised) obj;
+         ServerConnectionFactoryEndpoint endpoint = (ServerConnectionFactoryEndpoint)adv.getEndpoint();
+         return endpoint.getServerPeer();
+      }
       else
       {
          throw new IllegalStateException("PoisonInterceptor doesn't support " +
@@ -222,26 +249,36 @@ public class PoisonInterceptor implements Interceptor
 
    private void crash(Object target) throws Exception
    {
-      int serverId = getServerPeer(target).getServerPeerID();
+      try
+      {
+         int serverId = getServerPeer(target).getServerPeerID();
 
-      //First unregister from the RMI registry
-      Registry registry = LocateRegistry.getRegistry(RMITestServer.DEFAULT_REGISTRY_PORT);
+         //First unregister from the RMI registry
+         Registry registry = LocateRegistry.getRegistry(RMITestServer.DEFAULT_REGISTRY_PORT);
 
-      String name = RMITestServer.RMI_SERVER_PREFIX + serverId;
-      registry.unbind(name);
-      log.info("unregistered " + name + " from registry");
+         String name = RMITestServer.RMI_SERVER_PREFIX + serverId;
+         registry.unbind(name);
+         log.info("unregistered " + name + " from registry");
 
-      name = RMITestServer.NAMING_SERVER_PREFIX + serverId;
-      registry.unbind(name);
-      log.info("unregistered " + name + " from registry");
-      
-      log.info("#####"); 
-      log.info("#####");
-      log.info("##### Halting the server!");
-      log.info("#####");
-      log.info("#####");
+         name = RMITestServer.NAMING_SERVER_PREFIX + serverId;
+         registry.unbind(name);
+         log.info("unregistered " + name + " from registry");
 
-      Runtime.getRuntime().halt(1);
+         log.info("#####");
+         log.info("#####");
+         log.info("##### Halting the server!");
+         log.info("#####");
+         log.info("#####");
+      }
+      finally
+      {
+         // this finally is for the the case where server0 was killed and unbind throws an exception
+         // It shouldn't happen in our regular testsuite but it could happen on eventual
+         // temporary tests not meant to commit.
+         //
+         // For example I needed to kill server0 to test AOPLoader while I couldn't commit the test
+         Runtime.getRuntime().halt(1);
+      }
    }
 
    // Inner classes --------------------------------------------------------------------------------

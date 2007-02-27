@@ -287,6 +287,11 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
       return jndiBindings;
    }
 
+   public ServerPeer getServerPeer()
+   {
+      return serverPeer;
+   }
+
    /**
     * Sends a cluster view update message to its associated ClusteredConnectionFactories.
     *

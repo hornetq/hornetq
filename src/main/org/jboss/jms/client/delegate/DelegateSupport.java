@@ -37,6 +37,7 @@ import org.jboss.logging.Logger;
 import org.jboss.messaging.util.Streamable;
 import org.jboss.remoting.CannotConnectException;
 import org.jboss.remoting.Client;
+import org.jboss.remoting.ConnectionFailedException;
 
 /**
  * Base class for all client-side delegate classes.
@@ -202,16 +203,21 @@ public abstract class DelegateSupport implements Streamable, Serializable
    
    public JMSException handleThrowable(Throwable t)
    {
+      // ConnectionFailedException could happen during ConnectionFactory.createConnection
+      // IOException could happen during an interrupted exception.
+      // CannotConnectionException could happen during a communication error between a
+      //    connected remoting client and the server (what means.. any new invocation)
       if (t instanceof JMSException)
       {
          return (JMSException)t;
       }
-      else if ((t instanceof CannotConnectException) || (t instanceof IOException))
+      else if ((t instanceof CannotConnectException) || (t instanceof IOException) ||
+         (t instanceof ConnectionFailedException))
       {
          log.warn("Captured Exception:" + t, t);
          return new MessagingNetworkFailureException((Exception)t);
       }
-      else         
+      else
       {
          log.error("Failed", t);
          return new MessagingJMSException("Failed to invoke", t);

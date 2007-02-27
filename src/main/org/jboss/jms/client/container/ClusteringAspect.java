@@ -17,6 +17,7 @@ import org.jboss.jms.client.state.ConnectionState;
 import org.jboss.jms.client.FailoverCommandCenter;
 import org.jboss.jms.client.plugin.LoadBalancingPolicy;
 import org.jboss.jms.server.endpoint.CreateConnectionResult;
+import org.jboss.jms.util.MessagingNetworkFailureException;
 
 import javax.jms.JMSException;
 import java.util.Map;
@@ -36,6 +37,7 @@ import java.util.Arrays;
  *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  *
  * @version <tt>$Revision$</tt>
  *
@@ -97,102 +99,114 @@ public class ClusteringAspect
 
       while (attemptCount < MAX_RECONNECT_HOP_COUNT)
       {
-         int failedNodeIDToServer = -1;
-
-         if (delegate == null)
+         // since an exceptiong might be captured during an attempt,
+         // this has to be the first operation
+         attemptCount++;
+         try
          {
-            if (failedNodeID != null && failedNodeID.intValue() >= 0)
-            {
-               delegate = getFailoverDelegateForNode(failedNodeID);
-               failedNodeIDToServer = failedNodeID.intValue();
-            }
-            else
-            {
-               LoadBalancingPolicy loadBalancingPolicy = clusteredDelegate.getLoadBalancingPolicy();
-               delegate = (ClientConnectionFactoryDelegate)loadBalancingPolicy.getNext();
-            }
-         }
+            int failedNodeIDToServer = -1;
 
-         log.debug(this + " has chosen " + delegate + " as target, " +
-            (attemptCount == 0 ? "first connection attempt" : attemptCount + " connection attempts"));
-
-         CreateConnectionResult res = delegate.
-            createConnectionDelegate(username, password, failedNodeIDToServer);
-         ClientConnectionDelegate cd = (ClientConnectionDelegate)res.getDelegate();
-
-         if (cd != null)
-         {
-            // valid connection
-
-            log.debug(this + " got local connection delegate " + cd);
-
-            ConnectionState state = (ConnectionState)((DelegateSupport)cd).getState();
-
-            state.initializeFailoverCommandCenter();
-
-            FailoverCommandCenter fcc = state.getFailoverCommandCenter();
-
-            // add a connection listener to detect failure; the consolidated remoting connection
-            // listener must be already in place and configured
-            state.getRemotingConnection().getConnectionListener().
-               addDelegateListener(new ConnectionFailureListener(fcc, state.getRemotingConnection()));
-
-            log.debug(this + " installed failure listener on " + cd);
-
-            // also cache the username and the password into state, useful in case
-            // FailoverCommandCenter needs to create a new connection instead of a failed on
-            state.setUsername(username);
-            state.setPassword(password);
-
-            // also add a reference to the clustered ConnectionFactory delegate, useful in case
-            // FailoverCommandCenter needs to create a new connection instead of a failed on
-            state.setClusteredConnectionFactoryDeleage(clusteredDelegate);
-
-            return new CreateConnectionResult(cd);
-         }
-         else
-         {
-            // we did not get a valid connection to the node we've just tried
-
-            int actualServerID = res.getActualFailoverNodeID();
-
-            if (actualServerID == -1)
-            {
-               // No failover attempt was detected on the server side; this might happen if the
-               // client side network fails temporarily so the client connection breaks but the
-               // server cluster is still up and running - in this case we don't perform failover.
-
-               // In this case we should try back on the original server
-
-               log.warn("Client attempted failover, but no failover attempt " +
-                        "has been detected on the server side. We will now try again on the original server " +
-                        "in case there was a temporary glitch on the client--server network");
-               
-               delegate = getDelegateForNode(failedNodeID.intValue());
-               
-               //Pause a little to avoid hammering the same node in quick succession
-               
-               //Currently hardcoded
-               Thread.sleep(2000);
-            }
-            else
-            {   
-               // Server side failover has occurred / is occurring but trying to go to the 'default'
-               // failover node did not succeed. Retry with the node suggested by the cluster.
-   
-               delegate = getDelegateForNode(actualServerID);                  
-            }
-            
             if (delegate == null)
             {
-               // the delegate corresponding to the actualServerID not found among the cached
-               // delegates. TODO Could this ever happen? Should we send back the cf, or update it
-               // instead of just the id??
-               throw new JMSException("Cannot find a cached connection factory delegate for " +
-                  "node " + actualServerID);
+               if (failedNodeID != null && failedNodeID.intValue() >= 0)
+               {
+                  delegate = getFailoverDelegateForNode(failedNodeID);
+                  failedNodeIDToServer = failedNodeID.intValue();
+               }
+               else
+               {
+                  LoadBalancingPolicy loadBalancingPolicy = clusteredDelegate.getLoadBalancingPolicy();
+                  delegate = (ClientConnectionFactoryDelegate)loadBalancingPolicy.getNext();
+               }
             }
-            
-            attemptCount++;
+
+            log.debug(this + " has chosen " + delegate + " as target, " +
+               (attemptCount == 0 ? "first connection attempt" : attemptCount + " connection attempts"));
+
+            CreateConnectionResult res = delegate.
+               createConnectionDelegate(username, password, failedNodeIDToServer);
+            ClientConnectionDelegate cd = (ClientConnectionDelegate)res.getDelegate();
+
+            if (cd != null)
+            {
+               // valid connection
+
+               log.debug(this + " got local connection delegate " + cd);
+
+               ConnectionState state = (ConnectionState)((DelegateSupport)cd).getState();
+
+               state.initializeFailoverCommandCenter();
+
+               FailoverCommandCenter fcc = state.getFailoverCommandCenter();
+
+               // add a connection listener to detect failure; the consolidated remoting connection
+               // listener must be already in place and configured
+               state.getRemotingConnection().getConnectionListener().
+                  addDelegateListener(new ConnectionFailureListener(fcc, state.getRemotingConnection()));
+
+               log.debug(this + " installed failure listener on " + cd);
+
+               // also cache the username and the password into state, useful in case
+               // FailoverCommandCenter needs to create a new connection instead of a failed on
+               state.setUsername(username);
+               state.setPassword(password);
+
+               // also add a reference to the clustered ConnectionFactory delegate, useful in case
+               // FailoverCommandCenter needs to create a new connection instead of a failed on
+               state.setClusteredConnectionFactoryDeleage(clusteredDelegate);
+
+               return new CreateConnectionResult(cd);
+            }
+            else
+            {
+               // we did not get a valid connection to the node we've just tried
+
+               int actualServerID = res.getActualFailoverNodeID();
+
+               if (actualServerID == -1)
+               {
+                  // No failover attempt was detected on the server side; this might happen if the
+                  // client side network fails temporarily so the client connection breaks but the
+                  // server cluster is still up and running - in this case we don't perform failover.
+
+                  // In this case we should try back on the original server
+
+                  log.warn("Client attempted failover, but no failover attempt " +
+                           "has been detected on the server side. We will now try again on the original server " +
+                           "in case there was a temporary glitch on the client--server network");
+
+                  delegate = getDelegateForNode(failedNodeID.intValue());
+
+                  //Pause a little to avoid hammering the same node in quick succession
+
+                  //Currently hardcoded
+                  Thread.sleep(2000);
+               }
+               else
+               {
+                  // Server side failover has occurred / is occurring but trying to go to the 'default'
+                  // failover node did not succeed. Retry with the node suggested by the cluster.
+
+                  delegate = getDelegateForNode(actualServerID);
+               }
+
+               if (delegate == null)
+               {
+                  // the delegate corresponding to the actualServerID not found among the cached
+                  // delegates. TODO Could this ever happen? Should we send back the cf, or update it
+                  // instead of just the id??
+                  throw new JMSException("Cannot find a cached connection factory delegate for " +
+                     "node " + actualServerID);
+               }
+
+            }
+         }
+         catch (MessagingNetworkFailureException e)
+         {
+            delegate = null;
+            log.warn("Exception captured on createConnection... hopping a new connection", e);
+            //Currently hardcoded
+            Thread.sleep(2000);
          }
       }
 
