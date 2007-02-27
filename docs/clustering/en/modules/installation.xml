@@ -18,7 +18,7 @@
 
    <programlisting>
       cd util
-      ant -f release-admin.xml [-Did=node-id] [-Dports=port-config-label] cluster-node
+      ant -f release-admin.xml [-Did=node-id] [-Dports=port-config-label] [-Ddatabase=db-name] cluster-node
    </programlisting>
 
    <para>
@@ -55,6 +55,11 @@
             More details about the binding management service can be found in the Application Server
             documentation, at the following address
             <ulink url="http://docs.jboss.com/jbossas/guides/j2eeguide/r2/en/html_single/#ch10.bindingmanager">http://docs.jboss.com/jbossas/guides/j2eeguide/r2/en/html_single/#ch10.bindingmanager</ulink>
+         </listitem>
+         <listitem>
+            <filename>db-name</filename> is the name of the database you want to create the configurations for. Supported database names are: mysql, oracle, 
+            postgresql, mssql, and sybase. Notice that if you create database configuration to any database other than MySQL, you will still need to
+            manually install the database JDBC drivers (MySQL drivers are provided as part of the distribution).
          </listitem>
       </itemizedlist>
    </para>
