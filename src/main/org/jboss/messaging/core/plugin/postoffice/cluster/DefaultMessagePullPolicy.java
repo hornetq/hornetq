@@ -25,9 +25,7 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
- * A DefaultMessagePullPolicy
- * 
- * This chooses the remote queue with the most messages
+ * A MessagePullPolicy implementation that chooses the remote queue with the most messages.
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
@@ -37,37 +35,53 @@ import java.util.List;
  */
 public class DefaultMessagePullPolicy implements MessagePullPolicy
 {
+   // Constants ------------------------------------------------------------------------------------
+
+   // Static ---------------------------------------------------------------------------------------
+
+   // Attributes -----------------------------------------------------------------------------------
+
+   // Constructors ---------------------------------------------------------------------------------
+
+   // MessagePullPolicy implementation -------------------------------------------------------------
+
    public ClusteredQueue chooseQueue(List queues)
    {
-      Iterator iter = queues.iterator();
-      
-      ClusteredQueue chosenQueue = null;
-      
       int maxMessages = 0;
-       
-      while (iter.hasNext())
+      ClusteredQueue chosenQueue = null;
+
+      for(Iterator i = queues.iterator(); i.hasNext(); )
       {
-         ClusteredQueue queue = (ClusteredQueue)iter.next();
-         
+         ClusteredQueue queue = (ClusteredQueue)i.next();
+
          if (!queue.isLocal())
-         {  
+         {
             QueueStats stats = queue.getStats();
-            
+
             if (stats != null)
-            {               
+            {
                int cnt = stats.getMessageCount();
-               
+
                if (cnt > maxMessages)
                {
                   maxMessages = cnt;
-                  
                   chosenQueue = queue;
                }
             }
          }
       }
-      
+
       return chosenQueue;
    }
+
+   // Public ---------------------------------------------------------------------------------------
+
+   // Package protected ----------------------------------------------------------------------------
+
+   // Protected ------------------------------------------------------------------------------------
+
+   // Private --------------------------------------------------------------------------------------
+
+   // Inner classes --------------------------------------------------------------------------------
 
 }

@@ -258,6 +258,7 @@ public class SimpleReceiver implements Receiver
          {      
             if (timeout < 0)
             {
+               log.trace(this + ".waitForHandleInvocations() current timeout is " + timeout);
                resetInvocationCount();
                return false;
             }
@@ -277,7 +278,6 @@ public class SimpleReceiver implements Receiver
       }
       
       resetInvocationCount();
-      
       return true;
    }
 
