@@ -48,6 +48,8 @@ import org.jboss.messaging.core.plugin.contract.MessagingComponent;
 public class JDBCSupport implements MessagingComponent
 {
    private static final Logger log = Logger.getLogger(JDBCSupport.class);
+   
+   private static boolean trace = log.isTraceEnabled();
       
    protected DataSource ds;
    
@@ -273,10 +275,12 @@ public class JDBCSupport implements MessagingComponent
             if (Status.STATUS_MARKED_ROLLBACK == tm.getStatus())
             {
                failed = true;
+               if (trace) { log.trace("Rolling back tx"); }
                tm.rollback();               
             }
             else
             {
+               if (trace) { log.trace("Committing tx"); }
                tm.commit();
             }
          }
@@ -284,6 +288,7 @@ public class JDBCSupport implements MessagingComponent
          {
             if (oldTx != null && tm != null)
             {
+               if (trace) { log.trace("Resuming tx"); }
                tm.resume(oldTx);
             }
          }

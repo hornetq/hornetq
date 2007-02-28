@@ -1148,19 +1148,6 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
 
                   Queue queue = (Queue)del.getObserver();
 
-                  if (trace)
-                  {
-                     if (queue.isClustered())
-                     {
-                        ClusteredQueue cq = (ClusteredQueue)queue;
-                        log.trace(this + " successfully routed message to " + (cq.isLocal() ? "LOCAL"  : "REMOTE") + " destination '" + cq.getName() + "' on node " + cq.getNodeId());
-                     }
-                     else
-                     {
-                        
-                     }
-                  }
-
                   if (queue.isClustered())
                   {
                      ClusteredQueue cq = (ClusteredQueue)queue;

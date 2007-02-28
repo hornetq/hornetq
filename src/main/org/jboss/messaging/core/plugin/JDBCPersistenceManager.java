@@ -2078,10 +2078,12 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
                if (added)
                {
                   psInsertMessage.addBatch();
+                  if (trace) { log.trace("Message does not already exist so inserting it"); }
                   messageInsertsInBatch = true;
                }
                else
                { 
+                  if (trace) { log.trace("Message already exists so updating count"); }
                   psIncMessage.addBatch();
                   messageUpdatesInBatch = true;
                }
@@ -2090,11 +2092,13 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
             {
                if (added)
                {
+                  if (trace) { log.trace("Message does not already exist so inserting it"); }
                   int rows = updateWithRetry(psInsertMessage);
                   if (trace) { log.trace("Inserted " + rows + " rows"); }
                }
                else
                {
+                  if (trace) { log.trace("Message already exists so updating count"); }
                   int rows = updateWithRetry(psIncMessage);
                   if (trace) { log.trace("Updated " + rows + " rows"); }
                }
@@ -2291,6 +2295,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
          {
             try
             {
+               if (trace) { log.trace("Closing connection"); }
                conn.close();
             }
             catch (Throwable e)
