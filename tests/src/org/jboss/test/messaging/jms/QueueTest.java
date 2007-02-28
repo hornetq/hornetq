@@ -31,6 +31,7 @@ import javax.jms.TextMessage;
 import javax.naming.InitialContext;
 
 import org.jboss.jms.client.JBossConnectionFactory;
+import org.jboss.jms.client.JBossConnection;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
 
@@ -113,6 +114,71 @@ public class QueueTest extends MessagingTestCase
          if (conn != null)
          {
             conn.close();
+         }
+      }
+   }
+
+
+   public void testClosedConsumerBeforeStart() throws Exception
+   {
+      Queue queue = (Queue)ic.lookup("/queue/TestQueue");
+
+      // Maybe we could remove this counter after we are sure this test is fixed!
+      // I had to use a counter because this can work in some iterations.
+      for (int counter=0;counter<20;counter++)
+      {
+
+         log.info("Iteration = " + counter);
+
+         Connection conn1 = cf.createConnection();
+
+         assertEquals(0, ((JBossConnection)conn1).getServerID());
+
+         Connection conn2 = cf.createConnection();
+
+         assertEquals(0, ((JBossConnection)conn2).getServerID());
+
+         try
+         {
+            Session s = conn1.createSession(true, Session.AUTO_ACKNOWLEDGE);
+
+            MessageProducer p = s.createProducer(queue);
+
+            for (int i = 0; i < 20; i++)
+            {
+               p.send(s.createTextMessage("message " + i));
+            }
+
+            s.commit();
+
+            Session s2 = conn2.createSession(true, Session.AUTO_ACKNOWLEDGE);
+
+            // these next three lines are an anti-pattern but they shouldn't loose any messages
+            MessageConsumer c2 = s2.createConsumer(queue);
+            conn2.start();
+            c2.close();
+
+            c2 = s2.createConsumer(queue);
+
+            for (int i = 0; i < 20; i++)
+            {
+               TextMessage txt = (TextMessage)c2.receive(5000);
+               assertNotNull(txt);
+               assertEquals("message " + i, txt.getText());
+            }
+
+            assertNull(c2.receive(1000));
+         }
+         finally
+         {
+            if (conn1 != null)
+            {
+               conn1.close();
+            }
+            if (conn2 != null)
+            {
+               conn2.close();
+            }
          }
       }
    }
