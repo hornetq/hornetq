@@ -505,7 +505,7 @@ public class MessageCallbackHandler
    /**
     * Needed for failover
     */
-   public void synchronizeWith(MessageCallbackHandler newHandler, QueuedExecutor sessionExecutor)
+   public void synchronizeWith(MessageCallbackHandler newHandler)
    {
       consumerID = newHandler.consumerID;
 
@@ -517,11 +517,8 @@ public class MessageCallbackHandler
 
       buffer.clear();
       
-      this.sessionExecutor = sessionExecutor;
-      
       // need to reset toggle state
-      serverSending = true;
-      
+      serverSending = true;      
    }
    
    public long getLastDeliveryId()

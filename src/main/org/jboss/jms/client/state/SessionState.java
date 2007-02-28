@@ -47,6 +47,7 @@ import org.jboss.jms.server.endpoint.DeliveryRecovery;
 import org.jboss.jms.tx.MessagingXAResource;
 import org.jboss.jms.tx.ResourceManager;
 import org.jboss.logging.Logger;
+import org.jboss.messaging.util.ClearableQueuedExecutor;
 
 import EDU.oswego.cs.dl.util.concurrent.LinkedQueue;
 import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
@@ -84,7 +85,7 @@ public class SessionState extends HierarchicalStateSupport
    private Object currentTxId;
 
    // Executor used for executing onMessage methods
-   private QueuedExecutor executor;
+   private ClearableQueuedExecutor executor;
 
    private boolean recoverCalled;
    
@@ -133,7 +134,7 @@ public class SessionState extends HierarchicalStateSupport
          currentTxId = parent.getResourceManager().createLocalTx();
       }
 
-      createExecutor();
+      executor = new ClearableQueuedExecutor(new LinkedQueue());
 
       clientAckList = new ArrayList();
 
@@ -201,10 +202,8 @@ public class SessionState extends HierarchicalStateSupport
       // We need to clear anything waiting in the session executor - since there may be messages
       // from before failover waiting in there and we don't want them to get delivered after
       // failover.
-      executor.shutdownAfterProcessingCurrentTask();
+      executor.clearAllExceptCurrentTask();
       
-      createExecutor();
-
       ClientSessionDelegate newDelegate = (ClientSessionDelegate)newState.getDelegate();
 
       for (Iterator i = getChildren().iterator(); i.hasNext(); )
@@ -268,6 +267,9 @@ public class SessionState extends HierarchicalStateSupport
 
       if (!isTransacted() || (isXA() && getCurrentTxId() == null))
       {
+         // TODO - the check "(isXA() && getCurrentTxId() == null)" shouldn't be necessary any more
+         // since xa sessions no longer fall back to non transacted
+         
          // Non transacted session or an XA session with no transaction set (it falls back
          // to AUTO_ACKNOWLEDGE)
 
@@ -448,12 +450,6 @@ public class SessionState extends HierarchicalStateSupport
 
    // Private --------------------------------------------------------------------------------------
 
-   private void createExecutor()
-   {
-      executor = new QueuedExecutor(new LinkedQueue());
-   }
-
-   
    // Inner classes --------------------------------------------------------------------------------
 
 }

@@ -138,10 +138,8 @@ public class ConsumerState extends HierarchicalStateSupport
 
       MessageCallbackHandler handler = oldCallbackManager.unregisterHandler(oldConsumerID);
       MessageCallbackHandler newHandler = newCallbackManager.unregisterHandler(consumerID);
-
-      SessionState sstate = (SessionState)this.getParent();
-      
-      handler.synchronizeWith(newHandler, sstate.getExecutor());
+   
+      handler.synchronizeWith(newHandler);
       newCallbackManager.registerHandler(consumerID, handler);
    }
 
