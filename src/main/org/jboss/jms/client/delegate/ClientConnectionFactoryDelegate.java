@@ -37,6 +37,7 @@ import org.jboss.jms.server.Version;
 import org.jboss.jms.server.endpoint.CreateConnectionResult;
 import org.jboss.jms.server.remoting.JMSWireFormat;
 import org.jboss.jms.util.MessagingJMSException;
+import org.jboss.jms.util.MessagingNetworkFailureException;
 import org.jboss.jms.wireformat.ConnectionFactoryCreateConnectionDelegateRequest;
 import org.jboss.jms.wireformat.ConnectionFactoryGetClientAOPStackRequest;
 import org.jboss.jms.wireformat.ResponseSupport;
@@ -285,7 +286,7 @@ public class ClientConnectionFactoryDelegate
       }
       catch (Exception e)
       {
-         throw new MessagingJMSException("Failed to connect client", e);
+         throw new MessagingNetworkFailureException("Failed to connect client", e);
       }
 
       client.setMarshaller(new JMSWireFormat());

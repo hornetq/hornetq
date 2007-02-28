@@ -22,12 +22,10 @@
 
 package org.jboss.test.messaging.jms.clustering;
 
-import java.lang.reflect.Field;
-
 import javax.jms.Connection;
-
-import org.jboss.jms.client.ClientAOPStackLoader;
 import org.jboss.jms.client.JBossConnection;
+import org.jboss.jms.client.JBossConnectionFactory;
+import org.jboss.jms.util.MessagingNetworkFailureException;
 import org.jboss.test.messaging.jms.clustering.base.ClusteringTestBase;
 import org.jboss.test.messaging.tools.ServerManagement;
 import org.jboss.test.messaging.tools.aop.PoisonInterceptor;
@@ -57,75 +55,63 @@ public class ClusteredConnectionFactoryTest extends ClusteringTestBase
 
    public void testGetAOPBroken() throws Exception
    {
-      Connection conn = null;
-
       try
       {
-
-         resetAOP();
-
-         ServerManagement.killAndWait(2);
-         ServerManagement.killAndWait(1);
          ServerManagement.killAndWait(0);
+         ServerManagement.killAndWait(1);
+         ServerManagement.killAndWait(2);
 
          try
          {
-            conn = cf.createConnection();
+            assertNotNull(((JBossConnectionFactory)cf).getDelegate().getClientAOPStack());
             fail ("This should try an exception as every server is down");
          }
-         catch (RuntimeException e)
+         catch (MessagingNetworkFailureException e)
          {
-            log.error(e.toString(), e);
+            log.trace(e.toString(), e);
          }
       }
       finally
       {
-         if (conn != null)
-         {
-            conn.close();
-         }
-
          // need to re-start 0, it's the RMI server the other servers use
          ServerManagement.start(0, "all", true);
       }
    }
 
-   // TODO: Commented out pending resolution.
-   // See http://jira.jboss.org/jira/browse/JBMESSAGING-900
-//   public void testGetAOPBounce() throws Exception
-//   {
-//      Connection conn = null;
-//      Server poisonedServer = null;
-//
-//      try
-//      {
-//
-//         resetAOP();
-//
-//         ServerManagement.killAndWait(0);
-//         poisonedServer =
-//            ServerManagement.poisonTheServer(1, PoisonInterceptor.CF_GET_CLIENT_AOP_STACK);
-//
-//         conn = cf.createConnection();
-//         assertEquals(2, ((JBossConnection)conn).getServerID());
-//      }
-//      finally
-//      {
-//         if (conn != null)
-//         {
-//            conn.close();
-//         }
-//
-//         // need to re-start 0, it's the RMI server the other servers use
-//         ServerManagement.start(0, "all", true);
-//
-//         // Kill the poisoned server
-//         if (poisonedServer != null)
-//         {
-//            poisonedServer.kill();
-//         }
-//      }
-//   }
+   public void testLoadAOP() throws Exception
+   {
+
+      Connection conn = null;
+
+      try
+      {
+
+         ServerManagement.killAndWait(0);
+         ServerManagement.killAndWait(1);
+
+         assertNotNull(((JBossConnectionFactory)cf).getDelegate().getClientAOPStack());
+
+         conn = cf.createConnection();
+         assertEquals(2, ((JBossConnection)conn).getServerID());
+      }
+      finally
+      {
+         if (conn != null)
+         {
+            try
+            {
+               conn.close();
+            }
+            catch (Exception ignored)
+            {
+            }
+         }
+
+         ServerManagement.killAndWait(2);
+         // need to re-start 0, it's the RMI server the other servers use
+         ServerManagement.start(0, "all", true);
+      }
+   }
 
    public void testCreateConnectionOnBrokenServer() throws Exception
    {
@@ -250,16 +236,6 @@ public class ClusteredConnectionFactoryTest extends ClusteringTestBase
    }
 
    // Private --------------------------------------------------------------------------------------
-
-   private void resetAOP() throws NoSuchFieldException, IllegalAccessException
-   {
-
-      // Using reflection to cleanup AOP status and force to load AOP again
-      Field field = ClientAOPStackLoader.class.getDeclaredField("instance");
-      field.setAccessible(true);
-      log.info("Reseting AOP");
-      field.set(null, null);
-   }
 
    // Inner classes --------------------------------------------------------------------------------
 
