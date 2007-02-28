@@ -26,8 +26,6 @@ import javax.jms.JMSException;
 import org.jboss.remoting.callback.ServerInvokerCallbackHandler;
 
 /**
- * A ConnectionFactoryInternalEndpoint
- * 
  * The interface only exists so the connection factory requests can call through the AOP stack
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>

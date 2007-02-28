@@ -99,8 +99,8 @@ public class ClusteringAspect
 
       while (attemptCount < MAX_RECONNECT_HOP_COUNT)
       {
-         // since an exceptiong might be captured during an attempt,
-         // this has to be the first operation
+         // since an exceptiong might be captured during an attempt, this has to be the first
+         // operation
          attemptCount++;
          try
          {
@@ -205,7 +205,7 @@ public class ClusteringAspect
          {
             delegate = null;
             log.warn("Exception captured on createConnection... hopping to a new connection factory", e);
-            //Currently hardcoded
+            // Currently hardcoded
             Thread.sleep(2000);
          }
       }

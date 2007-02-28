@@ -199,7 +199,8 @@ public class SessionState extends HierarchicalStateSupport
       sessionID = newState.sessionID;
       
       // We need to clear anything waiting in the session executor - since there may be messages
-      // from before failover waiting in there and we don't want them to get delivered after failover
+      // from before failover waiting in there and we don't want them to get delivered after
+      // failover.
       executor.shutdownAfterProcessingCurrentTask();
       
       createExecutor();

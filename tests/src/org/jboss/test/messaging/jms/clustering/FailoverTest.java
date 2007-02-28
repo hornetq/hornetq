@@ -2133,6 +2133,25 @@ public class FailoverTest extends ClusteringTestBase
             //Ok
          }
                          
+//         session1.close();
+//
+//         session2.close();;
+//
+//         Session session3 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
+//
+//         MessageConsumer cons3 = session3.createConsumer(queue[0]);
+//
+//         TextMessage rm3 = (TextMessage)cons3.receive(2000);
+//
+//         assertNotNull(rm3);
+//
+//         assertEquals(tm3.getText(), rm3.getText());
+//
+//         rm3 = (TextMessage)cons3.receive(2000);
+//
+//         assertNull(rm3);
+
+
       }
       finally
       {

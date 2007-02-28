@@ -31,9 +31,8 @@ import org.jboss.messaging.core.tx.MessagingXid;
 
 
 /**
- * 
- * Represents the set of methods from the ConnectionDelegate that are handled on the server.
- * The rest of the methods are handled in the advice stack.
+ * Represents the set of methods from the ConnectionDelegate that are handled on the server. The
+ * rest of the methods are handled in the advice stack.
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>

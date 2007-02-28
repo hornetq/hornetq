@@ -103,7 +103,8 @@ public class ClientClusteredConnectionFactoryDelegate
          }
       }
 
-      throw new MessagingNetworkFailureException("Failed to download and/or install client side AOP stack");
+      throw new MessagingNetworkFailureException(
+         "Failed to download and/or install client side AOP stack");
    }
 
    /**

@@ -37,17 +37,18 @@ import org.jboss.remoting.callback.ServerInvokerCallbackHandler;
  *
  * ConnectionFactoryAdvised.java,v 1.3 2006/03/01 22:56:51 ovidiu Exp
  */
-public class ConnectionFactoryAdvised extends AdvisedSupport implements ConnectionFactoryInternalEndpoint
+public class ConnectionFactoryAdvised extends AdvisedSupport
+   implements ConnectionFactoryInternalEndpoint
 {
-   // Constants -----------------------------------------------------
+   // Constants ------------------------------------------------------------------------------------
 
-   // Static --------------------------------------------------------
+   // Static ---------------------------------------------------------------------------------------
 
-   // Attributes ----------------------------------------------------
+   // Attributes -----------------------------------------------------------------------------------
 
    protected ConnectionFactoryEndpoint endpoint;
 
-   // Constructors --------------------------------------------------
+   // Constructors ---------------------------------------------------------------------------------
 
    public ConnectionFactoryAdvised()
    {
@@ -58,7 +59,7 @@ public class ConnectionFactoryAdvised extends AdvisedSupport implements Connecti
       this.endpoint = endpoint;
    }
 
-   // ConnectionFactoryEndpoint implementation -----------------------
+   // ConnectionFactoryEndpoint implementation -----------------------------------------------------
 
    public CreateConnectionResult createConnectionDelegate(String username,
                                                           String password,
@@ -73,41 +74,43 @@ public class ConnectionFactoryAdvised extends AdvisedSupport implements Connecti
       return endpoint.getClientAOPStack();
    }
    
-   // ConnectionFactoryInternalEndpoint implementation -----------------------
-   public CreateConnectionResult createConnectionDelegate(String username,
-                                                          String password,
-                                                          int failedNodeID,
-                                                          String remotingSessionID,
-                                                          String clientVMID,
-                                                          byte versionToUse,
-                                                          ServerInvokerCallbackHandler callbackHandler)
+   // ConnectionFactoryInternalEndpoint implementation ---------------------------------------------
+   public CreateConnectionResult
+      createConnectionDelegate(String username,
+                               String password,
+                               int failedNodeID,
+                               String remotingSessionID,
+                               String clientVMID,
+                               byte versionToUse,
+                               ServerInvokerCallbackHandler callbackHandler)
       throws JMSException
    {
-      return ((ServerConnectionFactoryEndpoint)endpoint).createConnectionDelegate(username, password, failedNodeID,
-                                                      remotingSessionID, clientVMID,
-                                                      versionToUse, callbackHandler);
+      return ((ServerConnectionFactoryEndpoint)endpoint).
+         createConnectionDelegate(username, password, failedNodeID,
+                                  remotingSessionID, clientVMID,
+                                  versionToUse, callbackHandler);
    }
 
-   // AdvisedSupport override ---------------------------------------
+   // AdvisedSupport override ----------------------------------------------------------------------
 
    public Object getEndpoint()
    {
       return endpoint;
    }
 
-   // Public --------------------------------------------------------
+   // Public ---------------------------------------------------------------------------------------
 
    public String toString()
    {
       return "ConnectionFactoryAdvised->" + endpoint;
    }
 
-   // Package protected ---------------------------------------------
+   // Package protected ----------------------------------------------------------------------------
 
-   // Protected -----------------------------------------------------
+   // Protected ------------------------------------------------------------------------------------
 
-   // Private -------------------------------------------------------
+   // Private --------------------------------------------------------------------------------------
 
-   // Inner classes -------------------------------------------------
+   // Inner classes --------------------------------------------------------------------------------
 
 }

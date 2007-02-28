@@ -167,7 +167,8 @@ public class ProducerAspect
       // Generate the message id
       ConnectionState connectionState = (ConnectionState)sessionState.getParent();
       
-      long id = connectionState.getIdGenerator().getId((ConnectionDelegate)connectionState.getDelegate());
+      long id =
+         connectionState.getIdGenerator().getId((ConnectionDelegate)connectionState.getDelegate());
     
       JBossMessage messageToSend;
       boolean foreign = false;

@@ -14,7 +14,6 @@ import org.jboss.jms.client.delegate.ClientConnectionDelegate;
 import org.jboss.jms.client.remoting.JMSRemotingConnection;
 import org.jboss.jms.client.state.ConnectionState;
 import org.jboss.jms.delegate.ConnectionFactoryDelegate;
-import org.jboss.jms.message.MessageIdGenerator;
 import org.jboss.jms.server.endpoint.CreateConnectionResult;
 import org.jboss.logging.Logger;
 

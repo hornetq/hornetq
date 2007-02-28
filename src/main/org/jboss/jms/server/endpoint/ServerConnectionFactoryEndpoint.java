@@ -37,7 +37,6 @@ import org.jboss.jms.util.ExceptionUtil;
 import org.jboss.jms.wireformat.ConnectionFactoryUpdate;
 import org.jboss.jms.wireformat.Dispatcher;
 import org.jboss.logging.Logger;
-import org.jboss.messaging.core.plugin.IDBlock;
 import org.jboss.remoting.callback.Callback;
 import org.jboss.remoting.callback.ServerInvokerCallbackHandler;
 import org.jboss.security.SecurityAssociation;

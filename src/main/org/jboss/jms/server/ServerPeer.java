@@ -123,10 +123,10 @@ public class ServerPeer extends ServiceMBeanSupport implements ServerPeerMBean
 
    private Object failoverStatusLock;
    
-   //Default is 1 minute
+   // Default is 1 minute
    private long failoverStartTimeout = 60 * 1000;
    
-   //Default is 5 minutes
+   // Default is 5 minutes
    private long failoverCompleteTimeout = 5 * 60 * 1000;
    
    private Map sessions;

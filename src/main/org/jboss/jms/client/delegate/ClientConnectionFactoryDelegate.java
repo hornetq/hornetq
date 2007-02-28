@@ -45,8 +45,7 @@ import org.jboss.remoting.InvokerLocator;
 
 /**
  * The client-side ConnectionFactory delegate class.
- * 
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  *

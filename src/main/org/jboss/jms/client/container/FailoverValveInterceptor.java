@@ -118,21 +118,26 @@ public class FailoverValveInterceptor implements Interceptor, FailureDetector
          
          // Set retry flag as true on send() and sendTransaction()
          // more details at http://jira.jboss.org/jira/browse/JBMESSAGING-809
+
          if (invocation.getTargetObject() instanceof ClientSessionDelegate &&
             (methodName.equals("send") || methodName.equals("sendTransaction")))
          {
             log.debug(this + " caught " + methodName + "() invocation, enabling check for duplicates");
+
             Object[] arguments = ((MethodInvocation)invocation).getArguments();
             arguments[1] = Boolean.TRUE;
             ((MethodInvocation)invocation).setArguments(arguments);
          }
 
-         //We don't retry the following invocations:
-         //cancelDelivery, cancelDeliveries, cancelInflightMessages - the deliveries will already be cancelled after failover
-         if (methodName.equals("cancelDelivery") || methodName.equals("cancelDeliveries")
-                  || methodName.equals("cancelInflightMessages"))
+         // We don't retry the following invocations:
+         // cancelDelivery(), cancelDeliveries(), cancelInflightMessages() - the deliveries will
+         // already be cancelled after failover.
+
+         if (methodName.equals("cancelDelivery") ||
+            methodName.equals("cancelDeliveries") ||
+            methodName.equals("cancelInflightMessages"))
          {
-            log.debug(this + " NOT resuming " + methodName + "()");
+            log.debug(this + " NOT resuming " + methodName + "(), let it wither and die");
             
             return null;
          }

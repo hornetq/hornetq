@@ -15,20 +15,14 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 
 import org.jboss.jms.client.JBossConnection;
-import org.jboss.jms.client.FailoverEvent;
 import org.jboss.test.messaging.jms.clustering.base.ClusteringTestBase;
 import org.jboss.test.messaging.tools.ServerManagement;
 
-
 /**
- * 
- * A MergeQueueTest
- *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision: 1.1 $</tt>
  *
  * $Id$
- *
  */
 public class MergeQueueTest extends ClusteringTestBase
 {

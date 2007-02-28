@@ -23,8 +23,6 @@ package org.jboss.jms.client.state;
 
 import java.util.Collections;
 
-import javax.jms.Destination;
-
 import org.jboss.jms.client.delegate.ClientConnectionDelegate;
 import org.jboss.jms.client.delegate.DelegateSupport;
 import org.jboss.jms.client.remoting.CallbackManager;
@@ -32,7 +30,6 @@ import org.jboss.jms.client.remoting.MessageCallbackHandler;
 import org.jboss.jms.delegate.ConsumerDelegate;
 import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.server.Version;
-import org.jboss.jms.util.MessageQueueNameHelper;
 
 /**
  * State corresponding to a Consumer. This state is acessible inside aspects/interceptors.
