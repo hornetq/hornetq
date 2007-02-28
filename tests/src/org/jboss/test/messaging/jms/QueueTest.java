@@ -43,23 +43,23 @@ import org.jboss.test.messaging.tools.ServerManagement;
  */
 public class QueueTest extends MessagingTestCase
 {
-   // Constants -----------------------------------------------------
+   // Constants ------------------------------------------------------------------------------------
    
-   // Static --------------------------------------------------------
+   // Static ---------------------------------------------------------------------------------------
    
-   // Attributes ----------------------------------------------------
+   // Attributes -----------------------------------------------------------------------------------
 
    protected InitialContext ic;
    protected ConnectionFactory cf;
 
-   // Constructors --------------------------------------------------
+   // Constructors ---------------------------------------------------------------------------------
    
    public QueueTest(String name)
    {
       super(name);
    }
    
-   // TestCase overrides -------------------------------------------
+   // TestCase overrides --------------------------------------------------------------------------
    
    public void setUp() throws Exception
    {
@@ -86,7 +86,7 @@ public class QueueTest extends MessagingTestCase
    }
    
    
-   // Public --------------------------------------------------------
+   // Public ---------------------------------------------------------------------------------------
 
    /**
     * The simplest possible queue test.
@@ -118,7 +118,6 @@ public class QueueTest extends MessagingTestCase
       }
    }
 
-
    // added for http://jira.jboss.org/jira/browse/JBMESSAGING-899
    public void testClosedConsumerAfterStart() throws Exception
    {
@@ -126,9 +125,8 @@ public class QueueTest extends MessagingTestCase
 
       // Maybe we could remove this counter after we are sure this test is fixed!
       // I had to use a counter because this can work in some iterations.
-      for (int counter=0;counter<20;counter++)
+      for (int counter = 0; counter < 20; counter++)
       {
-
          log.info("Iteration = " + counter);
 
          Connection conn1 = cf.createConnection();
@@ -167,6 +165,19 @@ public class QueueTest extends MessagingTestCase
                assertNotNull(txt);
                assertEquals("message " + i, txt.getText());
             }
+
+            // Ovidiu: the test was originally invalid, a locally transacted session that is closed 
+            //         rolls back its transaction. I added s2.commit() to correct the test.
+            // JMS 1.1 Specifications, Section 4.3.5:
+            // "Closing a connection must roll back the transactions in progress on its
+            // transacted sessions*.
+            // *) The term 'transacted session' refers to the case where a session’s commit and
+            // rollback methods are used to demarcate a transaction local to the session. In the
+            // case where a session’s work is coordinated by an external transaction manager, a
+            // session’s commit and rollback methods are not used and the result of a closed
+            // session’s work is determined later by the transaction manager.
+
+            s2.commit();
 
             assertNull(c2.receive(1000));
          }
@@ -250,13 +261,13 @@ public class QueueTest extends MessagingTestCase
       assertEquals("TestQueue", queue.getQueueName());
    }
 
-   // Package protected ---------------------------------------------
+   // Package protected ----------------------------------------------------------------------------
    
-   // Protected -----------------------------------------------------
+   // Protected ------------------------------------------------------------------------------------
    
-   // Private -------------------------------------------------------
+   // Private --------------------------------------------------------------------------------------
    
-   // Inner classes -------------------------------------------------
+   // Inner classes --------------------------------------------------------------------------------
    
 }
 
