@@ -94,6 +94,43 @@ public class ClusteredConnectionFactoryTest extends ClusteringTestBase
       }
    }
 
+   // TODO: Commented out pending resolution.
+   // See http://jira.jboss.org/jira/browse/JBMESSAGING-900
+//   public void testGetAOPBounce() throws Exception
+//   {
+//      Connection conn = null;
+//      Server poisonedServer = null;
+//
+//      try
+//      {
+//
+//         resetAOP();
+//
+//         ServerManagement.killAndWait(0);
+//         poisonedServer =
+//            ServerManagement.poisonTheServer(1, PoisonInterceptor.CF_GET_CLIENT_AOP_STACK);
+//
+//         conn = cf.createConnection();
+//         assertEquals(2, ((JBossConnection)conn).getServerID());
+//      }
+//      finally
+//      {
+//         if (conn != null)
+//         {
+//            conn.close();
+//         }
+//
+//         // need to re-start 0, it's the RMI server the other servers use
+//         ServerManagement.start(0, "all", true);
+//
+//         // Kill the poisoned server
+//         if (poisonedServer != null)
+//         {
+//            poisonedServer.kill();
+//         }
+//      }
+//   }
+
    public void testCreateConnectionOnBrokenServer() throws Exception
    {
       Connection conn = null;

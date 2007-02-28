@@ -639,17 +639,23 @@ public class ServerManagement
     * Install dynamically an AOP advice that will do "bad things" on the server, simulating all
     * sorts of failures. I expect the name of this method to be refactored as we learn more about
     * this type of testing.
+    * @return a reference to the server that has been poisoned. Use this reference to kill the
+    *         server after use.
     */
-   public static void poisonTheServer(int serverIndex, int type) throws Exception
+   public static Server poisonTheServer(int serverIndex, int type) throws Exception
    {
       insureStarted(serverIndex);
-      servers[serverIndex].getServer().poisonTheServer(type);
+      Server poisoned = servers[serverIndex].getServer();
+
       // TODO (ovidiu): this is prone to race conditions, as somebody from the client may try to
       //       use (and create) an new server that is being poisoned, while the poisoned server is
       //       still alive.
-      servers[serverIndex] = null;
-   }
 
+      servers[serverIndex] = null;
+      poisoned.poisonTheServer(type);
+
+      return poisoned;
+   }
 
    public static Set query(ObjectName pattern) throws Exception
    {
