@@ -35,11 +35,12 @@ import org.jboss.example.jms.common.ExampleSupport;
 
 /**
  * The example creates two connections to two distinct cluster nodes on which we have previously
- * deployed a distributed queue. The example creates and sends a message using a connection, and
- * attempts to receive the message using the other connection. This is an example of message
- * redistribution in clustered environment at work. The JBoss Messaging clustered Post Offices
- * need to be configured with a default message redistribution policy for this example to work
- * correctly.
+ * deployed a distributed queue. The example sends and receives messages using both connections.
+ *
+ * NOTE: This is an example that assumes a NullMessagePullPolicy. This is the default configuration
+ *       option a release ships with, and also is a very boring options, since messages are *NOT*
+ *       redistributed among nodes. An example that assumes a DefaultMessagePullPolicy is coming
+ *       soon (http://jira.jboss.org/jira/browse/JBMESSAGING-907).
  *
  * Since this example is also used as a smoke test, it is essential that the VM exits with exit
  * code 0 in case of successful execution and a non-zero value on failure.
@@ -84,38 +85,51 @@ public class DistributedQueueExample extends ExampleSupport
          // Let's make sure that (this example is also a smoke test)
          assertNotEquals(getServerID(connection0), getServerID(connection1));
 
-         // Create a session and a producer on the first connection
+         // Create a session, a producer and a consumer on the first connection
 
          Session session0 = connection0.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer publisher = session0.createProducer(distributedQueue);
+         MessageProducer publisher0 = session0.createProducer(distributedQueue);
+         MessageConsumer consumer0 = session0.createConsumer(distributedQueue);
+         ExampleListener messageListener0 = new ExampleListener("MessageListener0");
+         consumer0.setMessageListener(messageListener0);
 
-
-         // Create another session and a consumer on the second connection
+         // Create another session, producer and consumer on the second connection
 
          Session session1 = connection1.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageConsumer consumer = session1.createConsumer(distributedQueue);
-         ExampleListener messageListener = new ExampleListener("MessageListener");
-         consumer.setMessageListener(messageListener);
+         MessageProducer publisher1 = session1.createProducer(distributedQueue);
+         MessageConsumer consumer1 = session1.createConsumer(distributedQueue);
+         ExampleListener messageListener1 = new ExampleListener("MessageListener1");
+         consumer1.setMessageListener(messageListener1);
 
-         // Start connection1, so we can receive the message
+         // Start connections, so we can receive the message
 
+         connection0.start();
          connection1.start();
 
-         // Sendi the message
+         // Send the message
 
          TextMessage message = session0.createTextMessage("Hello!");
-         publisher.send(message);
+         publisher0.send(message);
 
-         log("The message was successfully sent to the distributed queue");
+         message = session1.createTextMessage("Another Hello!");
+         publisher1.send(message);
 
+         log("The messages were successfully sent to the distributed queue");
 
-         // Wait longer than clustered Post Office's "StatsSendPeriod", which is usually 10 secs
-         messageListener.waitForMessage(15000);
+         // NOTE: We know that this example is extremely boring, but so it's NullMessagePullPolicy.
+         //       However, this is the default configuration option a release ships with.
 
+         messageListener0.waitForMessage(3000);
 
-         message = (TextMessage)messageListener.getMessage();
-         log(messageListener.getName() + " received message: " + message.getText());
+         message = (TextMessage)messageListener0.getMessage();
+         log(messageListener0.getName() + " received message: " + message.getText());
          assertEquals("Hello!", message.getText());
+
+         messageListener1.waitForMessage(3000);
+
+         message = (TextMessage)messageListener1.getMessage();
+         log(messageListener1.getName() + " received message: " + message.getText());
+         assertEquals("Another Hello!", message.getText());
 
          displayProviderInfo(connection0.getMetaData());
 

@@ -3,21 +3,27 @@
 <head>
   <meta content="text/html; charset=ISO-8859-1"
  http-equiv="content-type">
-  <title>JBoss Messaging Example - JMS Topic</title>
+  <title>JBoss Messaging Example - Distributed Queue</title>
 </head>
 <body>
 <br>
-<h1>JBoss Messaging Distributed Topic Example</h1>
+<h1>JBoss Messaging Distributed Queue Example</h1>
 $Revision: 1017 $
 <h2>Overview</h2>
 <br>
 This example demonstrates how to write JMS code that connects to a
-JBoss Messaging cluster and sends messages to a distributed topic. The
-client code creates two distinct JMS connections to two different
-cluster nodes. Each connection is then used to create a subscriber for
-the distributed topic. The example is considered
-successful
-if both subscribers receive a message sent to the topic.<br>
+JBoss Messaging cluster and sends messages to a distributed queue.
+The example creates two connections to two distinct cluster nodes
+on which we have previously deployed a distributed queue.
+The example sends and receives messages using both connections.
+<br>
+NOTE: This is an example that assumes a NullMessagePullPolicy.
+This is the default configuration option a release ships with,
+and also is a very boring options, since messages are *NOT*
+redistributed among nodes.
+<br>
+An example that assumes a DefaultMessagePullPolicy is coming
+soon (http://jira.jboss.org/jira/browse/JBMESSAGING-907).
 <br>
 This example relies on having access to a running JBoss Messaging
 cluster with at least two nodes. The JBoss Messaging cluster must be
@@ -49,7 +55,7 @@ up and running.<br>
 2. Go to the example's home directory<br>
 <br>
 <div style="margin-left: 40px;"><span style="font-family: monospace;">cd
-...\examples\distributed-topic</span><br>
+...\examples\distributed-queue</span><br>
 </div>
 <br>
 3. Run the example:<br>
@@ -78,13 +84,13 @@ identify:<br>
 ###########################################################################<br>
 &nbsp;&nbsp;&nbsp;&nbsp; [echo]
 #&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-Running the DISTRIBUTED TOPIC
+Running the DISTRIBUTED QUEUE
 example&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 #<br>
 &nbsp;&nbsp;&nbsp;&nbsp; [echo]
 ###########################################################################<br>
 &nbsp;&nbsp;&nbsp;&nbsp; [echo] The
-topic:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; testDistributedTopic<br>
+topic:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; testDistributedQueue<br>
 &nbsp;&nbsp;&nbsp;&nbsp; [echo] The client jar:
 ../../../output/lib/jboss-messaging-client.jar<br>
       <br>
@@ -92,7 +98,7 @@ sanity-check:<br>
       <br>
 init:<br>
 &nbsp;&nbsp;&nbsp; [mkdir] Created dir:
-C:\work\src\svn\messaging\docs\examples\distributed-topic\output<br>
+C:\work\src\svn\messaging\docs\examples\distributed-queue\output<br>
 &nbsp;&nbsp;&nbsp; [mkdir] Created dir:
 C:\work\src\svn\messaging\docs\examples\common\output<br>
       <br>
@@ -100,19 +106,19 @@ compile:<br>
 &nbsp;&nbsp;&nbsp; [javac] Compiling 2 source files to
 C:\work\src\svn\messaging\docs\examples\common\output<br>
 &nbsp;&nbsp;&nbsp; [javac] Compiling 2 source files to
-C:\work\src\svn\messaging\docs\examples\distributed-topic\output<br>
+C:\work\src\svn\messaging\docs\examples\distributed-queue\output<br>
       <br>
 run:<br>
-&nbsp;&nbsp;&nbsp;&nbsp; [java] Distributed topic
-/topic/testDistributedTopic exists<br>
-&nbsp;&nbsp;&nbsp;&nbsp; [java] The message was successfully published
-on the distributed topic<br>
-&nbsp;&nbsp;&nbsp;&nbsp; [java] MessageListener 1 received message:
+&nbsp;&nbsp;&nbsp;&nbsp; [java] Distributed queue
+/queue/testDistributedQueue exists<br>
+&nbsp;&nbsp;&nbsp;&nbsp; [java] The message was successfully sent
+to the distributed queue<br>
+&nbsp;&nbsp;&nbsp;&nbsp; [java] MessageListener0 received message:
 Hello!<br>
-&nbsp;&nbsp;&nbsp;&nbsp; [java] MessageListener 2 received message:
-Hello!<br>
+&nbsp;&nbsp;&nbsp;&nbsp; [java] MessageListener1 received message:
+Another Hello!<br>
 &nbsp;&nbsp;&nbsp;&nbsp; [java] The example connected to JBoss
-Messaging version 1.2.0.Beta1 (1.2)<br>
+Messaging version 1.2.0.GA (1.2)<br>
       <br>
 &nbsp;&nbsp;&nbsp;&nbsp; [java] #####################<br>
 &nbsp;&nbsp;&nbsp;&nbsp; [java] ###&nbsp;&nbsp;&nbsp;
