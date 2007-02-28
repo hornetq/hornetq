@@ -184,8 +184,6 @@ public abstract class ExampleSupport
       setup(null);
    }
    
-   
-   
    protected void setup(InitialContext ic) throws Exception
    {
       String destinationName;

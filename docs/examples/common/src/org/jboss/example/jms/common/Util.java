@@ -66,16 +66,17 @@ public class Util
    {
        deployQueue(jndiName,null);
    }
-   
+
+   // TODO: NOT TESTED!
    public static void activateMessagePullPolicy(InitialContext ic) throws Exception
    {
-      //Need to promgrammatically activate the default message pull policy.
+      // Need to promgrammatically activate the default message pull policy.
       
-      //We need to do this here since the default config ships with the NullMessagePullPolicy which
-      //doesn't do message redistribution
+      // We need to do this here since the default config ships with the NullMessagePullPolicy which
+      // doesn't do message redistribution.
       
-      //You won't have to do this in your own programs - you just need to make sure
-      //your postoffice MBean config specifies the DefaultMessagePullPolicy
+      // You won't have to do this in your own programs - you just need to make sure your postoffice
+      // MBean config specifies the DefaultMessagePullPolicy
       
       MBeanServerConnection mBeanServer = lookupMBeanServerProxy(ic);
       
@@ -83,15 +84,15 @@ public class Util
 
       mBeanServer.invoke(postOfficeObjectName, "stop", null, null);
       
-      Attribute att = new Attribute("MessagePullPolicy", "org.jboss.messaging.core.plugin.postoffice.cluster.NullMessagePullPolicy");
+      Attribute att =
+         new Attribute("MessagePullPolicy",
+                       "org.jboss.messaging.core.plugin.postoffice.cluster.NullMessagePullPolicy");
       
       mBeanServer.setAttribute(postOfficeObjectName, att);
 
-      //Restart the post office
+      // Restart the post office
       
       mBeanServer.invoke(postOfficeObjectName, "start", null, null);
-      
-      
    }
 
    public static void deployQueue(String jndiName, InitialContext ic) throws Exception
