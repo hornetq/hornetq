@@ -636,8 +636,8 @@
            <formatter classname="org.jboss.test.messaging.tools.ant.JUnitTestSuiteListener"/>
 
             <fileset dir="${build.tests.classes}">
-               <include name="**/jms/**/*Test.class"/>
-               <include name="**/thirdparty/**/*Test.class"/>
+               <include name="**/jms/**/${test-mask}.class"/>
+               <include name="**/thirdparty/**/${test-mask}.class"/>
                <exclude name="**/messaging/graveyard/**/*Test.class"/>
                <exclude name="**/jms/WireFormatTest.class"/>
                <exclude name="**/jms/stress/**"/>
