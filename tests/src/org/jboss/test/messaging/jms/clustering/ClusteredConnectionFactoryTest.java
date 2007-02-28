@@ -90,7 +90,7 @@ public class ClusteredConnectionFactoryTest extends ClusteringTestBase
          }
 
          // need to re-start 0, it's the RMI server the other servers use
-         ServerManagement.start(0, "all");
+         ServerManagement.start(0, "all", true);
       }
    }
 
@@ -207,6 +207,8 @@ public class ClusteredConnectionFactoryTest extends ClusteringTestBase
    {
       nodeCount = 3;
       super.setUp();
+
+      log.debug("setup done");
    }
 
    protected void tearDown() throws Exception
@@ -216,15 +218,14 @@ public class ClusteredConnectionFactoryTest extends ClusteringTestBase
 
    // Private --------------------------------------------------------------------------------------
 
-   private void resetAOP()
-      throws NoSuchFieldException, IllegalAccessException
+   private void resetAOP() throws NoSuchFieldException, IllegalAccessException
    {
 
       // Using reflection to cleanup AOP status and force to load AOP again
       Field field = ClientAOPStackLoader.class.getDeclaredField("instance");
       field.setAccessible(true);
       log.info("Reseting AOP");
-      field.set(null,null);
+      field.set(null, null);
    }
 
    // Inner classes --------------------------------------------------------------------------------

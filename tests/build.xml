@@ -709,79 +709,11 @@
 
    </target>
 
-   <!-- internal task for clustering-tests -->
-   <target name="start-clustering">
-      <!-- Stop the rmi servers in case a previous run aborted -->
-
-      <antcall target="stop-rmi-server-clustering">
-         <param name="test.server.index" value="3"/>
-      </antcall>
-
-      <antcall target="stop-rmi-server-clustering">
-         <param name="test.server.index" value="2"/>
-      </antcall>
-
-      <antcall target="stop-rmi-server-clustering">
-         <param name="test.server.index" value="1"/>
-      </antcall>
-
-      <antcall target="stop-rmi-server-clustering">
-         <param name="test.server.index" value="0"/>
-      </antcall>
-
-
-
-      <!-- Start 4 rmi servers -->
-
-      <antcall target="start-rmi-server-clustering">
-         <param name="test.server.index" value="0"/>
-      </antcall>
-
-      <antcall target="start-rmi-server-clustering">
-         <param name="test.server.index" value="1"/>
-      </antcall>
-
-      <antcall target="start-rmi-server-clustering">
-         <param name="test.server.index" value="2"/>
-      </antcall>
-
-      <antcall target="start-rmi-server-clustering">
-         <param name="test.server.index" value="3"/>
-      </antcall>
-
-      <mkdir dir="${build.tests.reports}"/>
-
-
-   </target>
-
-   <!-- internal task for clustering-tests -->
-   <target name="stop-clustering">
-      <!--
-          Stop the servers in the reverse order, so the VM that runs the RMI registry dies last.
-      -->
-
-      <antcall target="stop-rmi-server-clustering">
-         <param name="test.server.index" value="3"/>
-      </antcall>
-
-      <antcall target="stop-rmi-server-clustering">
-         <param name="test.server.index" value="2"/>
-      </antcall>
-
-      <antcall target="stop-rmi-server-clustering">
-         <param name="test.server.index" value="1"/>
-      </antcall>
-
-      <antcall target="stop-rmi-server-clustering">
-         <param name="test.server.index" value="0"/>
-      </antcall>
-   </target>
-
    <target name="clustering-tests" depends="tests-jar, prepare-testdirs, clear-test-logs"
            description="Runs the clustering tests">
 
 
-      <antcall target="start-clustering"/>
+      <mkdir dir="${build.tests.reports}"/>
 
       <echo message=""/>
       <echo message="Running clustering tests, fork=${junit.fork}, junit.batchtest.fork=${junit.batchtest.fork}"/>
@@ -842,16 +774,13 @@
             </fileset>
          </batchtest>
       </junit>
-
-      <antcall target="stop-clustering"/>
-
    </target>
 
    <target name="memory-leak-tests" depends="tests-jar, prepare-testdirs, clear-test-logs"
            description="Runs MemoryLeakTests, but it starts the clustering for leak-clustering-tests">
 
 
-      <antcall target="start-clustering"/>
+      <mkdir dir="${build.tests.reports}"/>
 
       <echo message=""/>
       <echo message="Running clustering tests, fork=${junit.fork}, junit.batchtest.fork=${junit.batchtest.fork}"/>
@@ -912,8 +841,6 @@
             </fileset>
          </batchtest>
       </junit>
-
-      <antcall target="stop-clustering"/>
 
    </target>
 
