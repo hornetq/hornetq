@@ -35,10 +35,11 @@ import javax.naming.InitialContext;
 import javax.sql.DataSource;
 import javax.transaction.TransactionManager;
 
+import junit.framework.TestCase;
+
 import org.jboss.jms.message.MessageIdGeneratorFactory;
 import org.jboss.logging.Logger;
 import org.jboss.test.messaging.tools.ServerManagement;
-import org.jboss.test.messaging.util.ProxyAssertSupport;
 import org.jboss.tm.TransactionManagerService;
 
 /**
@@ -52,7 +53,7 @@ import org.jboss.tm.TransactionManagerService;
  * @version <tt>$Revision$</tt>
  * $Id$
  */
-public class MessagingTestCase extends ProxyAssertSupport
+public class MessagingTestCase extends TestCase
 {
    // Constants -----------------------------------------------------
 
