@@ -21,6 +21,10 @@
 */
 package org.jboss.test.messaging.jms.clustering;
 
+import java.util.Iterator;
+import java.util.Set;
+import java.util.TreeSet;
+
 import javax.jms.Connection;
 import javax.jms.DeliveryMode;
 import javax.jms.Message;
@@ -247,6 +251,27 @@ public class MultipleFailoverTest extends ClusteringTestBase
             fail();
          }
          
+         //We check that we received all the message
+         //we allow for duplicates, see http://jira.jboss.org/jira/browse/JBMESSAGING-604
+         
+         conn.close();
+         conn = null;
+         
+         Iterator iter = list.msgs.iterator();
+         
+         count = 0;
+         while (iter.hasNext())
+         {
+            Integer i = (Integer)iter.next();
+            
+            if (i.intValue() != count)
+            {
+               fail("Missing message " + i);
+            }
+            
+            count++;
+         }
+         
          if (list.failed)
          {
             fail();
@@ -392,6 +417,8 @@ public class MultipleFailoverTest extends ClusteringTestBase
       
       volatile boolean failed;
       
+      Set msgs = new TreeSet();
+      
       MyListener(Latch latch)
       {
          this.latch = latch;
@@ -409,13 +436,34 @@ public class MultipleFailoverTest extends ClusteringTestBase
                log.info("Received message " + tm.getText() + " (" + tm + ")");
             }
             
-            if (tm.getIntProperty("cnt") != count)
-            {
-               log.error("Wrong message received " + tm.getIntProperty("cnt"));
-               failed = true;
-            }            
-            
             count++;
+            
+            /*
+            
+            IMPORTANT NOTE 
+            
+            http://jira.jboss.org/jira/browse/JBMESSAGING-604
+             
+            There will always be the possibility that duplicate messages can be received until
+            we implement duplicate message detection.
+            Consider the following possibility:
+            A message is sent the send succeeds on the server
+            The message is delivered to the client and acked.
+            The ack removes it from the server
+            The server then fails *before* the original send message has written its response
+            to the socket
+            The client receives a socket exception
+            Failover kicks in
+            After failover the client resumes the send
+            The message gets delivered again
+            And yes, this was actually seen to happen in the logs :)
+            
+            Therefore we only count that the total messages were received
+            */      
+            
+            msgs.add(new Integer(msg.getIntProperty("cnt")));
+            
+            
          }
          catch (Exception e)
          {
