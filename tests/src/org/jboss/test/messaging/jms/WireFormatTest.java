@@ -54,23 +54,23 @@ import org.jboss.jms.wireformat.BrowserNextMessageRequest;
 import org.jboss.jms.wireformat.BrowserNextMessageResponse;
 import org.jboss.jms.wireformat.CloseRequest;
 import org.jboss.jms.wireformat.ClosingRequest;
+import org.jboss.jms.wireformat.ClosingResponse;
 import org.jboss.jms.wireformat.ConnectionCreateSessionDelegateRequest;
 import org.jboss.jms.wireformat.ConnectionCreateSessionDelegateResponse;
 import org.jboss.jms.wireformat.ConnectionFactoryCreateConnectionDelegateRequest;
 import org.jboss.jms.wireformat.ConnectionFactoryCreateConnectionDelegateResponse;
 import org.jboss.jms.wireformat.ConnectionFactoryGetClientAOPStackRequest;
 import org.jboss.jms.wireformat.ConnectionFactoryGetClientAOPStackResponse;
-import org.jboss.jms.wireformat.ConnectionGetIDBlockRequest;
-import org.jboss.jms.wireformat.ConnectionGetIDBlockResponse;
 import org.jboss.jms.wireformat.ConnectionGetClientIDRequest;
 import org.jboss.jms.wireformat.ConnectionGetClientIDResponse;
+import org.jboss.jms.wireformat.ConnectionGetIDBlockRequest;
+import org.jboss.jms.wireformat.ConnectionGetIDBlockResponse;
 import org.jboss.jms.wireformat.ConnectionGetPreparedTransactionsRequest;
 import org.jboss.jms.wireformat.ConnectionGetPreparedTransactionsResponse;
 import org.jboss.jms.wireformat.ConnectionSendTransactionRequest;
 import org.jboss.jms.wireformat.ConnectionSetClientIDRequest;
 import org.jboss.jms.wireformat.ConnectionStartRequest;
 import org.jboss.jms.wireformat.ConnectionStopRequest;
-import org.jboss.jms.wireformat.ConsumerCancelInflightMessagesRequest;
 import org.jboss.jms.wireformat.ConsumerChangeRateRequest;
 import org.jboss.jms.wireformat.NullResponse;
 import org.jboss.jms.wireformat.PacketSupport;
@@ -275,11 +275,6 @@ public class WireFormatTest extends MessagingTestCase
       wf.testConsumerChangeRateRequest();
    }
    
-   public void testConsumerCancelInflightMessagesRequest() throws Exception
-   {                       
-      wf.testConsumerCancelInflightMessagesRequest();
-   }
-   
    // Browser
    
    public void testBrowserNextMessageRequest() throws Exception
@@ -390,6 +385,11 @@ public class WireFormatTest extends MessagingTestCase
    public void testNullResponse() throws Exception
    {                 
       wf.testNullResponse();
+   }
+   
+   public void testClosingResponse() throws Exception
+   {                 
+      wf.testClosingResponse();
    }
    
    
@@ -665,14 +665,6 @@ public class WireFormatTest extends MessagingTestCase
          testPacket(req, PacketSupport.REQ_CONSUMER_CHANGERATE);                           
       }
       
-      public void testConsumerCancelInflightMessagesRequest() throws Exception
-      { 
-         RequestSupport req =
-            new ConsumerCancelInflightMessagesRequest(23, (byte)77, 123);
-                 
-         testPacket(req, PacketSupport.REQ_CONSUMER_CANCELINFLIGHTMESSAGES);                           
-      }
-      
       // Browser
       
       public void testBrowserNextMessageRequest() throws Exception
@@ -857,6 +849,13 @@ public class WireFormatTest extends MessagingTestCase
          ResponseSupport resp =  new NullResponse();
                  
          testPacket(resp, PacketSupport.NULL_RESPONSE);                           
+      }
+      
+      public void testClosingResponse() throws Exception
+      { 
+         ResponseSupport resp =  new ClosingResponse(23);
+                 
+         testPacket(resp, PacketSupport.RESP_CLOSING);                           
       }
       
    }

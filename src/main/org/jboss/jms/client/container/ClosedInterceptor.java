@@ -135,7 +135,7 @@ public class ClosedInterceptor implements Interceptor
       {         
          if (checkClosingAlreadyDone())
          {
-            return null;
+            return new Long(-1);
          }
       }
       else if (isClose)

@@ -58,15 +58,13 @@ import org.jboss.remoting.callback.ServerInvokerCallbackHandler;
  * 
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * @version <tt>$Revision$</tt> $Id: ServerConsumerEndpoint.java 2399
- *          2007-02-23 01:21:29Z ovidiu.feodorov@jboss.com $
+ * @version <tt>$Revision$</tt> $Id$
  */
 public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
 {
    // Constants ------------------------------------------------------------------------------------
 
-   private static final Logger log = Logger
-            .getLogger(ServerConsumerEndpoint.class);
+   private static final Logger log = Logger.getLogger(ServerConsumerEndpoint.class);
 
    // Static ---------------------------------------------------------------------------------------
 
@@ -105,6 +103,8 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
    private volatile boolean clientAccepting;
 
    private boolean storeDeliveries;
+   
+   private long lastDeliveryID = -1;
    
    // Constructors ---------------------------------------------------------------------------------
 
@@ -150,11 +150,13 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
          // This is a consumer of a non durable topic subscription. We don't need to store
          // deliveries since if the consumer is closed or dies the refs go too.
          this.storeDeliveries = false;
-      } else
+      }
+      else
       {
          this.storeDeliveries = true;
       }
 
+      //For now always true - revisit later
       storeDeliveries = true;
 
       if (selector != null)
@@ -166,7 +168,7 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
       }
 
       this.started = this.sessionEndpoint.getConnectionEndpoint().isStarted();
-
+      
       // adding the consumer to the queue
       this.messageQueue.add(this);
 
@@ -204,7 +206,8 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
          try
          {
             sessionEndpoint.expireDelivery(delivery, expiryQueue);
-         } catch (Throwable t)
+         }
+         catch (Throwable t)
          {
             log.error("Failed to expire delivery: " + delivery, t);
          }
@@ -222,7 +225,7 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
 
             return null;
          }
-
+         
          if (trace) { log.trace(this + " has startStopLock lock, preparing the message for delivery"); }
 
          Message message = ref.getMessage();
@@ -241,9 +244,9 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
 
          if (storeDeliveries)
          {
-            deliveryId = sessionEndpoint.addDelivery(delivery, id, dlq,
-                     expiryQueue, redeliveryDelay);
-         } else
+            deliveryId = sessionEndpoint.addDelivery(delivery, id, dlq, expiryQueue, redeliveryDelay);
+         }
+         else
          {
             deliveryId = -1;
          }
@@ -273,20 +276,28 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
             if (callbackClient != null)
             {
                invoker = callbackClient.getInvoker();
-            } else
+                              
+            }
+            else
             {
                // TODO: dummy synchronization object, in case there's no clientInvoker. This will
                // happen during the first invocation anyway. It's a kludge, I know, but this whole
                // synchronization thing is a huge kludge. Needs to be reviewed.
                invoker = new Object();
             }
-
+            
             synchronized (invoker)
             {
                // one way invocation, no acknowledgment sent back by the client
-               if (trace) { log.trace(this + " submitting message " + message + " to the remoting layer to be sent asynchronously"); }               callbackHandler.handleCallbackOneway(callback);
+               if (trace) { log.trace(this + " submitting message " + message + " to the remoting layer to be sent asynchronously"); }
+               
+               callbackHandler.handleCallbackOneway(callback);
+               
+               //We store the delivery id so we know to wait for any deliveries in transit on close
+               this.lastDeliveryID = deliveryId;
             }
-         } catch (HandleCallbackException e)
+         }
+         catch (HandleCallbackException e)
          {
             // it's an oneway callback, so exception could only have happened on the server, while
             // trying to send the callback. This is a good reason to smack the whole connection.
@@ -345,13 +356,15 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
 
    // Closeable implementation ---------------------------------------------------------------------
 
-   public void closing() throws JMSException
+   public long closing() throws JMSException
    {
       try
       {
          if (trace) { log.trace(this + " closing");}
 
          stop();
+         
+         return lastDeliveryID;
       }
       catch (Throwable t)
       {
@@ -419,27 +432,6 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
       catch (Throwable t)
       {
          throw ExceptionUtil.handleJMSInvocation(t, this + " changeRate");
-      }
-   }
-
-   /**
-    * This method is always called between closing() and close() being called. Instead of having a
-    * new method we could perhaps somehow pass the last delivery id in with closing - then we don't
-    * need another message.
-    */
-   public void cancelInflightMessages(long lastDeliveryId) throws JMSException
-   {
-      if (trace) { log.trace(this + " cancelInflightMessages: " + lastDeliveryId); }
-
-      try
-      {
-         // Cancel all deliveries made by this consumer with delivery id > lastDeliveryId
-
-         sessionEndpoint.cancelDeliveriesForConsumerAfterDeliveryId(id, lastDeliveryId);
-      }
-      catch (Throwable t)
-      {
-         throw ExceptionUtil.handleJMSInvocation(t, this + " cancelInflightMessages");
       }
    }
 
@@ -552,7 +544,7 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
          }
 
          started = false;
-
+         
          // Any message deliveries already transit to the consumer, will just be ignored by the
          // MessageCallbackHandler since it will be closed.
          //
@@ -564,8 +556,7 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
          // 2) ServerConsumerEndpoint::closing() causes stop() this flushes any deliveries yet to
          // deliver to the client callback handler.
          //
-         // 3) MessageCallbackHandler::cancelInflightMessages(long lastDeliveryId) - any deliveries
-         // after lastDeliveryId for the consumer will be considered in flight and cancelled.
+         // 3) MessageCallbackHandler waits for all deliveries to arrive at client side
          //
          // 4) ServerConsumerEndpoint:close() - endpoint is deregistered.
          //

@@ -34,7 +34,6 @@ import org.jboss.jms.delegate.ConsumerDelegate;
 import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.wireformat.CloseRequest;
 import org.jboss.jms.wireformat.ClosingRequest;
-import org.jboss.jms.wireformat.ConsumerCancelInflightMessagesRequest;
 import org.jboss.jms.wireformat.ConsumerChangeRateRequest;
 import org.jboss.jms.wireformat.RequestSupport;
 import org.jboss.logging.Logger;
@@ -117,21 +116,14 @@ public class ClientConsumerDelegate extends DelegateSupport implements ConsumerD
       doInvoke(client, req);
    }
 
-   public void closing() throws JMSException
+   public long closing() throws JMSException
    {
       RequestSupport req = new ClosingRequest(id, version);
 
-      doInvoke(client, req);
+      return ((Long)doInvoke(client, req)).longValue();
    }
 
    // ConsumerDelegate implementation --------------------------------------------------------------
-
-   public void cancelInflightMessages(long lastDeliveryId) throws JMSException
-   {
-      RequestSupport req = new ConsumerCancelInflightMessagesRequest(id, version, lastDeliveryId);
-
-      doInvoke(client, req);
-   }
 
    public void changeRate(float newRate) throws JMSException
    {

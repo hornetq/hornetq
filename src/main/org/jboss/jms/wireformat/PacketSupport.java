@@ -110,7 +110,6 @@ public abstract class PacketSupport implements Streamable
    // --------
    
    public static final int REQ_CONSUMER_CHANGERATE = 401;
-   public static final int REQ_CONSUMER_CANCELINFLIGHTMESSAGES = 402;
    
    // Browser
    // -------
@@ -160,6 +159,8 @@ public abstract class PacketSupport implements Streamable
    public static final int RESP_BROWSER_NEXTMESSAGE = 100500;   
    public static final int RESP_BROWSER_HASNEXTMESSAGE = 100501;   
    public static final int RESP_BROWSER_NEXTMESSAGEBLOCK = 100502;
+   
+   public static final int RESP_CLOSING = 100601;
   
    
    public static PacketSupport createPacket(int id)
@@ -262,11 +263,7 @@ public abstract class PacketSupport implements Streamable
             break;  
             
          // Consumer
-
-         case REQ_CONSUMER_CANCELINFLIGHTMESSAGES:
-            packet = new ConsumerCancelInflightMessagesRequest();
-            break;
-                        
+    
          // Browser   
             
          case REQ_BROWSER_NEXTMESSAGE:
@@ -343,7 +340,10 @@ public abstract class PacketSupport implements Streamable
             packet = new BrowserNextMessageBlockResponse();
             break;     
             
-            
+         case RESP_CLOSING:
+            packet = new ClosingResponse();
+            break;
+                        
          case SERIALIZED:
             packet = new SerializedPacket();
             break;            

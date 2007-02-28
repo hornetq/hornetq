@@ -63,9 +63,9 @@ public class ConnectionAdvised extends AdvisedSupport implements ConnectionEndpo
       endpoint.close();
    }
 
-   public void closing() throws JMSException
+   public long closing() throws JMSException
    {
-      endpoint.closing();
+      return endpoint.closing();
    }
 
    public SessionDelegate createSessionDelegate(boolean transacted,

@@ -96,11 +96,10 @@ public class CallbackManager implements InvokerCallbackHandler
 
          if (handler == null)
          {
-            // This is OK and can happen if the callback handler is deregistered on consumer close,
-            // but there are messages still in transit which arrive later. In this case it is just
-            // safe to ignore the message.
+            // This should never happen since we wait for all deliveries to arrive before closing
+            // the consumer
 
-            if (trace) { log.trace(this + " callback handler not found, message arrived after consumer is closed"); }
+            log.warn(this + " callback handler not found, message arrived after consumer is closed. Cancelling it bacdk to queue");
             
             return;
          }

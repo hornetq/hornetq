@@ -134,8 +134,7 @@ public class FailoverValveInterceptor implements Interceptor, FailureDetector
          // already be cancelled after failover.
 
          if (methodName.equals("cancelDelivery") ||
-            methodName.equals("cancelDeliveries") ||
-            methodName.equals("cancelInflightMessages"))
+            methodName.equals("cancelDeliveries"))
          {
             log.debug(this + " NOT resuming " + methodName + "(), let it wither and die");
             

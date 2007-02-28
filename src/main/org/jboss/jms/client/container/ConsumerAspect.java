@@ -115,24 +115,18 @@ public class ConsumerAspect
    public Object handleClosing(Invocation invocation) throws Throwable
    {      
       ConsumerState consumerState = getState(invocation);
-        
+                       
+      // We make sure closing is called on the ServerConsumerEndpoint.
+      // This returns us the last delivery id sent
+      
+      Long l  = (Long)invocation.invokeNext();
+      
+      long lastDeliveryId = l.longValue();
+      
       // First we call close on the messagecallbackhandler which waits for onMessage invocations      
-      // to complete any further messages received will be ignored
-      consumerState.getMessageCallbackHandler().close();
-                        
-      // Then we make sure closing is called on the ServerConsumerEndpoint.
-
-      Object res = invocation.invokeNext();
-      
-      //Now we send a message to the server consumer with the last delivery id so
-      //it can cancel any inflight messages after that
-      //This needs to be done *after* the call to closing has been executed on the server
-      //maybe it can be combined with closing
-      
-      ConsumerDelegate del = (ConsumerDelegate)invocation.getTargetObject();
-      
-      long lastDeliveryId = consumerState.getMessageCallbackHandler().getLastDeliveryId();
-      
+      // to complete and the last delivery to arrive
+      consumerState.getMessageCallbackHandler().close(lastDeliveryId);
+                
       SessionState sessionState = (SessionState)consumerState.getParent();
       ConnectionState connectionState = (ConnectionState)sessionState.getParent();
                  
@@ -141,15 +135,10 @@ public class ConsumerAspect
       CallbackManager cm = connectionState.getRemotingConnection().getCallbackManager();
       cm.unregisterHandler(consumerState.getConsumerID());
          
-      //Now we need to cancel any inflight messages - this must be done before
-      //cancelling the message callback handler buffer, so that messages end up back in the channel
-      //in the right order
-      del.cancelInflightMessages(lastDeliveryId);
-      
       //And then we cancel any messages still in the message callback handler buffer     
       consumerState.getMessageCallbackHandler().cancelBuffer();
                                    
-      return res;
+      return l;
    }      
    
    public Object handleReceive(Invocation invocation) throws Throwable

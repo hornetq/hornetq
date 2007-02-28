@@ -3361,31 +3361,31 @@ public class MessageConsumerTest extends MessagingTestCase
          TextMessage tm = (TextMessage)m;
          count++;
 
-         log.trace("Got message:" + count);
-
+         log.info(this + " Got message:" + count);
+         
          try
          {
-            log.trace("message:" + tm.getText());
+            log.info(this + " message:" + tm.getText());
             if (count == 1)
             {
                if (!("a".equals(tm.getText())))
                {
-                  log.trace("Should be a but was " + tm.getText());
+                  log.info("Should be a but was " + tm.getText());
                   failed = true;
                   latch.release();
                }
-               log.trace("Throwing exception");
+               log.info("Throwing exception");
                throw new RuntimeException("Aardvark");
             }
             else if (count == 2)
             {
-               log.trace("ack mode:" + sess.getAcknowledgeMode());
+               log.info("ack mode:" + sess.getAcknowledgeMode());
                if (sess.getAcknowledgeMode() == Session.AUTO_ACKNOWLEDGE || sess.getAcknowledgeMode() == Session.DUPS_OK_ACKNOWLEDGE)
                {
                   //Message should be immediately redelivered
                   if (!("a".equals(tm.getText())))
                   {
-                     log.trace("Should be a but was " + tm.getText());
+                     log.info("Should be a but was " + tm.getText());
                      failed = true;
                      latch.release();
                   }
@@ -3400,7 +3400,7 @@ public class MessageConsumerTest extends MessagingTestCase
                   //Transacted or CLIENT_ACKNOWLEDGE - next message should be delivered
                   if (!("b".equals(tm.getText())))
                   {
-                     log.trace("Should be b but was " + tm.getText());
+                     log.info("Should be b but was " + tm.getText());
                      failed = true;
                      latch.release();
                   }
@@ -3412,7 +3412,7 @@ public class MessageConsumerTest extends MessagingTestCase
                {
                   if (!("b".equals(tm.getText())))
                   {
-                     log.trace("Should be b but was " + tm.getText());
+                     log.info("Should be b but was " + tm.getText());
                      failed = true;
                      latch.release();
                   }
@@ -3421,7 +3421,7 @@ public class MessageConsumerTest extends MessagingTestCase
                {
                   if (!("c".equals(tm.getText())))
                   {
-                     log.trace("Should be c but was " + tm.getText());
+                     log.info("Should be c but was " + tm.getText());
                      failed = true;
                      latch.release();
                   }
@@ -3435,7 +3435,7 @@ public class MessageConsumerTest extends MessagingTestCase
                {
                   if (!("c".equals(tm.getText())))
                   {
-                     log.trace("Should be c but was " + tm.getText());
+                     log.info("Should be c but was " + tm.getText());
                      failed = true;
                      latch.release();
                   }

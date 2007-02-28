@@ -70,9 +70,9 @@ public class SessionAdvised extends AdvisedSupport implements SessionEndpoint
       endpoint.close();
    }
 
-   public void closing() throws JMSException
+   public long closing() throws JMSException
    {
-      endpoint.closing();
+      return endpoint.closing();
    }
 
    public void send(JBossMessage msg, boolean checkForDuplicates) throws JMSException

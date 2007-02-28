@@ -331,7 +331,7 @@ public class ProducerAspect
    
    public Object handleClosing(Invocation invocation) throws Throwable
    {
-      return null;
+      return new Long(-1);
    }
    
    public Object handleClose(Invocation invocation) throws Throwable

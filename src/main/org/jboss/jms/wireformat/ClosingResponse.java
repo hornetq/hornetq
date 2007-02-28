@@ -1,4 +1,3 @@
-
 /*
  * JBoss, Home of Professional Open Source
  * Copyright 2005, JBoss Inc., and individual contributors as indicated
@@ -25,67 +24,40 @@ package org.jboss.jms.wireformat;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 
-import org.jboss.jms.server.endpoint.ConsumerEndpoint;
 
-/**
- * 
- * A ConsumerCancelInflightMessagesRequest
- *
- * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * @version <tt>$Revision$</tt>
- *
- * $Id$
- *
- */
-public class ConsumerCancelInflightMessagesRequest extends RequestSupport
+public class ClosingResponse extends ResponseSupport
 {
-   private long lastDeliveryId;
+   private long id;
    
-   public ConsumerCancelInflightMessagesRequest()
+   public ClosingResponse()
    {      
    }
    
-   public ConsumerCancelInflightMessagesRequest(int objectId,
-                                    byte version,
-                                    long lastDeliveryId)
+   public ClosingResponse(long id)
    {
-      super(objectId, PacketSupport.REQ_CONSUMER_CANCELINFLIGHTMESSAGES, version);
+      super(PacketSupport.RESP_CLOSING);
       
-      this.lastDeliveryId = lastDeliveryId;
+      this.id = id;
    }
 
-   public void read(DataInputStream is) throws Exception
+   public Object getResponse()
    {
-      super.read(is);
-      
-      lastDeliveryId = is.readLong();
+      return new Long(id);
    }
-
-   public ResponseSupport serverInvoke() throws Exception
-   {
-      ConsumerEndpoint endpoint = 
-         (ConsumerEndpoint)Dispatcher.instance.getTarget(objectId);
-      
-      if (endpoint == null)
-      {
-         throw new IllegalStateException("Cannot find object in dispatcher with id " + objectId);
-      }
-      
-      endpoint.cancelInflightMessages(lastDeliveryId);
-      
-      return null;
-   }
-
+   
    public void write(DataOutputStream os) throws Exception
    {
       super.write(os);
       
-      os.writeLong(lastDeliveryId);
+      os.writeLong(id);
       
       os.flush();
    }
+   
+   public void read(DataInputStream is) throws Exception
+   {
+      id = is.readLong();
+   }
 
 }
-
-
 

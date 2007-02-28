@@ -332,6 +332,8 @@ public class JMSRemotingConnection
       // cleaning up the callback listener
 
       client.setDisconnectTimeout(0);
+      
+      client.disconnect();
 
       try
       {

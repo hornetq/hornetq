@@ -59,8 +59,9 @@ public class ClosingRequest extends RequestSupport
          throw new IllegalStateException("Cannot find object in dispatcher with id " + objectId);
       }
       
-      endpoint.closing();
-      return null;
+      long id = endpoint.closing();
+      
+      return new ClosingResponse(id);
    }
 
    public void write(DataOutputStream os) throws Exception

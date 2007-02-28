@@ -42,12 +42,4 @@ public interface ConsumerEndpoint extends Closeable
     * Sent to the server to specify a new maximum rate at which to send messages at
     */
    void changeRate(float newRate) throws JMSException;
-   
-   
-   /**
-    * Cancels any deliveries with a delivery id > lastDeliveryId - these are inflight
-    * @param lastDeliveryId
-    */
-   void cancelInflightMessages(long lastDeliveryId) throws JMSException;
-
 }

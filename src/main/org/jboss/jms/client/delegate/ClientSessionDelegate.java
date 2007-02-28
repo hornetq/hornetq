@@ -142,11 +142,11 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
       doInvoke(client, req);
    }
 
-   public void closing() throws JMSException
+   public long closing() throws JMSException
    {
       RequestSupport req = new ClosingRequest(id, version);
 
-      doInvoke(client, req);
+      return ((Long)doInvoke(client, req)).longValue();
    }
 
    // SessionDelegate implementation ---------------------------------------------------------------

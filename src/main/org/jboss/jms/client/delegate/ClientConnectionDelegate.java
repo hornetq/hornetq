@@ -151,11 +151,11 @@ public class ClientConnectionDelegate extends DelegateSupport implements Connect
       doInvoke(client, req);
    }
 
-   public void closing() throws JMSException
+   public long closing() throws JMSException
    {
       RequestSupport req = new ClosingRequest(id, version);
 
-      doInvoke(client, req);
+      return ((Long)doInvoke(client, req)).longValue();
    }
 
    // ConnectionDelegate implementation ------------------------------------------------------------
@@ -239,7 +239,7 @@ public class ClientConnectionDelegate extends DelegateSupport implements Connect
    {
       RequestSupport req = new ConnectionStartRequest(id, version);
 
-      doInvokeOneway(client, req);
+      doInvoke(client, req);
    }
 
    public void stop() throws JMSException

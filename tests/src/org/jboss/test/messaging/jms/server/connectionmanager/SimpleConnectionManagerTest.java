@@ -319,9 +319,9 @@ public class SimpleConnectionManagerTest extends MessagingTestCase
          closed = true;
       }
 
-      public void closing() throws JMSException
+      public long closing() throws JMSException
       {
-         
+         return -1;
       }
 
       public IDBlock getIdBlock(int size) throws JMSException

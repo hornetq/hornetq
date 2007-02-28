@@ -59,9 +59,9 @@ public class ConsumerAdvised extends AdvisedSupport implements ConsumerEndpoint
       endpoint.close();
    }
 
-   public void closing() throws JMSException
+   public long closing() throws JMSException
    {
-      endpoint.closing();
+      return endpoint.closing();
    }
 
    public void changeRate(float newRate) throws JMSException
@@ -69,11 +69,6 @@ public class ConsumerAdvised extends AdvisedSupport implements ConsumerEndpoint
       endpoint.changeRate(newRate);
    }
    
-   public void cancelInflightMessages(long lastDeliveryId) throws JMSException
-   {
-      endpoint.cancelInflightMessages(lastDeliveryId);
-   }
-
    // AdvisedSupport overrides --------------------------------------
 
    public Object getEndpoint()

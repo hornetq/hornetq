@@ -29,7 +29,6 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -302,10 +301,12 @@ public class ServerSessionEndpoint implements SessionEndpoint
       }
    }
       
-   public void closing() throws JMSException
+   public long closing() throws JMSException
    {
       // currently does nothing
       if (trace) log.trace(this + " closing (noop)");
+      
+      return -1;
    }
  
    public void send(JBossMessage message, boolean checkForDuplicates) throws JMSException
@@ -747,41 +748,6 @@ public class ServerSessionEndpoint implements SessionEndpoint
       }
    }
       
-   void cancelDeliveriesForConsumerAfterDeliveryId(int consumerId, long lastDeliveryId)
-      throws Throwable
-   {
-      //Need to cancel in reverse
-      
-      LinkedList toCancel = new LinkedList();
-      
-      Iterator iter = deliveries.entrySet().iterator();
-            
-      while (iter.hasNext())
-      {
-         Map.Entry entry = (Map.Entry)iter.next();
-         
-         Long deliveryId = (Long)entry.getKey();
-         
-         DeliveryRecord record = (DeliveryRecord)entry.getValue();
-         
-         if (record.consumerId == consumerId && deliveryId.longValue() > lastDeliveryId)
-         {
-            iter.remove();
-            
-            toCancel.addFirst(record);
-         }
-      }
-      
-      iter = toCancel.iterator();
-      
-      while (iter.hasNext())
-      {
-         DeliveryRecord record = (DeliveryRecord)iter.next();
-         
-         record.del.cancel();
-      }
-   }
-   
    void removeBrowser(int browserId) throws Exception
    {
       synchronized (browsers)

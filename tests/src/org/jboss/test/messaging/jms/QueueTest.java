@@ -21,15 +21,19 @@
   */
 package org.jboss.test.messaging.jms;
 
-import javax.jms.ConnectionFactory;
-import javax.jms.Queue;
+import java.util.HashSet;
+import java.util.Set;
+
 import javax.jms.Connection;
-import javax.jms.Session;
-import javax.jms.MessageProducer;
+import javax.jms.ConnectionFactory;
 import javax.jms.MessageConsumer;
+import javax.jms.MessageProducer;
+import javax.jms.Queue;
+import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.naming.InitialContext;
 
+import org.jboss.jms.client.JBossConnection;
 import org.jboss.jms.client.JBossConnectionFactory;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
@@ -122,54 +126,84 @@ public class QueueTest extends MessagingTestCase
    {
       Queue queue = (Queue)ic.lookup("/queue/TestQueue");
 
-      Connection conn1 = cf.createConnection();
-
-      Connection conn2 = cf.createConnection();
-
-      try
+      // Maybe we could remove this counter after we are sure this test is fixed!
+      // I had to use a counter because this can work in some iterations.
+      for (int counter = 0; counter < 20; counter++)
       {
-         Session s = conn1.createSession(true, Session.AUTO_ACKNOWLEDGE);
+         log.info("Iteration = " + counter);
 
-         MessageProducer p = s.createProducer(queue);
+         Connection conn1 = cf.createConnection();
 
-         for (int i = 0; i < 20; i++)
+         assertEquals(0, ((JBossConnection)conn1).getServerID());
+
+         Connection conn2 = cf.createConnection();
+
+         assertEquals(0, ((JBossConnection)conn2).getServerID());
+
+         try
          {
-            p.send(s.createTextMessage("message " + i));
+            Session s = conn1.createSession(true, Session.AUTO_ACKNOWLEDGE);
+
+            MessageProducer p = s.createProducer(queue);
+
+            for (int i = 0; i < 20; i++)
+            {
+               p.send(s.createTextMessage("message " + i));
+            }
+
+            s.commit();
+
+            Session s2 = conn2.createSession(true, Session.AUTO_ACKNOWLEDGE);
+
+            // these next three lines are an anti-pattern but they shouldn't loose any messages
+            MessageConsumer c2 = s2.createConsumer(queue);
+            conn2.start();
+            c2.close();
+
+            c2 = s2.createConsumer(queue);
+
+            //There is a possibility the messages arrive out of order if they hit the closed
+            //consumer and are cancelled back before delivery to the other consumer has finished.
+            //There is nothing much we can do about this
+            Set texts = new HashSet();
+            
+            for (int i = 0; i < 20; i++)
+            {
+               TextMessage txt = (TextMessage)c2.receive(5000);
+               assertNotNull(txt);
+               texts.add(txt.getText());               
+            }
+            
+            for (int i = 0; i < 20; i++)
+            {
+               assertTrue(texts.contains("message " + i));            
+            }
+            
+            // Ovidiu: the test was originally invalid, a locally transacted session that is closed 
+            //         rolls back its transaction. I added s2.commit() to correct the test.
+            // JMS 1.1 Specifications, Section 4.3.5:
+            // "Closing a connection must roll back the transactions in progress on its
+            // transacted sessions*.
+            // *) The term 'transacted session' refers to the case where a session's commit and
+            // rollback methods are used to demarcate a transaction local to the session. In the
+            // case where a session's work is coordinated by an external transaction manager, a
+            // session's commit and rollback methods are not used and the result of a closed
+            // session's work is determined later by the transaction manager.
+
+            s2.commit();
+
+            assertNull(c2.receive(1000));
          }
-
-         s.commit();
-
-         Session s2 = conn2.createSession(true, Session.AUTO_ACKNOWLEDGE);
-
-         // Create a consumer, start the session, close the consumer..
-         // This shouldn't cause any message to be lost
-         MessageConsumer c2 = s2.createConsumer(queue);
-         conn2.start();
-         c2.close();
-
-         // open a new consumer
-         c2 = s2.createConsumer(queue);
-
-         for (int i = 0; i < 20; i++)
+         finally
          {
-            TextMessage txt = (TextMessage)c2.receive(5000);
-            assertNotNull(txt);
-            assertEquals("message " + i, txt.getText());
-         }
-
-         assertNull(c2.receive(1000));
-
-         s2.commit();
-      }
-      finally
-      {
-         if (conn1 != null)
-         {
-            conn1.close();
-         }
-         if (conn2 != null)
-         {
-            conn2.close();
+            if (conn1 != null)
+            {
+               conn1.close();
+            }
+            if (conn2 != null)
+            {
+               conn2.close();
+            }
          }
       }
    }

@@ -243,7 +243,7 @@ public class RemotingConnectionFailureTest extends MessagingTestCase
 
       client.setDisconnectTimeout(0);
       client.disconnect();
-
+      
       // the client should be "dead", in that both the connection validator and the lease pinger
       // are silenced
 

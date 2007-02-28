@@ -424,9 +424,11 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
       } 
    }
    
-   public void closing() throws JMSException
+   public long closing() throws JMSException
    {
       log.trace(this + " closing (noop)");    
+      
+      return -1;
    }
 
    public void sendTransaction(TransactionRequest request,

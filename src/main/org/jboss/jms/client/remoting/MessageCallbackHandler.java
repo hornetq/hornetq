@@ -61,6 +61,9 @@ public class MessageCallbackHandler
    
    private static boolean trace;      
    
+   private static final int WAIT_TIMEOUT = 30000;
+   
+   
    static
    {
       log = Logger.getLogger(MessageCallbackHandler.class);
@@ -109,7 +112,7 @@ public class MessageCallbackHandler
          return false;
       }
    }
-     
+        
    //This is static so it can be called by the asf layer too
    public static void callOnMessage(SessionDelegate sess,
                                     MessageListener listener,
@@ -200,8 +203,9 @@ public class MessageCallbackHandler
    private String queueName;
    private long lastDeliveryId = -1;
    private volatile boolean serverSending = true;
-   
+   private boolean waitingForLastDelivery;
         
+   
    // Constructors ---------------------------------------------------------------------------------
 
    public MessageCallbackHandler(boolean isCC, int ackMode,                                
@@ -306,10 +310,10 @@ public class MessageCallbackHandler
             {
                MessageProxy mp = (MessageProxy)i.next();
                
-               DefaultCancel ack =
+               DefaultCancel cancel =
                   new DefaultCancel(mp.getDeliveryId(), mp.getDeliveryCount(), false, false);
                
-               cancels.add(ack);
+               cancels.add(cancel);
             }
                   
             sessionDelegate.cancelDeliveries(cancels);
@@ -319,8 +323,12 @@ public class MessageCallbackHandler
       }
    }
    
-   public void close() throws JMSException
-   {   
+   public void close(long lastDeliveryId) throws JMSException
+   {     
+      waitForLastDelivery(lastDeliveryId);
+      
+      waitForOnMessageToComplete();   
+      
       synchronized (mainLock)
       {
          log.debug(this + " closing");
@@ -340,9 +348,7 @@ public class MessageCallbackHandler
          
          this.listener = null;
       }
-
-      waitForOnMessageToComplete();                  
-      
+                           
       if (trace) { log.trace(this + " closed"); }
    }
      
@@ -521,20 +527,54 @@ public class MessageCallbackHandler
       serverSending = true;      
    }
    
-   public long getLastDeliveryId()
-   {
-      synchronized (mainLock)
-      {
-         return lastDeliveryId;
-      }
-   }
-     
    // Package protected ----------------------------------------------------------------------------
    
    // Protected ------------------------------------------------------------------------------------
             
    // Private --------------------------------------------------------------------------------------
 
+   /*
+    * Wait for the last delivery to arrive
+    */
+   private void waitForLastDelivery(long id)
+   {
+      if (trace) { log.trace("Waiting for last delivery id " + id); }
+      
+      synchronized (mainLock)
+      {          
+         waitingForLastDelivery = true;
+         try
+         {
+            long wait = WAIT_TIMEOUT;
+            while (lastDeliveryId != id && wait > 0)
+            {
+               long start = System.currentTimeMillis();  
+               try
+               {
+                  mainLock.wait(wait);
+               }
+               catch (InterruptedException e)
+               {               
+               }
+               wait -= (System.currentTimeMillis() - start);
+            }      
+            if (trace && lastDeliveryId == id)
+            {
+               log.trace("Got last delivery");
+            }
+             
+            if (lastDeliveryId != id)
+            {
+               log.warn("Timed out waiting for last delivery"); 
+            }
+         }
+         finally
+         {
+            waitingForLastDelivery = false;
+         }
+      }
+   }
+   
    private void handleMessageInternal(Object message) throws Exception
    {
       MessageProxy proxy = (MessageProxy) message;
@@ -545,8 +585,10 @@ public class MessageCallbackHandler
       {
          if (closed)
          {
-            // Ignore
-            if (trace) { log.trace(this + " is closed, so ignore message"); }
+            // This should never happen - we should always wait for all deliveries to arrive
+            // when closing
+            log.warn(this + " is closed, so ignoring message");
+            
             return;
          }
 
@@ -556,7 +598,7 @@ public class MessageCallbackHandler
          buffer.addLast(proxy, proxy.getJMSPriority());
 
          lastDeliveryId = proxy.getDeliveryId();
-
+         
          if (trace) { log.trace(this + " added message(s) to the buffer"); }
 
          messageAdded();
@@ -654,11 +696,16 @@ public class MessageCallbackHandler
    
    private void messageAdded()
    {
+      boolean notified = false;
+      
       // If we have a thread waiting on receive() we notify it
       if (receiverThread != null)
       {
-         if (trace) { log.trace(this + " notifying receiver thread"); }            
-         mainLock.notify();
+         if (trace) { log.trace(this + " notifying receiver/waiter thread"); }   
+         
+         mainLock.notifyAll();
+         
+         notified = true;
       }     
       else if (listener != null)
       { 
@@ -672,6 +719,12 @@ public class MessageCallbackHandler
          }     
          
          //TODO - Execute onMessage on same thread for even better throughput 
+      }
+      
+      // Make sure we notify any thread waiting for last delivery
+      if (waitingForLastDelivery && !notified)
+      {
+         mainLock.notifyAll();
       }
    }
    

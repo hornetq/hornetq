@@ -80,16 +80,5 @@ public class ConnectionStartRequest extends RequestSupport
       os.flush();
    }
    
-   public Object getPayload()
-   {
-      OnewayInvocation oi = new OnewayInvocation(this);
-
-      InvocationRequest request =
-         new InvocationRequest(null, ServerPeer.REMOTING_JMS_SUBSYSTEM,
-                               oi, ONE_WAY_METADATA, null, null);
-      
-      return request;     
-   }
-
 }
 
