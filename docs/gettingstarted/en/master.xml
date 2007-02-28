@@ -1,50 +1,35 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.3CR3//EN"
 "../../../lib/docbook-support/support/docbook-dtd/docbookx.dtd" [
-<!ENTITY UG2_about SYSTEM "modules/UG2_about.xml">
-<!ENTITY UG2_introduction SYSTEM "modules/UG2_introduction.xml">
-<!ENTITY UG2_gettingstarted SYSTEM "modules/UG2_gettingstarted.xml">
-<!ENTITY UG2_installation SYSTEM "modules/UG2_installation.xml">
-<!ENTITY UG2_runningexamples SYSTEM "modules/UG2_runningexamples.xml">
-<!ENTITY UG2_configuration SYSTEM "modules/UG2_configuration.xml">
-<!ENTITY UG2_performance SYSTEM "modules/UG2_performance.xml">
-<!ENTITY C_about SYSTEM "modules/CLUST_about.xml">
-<!ENTITY C_introduction SYSTEM "modules/CLUST_introduction.xml">
-<!ENTITY C_overview SYSTEM "modules/CLUST_overview.xml">
-<!ENTITY C_installation SYSTEM "modules/CLUST_installation.xml">
-<!ENTITY C_configuration SYSTEM "modules/CLUST_configuration.xml">
+<!ENTITY about SYSTEM "modules/about.xml">
+<!ENTITY introduction SYSTEM "modules/introduction.xml">
+<!ENTITY gettingstarted SYSTEM "modules/gettingstarted.xml">
+<!ENTITY installation SYSTEM "modules/installation.xml">
+<!ENTITY runningexamples SYSTEM "modules/runningexamples.xml">
+<!ENTITY configuration SYSTEM "modules/configuration.xml">
+<!ENTITY performance SYSTEM "modules/performance.xml">
 ]>
 <book lang="en">
   <bookinfo>
-    <title>JBoss Messaging User's Guide 2.0</title>
+    <title>JBoss Messaging User's Guide</title>
 
     <subtitle>A high performance JMS server for JBoss</subtitle>
   </bookinfo>
 
   <toc></toc>
   
-  &UG2_about;
+  &about;
   
-  &UG2_introduction;
+  &introduction;
 
-  &UG2_gettingstarted;
+  &gettingstarted;
 
-  &UG2_runningexamples;
+  &runningexamples;
 
-  &UG2_installation;
+  &installation;
 
-  &UG2_configuration;
+  &configuration;
   
-  &UG2_performance;
-
-	&C_about;
-	
-	&C_introduction;
-	
-	&C_overview;
-	
-	&C_installation;
-	
-	&C_configuration;
+  &performance;
 
 </book>

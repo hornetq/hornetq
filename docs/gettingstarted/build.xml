@@ -1,7 +1,7 @@
 <project name="jbmessaging.documentation" default="all" basedir=".">
 
-  <property name="build.dir" value="${basedir}/../../output/docs/userguide-2.0"/>
-  <property name="pdf.name"  value="JBossMessagingUsersGuide-2.0.pdf"/>
+  <property name="build.dir" value="${basedir}/../../output/docs/userguide"/>
+  <property name="pdf.name"  value="JBossMessagingUsersGuide.pdf"/>
   <import file="${basedir}/../../lib/docbook-support/support.xml"/>
 
   <target name="all" depends="clean">
