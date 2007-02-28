@@ -171,11 +171,11 @@ public class QueueTest extends MessagingTestCase
             // JMS 1.1 Specifications, Section 4.3.5:
             // "Closing a connection must roll back the transactions in progress on its
             // transacted sessions*.
-            // *) The term 'transacted session' refers to the case where a session’s commit and
+            // *) The term 'transacted session' refers to the case where a session's commit and
             // rollback methods are used to demarcate a transaction local to the session. In the
-            // case where a session’s work is coordinated by an external transaction manager, a
-            // session’s commit and rollback methods are not used and the result of a closed
-            // session’s work is determined later by the transaction manager.
+            // case where a session's work is coordinated by an external transaction manager, a
+            // session's commit and rollback methods are not used and the result of a closed
+            // session's work is determined later by the transaction manager.
 
             s2.commit();
 
