@@ -33,10 +33,6 @@ import org.jboss.test.messaging.tools.ServerManagement;
 import org.jboss.test.messaging.tools.aop.PoisonInterceptor;
 
 /**
- * TODO: Is it possible to move tests I added on ClusteredConnectionFactoryGraveyardTest?
- * TODO:      These tests are kiilling server 0, as AOP is loaded starting from server 0.
- * TODO:      and I wanted to validate crashing scenarios
- * TODO: It's possible to run them manually but not as part of the entire testsuite.
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  * @version <tt>$Revision$</tt>
  *          $Id$
