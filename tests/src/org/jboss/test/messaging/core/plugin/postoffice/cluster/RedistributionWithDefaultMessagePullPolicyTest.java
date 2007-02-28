@@ -525,7 +525,7 @@ public class RedistributionWithDefaultMessagePullPolicyTest extends PostOfficeTe
       try
       {
          log.trace("Creating post offices");
-         
+
          office1 = (DefaultClusteredPostOffice)
             createClusteredPostOffice(1, "testgroup", 10000, 10000, new DefaultMessagePullPolicy(),
                                       sc, ms, pm, tr);
@@ -545,7 +545,7 @@ public class RedistributionWithDefaultMessagePullPolicyTest extends PostOfficeTe
          office5 = (DefaultClusteredPostOffice)
             createClusteredPostOffice(5, "testgroup", 10000, 10000, new DefaultMessagePullPolicy(),
                                       sc, ms, pm, tr);
-         
+
          log.trace("Created postoffices");
 
          LocalClusteredQueue queue1 =
@@ -572,7 +572,7 @@ public class RedistributionWithDefaultMessagePullPolicyTest extends PostOfficeTe
             new LocalClusteredQueue(office5, 5, "queue1", channelIDManager.getID(), ms, pm,
                                     true, recoverable, -1, null, tr);
          office5.bindClusteredQueue(new SimpleCondition("queue1"), queue5);
-         
+
          log.trace("Created and bound queues");
 
          final int NUM_MESSAGES = 100;
@@ -583,14 +583,14 @@ public class RedistributionWithDefaultMessagePullPolicyTest extends PostOfficeTe
          this.sendMessages("queue1", persistent, office3, NUM_MESSAGES, null);
          this.sendMessages("queue1", persistent, office4, NUM_MESSAGES, null);
          this.sendMessages("queue1", persistent, office5, NUM_MESSAGES, null);
-         
+
          log.trace("sent messages");
 
          Thread.sleep(2000);
 
-         
+
          log.trace("Finished small sleep");
-         
+
          //Check the sizes
 
          log.trace("Here are the sizes:");
@@ -614,29 +614,29 @@ public class RedistributionWithDefaultMessagePullPolicyTest extends PostOfficeTe
 
          assertEquals(NUM_MESSAGES, queue5.memoryRefCount());
          assertEquals(0, queue5.getDeliveringCount());
-         
+
          log.trace("Creating receiver");
 
          SimpleReceiver receiver = new SimpleReceiver("blah", SimpleReceiver.ACCEPTING);
-         
+
          log.trace("Created receiver");
 
          queue1.add(receiver);
-         
+
          log.trace("Added receiver");
 
          queue1.deliver();
-         
+
          log.trace("Called deliver");
 
          log.trace("Waiting for handleInvocations");
-         long start = System.currentTimeMillis();         
+         long start = System.currentTimeMillis();
          receiver.waitForHandleInvocations(NUM_MESSAGES * 5, 60000);
          long end = System.currentTimeMillis();
          log.trace("I waited for " + (end - start) + " ms");
-         
+
          Thread.sleep(2000);
-         
+
 
          log.trace("Here are the sizes:");
          log.trace("queue1, refs:" + queue1.memoryRefCount() + " dels:" + queue1.getDeliveringCount());
@@ -667,7 +667,7 @@ public class RedistributionWithDefaultMessagePullPolicyTest extends PostOfficeTe
          assertEquals(NUM_MESSAGES * 5, messages.size());
 
          Iterator iter = messages.iterator();
-         
+
          log.trace("Acknowledging messages");
 
          while (iter.hasNext())
@@ -676,7 +676,7 @@ public class RedistributionWithDefaultMessagePullPolicyTest extends PostOfficeTe
 
             receiver.acknowledge(msg, null);
          }
-         
+
          log.trace("Acknowledged messages");
 
          receiver.clear();
@@ -831,7 +831,7 @@ public class RedistributionWithDefaultMessagePullPolicyTest extends PostOfficeTe
          queue5.add(receiver5);
 
          receiver1.setMaxRefs(5);
-         queue1.deliver();         
+         queue1.deliver();
          receiver1.waitForHandleInvocations(5, 20000);
          Thread.sleep(1000);
          assertEquals(NUM_MESSAGES - 5, queue1.memoryRefCount());
@@ -842,7 +842,7 @@ public class RedistributionWithDefaultMessagePullPolicyTest extends PostOfficeTe
          receiver1.setMaxRefs(0);
 
          receiver2.setMaxRefs(10);
-         queue2.deliver();         
+         queue2.deliver();
          receiver2.waitForHandleInvocations(10, 20000);
          Thread.sleep(1000);
          assertEquals(NUM_MESSAGES - 10, queue2.memoryRefCount());
@@ -851,7 +851,7 @@ public class RedistributionWithDefaultMessagePullPolicyTest extends PostOfficeTe
          receiver2.setMaxRefs(0);
 
          receiver3.setMaxRefs(15);
-         queue3.deliver();         
+         queue3.deliver();
          receiver3.waitForHandleInvocations(15, 20000);
          Thread.sleep(1000);
          assertEquals(NUM_MESSAGES - 15, queue3.memoryRefCount());
@@ -860,7 +860,7 @@ public class RedistributionWithDefaultMessagePullPolicyTest extends PostOfficeTe
          receiver3.setMaxRefs(0);
 
          receiver4.setMaxRefs(20);
-         queue4.deliver();         
+         queue4.deliver();
          receiver4.waitForHandleInvocations(20, 20000);
          Thread.sleep(1000);
          assertEquals(NUM_MESSAGES - 20, queue4.memoryRefCount());
@@ -869,7 +869,7 @@ public class RedistributionWithDefaultMessagePullPolicyTest extends PostOfficeTe
          receiver4.setMaxRefs(0);
 
          receiver5.setMaxRefs(25);
-         queue5.deliver();         
+         queue5.deliver();
          receiver5.waitForHandleInvocations(25, 20000);
          Thread.sleep(1000);
          assertEquals(NUM_MESSAGES - 25, queue5.memoryRefCount());
@@ -894,9 +894,8 @@ public class RedistributionWithDefaultMessagePullPolicyTest extends PostOfficeTe
          receiver5.setMaxRefs(NUM_MESSAGES - 25);
          queue5.deliver();
          receiver5.waitForHandleInvocations(NUM_MESSAGES - 25, 20000);
-         
-         // Waiting time for statistics to kick in on MessagePullPolicy, avoiding races
-         Thread.sleep(20000);
+
+         Thread.sleep(2000);
 
          log.trace("receiver5 msgs:" + receiver5.getMessages().size());
 
@@ -946,8 +945,7 @@ public class RedistributionWithDefaultMessagePullPolicyTest extends PostOfficeTe
          queue5.deliver();
          receiver5.waitForHandleInvocations(5, 20000);
 
-         // Waiting time for statistics to kick in on MessagePullPolicy, avoiding races
-         Thread.sleep(20000);
+         Thread.sleep(4000);
 
          log.trace("Here are the sizes 4:");
          log.trace("queue1, refs:" + queue1.memoryRefCount() + " dels:" + queue1.getDeliveringCount());
@@ -989,9 +987,8 @@ public class RedistributionWithDefaultMessagePullPolicyTest extends PostOfficeTe
          receiver5.setMaxRefs(1);
          queue5.deliver();
          receiver5.waitForHandleInvocations(1, 20000);
-         
-         // Waiting time for statistics to kick in on MessagePullPolicy, avoiding races
-         Thread.sleep(20000);
+
+         Thread.sleep(2000);
 
          log.trace("Here are the sizes 5:");
          log.trace("queue1, refs:" + queue1.memoryRefCount() + " dels:" + queue1.getDeliveringCount());
@@ -1033,9 +1030,8 @@ public class RedistributionWithDefaultMessagePullPolicyTest extends PostOfficeTe
          receiver4.setMaxRefs(num);
          queue4.deliver();
          receiver4.waitForHandleInvocations(num, 20000);
-         
-         // Waiting time for statistics to kick in on MessagePullPolicy, avoiding races
-         Thread.sleep(20000);
+
+         Thread.sleep(2000);
 
          log.trace("Here are the sizes 6:");
          log.trace("queue1, refs:" + queue1.memoryRefCount() + " dels:" + queue1.getDeliveringCount());
