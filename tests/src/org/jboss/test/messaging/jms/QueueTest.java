@@ -120,7 +120,7 @@ public class QueueTest extends MessagingTestCase
 
 
    // added for http://jira.jboss.org/jira/browse/JBMESSAGING-899
-   public void testClosedConsumerBeforeStart() throws Exception
+   public void testClosedConsumerAfterStart() throws Exception
    {
       Queue queue = (Queue)ic.lookup("/queue/TestQueue");
 
