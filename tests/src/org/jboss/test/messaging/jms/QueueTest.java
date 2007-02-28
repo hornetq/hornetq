@@ -125,11 +125,7 @@ public class QueueTest extends MessagingTestCase
 
       Connection conn1 = cf.createConnection();
 
-      assertEquals(0, ((JBossConnection)conn1).getServerID());
-
       Connection conn2 = cf.createConnection();
-
-      assertEquals(0, ((JBossConnection)conn2).getServerID());
 
       try
       {
@@ -146,11 +142,13 @@ public class QueueTest extends MessagingTestCase
 
          Session s2 = conn2.createSession(true, Session.AUTO_ACKNOWLEDGE);
 
-         // these next three lines are an anti-pattern but they shouldn't loose any messages
+         // Create a consumer, start the session, close the consumer..
+         // This shouldn't cause any message to be lost
          MessageConsumer c2 = s2.createConsumer(queue);
          conn2.start();
          c2.close();
 
+         // open a new consumer
          c2 = s2.createConsumer(queue);
 
          for (int i = 0; i < 20; i++)
