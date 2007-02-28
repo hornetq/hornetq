@@ -17,13 +17,18 @@ The example creates two connections to two distinct cluster nodes
 on which we have previously deployed a distributed queue.
 The example sends and receives messages using both connections.
 <br>
-NOTE: This is an example that assumes a NullMessagePullPolicy.
-This is the default configuration option a release ships with,
-and also is a very boring options, since messages are *NOT*
-redistributed among nodes.
 <br>
+<span style="font-weight: bold;">Note</span><br>
+<div style="margin-left: 40px;">This is an example that assumes a
+NullMessagePullPolicy.
+This is the default configuration option a release ships with,
+and also is a very boring options, since messages are <span
+ style="font-weight: bold;">NOT</span>
+redistributed among nodes.
 An example that assumes a DefaultMessagePullPolicy is coming
-soon (http://jira.jboss.org/jira/browse/JBMESSAGING-907).
+soon (<a href="http://jira.jboss.org/jira/browse/JBMESSAGING-907">http://jira.jboss.org/jira/browse/JBMESSAGING-907</a>).
+<br>
+</div>
 <br>
 This example relies on having access to a running JBoss Messaging
 cluster with at least two nodes. The JBoss Messaging cluster must be
