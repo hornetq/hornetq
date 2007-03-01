@@ -107,7 +107,8 @@ CREATE_POSTOFFICE_TABLE=CREATE TABLE JBM_POSTOFFICE (POSTOFFICE_NAME VARCHAR(255
 	CHANNEL_ID BIGINT, IS_FAILED_OVER CHAR(1), FAILED_NODE_ID INTEGER)
 INSERT_BINDING=INSERT INTO JBM_POSTOFFICE (POSTOFFICE_NAME, NODE_ID, QUEUE_NAME, COND, 
 	SELECTOR, CHANNEL_ID, IS_FAILED_OVER, FAILED_NODE_ID) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-DELETE_BINDING=DELETE FROM JBM_POSTOFFICE WHERE POSTOFFICE_NAME=? AND NODE_ID=? AND QUEUE_NAME=?
+DELETE_BINDING=DELETE FROM JBM_POSTOFFICE WHERE POSTOFFICE_NAME=? AND NODE_ID=? AND 
+QUEUE_NAME=?
 LOAD_BINDINGS=SELECT NODE_ID, QUEUE_NAME, COND, SELECTOR, CHANNEL_ID, IS_FAILED_OVER, 
 	FAILED_NODE_ID FROM JBM_POSTOFFICE WHERE POSTOFFICE_NAME  = ?
 ]]&gt;&lt;/attribute&gt;
@@ -122,10 +123,11 @@ LOAD_BINDINGS=SELECT NODE_ID, QUEUE_NAME, COND, SELECTOR, CHANNEL_ID, IS_FAILED_
 
 &lt;attribute name="AsyncChannelConfig"&gt;
 &lt;config&gt;
-&lt;UDP mcast_recv_buf_size="500000" down_thread="false" ip_mcast="true" mcast_send_buf_size="32000"
-mcast_port="45567" ucast_recv_buf_size="500000" use_incoming_packet_handler="false"
-mcast_addr="228.8.8.8" use_outgoing_packet_handler="true" loopback="true" ucast_send_buf_size="32000" 
-	ip_ttl="32" bind_addr="127.0.0.1"/&gt;
+&lt;UDP mcast_recv_buf_size="500000" down_thread="false" ip_mcast="true" 
+mcast_send_buf_size="32000" mcast_port="45567" ucast_recv_buf_size="500000" 
+use_incoming_packet_handler="false" mcast_addr="228.8.8.8" 
+use_outgoing_packet_handler="true" loopback="true" ucast_send_buf_size="32000" 
+ip_ttl="32" bind_addr="127.0.0.1"/&gt;
 &lt;AUTOCONF down_thread="false" up_thread="false"/&gt;
 &lt;PING timeout="2000" down_thread="false" num_initial_members="3" up_thread="false"/&gt;
 &lt;MERGE2 max_interval="10000" down_thread="false" min_interval="5000" up_thread="false"/&gt;
@@ -139,17 +141,18 @@ retransmit_timeout="100,200,600,1200,2400,4800"/&gt;
 	max_bytes="0" up_thread="false"/&gt;
 &lt;FRAG frag_size="8192" down_thread="false" up_thread="false"/&gt;
 &lt;VIEW_SYNC avg_send_interval="60000" down_thread="false" up_thread="false" /&gt;
-&lt;pbcast.GMS print_local_addr="true" join_timeout="3000" down_thread="false" join_retry_timeout="2000" 
-	up_thread="false" shun="true"/&gt;
+&lt;pbcast.GMS print_local_addr="true" join_timeout="3000" down_thread="false" 
+join_retry_timeout="2000"	up_thread="false" shun="true"/&gt;
 &lt;/config&gt;
 &lt;/attribute&gt;
 
 &lt;attribute name="SyncChannelConfig"&gt;
 &lt;config&gt;
-&lt;UDP mcast_recv_buf_size="500000" down_thread="false" ip_mcast="true" mcast_send_buf_size="32000"
-mcast_port="45568" ucast_recv_buf_size="500000" use_incoming_packet_handler="false"
-mcast_addr="228.8.8.8" use_outgoing_packet_handler="true" loopback="true" ucast_send_buf_size="32000" 
-	ip_ttl="32" bind_addr="127.0.0.1"/&gt;
+&lt;UDP mcast_recv_buf_size="500000" down_thread="false" ip_mcast="true" 
+mcast_send_buf_size="32000" mcast_port="45568" ucast_recv_buf_size="500000" 
+use_incoming_packet_handler="false" mcast_addr="228.8.8.8" 
+use_outgoing_packet_handler="true" loopback="true" ucast_send_buf_size="32000" 
+ip_ttl="32" bind_addr="127.0.0.1"/&gt;
 &lt;AUTOCONF down_thread="false" up_thread="false"/&gt;
 &lt;PING timeout="2000" down_thread="false" num_initial_members="3" up_thread="false"/&gt;
 &lt;MERGE2 max_interval="10000" down_thread="false" min_interval="5000" up_thread="false"/&gt;
@@ -163,8 +166,8 @@ retransmit_timeout="100,200,600,1200,2400,4800"/&gt;
 	max_bytes="0" up_thread="false"/&gt;
 &lt;FRAG frag_size="8192" down_thread="false" up_thread="false"/&gt;
 &lt;VIEW_SYNC avg_send_interval="60000" down_thread="false" up_thread="false" /&gt;
-&lt;pbcast.GMS print_local_addr="true" join_timeout="3000" down_thread="false" join_retry_timeout="2000" 
-	up_thread="false" shun="true"/&gt;
+&lt;pbcast.GMS print_local_addr="true" join_timeout="3000" down_thread="false" 
+join_retry_timeout="2000" up_thread="false" shun="true"/&gt;
 &lt;pbcast.STATE_TRANSFER down_thread="false" up_thread="false"/&gt;
 &lt;/config&gt;
 &lt;/attribute&gt;

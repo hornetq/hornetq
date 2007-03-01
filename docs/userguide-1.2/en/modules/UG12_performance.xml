@@ -10,9 +10,9 @@
   </para>
 
   <programlisting>
-      svn co https://svn.jboss.org/repos/messaging/projects/perf/trunk messaging-perf
-      cd $PERF_HOME
-      ant
+svn co https://svn.jboss.org/repos/messaging/projects/perf/trunk messaging-perf
+cd $PERF_HOME
+ant
   </programlisting>
 
   <para>The test consists in sending bursts of 1000 0 Kilobytes non-persistent messages to both JBoss Messaging and JBossMQ instances while gradually increasing the send rate (200 messages/sec, 400 messages/sec, etc) and measuring the receive rate. At the end, the framework generates the graph representing the receive rate as function of the send rate for two executions (JBoss Messaging and JBossMQ).</para>
@@ -28,7 +28,7 @@
 &lt;mbean code="org.jboss.services.binding.ServiceBindingManager"
        name="jboss.system:service=ServiceBindingManager">
 
-  &lt;attribute name="ServerName">ports-01&lt;/attribute>
+  &lt;attribute name="ServerName">ports-01&lt;/attribute>WWWr
   &lt;attribute name="StoreURL">
     ../docs/examples/binding-manager/sample-bindings.xml
   &lt;/attribute>
@@ -46,7 +46,7 @@ run -c jbossmq
     </programlisting>
 
   </section>
-
+sssssssssssd
   <section>
     <title>Setup the Tests</title>
 

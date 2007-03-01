@@ -43,8 +43,8 @@
       </para>
 
        <programlisting>
-    cd util
-    ant -f release-admin.xml
+cd util
+ant -f release-admin.xml
        </programlisting>
 
         <para>
@@ -72,8 +72,8 @@
      </para>
 
    <programlisting>
-     cd $JBOSS_HOME/bin
-     ./run.sh -c messaging
+cd $JBOSS_HOME/bin
+./run.sh -c messaging
    </programlisting>
 
      <para>
@@ -183,9 +183,9 @@ pageSize=2000, downCacheSize=2000
 
    <programlisting>
 
-    setenv JBOSS_HOME=&lt;your_JBoss_installation&gt;
-    cd .../examples/queue
-    $ant
+setenv JBOSS_HOME=&lt;your_JBoss_installation&gt;
+cd .../examples/queue
+$ant
 
    </programlisting>
 

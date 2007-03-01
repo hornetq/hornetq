@@ -51,11 +51,17 @@
        &lt;arg type="java.lang.String" value="/topic"/&gt;
     &lt;/constructor&gt;
 
-    &lt;depends optional-attribute-name="ThreadPool"&gt;jboss.messaging:service=ThreadPool&lt;/depends&gt;
+    &lt;depends optional-attribute-name="ThreadPool"&gt;
+jboss.messaging:service=ThreadPool
+&lt;/depends&gt;
     &lt;depends optional-attribute-name="PersistenceManager"
 			&gt;jboss.messaging:service=PersistenceManager&lt;/depends&gt;
-    &lt;depends optional-attribute-name="MessageStore"&gt;jboss.messaging:service=MessageStore&lt;/depends&gt;
-    &lt;depends optional-attribute-name="ChannelMapper"&gt;jboss.messaging:service=ChannelMapper&lt;/depends&gt;
+    &lt;depends optional-attribute-name="MessageStore"&gt;
+jboss.messaging:service=MessageStore
+		&lt;/depends&gt;
+    &lt;depends optional-attribute-name="ChannelMapper"&gt;
+jboss.messaging:service=ChannelMapper
+		 &lt;/depends&gt;
 
     &lt;!-- Set to -1 to completely disable client leasing --&gt;
     &lt;attribute name="SecurityDomain"&gt;java:/jaas/messaging&lt;/attribute&gt;
@@ -73,7 +79,7 @@
 
         <para>
            This identifies the JBoss security domain that will be used when JBoss Messaging
-           authenticates and authorises access to JMS destinations for reading, writing or
+           authenticates and authorizes access to JMS destinations for reading, writing or
            creating.
         </para>
 
@@ -521,28 +527,27 @@ SELECT_PRECONF_CLIENTID=SELECT CLIENTID FROM JMS_USER WHERE USERID=?
         <programlisting>
 &lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
 &lt;server&gt;
- &lt;loader-repository&gt;jboss.messaging:loader=ScopedLoaderRepository
- &lt;loader-repository-config&gt;java2ParentDelegation=false&lt;/loader-repository-config&gt;
- &lt;/loader-repository&gt;
- &lt;mbean code=&quot;org.jboss.jms.server.destination.Queue&quot;
-           name=&quot;jboss.messaging.destination:service=Queue,name=testQueue&quot;
-           xmbean-dd=&quot;xmdesc/Queue-xmbean.xml&quot;&gt;
-           &lt;depends optional-attribute-name=&quot;ServerPeer&quot;&gt;
-						jboss.messaging:service=ServerPeer&lt;/depends&gt;
-           &lt;attribute name=&quot;SecurityConfig&quot;&gt;
-              &lt;security&gt;
-                 &lt;role name=&quot;guest&quot; read=&quot;true&quot; 
-									write=&quot;true&quot;/&gt;
-                 &lt;role name=&quot;publisher&quot; read=&quot;true&quot; 
-									write=&quot;true&quot; create=&quot;false&quot;/&gt;
-                 &lt;role name=&quot;noacc&quot; read=&quot;false&quot; 
-									write=&quot;false&quot; create=&quot;false&quot;/&gt;
-               &lt;/security&gt;
-           &lt;/attribute&gt;
-           &lt;attribute name=&quot;fullSize&quot;&gt;75000&lt;/attribute&gt;
-           &lt;attribute name=&quot;pageSize&quot;&gt;2000&lt;/attribute&gt;
-           &lt;attribute name=&quot;downCacheSize&quot;&gt;2000&lt;/attribute&gt;
- &lt;/mbean&gt;
+	&lt;loader-repository&gt;jboss.messaging:loader=ScopedLoaderRepository
+	&lt;loader-repository-config&gt;java2ParentDelegation=false&lt;/loader-repository-config&gt;
+	&lt;/loader-repository&gt;
+	&lt;mbean 
+		code=&quot;org.jboss.jms.server.destination.Queue&quot;
+	  name=&quot;jboss.messaging.destination:service=Queue,name=testQueue&quot;
+	  xmbean-dd=&quot;xmdesc/Queue-xmbean.xml&quot;&gt;
+		&lt;depends optional-attribute-name=&quot;ServerPeer&quot;&gt;
+			jboss.messaging:service=ServerPeer
+		&lt;/depends&gt;
+		&lt;attribute name=&quot;SecurityConfig&quot;&gt;
+		   &lt;security&gt;
+		      &lt;role name=&quot;guest&quot; read=&quot;true&quot;write=&quot;true&quot;/&gt;
+		      &lt;role name=&quot;publisher&quot; read=&quot;true&quot; write=&quot;true&quot; create=&quot;false&quot;/&gt;
+		      &lt;role name=&quot;noacc&quot; read=&quot;false&quot; write=&quot;false&quot; create=&quot;false&quot;/&gt;
+		    &lt;/security&gt;
+		&lt;/attribute&gt;
+		&lt;attribute name=&quot;fullSize&quot;&gt;75000&lt;/attribute&gt;
+		&lt;attribute name=&quot;pageSize&quot;&gt;2000&lt;/attribute&gt;
+		&lt;attribute name=&quot;downCacheSize&quot;&gt;2000&lt;/attribute&gt;
+	&lt;/mbean&gt;
 &lt;/server&gt;
         </programlisting>
 
@@ -577,33 +582,40 @@ SELECT_PRECONF_CLIENTID=SELECT CLIENTID FROM JMS_USER WHERE USERID=?
      </para>
 
       <programlisting>
-     &lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
-     &lt;server&gt;
-        &lt;loader-repository&gt;jboss.messaging:loader=ScopedLoaderRepository
-           &lt;loader-repository-config&gt;java2ParentDelegation=false&lt;/loader-repository-config&gt;
-        &lt;/loader-repository&gt;
-        &lt;mbean code=&quot;org.jboss.jms.server.connectionfactory.ConnectionFactory&quot;
-           name=&quot;jboss.messaging.destination:service=ConnectionFactory&quot;
-           xmbean-dd=&quot;xmdesc/ConnectionFactory-xmbean.xml&quot;&gt;
-           &lt;constructor&gt;
-              &lt;arg type=&quot;java.lang.String&quot; value=&quot;myClientID&quot;/&gt;
-           &lt;/constructor&gt;
-           &lt;depends optional-attribute-name=&quot;ServerPeer&quot;&gt;
-						jboss.messaging:service=ServerPeer&lt;/depends&gt;
-           &lt;depends optional-attribute-name=&quot;Connector&quot;&gt;
-						jboss.messaging:service=Connector,transport=socket&lt;/depends&gt;
-           &lt;attribute name=&quot;PrefetchSize&quot;&gt;10&lt;/attribute&gt;
-           &lt;attribute name=&quot;DefaultTempQueueFullSize&quot;&gt;1000&lt;/attribute&gt;
-           &lt;attribute name=&quot;DefaultTempQueuePageSize&quot;&gt;50&lt;/attribute&gt;
-           &lt;attribute name=&quot;DefaultTempQueueDownCacheSize&quot;&gt;50&lt;/attribute&gt;
-           &lt;attribute name=&quot;JNDIBindings&quot;&gt;
-              &lt;bindings&gt;
-                 &lt;binding&gt;/MyConnectionFactory1&lt;/binding&gt;
-                 &lt;binding&gt;/factories/cf1&lt;/binding>&gt;
-              &lt;/bindings&gt;
-           &lt;/attribute&gt;
-        &lt;/mbean&gt;
-     &lt;/server&gt;
+	                                                                                                   errrrrfff  eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee                                           fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff                          
+&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+&lt;server&gt;
+	&lt;loader-repository&gt;
+		jboss.messaging:loader=ScopedLoaderRepository
+			&lt;loader-repository-config&gt;
+				java2ParentDelegation=false
+			&lt;/loader-repository-config&gt;
+	&lt;/loader-repository&gt;
+	&lt;mbean 
+		code=&quot;org.jboss.jms.server.connectionfactory.ConnectionFactory&quot;
+		name=&quot;jboss.messaging.destination:service=ConnectionFactory&quot;
+		xmbean-dd=&quot;xmdesc/ConnectionFactory-xmbean.xml&quot;&gt;
+	   &lt;constructor&gt;
+			&lt;arg type=&quot;java.lang.String&quot; value=&quot;myClientID&quot;/&gt;
+	   &lt;/constructor&gt;
+		&lt;depends optional-attribute-name=&quot;ServerPeer&quot;&gt;
+			jboss.messaging:service=ServerPeer
+		&lt;/depends&gt;
+		&lt;depends optional-attribute-name=&quot;Connector&quot;&gt;
+			jboss.messaging:service=Connector,transport=socket
+		&lt;/depends&gt;
+		&lt;attribute name=&quot;PrefetchSize&quot;&gt;10&lt;/attribute&gt;
+		&lt;attribute name=&quot;DefaultTempQueueFullSize&quot;&gt;1000&lt;/attribute&gt;
+		&lt;attribute name=&quot;DefaultTempQueuePageSize&quot;&gt;50&lt;/attribute&gt;
+		&lt;attribute name=&quot;DefaultTempQueueDownCacheSize&quot;&gt;50&lt;/attribute&gt;
+		&lt;attribute name=&quot;JNDIBindings&quot;&gt;
+		   &lt;bindings&gt;
+		      &lt;binding&gt;/MyConnectionFactory1&lt;/binding&gt;
+		      &lt;binding&gt;/factories/cf1&lt;/binding>&gt;
+		   &lt;/bindings&gt;
+		&lt;/attribute&gt;
+	&lt;/mbean&gt;
+&lt;/server&gt; 
 
     </programlisting>
 
