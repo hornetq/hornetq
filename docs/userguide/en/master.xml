@@ -1,23 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.3CR3//EN"
 "../../../lib/docbook-support/support/docbook-dtd/docbookx.dtd" [
-<!ENTITY about SYSTEM "modules/UG12_about.xml">
-<!ENTITY introduction SYSTEM "modules/UG12_introduction.xml">
-<!ENTITY C_overview SYSTEM "modules/CLUST_overview.xml">
-<!ENTITY gettingstarted SYSTEM "modules/UG12_gettingstarted.xml">
-<!ENTITY NC_installation SYSTEM "modules/UG12_installation.xml">
-<!ENTITY C_installation SYSTEM "modules/CLUST_installation.xml">
-<!ENTITY runningexamples SYSTEM "modules/UG12_runningexamples.xml">
-<!ENTITY configuration SYSTEM "modules/UG12_configuration.xml">
-<!ENTITY C_configuration SYSTEM "modules/CLUST_configuration.xml">
-<!ENTITY performance SYSTEM "modules/UG12_performance.xml">
-
-
-<!ENTITY C_about SYSTEM "modules/CLUST_about.xml">
-<!ENTITY C_introduction SYSTEM "modules/CLUST_introduction.xml">
-
-
-
+<!ENTITY about SYSTEM "modules/about.xml">
+<!ENTITY introduction SYSTEM "modules/introduction.xml">
+<!ENTITY c_overview SYSTEM "modules/c_overview.xml">
+<!ENTITY gettingstarted SYSTEM "modules/gettingstarted.xml">
+<!ENTITY nc_installation SYSTEM "modules/installation.xml">
+<!ENTITY c_installation SYSTEM "modules/c_installation.xml">
+<!ENTITY runningexamples SYSTEM "modules/runningexamples.xml">
+<!ENTITY configuration SYSTEM "modules/configuration.xml">
+<!ENTITY c_configuration SYSTEM "modules/c_configuration.xml">
+<!ENTITY performance SYSTEM "modules/performance.xml">
 ]>
 <book lang="en">
   <bookinfo>
@@ -33,23 +26,20 @@
 
   &introduction;
 
-  &C_overview;
+  &c_overview;
 
   &gettingstarted;
 
-  &NC_installation;
+  &nc_installation;
 
-  &C_installation;
+  &c_installation;
 
   &runningexamples;
 
   &configuration;
 
-  &C_configuration;
-
+  &c_configuration;
 
   &performance;
-
-
 
 </book>

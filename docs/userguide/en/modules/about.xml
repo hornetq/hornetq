@@ -1,4 +1,4 @@
-<chapter id="UG2_about">
+<chapter id="about">
 
    <title>Introducing JBoss Messaging Release 1.2.0.GA</title>
 
@@ -11,26 +11,26 @@
    </para>
 
    <para>JBoss Messaging it is also the backbone of the JBoss ESB infrastructure.</para>
-   
+
    <para>
        Compared with JBossMQ, JBoss Messaging offers vastly improved performance in both single node
        and clustered environments.
        Please see
        <ulink url="http://wiki.jboss.org/wiki/Wiki.jsp?page=JBossMessagingPerformanceResultsPre1_0">this wiki page</ulink>
-       for performance benchmarks and <xref linkend="UG2_performance"/> on how to generate your own
+       for performance benchmarks and <xref linkend="performance"/> on how to generate your own
        performance benchmarks. JBoss Messaging also features a much better modular architecture that
        will allow us to add more features in the future.
    </para>
-   
+
    <para>
        While JBoss Messaging only becomes the default JMS provider from JBoss AS 4.2.1 and JBoss 5.0,
        production users on JBoss AS 4.0.x can still take advantage of the performance improvements
        by easily replacing the JBossMQ module with JBoss Messaging.
    </para>
-   
+
    <para>
        The procedure of swapping JMS providers is presented in detail in this manual.
-       In <xref linkend="UG2_installation"/> we discuss how to install and use JBoss Messaging in
+       In <xref linkend="installation"/> we discuss how to install and use JBoss Messaging in
        JBoss 4.0.x production servers. We cover JBoss Messaging-specific configuration options,
        as well as how to run the build-in sanity / performance tests.
    </para>

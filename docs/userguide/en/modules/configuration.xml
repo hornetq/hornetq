@@ -1,4 +1,4 @@
-<chapter id="UG2_configuration">
+<chapter id="configuration">
   <title>Configuration</title>
 
   <para>
@@ -26,7 +26,7 @@
       <filename>remoting-service.xml</filename>,
       <filename>xxx-persistence-service.xml</filename>
        (or <filename>clustered-xxx-persistence-service.xml</filename> for a clustered configuration,
-       more about clusterered configuration in <xref linkend="CLUST_configuration"/>),
+       more about clusterered configuration in <xref linkend="c_configuration"/>),
       <filename>connection-factories-service.xml</filename> and
       <filename>destinations-service.xml</filename>.
    </para>
@@ -1177,7 +1177,7 @@ POPULATE.TABLES.1=INSERT INTO JBM_USER (USER_ID,PASSWD,CLIENTID) VALUES ('dilber
 
       </programlisting>
 
-        <section id="conf.persistencemanager.attributes">
+        <section id="conf.jmsusermanager.attributes">
 
 
         <title>

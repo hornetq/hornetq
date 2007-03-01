@@ -1,11 +1,11 @@
-<chapter id="UG2_installation">
+<chapter id="installation">
   <title>JBoss Messaging Non-Clustered Installation</title>
 
    <para>
       This section describes the procedure to perfom a non-clustered installation. At the
       end of this procedure, you will create a JBoss Messaging configuration that will
       start a non-clustered messaging server. To find out how you can install JBoss Messaging
-      in a clustered configuration, please proceed to <xref linkend="CLUST_installation"/>.
+      in a clustered configuration, please proceed to <xref linkend="c_installation"/>.
    </para>
 
    <para>
@@ -234,7 +234,7 @@ Total time: 9 seconds
         It is recommended to run <literal>all</literal> validation examples available in the
         <filename>example</filename> directory (<filename>queue</filename>,
         <filename>topic</filename>, <filename>mdb</filename>, <filename>stateless</filename>, etc.).
-         In <xref linkend="UG2_examples"/>, we will have a look at each of those examples.
+         In <xref linkend="examples"/>, we will have a look at each of those examples.
      </para>
 
 

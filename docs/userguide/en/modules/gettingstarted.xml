@@ -1,4 +1,4 @@
-<chapter id="UG2_gettingstarted">
+<chapter id="gettingstarted">
    <title>Download Software</title>
 
    <para>
@@ -29,7 +29,7 @@
             <warning>
                Do not simply attempt to copy the archive under a JBoss instance <filename>deploy</filename> directory,
                since additional steps (such as un-installing JBossMQ and various other configurations
-               tasks) are required for a successful installation. See <xref linkend="UG2_installation"/> for
+               tasks) are required for a successful installation. See <xref linkend="installation"/> for
                more details.
             </warning>
          </listitem>
@@ -69,7 +69,7 @@
             <filename>util</filename>
             - a collection of <literal>ant</literal> configuration files used to automate
             installation and release
-            management procedures. See <xref linkend="UG2_installation"/> for
+            management procedures. See <xref linkend="installation"/> for
              more details.
          </listitem>
          <listitem>
