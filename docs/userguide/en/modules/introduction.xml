@@ -36,7 +36,18 @@
    <section id="support">
       <title>JBoss Messaging support cover from Red Hat</title>
 
-      <para>JBoss Messaging 1.2.GA support is available via the......</para>
+      <para>
+         JBoss Messaging 1.2.GA will become part of both Application Server Platform (JBoss 4.2
+         series) and Service Integration Platform (JBoss ESB 4 series) as default JMS provider.
+         Production support will be fully available for these plaforms and it will cover JBoss
+         Messaging.
+      </para>
+      <para>
+         Red Hat is also working on introducing a development support program, which is different
+         from production support and caters to companies who want to have a safety net even from
+         the development phase. The estimated availability date of this support progam is April
+         2007.
+      </para>
 
    </section>
 
