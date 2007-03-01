@@ -19,7 +19,7 @@
        <ulink url="http://wiki.jboss.org/wiki/Wiki.jsp?page=JBossMessagingPerformanceResultsPre1_0">this wiki page</ulink>
        for performance benchmarks and <xref linkend="UG2_performance"/> on how to generate your own
        performance benchmarks. JBoss Messaging also features a much better modular architecture that
-       would allow us to add more features in the future.
+       will allow us to add more features in the future.
    </para>
    
    <para>
