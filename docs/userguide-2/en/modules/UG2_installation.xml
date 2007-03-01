@@ -78,25 +78,42 @@
 ....
 14:23:56,174 WARN  [JDBCPersistenceManager]
 
-JBoss Messaging Warning: DataSource connection transaction isolation should be READ_COMMITTED, but it is currently NONE.
-                         Using an isolation level less strict than READ_COMMITTED may lead to data consistency problems.
-                         Using an isolation level more strict than READ_COMMITTED may lead to deadlock.
+JBoss Messaging Warning: 
+	DataSource connection transaction isolation should be READ_COMMITTED, but it is 
+	currently NONE.
+	Using an isolation level less strict than READ_COMMITTED may lead to data consistency 
+	problems.
+	Using an isolation level more strict than READ_COMMITTED may lead to deadlock.
 
 14:23:57,276 INFO  [ServerPeer] JBoss Messaging 1.0.1.GA server [server.0] started
-14:23:57,937 INFO  [ConnectionFactory] Connector has leasing enabled, lease period 20000 milliseconds
-14:23:57,937 INFO  [ConnectionFactory] [/ConnectionFactory, /XAConnectionFactory, java:/ConnectionFactory, java:/XAConnectionFactory] deployed
-14:23:57,987 INFO  [Queue] Queue[/queue/DLQ] started, fullSize=75000, pageSize=2000, downCacheSize=2000
-14:23:57,997 INFO  [Topic] Topic[/topic/testTopic] started, fullSize=75000, pageSize=2000, downCacheSize=2000
-14:23:58,017 INFO  [Topic] Topic[/topic/securedTopic] started, fullSize=75000, pageSize=2000, downCacheSize=2000
-14:23:58,017 INFO  [Topic] Topic[/topic/testDurableTopic] started, fullSize=75000, pageSize=2000, downCacheSize=2000
-14:23:58,027 INFO  [Queue] Queue[/queue/testQueue] started, fullSize=75000, pageSize=2000, downCacheSize=2000
-14:23:58,027 INFO  [Queue] Queue[/queue/A] started, fullSize=75000, pageSize=2000, downCacheSize=2000
-14:23:58,037 INFO  [Queue] Queue[/queue/B] started, fullSize=75000, pageSize=2000, downCacheSize=2000
-14:23:58,057 INFO  [Queue] Queue[/queue/C] started, fullSize=75000, pageSize=2000, downCacheSize=2000
-14:23:58,067 INFO  [Queue] Queue[/queue/D] started, fullSize=75000, pageSize=2000, downCacheSize=2000
-14:23:58,077 INFO  [Queue] Queue[/queue/ex] started, fullSize=75000, pageSize=2000, downCacheSize=2000
-14:23:58,077 INFO  [Topic] Topic[/topic/openTopic] started, fullSize=75000, pageSize=2000, downCacheSize=2000
-14:23:58,117 INFO  [ConnectionFactoryBindingService] Bound ConnectionManager 'jboss.jca:service=ConnectionFactoryBinding,name=JmsXA' to JNDI name 'java:JmsXA'
+14:23:57,937 INFO  [ConnectionFactory] Connector has leasing enabled, lease period 
+20000 milliseconds
+14:23:57,937 INFO  [ConnectionFactory] [/ConnectionFactory, /XAConnectionFactory, 
+java:/ConnectionFactory, java:/XAConnectionFactory] deployed
+14:23:57,987 INFO  [Queue] Queue[/queue/DLQ] started, fullSize=75000, pageSize=2000, 
+downCacheSize=2000
+14:23:57,997 INFO  [Topic] Topic[/topic/testTopic] started, fullSize=75000, pageSize=2000, 
+downCacheSize=2000
+14:23:58,017 INFO  [Topic] Topic[/topic/securedTopic] started, fullSize=75000, pageSize=2000, 
+downCacheSize=2000
+14:23:58,017 INFO  [Topic] Topic[/topic/testDurableTopic] started, fullSize=75000, 
+pageSize=2000, downCacheSize=2000
+14:23:58,027 INFO  [Queue] Queue[/queue/testQueue] started, fullSize=75000, pageSize=2000, 
+downCacheSize=2000
+14:23:58,027 INFO  [Queue] Queue[/queue/A] started, fullSize=75000, pageSize=2000, 
+downCacheSize=2000
+14:23:58,037 INFO  [Queue] Queue[/queue/B] started, fullSize=75000, pageSize=2000, 
+downCacheSize=2000
+14:23:58,057 INFO  [Queue] Queue[/queue/C] started, fullSize=75000, pageSize=2000, 
+downCacheSize=2000
+14:23:58,067 INFO  [Queue] Queue[/queue/D] started, fullSize=75000, pageSize=2000, 
+downCacheSize=2000
+14:23:58,077 INFO  [Queue] Queue[/queue/ex] started, fullSize=75000, pageSize=2000, 
+downCacheSize=2000
+14:23:58,077 INFO  [Topic] Topic[/topic/openTopic] started, fullSize=75000, pageSize=2000, 
+downCacheSize=2000
+14:23:58,117 INFO  [ConnectionFactoryBindingService] Bound ConnectionManager 
+'jboss.jca:service=ConnectionFactoryBinding,name=JmsXA' to JNDI name 'java:JmsXA'
 ....
    </programlisting>
 

@@ -544,7 +544,9 @@ public class MDBExample implements MessageDrivenBean, MessageListener
          with an error message similar to:
 
          <programlisting>
-C:\work\src\cvs\jboss-head\jms\docs\examples\ejb3mdb\build.xml:60: EJB3 does not seem to be installed in C:\work\src\jboss-4.0.3-src\build\output\jboss-4.0.3/server/messaging! Install it and try again.
+C:\work\src\cvs\jboss-head\jms\docs\examples\ejb3mdb\build.xml:60: EJB3 does not seem 
+to be installed in C:\work\src\jboss-4.0.3-src\build\output\jboss-4.0.3/server/messaging! 
+Install it and try again.
          </programlisting>
 
          <para>
@@ -558,78 +560,80 @@ C:\work\src\cvs\jboss-head\jms\docs\examples\ejb3mdb\build.xml:60: EJB3 does not
          The EJB3 Message Driven Bean source code:
       </para>
      <programlisting>
-        @MessageDriven(activateConfig =
-        {
-              @ActivationConfigProperty(propertyName="destinationType", propertyValue="javax.jms.Queue"),
-              @ActivationConfigProperty(propertyName="destination", propertyValue="queue/testQueue")
-        })
-        public class EJB3MDBExample implements MessageListener
-        {
-           public void onMessage(Message m)
-           {
-              businessLogic(m);
-           }
+@MessageDriven(activateConfig =
+{
+      @ActivationConfigProperty(propertyName="destinationType", 
+				propertyValue="javax.jms.Queue"),
+      @ActivationConfigProperty(propertyName="destination", 
+				propertyValue="queue/testQueue")
+})
+public class EJB3MDBExample implements MessageListener
+{
+   public void onMessage(Message m)
+   {
+      businessLogic(m);
+   }
 
 
-           private void businessLogic(Message m)
-           {
-              Connection conn = null;
-              Session session = null;
+   private void businessLogic(Message m)
+   {
+      Connection conn = null;
+      Session session = null;
 
-              try
-              {
-                 TextMessage tm = (TextMessage)m;
+      try
+      {
+         TextMessage tm = (TextMessage)m;
 
-                 String text = tm.getText();
-                 System.out.println("message " + text + " received");
+         String text = tm.getText();
+         System.out.println("message " + text + " received");
 
-                 // flip the string
-                 String result = "";
-                 for(int i = 0; i &lt; text.length(); i++)
-                 {
-                    result = text.charAt(i) + result;
-                 }
+         // flip the string
+         String result = "";
+         for(int i = 0; i &lt; text.length(); i++)
+         {
+            result = text.charAt(i) + result;
+         }
 
-                 System.out.println("message processed, result: " + result);
+         System.out.println("message processed, result: " + result);
 
 
-                 InitialContext ic = new InitialContext();
-                 ConnectionFactory cf = (ConnectionFactory)ic.lookup("java:/JmsXA");
-                 ic.close();
+         InitialContext ic = new InitialContext();
+         ConnectionFactory cf = (ConnectionFactory)ic.lookup("java:/JmsXA");
+         ic.close();
 
-                 conn = cf.createConnection();
-                 conn.start();
-                 session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         conn = cf.createConnection();
+         conn.start();
+         session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-                 Destination replyTo = m.getJMSReplyTo();
-                 MessageProducer producer = session.createProducer(replyTo);
-                 TextMessage reply = session.createTextMessage(result);
+         Destination replyTo = m.getJMSReplyTo();
+         MessageProducer producer = session.createProducer(replyTo);
+         TextMessage reply = session.createTextMessage(result);
 
-                 producer.send(reply);
-                 producer.close();
+         producer.send(reply);
+         producer.close();
 
-              }
-              catch(Exception e)
-              {
-                 e.printStackTrace();
-                 System.out.println("The Message Driven Bean failed!");
-              }
-              finally
-              {
-                 if (conn != null)
-                 {
-                    try
-                    {
-                       conn.close();
-                    }
-                    catch(Exception e)
-                    {
-                       System.out.println("Could not close the connection!" +e);
-                    }
-                 }
-              }
-           }
-        }
+      }
+      catch(Exception e)
+      {
+         e.printStackTrace();
+         System.out.println("The Message Driven Bean failed!");
+      }
+      finally
+      {
+         if (conn != null)
+         {
+            try
+            {
+               conn.close();
+            }
+            catch(Exception e)
+            {
+               System.out.println("Could not close the connection!" +e);
+            }
+         }
+      }
+   }
+}
      </programlisting>
 
      <para>The basic test examples in this chapter serve as the sanity check for your JBoss Messaging installation. They also provide basic programming examples. To develop your own JMS services, you probably need to configure JBoss Messaging to setup your own destinations and connection factories etc. In <xref linkend="configuration"/>, we will discuss JBoss Messaging configuration files and options.</para>

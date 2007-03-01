@@ -248,7 +248,6 @@
 					The JIRA issue link is:
 				
 					<ulink url="http://jira.jboss.org/jira/browse/JBMESSAGING-574">
-						http://jira.jboss.org/jira/browse/JBMESSAGING-574
 					</ulink>
 				
 	       </para>
@@ -259,7 +258,6 @@
 				JBoss Messaging 1.2.0.GA contains all features planned for the GA release, with the 
 				exception of the "unreliable link scenario" 
 				<ulink url="http://jira.jboss.org/jira/browse/JBMESSAGING-676">
-					http://jira.jboss.org/jira/browse/JBMESSAGING-676
 				</ulink>
 				whose development is still on-going on a parallel branch.
 				</para>

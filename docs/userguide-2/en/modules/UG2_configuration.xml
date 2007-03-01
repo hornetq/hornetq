@@ -38,32 +38,33 @@
 
      <programlisting>
 
-  &lt;mbean code="org.jboss.jms.server.ServerPeer"
-      name="jboss.messaging:service=ServerPeer"
-      xmbean-dd="xmdesc/ServerPeer-xmbean.xml"&gt;
+&lt;mbean code="org.jboss.jms.server.ServerPeer"
+    name="jboss.messaging:service=ServerPeer"
+    xmbean-dd="xmdesc/ServerPeer-xmbean.xml"&gt;
 
-      &lt;constructor&gt;
-         &lt;!-- ServerPeerID --&gt;
-         &lt;arg type="java.lang.String" value="server.0"/&gt;
-         &lt;!-- DefaultQueueJNDIContext --&gt;
-         &lt;arg type="java.lang.String" value="/queue"/&gt;
-         &lt;!-- DefaultTopicJNDIContext --&gt;
-         &lt;arg type="java.lang.String" value="/topic"/&gt;
-      &lt;/constructor&gt;
+    &lt;constructor&gt;
+       &lt;!-- ServerPeerID --&gt;
+       &lt;arg type="java.lang.String" value="server.0"/&gt;
+       &lt;!-- DefaultQueueJNDIContext --&gt;
+       &lt;arg type="java.lang.String" value="/queue"/&gt;
+       &lt;!-- DefaultTopicJNDIContext --&gt;
+       &lt;arg type="java.lang.String" value="/topic"/&gt;
+    &lt;/constructor&gt;
 
-      &lt;depends optional-attribute-name="ThreadPool"&gt;jboss.messaging:service=ThreadPool&lt;/depends&gt;
-      &lt;depends optional-attribute-name="PersistenceManager"&gt;jboss.messaging:service=PersistenceManager&lt;/depends&gt;
-      &lt;depends optional-attribute-name="MessageStore"&gt;jboss.messaging:service=MessageStore&lt;/depends&gt;
-      &lt;depends optional-attribute-name="ChannelMapper"&gt;jboss.messaging:service=ChannelMapper&lt;/depends&gt;
+    &lt;depends optional-attribute-name="ThreadPool"&gt;jboss.messaging:service=ThreadPool&lt;/depends&gt;
+    &lt;depends optional-attribute-name="PersistenceManager"
+			&gt;jboss.messaging:service=PersistenceManager&lt;/depends&gt;
+    &lt;depends optional-attribute-name="MessageStore"&gt;jboss.messaging:service=MessageStore&lt;/depends&gt;
+    &lt;depends optional-attribute-name="ChannelMapper"&gt;jboss.messaging:service=ChannelMapper&lt;/depends&gt;
 
-      &lt;!-- Set to -1 to completely disable client leasing --&gt;
-      &lt;attribute name="SecurityDomain"&gt;java:/jaas/messaging&lt;/attribute&gt;
-      &lt;attribute name="DefaultSecurityConfig"&gt;
-        &lt;security&gt;
-            &lt;role name="guest" read="true" write="true" create="true"/&gt;
-        &lt;/security&gt;
-      &lt;/attribute&gt;
-   &lt;/mbean&gt;
+    &lt;!-- Set to -1 to completely disable client leasing --&gt;
+    &lt;attribute name="SecurityDomain"&gt;java:/jaas/messaging&lt;/attribute&gt;
+    &lt;attribute name="DefaultSecurityConfig"&gt;
+      &lt;security&gt;
+          &lt;role name="guest" read="true" write="true" create="true"/&gt;
+      &lt;/security&gt;
+    &lt;/attribute&gt;
+ &lt;/mbean&gt;
 
      </programlisting>
 
@@ -186,8 +187,10 @@
       name="jboss.messaging:service=PersistenceManager"
       xmbean-dd="xmdesc/JDBCPersistenceManager-xmbean.xml"&gt;
       &lt;depends&gt;jboss.jca:service=DataSourceBinding,name=DefaultDS&lt;/depends&gt;
-      &lt;depends optional-attribute-name="TransactionManager"&gt;jboss:service=TransactionManager&lt;/depends&gt;
-      &lt;depends optional-attribute-name="ChannelMapper"&gt;jboss.messaging:service=ChannelMapper&lt;/depends&gt;
+      &lt;depends optional-attribute-name="TransactionManager"&gt;
+				jboss:service=TransactionManager&lt;/depends&gt;
+      &lt;depends optional-attribute-name="ChannelMapper"&gt;
+				jboss.messaging:service=ChannelMapper&lt;/depends&gt;
       &lt;attribute name="DataSource"&gt;java:/DefaultDS&lt;/attribute&gt;
       &lt;attribute name="CreateTablesOnStartup"&gt;true&lt;/attribute&gt;
       &lt;attribute name="UsingBatchUpdates"&gt;true&lt;/attribute&gt;
@@ -197,7 +200,8 @@
       name="jboss.messaging:service=ChannelMapper"
       xmbean-dd="xmdesc/JDBCChannelMapper-xmbean.xml"&gt;
       &lt;depends&gt;jboss.jca:service=DataSourceBinding,name=DefaultDS&lt;/depends&gt;
-      &lt;depends optional-attribute-name="TransactionManager"&gt;jboss:service=TransactionManager&lt;/depends&gt;
+      &lt;depends optional-attribute-name="TransactionManager"&gt;
+				jboss:service=TransactionManager&lt;/depends&gt;
       &lt;attribute name="DataSource"&gt;java:/DefaultDS&lt;/attribute&gt;
    &lt;/mbean&gt;
 &lt;/server&gt;
@@ -213,19 +217,30 @@
       name="jboss.messaging:service=PersistenceManager"
       xmbean-dd="xmdesc/JDBCPersistenceManager-xmbean.xml"&gt;
       &lt;depends&gt;jboss.jca:service=DataSourceBinding,name=DefaultDS&lt;/depends&gt;
-      &lt;depends optional-attribute-name="TransactionManager"&gt;jboss:service=TransactionManager&lt;/depends&gt;
-      &lt;depends optional-attribute-name="ChannelMapper"&gt;jboss.messaging:service=ChannelMapper&lt;/depends&gt;
+      &lt;depends optional-attribute-name="TransactionManager"&gt;
+				jboss:service=TransactionManager&lt;/depends&gt;
+      &lt;depends optional-attribute-name="ChannelMapper"&gt;
+				jboss.messaging:service=ChannelMapper&lt;/depends&gt;
       &lt;attribute name="DataSource"&gt;java:/DefaultDS&lt;/attribute&gt;
       &lt;attribute name="CreateTablesOnStartup"&gt;true&lt;/attribute&gt;
       &lt;attribute name="UsingBatchUpdates"&gt;true&lt;/attribute&gt;
       &lt;attribute name="SqlProperties"&gt;&lt;![CDATA[
-CREATE_MESSAGE_REF=CREATE TABLE JMS_MESSAGE_REFERENCE (CHANNELID BIGINT, MESSAGEID BIGINT, TRANSACTIONID BIGINT, STATE CHAR(1), ORD BIGINT, DELIVERYCOUNT INTEGER, RELIABLE CHAR(1), LOADED CHAR(1), PRIMARY KEY(CHANNELID, MESSAGEID))
-CREATE_IDX_MESSAGE_REF_TX=CREATE INDEX JMS_MESSAGE_REF_TX ON JMS_MESSAGE_REFERENCE (TRANSACTIONID)
+CREATE_MESSAGE_REF=CREATE TABLE JMS_MESSAGE_REFERENCE 
+	(CHANNELID BIGINT, MESSAGEID BIGINT, TRANSACTIONID BIGINT, STATE CHAR(1), 
+	ORD BIGINT, DELIVERYCOUNT INTEGER, RELIABLE CHAR(1), LOADED CHAR(1), 
+	PRIMARY KEY(CHANNELID, MESSAGEID))
+CREATE_IDX_MESSAGE_REF_TX=CREATE INDEX JMS_MESSAGE_REF_TX ON 
+	JMS_MESSAGE_REFERENCE (TRANSACTIONID)
 CREATE_IDX_MESSAGE_REF_ORD=CREATE INDEX JMS_MESSAGE_REF_ORD ON JMS_MESSAGE_REFERENCE (ORD)
-CREATE_IDX_MESSAGE_REF_MESSAGEID=CREATE INDEX JMS_MESSAGE_REF_MESSAGEID ON JMS_MESSAGE_REFERENCE (MESSAGEID)
-CREATE_IDX_MESSAGE_REF_LOADED=CREATE INDEX JMS_MESSAGE_REF_LOADED ON JMS_MESSAGE_REFERENCE (LOADED)
-CREATE_IDX_MESSAGE_REF_RELIABLE=CREATE INDEX JMS_MESSAGE_REF_RELIABLE ON JMS_MESSAGE_REFERENCE (RELIABLE)
-INSERT_MESSAGE_REF=INSERT INTO JMS_MESSAGE_REFERENCE (CHANNELID, MESSAGEID, TRANSACTIONID, STATE, ORD, DELIVERYCOUNT, RELIABLE, LOADED) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+CREATE_IDX_MESSAGE_REF_MESSAGEID=CREATE INDEX JMS_MESSAGE_REF_MESSAGEID ON 
+	JMS_MESSAGE_REFERENCE (MESSAGEID)
+CREATE_IDX_MESSAGE_REF_LOADED=CREATE INDEX JMS_MESSAGE_REF_LOADED ON 
+	JMS_MESSAGE_REFERENCE (LOADED)
+CREATE_IDX_MESSAGE_REF_RELIABLE=CREATE INDEX JMS_MESSAGE_REF_RELIABLE ON 
+	JMS_MESSAGE_REFERENCE (RELIABLE)
+INSERT_MESSAGE_REF=INSERT INTO JMS_MESSAGE_REFERENCE (CHANNELID, MESSAGEID, 
+	TRANSACTIONID, STATE, ORD, DELIVERYCOUNT, RELIABLE, LOADED) 
+	VALUES (?, ?, ?, ?, ?, ?, ?, ?)
 ....      ]]&gt;
       &lt;/attribute&gt;
       &lt;attribute name="MaxParams"&gt;500&lt;/attribute&gt;
@@ -235,11 +250,14 @@ INSERT_MESSAGE_REF=INSERT INTO JMS_MESSAGE_REFERENCE (CHANNELID, MESSAGEID, TRAN
       name="jboss.messaging:service=ChannelMapper"
       xmbean-dd="xmdesc/JDBCChannelMapper-xmbean.xml"&gt;
       &lt;depends&gt;jboss.jca:service=DataSourceBinding,name=DefaultDS&lt;/depends&gt;
-      &lt;depends optional-attribute-name="TransactionManager"&gt;jboss:service=TransactionManager&lt;/depends&gt;
+      &lt;depends optional-attribute-name="TransactionManager"&gt;
+				jboss:service=TransactionManager&lt;/depends&gt;
       &lt;attribute name="DataSource"&gt;java:/DefaultDS&lt;/attribute&gt;
       &lt;attribute name="SqlProperties"&gt;&lt;![CDATA[
-CREATE_USER_TABLE=CREATE TABLE JMS_USER (USERID VARCHAR(32) NOT NULL, PASSWD VARCHAR(32) NOT NULL, CLIENTID VARCHAR(128), PRIMARY KEY(USERID))
-CREATE_ROLE_TABLE=CREATE TABLE JMS_ROLE (ROLEID VARCHAR(32) NOT NULL, USERID VARCHAR(32) NOT NULL, PRIMARY KEY(USERID, ROLEID))
+CREATE_USER_TABLE=CREATE TABLE JMS_USER (USERID VARCHAR(32) NOT NULL, 
+	PASSWD VARCHAR(32) NOT NULL, CLIENTID VARCHAR(128), PRIMARY KEY(USERID))
+CREATE_ROLE_TABLE=CREATE TABLE JMS_ROLE (ROLEID VARCHAR(32) NOT NULL, 
+	USERID VARCHAR(32) NOT NULL, PRIMARY KEY(USERID, ROLEID))
 SELECT_PRECONF_CLIENTID=SELECT CLIENTID FROM JMS_USER WHERE USERID=?
 ....
       ]]&gt;
@@ -333,7 +351,8 @@ SELECT_PRECONF_CLIENTID=SELECT CLIENTID FROM JMS_USER WHERE USERID=?
 &lt;mbean code="org.jboss.jms.server.destination.Queue"
        name="jboss.messaging.destination:service=Queue,name=DLQ"
        xmbean-dd="xmdesc/Queue-xmbean.xml"&gt;
-   &lt;depends optional-attribute-name="ServerPeer"&gt;jboss.messaging:service=ServerPeer&lt;/depends&gt;
+   &lt;depends optional-attribute-name="ServerPeer"&gt;
+				jboss.messaging:service=ServerPeer&lt;/depends&gt;
 &lt;/mbean&gt;
 
 ....
@@ -341,7 +360,8 @@ SELECT_PRECONF_CLIENTID=SELECT CLIENTID FROM JMS_USER WHERE USERID=?
 &lt;mbean code="org.jboss.jms.server.destination.Topic"
        name="jboss.messaging.destination:service=Topic,name=testTopic"
        xmbean-dd="xmdesc/Topic-xmbean.xml"&gt;
-   &lt;depends optional-attribute-name="ServerPeer"&gt;jboss.messaging:service=ServerPeer&lt;/depends&gt;
+   &lt;depends optional-attribute-name="ServerPeer"&gt;
+		jboss.messaging:service=ServerPeer&lt;/depends&gt;
    &lt;attribute name="SecurityConfig"&gt;
       &lt;security&gt;
          &lt;role name="guest" read="true" write="true"/&gt;
@@ -356,7 +376,8 @@ SELECT_PRECONF_CLIENTID=SELECT CLIENTID FROM JMS_USER WHERE USERID=?
 &lt;mbean code="org.jboss.jms.server.destination.Queue"
        name="jboss.messaging.destination:service=Queue,name=testQueue"
        xmbean-dd="xmdesc/Queue-xmbean.xml"&gt;
-   &lt;depends optional-attribute-name="ServerPeer"&gt;jboss.messaging:service=ServerPeer&lt;/depends&gt;
+   &lt;depends optional-attribute-name="ServerPeer"&gt;
+		jboss.messaging:service=ServerPeer&lt;/depends&gt;
    &lt;attribute name="SecurityConfig"&gt;
       &lt;security&gt;
          &lt;role name="guest" read="true" write="true"/&gt;
@@ -506,12 +527,16 @@ SELECT_PRECONF_CLIENTID=SELECT CLIENTID FROM JMS_USER WHERE USERID=?
  &lt;mbean code=&quot;org.jboss.jms.server.destination.Queue&quot;
            name=&quot;jboss.messaging.destination:service=Queue,name=testQueue&quot;
            xmbean-dd=&quot;xmdesc/Queue-xmbean.xml&quot;&gt;
-           &lt;depends optional-attribute-name=&quot;ServerPeer&quot;&gt;jboss.messaging:service=ServerPeer&lt;/depends&gt;
+           &lt;depends optional-attribute-name=&quot;ServerPeer&quot;&gt;
+						jboss.messaging:service=ServerPeer&lt;/depends&gt;
            &lt;attribute name=&quot;SecurityConfig&quot;&gt;
               &lt;security&gt;
-                 &lt;role name=&quot;guest&quot; read=&quot;true&quot; write=&quot;true&quot;/&gt;
-                 &lt;role name=&quot;publisher&quot; read=&quot;true&quot; write=&quot;true&quot; create=&quot;false&quot;/&gt;
-                 &lt;role name=&quot;noacc&quot; read=&quot;false&quot; write=&quot;false&quot; create=&quot;false&quot;/&gt;
+                 &lt;role name=&quot;guest&quot; read=&quot;true&quot; 
+									write=&quot;true&quot;/&gt;
+                 &lt;role name=&quot;publisher&quot; read=&quot;true&quot; 
+									write=&quot;true&quot; create=&quot;false&quot;/&gt;
+                 &lt;role name=&quot;noacc&quot; read=&quot;false&quot; 
+									write=&quot;false&quot; create=&quot;false&quot;/&gt;
                &lt;/security&gt;
            &lt;/attribute&gt;
            &lt;attribute name=&quot;fullSize&quot;&gt;75000&lt;/attribute&gt;
@@ -563,8 +588,10 @@ SELECT_PRECONF_CLIENTID=SELECT CLIENTID FROM JMS_USER WHERE USERID=?
            &lt;constructor&gt;
               &lt;arg type=&quot;java.lang.String&quot; value=&quot;myClientID&quot;/&gt;
            &lt;/constructor&gt;
-           &lt;depends optional-attribute-name=&quot;ServerPeer&quot;&gt;jboss.messaging:service=ServerPeer&lt;/depends&gt;
-           &lt;depends optional-attribute-name=&quot;Connector&quot;&gt;jboss.messaging:service=Connector,transport=socket&lt;/depends&gt;
+           &lt;depends optional-attribute-name=&quot;ServerPeer&quot;&gt;
+						jboss.messaging:service=ServerPeer&lt;/depends&gt;
+           &lt;depends optional-attribute-name=&quot;Connector&quot;&gt;
+						jboss.messaging:service=Connector,transport=socket&lt;/depends&gt;
            &lt;attribute name=&quot;PrefetchSize&quot;&gt;10&lt;/attribute&gt;
            &lt;attribute name=&quot;DefaultTempQueueFullSize&quot;&gt;1000&lt;/attribute&gt;
            &lt;attribute name=&quot;DefaultTempQueuePageSize&quot;&gt;50&lt;/attribute&gt;
