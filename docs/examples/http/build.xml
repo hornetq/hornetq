@@ -22,6 +22,7 @@
    <property name="messaging.client.jar.path" value="../.."/>
    <property name="messaging.client.jar.name" value="jboss-messaging-client.jar"/>
    <property name="jboss.home" value="${ENV.JBOSS_HOME}"/>
+   <property name="jboss.configuration" value="messaging"/>
    <property name="example.queue.name" value="testQueue"/>
 
    <path id="common.compilation.classpath">
