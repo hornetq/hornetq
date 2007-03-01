@@ -6,8 +6,6 @@
  */
 package org.jboss.jms.server.remoting;
 
-import org.jboss.jms.server.endpoint.ServerConsumerEndpoint;
-import org.jboss.logging.Logger;
 import org.jboss.util.threadpool.ThreadPool;
 import org.jboss.util.threadpool.TaskWrapper;
 import org.jboss.util.threadpool.Task;
@@ -24,8 +22,6 @@ public class DirectThreadPool implements ThreadPool
 {
    // Constants ------------------------------------------------------------------------------------
 
-   private static final Logger log = Logger.getLogger(DirectThreadPool.class);
-   
    // Static ---------------------------------------------------------------------------------------
 
    // Attributes -----------------------------------------------------------------------------------
