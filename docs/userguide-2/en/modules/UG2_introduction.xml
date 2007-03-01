@@ -147,7 +147,7 @@
       </itemizedlist>
 
       <para>
-         JBoss Messaging 1.2 GA Clustering provides the following features:
+         JBoss Messaging 1.2.0.GA Clustering provides the following features:
       </para>
 
       <itemizedlist>
@@ -233,7 +233,7 @@
 
 	<section id="missingfeatures">
 		<title>
-			Features that didn't make it into the 1.2.0.GA release
+		Features that didn't make it into the 1.2.0.GA release
 		</title>
 		
 		<para>

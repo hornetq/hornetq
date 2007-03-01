@@ -1,6 +1,6 @@
 <chapter id="UG2_about">
 
-   <title>Introducing JBoss Messaging Release 2.0</title>
+   <title>Introducing JBoss Messaging Release 1.2.0.GA</title>
 
    <para>JBoss Messaging is a high performance JMS provider in the JBoss Enterprise Middleware Stack (JEMS). It is a complete rewrite of JBossMQ, which is the current default JMS provider in JBoss AS 4.x. JBoss Messaging will be the default JMS provider in JBoss AS 5.x and later, and it is the backbone of the JBoss ESB infrastructure.</para>
    

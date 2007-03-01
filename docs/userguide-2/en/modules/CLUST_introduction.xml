@@ -9,7 +9,7 @@
    <para>
       It will allow you to smoothly distribute your application load across your cluster,
       intelligently balancing and utilizing each nodes CPU cycles, with no single point of failure,
-      providing a highly scalable and perform-ant clustering implementation.
+      providing a highly scalable and performant clustering implementation.
    </para>
 
    <section id="c_features">
