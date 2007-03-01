@@ -1,4 +1,4 @@
-<chapter id="introduction">
+<chapter id="CLUST_introduction">
 
    <title>Introduction</title>
 
@@ -8,8 +8,8 @@
    </para>
    <para>
       It will allow you to smoothly distribute your application load across your cluster,
-      intelligently balancing and utilising each nodes CPU cycles, with no single point of failure,
-      providing a highly scalable and performant clustering implementation.
+      intelligently balancing and utilizing each nodes CPU cycles, with no single point of failure,
+      providing a highly scalable and perform-ant clustering implementation.
    </para>
 
    <section id="c_features">

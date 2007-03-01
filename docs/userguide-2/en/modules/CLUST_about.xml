@@ -1,26 +1,19 @@
-<chapter id="about">
+<chapter id="CLUST_about">
 
-   <title>JBoss Messaging Clustering Introduction</title>
+<title>JBoss Messaging Clustering</title>
 
-   <para>
-   This guide gives a brief overview of the features available in JBoss Messaging Clustering 1.2.0.CR1
-   </para>
+	<para>
+	This section of the userguide gives a brief overview of the features available in JBoss Messaging Clustering 2.0
+	</para>
 
-   <para>
-   It also gives a high level explanation of how clustering works and shows you how to set up a simple
-   cluster of JBoss Messaging servers.
-   </para>
+	<para>
+	It gives a high level explanation of how clustering works and shows you how to set up a simple
+	cluster of JBoss Messaging servers.
+	</para>
 
-   <para>
-      This guide is work in progress.
-    </para>
-
-    <para>It will expand considerably for the 1.2.0 GA release.
-    </para>
-
-     <para>
-      Please send your suggestions or comments to the
-      <ulink url="http://www.jboss.org/index.html?module=bb&amp;op=viewforum&amp;f=238">JBoss Messaging user forum</ulink>.
-   </para>
+	<para>
+	   Please send your suggestions, updates or comments to the
+	   <ulink url="http://www.jboss.org/index.html?module=bb&amp;op=viewforum&amp;f=238">JBoss Messaging user forum</ulink>.
+	</para>
 
 </chapter>

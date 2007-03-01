@@ -1,4 +1,4 @@
-<chapter id="overview">
+<chapter id="CLUST_overview">
 
    <title>Clustering overview</title>
 
@@ -6,7 +6,7 @@
       <title>JBoss Messaging Clustering Overview</title>
 
       <para>
-      Here's a brief overview of how clustering works in JBoss Messaging 1.2.
+      Here's a brief overview of how clustering works in JBoss Messaging 2.0.
       </para>
 
       <para>As mentioned in the previous chapter, please note that not all this functionality is
@@ -100,7 +100,7 @@
 
       <para>
       JBoss Messaging deals with this problem by intelligently pulling messages from other less
-       busy nodes, if it detects idle consumers on the fast node and slow consumers
+      busy nodes, if it detects idle consumers on the fast node and slow consumers
       on another node.
       </para>
 
@@ -113,7 +113,7 @@
       Normally, persistent messages are persisted in a shared database which is shared by all nodes
       in the cluster.
 
-      JBoss Messaging 1.2.GA will contain
+      JBoss Messaging 2.0.GA will contain
       an option where you can choose to not persist persistent messages in a database, but instead to replicate them between nodes of the cluster.
       </para>
 
@@ -127,10 +127,8 @@
       </para>
 
       <para>
-      If the messages are replicated onto suffficient nodes and the hardware is set-up with UPS, then we believe a comparable reliability guarantee to persisting messages to disk
-      can be achieved.
-
-      Of course, this won't be suitable for all situations, but you use the best tool for the job.
+      If the messages are replicated onto sufficient nodes and the hardware is set-up with UPS, then we believe a comparable reliability guarantee to persisting messages to disk
+      can be achieved. Of course, this won't be suitable for all situations, but you use the best tool for the job.
       </para>
 
    </section>
