@@ -388,7 +388,7 @@
 
       <!--
           HTTP stress tests currently fail, so they have been commented out, since they fail.
-          To be fixed for 1.2.0.GA.
+          To be fixed for 1.2.1.
           http://jira.jboss.com/jira/browse/JBMESSAGING-857
 
       <antcall target="remote-stress-tests">
