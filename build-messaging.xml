@@ -718,16 +718,9 @@
 
    <target name="userdoc" depends="release-structure">
 
-      <ant dir="./docs/gettingstarted" antfile="build.xml" target="all"/>
+      <ant dir="./docs/userguide-1.2" antfile="build.xml" target="all"/>
       <copy todir="${release.output}/docs/userguide">
-         <fileset dir="${project.output}/docs/userguide/en">
-            <include name="**"/>
-            <exclude name="**/do-not-distribute*"/>
-         </fileset>
-      </copy>
-      <ant dir="./docs/clustering" antfile="build.xml" target="all"/>
-      <copy todir="${release.output}/docs/clustering">
-         <fileset dir="${project.output}/docs/clustering/en">
+         <fileset dir="${project.output}/docs/userguide-1.2/en">
             <include name="**"/>
             <exclude name="**/do-not-distribute*"/>
          </fileset>
