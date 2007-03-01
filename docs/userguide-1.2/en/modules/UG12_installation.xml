@@ -1,10 +1,17 @@
 <chapter id="UG2_installation">
-  <title>Installation</title>
+  <title>JBoss Messaging Non-Clustered Installation</title>
 
    <para>
-      By default, a JBoss AS 4.0.x instance ships with JBossMQ as default JMS provider.
-      In order to use the JBoss AS instance with JBoss Messaging, you need to perform the installation
-      procedure described below.
+      This section describes the procedure to perfom a non-clustered installation. At the
+      end of this procedure, you will create a JBoss Messaging configuration that will
+      start a non-clustered Messaging server. To find out how you can install JBoss Messaging
+      in a clustered configuration, please proceed to <xref linkend="CLUST_installation"/>.
+   </para>
+
+   <para>
+      By default, a JBoss AS 4.0.x and 4.2.0 instance ships with JBossMQ as default JMS provider.
+      In order to use the JBoss AS instance with JBoss Messaging, you need to perform the
+      installation procedure described below.
    </para>
 
    <para>
@@ -18,9 +25,8 @@
    </para>
 
 
-
   <section id="install4">
-     <title>Installing JBoss Messaging with JBoss AS 4.x</title>
+     <title>Installing JBoss Messaging with JBoss AS 4.0.x and 4.2.1</title>
 
 
     <section id="install4.automated">

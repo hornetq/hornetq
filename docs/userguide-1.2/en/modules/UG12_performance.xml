@@ -4,6 +4,17 @@
 
   <para>As we discussed in <xref linkend="about"/>, the key advantage of JBoss Messaging is its superior performance. In fact, the JBoss Messaging comes with a set of standard performance test. You can run them on your server and generate your own performance benchmark results. In this chapter, we will show you how to run a JBoss Messaging server and a JBossMQ server side-by-side on a single machine, and compare their performance. To get the performance tests, you have to obtain the JBoss Messaging source code from CVS as described in <xref linkend="gettingstarted"/>.</para>
 
+  <para>
+    To get the performance tests, you first need to check out the source code and build the project. The location of the framework's source code will be
+    referred to as $PERF_HOME throughout the rest of the document.
+  </para>
+
+  <programlisting>
+      svn co https://svn.jboss.org/repos/messaging/projects/perf/trunk messaging-perf
+      cd $PERF_HOME
+      ant
+  </programlisting>
+
   <para>The test consists in sending bursts of 1000 0 Kilobytes non-persistent messages to both JBoss Messaging and JBossMQ instances while gradually increasing the send rate (200 messages/sec, 400 messages/sec, etc) and measuring the receive rate. At the end, the framework generates the graph representing the receive rate as function of the send rate for two executions (JBoss Messaging and JBossMQ).</para>
 
   <section>
@@ -44,7 +55,6 @@ run -c jbossmq
     <para>In order to correctly deploy the colocated executors, the framework relies on the <literal>JBOSS_HOME</literal> environment variable. It assumes directories <literal>$JBOSS_HOME/server/messaging</literal> and <literal>$JBOSS_HOME/server/jbossmq</literal> exist.</para>
 
     <programlisting>
-cd perf
 ant sar
 ant start-executors
     </programlisting>
@@ -60,7 +70,7 @@ ant deploy-destinations
   <section>
     <title>Configure Test Runs</title>
 
-    <para>The <literal>perf/perf.xml</literal> file is used to configure tests. In our setting (i.e., <literal>jbossmq</literal> runs in +100 port range from default), the <literal>&lt;providers></literal> section should look like the following. We can easily run the two JMS server configurations on different machines or in other port ranges. You just need to change the host and port numbers here for tests.</para>
+    <para>The <literal>etc/perf.xml</literal> file is used to configure tests. In our setting (i.e., <literal>jbossmq</literal> runs in +100 port range from default), the <literal>&lt;providers></literal> section should look like the following. We can easily run the two JMS server configurations on different machines or in other port ranges. You just need to change the host and port numbers here for tests.</para>
 
     <programlisting>
 &lt;provider name="JBossMessaging">
@@ -69,8 +79,8 @@ ant deploy-destinations
   &lt;pkg>org.jboss.naming:org.jnp.interfaces&lt;/pkg>
   &lt;executor name="REMOTE" url="rmi://localhost:7777/standalone"/>
   &lt;executor name="REMOTE2" url="rmi://localhost:7777/standalone2"/>
-  &lt;executor name="COLOCATED" url="rmi://localhost:7777/colocated-messaging"/>
-  &lt;executor name="COLOCATED2" url="rmi://localhost:7777/colocated-messaging2"/>
+  &lt;executor name="COLOCATED" url="rmi://localhost:7777/local-messaging"/>
+  &lt;executor name="COLOCATED2" url="rmi://localhost:7777/local-messaging2"/>
 &lt;/provider>
 
 &lt;provider name="JBossMQ">
@@ -79,8 +89,8 @@ ant deploy-destinations
   &lt;pkg>org.jboss.naming:org.jnp.interfaces&lt;/pkg>
   &lt;executor name="REMOTE" url="rmi://localhost:7777/standalone"/>
   &lt;executor name="REMOTE2" url="rmi://localhost:7777/standalone2"/>
-  &lt;executor name="COLOCATED" url="rmi://localhost:7777/colocated-jbossmq"/>
-  &lt;executor name="COLOCATED2" url="rmi://localhost:7777/colocated-jbossmq2"/>
+  &lt;executor name="COLOCATED" url="rmi://localhost:7777/local-jbossmq"/>
+  &lt;executor name="COLOCATED2" url="rmi://localhost:7777/local-jbossmq2"/>
 &lt;/provider>
     </programlisting>
 
@@ -146,12 +156,12 @@ ant deploy-destinations
   <section>
     <title>Run the Tests</title>
 
-    <para>To run the tests, simply executes <literal>ant</literal> from the command line. You can access the benchmark result graphs from <literal>output/results/benchmark-results.html</literal>.</para>
+    <para>To run the tests, simply execute <literal>ant run</literal> from the command line. You can access the benchmark result graphs from <literal>output/results/benchmark-results.html</literal>.</para>
 
     <para>After running the test, you can clean up the executors and test destinations using the following commands.</para>
 
     <programlisting>
-ant kill-executors
+ant stop-executors
 ant undeploy-destinations
     </programlisting>
 

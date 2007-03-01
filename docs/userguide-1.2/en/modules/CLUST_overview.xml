@@ -37,7 +37,7 @@
 
       <para>
       When a message is sent from a message producer attached to a particular node to a
-      distributed quueue, a routing policy determines which partial queue will receive
+      distributed queue, a routing policy determines which partial queue will receive
       the message.
       </para>
 

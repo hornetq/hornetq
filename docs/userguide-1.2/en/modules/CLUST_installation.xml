@@ -1,6 +1,11 @@
 <chapter id="CLUST_installation">
 
-   <title>JBoss Messaging Clustering Installation</title>
+   <title>JBoss Messaging Clustered Installation</title>
+
+   <note>
+      You need at least ant 1.6.3 installed in order for the installation procedure to work
+      correctly.
+   </note>
 
    <para>
       Use the <filename>release-admin.xml</filename> ant script shipped with the release to
@@ -12,7 +17,8 @@
    </para>
 
    <programlisting>
-      ant -f release-admin.xml [-Did=node-id] [-Dports=port-config-label] cluster-node
+      cd util
+      ant -f release-admin.xml [-Did=node-id] [-Dports=port-config-label] [-Ddatabase=db-name] cluster-node
    </programlisting>
 
    <para>
@@ -50,7 +56,17 @@
             documentation, at the following address
             <ulink url="http://docs.jboss.com/jbossas/guides/j2eeguide/r2/en/html_single/#ch10.bindingmanager">http://docs.jboss.com/jbossas/guides/j2eeguide/r2/en/html_single/#ch10.bindingmanager</ulink>
          </listitem>
+         <listitem>
+            <filename>db-name</filename> is the name of the database you want to create the configurations for. Supported database names are: mysql, oracle,
+            postgresql, mssql, and sybase. Notice that if you create database configuration to any database other than MySQL, you will still need to
+            manually install the database JDBC drivers (MySQL drivers are provided as part of the distribution).
+         </listitem>
       </itemizedlist>
+   </para>
+
+   <para>
+      Notice that you should have environment variable JBOSS_HOME correctly set to point to your JBoss AS distribution directory before executing any of the
+      scripts.
    </para>
 
    <para>
@@ -59,10 +75,10 @@
    </para>
 
    <programlisting>
-ant -f release-admin.xml cluster-node
-ant -f release-admin.xml -Did=1 -Dports=ports-01 cluster-node
-ant -f release-admin.xml -Did=2 -Dports=ports-02 cluster-node
-ant -f release-admin.xml -Did=3 -Dports=ports-03 cluster-node
+      ant -f release-admin.xml cluster-node
+      ant -f release-admin.xml -Did=1 -Dports=ports-01 cluster-node
+      ant -f release-admin.xml -Did=2 -Dports=ports-02 cluster-node
+      ant -f release-admin.xml -Did=3 -Dports=ports-03 cluster-node
    </programlisting>
 
    <para>
@@ -97,17 +113,17 @@ ant -f release-admin.xml -Did=3 -Dports=ports-03 cluster-node
       </para>
 
    <programlisting>
-cd $JBOSS_HOME/bin
-./run.sh -c messaging-node0
+      cd $JBOSS_HOME/bin
+      ./run.sh -c messaging-node0
 
-cd $JBOSS_HOME/bin
-./run.sh -c messaging-node1
+      cd $JBOSS_HOME/bin
+      ./run.sh -c messaging-node1
 
-cd $JBOSS_HOME/bin
-./run.sh -c messaging-node2
+      cd $JBOSS_HOME/bin
+      ./run.sh -c messaging-node2
 
-cd $JBOSS_HOME/bin
-./run.sh -c messaging-node3
+      cd $JBOSS_HOME/bin
+      ./run.sh -c messaging-node3
     </programlisting>
 
 
@@ -247,6 +263,16 @@ GMS: address is 127.0.0.1:2519
 
 
    </programlisting>
+
+
+   <note>
+      The installation script may fail while installing Messaging with source-generated
+      JBoss 4.0.5.GA-ejb3 instance. This is because release-admin.xml relies on finding
+      <filename>$JBOSS_HOME/docs/examples/binding-manager/sample-bindings.xml</filename>.
+      4.0.5.GA-ejb3 installations seem not to have a "docs" sub-directory. A very simple work-around
+      for this situation is to recursively copy the "docs" sub-directory available under a regular
+      (non-EJB3) source-generated 4.0.5.GA instance and retry the installation process.
+   </note>
 
 
 </chapter>

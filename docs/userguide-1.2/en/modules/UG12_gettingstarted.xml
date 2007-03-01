@@ -6,12 +6,19 @@
       <ulink url="http://www.jboss.com/products/messaging">the JBoss Messaging project landing page</ulink>.
    </para>
 
+   <para>
+       The recommended download location is the JBoss Labs Messaging Project download zone:
+       <ulink url="http://labs.jboss.com/portal/jbossmessaging/downloads">http://labs.jboss.com/portal/jbossmessaging/downloads</ulink>
+       We also maintain an alternate download location on sourceforge.net:
+       <ulink url="http://sourceforge.net/project/showfiles.php?group_id=22866&amp;package_id=157261">http://sourceforge.net/project/showfiles.php?group_id=22866&amp;package_id=157261</ulink>
+   </para>
+
    <section id="releasebundle">
       <title>The JBoss Messaging Release Bundle</title>
 
       <para>
-         The JBoss Messaging release bundle (<filename>jboss-messaging-1.0.x.zip</filename>)
-         will expand in a <filename>jboss-messaging-1.0.x</filename> directory that contains:
+         The JBoss Messaging release bundle (<filename>jboss-messaging-1.2.x.zip</filename>)
+         will expand in a <filename>jboss-messaging-1.2.x</filename> directory that contains:
       </para>
 
       <itemizedlist>
@@ -22,7 +29,7 @@
             <warning>
                Do not simply attempt to copy the archive under a JBoss instance <filename>deploy</filename> directory,
                since additional steps (such as un-installing JBossMQ and various other configurations
-               tasks) are required for a successful installation. See <xref linkend="installation"/> for
+               tasks) are required for a successful installation. See <xref linkend="UG2_installation"/> for
                more details.
             </warning>
          </listitem>
@@ -30,19 +37,44 @@
             <filename>jboss-messaging-client.jar</filename>
             - the client-side library that need to be in the classpath of the client that opens
             a remote connection to the Messaging server.
+
+            <note>
+                <para>
+                This is an important note on the Messaging client jar. JBoss Messaging has an
+                extensive tree of dependencies and bundling all right dependencies in one easy
+                to use archive, so no wrong versions inadvertently get in the class path is, as
+                experience shows, extremely convenient. However, this could cause problems if a
+                different version of a dependency is required by the user's client code.
+                </para>
+                <para>
+                If, for example, the log4j.jar bundled with the release causes problems for being
+                too old, one could just simply build the client-side class path so a newer version
+                of log4j.jar precedes jboss-messaging-client.jar in that class path. This approach
+                may work, but is not guaranteed to work, because we did not run the full test suite
+                with any other log4j.jar version except the one we bundle with the release.
+                </para>
+
+                <para>
+                 A list of required dependencies for a specific release can be found in the
+                 <filename>build-thirdpary.xml</filename> file that is part of the companion source
+                 bundle that ships with each release. It can also be looked up online in
+                  <ulink url="http://fisheye.jboss.org">http://fisheye.jboss.org</ulink>.
+                </para>
+            </note>
          </listitem>
          <listitem>
             <filename>util</filename>
             - a collection of <literal>ant</literal> configuration files used to automate
             installation and release
-            management procedures. See the Installation chapter for more details.
+            management procedures. See <xref linkend="UG2_installation"/> for
+             more details.
          </listitem>
          <listitem>
             <filename>examples</filename>
             - a collection of examples that should run out of the box and help you validate the
             installation. Detailed instructions are provided with each example, which range from
             very simple JMS queue and topic examples to relatively sophisticated use cases in which
-            EJBs and JCA JMS ConnectionFactories are involved.
+            EJBs and JCA JMS ConnectionFactories are involved, as well as clustering use cases.
             The <filename>examples/config</filename> sub-directory contains various configuration
             file examples.
          </listitem>
@@ -51,22 +83,15 @@
             - this user's guide.
          </listitem>
          <listitem>
-           <filename>src/jboss-messaging-1.0.x-src.zip</filename>
+           <filename>src/jboss-messaging-1.2.x-src.zip</filename>
             - the zipped source directory. The file can be directly installed into and used
             with a debugger.
-            <note>
-               JBoss Messaging cannot be built using exclusively this source snapshot, which is
-               provided for reference only.
-            </note>
-         </listitem>
-         <listitem>
-            <filename>src/jboss-messaging-tests-1.0.x-src.zip</filename>
-            - the functional testsuite source archive.
          </listitem>
          <listitem>
             <filename>test-results</filename>
             - the output of the functional testsuite, stress and smoke test runs for this release.
-            All these files have been generated during the release procedure.
+            All these files have been generated during the release procedure and are bundled here
+            for reference.
          </listitem>
          <listitem>
             <filename>api</filename>
@@ -82,17 +107,19 @@
    </section>
 
 
-   <section id="CVS">
-      <title>CVS Access</title>
+   <section id="SVN">
+      <title>SVN Access</title>
 
       <para>
          If you want to experiment with the latest developments you may checkout the latest code
-         from the 5.0 head branch. Be aware that the information provided in this manual might then
-         not be accurate.
-         For the latest instructions, check out the
+         from the Messaging SVN trunk. Be aware that the information provided in this manual might
+         then not be accurate.
+         For the latest instructions on how to check out and build source code, please go to
          <ulink url="http://wiki.jboss.org/wiki/Wiki.jsp?page=JBossMessagingDevelopment">
-            Messaging Development wiki page
-         </ulink>.
+            Messaging Development wiki page</ulink>, specifically
+
+         <ulink url="http://wiki.jboss.org/wiki/Wiki.jsp?page=JBossMessagingBuildInstructions">
+          "Building and Running JBoss Messaging"</ulink> section.
       </para>
 
    </section>
