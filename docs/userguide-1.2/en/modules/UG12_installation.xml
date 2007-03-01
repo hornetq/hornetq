@@ -4,7 +4,7 @@
    <para>
       This section describes the procedure to perfom a non-clustered installation. At the
       end of this procedure, you will create a JBoss Messaging configuration that will
-      start a non-clustered Messaging server. To find out how you can install JBoss Messaging
+      start a non-clustered messaging server. To find out how you can install JBoss Messaging
       in a clustered configuration, please proceed to <xref linkend="CLUST_installation"/>.
    </para>
 
@@ -28,17 +28,18 @@
   <section id="install4">
      <title>Installing JBoss Messaging with JBoss AS 4.0.x and 4.2.1</title>
 
+      <note>
+          You need Apache ant 1.7.0 or newer pre-installed on your system and available in
+          you path in order to be able to perform the installation process described below.
+      </note>
 
     <section id="install4.automated">
      <title>Installation procedure</title>
 
       <para>
          Set up the <literal>JBOSS_HOME</literal> environment variable to point to
-         the JBoss 4.x installation you
-         want to use JBoss Messaging with. Run the installation script, available in the
-         <filename>util</filename> directory of the release bundle.
-         Note that you need Apache Ant 1.6.x or newer installed and accessible from
-         your current directory.
+         the JBoss 4.x installation you want to use JBoss Messaging with. Run the installation
+         script, available in the  <filename>util</filename> directory of the release bundle.
       </para>
 
        <programlisting>
@@ -46,15 +47,15 @@
     ant -f release-admin.xml
        </programlisting>
 
-       <para>
-          The installation script will create a <filename>$JBOSS_HOME/server/messaging</filename>
-          configuration.
-       </para>
+        <para>
+            The installation script will create a <filename>$JBOSS_HOME/server/messaging</filename>
+            configuration.
+        </para>
 
        <note>
           If you want to create a JBoss Messaging configuration with a different name, modify
-          the <literal>messaging.config.name</literal> system property declared
-          at the beginning of the installation script accordingly.
+          the <literal>messaging.config.name</literal> system property declared at the beginning of
+           the installation script accordingly.
        </note>
     </section>
 
@@ -65,10 +66,9 @@
 
 
      <para>
-        To run the server,
-        execute the <filename>run.bat</filename> or <filename>run.sh</filename> script as
-        appropriate for your operating system,
-        in the <filename>$JBOSS_HOME/bin</filename> directory.
+        To run the server, execute the <filename>run.bat</filename> or <filename>run.sh</filename>
+        script as appropriate for your operating system, in the <filename>$JBOSS_HOME/bin</filename>
+        directory.
      </para>
 
    <programlisting>
@@ -82,49 +82,70 @@
 
    <programlisting>
 ....
-14:23:56,174 WARN  [JDBCPersistenceManager]
+01:44:48,317 WARN  [JDBCPersistenceManager]
 
-JBoss Messaging Warning: 
-	DataSource connection transaction isolation should be READ_COMMITTED, but it is 
-	currently NONE.
-	Using an isolation level less strict than READ_COMMITTED may lead to data consistency 
-	problems.
-	Using an isolation level more strict than READ_COMMITTED may lead to deadlock.
+JBoss Messaging Warning: DataSource connection transaction isolation should be
+       READ_COMMITTED, but it is currently NONE.
+       Using an isolation level less strict than READ_COMMITTED may lead to data
+       consistency problems.
+       Using an isolation level more strict than READ_COMMITTED may lead to deadlock.
 
-14:23:57,276 INFO  [ServerPeer] JBoss Messaging 1.0.1.GA server [server.0] started
-14:23:57,937 INFO  [ConnectionFactory] Connector has leasing enabled, lease period 
-20000 milliseconds
-14:23:57,937 INFO  [ConnectionFactory] [/ConnectionFactory, /XAConnectionFactory, 
-java:/ConnectionFactory, java:/XAConnectionFactory] deployed
-14:23:57,987 INFO  [Queue] Queue[/queue/DLQ] started, fullSize=75000, pageSize=2000, 
-downCacheSize=2000
-14:23:57,997 INFO  [Topic] Topic[/topic/testTopic] started, fullSize=75000, pageSize=2000, 
-downCacheSize=2000
-14:23:58,017 INFO  [Topic] Topic[/topic/securedTopic] started, fullSize=75000, pageSize=2000, 
-downCacheSize=2000
-14:23:58,017 INFO  [Topic] Topic[/topic/testDurableTopic] started, fullSize=75000, 
+01:44:50,450 INFO  [ServerPeer] JBoss Messaging 1.2.0.GA server [0] started
+01:44:51,311 INFO  [ConnectionFactory] Connector bisocket://192.168.1.104:4457 has
+leasing enabled, lease period 10000 milliseconds
+01:44:51,311 INFO  [ConnectionFactory] [/ConnectionFactory, /XAConnectionFactory,
+java:/ConnectionFactory, java:/XAConnectionFactory] started
+01:44:51,441 INFO  [ConnectionFactory] Connector bisocket://192.168.1.104:4457 has
+leasing enabled, lease period 10000 milliseconds
+01:44:51,441 INFO  [ConnectionFactory] [/NonClusteredConnectionFactory,
+/NonClusteredXAConnectionFactory, java:/NonClusteredConnectionFactory,
+java:/NonClusteredXAConnectionFactory] started
+01:44:51,681 INFO  [QueueService] Queue[/queue/DLQ] started, fullSize=200000,
 pageSize=2000, downCacheSize=2000
-14:23:58,027 INFO  [Queue] Queue[/queue/testQueue] started, fullSize=75000, pageSize=2000, 
-downCacheSize=2000
-14:23:58,027 INFO  [Queue] Queue[/queue/A] started, fullSize=75000, pageSize=2000, 
-downCacheSize=2000
-14:23:58,037 INFO  [Queue] Queue[/queue/B] started, fullSize=75000, pageSize=2000, 
-downCacheSize=2000
-14:23:58,057 INFO  [Queue] Queue[/queue/C] started, fullSize=75000, pageSize=2000, 
-downCacheSize=2000
-14:23:58,067 INFO  [Queue] Queue[/queue/D] started, fullSize=75000, pageSize=2000, 
-downCacheSize=2000
-14:23:58,077 INFO  [Queue] Queue[/queue/ex] started, fullSize=75000, pageSize=2000, 
-downCacheSize=2000
-14:23:58,077 INFO  [Topic] Topic[/topic/openTopic] started, fullSize=75000, pageSize=2000, 
-downCacheSize=2000
-14:23:58,117 INFO  [ConnectionFactoryBindingService] Bound ConnectionManager 
-'jboss.jca:service=ConnectionFactoryBinding,name=JmsXA' to JNDI name 'java:JmsXA'
+01:44:51,681 INFO  [QueueService] Queue[/queue/ExpiryQueue] started, fullSize=200000,
+pageSize=2000, downCacheSize=2000
+01:44:51,732 INFO  [TopicService] Topic[/topic/testTopic] started, fullSize=200000,
+pageSize=2000, downCacheSize=2000
+01:44:51,732 INFO  [TopicService] Topic[/topic/securedTopic] started, fullSize=200000,
+pageSize=2000, downCacheSize=2000
+01:44:51,732 INFO  [TopicService] Topic[/topic/testDurableTopic] started, fullSize=200000,
+pageSize=2000, downCacheSize=2000
+01:44:51,752 INFO  [QueueService] Queue[/queue/testQueue] started, fullSize=200000,
+pageSize=2000, downCacheSize=2000
+01:44:51,752 INFO  [QueueService] Queue[/queue/A] started, fullSize=200000,
+pageSize=2000, downCacheSize=2000
+01:44:51,762 INFO  [QueueService] Queue[/queue/B] started, fullSize=200000,
+pageSize=2000, downCacheSize=2000
+01:44:51,762 INFO  [QueueService] Queue[/queue/C] started, fullSize=200000,
+pageSize=2000, downCacheSize=2000
+01:44:51,882 INFO  [QueueService] Queue[/queue/D] started, fullSize=200000,
+pageSize=2000, downCacheSize=2000
+01:44:51,882 INFO  [QueueService] Queue[/queue/ex] started, fullSize=200000,
+pageSize=2000, downCacheSize=2000
+01:44:51,882 INFO  [QueueService] Queue[/queue/PrivateDLQ] started, fullSize=200000,
+pageSize=2000, downCacheSize=2000
+01:44:51,892 INFO  [QueueService] Queue[/queue/PrivateExpiryQueue] started, fullSize=200000,
+pageSize=2000, downCacheSize=2000
+01:44:51,892 INFO  [QueueService] Queue[/queue/QueueWithOwnDLQAndExpiryQueue] started,
+fullSize=200000, pageSize=2000, downCacheSize=2000
+01:44:51,892 INFO  [TopicService] Topic[/topic/TopicWithOwnDLQAndExpiryQueue] started,
+fullSize=200000, pageSize=2000, downCacheSize=2000
+01:44:51,942 INFO  [QueueService] Queue[/queue/QueueWithOwnRedeliveryDelay] started,
+fullSize=200000, pageSize=2000, downCacheSize=2000
+01:44:51,942 INFO  [TopicService] Topic[/topic/TopicWithOwnRedeliveryDelay] started,
+fullSize=200000, pageSize=2000, downCacheSize=2000
+01:44:51,952 INFO  [QueueService] Queue[/queue/testDistributedQueue] started, fullSize=200000,
+pageSize=2000, downCacheSize=2000
+01:44:51,952 INFO  [TopicService] Topic[/topic/testDistributedTopic] started, fullSize=200000,
+pageSize=2000, downCacheSize=2000
+01:44:52,372 INFO  [ConnectionFactoryBindingService] Bound ConnectionManager
+'jboss.jca:name=JmsXA,service=ConnectionFactoryBinding' to JNDI name 'java:JmsXA'
 ....
    </programlisting>
 
      <note>
-        The warning message <literal>DataSource connection transaction isolation should be READ_COMMITTED, but it is currently NONE</literal>
+        The warning message <literal>DataSource connection transaction isolation should be READ_COMMITTED,
+        but it is currently NONE</literal>
         is there to remind you that by default JBossAS ships with Hypersonic, an in-memory
         Java-based database engine, which is apropriate for demo purposes, but not for heavy load
         production environments. The
@@ -138,11 +159,7 @@ downCacheSize=2000
         otherwise you risk losing your data.
         See <xref linkend="conf.changingds"/> for details about replacing Hypersonic.
      </warning>
-
-
-
   </section>
-
 
 
   <section id="inst.validation">
@@ -178,28 +195,46 @@ downCacheSize=2000
 
 
         <programlisting>
+$ ant
 Buildfile: build.xml
+
 identify:
-  [echo] Running the queue example
-  [echo] The queue: testQueue
+[echo] ###########################################################################
+[echo] #                       Running the QUEUE example                         #
+[echo] ###########################################################################
+[echo] The queue:      testQueue
+[echo] The client jar: ../../../output/lib/jboss-messaging-client.jar
+
 sanity-check:
+
 init:
+[mkdir] Created dir: c:\work\src\svn\messaging\docs\examples\queue\output
+[mkdir] Created dir: c:\work\src\svn\messaging\docs\examples\common\output
+
 compile:
+[javac] Compiling 5 source files to c:\work\src\svn\messaging\docs\examples\common\output
+[javac] Compiling 1 source file to c:\work\src\svn\messaging\docs\examples\queue\output
+
 run:
-  [java] Queue /queue/testQueue exists
-  [java] The message was successfully sent to the testQueue queue
-  [java] Received message: Hello!
-  [java] The example connected to JBoss Messaging version 1.0.0 (1.0)
-  [java] #####################
-  [java] ###    SUCCESS!   ###
-  [java] #####################
-   </programlisting>
+   [java] Queue /queue/testQueue exists
+   [java] The message was successfully sent to the testQueue queue
+   [java] Received message: Hello!
+   [java] The example connected to JBoss Messaging version 1.2.0.GA (1.2)
+   [java]
+   [java] #####################
+   [java] ###    SUCCESS!   ###
+   [java] #####################
+
+BUILD SUCCESSFUL
+Total time: 9 seconds
+</programlisting>
 
 
      <para>
         It is recommended to run <literal>all</literal> validation examples available in the
-        <filename>example</filename> directory (<filename>queue</filename>, <filename>topic</filename>,
-        <filename>mdb</filename>, <filename>stateless</filename>, etc.). In <xref linkend="examples"/>, we will have a look at each of those examples.
+        <filename>example</filename> directory (<filename>queue</filename>,
+        <filename>topic</filename>, <filename>mdb</filename>, <filename>stateless</filename>, etc.).
+         In <xref linkend="UG2_examples"/>, we will have a look at each of those examples.
      </para>
 
 

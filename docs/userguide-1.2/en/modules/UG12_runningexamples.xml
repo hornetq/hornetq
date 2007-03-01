@@ -2,18 +2,35 @@
 
   <title>Running the Examples</title>
 
-  <para>Since JBoss Messaging is a full JMS provider, it supports all JMS APIs. So, all JMS applications should work without modification. Integrated inside a JBoss AS, we should also access the JMS system from EJBs and write message-driven beans against JMS destinations.</para>
+  <para>
+      Since JBoss Messaging is a fully compliant JMS provider, it supports all JMS APIs. So, all
+      JMS applications should work without modification. Integrated inside a JBoss AS, we should
+      also be able access the JMS system from EJBs and write message-driven beans against JMS
+      destinations.
+  </para>
 
 
-  <para>In the following sections, we will look at examples of the various JMS messaging models and message-driven beans. They make use of pre-configured JMS destinations and connection factories that come default with the server. So, no extra configuration is needed to run those examples. Just set JBOSS_HOME and run ANT in each example directory, as we described in <xref linkend="inst.validation"/>. The example source directories are located in the distribution under <literal>docs/examples</literal>.
+  <para>
+      In the following sections, we will look at examples of the various JMS messaging models
+      and message-driven beans. They make use of pre-configured JMS destinations and connection
+      factories that come default with the server. So, no extra configuration is needed to run
+      those examples. Just set JBOSS_HOME and run <literal>ant</literal> in each example
+      directory, as we described in <xref linkend="inst.validation"/>. The example source
+      directories are located in the distribution under <literal>docs/examples</literal>.
   </para>
 
   <section id="examples.queue">
     <title>Sending messages to a queue</title>
 
     <para>
-    Open an new command line. Set the JBOSS_HOME environment variable to point at a JBossAS 4.x installation. Navigate to the folder where you exploded the main archive and drill down to <literal>/examples/queue</literal>. You need to use Apache Ant to execute the build.xml file.
-    Make sure the JBoss server reference by the JBOSS_HOME is started.
+    Open an new command line. Set the JBOSS_HOME environment variable to point at a JBossAS 4.x
+    installation. Navigate to the folder where you exploded the main archive and drill down to
+    <literal>/examples/queue</literal>. You need to use Apache <literal>ant</literal> to execute
+    the <literal>build.xml</literal> file.
+    </para>
+
+    <para>
+        Make sure the JBoss server reference by the JBOSS_HOME is started.
    </para>
 
     <programlisting>
@@ -544,8 +561,8 @@ public class MDBExample implements MessageDrivenBean, MessageListener
          with an error message similar to:
 
          <programlisting>
-C:\work\src\cvs\jboss-head\jms\docs\examples\ejb3mdb\build.xml:60: EJB3 does not seem 
-to be installed in C:\work\src\jboss-4.0.3-src\build\output\jboss-4.0.3/server/messaging! 
+C:\work\src\cvs\jboss-head\jms\docs\examples\ejb3mdb\build.xml:60: EJB3 does not seem
+to be installed in C:\work\src\jboss-4.0.3-src\build\output\jboss-4.0.3/server/messaging!
 Install it and try again.
          </programlisting>
 
@@ -562,9 +579,9 @@ Install it and try again.
      <programlisting>
 @MessageDriven(activateConfig =
 {
-      @ActivationConfigProperty(propertyName="destinationType", 
+      @ActivationConfigProperty(propertyName="destinationType",
 				propertyValue="javax.jms.Queue"),
-      @ActivationConfigProperty(propertyName="destination", 
+      @ActivationConfigProperty(propertyName="destination",
 				propertyValue="queue/testQueue")
 })
 public class EJB3MDBExample implements MessageListener

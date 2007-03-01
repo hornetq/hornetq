@@ -2,10 +2,10 @@
 
    <title>JBoss Messaging Clustered Installation</title>
 
-   <note>
-      You need at least ant 1.6.3 installed in order for the installation procedure to work
-      correctly.
-   </note>
+    <note>
+        You need Apache ant 1.7.0 or newer pre-installed on your system and available in
+        you path in order to be able to perform the installation process described below.
+    </note>
 
    <para>
       Use the <filename>release-admin.xml</filename> ant script shipped with the release to
