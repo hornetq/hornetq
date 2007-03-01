@@ -2,7 +2,15 @@
 
   <title>Generating Performance Benchmark Results</title>
 
-  <para>As we discussed in <xref linkend="about"/>, the key advantage of JBoss Messaging is its superior performance. In fact, the JBoss Messaging comes with a set of standard performance test. You can run them on your server and generate your own performance benchmark results. In this chapter, we will show you how to run a JBoss Messaging server and a JBossMQ server side-by-side on a single machine, and compare their performance. To get the performance tests, you have to obtain the JBoss Messaging source code from CVS as described in <xref linkend="gettingstarted"/>.</para>
+  <para>
+      As we discussed in <xref linkend="UG2_about"/>, the key advantage of JBoss Messaging is
+      its superior performance. In fact, the JBoss Messaging comes with a set of standard
+      performance test. You can run them on your server and generate your own performance
+      benchmark results. In this chapter, we will show you how to run a JBoss Messaging server
+      and a JBossMQ server side-by-side on a single machine, and compare their performance.
+      To get the performance tests, you have to obtain the JBoss Messaging source code from SVN
+      as described in <xref linkend="UG2_gettingstarted"/>.
+  </para>
 
   <para>
     To get the performance tests, you first need to check out the source code and build the project. The location of the framework's source code will be
@@ -20,7 +28,14 @@ ant
   <section>
     <title>Run JBoss Messaging and JBossMQ Side-by-side</title>
 
-    <para>To run performance tests side-by-side on the same machine, we assume that you create two JBoss AS configurations with the JBoss Messaging and JBossMQ modules respectively. We assume that the JBoss Messaging module is installed in the <literal>server/messaging</literal> directory (see <xref linkend="installation"/>), and the default JBossMQ module is installed in <literal>server/jbossmq</literal> directory (just copy the original <literal>default</literal> directory that comes with the server).</para>
+    <para>
+        To run performance tests side-by-side on the same machine, we assume that you create
+        two JBoss AS configurations with the JBoss Messaging and JBossMQ modules respectively.
+        We assume that the JBoss Messaging module is installed in the
+        <literal>server/messaging</literal> directory (see <xref linkend="UG2_installation"/>),
+        and the default JBossMQ module is installed in <literal>server/jbossmq</literal>
+        directory (just copy the original <literal>default</literal> directory that comes with
+        the server).</para>
 
     <para>Now, if you run the two configurations on the same server, there will be port conflicts. To avoid that, we use the JBoss <literal>ServiceBindingManager</literal> to increase the port numbers in the <literal>jbossmq</literal> configuration by 100 (i.e., the JNDI service will be available at port 1199 instead of 1099). To do that, un-comment the following line in <literal>server/jbossmq/conf/jboss-service.xml</literal></para>
 

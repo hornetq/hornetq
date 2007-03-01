@@ -37,14 +37,10 @@
   
   &UG12_performance;
 
-	&C_about;
+  &C_overview;
 	
-	<!-- &C_introduction; -->
+  &C_installation;
 	
-	&C_overview;
-	
-	&C_installation;
-	
-	&C_configuration;
+  &C_configuration;
 
 </book>

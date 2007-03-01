@@ -1,12 +1,20 @@
 <chapter id="CLUST_overview">
 
-   <title>Clustering overview</title>
 
-   <section id="description">
+   <title>JBoss Messaging Clustering</title>
+
+    <para>
+      This section of the userguide gives a brief overview of the features available in
+        JBoss Messaging Clustering 1.2.0.GA. It gives a high level explanation of how
+        clustering works and shows you how to set up a simple cluster of JBoss Messaging
+        servers.
+     </para>
+
+   <section id="clustering_overview">
       <title>JBoss Messaging Clustering Overview</title>
 
       <para>
-      Here's a brief overview of how clustering works in JBoss Messaging 2.0.
+      Here's a brief overview of how clustering works in JBoss Messaging 1.2.
       </para>
 
       <para>As mentioned in the previous chapter, please note that not all this functionality is
@@ -132,4 +140,59 @@
       </para>
 
    </section>
+
+
+    <section id="clustering_architectural_overview">
+        <title>Clustering Architectural Overview</title>
+
+        <para>
+           One of the fundamental Messaging Core building blocks is the "Post Office". A JBoss Messaging
+           Post Office is message routing component, which accepts messages for delivery and synchronously
+           forwards them to their destination queues or topic subscriptions.
+        </para>
+
+        <para>
+           There is a single Post Office instance per JBoss Messaging server (cluster node). Both queues
+           and topics deployed on a JBoss Messaging node are "plugged" into that Post Office instance.
+           Internally JBoss Messaging only deals  with the concepts of queues, and considers a topic to
+           just be a set of queues (one for each subscription). Depending on the type of subscription -
+           durable or non-durable - the corresponding queue saves messages to persistent storage or
+           it just holds messages in memory and discards them when the non-durable subscription is closed.
+        </para>
+
+        <para>
+           Therefore, for a JMS queue, the Post Office routes messages to one and only one core queue,
+           depending on the queue name, whereas for a JMS topic, the Post Office routes a message
+           to a set of core queues, one for each topic subscription, depending on the topic name.
+        </para>
+
+        <para>
+           Clustering across multiple address spaces is achieved by clustering Post Office instances. Each
+           JBoss Messaging cluster node runs a Clustered Post Office instance, which is aware of the presence
+           of all other clustered Post Offices in the cluster. There is an one-to-one relationship between cluster
+           nodes and clustered Post Office instances. So, naturally, the most important piece of clustering
+           configuration is the <emphasis>clustered Post Office service configuration</emphasis>,
+           covered in detail below.
+        </para>
+
+        <para>
+           Clustered Post Office instances connect to each other via JGroups and they heavily rely on JGroups
+           group management and notification mechanisms. <emphasis>JGroups stack configuration</emphasis>
+           is an essential part of JBoss Messaging clustering configuration. JGroups configuration is only
+           briefly addressed in this guide. Detailed information on JGroups can be found in JGroups
+           release documentation or on-line at <ulink url="http://www.jgroups.org">http://www.jgroups.org</ulink>
+           or <ulink url="http://wiki.jboss.org/wiki/Wiki.jsp?page=JGroups">http://wiki.jboss.org/wiki/Wiki.jsp?page=JGroups</ulink>
+        </para>
+
+        <para>
+           When routing messages, a clustered Post Office  has a choice of forwarding the message to local
+           queues or remote queues, plugged into remote Post Office instances that are part of the same
+           cluster. Local queues are usually preferred, but if a local queue is part of a distributed queue, has
+           no consumers, and other local queues part of the same distributed queue have consumers, messages
+           can be automatically redistributed, subject of the message redistribution policy in effect. This allows
+           us to create distributed queues and distributed topics.  <emphasis>Message redistribution
+           configuration</emphasis> is another subject that we will insist on.
+        </para>
+
+    </section>
 </chapter>
