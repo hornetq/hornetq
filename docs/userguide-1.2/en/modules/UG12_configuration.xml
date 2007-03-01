@@ -1,20 +1,32 @@
 <chapter id="UG2_configuration">
   <title>Configuration</title>
 
-  <para>The JMS API specifies how a messaging client interacts with a messaging server. The exact definition and implementation of messaging services, such as message destinations and connection factories, are specific to JMS providers. JBoss Messaging has its own configuration files to configure services. If you are migrating services from JBossMQ (or other JMS provider) to JBoss Messaging, you will need to understand those configuration files.</para>
+  <para>
+      The JMS API specifies how a messaging client interacts with a messaging server. The exact
+      definition and implementation of messaging services, such as message destinations and
+      connection factories, are specific to JMS providers. JBoss Messaging has its own
+      configuration files to configure services. If you are migrating services from JBossMQ
+      (or other JMS provider) to JBoss Messaging, you will need to understand those
+      configuration files.
+  </para>
 
-  <para>In this chapter, we discuss how to configure various services inside JBoss Messaging, which work together to provide JMS API level
-     services to client applications.</para>
+  <para>
+      In this chapter, we discuss how to configure various services inside JBoss Messaging,
+      which work together to provide JMS API level services to client applications.
+  </para>
 
    <para>
-      Starting with the JBoss Messaging 1.0.1 release, the service configuration is spread among several configuration files.
-      (The 1.0.0 release used to have all configuration information lumped together in the SAR's deployment
-      descriptor <filename>jboss-messaging.sar/META-INF/jboss-service.xml</filename>). Depending
-      on the functionality provided by the services it configures, the configuration data is
-      distributed between
+      Starting with the JBoss Messaging 1.0.1 release, the service configuration is spread among
+      several configuration files (the 1.0.0 release used to have all configuration information
+      lumped together in the SAR's deployment descriptor
+      <filename>jboss-messaging.sar/META-INF/jboss-service.xml</filename>).
+      Depending on the functionality provided by the services it configures, the configuration
+      data is distributed between
       <filename>messaging-service.xml</filename>,
       <filename>remoting-service.xml</filename>,
-      <filename>xxx-persistence-service.xml</filename>,
+      <filename>xxx-persistence-service.xml</filename>
+       (or <filename>clustered-xxx-persistence-service.xml</filename> for a clustered configuration,
+       more about clusterered configuration in <xref linkend="CLUST_configuration"/>),
       <filename>connection-factories-service.xml</filename> and
       <filename>destinations-service.xml</filename>.
    </para>
@@ -29,49 +41,51 @@
 
     <para>
        The Server Peer is the "heart" of the JBoss Messaging JMS facade. The server's configuration,
-       together with the configuration of several core plug-ins (ThreadPool and the
-       MessageStore), resides in <filename>messaging-service.xml</filename> configuration file.
+       resides in <filename>messaging-service.xml</filename> configuration file.
     </para>
 
 
      <para>An example of a Server Peer configuration is presented below</para>
 
      <programlisting>
+ &lt;mbean code="org.jboss.jms.server.ServerPeer"
+        name="jboss.messaging:service=ServerPeer"
+        xmbean-dd="xmdesc/ServerPeer-xmbean.xml"&gt;
 
-&lt;mbean code="org.jboss.jms.server.ServerPeer"
-    name="jboss.messaging:service=ServerPeer"
-    xmbean-dd="xmdesc/ServerPeer-xmbean.xml"&gt;
+   &lt;constructor&gt;
+     &lt;!-- ServerPeerID --&gt;
+     &lt;arg type="int" value="0"/&gt;
+     &lt;!-- DefaultQueueJNDIContext --&gt;
+     &lt;arg type="java.lang.String" value="/queue"/&gt;
+     &lt;!-- DefaultTopicJNDIContext --&gt;
+     &lt;arg type="java.lang.String" value="/topic"/&gt;
+   &lt;/constructor&gt;
 
-    &lt;constructor&gt;
-       &lt;!-- ServerPeerID --&gt;
-       &lt;arg type="java.lang.String" value="server.0"/&gt;
-       &lt;!-- DefaultQueueJNDIContext --&gt;
-       &lt;arg type="java.lang.String" value="/queue"/&gt;
-       &lt;!-- DefaultTopicJNDIContext --&gt;
-       &lt;arg type="java.lang.String" value="/topic"/&gt;
-    &lt;/constructor&gt;
-
-    &lt;depends optional-attribute-name="ThreadPool"&gt;
-jboss.messaging:service=ThreadPool
-&lt;/depends&gt;
-    &lt;depends optional-attribute-name="PersistenceManager"
-			&gt;jboss.messaging:service=PersistenceManager&lt;/depends&gt;
-    &lt;depends optional-attribute-name="MessageStore"&gt;
-jboss.messaging:service=MessageStore
-		&lt;/depends&gt;
-    &lt;depends optional-attribute-name="ChannelMapper"&gt;
-jboss.messaging:service=ChannelMapper
-		 &lt;/depends&gt;
-
-    &lt;!-- Set to -1 to completely disable client leasing --&gt;
-    &lt;attribute name="SecurityDomain"&gt;java:/jaas/messaging&lt;/attribute&gt;
-    &lt;attribute name="DefaultSecurityConfig"&gt;
+   &lt;attribute name="PostOffice"&gt;jboss.messaging:service=PostOffice&lt;/attribute&gt;
+   &lt;attribute name="SecurityDomain"&gt;java:/jaas/messaging&lt;/attribute&gt;
+   &lt;attribute name="DefaultSecurityConfig"&gt;
       &lt;security&gt;
-          &lt;role name="guest" read="true" write="true" create="true"/&gt;
+        &lt;role name="guest" read="true" write="true" create="true"/&gt;
       &lt;/security&gt;
-    &lt;/attribute&gt;
- &lt;/mbean&gt;
+   &lt;/attribute&gt;
+   &lt;attribute name="DefaultDLQ"&gt;
+       jboss.messaging.destination:service=Queue,name=DLQ&lt;/attribute&gt;
+   &lt;attribute name="DefaultMaxDeliveryAttempts"&gt;10&lt;/attribute&gt;
+   &lt;attribute name="DefaultExpiryQueue"&gt;
+       jboss.messaging.destination:service=Queue,name=ExpiryQueue&lt;/attribute&gt;
+   &lt;attribute name="DefaultRedeliveryDelay"&gt;0&lt;/attribute&gt;
+   &lt;attribute name="QueueStatsSamplePeriod"&gt;5000&lt;/attribute&gt;
+   &lt;attribute name="FailoverStartTimeout"&gt;60000&lt;/attribute&gt;
+   &lt;attribute name="FailoverCompleteTimeout"&gt;300000&lt;/attribute&gt;
+   &lt;attribute name="DefaultMessageCounterHistoryDayLimit"&gt;-1&lt;/attribute&gt;
 
+   &lt;depends optional-attribute-name="PersistenceManager"&gt;
+       jboss.messaging:service=PersistenceManager&lt;/depends&gt;
+   &lt;depends optional-attribute-name="JMSUserManager"&gt;
+       jboss.messaging:service=JMSUserManager&lt;/depends&gt;
+   &lt;depends&gt;jboss.messaging:service=Connector,transport=bisocket&lt;/depends&gt;
+
+ &lt;/mbean&gt;
      </programlisting>
 
      <section id="conf.serverpeer.securitydomain">
@@ -231,21 +245,21 @@ jboss.messaging:service=ChannelMapper
       &lt;attribute name="CreateTablesOnStartup"&gt;true&lt;/attribute&gt;
       &lt;attribute name="UsingBatchUpdates"&gt;true&lt;/attribute&gt;
       &lt;attribute name="SqlProperties"&gt;&lt;![CDATA[
-CREATE_MESSAGE_REF=CREATE TABLE JMS_MESSAGE_REFERENCE 
-	(CHANNELID BIGINT, MESSAGEID BIGINT, TRANSACTIONID BIGINT, STATE CHAR(1), 
-	ORD BIGINT, DELIVERYCOUNT INTEGER, RELIABLE CHAR(1), LOADED CHAR(1), 
+CREATE_MESSAGE_REF=CREATE TABLE JMS_MESSAGE_REFERENCE
+	(CHANNELID BIGINT, MESSAGEID BIGINT, TRANSACTIONID BIGINT, STATE CHAR(1),
+	ORD BIGINT, DELIVERYCOUNT INTEGER, RELIABLE CHAR(1), LOADED CHAR(1),
 	PRIMARY KEY(CHANNELID, MESSAGEID))
-CREATE_IDX_MESSAGE_REF_TX=CREATE INDEX JMS_MESSAGE_REF_TX ON 
+CREATE_IDX_MESSAGE_REF_TX=CREATE INDEX JMS_MESSAGE_REF_TX ON
 	JMS_MESSAGE_REFERENCE (TRANSACTIONID)
 CREATE_IDX_MESSAGE_REF_ORD=CREATE INDEX JMS_MESSAGE_REF_ORD ON JMS_MESSAGE_REFERENCE (ORD)
-CREATE_IDX_MESSAGE_REF_MESSAGEID=CREATE INDEX JMS_MESSAGE_REF_MESSAGEID ON 
+CREATE_IDX_MESSAGE_REF_MESSAGEID=CREATE INDEX JMS_MESSAGE_REF_MESSAGEID ON
 	JMS_MESSAGE_REFERENCE (MESSAGEID)
-CREATE_IDX_MESSAGE_REF_LOADED=CREATE INDEX JMS_MESSAGE_REF_LOADED ON 
+CREATE_IDX_MESSAGE_REF_LOADED=CREATE INDEX JMS_MESSAGE_REF_LOADED ON
 	JMS_MESSAGE_REFERENCE (LOADED)
-CREATE_IDX_MESSAGE_REF_RELIABLE=CREATE INDEX JMS_MESSAGE_REF_RELIABLE ON 
+CREATE_IDX_MESSAGE_REF_RELIABLE=CREATE INDEX JMS_MESSAGE_REF_RELIABLE ON
 	JMS_MESSAGE_REFERENCE (RELIABLE)
-INSERT_MESSAGE_REF=INSERT INTO JMS_MESSAGE_REFERENCE (CHANNELID, MESSAGEID, 
-	TRANSACTIONID, STATE, ORD, DELIVERYCOUNT, RELIABLE, LOADED) 
+INSERT_MESSAGE_REF=INSERT INTO JMS_MESSAGE_REFERENCE (CHANNELID, MESSAGEID,
+	TRANSACTIONID, STATE, ORD, DELIVERYCOUNT, RELIABLE, LOADED)
 	VALUES (?, ?, ?, ?, ?, ?, ?, ?)
 ....      ]]&gt;
       &lt;/attribute&gt;
@@ -260,9 +274,9 @@ INSERT_MESSAGE_REF=INSERT INTO JMS_MESSAGE_REFERENCE (CHANNELID, MESSAGEID,
 				jboss:service=TransactionManager&lt;/depends&gt;
       &lt;attribute name="DataSource"&gt;java:/DefaultDS&lt;/attribute&gt;
       &lt;attribute name="SqlProperties"&gt;&lt;![CDATA[
-CREATE_USER_TABLE=CREATE TABLE JMS_USER (USERID VARCHAR(32) NOT NULL, 
+CREATE_USER_TABLE=CREATE TABLE JMS_USER (USERID VARCHAR(32) NOT NULL,
 	PASSWD VARCHAR(32) NOT NULL, CLIENTID VARCHAR(128), PRIMARY KEY(USERID))
-CREATE_ROLE_TABLE=CREATE TABLE JMS_ROLE (ROLEID VARCHAR(32) NOT NULL, 
+CREATE_ROLE_TABLE=CREATE TABLE JMS_ROLE (ROLEID VARCHAR(32) NOT NULL,
 	USERID VARCHAR(32) NOT NULL, PRIMARY KEY(USERID, ROLEID))
 SELECT_PRECONF_CLIENTID=SELECT CLIENTID FROM JMS_USER WHERE USERID=?
 ....
@@ -530,7 +544,7 @@ SELECT_PRECONF_CLIENTID=SELECT CLIENTID FROM JMS_USER WHERE USERID=?
 	&lt;loader-repository&gt;jboss.messaging:loader=ScopedLoaderRepository
 	&lt;loader-repository-config&gt;java2ParentDelegation=false&lt;/loader-repository-config&gt;
 	&lt;/loader-repository&gt;
-	&lt;mbean 
+	&lt;mbean
 		code=&quot;org.jboss.jms.server.destination.Queue&quot;
 	  name=&quot;jboss.messaging.destination:service=Queue,name=testQueue&quot;
 	  xmbean-dd=&quot;xmdesc/Queue-xmbean.xml&quot;&gt;
@@ -582,7 +596,7 @@ SELECT_PRECONF_CLIENTID=SELECT CLIENTID FROM JMS_USER WHERE USERID=?
      </para>
 
       <programlisting>
-	                                                                                                   errrrrfff  eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee                                           fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff                          
+	                                                                                                   errrrrfff  eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee                                           fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
 &lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
 &lt;server&gt;
 	&lt;loader-repository&gt;
@@ -591,7 +605,7 @@ SELECT_PRECONF_CLIENTID=SELECT CLIENTID FROM JMS_USER WHERE USERID=?
 				java2ParentDelegation=false
 			&lt;/loader-repository-config&gt;
 	&lt;/loader-repository&gt;
-	&lt;mbean 
+	&lt;mbean
 		code=&quot;org.jboss.jms.server.connectionfactory.ConnectionFactory&quot;
 		name=&quot;jboss.messaging.destination:service=ConnectionFactory&quot;
 		xmbean-dd=&quot;xmdesc/ConnectionFactory-xmbean.xml&quot;&gt;
@@ -615,7 +629,7 @@ SELECT_PRECONF_CLIENTID=SELECT CLIENTID FROM JMS_USER WHERE USERID=?
 		   &lt;/bindings&gt;
 		&lt;/attribute&gt;
 	&lt;/mbean&gt;
-&lt;/server&gt; 
+&lt;/server&gt;
 
     </programlisting>
 
