@@ -231,5 +231,38 @@
       </important>
    </section>
 
+	<section id="missingfeatures">
+		<title>
+			Features that didn't make it into the 1.2.0.GA release
+		</title>
+		
+		<para>
+    All the final features are available apart from:
+    </para>
+
+    <itemizedlist>
+       <listitem>
+       	<para>
+					Persistent level reliability guarantee without persistence. There is no option for in 
+					memory replication of persistent messages in this release. It will be scheduled ASAP. 
+					The JIRA issue link is:  .
+				
+					<ulink url="http://jira.jboss.org/jira/browse/JBMESSAGING-574">
+						http://jira.jboss.org/jira/browse/JBMESSAGING-574
+					</ulink>
+				
+	       </para>
+       </listitem>
+
+			<listitem>
+				<para>
+				JBoss Messaging 1.2.0.GA contains all features planned for the GA release, with the 
+				exception of the "unreliable link scenario" (http://jira.jboss.org/jira/browse/JBMESSAGING-676), 
+				whose development is still on-going on a parallel branch.
+				</para>
+			</listitem>
+
+    </itemizedlist>
+	</section>
 
 </chapter>
