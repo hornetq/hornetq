@@ -14,8 +14,8 @@
       It will allow you to smoothly distribute your application load across your cluster,
       intelligently balancing and utilizing each nodes CPU cycles, with no single point of failure,
       providing a highly scalable and perform-ant clustering implementation. JBoss Messaging includes
- 			a JMS front-end to deliver messaging in a standards-based format as well as being designed to be 
-			able to support other messaging protocols in the future.
+      a JMS front-end to deliver messaging in a standards-based format as well as being designed to be
+	  able to support other messaging protocols in the future.
    </para>
 
    <para>
@@ -29,15 +29,9 @@
    <para>
       The large and vibrant JEMS developer community fosters its continued innovation and
       enterprise quality. JBoss Messaging enables more agile applications in a wide range of
-      scenarios from simple messaging needs to an enterprise-wide messaging foundation.
+      scenarios from simple messaging needs to an enterprise-wide messaging foundation and adds
+      flexibility to any SOA initiative.
    </para>
-
-   <para>
-      JBoss Messaging adds flexibility to any SOA initiative.
-   </para>
-
-
-
 
    <section id="features">
       <title>JBoss Messaging 1.2.0.GA Features</title>
@@ -50,8 +44,8 @@
          <listitem>
             <para>
                A fully compatible and Sun certified JMS 1.1 implementation, that currently works
-               with a standard JBossAS 4.x installation and also as a JBoss Microkernel-based
-               standalone deployment.
+               with a standard JBossAS 4.0.x, 4.2.x and JBoss 5.x installation and also as a JBoss
+               Microkernel-based standalone deployment.
             </para>
          </listitem>
          <listitem>
@@ -92,11 +86,6 @@
                <listitem>
                   <para>
                      Distributed, transactional and reliable
-                  </para>
-               </listitem>
-               <listitem>
-                  <para>
-                     Clustering support
                   </para>
                </listitem>
             </itemizedlist>
@@ -174,13 +163,6 @@
          </listitem>
          <listitem>
             <para>
-              Persistent level reliability guarantee without persistence! By replicating persistent 
-							messages between nodes in memory, we can obtain comparable reliability levels to persisting 
-							messages to disk, without actually storing them to disk.
-            </para>
-         </listitem>
-         <listitem>
-            <para>
          			Pluggable routing implementation. The policy for routing messages to a queue is fully 
 							pluggable and easily replaceable. The default policy always chooses a queue at the local 
 							node if there is one, and if not, it round robins between queues on different nodes.
@@ -227,13 +209,15 @@
       <important>
          Even if JBoss Messaging deployment descriptors are very similar to JBoss MQ
          deployment descriptors, they are <emphasis>not</emphasis> identical, so they will require
-         some simple adjustments to get them to work with JBoss Messaging.
+         some simple adjustments to get them to work with JBoss Messaging. Also, the database
+         data model is completely different, so don't attempt to use JBoss Messaging with a JBossMQ
+         data schema and vice-versa.
       </important>
    </section>
 
 	<section id="missingfeatures">
 		<title>
-		Features that didn't make it into the 1.2.0.GA release
+		Features not yet available in the 1.2.0.GA release, but coming soon
 		</title>
 		
 		<para>
@@ -241,29 +225,28 @@
     </para>
 
     <itemizedlist>
-       <listitem>
-       	<para>
-					Persistent level reliability guarantee without persistence. There is no option for in 
-					memory replication of persistent messages in this release. It will be scheduled ASAP. 
-					The JIRA issue link is:
-				
-					<ulink url="http://jira.jboss.org/jira/browse/JBMESSAGING-574">
-					</ulink>
-				
-	       </para>
-       </listitem>
 
-			<listitem>
-				<para>
-				JBoss Messaging 1.2.0.GA contains all features planned for the GA release, with the 
-				exception of the "unreliable link scenario" 
-				<ulink url="http://jira.jboss.org/jira/browse/JBMESSAGING-676">
-				</ulink>
-				whose development is still on-going on a parallel branch.
-				</para>
-			</listitem>
+        <listitem>
+           <para>
+              In a very near future, it will be possible to guarantee persistent level reliability
+               guarantee without persistence. By replicating persistent messages between nodes in
+               memory, we can obtain comparable reliability levels to persisting messages to disk,
+               without actually storing them to disk. However, this feature is not available
+               in the 1.2.0.GA release. If you're interested in how this feature will be available,
+               this is the JIRA issue you can use to track it:
+               <ulink url="http://jira.jboss.org/jira/browse/JBMESSAGING-574">http://jira.jboss.org/jira/browse/JBMESSAGING-574</ulink>
+           </para>
+        </listitem>
+
+        <listitem>
+            <para>
+                The "unreliable link scenario"
+                <ulink url="http://jira.jboss.org/jira/browse/JBMESSAGING-676">http://jira.jboss.org/jira/browse/JBMESSAGING-676</ulink>
+                whose development is still on-going on a parallel branch.
+            </para>
+        </listitem>
 
     </itemizedlist>
-	</section>
+    </section>
 
 </chapter>
