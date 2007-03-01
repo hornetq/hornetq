@@ -52,6 +52,9 @@
                 of log4j.jar precedes jboss-messaging-client.jar in that class path. This approach
                 may work, but is not guaranteed to work, because we did not run the full test suite
                 with any other log4j.jar version except the one we bundle with the release.
+
+                Soon we will providing an ant task that creates a slimmed down client jar without the extra
+                dependencies bundled.
                 </para>
 
                 <para>

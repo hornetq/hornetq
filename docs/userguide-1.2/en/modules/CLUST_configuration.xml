@@ -3,208 +3,113 @@
    <title>JBoss Messaging Clustering Configuration</title>
 
    <para>
-      In order to understand JBoss Messaging clustering configuration, we will start with a
-      short clustering architectural overview, where we will identify "configuration areas",
-      meaning architectural elements that have corresponding configuration files, and whose
-      behavior can be changed through configuration.
+      In this chapter we will discuss how to configure JBoss Messaging clustering for different types of applications
    </para>
 
-   <section id="clustered_postoffice_configuration">
-      <title>Clustered Post Office Configuration</title>
+   <para>
+      Most of JBoss messaging clustering configuration revolves around the following variable:
+   </para>
+
+   <itemizedlist>
+
+      <listitem>Choosing the cluster router policy</listitem>
+
+      <listitem>Choosing the message redistributon policy</listitem>
+
+   </itemizedlist>
+
+   <section id="clusterrouter">
+
+      <title>Choosing the cluster router policy</title>
 
       <para>
-         In JBoss Messaging 1.2.0, the JGroups configuration for each clustered Post Office instance
-         is specified in the Post Office MBean service configuration element. The Post Office configuration
-         is present in the persistence configuration file corresponding to the specific database you're using
-         for the cluster instance.
+
+      When a message is sent to a queue on particular node of the cluster, the system must decide whether the current node will handle it or whether it should send
+      it to another node to handle.
       </para>
 
-      <para>
-         So, if you are using a MySQL database instance as shared persistent storage for your cluster, the
-         Post Office configuration for a specific node instance is available in
-         <filename>$JBOSS_HOME/server/messaging-nodeX/deploy/jboss-messaging.sar/clustered-mysql-persistence-service.xml</filename>
+      <para> The same applies if there are shared durable subscriptions on a topic and the message is being sent to a topic
       </para>
 
-      <para>An example of a Clustered Post Office configuration is shown below:</para>
+      <para>The correct decision to make depends on your application topology.</para>
+
+      <para>If your application consists of a set of servers with the same MDBs deployed on each server, and you have many well distributed producers sending
+      messages on all the nodes of the cluster, then the best policy is to always favour the local queue, since extra network trips are more expensive and the other
+      nodes are also havng local messages sent to them</para>
+
+      <para>However if your application consists of a set of homogenous MDBs but you have few or badly distributed producers, then always favouring the local producer
+      will mean the other nodes are being starved of messages and not using their CPUs cycles efficiently for messaging processing.</para>
+
+      <para>In this case, a good policy is to use a round robin routing policy where messages are round robin distributed to different nodes as they arrive.</para>
+
+      <para>In general, use the DefaultRoutingPolicy (this always favours the local queue) if you have many well distributed producers, and use the
+      RoundRobinRoutingPolicy if you have few or badly distributed producers.</para>
+
+      <para>This are specified in the clustered post office config, by specifying the following attribute</para>
+
+      <para>To favour the local queue:</para>
 
       <programlisting>
-&lt;mbean code="org.jboss.messaging.core.plugin.ClusteredPostOfficeService"
-name="jboss.messaging:service=PostOffice"
-xmbean-dd="xmdesc/ClusteredPostOffice-xmbean.xml"&gt;
-&lt;depends optional-attribute-name="ServerPeer"&gt;
-	jboss.messaging:service=ServerPeer&lt;/depends&gt;
-&lt;depends&gt;jboss.jca:service=DataSourceBinding,name=DefaultDS&lt;/depends&gt;
-&lt;depends optional-attribute-name="TransactionManager"&gt;
-	jboss:service=TransactionManager&lt;/depends&gt;
-&lt;attribute name="PostOfficeName"&gt;Clustered JMS&lt;/attribute&gt;
-&lt;attribute name="DataSource"&gt;java:/DefaultDS&lt;/attribute&gt;
-&lt;attribute name="CreateTablesOnStartup"&gt;true&lt;/attribute&gt;
-&lt;attribute name="SqlProperties"&gt;&lt;!![CDATA[
-CREATE_POSTOFFICE_TABLE=CREATE TABLE JBM_POSTOFFICE (POSTOFFICE_NAME VARCHAR(255), 
-	NODE_ID INTEGER, QUEUE_NAME VARCHAR(1023), COND VARCHAR(1023), SELECTOR VARCHAR(1023), 
-	CHANNEL_ID BIGINT, IS_FAILED_OVER CHAR(1), FAILED_NODE_ID INTEGER)
-INSERT_BINDING=INSERT INTO JBM_POSTOFFICE (POSTOFFICE_NAME, NODE_ID, QUEUE_NAME, COND, 
-	SELECTOR, CHANNEL_ID, IS_FAILED_OVER, FAILED_NODE_ID) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-DELETE_BINDING=DELETE FROM JBM_POSTOFFICE WHERE POSTOFFICE_NAME=? AND NODE_ID=? AND
-QUEUE_NAME=?
-LOAD_BINDINGS=SELECT NODE_ID, QUEUE_NAME, COND, SELECTOR, CHANNEL_ID, IS_FAILED_OVER,
-	FAILED_NODE_ID FROM JBM_POSTOFFICE WHERE POSTOFFICE_NAME  = ?
-]]&gt;&lt;/attribute&gt;
-&lt;attribute name="GroupName"&gt;DefaultPostOffice&lt;/attribute&gt;
-&lt;attribute name="StateTimeout"&gt;5000&lt;/attribute&gt;
-&lt;attribute name="CastTimeout"&gt;5000&lt;/attribute&gt;
-&lt;attribute name="StatsSendPeriod"&gt;10000&lt;/attribute&gt;
-&lt;attribute name="MessagePullPolicy"&gt;
-	org.jboss.messaging.core.plugin.postoffice.cluster.NullMessagePullPolicy&lt;/attribute&gt;
-&lt;attribute name="ClusterRouterFactory"&gt;
-	org.jboss.messaging.core.plugin.postoffice.cluster.DefaultRouterFactory&lt;/attribute&gt;
-
-&lt;attribute name="AsyncChannelConfig"&gt;
-&lt;config&gt;
-&lt;UDP mcast_recv_buf_size="500000" down_thread="false" ip_mcast="true"
-mcast_send_buf_size="32000" mcast_port="45567" ucast_recv_buf_size="500000"
-use_incoming_packet_handler="false" mcast_addr="228.8.8.8"
-use_outgoing_packet_handler="true" loopback="true" ucast_send_buf_size="32000"
-ip_ttl="32" bind_addr="127.0.0.1"/&gt;
-&lt;AUTOCONF down_thread="false" up_thread="false"/&gt;
-&lt;PING timeout="2000" down_thread="false" num_initial_members="3" up_thread="false"/&gt;
-&lt;MERGE2 max_interval="10000" down_thread="false" min_interval="5000" up_thread="false"/&gt;
-&lt;FD timeout="2000" max_tries="3" down_thread="false" up_thread="false" shun="true"/&gt;
-&lt;VERIFY_SUSPECT timeout="1500" down_thread="false" up_thread="false"/&gt;
-&lt;pbcast.NAKACK max_xmit_size="8192" down_thread="false" use_mcast_xmit="true" gc_lag="50"
-	up_thread="false"
-retransmit_timeout="100,200,600,1200,2400,4800"/&gt;
-&lt;UNICAST timeout="1200,2400,3600" down_thread="false" up_thread="false"/&gt;
-&lt;pbcast.STABLE stability_delay="1000" desired_avg_gossip="20000" down_thread="false"
-	max_bytes="0" up_thread="false"/&gt;
-&lt;FRAG frag_size="8192" down_thread="false" up_thread="false"/&gt;
-&lt;VIEW_SYNC avg_send_interval="60000" down_thread="false" up_thread="false" /&gt;
-&lt;pbcast.GMS print_local_addr="true" join_timeout="3000" down_thread="false"
-join_retry_timeout="2000"	up_thread="false" shun="true"/&gt;
-&lt;/config&gt;
-&lt;/attribute&gt;
-
-&lt;attribute name="SyncChannelConfig"&gt;
-&lt;config&gt;
-&lt;UDP mcast_recv_buf_size="500000" down_thread="false" ip_mcast="true"
-mcast_send_buf_size="32000" mcast_port="45568" ucast_recv_buf_size="500000"
-use_incoming_packet_handler="false" mcast_addr="228.8.8.8"
-use_outgoing_packet_handler="true" loopback="true" ucast_send_buf_size="32000"
-ip_ttl="32" bind_addr="127.0.0.1"/&gt;
-&lt;AUTOCONF down_thread="false" up_thread="false"/&gt;
-&lt;PING timeout="2000" down_thread="false" num_initial_members="3" up_thread="false"/&gt;
-&lt;MERGE2 max_interval="10000" down_thread="false" min_interval="5000" up_thread="false"/&gt;
-&lt;FD timeout="2000" max_tries="3" down_thread="false" up_thread="false" shun="true"/&gt;
-&lt;VERIFY_SUSPECT timeout="1500" down_thread="false" up_thread="false"/&gt;
-&lt;pbcast.NAKACK max_xmit_size="8192" down_thread="false" use_mcast_xmit="true" gc_lag="50"
-	up_thread="false"
-retransmit_timeout="100,200,600,1200,2400,4800"/&gt;
-&lt;UNICAST timeout="1200,2400,3600" down_thread="false" up_thread="false"/&gt;
-&lt;pbcast.STABLE stability_delay="1000" desired_avg_gossip="20000" down_thread="false"
-	max_bytes="0" up_thread="false"/&gt;
-&lt;FRAG frag_size="8192" down_thread="false" up_thread="false"/&gt;
-&lt;VIEW_SYNC avg_send_interval="60000" down_thread="false" up_thread="false" /&gt;
-&lt;pbcast.GMS print_local_addr="true" join_timeout="3000" down_thread="false"
-join_retry_timeout="2000" up_thread="false" shun="true"/&gt;
-&lt;pbcast.STATE_TRANSFER down_thread="false" up_thread="false"/&gt;
-&lt;/config&gt;
-&lt;/attribute&gt;
-&lt;/mbean&gt;
+       &lt;attribute name="ClusterRouterFactory"&gt;org.jboss.messaging.core.plugin.postoffice.cluster.DefaultRouterFactory&lt;/attribute&gt;
       </programlisting>
 
-      <para>Relevant clustered Post Office configuration attributes are discussed below:</para>
+      <para>To round robin:</para>
 
-      <section id="conf.groupname">
-         <title><literal>GroupName</literal></title>
-         <para>
-            This identifies the JGroups group the clustered Post Office will connect to.
-            All clustered Post Office instances with the same group name will connect to that group.
-         </para>
-      </section>
-
-      <section id="conf.statetimeout">
-         <title><literal>StateTimeout</literal></title>
-         <para>
-            The maximum amount of time in milliseconds to wait when making a request
-            to get the group state and waiting for the result. You will not normally need
-            to change this value. Default is 5000 ms.
-         </para>
-      </section>
-
-      <section id="conf.casttimeout">
-         <title><literal>CastTimeout</literal></title>
-         <para>
-            The maximum amount of time in milliseconds to wait when casting a message
-            and waiting for a result. You will not normally need to change this value.
-            Default is 5000 ms.
-         </para>
-      </section>
-
-      <section id="conf.statssend">
-         <title><literal>StatsSendPeriod</literal></title>
-         <para>
-            The period in milliseconds between much statistics for each queue will be cast
-            across the cluster.
-         </para>
-      </section>
-
-      <section id="conf.clusterrouterfactory">
-         <title><literal>ClusterRouterFactory</literal></title>
-         <para>
-            The fully qualified class name of the class that implements a factory for creating
-            message routers. For different message routing policies this can be changed.
-            Default is <literal>org.jboss.messaging.core.plugin.postoffice.cluster.DefaultRouterFactory</literal>.
-            This factory creates routers that always favor local queues.
-         </para>
-      </section>
-
-      <section id="conf.messagepullpolicy">
-         <title><literal>MessagePullPolicy</literal></title>
-         <para>
-            The fully qualified class name of the class that implements the MessagePullPolicy.
-            The message pull policy specifies how messages are redistributed after they leave
-            the Post Office and are delivered to queues. You can find more on message redistribution
-            policy in the dedicated section below. By default, the message redistribution policy
-            is <literal>org.jboss.messaging.core.plugin.postoffice.cluster.DefaultMessagePullPolicy</literal>.
-         </para>
-      </section>
+       <programlisting>
+         &lt;attribute name="ClusterRouterFactory"&gt;org.jboss.messaging.core.plugin.postoffice.cluster.RoundRobinRouterFactory&lt;/attribute&gt;
+      </programlisting>
 
    </section>
 
-   <section id="jgroups_configuration">
-      <title>JGroups Stack Configuration</title>
-      <para>
-         The details of the JGroups configuration won't be discussed here since it is standard JGroups configuration.
-         Detailed information on JGroups can be found in JGroups release documentation or on-line at
-         <ulink url="http://www.jgroups.org">http://www.jgroups.org</ulink> or
-         <ulink url="http://wiki.jboss.org/wiki/Wiki.jsp?page=JGroups">http://wiki.jboss.org/wiki/Wiki.jsp?page=JGroups</ulink>
+
+   <section id="messagepull">
+
+      <title>Choosing the message pull policy</title>
+
+      <para>Once messages have arrived on queues in a cluster, in an ideal world they will all be consumed at the same rate, and there will be consumers on each node.
       </para>
+
+      <para>However, in some application topologies, consumes may close on queues on a node, leaving messages otherwise stranded, or perhaps consumers
+      on some nodes are fast than consumers on other nodes causing messages to build up on one node or another and adversely effecting latency.
+      </para>
+
+      <para>JBoss Messaging allows messages to pulled from one node to another as load dictates in order to cope with such situations</para>
+
+      <para>Whether or not you should activate message pulling (message redistribution) depends on your application topology</para>
+
+      <para>For an application that consists of a set of servers with a heterogenous bank of MDBs (or other consumers) deployed on each node, consuming at
+      approximately the same rate, then message redistribution is not necessary.
+      </para>
+
+      <para>However, if your application consists of different numbers or rates of consumers on different nodes then message redistribution may help</para>
+
+      <warning>By its nature, message redistribution can result in messages being delivered in an order different to the strict ordering imposed by JMS. I.e.
+      messages can, sometimes be delivered in an order different to that which they were produced by their producer. If this ordering is important to you
+      then don't use message redistribution</warning>
+
+      <para>In general, use message redistribution when your consumers are not well distributed across the cluster or if they have greatly varying rates.</para>
+
+      <para>Message redistribution is set by setting the following attribute in the clustered post office configuration:
+      </para>
+
+      <para>
+      For no message redistribution:
+      </para>
+
+      <programlisting>
+           &lt;attribute name="MessagePullPolicy"&gt;org.jboss.messaging.core.plugin.postoffice.cluster.NullMessagePullPolicy&lt;/attribute&gt;
+      </programlisting>
+
+      <para>For message redistribution:</para>
+
+       <programlisting>
+           &lt;attribute name="MessagePullPolicy"&gt;org.jboss.messaging.core.plugin.postoffice.cluster.DefaultMessagePullPolicy&lt;/attribute&gt;
+      </programlisting>
+
+      <para>When selecting message redistribution you should also choose a value of <literal>StatsSendPeriod</literal> appropriately.</para>
+
    </section>
 
-   <section id="message_redistribution_configuration">
-      <title>Message Redistribution Configuration</title>
-      <para>
-         Each clustered Post Office instance can be configured to use a customizable
-         <emphasis>message redistribution policy</emphasis>. The message redistribution
-         policy dictates what happens with messages that are delivered to a local queue
-         that is part of a distributed queue or a distributed subscription. In order to use
-         a specific message redistribution policy, use the fully qualified class name of the
-         class that implements the MessagePullPolicy.
-      </para>
 
-      <para>
-         By default, the message redistribution policy is
-         <literal>org.jboss.messaging.core.plugin.postoffice.cluster.DefaultMessagePullPolicy</literal>
-         which tries to redistribute messages depending on receivers's consumption speed.
-      </para>
-
-      <para>
-         To disable message redistribution completely, specify
-         <literal>org.jboss.messaging.core.plugin.postoffice.cluster.NullMessagePullPolicy</literal>
-         as the value of <literal>MessagePullPolicy</literal> attribute. In this case, a message is
-         not redistributed, even if the local queue that has been delivered to has no consumers.
-      </para>
-
-   </section>
 
 </chapter>

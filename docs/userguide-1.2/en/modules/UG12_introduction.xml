@@ -15,7 +15,7 @@
       intelligently balancing and utilizing each nodes CPU cycles, with no single point of failure,
       providing a highly scalable and perform-ant clustering implementation. JBoss Messaging includes
       a JMS front-end to deliver messaging in a standards-based format as well as being designed to be
-	  able to support other messaging protocols in the future.
+     able to support other messaging protocols in the future.
    </para>
 
    <para>
@@ -32,6 +32,13 @@
       scenarios from simple messaging needs to an enterprise-wide messaging foundation and adds
       flexibility to any SOA initiative.
    </para>
+
+   <section id="support">
+      <title>JBoss Messaging support cover from Red Hat</title>
+
+      <para>JBoss Messaging 1.2.GA support is available via the......</para>
+
+   </section>
 
    <section id="features">
       <title>JBoss Messaging 1.2.0.GA Features</title>
@@ -133,6 +140,26 @@
                Customizable security framework based on JAAS
             </para>
          </listitem>
+         <listitem>
+            <para>
+               Fully integrated with JBoss Transactions (formerly known as Arjuna JTA) for full transaction recoverability.
+            </para>
+         </listitem>
+         <listitem>
+            <para>
+               Extensive JMX management interface
+            </para>
+         </listitem>
+         <listitem>
+            <para>
+               Support for most major databases including Oracle, Sybase, MS SQL Server, PostgreSQL and MySQL
+            </para>
+         </listitem>
+         <listitem>
+            <para>
+               HTTP transport
+            </para>
+         </listitem>
       </itemizedlist>
 
       <para>
@@ -163,32 +190,38 @@
          </listitem>
          <listitem>
             <para>
-         			Pluggable routing implementation. The policy for routing messages to a queue is fully 
-							pluggable and easily replaceable. The default policy always chooses a queue at the local 
-							node if there is one, and if not, it round robins between queues on different nodes.
+                  Pluggable routing implementation. The policy for routing messages to a queue is fully
+                     pluggable and easily replaceable. The default policy always chooses a queue at the local
+                     node if there is one, and if not, it round robins between queues on different nodes.
             </para>
          </listitem>
          <listitem>
             <para>
-         			Intelligent message redistribution policy. Messages are automatically distributed between 
-							nodes depending on how fast or slow consumers are on certain nodes. If there are no or slow 
-							consumers on a particular queue node, messages will be pulled from that queue to a queue with 
-							faster consumers on a different node. The policy is fully pluggable.
+                  Intelligent message redistribution policy. Messages are automatically distributed between
+                     nodes depending on how fast or slow consumers are on certain nodes. If there are no or slow
+                     consumers on a particular queue node, messages will be pulled from that queue to a queue with
+                     faster consumers on a different node. The policy is fully pluggable.
             </para>
          </listitem>
          <listitem>
             <para>
-         			Shared durable subscriptions. Consumers can connect to the same durable subscription while 
-							attached to different nodes. This allows processing load from durable subscriptions to be 
-							distributed across the cluster in a similar way to queues.
+                  Shared durable subscriptions. Consumers can connect to the same durable subscription while
+                     attached to different nodes. This allows processing load from durable subscriptions to be
+                     distributed across the cluster in a similar way to queues.
             </para>
          </listitem>
          <listitem>
             <para>
-         			High availability and seamless fail-over. If the node you are connected to fails, you 
-							will automatically fail over to another node and will not lose any persistent messages. 
-							You can carry on with your session seamlessly where you left off. Once and only once 
-							delivery of persistent messages is respected at all times.
+                  High availability and seamless fail-over. If the node you are connected to fails, you
+                     will automatically fail over to another node and will not lose any persistent messages.
+                     You can carry on with your session seamlessly where you left off. Once and only once
+                     delivery of persistent messages is respected at all times.
+         </para>
+         </listitem>
+         <listitem>
+            <para>
+               Message bridge. JBoss Messaging 1.2 contains a message bridge component which enables you to bridge messages between any two JMS1.1 destinations
+               on the same or physical separate locations. (E.g. separated by a WAN)
          </para>
          </listitem>
       </itemizedlist>
@@ -215,12 +248,12 @@
       </important>
    </section>
 
-	<section id="missingfeatures">
-		<title>
-		Features not yet available in the 1.2.0.GA release, but coming soon
-		</title>
-		
-		<para>
+   <section id="missingfeatures">
+      <title>
+      Features not yet available in the 1.2.0.GA release, but coming soon
+      </title>
+
+      <para>
     All the final features are available apart from:
     </para>
 

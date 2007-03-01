@@ -34,18 +34,23 @@
    <para>
       The AOP client-side and server-side interceptor stacks are configured in
       <filename>aop-messaging-client.xml</filename> and <filename>aop-messaging-server.xml</filename>.
+      Normally you will not want to change them, but you can some of the interceptors can be removed
+      to give a small performance increase, if you don't need them. Be very careful you have considered the security implications before removing the
+      security interceptor.
    </para>
 
   <section id="conf.serverpeer">
-    <title>Configuring the Server</title>
+    <title>Configuring the ServerPeer</title>
 
     <para>
        The Server Peer is the "heart" of the JBoss Messaging JMS facade. The server's configuration,
        resides in <filename>messaging-service.xml</filename> configuration file.
     </para>
 
+    <para>All JBoss Messaging services are rooted at the server peer</para>
 
-     <para>An example of a Server Peer configuration is presented below</para>
+     <para>An example of a Server Peer configuration is presented below. Note that not all values for the server peer's attributes are
+     specified in the example</para>
 
      <programlisting>
  &lt;mbean code="org.jboss.jms.server.ServerPeer"
@@ -88,66 +93,776 @@
  &lt;/mbean&gt;
      </programlisting>
 
-     <section id="conf.serverpeer.securitydomain">
-        <title>SecurityDomain</title>
+     <section id="conf.serverpeer.attributes">
 
-        <para>
-           This identifies the JBoss security domain that will be used when JBoss Messaging
-           authenticates and authorizes access to JMS destinations for reading, writing or
-           creating.
-        </para>
+       <title>
+             We now discuss the MBean attributes of the ServerPeer MBean
+        </title>
 
-        <para>
-           It should correspond to a entry in <filename>login-config.xml</filename> where
-           it is configured in exactly the same way as any other security domain in JBoss.
-        </para>
+       <section id="conf.serverpeer.attributes.persistencemanager">
+           <title>PersistenceManager</title>
+
+           <para>
+              This is the persistence manager that the ServerPeer uses. You will not normally need to change this attribute.
+           </para>
+        </section>
+
+       <section id="conf.serverpeer.attributes.postoffice">
+           <title>PostOffice</title>
+
+           <para>
+              This is the post office that the ServerPeer uses. You will not normally need to change this attribute.
+              The post office is responsible for routing messages to queues and maintaining the mapping between addresses and queues.
+           </para>
+        </section>
+
+       <section id="conf.serverpeer.attributes.jmsusermanager">
+           <title>JMSUserManager</title>
+
+           <para>
+              This is the JMS user manager that the ServerPeer uses. You will not normally need to change this attribute.
+           </para>
+        </section>
+
+       <section id="conf.serverpeer.attributes.defaultdlq">
+           <title>DefaultDLQ</title>
+
+           <para>
+              This is the name of the default DLQ (Dead Letter Queue) the server peer will use for destinations. The DLQ can be overridden on a per
+              destination basis - see the destination MBean configuration for more details.
+
+              A DLQ is a special destination where messages are sent when the server has attempted to deliver them unsuccessfully more than a certain number of
+              times.
+
+              If the DLQ is not specified at all then the message will be removed after the maximum number of delivery attempts.
+
+              The maximum number of delivery attempts can be specified using the attribute DefaultMaxDeliveryAttempts for a global default or individually
+              on a per destination basis.
+
+           </para>
+        </section>
+
+       <section id="conf.serverpeer.attributes.defaultexpiryqueue">
+           <title>DefaultExpiryQueue</title>
+
+           <para>
+              This is the name of the default expiry queue the server peer will use for destinations. The expiry can be overridden on a per
+              destination basis - see the destination MBean configuration for more details.
+
+              An expiry queue is a special destination where messages are sent when they have expired. Message expiry is determined by the value of
+              Message::getJMSExpiration()
+
+              If the expiry queue is not specified at all then the message will be removed after it is expired.
+
+           </para>
+        </section>
+
+
+        <section id="conf.serverpeer.attributes.serverpeerid">
+           <title>ServerPeerID</title>
+
+           <para>
+              The unique id of the server. In a cluster each server MUST have a unique id.
+           </para>
+        </section>
+
+        <section id="conf.serverpeer.attributes.defaultqueuejndicontext">
+           <title>DefaultQueueJNDIContext</title>
+
+           <para>
+              The default JNDI context to use when binding queues. Defaults to /queue.
+           </para>
+        </section>
+
+        <section id="conf.serverpeer.attributes.defaultopicjndicontext">
+           <title>DefaultTopicJNDIContext</title>
+
+           <para>
+              The default JNDI context to use when binding topics. Defaults to /topic.
+           </para>
+        </section>
+
+        <section id="conf.serverpeer.attributes.destinations">
+           <title>Destinations</title>
+
+           <para>
+              Returns a list of the destinations (queues and topics) currently deployed.
+           </para>
+        </section>
+
+        <section id="conf.serverpeer.attributes.defaultmaxdeliveryattempts">
+           <title>DefaultMaxDeliveryAttempts</title>
+
+           <para>
+              The default for the maximum number of times delivery of a message will be attempted before sending the message to the DLQ, if configured.
+           </para>
+           <para>
+              The default value is <literal>10</literal >
+           </para>
+           <para>This value can also be overridden on a per destination basis</para>
+        </section>
+
+        <section id="conf.serverpeer.attributes.failoverstarttimeout">
+           <title>FailoverStartTimeout</title>
+
+           <para>
+              The maximum number of milliseconds the client will wait for failover to start on the server side when a problem is detected.
+           </para>
+           <para>
+              The default value is <literal>60000</literal> (one minute)
+           </para>
+
+        </section>
+
+        <section id="conf.serverpeer.attributes.failovercompletetimeout">
+           <title>FailoverCompleteTimeout</title>
+
+           <para>
+              The maximum number of milliseconds the client will wait for failover to complete on the server side after it has started.
+           </para>
+           <para>
+              The default value is <literal>300000</literal> (five minutes)
+           </para>
+        </section>
+
+        <section id="conf.serverpeer.attributes.defaultredliverydelay">
+           <title>DefaultRedeliveryDelay</title>
+
+           <para>
+              When redelivering a message after failure of previous delivery it is often beneficial to introduce a delay perform redelivery in order
+              to prevent thrashing of delivery-failure, delivery-failure etc
+           </para>
+           <para>
+              The default value is <literal>0</literal> which means there will be no delay.
+           </para>
+           <para>Change this if your application could benefit with a delay before redelivery. This value can also be overridden on a per destination basis</para>
+        </section>
+
+        <section id="conf.serverpeer.attributes.queuestatssampleperiod">
+           <title>QueueStatsSamplePeriod</title>
+
+           <para>
+              Periodically the server will query each queue to gets its message statistics. This is the period.
+           </para>
+           <para>
+              The default value is <literal>10000</literal> milliseconds
+           </para>
+        </section>
+
+
+        <section id="conf.serverpeer.attributes.defaultmessagecounterhistorydaylimit">
+              <title>DefaultMessageCounterHistoryDayLimit</title>
+
+              <para>
+                 JBoss Messaging provides a message counter history which shows the number of messages arriving on each queue of a certain number of
+                 days. This attribute represents the maxiumum number of days for which to store message counter history. It can be overridden on a per
+                 destination basis
+           </para>
+        </section>
+
+        <section id="conf.serverpeer.attributes.messagecounters">
+              <title>MessageCounters</title>
+
+              <para>
+                 JBoss Messaging provides a message counter for each queue.
+           </para>
+        </section>
+
+        <section id="conf.serverpeer.attributes.messagecounterstatistics">
+              <title>MessageCountersStatistics</title>
+
+              <para>
+                 JBoss Messaging provides statistics for each message counter for each queue.
+           </para>
+        </section>
+
+        <section id="conf.serverpeer.attributes.defaultsecurity">
+           <title>DefaultSecurityConfig</title>
+
+           <para>
+              Default security configuration is used when the security configuration for a specific
+              queue or topic has not been overridden in the destination's deployment descriptor.
+              It has exactly the same syntax and semantics as in JBossMQ.
+           </para>
+
+           <para>
+              The <literal>DefaultSecurityConfig</literal> attribute element should contain
+              one <literal>&lt;security&gt;</literal> element.
+              The <literal>&lt;security&gt;</literal> element can contain multiple
+              <literal>&lt;role&gt;</literal> elements. Each <literal>&lt;role&gt;</literal>
+              element defines the default access for that particular role.
+           </para>
+
+           <para>
+              If the <literal>read</literal> attribute is <literal>true</literal> then that role
+              will be able to read (create consumers, receive messaages or browse) destinations
+              by default.
+           </para>
+
+           <para>
+              If the <literal>write</literal> attribute is <literal>true</literal> then that role
+              will be able to write (create producers or send messages) to destinations by default.
+           </para>
+
+           <para>
+              If the <literal>create</literal> attribute is <literal>true</literal> then that role
+              will be able to create durable subscriptions on topics by default.
+           </para>
+        </section>
      </section>
 
-     <section id="conf.serverpeer.defaultsecurity">
-        <title>DefaultSecurityConfig</title>
 
-        <para>
-           Default security configuration is used when the security configuration for a specific
-           queue or topic has not been overridden in the destination's deployment descriptor.
-           It has exactly the same syntax and semantics as in JBossMQ.
-        </para>
+     <section id="conf.serverpeer.operations">
 
-        <para>
-           The <literal>DefaultSecurityConfig</literal> attribute element should contain
-           one <literal>&lt;security&gt;</literal> element.
-           The <literal>&lt;security&gt;</literal> element can contain multiple
-           <literal>&lt;role&gt;</literal> elements. Each <literal>&lt;role&gt;</literal>
-           element defines the default access for that particular role.
-        </para>
+        <title>
+             We now discuss the MBean operations of the ServerPeer MBean
+        </title>
 
-        <para>
-           If the <literal>read</literal> attribute is <literal>true</literal> then that role
-           will be able to read (create consumers, receive messaages or browse) destinations
-           by default.
-        </para>
+        <section id="conf.serverpeer.operations.deployQueue">
+           <title>DeployQueue</title>
 
-        <para>
-           If the <literal>write</literal> attribute is <literal>true</literal> then that role
-           will be able to write (create producers or send messages) to destinations by default.
-        </para>
+           <para>
+              This operation lets you programmatically deploy a queue.
+           </para>
 
-        <para>
-           If the <literal>create</literal> attribute is <literal>true</literal> then that role
-           will be able to create durable subscriptions on topics by default.
-        </para>
+           <para>There are two overloaded versions of this operation</para>
+
+           <para>If the queue already exists but is undeployed it is deployed. Otherwise it is created and deployed</para>
+
+           <para>The <literal>name</literal> parameter represents the name of the destination to deploy.</para>
+           <para>The <literal>jndiName</literal> parameter (optional) represents the full jndi name where to bind the destination. If this is not specified
+           then the destination will be bound in &lt;DefaultQueueJNDIContext&gt;/&lt;name&gt;</para>
+
+           <para>The first version of this operation deploys the destination with the default paging parameters. The second overloaded version deploys
+           the destination with the specified paging parameters. See the section on configuring destinations for a discussion of what the
+           paging parameters mean</para>
+
+        </section>
+
+       <section id="conf.serverpeer.operations.undeployQueue">
+           <title>UndeployQueue</title>
+
+           <para>
+              This operation lets you programmatically undeploy a queue.
+           </para>
+
+           <para>The queue is undeployed but is NOT removed from persistent storage.</para>
+
+           <para>This operation returns <literal>true</literal> if the queue was successfull undeployed. otherwise it returns <literal>false</literal></para>
+
+        </section>
+
+       <section id="conf.serverpeer.operations.destroyQueue">
+           <title>DestroyQueue</title>
+
+           <para>
+              This operation lets you programmatically destroy a queue.
+           </para>
+
+           <para>The queue is undeployed and then all its data is destroyed from the database</para>
+
+           <warning>Be careful when using this method since it will delete all data for the queue</warning>
+
+           <para>This operation returns <literal>true</literal> if the queue was successfully destroyed. otherwise it returns <literal>false</literal></para>
+
+        </section>
+
+        <section id="conf.serverpeer.operations.deployTopic">
+           <title>DeployTopic</title>
+
+           <para>
+              This operation lets you programmatically deploy a topic.
+           </para>
+
+           <para>There are two overloaded versions of this operation</para>
+
+           <para>If the topic already exists but is undeployed it is deployed. Otherwise it is created and deployed</para>
+
+           <para>The <literal>name</literal> parameter represents the name of the destination to deploy.</para>
+           <para>The <literal>jndiName</literal> parameter (optional) represents the full jndi name where to bind the destination. If this is not specified
+           then the destination will be bound in &lt;DefaultTopicJNDIContext&gt;/&lt;name&gt;</para>
+
+           <para>The first version of this operation deploys the destination with the default paging parameters. The second overloaded version deploys
+           the destination with the specified paging parameters. See the section on configuring destinations for a discussion of what the
+           paging parameters mean</para>
+
+        </section>
+
+       <section id="conf.serverpeer.operations.undeployTopic">
+           <title>UndeployTopic</title>
+
+           <para>
+              This operation lets you programmatically undeploy a topic.
+           </para>
+
+           <para>The queue is undeployed but is NOT removed from persistent storage.</para>
+
+           <para>This operation returns <literal>true</literal> if the topic was successfully undeployed. otherwise it returns <literal>false</literal></para>
+
+        </section>
+
+       <section id="conf.serverpeer.operations.destroyTopic">
+           <title>DestroyTopic</title>
+
+           <para>
+              This operation lets you programmatically destroy a topic.
+           </para>
+
+           <para>The topic is undeployed and then all its data is destroyed from the database</para>
+
+           <warning>Be careful when using this method since it will delete all data for the topic</warning>
+
+           <para>This operation returns <literal>true</literal> if the topic was successfully destroyed. otherwise it returns <literal>false</literal></para>
+
+        </section>
+
+       <section id="conf.serverpeer.operations.listmessagecountersashtml">
+           <title>ListMessageCountersHTML</title>
+
+           <para>
+              This operation returns message counters in an easy to display HTML format.
+           </para>
+        </section>
+
+       <section id="conf.serverpeer.operations.resetallmessagecounters">
+           <title>ResetAllMesageCounters</title>
+
+           <para>
+              This operation resets all message counters to zero.
+           </para>
+        </section>
+
+
+       <section id="conf.serverpeer.operations.resetallmessagecounterhistories">
+           <title>ResetAllMesageCounters</title>
+
+           <para>
+              This operation resets all message counter histories to zero.
+           </para>
+        </section>
+
+       <section id="conf.serverpeer.operations.enablemessagecounters">
+           <title>EnableMessageCounters</title>
+
+           <para>
+              This operation enables all message counters for all destinations. Message counters are disabled by default.
+           </para>
+        </section>
+
+       <section id="conf.serverpeer.operations.disablemessagecounters">
+           <title>DisableMessageCounters</title>
+
+           <para>
+              This operation disables all message counters for all destinations. Message counters are disabled by default.
+           </para>
+        </section>
+
+       <section id="conf.serverpeer.operations.retrievepreparedtransactions">
+           <title>RetrievePreparedTransactions</title>
+
+           <para>
+              Retrieves a list of the Xids for all transactions currently in a prepared state on the node.
+           </para>
+      </section>
+
+       <section id="conf.serverpeer.operations.showpreparedtransactions">
+           <title>ShowPreparedTransactions</title>
+
+           <para>
+              Retrieves a list of the Xids for all transactions currently in a prepared state on the node in an easy to display HTML format.
+           </para>
+      </section>
+
+
      </section>
+
   </section>
 
+     <section id="conf.changingds">
+        <title>Changing the Database</title>
 
-  <section id="conf.persistence">
-    <title>Configuring Persistence</title>
+        <para>
+               Several JBoss Messaging services interact with persistent storage. They include: The Persistence Manager,
+               The PostOffice and the JMS User Manager.
+               The Persistence Manager is used to handle the message-related persistence.
+               The Post Office handles binding related persistence.
+               The JMS User manager handles user related persistence
+               The configuration for all these MBeans is handled in the <filename>xxx-persistence-service.xml</filename> file
+        </para>
 
-    <para>
-       JBoss Messaging interacts with a persistent store via two services: the Persistence Manager
-       and the Channel Mapper. The Persistence Manager is used to handle the message-related
-       functions. The Channel Mapper manages destination-related persistent
-       data.
+        <para>
+           If the database you want to switch to is one of MySQL, Oracle, PostgreSQL, MS SQL Sever or Sybase,
+           persistence configuration files are already available in
+           the <filename>examples/config</filename> directory of the release bundle.
+        </para>
+
+        <para>
+           In order to enable support for one of these databases, just replace the default
+           <filename>hsqldb-persistence-service.xml</filename> configuration file with the
+           database-specific configuration file and restart the server.
+        </para>
+
+        <para>
+           Also, be aware that by default, the Messaging services relying on a datastore
+           are referencing <literal>"java:/DefaultDS"</literal> for the datasource.
+           If you are deploying a datasource with a different JNDI name, you need to update
+           all the <literal>DataSource</literal> attribute in the persistence configuration file.
+
+           Example data source configurations for each of the popular databases are available in the distribution.
+        </para>
+
+     </section>
+
+
+  <section id="conf.postoffice">
+    <title>Configuring the Post office</title>
+
+    <para>It is the job of the post office to route messages to their destination(s).
     </para>
+
+    <para>The post office maintains the mappings between addresses to which messages can be sent and their final queues.</para>
+
+    <para>For example when sending a message with an address that represents a JMS queue name, the post office will route this to a single
+    queue - the JMS queue. When sending a message with an address that repesents a JMS topic name, the post office will route this to a set of
+    queues - one for each JMS subscription.</para>
+
+    <para>The post office also handles the persistence for the mapping of addresses</para>
+
+    <para>JBoss Messaging comes with two different post office implementations - depending on whether you want clustering or not. The clustered post office
+    has the ability to route messages to other nodes in the cluster</para>
+
+    <para>Whether you use the clustered post office or not depends on whether you deploy the <literal>clustered-xxx-persistence-service.xml</literal> MBean config
+    or just the non clustered <literal>xxx-persistence-service.xml</literal> file.</para>
+
+    <para>It is likely that in future releases of JBoss Messaging the clustered and non clustered post offices will be combined into a single post office for
+    ease of configuration</para>
+
+    <section id="conf.postoffice.nonclustered">
+       <title>Non clustered post office</title>
+
+       <para>The non clustered post office should be used where clustering is not required. It will be used when the
+       non clustered <literal>xxx-persistence-service.xml</literal> file is deployed.</para>
+
+       <para>Here is an example of a non clustered post office configuration:</para>
+
+       <programlisting>
+
+&lt;mbean code="org.jboss.messaging.core.plugin.DefaultPostOfficeService"
+      name="jboss.messaging:service=PostOffice"
+      xmbean-dd="xmdesc/DefaultPostOffice-xmbean.xml"&gt;
+      &lt;depends optional-attribute-name="ServerPeer"&gt;jboss.messaging:service=ServerPeer&lt;/depends&gt;
+      &lt;depends&gt;jboss.jca:service=DataSourceBinding,name=DefaultDS&lt;/depends&gt;
+      &lt;depends optional-attribute-name="TransactionManager"&gt;jboss:service=TransactionManager&lt;/depends&gt;
+      &lt;attribute name="PostOfficeName"&gt;JMS&lt;/attribute&gt;
+      &lt;attribute name="DataSource"&gt;java:/DefaultDS&lt;/attribute&gt;
+      &lt;attribute name="CreateTablesOnStartup"&gt;true&lt;/attribute&gt;
+      &lt;attribute name="SqlProperties"&gt;&lt;![CDATA[
+CREATE_POSTOFFICE_TABLE=CREATE TABLE JBM_POSTOFFICE (POSTOFFICE_NAME VARCHAR(255), NODE_ID INTEGER, QUEUE_NAME VARCHAR(1023), COND VARCHAR(1023), SELECTOR VARCHAR(1023), CHANNEL_ID BIGINT, CLUSTERED CHAR(1))
+INSERT_BINDING=INSERT INTO JBM_POSTOFFICE (POSTOFFICE_NAME, NODE_ID, QUEUE_NAME, COND, SELECTOR, CHANNEL_ID, CLUSTERED) VALUES (?, ?, ?, ?, ?, ?, ?)
+DELETE_BINDING=DELETE FROM JBM_POSTOFFICE WHERE POSTOFFICE_NAME=? AND NODE_ID=? AND QUEUE_NAME=?
+LOAD_BINDINGS=SELECT NODE_ID, QUEUE_NAME, COND, SELECTOR, CHANNEL_ID, CLUSTERED FROM JBM_POSTOFFICE WHERE POSTOFFICE_NAME  = ?
+      ]]&gt;&lt;/attribute&gt;
+   &lt;/mbean&gt;
+
+       </programlisting>
+
+       <section id="conf.postoffice.nonclustered.attributes">
+
+       <title>The non clustered post office has the following attributes</title>
+
+          <section id="conf.postoffice.nonclustered.attributes.datasource">
+             <title>DataSource</title>
+             <para>The datasource the postoffice should use for persisting its mapping data</para>
+          </section>
+
+          <section id="conf.postoffice.nonclustered.attributes.sqlproperties">
+              <title>SQLProperties</title>
+              <para>
+                            This is where the DDL and DML for the particular database is specified.
+                            If a particular DDL or DML statement is not overridden, the default Hypersonic
+                            configuration will be used for that statement.
+           </para>
+          </section>
+
+          <section id="conf.postoffice.nonclustered.attributes.createtables">
+               <title>CreateTablesOnStartup</title>
+
+               <para>
+                  Set this to <literal>true</literal> if you wish the post office to attempt
+                  to create the tables (and indexes) when it starts. If the tables (or indexes)
+                  already exist a <literal>SQLException</literal> will be thrown by the JDBC driver and
+                  ignored by the Persistence Manager, allowing it to continue.
+               </para>
+               <para>
+                  By default the value of <literal>CreateTablesOnStartup</literal> attribute
+                  is set to <literal>true</literal>
+               </para>
+         </section>
+
+          <section id="conf.postoffice.nonclustered.attributes.postofficename">
+               <title>PostOfficeName</title>
+
+               <para>
+                  The name of the post office
+               </para>
+         </section>
+      </section>
+   </section>
+
+
+   <section id="conf.postoffice.clustered">
+       <title>Clustered post office</title>
+
+       <para>The clustered post office should be used where clustering is required. It will be used when the
+       clustered <literal>clustered-xxx-persistence-service.xml</literal> file is deployed.</para>
+
+       <para>Here is an example of a clustered post office configuration:</para>
+
+       <programlisting>
+
+&lt;mbean code="org.jboss.messaging.core.plugin.ClusteredPostOfficeService"
+      name="jboss.messaging:service=PostOffice"
+      xmbean-dd="xmdesc/ClusteredPostOffice-xmbean.xml"&gt;
+      &lt;depends optional-attribute-name="ServerPeer"&gt;jboss.messaging:service=ServerPeer&lt;/depends&gt;
+      &lt;depends&gt;jboss.jca:service=DataSourceBinding,name=DefaultDS&lt;/depends&gt;
+      &lt;depends optional-attribute-name="TransactionManager"&gt;jboss:service=TransactionManager&lt;/depends&gt;
+      &lt;attribute name="PostOfficeName"&gt;Clustered JMS&lt;/attribute&gt;
+      &lt;attribute name="DataSource"&gt;java:/DefaultDS&lt;/attribute&gt;
+      &lt;attribute name="CreateTablesOnStartup"&gt;true&lt;/attribute&gt;
+      &lt;attribute name="SqlProperties"&gt;&lt;![CDATA[
+CREATE_POSTOFFICE_TABLE=CREATE TABLE JBM_POSTOFFICE (POSTOFFICE_NAME VARCHAR(255), NODE_ID INTEGER, QUEUE_NAME VARCHAR(1023), COND VARCHAR(1023), SELECTOR VARCHAR(1023), CHANNEL_ID BIGINT, CLUSTERED CHAR(1))
+INSERT_BINDING=INSERT INTO JBM_POSTOFFICE (POSTOFFICE_NAME, NODE_ID, QUEUE_NAME, COND, SELECTOR, CHANNEL_ID, CLUSTERED) VALUES (?, ?, ?, ?, ?, ?, ?)
+DELETE_BINDING=DELETE FROM JBM_POSTOFFICE WHERE POSTOFFICE_NAME=? AND NODE_ID=? AND QUEUE_NAME=?
+LOAD_BINDINGS=SELECT NODE_ID, QUEUE_NAME, COND, SELECTOR, CHANNEL_ID, CLUSTERED FROM JBM_POSTOFFICE WHERE POSTOFFICE_NAME  = ?
+      ]]&gt;&lt;/attribute&gt;
+      &lt;attribute name="GroupName"&gt;DefaultPostOffice&lt;/attribute&gt;
+      &lt;attribute name="StateTimeout"&gt;5000&lt;/attribute&gt;
+      &lt;attribute name="CastTimeout"&gt;5000&lt;/attribute&gt;
+      &lt;attribute name="StatsSendPeriod"&gt;10000&lt;/attribute&gt;
+      &lt;attribute name="MessagePullPolicy"&gt;org.jboss.messaging.core.plugin.postoffice.cluster.NullMessagePullPolicy&lt;/attribute&gt;
+      &lt;attribute name="ClusterRouterFactory"&gt;org.jboss.messaging.core.plugin.postoffice.cluster.DefaultRouterFactory&lt;/attribute&gt;
+
+
+      &lt;attribute name="ChannelFactoryName"&gt;jgroups.mux:name=Multiplexer&lt;/attribute&gt;
+      &lt;attribute name="SyncChannelName"&gt;udp-sync&lt;/attribute&gt;
+      &lt;attribute name="AsyncChannelName"&gt;udp&lt;/attribute&gt;
+      &lt;attribute name="ChannelPartitionName"&gt;${jboss.partition.name:DefaultPartition}-JMS&lt;/attribute&gt;
+
+      &lt;attribute name="AsyncChannelConfig"&gt;
+         &lt;config&gt;
+            &lt;UDP mcast_recv_buf_size="500000" down_thread="false" ip_mcast="true" mcast_send_buf_size="32000"
+           mcast_port="45567" ucast_recv_buf_size="500000" use_incoming_packet_handler="false"
+           mcast_addr="228.8.8.8" use_outgoing_packet_handler="true" loopback="true" ucast_send_buf_size="32000" ip_ttl="32" bind_addr="127.0.0.1"/&gt;
+            &lt;AUTOCONF down_thread="false" up_thread="false"/&gt;
+            &lt;PING timeout="2000" down_thread="false" num_initial_members="3" up_thread="false"/&gt;
+            &lt;MERGE2 max_interval="10000" down_thread="false" min_interval="5000" up_thread="false"/&gt;
+            &lt;FD_SOCK down_thread="false" up_thread="false"/&gt;
+            &lt;FD timeout="20000" max_tries="3" down_thread="false" up_thread="false" shun="true"/&gt;
+            &lt;VERIFY_SUSPECT timeout="1500" down_thread="false" up_thread="false"/&gt;
+            &lt;pbcast.NAKACK max_xmit_size="8192" down_thread="false" use_mcast_xmit="true" gc_lag="50" up_thread="false"
+                         retransmit_timeout="100,200,600,1200,2400,4800"/&gt;
+            &lt;UNICAST timeout="1200,2400,3600" down_thread="false" up_thread="false"/&gt;
+            &lt;pbcast.STABLE stability_delay="1000" desired_avg_gossip="20000" down_thread="false" max_bytes="0" up_thread="false"/&gt;
+            &lt;FRAG frag_size="8192" down_thread="false" up_thread="false"/&gt;
+            &lt;VIEW_SYNC avg_send_interval="60000" down_thread="false" up_thread="false" /&gt;
+            &lt;pbcast.GMS print_local_addr="true" join_timeout="3000" down_thread="false" join_retry_timeout="2000" up_thread="false" shun="true"/&gt;
+         &lt;/config&gt;
+      &lt;/attribute&gt;
+
+      &lt;attribute name="SyncChannelConfig"&gt;
+         &lt;config&gt;
+            &lt;UDP mcast_recv_buf_size="500000" down_thread="false" ip_mcast="true" mcast_send_buf_size="32000"
+           mcast_port="45568" ucast_recv_buf_size="500000" use_incoming_packet_handler="false"
+           mcast_addr="228.8.8.8" use_outgoing_packet_handler="true" loopback="true" ucast_send_buf_size="32000" ip_ttl="32" bind_addr="127.0.0.1"/&gt;
+            &lt;AUTOCONF down_thread="false" up_thread="false"/&gt;
+            &lt;PING timeout="2000" down_thread="false" num_initial_members="3" up_thread="false"/&gt;
+            &lt;MERGE2 max_interval="10000" down_thread="false" min_interval="5000" up_thread="false"/&gt;
+            &lt;FD_SOCK down_thread="false" up_thread="false"/&gt;
+            &lt;FD timeout="20000" max_tries="3" down_thread="false" up_thread="false" shun="true"/&gt;
+            &lt;VERIFY_SUSPECT timeout="1500" down_thread="false" up_thread="false"/&gt;
+            &lt;pbcast.NAKACK max_xmit_size="8192" down_thread="false" use_mcast_xmit="true" gc_lag="50" up_thread="false"
+                         retransmit_timeout="100,200,600,1200,2400,4800"/&gt;
+            &lt;UNICAST timeout="1200,2400,3600" down_thread="false" up_thread="false"/&gt;
+            &lt;pbcast.STABLE stability_delay="1000" desired_avg_gossip="20000" down_thread="false" max_bytes="0" up_thread="false"/&gt;
+            &lt;FRAG frag_size="8192" down_thread="false" up_thread="false"/&gt;
+            &lt;VIEW_SYNC avg_send_interval="60000" down_thread="false" up_thread="false" /&gt;
+            &lt;pbcast.GMS print_local_addr="true" join_timeout="3000" down_thread="false" join_retry_timeout="2000" up_thread="false" shun="true"/&gt;
+            &lt;pbcast.STATE_TRANSFER down_thread="false" up_thread="false"/&gt;
+         &lt;/config&gt;
+      &lt;/attribute&gt;
+   &lt;/mbean&gt;
+
+       </programlisting>
+
+       <section id="conf.postoffice.clustered.attributes">
+
+       <title>The nclustered post office has the following attributes</title>
+
+          <section id="conf.postoffice.clustered.attributes.datasource">
+             <title>DataSource</title>
+             <para>The datasource the postoffice should use for persisting its mapping data</para>
+          </section>
+
+          <section id="conf.postoffice.clustered.attributes.sqlproperties">
+              <title>SQLProperties</title>
+              <para>
+                            This is where the DDL and DML for the particular database is specified.
+                            If a particular DDL or DML statement is not overridden, the default Hypersonic
+                            configuration will be used for that statement.
+           </para>
+          </section>
+
+          <section id="conf.postoffice.clustered.attributes.createtables">
+               <title>CreateTablesOnStartup</title>
+
+               <para>
+                  Set this to <literal>true</literal> if you wish the post office to attempt
+                  to create the tables (and indexes) when it starts. If the tables (or indexes)
+                  already exist a <literal>SQLException</literal> will be thrown by the JDBC driver and
+                  ignored by the Persistence Manager, allowing it to continue.
+               </para>
+               <para>
+                  By default the value of <literal>CreateTablesOnStartup</literal> attribute
+                  is set to <literal>true</literal>
+               </para>
+         </section>
+
+          <section id="conf.postoffice.clustered.attributes.postofficename">
+               <title>PostOfficeName</title>
+
+               <para>
+                  The name of the post office
+               </para>
+         </section>
+
+          <section id="conf.postoffice.clustered.attributes.nodeidview">
+               <title>NodeIDView</title>
+
+               <para>
+                  This returns set containing the node ids of all the nodes in the cluster
+               </para>
+         </section>
+
+          <section id="conf.postoffice.clustered.attributes.groupname">
+               <title>GroupName</title>
+
+               <para>
+                  All post offices in the cluster with the same group name will form a cluster together. Make sure the group name matches with
+                  all the nodes in the cluster you want to form a cluster with.
+               </para>
+         </section>
+
+          <section id="conf.postoffice.clustered.attributes.messagepullpolicy">
+               <title>MessagePullPolicy</title>
+               <para>
+                  JBoss Messaging has the ability for queues on one node to pull messages from other nodes when they have exhausted their local messages.
+               </para>
+               <para>This prevents messages from getting stranded on nodes with slow or no consumers, and balances out message processing across the cluster.</para>
+               <para>How, if and when messages are pulled from one node to another is determined by the MessagePullPolicy</para>
+               <para>By default this set to <literal>org.jboss.messaging.core.plugin.postoffice.cluster.NullMessagePullPolicy</literal> which is a dummy
+               implementation which never pulls messages from one node to another.</para>
+               <para>Whether you need message redistribution or not depends on your application topology - please see the section on clustering configuration for
+               more details</para>
+               <para>If you require message redistribution then set this value to <literal>org.jboss.messaging.core.plugin.postoffice.cluster.NullMessagePullPolicy</literal>
+               </para>
+               <warning>Enabling message redistribution can result in the strict JMS message ordering guarantee being lost (i.e. the order of receipt of messages from
+               a particular producer is retained). If this is not acceptable then do not enable message redistribution.</warning>
+         </section>
+
+          <section id="conf.postoffice.clustered.attributes.clusterrouterfactory">
+               <title>ClusterRouterFactory</title>
+               <para>
+                  When a message arrives on a node - JBoss Messaging needs to decide whether to route it to a local queue or a remote queue on a different node.
+               </para>
+               <para>This setting allows you to specify the factory that determines this routing</para>
+               <para>By default this set to <literal>org.jboss.messaging.core.plugin.postoffice.cluster.DefaultRouterFactory</literal> which always favours
+               a local queue if one is available otherwise it round robins amongst other queues.</para>
+               <para>The particular router factory you require depends on your application topology - please see the section on clustering configuration for
+               more details</para>
+               <para>Other values this attribute can be set to are <literal>org.jboss.messaging.core.plugin.postoffice.cluster.RoundRobinRouterFactory</literal>
+               if you do not want to favour the local queue.
+               </para>
+         </section>
+
+          <section id="conf.postoffice.clustered.attributes.statetimeout">
+               <title>StateTimeout</title>
+               <para>
+                  The maximum time to wait when waiting for the group state to arrive when a node joins a pre-existing cluster.
+               </para>
+               <para>The default value is <literal>5000</literal> milliseconds
+               </para>
+         </section>
+
+          <section id="conf.postoffice.clustered.attributes.casttimeout">
+               <title>CastTimeout</title>
+               <para>
+                  The maximum time to wait for a reply casting message synchronously
+               </para>
+               <para>The default value is <literal>5000</literal> milliseconds
+               </para>
+         </section>
+
+         <section id="conf.postoffice.clustered.attributes.statssendperiod">
+               <title>StatsSendPeriod</title>
+               <para>
+                       When clustering, each node in the cluster will broadcast statistics periodically to inform the other nodes of their queues and the number of
+                       messages in them. This data is then used by the message redistribution policy to redistribute messages if necessary.
+                       This value represents the number of milliseconds between statistics broadcasts.
+              </para>
+              <para>
+                       The default value is <literal>10000</literal> milliseconds
+              </para>
+         </section>
+
+         <section id="conf.postoffice.clustered.attributes.syncchannelconfig">
+               <title>SyncChannelConfig</title>
+               <para>
+                    JBoss Messaging uses JGroups for all group management. This contains the JGroups stack configuration for the synchronous channel.
+              </para>
+              <para>The synchronous channel is used for sending request/reeciving responses from other nodes in the cluster</para>
+              <para>
+               The details of the JGroups configuration won't be discussed here since it is standard JGroups configuration.
+                       Detailed information on JGroups can be found in JGroups release documentation or on-line at
+                       <ulink url="http://www.jgroups.org">http://www.jgroups.org</ulink> or
+                 <ulink url="http://wiki.jboss.org/wiki/Wiki.jsp?page=JGroups">http://wiki.jboss.org/wiki/Wiki.jsp?page=JGroups</ulink>
+              </para>
+         </section>
+
+         <section id="conf.postoffice.clustered.attributes.asyncchannelconfig">
+               <title>AsyncChannelConfig</title>
+               <para>
+                    JBoss Messaging uses JGroups for all group management. This contains the JGroups stack configuration for the asynchronous channel.
+              </para>
+              <para>The asynchronous channel is used for sending sending/receiving messages from other nodes in the cluster</para>
+              <para>
+               The details of the JGroups configuration won't be discussed here since it is standard JGroups configuration.
+                       Detailed information on JGroups can be found in JGroups release documentation or on-line at
+                       <ulink url="http://www.jgroups.org">http://www.jgroups.org</ulink> or
+                 <ulink url="http://wiki.jboss.org/wiki/Wiki.jsp?page=JGroups">http://wiki.jboss.org/wiki/Wiki.jsp?page=JGroups</ulink>
+              </para>
+         </section>
+
+         <section id="conf.postoffice.clustered.attributes.threadpoolsize">
+               <title>ThreadPoolSize</title>
+               <para>
+                    The post office uses a thread pool for dispatching requests/handling responses from the cluster. This attribute represents the maximum size of
+                    that pool
+              </para>
+              <para>The default value of this is <literal>50</literal> threads</para>
+         </section>
+
+      </section>
+   </section>
+   </section>
+
+
+
+  <section id="conf.persistencemanager">
+    <title>Configuring the Persistence Manager</title>
+
+    <para>It is the job of the persistence manager to manage all message related persistence.
+    </para>
+
 
     <para>
        JBoss Messaging ships with a JDBC Persistence Manager used for handling persistence of
@@ -182,16 +897,17 @@
 
      <para>
         JBoss Messaging also ships with pre-made Persistence Manager configurations for MySQL,
-        Oracle, PostgreSQL and Sybase. The example <filename>mysql-persistence-service.xml</filename>,
+        Oracle, PostgreSQL, Sybase and MS SQL Server. The example <filename>mysql-persistence-service.xml</filename>,
         <filename>oracle-persistence-service.xml</filename>,
         <filename>postgres-persistence-service.xml</filename> and
-        <filename>sybase-persistence-service.xml</filename> configuration files are available
+        <filename>sybase-persistence-service.xml</filename> and
+        <filename>mssql-persistence-service.xml</filename> configuration files are available
         in the <filename>examples/config</filename> directory of the release bundle.
      </para>
 
      <para>
-        Configurations for MSSQL and other popular databases should be available soon. Users are
-        encouraged to contribute their own configuration files. The JDBC Persistence Manager has been designed
+        Users are encouraged to contribute their own configuration files where we will thoroughly test them before certifying them for suppported use
+        with JBoss Messaging. The JDBC Persistence Manager has been designed
         to use standard SQL for the DML so writing a JDBC Persistence Manager configuration for another
         database is usually only a fairly simple matter of changing DDL in the configuration
         which is likely to be different for different databases.
@@ -201,160 +917,328 @@
         The default Hypersonic persistence configuration file is listed below:
      </para>
 
-     <programlisting>
-&lt;server&gt;
-   &lt;mbean code="org.jboss.messaging.core.plugin.JDBCPersistenceManager"
-      name="jboss.messaging:service=PersistenceManager"
-      xmbean-dd="xmdesc/JDBCPersistenceManager-xmbean.xml"&gt;
-      &lt;depends&gt;jboss.jca:service=DataSourceBinding,name=DefaultDS&lt;/depends&gt;
-      &lt;depends optional-attribute-name="TransactionManager"&gt;
-				jboss:service=TransactionManager&lt;/depends&gt;
-      &lt;depends optional-attribute-name="ChannelMapper"&gt;
-				jboss.messaging:service=ChannelMapper&lt;/depends&gt;
-      &lt;attribute name="DataSource"&gt;java:/DefaultDS&lt;/attribute&gt;
-      &lt;attribute name="CreateTablesOnStartup"&gt;true&lt;/attribute&gt;
-      &lt;attribute name="UsingBatchUpdates"&gt;true&lt;/attribute&gt;
-   &lt;/mbean&gt;
+   <programlisting>
 
-   &lt;mbean code="org.jboss.jms.server.plugin.JDBCChannelMapper"
-      name="jboss.messaging:service=ChannelMapper"
-      xmbean-dd="xmdesc/JDBCChannelMapper-xmbean.xml"&gt;
-      &lt;depends&gt;jboss.jca:service=DataSourceBinding,name=DefaultDS&lt;/depends&gt;
-      &lt;depends optional-attribute-name="TransactionManager"&gt;
-				jboss:service=TransactionManager&lt;/depends&gt;
-      &lt;attribute name="DataSource"&gt;java:/DefaultDS&lt;/attribute&gt;
-   &lt;/mbean&gt;
-&lt;/server&gt;
-     </programlisting>
+      &lt;server&gt;
+
+         &lt;mbean code="org.jboss.messaging.core.plugin.JDBCPersistenceManagerService"
+            name="jboss.messaging:service=PersistenceManager"
+            xmbean-dd="xmdesc/JDBCPersistenceManager-xmbean.xml"&gt;
+            &lt;depends&gt;jboss.jca:service=DataSourceBinding,name=DefaultDS&lt;/depends&gt;
+            &lt;depends optional-attribute-name="TransactionManager"&gt;jboss:service=TransactionManager&lt;/depends&gt;
+            &lt;attribute name="DataSource"&gt;java:/DefaultDS&lt;/attribute&gt;
+            &lt;attribute name="CreateTablesOnStartup"&gt;true&lt;/attribute&gt;
+            &lt;attribute name="UsingBatchUpdates"&gt;false&lt;/attribute&gt;
+            &lt;attribute name="MaxParams"&gt;500&lt;/attribute&gt;
+         &lt;/mbean&gt;
+
+         &lt;mbean code="org.jboss.messaging.core.plugin.DefaultPostOfficeService"
+            name="jboss.messaging:service=PostOffice"
+            xmbean-dd="xmdesc/DefaultPostOffice-xmbean.xml"&gt;
+            &lt;depends optional-attribute-name="ServerPeer"&gt;jboss.messaging:service=ServerPeer&lt;/depends&gt;
+            &lt;depends&gt;jboss.jca:service=DataSourceBinding,name=DefaultDS&lt;/depends&gt;
+            &lt;depends optional-attribute-name="TransactionManager"&gt;jboss:service=TransactionManager&lt;/depends&gt;
+            &lt;attribute name="PostOfficeName"&gt;JMS&lt;/attribute&gt;
+            &lt;attribute name="DataSource"&gt;java:/DefaultDS&lt;/attribute&gt;
+            &lt;attribute name="CreateTablesOnStartup"&gt;true&lt;/attribute&gt;
+         &lt;/mbean&gt;
+
+         &lt;mbean code="org.jboss.jms.server.plugin.JDBCJMSUserManagerService"
+            name="jboss.messaging:service=JMSUserManager"
+            xmbean-dd="xmdesc/JMSUserManager-xmbean.xml"&gt;
+            &lt;depends&gt;jboss.jca:service=DataSourceBinding,name=DefaultDS&lt;/depends&gt;
+            &lt;depends optional-attribute-name="TransactionManager"&gt;jboss:service=TransactionManager&lt;/depends&gt;
+            &lt;attribute name="DataSource"&gt;java:/DefaultDS&lt;/attribute&gt;
+            &lt;attribute name="CreateTablesOnStartup"&gt;true&lt;/attribute&gt;
+            &lt;attribute name="SqlProperties"&gt;&lt;![CDATA[
+      POPULATE.TABLES.1=INSERT INTO JBM_USER (USER_ID,PASSWD,CLIENTID) VALUES ('dilbert','dogbert','dilbert-id')
+            ]]&gt;&lt;/attribute&gt;
+         &lt;/mbean&gt;
+
+      &lt;/server&gt;
+
+   </programlisting>
 
      <para>
         An example of a Persistence Manager configuration for a MySQL database follows:
      </para>
 
   <programlisting>
-&lt;server&gt;
-   &lt;mbean code="org.jboss.messaging.core.plugin.JDBCPersistenceManager"
-      name="jboss.messaging:service=PersistenceManager"
-      xmbean-dd="xmdesc/JDBCPersistenceManager-xmbean.xml"&gt;
-      &lt;depends&gt;jboss.jca:service=DataSourceBinding,name=DefaultDS&lt;/depends&gt;
-      &lt;depends optional-attribute-name="TransactionManager"&gt;
-				jboss:service=TransactionManager&lt;/depends&gt;
-      &lt;depends optional-attribute-name="ChannelMapper"&gt;
-				jboss.messaging:service=ChannelMapper&lt;/depends&gt;
-      &lt;attribute name="DataSource"&gt;java:/DefaultDS&lt;/attribute&gt;
-      &lt;attribute name="CreateTablesOnStartup"&gt;true&lt;/attribute&gt;
-      &lt;attribute name="UsingBatchUpdates"&gt;true&lt;/attribute&gt;
-      &lt;attribute name="SqlProperties"&gt;&lt;![CDATA[
-CREATE_MESSAGE_REF=CREATE TABLE JMS_MESSAGE_REFERENCE
-	(CHANNELID BIGINT, MESSAGEID BIGINT, TRANSACTIONID BIGINT, STATE CHAR(1),
-	ORD BIGINT, DELIVERYCOUNT INTEGER, RELIABLE CHAR(1), LOADED CHAR(1),
-	PRIMARY KEY(CHANNELID, MESSAGEID))
-CREATE_IDX_MESSAGE_REF_TX=CREATE INDEX JMS_MESSAGE_REF_TX ON
-	JMS_MESSAGE_REFERENCE (TRANSACTIONID)
-CREATE_IDX_MESSAGE_REF_ORD=CREATE INDEX JMS_MESSAGE_REF_ORD ON JMS_MESSAGE_REFERENCE (ORD)
-CREATE_IDX_MESSAGE_REF_MESSAGEID=CREATE INDEX JMS_MESSAGE_REF_MESSAGEID ON
-	JMS_MESSAGE_REFERENCE (MESSAGEID)
-CREATE_IDX_MESSAGE_REF_LOADED=CREATE INDEX JMS_MESSAGE_REF_LOADED ON
-	JMS_MESSAGE_REFERENCE (LOADED)
-CREATE_IDX_MESSAGE_REF_RELIABLE=CREATE INDEX JMS_MESSAGE_REF_RELIABLE ON
-	JMS_MESSAGE_REFERENCE (RELIABLE)
-INSERT_MESSAGE_REF=INSERT INTO JMS_MESSAGE_REFERENCE (CHANNELID, MESSAGEID,
-	TRANSACTIONID, STATE, ORD, DELIVERYCOUNT, RELIABLE, LOADED)
-	VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-....      ]]&gt;
-      &lt;/attribute&gt;
-      &lt;attribute name="MaxParams"&gt;500&lt;/attribute&gt;
-   &lt;/mbean&gt;
 
-   &lt;mbean code="org.jboss.jms.server.plugin.JDBCChannelMapper"
-      name="jboss.messaging:service=ChannelMapper"
-      xmbean-dd="xmdesc/JDBCChannelMapper-xmbean.xml"&gt;
-      &lt;depends&gt;jboss.jca:service=DataSourceBinding,name=DefaultDS&lt;/depends&gt;
-      &lt;depends optional-attribute-name="TransactionManager"&gt;
-				jboss:service=TransactionManager&lt;/depends&gt;
-      &lt;attribute name="DataSource"&gt;java:/DefaultDS&lt;/attribute&gt;
-      &lt;attribute name="SqlProperties"&gt;&lt;![CDATA[
-CREATE_USER_TABLE=CREATE TABLE JMS_USER (USERID VARCHAR(32) NOT NULL,
-	PASSWD VARCHAR(32) NOT NULL, CLIENTID VARCHAR(128), PRIMARY KEY(USERID))
-CREATE_ROLE_TABLE=CREATE TABLE JMS_ROLE (ROLEID VARCHAR(32) NOT NULL,
-	USERID VARCHAR(32) NOT NULL, PRIMARY KEY(USERID, ROLEID))
-SELECT_PRECONF_CLIENTID=SELECT CLIENTID FROM JMS_USER WHERE USERID=?
-....
-      ]]&gt;
-      &lt;/attribute&gt;
-   &lt;/mbean&gt;
-&lt;/server&gt;
+   &lt;server&gt;
+
+      &lt;mbean code="org.jboss.messaging.core.plugin.JDBCPersistenceManagerService"
+            name="jboss.messaging:service=PersistenceManager"
+            xmbean-dd="xmdesc/JDBCPersistenceManager-xmbean.xml"&gt;
+            &lt;depends&gt;jboss.jca:service=DataSourceBinding,name=DefaultDS&lt;/depends&gt;
+            &lt;depends optional-attribute-name="TransactionManager"&gt;jboss:service=TransactionManager&lt;/depends&gt;
+            &lt;attribute name="DataSource"&gt;java:/DefaultDS&lt;/attribute&gt;
+            &lt;attribute name="CreateTablesOnStartup"&gt;true&lt;/attribute&gt;
+            &lt;attribute name="UsingBatchUpdates"&gt;true&lt;/attribute&gt;
+            &lt;attribute name="SqlProperties"&gt;&lt;![CDATA[
+      CREATE_MESSAGE_REFERENCE=CREATE TABLE JBM_MSG_REF (CHANNEL_ID BIGINT, MESSAGE_ID BIGINT, TRANSACTION_ID BIGINT, STATE CHAR(1), ORD BIGINT, PAGE_ORD BIGINT, DELIVERY_COUNT INTEGER, SCHED_DELIVERY BIGINT, PRIMARY KEY(CHANNEL_ID, MESSAGE_ID))
+      CREATE_IDX_MESSAGE_REF_TX=CREATE INDEX JBM_MSG_REF_TX ON JBM_MSG_REF (TRANSACTION_ID)
+      CREATE_IDX_MESSAGE_REF_ORD=CREATE INDEX JBM_MSG_REF_ORD ON JBM_MSG_REF (ORD)
+      CREATE_IDX_MESSAGE_REF_PAGE_ORD=CREATE INDEX JBM_MSG_REF_PAGE_ORD ON JBM_MSG_REF (PAGE_ORD)
+      CREATE_IDX_MESSAGE_REF_MESSAGE_ID=CREATE INDEX JBM_MSG_REF_MESSAGE_ID ON JBM_MSG_REF (MESSAGE_ID)
+      CREATE_IDX_MESSAGE_REF_SCHED_DELIVERY=CREATE INDEX JBM_MSG_REF_SCHED_DELIVERY ON JBM_MSG_REF (SCHED_DELIVERY)
+      CREATE_MESSAGE=CREATE TABLE JBM_MSG (MESSAGE_ID BIGINT, RELIABLE CHAR(1), EXPIRATION BIGINT, TIMESTAMP BIGINT, PRIORITY TINYINT, HEADERS MEDIUMBLOB, PAYLOAD LONGBLOB, CHANNEL_COUNT INTEGER, TYPE TINYINT, PRIMARY KEY (MESSAGE_ID))
+      CREATE_TRANSACTION=CREATE TABLE JBM_TX (TRANSACTION_ID BIGINT, BRANCH_QUAL VARBINARY(254), FORMAT_ID INTEGER, GLOBAL_TXID VARBINARY(254), PRIMARY KEY (TRANSACTION_ID))
+      CREATE_COUNTER=CREATE TABLE JBM_COUNTER (NAME VARCHAR(255), NEXT_ID BIGINT, PRIMARY KEY(NAME))
+      INSERT_MESSAGE_REF=INSERT INTO JBM_MSG_REF (CHANNEL_ID, MESSAGE_ID, TRANSACTION_ID, STATE, ORD, PAGE_ORD, DELIVERY_COUNT, SCHED_DELIVERY) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+      DELETE_MESSAGE_REF=DELETE FROM JBM_MSG_REF WHERE MESSAGE_ID=? AND CHANNEL_ID=? AND STATE='C'
+      UPDATE_MESSAGE_REF=UPDATE JBM_MSG_REF SET TRANSACTION_ID=?, STATE='-' WHERE MESSAGE_ID=? AND CHANNEL_ID=? AND STATE='C'
+      UPDATE_PAGE_ORDER=UPDATE JBM_MSG_REF SET PAGE_ORD = ? WHERE MESSAGE_ID=? AND CHANNEL_ID=?
+      COMMIT_MESSAGE_REF1=UPDATE JBM_MSG_REF SET STATE='C', TRANSACTION_ID = NULL WHERE TRANSACTION_ID=? AND STATE='+'
+      COMMIT_MESSAGE_REF2=DELETE FROM JBM_MSG_REF WHERE TRANSACTION_ID=? AND STATE='-'
+      ROLLBACK_MESSAGE_REF1=DELETE FROM JBM_MSG_REF WHERE TRANSACTION_ID=? AND STATE='+'
+      ROLLBACK_MESSAGE_REF2=UPDATE JBM_MSG_REF SET STATE='C', TRANSACTION_ID = NULL WHERE TRANSACTION_ID=? AND STATE='-'
+      LOAD_PAGED_REFS=SELECT MESSAGE_ID, DELIVERY_COUNT, PAGE_ORD, SCHED_DELIVERY FROM JBM_MSG_REF WHERE CHANNEL_ID = ? AND PAGE_ORD BETWEEN ? AND ? ORDER BY PAGE_ORD
+      LOAD_UNPAGED_REFS=SELECT MESSAGE_ID, DELIVERY_COUNT, SCHED_DELIVERY FROM JBM_MSG_REF WHERE STATE = 'C' AND CHANNEL_ID = ? AND PAGE_ORD IS NULL ORDER BY ORD
+      LOAD_REFS=SELECT MESSAGE_ID, DELIVERY_COUNT, SCHED_DELIVERY FROM JBM_MSG_REF WHERE STATE = 'C' AND CHANNEL_ID = ? ORDER BY ORD
+      UPDATE_REFS_NOT_PAGED=UPDATE JBM_MSG_REF SET PAGE_ORD = NULL WHERE PAGE_ORD BETWEEN ? AND ? AND CHANNEL_ID=?
+      SELECT_MIN_MAX_PAGE_ORD=SELECT MIN(PAGE_ORD), MAX(PAGE_ORD) FROM JBM_MSG_REF WHERE CHANNEL_ID = ?
+      SELECT_EXISTS_REF=SELECT MESSAGE_ID FROM JBM_MSG_REF WHERE CHANNEL_ID = ? AND MESSAGE_ID = ?
+      SELECT_EXISTS_REF_MESSAGE_ID=SELECT MESSAGE_ID FROM JBM_MSG_REF WHERE MESSAGE_ID = ?
+      UPDATE_DELIVERY_COUNT=UPDATE JBM_MSG_REF SET DELIVERY_COUNT = ? WHERE CHANNEL_ID = ? AND MESSAGE_ID = ?
+      UPDATE_CHANNEL_ID=UPDATE JBM_MSG_REF SET CHANNEL_ID = ? WHERE CHANNEL_ID = ?
+      LOAD_MESSAGES=SELECT MESSAGE_ID, RELIABLE, EXPIRATION, TIMESTAMP, PRIORITY, HEADERS, PAYLOAD, TYPE FROM JBM_MSG
+      INSERT_MESSAGE=INSERT INTO JBM_MSG (MESSAGE_ID, RELIABLE, EXPIRATION, TIMESTAMP, PRIORITY, HEADERS, PAYLOAD, CHANNEL_COUNT, TYPE) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+      INC_CHANNEL_COUNT=UPDATE JBM_MSG SET CHANNEL_COUNT = CHANNEL_COUNT + 1 WHERE MESSAGE_ID=?
+      DEC_CHANNEL_COUNT=UPDATE JBM_MSG SET CHANNEL_COUNT = CHANNEL_COUNT - 1 WHERE MESSAGE_ID=?
+      DELETE_MESSAGE=DELETE FROM JBM_MSG WHERE MESSAGE_ID=? AND CHANNEL_COUNT=0
+      MESSAGE_ID_COLUMN=MESSAGE_ID
+      MESSAGE_EXISTS=SELECT MESSAGE_ID FROM JBM_MSG WHERE MESSAGE_ID = ? FOR UPDATE
+      INSERT_TRANSACTION=INSERT INTO JBM_TX (TRANSACTION_ID, BRANCH_QUAL, FORMAT_ID, GLOBAL_TXID) VALUES(?, ?, ?, ?)
+      DELETE_TRANSACTION=DELETE FROM JBM_TX WHERE TRANSACTION_ID = ?
+      SELECT_PREPARED_TRANSACTIONS=SELECT TRANSACTION_ID, BRANCH_QUAL, FORMAT_ID, GLOBAL_TXID FROM JBM_TX
+      SELECT_MESSAGE_ID_FOR_REF=SELECT MESSAGE_ID, CHANNEL_ID FROM JBM_MSG_REF WHERE TRANSACTION_ID = ? AND STATE = '+' ORDER BY ORD
+      SELECT_MESSAGE_ID_FOR_ACK=SELECT MESSAGE_ID, CHANNEL_ID FROM JBM_MSG_REF WHERE TRANSACTION_ID = ? AND STATE = '-' ORDER BY ORD
+      UPDATE_COUNTER=UPDATE JBM_COUNTER SET NEXT_ID = ? WHERE NAME=?
+      SELECT_COUNTER=SELECT NEXT_ID FROM JBM_COUNTER WHERE NAME=? FOR UPDATE
+      INSERT_COUNTER=INSERT INTO JBM_COUNTER (NAME, NEXT_ID) VALUES (?, ?)
+      SELECT_ALL_CHANNELS=SELECT DISTINCT(CHANNEL_ID) FROM JBM_MSG_REF
+            ]]&gt;&lt;/attribute&gt;
+            &lt;attribute name="MaxParams"&gt;500&lt;/attribute&gt;
+      &lt;/mbean&gt;
+
+      &lt;mbean code="org.jboss.messaging.core.plugin.DefaultPostOfficeService"
+         name="jboss.messaging:service=PostOffice"
+         xmbean-dd="xmdesc/DefaultPostOffice-xmbean.xml"&gt;
+         &lt;depends optional-attribute-name="ServerPeer"&gt;jboss.messaging:service=ServerPeer&lt;/depends&gt;
+         &lt;depends&gt;jboss.jca:service=DataSourceBinding,name=DefaultDS&lt;/depends&gt;
+         &lt;depends optional-attribute-name="TransactionManager"&gt;jboss:service=TransactionManager&lt;/depends&gt;
+         &lt;attribute name="PostOfficeName"&gt;JMS&lt;/attribute&gt;
+         &lt;attribute name="DataSource"&gt;java:/DefaultDS&lt;/attribute&gt;
+         &lt;attribute name="CreateTablesOnStartup"&gt;true&lt;/attribute&gt;
+         &lt;attribute name="SqlProperties"&gt;&lt;![CDATA[
+   CREATE_POSTOFFICE_TABLE=CREATE TABLE JBM_POSTOFFICE (POSTOFFICE_NAME VARCHAR(255), NODE_ID INTEGER, QUEUE_NAME VARCHAR(1023), COND VARCHAR(1023), SELECTOR VARCHAR(1023), CHANNEL_ID BIGINT, CLUSTERED CHAR(1))
+   INSERT_BINDING=INSERT INTO JBM_POSTOFFICE (POSTOFFICE_NAME, NODE_ID, QUEUE_NAME, COND, SELECTOR, CHANNEL_ID, CLUSTERED) VALUES (?, ?, ?, ?, ?, ?, ?)
+   DELETE_BINDING=DELETE FROM JBM_POSTOFFICE WHERE POSTOFFICE_NAME=? AND NODE_ID=? AND QUEUE_NAME=?
+   LOAD_BINDINGS=SELECT NODE_ID, QUEUE_NAME, COND, SELECTOR, CHANNEL_ID, CLUSTERED FROM JBM_POSTOFFICE WHERE POSTOFFICE_NAME  = ?
+         ]]&gt;&lt;/attribute&gt;
+      &lt;/mbean&gt;
+
+      &lt;mbean code="org.jboss.jms.server.plugin.JDBCJMSUserManagerService"
+         name="jboss.messaging:service=JMSUserManager"
+         xmbean-dd="xmdesc/JMSUserManager-xmbean.xml"&gt;
+         &lt;depends&gt;jboss.jca:service=DataSourceBinding,name=DefaultDS&lt;/depends&gt;
+         &lt;depends optional-attribute-name="TransactionManager"&gt;jboss:service=TransactionManager&lt;/depends&gt;
+         &lt;attribute name="DataSource"&gt;java:/DefaultDS&lt;/attribute&gt;
+         &lt;attribute name="CreateTablesOnStartup"&gt;true&lt;/attribute&gt;
+         &lt;attribute name="SqlProperties"&gt;&lt;![CDATA[
+   CREATE_USER_TABLE=CREATE TABLE JBM_USER (USER_ID VARCHAR(32) NOT NULL, PASSWD VARCHAR(32) NOT NULL, CLIENTID VARCHAR(128), PRIMARY KEY(USER_ID))
+   CREATE_ROLE_TABLE=CREATE TABLE JBM_ROLE (ROLE_ID VARCHAR(32) NOT NULL, USER_ID VARCHAR(32) NOT NULL, PRIMARY KEY(USER_ID, ROLE_ID))
+   SELECT_PRECONF_CLIENTID=SELECT CLIENTID FROM JBM_USER WHERE USER_ID=?
+   POPULATE.TABLES.1=INSERT INTO JBM_USER (USER_ID,PASSWD,CLIENTID) VALUES ('dilbert','dogbert','dilbert-id')
+         ]]&gt;&lt;/attribute&gt;
+      &lt;/mbean&gt;
+
+   &lt;/server&gt;
+
   </programlisting>
 
-     <section id="conf.changingds">
-        <title>Changing the Database</title>
+     <section id="conf.persistencemanager.attributes">
 
-        <para>
-           If the database you want to switch to is one of MySQL, Oracle or Postgres,
-           persistence configuration files are already available in
-           the <filename>examples/config</filename> directory of the release bundle.
-        </para>
 
-        <para>
-           In order to enable support for one of these databases, just replace the default
-           <filename>hsqldb-persistence-service.xml</filename> configuration file with the
-           database-specific configuration file and restart the server.
-        </para>
+        <title>
+        We now discuss the MBean attributes of the PersistenceManager MBean
+        </title>
 
-        <para>
-           Also, be aware that by default, the Messaging services relying on a datastore
-           are referencing <literal>"java:/DefaultDS"</literal> for the datasource.
-           If you are deploying a datasource with a different JNDI name, you need to update
-           all the <literal>DataSource</literal> attribute in the persistence configuration file.
-        </para>
+        <section id="conf.persistencemanager.attributes.createtables">
+           <title>CreateTablesOnStartup</title>
 
+           <para>
+              Set this to <literal>true</literal> if you wish the Persistence Manager to attempt
+              to create the tables (and indexes) when it starts. If the tables (or indexes)
+              already exist a <literal>SQLException</literal> will be thrown by the JDBC driver and
+              ignored by the Persistence Manager, allowing it to continue.
+           </para>
+           <para>
+              By default the value of <literal>CreateTablesOnStartup</literal> attribute
+              is set to <literal>true</literal>
+           </para>
      </section>
 
-     <section id="conf.persistence.createtables">
-        <title>CreateTablesOnStartup</title>
+      <section id="conf.persistencemanager.attributes.batchupdates">
+           <title>UsingBatchUpdates</title>
 
-        <para>
-           Set this to <literal>true</literal> if you wish the Persistence Manager to attempt
-           to create the tables (and indexes) when it starts. If the tables (or indexes)
-           already exist a <literal>SQLException</literal> will be thrown by the JDBC driver and
-           ignored by the Persistence Manager, allowing it to continue.
-        </para>
-        <para>
-           By default the value of <literal>CreateTablesOnStartup</literal> attribute
-           is set to <literal>true</literal>
-        </para>
-  </section>
+           <para>
+              Set this to <literal>true</literal> if the database supports JDBC batch updates.
+              The JDBC Persistence Manager will then group multiple database updates in batches
+              to aid performance.
+           </para>
+         <para>
+            By default the value of <literal>UsingBatchUpdates</literal> attribute
+            is set to <literal>false</literal>
+         </para>
+       </section>
 
-   <section id="conf.persistence.batchupdates">
-        <title>UsingBatchUpdates</title>
+      <section id="conf.persistencemanager.attributes.binarystream">
+           <title>UsingBinaryStream</title>
 
-        <para>
-           Set this to <literal>true</literal> if the database supports JDBC batch updates.
-           The JDBC Persistence Manager will then group multiple database updates in batches
-           to aid performance.
+           <para>
+              Set this to <literal>true</literal> if you want messages to be store and read using a JDBC binary stream rather than using
+              getBytes(), setBytes(). Some database has limits on the maximum number of bytes that can be get/set using getBytes()/setBytes().
+           </para>
+         <para>
+            By default the value of <literal>UsingBinaryStream</literal> attribute
+            is set to <literal>true</literal>
+         </para>
+       </section>
+
+      <section id="conf.persistencemanager.attributes.trailingbyte">
+           <title>UsingTrailingByte</title>
+
+           <para>
+              Certain version of Sybase are known to truncate blobs if they have trailing zeros. To prevent this if this attribute is set to
+              <literal>true</literal> then a trailing non zero byte will be added and removed to each blob before and after persistence to prevent
+              the database from truncating it. Currently this is only known to be necessary for Sybase.
+           </para>
+         <para>
+            By default the value of <literal>UsingTrailingByte</literal> attribute
+            is set to <literal>false</literal>
+         </para>
+       </section>
+
+       <section id="conf.persistencemanager.attributes.sqlproperties">
+           <title>SQLProperties</title>
+
+           <para>
+              This is where the DDL and DML for the particular database is specified.
+              If a particular DDL or DML statement is not overridden, the default Hypersonic
+              configuration will be used for that statement.
+           </para>
+        </section>
+
+        <section id="conf.persistencemanager.attributes.maxparams">
+          <title>MaxParams</title>
+
+          <para>
+             When loading messages the persistence manager will generate prepared statements with many parameters. This value tells the persistence
+             manager what the absolute maximum number of parameters are allowable per prepared statement.
+
+          </para>
+          <para>
+           By default the value of <literal>MaxParams</literal> attribute
+           is set to <literal>100</literal>
         </para>
-      <para>
-         By default the value of <literal>UsingBatchUpdates</literal> attribute
-         is set to <literal>false</literal>
-      </para>
+       </section>
+
     </section>
 
-     <section id="conf.persistence.sqlproperties">
-        <title>SQLProperties</title>
+   </section>
 
-        <para>
-           This is where the DDL and DML for the particular database is specified.
-           If a particular DDL or DML statement is not overridden, the default Hypersonic
-           configuration will be used for that statement.
-        </para>
+
+ <section id="conf.jmsusermanager">
+   <title>Configuring the JMS user manager</title>
+
+      <para>The JMS user manager handles the mapping of pre-configured client IDs to users and also managers the user and role tables which may or
+      may not be used depending on which login module you have configured</para>
+
+      <para>Here is an example JMSUserManager configuration</para>
+
+      <programlisting>
+
+   &lt;mbean code="org.jboss.jms.server.plugin.JDBCJMSUserManagerService"
+      name="jboss.messaging:service=JMSUserManager"
+      xmbean-dd="xmdesc/JMSUserManager-xmbean.xml"&gt;
+      &lt;depends&gt;jboss.jca:service=DataSourceBinding,name=DefaultDS&lt;/depends&gt;
+      &lt;depends optional-attribute-name="TransactionManager"&gt;jboss:service=TransactionManager&lt;/depends&gt;
+      &lt;attribute name="DataSource"&gt;java:/DefaultDS&lt;/attribute&gt;
+      &lt;attribute name="CreateTablesOnStartup"&gt;true&lt;/attribute&gt;
+      &lt;attribute name="SqlProperties"&gt;&lt;![CDATA[
+CREATE_USER_TABLE=CREATE TABLE JBM_USER (USER_ID VARCHAR(32) NOT NULL, PASSWD VARCHAR(32) NOT NULL, CLIENTID VARCHAR(128), PRIMARY KEY(USER_ID))
+CREATE_ROLE_TABLE=CREATE TABLE JBM_ROLE (ROLE_ID VARCHAR(32) NOT NULL, USER_ID VARCHAR(32) NOT NULL, PRIMARY KEY(USER_ID, ROLE_ID))
+SELECT_PRECONF_CLIENTID=SELECT CLIENTID FROM JBM_USER WHERE USER_ID=?
+POPULATE.TABLES.1=INSERT INTO JBM_USER (USER_ID,PASSWD,CLIENTID) VALUES ('dilbert','dogbert','dilbert-id')
+      ]]&gt;&lt;/attribute&gt;
+   &lt;/mbean&gt;
+
+      </programlisting>
+
+        <section id="conf.persistencemanager.attributes">
+
+
+        <title>
+        We now discuss the MBean attributes of the PersistenceManager MBean
+        </title>
+
+        <section id="conf.jmsusermanager.attributes.createtables">
+           <title>CreateTablesOnStartup</title>
+
+           <para>
+              Set this to <literal>true</literal> if you wish the JMS user manager to attempt
+              to create the tables (and indexes) when it starts. If the tables (or indexes)
+              already exist a <literal>SQLException</literal> will be thrown by the JDBC driver and
+              ignored by the Persistence Manager, allowing it to continue.
+           </para>
+           <para>
+              By default the value of <literal>CreateTablesOnStartup</literal> attribute
+              is set to <literal>true</literal>
+           </para>
+     </section>
+
+      <section id="conf.jmsusermanager.attributes.batchupdates">
+           <title>UsingBatchUpdates</title>
+
+           <para>
+              Set this to <literal>true</literal> if the database supports JDBC batch updates.
+              The JDBC Persistence Manager will then group multiple database updates in batches
+              to aid performance.
+           </para>
+         <para>
+            By default the value of <literal>UsingBatchUpdates</literal> attribute
+            is set to <literal>false</literal>
+         </para>
+       </section>
+
+
+       <section id="conf.jmsusermanager.attributes.sqlproperties">
+           <title>SQLProperties</title>
+
+           <para>
+              This is where the DDL and DML for the particular database is specified.
+              If a particular DDL or DML statement is not overridden, the default Hypersonic
+              configuration will be used for that statement.
+           </para>
+
+           <para>
+           Default user and role data can also be specified here. Any data to be inserted must be specified with property names starting with
+           <literal>POPULATE.TABLES</literal> as in the above example.
+           </para>
+        </section>
+
+
      </section>
 
   </section>
+
 
   <section id="conf.destination">
     <title>Configuring Destinations</title>
 
-     <section id="conf.preconf.destinations">
+<section id="conf.preconf.destinations">
         <title>Pre-configured destinations</title>
 
         <para>
@@ -365,158 +1249,759 @@ SELECT_PRECONF_CLIENTID=SELECT CLIENTID FROM JMS_USER WHERE USERID=?
         </para>
 
         <programlisting>
+   &lt;!--
+      The Default Dead Letter Queue. This destination is a dependency of an EJB MDB container.
+   --&gt;
 
-&lt;!-- The Dead Letter Queue. This destination is a dependency of an EJB MDB container --&gt;
+   &lt;mbean code="org.jboss.jms.server.destination.QueueService"
+      name="jboss.messaging.destination:service=Queue,name=DLQ"
+      xmbean-dd="xmdesc/Queue-xmbean.xml"&gt;
+      &lt;depends optional-attribute-name="ServerPeer"&gt;jboss.messaging:service=ServerPeer&lt;/depends&gt;
+      &lt;depends&gt;jboss.messaging:service=PostOffice&lt;/depends&gt;
+   &lt;/mbean&gt;
 
-&lt;mbean code="org.jboss.jms.server.destination.Queue"
-       name="jboss.messaging.destination:service=Queue,name=DLQ"
-       xmbean-dd="xmdesc/Queue-xmbean.xml"&gt;
-   &lt;depends optional-attribute-name="ServerPeer"&gt;
-				jboss.messaging:service=ServerPeer&lt;/depends&gt;
-&lt;/mbean&gt;
 
-....
+   &lt;mbean code="org.jboss.jms.server.destination.TopicService"
+      name="jboss.messaging.destination:service=Topic,name=testTopic"
+      xmbean-dd="xmdesc/Topic-xmbean.xml"&gt;
+      &lt;depends optional-attribute-name="ServerPeer"&gt;jboss.messaging:service=ServerPeer&lt;/depends&gt;
+      &lt;depends&gt;jboss.messaging:service=PostOffice&lt;/depends&gt;
+      &lt;attribute name="SecurityConfig"&gt;
+         &lt;security&gt;
+            &lt;role name="guest" read="true" write="true"/&gt;
+            &lt;role name="publisher" read="true" write="true" create="false"/&gt;
+            &lt;role name="durpublisher" read="true" write="true" create="true"/&gt;
+         &lt;/security&gt;
+      &lt;/attribute&gt;
+   &lt;/mbean&gt;
 
-&lt;mbean code="org.jboss.jms.server.destination.Topic"
-       name="jboss.messaging.destination:service=Topic,name=testTopic"
-       xmbean-dd="xmdesc/Topic-xmbean.xml"&gt;
-   &lt;depends optional-attribute-name="ServerPeer"&gt;
-		jboss.messaging:service=ServerPeer&lt;/depends&gt;
-   &lt;attribute name="SecurityConfig"&gt;
-      &lt;security&gt;
-         &lt;role name="guest" read="true" write="true"/&gt;
-         &lt;role name="publisher" read="true" write="true" create="false"/&gt;
-         &lt;role name="durpublisher" read="true" write="true" create="true"/&gt;
-      &lt;/security&gt;
-   &lt;/attribute&gt;
-&lt;/mbean&gt;
+   &lt;mbean code="org.jboss.jms.server.destination.TopicService"
+      name="jboss.messaging.destination:service=Topic,name=securedTopic"
+      xmbean-dd="xmdesc/Topic-xmbean.xml"&gt;
+      &lt;depends optional-attribute-name="ServerPeer"&gt;jboss.messaging:service=ServerPeer&lt;/depends&gt;
+      &lt;depends&gt;jboss.messaging:service=PostOffice&lt;/depends&gt;
+      &lt;attribute name="SecurityConfig"&gt;
+         &lt;security&gt;
+            &lt;role name="publisher" read="true" write="true" create="false"/&gt;
+         &lt;/security&gt;
+      &lt;/attribute&gt;
+   &lt;/mbean&gt;
 
-....
 
-&lt;mbean code="org.jboss.jms.server.destination.Queue"
-       name="jboss.messaging.destination:service=Queue,name=testQueue"
-       xmbean-dd="xmdesc/Queue-xmbean.xml"&gt;
-   &lt;depends optional-attribute-name="ServerPeer"&gt;
-		jboss.messaging:service=ServerPeer&lt;/depends&gt;
-   &lt;attribute name="SecurityConfig"&gt;
-      &lt;security&gt;
-         &lt;role name="guest" read="true" write="true"/&gt;
-         &lt;role name="publisher" read="true" write="true" create="false"/&gt;
-         &lt;role name="noacc" read="false" write="false" create="false"/&gt;
-      &lt;/security&gt;
-   &lt;/attribute&gt;
-&lt;/mbean&gt;
+   &lt;mbean code="org.jboss.jms.server.destination.QueueService"
+      name="jboss.messaging.destination:service=Queue,name=testQueue"
+      xmbean-dd="xmdesc/Queue-xmbean.xml"&gt;
+      &lt;depends optional-attribute-name="ServerPeer"&gt;jboss.messaging:service=ServerPeer&lt;/depends&gt;
+      &lt;depends&gt;jboss.messaging:service=PostOffice&lt;/depends&gt;
+      &lt;attribute name="SecurityConfig"&gt;
+         &lt;security&gt;
+            &lt;role name="guest" read="true" write="true"/&gt;
+            &lt;role name="publisher" read="true" write="true" create="false"/&gt;
+            &lt;role name="noacc" read="false" write="false" create="false"/&gt;
+         &lt;/security&gt;
+      &lt;/attribute&gt;
+   &lt;/mbean&gt;
 
+   &lt;mbean code="org.jboss.jms.server.destination.QueueService"
+      name="jboss.messaging.destination:service=Queue,name=A"
+      xmbean-dd="xmdesc/Queue-xmbean.xml"&gt;
+      &lt;depends optional-attribute-name="ServerPeer"&gt;jboss.messaging:service=ServerPeer&lt;/depends&gt;
+      &lt;depends&gt;jboss.messaging:service=PostOffice&lt;/depends&gt;
+   &lt;/mbean&gt;
+
+
+   &lt;!-- It's possible for indiviual queues and topics to use a specific queue for
+   an expiry or DLQ --&gt;
+
+   &lt;mbean code="org.jboss.jms.server.destination.QueueService"
+      name="jboss.messaging.destination:service=Queue,name=PrivateDLQ"
+      xmbean-dd="xmdesc/Queue-xmbean.xml"&gt;
+      &lt;depends optional-attribute-name="ServerPeer"&gt;jboss.messaging:service=ServerPeer&lt;/depends&gt;
+      &lt;depends&gt;jboss.messaging:service=PostOffice&lt;/depends&gt;
+   &lt;/mbean&gt;
+
+   &lt;mbean code="org.jboss.jms.server.destination.QueueService"
+      name="jboss.messaging.destination:service=Queue,name=PrivateExpiryQueue"
+      xmbean-dd="xmdesc/Queue-xmbean.xml"&gt;
+      &lt;depends optional-attribute-name="ServerPeer"&gt;jboss.messaging:service=ServerPeer&lt;/depends&gt;
+      &lt;depends&gt;jboss.messaging:service=PostOffice&lt;/depends&gt;
+   &lt;/mbean&gt;
+
+   &lt;mbean code="org.jboss.jms.server.destination.QueueService"
+      name="jboss.messaging.destination:service=Queue,name=QueueWithOwnDLQAndExpiryQueue"
+      xmbean-dd="xmdesc/Queue-xmbean.xml"&gt;
+      &lt;depends optional-attribute-name="ServerPeer"&gt;jboss.messaging:service=ServerPeer&lt;/depends&gt;
+      &lt;depends&gt;jboss.messaging:service=PostOffice&lt;/depends&gt;
+      &lt;attribute name="DLQ"&gt;jboss.messaging.destination:service=Queue,name=PrivateDLQ&lt;/attribute&gt;
+      &lt;attribute name="ExpiryQueue"&gt;jboss.messaging.destination:service=Queue,name=PrivateExpiryQueue&lt;/attribute&gt;
+   &lt;/mbean&gt;
+
+   &lt;mbean code="org.jboss.jms.server.destination.TopicService"
+      name="jboss.messaging.destination:service=Topic,name=TopicWithOwnDLQAndExpiryQueue"
+      xmbean-dd="xmdesc/Topic-xmbean.xml"&gt;
+      &lt;depends optional-attribute-name="ServerPeer"&gt;jboss.messaging:service=ServerPeer&lt;/depends&gt;
+      &lt;depends&gt;jboss.messaging:service=PostOffice&lt;/depends&gt;
+      &lt;attribute name="DLQ"&gt;jboss.messaging.destination:service=Queue,name=PrivateDLQ&lt;/attribute&gt;
+      &lt;attribute name="ExpiryQueue"&gt;jboss.messaging.destination:service=Queue,name=PrivateExpiryQueue&lt;/attribute&gt;
+   &lt;/mbean&gt;
+
+
+   &lt;mbean code="org.jboss.jms.server.destination.TopicService"
+      name="jboss.messaging.destination:service=Topic,name=TopicWithOwnRedeliveryDelay"
+      xmbean-dd="xmdesc/Topic-xmbean.xml"&gt;
+      &lt;depends optional-attribute-name="ServerPeer"&gt;jboss.messaging:service=ServerPeer&lt;/depends&gt;
+      &lt;depends&gt;jboss.messaging:service=PostOffice&lt;/depends&gt;
+      &lt;attribute name="RedeliveryDelay"&gt;5000&lt;/attribute&gt;
+   &lt;/mbean&gt;
+
+
+   &lt;mbean code="org.jboss.jms.server.destination.TopicService"
+      name="jboss.messaging.destination:service=Topic,name=testDistributedTopic"
+      xmbean-dd="xmdesc/Topic-xmbean.xml"&gt;
+      &lt;depends optional-attribute-name="ServerPeer"&gt;jboss.messaging:service=ServerPeer&lt;/depends&gt;
+      &lt;depends&gt;jboss.messaging:service=PostOffice&lt;/depends&gt;
+      &lt;attribute name="Clustered"&gt;true&lt;/attribute&gt;
+   &lt;/mbean&gt;
 ....
         </programlisting>
 
+    </section>
+
+
+    <section id="conf.destination.queue">
+
+       <title>Configuring queues</title>
+
+        <section id="conf.destination.queue.attributes">
+
+            <title>
+            We now discuss the MBean attributes of the Queue MBean
+            </title>
+
+               <section id="conf.destination.queue.attributes.name">
+                  <title>Name</title>
+                  <para>The name of the queue</para>
+               </section>
+
+               <section id="conf.destination.queue.attributes.jndiName">
+                   <title>JNDIName</title>
+                   <para>The JNDI name where the queue is bound</para>
+               </section>
+
+               <section id="conf.destination.queue.attributes.dlq">
+                    <title>DLQ</title>
+                    <para>The DLQ used for this queue. Overrides any value set on the ServerPeer config</para>
+               </section>
+
+               <section id="conf.destination.queue.attributes.expiryqueue">
+                    <title>ExpiryQueue</title>
+                    <para>The Expiry queue used for this queue. Overrides any value set on the ServerPeer config</para>
+               </section>
+
+               <section id="conf.destination.queue.attributes.redeliverydelay">
+                    <title>RedeliveryDelay</title>
+                    <para>The redlivery delay to be used for this queue. Overrides any value set on the ServerPeer config</para>
+               </section>
+
+              <section id="conf.destination.queue.attributes.security">
+               <title>Destination Security Configuration</title>
+
+                 <para>
+                    <literal>SecurityConfig</literal> - allows you to determine which roles are allowed
+                    to read, write and create on the destination. It has exactly the same syntax and
+                    semantics as the security configuration in JBossMQ destinations.
+                 </para>
+
+                 <para>
+                    The <literal>SecurityConfig</literal> element should contain one
+                    <literal>&lt;security&gt;</literal> element. The <literal>&lt;security&gt;</literal>
+                    element can contain multiple <literal>&lt;role&gt;</literal> elements.
+                    Each <literal>&lt;role&gt;</literal> element defines the access for that
+                    particular role.
+                 </para>
+
+                 <para>
+                    If the <literal>read</literal> attribute is <literal>true</literal> then that role
+                    will be able to read (create consumers, receive messaages or browse) this destination.
+                 </para>
+
+                 <para>
+                    If the <literal>write</literal> attribute is <literal>true</literal> then that role
+                    will be able to write (create producers or send messages) to this destination.
+                 </para>
+
+                 <para>
+                    If the <literal>create</literal> attribute is <literal>true</literal> then that role
+                    will be able to create durable subscriptions on this destination.
+                 </para>
+
+                 <para>
+                    Note that the security configuration for a destination is optional. If a
+                    <literal>SecurityConfig</literal> element is not specifed then the default
+                    security configuration from the Server Peer will be used.
+                 </para>
+              </section>
+
+           <section id="conf.destination.queue.attributes.paging">
+              <title>Destination paging parameters</title>
+
+              <para>
+                 'Pageable Channels' are a sophisticated new feature available in JBoss Messaging.
+              </para>
+
+              <para>
+                 If your application needs to support very large queues or subscriptions containing
+                 potentially millions of messages, then it's not possible to store them all in
+                 memory at once.
+              </para>
+
+              <para>
+                 JBoss Messaging solves this problem but letting you specify the
+                 maximum number of messages that can be stored in memory at any one time,
+                 on a queue-by-queue, or topic-by-topic basis. JBoss Messaging then pages messages
+                 to and from storage transparently in blocks, allowing queues and subscriptions to
+                 grow to very large sizes without any performance degradation as channel size increases.
+              </para>
+
+              <para>
+                 This has been tested with in excess of 10 million 2K messages on very basic hardware
+                 and has the potential to scale to much larger number of messages.
+              </para>
+
+              <para>
+                 The individual parameters are:
+              </para>
+
+              <para>
+                 <literal>FullSize</literal> - this is the maximum number of messages held by the
+                 queue or topic subscriptions in memory at any one time. The actual queue or
+                 subscription can hold many more messages than this but these are paged to and
+                 from storage as necessary as messages are added or consumed.
+              </para>
+
+              <para>
+                 <literal>PageSize</literal> - When loading messages from the queue or subscrition
+                 this is the maximum number of messages to pre-load in one operation.
+              </para>
+
+              <para>
+                 <literal>DownCacheSize</literal> - When paging messages to storage from the queue
+                 they first go into a "Down Cache" before being written to storage. This enables the
+                 write to occur as a single operation thus aiding performance. This setting determines
+                 the max number of messages that the Down Cache will hold before they are flushed
+                 to storage.
+              </para>
+
+              <para>
+                 If no values for <literal>FullSize</literal>, <literal>PageSize</literal>,
+                 or <literal>DownCacheSize</literal> are specified they will default to values
+                 75000, 2000, 2000 respectively.
+              </para>
+
+              <para>
+                 If you want to specify the paging parameters used for temporary queues then you need to specify them
+                 on the appropriate connection factory.
+                 See connection factory configuration for details.
+              </para>
+           </section>
+
+           <section id="conf.destination.queue.attributes.createdprogrammatically">
+               <title>CreatedProgrammatically</title>
+
+               <para>
+                 Returns <literal>true</literal> if the queue was created programmatically
+              </para>
+          </section>
+
+           <section id="conf.destination.queue.attributes.messagecount">
+               <title>MessageCount</title>
+
+               <para>
+                 Returns the total number of messages in the queue = number not being delivered + number being delivered + number being scheduled
+              </para>
+          </section>
+
+           <section id="conf.destination.queue.attributes.scheduledmessagecount">
+               <title>ScheduledMessageCount</title>
+
+               <para>
+                 Returns the  number of scheduled messages in the queue. This is the number of messages scheduled to be delivered at a later date.
+              </para>
+          </section>
+
+           <section id="conf.destination.queue.attributes.maxsize">
+               <title>MaxSize</title>
+
+               <para>
+                 A maximum size (in number of messages) can be specified for a queue. Any messages that arrive beyond this point will be dropped. The default is
+                 <literal>-1</literal> which is unbounded.
+              </para>
+          </section>
+
+           <section id="conf.destination.queue.attributes.clustered">
+               <title>Clustered</title>
+
+               <para>
+                 Clustered destinations must have this set to <literal>true</literal>
+              </para>
+          </section>
+
+           <section id="conf.destination.queue.attributes.messagecounter">
+               <title>MessageCounter</title>
+
+               <para>
+                 Each queue maintains a message counter.
+              </para>
+          </section>
+
+           <section id="conf.destination.queue.attributes.messagecounterstats">
+               <title>MessageCounterStatistics</title>
+
+               <para>
+                 The statistics for the message counter
+              </para>
+          </section>
+
+           <section id="conf.destination.queue.attributes.messagecounterhistorydaylimit">
+               <title>MessageCounterHistoryDayLimit</title>
+
+               <para>
+                 The maximum number of days to hold message counter history for. Overrides any value set on the ServerPeer.
+              </para>
+          </section>
+
+           <section id="conf.destination.queue.attributes.consumercount">
+               <title>ConsumerCount</title>
+
+               <para>
+                 The number of consumers currently consuming from the queue.
+              </para>
+          </section>
+
      </section>
 
-     <section id="conf.destination.config.paramters">
-        <title>Destination Configuration Parameters</title>
 
-        <section id="conf.destination.security">
-         <title>Destination Security Configuration</title>
+     <section id="conf.destination.queue.operations">
 
-           <para>
-              <literal>SecurityConfig</literal> - allows you to determine which roles are allowed
-              to read, write and create on the destination. It has exactly the same syntax and
-              semantics as the security configuration in JBossMQ destinations.
-           </para>
+         <title>
+             We now discuss the MBean operations of the Queue MBean
+         </title>
 
-           <para>
-              The <literal>SecurityConfig</literal> element should contain one
-              <literal>&lt;security&gt;</literal> element. The <literal>&lt;security&gt;</literal>
-              element can contain multiple <literal>&lt;role&gt;</literal> elements.
-              Each <literal>&lt;role&gt;</literal> element defines the access for that
-              particular role.
-           </para>
+         <section id="conf.destination.queue.operations.removeallmessages">
+             <title>RemoveAllMessages</title>
 
-           <para>
-              If the <literal>read</literal> attribute is <literal>true</literal> then that role
-              will be able to read (create consumers, receive messaages or browse) this destination.
-           </para>
+              <para>
+                Remove (and delete) all messages from the queue.
+                <warning>Use this with caution. It will permanently delete all messages from the queue</warning>
+             </para>
+         </section>
 
-           <para>
-              If the <literal>write</literal> attribute is <literal>true</literal> then that role
-              will be able to write (create producers or send messages) to this destination.
-           </para>
+         <section id="conf.destination.queue.operations.listallmessages">
+             <title>ListAllMessages</title>
 
-           <para>
-              If the <literal>create</literal> attribute is <literal>true</literal> then that role
-              will be able to create durable subscriptions on this destination.
-           </para>
+              <para>
+                List all messages currently in the queue
+             </para>
+             <para>There are two overloaded versions of this operation: One takes a JMS selector as an argument, the other does not. By using the selector
+             you can retrieve a subset of the messages in the queue that match the criteria</para>
+         </section>
 
-           <para>
-              Note that the security configuration for a destination is optional. If a
-              <literal>SecurityConfig</literal> element is not specifed then the default
-              security configuration from the Server Peer will be used.
-           </para>
-        </section>
+         <section id="conf.destination.queue.operations.listdurablemessages">
+             <title>ListDurableMessages</title>
 
-        <section id="conf.destination.paging">
-           <title>Destination paging parameters</title>
+              <para>
+                As listAllMessages but only lists the durable messages
+             </para>
+             <para>There are two overloaded versions of this operation: One takes a JMS selector as an argument, the other does not. By using the selector
+             you can retrieve a subset of the messages in the queue that match the criteria</para>
+         </section>
 
-           <para>
-              'Pageable Channels' are a sophisticated new feature available in JBoss Messaging.
-           </para>
 
-           <para>
-              If your application needs to support very large queues or subscriptions containing
-              potentially millions of messages, then it's not possible to store them all in
-              memory at once.
-           </para>
+         <section id="conf.destination.queue.operations.listnondurablemessages">
+             <title>ListNonDurableMessages</title>
 
-           <para>
-              JBoss Messaging solves this problem but letting you specify the
-              maximum number of messages that can be stored in memory at any one time,
-              on a queue-by-queue, or topic-by-topic basis. JBoss Messaging then pages messages
-              to and from storage transparently in blocks, allowing queues and subscriptions to
-              grow to very large sizes without any performance degradation as channel size increases.
-           </para>
+              <para>
+                As listAllMessages but only lists the non durable messages
+             </para>
+             <para>There are two overloaded versions of this operation: One takes a JMS selector as an argument, the other does not. By using the selector
+             you can retrieve a subset of the messages in the queue that match the criteria</para>
+         </section>
 
-           <para>
-              This has been tested with in excess of 10 million 2K messages on very basic hardware
-              and has the potential to scale to much larger number of messages.
-           </para>
+         <section id="conf.destination.queue.operations.resetmessagecounter">
+             <title>ResetMessageCounter</title>
 
-           <para>
-              The individual parameters are:
-           </para>
+              <para>
+                Resets the message counter to zero.
+             </para>
+         </section>
 
-           <para>
-              <literal>FullSize</literal> - this is the maximum number of messages held by the
-              queue or topic subscriptions in memory at any one time. The actual queue or
-              subscription can hold many more messages than this but these are paged to and
-              from storage as necessary as messages are added or consumed.
-           </para>
+         <section id="conf.destination.queue.operations.resetmessagecounterhistory">
+             <title>ResetMessageCounterHistory</title>
 
-           <para>
-              <literal>PageSize</literal> - When loading messages from the queue or subscrition
-              this is the maximum number of messages to pre-load in one operation.
-           </para>
+              <para>
+                Resets the message counter history.
+             </para>
+         </section>
 
-           <para>
-              <literal>DownCacheSize</literal> - When paging messages to storage from the queue
-              they first go into a "Down Cache" before being written to storage. This enables the
-              write to occur as a single operation thus aiding performance. This setting determines
-              the max number of messages that the Down Cache will hold before they are flushed
-              to storage.
-           </para>
+         <section id="conf.destination.queue.operations.listmessagecounterashtml">
+             <title>ListMessageCounterAsHTML</title>
 
-           <para>
-              If no values for <literal>FullSize</literal>, <literal>PageSize</literal>,
-              or <literal>DownCacheSize</literal> are specified they will default to values
-              75000, 2000, 2000 respectively.
-           </para>
+              <para>
+                Lists the message counter in an easy to display HTML format
+             </para>
+         </section>
 
-           <para>
-              If you want to specify the paging parameters used for temporary queues then you need to specify them
-              on the appropriate connection factory.
-              See connection factory configuration for details.
-           </para>
-        </section>
+         <section id="conf.destination.queue.operations.listmessagecounterhistoryashtml">
+             <title>ListMessageCounterHistoryAsHTML</title>
+
+              <para>
+                Lists the message counter history in an easy to display HTML format
+             </para>
+         </section>
+
+
      </section>
+
+  </section>
+
+
+
+
+  <section id="conf.destination.topics">
+
+       <title>Configuring topics</title>
+
+        <section id="conf.destination.topic.attributes">
+
+            <title>
+            We now discuss the MBean attributes of the Topic MBean
+            </title>
+
+               <section id="conf.destination.topic.attributes.name">
+                  <title>Name</title>
+                  <para>The name of the topic</para>
+               </section>
+
+               <section id="conf.destination.topic.attributes.jndiName">
+                   <title>JNDIName</title>
+                   <para>The JNDI name where the topic is bound</para>
+               </section>
+
+               <section id="conf.destination.topic.attributes.dlq">
+                    <title>DLQ</title>
+                    <para>The DLQ used for this topic. Overrides any value set on the ServerPeer config</para>
+               </section>
+
+               <section id="conf.destination.topic.attributes.expiryqueue">
+                    <title>ExpiryQueue</title>
+                    <para>The Expiry queue used for this topic. Overrides any value set on the ServerPeer config</para>
+               </section>
+
+               <section id="conf.destination.topic.attributes.redeliverydelay">
+                    <title>RedeliveryDelay</title>
+                    <para>The redelivery delay to be used for this topic. Overrides any value set on the ServerPeer config</para>
+               </section>
+
+              <section id="conf.destination.topic.attributes.security">
+               <title>Destination Security Configuration</title>
+
+                 <para>
+                    <literal>SecurityConfig</literal> - allows you to determine which roles are allowed
+                    to read, write and create on the destination. It has exactly the same syntax and
+                    semantics as the security configuration in JBossMQ destinations.
+                 </para>
+
+                 <para>
+                    The <literal>SecurityConfig</literal> element should contain one
+                    <literal>&lt;security&gt;</literal> element. The <literal>&lt;security&gt;</literal>
+                    element can contain multiple <literal>&lt;role&gt;</literal> elements.
+                    Each <literal>&lt;role&gt;</literal> element defines the access for that
+                    particular role.
+                 </para>
+
+                 <para>
+                    If the <literal>read</literal> attribute is <literal>true</literal> then that role
+                    will be able to read (create consumers, receive messaages or browse) this destination.
+                 </para>
+
+                 <para>
+                    If the <literal>write</literal> attribute is <literal>true</literal> then that role
+                    will be able to write (create producers or send messages) to this destination.
+                 </para>
+
+                 <para>
+                    If the <literal>create</literal> attribute is <literal>true</literal> then that role
+                    will be able to create durable subscriptions on this destination.
+                 </para>
+
+                 <para>
+                    Note that the security configuration for a destination is optional. If a
+                    <literal>SecurityConfig</literal> element is not specifed then the default
+                    security configuration from the Server Peer will be used.
+                 </para>
+              </section>
+
+           <section id="conf.destination.topic.attributes.paging">
+              <title>Destination paging parameters</title>
+
+              <para>
+                 'Pageable Channels' are a sophisticated new feature available in JBoss Messaging.
+              </para>
+
+              <para>
+                 If your application needs to support very large queues or subscriptions containing
+                 potentially millions of messages, then it's not possible to store them all in
+                 memory at once.
+              </para>
+
+              <para>
+                 JBoss Messaging solves this problem but letting you specify the
+                 maximum number of messages that can be stored in memory at any one time,
+                 on a queue-by-queue, or topic-by-topic basis. JBoss Messaging then pages messages
+                 to and from storage transparently in blocks, allowing queues and subscriptions to
+                 grow to very large sizes without any performance degradation as channel size increases.
+              </para>
+
+              <para>
+                 This has been tested with in excess of 10 million 2K messages on very basic hardware
+                 and has the potential to scale to much larger number of messages.
+              </para>
+
+              <para>
+                 The individual parameters are:
+              </para>
+
+              <para>
+                 <literal>FullSize</literal> - this is the maximum number of messages held by the
+                 queue or topic subscriptions in memory at any one time. The actual queue or
+                 subscription can hold many more messages than this but these are paged to and
+                 from storage as necessary as messages are added or consumed.
+              </para>
+
+              <para>
+                 <literal>PageSize</literal> - When loading messages from the queue or subscrition
+                 this is the maximum number of messages to pre-load in one operation.
+              </para>
+
+              <para>
+                 <literal>DownCacheSize</literal> - When paging messages to storage from the queue
+                 they first go into a "Down Cache" before being written to storage. This enables the
+                 write to occur as a single operation thus aiding performance. This setting determines
+                 the max number of messages that the Down Cache will hold before they are flushed
+                 to storage.
+              </para>
+
+              <para>
+                 If no values for <literal>FullSize</literal>, <literal>PageSize</literal>,
+                 or <literal>DownCacheSize</literal> are specified they will default to values
+                 75000, 2000, 2000 respectively.
+              </para>
+
+              <para>
+                 If you want to specify the paging parameters used for temporary queues then you need to specify them
+                 on the appropriate connection factory.
+                 See connection factory configuration for details.
+              </para>
+           </section>
+
+           <section id="conf.destination.topic.attributes.createdprogrammatically">
+               <title>CreatedProgrammatically</title>
+
+               <para>
+                 Returns <literal>true</literal> if the topic was created programmatically
+              </para>
+          </section>
+
+           <section id="conf.destination.topic.attributes.maxsize">
+               <title>MaxSize</title>
+
+               <para>
+                 A maximum size (in number of messages) can be specified for a topic subscription. Any messages that arrive beyond this point will be dropped. The default is
+                 <literal>-1</literal> which is unbounded.
+              </para>
+          </section>
+
+           <section id="conf.destination.topic.attributes.clustered">
+               <title>Clustered</title>
+
+               <para>
+                 Clustered destinations must have this set to <literal>true</literal>
+              </para>
+          </section>
+
+           <section id="conf.destination.topic.attributes.messagecounterhistorydaylimit">
+               <title>MessageCounterHistoryDayLimit</title>
+
+               <para>
+                 The maximum number of days to hold message counter history for. Overrides any value set on the ServerPeer.
+              </para>
+          </section>
+
+           <section id="conf.destination.topic.attributes.messagecounters">
+               <title>MessageCounters</title>
+
+               <para>
+                 Return a list of the message counters for the subscriptions of this topic.
+              </para>
+          </section>
+
+           <section id="conf.destination.topic.attributes.allmessagecount">
+               <title>AllMessageCount</title>
+
+               <para>
+                 Return the total number of messages in all subscriptions of this topic.
+              </para>
+          </section>
+
+           <section id="conf.destination.topic.attributes.durablemessagecount">
+               <title>DurableMessageCount</title>
+
+               <para>
+                 Return the total number of durable messages in all subscriptions of this topic.
+              </para>
+
+          </section>
+
+         <section id="conf.destination.topic.attributes.nondurablemessagecount">
+             <title>NonDurableMessageCount</title>
+
+             <para>
+               Return the total number of non durable messages in all subscriptions of this topic.
+            </para>
+          </section>
+
+         <section id="conf.destination.topic.attributes.allsubscriptionscount">
+             <title>AllSubscriptionsCount</title>
+
+             <para>
+               The count of all subscriptions on this topic
+            </para>
+          </section>
+
+         <section id="conf.destination.topic.attributes.durablesubscriptionscount">
+             <title>DurableSubscriptionsCount</title>
+
+             <para>
+               The count of all durable subscriptions on this topic
+            </para>
+          </section>
+
+         <section id="conf.destination.topic.attributesnon.durablesubscriptionscount">
+             <title>NonDurableSubscriptionsCount</title>
+
+             <para>
+               The count of all non durable subscriptions on this topic
+            </para>
+        </section>
+
+
+     </section>
+
+
+     <section id="conf.destination.topic.operations">
+
+         <title>
+             We now discuss the MBean operations of the Topic MBean
+         </title>
+
+         <section id="conf.destination.topic.operations.removeallmessages">
+             <title>RemoveAllMessages</title>
+
+              <para>
+                Remove (and delete) all messages from the subscriptions of this topic.
+                <warning>Use this with caution. It will permanently delete all messages from the topic</warning>
+             </para>
+         </section>
+
+         <section id="conf.destination.topic.operations.listallsubscriptions">
+             <title>ListAllSubscriptions</title>
+
+              <para>
+                List all subscriptions of this topic
+             </para>
+         </section>
+
+         <section id="conf.destination.topic.operations.listdurablesubscriptions">
+             <title>ListDurableSubscriptions</title>
+
+              <para>
+                List all durable subscriptions of this topic
+             </para>
+         </section>
+
+         <section id="conf.destination.topic.operations.listnondurablesubscriptions">
+             <title>ListNonDurableSubscriptions</title>
+
+              <para>
+                List all non durable subscriptions of this topic
+             </para>
+         </section>
+
+         <section id="conf.destination.topic.operations.listallsubscriptionsashtml">
+             <title>ListAllSubscriptionsAsHTML</title>
+
+              <para>
+                List all subscriptions of this topic in an easy to display HTML format
+             </para>
+         </section>
+
+         <section id="conf.destination.topic.operations.listdurablesubscriptionsashtml">
+             <title>ListDurableSubscriptionsAsHTML</title>
+
+              <para>
+                List all durable subscriptions of this topic in an easy to display HTML format
+             </para>
+         </section>
+
+         <section id="conf.destination.topic.operations.listnondurablesubscriptionsashtml">
+             <title>ListNonDurableSubscriptionsAsHTML</title>
+
+              <para>
+                List all non durable subscriptions of this topic in an easy to display HTML format
+             </para>
+         </section>
+
+         <section id="conf.destination.topic.operations.listallmessages">
+             <title>ListAllMessages</title>
+
+              <para>
+                Lists all messages for the specified subscription.
+             </para>
+
+             <para> There are two overloaded versions of this operation. One that takes a selector and one that does not.
+             By specifyingthe selector you can limit the messages returned.
+             </para>
+         </section>
+
+         <section id="conf.destination.topic.operations.listnondurablemessages">
+             <title>ListNonDurableMessages</title>
+
+              <para>
+                Lists all non durable messages for the specified subscription.
+             </para>
+
+             <para> There are two overloaded versions of this operation. One that takes a selector and one that does not.
+             By specifyingthe selector you can limit the messages returned.
+             </para>
+         </section>
+
+         <section id="conf.destination.topic.operations.listdurablemessages">
+             <title>ListDurableMessages</title>
+
+              <para>
+                Lists all durable messages for the specified subscription.
+             </para>
+
+             <para> There are two overloaded versions of this operation. One that takes a selector and one that does not.
+             By specifyingthe selector you can limit the messages returned.
+             </para>
+         </section>
+
+     </section>
+
+  </section>
+
+
 
      <section id="conf.destination.new">
         <title>Deploying a new destination</title>
@@ -541,27 +2026,27 @@ SELECT_PRECONF_CLIENTID=SELECT CLIENTID FROM JMS_USER WHERE USERID=?
         <programlisting>
 &lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
 &lt;server&gt;
-	&lt;loader-repository&gt;jboss.messaging:loader=ScopedLoaderRepository
-	&lt;loader-repository-config&gt;java2ParentDelegation=false&lt;/loader-repository-config&gt;
-	&lt;/loader-repository&gt;
-	&lt;mbean
-		code=&quot;org.jboss.jms.server.destination.Queue&quot;
-	  name=&quot;jboss.messaging.destination:service=Queue,name=testQueue&quot;
-	  xmbean-dd=&quot;xmdesc/Queue-xmbean.xml&quot;&gt;
-		&lt;depends optional-attribute-name=&quot;ServerPeer&quot;&gt;
-			jboss.messaging:service=ServerPeer
-		&lt;/depends&gt;
-		&lt;attribute name=&quot;SecurityConfig&quot;&gt;
-		   &lt;security&gt;
-		      &lt;role name=&quot;guest&quot; read=&quot;true&quot;write=&quot;true&quot;/&gt;
-		      &lt;role name=&quot;publisher&quot; read=&quot;true&quot; write=&quot;true&quot; create=&quot;false&quot;/&gt;
-		      &lt;role name=&quot;noacc&quot; read=&quot;false&quot; write=&quot;false&quot; create=&quot;false&quot;/&gt;
-		    &lt;/security&gt;
-		&lt;/attribute&gt;
-		&lt;attribute name=&quot;fullSize&quot;&gt;75000&lt;/attribute&gt;
-		&lt;attribute name=&quot;pageSize&quot;&gt;2000&lt;/attribute&gt;
-		&lt;attribute name=&quot;downCacheSize&quot;&gt;2000&lt;/attribute&gt;
-	&lt;/mbean&gt;
+   &lt;loader-repository&gt;jboss.messaging:loader=ScopedLoaderRepository
+   &lt;loader-repository-config&gt;java2ParentDelegation=false&lt;/loader-repository-config&gt;
+   &lt;/loader-repository&gt;
+   &lt;mbean
+      code=&quot;org.jboss.jms.server.destination.Queue&quot;
+     name=&quot;jboss.messaging.destination:service=Queue,name=testQueue&quot;
+     xmbean-dd=&quot;xmdesc/Queue-xmbean.xml&quot;&gt;
+      &lt;depends optional-attribute-name=&quot;ServerPeer&quot;&gt;
+         jboss.messaging:service=ServerPeer
+      &lt;/depends&gt;
+      &lt;attribute name=&quot;SecurityConfig&quot;&gt;
+         &lt;security&gt;
+            &lt;role name=&quot;guest&quot; read=&quot;true&quot;write=&quot;true&quot;/&gt;
+            &lt;role name=&quot;publisher&quot; read=&quot;true&quot; write=&quot;true&quot; create=&quot;false&quot;/&gt;
+            &lt;role name=&quot;noacc&quot; read=&quot;false&quot; write=&quot;false&quot; create=&quot;false&quot;/&gt;
+          &lt;/security&gt;
+      &lt;/attribute&gt;
+      &lt;attribute name=&quot;fullSize&quot;&gt;75000&lt;/attribute&gt;
+      &lt;attribute name=&quot;pageSize&quot;&gt;2000&lt;/attribute&gt;
+      &lt;attribute name=&quot;downCacheSize&quot;&gt;2000&lt;/attribute&gt;
+   &lt;/mbean&gt;
 &lt;/server&gt;
         </programlisting>
 
@@ -592,43 +2077,48 @@ SELECT_PRECONF_CLIENTID=SELECT CLIENTID FROM JMS_USER WHERE USERID=?
     </para>
 
     <para>
+    Connection factories can either be clustered or non clustered.
+    Clustered connection factories create subsequent connections on different nodes of the cluster according to the load balancing policy.
+    The default load balancing policy is round robin.
+    </para>
+
+    <para>
        An example connection factory configuration is presented below:
      </para>
 
       <programlisting>
-	                                                                                                   errrrrfff  eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee                                           fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
-&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+
 &lt;server&gt;
-	&lt;loader-repository&gt;
-		jboss.messaging:loader=ScopedLoaderRepository
-			&lt;loader-repository-config&gt;
-				java2ParentDelegation=false
-			&lt;/loader-repository-config&gt;
-	&lt;/loader-repository&gt;
-	&lt;mbean
-		code=&quot;org.jboss.jms.server.connectionfactory.ConnectionFactory&quot;
-		name=&quot;jboss.messaging.destination:service=ConnectionFactory&quot;
-		xmbean-dd=&quot;xmdesc/ConnectionFactory-xmbean.xml&quot;&gt;
-	   &lt;constructor&gt;
-			&lt;arg type=&quot;java.lang.String&quot; value=&quot;myClientID&quot;/&gt;
-	   &lt;/constructor&gt;
-		&lt;depends optional-attribute-name=&quot;ServerPeer&quot;&gt;
-			jboss.messaging:service=ServerPeer
-		&lt;/depends&gt;
-		&lt;depends optional-attribute-name=&quot;Connector&quot;&gt;
-			jboss.messaging:service=Connector,transport=socket
-		&lt;/depends&gt;
-		&lt;attribute name=&quot;PrefetchSize&quot;&gt;10&lt;/attribute&gt;
-		&lt;attribute name=&quot;DefaultTempQueueFullSize&quot;&gt;1000&lt;/attribute&gt;
-		&lt;attribute name=&quot;DefaultTempQueuePageSize&quot;&gt;50&lt;/attribute&gt;
-		&lt;attribute name=&quot;DefaultTempQueueDownCacheSize&quot;&gt;50&lt;/attribute&gt;
-		&lt;attribute name=&quot;JNDIBindings&quot;&gt;
-		   &lt;bindings&gt;
-		      &lt;binding&gt;/MyConnectionFactory1&lt;/binding&gt;
-		      &lt;binding&gt;/factories/cf1&lt;/binding>&gt;
-		   &lt;/bindings&gt;
-		&lt;/attribute&gt;
-	&lt;/mbean&gt;
+   &lt;loader-repository&gt;
+      jboss.messaging:loader=ScopedLoaderRepository
+         &lt;loader-repository-config&gt;
+            java2ParentDelegation=false
+         &lt;/loader-repository-config&gt;
+   &lt;/loader-repository&gt;
+   &lt;mbean
+      code=&quot;org.jboss.jms.server.connectionfactory.ConnectionFactory&quot;
+      name=&quot;jboss.messaging.destination:service=ConnectionFactory&quot;
+      xmbean-dd=&quot;xmdesc/ConnectionFactory-xmbean.xml&quot;&gt;
+      &lt;constructor&gt;
+         &lt;arg type=&quot;java.lang.String&quot; value=&quot;myClientID&quot;/&gt;
+      &lt;/constructor&gt;
+      &lt;depends optional-attribute-name=&quot;ServerPeer&quot;&gt;
+         jboss.messaging:service=ServerPeer
+      &lt;/depends&gt;
+      &lt;depends optional-attribute-name=&quot;Connector&quot;&gt;
+         jboss.messaging:service=Connector,transport=socket
+      &lt;/depends&gt;
+      &lt;attribute name=&quot;PrefetchSize&quot;&gt;10&lt;/attribute&gt;
+      &lt;attribute name=&quot;DefaultTempQueueFullSize&quot;&gt;1000&lt;/attribute&gt;
+      &lt;attribute name=&quot;DefaultTempQueuePageSize&quot;&gt;50&lt;/attribute&gt;
+      &lt;attribute name=&quot;DefaultTempQueueDownCacheSize&quot;&gt;50&lt;/attribute&gt;
+      &lt;attribute name=&quot;JNDIBindings&quot;&gt;
+         &lt;bindings&gt;
+            &lt;binding&gt;/MyConnectionFactory1&lt;/binding&gt;
+            &lt;binding&gt;/factories/cf1&lt;/binding>&gt;
+         &lt;/bindings&gt;
+      &lt;/attribute&gt;
+   &lt;/mbean&gt;
 &lt;/server&gt;
 
     </programlisting>
@@ -641,17 +2131,70 @@ SELECT_PRECONF_CLIENTID=SELECT CLIENTID FROM JMS_USER WHERE USERID=?
         remoting connector. To use a different remoting connector with the connection factory
         change the <literal>Connector</literal> attribute to specify the service name of the connector you wish to use.
     </para>
-    <para>prefetchSize is an optional attribute that determines how many messages client side message consumers will buffer locally. Pre-fetching messages prevents
-    the client having to go to the server each time a message is consumed to say it is ready to receive another message.
-    This greatly increases throughput. The default value for prefetchSize is 150. You may want to change this to a smaller value if you are dealing with
-    very large messages, so as not to use too much memory on the client.
-    </para>
-    <para>DefaultTempQueueFullSize, DefaultTempQueuePageSize, DefaultTempQueueDownCacheSize are optional attributes that determine the default paging parameters to be used for
-    any temporary destinations scoped to connections created using this connection factory. See the section on paging channels for more information
-    on what these values mean.
-    They will default to values of 75000, 2000 and 2000 respectively if ommitted.
-    </para>
-  </section>
+
+    <section id="conf.connectionfactory.attributes">
+
+       <title>
+           We now discuss the MBean attributes of the ConnectionFactory MBean
+       </title>
+
+       <section id="conf.destination.connectionfactory.attributes.clientid">
+           <title>ClientID</title>
+
+            <para>
+              Connection factories can be pre-configured with a client id. Any connections created using this connection factory will obtain this client id
+           </para>
+       </section>
+
+       <section id="conf.destination.connectionfactory.attributes.jndibindings">
+           <title>JNDIBindings</title>
+
+            <para>
+              Returns a list of the JNDI bindings for this connection factory
+           </para>
+       </section>
+
+     <section id="conf.destination.connectionfactory.attributes.prefetchsize">
+         <title>PrefetchSize</title>
+
+          <para>
+            Each client side consumer maintains a local buffer of messages from which it consumes. The server typically sends messages as fast as it can
+            to the consumer, and when the consumer is full it sends the server a "stop" message to say it is full.
+            When it clears enough space it sends a "start" message to ask the server to continue sending messages.
+            The prefetchSize determines the size of this buffer. Larger values give better throughput.
+         </para>
+       </section>
+
+     <section id="conf.destination.connectionfactory.attributes.tempqueuepaging">
+        <title>Temporary queue paging parameters</title>
+
+       <para>DefaultTempQueueFullSize, DefaultTempQueuePageSize, DefaultTempQueueDownCacheSize are optional attributes that determine the default paging parameters to be used for
+       any temporary destinations scoped to connections created using this connection factory. See the section on paging channels for more information
+       on what these values mean.
+       They will default to values of 200000, 2000 and 2000 respectively if ommitted.
+       </para>
+     </section>
+
+    <section id="conf.destination.connectionfactory.attributes.dupsokbatchsize">
+       <title>DupsOKBatchSize</title>
+
+      <para>When using a session with acknowledge mode of DUPS_OK_ACKNOWLEDGE this setting determines how many acknowledgments it will buffer locally
+      before sending. The default value is <literal>2000</literal>
+      </para>
+   </section>
+
+   <section id="conf.destination.connectionfactory.attributes.connector">
+          <title>Connector</title>
+
+         <para>This specifies which remoting connector this connection factory uses. Different connection factories can use different connectors.
+         </para>
+         <para>For instance you could deploy one connection factory that creates connections that use the HTTP transport to communicate to the server and another
+         that creates connections that use the bisocket transport to communicate.</para>
+   </section>
+
+   </section>
+
+</section>
 
   <section id="conf.connector">
       <title>Configuring the remoting connector</title>
@@ -669,24 +2212,25 @@ SELECT_PRECONF_CLIENTID=SELECT CLIENTID FROM JMS_USER WHERE USERID=?
       </para>
 
       <para>
-         The default connector is configured to use the remoting socket transport.
+         The default connector is configured to use the remoting bisocket transport. The bisocket transport is a TCP socket based transport
+         which only listens and accepts connections on the server side. I.e. connections are always initiated from the client side. This means
+         it works well in typical firewall scenarios where only inbound connections are allowed on the server. Or where onlu outbound connections are
+         allowed from the client.
       </para>
 
       <para>
-         This transport opens TCP connections from client to server for client to server
-         communications (e.g. sending messages) and TCP connections from server to client
-         for server to client communications (e.g. receiving messages). The transport can be
-         configured to use SSL where a higher level of security is required.
-      </para>
+        The bisocket transport can be configured to use SSL where a higher level of security is required.
+        </para>
 
       <para>
-        Future releases JBoss Messaging will support a bidirectional socket transport
-         (similar to UIL2 in JBoss MQ) and an HTTP transport, both of which are useful in
-         network environments where TCP connections from server to client are not possible.
-         This means, for example, that you could deploy one connection factory that uses
-         the HTTP transport for all the connections created from it, and another connection
-         factory that uses the socket transport for all connections created from it.
+        The other supported transport is the HTTP transport. This uses the HTTP protocol to communicate between client and server. Data is received on the client
+        by the client periodically polling the server for messages. This transport is well suited to situations where there is a firewall between client and server
+        which only allows incoming HTTP traffic on the server.
+        Please note this transport will not be as performant as the bisocket transport due to the nature of polling and the HTTP protocl. Also please note it is not
+        designed for high load situations.
       </para>
+
+      <para>No other remoting transports are currently supported by JBoss Messaging</para>
 
        <para>
          You can look at remoting configuration under:
@@ -695,7 +2239,7 @@ SELECT_PRECONF_CLIENTID=SELECT CLIENTID FROM JMS_USER WHERE USERID=?
        <para>
           &lt;JBoss&gt;/server/&lt;YourMessagingServer&gt;/deploy/jboss-messaging.sar/remoting-service.xml
        </para>
-       
+
        <para>
           By default JBoss Messaging binds to ${jboss.bind.address} which can be defined by:
           ./run.sh -c &lt;yourconfig&gt; -b yourIP.
@@ -703,8 +2247,19 @@ SELECT_PRECONF_CLIENTID=SELECT CLIENTID FROM JMS_USER WHERE USERID=?
 
        <para>
           You can change remoting-service.xml if you want for example use a
-          different communication port, or change any other network behavior.
+          different communication port.
        </para>
+
+       <warning>Please be wary of changing other settings as they can have an adverse effect on the system</warning>
+
+  </section>
+
+  <section id="conf.servicebindingmanager">
+     <title>ServiceBindingManager</title>
+
+     <para>If you are using the JBoss AS ServiceBindingManager to provide different servers with different port ranges, then you must make sure that the JBoss Messaging
+     remoting configuration specified in the JBoss Messaging section of the ServiceBindingManager xml file exactly matches that in remoting-service.xml
+    </para>
   </section>
 
   <section id="conf.callback">
@@ -715,15 +2270,15 @@ SELECT_PRECONF_CLIENTID=SELECT CLIENTID FROM JMS_USER WHERE USERID=?
       </para>
 
       <para>
-         By default JBoss Messaging will execute InetAddress.getLocalHost().getHostAddress() to access your local host IP, but in case you need to setup a different IP, you can define a system property in your java arguments: 
+         By default JBoss Messaging will execute InetAddress.getLocalHost().getHostAddress() to access your local host IP, but in case you need to setup a different IP, you can define a system property in your java arguments:
       </para>
 
       <para>
-		Use java -Djboss.messaging.callback.bind.address=YourHost - That will determine the callBack host in your client.
+      Use java -Djboss.messaging.callback.bind.address=YourHost - That will determine the callBack host in your client.
       </para>
 
       <para>
-		The client port will be selected randomly for any non used port. But if you defined -Djboss.messaging.callback.bind.port=NumericPort in your System Properties that number is going to be used for the call back client port.
+      The client port will be selected randomly for any non used port. But if you defined -Djboss.messaging.callback.bind.port=NumericPort in your System Properties that number is going to be used for the call back client port.
       </para>
 
   </section>
