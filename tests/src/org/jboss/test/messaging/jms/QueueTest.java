@@ -126,84 +126,66 @@ public class QueueTest extends MessagingTestCase
    {
       Queue queue = (Queue)ic.lookup("/queue/TestQueue");
 
-      // Maybe we could remove this counter after we are sure this test is fixed!
-      // I had to use a counter because this can work in some iterations.
-      for (int counter = 0; counter < 20; counter++)
+      Connection conn1 = cf.createConnection();
+
+      assertEquals(0, ((JBossConnection)conn1).getServerID());
+
+      Connection conn2 = cf.createConnection();
+
+      assertEquals(0, ((JBossConnection)conn2).getServerID());
+
+      try
       {
-         log.info("Iteration = " + counter);
+         Session s = conn1.createSession(true, Session.AUTO_ACKNOWLEDGE);
 
-         Connection conn1 = cf.createConnection();
+         MessageProducer p = s.createProducer(queue);
 
-         assertEquals(0, ((JBossConnection)conn1).getServerID());
-
-         Connection conn2 = cf.createConnection();
-
-         assertEquals(0, ((JBossConnection)conn2).getServerID());
-
-         try
+         for (int i = 0; i < 20; i++)
          {
-            Session s = conn1.createSession(true, Session.AUTO_ACKNOWLEDGE);
-
-            MessageProducer p = s.createProducer(queue);
-
-            for (int i = 0; i < 20; i++)
-            {
-               p.send(s.createTextMessage("message " + i));
-            }
-
-            s.commit();
-
-            Session s2 = conn2.createSession(true, Session.AUTO_ACKNOWLEDGE);
-
-            // these next three lines are an anti-pattern but they shouldn't loose any messages
-            MessageConsumer c2 = s2.createConsumer(queue);
-            conn2.start();
-            c2.close();
-
-            c2 = s2.createConsumer(queue);
-
-            //There is a possibility the messages arrive out of order if they hit the closed
-            //consumer and are cancelled back before delivery to the other consumer has finished.
-            //There is nothing much we can do about this
-            Set texts = new HashSet();
-            
-            for (int i = 0; i < 20; i++)
-            {
-               TextMessage txt = (TextMessage)c2.receive(5000);
-               assertNotNull(txt);
-               texts.add(txt.getText());               
-            }
-            
-            for (int i = 0; i < 20; i++)
-            {
-               assertTrue(texts.contains("message " + i));            
-            }
-            
-            // Ovidiu: the test was originally invalid, a locally transacted session that is closed 
-            //         rolls back its transaction. I added s2.commit() to correct the test.
-            // JMS 1.1 Specifications, Section 4.3.5:
-            // "Closing a connection must roll back the transactions in progress on its
-            // transacted sessions*.
-            // *) The term 'transacted session' refers to the case where a session's commit and
-            // rollback methods are used to demarcate a transaction local to the session. In the
-            // case where a session's work is coordinated by an external transaction manager, a
-            // session's commit and rollback methods are not used and the result of a closed
-            // session's work is determined later by the transaction manager.
-
-            s2.commit();
-
-            assertNull(c2.receive(1000));
+            p.send(s.createTextMessage("message " + i));
          }
-         finally
+
+         s.commit();
+
+         Session s2 = conn2.createSession(true, Session.AUTO_ACKNOWLEDGE);
+
+         // these next three lines are an anti-pattern but they shouldn't loose any messages
+         MessageConsumer c2 = s2.createConsumer(queue);
+         conn2.start();
+         c2.close();
+
+         c2 = s2.createConsumer(queue);
+
+         //There is a possibility the messages arrive out of order if they hit the closed
+         //consumer and are cancelled back before delivery to the other consumer has finished.
+         //There is nothing much we can do about this
+         Set texts = new HashSet();
+
+         for (int i = 0; i < 20; i++)
          {
-            if (conn1 != null)
-            {
-               conn1.close();
-            }
-            if (conn2 != null)
-            {
-               conn2.close();
-            }
+            TextMessage txt = (TextMessage)c2.receive(5000);
+            assertNotNull(txt);
+            texts.add(txt.getText());
+         }
+
+         for (int i = 0; i < 20; i++)
+         {
+            assertTrue(texts.contains("message " + i));
+         }
+
+         s2.commit();
+
+         assertNull(c2.receive(1000));
+      }
+      finally
+      {
+         if (conn1 != null)
+         {
+            conn1.close();
+         }
+         if (conn2 != null)
+         {
+            conn2.close();
          }
       }
    }
