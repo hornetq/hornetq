@@ -90,7 +90,7 @@ public class JmsClientAspectXMLLoader extends AspectXmlLoader
             
             Document doc = docBuilder.parse(source);
             
-            this.deployXML(doc, null);              
+            this.deployXML(doc, null, this.getClass().getClassLoader());              
          }
          finally
          {
