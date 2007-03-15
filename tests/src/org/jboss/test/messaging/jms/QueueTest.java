@@ -124,69 +124,75 @@ public class QueueTest extends MessagingTestCase
    // added for http://jira.jboss.org/jira/browse/JBMESSAGING-899
    public void testClosedConsumerAfterStart() throws Exception
    {
-      Queue queue = (Queue)ic.lookup("/queue/TestQueue");
+      Queue queue = (Queue) ic.lookup("/queue/TestQueue");
 
-      Connection conn1 = cf.createConnection();
-
-      assertEquals(0, ((JBossConnection)conn1).getServerID());
-
-      Connection conn2 = cf.createConnection();
-
-      assertEquals(0, ((JBossConnection)conn2).getServerID());
-
-      try
+      // This loop is to increase chances of a failure.
+      for (int counter = 0; counter < 20; counter++)
       {
-         Session s = conn1.createSession(true, Session.AUTO_ACKNOWLEDGE);
+         log.info("Iteration = " + counter);
 
-         MessageProducer p = s.createProducer(queue);
+         Connection conn1 = cf.createConnection();
 
-         for (int i = 0; i < 20; i++)
+         assertEquals(0, ((JBossConnection) conn1).getServerID());
+
+         Connection conn2 = cf.createConnection();
+
+         assertEquals(0, ((JBossConnection) conn2).getServerID());
+
+         try
          {
-            p.send(s.createTextMessage("message " + i));
+            Session s = conn1.createSession(true, Session.AUTO_ACKNOWLEDGE);
+
+            MessageProducer p = s.createProducer(queue);
+
+            for (int i = 0; i < 20; i++)
+            {
+               p.send(s.createTextMessage("message " + i));
+            }
+
+            s.commit();
+
+            Session s2 = conn2.createSession(true, Session.AUTO_ACKNOWLEDGE);
+
+            // Create a consumer, start the session, close the consumer..
+            // This shouldn't cause any message to be lost
+            MessageConsumer c2 = s2.createConsumer(queue);
+            conn2.start();
+            c2.close();
+
+            c2 = s2.createConsumer(queue);
+
+            //There is a possibility the messages arrive out of order if they hit the closed
+            //consumer and are cancelled back before delivery to the other consumer has finished.
+            //There is nothing much we can do about this
+            Set texts = new HashSet();
+
+            for (int i = 0; i < 20; i++)
+            {
+               TextMessage txt = (TextMessage) c2.receive(5000);
+               assertNotNull(txt);
+               texts.add(txt.getText());
+            }
+
+            for (int i = 0; i < 20; i++)
+            {
+               assertTrue(texts.contains("message " + i));
+            }
+
+            s2.commit();
+
+            assertNull(c2.receive(1000));
          }
-
-         s.commit();
-
-         Session s2 = conn2.createSession(true, Session.AUTO_ACKNOWLEDGE);
-
-         // Create a consumer, start the session, close the consumer..
-         // This shouldn't cause any message to be lost
-         MessageConsumer c2 = s2.createConsumer(queue);
-         conn2.start();
-         c2.close();
-
-         c2 = s2.createConsumer(queue);
-
-         //There is a possibility the messages arrive out of order if they hit the closed
-         //consumer and are cancelled back before delivery to the other consumer has finished.
-         //There is nothing much we can do about this
-         Set texts = new HashSet();
-
-         for (int i = 0; i < 20; i++)
+         finally
          {
-            TextMessage txt = (TextMessage)c2.receive(5000);
-            assertNotNull(txt);
-            texts.add(txt.getText());
-         }
-
-         for (int i = 0; i < 20; i++)
-         {
-            assertTrue(texts.contains("message " + i));
-         }
-
-         s2.commit();
-
-         assertNull(c2.receive(1000));
-      }
-      finally
-      {
-         if (conn1 != null)
-         {
-            conn1.close();
-         }
-         if (conn2 != null)
-         {
-            conn2.close();
+            if (conn1 != null)
+            {
+               conn1.close();
+            }
+            if (conn2 != null)
+            {
+               conn2.close();
+            }
          }
       }
    }
