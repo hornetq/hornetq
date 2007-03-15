@@ -63,9 +63,12 @@ public class FailoverCommandCenter
    /**
     * Method called by failure detection components (FailoverValveInterceptors and
     * ConnectionListeners) when they have reasons to believe that a server failure occured.
+    * 
+    * Returns true if the failover command centre handled the exception gracefully and failover completed
+    * or false if it didn't and failover did not occur
     */
-   public void failureDetected(Throwable reason, FailureDetector source,
-                               JMSRemotingConnection remotingConnection)
+   public boolean failureDetected(Throwable reason, FailureDetector source,
+                                  JMSRemotingConnection remotingConnection)
       throws Exception
    {
       log.debug("failure detected by " + source);
@@ -94,7 +97,9 @@ public class FailoverCommandCenter
             {
                log.debug(this + " ignoring failure detection notification, as failover was " +
                   "already (or is in process of being) performed on this connection");
-               return;
+               
+               //Return true since failover already completed ok
+               return true;
             }
 
             remotingConnection.setFailed();
@@ -118,9 +123,7 @@ public class FailoverCommandCenter
          
          if (res == null)
          {
-            // No failover attempt was detected on the server side; this might happen if the
-            // client side network fails temporarily so the client connection breaks but the
-            // server cluster is still up and running - in this case we don't perform failover.
+            // Failover did not occur
             failoverSuccessful = false;
          }
          else
@@ -144,6 +147,8 @@ public class FailoverCommandCenter
             
             failoverSuccessful = true;                        
          }
+         
+         return failoverSuccessful;
       }
       catch (Exception e)
       {

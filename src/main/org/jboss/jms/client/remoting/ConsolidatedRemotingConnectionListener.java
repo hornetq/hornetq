@@ -6,16 +6,14 @@
  */
 package org.jboss.jms.client.remoting;
 
-import org.jboss.remoting.ConnectionListener;
-import org.jboss.remoting.Client;
-import org.jboss.logging.Logger;
-import org.jboss.jms.client.state.ConnectionState;
-
 import javax.jms.ExceptionListener;
 import javax.jms.JMSException;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Iterator;
+
+import org.jboss.jms.client.container.ConnectionFailureListener;
+import org.jboss.jms.client.state.ConnectionState;
+import org.jboss.logging.Logger;
+import org.jboss.remoting.Client;
+import org.jboss.remoting.ConnectionListener;
 
 /**
  * The ONLY remoting connection listener for a JMS connection's underlying remoting connection.
@@ -44,51 +42,56 @@ public class ConsolidatedRemotingConnectionListener implements ConnectionListene
    private ExceptionListener jmsExceptionListener;
 
    // List<ConnectionListener>
-   private List delegateListeners;
+   //private List delegateListeners;
+   
+   private ConnectionFailureListener remotingListener;
 
    // Constructors ---------------------------------------------------------------------------------
 
    public ConsolidatedRemotingConnectionListener()
    {
-      delegateListeners = new ArrayList();
    }
 
    // ConnectionListener implementation ------------------------------------------------------------
 
    public void handleConnectionException(Throwable throwable, Client client)
    {
-      // forward the exception to delegate listeners and JMS ExceptionListeners; synchronize and
-      // copy to avoid race conditions
+      // forward the exception to delegate listener and JMS ExceptionListeners; synchronize
+      // to avoid race conditions
 
       ExceptionListener jmsExceptionListenerCopy;
-      List delegateListenersCopy = new ArrayList();
+  
+      ConnectionFailureListener remotingListenerCopy;
 
       synchronized(this)
       {
          jmsExceptionListenerCopy = jmsExceptionListener;
 
-         for(Iterator i = delegateListeners.iterator(); i.hasNext(); )
-         {
-            delegateListenersCopy.add(i.next());
-         }
+         remotingListenerCopy = remotingListener;
       }
+      
+      boolean forwardToJMSListener = true;
 
-      for(Iterator i = delegateListenersCopy.iterator(); i.hasNext(); )
+      if (remotingListenerCopy != null)
       {
-         ConnectionListener l = (ConnectionListener)i.next();
-
          try
          {
-            log.debug(this + " forwarding remoting failure \"" + throwable + "\" to " + l);
-            l.handleConnectionException(throwable, client);
+            log.debug(this + " forwarding remoting failure \"" + throwable + "\" to " + remotingListenerCopy);
+            
+            //We only forward to the JMS listener if failover did not successfully handle the exception
+            //If failover handled the exception transparently then there is effectively no problem
+            //with the logical connection that the client needs to be aware of
+            forwardToJMSListener = !remotingListenerCopy.handleConnectionException(throwable, client);
          }
          catch(Exception e)
          {
-            log.warn("Failed to forward " + throwable + " to " + l, e);
+            log.warn("Failed to forward " + throwable + " to " + remotingListenerCopy, e);
          }
       }
-
-      if (jmsExceptionListenerCopy != null)
+      
+      log.info("DISPATCHING TO JMSLISTENER " + forwardToJMSListener);
+      
+      if (forwardToJMSListener && jmsExceptionListenerCopy != null)
       {
          JMSException jmsException = null;
 
@@ -118,10 +121,16 @@ public class ConsolidatedRemotingConnectionListener implements ConnectionListene
 
    // Public ---------------------------------------------------------------------------------------
 
-   public synchronized boolean addDelegateListener(ConnectionListener l)
+   public synchronized void setDelegateListener(ConnectionFailureListener l)
    {
-      log.debug(this + " adding delegate listener " + l);
-      return delegateListeners.add(l);
+      log.debug(this + " setting delegate listener " + l);
+      
+      if (remotingListener != null)
+      {
+         throw new IllegalStateException("There is already a connection listener for the connection");
+      }
+      
+      remotingListener = l;
    }
 
    public synchronized void addJMSExceptionListener(ExceptionListener jmsExceptionListener)
@@ -141,7 +150,7 @@ public class ConsolidatedRemotingConnectionListener implements ConnectionListene
    public synchronized void clear()
    {
       jmsExceptionListener = null;
-      delegateListeners.clear();
+      remotingListener = null;
       log.debug(this + " cleared");
    }
 

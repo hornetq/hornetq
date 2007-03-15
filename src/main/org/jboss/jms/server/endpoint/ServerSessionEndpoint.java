@@ -198,18 +198,8 @@ public class ServerSessionEndpoint implements SessionEndpoint
    {
       try
       {
-//         if (!connectionEndpoint.isFailoverConnection())
-//         {
-            // regular consumer
-            return createConsumerDelegateInternal(jmsDestination, selector,
-                                                  noLocal, subscriptionName);
-  //       }
-
-//         // we're child of a failover connection. Favor failover channels when creating new
-//         // consumers
-//         return createFailoverConsumerDelegateInternal(jmsDestination, selector,
-//                                                       noLocal, subscriptionName,
-//                                                       failoverChannelID);
+         return createConsumerDelegateInternal(jmsDestination, selector,
+                                               noLocal, subscriptionName);
       }
       catch (Throwable t)
       {
@@ -223,15 +213,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
 	{
       try
       {
-//         if (!connectionEndpoint.isFailoverConnection())
-//         {
-            // regular browser
-            return createBrowserDelegateInternal(jmsDestination, selector);
-//         }
-//
-//         // we're child of a failover connection. Favor failover channels when creating new
-//         // browsers
-//         return createFailoverBrowserDelegateInternal(jmsDestination, selector, failoverChannelID);
+         return createBrowserDelegateInternal(jmsDestination, selector);
       }
       catch (Throwable t)
       {
@@ -849,6 +831,9 @@ public class ServerSessionEndpoint implements SessionEndpoint
       }
       
       promptDelivery(channels);
+      
+      //Close down the executor
+      executor.shutdownAfterProcessingCurrentTask();
       
       deliveries.clear();
       

@@ -72,7 +72,6 @@ import org.jboss.messaging.core.plugin.postoffice.cluster.FailoverStatus;
 import org.jboss.messaging.core.tx.TransactionRepository;
 import org.jboss.messaging.util.Util;
 import org.jboss.mx.loading.UnifiedClassLoader3;
-import org.jboss.remoting.ServerInvocationHandler;
 import org.jboss.remoting.marshal.MarshalFactory;
 import org.jboss.system.ServiceCreator;
 import org.jboss.system.ServiceMBeanSupport;
@@ -168,10 +167,6 @@ public class ServerPeer extends ServiceMBeanSupport implements ServerPeerMBean
    
    protected ObjectName defaultExpiryQueueObjectName;
    protected Queue defaultExpiryQueue;
-
-   //Other stuff
-
-   private JMSServerInvocationHandler handler;
 
    // Constructors ---------------------------------------------------------------------------------
 
@@ -272,6 +267,10 @@ public class ServerPeer extends ServiceMBeanSupport implements ServerPeerMBean
          txRepository.loadPreparedTransactions();
          
          initializeRemoting(mbeanServer);
+         
+         //Now everything is started we can tell the invocation handler to start handling invocations
+         //We do this right at the end otherwise it can start handling invocations before we are properly started
+         JMSServerInvocationHandler.setClosed(false);
 
          started = true;
 
@@ -296,6 +295,11 @@ public class ServerPeer extends ServiceMBeanSupport implements ServerPeerMBean
          log.debug(this + " stopping");
 
          started = false;
+         
+         //Tell the invocation handler we are closed - this is so we don't attempt to handle
+         //any invocations when we are in a partial closing down state - which can give strange
+         //"object not found with id" exceptions and stuff like that
+         JMSServerInvocationHandler.setClosed(true);
 
          // Stop the wired components
 
@@ -927,11 +931,6 @@ public class ServerPeer extends ServiceMBeanSupport implements ServerPeerMBean
    {
       return channelIDManager;
    }
-
-   public ServerInvocationHandler getInvocationHandler()
-   {
-      return handler;
-   }
    
    public ServerSessionEndpoint getSession(Integer sessionID)
    {
@@ -1277,8 +1276,6 @@ public class ServerPeer extends ServiceMBeanSupport implements ServerPeerMBean
       JMSWireFormat wf = new JMSWireFormat();
 
       MarshalFactory.addMarshaller("jms", wf, wf);
-
-      handler = new JMSServerInvocationHandler();
    }
 
    private void loadServerAOPConfig() throws Exception

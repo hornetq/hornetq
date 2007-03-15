@@ -343,6 +343,11 @@ public class JMSRemotingConnection
       {
          // very unlikely to get an exception on a local remove (I suspect badly designed API),
          // but we're failed anyway, so we don't care too much
+         
+         // Actually an exception will always be thrown here if the failure was detected by the connection
+         // validator since the validator will disconnect the client before calling the connection
+         // listener.
+
          log.debug(this + " failed to cleanly remove callback manager from the client", t);
       }
 

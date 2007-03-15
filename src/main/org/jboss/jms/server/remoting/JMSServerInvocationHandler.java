@@ -28,6 +28,7 @@ import java.util.Map;
 
 import javax.management.MBeanServer;
 
+import org.jboss.jms.util.MessagingJMSException;
 import org.jboss.jms.wireformat.ConnectionFactoryCreateConnectionDelegateRequest;
 import org.jboss.jms.wireformat.RequestSupport;
 import org.jboss.logging.Logger;
@@ -62,14 +63,22 @@ public class JMSServerInvocationHandler implements ServerInvocationHandler
    
    private boolean trace;
    
+   //We need some way the server peer can call the invocation handler to make it open/closed
+   private static boolean closed = true;
+   
+   public static synchronized void setClosed(boolean closed)
+   {
+      JMSServerInvocationHandler.closed = closed;
+   }
+   
    // Constructors ---------------------------------------------------------------------------------
 
    public JMSServerInvocationHandler()
    {
       callbackHandlers = new HashMap();
       trace = log.isTraceEnabled();
-   }
-
+   }   
+     
    // ServerInvocationHandler ----------------------------------------------------------------------
 
    public void setMBeanServer(MBeanServer server)
@@ -92,37 +101,45 @@ public class JMSServerInvocationHandler implements ServerInvocationHandler
    public Object invoke(InvocationRequest invocation) throws Throwable
    {      
       if (trace) { log.trace("invoking " + invocation); }
-        
-      RequestSupport request = (RequestSupport)invocation.getParameter();
       
-      if (request instanceof ConnectionFactoryCreateConnectionDelegateRequest)
-      {
-         //Create connection request
-         
-         ConnectionFactoryCreateConnectionDelegateRequest cReq = 
-            (ConnectionFactoryCreateConnectionDelegateRequest)request;
-         
-         String remotingSessionId = cReq.getRemotingSessionID();
-         
-         ServerInvokerCallbackHandler callbackHandler = null;
-         synchronized(callbackHandlers)
+      synchronized (JMSServerInvocationHandler.class)
+      {         
+         if (closed)
          {
-            callbackHandler = (ServerInvokerCallbackHandler)callbackHandlers.get(remotingSessionId);
+            throw new MessagingJMSException("Cannot handle invocation since server is not active (it is either starting up or shutting down)");
          }
-         if (callbackHandler != null)
+           
+         RequestSupport request = (RequestSupport)invocation.getParameter();
+         
+         if (request instanceof ConnectionFactoryCreateConnectionDelegateRequest)
          {
-            log.debug("found calllback handler for remoting session " + Util.guidToString(remotingSessionId));
+            //Create connection request
             
-            cReq.setCallbackHandler(callbackHandler);
+            ConnectionFactoryCreateConnectionDelegateRequest cReq = 
+               (ConnectionFactoryCreateConnectionDelegateRequest)request;
+            
+            String remotingSessionId = cReq.getRemotingSessionID();
+            
+            ServerInvokerCallbackHandler callbackHandler = null;
+            synchronized(callbackHandlers)
+            {
+               callbackHandler = (ServerInvokerCallbackHandler)callbackHandlers.get(remotingSessionId);
+            }
+            if (callbackHandler != null)
+            {
+               log.debug("found calllback handler for remoting session " + Util.guidToString(remotingSessionId));
+               
+               cReq.setCallbackHandler(callbackHandler);
+            }
+            else
+            {
+               throw new IllegalStateException("Cannot find callback handler " +
+                                               "for session id " + remotingSessionId);
+            }
          }
-         else
-         {
-            throw new IllegalStateException("Cannot find callback handler " +
-                                            "for session id " + remotingSessionId);
-         }
-      }
       
-      return request.serverInvoke();
+         return request.serverInvoke();
+      }
    }
 
    public void addListener(InvokerCallbackHandler callbackHandler)
@@ -192,6 +209,11 @@ public class JMSServerInvocationHandler implements ServerInvocationHandler
    // Protected ------------------------------------------------------------------------------------
    
    // Private --------------------------------------------------------------------------------------
+   
+   private synchronized void doSetClosed(boolean closed)
+   {
+      this.closed = true;
+   }
    
    // Inner classes --------------------------------------------------------------------------------
 }

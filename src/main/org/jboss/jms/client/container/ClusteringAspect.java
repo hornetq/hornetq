@@ -99,7 +99,7 @@ public class ClusteringAspect
 
       while (attemptCount < MAX_RECONNECT_HOP_COUNT)
       {
-         // since an exceptiong might be captured during an attempt, this has to be the first
+         // since an exception might be captured during an attempt, this has to be the first
          // operation
          attemptCount++;
          try
@@ -142,7 +142,7 @@ public class ClusteringAspect
                // add a connection listener to detect failure; the consolidated remoting connection
                // listener must be already in place and configured
                state.getRemotingConnection().getConnectionListener().
-                  addDelegateListener(new ConnectionFailureListener(fcc, state.getRemotingConnection()));
+                  setDelegateListener(new ConnectionFailureListener(fcc, state.getRemotingConnection()));
 
                log.debug(this + " installed failure listener on " + cd);
 

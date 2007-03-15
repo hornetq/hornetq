@@ -6,23 +6,23 @@
  */
 package org.jboss.jms.client.container;
 
-import org.jboss.remoting.ConnectionListener;
-import org.jboss.remoting.Client;
-import org.jboss.logging.Logger;
 import org.jboss.jms.client.FailoverCommandCenter;
 import org.jboss.jms.client.FailureDetector;
 import org.jboss.jms.client.remoting.JMSRemotingConnection;
+import org.jboss.logging.Logger;
+import org.jboss.remoting.Client;
 
 /**
  * The listener that detects a connection failure and initiates the failover process. Each physical
  * connection created under the supervision of ClusteredAspect has one of these.
  *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
  *
  * $Id$
  */
-public class ConnectionFailureListener implements ConnectionListener, FailureDetector
+public class ConnectionFailureListener implements FailureDetector
 {
    // Constants ------------------------------------------------------------------------------------
 
@@ -48,18 +48,24 @@ public class ConnectionFailureListener implements ConnectionListener, FailureDet
 
    // ConnectionListener implementation ------------------------------------------------------------
 
-   public void handleConnectionException(Throwable throwable, Client client)
+   /*
+    * Returns true if failover handled the exception gracefully
+    * Returns false if failover was unable to handle the exception and it should be passed
+    * on to any JMS exception listener
+    */
+   public boolean handleConnectionException(Throwable throwable, Client client)
    {
       try
       {
          log.debug(this + " is being notified of connection failure: " + throwable);
 
-         fcc.failureDetected(throwable, this, remotingConnection);
-
+         return fcc.failureDetected(throwable, this, remotingConnection);
       }
       catch (Throwable e)
       {
          log.error("Caught exception in handling failure", e);
+         
+         return false;
       }
    }
 
