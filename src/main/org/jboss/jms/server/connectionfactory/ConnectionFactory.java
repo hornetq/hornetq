@@ -295,7 +295,8 @@ public class ConnectionFactory extends ServiceMBeanSupport
          return;
       }
       
-      Class clz = Class.forName(factoryName);
+      //We don't use Class.forName() since then it won't work with scoped deployments
+      Class clz = Thread.currentThread().getContextClassLoader().loadClass(factoryName);
       
       loadBalancingFactory = (LoadBalancingFactory)clz.newInstance();
    }

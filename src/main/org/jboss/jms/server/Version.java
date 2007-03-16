@@ -126,7 +126,10 @@ public class Version implements Streamable, Serializable
       {
          Properties versionInfo = new Properties();
 
-         is = getClass().getClassLoader().getResourceAsStream(versionFile);
+         //Note we use the context classloader so this works in a scoped deployment
+         
+         is = Thread.currentThread().getContextClassLoader().getResourceAsStream(versionFile);
+         
          versionInfo.load(is);
 
          String s;

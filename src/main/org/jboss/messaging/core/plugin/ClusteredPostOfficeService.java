@@ -384,10 +384,13 @@ public class ClusteredPostOfficeService extends JDBCServiceSupport implements Pe
          PersistenceManager pm = serverPeer.getPersistenceManagerInstance();
          int nodeId = serverPeer.getServerPeerID();
 
-         Class clazz = Class.forName(messagePullPolicy);
+         // We don't use Class.forName() since then it won't work with scoped deployments
+         Class clazz = Thread.currentThread().getContextClassLoader().loadClass(messagePullPolicy);
+         
          MessagePullPolicy pullPolicy = (MessagePullPolicy)clazz.newInstance();
 
-         clazz = Class.forName(clusterRouterFactory);
+         clazz = Thread.currentThread().getContextClassLoader().loadClass(clusterRouterFactory);
+         
          ClusterRouterFactory rf = (ClusterRouterFactory)clazz.newInstance();
 
          ConditionFactory cf = new JMSConditionFactory();
