@@ -82,6 +82,18 @@ public class DuplicateClientIDTest extends MessagingTestCase
          if (c2 != null) c2.close();
       }
 
+      // This clause was added for http://jira.jboss.org/jira/browse/JBMESSAGING-932
+      // If opening a new connection after closing the previous one... this should work
+      try
+      {
+         c1 = cf.createConnection();
+         c1.setClientID("Duplicated");
+      }
+      finally
+      {
+         if (c1 != null) c1.close();
+      }
+
    }
 
    //http://jira.jboss.com/jira/browse/JBMESSAGING-816
@@ -123,6 +135,24 @@ public class DuplicateClientIDTest extends MessagingTestCase
             c2.close();
          }
       }
+
+      // This clause was added for http://jira.jboss.org/jira/browse/JBMESSAGING-932
+      // If opening a new connection after closing the previous one... this should work
+      try
+      {
+         c1 = cf.createConnection("dilbert", "dogbert");
+         assertNotNull(c1);
+         assertNotNull(c1.getClientID());
+      }
+      finally
+      {
+         if (c1 != null)
+         {
+            c1.close();
+         }
+      }
+
+
    }
 
    public void testNotDuplicateClientID() throws Exception

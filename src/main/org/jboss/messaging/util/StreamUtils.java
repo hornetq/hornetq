@@ -162,14 +162,14 @@ public class StreamUtils
             ObjectInputStream ois;
             if (useJBossSerialization)
             {
-               ois = new JBossObjectInputStream(in);
+               ois = new JBossObjectInputStream(in, Thread.currentThread().getContextClassLoader());
             }
             else
             {
-               ois = new ObjectInputStream(in);
+               ois = new ObjectInputStreamWithClassLoader(in);
             }
                         
-            value = (Serializable)ois.readObject();
+            value = ois.readObject();
             break;
          }              
          default :

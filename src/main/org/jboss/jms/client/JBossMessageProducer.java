@@ -35,7 +35,6 @@ import javax.jms.TopicPublisher;
 
 import org.jboss.jms.delegate.ProducerDelegate;
 import org.jboss.jms.destination.JBossDestination;
-import org.jboss.jms.util.ThreadContextClassLoaderChanger;
 import org.jboss.logging.Logger;
 
 /**
@@ -162,18 +161,7 @@ public class JBossMessageProducer implements MessageProducer, QueueSender, Topic
          throw new InvalidDestinationException("Not a JBossDestination:" + destination);
       }
 
-      ThreadContextClassLoaderChanger tccc = new ThreadContextClassLoaderChanger();
-
-      try
-      {
-         tccc.set(getClass().getClassLoader());
-
-         delegate.send((JBossDestination)destination, m, deliveryMode, priority, timeToLive);
-      }
-      finally
-      {
-         tccc.restore();
-      }      
+      delegate.send((JBossDestination)destination, m, deliveryMode, priority, timeToLive);
    }
 
 

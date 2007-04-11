@@ -29,7 +29,6 @@ import java.io.Serializable;
 import java.util.Enumeration;
 
 import org.jboss.jms.delegate.BrowserDelegate;
-import org.jboss.jms.util.ThreadContextClassLoaderChanger;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -69,18 +68,7 @@ public class JBossQueueBrowser implements QueueBrowser, Serializable
 
    public Enumeration getEnumeration() throws JMSException
    {
-      ThreadContextClassLoaderChanger tccc = new ThreadContextClassLoaderChanger();
-
-      try
-      {
-         tccc.set(getClass().getClassLoader());
-         delegate.reset();
-      }
-      finally
-      {
-         tccc.restore();
-      }
-      
+      delegate.reset();
       return new BrowserEnumeration();
    }
 

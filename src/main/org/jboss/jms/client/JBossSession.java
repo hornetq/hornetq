@@ -65,7 +65,6 @@ import org.jboss.jms.destination.JBossTemporaryQueue;
 import org.jboss.jms.destination.JBossTemporaryTopic;
 import org.jboss.jms.destination.JBossTopic;
 import org.jboss.jms.message.MessageProxy;
-import org.jboss.jms.util.ThreadContextClassLoaderChanger;
 import org.jboss.logging.Logger;
 
 /**
@@ -191,18 +190,7 @@ public class JBossSession implements
    {
       if (log.isTraceEnabled()) { log.trace("setMessageListener(" + listener + ") called"); }
 
-      ThreadContextClassLoaderChanger tccc = new ThreadContextClassLoaderChanger();
-
-      try
-      {
-         tccc.set(getClass().getClassLoader());
-
-         delegate.setMessageListener(listener);
-      }
-      finally
-      {
-         tccc.restore();
-      }
+      delegate.setMessageListener(listener);
    }
 
    public void run()
@@ -218,19 +206,8 @@ public class JBossSession implements
          throw new InvalidDestinationException("Not a JBossDestination:" + d);
       }
            
-      ThreadContextClassLoaderChanger tccc = new ThreadContextClassLoaderChanger();
-
-      try
-      {
-         tccc.set(getClass().getClassLoader());
-
-         ProducerDelegate producerDelegate = delegate.createProducerDelegate((JBossDestination)d);
-         return new JBossMessageProducer(producerDelegate);
-      }
-      finally
-      {
-         tccc.restore();
-      }
+      ProducerDelegate producerDelegate = delegate.createProducerDelegate((JBossDestination)d);
+      return new JBossMessageProducer(producerDelegate);
    }
 
   public MessageConsumer createConsumer(Destination d) throws JMSException
@@ -257,21 +234,10 @@ public class JBossSession implements
 
       log.debug("attempting to create consumer for destination:" + d + (messageSelector == null ? "" : ", messageSelector: " + messageSelector) + (noLocal ? ", noLocal = true" : ""));
 
-      ThreadContextClassLoaderChanger tccc = new ThreadContextClassLoaderChanger();
+      ConsumerDelegate cd = delegate.
+         createConsumerDelegate((JBossDestination)d, messageSelector, noLocal, null, false);
 
-      try
-      {
-         tccc.set(getClass().getClassLoader());
-
-         ConsumerDelegate cd = delegate.
-            createConsumerDelegate((JBossDestination)d, messageSelector, noLocal, null, false);
-         
-         return new JBossMessageConsumer(cd);
-      }
-      finally
-      {
-         tccc.restore();
-      }
+      return new JBossMessageConsumer(cd);
    }
 
    public Queue createQueue(String queueName) throws JMSException
@@ -310,21 +276,10 @@ public class JBossSession implements
          throw new InvalidDestinationException("Not a JBossTopic:" + topic);
       }
 
-      ThreadContextClassLoaderChanger tccc = new ThreadContextClassLoaderChanger();
+      ConsumerDelegate cd =
+         delegate.createConsumerDelegate((JBossTopic)topic, null, false, name, false);
 
-      try
-      {
-         tccc.set(getClass().getClassLoader());
-
-         ConsumerDelegate cd =
-            delegate.createConsumerDelegate((JBossTopic)topic, null, false, name, false);
-
-         return new JBossMessageConsumer(cd);
-      }
-      finally
-      {
-         tccc.restore();
-      }
+      return new JBossMessageConsumer(cd);
    }
 
    public TopicSubscriber createDurableSubscriber(Topic topic,
@@ -382,21 +337,10 @@ public class JBossSession implements
          messageSelector = null;
       }
 
-      ThreadContextClassLoaderChanger tccc = new ThreadContextClassLoaderChanger();
+      BrowserDelegate del =
+         delegate.createBrowserDelegate((JBossQueue)queue, messageSelector);
 
-      try
-      {
-         tccc.set(getClass().getClassLoader());
-
-         BrowserDelegate del =
-            delegate.createBrowserDelegate((JBossQueue)queue, messageSelector);
-         
-         return new JBossQueueBrowser(queue, messageSelector, del);
-      }
-      finally
-      {
-         tccc.restore();
-      }
+      return new JBossQueueBrowser(queue, messageSelector, del);
    }
 
    public TemporaryQueue createTemporaryQueue() throws JMSException

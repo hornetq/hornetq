@@ -663,7 +663,7 @@ public class SessionAspect
        
       MethodInvocation mi = (MethodInvocation)invocation;
       
-      if (mi.getArguments() != null)
+      if (mi.getArguments() != null && mi.getArguments().length > 0)
       {
          jbm.setObject((Serializable)mi.getArguments()[0]);
       }
@@ -683,8 +683,8 @@ public class SessionAspect
       JBossTextMessage jbm = new JBossTextMessage(0);
       
       MethodInvocation mi = (MethodInvocation)invocation;
-      
-      if (mi.getArguments() != null)
+
+      if (mi.getArguments() != null && mi.getArguments().length > 0)
       {
          jbm.setText((String)mi.getArguments()[0]);
       }

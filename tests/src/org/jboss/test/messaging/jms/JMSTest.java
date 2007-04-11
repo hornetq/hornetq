@@ -127,6 +127,42 @@ public class JMSTest extends MessagingTestCase
       conn.close();
    }
 
+   public void test_CreateTextMessageNull() throws Exception
+   {
+      ConnectionFactory cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
+
+      Queue queue = (Queue)ic.lookup("/queue/JMSTestQueue");
+
+      Connection conn = cf.createConnection();
+
+      Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+      MessageProducer prod = session.createProducer(queue);
+      prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+
+      TextMessage m = session.createTextMessage();
+
+      m.setText("message one");
+
+      prod.send(m);
+
+      conn.close();
+
+      conn = cf.createConnection();
+
+      session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+      MessageConsumer cons = session.createConsumer(queue);
+
+      conn.start();
+
+      TextMessage rm = (TextMessage)cons.receive();
+
+      assertEquals("message one", rm.getText());
+
+      conn.close();
+   }
+
    public void test_Persistent_NonTransactional() throws Exception
    {
       ConnectionFactory cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");

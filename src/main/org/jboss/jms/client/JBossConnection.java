@@ -49,7 +49,6 @@ import org.jboss.jms.client.delegate.DelegateSupport;
 import org.jboss.jms.client.state.ConnectionState;
 import org.jboss.jms.delegate.ConnectionDelegate;
 import org.jboss.jms.delegate.SessionDelegate;
-import org.jboss.jms.util.ThreadContextClassLoaderChanger;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -94,34 +93,12 @@ public class JBossConnection implements
 
    public String getClientID() throws JMSException
    {
-      ThreadContextClassLoaderChanger tccc = new ThreadContextClassLoaderChanger();
-
-      try
-      {
-         tccc.set(getClass().getClassLoader());
-
-         return delegate.getClientID();
-      }
-      finally
-      {
-         tccc.restore();
-      }
+      return delegate.getClientID();
    }
 
    public void setClientID(String clientID) throws JMSException
    {
-      ThreadContextClassLoaderChanger tccc = new ThreadContextClassLoaderChanger();
-
-      try
-      {
-         tccc.set(getClass().getClassLoader());
-
-         delegate.setClientID(clientID);
-      }
-      finally
-      {
-         tccc.restore();
-      }
+      delegate.setClientID(clientID);
    }
 
    public ConnectionMetaData getMetaData() throws JMSException
@@ -289,20 +266,9 @@ public class JBossConnection implements
          acknowledgeMode = Session.SESSION_TRANSACTED;
       }
 
-      ThreadContextClassLoaderChanger tccc = new ThreadContextClassLoaderChanger();
-
-      try
-      {
-         tccc.set(getClass().getClassLoader());
-
-         SessionDelegate sessionDelegate =
-            delegate.createSessionDelegate(transacted, acknowledgeMode, isXA);
-         return new JBossSession(sessionDelegate, type);
-      }
-      finally
-      {
-         tccc.restore();
-      }
+      SessionDelegate sessionDelegate =
+         delegate.createSessionDelegate(transacted, acknowledgeMode, isXA);
+      return new JBossSession(sessionDelegate, type);
    }
 
    // Temporarily commented out as it seems to produce random test failures

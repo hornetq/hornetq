@@ -834,7 +834,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
       
       //Close down the executor
       executor.shutdownAfterProcessingCurrentTask();
-      
+
       deliveries.clear();
       
       sp.removeSession(new Integer(id));

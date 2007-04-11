@@ -306,10 +306,22 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
 
             log.debug(this + " failed to handle callback", e);
 
+            /*
+
+            TODO: http://jira.jboss.org/jira/browse/JBMESSAGING-928
+                  We need to fix the lock condition caused by handleClientFailure (the promotion of the readLock to writeLock,
+                  cause a infinite wait on read locks that will need synchronized methods...
+                  We will relay on Lease until we can fix this.
+
+                  due to a time constraint to fix a production issue on an user, I have removed this condition until we can
+                  perform this condition without a risk while we will create a testcase for this condition.
+
+                  
+
             ServerConnectionEndpoint sce = sessionEndpoint.getConnectionEndpoint();
             ConnectionManager cm = sce.getServerPeer().getConnectionManager();
 
-            cm.handleClientFailure(sce.getRemotingClientSessionID(), false);
+            cm.handleClientFailure(sce.getRemotingClientSessionID(), false); */
 
             // we're practically cut, from connection down
 

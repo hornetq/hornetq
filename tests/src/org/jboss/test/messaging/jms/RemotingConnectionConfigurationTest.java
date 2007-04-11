@@ -24,6 +24,7 @@ package org.jboss.test.messaging.jms;
 import java.lang.reflect.Field;
 import java.net.InetAddress;
 import java.util.Map;
+import java.util.HashSet;
 
 import javax.jms.ConnectionFactory;
 import javax.naming.InitialContext;
@@ -185,7 +186,8 @@ public class RemotingConnectionConfigurationTest extends MessagingTestCase
             Map callbackConnectors = (Map)field.get(client);
 
             InvokerCallbackHandler callbackHandler = remotingConnection.getCallbackManager();
-            Connector connector = (Connector)callbackConnectors.get(callbackHandler);
+            HashSet map = (HashSet) callbackConnectors.get(callbackHandler);
+            Connector connector = (Connector)map.iterator().next();
             locator = new InvokerLocator(connector.getInvokerLocator());
             assertEquals(address, locator.getHost());
             assertEquals(freePort, locator.getPort());

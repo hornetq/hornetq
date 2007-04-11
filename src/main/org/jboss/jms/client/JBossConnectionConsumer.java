@@ -40,7 +40,6 @@ import org.jboss.jms.delegate.SessionDelegate;
 import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.message.MessageProxy;
 import org.jboss.jms.util.MessageQueueNameHelper;
-import org.jboss.jms.util.ThreadContextClassLoaderChanger;
 import org.jboss.logging.Logger;
 
 import EDU.oswego.cs.dl.util.concurrent.SynchronizedInt;
@@ -117,22 +116,11 @@ public class JBossConnectionConsumer implements ConnectionConsumer, Runnable
          this.maxMessages = 1;
       }
 
-      ThreadContextClassLoaderChanger tccc = new ThreadContextClassLoaderChanger();
+      // Create a consumer. The MessageCallbackhandler knows we are a connection consumer so will
+      // not call pre or postDeliver so messages won't be acked, or stored in session/tx.
+      sess = conn.createSessionDelegate(false, Session.CLIENT_ACKNOWLEDGE, false);
 
-      try
-      {
-         tccc.set(getClass().getClassLoader());
-
-         // Create a consumer. The MessageCallbackhandler knows we are a connection consumer so will
-         // not call pre or postDeliver so messages won't be acked, or stored in session/tx.
-         sess = conn.createSessionDelegate(false, Session.CLIENT_ACKNOWLEDGE, false);
-
-         cons = sess.createConsumerDelegate(dest, messageSelector, false, subName, true);
-      }
-      finally
-      {
-         tccc.restore();
-      }
+      cons = sess.createConsumerDelegate(dest, messageSelector, false, subName, true);
 
       ConsumerState state = (ConsumerState)((DelegateSupport)cons).getState();
 

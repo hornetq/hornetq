@@ -145,7 +145,7 @@ public class ConsumerAspect
    {
       MethodInvocation mi = (MethodInvocation)invocation;
       Object[] args = mi.getArguments();
-      long timeout = args == null ? 0 : ((Long)args[0]).longValue();
+      long timeout = (args == null || args.length==0) ? 0 : ((Long)args[0]).longValue();
       
       return getMessageCallbackHandler(invocation).receive(timeout);
    }

@@ -24,33 +24,40 @@ package org.jboss.test.messaging.jms.message;
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.ObjectMessage;
+import javax.jms.DeliveryMode;
 
 import org.jboss.test.messaging.jms.message.base.MessageTestBase;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.StringTokenizer;
 
 /**
  * A test that sends/receives object messages to the JMS provider and verifies their integrity.
  *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  * @version <tt>$Revision$</tt>
  *
  * $Id$
  */
 public class ObjectMessageTest extends MessageTestBase
 {
-   // Constants -----------------------------------------------------
+   // Constants ------------------------------------------------------------------------------------
 
-   // Static --------------------------------------------------------
+   // Static ---------------------------------------------------------------------------------------
    
-   // Attributes ----------------------------------------------------
+   // Attributes -----------------------------------------------------------------------------------
 
-   // Constructors --------------------------------------------------
+   // Constructors ---------------------------------------------------------------------------------
 
    public ObjectMessageTest(String name)
    {
       super(name);
    }
 
-   // Public --------------------------------------------------------
+   // Public ---------------------------------------------------------------------------------------
 
    public void setUp() throws Exception
    {
@@ -64,7 +71,48 @@ public class ObjectMessageTest extends MessageTestBase
       super.tearDown();
    }
 
-   // Protected -----------------------------------------------------
+
+   public void testClassLoaderIsolation() throws Exception
+   {
+
+      ClassLoader originalClassLoader = Thread.currentThread().getContextClassLoader();
+      try
+      {
+         queueProd.setDeliveryMode(DeliveryMode.PERSISTENT);
+
+         ObjectMessage om = (ObjectMessage) message;
+
+         SomeObject testObject = new SomeObject(3, 7);
+
+         ClassLoader testClassLoader = newClassLoader(testObject.getClass());
+
+         om.setObject(testObject);
+
+         queueProd.send(message);
+
+         Thread.currentThread().setContextClassLoader(testClassLoader);
+
+         ObjectMessage r = (ObjectMessage) queueCons.receive();
+
+         Object testObject2 = r.getObject();
+
+         assertEquals("org.jboss.test.messaging.jms.message.SomeObject",
+            testObject2.getClass().getName());
+         assertNotSame(testObject, testObject2);
+         assertNotSame(testObject.getClass(), testObject2.getClass());
+         assertNotSame(testObject.getClass().getClassLoader(),
+            testObject2.getClass().getClassLoader());
+         assertSame(testClassLoader,
+            testObject2.getClass().getClassLoader());
+      }
+      finally
+      {
+         Thread.currentThread().setContextClassLoader(originalClassLoader);
+      }
+
+   }
+
+   // Protected ------------------------------------------------------------------------------------
 
    protected void prepareMessage(Message m) throws JMSException
    {
@@ -82,4 +130,40 @@ public class ObjectMessageTest extends MessageTestBase
       ObjectMessage om = (ObjectMessage)m;
       assertEquals("this is the serializable object", om.getObject());
    }
+
+   protected static ClassLoader newClassLoader(Class anyUserClass) throws Exception
+   {
+      URL classLocation = anyUserClass.getProtectionDomain().getCodeSource().getLocation();
+      StringTokenizer tokenString = new StringTokenizer(System.getProperty("java.class.path"),
+         File.pathSeparator);
+      String pathIgnore = System.getProperty("java.home");
+      if (pathIgnore == null)
+      {
+         pathIgnore = classLocation.toString();
+      }
+
+      ArrayList urls = new ArrayList();
+      while (tokenString.hasMoreElements())
+      {
+         String value = tokenString.nextToken();
+         URL itemLocation = new File(value).toURL();
+         if (!itemLocation.equals(classLocation) &&
+                      itemLocation.toString().indexOf(pathIgnore) >= 0)
+         {
+            //System.out.println("Location:" + itemLocation);
+            urls.add(itemLocation);
+         }
+      }
+
+      URL[] urlArray = (URL[]) urls.toArray(new URL[urls.size()]);
+
+      ClassLoader masterClassLoader = URLClassLoader.newInstance(urlArray, null);
+
+
+      ClassLoader appClassLoader = URLClassLoader.newInstance(new URL[]{classLocation},
+                                      masterClassLoader);
+
+      return appClassLoader;
+   }
+
 }

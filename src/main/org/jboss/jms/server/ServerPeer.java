@@ -1281,7 +1281,7 @@ public class ServerPeer extends ServiceMBeanSupport implements ServerPeerMBean
    private void loadServerAOPConfig() throws Exception
    {
       URL url = this.getClass().getClassLoader().getResource("aop-messaging-server.xml");
-      AspectXmlLoader.deployXML(url);
+      AspectXmlLoader.deployXML(url, this.getClass().getClassLoader());
    }
 
    private void unloadServerAOPConfig() throws Exception

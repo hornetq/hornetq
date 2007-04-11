@@ -192,6 +192,13 @@
       </condition>
       <antcall target="expand-jar"/>
       <antcall target="expand-sar"/>
+
+      <move todir="${jboss.home}/server/${config.name}/conf">
+          <fileset dir="${jboss.home}/server/${config.name}/deploy/jboss-messaging.sar">
+             <include name="messaging-*.properties"/>
+          </fileset>
+       </move>
+
    </target>
 
    <target name="expand-sar" if="is.sar">

@@ -117,6 +117,23 @@ public class RMITestServer extends UnicastRemoteObject implements Server
       }
 
       log.info("RMI server " + serverIndex + " bound");
+
+      // there is one crash test that needs to start the server, as an external VM...
+      // as one client will crash while another will be alive
+      boolean startAll=false;
+
+      for (int i=0;i<args.length;i++)
+      {
+         if (args[i].equals("-startAll"))
+         {
+            startAll=true;
+         }
+      }
+
+      if (startAll)
+      {
+         testServer.start("all", true);
+      }
    }
 
    // Attributes ----------------------------------------------------

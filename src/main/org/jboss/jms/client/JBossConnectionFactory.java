@@ -42,7 +42,6 @@ import javax.naming.Reference;
 import org.jboss.jms.delegate.ConnectionFactoryDelegate;
 import org.jboss.jms.referenceable.SerializableObjectRefAddr;
 import org.jboss.jms.server.endpoint.CreateConnectionResult;
-import org.jboss.jms.util.ThreadContextClassLoaderChanger;
 import org.jboss.logging.Logger;
 
 /**
@@ -188,35 +187,24 @@ public class JBossConnectionFactory implements
                                                       boolean isXA, int type)
       throws JMSException
    {
-      ThreadContextClassLoaderChanger tccc = new ThreadContextClassLoaderChanger();
-      
       try
       {
-         tccc.set(getClass().getClassLoader());
-
-         try
-         {
-            ClientAOPStackLoader.getInstance().load(delegate);
-         }
-         catch(Exception e)
-         {
-            // Need to log message since no guarantee that client will log it
-            final String msg = "Failed to download and/or install client side AOP stack";
-            log.error(msg, e);
-            throw new RuntimeException(msg, e);
-         }
-   
-         // The version used by the connection is the minimum of the server version for the
-         // connection factory and the client code version
-         
-         CreateConnectionResult res = delegate.createConnectionDelegate(username, password, -1);        
-         
-         return new JBossConnection(res.getDelegate(), type);
+         ClientAOPStackLoader.getInstance().load(delegate);
       }
-      finally
+      catch(Exception e)
       {
-         tccc.restore();
+         // Need to log message since no guarantee that client will log it
+         final String msg = "Failed to download and/or install client side AOP stack";
+         log.error(msg, e);
+         throw new RuntimeException(msg, e);
       }
+
+      // The version used by the connection is the minimum of the server version for the
+      // connection factory and the client code version
+
+      CreateConnectionResult res = delegate.createConnectionDelegate(username, password, -1);
+
+      return new JBossConnection(res.getDelegate(), type);
    }
    
    // Private --------------------------------------------------------------------------------------

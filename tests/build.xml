@@ -300,6 +300,27 @@
       </java>
    </target>
 
+   <!-- Starts an all config already when starting the rmi server (used on crash tests) -->
+   <target name="start-rmi-server-with-allconfig" depends="init"
+           description="Starts an all config already when starting the rmi server (used on crash tests)">
+
+      <java classname="org.jboss.test.messaging.tools.jmx.rmi.RMITestServer" fork="true" spawn="true">
+         <sysproperty key="module.output" value="${tests.output}"/>
+         <sysproperty key="test.logfile.suffix" value="${remote.server.test.logfile.suffix}"/>
+         <sysproperty key="test.bind.address" value="${test.bind.address}"/>
+         <sysproperty key="test.database" value="${functional.tests.database}"/>
+         <sysproperty key="test.serialization" value="${functional.tests.serialization}"/>
+         <sysproperty key="test.remoting" value="${test.remoting}"/>
+         <sysproperty key="java.net.preferIPv4Stack" value="true"/>
+         <sysproperty key="objectstore.dir" value="${objectstore.dir}"/>
+         <!--
+         <jvmarg line="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_shmem,server=y,suspend=y,address=rmiserver"/>
+         -->
+         <arg value="-startAll"/>
+         <classpath refid="test.execution.classpath"/>
+      </java>
+   </target>
+
    <target name="start-rmi-server-clustering" depends="init"
            description="Starts the RMI server used by clustering tests">
 
@@ -842,6 +863,95 @@
          </batchtest>
       </junit>
 
+   </target>
+
+
+   <!-- Temporary crash debug -->
+   <target name="crash-tmp1" depends="tests-jar, prepare-testdirs, clear-test-logs">
+      <java classname="org.jboss.test.messaging.tools.jmx.rmi.RMITestServer" fork="true">
+         <sysproperty key="module.output" value="${tests.output}"/>
+         <sysproperty key="test.logfile.suffix" value="tmp-server"/>
+         <sysproperty key="test.bind.address" value="${test.bind.address}"/>
+         <sysproperty key="test.database" value="${functional.tests.database}"/>
+         <sysproperty key="test.serialization" value="${functional.tests.serialization}"/>
+         <sysproperty key="test.remoting" value="${test.remoting}"/>
+         <sysproperty key="java.net.preferIPv4Stack" value="true"/>
+         <sysproperty key="objectstore.dir" value="${objectstore.dir}"/>
+         <!--
+         <jvmarg line="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_shmem,server=y,suspend=y,address=rmiserver"/>
+         -->
+         <arg value="-startAll"/>
+         <classpath refid="test.execution.classpath"/>
+      </java>
+   </target>
+
+   <!-- Temporary crash debug -->
+   <target name="crash-tmp2" depends="tests-jar, prepare-testdirs">
+
+      <java classname="org.jboss.test.messaging.jms.crash.simultaneousfailure.FailingClient" >
+         <sysproperty key="module.output" value="${tests.output}"/>
+         <sysproperty key="test.logfile.suffix" value="crash-client"/>
+         <sysproperty key="test.bind.address" value="${test.bind.address}"/>
+         <sysproperty key="test.database" value="${functional.tests.database}"/>
+         <sysproperty key="test.serialization" value="${functional.tests.serialization}"/>
+         <sysproperty key="test.remoting" value="${test.remoting}"/>
+         <sysproperty key="remote" value="true"/>
+         <sysproperty key="java.net.preferIPv4Stack" value="true"/>
+         <sysproperty key="objectstore.dir" value="${objectstore.dir}"/>
+         <!--
+         <jvmarg line="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_shmem,server=y,suspend=y,address=rmiserver"/>
+         -->
+         <classpath refid="test.execution.classpath"/>
+      </java>
+   </target>
+
+
+
+   <!-- Temporary crash debug -->
+   <target name="crash-tmp3" depends="tests-jar, prepare-testdirs">
+      <antcall target="crash-test">
+         <param name="crash.test.name" value="org.jboss.test.messaging.jms.crash.simultaneousfailure.SimultaneousFailureTest"/>
+      </antcall>
+
+   </target>
+
+   <!-- This test is disabled until we can implement http://jira.jboss.org/jira/browse/JBMESSAGING-928 properly -->
+   <target name="simultaneous-crash" depends="tests-jar, prepare-testdirs, clear-test-logs">
+      <antcall target="stop-rmi-server"/>
+
+      <antcall target="start-rmi-server-with-allconfig">
+         <param name="remote.server.test.logfile.suffix" value="multiple-crash"/>
+      </antcall>
+
+      <sleep seconds="20"/>
+
+
+      <java classname="org.jboss.test.messaging.jms.crash.simultaneousfailure.FailingClient" fork="true" spawn="true">
+         <sysproperty key="module.output" value="${tests.output}"/>
+         <sysproperty key="test.logfile.suffix" value="crash-client"/>
+         <sysproperty key="test.bind.address" value="${test.bind.address}"/>
+         <sysproperty key="test.database" value="${functional.tests.database}"/>
+         <sysproperty key="test.serialization" value="${functional.tests.serialization}"/>
+         <sysproperty key="test.remoting" value="${test.remoting}"/>
+         <sysproperty key="remote" value="true"/>
+         <sysproperty key="java.net.preferIPv4Stack" value="true"/>
+         <sysproperty key="objectstore.dir" value="${objectstore.dir}"/>
+         <!--
+         <jvmarg line="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_shmem,server=y,suspend=y,address=rmiserver"/>
+         -->
+         <classpath refid="test.execution.classpath"/>
+      </java>
+
+      <antcall target="crash-test">
+         <param name="crash.test.name" value="org.jboss.test.messaging.jms.crash.simultaneousfailure.SimultaneousFailureTest"/>
+      </antcall>
+
+
+
+
+      <sleep seconds="120"/>
+
+      <antcall target="stop-rmi-server"/>
    </target>
 
    <target name="crash-tests" depends="tests-jar, prepare-testdirs, clear-test-logs"
