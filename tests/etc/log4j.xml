@@ -77,7 +77,7 @@
    </category>
 
    <category name="org.jboss.messaging.core.plugin.JDBCSupport">
-      <priority value="INFO"/>
+      <priority value="TRACE" class="org.jboss.logging.XLevel"/>
    </category>
 
    <category name="org.jboss.test.messaging.tools.jmx.MockJBossSecurityManager">
