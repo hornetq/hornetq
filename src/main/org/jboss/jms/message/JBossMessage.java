@@ -62,6 +62,7 @@ import org.jboss.util.Strings;
  * 
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @author <a href="mailto:bershath@yahoo.com">Tyronne Wickramarathne</a>
  * 
  * Partially ported from JBossMQ implementation originally written by:
  * @author Norbert Lataille (Norbert.Lataille@m4x.org)
@@ -428,11 +429,19 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message, S
 
    public void setJMSReplyTo(Destination replyTo) throws JMSException
    {
-      if (!(replyTo instanceof JBossDestination))
+      //Need to be able to set null too
+      if (replyTo == null)
       {
-         throw new InvalidDestinationException("Replyto cannot be foreign");
+         headers.put(REPLYTO_HEADER_NAME, null);
       }
-      headers.put(REPLYTO_HEADER_NAME, (JBossDestination)replyTo);
+      else
+      {      
+         if (!(replyTo instanceof JBossDestination))
+         {
+            throw new InvalidDestinationException("Replyto cannot be foreign");
+         }
+         headers.put(REPLYTO_HEADER_NAME, (JBossDestination)replyTo);
+      }
    }
 
    public Destination getJMSDestination() throws JMSException

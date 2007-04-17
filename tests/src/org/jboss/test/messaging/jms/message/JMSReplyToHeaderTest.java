@@ -73,6 +73,18 @@ public class JMSReplyToHeaderTest extends MessageTest
       assertEquals(tempQ, m.getJMSReplyTo());
    }
    
+   public void testJMSDestinationNull() throws Exception
+   {
+      Message m = queueProducerSession.createMessage();
+      m.setJMSReplyTo(null);
+      
+      queueProducer.send(m);
+      queueConsumer.receive();
+      assertNull(m.getJMSReplyTo());
+   }
+   
+   
+   
    
 
 

@@ -326,8 +326,18 @@ public class JBossConnectionConsumer implements ConnectionConsumer, Runnable
       //Calling session.closing() will cause the consumer to close which
       //will make any receive() calls return null
       //and not return until the consumer close protocol is complete
-      sess.closing();
-      sess.close();           
+      
+      try
+      {      
+         sess.closing();
+         sess.close();
+      }
+      catch (Throwable t)
+      {
+         //Closing may fail if doClose() was called after a previous Throwable was caught hence
+         //only want to log in trace mode
+         log.trace("Failed to close session", t);
+      }
       
       if (trace) { log.trace(this + "Closed message handler"); }
    }
