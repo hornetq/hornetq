@@ -389,9 +389,15 @@
            default remoting configuration (bisocket)
       -->
       <antcall target="remote-tests"/>
+
+      <!-- We DO NOT run the test suite using the HTTP transport - it is not sufficiently stable
+
       <antcall target="remote-tests">
          <param name="test.remoting" value="http"/>
       </antcall>
+
+      -->
+
       <antcall target="clustering-tests"/>
 
    </target>
@@ -407,10 +413,7 @@
       <antcall target="remote-stress-tests"/> <!-- default remoting configuration (bisocket) -->
 
 
-      <!--
-          HTTP stress tests currently fail, so they have been commented out, since they fail.
-          To be fixed for 1.2.1.
-          http://jira.jboss.com/jira/browse/JBMESSAGING-857
+      <!-- We DO NOT run the test suite using the HTTP transport - it is not sufficiently stable
 
       <antcall target="remote-stress-tests">
          <param name="test.remoting" value="http"/>
