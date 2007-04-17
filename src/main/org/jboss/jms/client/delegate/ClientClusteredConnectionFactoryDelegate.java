@@ -103,12 +103,11 @@ public class ClientClusteredConnectionFactoryDelegate
          }
          catch (MessagingNetworkFailureException e)
          {
-            log.warn("Server" + 0 + " was broken, loading AOP from next delegate", e);
+            log.warn("Server" + server + " was broken, loading AOP from next delegate", e);
          }
       }
 
-      throw new MessagingNetworkFailureException(
-         "Failed to download and/or install client side AOP stack");
+      throw new MessagingNetworkFailureException("Failed to download and/or install client side AOP stack");
    }
 
    /**
