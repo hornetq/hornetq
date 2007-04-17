@@ -28,6 +28,10 @@ import javax.jms.QueueConnection;
 import javax.jms.QueueConnectionFactory;
 import javax.jms.TopicConnection;
 import javax.jms.TopicConnectionFactory;
+import javax.jms.Session;
+import javax.jms.Topic;
+import javax.jms.TopicSubscriber;
+import javax.jms.TopicSession;
 import javax.management.ObjectName;
 import javax.naming.InitialContext;
 
@@ -35,6 +39,7 @@ import org.jboss.jms.client.JBossConnectionFactory;
 import org.jboss.jms.client.delegate.ClientConnectionFactoryDelegate;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
+import org.jboss.test.messaging.tools.jmx.ServiceContainer;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -264,6 +269,67 @@ public class ConnectionFactoryTest extends MessagingTestCase
       c.close();
    }
 
+   // Added for http://jira.jboss.org/jira/browse/JBMESSAGING-939
+   public void testDurableSubscriptionOnPreConfiguredConnectionFactory() throws Exception
+   {
+      ObjectName cf1 = deployConnectionFactory("jboss.messaging.destination:service=TestConnectionFactory1", ServiceContainer.REMOTING_OBJECT_NAME.getCanonicalName(), "/TestDurableCF", "cfTest");
+
+      ServerManagement.deployTopic("TestSubscriber");
+
+      Connection conn = null;
+
+      try
+      {
+         Topic topic = (Topic) initialContext.lookup("/topic/TestSubscriber");
+         ConnectionFactory cf = (ConnectionFactory) initialContext.lookup("/TestDurableCF");
+         conn = cf.createConnection();
+
+         // I have to remove this asertion, as the test would work if doing this assertion
+         // as getClientID performed some operation that cleared the bug condition during
+         // the creation of this testcase
+         //assertEquals("cfTest", conn.getClientID());
+
+         Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+         TopicSubscriber subs = session.createDurableSubscriber(topic,
+            "durableSubscriberChangeSelectorTest", "TEST = 'test'", false);
+      }
+      finally
+      {
+         try
+         {
+            if (conn != null)
+            {
+               conn.close();
+            }
+         }
+         catch (Exception e)
+         {
+            log.warn(e.toString(), e);
+         }
+
+
+         try
+         {
+            stopService(cf1);
+         }
+         catch (Exception e)
+         {
+            log.warn(e.toString(), e);
+         }
+
+         try
+         {
+            ServerManagement.destroyTopic("TestSubscriber");
+         }
+         catch (Exception e)
+         {
+            log.warn(e.toString(), e);
+         }
+
+      }
+
+   }
 
    // Package protected ---------------------------------------------
 
