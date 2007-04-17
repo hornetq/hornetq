@@ -86,7 +86,11 @@ public class ClientClusteredConnectionFactoryDelegate
    {
       // Use one of the non-clustered ConnectionFactory delegates to retrieve the client AOP stack
       // from one of the nodes.
-
+      
+      // It doesn't really matter which one
+      
+      log.debug("Getting AOP stack, there are " + delegates.length + " delegates to choose from");
+            
       for (int server = 0; server < delegates.length; server++)
       {
          try
