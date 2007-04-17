@@ -33,6 +33,7 @@ import org.jboss.jms.client.state.ConsumerState;
 import org.jboss.jms.client.state.SessionState;
 import org.jboss.jms.delegate.ConsumerDelegate;
 import org.jboss.jms.delegate.SessionDelegate;
+import org.jboss.jms.delegate.ConnectionDelegate;
 import org.jboss.jms.util.MessageQueueNameHelper;
 
 import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
@@ -84,8 +85,13 @@ public class ConsumerAspect
       String queueName = null;
       if (consumerState.getSubscriptionName() != null)
       {
+         // I have to use the clientID from connectionDelegate instead of connectionState...
+         // this is because when a pre configured CF is used we need to get the clientID from
+         // server side.
+         // This was a condition verified by the TCK and it was fixed as part of
+         // http://jira.jboss.com/jira/browse/JBMESSAGING-939
          queueName = MessageQueueNameHelper.
-            createSubscriptionName(connectionState.getClientID(),
+            createSubscriptionName(((ConnectionDelegate)connectionState.getDelegate()).getClientID(),
                                    consumerState.getSubscriptionName());
       }
       else if (consumerState.getDestination().isQueue())
