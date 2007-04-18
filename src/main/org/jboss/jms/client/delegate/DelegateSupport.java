@@ -219,6 +219,8 @@ public abstract class DelegateSupport implements Streamable, Serializable
          log.warn("Captured Exception:" + t, t);
          return new MessagingNetworkFailureException((Exception)t);
       }
+      //This can occur if failure happens when Client.connect() is called
+      //Ideally remoting should have a consistent API
       else if (t instanceof RuntimeException)
       {
          RuntimeException re = (RuntimeException)t;
