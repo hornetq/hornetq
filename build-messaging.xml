@@ -162,7 +162,7 @@
       <path refid="jboss.aop.classpath"/>
       <path refid="jboss.remoting.classpath"/>
       <path refid="jboss.serialization.classpath"/>
-      <path refid="jboss.jbossts.classpath"/>
+      <path refid="jboss.jbossts14.classpath"/>
    </path>
 
    <!--
