@@ -229,12 +229,12 @@ public abstract class DelegateSupport implements Streamable, Serializable
          {
             do
             {
-               if ((t instanceof CannotConnectException) ||
-                        (t instanceof IOException) ||
-                        (t instanceof ConnectionFailedException))
+               if ((initCause instanceof CannotConnectException) ||
+                        (initCause instanceof IOException) ||
+                        (initCause instanceof ConnectionFailedException))
                {
-                  log.warn("Captured Exception:" + t, t);
-                  return new MessagingNetworkFailureException((Exception)t);
+                  log.warn("Captured Exception:" + initCause, initCause);
+                  return new MessagingNetworkFailureException((Exception)initCause);
                }
                initCause = initCause.getCause();
             }
