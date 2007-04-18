@@ -219,11 +219,32 @@ public abstract class DelegateSupport implements Streamable, Serializable
          log.warn("Captured Exception:" + t, t);
          return new MessagingNetworkFailureException((Exception)t);
       }
-      else
+      else if (t instanceof RuntimeException)
       {
-         log.error("Failed", t);
-         return new MessagingJMSException("Failed to invoke", t);
+         RuntimeException re = (RuntimeException)t;
+         
+         Throwable initCause = re.getCause();
+         
+         if (initCause != null)
+         {
+            do
+            {
+               if ((t instanceof CannotConnectException) ||
+                        (t instanceof IOException) ||
+                        (t instanceof ConnectionFailedException))
+               {
+                  log.warn("Captured Exception:" + t, t);
+                  return new MessagingNetworkFailureException((Exception)t);
+               }
+               initCause = initCause.getCause();
+            }
+            while (initCause != null);
+         }
       }
+         
+      log.error("Failed", t);
+      return new MessagingJMSException("Failed to invoke", t);
+      
    }
    
    public Client getClient()
