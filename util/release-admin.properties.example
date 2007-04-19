@@ -1,5 +1,6 @@
 #
-# Properties file for overriding any environment variables for release-admin.xml
+# Example properties file for locally overriding any environment variables for release-admin.xml
+# Rename it to release-admin.xml for it to take effect
 #
 #
 main.artifact.location=../output/lib
