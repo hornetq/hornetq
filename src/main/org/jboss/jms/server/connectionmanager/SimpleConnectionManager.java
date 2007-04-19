@@ -131,6 +131,16 @@ public class SimpleConnectionManager implements ConnectionManager, ConnectionLis
       return null;
    }
 
+   
+
+   public synchronized List getActiveConnections()
+   {
+      // I will make a copy to avoid ConcurrentModification
+      ArrayList list = new ArrayList();
+      list.addAll(activeConnectionEndpoints);
+      return list;
+   }
+   
    public synchronized void handleClientFailure(String remotingSessionID, boolean clientToServer)
    {
       String jmsClientID = (String)remotingSessions.get(remotingSessionID);
@@ -188,14 +198,6 @@ public class SimpleConnectionManager implements ConnectionManager, ConnectionLis
             }
          }
       }
-   }
-
-   public synchronized List getActiveConnections()
-   {
-      // I will make a copy to avoid ConcurrentModification
-      ArrayList list = new ArrayList();
-      list.addAll(activeConnectionEndpoints);
-      return list;
    }
 
    // ConnectionListener implementation ------------------------------------------------------------
@@ -267,6 +269,8 @@ public class SimpleConnectionManager implements ConnectionManager, ConnectionLis
    // Protected ------------------------------------------------------------------------------------
 
    // Private --------------------------------------------------------------------------------------
+   
+
 
    // Inner classes --------------------------------------------------------------------------------
 

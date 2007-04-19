@@ -106,7 +106,7 @@ public class JMSServerInvocationHandler implements ServerInvocationHandler
       {         
          if (closed)
          {
-            throw new MessagingJMSException("Cannot handle invocation since server is not active (it is either starting up or shutting down)");
+            throw new MessagingJMSException("Cannot handle invocation since messaging server is not active (it is either starting up or shutting down)");
          }
            
          RequestSupport request = (RequestSupport)invocation.getParameter();
@@ -209,11 +209,6 @@ public class JMSServerInvocationHandler implements ServerInvocationHandler
    // Protected ------------------------------------------------------------------------------------
    
    // Private --------------------------------------------------------------------------------------
-   
-   private synchronized void doSetClosed(boolean closed)
-   {
-      this.closed = true;
-   }
    
    // Inner classes --------------------------------------------------------------------------------
 }
