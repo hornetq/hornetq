@@ -164,8 +164,16 @@ public class DuplicateClientIDTest extends MessagingTestCase
       try
       {
          c0 = cf.createConnection("dilbert", "dogbert");
+         
+         assertEquals("dilbert-id", c0.getClientID());
+         
          c1 = cf.createConnection();
+         
+         assertNull(c1.getClientID());
+         
          c2 = cf.createConnection();
+         
+         assertNull(c2.getClientID());
       }
       finally
       {
