@@ -87,7 +87,7 @@
       <componentref name="javassist" version="3.5.0.CR1"/>
       <componentref name="jgroups" version="2.4.1.SP1"/>
       <componentref name="trove" version="1.0.2"/>
-      <componentref name="jboss/common-core" version="2.0.2.GA"/>
+      <componentref name="jboss/common-core" version="2.0.3.GA"/>
       <componentref name="jboss/common-logging-log4j" version="2.0.2.GA"/>
       <componentref name="jboss/common-logging-spi" version="2.0.2.GA"/>
       <componentref name="jboss/aop" version="1.5.5.GA"/>
