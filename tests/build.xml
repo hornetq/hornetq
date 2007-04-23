@@ -1095,23 +1095,6 @@
          <param name="test.remoting" value="http"/>
       </antcall>
 
-      <!--
-          CallbackFailureTest over "bisocket"
-      -->
-
-      <antcall target="start-rmi-server">
-         <param name="remote.server.test.logfile.suffix" value="remote-crash"/>
-      </antcall>
-
-
-      <antcall target="crash-test">
-          <param name="crash.test.name" value="org.jboss.test.messaging.jms.crash.CallbackFailureTest"/>
-      </antcall>
-
-      <!--
-          CallbackFailureTest over "http" does not make sense
-      -->
-
    </target>
 
 
