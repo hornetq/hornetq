@@ -234,7 +234,71 @@ public class QueueManagementTest extends DestinationManagementTestBase
          ServerManagement.invoke(ServerManagement.getServerPeerObjectName(), "disableMessageCounters", null, null);
       }
    }
-   
+
+   public void testNegativeMessageCountBug() throws Exception
+   {
+      InitialContext ic = new InitialContext(ServerManagement.getJNDIEnvironment());
+      ConnectionFactory cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
+      
+      final String queueName = "QueueNegativeMessageCount";
+      final ObjectName destObjectName =
+         new ObjectName("jboss.messaging.destination:service=Queue,name=" + queueName);
+
+      ServerManagement.deployQueue(queueName);
+      ServerManagement.invoke(ServerManagement.getServerPeerObjectName(), "enableMessageCounters", null, null);
+      
+      try
+      {
+         Queue queue = (Queue)ic.lookup("/queue/" + queueName);
+
+         // Send some messages to the queue
+         final int maxMessageCount = 3;
+
+         Connection conn = cf.createConnection();
+         
+         Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         MessageProducer prod = session.createProducer(queue);
+         prod.setDeliveryMode(DeliveryMode.PERSISTENT);
+
+         for (int i = 0; i < maxMessageCount; i++)
+         {
+            TextMessage m = session.createTextMessage("Message #" + Integer.toString(i + 1));
+            prod.send(m);
+         }
+         
+         conn.close();
+
+         // Receive a message
+         conn = cf.createConnection();
+         session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         
+         MessageConsumer cons = session.createConsumer(queue);
+         
+         conn.start();
+         
+         Message message = cons.receive(500L);
+         assertNotNull(message);
+         assertEquals("Message #1", ((TextMessage) message).getText());
+         
+         ServerManagement.invoke(destObjectName, "removeAllMessages", new Object[0], new String[0]);
+         
+         // Assert that all messages were in fact removed.
+         message = cons.receive(500L);
+         assertNull(message);
+
+         // Check that the message count is 0.
+         Integer count = (Integer)ServerManagement.getAttribute(destObjectName, "MessageCount");
+         assertEquals(0, count.intValue());
+
+         conn.close();
+      }
+      finally
+      {
+         ServerManagement.undeployQueue(queueName);
+         ServerManagement.invoke(ServerManagement.getServerPeerObjectName(), "disableMessageCounters", null, null);
+      }
+   }
+
    public void testScheduledMessageCount() throws Exception
    {
       InitialContext ic = new InitialContext(ServerManagement.getJNDIEnvironment());
