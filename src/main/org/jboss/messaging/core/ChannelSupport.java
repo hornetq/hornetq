@@ -330,10 +330,15 @@ public abstract class ChannelSupport implements Channel
     */
    public void removeAllReferences() throws Throwable
    {
-      log.debug(this + " remnoving all references");
+      log.debug(this + " removing all references");
       
       synchronized (refLock)
-      {            
+      {
+         if (deliveringCount.get() > 0)
+         {
+            throw new IllegalStateException("Cannot remove references while deliveries are in progress");
+         }
+         
          //Now we consume the rest of the messages
          //This may take a while if we have a lot of messages including perhaps millions
          //paged in the database - but there's no obvious other way to do it.
@@ -350,9 +355,11 @@ public abstract class ChannelSupport implements Channel
             SimpleDelivery del = new SimpleDelivery(this, ref);
 
             del.acknowledge(null);
-         }         
-         
-         deliveringCount.set(0);
+
+            // Delivery#acknowledge decrements the deliveringCount without incrementing it first (because
+            // deliver has actually never been called), so increment it here to be accurate.  
+            deliveringCount.increment();
+         }
       }
       
       clearAllScheduledDeliveries();

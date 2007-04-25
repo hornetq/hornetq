@@ -34,6 +34,7 @@ import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.management.ObjectName;
+import javax.management.RuntimeMBeanException;
 import javax.naming.InitialContext;
 
 import org.jboss.jms.message.JBossMessage;
@@ -279,17 +280,20 @@ public class QueueManagementTest extends DestinationManagementTestBase
          Message message = cons.receive(500L);
          assertNotNull(message);
          assertEquals("Message #1", ((TextMessage) message).getText());
-         
-         ServerManagement.invoke(destObjectName, "removeAllMessages", new Object[0], new String[0]);
-         
-         // Assert that all messages were in fact removed.
-         message = cons.receive(500L);
-         assertNull(message);
 
-         // Check that the message count is 0.
-         Integer count = (Integer)ServerManagement.getAttribute(destObjectName, "MessageCount");
-         assertEquals(0, count.intValue());
-
+         try
+         {
+            ServerManagement.invoke(destObjectName, "removeAllMessages", new Object[0], new String[0]);
+            fail("Should have thrown an exception");
+         }
+         catch (RuntimeMBeanException e)
+         {
+            if (!(e.getCause() instanceof IllegalStateException))
+            {
+               fail("Should have thrown a RuntimeMBeanException wrapping IllegalStateException");
+            }
+         }
+         
          conn.close();
       }
       finally
