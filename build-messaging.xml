@@ -156,6 +156,7 @@
               present in ./lib, it will take precedence over the corresponding repository instance.
     -->
    <path id="jboss.dependencies.classpath">
+
       <path refid="jboss.common.core.classpath"/>
       <path refid="jboss.common.logging.log4j.classpath"/>
       <path refid="jboss.common.logging.spi.classpath"/>
