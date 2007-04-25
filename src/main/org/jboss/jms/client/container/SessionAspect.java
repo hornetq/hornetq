@@ -598,7 +598,7 @@ public class SessionAspect
       SessionState state = getState(invocation);
       Object txID = state.getCurrentTxId();
 
-      if (txID != null)
+      if ((!state.isXA() && state.isTransacted()) || (state.isXA() && !(txID instanceof LocalTx)))
       {
          // the session is non-XA and transacted, or XA and enrolled in a global transaction, so
          // we add the message to a transaction instead of sending it now. An XA session that has
