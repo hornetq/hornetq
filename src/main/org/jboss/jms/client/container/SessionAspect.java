@@ -33,6 +33,7 @@ import javax.jms.MessageListener;
 import javax.jms.ServerSessionPool;
 import javax.jms.Session;
 import javax.jms.TransactionInProgressException;
+import javax.jms.ServerSession;
 
 import org.jboss.aop.joinpoint.Invocation;
 import org.jboss.aop.joinpoint.MethodInvocation;
@@ -248,7 +249,11 @@ public class SessionAspect
                   
          state.getClientAckList().add(info);
       }
-      else if (ackMode == Session.AUTO_ACKNOWLEDGE)
+      // if XA and there is no transaction enlisted on XA we will act as AutoAcknowledge
+      // However if it's a MDB (or ServerSession) we should behaved as transacted
+      else if (ackMode == Session.AUTO_ACKNOWLEDGE ||
+               (state.isXA() && (state.getCurrentTxId() instanceof LocalTx) &&
+                  !(state.getDistinguishedListener() instanceof ServerSession)))
       {
          // We collect the single acknowledgement in the state. 
                            
@@ -302,8 +307,12 @@ public class SessionAspect
       SessionState state = getState(invocation);
       
       int ackMode = state.getAcknowledgeMode();
-      
-      if (ackMode == Session.AUTO_ACKNOWLEDGE)
+
+      // if XA and there is no transaction enlisted on XA we will act as AutoAcknowledge
+      // However if it's a MDB (or ServerSession) we should behaved as transacted
+      if (ackMode == Session.AUTO_ACKNOWLEDGE ||
+         (state.isXA() && (state.getCurrentTxId() instanceof LocalTx) &&
+                  !(state.getDistinguishedListener() instanceof ServerSession)))
       {
          // We auto acknowledge.
 
