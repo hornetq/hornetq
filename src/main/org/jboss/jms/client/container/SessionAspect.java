@@ -98,7 +98,7 @@ public class SessionAspect
       if (trace) { log.trace("handleClosing()"); }
 
       //Sanity check
-      if (state.isXA())
+      if (state.isXA() && !isConsideredNonTransacted(state))
       {
          if (trace) { log.trace("Session is XA"); }
          
@@ -128,7 +128,7 @@ public class SessionAspect
       //any deliveries - this is because the message listener might have closed
       //before on message had finished executing
       
-      if (ackMode == Session.AUTO_ACKNOWLEDGE)
+      if (ackMode == Session.AUTO_ACKNOWLEDGE || isConsideredNonTransacted(state))
       {
          //Acknowledge or cancel any outstanding auto ack
          
@@ -250,9 +250,7 @@ public class SessionAspect
       }
       // if XA and there is no transaction enlisted on XA we will act as AutoAcknowledge
       // However if it's a MDB (if there is a DistinguishedListener) we should behaved as transacted
-      else if (ackMode == Session.AUTO_ACKNOWLEDGE ||
-               (state.isXA() && (state.getCurrentTxId() instanceof LocalTx) &&
-                  (state.getDistinguishedListener() == null)))
+      else if (ackMode == Session.AUTO_ACKNOWLEDGE || isConsideredNonTransacted(state))
       {
          // We collect the single acknowledgement in the state. 
                            
@@ -309,9 +307,7 @@ public class SessionAspect
 
       // if XA and there is no transaction enlisted on XA we will act as AutoAcknowledge
       // However if it's a MDB (if there is a DistinguishedListener) we should behaved as transacted
-      if (ackMode == Session.AUTO_ACKNOWLEDGE ||
-         (state.isXA() && (state.getCurrentTxId() instanceof LocalTx) &&
-                  (state.getDistinguishedListener() == null)))
+      if (ackMode == Session.AUTO_ACKNOWLEDGE || isConsideredNonTransacted(state))
       {
          // We auto acknowledge.
 
@@ -424,7 +420,7 @@ public class SessionAspect
             
       SessionState state = getState(invocation);
       
-      if (state.isTransacted())
+      if (state.isTransacted() && !isConsideredNonTransacted(state))
       {
          throw new IllegalStateException("Cannot recover a transacted session");
       }
@@ -443,8 +439,10 @@ public class SessionAspect
          state.setClientAckList(new ArrayList());
          
          del.redeliver(dels);
+
+         state.setRecoverCalled(true);
       }
-      else if (ackMode == Session.AUTO_ACKNOWLEDGE || ackMode == Session.DUPS_OK_ACKNOWLEDGE)
+      else if (ackMode == Session.AUTO_ACKNOWLEDGE || ackMode == Session.DUPS_OK_ACKNOWLEDGE || isConsideredNonTransacted(state))
       {
          DeliveryInfo info = state.getAutoAckInfo();
          
@@ -459,11 +457,12 @@ public class SessionAspect
             del.redeliver(redels);
             
             state.setAutoAckInfo(null);            
+
+            state.setRecoverCalled(true);
          }
       }   
         
-      state.setRecoverCalled(true);
-      
+
       return null;  
    }
    
@@ -606,6 +605,11 @@ public class SessionAspect
       SessionState state = getState(invocation);
       Object txID = state.getCurrentTxId();
 
+      // If there is no GlobalTransaction we run it as local transacted
+      // as discussed at http://www.jboss.com/index.html?module=bb&op=viewtopic&t=98577
+      // http://jira.jboss.org/jira/browse/JBMESSAGING-946
+      // and
+      // http://jira.jboss.org/jira/browse/JBMESSAGING-410
       if ((!state.isXA() && state.isTransacted()) || (state.isXA() && !(txID instanceof LocalTx)))
       {
          // the session is non-XA and transacted, or XA and enrolled in a global transaction, so
@@ -871,6 +875,17 @@ public class SessionAspect
       {
          del.cancelDeliveries(cancels);
       }
+   }
+
+   /** http://jira.jboss.org/jira/browse/JBMESSAGING-946 - To accomodate TCK and the MQ behavior
+    *    we should behave as non transacted, AUTO_ACK when there is no transaction enlisted
+    *    However when the Session is being used by ASF we should consider the case where
+    *    we will convert LocalTX to GlobalTransactions.
+    *    This function helper will ensure the condition that needs to be tested on this aspect
+    * */
+   private boolean isConsideredNonTransacted(SessionState state)
+   {
+      return state.isXA() && (state.getCurrentTxId() instanceof LocalTx) && (state.getDistinguishedListener() == null);
    }
 
    // Inner Classes -------------------------------------------------

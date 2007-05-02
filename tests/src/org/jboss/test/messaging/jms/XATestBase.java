@@ -620,6 +620,89 @@ public abstract class XATestBase extends MessagingTestCase
    }
 
    /*
+    *   This test will:
+    *     - Send two messages over a producer
+    *     - Receive one message over a consumer created used a XASession
+    *     - Call Recover
+    *     - Receive the second message
+    *     - The queue should be empty after that 
+    *   Verifies if messages are sent ok and ack properly when recovery is called
+    *      NOTE: To accomodate TCK tests where Session/Consumers are being used without transaction enlisting
+    *            we are processing those cases as nonTransactional/AutoACK, however if the session is being used
+    *            to process MDBs we will consider the LocalTransaction convertion and process those as the comment above
+    *            This was done as per: http://jira.jboss.org/jira/browse/JBMESSAGING-946
+    *
+    */
+   public void testRecoverOnXA() throws Exception
+   {
+      XAConnection xaconn = null;
+
+      try
+      {
+         ServerManagement.deployQueue("MyQueue2");
+
+         // send a message to the queue
+
+         ConnectionFactory cf = (ConnectionFactory)initialContext.lookup("/ConnectionFactory");
+         Queue queue = (Queue)initialContext.lookup("queue/MyQueue2");
+         Connection conn = cf.createConnection();
+         Session s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         MessageProducer p = s.createProducer(queue);
+         p.setDeliveryMode(DeliveryMode.PERSISTENT);
+         Message m = s.createTextMessage("one");
+         p.send(m);
+         m = s.createTextMessage("two");
+         p.send(m);
+         conn.close();
+
+         ObjectName queueMBean = new ObjectName("jboss.messaging.destination:service=Queue,name=MyQueue2");
+         Integer count = (Integer)ServerManagement.getAttribute(queueMBean, "MessageCount");
+         assertEquals(2, count.intValue());
+
+         XAConnectionFactory xacf = (XAConnectionFactory)cf;
+
+         xaconn = xacf.createXAConnection();
+
+         xaconn.start();
+
+         XASession xasession = xaconn.createXASession();
+
+         MessageConsumer consumer = xasession.createConsumer(queue);
+
+         TextMessage messageReceived = (TextMessage)consumer.receive(1000);
+
+         assertNotNull(messageReceived);
+
+         assertEquals("one", messageReceived.getText());
+
+         xasession.recover();
+
+         messageReceived = (TextMessage)consumer.receive(1000);
+
+         assertEquals("two", messageReceived.getText());
+
+         consumer.close();
+
+         // I can't call xasession.close for this test as JCA layer would cache the session
+         // So.. keep this close commented!
+         //xasession.close();
+
+         count = (Integer)ServerManagement.getAttribute(queueMBean, "MessageCount");
+         assertEquals(0, count.intValue());
+
+
+      }
+      finally
+      {
+         if (xaconn != null)
+         {
+            xaconn.close();
+         }
+         ServerManagement.undeployQueue("MyQueue2");
+      }
+   }
+
+   /*
     * If there is no global tx present messages consumed must consumed as if they were in a
     * local tx. Note this behaviour differs from messages sent
     * This is so we can support transacted delivery of messags in an MDB as mentioned
