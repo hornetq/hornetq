@@ -69,6 +69,7 @@ import org.jboss.logging.Logger;
  * This aspect is PER_VM
  *
  * @author <a href="mailto:tim.fox@jboss.com>Tim Fox</a>
+ * @author <a href="mailto:clebert.suconic@jboss.com>Clebert Suconic</a>
  * @author <a href="mailto:ovidiu@jboss.com>Ovidiu Feodorov</a>
  *
  * $Id$
@@ -98,7 +99,7 @@ public class SessionAspect
       if (trace) { log.trace("handleClosing()"); }
 
       //Sanity check
-      if (state.isXA() && !isConsideredNonTransacted(state))
+      if (state.isXA() && !isXAAndConsideredNonTransacted(state))
       {
          if (trace) { log.trace("Session is XA"); }
          
@@ -128,7 +129,7 @@ public class SessionAspect
       //any deliveries - this is because the message listener might have closed
       //before on message had finished executing
       
-      if (ackMode == Session.AUTO_ACKNOWLEDGE || isConsideredNonTransacted(state))
+      if (ackMode == Session.AUTO_ACKNOWLEDGE || isXAAndConsideredNonTransacted(state))
       {
          //Acknowledge or cancel any outstanding auto ack
          
@@ -250,7 +251,7 @@ public class SessionAspect
       }
       // if XA and there is no transaction enlisted on XA we will act as AutoAcknowledge
       // However if it's a MDB (if there is a DistinguishedListener) we should behaved as transacted
-      else if (ackMode == Session.AUTO_ACKNOWLEDGE || isConsideredNonTransacted(state))
+      else if (ackMode == Session.AUTO_ACKNOWLEDGE || isXAAndConsideredNonTransacted(state))
       {
          // We collect the single acknowledgement in the state. 
                            
@@ -307,7 +308,7 @@ public class SessionAspect
 
       // if XA and there is no transaction enlisted on XA we will act as AutoAcknowledge
       // However if it's a MDB (if there is a DistinguishedListener) we should behaved as transacted
-      if (ackMode == Session.AUTO_ACKNOWLEDGE || isConsideredNonTransacted(state))
+      if (ackMode == Session.AUTO_ACKNOWLEDGE || isXAAndConsideredNonTransacted(state))
       {
          // We auto acknowledge.
 
@@ -420,7 +421,7 @@ public class SessionAspect
             
       SessionState state = getState(invocation);
       
-      if (state.isTransacted() && !isConsideredNonTransacted(state))
+      if (state.isTransacted() && !isXAAndConsideredNonTransacted(state))
       {
          throw new IllegalStateException("Cannot recover a transacted session");
       }
@@ -442,7 +443,7 @@ public class SessionAspect
 
          state.setRecoverCalled(true);
       }
-      else if (ackMode == Session.AUTO_ACKNOWLEDGE || ackMode == Session.DUPS_OK_ACKNOWLEDGE || isConsideredNonTransacted(state))
+      else if (ackMode == Session.AUTO_ACKNOWLEDGE || ackMode == Session.DUPS_OK_ACKNOWLEDGE || isXAAndConsideredNonTransacted(state))
       {
          DeliveryInfo info = state.getAutoAckInfo();
          
@@ -883,7 +884,7 @@ public class SessionAspect
     *    we will convert LocalTX to GlobalTransactions.
     *    This function helper will ensure the condition that needs to be tested on this aspect
     * */
-   private boolean isConsideredNonTransacted(SessionState state)
+   private boolean isXAAndConsideredNonTransacted(SessionState state)
    {
       return state.isXA() && (state.getCurrentTxId() instanceof LocalTx) && (state.getDistinguishedListener() == null);
    }
