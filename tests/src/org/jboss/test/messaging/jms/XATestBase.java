@@ -21,28 +21,29 @@
   */
 package org.jboss.test.messaging.jms;
 
+import java.util.ArrayList;
+
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.DeliveryMode;
 import javax.jms.Destination;
+import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
+import javax.jms.MessageListener;
 import javax.jms.MessageProducer;
 import javax.jms.Queue;
+import javax.jms.ServerSession;
+import javax.jms.ServerSessionPool;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.jms.XAConnection;
-import javax.jms.XASession;
-import javax.jms.MessageListener;
 import javax.jms.XAConnectionFactory;
-import javax.jms.ServerSessionPool;
-import javax.jms.ServerSession;
-import javax.jms.JMSException;
+import javax.jms.XASession;
 import javax.management.ObjectName;
 import javax.naming.InitialContext;
 import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
-import javax.transaction.UserTransaction;
 import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
@@ -54,9 +55,10 @@ import org.jboss.jms.client.delegate.ClientConnectionDelegate;
 import org.jboss.jms.client.delegate.DelegateSupport;
 import org.jboss.jms.client.state.ConnectionState;
 import org.jboss.jms.client.state.SessionState;
+import org.jboss.jms.tx.LocalTx;
 import org.jboss.jms.tx.MessagingXAResource;
 import org.jboss.jms.tx.ResourceManager;
-import org.jboss.jms.tx.LocalTx;
+import org.jboss.logging.Logger;
 import org.jboss.messaging.core.tx.MessagingXid;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
@@ -64,10 +66,8 @@ import org.jboss.test.messaging.tools.jmx.ServiceContainer;
 import org.jboss.test.messaging.tools.jndi.InVMInitialContextFactory;
 import org.jboss.tm.TransactionManagerLocator;
 import org.jboss.tm.TxUtils;
-import org.jboss.logging.Logger;
 
 import com.arjuna.ats.internal.jta.transaction.arjunacore.TransactionManagerImple;
-import java.util.ArrayList;
 
 /**
  *
@@ -216,8 +216,7 @@ public abstract class XATestBase extends MessagingTestCase
 
    // Public --------------------------------------------------------
 
-
-   /* If there is no global tx present the send must behave as non transacted
+   /* If there is no global tx present the send must behave as non transacted.
     * See http://www.jboss.com/index.html?module=bb&op=viewtopic&t=98577&postdays=0&postorder=asc&start=0
     * http://jira.jboss.com/jira/browse/JBMESSAGING-410
     * http://jira.jboss.com/jira/browse/JBMESSAGING-721
@@ -225,15 +224,6 @@ public abstract class XATestBase extends MessagingTestCase
     */
    public void testSendNoGlobalTransaction() throws Exception
    {
-
-      if (ServerManagement.isRemote())
-      {
-         log.info("************************************************************************************************************************");
-         log.info("testSendNoGlobalTransaction is being ignored on remote runs, as this requires access to the JCA layer on java:/");
-         log.info("************************************************************************************************************************");
-         return;
-      }
-
       Transaction suspended = null;
 
       try
@@ -244,31 +234,31 @@ public abstract class XATestBase extends MessagingTestCase
 
          suspended = TransactionManagerLocator.getInstance().locate().suspend();
 
-         // send a message to the queue, using a JCA wrapper
+         // send a message to the queue using an XASession that's not enlisted in a global tx
 
          Queue queue = (Queue)initialContext.lookup("queue/MyQueue");
 
-         ConnectionFactory mcf =
-            (ConnectionFactory)initialContext.lookup("java:/JCAConnectionFactory");
+         XAConnectionFactory xcf =
+            (XAConnectionFactory)initialContext.lookup("java:/XAConnectionFactory");
 
-         Connection conn = mcf.createConnection();
+         XAConnection xconn = xcf.createXAConnection();
 
-         Session s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer p = s.createProducer(queue);
-         p.setDeliveryMode(DeliveryMode.PERSISTENT);
-         Message m = s.createTextMessage("one");
+         XASession xs = xconn.createXASession();
+         
+         MessageProducer p = xs.createProducer(queue);
+         Message m = xs.createTextMessage("one");
 
          p.send(m);
 
          log.debug("message sent");
 
-         conn.close();
+         xconn.close();
 
          // receive the message
          ConnectionFactory cf = (ConnectionFactory)initialContext.lookup("/ConnectionFactory");
-         conn = cf.createConnection();
+         Connection conn = cf.createConnection();
          conn.start();
-         s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         Session s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
          MessageConsumer c = s.createConsumer(queue);
          TextMessage rm = (TextMessage)c.receive(1000);
 
@@ -287,129 +277,33 @@ public abstract class XATestBase extends MessagingTestCase
       }
    }
 
-   /* If there is no global tx present the send must behave as non transacted
-    * See http://www.jboss.com/index.html?module=bb&op=viewtopic&t=98577&postdays=0&postorder=asc&start=0
-    * http://jira.jboss.com/jira/browse/JBMESSAGING-410
-    * http://jira.jboss.com/jira/browse/JBMESSAGING-721
-    * http://jira.jboss.org/jira/browse/JBMESSAGING-946
-    */
-   public void testSendNoGlobalTransaction2() throws Exception
-   {
-
-      if (ServerManagement.isRemote())
-      {
-         log.info("************************************************************************************************************************");
-         log.info("testSendNoGlobalTransaction2 is being ignored on remote runs, as this requires access to the JCA layer on java:/");
-         log.info("************************************************************************************************************************");
-         return;
-      }
-
-      Transaction suspended = TransactionManagerLocator.getInstance().locate().suspend();
-
-      try
-      {
-
-         ConnectionFactory mcf =
-            (ConnectionFactory)initialContext.lookup("java:/JCAConnectionFactory");
-         Connection conn = mcf.createConnection();
-         conn.start();
-
-         UserTransaction ut = ServerManagement.getUserTransaction();
-
-         ut.begin();
-
-         Session s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer p = s.createProducer(queue);
-         Message m = s.createTextMessage("one");
-
-         p.send(m);
-
-         ut.commit();
-
-         conn.close();
-
-         ConnectionFactory cf = (ConnectionFactory)initialContext.lookup("ConnectionFactory");
-         conn = cf.createConnection();
-         s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         conn.start();
-
-         TextMessage rm = (TextMessage)s.createConsumer(queue).receive(500);
-
-         assertEquals("one", rm.getText());
-
-         conn.close();
-
-         // make sure there's no active JTA transaction
-
-         assertNull(TransactionManagerLocator.getInstance().locate().getTransaction());
-
-         // send a message to the queue, using a JCA wrapper
-
-         mcf = (ConnectionFactory)initialContext.lookup("java:/JCAConnectionFactory");
-
-         conn = mcf.createConnection();
-
-         s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         p = s.createProducer(queue);
-         p.setDeliveryMode(DeliveryMode.PERSISTENT);
-         m = s.createTextMessage("one");
-
-         p.send(m);
-
-         conn.close();
-
-         // receive the message
-         cf = (ConnectionFactory)initialContext.lookup("/ConnectionFactory");
-         conn = cf.createConnection();
-         conn.start();
-         s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageConsumer c = s.createConsumer(queue);
-         rm = (TextMessage)c.receive(1000);
-
-         assertEquals("one", rm.getText());
-
-         conn.close();
-      }
-      finally
-      {
-         if (suspended != null)
-         {
-            TransactionManagerLocator.getInstance().locate().resume(suspended);
-         }
-      }
-   }
 
    /*
-    * If there is no global tx present messages consumed must consumed as if they were in a
-    * local tx. Note this behaviour differs from messages sent
-    * This is so we can support transacted delivery of messags in an MDB as mentioned
-    *
-    * However to accomodate TCK tests, when Sessions/Consumers are being used without transaction
-    * enlist, we will process those cases as NonTransactional, AutoAck.
+    * If messages are consumed using an XASession that is not enlisted in a transaction then the behaviour of the session
+    * falls back to being AUTO_ACK - i.e. the messages will get acked immediately.
+    * 
+    * There is one exception to this:
+    * 
+    * For transactional delivery of messages in an MDB using the old container invoker (non JCA 1.5 inflow) the message
+    * is received from the JMS provider *before* the MDB container has a chance to enlist the session in a transaction.
+    * (see page 199 (chapter 5 JMS and Transactions, section "Application Server Integration" of Mark Little's book Java Transaction
+    * processing for a discussion of how different app servers deal with this)
+    * This is not a problem specific to JBoss and was solved with JCA 1.5 message inflow.
+    * Consequently, if we detect the session has a distinguised session listener (which it will if using ASF) then the behaviour
+    * is to fall back to being a local transacted session. Later on, when the session is enlisted the work done in the local tx
+    * is converted to the global tx brach.
+    * 
+    * We are testing the exceptional case here without a global tx here
     *
     * See http://www.jboss.com/index.html?module=bb&op=viewtopic&t=98577&postdays=0&postorder=asc&start=0
     * http://jira.jboss.com/jira/browse/JBMESSAGING-410
     * http://jira.jboss.com/jira/browse/JBMESSAGING-721
     * http://jira.jboss.org/jira/browse/JBMESSAGING-946
     *
-    * For transactional delivery the receipt of the message should be in a transaction but by the time
-    * the mdb container is invoked the message has already been received it is too late - the message
-    * has already been received and passed on (see page 199 (chapter 5 JMS and Transactions, section "Application Server Integration"
-    * of Mark Little's book Java Transaction processing
-    * for a discussion of how different app serves deal with this)
-    * The way jboss messaging (and jboss mq) deals with this is to convert any work done
-    * prior to when the xasession is enlisted in the tx, into work done in the xa tx.
-    *
-    *      NOTE: To accomodate TCK tests where Session/Consumers are being used without transaction enlisting
-    *            we are processing those cases as nonTransactional/AutoACK, however if the session is being used
-    *            to process MDBs we will consider the LocalTransaction convertion and process those as the comment above
-    *            This was done as per: http://jira.jboss.org/jira/browse/JBMESSAGING-946
-    *
     */
-   public void testConnectionConsumer() throws Exception
+   public void testConsumeWithConnectionConsumerNoGlobalTransaction() throws Exception
    {
       ServerManagement.deployQueue("MyQueue2");
-
 
       try
       {
@@ -439,7 +333,7 @@ public abstract class XATestBase extends MessagingTestCase
 
             // using XA with a ConnectionConsumer (testing the transaction behavior under MDBs)
 
-            XAConnectionFactory xacf = (XAConnectionFactory) cf;
+            XAConnectionFactory xacf = (XAConnectionFactory) initialContext.lookup("/XAConnectionFactory");
             xaconn = xacf.createXAConnection();
             xaconn.start();
             XASession xasession = xaconn.createXASession();
@@ -505,35 +399,122 @@ public abstract class XATestBase extends MessagingTestCase
 
 
    }
-
+   
+   
    /*
-    * If there is no global tx present messages consumed must consumed as if they were in a
-    * local tx. Note this behaviour differs from messages sent
-    * This is so we can support transacted delivery of messags in an MDB as mentioned
-    *
-    * However to accomodate TCK tests, when Sessions/Consumers are being used without transaction
-    * enlist, we will process those cases as NonTransactional, AutoAck.
+    * If messages are consumed using an XASession that is not enlisted in a transaction then the behaviour of the session
+    * falls back to being AUTO_ACK - i.e. the messages will get acked immediately.
+    * 
+    * There is one exception to this:
+    * 
+    * For transactional delivery of messages in an MDB using the old container invoker (non JCA 1.5 inflow) the message
+    * is received from the JMS provider *before* the MDB container has a chance to enlist the session in a transaction.
+    * (see page 199 (chapter 5 JMS and Transactions, section "Application Server Integration" of Mark Little's book Java Transaction
+    * processing for a discussion of how different app servers deal with this)
+    * This is not a problem specific to JBoss and was solved with JCA 1.5 message inflow.
+    * Consequently, if we detect the session has a distinguised session listener (which it will if using ASF) then the behaviour
+    * is to fall back to being a local transacted session. Later on, when the session is enlisted the work done in the local tx
+    * is converted to the global tx brach.
+    * 
+    * We are testing the standard case without a global tx here
     *
     * See http://www.jboss.com/index.html?module=bb&op=viewtopic&t=98577&postdays=0&postorder=asc&start=0
     * http://jira.jboss.com/jira/browse/JBMESSAGING-410
     * http://jira.jboss.com/jira/browse/JBMESSAGING-721
     * http://jira.jboss.org/jira/browse/JBMESSAGING-946
     *
-    * For transactional delivery the receipt of the message should be in a transaction but by the time
-    * the mdb container is invoked the message has already been received it is too late - the message
-    * has already been received and passed on (see page 199 (chapter 5 JMS and Transactions, section "Application Server Integration"
-    * of Mark Little's book Java Transaction processing
-    * for a discussion of how different app serves deal with this)
-    * The way jboss messaging (and jboss mq) deals with this is to convert any work done
-    * prior to when the xasession is enlisted in the tx, into work done in the xa tx.
+    */
+   public void testConsumeWithoutConnectionConsumerNoGlobalTransaction() throws Exception
+   {
+      try
+      {
+         ServerManagement.deployQueue("MyQueue2");
+
+         // send a message to the queue
+
+         ConnectionFactory cf = (ConnectionFactory)initialContext.lookup("/ConnectionFactory");
+         Queue queue = (Queue)initialContext.lookup("queue/MyQueue2");
+         Connection conn = cf.createConnection();
+         Session s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         MessageProducer p = s.createProducer(queue);
+         p.setDeliveryMode(DeliveryMode.PERSISTENT);
+         Message m = s.createTextMessage("one");
+         p.send(m);
+         conn.close();
+
+         // make sure there's no active JTA transaction
+
+         Transaction suspended = TransactionManagerLocator.getInstance().locate().suspend();
+
+         try
+         {
+
+            ObjectName queueMBean = new ObjectName("jboss.messaging.destination:service=Queue,name=MyQueue2");
+            Integer count = (Integer)ServerManagement.getAttribute(queueMBean, "MessageCount");
+            assertEquals(1, count.intValue());
+
+            XAConnectionFactory xcf =
+                  (XAConnectionFactory)initialContext.lookup("java:/XAConnectionFactory");
+            XAConnection xconn = xcf.createXAConnection();
+            xconn.start();
+
+            // no active JTA transaction here
+
+            XASession xs = xconn.createXASession();
+
+            MessageConsumer c = xs.createConsumer(queue);
+
+            // the message should be store unacked in the local session
+            TextMessage rm = (TextMessage)c.receive(1000);
+
+            assertEquals("one", rm.getText());
+            
+            // messages should be acked
+            count = (Integer)ServerManagement.getAttribute(queueMBean, "MessageCount");
+            assertEquals(0, count.intValue());
+            
+            xconn.close();
+         }
+         finally
+         {
+
+            if (suspended != null)
+            {
+               TransactionManagerLocator.getInstance().locate().resume(suspended);
+            }
+         }
+      }
+      finally
+      {
+         ServerManagement.undeployQueue("MyQueue2");
+      }
+   }
+   
+
+   /*
+    * If messages are consumed using an XASession that is not enlisted in a transaction then the behaviour of the session
+    * falls back to being AUTO_ACK - i.e. the messages will get acked immediately.
+    * 
+    * There is one exception to this:
+    * 
+    * For transactional delivery of messages in an MDB using the old container invoker (non JCA 1.5 inflow) the message
+    * is received from the JMS provider *before* the MDB container has a chance to enlist the session in a transaction.
+    * (see page 199 (chapter 5 JMS and Transactions, section "Application Server Integration" of Mark Little's book Java Transaction
+    * processing for a discussion of how different app servers deal with this)
+    * This is not a problem specific to JBoss and was solved with JCA 1.5 message inflow.
+    * Consequently, if we detect the session has a distinguised session listener (which it will if using ASF) then the behaviour
+    * is to fall back to being a local transacted session. Later on, when the session is enlisted the work done in the local tx
+    * is converted to the global tx brach.
+    * 
+    * We are testing the case with a global tx here
     *
-    *      NOTE: To accomodate TCK tests where Session/Consumers are being used without transaction enlisting
-    *            we are processing those cases as nonTransactional/AutoACK, however if the session is being used
-    *            to process MDBs we will consider the LocalTransaction convertion and process those as the comment above
-    *            This was done as per: http://jira.jboss.org/jira/browse/JBMESSAGING-946
+    * See http://www.jboss.com/index.html?module=bb&op=viewtopic&t=98577&postdays=0&postorder=asc&start=0
+    * http://jira.jboss.com/jira/browse/JBMESSAGING-410
+    * http://jira.jboss.com/jira/browse/JBMESSAGING-721
+    * http://jira.jboss.org/jira/browse/JBMESSAGING-946
     *
     */
-   public void testReceiveGlobalTransaction() throws Exception
+   public void testConsumeGlobalTransaction() throws Exception
    {
       XAConnection xaconn = null;
 
@@ -569,8 +550,8 @@ public abstract class XATestBase extends MessagingTestCase
 
          XASession xasession = xaconn.createXASession();
 
-
          XAResource resouce = xasession.getXAResource();
+         
          trans.enlistResource(resouce);
 
          MessageConsumer consumer = xasession.createConsumer(queue);
@@ -584,6 +565,7 @@ public abstract class XATestBase extends MessagingTestCase
          assertNull(consumer.receive(1000));
 
          count = (Integer)ServerManagement.getAttribute(queueMBean, "MessageCount");
+         
          assertEquals(1, count.intValue());
 
          trans.delistResource(resouce, XAResource.TMSUCCESS);
@@ -701,110 +683,6 @@ public abstract class XATestBase extends MessagingTestCase
          ServerManagement.undeployQueue("MyQueue2");
       }
    }
-
-   /*
-    * If there is no global tx present messages consumed must consumed as if they were in a
-    * local tx. Note this behaviour differs from messages sent
-    * This is so we can support transacted delivery of messags in an MDB as mentioned
-    *
-    * However to accomodate TCK tests, when Sessions/Consumers are being used without transaction
-    * enlist, we will process those cases as NonTransactional, AutoAck.
-    *
-    * See http://www.jboss.com/index.html?module=bb&op=viewtopic&t=98577&postdays=0&postorder=asc&start=0
-    * http://jira.jboss.com/jira/browse/JBMESSAGING-410
-    * http://jira.jboss.com/jira/browse/JBMESSAGING-721
-    * http://jira.jboss.org/jira/browse/JBMESSAGING-946
-    *
-    * For transactional delivery the receipt of the message should be in a transaction but by the time
-    * the mdb container is invoked the message has already been received it is too late - the message
-    * has already been received and passed on (see page 199 (chapter 5 JMS and Transactions, section "Application Server Integration"
-    * of Mark Little's book Java Transaction processing
-    * for a discussion of how different app serves deal with this)
-    * The way jboss messaging (and jboss mq) deals with this is to convert any work done
-    * prior to when the xasession is enlisted in the tx, into work done in the xa tx.
-    *
-    *      NOTE: To accomodate TCK tests where Session/Consumers are being used without transaction enlisting
-    *            we are processing those cases as nonTransactional/AutoACK, however if the session is being used
-    *            to process MDBs we will consider the LocalTransaction convertion and process those as the comment above
-    *            This was done as per: http://jira.jboss.org/jira/browse/JBMESSAGING-946
-    *
-    */
-   public void testReceiveNoGlobalTransaction() throws Exception
-   {
-      if (ServerManagement.isRemote())
-      {
-         log.info("************************************************************************************************************************");
-         log.info("testReceiveNoGlobalTransaction is being ignored on remote runs, as this requires access to the JCA layer on java:/");
-         log.info("************************************************************************************************************************");
-         return;
-      }
-
-      try
-      {
-         ServerManagement.deployQueue("MyQueue2");
-
-         // send a message to the queue
-
-         ConnectionFactory cf = (ConnectionFactory)initialContext.lookup("/ConnectionFactory");
-         Queue queue = (Queue)initialContext.lookup("queue/MyQueue2");
-         Connection conn = cf.createConnection();
-         Session s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer p = s.createProducer(queue);
-         p.setDeliveryMode(DeliveryMode.PERSISTENT);
-         Message m = s.createTextMessage("one");
-         p.send(m);
-         conn.close();
-
-         // make sure there's no active JTA transaction
-
-         Transaction suspended = TransactionManagerLocator.getInstance().locate().suspend();
-
-         try
-         {
-
-            ObjectName queueMBean = new ObjectName("jboss.messaging.destination:service=Queue,name=MyQueue2");
-            Integer count = (Integer)ServerManagement.getAttribute(queueMBean, "MessageCount");
-            assertEquals(1, count.intValue());
-
-            // using a JCA wrapper without a transaction
-
-            ConnectionFactory mcf =
-                  (ConnectionFactory)initialContext.lookup("java:/JCAConnectionFactory");
-            conn = mcf.createConnection();
-            conn.start();
-
-            // no active JTA transaction here
-
-            s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-
-            MessageConsumer c = s.createConsumer(queue);
-
-            // the messge should be store unacked in the local session
-            TextMessage rm = (TextMessage)c.receive(1000);
-
-            assertEquals("one", rm.getText());
-
-            conn.close();
-
-            // messages should be consumed
-            count = (Integer)ServerManagement.getAttribute(queueMBean, "MessageCount");
-            assertEquals(0, count.intValue());
-         }
-         finally
-         {
-
-            if (suspended != null)
-            {
-               TransactionManagerLocator.getInstance().locate().resume(suspended);
-            }
-         }
-      }
-      finally
-      {
-         ServerManagement.undeployQueue("MyQueue2");
-      }
-   }
-
 
    //See http://jira.jboss.com/jira/browse/JBMESSAGING-638
    public void testResourceManagerMemoryLeakOnCommit() throws Exception
@@ -932,16 +810,7 @@ public abstract class XATestBase extends MessagingTestCase
       }
    }
 
-
-   /**
-   * //http://jira.jboss.com/jira/browse/JBMESSAGING-721
-   *      NOTE: To accomodate TCK tests where Session/Consumers are being used without transaction enlisting
-   *            we are processing those cases as nonTransactional/AutoACK, however if the session is being used
-   *            to process MDBs we will consider the LocalTransaction convertion and process those as the comment above
-   *            This was done as per: http://jira.jboss.org/jira/browse/JBMESSAGING-946
-   *
-   */
-
+   // http://jira.jboss.com/jira/browse/JBMESSAGING-721
    public void testConvertFromLocalTx() throws Exception
    {
       Connection conn = null;

@@ -57,11 +57,11 @@
 	<classpathentry kind="lib" path="thirdparty/retrotranslator/lib/retrotranslator-transformer.jar"/>
 	<classpathentry kind="lib" path="thirdparty/trove/lib/trove.jar"/>
 	<classpathentry kind="lib" path="thirdparty/jboss/remoting/lib/jboss-remoting.jar"/>
-	<classpathentry kind="var" path="ANT_HOME/lib/ant-junit.jar"/>
 	<classpathentry kind="lib" path="thirdparty/jboss/common-logging-log4j/lib/jboss-logging-log4j.jar"/>
 	<classpathentry kind="lib" path="thirdparty/jboss/common-logging-spi/lib/jboss-logging-spi.jar"/>
 	<classpathentry kind="lib" path="thirdparty/jboss/common-core/lib/jboss-common-core.jar"/>
-	<classpathentry kind="var" path="ANT_HOME/lib/ant.jar"/>
 	<classpathentry kind="lib" path="thirdparty/jboss/jbossts14/lib/jbossjta.jar"/>
+	<classpathentry kind="var" path="ANT_HOME/lib/ant.jar"/>
+	<classpathentry kind="var" path="ANT_HOME/lib/ant-junit.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
