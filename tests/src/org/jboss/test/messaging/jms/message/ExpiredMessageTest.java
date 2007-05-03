@@ -18,6 +18,9 @@ import javax.jms.Session;
 import javax.jms.MessageProducer;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
+import javax.jms.XAConnectionFactory;
+import javax.jms.XAConnection;
+import javax.management.ObjectName;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -70,6 +73,52 @@ public class ExpiredMessageTest extends MessagingTestCase
       conn.start();
 
       assertNull(cons.receive(3000));
+   }
+
+   public void testExpirationTransfer() throws Exception
+   {
+
+      ServerManagement.deployQueue("expiredTarget");
+
+      Object originalValue = ServerManagement.getAttribute(ServerManagement.getServerPeerObjectName(), "DefaultExpiryQueue");
+
+      ServerManagement.setAttribute(ServerManagement.getServerPeerObjectName(), "DefaultExpiryQueue", "jboss.messaging.destination:service=Queue,name=expiredTarget");
+
+      try
+      {
+
+         ConnectionFactory cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
+         Queue queue = (Queue)ic.lookup("/queue/expiredMessageTestQueue");
+
+         Connection conn = cf.createConnection();
+
+         Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+         MessageConsumer cons = session.createConsumer(queue);
+
+         conn.start();
+
+         MessageProducer prod = session.createProducer(queue);
+         prod.setTimeToLive(100);
+
+         Message m = session.createTextMessage("This message will die");
+
+         prod.send(m);
+
+         // wait for the message to die
+
+         Thread.sleep(5000);
+
+
+         assertNull(cons.receive(3000));
+      }
+      finally
+      {
+         ServerManagement.destroyQueue("expiredSource");
+         ServerManagement.destroyQueue("expiredTarget");
+         ServerManagement.setAttribute(ServerManagement.getServerPeerObjectName(), "DefaultExpiryQueue", originalValue.toString());
+      }
+
    }
 
    // Package protected ----------------------------------------------------------------------------
