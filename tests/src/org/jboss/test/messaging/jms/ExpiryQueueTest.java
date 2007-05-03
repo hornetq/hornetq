@@ -622,6 +622,59 @@ public class ExpiryQueueTest extends MessagingTestCase
          if (conn != null) conn.close();
       }
    }
+   
+   public void testExpirationTransfer() throws Exception
+   {
+
+      ServerManagement.deployQueue("expiredTarget");
+
+      Object originalValue = ServerManagement.getAttribute(ServerManagement.getServerPeerObjectName(), "DefaultExpiryQueue");
+
+      ServerManagement.setAttribute(ServerManagement.getServerPeerObjectName(), "DefaultExpiryQueue", "jboss.messaging.destination:service=Queue,name=expiredTarget");
+
+      try
+      {
+
+         ConnectionFactory cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
+         Queue queue = (Queue)ic.lookup("/queue/expiredMessageTestQueue");
+
+         Connection conn = cf.createConnection();
+
+         Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+         MessageConsumer cons = session.createConsumer(queue);
+
+         conn.start();
+
+         MessageProducer prod = session.createProducer(queue);
+         prod.setTimeToLive(100);
+
+         Message m = session.createTextMessage("This message will die");
+
+         prod.send(m);
+
+         assertNull(cons.receive(3000));
+
+         // wait for the message to die
+
+         Thread.sleep(2000);
+
+         MessageConsumer consumerExpiredQueue = session.createConsumer(queue);
+
+         TextMessage txt = (TextMessage) consumerExpiredQueue.receive(1000);
+
+         assertEquals("This message will die", txt.getText());
+
+         assertNull(consumerExpiredQueue.receive(1000));
+      }
+      finally
+      {
+         ServerManagement.destroyQueue("expiredSource");
+         ServerManagement.destroyQueue("expiredTarget");
+         ServerManagement.setAttribute(ServerManagement.getServerPeerObjectName(), "DefaultExpiryQueue", originalValue.toString());
+      }
+
+   }
 
       
    // Package protected ---------------------------------------------
