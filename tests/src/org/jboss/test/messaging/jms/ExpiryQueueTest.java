@@ -675,7 +675,8 @@ public class ExpiryQueueTest extends MessagingTestCase
          {
             conn.close();
          }
-         ServerManagement.destroyQueue("expiredTarget");
+         
+         ServerManagement.destroyQueue("expiryQueue");
          
          ServerManagement.setAttribute(ServerManagement.getServerPeerObjectName(), "DefaultExpiryQueue", originalValue.toString());
       }
