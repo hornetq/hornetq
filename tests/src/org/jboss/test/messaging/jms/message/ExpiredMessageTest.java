@@ -20,6 +20,7 @@ import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.XAConnectionFactory;
 import javax.jms.XAConnection;
+import javax.jms.TextMessage;
 import javax.management.ObjectName;
 
 /**
@@ -105,12 +106,21 @@ public class ExpiredMessageTest extends MessagingTestCase
 
          prod.send(m);
 
+         assertNull(cons.receive(3000));
+
          // wait for the message to die
 
-         Thread.sleep(5000);
+         Thread.sleep(2000);
 
+         Queue queueExpiryQueue = (Queue)ic.lookup("/queue/expiredTarget");
 
-         assertNull(cons.receive(3000));
+         MessageConsumer consumerExpiredQueue = session.createConsumer(queue);
+
+         TextMessage txt = (TextMessage) consumerExpiredQueue.receive(1000);
+
+         assertEquals("This message will die", txt.getText());
+
+         assertNull(consumerExpiredQueue.receive(1000));
       }
       finally
       {
