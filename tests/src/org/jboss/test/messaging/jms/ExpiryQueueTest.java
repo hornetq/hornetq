@@ -627,10 +627,14 @@ public class ExpiryQueueTest extends MessagingTestCase
    {
 
       ServerManagement.deployQueue("expiredTarget");
+      ServerManagement.deployQueue("expiredMessageTestQueue");
+
 
       Object originalValue = ServerManagement.getAttribute(ServerManagement.getServerPeerObjectName(), "DefaultExpiryQueue");
 
       ServerManagement.setAttribute(ServerManagement.getServerPeerObjectName(), "DefaultExpiryQueue", "jboss.messaging.destination:service=Queue,name=expiredTarget");
+
+      Connection conn = null;
 
       try
       {
@@ -638,11 +642,9 @@ public class ExpiryQueueTest extends MessagingTestCase
          ConnectionFactory cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
          Queue queue = (Queue)ic.lookup("/queue/expiredMessageTestQueue");
 
-         Connection conn = cf.createConnection();
+         conn = cf.createConnection();
 
          Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-
-         MessageConsumer cons = session.createConsumer(queue);
 
          conn.start();
 
@@ -653,13 +655,16 @@ public class ExpiryQueueTest extends MessagingTestCase
 
          prod.send(m);
 
-         assertNull(cons.receive(3000));
-
          // wait for the message to die
-
          Thread.sleep(2000);
 
-         MessageConsumer consumerExpiredQueue = session.createConsumer(queue);
+         MessageConsumer cons = session.createConsumer(queue);
+
+         assertNull(cons.receive(3000));
+
+         Queue queueExpiryQueue = (Queue)ic.lookup("/queue/expiredTarget");
+
+         MessageConsumer consumerExpiredQueue = session.createConsumer(queueExpiryQueue);
 
          TextMessage txt = (TextMessage) consumerExpiredQueue.receive(1000);
 
@@ -669,11 +674,14 @@ public class ExpiryQueueTest extends MessagingTestCase
       }
       finally
       {
-         ServerManagement.destroyQueue("expiredSource");
+         if (conn != null)
+         {
+            conn.close();
+         }
          ServerManagement.destroyQueue("expiredTarget");
+         ServerManagement.destroyQueue("expiredMessageTestQueue");
          ServerManagement.setAttribute(ServerManagement.getServerPeerObjectName(), "DefaultExpiryQueue", originalValue.toString());
       }
-
    }
 
       
