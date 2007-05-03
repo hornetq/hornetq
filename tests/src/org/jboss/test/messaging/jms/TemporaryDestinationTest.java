@@ -179,6 +179,46 @@ public class TemporaryDestinationTest extends MessagingTestCase
          // OK
       }
    }
+   
+   public void testTemporaryQueueDeleteWithConsumer() throws Exception
+   {
+   	TemporaryQueue tempQueue = producerSession.createTemporaryQueue();
+   	
+   	MessageConsumer consumer = consumerSession.createConsumer(tempQueue);
+   	
+   	try
+   	{
+   		tempQueue.delete();
+   		
+   		fail("Should throw JMSException");
+   	}
+   	catch (JMSException e)
+   	{
+   		//Should fail - you can't delete a temp queue if it has active consumers
+   	}
+   	
+   	consumer.close();   	
+   }
+   
+   public void testTemporaryTopicDeleteWithConsumer() throws Exception
+   {
+   	TemporaryTopic tempTopic = producerSession.createTemporaryTopic();
+   	
+   	MessageConsumer consumer = consumerSession.createConsumer(tempTopic);
+   	
+   	try
+   	{
+   		tempTopic.delete();
+   		
+   		fail("Should throw JMSException");
+   	}
+   	catch (JMSException e)
+   	{
+   		//Should fail - you can't delete a temp topic if it has active consumers
+   	}
+   	
+   	consumer.close();   	
+   }
 
    public void testTemporaryQueueDeleted() throws Exception
    {

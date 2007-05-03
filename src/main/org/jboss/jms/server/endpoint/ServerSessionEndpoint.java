@@ -581,6 +581,13 @@ public class ServerSessionEndpoint implements SessionEndpoint
                   
          if (dest.isQueue())
          {
+         	Binding binding = postOffice.getBindingForQueueName(dest.getName());
+         	
+         	if (binding.getQueue().getNumberOfReceivers() != 0)
+         	{
+         		throw new IllegalStateException("Cannot delete temporary queue if it has consumer(s)");
+         	}
+         	
             //Unbind
             postOffice.unbindQueue(dest.getName());
             
@@ -602,10 +609,16 @@ public class ServerSessionEndpoint implements SessionEndpoint
             Collection bindings =
                postOffice.getBindingsForCondition(new JMSCondition(false, dest.getName()));
             
-            if (!bindings.isEmpty())
+            Iterator iter = bindings.iterator();
+            
+            while (iter.hasNext())
             {
-               throw new IllegalStateException("Cannot delete temporary destination, " +
-                  "since it has active consumer(s)");
+            	Binding binding = (Binding)iter.next();
+            	
+            	if (binding.getQueue().getNumberOfReceivers() != 0)
+            	{
+            		throw new IllegalStateException("Cannot delete temporary destination if it has consumer(s)");
+            	}
             }
          }
          
