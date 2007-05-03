@@ -70,10 +70,13 @@ public class DuplicateClientIDTest extends MessagingTestCase
          {
             c2 = cf.createConnection();
             c2.setClientID("Duplicated");
-            fail("JBossMessaging is allowing duplicate clients!");
          }
          catch (InvalidClientIDException e)
          {
+            // From JMS Spec session 4.3.2 you could have multiple connections with the same
+            // ID... as long as you check for multiple ClientIDs and don't duplicate messages 
+            fail("You could have multiple connections with the same clientID, " +
+               "as long they are not being in use!");
          }
       }
       finally
@@ -115,13 +118,13 @@ public class DuplicateClientIDTest extends MessagingTestCase
             assertNotNull(c2);
             assertNotNull(c2.getClientID());
 
-            if (c1.getClientID().equals(c2.getClientID()))
-            {            
-               fail("JBossMessaging is allowing duplicate clients!");
-            }
          }
          catch (InvalidClientIDException e)
          {
+            // From JMS Spec session 4.3.2 you could have multiple connections with the same
+            // ID... as long as you check for multiple ClientIDs and don't duplicate messages
+            fail("You could have multiple connections with the same clientID, " +
+               "as long they are not being in use!");
          }
       }
       finally

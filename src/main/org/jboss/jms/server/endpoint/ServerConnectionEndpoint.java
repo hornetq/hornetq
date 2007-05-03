@@ -302,8 +302,6 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
             throw new IllegalStateException("Cannot set clientID, already set as " + this.clientID);
          }
 
-         serverPeer.checkClientID(clientID);
-
          log.debug(this + "setting client ID to " + clientID);
 
          this.clientID = clientID;

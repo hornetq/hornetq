@@ -213,11 +213,6 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
          }                  
       }
 
-      if (clientIDUsed!=null)
-      {
-         serverPeer.checkClientID(clientIDUsed);
-      }
-      
       // create the corresponding "server-side" connection endpoint and register it with the
       // server peer's ClientManager
       ServerConnectionEndpoint endpoint =
