@@ -1012,6 +1012,8 @@ public class ServerSessionEndpoint implements SessionEndpoint
       //subscriptions of a topic for example
       //We set headers that hold the original message destination, expiry time and original message id
       
+   	if (trace) { log.trace("Making copy of message for DLQ or expiry " + del); }
+   	
       JBossMessage msg = ((JBossMessage)del.getReference().getMessage());
       
       JBossMessage copy = msg.doCopy();
@@ -1046,7 +1048,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
       Transaction tx = tr.createTransaction();
       
       MessageReference ref = ms.reference(msg);
-                       
+                  
       try
       {               
          if (queue != null)

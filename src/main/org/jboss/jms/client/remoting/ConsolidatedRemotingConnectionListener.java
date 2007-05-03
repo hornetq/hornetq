@@ -89,8 +89,6 @@ public class ConsolidatedRemotingConnectionListener implements ConnectionListene
          }
       }
       
-      log.info("DISPATCHING TO JMSLISTENER " + forwardToJMSListener);
-      
       if (forwardToJMSListener && jmsExceptionListenerCopy != null)
       {
          JMSException jmsException = null;

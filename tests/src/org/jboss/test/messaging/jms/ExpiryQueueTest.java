@@ -626,13 +626,11 @@ public class ExpiryQueueTest extends MessagingTestCase
    public void testExpirationTransfer() throws Exception
    {
 
-      ServerManagement.deployQueue("expiredTarget");
-      ServerManagement.deployQueue("expiredMessageTestQueue");
-
+      ServerManagement.deployQueue("expiryQueue");
 
       Object originalValue = ServerManagement.getAttribute(ServerManagement.getServerPeerObjectName(), "DefaultExpiryQueue");
 
-      ServerManagement.setAttribute(ServerManagement.getServerPeerObjectName(), "DefaultExpiryQueue", "jboss.messaging.destination:service=Queue,name=expiredTarget");
+      ServerManagement.setAttribute(ServerManagement.getServerPeerObjectName(), "DefaultExpiryQueue", "jboss.messaging.destination:service=Queue,name=expiryQueue");
 
       Connection conn = null;
 
@@ -640,8 +638,7 @@ public class ExpiryQueueTest extends MessagingTestCase
       {
 
          ConnectionFactory cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
-         Queue queue = (Queue)ic.lookup("/queue/expiredMessageTestQueue");
-
+         
          conn = cf.createConnection();
 
          Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -661,8 +658,8 @@ public class ExpiryQueueTest extends MessagingTestCase
          MessageConsumer cons = session.createConsumer(queue);
 
          assertNull(cons.receive(3000));
-
-         Queue queueExpiryQueue = (Queue)ic.lookup("/queue/expiredTarget");
+         
+         Queue queueExpiryQueue = (Queue)ic.lookup("/queue/expiryQueue");
 
          MessageConsumer consumerExpiredQueue = session.createConsumer(queueExpiryQueue);
 
@@ -679,7 +676,7 @@ public class ExpiryQueueTest extends MessagingTestCase
             conn.close();
          }
          ServerManagement.destroyQueue("expiredTarget");
-         ServerManagement.destroyQueue("expiredMessageTestQueue");
+         
          ServerManagement.setAttribute(ServerManagement.getServerPeerObjectName(), "DefaultExpiryQueue", originalValue.toString());
       }
    }

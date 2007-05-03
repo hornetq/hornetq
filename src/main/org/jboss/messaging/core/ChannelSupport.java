@@ -985,6 +985,8 @@ public abstract class ChannelSupport implements Channel
          try
          {
             // We add the references to the state
+         	
+         	boolean promptDelivery = false;
             
             for(Iterator i = refsToAdd.iterator(); i.hasNext(); )
             {
@@ -1003,6 +1005,9 @@ public abstract class ChannelSupport implements Channel
                {
                   throw new TransactionException("Failed to add reference", t);
                }
+               
+               //Only need to prompt delivery if refs were added
+               promptDelivery = true;
             }
 
             // Remove deliveries
@@ -1019,9 +1024,12 @@ public abstract class ChannelSupport implements Channel
             }
             
             // prompt delivery
-            synchronized (refLock)
+            if (promptDelivery)
             {
-               deliverInternal();
+            	synchronized (refLock)
+            	{
+            		deliverInternal();
+            	}
             }
          }
          catch (Throwable t)
