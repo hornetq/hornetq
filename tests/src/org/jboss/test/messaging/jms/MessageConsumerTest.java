@@ -342,58 +342,6 @@ public class MessageConsumerTest extends MessagingTestCase
    }
 
 
-   public void testRedeliveryToCompetingConsumerOnSubscription() throws Exception
-   {
-      Connection conn = cf.createConnection();
-
-      conn.setClientID("wibble");
-
-      Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-
-      MessageProducer prod = sessSend.createProducer(topic);
-
-      conn.start();
-
-      Session sessConsume1 = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
-
-      MessageConsumer cons1 = sessConsume1.createDurableSubscriber(topic, "sub1");
-
-      TextMessage tm = sessSend.createTextMessage();
-
-      tm.setText("Your mum");
-
-      prod.send(tm);
-
-      TextMessage tm2 = (TextMessage)cons1.receive();
-
-      assertNotNull(tm2);
-
-      assertEquals("Your mum", tm2.getText());
-
-      //Don't ack
-
-      //Create another consumer
-
-      Session sessConsume2 = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
-
-      MessageConsumer cons2 = sessConsume2.createDurableSubscriber(topic, "sub1");
-
-      //this should cancel message and cause delivery to other consumer
-
-      sessConsume1.close();
-
-      TextMessage tm3 = (TextMessage)cons2.receive(1000);
-
-      assertNotNull(tm3);
-
-      assertEquals("Your mum", tm3.getText());
-
-      tm3.acknowledge();
-
-      conn.close();
-
-   }
-
    /**
     * The simplest possible receive() test for a non-persistent message.
     */
