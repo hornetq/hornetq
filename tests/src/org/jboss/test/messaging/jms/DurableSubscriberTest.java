@@ -522,6 +522,35 @@ public class DurableSubscriberTest extends MessagingTestCase
 
       conn.close();
    }
+   
+   public void testSubscribeWithActiveSubscription() throws Exception
+   {
+   	ConnectionFactory cf = (ConnectionFactory)ic.lookup("ConnectionFactory");
+      Topic topic = (Topic)ic.lookup("/topic/Topic");
+
+      Connection conn = cf.createConnection();
+      conn.setClientID("zeke");
+
+      Session s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+      TopicSubscriber dursub1 = s.createDurableSubscriber(topic, "dursub1");
+
+      try
+      {      
+      	s.createDurableSubscriber(topic, "dursub1");
+         fail();
+      }
+      catch (IllegalStateException e)
+      {
+         //Ok - it is illegal to have more than one active subscriber on a subscrtiption at any one time
+      }
+         
+      dursub1.close();
+      
+      s.unsubscribe("dursub1");
+
+      conn.close();
+   }
 
    // Package protected ---------------------------------------------
 

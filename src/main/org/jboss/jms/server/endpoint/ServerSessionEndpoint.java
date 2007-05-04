@@ -1294,9 +1294,17 @@ public class ServerSessionEndpoint implements SessionEndpoint
             else
             {
                //Durable sub already exists
-               
+            	
                if (trace) { log.trace(this + " subscription " + subscriptionName + " already exists"); }
                
+            	//Check if it is already has a subscriber
+            	//We can't have more than one subscriber at a time on the durable sub
+               
+               if (binding.getQueue().getNumberOfReceivers() > 0)
+               {
+               	throw new IllegalStateException("Cannot create a subscriber on the durable subscription since it already has subscriber(s)");
+               }
+                              
                // From javax.jms.Session Javadoc (and also JMS 1.1 6.11.1):
                // A client can change an existing durable subscription by creating a durable
                // TopicSubscriber with the same name and a new topic and/or message selector.
