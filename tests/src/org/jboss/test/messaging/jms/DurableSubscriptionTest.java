@@ -55,7 +55,7 @@ import org.jboss.test.messaging.tools.ServerManagement;
  *
  * $Id: DurableSubscriberTest.java 1319 2006-09-19 17:17:53Z ovidiu.feodorov@jboss.com $
  */
-public class DurableSubscriberTest extends MessagingTestCase
+public class DurableSubscriptionTest extends MessagingTestCase
 {
    // Constants -----------------------------------------------------
 
@@ -67,7 +67,7 @@ public class DurableSubscriberTest extends MessagingTestCase
 
    // Constructors --------------------------------------------------
 
-   public DurableSubscriberTest(String name)
+   public DurableSubscriptionTest(String name)
    {
       super(name);
    }
