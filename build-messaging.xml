@@ -332,6 +332,18 @@
       </javac>
    </target>
 
+   <target name="instrument-classes">
+      <taskdef name="aopc" classname="org.jboss.aop.ant.AopC" classpathref="jboss.aop.classpath"/>
+      <echo message="NOTE: aopc incremental compilation might fail, if so do an ant clean first (see JMESSAGING-271)"/>
+      <aopc compilerclasspathref="aopc.classpath"
+            classpathref="aopc.classpath"
+            verbose="false">
+         <classpath refid="aopc.classpath"/>
+         <src path="${build.classes}/org/jboss/jms"/>
+         <aoppath path="src/etc/prepare-aop.xml"/>
+      </aopc>
+   </target>
+
    <target name="compile-classes">
 
       <mkdir dir="${build.classes}"/>
@@ -351,16 +363,8 @@
          <include name="**/*.java"/>
          <classpath refid="compilation.classpath"/>
       </javac>
-
-      <taskdef name="aopc" classname="org.jboss.aop.ant.AopC" classpathref="jboss.aop.classpath"/>
-      <echo message="NOTE: aopc incremental compilation might fail, if so do an ant clean first (see JMESSAGING-271)"/>
-      <aopc compilerclasspathref="aopc.classpath"
-            classpathref="aopc.classpath"
-            verbose="false">
-         <classpath refid="aopc.classpath"/>
-         <src path="${build.classes}"/>
-         <aoppath path="src/etc/prepare-aop.xml"/>
-      </aopc>
+      
+      <antcall target="instrument-classes" />
    </target>
 
    <target name="compile-etc">
