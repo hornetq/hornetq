@@ -219,7 +219,7 @@
    <!-- Compilation Tasks                                                                        -->
    <!-- ======================================================================================== -->
 
-   <target name="init" depends="resolve-local-dependencies"/>
+   <target name="init" />
 
    <target name="compile" depends="init">
 

@@ -5,7 +5,7 @@
 #
 main.artifact.location=../output/lib
 auxiliary.artifacts.location=../src/etc/server/default/deploy
-messaging.artifact.name=jboss-messaging-scoped.sar
+messaging.artifact.name=jboss-messaging.sar
 #
 # standalone config name override
 #

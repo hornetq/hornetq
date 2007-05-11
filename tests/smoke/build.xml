@@ -9,7 +9,7 @@
    <property file="./smoke.properties"/>
    <property name="sleep.interval" value="60"/>
    <property name="jnpPort" value="1099"/>
-   <property name="messaging.server.artifact.name" value="jboss-messaging-scoped.sar"/>
+   <property name="messaging.server.artifact.name" value="jboss-messaging.sar"/>
    <property name="messaging.server.artifact.path" value="../../output/lib"/>
    <property name="relative.client.jar.location" value="../../util"/>
    <property name="messaging.client.jar.name" value="jboss-messaging-client.jar"/>
@@ -80,46 +80,84 @@
 
    <target name="installation-tests">
 
-      <!-- 4.0.0, 4.0.1 NOT SUPPORTED -->
 
       <!--
-          Note on installer versions.
-          When installing versions to test via the JBoss installer, make sure call by value is *not*
-          selected in the installation process. The reason for testing installer versions is to test
-          the arrangement where JBoss is configured for all pass by reference
-      -->
-
-      <!--
-           4.0.1sp1
+           4.2.0.GA
       -->
 
       <antcall target="installation-test">
-         <param name="jboss.home" value="${jboss401sp1.home}"/>
-         <param name="run.secure-socket.example" value="false"/>
+         <param name="jboss.home" value="${jboss420GA.home}"/>
+         <param name="run.secure-socket.example" value="true"/>
+         <param name="install-jars" value="no"/>
       </antcall>
 
+
+
       <!--
-           4.0.2
+           4.0.5.GA
       -->
 
       <antcall target="installation-test">
-         <param name="jboss.home" value="${jboss402.home}"/>
+         <param name="jboss.home" value="${jboss405GA.home}"/>
+         <param name="install-jars" value="yes"/>
          <param name="run.secure-socket.example" value="false"/>
+         <param name="run.http.example" value="false"/>
       </antcall>
 
+      <antcall target="installation-test">
+         <param name="jboss.home" value="${jboss405GA-installer.home}"/>
+         <param name="install-jars" value="yes"/>
+         <param name="run.secure-socket.example" value="false"/>
+         <param name="run.http.example" value="false"/>
+      </antcall>
+
+      <antcall target="installation-test">
+         <param name="jboss.home" value="${jboss405GA.home}"/>
+         <param name="release.admin.target" value="standalone"/>
+         <param name="run.mdb.example" value="false"/>
+         <param name="run.mdb-failure.example" value="false"/>
+         <param name="run.stateless.example" value="false"/>
+         <param name="run.secure-socket.example" value="false"/>
+         <param name="install-jars" value="yes"/>
+         <param name="run.http.example" value="false"/>
+      </antcall>
+
+      <antcall target="installation-test">
+         <param name="jboss.home" value="${jboss405GAejb3.home}"/>
+         <param name="no.java4" value="true"/>
+         <param name="run.ejb3mdb.example" value="true"/>
+         <param name="run.secure-socket.example" value="false"/>
+         <param name="install-jars" value="yes"/>
+         <param name="run.http.example" value="false"/>
+      </antcall>
+
+      
       <!--
-           4.0.3
+           4.0.4.GA
       -->
 
       <antcall target="installation-test">
-         <param name="jboss.home" value="${jboss403.home}"/>
+         <param name="jboss.home" value="${jboss404GA.home}"/>
          <param name="run.secure-socket.example" value="false"/>
+         <param name="run.http.example" value="false"/>
       </antcall>
 
       <antcall target="installation-test">
-         <param name="jboss.home" value="${jboss403-installer.home}"/>
+         <param name="jboss.home" value="${jboss404GA-installer.home}"/>
          <param name="run.secure-socket.example" value="false"/>
+         <param name="run.http.example" value="false"/>
       </antcall>
+
+      <antcall target="installation-test">
+         <param name="jboss.home" value="${jboss404GA.home}"/>
+         <param name="release.admin.target" value="standalone"/>
+         <param name="run.mdb.example" value="false"/>
+         <param name="run.mdb-failure.example" value="false"/>
+         <param name="run.stateless.example" value="false"/>
+         <param name="run.secure-socket.example" value="false"/>
+         <param name="run.http.example" value="false"/>
+      </antcall>
+
 
       <!--
            4.0.3SP1
@@ -137,6 +175,48 @@
 
 
       <!--
+           4.0.3
+      -->
+
+      <antcall target="installation-test">
+         <param name="jboss.home" value="${jboss403.home}"/>
+         <param name="run.secure-socket.example" value="false"/>
+      </antcall>
+
+      <antcall target="installation-test">
+         <param name="jboss.home" value="${jboss403-installer.home}"/>
+         <param name="run.secure-socket.example" value="false"/>
+      </antcall>
+
+      <!--
+           4.0.2
+      -->
+
+      <antcall target="installation-test">
+         <param name="jboss.home" value="${jboss402.home}"/>
+         <param name="run.secure-socket.example" value="false"/>
+      </antcall>
+
+
+      <!-- 4.0.0, 4.0.1 NOT SUPPORTED -->
+
+      <!--
+          Note on installer versions.
+          When installing versions to test via the JBoss installer, make sure call by value is *not*
+          selected in the installation process. The reason for testing installer versions is to test
+          the arrangement where JBoss is configured for all pass by reference
+      -->
+
+      <!--
+           4.0.1sp1 - not supported on non scopped
+      -->
+
+      <!-- <antcall target="installation-test">
+         <param name="jboss.home" value="${jboss401sp1.home}"/>
+         <param name="run.secure-socket.example" value="false"/>
+      </antcall> -->
+
+      <!--
            4.0.3SP1 standalone. Temporarily removed from the supported configurations list.
            See http://jira.jboss.org/jira/browse/JBMESSAGING-848
       -->
@@ -150,54 +230,6 @@
          <param name="run.secure-socket.example" value="false"/>
       </antcall>
       -->
-
-      <!--
-           4.0.4.GA
-      -->
-
-      <antcall target="installation-test">
-         <param name="jboss.home" value="${jboss404GA.home}"/>
-      </antcall>
-
-      <antcall target="installation-test">
-         <param name="jboss.home" value="${jboss404GA-installer.home}"/>
-      </antcall>
-
-      <antcall target="installation-test">
-         <param name="jboss.home" value="${jboss404GA.home}"/>
-         <param name="release.admin.target" value="standalone"/>
-         <param name="run.mdb.example" value="false"/>
-         <param name="run.mdb-failure.example" value="false"/>
-         <param name="run.stateless.example" value="false"/>
-         <param name="run.secure-socket.example" value="false"/>
-      </antcall>
-
-      <!--
-           4.0.5.GA
-      -->
-
-      <antcall target="installation-test">
-         <param name="jboss.home" value="${jboss405GA.home}"/>
-      </antcall>
-
-      <antcall target="installation-test">
-         <param name="jboss.home" value="${jboss405GA-installer.home}"/>
-      </antcall>
-
-      <antcall target="installation-test">
-         <param name="jboss.home" value="${jboss405GA.home}"/>
-         <param name="release.admin.target" value="standalone"/>
-         <param name="run.mdb.example" value="false"/>
-         <param name="run.mdb-failure.example" value="false"/>
-         <param name="run.stateless.example" value="false"/>
-         <param name="run.secure-socket.example" value="false"/>
-      </antcall>
-
-      <antcall target="installation-test">
-         <param name="jboss.home" value="${jboss405GAejb3.home}"/>
-         <param name="no.java4" value="true"/>
-         <param name="run.ejb3mdb.example" value="true"/>
-      </antcall>
 
    </target>
 
@@ -660,14 +692,20 @@
       <!--
           Run single-node tests
       -->
-      <antcall target="create-messaging-config"/>
+      <antcall target="create-messaging-config">
+         <param name="install-jars" value="${install-jars}"/>
+      </antcall>
+
       <antcall target="run-all-examples"/>
       <antcall target="clean-messaging-config"/>
 
       <!--
           Run clustered tests
       -->
-      <antcall target="create-clustered-messaging-config"/>
+      <antcall target="create-clustered-messaging-config">
+         <param name="install-jars" value="${install-jars}"/>
+      </antcall>
+
       <antcall target="run-all-clustered-examples"/>
       <antcall target="clean-clustered-messaging-config"/>
                                                                                                  
@@ -735,6 +773,8 @@
          <property name="standalone.messaging.config.name" value="${jboss.configuration}"/>
          <property name="main.artifact.location" value="${messaging.server.artifact.path}"/>
          <property name="messaging.artifact.name" value="${messaging.server.artifact.name}"/>
+         <property name="driver-jar" value="${driver-jar}"/> 
+         <property name="install-jars" value="${install-jars}"/>
       </ant>
       <available file="../../output/lib/jboss-messaging-client.jar" property="client.jar.present"/>
       <fail unless="client.jar.present">Cannot find the client jar ../../output/lib/jboss-messaging-client.jar</fail>
@@ -759,6 +799,8 @@
          <property name="messaging.artifact.name" value="${messaging.server.artifact.name}"/>
          <property name="auxiliary.artifacts.location" value="../../src/etc/server/default/deploy"/>
          <property name="auxiliary.lib.location" value="../../util/lib"/>
+         <property name="driver-jar" value="${driver-jar}"/>
+         <property name="install-jars" value="${install-jars}"/>
       </ant>
 
       <!--
@@ -773,6 +815,8 @@
          <property name="messaging.artifact.name" value="${messaging.server.artifact.name}"/>
          <property name="auxiliary.artifacts.location" value="../../src/etc/server/default/deploy"/>
          <property name="auxiliary.lib.location" value="../../util/lib"/>
+         <property name="driver-jar" value="${driver-jar}"/>
+         <property name="install-jars" value="${install-jars}"/>
       </ant>
 
    </target>

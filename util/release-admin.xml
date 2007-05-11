@@ -2,7 +2,7 @@
 
 <!-- ====================================================================== -->
 <!--                                                                        -->
-<!--  Ant file to create a JBoss 4.x messaging configurations based on a    -->
+   <!--  Ant file to create a JBoss 4.x messaging configurations based on a    -->
 <!--  default configuration.                                                -->
 <!--                                                                        -->
 <!-- ====================================================================== -->
@@ -15,15 +15,19 @@
 
    <property file="./release-admin.properties"/>
 
+   <property name="download-jars" value="./new-jars"/>
+
+   <property name="jgroups-version" value="2.4.1.SP3-brew"/>
+   <property name="aop-version" value="1.5.5.GA"/>
+   <property name="javassist-version" value="3.5.0.GA-brew"/>
+   <property name="jboss-remoting-version" value="2.2.0.SP4"/>
+
+
    <property name="jboss.home" value="${ENV.JBOSS_HOME}"/>
    <property name="messaging.config.name" value="messaging"/>
+   <property name="messaging.config.source" value="default"/>
    <property name="id" value="0"/>
    <property name="database" value="mysql"/>
-   <property name="thirdparty.home" value="../thirdparty"/>
-   <property name="thirdparty.jbossts.home" value="${thirdparty.home}/jboss/jbossts"/>
-   <property name="lib.home" value="../lib"/>
-   <property name="lib.jbossts.home" value="${lib.home}/jbossts"/>
-   <property name="output.lib.home" value="../output/lib"/>
 
    <!--
         DO NOT change these values here, otherwise the installation script won't work. If you need
@@ -32,7 +36,7 @@
    <property name="main.artifact.location" value=".."/>
    <property name="auxiliary.artifacts.location" value="../examples/config"/>
    <property name="auxiliary.lib.location" value="./lib"/>
-   <property name="messaging.artifact.name" value="jboss-messaging-scoped.sar"/>
+   <property name="messaging.artifact.name" value="jboss-messaging.sar"/>
 
    <!-- ======================================================================================== -->
    <!-- Top level targets. These are the "modes" this script is supposed to work in.             -->
@@ -90,19 +94,12 @@
 
         <fail unless="supported.database" message="Database type '${database}' not supported!"/>
 
-        <!--
-             We only provide database drivers for MySQL, for the time being.
-        -->
-        <condition property="database.drivers.provided.by.us">
-            <equals arg1="${database}" arg2="mysql"/>
-        </condition>
-
     </target>
 
    <target name="validate-jboss">
       <fail unless="jboss.home" message="JBOSS_HOME environment variable not set! Set it and try again."/>
-      <available property="default-config" type="dir" file="${jboss.home}/server/default"/>
-      <fail unless="default-config" message="${jboss.home}/server/default not found!"/>
+      <available property="default-config" type="dir" file="${jboss.home}/server/${messaging.config.source}"/>
+      <fail unless="default-config" message="${jboss.home}/server/${messaging.config.source} not found!"/>
    </target>
 
    <target name="prevent-messaging-overwrite">
@@ -115,13 +112,61 @@
       <fail unless="messaging-artifact-exists" message="${main.artifact.location}/${messaging.artifact.name} does not exist! Build it and try again."/>
    </target>
 
+
+   <target name="test-for-jars">
+      <condition property="condition-replace-jars">
+         <equals arg1="${install-jars}" arg2="yes"/>
+      </condition>
+   </target>
+
+   <target name="get-jars" depends="test-for-jars" if="condition-replace-jars">
+      <mkdir dir="./${download-jars}"/>
+      <get src="http://repository.jboss.com/jboss/remoting/${jboss-remoting-version}/lib/jboss-remoting.jar" dest="./${download-jars}/jboss-remoting.jar" usetimestamp="yes"/>
+      <get src="http://repository.jboss.com/javassist/${javassist-version}/lib/javassist.jar" dest="./${download-jars}/javassist.jar" usetimestamp="yes"/>
+      <get src="http://repository.jboss.com/jboss/aop/${aop-version}/lib/common-softvaluehashmap.jar" dest="./${download-jars}/common-softvaluehashmap.jar" usetimestamp="yes"/>
+      <get src="http://repository.jboss.com/jboss/aop/${aop-version}/lib/jboss-aop-jdk50-client.jar" dest="./${download-jars}/jboss-aop-jdk50-client.jar" usetimestamp="yes"/>
+      <get src="http://repository.jboss.com/jboss/aop/${aop-version}/lib/jboss-aop-jdk50.jar" dest="./${download-jars}/jboss-aop-jdk50.jar" usetimestamp="yes"/>
+      <get src="http://repository.jboss.com/jboss/aop/${aop-version}/lib/jboss-aop.jar" dest="./${download-jars}/jboss-aop.jar" usetimestamp="yes"/>
+      <get src="http://repository.jboss.com/jboss/aop/${aop-version}/lib/jdk14-pluggable-instrumentor.jar" dest="./${download-jars}/jdk14-pluggable-instrumentor.jar" usetimestamp="yes"/>
+      <get src="http://repository.jboss.com/jboss/aop/${aop-version}/lib/jrockit-pluggable-instrumentor.jar" dest="./${download-jars}/jrockit-pluggable-instrumentor.jar" usetimestamp="yes"/>
+      <get src="http://repository.jboss.com/jboss/aop/${aop-version}/lib/pluggable-instrumentor.jar" dest="./${download-jars}/pluggable-instrumentor.jar" usetimestamp="yes"/>
+      <get src="http://repository.jboss.com/jgroups/${jgroups-version}/lib/jgroups.jar" dest="./${download-jars}/jgroups.jar" usetimestamp="yes"/>
+   </target>
+
+   <!-- Replace server jars for jboss-4.0.X installations -->
+   <target name="task-replace-server-jars" depends="test-for-jars, get-jars" if="condition-replace-jars">
+
+      <copy todir="${jboss.home}/server/${config.name}/lib" overwrite="yes" flatten="yes">
+         <fileset dir="./${download-jars}"/>
+      </copy>
+
+      <mkdir dir="${jboss.home}/messaging-client-libs"/>
+
+      <copy todir="${jboss.home}/messaging-client-libs"  overwrite="yes">
+         <fileset dir="${jboss.home}/client"/>
+      </copy>
+
+      <copy todir="${jboss.home}/messaging-client-libs" overwrite="yes" flatten="yes">
+         <fileset dir="./${download-jars}"/>
+      </copy>
+
+   </target>
+
+
+   <target name="replace-server-jars" depends="task-replace-server-jars" if="replace-jars"/>
+
+
+   <target name="install-driver" if="driver-jar">
+      <copy file="${driver-jar}" todir="${jboss.home}/server/${config.name}/lib"/> 
+   </target>
+
    <target name="create-server-config" depends="validate-jboss, prevent-messaging-overwrite, validate-messaging-artifact">
 
       <echo message="Creating JBoss Messaging configuration '${config.name}' for ${jboss.home} based on ${messaging.artifact.name}"/>
 
       <mkdir dir="${jboss.home}/server/${config.name}"/>
       <copy todir="${jboss.home}/server/${config.name}">
-         <fileset dir="${jboss.home}/server/default">
+         <fileset dir="${jboss.home}/server/${messaging.config.source}">
             <exclude name="data/**"/>
             <exclude name="work/**"/>
             <exclude name="log/**"/>
@@ -130,7 +175,7 @@
             <exclude name="lib/jboss-messaging.jar"/>
          </fileset>
       </copy>
-      <copy file="${jboss.home}/server/default/deploy/jms/jms-ra.rar"
+      <copy file="${jboss.home}/server/${messaging.config.source}/deploy/jms/jms-ra.rar"
             todir="${jboss.home}/server/${config.name}/deploy"/>
 
       <!-- add a "messaging" security domain -->
@@ -145,53 +190,16 @@
          &lt;/login-module&gt;&#013;&#010;        &lt;/authentication&gt;&#013;&#010;    &lt;/application-policy&gt;&#013;&#010;"/>
       </replaceregexp>
 
-      <!-- Make sure JNDI CallByValue is disabled, otherwise MDB deployments will fail -->
-      <property name="naming.config.file" value="${jboss.home}/server/${config.name}/deploy/naming-service.xml"/>
-      <available property="naming.service.config.present" file="${naming.config.file}"/>
-      <antcall target="enable-jndi-call-by-reference"/>
-
-      <!-- mute org.jboss.serial DEBUG -->
-      <replaceregexp file="${jboss.home}/server/${config.name}/conf/log4j.xml" flags="s">
-         <regexp pattern="(\x3croot\x3e)"/>
-         <substitution expression="&lt;category name=&quot;org.jboss.serial&quot;&gt;&#013;&#010;      &lt;priority value=&quot;INFO&quot;/&gt;&#013;&#010;   &lt;/category&gt;&#013;&#010;&#013;&#010;   \1"/>
-      </replaceregexp>
-
-
-      <!-- TODO: creating a server configuration breaks if whe have this enabled. Temporarily
-                 commenting it out, until I figure out why it breaks
-                 http://jira.jboss.org/jira/browse/JBMESSAGING-811
-      -->
-
-
-      <!-- Replace local TM with JBossTS -->
-
-      <!--
-      <copy file="${thirdparty.jbossts.home}/lib/jbossjta.jar"
-            todir="${jboss.home}/server/${messaging.config.name}/lib"/>
-      <copy file="${thirdparty.jbossts.home}/lib/jbossjta-integration.jar"
-            todir="${jboss.home}/server/${messaging.config.name}/lib"/>
-      <copy file="${thirdparty.jbossts.home}/lib/jbossts-common.jar"
-            todir="${jboss.home}/server/${messaging.config.name}/lib"/>
-      <copy file="${lib.jbossts.home}/jbossjta-properties.xml"
-            todir="${jboss.home}/server/${messaging.config.name}/conf"/>
-      <copy overwrite="true"
-            file="${lib.jbossts.home}/jboss-service.xml"
-            todir="${jboss.home}/server/${messaging.config.name}/conf"/>
-      <copy file="${output.lib.home}/jboss-messaging-integration.jar"
-            todir="${jboss.home}/server/${messaging.config.name}/lib"/>
-      -->
-
-      <!-- copy the scoped sar
-      <copy todir="${jboss.home}/server/${config.name}/deploy"
-            file="${relative.sar.location}/${messaging.sar.name}"/>
-      -->
-
       <!-- we deploy the archive exploded so that users can easily access the configuration files -->
       <condition property="is.sar" value="true">
          <contains substring=".sar" string="${messaging.artifact.name}"/>
       </condition>
       <antcall target="expand-jar"/>
       <antcall target="expand-sar"/>
+
+      <antcall target="replace-server-jars"/>
+
+      <antcall target="install-driver"/>
 
       <move todir="${jboss.home}/server/${config.name}/conf">
           <fileset dir="${jboss.home}/server/${config.name}/deploy/jboss-messaging.sar">
@@ -239,13 +247,6 @@
       <delete dir="${jboss.home}/server/${config.name}/deploy/jboss-messaging/xmdesc"/>
    </target>
 
-   <target name="enable-jndi-call-by-reference" if="naming.service.config.present">
-      <replaceregexp file="${naming.config.file}" flags="s">
-         <regexp pattern="\x3cattribute name=\x22CallByValue\x22\x3etrue\x3c/attribute\x3e"/>
-         <substitution expression="&lt;attribute name=&quot;CallByValue&quot;&gt;false&lt;/attribute&gt;"/>
-      </replaceregexp>
-   </target>
-
    <target name="create-standalone-server-config" depends="validate-jboss, validate-messaging-artifact"
            description="Creates a standalone Messaging server configuration based on a default JBoss instance">
 
@@ -256,7 +257,7 @@
       <mkdir dir="${jboss.home}/server/${config.name}/deploy"/>
 
       <copy todir="${jboss.home}/server/${config.name}/conf">
-         <fileset dir="${jboss.home}/server/default/conf">
+         <fileset dir="${jboss.home}/server/${messaging.config.source}/conf">
             <include name="jboss-service.xml"/>
             <include name="jndi.properties"/>
             <include name="log4j.xml"/>
@@ -267,7 +268,7 @@
       </copy>
 
       <copy todir="${jboss.home}/server/${config.name}/deploy">
-         <fileset dir="${jboss.home}/server/default/deploy">
+         <fileset dir="${jboss.home}/server/${messaging.config.source}/deploy">
             <include name="hsqldb-ds.xml"/>
             <include name="jboss-local-jdbc.rar"/>
             <include name="jbossjca-service.xml"/>
@@ -280,7 +281,7 @@
       </copy>
 
       <copy todir="${jboss.home}/server/${config.name}/lib">
-         <fileset dir="${jboss.home}/server/default/lib">
+         <fileset dir="${jboss.home}/server/${messaging.config.source}/lib">
             <include name="commons*.jar"/>
             <include name="hsqldb*.jar"/>
             <include name="javax.servlet*.jar"/>
@@ -433,6 +434,23 @@
 
    </target>
 
+
+   <target name="test-for-jgroups">
+      <condition property="jgroups-not-available">
+         <not>
+            <available file="${jboss.home}/server/${config.name}/lib/jgroups.jar"/>
+         </not>
+      </condition>
+   </target>
+
+   <target name="install-jgroups" depends="test-for-jgroups" if="jgroups-not-available">
+      <echo message="I will copy jgroups into ${jboss.home}/server/${config.name}/lib/jgroups.jar"/>
+
+      <mkdir dir="./${download-jars}"/>
+      <get src="http://repository.jboss.com/jgroups/${jgroups-version}/lib/jgroups.jar" dest="./${download-jars}/jgroups.jar" usetimestamp="yes"/>
+      <copy file="./${download-jars}/jgroups.jar" todir="${jboss.home}/server/${config.name}/lib"/>
+   </target>
+
    <target name="create-cluster-node-server-config">
 
       <!--
@@ -476,11 +494,12 @@
       <delete file="${jboss.home}/server/${config.name}/deploy/jboss-messaging.sar/hsqldb-persistence-service.xml" quiet="false" failonerror="true"/>
       <copy file="${auxiliary.artifacts.location}/clustered-${database}-persistence-service.xml" todir="${jboss.home}/server/${config.name}/deploy/jboss-messaging.sar/"/>
 
+      <antcall target="install-jgroups"/>
+
       <antcall target="warn-check-database-drivers"/>
-      <antcall target="warn-no-database-drivers"/>
    </target>
 
-   <target name="warn-check-database-drivers" if="database.drivers.provided.by.us">
+   <target name="warn-check-database-drivers">
 <echo>
 
 
@@ -505,50 +524,6 @@
  3. Contains a schema (database/tablespace) named 'messaging'.
  4. The URL (hostname and port), username and password and other connect information are correct.
  5. The installed ${database}-driver.jar's version maches your database.
-
-
-
-
-</echo>
-   </target>
-
-   <target name="warn-no-database-drivers" unless="database.drivers.provided.by.us">
-<echo>
-
-
-
-                    ##########################
-                    #                        #
-                    #        WARNING!        #
-                    #                        #
-                    ##########################
-
-
- The configuration that has just been created uses a generic ${database} service descriptor!
-
- Check
-
-      ${jboss.home}/server/${config.name}/deploy/${database}-ds.xml
-
- and make sure that:
-
- 1. Your database is indeed ${database}.
- 2. It is accessible from every physical node you installed Messaging on.
- 3. Contains a schema (database/tablespace) named 'messaging'.
- 4. The URL (hostname and port), username and password and other connect information are correct.
-
-
-                    ##########################
-                    #                        #
-                    #    ANOTHER WARNING!    #
-                    #                        #
-                    ##########################
-
-
-
-       NO DATABASE DRIVERS HAVE BEEN INSTALLED! YOU STILL NEED
-       T0 INSTALL THE APROPRIATE ${database} DATABASE DRIVERS IN
-       ${jboss.home}/server/${config.name}/lib
 
 
 
