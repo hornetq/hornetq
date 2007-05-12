@@ -9,10 +9,6 @@
 
 <server>
 
-   <loader-repository>jboss.messaging:loader=ScopedLoaderRepository
-       <loader-repository-config>java2ParentDelegation=false</loader-repository-config>
-   </loader-repository>
-
    <mbean code="org.jboss.remoting.transport.Connector"
           name="jboss.messaging:service=Connector,transport=SSLSocket"
           display-name="SSL Socket Transport Connector">

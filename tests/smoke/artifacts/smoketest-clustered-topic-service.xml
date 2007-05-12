@@ -2,12 +2,6 @@
 
 <server>
 
-   <!--
-   <loader-repository>jboss.messaging:loader=ScopedLoaderRepository
-       <loader-repository-config>java2ParentDelegation=false</loader-repository-config>
-   </loader-repository>
-   -->
-
    <mbean code="org.jboss.jms.server.destination.TopicService"
       name="jboss.messaging.destination:service=Topic,name=DistributedSmokeTestTopic"
       xmbean-dd="xmdesc/Topic-xmbean.xml">

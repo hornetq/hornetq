@@ -76,6 +76,10 @@
       <ant antfile="build-messaging.xml" target="client-jar"/>
    </target>
 
+   <target name="fat-client-jar" depends="createthirdparty">
+      <ant antfile="build-messaging.xml" target="fat-client-jar"/>
+   </target>
+
    <target name="jar" depends="createthirdparty">
       <ant antfile="build-messaging.xml" target="jar"/>
    </target>

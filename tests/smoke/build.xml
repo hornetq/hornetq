@@ -80,23 +80,25 @@
 
    <target name="installation-tests">
 
+      <!-- We only support 4.2.0.GA and later - so we only smoke against that -->
+
 
       <!--
            4.2.0.GA
       -->
 
+      
       <antcall target="installation-test">
          <param name="jboss.home" value="${jboss420GA.home}"/>
-         <param name="run.secure-socket.example" value="true"/>
          <param name="install-jars" value="no"/>
       </antcall>
-
-
+      
 
       <!--
            4.0.5.GA
       -->
 
+      <!--
       <antcall target="installation-test">
          <param name="jboss.home" value="${jboss405GA.home}"/>
          <param name="install-jars" value="yes"/>
@@ -130,12 +132,12 @@
          <param name="install-jars" value="yes"/>
          <param name="run.http.example" value="false"/>
       </antcall>
-
+      -->
       
       <!--
            4.0.4.GA
       -->
-
+      <!--
       <antcall target="installation-test">
          <param name="jboss.home" value="${jboss404GA.home}"/>
          <param name="run.secure-socket.example" value="false"/>
@@ -157,12 +159,12 @@
          <param name="run.secure-socket.example" value="false"/>
          <param name="run.http.example" value="false"/>
       </antcall>
-
+      -->
 
       <!--
            4.0.3SP1
       -->
-
+      <!--
       <antcall target="installation-test">
          <param name="jboss.home" value="${jboss403SP1.home}"/>
          <param name="run.secure-socket.example" value="false"/>
@@ -172,12 +174,12 @@
          <param name="jboss.home" value="${jboss403SP1-installer.home}"/>
          <param name="run.secure-socket.example" value="false"/>
       </antcall>
-
+      -->
 
       <!--
            4.0.3
       -->
-
+      <!--
       <antcall target="installation-test">
          <param name="jboss.home" value="${jboss403.home}"/>
          <param name="run.secure-socket.example" value="false"/>
@@ -187,18 +189,16 @@
          <param name="jboss.home" value="${jboss403-installer.home}"/>
          <param name="run.secure-socket.example" value="false"/>
       </antcall>
-
+      -->
       <!--
            4.0.2
       -->
-
+      <!--
       <antcall target="installation-test">
          <param name="jboss.home" value="${jboss402.home}"/>
          <param name="run.secure-socket.example" value="false"/>
       </antcall>
-
-
-      <!-- 4.0.0, 4.0.1 NOT SUPPORTED -->
+      -->
 
       <!--
           Note on installer versions.
@@ -320,13 +320,13 @@
 
       <antcall target="ping-jms-server"/>
 
-      <antcall target="deploy-scoped-queue"/>
+      <antcall target="deploy-queue"/>
       <antcall target="sleep"><param name="sleep.interval" value="8"/></antcall>
       <antcall target="ping-queue">
          <param name="example.queue.name" value="SmokeTestQueue"/>
       </antcall>
 
-      <antcall target="deploy-scoped-topic"/>
+      <antcall target="deploy-topic"/>
       <antcall target="sleep"><param name="sleep.interval" value="8"/></antcall>
       <antcall target="ping-topic">
          <param name="example.topic.name" value="SmokeTestTopic"/>
@@ -416,7 +416,7 @@
           configuration.
       -->
 
-      <antcall target="deploy-scoped-queue">
+      <antcall target="deploy-queue">
          <param name="jboss.configuration" value="${jboss.configuration}-node0"/>
       </antcall>
       <antcall target="sleep"><param name="sleep.interval" value="8"/></antcall>
@@ -428,7 +428,7 @@
           Deploy the clustered queue.
       -->
 
-      <antcall target="deploy-clustered-scoped-queue">
+      <antcall target="deploy-clustered-queue">
          <param name="jboss.configuration" value="${jboss.configuration}-node0"/>
       </antcall>
       <antcall target="sleep"><param name="sleep.interval" value="8"/></antcall>
@@ -441,7 +441,7 @@
           configuration.
       -->
 
-      <antcall target="deploy-scoped-topic">
+      <antcall target="deploy-topic">
          <param name="jboss.configuration" value="${jboss.configuration}-node0"/>
       </antcall>
       <antcall target="sleep"><param name="sleep.interval" value="8"/></antcall>
@@ -453,7 +453,7 @@
           Deploy the clustered topic.
       -->
 
-      <antcall target="deploy-clustered-scoped-topic">
+      <antcall target="deploy-clustered-topic">
          <param name="jboss.configuration" value="${jboss.configuration}-node0"/>
       </antcall>
       <antcall target="sleep"><param name="sleep.interval" value="8"/></antcall>
@@ -480,7 +480,7 @@
           Deploy the clustered queue.
       -->
 
-      <antcall target="deploy-clustered-scoped-queue">
+      <antcall target="deploy-clustered-queue">
          <param name="jboss.configuration" value="${jboss.configuration}-node1"/>
       </antcall>
       <antcall target="sleep"><param name="sleep.interval" value="8"/></antcall>
@@ -494,7 +494,7 @@
           Deploy the clustered topic.
       -->
 
-      <antcall target="deploy-clustered-scoped-topic">
+      <antcall target="deploy-clustered-topic">
          <param name="jboss.configuration" value="${jboss.configuration}-node1"/>
       </antcall>
       <antcall target="sleep"><param name="sleep.interval" value="8"/></antcall>
@@ -772,8 +772,7 @@
          <property name="messaging.config.name" value="${jboss.configuration}"/>
          <property name="standalone.messaging.config.name" value="${jboss.configuration}"/>
          <property name="main.artifact.location" value="${messaging.server.artifact.path}"/>
-         <property name="messaging.artifact.name" value="${messaging.server.artifact.name}"/>
-         <property name="driver-jar" value="${driver-jar}"/> 
+         <property name="messaging.artifact.name" value="${messaging.server.artifact.name}"/>         
          <property name="install-jars" value="${install-jars}"/>
       </ant>
       <available file="../../output/lib/jboss-messaging-client.jar" property="client.jar.present"/>
@@ -984,25 +983,9 @@
             todir="${jboss.home}/server/${jboss.configuration}/deploy"/>
    </target>
 
-   <target name="deploy-scoped-queue">
-      <copy file="artifacts/smoketest-queue-service.xml" tofile="./smoketest-queue-service.xml"/>
-      <!-- enable scoping -->
-      <replaceregexp file="./smoketest-queue-service.xml" flags="s">
-         <regexp pattern="\x3c!\x2d-([ \t\n\r]*)(\x3cloader-repository\x3e.*\x3c/loader-repository\x3e)([ \t\n\r]*)\x2d-\x3e"/>
-         <substitution expression="\2"/>
-      </replaceregexp>
-      <move file="./smoketest-queue-service.xml" todir="${jboss.home}/server/${jboss.configuration}/deploy"/>
-   </target>
 
-   <target name="deploy-clustered-scoped-queue">
+   <target name="deploy-scoped-queue">
       <copy file="artifacts/smoketest-clustered-queue-service.xml"
-            tofile="./smoketest-clustered-queue-service.xml"/>
-      <!-- enable scoping -->
-      <replaceregexp file="./smoketest-clustered-queue-service.xml" flags="s">
-         <regexp pattern="\x3c!\x2d-([ \t\n\r]*)(\x3cloader-repository\x3e.*\x3c/loader-repository\x3e)([ \t\n\r]*)\x2d-\x3e"/>
-         <substitution expression="\2"/>
-      </replaceregexp>
-      <move file="./smoketest-clustered-queue-service.xml"
             todir="${jboss.home}/server/${jboss.configuration}/deploy"/>
    </target>
 
@@ -1021,26 +1004,9 @@
              todir="${jboss.home}/server/${jboss.configuration}/deploy"/>
    </target>
 
-   <target name="deploy-scoped-topic">
-      <copy file="artifacts/smoketest-topic-service.xml" tofile="./smoketest-topic-service.xml"/>
-      <!-- enable scoping -->
-      <replaceregexp file="./smoketest-topic-service.xml" flags="s">
-         <regexp pattern="\x3c!\x2d-([ \t\n\r]*)(\x3cloader-repository\x3e.*\x3c/loader-repository\x3e)([ \t\n\r]*)\x2d-\x3e"/>
-         <substitution expression="\2"/>
-      </replaceregexp>
-      <move file="./smoketest-topic-service.xml" todir="${jboss.home}/server/${jboss.configuration}/deploy"/>
-   </target>
-
-   <target name="deploy-clustered-scoped-topic">
+   <target name="deploy-clustered-topic">
       <copy file="artifacts/smoketest-clustered-topic-service.xml"
-            tofile="./smoketest-clustered-topic-service.xml"/>
-      <!-- enable scoping -->
-      <replaceregexp file="./smoketest-clustered-topic-service.xml" flags="s">
-         <regexp pattern="\x3c!\x2d-([ \t\n\r]*)(\x3cloader-repository\x3e.*\x3c/loader-repository\x3e)([ \t\n\r]*)\x2d-\x3e"/>
-         <substitution expression="\2"/>
-      </replaceregexp>
-      <move file="./smoketest-clustered-topic-service.xml"
-            todir="${jboss.home}/server/${jboss.configuration}/deploy"/>
+      	    todir="${jboss.home}/server/${jboss.configuration}/deploy"/>
    </target>
 
    <target name="ping-topic">

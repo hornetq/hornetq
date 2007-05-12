@@ -281,7 +281,7 @@
 
    <target name="instrument-classes">
       <taskdef name="aopc" classname="org.jboss.aop.ant.AopC" classpathref="jboss.aop.classpath"/>
-      <echo message="NOTE: aopc incremental compilation might fail, if so do an ant clean first (see JMESSAGING-271)"/>
+      <echo message="NOTE: aopc incremental compilation might fail, if so do an ant clean first (see JBMESSAGING-271)"/>
       <aopc compilerclasspathref="aopc.classpath"
             classpathref="aopc.classpath"
             verbose="false">
@@ -376,16 +376,10 @@
          </fileset>
       </jar>
 
-      <!-- JBossTS integration layer for XA recovery -->
-
-      <jar jarfile="${build.lib}/jboss-${module.name}-integration.jar" manifest="${build.etc}/default.mf">
-         <fileset dir="${build.classes}" includes="org/jboss/jms/recovery/*.class"/>
-      </jar>
-
    </target>
 
 
-   <target name="sar" depends="compile, jar, sar-structure, extract-server-dependencies">
+   <target name="sar" depends="compile, jar, sar-structure">
       <mkdir dir="${build.lib}"/>
       <jar jarfile="${build.lib}/jboss-${module.name}.sar" manifest="${build.etc}/default.mf">
          <fileset dir="${build.lib}" includes="jboss-${module.name}.jar"/>
@@ -414,23 +408,21 @@
       </copy>
       <copy todir="${build.jar}" file="${source.etc}/aop-messaging-server.xml"/>
       <copy todir="${build.jar}" file="${source.etc}/aop-messaging-client.xml"/>
-      <copy todir="${build.jar}" file="${source.etc}/server/default/config/messaging-users.properties"/>
-      <copy todir="${build.jar}" file="${source.etc}/server/default/config/messaging-roles.properties"/>
    </target>
 
-   <target name="sar-structure" depends="jar-structure, extract-server-dependencies">
+   <target name="sar-structure" depends="jar-structure">
       <copy todir="${build.sar}/META-INF" file="${source.etc}/server/default/deploy/jboss-service.xml"/>
    </target>
 
-   <target name="extract-server-dependencies">
+   <target name="artifacts" depends="jar, sar, client-jar, fat-client-jar"/>
 
-   </target>
+   <!-- We DO NOT recommend using the fat client jar, since you may end up using
+        the wrong version of the included jars -->
+   <target name="fat-client-jar" depends="compile">
 
-   <target name="artifacts" depends="jar, sar, client-jar"/>
+      <mkdir dir="${build.lib}"/>
 
-   <target name="client-jar" depends="compile, sar">
-
-      <jar jarfile="${build.lib}/jboss-messaging-client.jar">
+      <jar jarfile="${build.lib}/jboss-messaging-fat-client.jar">
          <fileset dir="${build.classes}">
             <include name="org/jboss/**"/>
          </fileset>
@@ -451,10 +443,14 @@
          <zipfileset  src="${apache.logging.lib}/commons-logging.jar"/>
          <zipfileset  src="${jboss.serialization.lib}/jboss-serialization.jar"/>
       </jar>
+   </target>
 
-      <jar jarfile="${build.lib}/jboss-messaging-client-thin.jar">
+   <!-- This is the thin client jar -->
+   <target name="client-jar" depends="compile">
+      <mkdir dir="${build.lib}"/>
 
-         <!-- those jars are required to be used with this.. if any of those classes are not available, these are going to be used! -->
+      <jar jarfile="${build.lib}/jboss-messaging-client.jar">
+
          <manifest>
             <attribute name="Class-path"
                        value="jboss-aop.jar jboss-remoting.jar jboss-serialization.jar javassist.jar trove.jar jboss-common-core.jar jboss-common-client.jar jboss-j2ee.jar jboss-j2se.jar jnp-client.jar concurrent.jar log4j.jar commons-logging.jar"/>

@@ -17,6 +17,8 @@ jboss405GA-installer.home=C:\\work\\jnlp\\jboss-4.0.5.GA
 
 jboss500Alpha.home=C:\\work\\src\\cvs\\jboss-head\\build\\output\\jboss-5.0.0.Alpha
 
+jboss420GA.home=/home/tim/dev/jboss-4.2.0.GA
+
 #
 # Compatibility test configuration
 #

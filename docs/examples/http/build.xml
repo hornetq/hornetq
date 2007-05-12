@@ -27,7 +27,6 @@
 
    <path id="common.compilation.classpath">
       <fileset file="${jboss.home}/client/jboss-j2ee.jar"/>
-      <fileset file="${jboss.home}/client/jboss-j2se.jar"/>
       <fileset file="${messaging.client.jar.path}/${messaging.client.jar.name}"/>
    </path>
 
@@ -41,6 +40,11 @@
       <pathelement path="../common/output"/>
       <pathelement path="./output"/>
       <fileset file="${messaging.client.jar.path}/${messaging.client.jar.name}"/>
+      <fileset file="${jboss.home}/client/jbossall-client.jar"/>
+      <fileset file="../../../thirdparty/jboss/aop/lib/jboss-aop.jar"/>
+      <fileset file="../../../thirdparty/javassist/lib/javassist.jar"/>
+      <fileset file="../../../thirdparty/trove/lib/trove.jar"/>
+      <fileset file="../../../thirdparty/apache-log4j/lib/log4j.jar"/>
    </path>
 
    <target name="identify">

@@ -320,6 +320,14 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
       asyncChannel.connect(groupName);
 
       super.start();
+      
+      //Sanity check - we check there aren't any other nodes already in the cluster with the same node id
+      if (knowAboutNodeId(currentNodeId))
+      {
+      	throw new IllegalArgumentException("Cannot start post office since there is already a post office in the " +
+      			"cluster with the same node id (" + this.currentNodeId + "). " +
+      			"Are you sure you have given each node a unique node id during installation?");
+      }
 
       Address syncAddress = syncChannel.getLocalAddress();
       Address asyncAddress = asyncChannel.getLocalAddress();

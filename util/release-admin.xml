@@ -2,7 +2,7 @@
 
 <!-- ====================================================================== -->
 <!--                                                                        -->
-   <!--  Ant file to create a JBoss 4.x messaging configurations based on a    -->
+<!--  Ant file to create a JBoss 4.x messaging configurations based on a    -->
 <!--  default configuration.                                                -->
 <!--                                                                        -->
 <!-- ====================================================================== -->
@@ -33,7 +33,7 @@
         DO NOT change these values here, otherwise the installation script won't work. If you need
         to change them, to it in release-admin.properties.
    -->
-   <property name="main.artifact.location" value=".."/>
+   <property name="main.artifact.location" value="../output/lib"/>
    <property name="auxiliary.artifacts.location" value="../examples/config"/>
    <property name="auxiliary.lib.location" value="./lib"/>
    <property name="messaging.artifact.name" value="jboss-messaging.sar"/>
@@ -42,9 +42,7 @@
    <!-- Top level targets. These are the "modes" this script is supposed to work in.             -->
    <!-- ======================================================================================== -->
 
-   <!--
-        A default scoped installation for JBoss 4.x.
-   -->
+   <!-- An unscoped installation for JBoss 4.x -->
    <target name="default" depends="validate-ant, validate-database">
       <set-config-name base="${messaging.config.name}" suffix=""/>
       <antcall target="create-server-config"/>
@@ -136,17 +134,9 @@
    <!-- Replace server jars for jboss-4.0.X installations -->
    <target name="task-replace-server-jars" depends="test-for-jars, get-jars" if="condition-replace-jars">
 
+      <echo>Replacing server jars in server/.../lib !!</echo>
+
       <copy todir="${jboss.home}/server/${config.name}/lib" overwrite="yes" flatten="yes">
-         <fileset dir="./${download-jars}"/>
-      </copy>
-
-      <mkdir dir="${jboss.home}/messaging-client-libs"/>
-
-      <copy todir="${jboss.home}/messaging-client-libs"  overwrite="yes">
-         <fileset dir="${jboss.home}/client"/>
-      </copy>
-
-      <copy todir="${jboss.home}/messaging-client-libs" overwrite="yes" flatten="yes">
          <fileset dir="./${download-jars}"/>
       </copy>
 
@@ -154,7 +144,6 @@
 
 
    <target name="replace-server-jars" depends="task-replace-server-jars" if="replace-jars"/>
-
 
    <target name="install-driver" if="driver-jar">
       <copy file="${driver-jar}" todir="${jboss.home}/server/${config.name}/lib"/> 
@@ -172,11 +161,9 @@
             <exclude name="log/**"/>
             <exclude name="tmp/**"/>
             <exclude name="deploy/jms/**"/>
-            <exclude name="lib/jboss-messaging.jar"/>
+            <exclude name="lib/jbossmq.jar"/>
          </fileset>
       </copy>
-      <copy file="${jboss.home}/server/${messaging.config.source}/deploy/jms/jms-ra.rar"
-            todir="${jboss.home}/server/${config.name}/deploy"/>
 
       <!-- add a "messaging" security domain -->
       <replaceregexp file="${jboss.home}/server/${config.name}/conf/login-config.xml" flags="s">
@@ -202,10 +189,13 @@
       <antcall target="install-driver"/>
 
       <move todir="${jboss.home}/server/${config.name}/conf">
-          <fileset dir="${jboss.home}/server/${config.name}/deploy/jboss-messaging.sar">
+          <fileset dir="../src/etc/server/default/config">
              <include name="messaging-*.properties"/>
           </fileset>
-       </move>
+      </move>
+
+      <copy file="${jboss.home}/server/${messaging.config.source}/deploy/jms/jms-ra.rar"
+            todir="${jboss.home}/server/${config.name}/deploy"/>
 
    </target>
 

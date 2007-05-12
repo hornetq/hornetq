@@ -63,6 +63,8 @@ public abstract class DelegateSupport implements Streamable, Serializable
    // Constants ------------------------------------------------------------------------------------
       
    private static final Logger log = Logger.getLogger(DelegateSupport.class);
+   
+   private static final long serialVersionUID = -8066842892620236541L;
 
    private static boolean trace = log.isTraceEnabled();
    
