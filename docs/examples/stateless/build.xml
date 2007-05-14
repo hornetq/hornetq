@@ -12,14 +12,8 @@
 
    <property environment="ENV"/>
 
-   <!--
-        If you don't find this file in the current directory, it's ok, it's intended to provide
-        defaults for in-workarea testing and it's not meant for distribution with the example bundle.
-   -->
-   <property file="do-not-distribute.properties"/>
-
    <!-- These properties may be overriden by calling ants when this example is used in a smoke test -->
-   <property name="messaging.client.jar.path" value="../.."/>
+   <property name="messaging.client.jar.path" value="../../../output/lib"/>
    <property name="messaging.client.jar.name" value="jboss-messaging-client.jar"/>
    <property name="jboss.home" value="${ENV.JBOSS_HOME}"/>
    <property name="jboss.configuration" value="messaging"/>
@@ -32,19 +26,19 @@
 
    <path id="example.compilation.classpath">
       <path refid="common.compilation.classpath"/>
-      <pathelement path="../common/output"/>
+      <pathelement path="../common/output/classes"/>
    </path>
 
    <path id="execution.classpath">
       <pathelement path="./etc"/>
-      <pathelement path="../common/output"/>
-      <pathelement path="./output"/>
+      <pathelement path="../common/output/classes"/>
+      <pathelement path="./output/classes"/>
       <fileset file="${messaging.client.jar.path}/${messaging.client.jar.name}"/>
       <fileset file="${jboss.home}/client/jbossall-client.jar"/>
-      <fileset file="../../../thirdparty/jboss/aop/lib/jboss-aop.jar"/>
-      <fileset file="../../../thirdparty/javassist/lib/javassist.jar"/>
-      <fileset file="../../../thirdparty/trove/lib/trove.jar"/>
-      <fileset file="../../../thirdparty/apache-log4j/lib/log4j.jar"/>
+      <fileset file="${jboss.home}/server/${jboss.configuration}/lib/log4j.jar"/>
+      <fileset file="${jboss.home}/server/${jboss.configuration}/lib/javassist.jar"/>
+      <fileset file="${jboss.home}/server/${jboss.configuration}/deploy/jboss-aop-jdk50.deployer/jboss-aop-jdk50.jar"/>
+      <fileset file="${jboss.home}/server/${jboss.configuration}/deploy/jboss-aop-jdk50.deployer/trove.jar"/>
    </path>
 
    <target name="identify">
@@ -64,11 +58,11 @@
    <target name="init" depends="sanity-check">
       <mkdir dir="./output/classes/META-INF"/>
       <mkdir dir="./output/lib"/>
-      <mkdir dir="../common/output"/>
+      <mkdir dir="../common/output/classes"/>
    </target>
 
    <target name="compile" depends="init">
-      <javac destdir="../common/output" debug="on" debuglevel="lines,vars,source">
+      <javac destdir="../common/output/classes" debug="on" debuglevel="lines,vars,source">
          <src path="../common/src"/>
          <classpath refid="common.compilation.classpath"/>
       </javac>

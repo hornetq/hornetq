@@ -1333,6 +1333,7 @@
             <include name=".*.classpath"/>
          </fileset>
       </delete>
+      <ant dir="./smoke" antfile="build.xml" inheritAll="false" target="clean"/>
    </target>
 
    <!-- ======================================================================================== -->

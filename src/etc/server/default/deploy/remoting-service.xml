@@ -8,6 +8,9 @@
 
 <server>
 
+   <!-- Standard bisocket connector - the bisocket transport only opens connection from client->server
+        so can be used with firewalls where only outgoing connections are allowed.
+        For examples of HTTP and SSL transports see docs/examples -->
    <mbean code="org.jboss.remoting.transport.Connector"
           name="jboss.messaging:service=Connector,transport=bisocket"
           display-name="Bisocket transport Connector">
@@ -16,7 +19,6 @@
             <invoker transport="bisocket">
                <attribute name="marshaller" isParam="true">org.jboss.jms.server.remoting.JMSWireFormat</attribute>
                <attribute name="unmarshaller" isParam="true">org.jboss.jms.server.remoting.JMSWireFormat</attribute>
-               <!-- Serialization type must be jms - do not change! -->
                <attribute name="serializationtype" isParam="true">jms</attribute>
                <attribute name="dataType" isParam="true">jms</attribute>
                <attribute name="socket.check_connection" isParam="true">false</attribute>
@@ -39,36 +41,6 @@
       </attribute>
       <depends>jboss.messaging:service=NetworkRegistry</depends>
    </mbean>
-
-   <!--
-        HTTP Connector example
-   -->
-   <!--
-   <mbean code="org.jboss.remoting.transport.Connector"
-          name="jboss.messaging:service=Connector,transport=http"
-          display-name="HTTP transport Connector">
-      <attribute name="Configuration">
-         <config>
-            <invoker transport="http">
-               <attribute name="marshaller" isParam="true">org.jboss.jms.server.remoting.JMSWireFormat</attribute>
-               <attribute name="unmarshaller" isParam="true">org.jboss.jms.server.remoting.JMSWireFormat</attribute>
-               <!== Serialization type must be jms - do not change! ==>
-               <attribute name="serializationtype" isParam="true">jms</attribute>
-               <attribute name="dataType" isParam="true">jms</attribute>
-               <attribute name="serverBindAddress">${jboss.bind.address}</attribute>
-               <attribute name="serverBindPort">4458</attribute>
-               <attribute name="leasePeriod">20000</attribute>
-               <attribute name="callbackStore">org.jboss.remoting.callback.CallbackStore</attribute>
-               <attribute name="callbackPollPeriod" isParam="true">100</attribute>
-            </invoker>
-            <handlers>
-               <handler subsystem="JMS">org.jboss.jms.server.remoting.JMSServerInvocationHandler</handler>
-            </handlers>
-         </config>
-      </attribute>
-      <depends>jboss.messaging:service=NetworkRegistry</depends>
-   </mbean>
-   -->
 
 
    <!-- TODO: Do I need this> -->

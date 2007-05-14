@@ -21,10 +21,15 @@
                <attribute name="unmarshaller" isParam="true">org.jboss.jms.server.remoting.JMSWireFormat</attribute>
                <attribute name="serializationtype" isParam="true">jms</attribute>
                <attribute name="dataType" isParam="true">jms</attribute>
+               <attribute name="socket.check_connection" isParam="true">false</attribute>
+               <attribute name="timeout" isParam="true">0</attribute>
                <attribute name="serverBindAddress">${jboss.bind.address}</attribute>
                <attribute name="serverBindPort">4458</attribute>
-               <attribute name="leasePeriod">20000</attribute>
+               <attribute name="leasePeriod">10000</attribute>
                <attribute name="callbackStore">org.jboss.remoting.callback.CallbackStore</attribute>
+
+
+
                <attribute name="callbackPollPeriod" isParam="true">100</attribute>
             </invoker>
             <handlers>
@@ -36,7 +41,7 @@
    </mbean>
    
    <mbean code="org.jboss.jms.server.connectionfactory.ConnectionFactory"
-      name="jboss.messaging.destination:service=SecureConnectionFactory"
+      name="jboss.messaging.destination:service=HttpConnectionFactory"
       xmbean-dd="xmdesc/ConnectionFactory-xmbean.xml">
       <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
       <depends optional-attribute-name="Connector">jboss.messaging:service=Connector,transport=http</depends>

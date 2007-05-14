@@ -731,7 +731,7 @@
       <echo message="Checking current client's compatibility with a ${jboss.messaging.version} server"/>
       <unzip src="${jboss.compatibility.home}/../jboss-messaging-${jboss.messaging.version}.zip" dest="./output">
          <patternset>
-            <include name="jboss-messaging-${jboss.messaging.version}/jboss-messaging-scoped.sar"/>
+            <include name="jboss-messaging-${jboss.messaging.version}/jboss-messaging.sar"/>
          </patternset>
       </unzip>
       <antcall target="create-messaging-config">
@@ -980,12 +980,6 @@
 
    <target name="deploy-queue">
       <copy file="artifacts/smoketest-queue-service.xml"
-            todir="${jboss.home}/server/${jboss.configuration}/deploy"/>
-   </target>
-
-
-   <target name="deploy-scoped-queue">
-      <copy file="artifacts/smoketest-clustered-queue-service.xml"
             todir="${jboss.home}/server/${jboss.configuration}/deploy"/>
    </target>
 

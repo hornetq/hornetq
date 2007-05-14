@@ -51,23 +51,6 @@ import org.jboss.test.messaging.tools.ServerManagement;
  * Much of the basic idea of the tests come from SecurityUnitTestCase.java in JBossMQ by:
  * @author <a href="pra@tim.se">Peter Antman</a>
  * 
- * In order for this test to run you must ensure:
- * 
- * A JBoss instance is running at localhost
- * jboss-messaging.sar has been deployed to JBoss
- * login-config.xml should have an application-policy as follows:
- * 
- *   <application-policy name="messaging">
- *    <authentication>
- *     <login-module code="org.jboss.security.auth.spi.DatabaseServerLoginModule"
- *       flag="required">
- *       <module-option name="unauthenticatedIdentity">guest</module-option>
- *       <module-option name="dsJndiName">java:/DefaultDS</module-option>
- *        <module-option name="principalsQuery">SELECT PASSWD FROM JMS_USERS WHERE USERID=?</module-option>
- *       <module-option name="rolesQuery">SELECT ROLEID, 'Roles' FROM JMS_ROLES WHERE USERID=?</module-option>
- *     </login-module>
- *    </authentication>
- *   </application-policy>
  *
  * @version <tt>$Revision$</tt>
  *

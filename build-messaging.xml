@@ -516,7 +516,6 @@
       <copy todir="${release.output}/util">
          <fileset dir="./util">
             <include name="**"/>
-            <exclude name="do-not-distribute*"/>
          </fileset>
       </copy>
       <zip destfile="${build.lib}/jboss-messaging-${module.version}.zip"
@@ -539,7 +538,6 @@
       <copy todir="${release.output}/examples">
          <fileset dir="./docs/examples">
             <exclude name="programmatic-deployment"/>
-            <exclude name="**/do-not-distribute*"/>
          </fileset>
       </copy>
       <copy todir="${release.output}/examples/config">
@@ -556,7 +554,6 @@
       <copy todir="${release.output}/docs/userguide">
          <fileset dir="${project.output}/docs/userguide/en">
             <include name="**"/>
-            <exclude name="**/do-not-distribute*"/>
          </fileset>
       </copy>
    </target>
@@ -647,6 +644,7 @@
       <ant dir="./docs/examples/distributed-queue" antfile="build.xml" inheritAll="false" target="clean"/>
       <ant dir="./docs/examples/distributed-topic" antfile="build.xml" inheritAll="false" target="clean"/>
       <ant dir="./docs/examples/queue-failover" antfile="build.xml" inheritAll="false" target="clean"/>
+      <ant dir="./docs/examples/http" antfile="build.xml" inheritAll="false" target="clean"/>
       <ant dir="./tests" antfile="build.xml" inheritAll="false" target="clean"/>
    </target>
 

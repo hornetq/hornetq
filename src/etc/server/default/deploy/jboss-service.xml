@@ -1,14 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <!--
-     Scoped Messaging SAR deployment descriptor. This deployment descriptor is used only for scoped
-     deployments.
+     Bootstrap - starts the messaging server peer
 
      $Id$
  -->
 
 <server>
-
 
    <mbean code="org.jboss.jms.server.Bootstrap"
       name="jboss.messaging:service=Bootstrap"

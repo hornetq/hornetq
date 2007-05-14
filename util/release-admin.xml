@@ -2,8 +2,13 @@
 
 <!-- ====================================================================== -->
 <!--                                                                        -->
-<!--  Ant file to create a JBoss 4.x messaging configurations based on a    -->
-<!--  default configuration.                                                -->
+<!--  Ant file to create a JBoss 4.20 or later messaging configurations     -->
+<!--  based on a default configuration.                                     -->
+<!--  Please note that this script will only work with JBoss AS 4.2.0 or    -->
+<!--  later JBoss 4 series.                                                 -->
+<!--  For installing in JBoss 4.0.x (not recommended due to various         -->
+<!--  jar incompatibilities you must do a manual install - see              -->
+<!--  user guide for more information                                       -->
 <!--                                                                        -->
 <!-- ====================================================================== -->
 
@@ -22,7 +27,6 @@
    <property name="javassist-version" value="3.5.0.GA-brew"/>
    <property name="jboss-remoting-version" value="2.2.0.SP4"/>
 
-
    <property name="jboss.home" value="${ENV.JBOSS_HOME}"/>
    <property name="messaging.config.name" value="messaging"/>
    <property name="messaging.config.source" value="default"/>
@@ -30,28 +34,33 @@
    <property name="database" value="mysql"/>
 
    <!--
-        DO NOT change these values here, otherwise the installation script won't work. If you need
-        to change them, to it in release-admin.properties.
+        DO NOT change these values here, otherwise the installation script might break. If you need
+        to change them, do it in release-admin.properties.
    -->
-   <property name="main.artifact.location" value="../output/lib"/>
-   <property name="auxiliary.artifacts.location" value="../examples/config"/>
-   <property name="auxiliary.lib.location" value="./lib"/>
-   <property name="messaging.artifact.name" value="jboss-messaging.sar"/>
+
+   <!-- The location of the sar file -->
+   <property name="sar.location" value="../output/lib"/>
+
+   <!-- The name of the sar -->
+   <property name="sar.name" value="jboss-messaging.sar"/>
+
+   <!-- The location of datasource file - used for clustered install -->
+   <property name="datasource.location" value="../examples/config"/>
 
    <!-- ======================================================================================== -->
    <!-- Top level targets. These are the "modes" this script is supposed to work in.             -->
    <!-- ======================================================================================== -->
 
-   <!-- An unscoped installation for JBoss 4.x -->
-   <target name="default" depends="validate-ant, validate-database">
+   <!-- An standard installation for JBoss 4.x based on "default"-->
+   <target name="default" depends="validate-ant">
       <set-config-name base="${messaging.config.name}" suffix=""/>
       <antcall target="create-server-config"/>
    </target>
 
    <!--
-        A "standalone" (non-scoped minimal configuration) installation for JBoss 4.x.
+        A "standalone" (minimal configuration) installation for JBoss 4.x.
    -->
-   <target name="standalone" depends="validate-ant, validate-database">
+   <target name="standalone" depends="validate-ant">
       <condition property="config.name" value="${standalone.messaging.config.name}">
           <isset property="standalone.messaging.config.name"/>
       </condition>
@@ -60,7 +69,7 @@
    </target>
 
    <!--
-        A cluster node installation for JBoss 4.x.
+        A cluster node installation for JBoss 4.2.0. or later JBoss 4 series
    -->
    <target name="cluster-node" depends="validate-ant, validate-database">
       <set-config-name base="${messaging.config.name}" suffix="node${id}"/>
@@ -71,6 +80,7 @@
    <!-- Internal targets                                                                         -->
    <!-- ======================================================================================== -->
 
+   <!-- We require ant 1.7.0 or later -->
    <target name="validate-ant">
         <condition property="ant.ok">
             <antversion atleast="1.7.0"/>
@@ -78,8 +88,8 @@
         <fail unless="ant.ok" message="The ant you're using (${ant.version}) is too old, you need at least 1.7.0!"/>
    </target>
 
-    <target name="validate-database">
-
+   <!-- For a cluster node installation - we require a shared (non hsqldb) database to be available -->
+   <target name="validate-database">
         <condition property="supported.database">
             <or>
                 <equals arg1="${database}" arg2="mysql"/>
@@ -91,75 +101,42 @@
         </condition>
 
         <fail unless="supported.database" message="Database type '${database}' not supported!"/>
+   </target>
 
-    </target>
-
+   <!-- The JBOSS_HOME environment variable and the directory must exist, we also check we are running 
+        in JBoss 4.2.0 or later JBoss 4 series -->
    <target name="validate-jboss">
       <fail unless="jboss.home" message="JBOSS_HOME environment variable not set! Set it and try again."/>
       <available property="default-config" type="dir" file="${jboss.home}/server/${messaging.config.source}"/>
       <fail unless="default-config" message="${jboss.home}/server/${messaging.config.source} not found!"/>
    </target>
 
+   <!-- If the target configuration already exists, we don't overwrite it, since we don't want to delete
+        someone's important stuff -->
    <target name="prevent-messaging-overwrite">
       <available property="messaging-config" type="dir" file="${jboss.home}/server/${config.name}"/>
       <fail if="messaging-config" message="'${config.name}' configuration already exists! Delete it manually and try again."/>
    </target>
 
+   <!-- We make sure the sar file exists -->
    <target name="validate-messaging-artifact">
-      <available property="messaging-artifact-exists" type="file" file="${main.artifact.location}/${messaging.artifact.name}"/>
-      <fail unless="messaging-artifact-exists" message="${main.artifact.location}/${messaging.artifact.name} does not exist! Build it and try again."/>
+      <available property="messaging-artifact-exists" type="file" file="${sar.location}/${sar.name}"/>
+      <fail unless="messaging-artifact-exists" message="${sar.location}/${sar.name} does not exist! Build it and try again."/>
    </target>
 
-
-   <target name="test-for-jars">
-      <condition property="condition-replace-jars">
-         <equals arg1="${install-jars}" arg2="yes"/>
-      </condition>
-   </target>
-
-   <target name="get-jars" depends="test-for-jars" if="condition-replace-jars">
-      <mkdir dir="./${download-jars}"/>
-      <get src="http://repository.jboss.com/jboss/remoting/${jboss-remoting-version}/lib/jboss-remoting.jar" dest="./${download-jars}/jboss-remoting.jar" usetimestamp="yes"/>
-      <get src="http://repository.jboss.com/javassist/${javassist-version}/lib/javassist.jar" dest="./${download-jars}/javassist.jar" usetimestamp="yes"/>
-      <get src="http://repository.jboss.com/jboss/aop/${aop-version}/lib/common-softvaluehashmap.jar" dest="./${download-jars}/common-softvaluehashmap.jar" usetimestamp="yes"/>
-      <get src="http://repository.jboss.com/jboss/aop/${aop-version}/lib/jboss-aop-jdk50-client.jar" dest="./${download-jars}/jboss-aop-jdk50-client.jar" usetimestamp="yes"/>
-      <get src="http://repository.jboss.com/jboss/aop/${aop-version}/lib/jboss-aop-jdk50.jar" dest="./${download-jars}/jboss-aop-jdk50.jar" usetimestamp="yes"/>
-      <get src="http://repository.jboss.com/jboss/aop/${aop-version}/lib/jboss-aop.jar" dest="./${download-jars}/jboss-aop.jar" usetimestamp="yes"/>
-      <get src="http://repository.jboss.com/jboss/aop/${aop-version}/lib/jdk14-pluggable-instrumentor.jar" dest="./${download-jars}/jdk14-pluggable-instrumentor.jar" usetimestamp="yes"/>
-      <get src="http://repository.jboss.com/jboss/aop/${aop-version}/lib/jrockit-pluggable-instrumentor.jar" dest="./${download-jars}/jrockit-pluggable-instrumentor.jar" usetimestamp="yes"/>
-      <get src="http://repository.jboss.com/jboss/aop/${aop-version}/lib/pluggable-instrumentor.jar" dest="./${download-jars}/pluggable-instrumentor.jar" usetimestamp="yes"/>
-      <get src="http://repository.jboss.com/jgroups/${jgroups-version}/lib/jgroups.jar" dest="./${download-jars}/jgroups.jar" usetimestamp="yes"/>
-   </target>
-
-   <!-- Replace server jars for jboss-4.0.X installations -->
-   <target name="task-replace-server-jars" depends="test-for-jars, get-jars" if="condition-replace-jars">
-
-      <echo>Replacing server jars in server/.../lib !!</echo>
-
-      <copy todir="${jboss.home}/server/${config.name}/lib" overwrite="yes" flatten="yes">
-         <fileset dir="./${download-jars}"/>
-      </copy>
-
-   </target>
-
-
-   <target name="replace-server-jars" depends="task-replace-server-jars" if="replace-jars"/>
-
-   <target name="install-driver" if="driver-jar">
-      <copy file="${driver-jar}" todir="${jboss.home}/server/${config.name}/lib"/> 
-   </target>
-
+   <!-- Create a server configuration based on a default server configuration -->
    <target name="create-server-config" depends="validate-jboss, prevent-messaging-overwrite, validate-messaging-artifact">
 
-      <echo message="Creating JBoss Messaging configuration '${config.name}' for ${jboss.home} based on ${messaging.artifact.name}"/>
+      <echo message="Creating JBoss Messaging configuration '${config.name}' for ${jboss.home} based on ${sar.name}"/>
 
       <mkdir dir="${jboss.home}/server/${config.name}"/>
+
       <copy todir="${jboss.home}/server/${config.name}">
          <fileset dir="${jboss.home}/server/${messaging.config.source}">
-            <exclude name="data/**"/>
-            <exclude name="work/**"/>
-            <exclude name="log/**"/>
-            <exclude name="tmp/**"/>
+            <include name="conf/**"/>
+            <include name="deploy/**"/>
+            <include name="lib/**"/>
+            <!-- Don't copy jbossmq -->
             <exclude name="deploy/jms/**"/>
             <exclude name="lib/jbossmq.jar"/>
          </fileset>
@@ -172,75 +149,47 @@
             &lt;login-module code = &quot;org.jboss.security.auth.spi.UsersRolesLoginModule&quot;&#013;&#010;
             flag = &quot;required&quot; &gt;&#013;&#010;
          &lt;module-option name = &quot;unauthenticatedIdentity&quot;&gt;guest&lt;/module-option&gt;&#013;&#010;
-         &lt;module-option name = &quot;usersProperties&quot;&gt;messaging-users.properties&lt;/module-option&gt;&#013;&#010;
-         &lt;module-option name = &quot;rolesProperties&quot;&gt;messaging-roles.properties&lt;/module-option&gt;&#013;&#010;
+         &lt;module-option name = &quot;usersProperties&quot;&gt;props/messaging-users.properties&lt;/module-option&gt;&#013;&#010;
+         &lt;module-option name = &quot;rolesProperties&quot;&gt;props/messaging-roles.properties&lt;/module-option&gt;&#013;&#010;
          &lt;/login-module&gt;&#013;&#010;        &lt;/authentication&gt;&#013;&#010;    &lt;/application-policy&gt;&#013;&#010;"/>
       </replaceregexp>
 
       <!-- we deploy the archive exploded so that users can easily access the configuration files -->
-      <condition property="is.sar" value="true">
-         <contains substring=".sar" string="${messaging.artifact.name}"/>
-      </condition>
-      <antcall target="expand-jar"/>
       <antcall target="expand-sar"/>
 
+      <!-- we only replace the server jars if 'install-jars' ENV variable = 'yes' -->
       <antcall target="replace-server-jars"/>
 
-      <antcall target="install-driver"/>
-
-      <move todir="${jboss.home}/server/${config.name}/conf">
+      <!-- Copy the default security properties files to conf/props-->
+      <copy todir="${jboss.home}/server/${config.name}/conf/props">
           <fileset dir="../src/etc/server/default/config">
              <include name="messaging-*.properties"/>
           </fileset>
-      </move>
+      </copy>
 
+      <!-- Copy the JMS JCA resource adaptor -->
       <copy file="${jboss.home}/server/${messaging.config.source}/deploy/jms/jms-ra.rar"
             todir="${jboss.home}/server/${config.name}/deploy"/>
 
    </target>
 
-   <target name="expand-sar" if="is.sar">
-      <unjar src="${main.artifact.location}/${messaging.artifact.name}"
+
+   <!-- Expand the sar file in the deploy directory -->
+   <target name="expand-sar">
+      <unjar src="${sar.location}/${sar.name}"
              dest="${jboss.home}/server/${config.name}/deploy/jboss-messaging.sar">
       </unjar>
    </target>
 
-   <target name="expand-jar" unless="is.sar">
-      <unjar src="${main.artifact.location}/${messaging.artifact.name}"
-             dest="${jboss.home}/server/${config.name}/deploy/jboss-messaging">
-      </unjar>
-      <jar jarfile="${jboss.home}/server/${config.name}/deploy/jboss-messaging/jboss-messaging.jar"
-           manifest="${jboss.home}/server/${config.name}/deploy/jboss-messaging/META-INF/MANIFEST.MF">
-         <fileset dir="${jboss.home}/server/${config.name}/deploy/jboss-messaging" includes="org/**,VERSION,aop-messaging*.xml"/>
-      </jar>
-      <delete>
-         <fileset dir="${jboss.home}/server/${config.name}/deploy/jboss-messaging">
-            <include name="VERSION"/>
-            <include name="aop-messaging*.xml"/>
-         </fileset>
-      </delete>
-      <delete dir="${jboss.home}/server/${config.name}/deploy/jboss-messaging/org"/>
-      <delete dir="${jboss.home}/server/${config.name}/deploy/jboss-messaging/META-INF"/>
+   <!-- Create a standalone (stripped down) JBM installation based on default -->
 
-      <move file="${jboss.home}/server/${config.name}/deploy/jboss-messaging/jboss-messaging.jar"
-            todir="${jboss.home}/server/${config.name}/lib"/>
-      <move todir="${jboss.home}/server/${config.name}/conf/xmdesc">
-         <fileset dir="${jboss.home}/server/${config.name}/deploy/jboss-messaging/xmdesc">
-            <include name="*.xml"/>
-         </fileset>
-      </move>
-      <move todir="${jboss.home}/server/${config.name}/conf">
-         <fileset dir="${jboss.home}/server/${config.name}/deploy/jboss-messaging">
-            <include name="messaging-*.properties"/>
-         </fileset>
-      </move>
-      <delete dir="${jboss.home}/server/${config.name}/deploy/jboss-messaging/xmdesc"/>
-   </target>
-
+   <!-- FIXME - this is currently very brittle - since it may break if the default
+        installation structure changes in future versions of JBAS -
+        consider removing it -->
    <target name="create-standalone-server-config" depends="validate-jboss, validate-messaging-artifact"
            description="Creates a standalone Messaging server configuration based on a default JBoss instance">
 
-      <echo message="Creating Standalone Messaging configuration '${config.name}' for ${jboss.home} based on ${messaging.artifact.name}"/>
+      <echo message="Creating Standalone Messaging configuration '${config.name}' for ${jboss.home} based on ${sar.name}"/>
 
       <mkdir dir="${jboss.home}/server/${config.name}/conf"/>
       <mkdir dir="${jboss.home}/server/${config.name}/lib"/>
@@ -248,8 +197,6 @@
 
       <copy todir="${jboss.home}/server/${config.name}/conf">
          <fileset dir="${jboss.home}/server/${messaging.config.source}/conf">
-            <include name="jboss-service.xml"/>
-            <include name="jndi.properties"/>
             <include name="log4j.xml"/>
             <include name="login-config.xml"/>
             <include name="props/**"/>
@@ -384,7 +331,7 @@
 
       <!-- deploy exploded messaging -->
 
-      <unjar src="${main.artifact.location}/${messaging.artifact.name}"
+      <unjar src="${sar.location}/${sar.name}"
              dest="${jboss.home}/server/${config.name}/deploy/jboss-messaging">
       </unjar>
 
@@ -412,11 +359,12 @@
          </patternset>
       </unjar>
 
-      <move todir="${jboss.home}/server/${config.name}/conf">
-         <fileset dir="${jboss.home}/server/${config.name}/deploy/jboss-messaging">
-            <include name="messaging-*.properties"/>
-         </fileset>
-      </move>
+      <!-- Copy the default security properties files to conf/props-->
+      <copy todir="${jboss.home}/server/${config.name}/conf/props">
+          <fileset dir="../src/etc/server/default/config">
+             <include name="messaging-*.properties"/>
+          </fileset>
+      </copy>
 
       <delete dir="${jboss.home}/server/${config.name}/deploy/jboss-messaging/xmdesc"/>
       <delete dir="${jboss.home}/server/${config.name}/deploy/jboss-messaging/META-INF"/>
@@ -465,24 +413,14 @@
       <echo message="Enabling ${database}"/>
 
       <delete file="${jboss.home}/server/${config.name}/deploy/hsqldb-ds.xml" quiet="false" failonerror="true"/>
-      <copy file="${auxiliary.artifacts.location}/${database}-ds.xml" todir="${jboss.home}/server/${config.name}/deploy/"/>
-
-      <!--
-           We may not distribute the driver for availability or copyright reasons, so the driver
-           may not be under lib. We need to check and issue a warning if it isn't.
-      -->
-      <copy todir="${jboss.home}/server/${config.name}/lib">
-         <fileset dir="${auxiliary.lib.location}">
-            <include name="${database}-driver*.jar"/>
-         </fileset>
-      </copy>
+      <copy file="${datasource.location}/${database}-ds.xml" todir="${jboss.home}/server/${config.name}/deploy/"/>
 
       <!--
            Use clustered persistence configuration file.
       -->
 
       <delete file="${jboss.home}/server/${config.name}/deploy/jboss-messaging.sar/hsqldb-persistence-service.xml" quiet="false" failonerror="true"/>
-      <copy file="${auxiliary.artifacts.location}/clustered-${database}-persistence-service.xml" todir="${jboss.home}/server/${config.name}/deploy/jboss-messaging.sar/"/>
+      <copy file="${datasource.location}/clustered-${database}-persistence-service.xml" todir="${jboss.home}/server/${config.name}/deploy/jboss-messaging.sar/"/>
 
       <antcall target="install-jgroups"/>
 
@@ -686,7 +624,7 @@
    <target name="dump">
       <echo message="jboss.home=${jboss.home}"/>
       <echo message="messaging.config.name=${messaging.config.name}"/>
-      <echo message="main.artifact.location=${main.artifact.location}"/>
+      <echo message="sar.location=${sar.location}"/>
    </target>
 
    <target name="test" depends="validate-ant">
