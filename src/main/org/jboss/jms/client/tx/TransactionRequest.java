@@ -29,7 +29,6 @@ import javax.transaction.xa.Xid;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.tx.MessagingXid;
 import org.jboss.messaging.util.Streamable;
-import org.jboss.jms.shared.tx.ClientTransaction;
 
 /**
  * This class contains all the data needed to perform a JMS transaction.
