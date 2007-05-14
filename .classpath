@@ -29,7 +29,6 @@
 	<classpathentry kind="lib" path="tests/lib/jboss-local-jdbc.jar"/>
 	<classpathentry kind="lib" path="tests/lib/jboss-mbeans.jar"/>
 	<classpathentry kind="lib" path="tests/lib/jms-ra.jar"/>
-	<classpathentry kind="lib" path="tests/lib/mysql-connector-java-3.1.13-bin.jar"/>
 	<classpathentry kind="lib" path="thirdparty/jgroups/lib/jgroups.jar"/>
 	<classpathentry kind="lib" path="thirdparty/apache-log4j/lib/log4j.jar"/>
 	<classpathentry kind="lib" path="thirdparty/junit/lib/junit.jar"/>

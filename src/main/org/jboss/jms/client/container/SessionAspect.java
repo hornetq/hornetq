@@ -59,8 +59,8 @@ import org.jboss.jms.message.StreamMessageProxy;
 import org.jboss.jms.message.TextMessageProxy;
 import org.jboss.jms.server.endpoint.DefaultCancel;
 import org.jboss.jms.server.endpoint.DeliveryInfo;
-import org.jboss.jms.tx.LocalTx;
-import org.jboss.jms.tx.ResourceManager;
+import org.jboss.jms.client.tx.LocalTx;
+import org.jboss.jms.client.tx.ResourceManager;
 import org.jboss.logging.Logger;
 
 /**

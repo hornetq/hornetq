@@ -24,8 +24,8 @@ package org.jboss.jms.wireformat;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 
+import org.jboss.jms.client.tx.TransactionRequest;
 import org.jboss.jms.server.endpoint.ConnectionEndpoint;
-import org.jboss.jms.tx.TransactionRequest;
 import org.jboss.logging.Logger;
 
 /**

@@ -19,7 +19,7 @@
   * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   */
-package org.jboss.jms.tx;
+package org.jboss.jms.client.tx;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -38,7 +38,7 @@ import org.jboss.jms.delegate.SessionDelegate;
 import org.jboss.jms.message.JBossMessage;
 import org.jboss.jms.message.MessageProxy;
 import org.jboss.jms.server.endpoint.DeliveryInfo;
-import org.jboss.jms.tx.ClientTransaction.SessionTxState;
+import org.jboss.jms.client.tx.ClientTransaction.SessionTxState;
 import org.jboss.jms.util.MessagingTransactionRolledBackException;
 import org.jboss.jms.util.MessagingXAException;
 import org.jboss.logging.Logger;

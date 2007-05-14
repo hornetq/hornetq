@@ -423,7 +423,7 @@
 
       <jar jarfile="${build.lib}/jboss-messaging-fat-client.jar">
          <fileset dir="${build.classes}">
-            <include name="org/jboss/**"/>
+            <include name="org/jboss/jms/client/**/*.class"/>
          </fileset>
          <fileset dir="${build.etc}">
             <include name="VERSION"/>
@@ -455,7 +455,7 @@
                        value="jboss-aop.jar jboss-remoting.jar jboss-serialization.jar javassist.jar trove.jar jboss-common-core.jar jboss-common-client.jar jboss-j2ee.jar jboss-j2se.jar jnp-client.jar concurrent.jar log4j.jar commons-logging.jar"/>
          </manifest>
          <fileset dir="${build.classes}">
-            <include name="org/jboss/**"/>
+            <include name="org/jboss/jms/client/**/*.class"/>
          </fileset>
          <fileset dir="${build.etc}">
             <include name="VERSION"/>

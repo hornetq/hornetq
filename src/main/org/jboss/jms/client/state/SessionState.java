@@ -44,8 +44,8 @@ import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.server.Version;
 import org.jboss.jms.server.endpoint.DeliveryInfo;
 import org.jboss.jms.server.endpoint.DeliveryRecovery;
-import org.jboss.jms.tx.MessagingXAResource;
-import org.jboss.jms.tx.ResourceManager;
+import org.jboss.jms.client.tx.MessagingXAResource;
+import org.jboss.jms.client.tx.ResourceManager;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.util.ClearableQueuedExecutor;
 

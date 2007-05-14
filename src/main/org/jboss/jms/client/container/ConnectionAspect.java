@@ -33,7 +33,7 @@ import org.jboss.jms.client.remoting.JMSRemotingConnection;
 import org.jboss.jms.client.delegate.ClientConnectionDelegate;
 import org.jboss.jms.client.state.ConnectionState;
 import org.jboss.jms.message.MessageIdGeneratorFactory;
-import org.jboss.jms.tx.ResourceManagerFactory;
+import org.jboss.jms.client.tx.ResourceManagerFactory;
 
 /**
  * Handles operations related to the connection
