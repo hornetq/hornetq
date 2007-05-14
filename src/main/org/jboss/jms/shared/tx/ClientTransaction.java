@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.jms.client.tx;
+package org.jboss.jms.shared.tx;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -34,8 +34,8 @@ import org.jboss.jms.message.JBossMessage;
 import org.jboss.jms.server.endpoint.Ack;
 import org.jboss.jms.server.endpoint.DefaultAck;
 import org.jboss.jms.server.endpoint.DeliveryInfo;
-import org.jboss.messaging.core.message.MessageFactory;
 import org.jboss.logging.Logger;
+import org.jboss.messaging.core.message.MessageFactory;
 
 /**
  * Holds the state of a transaction on the client side
