@@ -76,7 +76,7 @@ public class QueueFailoverExample extends ExampleSupport
 
          connection.start();
 
-         // Send 2 messagea to the queue
+         // Send 2 messages to the queue
 
          Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
@@ -104,8 +104,8 @@ public class QueueFailoverExample extends ExampleSupport
 
          // Kill the active node
          killActiveNode();
-
-         Thread.sleep(30000); // TODO not necesare after we install the client valve
+         
+         Thread.sleep(5000);
 
          // receive the second message on the failed over node
 

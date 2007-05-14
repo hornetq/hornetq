@@ -2,6 +2,28 @@
 
 <!-- $Id$ -->
 
+<!--
+
+   Run the messaging smoke tests
+   =============================
+
+   We only run smoke tests against JBAS 4.2.0.GA and later since this is what we support.
+
+   Any earlier versions are best effort.
+
+   The smoke tests require 3 servers configuration to be set up before running:
+
+   1) ${JBOSS_HOME}/server/<jboss-configuration> non clustered config based on default
+
+   2) ${JBOSS_HOME}/server/<jboss-configuration>0 clustered config based on all
+
+   3) ${JBOSS_HOME}/server/<jboss-configuration>1 clustered config based on all
+
+   The configs should be running when the script is started
+
+
+-->
+
 <project default="all" name="Messaging Smoke Test Suite">
 
    <property environment="ENV"/>
@@ -14,7 +36,7 @@
    <property name="relative.client.jar.location" value="../../util"/>
    <property name="messaging.client.jar.name" value="jboss-messaging-client.jar"/>
    <property name="release.admin.target" value="default"/>
-   <property name="jboss.configuration" value="messaging-smoke-test"/>
+   <property name="jboss.configuration" value="messaging"/>
    <property name="messaging.client.jar.path" value="${basedir}/../../output/lib"/>
    <property name="smoke.test.type" value="installation"/>
    <property name="clustered" value="false"/>
@@ -33,7 +55,7 @@
    <property name="run.mdb-failure.example" value="true"/>
    <property name="run.http.example" value="true"/>
    <property name="run.stateless.example" value="true"/>
-   <property name="run.ejb3mdb.example" value="false"/>
+   <property name="run.ejb3mdb.example" value="true"/>
    <property name="run.secure-socket.example" value="true"/>
    <property name="run.distributed-queue.example" value="true"/>
    <property name="run.distributed-topic.example" value="true"/>
@@ -63,10 +85,10 @@
    <target name="all" depends="insure-smoke-properties">
       <mkdir dir="./output"/>
       <delete file="./output/smoke.log" quiet="true"/>
-      <antcall target="build-deployment-archives-from-scratch"/>
 
       <antcall target="installation-tests"/>
 
+<!--
       <antcall target="old-server-compatibility-tests">
          <param name="smoke.test.type" value="client.compatibility"/>
       </antcall>
@@ -74,6 +96,7 @@
       <antcall target="old-client-compatibility-tests">
          <param name="smoke.test.type" value="server.compatibility"/>
       </antcall>
+-->
 
       <antcall target="report"/>
    </target>
@@ -90,203 +113,18 @@
       
       <antcall target="installation-test">
          <param name="jboss.home" value="${jboss420GA.home}"/>
-         <param name="install-jars" value="no"/>
-      </antcall>
-      
-
-      <!--
-           4.0.5.GA
-      -->
-
-      <!--
-      <antcall target="installation-test">
-         <param name="jboss.home" value="${jboss405GA.home}"/>
-         <param name="install-jars" value="yes"/>
-         <param name="run.secure-socket.example" value="false"/>
-         <param name="run.http.example" value="false"/>
-      </antcall>
-
-      <antcall target="installation-test">
-         <param name="jboss.home" value="${jboss405GA-installer.home}"/>
-         <param name="install-jars" value="yes"/>
-         <param name="run.secure-socket.example" value="false"/>
-         <param name="run.http.example" value="false"/>
-      </antcall>
-
-      <antcall target="installation-test">
-         <param name="jboss.home" value="${jboss405GA.home}"/>
-         <param name="release.admin.target" value="standalone"/>
-         <param name="run.mdb.example" value="false"/>
-         <param name="run.mdb-failure.example" value="false"/>
-         <param name="run.stateless.example" value="false"/>
-         <param name="run.secure-socket.example" value="false"/>
-         <param name="install-jars" value="yes"/>
-         <param name="run.http.example" value="false"/>
-      </antcall>
-
-      <antcall target="installation-test">
-         <param name="jboss.home" value="${jboss405GAejb3.home}"/>
-         <param name="no.java4" value="true"/>
-         <param name="run.ejb3mdb.example" value="true"/>
-         <param name="run.secure-socket.example" value="false"/>
-         <param name="install-jars" value="yes"/>
-         <param name="run.http.example" value="false"/>
-      </antcall>
-      -->
-      
-      <!--
-           4.0.4.GA
-      -->
-      <!--
-      <antcall target="installation-test">
-         <param name="jboss.home" value="${jboss404GA.home}"/>
-         <param name="run.secure-socket.example" value="false"/>
-         <param name="run.http.example" value="false"/>
-      </antcall>
-
-      <antcall target="installation-test">
-         <param name="jboss.home" value="${jboss404GA-installer.home}"/>
-         <param name="run.secure-socket.example" value="false"/>
-         <param name="run.http.example" value="false"/>
-      </antcall>
-
-      <antcall target="installation-test">
-         <param name="jboss.home" value="${jboss404GA.home}"/>
-         <param name="release.admin.target" value="standalone"/>
-         <param name="run.mdb.example" value="false"/>
-         <param name="run.mdb-failure.example" value="false"/>
-         <param name="run.stateless.example" value="false"/>
-         <param name="run.secure-socket.example" value="false"/>
-         <param name="run.http.example" value="false"/>
-      </antcall>
-      -->
-
-      <!--
-           4.0.3SP1
-      -->
-      <!--
-      <antcall target="installation-test">
-         <param name="jboss.home" value="${jboss403SP1.home}"/>
-         <param name="run.secure-socket.example" value="false"/>
-      </antcall>
-
-      <antcall target="installation-test">
-         <param name="jboss.home" value="${jboss403SP1-installer.home}"/>
-         <param name="run.secure-socket.example" value="false"/>
-      </antcall>
-      -->
-
-      <!--
-           4.0.3
-      -->
-      <!--
-      <antcall target="installation-test">
-         <param name="jboss.home" value="${jboss403.home}"/>
-         <param name="run.secure-socket.example" value="false"/>
-      </antcall>
-
-      <antcall target="installation-test">
-         <param name="jboss.home" value="${jboss403-installer.home}"/>
-         <param name="run.secure-socket.example" value="false"/>
-      </antcall>
-      -->
-      <!--
-           4.0.2
-      -->
-      <!--
-      <antcall target="installation-test">
-         <param name="jboss.home" value="${jboss402.home}"/>
-         <param name="run.secure-socket.example" value="false"/>
-      </antcall>
-      -->
-
-      <!--
-          Note on installer versions.
-          When installing versions to test via the JBoss installer, make sure call by value is *not*
-          selected in the installation process. The reason for testing installer versions is to test
-          the arrangement where JBoss is configured for all pass by reference
-      -->
-
-      <!--
-           4.0.1sp1 - not supported on non scopped
-      -->
-
-      <!-- <antcall target="installation-test">
-         <param name="jboss.home" value="${jboss401sp1.home}"/>
-         <param name="run.secure-socket.example" value="false"/>
-      </antcall> -->
-
-      <!--
-           4.0.3SP1 standalone. Temporarily removed from the supported configurations list.
-           See http://jira.jboss.org/jira/browse/JBMESSAGING-848
-      -->
-      <!--
-      <antcall target="installation-test">
-         <param name="jboss.home" value="${jboss403SP1.home}"/>
-         <param name="release.admin.target" value="standalone"/>
-         <param name="run.mdb.example" value="false"/>
-         <param name="run.mdb-failure.example" value="false"/>
-         <param name="run.stateless.example" value="false"/>
-         <param name="run.secure-socket.example" value="false"/>
-      </antcall>
-      -->
-
-   </target>
-
-   <target name="old-server-compatibility-tests">
-
-      <!-- ====================================================  -->
-      <!--                                                       -->
-      <!--  Add here other old server versions to test:          -->
-      <!--                                                       -->
-      <!-- ====================================================  -->
-
-      <!--
-
-           http://jira.jboss.com/jira/browse/JBMESSAGING-427
-           Due to fix to handle long strings. We can no longer guarantee compatibility for versions < 1.0.3
-      -->
-
-      <!--
-
-      <antcall target="old-server-compatibility-test">
-         <param name="jboss.home" value="${jboss.compatibility.home}"/>
-         <param name="jboss.messaging.version" value="1.0.1.CR1"/>
-      </antcall>
-
-      <antcall target="old-server-compatibility-test">
-         <param name="jboss.home" value="${jboss.compatibility.home}"/>
-         <param name="jboss.messaging.version" value="1.0.1.CR2"/>
-      </antcall>
-
-      -->
+      </antcall>      
 
    </target>
 
    <target name="old-client-compatibility-tests">
-
-      <!--
-
-      <antcall target="create-messaging-config">
-         <param name="jboss.home" value="${jboss.compatibility.home}"/>
-         <param name="jboss.configuration" value="current-version-server"/>
-      </antcall>
-
-      -->
-
+      
       <!-- ====================================================  -->
       <!--                                                       -->
       <!--  Add here other old client versions to test:          -->
       <!--                                                       -->
       <!-- ====================================================  -->
 
-      <!--
-           http://jira.jboss.com/jira/browse/JBMESSAGING-427
-           Due to fix to handle long strings. We can no longer guarantee compatibility for versions < 1.0.3
-      -->
-
-      <!--
-
       <antcall target="old-client-compatibility-test">
          <param name="jboss.home" value="${jboss.compatibility.home}"/>
          <param name="jboss.configuration" value="current-version-server"/>
@@ -299,24 +137,9 @@
          <param name="jboss.messaging.version" value="1.0.1.CR2"/>
       </antcall>
 
-      -->
-
-      <!--
-
-      <antcall target="clean-messaging-config">
-         <param name="jboss.home" value="${jboss.compatibility.home}"/>
-         <param name="jboss.configuration" value="current-version-server"/>
-      </antcall>
-
-      -->
-
    </target>
 
    <target name="run-all-examples">
-
-      <antcall target="start"/>
-      <antcall target="record-running-jboss-instance"/>
-      <antcall target="sleep"><param name="sleep.interval" value="40"/></antcall>
 
       <antcall target="ping-jms-server"/>
 
@@ -390,26 +213,11 @@
       <!--                                                       -->
       <!-- ====================================================  -->
 
-      <antcall target="stop"/>
-      <antcall target="sleep"><param name="sleep.interval" value="10"/></antcall>
       <antcall target="display-warnings-and-errors"/>
 
    </target>
 
    <target name="run-all-clustered-examples">
-
-      <!--
-          Start node0.
-      -->
-
-      <antcall target="start">
-         <param name="jboss.configuration" value="${jboss.configuration}-node0"/>
-      </antcall>
-      <antcall target="record-running-jboss-instance">
-         <param name="jboss.configuration" value="${jboss.configuration}-node0"/>
-      </antcall>
-      <antcall target="sleep"><param name="sleep.interval" value="40"/></antcall>
-      <antcall target="ping-jms-server"/>
 
       <!--
           Deploy the non-clustered queue, we'll also run non-clustered examples in a clustered
@@ -459,21 +267,6 @@
       <antcall target="sleep"><param name="sleep.interval" value="8"/></antcall>
       <antcall target="ping-topic">
          <param name="example.topic.name" value="DistributedSmokeTestTopic"/>
-      </antcall>
-
-      <!--
-          Start node1.
-      -->
-
-      <antcall target="start">
-         <param name="jboss.configuration" value="${jboss.configuration}-node1"/>
-      </antcall>
-      <antcall target="record-running-jboss-instance1">
-         <param name="jboss.configuration" value="${jboss.configuration}-node1"/>
-      </antcall>
-      <antcall target="sleep"><param name="sleep.interval" value="40"/></antcall>
-      <antcall target="ping-jms-server">
-         <param name="jnpPort" value="1199"/>
       </antcall>
 
       <!--
@@ -583,6 +376,7 @@
          <param name="example.topic.name" value="DistributedSmokeTestTopic"/>
       </antcall>
 
+      <!-- This one must be last since it kills the server -->
       <antcall target="run-clustered-example">
          <param name="example.name" value="queue-failover"/>
          <param name="example.queue.name" value="DistributedSmokeTestQueue"/>
@@ -593,11 +387,6 @@
       <!--  END OF CLUSTERED EXAMPLE LIST                        -->
       <!--                                                       -->
       <!-- ====================================================  -->
-
-      <!-- this will stop both nodes -->
-      <antcall target="stop"/>
-
-      <antcall target="sleep"><param name="sleep.interval" value="20"/></antcall>
 
       <antcall target="display-warnings-and-errors">
          <param name="jboss.configuration" value="${jboss.configuration}-node0"/>
@@ -692,23 +481,15 @@
       <!--
           Run single-node tests
       -->
-      <antcall target="create-messaging-config">
-         <param name="install-jars" value="${install-jars}"/>
-      </antcall>
 
       <antcall target="run-all-examples"/>
-      <antcall target="clean-messaging-config"/>
 
       <!--
           Run clustered tests
       -->
-      <antcall target="create-clustered-messaging-config">
-         <param name="install-jars" value="${install-jars}"/>
-      </antcall>
 
       <antcall target="run-all-clustered-examples"/>
-      <antcall target="clean-clustered-messaging-config"/>
-                                                                                                 
+                                                                                  
    </target>
 
    <target name="check-java-version">
@@ -734,17 +515,11 @@
             <include name="jboss-messaging-${jboss.messaging.version}/jboss-messaging.sar"/>
          </patternset>
       </unzip>
-      <antcall target="create-messaging-config">
-         <param name="messaging.server.artifact.path" value="./output/jboss-messaging-${jboss.messaging.version}"/>
-         <param name="jboss.configuration" value="messaging-${jboss.messaging.version}"/>
-      </antcall>
+
       <antcall target="run-all-examples">
          <param name="jboss.configuration" value="messaging-${jboss.messaging.version}"/>
       </antcall>
       <delete dir="./output/jboss-messaging-${jboss.messaging.version}"/>
-      <antcall target="clean-messaging-config">
-         <param name="jboss.configuration" value="messaging-${jboss.messaging.version}"/>
-      </antcall>
 
    </target>
 
@@ -761,87 +536,6 @@
       </antcall>
       <delete dir="./output/jboss-messaging-${jboss.messaging.version}"/>
 
-   </target>
-
-   <target name="create-messaging-config">
-
-      <available file="${messaging.server.artifact.path}/${messaging.server.artifact.name}" property="archive.present"/>
-      <fail unless="archive.present">Cannot find deployment archive ${messaging.server.artifact.path}/${messaging.server.artifact.name}</fail>
-      <ant antfile="../../util/release-admin.xml" target="${release.admin.target}">
-         <property name="jboss.home" value="${jboss.home}"/>
-         <property name="messaging.config.name" value="${jboss.configuration}"/>
-         <property name="standalone.messaging.config.name" value="${jboss.configuration}"/>
-         <property name="main.artifact.location" value="${messaging.server.artifact.path}"/>
-         <property name="messaging.artifact.name" value="${messaging.server.artifact.name}"/>         
-         <property name="install-jars" value="${install-jars}"/>
-      </ant>
-      <available file="../../output/lib/jboss-messaging-client.jar" property="client.jar.present"/>
-      <fail unless="client.jar.present">Cannot find the client jar ../../output/lib/jboss-messaging-client.jar</fail>
-
-   </target>
-
-   <target name="create-clustered-messaging-config">
-
-      <available file="${messaging.server.artifact.path}/${messaging.server.artifact.name}" property="archive.present"/>
-      <fail unless="archive.present">Cannot find deployment archive ${messaging.server.artifact.path}/${messaging.server.artifact.name}</fail>
-
-      <available file="../../output/lib/jboss-messaging-client.jar" property="client.jar.present"/>
-      <fail unless="client.jar.present">Cannot find the client jar ../../output/lib/jboss-messaging-client.jar</fail>
-
-      <!--
-          create node 0
-      -->
-      <ant antfile="../../util/release-admin.xml" target="cluster-node">
-         <property name="jboss.home" value="${jboss.home}"/>
-         <property name="messaging.config.name" value="${jboss.configuration}"/>
-         <property name="main.artifact.location" value="${messaging.server.artifact.path}"/>
-         <property name="messaging.artifact.name" value="${messaging.server.artifact.name}"/>
-         <property name="auxiliary.artifacts.location" value="../../src/etc/server/default/deploy"/>
-         <property name="auxiliary.lib.location" value="../../util/lib"/>
-         <property name="driver-jar" value="${driver-jar}"/>
-         <property name="install-jars" value="${install-jars}"/>
-      </ant>
-
-      <!--
-          create node 1
-      -->
-      <ant antfile="../../util/release-admin.xml" target="cluster-node">
-         <property name="id" value="1"/>
-         <property name="ports" value="ports-01"/>
-         <property name="jboss.home" value="${jboss.home}"/>
-         <property name="messaging.config.name" value="${jboss.configuration}"/>
-         <property name="main.artifact.location" value="${messaging.server.artifact.path}"/>
-         <property name="messaging.artifact.name" value="${messaging.server.artifact.name}"/>
-         <property name="auxiliary.artifacts.location" value="../../src/etc/server/default/deploy"/>
-         <property name="auxiliary.lib.location" value="../../util/lib"/>
-         <property name="driver-jar" value="${driver-jar}"/>
-         <property name="install-jars" value="${install-jars}"/>
-      </ant>
-
-   </target>
-
-   <target name="clean-messaging-config" description="Cleans the non-clustered JBoss instance, and also the clustered ones, if necessary">
-      <fail unless="jboss.home" message="jboss.home property not set!"/>
-      <echo message="Cleaning ${jboss.home}/server/${jboss.configuration}"/>
-      <delete dir="${jboss.home}/server/${jboss.configuration}" quiet="false" failonerror="true"/>
-      <antcall target="clean-messaging-config1"/>
-      <delete file="./output/last-run.properties" quiet="true"/>
-   </target>
-
-   <target name="clean-messaging-config1" description="Cleans the second clustered JBoss instance" if="jboss.home1">
-      <fail unless="jboss.home1" message="jboss.home1 property not set!"/>
-      <fail unless="jboss.configuration1" message="jboss.configuration1 property not set!"/>
-      <echo message="Cleaning ${jboss.home1}/server/${jboss.configuration1}"/>
-      <delete dir="${jboss.home1}/server/${jboss.configuration1}" quiet="false" failonerror="true"/>
-   </target>
-
-   <target name="clean-clustered-messaging-config" description="Cleans all clustered JBoss configurations">
-      <fail unless="jboss.home" message="jboss.home property not set!"/>
-      <echo message="Cleaning ${jboss.home}/server/${jboss.configuration}-node0"/>
-      <delete dir="${jboss.home}/server/${jboss.configuration}-node0" quiet="false" failonerror="true"/>
-      <echo message="Cleaning ${jboss.home}/server/${jboss.configuration}-node1"/>
-      <delete dir="${jboss.home}/server/${jboss.configuration}-node1" quiet="false" failonerror="true"/>
-      <delete file="./output/last-run.properties" quiet="true"/>
    </target>
 
    <!-- don't call this target directly, call it via "run-example" -->
@@ -910,50 +604,6 @@
 
    </target>
 
-   <target name="build-deployment-archives-from-scratch">
-
-      <ant dir="../.." antfile="build.xml" target="clean" inheritAll="false"/>
-      <ant dir="../.." antfile="build.xml" target="artifacts" inheritAll="false"/>
-      <!--
-           I need this because the smoke test itself uses org.jboss.test.messaging.tools classes.
-      -->
-      <ant dir="../../tests" antfile="build.xml" target="compile" inheritAll="false"/>
-
-   </target>
-
-   <target name="start" description="Starts the jboss instance">
-
-      <fail unless="jboss.home" message="jboss.home property not set!"/>
-      <echo message="Starting '${jboss.configuration}' config on ${jboss.home}"/>
-      <java classname="org.jboss.Main" fork="yes" spawn="yes" dir="${jboss.home}/bin">
-         <jvmarg value="-server"/>
-         <jvmarg value="-Xms128m"/>
-         <jvmarg value="-Xmx128m"/>
-         <arg value="-c"/>
-         <arg value="${jboss.configuration}"/>
-         <sysproperty key="java.endorsed.dirs" value="${jboss.home}/lib/endorsed"/>
-         <classpath>
-            <pathelement location="${jboss.home}/bin/run.jar"/>
-            <pathelement location="${java.home}/lib/tools.jar"/>
-         </classpath>
-      </java>
-
-   </target>
-
-   <target name="record-running-jboss-instance">
-      <path id="crt.jboss.home"><pathelement location="${jboss.home}"/></path>
-      <pathconvert targetos="unix" property="crt.jboss.home.tostring" refid="crt.jboss.home"/>
-      <echo message="${line.separator}jboss.home=${crt.jboss.home.tostring}" file="./output/last-run.properties" append="true"/>
-      <echo message="${line.separator}jboss.configuration=${jboss.configuration}" file="./output/last-run.properties" append="true"/>
-   </target>
-
-   <target name="record-running-jboss-instance1">
-      <path id="crt.jboss.home"><pathelement location="${jboss.home}"/></path>
-      <pathconvert targetos="unix" property="crt.jboss.home.tostring" refid="crt.jboss.home"/>
-      <echo message="${line.separator}jboss.home1=${crt.jboss.home.tostring}" file="./output/last-run.properties" append="true"/>
-      <echo message="${line.separator}jboss.configuration1=${jboss.configuration}" file="./output/last-run.properties" append="true"/>
-   </target>
-
    <target name="twiddle">
 
       <java classname="org.jboss.console.twiddle.Twiddle" fork="yes" failonerror="yes"
@@ -983,6 +633,11 @@
             todir="${jboss.home}/server/${jboss.configuration}/deploy"/>
    </target>
 
+   <target name="deploy-clustered-queue">
+      <copy file="artifacts/smoketest-clustered-queue-service.xml"
+      	    todir="${jboss.home}/server/${jboss.configuration}/deploy"/>
+   </target>
+
    <target name="ping-queue">
       <java classname="org.jboss.console.twiddle.Twiddle" fork="yes" failonerror="yes"
           dir="${jboss.home}/bin">
@@ -1009,45 +664,6 @@
          <arg line="-s jnp://localhost:${jnpPort} get jboss.messaging.destination:name=${example.topic.name},service=Topic Name"/>
          <classpath>
             <path refid="twiddle.classpath"/>
-         </classpath>
-      </java>
-   </target>
-
-   <target name="stop" description="Stops the unique (or the first in a cluster) JBoss instance">
-
-      <fail unless="jboss.home" message="jboss.home property not set!"/>
-      <java classname="org.jboss.Shutdown" fork="yes" dir="${jboss.home}/bin">
-         <jvmarg value="-server"/>
-         <jvmarg value="-Xms128m"/>
-         <jvmarg value="-Xmx128m"/>
-         <arg line="-s jnp://localhost:${jnpPort} -S"/>
-         <arg value="--user=${user}"/>
-         <arg value="--password=${password}"/>
-         <classpath>
-            <pathelement location="${jboss.home}/bin/shutdown.jar"/>
-            <pathelement location="${jboss.home}/client/jbossall-client.jar"/>
-         </classpath>
-      </java>
-
-      <antcall target="stop1">
-         <param name="jnpPort" value="1199"/>
-      </antcall>
-
-   </target>
-
-   <target name="stop1" description="Stops the second cluster instance" if="jboss.home1">
-
-      <fail unless="jboss.home1" message="jboss.home1 property not set!"/>
-      <java classname="org.jboss.Shutdown" fork="yes" dir="${jboss.home}/bin">
-         <jvmarg value="-server"/>
-         <jvmarg value="-Xms128m"/>
-         <jvmarg value="-Xmx128m"/>
-         <arg line="-s jnp://localhost:${jnpPort} -S"/>
-         <arg value="--user=${user}"/>
-         <arg value="--password=${password}"/>
-         <classpath>
-            <pathelement location="${jboss.home}/bin/shutdown.jar"/>
-            <pathelement location="${jboss.home}/client/jbossall-client.jar"/>
          </classpath>
       </java>
    </target>
@@ -1107,10 +723,6 @@
 
    <target name="clean">
       <delete dir="./output"/>
-      <!--
-          This also works on a clustered configuration when output/last-run.properties is correctly set.
-      -->
-      <antcall target="clean-messaging-config"/>
    </target>
 
    <target name="print-classpath">

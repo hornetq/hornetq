@@ -82,6 +82,7 @@ public class QueueExample extends ExampleSupport
          connection.start();
          
          message = (TextMessage)consumer.receive(2000);
+
          log("Received message: " + message.getText());
          assertEquals("Hello!", message.getText());
          

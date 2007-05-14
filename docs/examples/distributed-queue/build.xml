@@ -4,6 +4,8 @@
 
    To run the example, set JBOSS_HOME and run ant (with no parameters)
 
+   The example requires a two nodes messaging-node0 and messaging-node1 to be running
+
    $Id: build.xml 974 2006-05-22 21:35:38 -0600 (Mon, 22 May 2006) ovidiu $
 
  -->
@@ -16,6 +18,7 @@
    <property name="messaging.client.jar.path" value="../../../output/lib"/>
    <property name="messaging.client.jar.name" value="jboss-messaging-client.jar"/>
    <property name="jboss.home" value="${ENV.JBOSS_HOME}"/>
+   <property name="jboss.configuration0" value="messaging-node0"/>
    <property name="example.queue.name" value="testDistributedQueue"/>
 
    <path id="common.compilation.classpath">
@@ -34,10 +37,10 @@
       <pathelement path="./output/classes"/>
       <fileset file="${messaging.client.jar.path}/${messaging.client.jar.name}"/>
       <fileset file="${jboss.home}/client/jbossall-client.jar"/>
-      <fileset file="${jboss.home}/server/${jboss.configuration}/lib/log4j.jar"/>
-      <fileset file="${jboss.home}/server/${jboss.configuration}/lib/javassist.jar"/>
-      <fileset file="${jboss.home}/server/${jboss.configuration}/deploy/jboss-aop-jdk50.deployer/jboss-aop-jdk50.jar"/>
-      <fileset file="${jboss.home}/server/${jboss.configuration}/deploy/jboss-aop-jdk50.deployer/trove.jar"/>
+      <fileset file="${jboss.home}/server/${jboss.configuration0}/lib/log4j.jar"/>
+      <fileset file="${jboss.home}/server/${jboss.configuration0}/lib/javassist.jar"/>
+      <fileset file="${jboss.home}/server/${jboss.configuration0}/deploy/jboss-aop-jdk50.deployer/jboss-aop-jdk50.jar"/>
+      <fileset file="${jboss.home}/server/${jboss.configuration0}/deploy/jboss-aop-jdk50.deployer/trove.jar"/>
    </path>
 
    <target name="identify">

@@ -20,13 +20,6 @@
 
    <property file="./release-admin.properties"/>
 
-   <property name="download-jars" value="./new-jars"/>
-
-   <property name="jgroups-version" value="2.4.1.SP3-brew"/>
-   <property name="aop-version" value="1.5.5.GA"/>
-   <property name="javassist-version" value="3.5.0.GA-brew"/>
-   <property name="jboss-remoting-version" value="2.2.0.SP4"/>
-
    <property name="jboss.home" value="${ENV.JBOSS_HOME}"/>
    <property name="messaging.config.name" value="messaging"/>
    <property name="messaging.config.source" value="default"/>
@@ -51,57 +44,13 @@
    <!-- Top level targets. These are the "modes" this script is supposed to work in.             -->
    <!-- ======================================================================================== -->
 
-   <!-- An standard installation for JBoss 4.x based on "default"-->
-   <target name="default" depends="validate-ant">
-      <set-config-name base="${messaging.config.name}" suffix=""/>
+   <target name="default">
       <antcall target="create-server-config"/>
-   </target>
-
-   <!--
-        A "standalone" (minimal configuration) installation for JBoss 4.x.
-   -->
-   <target name="standalone" depends="validate-ant">
-      <condition property="config.name" value="${standalone.messaging.config.name}">
-          <isset property="standalone.messaging.config.name"/>
-      </condition>
-      <set-config-name base="${messaging.config.name}" suffix="standalone"/>
-      <antcall target="create-standalone-server-config"/>
-   </target>
-
-   <!--
-        A cluster node installation for JBoss 4.2.0. or later JBoss 4 series
-   -->
-   <target name="cluster-node" depends="validate-ant, validate-database">
-      <set-config-name base="${messaging.config.name}" suffix="node${id}"/>
-      <antcall target="create-cluster-node-server-config"/>
    </target>
 
    <!-- ======================================================================================== -->
    <!-- Internal targets                                                                         -->
    <!-- ======================================================================================== -->
-
-   <!-- We require ant 1.7.0 or later -->
-   <target name="validate-ant">
-        <condition property="ant.ok">
-            <antversion atleast="1.7.0"/>
-        </condition>
-        <fail unless="ant.ok" message="The ant you're using (${ant.version}) is too old, you need at least 1.7.0!"/>
-   </target>
-
-   <!-- For a cluster node installation - we require a shared (non hsqldb) database to be available -->
-   <target name="validate-database">
-        <condition property="supported.database">
-            <or>
-                <equals arg1="${database}" arg2="mysql"/>
-                <equals arg1="${database}" arg2="postgresql"/>
-                <equals arg1="${database}" arg2="oracle"/>
-                <equals arg1="${database}" arg2="mssql"/>
-                <equals arg1="${database}" arg2="sybase"/>
-            </or>
-        </condition>
-
-        <fail unless="supported.database" message="Database type '${database}' not supported!"/>
-   </target>
 
    <!-- The JBOSS_HOME environment variable and the directory must exist, we also check we are running 
         in JBoss 4.2.0 or later JBoss 4 series -->
@@ -114,8 +63,8 @@
    <!-- If the target configuration already exists, we don't overwrite it, since we don't want to delete
         someone's important stuff -->
    <target name="prevent-messaging-overwrite">
-      <available property="messaging-config" type="dir" file="${jboss.home}/server/${config.name}"/>
-      <fail if="messaging-config" message="'${config.name}' configuration already exists! Delete it manually and try again."/>
+      <available property="messaging-config" type="dir" file="${jboss.home}/server/${messaging.config.name}"/>
+      <fail if="messaging-config" message="'${messaging.config.name}' configuration already exists! Delete it manually and try again."/>
    </target>
 
    <!-- We make sure the sar file exists -->
@@ -127,23 +76,26 @@
    <!-- Create a server configuration based on a default server configuration -->
    <target name="create-server-config" depends="validate-jboss, prevent-messaging-overwrite, validate-messaging-artifact">
 
-      <echo message="Creating JBoss Messaging configuration '${config.name}' for ${jboss.home} based on ${sar.name}"/>
+      <echo message="Creating JBoss Messaging configuration '${messaging.config.name}' for ${jboss.home} based on configuration '${messaging.config.source}' with ${sar.name}"/>
 
-      <mkdir dir="${jboss.home}/server/${config.name}"/>
+      <mkdir dir="${jboss.home}/server/${messaging.config.name}"/>
 
-      <copy todir="${jboss.home}/server/${config.name}">
+      <copy todir="${jboss.home}/server/${messaging.config.name}">
          <fileset dir="${jboss.home}/server/${messaging.config.source}">
             <include name="conf/**"/>
             <include name="deploy/**"/>
             <include name="lib/**"/>
+	    <include name="farm/**"/>
+	    <include name="deploy-hasingleton/**"/>
             <!-- Don't copy jbossmq -->
             <exclude name="deploy/jms/**"/>
+	    <exclude name="deploy-hasingleton/jms/**"/>
             <exclude name="lib/jbossmq.jar"/>
          </fileset>
       </copy>
 
       <!-- add a "messaging" security domain -->
-      <replaceregexp file="${jboss.home}/server/${config.name}/conf/login-config.xml" flags="s">
+      <replaceregexp file="${jboss.home}/server/${messaging.config.name}/conf/login-config.xml" flags="s">
          <regexp pattern="(\x3cpolicy\x3e)"/>
          <substitution expression="\1&#013;&#010;&#013;&#010;    &lt;application-policy name = &quot;messaging&quot;&gt;&#013;&#010;        &lt;authentication&gt;&#013;&#010;
             &lt;login-module code = &quot;org.jboss.security.auth.spi.UsersRolesLoginModule&quot;&#013;&#010;
@@ -157,11 +109,8 @@
       <!-- we deploy the archive exploded so that users can easily access the configuration files -->
       <antcall target="expand-sar"/>
 
-      <!-- we only replace the server jars if 'install-jars' ENV variable = 'yes' -->
-      <antcall target="replace-server-jars"/>
-
       <!-- Copy the default security properties files to conf/props-->
-      <copy todir="${jboss.home}/server/${config.name}/conf/props">
+      <copy todir="${jboss.home}/server/${messaging.config.name}/conf/props">
           <fileset dir="../src/etc/server/default/config">
              <include name="messaging-*.properties"/>
           </fileset>
@@ -169,7 +118,7 @@
 
       <!-- Copy the JMS JCA resource adaptor -->
       <copy file="${jboss.home}/server/${messaging.config.source}/deploy/jms/jms-ra.rar"
-            todir="${jboss.home}/server/${config.name}/deploy"/>
+            todir="${jboss.home}/server/${messaging.config.name}/deploy"/>
 
    </target>
 
@@ -177,457 +126,8 @@
    <!-- Expand the sar file in the deploy directory -->
    <target name="expand-sar">
       <unjar src="${sar.location}/${sar.name}"
-             dest="${jboss.home}/server/${config.name}/deploy/jboss-messaging.sar">
+             dest="${jboss.home}/server/${messaging.config.name}/deploy/jboss-messaging.sar">
       </unjar>
-   </target>
-
-   <!-- Create a standalone (stripped down) JBM installation based on default -->
-
-   <!-- FIXME - this is currently very brittle - since it may break if the default
-        installation structure changes in future versions of JBAS -
-        consider removing it -->
-   <target name="create-standalone-server-config" depends="validate-jboss, validate-messaging-artifact"
-           description="Creates a standalone Messaging server configuration based on a default JBoss instance">
-
-      <echo message="Creating Standalone Messaging configuration '${config.name}' for ${jboss.home} based on ${sar.name}"/>
-
-      <mkdir dir="${jboss.home}/server/${config.name}/conf"/>
-      <mkdir dir="${jboss.home}/server/${config.name}/lib"/>
-      <mkdir dir="${jboss.home}/server/${config.name}/deploy"/>
-
-      <copy todir="${jboss.home}/server/${config.name}/conf">
-         <fileset dir="${jboss.home}/server/${messaging.config.source}/conf">
-            <include name="log4j.xml"/>
-            <include name="login-config.xml"/>
-            <include name="props/**"/>
-            <include name="xmdesc/**"/>
-         </fileset>
-      </copy>
-
-      <copy todir="${jboss.home}/server/${config.name}/deploy">
-         <fileset dir="${jboss.home}/server/${messaging.config.source}/deploy">
-            <include name="hsqldb-ds.xml"/>
-            <include name="jboss-local-jdbc.rar"/>
-            <include name="jbossjca-service.xml"/>
-            <include name="jbossweb-tomcat55.sar/**"/>
-            <include name="jmx-console.war/**"/>
-            <include name="jmx-invoker-service.xml"/>
-            <include name="management/**"/>
-            <include name="properties-service.xml"/>
-         </fileset>
-      </copy>
-
-      <copy todir="${jboss.home}/server/${config.name}/lib">
-         <fileset dir="${jboss.home}/server/${messaging.config.source}/lib">
-            <include name="commons*.jar"/>
-            <include name="hsqldb*.jar"/>
-            <include name="javax.servlet*.jar"/>
-            <include name="jboss-common-jdbc-wrapper.jar"/>
-            <include name="jboss-j2ee.jar"/>
-            <include name="jboss-jca.jar"/>
-            <include name="jboss-management.jar"/>
-            <include name="jboss-monitoring.jar"/>
-            <include name="jboss-transaction.jar"/>
-            <include name="jboss.jar"/>
-            <include name="jbosssx.jar"/>
-            <include name="jmx-adaptor-plugin.jar"/>
-            <include name="jnpserver.jar"/>
-            <include name="log4j.jar"/>
-            <include name="properties-plugin.jar"/>
-         </fileset>
-      </copy>
-
-      <!-- slim down jboss-service.xml -->
-
-      <replaceregexp file="${jboss.home}/server/${config.name}/conf/jboss-service.xml" flags="s">
-         <regexp pattern="(\x3cmbean code=\x22org.jboss.management.j2ee.LocalJBossServerDomain\x22.*jboss:service=CorbaORB\x3c/attribute\x3e[ \t\n\r]*\x3c/mbean\x3e)"/>
-         <substitution expression=""/>
-      </replaceregexp>
-
-      <replaceregexp file="${jboss.home}/server/${config.name}/conf/jboss-service.xml" flags="s">
-         <regexp pattern="(\x3cmbean code=\x22org.jboss.util.property.jmx.SystemPropertyClassValue\x22.*org.jboss.system.JBossRMIClassLoader\x3c/attribute\x3e[ \t\n\r]*\x3c/mbean\x3e)"/>
-         <substitution expression=""/>
-      </replaceregexp>
-
-      <replaceregexp file="${jboss.home}/server/${config.name}/conf/jboss-service.xml" flags="s">
-         <regexp pattern="(\x3cmbean code=\x22org.jboss.web.WebService\x22.*\x3cdepends optional-attribute-name=\x22ThreadPool\x22[ \t\n\r]*proxy-type=\x22attribute\x22\x3ejboss.system:service=ThreadPool\x3c/depends\x3e[ \t\n\r]*\x3c/mbean\x3e)"/>
-         <substitution expression=""/>
-      </replaceregexp>
-
-      <replaceregexp file="${jboss.home}/server/${config.name}/conf/jboss-service.xml" flags="s">
-         <regexp pattern="(\x3cmbean code=\x22org.jboss.tm.usertx.server.ClientUserTransactionService\x22.*\x3cdepends\x3ejboss:service=invoker,type=jrmp\x3c/depends\x3e[ \t\n\r]*\x3c/mbean\x3e[ \t\n\r]*\x3c/depends\x3e[ \t\n\r]*\x3c/mbean\x3e)"/>
-         <substitution expression=""/>
-      </replaceregexp>
-
-      <replaceregexp file="${jboss.home}/server/${config.name}/conf/jboss-service.xml" flags="s">
-         <regexp pattern="(\x3cmbean code=\x22org.jboss.invocation.pooled.server.PooledInvoker\x22.*\x3cdepends optional-attribute-name=\x22TransactionManagerService\x22\x3ejboss:service=TransactionManager\x3c/depends\x3e[ \t\n\r]*\x3c/mbean\x3e)"/>
-         <substitution expression=""/>
-      </replaceregexp>
-
-      <replaceregexp file="${jboss.home}/server/${config.name}/conf/jboss-service.xml" flags="s">
-         <regexp pattern="(\x3cmbean code=\x22org.jboss.ejb.plugins.cmp.jdbc.metadata.MetaDataLibrary\x22.*name=\x22jboss.jdbc:service=metadata\x22/\x3e)"/>
-         <substitution expression=""/>
-      </replaceregexp>
-
-      <!-- customize login-config.xml -->
-
-      <replaceregexp file="${jboss.home}/server/${config.name}/conf/login-config.xml" flags="s">
-         <regexp pattern="(\x3cpolicy\x3e)"/>
-         <substitution expression="\1 &lt;application-policy name = &quot;messaging&quot;&gt;
-         &lt;authentication&gt;&lt;login-module code = &quot;org.jboss.security.auth.spi.UsersRolesLoginModule&quot;
-            flag = &quot;required&quot; &gt;
-         &lt;module-option name = &quot;unauthenticatedIdentity&quot;&gt;guest&lt;/module-option&gt;
-         &lt;module-option name = &quot;usersProperties&quot;&gt;messaging-users.properties&lt;/module-option&gt;
-         &lt;module-option name = &quot;rolesProperties&quot;&gt;messaging-roles.properties&lt;/module-option&gt;
-         &lt;/login-module&gt;&lt;/authentication&gt;&lt;/application-policy&gt;"/>
-      </replaceregexp>
-
-      <replaceregexp file="${jboss.home}/server/${config.name}/conf/login-config.xml" flags="s">
-         <regexp pattern="(\x3cpolicy\x3e)"/>
-         <substitution expression="\1 &lt;application-policy name = &quot;messaging&quot;&gt;
-         &lt;authentication&gt;&lt;login-module code = &quot;org.jboss.security.auth.spi.UsersRolesLoginModule&quot;
-            flag = &quot;required&quot; &gt;
-         &lt;module-option name = &quot;unauthenticatedIdentity&quot;&gt;guest&lt;/module-option&gt;
-         &lt;module-option name = &quot;usersProperties&quot;&gt;messaging-users.properties&lt;/module-option&gt;
-         &lt;module-option name = &quot;rolesProperties&quot;&gt;messaging-roles.properties&lt;/module-option&gt;
-         &lt;/login-module&gt;&lt;/authentication&gt;&lt;/application-policy&gt;"/>
-      </replaceregexp>
-
-      <replaceregexp file="${jboss.home}/server/${config.name}/conf/login-config.xml" flags="s">
-         <regexp pattern="(\x3capplication-policy name = \x22jbossmq\x22\x3e.*FROM JMS_ROLES WHERE USERID=.\x3c/module-option\x3e[ \t\n\r]*\x3c/login-module\x3e[ \t\n\r]*\x3c/authentication\x3e[ \t\n\r]*\x3c/application-policy\x3e)"/>
-         <substitution expression=""/>
-      </replaceregexp>
-
-      <replaceregexp file="${jboss.home}/server/${config.name}/conf/login-config.xml" flags="s">
-         <regexp pattern="(\x3capplication-policy name = \x22jbossmq\x22\x3e.*jboss.mq:service=StateManager\x3c/module-option\x3e[ \t\n\r]*\x3c/login-module\x3e[ \t\n\r]*\x3c/authentication\x3e[ \t\n\r]*\x3c/application-policy\x3e)"/>
-         <substitution expression=""/>
-      </replaceregexp>
-
-      <replaceregexp file="${jboss.home}/server/${config.name}/conf/login-config.xml" flags="s">
-         <regexp pattern="(\x3capplication-policy name=\x22JBossWS\x22\x3e.*\x3cmodule-option name=\x22unauthenticatedIdentity\x22\x3eanonymous\x3c/module-option\x3e[ \t\n\r]*\x3c/login-module\x3e[ \t\n\r]*\x3c/authentication\x3e[ \t\n\r]*\x3c/application-policy\x3e)"/>
-         <substitution expression=""/>
-      </replaceregexp>
-
-      <!-- mute org.jboss.serial DEBUG -->
-
-      <replaceregexp file="${jboss.home}/server/${config.name}/conf/log4j.xml" flags="s">
-         <regexp pattern="(\x3croot\x3e)"/>
-         <substitution expression="&lt;category name=&quot;org.jboss.serial&quot;&gt;&#013;&#010;      &lt;priority value=&quot;INFO&quot;/&gt;&#013;&#010;   &lt;/category&gt;&#013;&#010;&#013;&#010;   \1"/>
-      </replaceregexp>
-
-      <!-- customize hsqldb-ds.xml -->
-
-      <replaceregexp file="${jboss.home}/server/${config.name}/deploy/hsqldb-ds.xml" flags="s">
-         <regexp pattern="(\x3cmetadata\x3e[ \t\n\r]*\x3ctype-mapping\x3eHypersonic SQL\x3c/type-mapping\x3e[ \t\n\r]*\x3c/metadata\x3e)"/>
-         <substitution expression=""/>
-      </replaceregexp>
-
-      <!-- get rid of the AJP connector -->
-
-      <replaceregexp file="${jboss.home}/server/${config.name}/deploy/jbossweb-tomcat55.sar/server.xml" flags="s">
-         <regexp pattern="(\x3cConnector port=\x228009\x22.*protocol=\x22AJP/1.3\x22/\x3e)"/>
-         <substitution expression=""/>
-      </replaceregexp>
-
-      <!-- deploy exploded messaging -->
-
-      <unjar src="${sar.location}/${sar.name}"
-             dest="${jboss.home}/server/${config.name}/deploy/jboss-messaging">
-      </unjar>
-
-      <!-- un-scope the deployment -->
-
-      <move todir="${jboss.home}/server/${config.name}/lib">
-         <fileset dir="${jboss.home}/server/${config.name}/deploy/jboss-messaging">
-            <include name="jboss-messaging.jar"/>
-            <include name="javassist.jar"/>
-            <include name="jboss-aop.jar"/>
-            <include name="jboss-aspect-library.jar"/>
-            <include name="jboss-common-softvaluehashmap.jar"/>
-            <include name="jboss-common-stream.jar"/>
-            <include name="jboss-remoting.jar"/>
-            <include name="jboss-serialization.jar"/>
-            <include name="jboss-unified-invocation.jar"/>
-            <include name="trove.jar"/>
-         </fileset>
-      </move>
-
-      <unjar src="${jboss.home}/server/${config.name}/lib/jboss-messaging.jar"
-             dest="${jboss.home}/server/${config.name}/conf">
-         <patternset>
-            <include name="xmdesc/**"/>
-         </patternset>
-      </unjar>
-
-      <!-- Copy the default security properties files to conf/props-->
-      <copy todir="${jboss.home}/server/${config.name}/conf/props">
-          <fileset dir="../src/etc/server/default/config">
-             <include name="messaging-*.properties"/>
-          </fileset>
-      </copy>
-
-      <delete dir="${jboss.home}/server/${config.name}/deploy/jboss-messaging/xmdesc"/>
-      <delete dir="${jboss.home}/server/${config.name}/deploy/jboss-messaging/META-INF"/>
-      <delete file="${jboss.home}/server/${config.name}/deploy/jboss-messaging/jms-ds.xml"/>
-
-   </target>
-
-
-   <target name="test-for-jgroups">
-      <condition property="jgroups-not-available">
-         <not>
-            <available file="${jboss.home}/server/${config.name}/lib/jgroups.jar"/>
-         </not>
-      </condition>
-   </target>
-
-   <target name="install-jgroups" depends="test-for-jgroups" if="jgroups-not-available">
-      <echo message="I will copy jgroups into ${jboss.home}/server/${config.name}/lib/jgroups.jar"/>
-
-      <mkdir dir="./${download-jars}"/>
-      <get src="http://repository.jboss.com/jgroups/${jgroups-version}/lib/jgroups.jar" dest="./${download-jars}/jgroups.jar" usetimestamp="yes"/>
-      <copy file="./${download-jars}/jgroups.jar" todir="${jboss.home}/server/${config.name}/lib"/>
-   </target>
-
-   <target name="create-cluster-node-server-config">
-
-      <!--
-           Create the non-clustered configuration first.
-      -->
-      <antcall target="create-server-config"/>
-
-      <!--
-           Configure the apropriate port range.
-      -->
-      <antcall target="configure-service-binding-manager"/>
-
-      <!--
-           Adjust the node id
-      -->
-      <replaceregexp file="${jboss.home}/server/${config.name}/deploy/jboss-messaging.sar/messaging-service.xml" flags="s"
-         match="(\x3carg[ \t]type=\x22int\x22[ \t]*value=\x22).+?(\x22.*)" replace="\1${id}\2"/>
-
-      <!--
-           Replace HSQLDB with a LAN-shareable database.
-      -->
-      <echo message="Enabling ${database}"/>
-
-      <delete file="${jboss.home}/server/${config.name}/deploy/hsqldb-ds.xml" quiet="false" failonerror="true"/>
-      <copy file="${datasource.location}/${database}-ds.xml" todir="${jboss.home}/server/${config.name}/deploy/"/>
-
-      <!--
-           Use clustered persistence configuration file.
-      -->
-
-      <delete file="${jboss.home}/server/${config.name}/deploy/jboss-messaging.sar/hsqldb-persistence-service.xml" quiet="false" failonerror="true"/>
-      <copy file="${datasource.location}/clustered-${database}-persistence-service.xml" todir="${jboss.home}/server/${config.name}/deploy/jboss-messaging.sar/"/>
-
-      <antcall target="install-jgroups"/>
-
-      <antcall target="warn-check-database-drivers"/>
-   </target>
-
-   <target name="warn-check-database-drivers">
-<echo>
-
-
-
-                    ##########################
-                    #                        #
-                    #        WARNING!        #
-                    #                        #
-                    ##########################
-
-
- The configuration that has just been created uses a generic ${database} service descriptor!
-
- Check
-
-      ${jboss.home}/server/${config.name}/deploy/${database}-ds.xml
-
- and make sure that:
-
- 1. Your database is indeed ${database}.
- 2. It is accessible from every physical node you installed Messaging on.
- 3. Contains a schema (database/tablespace) named 'messaging'.
- 4. The URL (hostname and port), username and password and other connect information are correct.
- 5. The installed ${database}-driver.jar's version maches your database.
-
-
-
-
-</echo>
-   </target>
-
-   <target name="configure-service-binding-manager" if="ports">
-
-      <!--
-          Enable the service binding manager, by deleting XML comment tags.
-      -->
-      <replaceregexp file="${jboss.home}/server/${config.name}/conf/jboss-service.xml" flags="s">
-         <regexp pattern="(\x3cmbean[ \t]*code=\x22org.jboss.services.binding.ServiceBindingManager\x22.+org.jboss.services.binding.XMLServicesStoreFactory[ \t\n\r]*\x3c/attribute\x3e[ \t\n\r]*\x3c/mbean\x3e[ \t\n\r]*)--\x3e"/>
-         <substitution expression="--&gt;&#013;&#010;&#013;&#010;   \1"/>
-      </replaceregexp>
-
-      <!--
-          Use the server configuration specified as "ports" system property
-      -->
-      <replaceregexp file="${jboss.home}/server/${config.name}/conf/jboss-service.xml" flags="s">
-         <regexp pattern="(\x3cattribute[ \t]*name=\x22ServerName\x22\x3e)ports-01(\x3c/attribute\x3e)"/>
-         <substitution expression="\1${ports}\2"/>
-      </replaceregexp>
-
-      <!--
-          Configure jboss-service.xml to use a local copy of sample-bindings.xml
-      -->
-      <replaceregexp file="${jboss.home}/server/${config.name}/conf/jboss-service.xml" flags="s">
-         <regexp pattern="(\x3cattribute[ \t]*name=\x22StoreURL\x22\x3e)\x24\x7bjboss.home.url\x7d/docs/examples/binding-manager/sample-bindings.xml(\x3c/attribute\x3e)"/>
-         <substitution expression="\1${jboss.server.config.url}/binding-manager.xml\2"/>
-      </replaceregexp>
-
-      <!--
-          The above regular expression won't match some older JBoss configurations (such as
-          4.0.1sp1), so trying with an alternate expression.
-      -->
-      <replaceregexp file="${jboss.home}/server/${config.name}/conf/jboss-service.xml" flags="s">
-         <regexp pattern="(\x3cattribute[ \t]*name=\x22StoreURL\x22\x3e)../docs/examples/binding-manager/sample-bindings.xml(\x3c/attribute\x3e)"/>
-         <substitution expression="\1../server/${config.name}/conf/binding-manager.xml\2"/>
-      </replaceregexp>
-
-      <!--
-          Some installer-generated installations (JBoss 4.0.3, JBoss 4.0.3.SP1) do not contain
-          a BindingManager declaration at all, so we need to insert it by ourselves.
-      -->
-      <loadfile property="jboss-service.xml-content"
-                srcFile="${jboss.home}/server/${config.name}/conf/jboss-service.xml"/>
-
-      <condition property="binding.manager.declared">
-         <contains string="${jboss-service.xml-content}" substring="org.jboss.services.binding.ServiceBindingManager"/>
-      </condition>
-
-      <antcall target="insert-service-binding-manager-configuration"/>
-
-      <!--
-          Actually copy the file
-      -->
-      <copy file="${jboss.home}/docs/examples/binding-manager/sample-bindings.xml"
-            tofile="${jboss.home}/server/${config.name}/conf/binding-manager.xml"/>
-
-      <!--
-          Add remoting binding manager overrides in ${config.name}/conf/binding-manager.xml
-      -->
-      <replace-messaging-connector-override server-name="ports-default" port="4457" binding-manager-file="${jboss.home}/server/${config.name}/conf/binding-manager.xml"/>
-      <replace-messaging-connector-override server-name="ports-01" port="4557" binding-manager-file="${jboss.home}/server/${config.name}/conf/binding-manager.xml"/>
-      <replace-messaging-connector-override server-name="ports-02" port="4657" binding-manager-file="${jboss.home}/server/${config.name}/conf/binding-manager.xml"/>
-      <replace-messaging-connector-override server-name="ports-03" port="4757" binding-manager-file="${jboss.home}/server/${config.name}/conf/binding-manager.xml"/>
-
-   </target>
-
-   <target name="insert-service-binding-manager-configuration" unless="binding.manager.declared">
-
-      <replaceregexp file="${jboss.home}/server/${config.name}/conf/jboss-service.xml" flags="s">
-         <regexp pattern="(\x3cmbean[ \t]*code=\x22org.jboss.logging.Log4jService\x22.*?\x3c/mbean\x3e)"/>
-         <substitution expression="\1
-&#013;&#010;&#013;&#010;
-  &lt;mbean code=&quot;org.jboss.services.binding.ServiceBindingManager&quot;&#013;&#010;
-         name=&quot;jboss.system:service=ServiceBindingManager&quot;&gt;&#013;&#010;
-     &lt;attribute name=&quot;ServerName&quot;&gt;${ports}&lt;/attribute&gt;&#013;&#010;
-     &lt;attribute name=&quot;StoreURL&quot;&gt;${jboss.server.config.url}/binding-manager.xml&lt;/attribute&gt;&#013;&#010;
-     &lt;attribute name=&quot;StoreFactoryClassName&quot;&gt;&#013;&#010;
-        org.jboss.services.binding.XMLServicesStoreFactory&#013;&#010;
-     &lt;/attribute&gt;&#013;&#010;
-  &lt;/mbean&gt;"/>
-      </replaceregexp>
-
-   </target>
-
-   <macrodef name="replace-messaging-connector-override">
-      <attribute name="server-name"/>
-      <attribute name="port"/>
-      <attribute name="binding-manager-file"/>
-      <sequential>
-         <!--
-             If configuration override already exists, replace it with the correct one.
-         -->
-         <replaceregexp file="@{binding-manager-file}" flags="s">
-            <regexp pattern="(\x3cserver[ \t]*name=\x22@{server-name}\x22\x3e)(.*?)(\x3cservice-config[ \t]*name=\x22jboss.messaging:service=Connector,transport=)(.*?)(\x3c/service-config\x3e)(.*?)(\x3c/server\x3e)"/>
-            <substitution expression="\1\2&#013;&#010;      &lt;service-config name=&quot;jboss.messaging:service=Connector,transport=bisocket&quot;&#013;&#010;
-                     delegateClass=&quot;org.jboss.services.binding.AttributeMappingDelegate&quot;&gt;&#013;&#010;
-        &lt;delegate-config&gt;&#013;&#010;
-           &lt;attribute name=&quot;InvokerLocator&quot;&gt;bisocket://${jboss.bind.address}:@{port}/?NumberOfCallRetries=2&#038;amp;clientMaxPoolSize=50&#038;amp;clientSocketClass=org.jboss.jms.client.remoting.ClientSocketWrapper&#038;amp;dataType=jms&#038;amp;marshaller=org.jboss.jms.server.remoting.JMSWireFormat&#038;amp;numberOfRetries=1&#038;amp;serializationtype=jms&#038;amp;socket.check_connection=false&#038;amp;unmarshaller=org.jboss.jms.server.remoting.JMSWireFormat&lt;/attribute&gt;&#010;
-        &lt;/delegate-config&gt;&#013;&#010;
-        &lt;binding port=&quot;@{port}&quot;/&gt;&#013;&#010;
-    &lt;/service-config&gt;\6\7"/>
-         </replaceregexp>
-
-         <!--
-             If we don't find any configuration after replacement, then it means it didn't exist
-             in the first place, so add a new one
-         -->
-
-         <loadfile property="binding.manager.xml.content"
-                   srcFile="@{binding-manager-file}"/>
-
-         <condition property="messaging.connector.override.exists">
-            <matches string="${binding.manager.xml.content}" singleline="true">
-               <regexp pattern="(\x3cserver[ \t]*name=\x22@{server-name}\x22\x3e)(.*?)(\x3cservice-config[ \t]*name=\x22jboss.messaging:service=Connector,transport=)(.*?)@{port}(.*?)(\x3c/service-config\x3e)(.*?)(\x3c/server\x3e)"/>
-            </matches>
-         </condition>
-         <echo message="override exists: ${messaging.connector.override.exists}"/>
-
-         <antcall target="add-messaging-connector-override-if-not-already-there">
-            <param name="local.server.name" value="@{server-name}"/>
-            <param name="local.port" value="@{port}"/>
-            <param name="local.binding.manager.file" value="@{binding-manager-file}"/>
-         </antcall>
-
-      </sequential>
-   </macrodef>
-
-   <macrodef name="add-messaging-connector-override">
-      <attribute name="server-name"/>
-      <attribute name="port"/>
-      <attribute name="binding-manager-file"/>
-      <sequential>
-         <replaceregexp file="@{binding-manager-file}" flags="s">
-            <regexp pattern="(\x3cserver[ \t]*name=\x22@{server-name}\x22\x3e)(.*?)(\x3c/server\x3e)"/>
-            <!--
-                 note: substitution expression mst be identical with the one in
-                 replace-messaging-connector-override, with &#013;&#010;   \3 at the end instead of
-                 \6\7
-            -->
-            <substitution expression="\1\2&#013;&#010;      &lt;service-config name=&quot;jboss.messaging:service=Connector,transport=bisocket&quot;&#013;&#010;
-                     delegateClass=&quot;org.jboss.services.binding.AttributeMappingDelegate&quot;&gt;&#013;&#010;
-        &lt;delegate-config&gt;&#013;&#010;
-           &lt;attribute name=&quot;InvokerLocator&quot;&gt;bisocket://${jboss.bind.address}:@{port}/?NumberOfCallRetries=2&#038;amp;clientMaxPoolSize=50&#038;amp;clientSocketClass=org.jboss.jms.client.remoting.ClientSocketWrapper&#038;amp;dataType=jms&#038;amp;marshaller=org.jboss.jms.server.remoting.JMSWireFormat&#038;amp;numberOfRetries=1&#038;amp;serializationtype=jms&#038;amp;socket.check_connection=false&#038;amp;unmarshaller=org.jboss.jms.server.remoting.JMSWireFormat&lt;/attribute&gt;&#010;
-        &lt;/delegate-config&gt;&#013;&#010;
-        &lt;binding port=&quot;@{port}&quot;/&gt;&#013;&#010;
-    &lt;/service-config&gt;&#013;&#010;   \3"/>
-         </replaceregexp>
-      </sequential>
-   </macrodef>
-
-   <target name="add-messaging-connector-override-if-not-already-there" unless="messaging.connector.override.exists">
-      <add-messaging-connector-override server-name="${local.server.name}" port="${local.port}" binding-manager-file="${local.binding.manager.file}"/>
-   </target>
-
-   <macrodef name="set-config-name">
-      <attribute name="base"/>
-      <attribute name="suffix"/>
-      <sequential>
-         <condition property="config.name" value="@{base}-@{suffix}" else="@{base}">
-            <length string="@{suffix}" when="greater" length="0"/>
-         </condition>
-      </sequential>
-   </macrodef>
-
-   <target name="dump">
-      <echo message="jboss.home=${jboss.home}"/>
-      <echo message="messaging.config.name=${messaging.config.name}"/>
-      <echo message="sar.location=${sar.location}"/>
-   </target>
-
-   <target name="test" depends="validate-ant">
    </target>
 
 </project>
