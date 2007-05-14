@@ -401,7 +401,6 @@
       <copy todir="${build.jar}" file="${source.etc}/server/default/deploy/destinations-service.xml"/>
       <copy todir="${build.jar}" file="${source.etc}/server/default/deploy/hsqldb-persistence-service.xml"/>
       <copy todir="${build.jar}" file="${source.etc}/server/default/deploy/remoting-service.xml"/>
-      <copy todir="${build.jar}" file="${source.etc}/server/default/deploy/jms-ds.xml"/>
       <copy file="${build.etc}/VERSION" toFile="${build.jar}/VERSION"/>
       <copy todir="${build.jar}/xmdesc">
          <fileset dir="${source.etc}/xmdesc" includes="*.xml"/>
