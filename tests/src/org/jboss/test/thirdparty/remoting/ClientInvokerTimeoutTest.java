@@ -190,10 +190,10 @@ public class ClientInvokerTimeoutTest extends MessagingTestCase
          "socket://" + addr + ":" + port + "/?" +
             "clientSocketClass=org.jboss.jms.client.remoting.ClientSocketWrapper&" +
             "dataType=jms&" +
-            "marshaller=org.jboss.jms.server.remoting.JMSWireFormat&" +
+            "marshaller=org.jboss.jms.wireformat.JMSWireFormat&" +
             "serializationtype=jboss&" +
             "socket.check_connection=false&" +
-            "unmarshaller=org.jboss.jms.server.remoting.JMSWireFormat";
+            "unmarshaller=org.jboss.jms.wireformat.JMSWireFormat";
 
       ServiceAttributeOverrides sao = new ServiceAttributeOverrides();
       sao.put(ServiceContainer.REMOTING_OBJECT_NAME, "LocatorURI", serviceLocatorString);

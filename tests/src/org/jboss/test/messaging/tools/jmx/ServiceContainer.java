@@ -1368,8 +1368,8 @@ log.info("password:" + config.getDatabasePassword());
          long clientLeasePeriod = 20000;
 
          String marshallers =
-            "marshaller=org.jboss.jms.server.remoting.JMSWireFormat&" +
-            "unmarshaller=org.jboss.jms.server.remoting.JMSWireFormat&";
+            "marshaller=org.jboss.jms.wireformat.JMSWireFormat&" +
+            "unmarshaller=org.jboss.jms.wireformat.JMSWireFormat&";
          String dataType = "dataType=jms&";
 
          // We use this from thirdparty remoting tests when we don't want to send stuff through
