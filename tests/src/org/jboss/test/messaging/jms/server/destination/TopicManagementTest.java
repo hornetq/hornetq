@@ -236,14 +236,25 @@ public class TopicManagementTest extends DestinationManagementTestBase
          //Need to pause since delivery may still be in progress
          Thread.sleep(2000);
          
-         ServerManagement.invoke(destObjectName, "removeAllMessages", null, null);
+         //This should fail since you cannot remove messages if there are deliveries in progress
+         try
+         {
+         	ServerManagement.invoke(destObjectName, "removeAllMessages", null, null);
+         	fail();
+         }
+         catch (Exception e)
+         {
+         	//OK
+         }
    
          count = ((Integer)ServerManagement.getAttribute(destObjectName, "AllMessageCount")).intValue();
          
-         assertEquals(0, count);
+         assertEquals(2, count);
                   
          // Now close the connection
          conn.close();
+         
+         ServerManagement.invoke(destObjectName, "removeAllMessages", null, null);
          
          Thread.sleep(1000);
          
@@ -267,6 +278,10 @@ public class TopicManagementTest extends DestinationManagementTestBase
 
          // Start the connection for delivery
          conn.start();
+         
+         conn.close();
+         
+         Thread.sleep(1000);
          
          // Remove all messages from the topic
          ServerManagement.invoke(destObjectName, "removeAllMessages", null, null);

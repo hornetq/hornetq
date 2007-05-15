@@ -377,7 +377,9 @@ public class ServerSessionEndpoint implements SessionEndpoint
             
             channels.add(del.getObserver());
          }
-                              
+                 
+         if (trace) { log.trace("Cancelled deliveries"); }
+         
          // need to prompt delivery for all affected channels
          
          promptDelivery(channels);
@@ -941,6 +943,8 @@ public class ServerSessionEndpoint implements SessionEndpoint
    
    void promptDelivery(final Channel channel)
    {
+   	if (trace) { log.trace("Prompting delivery on " + channel); }
+   	
       try
       {
          //Prompting delivery must be asynchronous to avoid deadlock
@@ -996,6 +1000,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
             del.getReference().setScheduledDeliveryTime(System.currentTimeMillis() + rec.redeliveryDelay);
          }
          
+         if (trace) { log.trace("Cancelling delivery " + cancel.getDeliveryId()); }
          del.cancel();
       }
       else
@@ -1511,6 +1516,8 @@ public class ServerSessionEndpoint implements SessionEndpoint
    {
       //Now prompt delivery on the channels
       Iterator iter = channels.iterator();
+      
+      if (trace) { log.trace("Prompting delivery"); }
       
       while (iter.hasNext())
       {
