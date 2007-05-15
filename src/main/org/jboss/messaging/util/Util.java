@@ -21,16 +21,18 @@
   */
 package org.jboss.messaging.util;
 
+import java.io.StringReader;
+import java.sql.Connection;
+
+import javax.jms.DeliveryMode;
+import javax.jms.Session;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+
+import org.jboss.logging.Logger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.xml.sax.InputSource;
-import org.jboss.logging.Logger;
-
-import javax.jms.Session;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.DocumentBuilder;
-import java.io.StringReader;
-import java.sql.Connection;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -65,27 +67,7 @@ public class Util
        return "...-" + s.substring(idx + 1);
     }
 
-    public static String acknowledgmentModeToString(int ackMode)
-    {
-
-       if (ackMode == Session.AUTO_ACKNOWLEDGE)
-       {
-          return "AUTO_ACKNOWLEDGE";
-       }
-       else if (ackMode == Session.CLIENT_ACKNOWLEDGE)
-       {
-          return "CLIENT_ACKNOWLEDGE";
-       }
-       else if (ackMode == Session.DUPS_OK_ACKNOWLEDGE)
-       {
-          return "DUPS_OK_ACKNOWLEDGE";
-       }
-       else if (ackMode == Session.SESSION_TRANSACTED)
-       {
-          return "SESSION_TRANSACTED";
-       }
-       return "UNKNOWN: " + ackMode;
-    }
+    
 
     public static String transactionIsolationToString(int level)
     {
@@ -108,6 +90,40 @@ public class Util
       DocumentBuilder parser = factory.newDocumentBuilder();
       Document doc = parser.parse(new InputSource(new StringReader(s)));
       return doc.getDocumentElement();
+   }
+   
+   public static String deliveryMode(int m)
+   {
+      if (m == DeliveryMode.NON_PERSISTENT)
+      {
+         return "NON_PERSISTENT";
+      }
+      if (m == DeliveryMode.PERSISTENT)
+      {
+         return "PERSISTENT";
+      }
+      return "UNKNOWN";
+   }
+
+   public static String acknowledgmentMode(int ack)
+   {
+      if (ack == Session.AUTO_ACKNOWLEDGE)
+      {
+         return "AUTO_ACKNOWLEDGE";
+      }
+      if (ack == Session.CLIENT_ACKNOWLEDGE)
+      {
+         return "CLIENT_ACKNOWLEDGE";
+      }
+      if (ack == Session.DUPS_OK_ACKNOWLEDGE)
+      {
+         return "DUPS_OK_ACKNOWLEDGE";
+      }
+      if (ack == Session.SESSION_TRANSACTED)
+      {
+         return "SESSION_TRANSACTED";
+      }
+      return "UNKNOWN";
    }
 
    // Attributes ----------------------------------------------------

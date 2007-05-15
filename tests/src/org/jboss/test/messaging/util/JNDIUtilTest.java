@@ -21,12 +21,12 @@
 */
 package org.jboss.test.messaging.util;
 
-import org.jboss.test.messaging.MessagingTestCase;
-import org.jboss.test.messaging.tools.ServerManagement;
-import org.jboss.jms.util.JNDIUtil;
-
 import javax.naming.InitialContext;
 import javax.naming.NameNotFoundException;
+
+import org.jboss.messaging.util.JNDIUtil;
+import org.jboss.test.messaging.MessagingTestCase;
+import org.jboss.test.messaging.tools.ServerManagement;
 
 
 /**

@@ -28,9 +28,9 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import org.jboss.jms.server.endpoint.Cancel;
-import org.jboss.jms.server.endpoint.DefaultCancel;
-import org.jboss.jms.server.endpoint.SessionEndpoint;
+import org.jboss.jms.delegate.Cancel;
+import org.jboss.jms.delegate.DefaultCancel;
+import org.jboss.jms.delegate.SessionEndpoint;
 
 /**
  * 

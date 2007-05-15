@@ -19,35 +19,27 @@
   * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   */
-package org.jboss.jms.server.endpoint;
+package org.jboss.jms.delegate;
 
 import javax.jms.JMSException;
 
 import org.jboss.jms.client.Closeable;
-import org.jboss.jms.message.JBossMessage;
 
 /**
- * Represents the set of methods from the BrowserDelegate that are handled on the server. The rest
- * of the methods are handled in the advice stack.
- * 
+ * Represents the set of methods from the ConsumerDelegate that are handled on the server.
+ * The rest of the methods are handled in the advice stack.
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ *
  * @version <tt>$Revision$</tt>
  *
  * $Id$
  */
-public interface BrowserEndpoint extends Closeable
-{
+public interface ConsumerEndpoint extends Closeable
+{  
    /**
-    * Reset the internal state of the browser endpoint so the following
-    * nextMessage()/hasNextMessage()/nextMessageBlock() invocations would reflect the state of the
-    * queue at the moment of the reset.
+    * Sent to the server to specify a new maximum rate at which to send messages at
     */
-   void reset() throws JMSException;
-
-   JBossMessage nextMessage() throws JMSException;
-   
-   boolean hasNextMessage() throws JMSException;
-      
-   JBossMessage[] nextMessageBlock(int maxMessages) throws JMSException;
+   void changeRate(float newRate) throws JMSException;
 }

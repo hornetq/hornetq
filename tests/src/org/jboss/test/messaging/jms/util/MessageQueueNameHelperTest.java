@@ -23,7 +23,7 @@ package org.jboss.test.messaging.jms.util;
 
 import junit.framework.TestCase;
 
-import org.jboss.jms.util.MessageQueueNameHelper;
+import org.jboss.messaging.util.MessageQueueNameHelper;
 
 
 public class MessageQueueNameHelperTest extends TestCase

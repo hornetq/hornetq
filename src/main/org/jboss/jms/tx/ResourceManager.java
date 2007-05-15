@@ -34,10 +34,10 @@ import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
 
 import org.jboss.jms.delegate.ConnectionDelegate;
+import org.jboss.jms.delegate.DeliveryInfo;
 import org.jboss.jms.delegate.SessionDelegate;
 import org.jboss.jms.message.JBossMessage;
 import org.jboss.jms.message.MessageProxy;
-import org.jboss.jms.server.endpoint.DeliveryInfo;
 import org.jboss.jms.tx.ClientTransaction.SessionTxState;
 import org.jboss.jms.util.MessagingTransactionRolledBackException;
 import org.jboss.jms.util.MessagingXAException;

@@ -16,7 +16,7 @@ import org.jboss.jms.client.delegate.DelegateSupport;
 import org.jboss.jms.client.state.ConnectionState;
 import org.jboss.jms.client.FailoverCommandCenter;
 import org.jboss.jms.client.plugin.LoadBalancingPolicy;
-import org.jboss.jms.server.endpoint.CreateConnectionResult;
+import org.jboss.jms.delegate.CreateConnectionResult;
 import org.jboss.jms.util.MessagingNetworkFailureException;
 
 import javax.jms.JMSException;

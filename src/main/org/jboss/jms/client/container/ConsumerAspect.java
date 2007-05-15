@@ -34,7 +34,7 @@ import org.jboss.jms.client.state.SessionState;
 import org.jboss.jms.delegate.ConsumerDelegate;
 import org.jboss.jms.delegate.SessionDelegate;
 import org.jboss.jms.delegate.ConnectionDelegate;
-import org.jboss.jms.util.MessageQueueNameHelper;
+import org.jboss.messaging.util.MessageQueueNameHelper;
 
 import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
 

@@ -23,6 +23,8 @@ package org.jboss.jms.server.endpoint;
 
 import javax.jms.JMSException;
 
+import org.jboss.jms.delegate.ConnectionFactoryEndpoint;
+import org.jboss.jms.delegate.CreateConnectionResult;
 import org.jboss.remoting.callback.ServerInvokerCallbackHandler;
 
 /**

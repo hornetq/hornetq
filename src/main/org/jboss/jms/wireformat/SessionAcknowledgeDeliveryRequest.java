@@ -25,9 +25,9 @@ package org.jboss.jms.wireformat;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 
-import org.jboss.jms.server.endpoint.Ack;
-import org.jboss.jms.server.endpoint.DefaultAck;
-import org.jboss.jms.server.endpoint.SessionEndpoint;
+import org.jboss.jms.delegate.Ack;
+import org.jboss.jms.delegate.DefaultAck;
+import org.jboss.jms.delegate.SessionEndpoint;
 
 /**
  * 

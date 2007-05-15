@@ -25,15 +25,15 @@ import java.util.List;
 
 import javax.jms.JMSException;
 
+import org.jboss.jms.delegate.Ack;
 import org.jboss.jms.delegate.BrowserDelegate;
+import org.jboss.jms.delegate.Cancel;
 import org.jboss.jms.delegate.ConsumerDelegate;
+import org.jboss.jms.delegate.SessionEndpoint;
 import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.destination.JBossQueue;
 import org.jboss.jms.destination.JBossTopic;
 import org.jboss.jms.message.JBossMessage;
-import org.jboss.jms.server.endpoint.Ack;
-import org.jboss.jms.server.endpoint.Cancel;
-import org.jboss.jms.server.endpoint.SessionEndpoint;
 
 /**
  * The server-side advised instance corresponding to a Session. It is bound to the AOP

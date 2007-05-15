@@ -30,10 +30,10 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.jboss.jms.delegate.Ack;
+import org.jboss.jms.delegate.DefaultAck;
+import org.jboss.jms.delegate.DeliveryInfo;
 import org.jboss.jms.message.JBossMessage;
-import org.jboss.jms.server.endpoint.Ack;
-import org.jboss.jms.server.endpoint.DefaultAck;
-import org.jboss.jms.server.endpoint.DeliveryInfo;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.message.MessageFactory;
 

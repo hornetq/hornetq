@@ -44,7 +44,7 @@ import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.message.MessageIdGenerator;
 import org.jboss.jms.message.MessageIdGeneratorFactory;
 import org.jboss.jms.server.Version;
-import org.jboss.jms.server.endpoint.CreateConnectionResult;
+import org.jboss.jms.delegate.CreateConnectionResult;
 import org.jboss.logging.Logger;
 
 /**

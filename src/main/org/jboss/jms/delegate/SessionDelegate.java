@@ -35,8 +35,6 @@ import org.jboss.jms.message.MessageProxy;
 import org.jboss.jms.message.ObjectMessageProxy;
 import org.jboss.jms.message.StreamMessageProxy;
 import org.jboss.jms.message.TextMessageProxy;
-import org.jboss.jms.server.endpoint.DeliveryInfo;
-import org.jboss.jms.server.endpoint.SessionEndpoint;
 
 /**
  * Represents the minimal set of operations to provide session functionality.

@@ -23,8 +23,8 @@ package org.jboss.jms.server.endpoint.advised;
 
 import javax.jms.JMSException;
 
+import org.jboss.jms.delegate.ConnectionEndpoint;
 import org.jboss.jms.delegate.SessionDelegate;
-import org.jboss.jms.server.endpoint.ConnectionEndpoint;
 import org.jboss.jms.tx.TransactionRequest;
 import org.jboss.messaging.core.plugin.IDBlock;
 import org.jboss.messaging.core.tx.MessagingXid;

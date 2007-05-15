@@ -26,8 +26,8 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 
 import org.jboss.jms.client.delegate.ClientConsumerDelegate;
+import org.jboss.jms.delegate.SessionEndpoint;
 import org.jboss.jms.destination.JBossDestination;
-import org.jboss.jms.server.endpoint.SessionEndpoint;
 
 /**
  * 

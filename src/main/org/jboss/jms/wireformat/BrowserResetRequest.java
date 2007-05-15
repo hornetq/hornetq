@@ -6,10 +6,10 @@
  */
 package org.jboss.jms.wireformat;
 
-import org.jboss.jms.server.endpoint.BrowserEndpoint;
-
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+
+import org.jboss.jms.delegate.BrowserEndpoint;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>

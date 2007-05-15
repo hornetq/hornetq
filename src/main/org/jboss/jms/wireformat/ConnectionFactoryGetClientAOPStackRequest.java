@@ -24,7 +24,7 @@ package org.jboss.jms.wireformat;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 
-import org.jboss.jms.server.endpoint.ConnectionFactoryEndpoint;
+import org.jboss.jms.delegate.ConnectionFactoryEndpoint;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>

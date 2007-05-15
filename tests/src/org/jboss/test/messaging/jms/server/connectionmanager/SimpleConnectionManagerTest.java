@@ -31,11 +31,11 @@ import javax.naming.InitialContext;
 
 import org.jboss.jms.client.JBossConnection;
 import org.jboss.jms.client.JBossConnectionFactory;
+import org.jboss.jms.delegate.ConnectionEndpoint;
 import org.jboss.jms.delegate.SessionDelegate;
 import org.jboss.jms.server.ConnectionManager;
 import org.jboss.jms.server.ServerPeer;
 import org.jboss.jms.server.connectionmanager.SimpleConnectionManager;
-import org.jboss.jms.server.endpoint.ConnectionEndpoint;
 import org.jboss.jms.tx.TransactionRequest;
 import org.jboss.messaging.core.plugin.IDBlock;
 import org.jboss.messaging.core.tx.MessagingXid;

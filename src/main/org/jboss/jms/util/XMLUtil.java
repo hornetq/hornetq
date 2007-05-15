@@ -55,7 +55,7 @@ public class XMLUtil
       return doc.getDocumentElement();
    }
 
-   public static String elementToString(Node n) throws XMLException
+   public static String elementToString(Node n)
    {
 
       String name = n.getNodeName();
@@ -139,7 +139,7 @@ public class XMLUtil
     *
     * TODO implementation of this method is a hack. Implement it properly.
     */
-   public static String getTextContent(Node n) throws XMLException
+   public static String getTextContent(Node n)
    {
       if (n.hasChildNodes())
       {
@@ -229,17 +229,17 @@ public class XMLUtil
    {
       if (node == null)
       {
-         throw new XMLRuntimeException("the first node to be compared is null");
+         throw new IllegalArgumentException("the first node to be compared is null");
       }
 
       if (node2 == null)
       {
-         throw new XMLRuntimeException("the second node to be compared is null");
+         throw new IllegalArgumentException("the second node to be compared is null");
       }
 
       if (!node.getNodeName().equals(node2.getNodeName()))
       {
-         throw new XMLRuntimeException("nodes have different node names");
+         throw new IllegalArgumentException("nodes have different node names");
       }
 
       int attrCount = 0;
@@ -258,7 +258,7 @@ public class XMLUtil
 
       if (attrCount != attrCount2)
       {
-         throw new XMLRuntimeException("nodes hava a different number of attributes");
+         throw new IllegalArgumentException("nodes hava a different number of attributes");
       }
 
       outer: for(int i = 0; i < attrCount; i++)
@@ -278,14 +278,14 @@ public class XMLUtil
                continue outer;
             }
          }
-         throw new XMLRuntimeException("attribute " + name + "=" + value + " doesn't match");
+         throw new IllegalArgumentException("attribute " + name + "=" + value + " doesn't match");
       }
 
       boolean hasChildren = node.hasChildNodes();
 
       if (hasChildren != node2.hasChildNodes())
       {
-         throw new XMLRuntimeException("one node has children and the other doesn't");
+         throw new IllegalArgumentException("one node has children and the other doesn't");
       }
 
       if (hasChildren)
@@ -301,7 +301,7 @@ public class XMLUtil
 
          if (length != nodes2.size())
          {
-            throw new XMLRuntimeException("nodes hava a different number of children");
+            throw new IllegalArgumentException("nodes hava a different number of children");
          }
 
          for(int i = 0; i < length; i++)

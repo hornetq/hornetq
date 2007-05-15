@@ -28,8 +28,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import org.jboss.jms.server.endpoint.DeliveryRecovery;
-import org.jboss.jms.server.endpoint.SessionEndpoint;
+import org.jboss.jms.delegate.DeliveryRecovery;
+import org.jboss.jms.delegate.SessionEndpoint;
 
 /**
  * 

@@ -21,9 +21,10 @@
   */
 package org.jboss.jms.server;
 
-import org.jboss.jms.server.endpoint.ConnectionEndpoint;
-import org.jboss.messaging.core.plugin.contract.MessagingComponent;
 import java.util.List;
+
+import org.jboss.jms.delegate.ConnectionEndpoint;
+import org.jboss.messaging.core.plugin.contract.MessagingComponent;
 
 
 /**

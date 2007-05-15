@@ -21,16 +21,15 @@
   */
 package org.jboss.jms.server.connectionfactory;
 
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
-import org.w3c.dom.Node;
-import org.jboss.jms.util.XMLException;
-import org.jboss.jms.util.XMLUtil;
-
-import java.util.List;
-import java.util.Collections;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
+import java.util.List;
+
+import org.jboss.jms.util.XMLUtil;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -51,7 +50,7 @@ public class JNDIBindings
 
    // Constructors --------------------------------------------------
 
-   public JNDIBindings(Element delegate) throws XMLException
+   public JNDIBindings(Element delegate)
    {
       parse(delegate);
       this.delegate = delegate;
@@ -98,11 +97,11 @@ public class JNDIBindings
 
    // Private -------------------------------------------------------
 
-   private void parse(Element e) throws XMLException
+   private void parse(Element e)
    {
       if (!"bindings".equals(e.getNodeName()))
       {
-         throw new XMLException("The element is not a <bindings> element");
+         throw new IllegalArgumentException("The element is not a <bindings> element");
       }
 
       if (!e.hasChildNodes())

@@ -25,8 +25,8 @@ package org.jboss.jms.wireformat;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 
+import org.jboss.jms.delegate.SessionEndpoint;
 import org.jboss.jms.message.JBossMessage;
-import org.jboss.jms.server.endpoint.SessionEndpoint;
 import org.jboss.messaging.core.message.MessageFactory;
 
 /**

@@ -12,7 +12,7 @@ import java.io.Reader;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.StringTokenizer;
-import org.jboss.jms.util.XMLException;
+
 import org.jboss.jms.util.XMLUtil;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
@@ -378,7 +378,7 @@ class ServiceContainerConfiguration
             }
             else
             {
-               throw new XMLException("Unknown element: " + name);
+               throw new IllegalArgumentException("Unknown element: " + name);
             }
          }
       }

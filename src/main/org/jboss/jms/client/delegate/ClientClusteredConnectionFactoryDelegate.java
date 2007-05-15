@@ -24,7 +24,7 @@ package org.jboss.jms.client.delegate;
 import java.util.Map;
 import java.io.Serializable;
 
-import org.jboss.jms.server.endpoint.CreateConnectionResult;
+import org.jboss.jms.delegate.CreateConnectionResult;
 import org.jboss.jms.delegate.ConnectionFactoryDelegate;
 import org.jboss.jms.client.plugin.LoadBalancingPolicy;
 import org.jboss.jms.util.MessagingNetworkFailureException;

@@ -28,7 +28,7 @@ import javax.naming.InitialContext;
 import javax.naming.NameNotFoundException;
 import org.jboss.jms.destination.*;
 import org.jboss.jms.server.destination.ManagedDestination;
-import org.jboss.jms.util.JNDIUtil;
+import org.jboss.messaging.util.JNDIUtil;
 import org.jboss.jms.util.MessagingJMSException;
 import org.jboss.logging.Logger;
 

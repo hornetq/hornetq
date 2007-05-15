@@ -24,7 +24,7 @@ package org.jboss.jms.wireformat;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 
-import org.jboss.jms.server.endpoint.CreateConnectionResult;
+import org.jboss.jms.delegate.CreateConnectionResult;
 import org.jboss.jms.server.endpoint.advised.ConnectionFactoryAdvised;
 import org.jboss.remoting.callback.ServerInvokerCallbackHandler;
 

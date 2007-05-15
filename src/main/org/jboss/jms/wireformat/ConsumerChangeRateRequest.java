@@ -25,7 +25,7 @@ package org.jboss.jms.wireformat;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 
-import org.jboss.jms.server.endpoint.ConsumerEndpoint;
+import org.jboss.jms.delegate.ConsumerEndpoint;
 
 /**
  * 

@@ -15,7 +15,7 @@ import org.jboss.jms.server.DestinationManager;
 import org.jboss.jms.server.SecurityManager;
 import org.jboss.jms.server.ServerPeer;
 import org.jboss.jms.server.messagecounter.MessageCounter;
-import org.jboss.jms.util.ExceptionUtil;
+import org.jboss.messaging.util.ExceptionUtil;
 import org.jboss.messaging.core.plugin.IDManager;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.plugin.contract.MessagingComponent;

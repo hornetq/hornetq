@@ -35,6 +35,7 @@ import javax.jms.JMSException;
 import org.jboss.aop.AspectManager;
 import org.jboss.jms.client.delegate.ClientSessionDelegate;
 import org.jboss.jms.client.remoting.CallbackManager;
+import org.jboss.jms.delegate.ConnectionEndpoint;
 import org.jboss.jms.delegate.SessionDelegate;
 import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.message.JBossMessage;
@@ -48,8 +49,7 @@ import org.jboss.jms.server.remoting.JMSWireFormat;
 import org.jboss.jms.tx.ClientTransaction;
 import org.jboss.jms.tx.TransactionRequest;
 import org.jboss.jms.tx.ClientTransaction.SessionTxState;
-import org.jboss.jms.util.ExceptionUtil;
-import org.jboss.jms.util.ToString;
+import org.jboss.messaging.util.ExceptionUtil;
 import org.jboss.jms.wireformat.Dispatcher;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.message.Message;
@@ -60,6 +60,7 @@ import org.jboss.messaging.core.plugin.contract.PostOffice;
 import org.jboss.messaging.core.tx.MessagingXid;
 import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.messaging.core.tx.TransactionRepository;
+import org.jboss.messaging.util.Util;
 import org.jboss.remoting.Client;
 import org.jboss.remoting.callback.ServerInvokerCallbackHandler;
 
@@ -222,7 +223,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
       try
       {
          log.debug(this + " creating " + (transacted ? "transacted" : "non transacted") +
-            " session, " + ToString.acknowledgmentMode(acknowledgmentMode) + ", " +
+            " session, " + Util.acknowledgmentMode(acknowledgmentMode) + ", " +
             (isXA ? "XA": "non XA"));
          
          if (closed)

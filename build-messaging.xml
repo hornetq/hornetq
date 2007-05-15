@@ -460,6 +460,8 @@
             <include name="org/jboss/jms/destination/**/*.class"/>
             <include name="org/jboss/jms/message/**/*.class"/>
             <include name="org/jboss/jms/tx/**/*.class"/>
+            <include name="org/jboss/jms/referenceable/*.class"/>
+            <include name="org/jboss/messaging/util/**/*.class"/>
          </fileset>
          <fileset dir="${build.etc}">
             <include name="VERSION"/>

@@ -24,9 +24,9 @@ package org.jboss.jms.server.plugin;
 import javax.transaction.TransactionManager;
 
 import org.jboss.jms.server.plugin.contract.JMSUserManager;
-import org.jboss.jms.util.ExceptionUtil;
 import org.jboss.messaging.core.plugin.JDBCServiceSupport;
 import org.jboss.messaging.core.plugin.contract.MessagingComponent;
+import org.jboss.messaging.util.ExceptionUtil;
 
 /**
  * A JDBCJMSUserManagerService

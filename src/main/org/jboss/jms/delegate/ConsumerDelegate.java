@@ -26,7 +26,6 @@ import javax.jms.Message;
 import javax.jms.MessageListener;
 
 import org.jboss.jms.destination.JBossDestination;
-import org.jboss.jms.server.endpoint.ConsumerEndpoint;
 
 /**
  * Represents the minimal set of operations to provide consumer

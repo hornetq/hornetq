@@ -21,8 +21,6 @@
   */
 package org.jboss.jms.delegate;
 
-import org.jboss.jms.server.endpoint.BrowserEndpoint;
-
 /**
  * Represents the minimal set of operations to provide browser
  * functionality.

@@ -21,7 +21,6 @@
   */
 package org.jboss.jms.delegate;
 
-import org.jboss.jms.server.endpoint.ConnectionFactoryEndpoint;
 
 /**
  * Represents the minimal set of operations to provide connection factory functionality. Some of the

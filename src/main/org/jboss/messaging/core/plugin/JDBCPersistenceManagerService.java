@@ -23,9 +23,9 @@ package org.jboss.messaging.core.plugin;
 
 import javax.transaction.TransactionManager;
 
-import org.jboss.jms.util.ExceptionUtil;
 import org.jboss.messaging.core.plugin.contract.MessagingComponent;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager;
+import org.jboss.messaging.util.ExceptionUtil;
 
 /**
  * A JDBCPersistenceManagerService

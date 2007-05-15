@@ -14,8 +14,8 @@ import javax.jms.JMSException;
 
 import org.jboss.jms.server.JMSCondition;
 import org.jboss.jms.server.messagecounter.MessageCounter;
-import org.jboss.jms.util.ExceptionUtil;
-import org.jboss.jms.util.MessageQueueNameHelper;
+import org.jboss.messaging.util.ExceptionUtil;
+import org.jboss.messaging.util.MessageQueueNameHelper;
 import org.jboss.jms.util.XMLUtil;
 import org.jboss.messaging.core.local.PagingFilteredQueue;
 import org.jboss.messaging.core.plugin.contract.ClusteredPostOffice;

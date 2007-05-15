@@ -7,7 +7,7 @@
 package org.jboss.jms.client;
 
 import org.jboss.jms.client.container.JmsClientAspectXMLLoader;
-import org.jboss.jms.server.endpoint.ConnectionFactoryEndpoint;
+import org.jboss.jms.delegate.ConnectionFactoryEndpoint;
 
 /**
  * A static singleton that insures the client-side AOP stack is loaded.

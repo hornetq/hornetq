@@ -23,8 +23,8 @@ package org.jboss.jms.server.endpoint.advised;
 
 import javax.jms.JMSException;
 
+import org.jboss.jms.delegate.BrowserEndpoint;
 import org.jboss.jms.message.JBossMessage;
-import org.jboss.jms.server.endpoint.BrowserEndpoint;
 
 /**
  * The server-side advised instance corresponding to a Browser. It is bound to the AOP

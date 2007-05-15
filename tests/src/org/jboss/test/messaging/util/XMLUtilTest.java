@@ -21,7 +21,6 @@
 */
 package org.jboss.test.messaging.util;
 
-import org.jboss.jms.util.XMLRuntimeException;
 import org.jboss.jms.util.XMLUtil;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.w3c.dom.Element;
@@ -152,7 +151,7 @@ public class XMLUtilTest extends MessagingTestCase
          XMLUtil.assertEquivalent(XMLUtil.stringToElement(s), XMLUtil.stringToElement(s2));
          fail("this should throw exception");
       }
-      catch(XMLRuntimeException e)
+      catch(IllegalArgumentException e)
       {
          // OK
          log.debug("STACK TRACE", e);
@@ -193,7 +192,7 @@ public class XMLUtilTest extends MessagingTestCase
          XMLUtil.assertEquivalent(XMLUtil.stringToElement(s), XMLUtil.stringToElement(s2));
          fail("this should throw exception");
       }
-      catch(XMLRuntimeException e)
+      catch(IllegalArgumentException e)
       {
          // OK
          log.debug("STACK TRACE", e);

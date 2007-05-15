@@ -23,9 +23,9 @@ package org.jboss.jms.server.endpoint.advised;
 
 import javax.jms.JMSException;
 
-import org.jboss.jms.server.endpoint.ConnectionFactoryEndpoint;
+import org.jboss.jms.delegate.ConnectionFactoryEndpoint;
+import org.jboss.jms.delegate.CreateConnectionResult;
 import org.jboss.jms.server.endpoint.ConnectionFactoryInternalEndpoint;
-import org.jboss.jms.server.endpoint.CreateConnectionResult;
 import org.jboss.jms.server.endpoint.ServerConnectionFactoryEndpoint;
 import org.jboss.remoting.callback.ServerInvokerCallbackHandler;
 

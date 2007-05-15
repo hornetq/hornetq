@@ -27,7 +27,6 @@ import javax.transaction.TransactionManager;
 import org.jboss.jms.server.JMSConditionFactory;
 import org.jboss.jms.server.ServerPeer;
 import org.jboss.jms.server.selector.SelectorFactory;
-import org.jboss.jms.util.ExceptionUtil;
 import org.jboss.messaging.core.FilterFactory;
 import org.jboss.messaging.core.plugin.contract.ConditionFactory;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
@@ -35,6 +34,7 @@ import org.jboss.messaging.core.plugin.contract.MessagingComponent;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager;
 import org.jboss.messaging.core.plugin.postoffice.DefaultPostOffice;
 import org.jboss.messaging.core.tx.TransactionRepository;
+import org.jboss.messaging.util.ExceptionUtil;
 
 /**
  * A DefaultPostOfficeService

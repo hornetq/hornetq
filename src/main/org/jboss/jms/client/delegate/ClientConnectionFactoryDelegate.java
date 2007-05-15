@@ -34,7 +34,7 @@ import org.jboss.jms.client.remoting.JMSRemotingConnection;
 import org.jboss.jms.delegate.ConnectionFactoryDelegate;
 import org.jboss.jms.server.ServerPeer;
 import org.jboss.jms.server.Version;
-import org.jboss.jms.server.endpoint.CreateConnectionResult;
+import org.jboss.jms.delegate.CreateConnectionResult;
 import org.jboss.jms.server.remoting.JMSWireFormat;
 import org.jboss.jms.util.MessagingNetworkFailureException;
 import org.jboss.jms.wireformat.ConnectionFactoryCreateConnectionDelegateRequest;

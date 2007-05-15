@@ -19,43 +19,35 @@
   * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   */
-package org.jboss.jms.util;
+package org.jboss.jms.delegate;
+
+import javax.jms.JMSException;
+
+import org.jboss.jms.client.Closeable;
+import org.jboss.jms.message.JBossMessage;
 
 /**
+ * Represents the set of methods from the BrowserDelegate that are handled on the server. The rest
+ * of the methods are handled in the advice stack.
+ * 
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  *
  * $Id$
  */
-public class XMLException extends Exception
+public interface BrowserEndpoint extends Closeable
 {
-   // Constants -----------------------------------------------------
+   /**
+    * Reset the internal state of the browser endpoint so the following
+    * nextMessage()/hasNextMessage()/nextMessageBlock() invocations would reflect the state of the
+    * queue at the moment of the reset.
+    */
+   void reset() throws JMSException;
+
+   JBossMessage nextMessage() throws JMSException;
    
-   private static final long serialVersionUID = -1766745141220167507L;
-
-   // Static --------------------------------------------------------
-   
-   // Attributes ----------------------------------------------------
-
-   // Constructors --------------------------------------------------
-
-   public XMLException(String msg)
-   {
-     super(msg);
-   }
-
-   public XMLException(String msg, Exception cause)
-   {
-     super(msg, cause);
-   }
-
-   // Public --------------------------------------------------------
-
-   // Package protected ---------------------------------------------
-   
-   // Protected -----------------------------------------------------
-   
-   // Private -------------------------------------------------------
-   
-   // Inner classes -------------------------------------------------   
+   boolean hasNextMessage() throws JMSException;
+      
+   JBossMessage[] nextMessageBlock(int maxMessages) throws JMSException;
 }

@@ -19,10 +19,11 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.jms.util;
+package org.jboss.messaging.util;
 
 import javax.jms.JMSException;
 
+import org.jboss.jms.util.MessagingJMSException;
 import org.jboss.logging.Logger;
 import org.jboss.util.id.GUID;
 

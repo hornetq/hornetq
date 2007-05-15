@@ -28,9 +28,9 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import org.jboss.jms.server.endpoint.Ack;
-import org.jboss.jms.server.endpoint.DefaultAck;
-import org.jboss.jms.server.endpoint.SessionEndpoint;
+import org.jboss.jms.delegate.Ack;
+import org.jboss.jms.delegate.DefaultAck;
+import org.jboss.jms.delegate.SessionEndpoint;
 
 /**
  * 

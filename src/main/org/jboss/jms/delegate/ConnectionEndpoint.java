@@ -19,27 +19,44 @@
   * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   */
-package org.jboss.jms.server.endpoint;
+package org.jboss.jms.delegate;
 
 import javax.jms.JMSException;
 
 import org.jboss.jms.client.Closeable;
+import org.jboss.jms.delegate.SessionDelegate;
+import org.jboss.jms.tx.TransactionRequest;
+import org.jboss.messaging.core.plugin.IDBlock;
+import org.jboss.messaging.core.tx.MessagingXid;
+
 
 /**
- * Represents the set of methods from the ConsumerDelegate that are handled on the server.
- * The rest of the methods are handled in the advice stack.
- *
+ * Represents the set of methods from the ConnectionDelegate that are handled on the server. The
+ * rest of the methods are handled in the advice stack.
+ * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
- *
  * @version <tt>$Revision$</tt>
  *
  * $Id$
  */
-public interface ConsumerEndpoint extends Closeable
-{  
-   /**
-    * Sent to the server to specify a new maximum rate at which to send messages at
-    */
-   void changeRate(float newRate) throws JMSException;
+public interface ConnectionEndpoint extends Closeable
+{
+   SessionDelegate createSessionDelegate(boolean transacted,
+                                         int acknowledgmentMode,
+                                         boolean isXA) throws JMSException;
+
+   String getClientID() throws JMSException;
+
+   void setClientID(String id) throws JMSException;
+
+   void start() throws JMSException;
+
+   void stop() throws JMSException;
+
+   void sendTransaction(TransactionRequest request, boolean checkForDuplicates) throws JMSException;
+
+   MessagingXid[] getPreparedTransactions() throws JMSException; 
+   
+   IDBlock getIdBlock(int size) throws JMSException;
 }
+

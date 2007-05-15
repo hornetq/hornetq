@@ -32,7 +32,7 @@ import javax.naming.InitialContext;
 import javax.sql.DataSource;
 import javax.transaction.TransactionManager;
 
-import org.jboss.jms.util.ExceptionUtil;
+import org.jboss.messaging.util.ExceptionUtil;
 import org.jboss.system.ServiceMBeanSupport;
 import org.jboss.tm.TransactionManagerServiceMBean;
 

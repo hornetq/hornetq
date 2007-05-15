@@ -27,9 +27,8 @@ import javax.jms.ExceptionListener;
 import javax.jms.JMSException;
 import javax.jms.ServerSessionPool;
 
-import org.jboss.jms.client.JBossConnectionConsumer;
 import org.jboss.jms.client.FailoverListener;
-import org.jboss.jms.server.endpoint.ConnectionEndpoint;
+import org.jboss.jms.client.JBossConnectionConsumer;
 
 /**
  * Represents the minimal set of operations to provide connection functionality.

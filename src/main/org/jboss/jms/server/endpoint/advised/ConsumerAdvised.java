@@ -23,7 +23,7 @@ package org.jboss.jms.server.endpoint.advised;
 
 import javax.jms.JMSException;
 
-import org.jboss.jms.server.endpoint.ConsumerEndpoint;
+import org.jboss.jms.delegate.ConsumerEndpoint;
 
 /**
  * The server-side advised instance corresponding to a Consumer. It is bound to the AOP
