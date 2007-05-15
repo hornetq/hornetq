@@ -530,8 +530,10 @@
             <include name="**"/>
          </fileset>
       </copy>
-      <zip destfile="${build.lib}/jboss-messaging-${module.version}.zip"
-           basedir="${project.root}/release"/>
+      <zip destfile="${build.lib}/jboss-messaging-${module.version}.zip">
+         <zipfileset dir="${release.output}" prefix="jboss-messaging-${module.version}/"/>
+         <zipfileset dir="./src/etc/server/default/config" prefix="jboss-messaging-${module.version}/src/etc/server/default/config/"/>
+      </zip>
       <echo message="Release bundle jboss-messaging-${module.version}.zip done"/>
    </target>
 

@@ -32,7 +32,7 @@
    -->
 
    <!-- The location of the sar file -->
-   <property name="sar.location" value="../output/lib"/>
+   <property name="sar.location" value="../"/>
 
    <!-- The name of the sar -->
    <property name="sar.name" value="jboss-messaging.sar"/>

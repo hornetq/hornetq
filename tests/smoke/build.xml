@@ -583,7 +583,9 @@
 
       <ant dir="../../docs/examples/${example.name}" antfile="build.xml" target="clean"/>
 
-      <ant dir="../../docs/examples/${example.name}" antfile="build.xml"/>
+      <ant dir="../../docs/examples/${example.name}" antfile="build.xml">
+         <property name="messaging.client.jar.path" value="../../../output/lib"/>
+      </ant>
 
       <echo message="Example ${example.name} executed successfully, cleaning ..."/>
 
