@@ -9,12 +9,12 @@
    <aspect class="org.jboss.jms.server.container.SecurityAspect" scope="PER_INSTANCE"/>
    
    <!-- Connection -->
-   <bind pointcut="execution(* org.jboss.jms.server.endpoint.advised.ConnectionAdvised->$implementing{org.jboss.jms.server.endpoint.ConnectionEndpoint}(..))">
+   <bind pointcut="execution(* org.jboss.jms.server.endpoint.advised.ConnectionAdvised->$implementing{org.jboss.jms.delegate.ConnectionEndpoint}(..))">
       <interceptor-ref name="org.jboss.jms.server.container.ServerLogInterceptor"/>
    </bind>   
 
    <!-- Session -->
-   <bind pointcut="execution(* org.jboss.jms.server.endpoint.advised.SessionAdvised->$implementing{org.jboss.jms.server.endpoint.SessionEndpoint}(..))">
+   <bind pointcut="execution(* org.jboss.jms.server.endpoint.advised.SessionAdvised->$implementing{org.jboss.jms.delegate.SessionEndpoint}(..))">
       <interceptor-ref name="org.jboss.jms.server.container.ServerLogInterceptor"/>
    </bind>
    <bind pointcut="execution(* org.jboss.jms.server.endpoint.advised.SessionAdvised->createBrowserDelegate(..))">
@@ -28,13 +28,13 @@
    </bind>
    
    <!-- Consumer -->
-   <bind pointcut="execution(* org.jboss.jms.server.endpoint.advised.ConsumerAdvised->$implementing{org.jboss.jms.server.endpoint.ConsumerEndpoint}(..))">
+   <bind pointcut="execution(* org.jboss.jms.server.endpoint.advised.ConsumerAdvised->$implementing{org.jboss.jms.delegate.ConsumerEndpoint}(..))">
       <interceptor-ref name="org.jboss.jms.server.container.ServerLogInterceptor"/>
    </bind>
 
 
    <!-- Browser -->
-   <bind pointcut="execution(* org.jboss.jms.server.endpoint.advised.BrowserAdvised->$implementing{org.jboss.jms.server.endpoint.BrowserEndpoint}(..))">
+   <bind pointcut="execution(* org.jboss.jms.server.endpoint.advised.BrowserAdvised->$implementing{org.jboss.jms.delegate.BrowserEndpoint}(..))">
       <interceptor-ref name="org.jboss.jms.server.container.ServerLogInterceptor"/>
    </bind>
    

@@ -50,7 +50,7 @@
       <interceptor-ref name="org.jboss.jms.client.container.ExceptionInterceptor"/>
       <interceptor-ref name="org.jboss.jms.client.container.ClosedInterceptor"/>               
    </bind>
-   <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientConnectionDelegate->$implementing{org.jboss.jms.server.endpoint.ConnectionEndpoint}(..))">
+   <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientConnectionDelegate->$implementing{org.jboss.jms.delegate.ConnectionEndpoint}(..))">
       <interceptor-ref name="org.jboss.jms.client.container.FailoverValveInterceptor"/>         
    </bind>      
    <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientConnectionDelegate->start())">
@@ -102,7 +102,7 @@
       <interceptor-ref name="org.jboss.jms.client.container.ExceptionInterceptor"/>
       <interceptor-ref name="org.jboss.jms.client.container.ClosedInterceptor"/>             
    </bind>
-   <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientSessionDelegate->$implementing{org.jboss.jms.server.endpoint.SessionEndpoint}(..))">
+   <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientSessionDelegate->$implementing{org.jboss.jms.delegate.SessionEndpoint}(..))">
       <interceptor-ref name="org.jboss.jms.client.container.FailoverValveInterceptor"/>         
    </bind> 
    <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientSessionDelegate->createMessage())">
@@ -196,7 +196,7 @@
       <interceptor-ref name="org.jboss.jms.client.container.ExceptionInterceptor"/>
       <interceptor-ref name="org.jboss.jms.client.container.ClosedInterceptor"/>          
    </bind>  
-   <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientConsumerDelegate->$implementing{org.jboss.jms.server.endpoint.ConsumerEndpoint}(..))">
+   <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientConsumerDelegate->$implementing{org.jboss.jms.delegate.ConsumerEndpoint}(..))">
       <interceptor-ref name="org.jboss.jms.client.container.FailoverValveInterceptor"/>         
    </bind>         
    <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientConsumerDelegate->getMessageListener())">
@@ -288,7 +288,7 @@
       <interceptor-ref name="org.jboss.jms.client.container.ExceptionInterceptor"/>
       <interceptor-ref name="org.jboss.jms.client.container.ClosedInterceptor"/>
    </bind>   
-   <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientBrowserDelegate->$implementing{org.jboss.jms.server.endpoint.BrowserEndpoint}(..))">
+   <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientBrowserDelegate->$implementing{org.jboss.jms.delegate.BrowserEndpoint}(..))">
       <interceptor-ref name="org.jboss.jms.client.container.FailoverValveInterceptor"/>         
    </bind>      
    <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientBrowserDelegate->nextMessage())">

@@ -17,9 +17,9 @@
   <!-- Prepare the server delegate classes - these provide the server side advice stack -->
   
   <prepare expr="execution(* org.jboss.jms.server.endpoint.advised.ConnectionFactoryAdvised->$implementing{org.jboss.jms.server.endpoint.ConnectionFactoryInternalEndpoint}(..))"/>
-  <prepare expr="execution(* org.jboss.jms.server.endpoint.advised.ConnectionAdvised->$implementing{org.jboss.jms.server.endpoint.ConnectionEndpoint}(..))"/>
-  <prepare expr="execution(* org.jboss.jms.server.endpoint.advised.SessionAdvised->$implementing{org.jboss.jms.server.endpoint.SessionEndpoint}(..))"/> 
-  <prepare expr="execution(* org.jboss.jms.server.endpoint.advised.ConsumerAdvised->$implementing{org.jboss.jms.server.endpoint.ConsumerEndpoint}(..))"/>
-  <prepare expr="execution(* org.jboss.jms.server.endpoint.advised.BrowserAdvised->$implementing{org.jboss.jms.server.endpoint.BrowserEndpoint}(..))"/>
+  <prepare expr="execution(* org.jboss.jms.server.endpoint.advised.ConnectionAdvised->$implementing{org.jboss.jms.delegate.ConnectionEndpoint}(..))"/>
+  <prepare expr="execution(* org.jboss.jms.server.endpoint.advised.SessionAdvised->$implementing{org.jboss.jms.delegate.SessionEndpoint}(..))"/> 
+  <prepare expr="execution(* org.jboss.jms.server.endpoint.advised.ConsumerAdvised->$implementing{org.jboss.jms.delegate.ConsumerEndpoint}(..))"/>
+  <prepare expr="execution(* org.jboss.jms.server.endpoint.advised.BrowserAdvised->$implementing{org.jboss.jms.delegate.BrowserEndpoint}(..))"/>
 
 </aop>
