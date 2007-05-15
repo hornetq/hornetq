@@ -248,8 +248,8 @@ probably have in a real production config, this is so the tests don't take aeons
         provider2.xaconnectionfactorylookup=xyz
         -->
 
-        <property name="com.arjuna.ats.jta.recovery.XAResourceRecovery.JBMESSAGINGBRIDGE_SERVER0" value="org.jboss.jms.recovery.MessagingXAResourceRecovery;adaptor1"/>
-        <property name="com.arjuna.ats.jta.recovery.XAResourceRecovery.JBMESSAGINGBRIDGE_SERVER1" value="org.jboss.jms.recovery.MessagingXAResourceRecovery;adaptor2"/>
+        <property name="com.arjuna.ats.jta.recovery.XAResourceRecovery.JBMESSAGINGBRIDGE_SERVER0" value="org.jboss.jms.server.recovery.MessagingXAResourceRecovery;adaptor1"/>
+        <property name="com.arjuna.ats.jta.recovery.XAResourceRecovery.JBMESSAGINGBRIDGE_SERVER1" value="org.jboss.jms.server.recovery.MessagingXAResourceRecovery;adaptor2"/>
 
         <!--
         Support subtransactions in the JTA layer?
