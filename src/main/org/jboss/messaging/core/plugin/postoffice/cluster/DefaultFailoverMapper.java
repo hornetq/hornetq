@@ -26,7 +26,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import org.jboss.logging.Logger;
 import org.jboss.messaging.core.plugin.contract.FailoverMapper;
 
 /**
@@ -43,8 +42,6 @@ import org.jboss.messaging.core.plugin.contract.FailoverMapper;
  */
 public class DefaultFailoverMapper implements FailoverMapper
 {
-   private static final Logger log = Logger.getLogger(DefaultFailoverMapper.class);
-
    /**
     * Generate a mapping given a set of nodes - nodes will be sorted by the method.
     *

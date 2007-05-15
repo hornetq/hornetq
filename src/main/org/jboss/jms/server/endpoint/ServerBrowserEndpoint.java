@@ -29,7 +29,7 @@ import javax.jms.JMSException;
 import javax.jms.Message;
 
 import org.jboss.jms.message.JBossMessage;
-import org.jboss.jms.selector.Selector;
+import org.jboss.jms.server.selector.Selector;
 import org.jboss.jms.util.ExceptionUtil;
 import org.jboss.jms.wireformat.Dispatcher;
 import org.jboss.logging.Logger;

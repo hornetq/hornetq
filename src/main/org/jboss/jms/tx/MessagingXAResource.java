@@ -19,7 +19,7 @@
   * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   */
-package org.jboss.jms.client.tx;
+package org.jboss.jms.tx;
 
 import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;

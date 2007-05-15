@@ -21,8 +21,6 @@
   */
 package org.jboss.messaging.core.message;
 
-import java.util.Map;
-
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
 

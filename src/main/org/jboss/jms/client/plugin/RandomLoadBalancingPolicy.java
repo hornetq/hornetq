@@ -32,12 +32,13 @@ import java.util.Random;
  */
 public class RandomLoadBalancingPolicy implements LoadBalancingPolicy
 {
-
    // Constants ------------------------------------------------------------------------------------
 
+	private static final long serialVersionUID = -4377960504057811985L;
+	
    // Attributes -----------------------------------------------------------------------------------
 
-   private ConnectionFactoryDelegate[] delegates;
+	private ConnectionFactoryDelegate[] delegates;
    private transient Random random = null;
 
    // Static ---------------------------------------------------------------------------------------

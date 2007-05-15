@@ -24,11 +24,11 @@ package org.jboss.test.messaging.jms.selector;
 import java.io.ByteArrayInputStream;
 import java.util.HashMap;
 
+import org.jboss.jms.server.selector.SelectorParser;
+import org.jboss.jms.server.selector.ISelectorParser;
+import org.jboss.jms.server.selector.Identifier;
+import org.jboss.jms.server.selector.Operator;
 import org.jboss.test.messaging.MessagingTestCase;
-import org.jboss.jms.selector.ISelectorParser;
-import org.jboss.jms.selector.SelectorParser;
-import org.jboss.jms.selector.Identifier;
-import org.jboss.jms.selector.Operator;
 
 
 /** Tests of the JavaCC LL(1) parser.

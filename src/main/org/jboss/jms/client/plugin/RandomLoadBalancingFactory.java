@@ -31,9 +31,11 @@ import org.jboss.jms.delegate.ConnectionFactoryDelegate;
  */
 public class RandomLoadBalancingFactory extends LoadBalancingFactory
 {
-
    // Constants ------------------------------------------------------------------------------------
 
+	private static final long serialVersionUID = 1309306819552168488L;
+
+	
    // Attributes -----------------------------------------------------------------------------------
 
    // Static ---------------------------------------------------------------------------------------
@@ -42,7 +44,7 @@ public class RandomLoadBalancingFactory extends LoadBalancingFactory
 
    // Public ---------------------------------------------------------------------------------------
 
-   // Implementation of LoadBalancingFactory -------------------------------------------------------
+	// Implementation of LoadBalancingFactory -------------------------------------------------------
    public LoadBalancingPolicy createLoadBalancingPolicy(ConnectionFactoryDelegate[] view)
    {
       return new RandomLoadBalancingPolicy(view);

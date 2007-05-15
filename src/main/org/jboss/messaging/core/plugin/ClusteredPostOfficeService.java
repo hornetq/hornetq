@@ -31,9 +31,9 @@ import javax.management.NotificationListener;
 import javax.management.ObjectName;
 import javax.transaction.TransactionManager;
 
-import org.jboss.jms.selector.SelectorFactory;
 import org.jboss.jms.server.JMSConditionFactory;
 import org.jboss.jms.server.ServerPeer;
+import org.jboss.jms.server.selector.SelectorFactory;
 import org.jboss.jms.util.ExceptionUtil;
 import org.jboss.messaging.core.FilterFactory;
 import org.jboss.messaging.core.plugin.contract.ConditionFactory;

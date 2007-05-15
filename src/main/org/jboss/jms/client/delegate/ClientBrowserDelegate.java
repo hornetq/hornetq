@@ -52,13 +52,15 @@ public class ClientBrowserDelegate extends DelegateSupport implements BrowserDel
 {
    // Constants ------------------------------------------------------------------------------------
 
+	private static final long serialVersionUID = 3048255931412144958L;
+	
    // Attributes -----------------------------------------------------------------------------------
 
    // Static ---------------------------------------------------------------------------------------
 
    // Constructors ---------------------------------------------------------------------------------
 
-   public ClientBrowserDelegate(int objectID)
+	public ClientBrowserDelegate(int objectID)
    {
       super(objectID);
    }

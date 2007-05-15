@@ -52,7 +52,9 @@ public class ClientConsumerDelegate extends DelegateSupport implements ConsumerD
 {
    // Constants ------------------------------------------------------------------------------------
 
-   private static final Logger log = Logger.getLogger(ClientConsumerDelegate.class);
+	private static final long serialVersionUID = 3253922610778321868L;
+
+	private static final Logger log = Logger.getLogger(ClientConsumerDelegate.class);
 
    // Attributes -----------------------------------------------------------------------------------
 

@@ -24,17 +24,17 @@ package org.jboss.jms.client.state;
 import java.util.HashSet;
 import java.util.Iterator;
 
-import org.jboss.jms.client.delegate.DelegateSupport;
+import org.jboss.jms.client.FailoverCommandCenter;
 import org.jboss.jms.client.delegate.ClientConnectionDelegate;
 import org.jboss.jms.client.delegate.ClientSessionDelegate;
+import org.jboss.jms.client.delegate.DelegateSupport;
 import org.jboss.jms.client.remoting.JMSRemotingConnection;
-import org.jboss.jms.client.FailoverCommandCenter;
 import org.jboss.jms.delegate.ConnectionDelegate;
 import org.jboss.jms.delegate.ConnectionFactoryDelegate;
 import org.jboss.jms.message.MessageIdGenerator;
 import org.jboss.jms.server.Version;
-import org.jboss.jms.client.tx.ResourceManager;
-import org.jboss.jms.client.tx.ResourceManagerFactory;
+import org.jboss.jms.tx.ResourceManager;
+import org.jboss.jms.tx.ResourceManagerFactory;
 import org.jboss.logging.Logger;
 
 import EDU.oswego.cs.dl.util.concurrent.SyncSet;

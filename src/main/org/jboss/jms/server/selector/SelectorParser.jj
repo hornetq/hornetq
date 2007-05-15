@@ -16,7 +16,7 @@ options {
 
 PARSER_BEGIN(SelectorParser)
    
-package org.jboss.jms.selector;
+package org.jboss.jms.server.selector;
 
 import java.io.StringReader;
 

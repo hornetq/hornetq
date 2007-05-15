@@ -24,9 +24,8 @@ package org.jboss.jms.wireformat;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 
-import org.jboss.jms.client.tx.TransactionRequest;
 import org.jboss.jms.server.endpoint.ConnectionEndpoint;
-import org.jboss.logging.Logger;
+import org.jboss.jms.tx.TransactionRequest;
 
 /**
  * 
@@ -40,9 +39,7 @@ import org.jboss.logging.Logger;
  */
 public class ConnectionSendTransactionRequest extends RequestSupport
 {
-   private static final Logger log = Logger.getLogger(ConnectionSendTransactionRequest.class);
-   
-   
+
    private TransactionRequest req;
    private boolean checkForDuplicates;
    

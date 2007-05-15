@@ -27,7 +27,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import org.jboss.logging.Logger;
 import org.jboss.remoting.InvocationResponse;
 import org.jboss.remoting.callback.Callback;
 
@@ -42,9 +41,7 @@ import org.jboss.remoting.callback.Callback;
  */
 public class PolledCallbacksDelivery extends PacketSupport
 {
-   private static final Logger log = Logger.getLogger(PolledCallbacksDelivery.class);
-   
-   
+
    private List callbacks;
    
    private String sessionID;

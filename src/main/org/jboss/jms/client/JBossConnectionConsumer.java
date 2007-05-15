@@ -187,7 +187,7 @@ public class JBossConnectionConsumer implements ConnectionConsumer, Runnable
       {
          List mesList = new ArrayList();
          
-         outer: while (true)
+         while (true)
          {            
             if (closed)
             {
@@ -198,7 +198,7 @@ public class JBossConnectionConsumer implements ConnectionConsumer, Runnable
             if (mesList.isEmpty())
             {
                // Remove up to maxMessages messages from the consumer
-               inner: for (int i = 0; i < maxMessages; i++)
+               for (int i = 0; i < maxMessages; i++)
                {               
                   // receiveNoWait
 

@@ -21,9 +21,9 @@
   */
 package org.jboss.test.messaging.jms.selector;
 
-import org.jboss.jms.selector.Selector;
-import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.jms.message.JBossMessage;
+import org.jboss.jms.server.selector.Selector;
+import org.jboss.test.messaging.MessagingTestCase;
 
 /**
  * Tests the complinace with the JMS Selector syntax.

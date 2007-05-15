@@ -25,12 +25,9 @@ package org.jboss.jms.wireformat;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 
-import org.jboss.jms.server.ServerPeer;
 import org.jboss.jms.server.endpoint.Cancel;
 import org.jboss.jms.server.endpoint.DefaultCancel;
 import org.jboss.jms.server.endpoint.SessionEndpoint;
-import org.jboss.remoting.InvocationRequest;
-import org.jboss.remoting.invocation.OnewayInvocation;
 
 /**
  * 

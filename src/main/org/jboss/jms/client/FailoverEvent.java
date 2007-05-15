@@ -17,7 +17,9 @@ public class FailoverEvent extends EventObject
 {
    // Constants ------------------------------------------------------------------------------------
 
-   public static final int FAILURE_DETECTED = 10;
+	private static final long serialVersionUID = 8451706459791859231L;
+	
+	public static final int FAILURE_DETECTED = 10;
    public static final int FAILOVER_STARTED = 20;
    public static final int FAILOVER_COMPLETED = 30;
    public static final int FAILOVER_FAILED = 100;

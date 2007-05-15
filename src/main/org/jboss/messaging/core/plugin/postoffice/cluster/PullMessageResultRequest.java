@@ -24,7 +24,6 @@ package org.jboss.messaging.core.plugin.postoffice.cluster;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 
-import org.jboss.logging.Logger;
 import org.jboss.messaging.core.message.Message;
 import org.jboss.messaging.core.message.MessageFactory;
 
@@ -40,8 +39,6 @@ import org.jboss.messaging.core.message.MessageFactory;
  */
 public class PullMessageResultRequest extends ClusterRequest
 {
-   private static final Logger log = Logger.getLogger(PullMessageResultRequest.class);   
-   
    public static final int TYPE = 2;
    
    private long holdingTxId;

@@ -26,14 +26,14 @@ import javax.jms.IllegalStateException;
 
 import org.jboss.aop.joinpoint.Invocation;
 import org.jboss.aop.joinpoint.MethodInvocation;
-import org.jboss.jms.client.JBossConnectionMetaData;
 import org.jboss.jms.client.FailoverListener;
+import org.jboss.jms.client.JBossConnectionMetaData;
+import org.jboss.jms.client.delegate.ClientConnectionDelegate;
 import org.jboss.jms.client.remoting.ConsolidatedRemotingConnectionListener;
 import org.jboss.jms.client.remoting.JMSRemotingConnection;
-import org.jboss.jms.client.delegate.ClientConnectionDelegate;
 import org.jboss.jms.client.state.ConnectionState;
 import org.jboss.jms.message.MessageIdGeneratorFactory;
-import org.jboss.jms.client.tx.ResourceManagerFactory;
+import org.jboss.jms.tx.ResourceManagerFactory;
 
 /**
  * Handles operations related to the connection

@@ -19,14 +19,13 @@
   * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   */
-package org.jboss.jms.client.tx;
+package org.jboss.jms.tx;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 
 import javax.transaction.xa.Xid;
 
-import org.jboss.logging.Logger;
 import org.jboss.messaging.core.tx.MessagingXid;
 import org.jboss.messaging.util.Streamable;
 
@@ -50,8 +49,6 @@ import org.jboss.messaging.util.Streamable;
 public class TransactionRequest implements Streamable
 {
    // Constants -----------------------------------------------------
-   
-   private static final Logger log = Logger.getLogger(TransactionRequest.class);      
    
    public final static byte ONE_PHASE_COMMIT_REQUEST = 0;
    public final static byte TWO_PHASE_PREPARE_REQUEST = 2;

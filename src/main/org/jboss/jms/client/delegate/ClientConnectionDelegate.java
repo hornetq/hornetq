@@ -35,11 +35,11 @@ import org.jboss.jms.client.JBossConnectionConsumer;
 import org.jboss.jms.client.remoting.JMSRemotingConnection;
 import org.jboss.jms.client.state.ConnectionState;
 import org.jboss.jms.client.state.HierarchicalState;
-import org.jboss.jms.client.tx.ResourceManagerFactory;
-import org.jboss.jms.client.tx.TransactionRequest;
 import org.jboss.jms.delegate.ConnectionDelegate;
 import org.jboss.jms.delegate.SessionDelegate;
 import org.jboss.jms.server.Version;
+import org.jboss.jms.tx.ResourceManagerFactory;
+import org.jboss.jms.tx.TransactionRequest;
 import org.jboss.jms.wireformat.CloseRequest;
 import org.jboss.jms.wireformat.ClosingRequest;
 import org.jboss.jms.wireformat.ConnectionCreateSessionDelegateRequest;
@@ -70,7 +70,9 @@ public class ClientConnectionDelegate extends DelegateSupport implements Connect
 {
    // Constants ------------------------------------------------------------------------------------
 
-   private static final Logger log = Logger.getLogger(ClientConnectionDelegate.class);
+	private static final long serialVersionUID = -5485083713058725777L;
+
+	private static final Logger log = Logger.getLogger(ClientConnectionDelegate.class);
 
    // Attributes -----------------------------------------------------------------------------------
 

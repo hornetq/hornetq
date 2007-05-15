@@ -26,9 +26,9 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
-import org.jboss.jms.selector.Selector;
 import org.jboss.jms.server.JMSCondition;
 import org.jboss.jms.server.messagecounter.MessageCounter;
+import org.jboss.jms.server.selector.Selector;
 import org.jboss.jms.util.MessageQueueNameHelper;
 import org.jboss.messaging.core.Queue;
 import org.jboss.messaging.core.message.Message;

@@ -27,7 +27,6 @@ import java.io.DataOutputStream;
 
 import org.jboss.jms.message.JBossMessage;
 import org.jboss.jms.server.endpoint.SessionEndpoint;
-import org.jboss.logging.Logger;
 import org.jboss.messaging.core.message.MessageFactory;
 
 /**
@@ -42,8 +41,6 @@ import org.jboss.messaging.core.message.MessageFactory;
  */
 public class SessionSendRequest extends RequestSupport
 {
-   private static final Logger log = Logger.getLogger(SessionSendRequest.class);   
-   
    
    private JBossMessage msg;
    private boolean checkForDuplicates;

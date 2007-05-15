@@ -25,8 +25,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import org.jboss.jms.selector.Selector;
 import org.jboss.jms.server.messagecounter.MessageCounter;
+import org.jboss.jms.server.selector.Selector;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Queue;
 import org.jboss.messaging.core.message.Message;

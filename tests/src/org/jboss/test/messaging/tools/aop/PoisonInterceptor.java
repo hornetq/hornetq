@@ -12,7 +12,6 @@ import java.rmi.registry.Registry;
 import org.jboss.aop.advice.Interceptor;
 import org.jboss.aop.joinpoint.Invocation;
 import org.jboss.aop.joinpoint.MethodInvocation;
-import org.jboss.jms.client.tx.TransactionRequest;
 import org.jboss.jms.server.ServerPeer;
 import org.jboss.jms.server.endpoint.ServerConnectionEndpoint;
 import org.jboss.jms.server.endpoint.ServerConnectionFactoryEndpoint;
@@ -20,6 +19,7 @@ import org.jboss.jms.server.endpoint.ServerSessionEndpoint;
 import org.jboss.jms.server.endpoint.advised.ConnectionAdvised;
 import org.jboss.jms.server.endpoint.advised.ConnectionFactoryAdvised;
 import org.jboss.jms.server.endpoint.advised.SessionAdvised;
+import org.jboss.jms.tx.TransactionRequest;
 import org.jboss.logging.Logger;
 import org.jboss.test.messaging.tools.jmx.rmi.RMITestServer;
 

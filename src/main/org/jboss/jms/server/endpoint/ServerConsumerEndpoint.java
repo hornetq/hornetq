@@ -27,9 +27,9 @@ import javax.jms.JMSException;
 
 import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.message.JBossMessage;
-import org.jboss.jms.selector.Selector;
 import org.jboss.jms.server.destination.TopicService;
 import org.jboss.jms.server.messagecounter.MessageCounter;
+import org.jboss.jms.server.selector.Selector;
 import org.jboss.jms.util.ExceptionUtil;
 import org.jboss.jms.wireformat.ClientDelivery;
 import org.jboss.jms.wireformat.Dispatcher;
