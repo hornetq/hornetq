@@ -43,7 +43,7 @@ import org.jboss.jms.destination.JBossQueue;
 import org.jboss.jms.destination.JBossTopic;
 import org.jboss.jms.server.destination.ManagedDestination;
 import org.jboss.jms.server.messagecounter.MessageCounter;
-import org.jboss.jms.util.XMLUtil;
+import org.jboss.messaging.util.XMLUtil;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
 import org.w3c.dom.Element;

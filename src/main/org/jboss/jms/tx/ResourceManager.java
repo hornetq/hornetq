@@ -36,11 +36,11 @@ import javax.transaction.xa.Xid;
 import org.jboss.jms.delegate.ConnectionDelegate;
 import org.jboss.jms.delegate.DeliveryInfo;
 import org.jboss.jms.delegate.SessionDelegate;
+import org.jboss.jms.exception.MessagingTransactionRolledBackException;
+import org.jboss.jms.exception.MessagingXAException;
 import org.jboss.jms.message.JBossMessage;
 import org.jboss.jms.message.MessageProxy;
 import org.jboss.jms.tx.ClientTransaction.SessionTxState;
-import org.jboss.jms.util.MessagingTransactionRolledBackException;
-import org.jboss.jms.util.MessagingXAException;
 import org.jboss.logging.Logger;
 
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;

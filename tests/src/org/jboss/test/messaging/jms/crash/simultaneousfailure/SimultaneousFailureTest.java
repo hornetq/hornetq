@@ -22,20 +22,17 @@
 
 package org.jboss.test.messaging.jms.crash.simultaneousfailure;
 
-import org.jboss.test.messaging.MessagingTestCase;
-import org.jboss.test.messaging.tools.ServerManagement;
-import org.jboss.logging.Logger;
-import javax.naming.InitialContext;
-import javax.jms.ConnectionFactory;
-import javax.jms.Destination;
 import javax.jms.Connection;
+import javax.jms.ConnectionFactory;
 import javax.jms.Session;
-import javax.jms.MessageProducer;
-import javax.jms.MessageConsumer;
-import javax.jms.Message;
+import javax.jms.TextMessage;
 import javax.jms.Topic;
 import javax.jms.TopicSubscriber;
-import javax.jms.TextMessage;
+import javax.naming.InitialContext;
+
+import org.jboss.logging.Logger;
+import org.jboss.test.messaging.MessagingTestCase;
+import org.jboss.test.messaging.tools.ServerManagement;
 
 /**
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>

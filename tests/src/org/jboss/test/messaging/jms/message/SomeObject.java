@@ -38,7 +38,9 @@ public class SomeObject implements Serializable
 
    // Attributes -----------------------------------------------------------------------------------
 
-   int i;
+	private static final long serialVersionUID = -2939720794544432834L;
+	
+	int i;
    int j;
 
    // Static ---------------------------------------------------------------------------------------

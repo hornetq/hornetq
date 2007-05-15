@@ -98,7 +98,8 @@ public class ObjectMessageDeliveryTest extends MessagingTestCase
    
    static class TestObject implements Serializable
    {
-      String text;
+		private static final long serialVersionUID = -340663970717491155L;
+		String text;
    }
    
    /**

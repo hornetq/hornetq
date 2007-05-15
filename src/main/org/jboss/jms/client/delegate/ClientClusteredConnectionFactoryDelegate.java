@@ -21,17 +21,17 @@
  */
 package org.jboss.jms.client.delegate;
 
-import java.util.Map;
 import java.io.Serializable;
-
-import org.jboss.jms.delegate.CreateConnectionResult;
-import org.jboss.jms.delegate.ConnectionFactoryDelegate;
-import org.jboss.jms.client.plugin.LoadBalancingPolicy;
-import org.jboss.jms.util.MessagingNetworkFailureException;
-import org.jboss.messaging.core.plugin.IDBlock;
-import org.jboss.logging.Logger;
+import java.util.Map;
 
 import javax.jms.JMSException;
+
+import org.jboss.jms.client.plugin.LoadBalancingPolicy;
+import org.jboss.jms.delegate.ConnectionFactoryDelegate;
+import org.jboss.jms.delegate.CreateConnectionResult;
+import org.jboss.jms.exception.MessagingNetworkFailureException;
+import org.jboss.logging.Logger;
+import org.jboss.messaging.core.plugin.IDBlock;
 
 /**
  * A ClientClusteredConnectionFactoryDelegate.

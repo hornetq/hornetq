@@ -6,22 +6,23 @@
  */
 package org.jboss.jms.client.container;
 
-import org.jboss.logging.Logger;
-import org.jboss.aop.joinpoint.Invocation;
-import org.jboss.aop.joinpoint.MethodInvocation;
-import org.jboss.jms.client.delegate.ClientClusteredConnectionFactoryDelegate;
-import org.jboss.jms.client.delegate.ClientConnectionFactoryDelegate;
-import org.jboss.jms.client.delegate.ClientConnectionDelegate;
-import org.jboss.jms.client.delegate.DelegateSupport;
-import org.jboss.jms.client.state.ConnectionState;
-import org.jboss.jms.client.FailoverCommandCenter;
-import org.jboss.jms.client.plugin.LoadBalancingPolicy;
-import org.jboss.jms.delegate.CreateConnectionResult;
-import org.jboss.jms.util.MessagingNetworkFailureException;
+import java.util.Arrays;
+import java.util.Map;
 
 import javax.jms.JMSException;
-import java.util.Map;
-import java.util.Arrays;
+
+import org.jboss.aop.joinpoint.Invocation;
+import org.jboss.aop.joinpoint.MethodInvocation;
+import org.jboss.jms.client.FailoverCommandCenter;
+import org.jboss.jms.client.delegate.ClientClusteredConnectionFactoryDelegate;
+import org.jboss.jms.client.delegate.ClientConnectionDelegate;
+import org.jboss.jms.client.delegate.ClientConnectionFactoryDelegate;
+import org.jboss.jms.client.delegate.DelegateSupport;
+import org.jboss.jms.client.plugin.LoadBalancingPolicy;
+import org.jboss.jms.client.state.ConnectionState;
+import org.jboss.jms.delegate.CreateConnectionResult;
+import org.jboss.jms.exception.MessagingNetworkFailureException;
+import org.jboss.logging.Logger;
 
 /**
  * This aspect is part of a clustered ConnectionFactory aspect stack.

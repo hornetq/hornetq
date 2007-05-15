@@ -29,7 +29,6 @@ import javax.jms.ConnectionFactory;
 import javax.jms.Topic;
 
 import org.jboss.jms.client.JBossConnection;
-import org.jboss.logging.Logger;
 import org.jboss.test.messaging.tools.jmx.rmi.Command;
 
 /**
@@ -46,8 +45,6 @@ public class CreateTwoClientOnServerCommand implements Command
 {
    private static final long serialVersionUID = -997724797145152821L;
    
-   private static final Logger log = Logger.getLogger(CreateTwoClientOnServerCommand.class);
-      
    private ConnectionFactory cf;
    
    private boolean retainReference;

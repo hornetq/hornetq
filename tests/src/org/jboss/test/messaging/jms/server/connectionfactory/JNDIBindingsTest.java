@@ -21,13 +21,14 @@
   */
 package org.jboss.test.messaging.jms.server.connectionfactory;
 
-import org.jboss.test.messaging.MessagingTestCase;
-import org.jboss.jms.util.XMLUtil;
-import org.jboss.jms.server.connectionfactory.JNDIBindings;
-import org.w3c.dom.Element;
+import java.util.List;
 
 import javax.naming.InitialContext;
-import java.util.List;
+
+import org.jboss.jms.server.connectionfactory.JNDIBindings;
+import org.jboss.messaging.util.XMLUtil;
+import org.jboss.test.messaging.MessagingTestCase;
+import org.w3c.dom.Element;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>

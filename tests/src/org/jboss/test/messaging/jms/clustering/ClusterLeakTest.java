@@ -22,23 +22,23 @@
 
 package org.jboss.test.messaging.jms.clustering;
 
-import org.jboss.test.messaging.jms.clustering.base.ClusteringTestBase;
-import org.jboss.test.messaging.tools.ServerManagement;
-import org.jboss.jms.client.state.ConnectionState;
-import org.jboss.jms.client.state.ProducerState;
-import org.jboss.jms.client.delegate.DelegateSupport;
+import java.util.Map;
+
+import javax.jms.Connection;
+import javax.jms.DeliveryMode;
+import javax.jms.MessageConsumer;
+import javax.jms.Session;
+import javax.jms.TextMessage;
+
 import org.jboss.jms.client.JBossConnection;
 import org.jboss.jms.client.JBossMessageProducer;
-import org.jboss.jms.client.container.ConnectionFailureListener;
-import org.jboss.profiler.jvmti.JVMTIInterface;
+import org.jboss.jms.client.delegate.DelegateSupport;
+import org.jboss.jms.client.state.ConnectionState;
+import org.jboss.jms.client.state.ProducerState;
 import org.jboss.profiler.jvmti.InventoryDataPoint;
-import javax.jms.Connection;
-import javax.jms.Session;
-import javax.jms.MessageConsumer;
-import javax.jms.MessageProducer;
-import javax.jms.DeliveryMode;
-import javax.jms.TextMessage;
-import java.util.Map;
+import org.jboss.profiler.jvmti.JVMTIInterface;
+import org.jboss.test.messaging.jms.clustering.base.ClusteringTestBase;
+import org.jboss.test.messaging.tools.ServerManagement;
 
 /**
  * This test is executed with target "leak-tests" on the testsuite/build.xml

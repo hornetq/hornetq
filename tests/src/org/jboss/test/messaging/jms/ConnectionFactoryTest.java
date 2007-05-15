@@ -26,12 +26,10 @@ import javax.jms.ConnectionFactory;
 import javax.jms.JMSException;
 import javax.jms.QueueConnection;
 import javax.jms.QueueConnectionFactory;
-import javax.jms.TopicConnection;
-import javax.jms.TopicConnectionFactory;
 import javax.jms.Session;
 import javax.jms.Topic;
-import javax.jms.TopicSubscriber;
-import javax.jms.TopicSession;
+import javax.jms.TopicConnection;
+import javax.jms.TopicConnectionFactory;
 import javax.management.ObjectName;
 import javax.naming.InitialContext;
 
@@ -291,7 +289,7 @@ public class ConnectionFactoryTest extends MessagingTestCase
 
          Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         TopicSubscriber subs = session.createDurableSubscriber(topic,
+         session.createDurableSubscriber(topic,
             "durableSubscriberChangeSelectorTest", "TEST = 'test'", false);
       }
       finally

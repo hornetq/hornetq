@@ -397,7 +397,9 @@ public class WireFormatTest extends MessagingTestCase
    
    private class TestWireFormat extends JMSWireFormat
    {      
-      private void testPacket(PacketSupport req, int id) throws Exception
+		private static final long serialVersionUID = -832216627671902129L;
+
+		private void testPacket(PacketSupport req, int id) throws Exception
       {
          ByteArrayOutputStream bos = new ByteArrayOutputStream();
          

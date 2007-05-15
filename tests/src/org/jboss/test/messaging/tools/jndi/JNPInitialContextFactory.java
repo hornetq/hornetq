@@ -28,8 +28,6 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.naming.spi.InitialContextFactory;
 
-import org.jboss.logging.Logger;
-
 /**
  * An InitialContextFactory providing InitialContext to JNDI on a remote JBoss instance.
 
@@ -41,10 +39,6 @@ import org.jboss.logging.Logger;
 public class JNPInitialContextFactory implements InitialContextFactory
 {
    // Constants -----------------------------------------------------
-
-   private static final Logger log = Logger.getLogger(JNPInitialContextFactory.class);
-
-   private static InVMContext initialContext;
 
    // Static --------------------------------------------------------
 

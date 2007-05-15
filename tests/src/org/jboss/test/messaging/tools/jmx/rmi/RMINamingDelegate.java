@@ -37,12 +37,14 @@ import java.rmi.server.UnicastRemoteObject;
 public class RMINamingDelegate extends UnicastRemoteObject implements NamingDelegate
 {
    // Constants -----------------------------------------------------
-
+	
+	private static final long serialVersionUID = -7123818911636174877L;
+	
    // Static --------------------------------------------------------
 
    // Attributes ----------------------------------------------------
 
-   private InitialContextAccess ica;
+	private InitialContextAccess ica;
    private int serverIndex;
 
    // Constructors --------------------------------------------------

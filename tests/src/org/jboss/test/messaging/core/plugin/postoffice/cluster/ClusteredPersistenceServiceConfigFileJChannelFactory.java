@@ -6,18 +6,19 @@
  */
 package org.jboss.test.messaging.core.plugin.postoffice.cluster;
 
+import java.net.URL;
+
+import javax.management.MBeanServer;
+import javax.management.ObjectName;
+
+import org.jboss.logging.Logger;
 import org.jboss.messaging.core.plugin.postoffice.cluster.jchannelfactory.JChannelFactory;
 import org.jboss.messaging.core.plugin.postoffice.cluster.jchannelfactory.MultiplexerJChannelFactory;
-import org.jboss.logging.Logger;
-import org.jboss.test.messaging.tools.jboss.ServiceDeploymentDescriptor;
+import org.jboss.messaging.util.XMLUtil;
 import org.jboss.test.messaging.tools.jboss.MBeanConfigurationElement;
-import org.jboss.jms.util.XMLUtil;
+import org.jboss.test.messaging.tools.jboss.ServiceDeploymentDescriptor;
 import org.jgroups.JChannel;
 import org.w3c.dom.Element;
-
-import javax.management.ObjectName;
-import javax.management.MBeanServer;
-import java.net.URL;
 
 /**
  * A JChannelFactory that reads the configuration of its synchronous/asynchronous JChannels from a

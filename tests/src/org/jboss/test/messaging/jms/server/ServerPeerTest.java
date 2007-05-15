@@ -44,9 +44,9 @@ import javax.naming.NameNotFoundException;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
 
+import org.jboss.jms.exception.MessagingJMSException;
 import org.jboss.jms.server.messagecounter.MessageCounter;
 import org.jboss.jms.server.messagecounter.MessageStatistics;
-import org.jboss.jms.util.MessagingJMSException;
 import org.jboss.messaging.core.tx.MessagingXid;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;

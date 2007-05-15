@@ -6,19 +6,20 @@
  */
 package org.jboss.test.messaging.tools.jboss;
 
-import org.w3c.dom.Node;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
-import org.jboss.jms.util.XMLUtil;
-import org.jboss.logging.Logger;
-
-import javax.management.ObjectName;
-import java.util.Map;
-import java.util.Set;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.ArrayList;
+import java.util.Map;
+import java.util.Set;
+
+import javax.management.ObjectName;
+
+import org.jboss.logging.Logger;
+import org.jboss.messaging.util.XMLUtil;
+import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 /**
  * The convenience object model of a JBoss <mbean> service descriptor configuration element.

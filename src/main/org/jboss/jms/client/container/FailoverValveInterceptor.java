@@ -17,7 +17,7 @@ import org.jboss.jms.client.delegate.DelegateSupport;
 import org.jboss.jms.client.remoting.JMSRemotingConnection;
 import org.jboss.jms.client.state.ConnectionState;
 import org.jboss.jms.client.state.HierarchicalState;
-import org.jboss.jms.util.MessagingNetworkFailureException;
+import org.jboss.jms.exception.MessagingNetworkFailureException;
 import org.jboss.logging.Logger;
 
 /**

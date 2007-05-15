@@ -21,10 +21,10 @@
 */
 package org.jboss.test.messaging.tools.jmx;
 
-import org.jboss.invocation.Invoker;
-import org.jboss.invocation.Invocation;
-
 import java.io.Serializable;
+
+import org.jboss.invocation.Invocation;
+import org.jboss.invocation.Invoker;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -35,6 +35,8 @@ import java.io.Serializable;
 class NoopInvoker implements Serializable, Invoker
 {
    // Constants -----------------------------------------------------
+	
+	private static final long serialVersionUID = -7508123339922333502L;
 
    // Static --------------------------------------------------------
 
@@ -44,7 +46,7 @@ class NoopInvoker implements Serializable, Invoker
 
    // Invoker implementation ----------------------------------------
 
-   public String getServerHostName() throws Exception
+	public String getServerHostName() throws Exception
    {
       return "localhost";
    }

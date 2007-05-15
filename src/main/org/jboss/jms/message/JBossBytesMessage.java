@@ -34,7 +34,7 @@ import javax.jms.JMSException;
 import javax.jms.MessageEOFException;
 import javax.jms.MessageFormatException;
 
-import org.jboss.jms.util.MessagingJMSException;
+import org.jboss.jms.exception.MessagingJMSException;
 import org.jboss.logging.Logger;
 
 /**

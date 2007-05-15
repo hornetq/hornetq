@@ -36,10 +36,6 @@ import javax.jms.TopicConnection;
 import javax.jms.TopicPublisher;
 import javax.jms.TopicSession;
 import javax.jms.TopicSubscriber;
-import javax.jms.XAConnection;
-import javax.jms.Queue;
-import javax.jms.XAConnectionFactory;
-import javax.jms.XASession;
 import javax.management.ObjectName;
 import javax.naming.InitialContext;
 

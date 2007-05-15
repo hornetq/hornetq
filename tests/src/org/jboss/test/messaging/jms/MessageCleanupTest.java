@@ -280,9 +280,9 @@ public class MessageCleanupTest extends MessagingTestCase
       
       prod.setDeliveryMode(DeliveryMode.PERSISTENT);
            
-      MessageConsumer cons1 = sess.createConsumer(topic);
+      sess.createConsumer(topic);
       
-      MessageConsumer cons2 = sess.createConsumer(topic);
+      sess.createConsumer(topic);
       
       //Don't start the connection
       

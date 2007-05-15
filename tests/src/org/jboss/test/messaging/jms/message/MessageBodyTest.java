@@ -1208,7 +1208,8 @@ public class MessageBodyTest extends MessagingTestCase
 
    static class TestSerializable implements Serializable
    {
-      String str;
+		private static final long serialVersionUID = -8641359255228705573L;
+		String str;
    }
 
    public void testObjectMessage() throws Exception

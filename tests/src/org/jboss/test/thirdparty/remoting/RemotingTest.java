@@ -66,6 +66,7 @@ public class RemotingTest extends MessagingTestCase
    // Attributes -----------------------------------------------------------------------------------
 
    InitialContext ic;
+   
    private boolean connListenerCalled;
 
    // Constructors ---------------------------------------------------------------------------------

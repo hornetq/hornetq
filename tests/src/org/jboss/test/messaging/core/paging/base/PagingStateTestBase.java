@@ -438,8 +438,7 @@ public class PagingStateTestBase extends MessagingTestCase
       while (rs.next())
       {
          long msgId = rs.getLong(1);
-         long ord = rs.getLong(2);         
-         
+
          msgIds.add(new Long(msgId));
       }
       rs.close();
@@ -481,8 +480,7 @@ public class PagingStateTestBase extends MessagingTestCase
       while (rs.next())
       {
          long msgId = rs.getLong(1);     
-         long pageOrd = rs.getLong(3);
-          
+
          msgIds.add(new Long(msgId));
       }
       rs.close();

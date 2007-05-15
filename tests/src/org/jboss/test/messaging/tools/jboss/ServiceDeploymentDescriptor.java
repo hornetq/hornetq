@@ -14,8 +14,8 @@ import java.util.List;
 
 import javax.management.ObjectName;
 
-import org.jboss.jms.util.XMLUtil;
 import org.jboss.logging.Logger;
+import org.jboss.messaging.util.XMLUtil;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;

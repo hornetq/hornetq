@@ -23,7 +23,7 @@ package org.jboss.messaging.util;
 
 import javax.jms.JMSException;
 
-import org.jboss.jms.util.MessagingJMSException;
+import org.jboss.jms.exception.MessagingJMSException;
 import org.jboss.logging.Logger;
 import org.jboss.util.id.GUID;
 

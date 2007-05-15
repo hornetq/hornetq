@@ -29,7 +29,6 @@ import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.DeliveryMode;
 import javax.jms.JMSException;
-import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.jms.ObjectMessage;
@@ -195,7 +194,7 @@ public class MemLeakTest extends MessagingTestCase
       
       for (int i = 0; i < NUM_MESSAGES; i++)
       {
-         Message m = cons.receive();
+         cons.receive();
          log.info("Received " + i);
       }
    }
@@ -220,8 +219,6 @@ public class MemLeakTest extends MessagingTestCase
 
       prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
 
-      final int NUM_MESSAGES = 100;
-      
       //send some messages
       ArrayList payLoad = new ArrayList();
       for (int i=0;i<100;i++)
@@ -294,13 +291,13 @@ public class MemLeakTest extends MessagingTestCase
       
       for (int i = 0; i < NUM_MESSAGES/2; i++)
       {
-         Message m = cons1.receive();
+         cons1.receive();
          log.info("Received " + i);
       }
       log.info("Starting second queue");
       for (int i = 0; i < NUM_MESSAGES/2; i++)
       {
-         Message m = cons2.receive();
+         cons2.receive();
          log.info("Received " + i);
       }
    }

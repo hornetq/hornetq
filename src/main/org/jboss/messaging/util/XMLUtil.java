@@ -4,25 +4,26 @@
  * Distributable under LGPL license.
  * See terms of license at gnu.org.
  */
-package org.jboss.jms.util;
+package org.jboss.messaging.util;
 
-import org.w3c.dom.Element;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.io.StringReader;
+import java.lang.reflect.Method;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+
+import org.jboss.logging.Logger;
 import org.w3c.dom.Document;
-import org.w3c.dom.Node;
+import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
-import org.jboss.logging.Logger;
-
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.DocumentBuilder;
-import java.io.StringReader;
-import java.io.Reader;
-import java.io.InputStreamReader;
-import java.net.URL;
-import java.lang.reflect.Method;
-import java.util.List;
-import java.util.ArrayList;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>

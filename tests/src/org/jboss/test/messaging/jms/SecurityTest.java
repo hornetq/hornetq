@@ -35,8 +35,8 @@ import javax.jms.Topic;
 import javax.management.ObjectName;
 import javax.naming.InitialContext;
 
-import org.jboss.jms.util.XMLUtil;
 import org.jboss.logging.Logger;
+import org.jboss.messaging.util.XMLUtil;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
 

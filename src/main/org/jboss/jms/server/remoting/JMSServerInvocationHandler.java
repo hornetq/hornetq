@@ -28,7 +28,7 @@ import java.util.Map;
 
 import javax.management.MBeanServer;
 
-import org.jboss.jms.util.MessagingJMSException;
+import org.jboss.jms.exception.MessagingJMSException;
 import org.jboss.jms.wireformat.ConnectionFactoryCreateConnectionDelegateRequest;
 import org.jboss.jms.wireformat.RequestSupport;
 import org.jboss.logging.Logger;

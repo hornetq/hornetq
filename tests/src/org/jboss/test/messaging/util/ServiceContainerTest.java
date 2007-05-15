@@ -6,17 +6,16 @@
  */
 package org.jboss.test.messaging.util;
 
-import org.jboss.logging.Logger;
-import org.jboss.test.messaging.tools.ServerManagement;
-import org.jboss.test.messaging.MessagingTestCase;
-import org.jboss.jms.client.JBossConnectionFactory;
-
-import javax.naming.InitialContext;
-import javax.jms.ConnectionFactory;
-import javax.jms.Queue;
 import javax.jms.Connection;
-import javax.jms.Session;
+import javax.jms.ConnectionFactory;
 import javax.jms.MessageProducer;
+import javax.jms.Queue;
+import javax.jms.Session;
+import javax.naming.InitialContext;
+
+import org.jboss.jms.client.JBossConnectionFactory;
+import org.jboss.test.messaging.MessagingTestCase;
+import org.jboss.test.messaging.tools.ServerManagement;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -26,8 +25,6 @@ import javax.jms.MessageProducer;
 public class ServiceContainerTest extends MessagingTestCase
 {
    // Constants -----------------------------------------------------
-
-   private static final Logger log = Logger.getLogger(ServiceContainerTest.class);
 
    // Static --------------------------------------------------------
 

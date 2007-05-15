@@ -121,7 +121,7 @@ public class PriorityLinkedListTest extends MessagingTestCase
       
       for (int i = 0; i < NUM_MESSAGES; i++)
       {
-         Object obj = list.removeFirst();
+         list.removeFirst();
       }
       
       long end = System.currentTimeMillis();
@@ -411,7 +411,7 @@ public class PriorityLinkedListTest extends MessagingTestCase
       int c = 0;
       while (iter.hasNext())
       {
-         Wibble w = (Wibble)iter.next();
+         iter.next();
          c++;
       }      
       assertEquals(c, 26);
