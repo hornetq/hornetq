@@ -49,13 +49,13 @@ import javax.sql.DataSource;
 import javax.transaction.TransactionManager;
 import javax.transaction.xa.Xid;
 
+import org.jboss.jms.tx.MessagingXid;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.message.Message;
 import org.jboss.messaging.core.message.MessageFactory;
 import org.jboss.messaging.core.message.MessageReference;
 import org.jboss.messaging.core.message.MessageSupport;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager;
-import org.jboss.messaging.core.tx.MessagingXid;
 import org.jboss.messaging.core.tx.PreparedTxInfo;
 import org.jboss.messaging.core.tx.Transaction;
 import org.jboss.messaging.core.tx.TxCallback;

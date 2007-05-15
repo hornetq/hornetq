@@ -35,11 +35,11 @@ import org.jboss.jms.delegate.ConnectionFactoryDelegate;
 import org.jboss.jms.delegate.CreateConnectionResult;
 import org.jboss.jms.exception.MessagingNetworkFailureException;
 import org.jboss.jms.server.ServerPeer;
-import org.jboss.jms.server.Version;
-import org.jboss.jms.server.remoting.JMSWireFormat;
 import org.jboss.jms.wireformat.ConnectionFactoryCreateConnectionDelegateRequest;
 import org.jboss.jms.wireformat.ConnectionFactoryGetClientAOPStackRequest;
+import org.jboss.jms.wireformat.JMSWireFormat;
 import org.jboss.jms.wireformat.ResponseSupport;
+import org.jboss.messaging.util.Version;
 import org.jboss.remoting.Client;
 import org.jboss.remoting.InvokerLocator;
 

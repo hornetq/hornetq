@@ -24,10 +24,8 @@ package org.jboss.jms.delegate;
 import javax.jms.JMSException;
 
 import org.jboss.jms.client.Closeable;
-import org.jboss.jms.delegate.SessionDelegate;
+import org.jboss.jms.tx.MessagingXid;
 import org.jboss.jms.tx.TransactionRequest;
-import org.jboss.messaging.core.plugin.IDBlock;
-import org.jboss.messaging.core.tx.MessagingXid;
 
 
 /**

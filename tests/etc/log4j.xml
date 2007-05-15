@@ -84,7 +84,7 @@
       <priority value="DEBUG"/>
    </category>
 
-   <category name="org.jboss.jms.server.remoting.JMSWireFormat">
+   <category name="org.jboss.jms.wireformat.JMSWireFormat">
       <!-- <priority value="TRACE" class="org.jboss.logging.XLevel"/> -->
       <priority value="DEBUG"/>
    </category>

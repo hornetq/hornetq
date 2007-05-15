@@ -24,7 +24,7 @@ package org.jboss.jms.wireformat;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 
-import org.jboss.messaging.core.tx.MessagingXid;
+import org.jboss.jms.tx.MessagingXid;
 
 /**
  * 

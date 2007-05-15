@@ -26,7 +26,6 @@ import java.io.DataOutputStream;
 
 import javax.transaction.xa.Xid;
 
-import org.jboss.messaging.core.tx.MessagingXid;
 import org.jboss.messaging.util.Streamable;
 
 /**

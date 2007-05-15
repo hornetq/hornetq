@@ -36,8 +36,9 @@ import org.jboss.jms.client.remoting.JMSRemotingConnection;
 import org.jboss.jms.client.state.ConnectionState;
 import org.jboss.jms.client.state.HierarchicalState;
 import org.jboss.jms.delegate.ConnectionDelegate;
+import org.jboss.jms.delegate.IDBlock;
 import org.jboss.jms.delegate.SessionDelegate;
-import org.jboss.jms.server.Version;
+import org.jboss.jms.tx.MessagingXid;
 import org.jboss.jms.tx.ResourceManagerFactory;
 import org.jboss.jms.tx.TransactionRequest;
 import org.jboss.jms.wireformat.CloseRequest;
@@ -52,8 +53,7 @@ import org.jboss.jms.wireformat.ConnectionStartRequest;
 import org.jboss.jms.wireformat.ConnectionStopRequest;
 import org.jboss.jms.wireformat.RequestSupport;
 import org.jboss.logging.Logger;
-import org.jboss.messaging.core.plugin.IDBlock;
-import org.jboss.messaging.core.tx.MessagingXid;
+import org.jboss.messaging.util.Version;
 
 /**
  * The client-side Connection delegate class.

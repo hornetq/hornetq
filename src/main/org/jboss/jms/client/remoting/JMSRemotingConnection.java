@@ -25,7 +25,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.jboss.jms.server.ServerPeer;
-import org.jboss.jms.server.remoting.JMSWireFormat;
+import org.jboss.jms.wireformat.JMSWireFormat;
 import org.jboss.logging.Logger;
 import org.jboss.remoting.Client;
 import org.jboss.remoting.InvokerLocator;

@@ -24,7 +24,7 @@ package org.jboss.jms.client.state;
 import org.jboss.jms.client.delegate.DelegateSupport;
 import org.jboss.jms.delegate.BrowserDelegate;
 import org.jboss.jms.destination.JBossDestination;
-import org.jboss.jms.server.Version;
+import org.jboss.messaging.util.Version;
 
 /**
  * State corresponding to a browser. This state is acessible inside aspects/interceptors.

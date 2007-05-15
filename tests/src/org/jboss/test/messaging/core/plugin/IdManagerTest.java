@@ -21,7 +21,7 @@
   */
 package org.jboss.test.messaging.core.plugin;
 
-import org.jboss.messaging.core.plugin.IDBlock;
+import org.jboss.jms.delegate.IDBlock;
 import org.jboss.messaging.core.plugin.IDManager;
 import org.jboss.messaging.core.plugin.JDBCPersistenceManager;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager;

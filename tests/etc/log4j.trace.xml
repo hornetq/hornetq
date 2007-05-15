@@ -75,7 +75,7 @@
       <priority value="DEBUG"/>
    </category>
 
-   <category name="org.jboss.jms.server.remoting.JMSWireFormat">
+   <category name="org.jboss.jms.wireformat.JMSWireFormat">
       <priority value="DEBUG"/>
    </category>
 

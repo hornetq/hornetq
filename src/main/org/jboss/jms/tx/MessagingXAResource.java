@@ -29,7 +29,6 @@ import org.jboss.jms.client.state.SessionState;
 import org.jboss.jms.delegate.ConnectionDelegate;
 import org.jboss.jms.exception.MessagingXAException;
 import org.jboss.logging.Logger;
-import org.jboss.messaging.core.tx.MessagingXid;
 
 /**
  * An XAResource implementation.

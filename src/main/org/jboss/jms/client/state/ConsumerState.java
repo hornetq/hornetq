@@ -29,7 +29,8 @@ import org.jboss.jms.client.remoting.CallbackManager;
 import org.jboss.jms.client.remoting.MessageCallbackHandler;
 import org.jboss.jms.delegate.ConsumerDelegate;
 import org.jboss.jms.destination.JBossDestination;
-import org.jboss.jms.server.Version;
+import org.jboss.messaging.util.Version;
+
 
 /**
  * State corresponding to a Consumer. This state is acessible inside aspects/interceptors.

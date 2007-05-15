@@ -19,7 +19,7 @@
   * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   */
-package org.jboss.jms.server.remoting;
+package org.jboss.jms.wireformat;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -31,14 +31,6 @@ import java.io.OutputStream;
 import java.util.List;
 import java.util.Map;
 
-import org.jboss.jms.wireformat.ClientDelivery;
-import org.jboss.jms.wireformat.ConnectionFactoryUpdate;
-import org.jboss.jms.wireformat.NullResponse;
-import org.jboss.jms.wireformat.PacketSupport;
-import org.jboss.jms.wireformat.PolledCallbacksDelivery;
-import org.jboss.jms.wireformat.RequestSupport;
-import org.jboss.jms.wireformat.ResponseSupport;
-import org.jboss.jms.wireformat.SerializedPacket;
 import org.jboss.logging.Logger;
 import org.jboss.remoting.InvocationRequest;
 import org.jboss.remoting.InvocationResponse;

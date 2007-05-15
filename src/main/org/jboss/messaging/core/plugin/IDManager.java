@@ -21,6 +21,7 @@
   */
 package org.jboss.messaging.core.plugin;
 
+import org.jboss.jms.delegate.IDBlock;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.plugin.contract.MessagingComponent;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager;

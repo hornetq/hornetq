@@ -24,7 +24,7 @@ package org.jboss.jms.wireformat;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 
-import org.jboss.messaging.core.plugin.IDBlock;
+import org.jboss.jms.delegate.IDBlock;
 
 /**
  * 

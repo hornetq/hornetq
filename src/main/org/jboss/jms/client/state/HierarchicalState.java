@@ -21,10 +21,10 @@
   */
 package org.jboss.jms.client.state;
 
-import org.jboss.jms.client.delegate.DelegateSupport;
-import org.jboss.jms.server.Version;
-
 import java.util.Set;
+
+import org.jboss.jms.client.delegate.DelegateSupport;
+import org.jboss.messaging.util.Version;
 
 /**
  * Any state that is Hierarchical in nature implements this interface (e.g. a connection has child

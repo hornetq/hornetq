@@ -47,7 +47,7 @@ import javax.transaction.xa.Xid;
 import org.jboss.jms.exception.MessagingJMSException;
 import org.jboss.jms.server.messagecounter.MessageCounter;
 import org.jboss.jms.server.messagecounter.MessageStatistics;
-import org.jboss.messaging.core.tx.MessagingXid;
+import org.jboss.jms.tx.MessagingXid;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
 

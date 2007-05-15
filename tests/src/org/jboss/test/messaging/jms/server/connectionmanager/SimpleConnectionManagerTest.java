@@ -36,9 +36,9 @@ import org.jboss.jms.delegate.SessionDelegate;
 import org.jboss.jms.server.ConnectionManager;
 import org.jboss.jms.server.ServerPeer;
 import org.jboss.jms.server.connectionmanager.SimpleConnectionManager;
+import org.jboss.jms.tx.MessagingXid;
 import org.jboss.jms.tx.TransactionRequest;
 import org.jboss.messaging.core.plugin.IDBlock;
-import org.jboss.messaging.core.tx.MessagingXid;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
 

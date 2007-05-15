@@ -24,8 +24,8 @@ package org.jboss.jms.message;
 import javax.jms.JMSException;
 
 import org.jboss.jms.delegate.ConnectionEndpoint;
+import org.jboss.jms.delegate.IDBlock;
 import org.jboss.logging.Logger;
-import org.jboss.messaging.core.plugin.IDBlock;
 
 /**
  * 

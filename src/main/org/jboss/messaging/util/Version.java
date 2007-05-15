@@ -4,7 +4,7 @@
  * Distributable under LGPL license.
  * See terms of license at gnu.org.
  */
-package org.jboss.jms.server;
+package org.jboss.messaging.util;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -13,7 +13,6 @@ import java.io.Serializable;
 import java.util.Properties;
 
 import org.jboss.logging.Logger;
-import org.jboss.messaging.util.Streamable;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>

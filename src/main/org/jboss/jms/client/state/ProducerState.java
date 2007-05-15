@@ -26,9 +26,9 @@ import java.util.Collections;
 import javax.jms.DeliveryMode;
 import javax.jms.Destination;
 
-import org.jboss.jms.delegate.ProducerDelegate;
-import org.jboss.jms.server.Version;
 import org.jboss.jms.client.delegate.DelegateSupport;
+import org.jboss.jms.delegate.ProducerDelegate;
+import org.jboss.messaging.util.Version;
 
 /**
  * State corresponding to a producer. This state is acessible inside aspects/interceptors.

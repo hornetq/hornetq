@@ -21,14 +21,14 @@
   */
 package org.jboss.jms.client;
 
-import org.jboss.jms.server.Version;
-
+import java.io.Serializable;
 import java.util.Enumeration;
 import java.util.Vector;
-import java.io.Serializable;
 
 import javax.jms.ConnectionMetaData;
 import javax.jms.JMSException;
+
+import org.jboss.messaging.util.Version;
 
 /**
  * Connection metadata

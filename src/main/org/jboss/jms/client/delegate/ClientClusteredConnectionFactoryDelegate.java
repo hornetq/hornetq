@@ -29,9 +29,9 @@ import javax.jms.JMSException;
 import org.jboss.jms.client.plugin.LoadBalancingPolicy;
 import org.jboss.jms.delegate.ConnectionFactoryDelegate;
 import org.jboss.jms.delegate.CreateConnectionResult;
+import org.jboss.jms.delegate.IDBlock;
 import org.jboss.jms.exception.MessagingNetworkFailureException;
 import org.jboss.logging.Logger;
-import org.jboss.messaging.core.plugin.IDBlock;
 
 /**
  * A ClientClusteredConnectionFactoryDelegate.

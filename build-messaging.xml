@@ -455,13 +455,20 @@
                        value="jboss-aop.jar jboss-remoting.jar jboss-serialization.jar javassist.jar trove.jar jboss-common-core.jar jboss-common-client.jar jboss-j2ee.jar jboss-j2se.jar jnp-client.jar concurrent.jar log4j.jar commons-logging.jar"/>
          </manifest>
          <fileset dir="${build.classes}">
+            <!-- This structur is temporary until we partition the classes
+                 properly between client and server -->
             <include name="org/jboss/jms/client/**/*.class"/>
             <include name="org/jboss/jms/delegate/**/*.class"/>
             <include name="org/jboss/jms/destination/**/*.class"/>
             <include name="org/jboss/jms/message/**/*.class"/>
             <include name="org/jboss/jms/tx/**/*.class"/>
             <include name="org/jboss/jms/referenceable/*.class"/>
+	    <include name="org/jboss/jms/exception/*.class"/>
+            <include name="org/jboss/jms/wireformat/*.class"/>
             <include name="org/jboss/messaging/util/**/*.class"/>
+	    <include name="org/jboss/messaging/core/message/**/*.class"/>
+            <!-- Need server socket wrapper -->
+            <include name="org/jboss/jms/server/remoting/**/*.class"/>
          </fileset>
          <fileset dir="${build.etc}">
             <include name="VERSION"/>
