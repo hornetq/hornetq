@@ -23,8 +23,6 @@
    <property name="jboss.home" value="${ENV.JBOSS_HOME}"/>
    <property name="messaging.config.name" value="messaging"/>
    <property name="messaging.config.source" value="default"/>
-   <property name="id" value="0"/>
-   <property name="database" value="mysql"/>
 
    <!--
         DO NOT change these values here, otherwise the installation script might break. If you need
