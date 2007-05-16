@@ -121,8 +121,9 @@
             todir="${jboss.home}/server/${messaging.config.name}/deploy"/>
 
       <!-- Copy the JMS provider loader stuff -->
-      <copy file="${jboss.home}/server/${messaging.config.source}/deploy/jms/jms-ds.xml"
-            todir="${jboss.home}/server/${messaging.config.name}/deploy"/>
+      <copy todir="${jboss.home}/server/${messaging.config.name}/deploy">
+         <fileset dir="${jboss.home}/server/${messaging.config.source}/deploy/jms" includes="jms-ds.xml,hajndi-jms-ds.xml"/>
+      </copy>
 
    </target>
 
