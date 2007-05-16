@@ -164,11 +164,13 @@
       <antcall target="run-example">
          <param name="example.name" value="queue"/>
          <param name="example.queue.name" value="SmokeTestQueue"/>
+         <param name="jboss.home" value="${jboss.home}"/>
       </antcall>
 
       <antcall target="run-example">
          <param name="example.name" value="topic"/>
          <param name="example.topic.name" value="SmokeTestTopic"/>
+         <param name="jboss.home" value="${jboss.home}"/>
       </antcall>
 
       <antcall target="run-example">
@@ -230,6 +232,7 @@
       <antcall target="sleep"><param name="sleep.interval" value="8"/></antcall>
       <antcall target="ping-queue">
          <param name="example.queue.name" value="SmokeTestQueue"/>
+         <param name="jnpPort" value="1199"/>
       </antcall>
 
       <!--
@@ -242,6 +245,7 @@
       <antcall target="sleep"><param name="sleep.interval" value="8"/></antcall>
       <antcall target="ping-queue">
          <param name="example.queue.name" value="DistributedSmokeTestQueue"/>
+         <param name="jnpPort" value="1199"/>
       </antcall>
 
       <!--
@@ -255,6 +259,7 @@
       <antcall target="sleep"><param name="sleep.interval" value="8"/></antcall>
       <antcall target="ping-topic">
          <param name="example.topic.name" value="SmokeTestTopic"/>
+         <param name="jnpPort" value="1199"/>
       </antcall>
 
       <!--
@@ -267,6 +272,7 @@
       <antcall target="sleep"><param name="sleep.interval" value="8"/></antcall>
       <antcall target="ping-topic">
          <param name="example.topic.name" value="DistributedSmokeTestTopic"/>
+         <param name="jnpPort" value="1199"/>
       </antcall>
 
       <!--

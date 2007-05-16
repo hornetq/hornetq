@@ -37,9 +37,6 @@
    <!-- The name of the sar -->
    <property name="sar.name" value="jboss-messaging.sar"/>
 
-   <!-- The location of datasource file - used for clustered install -->
-   <property name="datasource.location" value="../examples/config"/>
-
    <!-- ======================================================================================== -->
    <!-- Top level targets. These are the "modes" this script is supposed to work in.             -->
    <!-- ======================================================================================== -->
