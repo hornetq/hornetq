@@ -376,6 +376,13 @@ public class ServerManagement
 
       sb.append("-Dtest.bind.address=localhost").append(' ');
 
+      String jgroupsBindAddr = System.getProperty(org.jgroups.Global.BIND_ADDR);
+      if (jgroupsBindAddr != null)
+      {
+         sb.append("-D").append(org.jgroups.Global.BIND_ADDR).append("=")
+            .append(jgroupsBindAddr).append(' ');
+      }
+
       String database = System.getProperty("test.database");
       if (database != null)
       {
@@ -448,7 +455,7 @@ public class ServerManagement
       }
 
       sb.append("org.jboss.test.messaging.tools.jmx.rmi.RMITestServer");
-
+      
       String commandLine = sb.toString();
 
       //System.out.println(commandLine);
