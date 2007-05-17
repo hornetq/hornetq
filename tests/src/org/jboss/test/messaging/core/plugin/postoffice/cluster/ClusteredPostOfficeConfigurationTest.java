@@ -9,10 +9,8 @@ import org.jboss.messaging.core.plugin.contract.ClusteredPostOffice;
 import org.jboss.messaging.core.plugin.postoffice.cluster.DefaultClusteredPostOffice;
 import org.jboss.test.messaging.core.plugin.base.PostOfficeTestBase;
 import org.jgroups.JChannel;
-import org.jgroups.protocols.TP;
 import org.jgroups.protocols.UDP;
 import org.jgroups.stack.Protocol;
-import org.jgroups.stack.ProtocolStack;
 
 // This test assumes that bind_addr is not set in the clustered-*-persistence.xml
 // configuration file!
@@ -80,12 +78,16 @@ public class ClusteredPostOfficeConfigurationTest extends PostOfficeTestBase
    private void assertChannelsBoundTo(InetAddress bindAddress) throws Exception {
       String addressAsString = bindAddress.toString();
       ClusteredPostOffice postOffice = createClusteredPostOfficeSimple();
-
-      JChannel syncChannel = getPostOfficeSyncChannel(postOffice);
-      assertEquals(addressAsString, getUDPBindAddress(syncChannel));
       
-      JChannel asyncChannel = getPostOfficeAsyncChannel(postOffice);
-      assertEquals(addressAsString, getUDPBindAddress(asyncChannel));
+      try {
+         JChannel syncChannel = getPostOfficeSyncChannel(postOffice);
+         assertEquals(addressAsString, getUDPBindAddress(syncChannel));
+         
+         JChannel asyncChannel = getPostOfficeAsyncChannel(postOffice);
+         assertEquals(addressAsString, getUDPBindAddress(asyncChannel));
+      } finally {
+         postOffice.stop();
+      }
    }
 
    public void testNoProperties() throws Exception {
@@ -100,5 +102,17 @@ public class ClusteredPostOfficeConfigurationTest extends PostOfficeTestBase
       String address = "127.0.0.1";
       System.setProperty(org.jgroups.Global.BIND_ADDR, address);
       assertChannelsBoundTo(InetAddress.getByName(address));
+   }
+   
+   public void testIgnoreBindAddressPropertySet() throws Exception {
+      InetAddress defaultAddress = org.jgroups.util.Util.getFirstNonLoopbackAddress();
+      if (defaultAddress == null) {
+         fail("No address available for JGroups to bind to");
+      }
+      
+      String address = "127.0.0.1";
+      System.setProperty(org.jgroups.Global.BIND_ADDR, address);
+      System.setProperty(org.jgroups.Global.IGNORE_BIND_ADDRESS_PROPERTY, "true");
+      assertChannelsBoundTo(defaultAddress);
    }
 }
