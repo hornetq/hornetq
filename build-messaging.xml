@@ -520,6 +520,7 @@
 
       <copy todir="${release.output}" file="${build.lib}/jboss-${module.name}.sar"/>
       <copy todir="${release.output}" file="${build.lib}/jboss-${module.name}-client.jar"/>
+      <copy todir="${release.output}" file="${build.lib}/jboss-${module.name}-fat-client.jar"/>
       <copy todir="${release.output}" file="./docs/README.html"/>
       <copy todir="${release.output}" file="./JBossORG-EULA.txt"/>
       <copy todir="${release.output}/api">
