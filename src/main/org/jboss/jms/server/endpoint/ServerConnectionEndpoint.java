@@ -21,6 +21,7 @@
   */
 package org.jboss.jms.server.endpoint;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -45,7 +46,6 @@ import org.jboss.jms.server.JMSCondition;
 import org.jboss.jms.server.SecurityManager;
 import org.jboss.jms.server.ServerPeer;
 import org.jboss.jms.server.endpoint.advised.SessionAdvised;
-import org.jboss.jms.server.messagecounter.MessageCounter;
 import org.jboss.jms.tx.ClientTransaction;
 import org.jboss.jms.tx.MessagingXid;
 import org.jboss.jms.tx.TransactionRequest;
@@ -55,6 +55,7 @@ import org.jboss.jms.wireformat.JMSWireFormat;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.message.Message;
 import org.jboss.messaging.core.message.MessageReference;
+import org.jboss.messaging.core.plugin.contract.ClusteredPostOffice;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.plugin.contract.PostOffice;
 import org.jboss.messaging.core.tx.Transaction;
@@ -386,25 +387,32 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
    
                if (dest.isQueue())
                {     
-                  postOffice.unbindQueue(dest.getName()); 
-                  
-                  String counterName =
-                     ServerSessionEndpoint.TEMP_QUEUE_MESSAGECOUNTER_PREFIX + dest.getName();
-                  
-                  MessageCounter counter =
-                     serverPeer.getMessageCounterManager().unregisterMessageCounter(counterName);
-                  
-                  if (counter == null)
-                  {
-                     throw new IllegalStateException(
-                        "Cannot find counter to unregister " + counterName);
-                  }
+               	if (postOffice.isLocal())
+               	{
+               		postOffice.unbindQueue(dest.getName());
+               	}
+               	else
+               	{
+               		((ClusteredPostOffice)postOffice).unbindClusteredQueue(dest.getName());
+               	}
                }
                else
                {
-                  //No need to unbind - this will already have happened, and all removeAllReferences
+                  //No need to unbind - this will already have happened, and removeAllReferences
                   //will have already been called when the subscriptions were closed
-                  //which always happens before the connection closed (depth first close)              
+                  //which always happens before the connection closed (depth first close)     
+               	//note there are no durable subs on a temporary topic
+               	
+               	//Sanity check
+               	
+               	Collection bindings =
+                     postOffice.getBindingsForCondition(new JMSCondition(false, dest.getName()));
+                  
+                  if (!bindings.isEmpty())
+               	{
+                  	//This should never happen
+                  	throw new IllegalStateException("Cannot delete temporary destination if it has consumer(s)");
+               	}
                }
             }
             

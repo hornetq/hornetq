@@ -64,9 +64,9 @@ public class ManagedQueue extends ManagedDestination
    {
    }
 
-   public ManagedQueue(String name, int fullSize, int pageSize, int downCacheSize)
+   public ManagedQueue(String name, int fullSize, int pageSize, int downCacheSize, boolean clustered)
    {
-      super(name, fullSize, pageSize, downCacheSize);
+      super(name, fullSize, pageSize, downCacheSize, clustered);
    }
 
    // ManagedDestination overrides -----------------------------------------------------------------

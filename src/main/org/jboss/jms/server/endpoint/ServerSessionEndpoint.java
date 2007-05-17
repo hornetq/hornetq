@@ -71,6 +71,7 @@ import org.jboss.messaging.core.local.PagingFilteredQueue;
 import org.jboss.messaging.core.message.MessageReference;
 import org.jboss.messaging.core.plugin.IDManager;
 import org.jboss.messaging.core.plugin.contract.ClusteredPostOffice;
+import org.jboss.messaging.core.plugin.contract.Condition;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
 import org.jboss.messaging.core.plugin.contract.PersistenceManager;
 import org.jboss.messaging.core.plugin.contract.PostOffice;
@@ -526,13 +527,16 @@ public class ServerSessionEndpoint implements SessionEndpoint
          int pageSize = connectionEndpoint.getDefaultTempQueuePageSize();
          int downCacheSize = connectionEndpoint.getDefaultTempQueueDownCacheSize();
          
+         //Temporary destinations are clustered if the post office is clustered
+         boolean clustered = !postOffice.isLocal();
+         
          if (dest.isTopic())
          {
-            mDest = new ManagedTopic(dest.getName(), fullSize, pageSize, downCacheSize);
+            mDest = new ManagedTopic(dest.getName(), fullSize, pageSize, downCacheSize, clustered);
          }
          else
          {
-            mDest = new ManagedQueue(dest.getName(), fullSize, pageSize, downCacheSize);
+            mDest = new ManagedQueue(dest.getName(), fullSize, pageSize, downCacheSize, clustered);
          }
          
          dm.registerDestination(mDest);
@@ -541,20 +545,31 @@ public class ServerSessionEndpoint implements SessionEndpoint
          {            
             Queue coreQueue;
 
-            coreQueue = new PagingFilteredQueue(dest.getName(),
-                                                idm.getID(), ms, pm, true, false,
-                                                -1, null, fullSize, pageSize, downCacheSize);
-
-            String counterName = TEMP_QUEUE_MESSAGECOUNTER_PREFIX + dest.getName();
+            if (clustered)
+            {
+               coreQueue = new LocalClusteredQueue((ClusteredPostOffice)postOffice, nodeId, dest.getName(),
+										                     idm.getID(), ms, pm, true, false,
+										                     -1, null, tr,
+										                     fullSize, pageSize, downCacheSize);
+            }
+            else
+            {
+	            coreQueue = new PagingFilteredQueue(dest.getName(),
+	                                                idm.getID(), ms, pm, true, false,
+	                                                -1, null, fullSize, pageSize, downCacheSize);
+            }
+        
+            Condition cond = new JMSCondition(true, dest.getName());
             
-            MessageCounter counter =
-               new MessageCounter(counterName, null, coreQueue, false, false,
-                                  sp.getDefaultMessageCounterHistoryDayLimit());
-            
-            sp.getMessageCounterManager().registerMessageCounter(counterName, counter);
-                                 
-            // make a binding for this queue
-            postOffice.bindQueue(new JMSCondition(true, dest.getName()), coreQueue);
+         	// make a binding for this queue
+            if (clustered)
+            {
+            	((ClusteredPostOffice)postOffice).bindClusteredQueue(cond, (LocalClusteredQueue)coreQueue);
+            }
+            else
+            {
+            	postOffice.bindQueue(cond, coreQueue);
+            }
          }         
       }
       catch (Throwable t)
@@ -575,7 +590,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
          if (!dest.isTemporary())
          {
             throw new InvalidDestinationException("Destination:" + dest +
-               " is not a temporary destination");
+                                                  " is not a temporary destination");
          }
          
          ManagedDestination mDest = dm.getDestination(dest.getName(), dest.isQueue());
@@ -595,19 +610,14 @@ public class ServerSessionEndpoint implements SessionEndpoint
          	}
          	
             //Unbind
-            postOffice.unbindQueue(dest.getName());
-            
-            String counterName = TEMP_QUEUE_MESSAGECOUNTER_PREFIX + dest.getName();
-            
-            connectionEndpoint.removeTemporaryDestination(dest);
-            
-            MessageCounter counter =
-               sp.getMessageCounterManager().unregisterMessageCounter(counterName);
-            
-            if (counter == null)
-            {
-               throw new IllegalStateException("Cannot find counter to unregister " + counterName);
-            }
+         	if (mDest.isClustered())
+         	{
+         		((ClusteredPostOffice)postOffice).unbindClusteredQueue(dest.getName());
+         	}
+         	else
+         	{
+         		postOffice.unbindQueue(dest.getName());
+         	}            
          }
          else
          {
@@ -615,18 +625,17 @@ public class ServerSessionEndpoint implements SessionEndpoint
             Collection bindings =
                postOffice.getBindingsForCondition(new JMSCondition(false, dest.getName()));
             
-            Iterator iter = bindings.iterator();
-            
-            while (iter.hasNext())
-            {
-            	Binding binding = (Binding)iter.next();
-            	
-            	if (binding.getQueue().getNumberOfReceivers() != 0)
-            	{
-            		throw new IllegalStateException("Cannot delete temporary destination if it has consumer(s)");
-            	}
-            }
+            if (!bindings.isEmpty())
+         	{
+            	throw new IllegalStateException("Cannot delete temporary destination if it has consumer(s)");
+         	}
+                        
+            // There is no need to explicitly unbind the subscriptions for the temp topic, this is because we
+            // will not get here unless there are no bindings.
+            // Note that you cannot create surable subs on a temp topic
          }
+         
+         connectionEndpoint.removeTemporaryDestination(dest);         
          
          dm.unregisterDestination(mDest);                             
       }
@@ -1228,11 +1237,15 @@ public class ServerSessionEndpoint implements SessionEndpoint
                dayLimitToUse = sp.getDefaultMessageCounterHistoryDayLimit();
             }
             
-            MessageCounter counter =
-               new MessageCounter(counterName, null, q, true, false,
-                                  dayLimitToUse);
-            
-            sp.getMessageCounterManager().registerMessageCounter(counterName, counter);
+            //We don't create message counters on temp topics
+            if (!mDest.isTemporary())
+            {
+	            MessageCounter counter =
+	               new MessageCounter(counterName, null, q, true, false,
+	                                  dayLimitToUse);
+	            
+	            sp.getMessageCounterManager().registerMessageCounter(counterName, counter);
+            }
          }
          else
          {
@@ -1292,13 +1305,18 @@ public class ServerSessionEndpoint implements SessionEndpoint
                      binding = cpo.bindQueue(topicCond, q);
                   }
                }
-               String counterName = TopicService.SUBSCRIPTION_MESSAGECOUNTER_PREFIX + q.getName();
-                       
-               MessageCounter counter =
-                  new MessageCounter(counterName, subscriptionName, q, true, true,
-                                     mDest.getMessageCounterHistoryDayLimit());
                
-               sp.getMessageCounterManager().registerMessageCounter(counterName, counter);
+               //We don't create message counters on temp topics
+               if (!mDest.isTemporary())
+               {	               
+	               String counterName = TopicService.SUBSCRIPTION_MESSAGECOUNTER_PREFIX + q.getName();
+	                       
+	               MessageCounter counter =
+	                  new MessageCounter(counterName, subscriptionName, q, true, true,
+	                                     mDest.getMessageCounterHistoryDayLimit());
+	               
+	               sp.getMessageCounterManager().registerMessageCounter(counterName, counter);
+               }
             }
             else
             {
@@ -1389,11 +1407,14 @@ public class ServerSessionEndpoint implements SessionEndpoint
                   }
                   String counterName = TopicService.SUBSCRIPTION_MESSAGECOUNTER_PREFIX + q.getName();
                   
-                  MessageCounter counter =
-                     new MessageCounter(counterName, subscriptionName, q, true, true,
-                                        mDest.getMessageCounterHistoryDayLimit());
-                  
-                  sp.getMessageCounterManager().registerMessageCounter(counterName, counter);
+                  if (!mDest.isTemporary())
+                  {
+	                  MessageCounter counter =
+	                     new MessageCounter(counterName, subscriptionName, q, true, true,
+	                                        mDest.getMessageCounterHistoryDayLimit());
+	                  
+	                  sp.getMessageCounterManager().registerMessageCounter(counterName, counter);
+                  }
                }
             }
          }

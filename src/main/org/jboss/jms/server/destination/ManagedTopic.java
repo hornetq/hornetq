@@ -51,9 +51,9 @@ public class ManagedTopic extends ManagedDestination
    {      
    }
    
-   public ManagedTopic(String name, int fullSize, int pageSize, int downCacheSize)
+   public ManagedTopic(String name, int fullSize, int pageSize, int downCacheSize, boolean clustered)
    {
-      super(name, fullSize, pageSize, downCacheSize);           
+      super(name, fullSize, pageSize, downCacheSize, clustered);           
    }
 
    public void removeAllMessages() throws Throwable

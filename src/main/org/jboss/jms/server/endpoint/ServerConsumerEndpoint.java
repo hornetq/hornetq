@@ -28,6 +28,8 @@ import javax.jms.JMSException;
 import org.jboss.jms.delegate.ConsumerEndpoint;
 import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.message.JBossMessage;
+import org.jboss.jms.server.ServerPeer;
+import org.jboss.jms.server.destination.ManagedDestination;
 import org.jboss.jms.server.destination.TopicService;
 import org.jboss.jms.server.messagecounter.MessageCounter;
 import org.jboss.jms.server.selector.Selector;
@@ -482,14 +484,20 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
 
          Binding binding = postOffice.getBindingForQueueName(queueName);
 
-         // Note binding can be null since there can many competing subscribers for the
-         // subscription - in which case the first will have removed the subscription and
-         // subsequently ones won't find it
-
-         if (binding != null && !binding.getQueue().isRecoverable())
+         if (binding == null)
+         {
+         	//Sanity check
+         	throw new IllegalStateException("Cannot find binding for topic sub with queue name: " + queueName);
+         }
+                  
+         ServerPeer sp = sessionEndpoint.getConnectionEndpoint().getServerPeer();
+         
+         ManagedDestination mDest = sp.getDestinationManager().getDestination(destination.getName(), false);
+         
+         if (!binding.getQueue().isRecoverable())
          {
             Queue queue = binding.getQueue();
-            if (!queue.isClustered())
+            if (!mDest.isClustered())
             {
                postOffice.unbindQueue(queue.getName());
             }
@@ -498,15 +506,16 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
                ((ClusteredPostOffice)postOffice).unbindClusteredQueue(queue.getName());
             }
 
-            String counterName = TopicService.SUBSCRIPTION_MESSAGECOUNTER_PREFIX + queueName;
-
-            MessageCounter counter = sessionEndpoint.getConnectionEndpoint()
-                     .getServerPeer().getMessageCounterManager()
-                     .unregisterMessageCounter(counterName);
-
-            if (counter == null)
+            if (!mDest.isTemporary())
             {
-               throw new IllegalStateException("Cannot find counter to remove " + counterName);
+	            String counterName = TopicService.SUBSCRIPTION_MESSAGECOUNTER_PREFIX + queueName;
+	
+	            MessageCounter counter = sp.getMessageCounterManager().unregisterMessageCounter(counterName);
+	
+	            if (counter == null)
+	            {
+	               throw new IllegalStateException("Cannot find counter to remove " + counterName);
+	            }
             }
          }
       }

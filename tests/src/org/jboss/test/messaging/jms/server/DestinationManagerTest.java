@@ -382,9 +382,9 @@ public class DestinationManagerTest extends MessagingTestCase
       
       dm.start();
         
-      ManagedQueue queue1 = new ManagedQueue("queue1", 1000, 10, 10);
+      ManagedQueue queue1 = new ManagedQueue("queue1", 1000, 10, 10, false);
       
-      ManagedTopic topic1 = new ManagedTopic("topic1", 1000, 10, 10);
+      ManagedTopic topic1 = new ManagedTopic("topic1", 1000, 10, 10, false);
       
       dm.registerDestination(queue1);
       

@@ -96,12 +96,13 @@ public abstract class ManagedDestination implements MessagingComponent
    /*
     * Constructor for temporary destinations
     */
-   public ManagedDestination(String name, int fullSize, int pageSize, int downCacheSize)
+   public ManagedDestination(String name, int fullSize, int pageSize, int downCacheSize, boolean clustered)
    {
       this.name = name;
       this.fullSize = fullSize;
       this.pageSize = pageSize;
       this.downCacheSize = downCacheSize;
+      this.clustered = clustered;
    }
 
    public boolean isClustered()
