@@ -27,13 +27,17 @@ import org.jboss.example.jms.webservices.endpoint.JMSSample;
 import org.jboss.ws.core.jaxrpc.client.ServiceFactoryImpl;
 import org.jboss.ws.core.jaxrpc.client.ServiceImpl;
 import javax.xml.rpc.ServiceFactory;
+import javax.xml.rpc.ServiceException;
 import javax.xml.namespace.QName;
 import javax.naming.InitialContext;
+import javax.naming.NamingException;
 import javax.jms.Destination;
 import javax.jms.ConnectionFactory;
 import javax.jms.Session;
 import java.net.URL;
+import java.net.MalformedURLException;
 import java.io.File;
+import java.rmi.RemoteException;
 
 import javax.jms.*;
 import javax.jms.IllegalStateException;
@@ -47,9 +51,21 @@ import javax.jms.IllegalStateException;
  */
 public class Client extends ExampleSupport
 {
+   private static final String MESSAGE_TEXT = "Hello from a WebService!";
+
    public void example() throws Exception
    {
-      ServiceFactoryImpl factory = (ServiceFactoryImpl)ServiceFactory.newInstance();
+      sendMessage();
+
+      receiveMessage();
+
+      System.out.println("Message was received ok!");
+   }
+
+   private void sendMessage()
+      throws ServiceException, MalformedURLException, RemoteException
+   {
+      ServiceFactoryImpl factory = (ServiceFactoryImpl) ServiceFactory.newInstance();
 
       URL wsdlLocation = new URL("http://127.0.0.1:8080/jms-web-service/JMSWebServiceExample?wsdl");
       QName serviceName = new QName("http://endpoint.webservices.jms.example.jboss.org/", "JMSSampleService");
@@ -58,14 +74,16 @@ public class Client extends ExampleSupport
 
       ServiceImpl service = (ServiceImpl)factory.createService(wsdlLocation, serviceName, fileMapping.toURL());
 
-      JMSSample sample = (JMSSample)service.getPort(JMSSample.class);
+      JMSSample proxy = (JMSSample)service.getPort(JMSSample.class);
 
-      sample.sendMessage("queue/testQueue","Hello from a WebService!");
+      proxy.sendMessage(getDestinationJNDIName(), MESSAGE_TEXT);
+   }
 
-
-
+   private void receiveMessage()
+      throws NamingException, JMSException
+   {
       InitialContext ctx = new InitialContext();
-      Destination dest = (Destination)ctx.lookup("queue/testQueue");
+      Destination dest = (Destination)ctx.lookup(getDestinationJNDIName());
 
       ConnectionFactory cf = (ConnectionFactory)ctx.lookup("/ConnectionFactory");
       Connection conn = cf.createConnection();
@@ -83,12 +101,10 @@ public class Client extends ExampleSupport
          throw new IllegalStateException("Couldn't receive message");
       }
 
-      if (!msg.getText().equals("Hello from a WebService!"))
+      if (!msg.getText().equals(MESSAGE_TEXT))
       {
          throw new IllegalStateException("Couldn't receive message");
       }
-
-      System.out.println("Received message ok!");
    }
 
    protected boolean isQueueExample()
@@ -98,6 +114,6 @@ public class Client extends ExampleSupport
 
    public static void main(String[] args) throws Exception
    {
-      new Client().example();
+      new Client().run();
    }
 }

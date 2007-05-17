@@ -32,6 +32,9 @@
       <pathelement path="../common/output/classes"/>
       <pathelement path="./output/classes"/>
       <pathelement location="${messaging.client.jar.path}/${messaging.client.jar.name}"/>
+
+      <!-- all this stuff for WebServices -->
+      <pathelement location="${jboss.home}/lib/endorsed/xercesImpl.jar"/>
       <pathelement location="${jboss.client}/activation.jar"/>
       <pathelement location="${jboss.client}/commons-logging.jar"/>
       <pathelement location="${jboss.client}/javassist.jar"/>
@@ -54,7 +57,6 @@
       <pathelement path="./output/client-classes"/>
 
       <!-- all this stuff for WebServices -->
-      <pathelement location="${messaging.client.jar.path}/${messaging.client.jar.name}"/>
       <pathelement location="${jboss.client}/activation.jar"/>
       <pathelement location="${jboss.client}/commons-logging.jar"/>
       <pathelement location="${jboss.client}/javassist.jar"/>
@@ -68,9 +70,10 @@
       <pathelement location="${jboss.client}/jboss-saaj.jar"/>
       <pathelement location="${jboss.client}/wsdl4j.jar"/>
       <pathelement location="${jboss.client}/jaxb-api.jar"/>
-      <pathelement location="${jboss.home}//lib/endorsed/xercesImpl.jar"/>
+      <pathelement location="${jboss.home}/lib/endorsed/xercesImpl.jar"/>
 
 
+      <pathelement location="${messaging.client.jar.path}/${messaging.client.jar.name}"/>
       <pathelement location="${jboss.home}/client/jbossall-client.jar"/>
       <pathelement location="${jboss.home}/server/${jboss.configuration}/lib/log4j.jar"/>
       <pathelement location="${jboss.home}/server/${jboss.configuration}/lib/javassist.jar"/>
