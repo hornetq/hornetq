@@ -12,8 +12,10 @@
 
    <property environment="ENV"/>
 
+   <property file="../examples.properties"/>
+
    <!-- These properties may be overriden by calling ants when this example is used in a smoke test -->
-   <property name="messaging.client.jar.path" value="../../"/>
+   <property file="../examples.properties"/>
    <property name="messaging.client.jar.name" value="jboss-messaging-client.jar"/>
    <property name="jboss.home" value="${ENV.JBOSS_HOME}"/>
    <property name="jboss.configuration0" value="messaging-node0"/>

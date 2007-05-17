@@ -110,15 +110,15 @@
            4.2.0.GA
       -->
 
-      
+
       <antcall target="installation-test">
          <param name="jboss.home" value="${jboss420GA.home}"/>
-      </antcall>      
+      </antcall>
 
    </target>
 
    <target name="old-client-compatibility-tests">
-      
+
       <!-- ====================================================  -->
       <!--                                                       -->
       <!--  Add here other old client versions to test:          -->
@@ -164,13 +164,11 @@
       <antcall target="run-example">
          <param name="example.name" value="queue"/>
          <param name="example.queue.name" value="SmokeTestQueue"/>
-         <param name="jboss.home" value="${jboss.home}"/>
       </antcall>
 
       <antcall target="run-example">
          <param name="example.name" value="topic"/>
          <param name="example.topic.name" value="SmokeTestTopic"/>
-         <param name="jboss.home" value="${jboss.home}"/>
       </antcall>
 
       <antcall target="run-example">
@@ -232,7 +230,6 @@
       <antcall target="sleep"><param name="sleep.interval" value="8"/></antcall>
       <antcall target="ping-queue">
          <param name="example.queue.name" value="SmokeTestQueue"/>
-         <param name="jnpPort" value="1199"/>
       </antcall>
 
       <!--
@@ -245,7 +242,6 @@
       <antcall target="sleep"><param name="sleep.interval" value="8"/></antcall>
       <antcall target="ping-queue">
          <param name="example.queue.name" value="DistributedSmokeTestQueue"/>
-         <param name="jnpPort" value="1199"/>
       </antcall>
 
       <!--
@@ -259,7 +255,6 @@
       <antcall target="sleep"><param name="sleep.interval" value="8"/></antcall>
       <antcall target="ping-topic">
          <param name="example.topic.name" value="SmokeTestTopic"/>
-         <param name="jnpPort" value="1199"/>
       </antcall>
 
       <!--
@@ -272,7 +267,6 @@
       <antcall target="sleep"><param name="sleep.interval" value="8"/></antcall>
       <antcall target="ping-topic">
          <param name="example.topic.name" value="DistributedSmokeTestTopic"/>
-         <param name="jnpPort" value="1199"/>
       </antcall>
 
       <!--
@@ -495,7 +489,7 @@
       -->
 
       <antcall target="run-all-clustered-examples"/>
-                                                                                  
+
    </target>
 
    <target name="check-java-version">
@@ -589,9 +583,7 @@
 
       <ant dir="../../docs/examples/${example.name}" antfile="build.xml" target="clean"/>
 
-      <ant dir="../../docs/examples/${example.name}" antfile="build.xml">
-         <property name="messaging.client.jar.path" value="../../../output/lib"/>
-      </ant>
+      <ant dir="../../docs/examples/${example.name}" antfile="build.xml"/>
 
       <echo message="Example ${example.name} executed successfully, cleaning ..."/>
 

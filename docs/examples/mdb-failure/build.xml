@@ -16,6 +16,7 @@
    <property name="undeploy.failonerror" value="true"/>
 
    <!-- These properties may be overriden by calling ants when this example is used in a smoke test -->
+   <property file="../examples.properties"/>
    <property name="messaging.client.jar.path" value="../../"/>
    <property name="messaging.client.jar.name" value="jboss-messaging-client.jar"/>
    <property name="jboss.home" value="${ENV.JBOSS_HOME}"/>
