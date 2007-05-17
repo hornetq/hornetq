@@ -1,86 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <chapter id="installation">
   <title>JBoss Messaging Non-Clustered Installation</title>
 
-   <para>
-      This section describes the procedure to perfom a non-clustered installation. At the
-      end of this procedure, you will create a JBoss Messaging configuration that will
-      start a non-clustered messaging server. To find out how you can install JBoss Messaging
-      in a clustered configuration, please proceed to <xref linkend="c_installation"/>.
-   </para>
+  <para>This section describes the procedure to perfom a non-clustered
+  installation. At the end of this procedure, you will create a JBoss
+  Messaging configuration that will start a non-clustered messaging server. To
+  find out how you can install JBoss Messaging in a clustered configuration,
+  please proceed to <xref linkend="c_installation" />.</para>
 
-   <para>
-      By default, a JBoss AS 4.0.x and 4.2.0 instance ships with JBossMQ as default JMS provider.
-      In order to use the JBoss AS instance with JBoss Messaging, you need to perform the
-      installation procedure described below.
-   </para>
+  <para>By default, a JBoss AS 4.0.x and 4.2.0 instance ships with JBossMQ as
+  default JMS provider. In order to use the JBoss AS instance with JBoss
+  Messaging, you need to perform the installation procedure described
+  below.</para>
 
-   <para>
-      <warning>
-         A JBossMQ and a JBoss Messaging instance cannot coexist, at least not unless special
-         precautions are taken. Do not simply attempt to copy the Messaging release artifact
-         <filename>jboss-messaging-scoped.sar</filename> over to the JBoss instance
-         <filename>deploy</filename> directory. Follow one of the alternate installation procedures
-         outlined below instead.
-      </warning>
-   </para>
+  <para><warning>
+       A JBossMQ and a JBoss Messaging instance cannot coexist, at least not unless special precautions are taken. Do not simply attempt to copy the Messaging release artifact 
 
+      <filename>jboss-messaging-scoped.sar</filename>
+
+       over to the JBoss instance 
+
+      <filename>deploy</filename>
+
+       directory. Follow one of the alternate installation procedures outlined below instead. 
+    </warning></para>
 
   <section id="install4">
-     <title>Installing JBoss Messaging with JBoss AS 4.0.x and 4.2.1</title>
-
-      <note>
-          You need Apache ant 1.7.0 or newer pre-installed on your system and available in
-          you path in order to be able to perform the installation process described below.
-      </note>
+    <title>Installing JBoss Messaging on JBoss AS 4.2.0.GA</title>
 
     <section id="install4.automated">
-     <title>Installation procedure</title>
+      <title>Installation procedure</title>
 
-      <para>
-         Set up the <literal>JBOSS_HOME</literal> environment variable to point to
-         the JBoss 4.x installation you want to use JBoss Messaging with. Run the installation
-         script, available in the  <filename>util</filename> directory of the release bundle.
-      </para>
+      <para>Set up the <literal>JBOSS_HOME</literal> environment variable to
+      point to the JBoss 4.x installation you want to use JBoss Messaging
+      with. Run the installation script, available in the
+      <filename>util</filename> directory of the release bundle.</para>
 
-       <programlisting>
-cd util
-ant -f release-admin.xml
-       </programlisting>
+      <programlisting>
+ cd util
+ ant -f release-admin.xml
+        </programlisting>
 
-        <para>
-            The installation script will create a <filename>$JBOSS_HOME/server/messaging</filename>
-            configuration.
-        </para>
+      <para>The installation script will create a
+      <filename>$JBOSS_HOME/server/messaging</filename> configuration.</para>
 
-       <note>
-          If you want to create a JBoss Messaging configuration with a different name, modify
-          the <literal>messaging.config.name</literal> system property declared at the beginning of
-           the installation script accordingly.
-       </note>
+      <note>
+        <para>If you want to create a JBoss Messaging configuration with a
+        different name, modify the <literal>messaging.config.name</literal>
+        system property declared at the beginning of the installation script
+        accordingly.</para>
+
+        <para>If you want to use all as the source configuration (for
+        clustered configs), modify the
+        <literal>messaging.config.source</literal> variable at the beginning
+        of the script also.</para>
+
+        <para>Or if you prefer you could use
+        <literal>-Dmessaging.config.name=YourConfig
+        -Dmessaging.config.source=all</literal></para>
+      </note>
     </section>
 
+    <section id="install.old.installation">
+      <title>JBoss Messaging on JBoss 4.0.4.GA and JBoss 4.0.5.GA</title>
+
+      <note>
+        You should avoid using JBossMessaging on any version prior to JBoss 4.2.0.GA, such as 4.0.5.GA and 4.0.4.GA. JBoss Messaging uses newer versions of JBoss AOP, JBoss Remoting and JGroups compared to JBoss 4.0.X. If you really need to install JBoss Messaging on those versions you will have to update those jars as described on this section but this might cause problems with other components such as JBoss Web Services and EJB3.
+      </note>
+
+      <itemizedlist>
+        <listitem>
+          <para>Execute ant -f release-admin as described on the previous
+          section</para>
+        </listitem>
+
+        <listitem>
+          <para>Replace these jars. There is a /thirdparty directory on the
+          release bundle you could use as source, or download these packages
+          accordingly:</para>
+
+          <itemizedlist>
+            <listitem>
+              <para>$JBOSS_HOME/server/&lt;SERVER_NAME&gt;/deploy/jboss-aop.deployer/jboss-aop.jar</para>
+
+              <para>JBoss AOP 1.5.5.GA+</para>
+
+              <para>(For AOP, sometimes you have to use a specific JAR
+              according to your JVM of choice. Use the most convenient for
+              you)</para>
+            </listitem>
+
+            <listitem>
+              <para>$JBOSS_HOME/server/&lt;SERVER_NAME&gt;/lib/javassist.jar</para>
+
+              <para>Javassist 3.5.0.GA-brew+</para>
+            </listitem>
+
+            <listitem>
+              <para>$JBOSS_HOME/server/&lt;SERVER_NAME&gt;/lib/jboss-remoting.jar</para>
+
+              <para>JBoss Remoting 2.2.0.SP4+</para>
+            </listitem>
+
+            <listitem>
+              <para>$JBOSS_HOME/server/&lt;SERVER_NAME&gt;/lib/jgroups.jar (if
+              using a clustered configuration)</para>
+
+              <para>JGroups 2.4.1.SP3-brew+</para>
+            </listitem>
+          </itemizedlist>
+        </listitem>
+
+        <listitem>
+          <para>Make sure you use jboss-messaging-fat-client.jar on any client
+          VM. This file should have precedence on jboss-all-client.jar on the
+          ClassPath</para>
+        </listitem>
+      </itemizedlist>
+    </section>
   </section>
 
   <section id="startingtheservice">
-     <title>Starting the Server</title>
+    <title>Starting the Server</title>
 
+    <para>To run the server, execute the <filename>run.bat</filename> or
+    <filename>run.sh</filename> script as appropriate for your operating
+    system, in the <filename>$JBOSS_HOME/bin</filename> directory.</para>
 
-     <para>
-        To run the server, execute the <filename>run.bat</filename> or <filename>run.sh</filename>
-        script as appropriate for your operating system, in the <filename>$JBOSS_HOME/bin</filename>
-        directory.
-     </para>
-
-   <programlisting>
+    <programlisting>
 cd $JBOSS_HOME/bin
 ./run.sh -c messaging
    </programlisting>
 
-     <para>
-        A successful JBoss Messaging deployment generates logging output similar to:
-     </para>
+    <para>A successful JBoss Messaging deployment generates logging output
+    similar to:</para>
 
-   <programlisting>
+    <programlisting>
 ....
 01:44:48,317 WARN  [JDBCPersistenceManager]
 
@@ -143,45 +198,51 @@ pageSize=2000, downCacheSize=2000
 ....
    </programlisting>
 
-     <note>
-        The warning message <literal>DataSource connection transaction isolation should be READ_COMMITTED,
-        but it is currently NONE</literal>
-        is there to remind you that by default JBossAS ships with Hypersonic, an in-memory
-        Java-based database engine, which is apropriate for demo purposes, but not for heavy load
-        production environments. The
-        <ulink url="http://wiki.jboss.org/wiki/Wiki.jsp?page=ConfigJBossMQDB">Critique of Hypersonic</ulink>
-        wiki page outlines some of the well-known issues occuring when using this database.
-     </note>
+    <note>
+       The warning message 
 
-     <warning>
-        Before using Messaging in production, you <emphasis>must</emphasis> configure
-        the Messaging instance to use an enterprise-class database backend such as MySQL or Oracle,
-        otherwise you risk losing your data.
-        See <xref linkend="conf.changingds"/> for details about replacing Hypersonic.
-     </warning>
+      <literal>DataSource connection transaction isolation should be
+      READ_COMMITTED, but it is currently NONE</literal>
+
+       is there to remind you that by default JBossAS ships with Hypersonic, an in-memory Java-based database engine, which is apropriate for demo purposes, but not for heavy load production environments. The 
+
+      <ulink
+      url="http://wiki.jboss.org/wiki/Wiki.jsp?page=ConfigJBossMQDB">Critique
+      of Hypersonic</ulink>
+
+       wiki page outlines some of the well-known issues occuring when using this database. 
+    </note>
+
+    <warning>
+       Before using Messaging in production, you 
+
+      <emphasis>must</emphasis>
+
+       configure the Messaging instance to use an enterprise-class database backend such as MySQL or Oracle, otherwise you risk losing your data. See 
+
+      <xref linkend="conf.changingds" />
+
+       for details about replacing Hypersonic. 
+    </warning>
   </section>
 
-
   <section id="inst.validation">
-     <title>Installation Validation</title>
+    <title>Installation Validation</title>
 
-     <para>
-        The release bundle contains a series of examples that should run "out of the box" and
-        could be used to validate a new installation. Such an example sends a persistent JMS message
-        to a queue called <literal>queue/testQueue</literal>.
-     </para>
+    <para>The release bundle contains a series of examples that should run
+    "out of the box" and could be used to validate a new installation. Such an
+    example sends a persistent JMS message to a queue called
+    <literal>queue/testQueue</literal>.</para>
 
+    <para>To run the example and validate the installation, open an new
+    command line window and set the <literal>JBOSS_HOME</literal> environment
+    variable to point to the JBoss AS 4.x installation you've just installed
+    Messaging on. Navigate to the folder where you extracted the release
+    bundle and drill down to <filename>/examples/queue</filename>. Apache Ant
+    must pe present in your path in order to be able to run the
+    example.</para>
 
-    <para>
-       To run the example and validate the installation,
-       open an new command line window and set the <literal>JBOSS_HOME</literal>
-       environment variable to point to the JBoss AS 4.x installation you've just installed
-       Messaging on. Navigate to the folder where
-       you extracted the release bundle and drill down to <filename>/examples/queue</filename>.
-       Apache Ant must pe present in your path in order to be able to run the example.
-    </para>
-
-   <programlisting>
+    <programlisting>
 
 setenv JBOSS_HOME=&lt;your_JBoss_installation&gt;
 cd .../examples/queue
@@ -189,12 +250,9 @@ $ant
 
    </programlisting>
 
-     <para>
-        A successfull execution log output looks similar to:
-     </para>
+    <para>A successfull execution log output looks similar to:</para>
 
-
-        <programlisting>
+    <programlisting>
 $ ant
 Buildfile: build.xml
 
@@ -229,15 +287,11 @@ BUILD SUCCESSFUL
 Total time: 9 seconds
 </programlisting>
 
-
-     <para>
-        It is recommended to run <literal>all</literal> validation examples available in the
-        <filename>example</filename> directory (<filename>queue</filename>,
-        <filename>topic</filename>, <filename>mdb</filename>, <filename>stateless</filename>, etc.).
-         In <xref linkend="examples"/>, we will have a look at each of those examples.
-     </para>
-
-
+    <para>It is recommended to run <literal>all</literal> validation examples
+    available in the <filename>example</filename> directory
+    (<filename>queue</filename>, <filename>topic</filename>,
+    <filename>mdb</filename>, <filename>stateless</filename>, etc.). In <xref
+    linkend="examples" />, we will have a look at each of those
+    examples.</para>
   </section>
-
 </chapter>
