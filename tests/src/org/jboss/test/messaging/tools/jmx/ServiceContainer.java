@@ -487,7 +487,7 @@ public class ServiceContainer
          log.info("Installing HTTP connection factory");
          ServiceAttributeOverrides httpOverride = new ServiceAttributeOverrides();
          startRemoting(httpOverride, "http", HTTP_REMOTING_OBJECT_NAME);
-         deployConnectionFactories("server/default/deploy/connection-factory-http.xml", attrOverrides);
+         deployConnectionFactories("connection-factory-http.xml", attrOverrides);
       }
 
       // bind the default JMS provider
