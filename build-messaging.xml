@@ -534,12 +534,6 @@
       <zip destfile="${build.lib}/jboss-messaging-${module.version}.zip">
          <zipfileset dir="${release.output}" prefix="jboss-messaging-${module.version}/"/>
          <zipfileset dir="./src/etc/server/default/config" prefix="jboss-messaging-${module.version}/src/etc/server/default/config/"/>
-
-         <!-- Adding these files for user's convenience -->
-         <zipfileset dir="./thirdparty/jboss/remoting/lib" prefix="jboss-messaging-${module.version}/thirdparty"/>
-         <zipfileset dir="./thirdparty/jboss/aop/lib" prefix="jboss-messaging-${module.version}/thirdparty"/>
-         <zipfileset dir="./thirdparty/jgroups/lib" prefix="jboss-messaging-${module.version}/thirdparty"/>
-         <zipfileset dir="./thirdparty/javassist/lib" includes="jboss-messaging-${module.version}/javassist.jar" prefix="thirdparty"/>
       </zip>
       <echo message="Release bundle jboss-messaging-${module.version}.zip done"/>
    </target>
