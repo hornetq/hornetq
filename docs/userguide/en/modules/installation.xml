@@ -43,6 +43,9 @@
       <para>The installation script will create a
       <filename>$JBOSS_HOME/server/messaging</filename> configuration.</para>
 
+      <para>There are few extra steps at <xref
+      linkend="install.extra-steps" /></para>
+
       <note>
         <para>If you want to create a JBoss Messaging configuration with a
         different name, modify the <literal>messaging.config.name</literal>
@@ -78,8 +81,8 @@
           JBOSS_CONFIG/deploy/jms.</para>
 
           <para>Case you are working with a configuration similar to all, make
-          sure you don't have any JBossMQ files under
-          /deploy-hasingleton</para>
+          sure you don't have any JBossMQ files under /deploy-hasingleton. For
+          that just remove /deploy-hasingleton</para>
         </listitem>
 
         <listitem>
@@ -90,13 +93,13 @@
 
           <programlisting>
 &lt;application-policy name = "messaging"&gt;
-     &lt;authentication&gt;
-          &lt;login-module code = "org.jboss.security.auth.spi.UsersRolesLoginModule" flag = "required" &gt;
-            &lt;module-option name = "unauthenticatedIdentity"&gt;guest&lt;/module-option&gt;
-            &lt;module-option name = "usersProperties"&gt;props/messaging-users.properties&lt;/module-option&gt;
-            &lt;module-option name = "rolesProperties"&gt;props/messaging-roles.properties&lt;/module-option&gt;
-          &lt;/login-module&gt;
-     &lt;/authentication&gt;
+&lt;authentication&gt;
+&lt;login-module code = "org.jboss.security.auth.spi.UsersRolesLoginModule" flag = "required" &gt;
+   &lt;module-option name = "unauthenticatedIdentity"&gt;guest&lt;/module-option&gt;
+   &lt;module-option name = "usersProperties"&gt;props/messaging-users.properties&lt;/module-option&gt;
+   &lt;module-option name = "rolesProperties"&gt;props/messaging-roles.properties&lt;/module-option&gt;
+&lt;/login-module&gt;
+&lt;/authentication&gt;
 &lt;/application-policy&gt;
           </programlisting>
 
@@ -150,22 +153,23 @@ guest=guest
           </itemizedlist>
         </listitem>
       </itemizedlist>
+
+      <para>There are few extra steps at <xref
+      linkend="install.extra-steps" /></para>
     </section>
 
     <section id="install.clustered">
       <title>Clustered Installation</title>
 
-      <para></para>
-
       <itemizedlist>
         <listitem>
-          <para>Install JBoss Messaging using <xref
+          <para>Install JBoss Messaging as described in <xref
           linkend="install.manual" /> or <xref linkend="install4.automated" />
-          using the "all" (clustered) configuration</para>
+          using the "all" (clustered) configuration as your source</para>
         </listitem>
 
         <listitem>
-          <para>Ensure the server id in messaging-service.xml is unique on
+          <para>Ensure the server id in messaging-service.xml is unique for
           each node on the cluster</para>
         </listitem>
 
@@ -181,6 +185,9 @@ guest=guest
 
           <para>Make sure is bound to /DefaultDS and remove
           hsqldb-ds.xml.</para>
+
+          <para>It's required to use a shared database in clustered
+          environment. HSQLDB won't work for a clustered config.</para>
         </listitem>
 
         <listitem>
@@ -192,61 +199,148 @@ guest=guest
           <para>If you want to run multiple instances bound to the same IP you
           could use the Binding Manager</para>
 
-          <para><itemizedlist>
-              <listitem>
-                <para>Uncomment binding manager service from
-                $JBOSS_HOME/yourServer/conf/jboss-service.xml</para>
-              </listitem>
+          <itemizedlist>
+            <listitem>
+              <para>Uncomment binding manager service from
+              $JBOSS_HOME/yourServer/conf/jboss-service.xml</para>
+            </listitem>
 
-              <listitem>
-                <para>Specify the desired port rage (e.g. ports-01,
-                ports-02... etc)</para>
-              </listitem>
+            <listitem>
+              <para>Specify the desired port rage (e.g. ports-01, ports-02...
+              etc)</para>
+            </listitem>
 
-              <listitem>
-                <para>Look at
-                $JBOSS_HOME/docs/examples/binding-manager/sample-bindings.xml.
-                On each port range, JBoss Remoting configuration should look
-                like:</para>
+            <listitem>
+              <para>Look at
+              $JBOSS_HOME/docs/examples/binding-manager/sample-bindings.xml.
+              On each port range, JBoss Remoting configuration should look
+              like:</para>
 
-                <programlisting>&lt;!-- ********************* jboss messaging ********************** --&gt;
+              <programlisting>&lt;!-- ********************* jboss messaging ********************** --&gt;
 
 &lt;service-config name="jboss.messaging:service=Connector,transport=bisocket"
                 delegateClass="org.jboss.services.binding.AttributeMappingDelegate"&gt;
-   &lt;delegate-config&gt;
-      &lt;attribute name="Configuration"&gt;&lt;![CDATA[
-     &lt;config&gt;
-         &lt;invoker transport="bisocket"&gt;
-            &lt;attribute name="marshaller" isParam="true"&gt;org.jboss.jms.wireformat.JMSWireFormat&lt;/attribute&gt;
-            &lt;attribute name="unmarshaller" isParam="true"&gt;org.jboss.jms.wireformat.JMSWireFormat&lt;/attribute&gt;
-            &lt;attribute name="serializationtype" isParam="true"&gt;jms&lt;/attribute&gt;
-            &lt;attribute name="dataType" isParam="true"&gt;jms&lt;/attribute&gt;
-            &lt;attribute name="socket.check_connection" isParam="true"&gt;false&lt;/attribute&gt;
-            &lt;attribute name="timeout" isParam="true"&gt;0&lt;/attribute&gt;
-            &lt;attribute name="serverBindAddress"&gt;${jboss.bind.address}&lt;/attribute&gt;
-            &lt;attribute name="serverBindPort"&gt;4457&lt;/attribute&gt;
-            &lt;attribute name="leasePeriod"&gt;10000&lt;/attribute&gt;
-            &lt;attribute name="callbackStore"&gt;org.jboss.remoting.callback.CallbackStore&lt;/attribute&gt;
-            &lt;attribute name="clientSocketClass" isParam="true"&gt;org.jboss.jms.client.remoting.ClientSocketWrapper&lt;/attribute&gt;
-            &lt;attribute name="serverSocketClass"&gt;org.jboss.jms.server.remoting.ServerSocketWrapper&lt;/attribute&gt;
-            &lt;attribute name="callbackErrorsAllowed"&gt;1&lt;/attribute&gt;
-            &lt;attribute name="numberOfRetries" isParam="true"&gt;1&lt;/attribute&gt;
-            &lt;attribute name="NumberOfCallRetries" isParam="true"&gt;2&lt;/attribute&gt;
-            &lt;attribute name="clientMaxPoolSize" isParam="true"&gt;50&lt;/attribute&gt;
-         &lt;/invoker&gt;
-         &lt;handlers&gt;
-            &lt;handler subsystem="JMS"&gt;org.jboss.jms.server.remoting.JMSServerInvocationHandler&lt;/handler&gt;
-         &lt;/handlers&gt;
-   &lt;/config&gt;
-      ]]&gt;&lt;/attribute&gt;
+&lt;delegate-config&gt;
+&lt;attribute name="Configuration"&gt;&lt;![CDATA[
+&lt;config&gt;
+&lt;invoker transport="bisocket"&gt;
+   &lt;attribute name="marshaller" isParam="true"&gt;
+                 org.jboss.jms.wireformat.JMSWireFormat&lt;/attribute&gt;
+   &lt;attribute name="unmarshaller" isParam="true"&gt;
+                 org.jboss.jms.wireformat.JMSWireFormat&lt;/attribute&gt;
+   &lt;attribute name="serializationtype" isParam="true"&gt;jms&lt;/attribute&gt;
+   &lt;attribute name="dataType" isParam="true"&gt;jms&lt;/attribute&gt;
+   &lt;attribute name="socket.check_connection" isParam="true"&gt;false&lt;/attribute&gt;
+   &lt;attribute name="timeout" isParam="true"&gt;0&lt;/attribute&gt;
+   &lt;attribute name="serverBindAddress"&gt;${jboss.bind.address}&lt;/attribute&gt;
+   &lt;attribute name="serverBindPort"&gt;4457&lt;/attribute&gt;
+   &lt;attribute name="leasePeriod"&gt;10000&lt;/attribute&gt;
+   &lt;attribute name="callbackStore"&gt;org.jboss.remoting.callback.CallbackStore&lt;/attribute&gt;
+   &lt;attribute name="clientSocketClass" isParam="true"&gt;
+                 org.jboss.jms.client.remoting.ClientSocketWrapper&lt;/attribute&gt;
+   &lt;attribute name="serverSocketClass"&gt;
+                 org.jboss.jms.server.remoting.ServerSocketWrapper&lt;/attribute&gt;
+   &lt;attribute name="callbackErrorsAllowed"&gt;1&lt;/attribute&gt;
+   &lt;attribute name="numberOfRetries" isParam="true"&gt;1&lt;/attribute&gt;
+   &lt;attribute name="NumberOfCallRetries" isParam="true"&gt;2&lt;/attribute&gt;
+   &lt;attribute name="clientMaxPoolSize" isParam="true"&gt;50&lt;/attribute&gt;
+&lt;/invoker&gt;
+&lt;handlers&gt;
+   &lt;handler subsystem="JMS"&gt;org.jboss.jms.server.remoting.JMSServerInvocationHandler&lt;/handler&gt;
+&lt;/handlers&gt;
+&lt;/config&gt;
+   ]]&gt;&lt;/attribute&gt;
    &lt;/delegate-config&gt;
    &lt;binding port="4457"/&gt;
 &lt;/service-config&gt;</programlisting>
 
-                <para>For ports-default use port 4457, ports-01 4557, ports-02
-                4657 and ports-03 4757</para>
-              </listitem>
-            </itemizedlist></para>
+              <para>For ports-default you could use port 4457, ports-01 4557,
+              ports-02 4657 and ports-03 4757.</para>
+            </listitem>
+          </itemizedlist>
+        </listitem>
+      </itemizedlist>
+
+      <para>There are few extra steps at <xref
+      linkend="install.extra-steps" /></para>
+    </section>
+
+    <section id="install.extra-steps">
+      <title>Extra steps after your instalation is complete</title>
+
+      <para>You should also make these changes on any configuration you
+      choose, to prevent references to the old JBossMQ:</para>
+
+      <itemizedlist>
+        <listitem>
+          <para>Edit $JBOSS_SERVER/server/YourConfig/jms-ds.xml and replace
+          jboss.mq by jboss.messaging on every occurrence</para>
+        </listitem>
+
+        <listitem>
+          <para>Edit $JBOSS_SERVER/server/YourConfig/config/standardjboss.xml
+          and set CreateJBossMQDestination to false on every occurrence</para>
+
+          <para>Make sure it looks like this:</para>
+
+          <para>&lt;CreateJBossMQDestination&gt;false&lt;/CreateJBossMQDestination&gt;</para>
+
+          <para>Those Proxies will try to create a Destination on JBossMQ if
+          they can't find it on JNDI, what would cause some errors related to
+          JBoss MQ.</para>
+        </listitem>
+
+        <listitem>
+          <para>Edit $JBOSS_SERVER/server/YourConfig/config/jboss-service.xml
+          and remove the reference to JBoss MQ on JSR-77 Management
+          Bean</para>
+
+          <programlisting>
+ &lt;!-- ==================================================================== --&gt;
+ &lt;!-- JSR-77 Single JBoss Server Management Domain                         --&gt;
+ &lt;!-- ==================================================================== --&gt;
+ &lt;mbean code="org.jboss.management.j2ee.LocalJBossServerDomain"
+
+  ... Remove this line ...
+ &lt;attribute name="JMSService"&gt;jboss.mq:service=DestinationManager&lt;/attribute&gt;
+             </programlisting>
+        </listitem>
+
+        <listitem>
+          <para>Change $JBOSS_SERVICE/server/YourConfig/conf/login-config.xml
+          and remove jboss-mq security policies</para>
+
+          <programlisting>
+### Remove these lines:
+
+&lt;!-- Security domain for JBossMQ --&gt;
+&lt;application-policy name = "jbossmq"&gt;
+ &lt;authentication&gt;
+    &lt;login-module code = "org.jboss.security.auth.spi.DatabaseServerLoginModule"
+       flag = "required"&gt;
+       &lt;module-option name = "unauthenticatedIdentity"&gt;guest&lt;/module-option&gt;
+       &lt;module-option name = "dsJndiName"&gt;java:/DefaultDS&lt;/module-option&gt;
+       &lt;module-option name = "principalsQuery"&gt;
+             SELECT PASSWD FROM JMS_USERS WHERE USERID=?&lt;/module-option&gt;
+       &lt;module-option name = "rolesQuery"&gt;
+             SELECT ROLEID, 'Roles' FROM JMS_ROLES WHERE USERID=?&lt;/module-option&gt;
+    &lt;/login-module&gt;
+ &lt;/authentication&gt;
+&lt;/application-policy&gt;
+
+&lt;!-- Security domain for JBossMQ when using file-state-service.xml
+&lt;application-policy name = "jbossmq"&gt;
+ &lt;authentication&gt;
+    &lt;login-module code = "org.jboss.mq.sm.file.DynamicLoginModule"
+       flag = "required"&gt;
+       &lt;module-option name = "unauthenticatedIdentity"&gt;guest&lt;/module-option&gt;
+       &lt;module-option name = "sm.objectname"&gt;jboss.mq:service=StateManager&lt;/module-option&gt;
+    &lt;/login-module&gt;
+ &lt;/authentication&gt;
+&lt;/application-policy&gt;
+--&gt;
+             
+            </programlisting>
         </listitem>
       </itemizedlist>
     </section>
@@ -262,19 +356,24 @@ guest=guest
     <itemizedlist>
       <listitem>
         <para>Install JBoss Messaging using the most convenient way described
-        on the <link linkend="installation">previous section</link>.</para>
+        on the <link linkend="installation">previous section</link> using the
+        default configuration as your base (even for a clustered JBoss
+        Messaging)</para>
       </listitem>
 
       <listitem>
-        <para>Replace the jars on this following list. There is a /thirdparty
-        directory on the release bundle for your convenience, or you could
-        download these packages on http://www.jboss.org.</para>
+        <para>Replace the jars on this following list. You could download
+        these jars from www.jboss.org or use the repository links provided
+        bellow:</para>
 
         <itemizedlist>
           <listitem>
             <para>$JBOSS_HOME/server/&lt;SERVER_NAME&gt;/deploy/jboss-aop.deployer/jboss-aop.jar</para>
 
             <para>JBoss AOP 1.5.5.GA+</para>
+
+            <para><ulink
+            url="http://repository.jboss.com/jboss/aop/1.5.5.GA/lib/">http://repository.jboss.com/jboss/aop/1.5.5.GA/lib/</ulink></para>
 
             <para>(For AOP, sometimes you have to use a specific JAR according
             to your JVM of choice. Use the most convenient for you)</para>
@@ -284,12 +383,18 @@ guest=guest
             <para>$JBOSS_HOME/server/&lt;SERVER_NAME&gt;/lib/javassist.jar</para>
 
             <para>Javassist 3.5.0.GA-brew+</para>
+
+            <para><ulink
+            url="http://repository.jboss.com/javassist/3.5.0.GA-brew/lib/">http://repository.jboss.com/javassist/3.5.0.GA-brew/lib/</ulink></para>
           </listitem>
 
           <listitem>
             <para>$JBOSS_HOME/server/&lt;SERVER_NAME&gt;/lib/jboss-remoting.jar</para>
 
             <para>JBoss Remoting 2.2.0.SP4+</para>
+
+            <para><ulink
+            url="http://repository.jboss.com/jboss/remoting/2.2.0.SP4/lib/">http://repository.jboss.com/jboss/remoting/2.2.0.SP4/lib/</ulink></para>
           </listitem>
 
           <listitem>
@@ -297,6 +402,9 @@ guest=guest
             using a clustered configuration)</para>
 
             <para>JGroups 2.4.1.SP3-brew+</para>
+
+            <para><ulink
+            url="http://repository.jboss.com/jgroups/2.4.1.SP3-brew/lib/">http://repository.jboss.com/jgroups/2.4.1.SP3-brew/lib/</ulink></para>
           </listitem>
         </itemizedlist>
       </listitem>
