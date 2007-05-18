@@ -82,7 +82,7 @@
 
           <para>Case you are working with a configuration similar to all, make
           sure you don't have any JBossMQ files under /deploy-hasingleton. For
-          that just remove /deploy-hasingleton</para>
+          that just remove /deploy-hasingleton/jms</para>
         </listitem>
 
         <listitem>
