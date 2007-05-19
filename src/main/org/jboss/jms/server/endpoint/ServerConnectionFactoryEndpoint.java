@@ -131,8 +131,6 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
                                                           ServerInvokerCallbackHandler callbackHandler)
       throws JMSException      
    {
-   	log.info("CREATING CONNECTION, USERNAME=" + username + " PASSWORD=" + password + " FAILED NODE ID=" + failedNodeID, new Exception());
-   	
       try
       {
          if (failedNodeID == -1)
