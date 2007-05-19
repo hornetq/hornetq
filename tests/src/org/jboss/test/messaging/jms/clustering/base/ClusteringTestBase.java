@@ -112,7 +112,7 @@ public class ClusteringTestBase extends MessagingTestCase
 
       // We only need to lookup one connection factory since it will be clustered so we will
       // actually create connections on different servers (round robin).
-      cf = (ConnectionFactory)ic[0].lookup("/ConnectionFactory");
+      cf = (ConnectionFactory)ic[0].lookup("/ClusteredConnectionFactory");
 
       drainQueues();
    }
@@ -280,7 +280,7 @@ public class ClusteringTestBase extends MessagingTestCase
       {
          // TODO This is a dangerous hack, relying on an arbitrary distribution algorithm
          // (round-robin in this case). If we want a connection to a specific node, we should be
-         // able to look up something like "/ConnectionFactory0"
+         // able to look up something like "/ClusteredConnectionFactory0"
          
          for(int i = 0; i < nodeCount; i++)
          {

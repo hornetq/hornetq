@@ -37,8 +37,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.jboss.jms.destination.JBossDestination;
-import org.jboss.serial.io.JBossObjectInputStream;
-import org.jboss.serial.io.JBossObjectOutputStream;
 
 /**
  * A StreamUtils
@@ -82,15 +80,7 @@ public class StreamUtils
    public static final byte SERIALIZABLE = 12;
    
    public static final byte DESTINATION = 13;
-   
-   private static boolean useJBossSerialization = false;
-   
-   public static void setUseJBossSerialization(boolean use)
-   {
-      useJBossSerialization = use;
-   }
-
-         
+           
    public static Object readObject(DataInputStream in, boolean longStrings)
       throws IOException, ClassNotFoundException
    {
@@ -159,15 +149,7 @@ public class StreamUtils
          }
          case SERIALIZABLE:
          {
-            ObjectInputStream ois;
-            if (useJBossSerialization)
-            {
-               ois = new JBossObjectInputStream(in, Thread.currentThread().getContextClassLoader());
-            }
-            else
-            {
-               ois = new ObjectInputStreamWithClassLoader(in);
-            }
+            ObjectInputStream ois = new ObjectInputStreamWithClassLoader(in);           
                         
             value = ois.readObject();
             break;
@@ -262,16 +244,7 @@ public class StreamUtils
       else if (object instanceof Serializable)
       {
          out.writeByte(SERIALIZABLE);
-         ObjectOutputStream oos;
-         
-         if (useJBossSerialization)
-         {
-            oos = new JBossObjectOutputStream(out);
-         }
-         else
-         {
-            oos = new ObjectOutputStream(out);
-         }
+         ObjectOutputStream oos = new ObjectOutputStream(out);         
                   
          oos.writeObject(object);
          oos.flush();

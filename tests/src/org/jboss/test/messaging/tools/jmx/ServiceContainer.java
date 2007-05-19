@@ -144,7 +144,6 @@ public class ServiceContainer
    // List<ObjectName>
    private List connFactoryObjectNames = new ArrayList();
 
-
    static
    {
       try
@@ -1626,15 +1625,41 @@ log.info("password:" + config.getDatabasePassword());
       {
          throw new Exception("Cannot find " + connFactoryConfigFile + " in the classpath");
       }
+      
+      connFactoryObjectNames.clear();
 
       ServiceDeploymentDescriptor cfdd =
          new ServiceDeploymentDescriptor(connFactoryConfigFileURL);
+      
+      
       List connFactoryElements = cfdd.query("service", "ConnectionFactory");
-      if (connFactoryElements.isEmpty())
+
+      for (Iterator i = connFactoryElements.iterator(); i.hasNext();)
       {
-         connFactoryElements = cfdd.query("service", "HTTPConnectionFactory");
+         MBeanConfigurationElement connFactoryElement = (MBeanConfigurationElement) i.next();
+         ObjectName on = registerAndConfigureService(connFactoryElement);
+         overrideAttributes(on, attrOverrides);
+         // dependencies have been automatically injected already
+         invoke(on, "create", new Object[0], new String[0]);
+         invoke(on, "start", new Object[0], new String[0]);
+         connFactoryObjectNames.add(on);
       }
-      connFactoryObjectNames.clear();
+      
+      connFactoryElements = cfdd.query("service", "ClusteredConnectionFactory");
+
+      for (Iterator i = connFactoryElements.iterator(); i.hasNext();)
+      {
+         MBeanConfigurationElement connFactoryElement = (MBeanConfigurationElement) i.next();
+         ObjectName on = registerAndConfigureService(connFactoryElement);
+         overrideAttributes(on, attrOverrides);
+         // dependencies have been automatically injected already
+         invoke(on, "create", new Object[0], new String[0]);
+         invoke(on, "start", new Object[0], new String[0]);
+         connFactoryObjectNames.add(on);
+      }
+      
+      connFactoryElements = cfdd.query("service", "HTTPConnectionFactory");
+
       for (Iterator i = connFactoryElements.iterator(); i.hasNext();)
       {
          MBeanConfigurationElement connFactoryElement = (MBeanConfigurationElement) i.next();

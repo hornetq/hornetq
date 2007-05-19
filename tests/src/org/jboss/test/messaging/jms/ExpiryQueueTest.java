@@ -40,7 +40,7 @@ import javax.naming.InitialContext;
 import javax.naming.NameNotFoundException;
 
 import org.jboss.jms.destination.JBossQueue;
-import org.jboss.jms.server.endpoint.ServerSessionEndpoint;
+import org.jboss.jms.message.JBossMessage;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
 
@@ -408,13 +408,13 @@ public class ExpiryQueueTest extends MessagingTestCase
             
             // Check the headers
             String origDest =
-               tm.getStringProperty(ServerSessionEndpoint.JBOSS_MESSAGING_ORIG_DESTINATION);
+               tm.getStringProperty(JBossMessage.JBOSS_MESSAGING_ORIG_DESTINATION);
             
             String origMessageId =
-               tm.getStringProperty(ServerSessionEndpoint.JBOSS_MESSAGING_ORIG_MESSAGE_ID);
+               tm.getStringProperty(JBossMessage.JBOSS_MESSAGING_ORIG_MESSAGE_ID);
             
             long actualExpiryTime =
-               tm.getLongProperty(ServerSessionEndpoint.JBOSS_MESSAGING_ACTUAL_EXPIRY_TIME);
+               tm.getLongProperty(JBossMessage.JBOSS_MESSAGING_ACTUAL_EXPIRY_TIME);
             
             assertEquals(topic.toString(), origDest);
             

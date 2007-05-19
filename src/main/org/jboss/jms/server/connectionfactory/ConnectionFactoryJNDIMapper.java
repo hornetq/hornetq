@@ -42,6 +42,7 @@ import org.jboss.jms.client.delegate.ClientClusteredConnectionFactoryDelegate;
 import org.jboss.jms.client.delegate.ClientConnectionFactoryDelegate;
 import org.jboss.jms.client.plugin.LoadBalancingFactory;
 import org.jboss.jms.client.plugin.LoadBalancingPolicy;
+import org.jboss.jms.client.plugin.NoLoadBalancingLoadBalancingFactory;
 import org.jboss.jms.delegate.ConnectionFactoryDelegate;
 import org.jboss.jms.server.ConnectionFactoryManager;
 import org.jboss.jms.server.ServerPeer;
@@ -119,12 +120,15 @@ public class ConnectionFactoryJNDIMapper
                                                       int defaultTempQueuePageSize,
                                                       int defaultTempQueueDownCacheSize,
                                                       int dupsOKBatchSize,
-                                                      boolean clustered,
+                                                      boolean supportsFailover,
+                                                      boolean supportsLoadBalancing,
                                                       LoadBalancingFactory loadBalancingFactory)
       throws Exception
    {
       log.debug(this + " registering connection factory '" + uniqueName +
          "', bindings: " + jndiBindings);
+      
+      log.info("REGISTERING CF " + uniqueName + " supports failover: " + supportsFailover + " suppors LB " + supportsLoadBalancing);
 
       // Sanity check
       if (delegates.containsKey(uniqueName))
@@ -147,12 +151,24 @@ public class ConnectionFactoryJNDIMapper
 
       ConnectionFactoryDelegate delegate = null;
 
-      if (clustered)
+      if (supportsFailover || supportsLoadBalancing)
       {
          setupReplicator();
       }
+      
+      if (supportsFailover && replicator == null)
+      {
+      	log.warn("supportsFailover attribute is true on connection factory: " + uniqueName + " but post office is non clustered. " +
+      			   "So connection factory will *not* support failover");
+      }
+      
+      if (supportsLoadBalancing && replicator == null)
+      {
+      	log.warn("supportsLoadBalancing attribute is true on connection factory: " + uniqueName + " but post office is non clustered. " +
+      			   "So connection factory will *not* support load balancing");
+      }
 
-      boolean creatingClustered = clustered && replicator != null;
+      boolean creatingClustered = (supportsFailover || supportsLoadBalancing) && replicator != null;
 
       ClientConnectionFactoryDelegate localDelegate =
          new ClientConnectionFactoryDelegate(id, serverPeer.getServerPeerID(),
@@ -170,19 +186,28 @@ public class ConnectionFactoryJNDIMapper
       if (creatingClustered)
       {
          // Replicate the change - we will ignore this locally
+      	
+      	log.info("REPLICATING CF!!");
 
          replicator.put(CF_PREFIX + uniqueName, localDelegate);
 
          // Create a clustered delegate
+         
+         if (!supportsLoadBalancing)
+         {
+         	loadBalancingFactory = new NoLoadBalancingLoadBalancingFactory(localDelegate);
+         }
 
          Map localDelegates = replicator.get(CF_PREFIX + uniqueName);
-         delegate = createClusteredDelegate(localDelegates.values(), loadBalancingFactory);
+         delegate = createClusteredDelegate(localDelegates.values(), loadBalancingFactory, supportsFailover);
 
          log.debug(this + " created clustered delegate " + delegate);
       }
       else
       {
          delegate = localDelegate;
+         
+         log.info("NOT REPLICATING CF!!");
       }
 
       log.trace(this + " adding delegates factory " + uniqueName + " pointing to " + delegate);
@@ -206,7 +231,7 @@ public class ConnectionFactoryJNDIMapper
       Dispatcher.instance.registerTarget(id, advised);
    }
 
-   public synchronized void unregisterConnectionFactory(String uniqueName, boolean clustered)
+   public synchronized void unregisterConnectionFactory(String uniqueName, boolean supportsFailover, boolean supportsLoadBalancing)
       throws Exception
    {
       log.trace("ConnectionFactory " + uniqueName + " being unregistered");
@@ -240,7 +265,7 @@ public class ConnectionFactoryJNDIMapper
          throw new IllegalArgumentException("Cannot find factory with name " + uniqueName);
       }
 
-      if (clustered)
+      if (supportsFailover || supportsLoadBalancing)
       {
          setupReplicator();
 
@@ -251,10 +276,9 @@ public class ConnectionFactoryJNDIMapper
             if (!replicator.remove(CF_PREFIX + uniqueName))
             {
                throw new IllegalStateException("Cannot find replicant to remove: " +
-                  CF_PREFIX + uniqueName);
+                                               CF_PREFIX + uniqueName);
             }
          }
-
       }
 
       Dispatcher.instance.unregisterTarget(endpoint.getID(), endpoint);
@@ -417,7 +441,8 @@ public class ConnectionFactoryJNDIMapper
     * @param localDelegates - Collection<ClientConnectionFactoryDelegate>
     */
    private ClientClusteredConnectionFactoryDelegate
-      createClusteredDelegate(Collection localDelegates, LoadBalancingFactory loadBalancingFactory)
+      createClusteredDelegate(Collection localDelegates, LoadBalancingFactory loadBalancingFactory,
+      		                  boolean supportsFailover)
       throws Exception
    {
       log.trace(this + " creating a clustered ConnectionFactoryDelegate based on " + localDelegates);
@@ -444,7 +469,10 @@ public class ConnectionFactoryJNDIMapper
       }
 
       LoadBalancingPolicy lbp = loadBalancingFactory.createLoadBalancingPolicy(delegates);
-      return new ClientClusteredConnectionFactoryDelegate(delegates, failoverMap, lbp);
+      
+      log.info("Using lod balancing policy:" + lbp);
+      
+      return new ClientClusteredConnectionFactoryDelegate(delegates, failoverMap, lbp, supportsFailover);
    }
 
    private void rebindConnectionFactory(Context ic, JNDIBindings jndiBindings,

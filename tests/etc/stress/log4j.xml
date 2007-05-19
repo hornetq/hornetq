@@ -70,10 +70,6 @@
    <!-- Limit categories -->
    <!-- ================ -->
 
-   <category name="org.jboss.serial">
-      <priority value="INFO"/>
-   </category>
-
    <category name="org.jboss">
       <priority value="DEBUG"/>
    </category>

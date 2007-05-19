@@ -89,12 +89,11 @@ public class ConnectionFactoryTest extends MessagingTestCase
 
    public void testDefaultConnectionFactory() throws Exception
    {
-      // I expect at least "/ConnectionFactory" and "/XAConnectionFactory", they should be
-      // configured by default in jboss-service.xml
+      // These should be configured by default in connection-factories-service.xml
 
       ConnectionFactory cf = (ConnectionFactory)initialContext.lookup("/ConnectionFactory");
       log.debug("ConnectionFactory: " + cf);
-
+      
       XAConnectionFactory xacf = (XAConnectionFactory)initialContext.lookup("/XAConnectionFactory");
       log.debug("ConnectionFactory: " + xacf);
 
@@ -102,6 +101,18 @@ public class ConnectionFactoryTest extends MessagingTestCase
       log.debug("ConnectionFactory: " + cf);
 
       xacf = (XAConnectionFactory)initialContext.lookup("java:/XAConnectionFactory");
+      log.debug("ConnectionFactory: " + xacf);
+      
+      cf = (ConnectionFactory)initialContext.lookup("/ClusteredConnectionFactory");
+      log.debug("ConnectionFactory: " + cf);
+
+      xacf = (XAConnectionFactory)initialContext.lookup("/ClusteredXAConnectionFactory");
+      log.debug("ConnectionFactory: " + xacf);
+
+      cf = (ConnectionFactory)initialContext.lookup("java:/ClusteredConnectionFactory");
+      log.debug("ConnectionFactory: " + cf);
+
+      xacf = (XAConnectionFactory)initialContext.lookup("java:/ClusteredXAConnectionFactory");
       log.debug("ConnectionFactory: " + xacf);
    }
 

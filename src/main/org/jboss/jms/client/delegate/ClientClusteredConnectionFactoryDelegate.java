@@ -68,16 +68,22 @@ public class ClientClusteredConnectionFactoryDelegate
    private Map failoverMap;
 
    private LoadBalancingPolicy loadBalancingPolicy;
+   
+   private boolean supportsFailover;
+   
+   private boolean supportsLoadBalancing;
 
    // Constructors ---------------------------------------------------------------------------------
 
    public ClientClusteredConnectionFactoryDelegate(ClientConnectionFactoryDelegate[] delegates,
                                                    Map failoverMap,
-                                                   LoadBalancingPolicy loadBalancingPolicy)
+                                                   LoadBalancingPolicy loadBalancingPolicy,
+                                                   boolean supportsFailover)
    {
       this.delegates = delegates;
       this.failoverMap = failoverMap;
       this.loadBalancingPolicy = loadBalancingPolicy;
+      this.supportsFailover = supportsFailover;
    }
 
    // ConnectionFactoryDelegate implementation -----------------------------------------------------
@@ -156,7 +162,12 @@ public class ClientClusteredConnectionFactoryDelegate
    {
       return loadBalancingPolicy;
    }
-
+   
+   public boolean isSupportsFailover()
+   {
+   	return supportsFailover;
+   }
+   
    /** Method used to update the delegate and failoverMap during viewChange */
    public synchronized void updateFailoverInfo(ClientConnectionFactoryDelegate[] delegates,
                                                Map failoverMap)
@@ -164,7 +175,10 @@ public class ClientClusteredConnectionFactoryDelegate
       this.delegates = delegates;
       this.failoverMap = failoverMap;
 
-      loadBalancingPolicy.updateView(delegates);
+      if (supportsLoadBalancing)
+      {
+      	loadBalancingPolicy.updateView(delegates);
+      }
    }
 
    public String toString()

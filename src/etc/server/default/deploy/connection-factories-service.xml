@@ -8,6 +8,10 @@
 
 <server>
 
+   <!-- The default connection factory does not support automatic failover or load balancing-
+        this is so we can maintain compatiblity with applications written for JBoss MQ which use this
+        connection factory.
+   -->     
    <mbean code="org.jboss.jms.server.connectionfactory.ConnectionFactory"
       name="jboss.messaging.connectionfactory:service=ConnectionFactory"
       xmbean-dd="xmdesc/ConnectionFactory-xmbean.xml">
@@ -23,18 +27,15 @@
             <binding>java:/XAConnectionFactory</binding>
          </bindings>
       </attribute>
-
-      <attribute name="Clustered">true</attribute>
-      <attribute name="LoadBalancingFactory">org.jboss.jms.client.plugin.RoundRobinLoadBalancingFactory</attribute>
    </mbean>
 
-   <!--
-        A "local" non-clustered ConnectionFactory that doesn't have neither load balancing nor
-        failover capabilities. It creates connections to the server node that deployed it.
+   <!-- A clustered connection factory that supports automatic failover and load balancing of created
+        connections.
+        This factory is not suitable to be used by MDBs,
+        see http://www.jboss.com/index.html?module=bb&op=viewtopic&t=108961
    -->
-
    <mbean code="org.jboss.jms.server.connectionfactory.ConnectionFactory"
-      name="jboss.messaging.connectionfactory:service=NonClusteredConnectionFactory"
+      name="jboss.messaging.connectionfactory:service=ClusteredConnectionFactory"
       xmbean-dd="xmdesc/ConnectionFactory-xmbean.xml">
       <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
       <depends optional-attribute-name="Connector">jboss.messaging:service=Connector,transport=bisocket</depends>
@@ -42,14 +43,15 @@
 
       <attribute name="JNDIBindings">
          <bindings>
-            <binding>/NonClusteredConnectionFactory</binding>
-            <binding>/NonClusteredXAConnectionFactory</binding>
-            <binding>java:/NonClusteredConnectionFactory</binding>
-            <binding>java:/NonClusteredXAConnectionFactory</binding>
+            <binding>/ClusteredConnectionFactory</binding>
+            <binding>/ClusteredXAConnectionFactory</binding>
+            <binding>java:/ClusteredConnectionFactory</binding>
+            <binding>java:/ClusteredXAConnectionFactory</binding>
          </bindings>
       </attribute>
 
-      <attribute name="Clustered">false</attribute>
+      <attribute name="SupportsFailover">true</attribute>
+      <attribute name="SupportsLoadBalancing">true</attribute>      
    </mbean>
 
 </server>

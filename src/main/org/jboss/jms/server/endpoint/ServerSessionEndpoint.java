@@ -118,12 +118,6 @@ public class ServerSessionEndpoint implements SessionEndpoint
    
    static final String TEMP_QUEUE_MESSAGECOUNTER_PREFIX = "TempQueue.";
    
-   public static final String JBOSS_MESSAGING_ORIG_DESTINATION = "JBM_ORIG_DESTINATION";
-
-   public static final String JBOSS_MESSAGING_ORIG_MESSAGE_ID = "JBM_ORIG_MESSAGE_ID";
-   
-   public static final String JBOSS_MESSAGING_ACTUAL_EXPIRY_TIME = "JBM_ACTUAL_EXPIRY";
-   
    // Static ---------------------------------------------------------------------------------------
 
    // Attributes -----------------------------------------------------------------------------------
@@ -1060,15 +1054,15 @@ public class ServerSessionEndpoint implements SessionEndpoint
       
       String origDest = msg.getJMSDestination().toString();
             
-      copy.setStringProperty(JBOSS_MESSAGING_ORIG_MESSAGE_ID, origMessageId);
+      copy.setStringProperty(JBossMessage.JBOSS_MESSAGING_ORIG_MESSAGE_ID, origMessageId);
       
-      copy.setStringProperty(JBOSS_MESSAGING_ORIG_DESTINATION, origDest);
+      copy.setStringProperty(JBossMessage.JBOSS_MESSAGING_ORIG_DESTINATION, origDest);
       
       if (expiry)
       {
          long actualExpiryTime = System.currentTimeMillis();
          
-         copy.setLongProperty(JBOSS_MESSAGING_ACTUAL_EXPIRY_TIME, actualExpiryTime);
+         copy.setLongProperty(JBossMessage.JBOSS_MESSAGING_ACTUAL_EXPIRY_TIME, actualExpiryTime);
       }
       
       return copy;

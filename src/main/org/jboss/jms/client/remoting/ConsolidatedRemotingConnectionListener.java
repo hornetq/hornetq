@@ -41,9 +41,6 @@ public class ConsolidatedRemotingConnectionListener implements ConnectionListene
 
    private ExceptionListener jmsExceptionListener;
 
-   // List<ConnectionListener>
-   //private List delegateListeners;
-   
    private ConnectionFailureListener remotingListener;
 
    // Constructors ---------------------------------------------------------------------------------

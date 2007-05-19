@@ -31,7 +31,7 @@ import org.jboss.logging.Logger;
  * - To choose the next node to create a physical connection to, based on a pluggable load balancing
  *   policy.
  * - To handle physical connection creation (by delegating it to a non-clustered ConnectionFactory
- *   delegate) and instal failure listeners.
+ *   delegate) and install failure listeners.
  * - etc.
  *
  * It's a PER_INSTANCE aspect (one of these per each clustered ConnectionFactory instance)
@@ -83,8 +83,10 @@ public class ClusteringAspect
       {
          clusteredDelegate = (ClientClusteredConnectionFactoryDelegate)invocation.getTargetObject();
       }
+      
+      boolean supportsFailover = clusteredDelegate.isSupportsFailover();
 
-      // the method handles both the case of a first connection creation attempt and a retry during
+      // the method handles both the case of a first connection creation attempt and a reconnect after
       // a client-side failover. The difference is given by the failedNodeID (-1 for first attempt)
 
       MethodInvocation mi = (MethodInvocation)invocation;
@@ -111,12 +113,14 @@ public class ClusteringAspect
             {
                if (failedNodeID != null && failedNodeID.intValue() >= 0)
                {
+               	//It's a reconnect after failover
                   delegate = getFailoverDelegateForNode(failedNodeID);
                   failedNodeIDToServer = failedNodeID.intValue();
                }
                else
                {
-                  LoadBalancingPolicy loadBalancingPolicy = clusteredDelegate.getLoadBalancingPolicy();
+               	//It's a first time create connection
+                  LoadBalancingPolicy loadBalancingPolicy = clusteredDelegate.getLoadBalancingPolicy();                  
                   delegate = (ClientConnectionFactoryDelegate)loadBalancingPolicy.getNext();
                }
             }
@@ -133,33 +137,42 @@ public class ClusteringAspect
                // valid connection
 
                log.debug(this + " got local connection delegate " + cd);
+               
+               if (supportsFailover)
+               {
+	               ConnectionState state = (ConnectionState)((DelegateSupport)cd).getState();
+	
+	               state.initializeFailoverCommandCenter();
+	
+	               FailoverCommandCenter fcc = state.getFailoverCommandCenter();
+	
+	               // add a connection listener to detect failure; the consolidated remoting connection
+	               // listener must be already in place and configured
+	               state.getRemotingConnection().getConnectionListener().
+	                  setDelegateListener(new ConnectionFailureListener(fcc, state.getRemotingConnection()));
+	
+	               log.debug(this + " installed failure listener on " + cd);
+	
+	               // also cache the username and the password into state, useful in case
+	               // FailoverCommandCenter needs to create a new connection instead of a failed on
+	               state.setUsername(username);
+	               state.setPassword(password);
+	
+	               // also add a reference to the clustered ConnectionFactory delegate, useful in case
+	               // FailoverCommandCenter needs to create a new connection instead of a failed on
+	               state.setClusteredConnectionFactoryDeleage(clusteredDelegate);
+               }
 
-               ConnectionState state = (ConnectionState)((DelegateSupport)cd).getState();
-
-               state.initializeFailoverCommandCenter();
-
-               FailoverCommandCenter fcc = state.getFailoverCommandCenter();
-
-               // add a connection listener to detect failure; the consolidated remoting connection
-               // listener must be already in place and configured
-               state.getRemotingConnection().getConnectionListener().
-                  setDelegateListener(new ConnectionFailureListener(fcc, state.getRemotingConnection()));
-
-               log.debug(this + " installed failure listener on " + cd);
-
-               // also cache the username and the password into state, useful in case
-               // FailoverCommandCenter needs to create a new connection instead of a failed on
-               state.setUsername(username);
-               state.setPassword(password);
-
-               // also add a reference to the clustered ConnectionFactory delegate, useful in case
-               // FailoverCommandCenter needs to create a new connection instead of a failed on
-               state.setClusteredConnectionFactoryDeleage(clusteredDelegate);
-
-               return new CreateConnectionResult(cd);
+               return res;
             }
             else
             {
+            	// This should never occur if we are not doing failover
+            	if (!supportsFailover)
+            	{
+            		throw new IllegalStateException("Doesn't support failover so must return a connection delegate");
+            	}
+            	
                // we did not get a valid connection to the node we've just tried
 
                int actualServerID = res.getActualFailoverNodeID();
@@ -234,10 +247,18 @@ public class ClusteringAspect
       {
          throw new IllegalArgumentException("nodeID must be 0 or positive");
       }
-
+      
       Map failoverMap = clusteredDelegate.getFailoverMap();
+      
+      //Sanity check
+      if (failoverMap.size() != delegates.length)
+      {
+      	throw new IllegalStateException("Unable to failover. Number of servers is not the same as number of connection factories. " +
+      			                           "It is likely you haven't deployed the connection factory on all nodes in the cluster.");
+      }
+      
       Integer failoverNodeID = (Integer)failoverMap.get(nodeID);
-
+      
       // FailoverNodeID is not on the map, that means the ConnectionFactory was updated by another
       // connection in another server. So we will have to guess the failoverID by numeric order.
       // In case we guessed the new server wrongly we will have to rely on redirect from failover.

@@ -20,6 +20,10 @@ import org.w3c.dom.Element;
 
 /**
  * A deployable JBoss Messaging connection factory.
+ * 
+ * The default connection factory does not support load balancing or
+ * automatic failover.
+ * 
  *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -35,27 +39,37 @@ public class ConnectionFactory extends ServiceMBeanSupport
    
    // Attributes -----------------------------------------------------------------------------------
 
-   protected String clientID;
-   protected JNDIBindings jndiBindings;
-   protected int prefetchSize = 150;
-   protected boolean clustered;
-   protected LoadBalancingFactory loadBalancingFactory;
+   private String clientID;
    
-   protected int defaultTempQueueFullSize = 200000;
-   protected int defaultTempQueuePageSize = 2000;
-   protected int defaultTempQueueDownCacheSize = 2000;
+   private JNDIBindings jndiBindings;
    
-   protected int dupsOKBatchSize = 1000;
+   private int prefetchSize = 150;
+   
+   private boolean supportsFailover;
+   
+   private boolean supportsLoadBalancing;
+   
+   private LoadBalancingFactory loadBalancingFactory;
+   
+   private int defaultTempQueueFullSize = 200000;
+   
+   private int defaultTempQueuePageSize = 2000;
+   
+   private int defaultTempQueueDownCacheSize = 2000;
+   
+   private int dupsOKBatchSize = 1000;
 
-   protected ObjectName serverPeerObjectName;
-   protected ConnectionFactoryManager connectionFactoryManager;
+   private ObjectName serverPeerObjectName;
    
-   protected ConnectorManager connectorManager;
-   protected ConnectionManager connectionManager;
+   private ConnectionFactoryManager connectionFactoryManager;
+   
+   private ConnectorManager connectorManager;
+   
+   private ConnectionManager connectionManager;
       
-   protected ObjectName connectorObjectName;
+   private ObjectName connectorObjectName;
 
-   protected boolean started;
+   private boolean started;
 
    // Constructors ---------------------------------------------------------------------------------
 
@@ -128,7 +142,7 @@ public class ConnectionFactory extends ServiceMBeanSupport
             registerConnectionFactory(getServiceName().getCanonicalName(), clientID, jndiBindings,
                                       locatorURI, enablePing, prefetchSize,
                                       defaultTempQueueFullSize, defaultTempQueuePageSize,                                      
-                                      defaultTempQueueDownCacheSize, dupsOKBatchSize, clustered,
+                                      defaultTempQueueDownCacheSize, dupsOKBatchSize, supportsFailover, supportsLoadBalancing,
                                       loadBalancingFactory);
       
          InvokerLocator locator = new InvokerLocator(locatorURI);
@@ -161,7 +175,7 @@ public class ConnectionFactory extends ServiceMBeanSupport
          started = false;
          
          connectionFactoryManager.
-            unregisterConnectionFactory(getServiceName().getCanonicalName(), clustered);
+            unregisterConnectionFactory(getServiceName().getCanonicalName(), supportsFailover, supportsLoadBalancing);
          connectorManager.unregisterConnector(connectorObjectName.getCanonicalName());
          
          log.info(this + " undeployed");
@@ -267,19 +281,34 @@ public class ConnectionFactory extends ServiceMBeanSupport
       return connectorObjectName;
    }
    
-   public boolean isClustered()
+   public boolean isSupportsFailover()
    {
-      return clustered;
+      return supportsFailover;
    }
    
-   public void setClustered(boolean clustered)
+   public void setSupportsFailover(boolean supportsFailover)
    {
       if (started)
       {
-         log.warn("Clustered can only be changed when connection factory is stopped");
+         log.warn("supportsFailover can only be changed when connection factory is stopped");
          return;
       }
-      this.clustered = clustered;
+      this.supportsFailover = supportsFailover;
+   }
+   
+   public boolean isSupportsLoadBalancing()
+   {
+      return supportsLoadBalancing;
+   }
+   
+   public void setSupportsLoadBalancing(boolean supportsLoadBalancing)
+   {
+      if (started)
+      {
+         log.warn("supportsLoadBalancing can only be changed when connection factory is stopped");
+         return;
+      }
+      this.supportsLoadBalancing = supportsLoadBalancing;
    }
 
    public String getLoadBalancingFactory()

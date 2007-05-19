@@ -218,7 +218,6 @@ public abstract class DelegateSupport implements Streamable, Serializable
          (t instanceof IOException) ||
          (t instanceof ConnectionFailedException))
       {
-         log.warn("Captured Exception:" + t, t);
          return new MessagingNetworkFailureException((Exception)t);
       }
       //This can occur if failure happens when Client.connect() is called
@@ -237,7 +236,6 @@ public abstract class DelegateSupport implements Streamable, Serializable
                         (initCause instanceof IOException) ||
                         (initCause instanceof ConnectionFailedException))
                {
-                  log.warn("Captured Exception:" + initCause, initCause);
                   return new MessagingNetworkFailureException((Exception)initCause);
                }
                initCause = initCause.getCause();
@@ -246,7 +244,6 @@ public abstract class DelegateSupport implements Streamable, Serializable
          }
       }
          
-      log.error("Failed", t);
       return new MessagingJMSException("Failed to invoke", t);
       
    }

@@ -220,7 +220,14 @@ public interface Server extends Remote
                                 int prefetchSize,
                                 int defaultTempQueueFullSize,
                                 int defaultTempQueuePageSize,
-                                int defaultTempQueueDownCacheSize) throws Exception;
+                                int defaultTempQueueDownCacheSize
+                                ) throws Exception;
+   
+   void deployConnectionFactory(String objectName,
+								         String[] jndiBindings,
+								         boolean supportsFailover,
+								         boolean supportsLoadBalancing       
+								         ) throws Exception;
 
    void deployConnectionFactory(String objectName,
                                 String[] jndiBindings,

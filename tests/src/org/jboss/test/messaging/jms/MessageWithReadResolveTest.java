@@ -21,8 +21,6 @@
  */
 package org.jboss.test.messaging.jms;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.Serializable;
 
 import javax.jms.Connection;
@@ -35,8 +33,6 @@ import javax.jms.Session;
 import javax.naming.InitialContext;
 
 import org.jboss.jms.client.JBossConnectionFactory;
-import org.jboss.serial.io.JBossObjectInputStream;
-import org.jboss.serial.io.JBossObjectOutputStream;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
 
@@ -139,6 +135,10 @@ public class MessageWithReadResolveTest extends MessagingTestCase
    }
    
    /* Now test using serialization directly */
+   
+   /*
+    * 
+    * We don't currently use JBoss Serialization
    public void testUseSerializationDirectly() throws Exception
    {
       TestMessage tm = new TestMessage(456, false);
@@ -164,6 +164,7 @@ public class MessageWithReadResolveTest extends MessagingTestCase
       ois.close();
             
    }
+   */
    
    // Package protected ---------------------------------------------
    

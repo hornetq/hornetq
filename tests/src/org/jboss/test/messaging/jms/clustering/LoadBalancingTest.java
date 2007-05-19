@@ -59,7 +59,7 @@ public class LoadBalancingTest extends MessagingTestCase
       {
          InitialContext ic = new InitialContext(ServerManagement.getJNDIEnvironment(0));
 
-         ConnectionFactory cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
+         ConnectionFactory cf = (ConnectionFactory)ic.lookup("/ClusteredConnectionFactory");
 
          JBossConnectionFactory jbcf = (JBossConnectionFactory)cf;
          ClientClusteredConnectionFactoryDelegate clusteredDelegate =
@@ -107,7 +107,7 @@ public class LoadBalancingTest extends MessagingTestCase
       {
          InitialContext ic0 = new InitialContext(ServerManagement.getJNDIEnvironment(0));
 
-         ConnectionFactory cf = (ConnectionFactory)ic0.lookup("/ConnectionFactory");
+         ConnectionFactory cf = (ConnectionFactory)ic0.lookup("/ClusteredConnectionFactory");
 
          JBossConnectionFactory jbcf = (JBossConnectionFactory)cf;
          ClientClusteredConnectionFactoryDelegate clusteredDelegate =
@@ -158,7 +158,7 @@ public class LoadBalancingTest extends MessagingTestCase
       // clear the database for those.
 
       ServiceAttributeOverrides override = new ServiceAttributeOverrides();
-      override.put(new ObjectName("jboss.messaging.connectionfactory:service=ConnectionFactory"),
+      override.put(new ObjectName("jboss.messaging.connectionfactory:service=ClusteredConnectionFactory"),
          "LoadBalancingFactory", "org.jboss.jms.client.plugin.RandomLoadBalancingFactory");
       ServerManagement.start(0, "all", override, true);
 
@@ -166,7 +166,7 @@ public class LoadBalancingTest extends MessagingTestCase
       {
          InitialContext ic0 = new InitialContext(ServerManagement.getJNDIEnvironment(0));
 
-         ConnectionFactory cf = (ConnectionFactory)ic0.lookup("/ConnectionFactory");
+         ConnectionFactory cf = (ConnectionFactory)ic0.lookup("/ClusteredConnectionFactory");
 
          JBossConnectionFactory jbcf = (JBossConnectionFactory)cf;
          ClientClusteredConnectionFactoryDelegate clusteredDelegate =
@@ -214,7 +214,7 @@ public class LoadBalancingTest extends MessagingTestCase
       // clear the database for those.
 
       ServiceAttributeOverrides override = new ServiceAttributeOverrides();
-      override.put(new ObjectName("jboss.messaging.connectionfactory:service=ConnectionFactory"),
+      override.put(new ObjectName("jboss.messaging.connectionfactory:service=ClusteredConnectionFactory"),
          "LoadBalancingFactory", "org.jboss.jms.client.plugin.RandomLoadBalancingFactory");
       ServerManagement.start(0, "all", override, true);
       ServerManagement.start(1, "all", override, false);
@@ -223,7 +223,7 @@ public class LoadBalancingTest extends MessagingTestCase
       {
          InitialContext ic0 = new InitialContext(ServerManagement.getJNDIEnvironment(0));
 
-         ConnectionFactory cf = (ConnectionFactory)ic0.lookup("/ConnectionFactory");
+         ConnectionFactory cf = (ConnectionFactory)ic0.lookup("/ClusteredConnectionFactory");
 
          JBossConnectionFactory jbcf = (JBossConnectionFactory)cf;
          ClientClusteredConnectionFactoryDelegate clusteredDelegate =

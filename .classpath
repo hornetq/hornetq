@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="docs/examples/queue-failover/src"/>
+	<classpathentry kind="src" path="docs/examples/web-service/src-client"/>
+	<classpathentry kind="src" path="docs/examples/web-service/src"/>
 	<classpathentry kind="src" path="docs/examples/mdb-failure/src"/>
 	<classpathentry kind="src" path="docs/examples/distributed-queue/src"/>
 	<classpathentry kind="src" path="output/gen-parsers"/>
@@ -57,5 +59,6 @@
 	<classpathentry kind="var" path="ANT_HOME/lib/ant.jar"/>
 	<classpathentry kind="var" path="ANT_HOME/lib/ant-junit.jar"/>
 	<classpathentry kind="lib" path="thirdparty/jboss/common/lib/jboss-common.jar"/>
+	<classpathentry kind="src" path=".apt_generated"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

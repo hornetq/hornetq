@@ -718,21 +718,42 @@ public class LocalTestServer implements Server
                                        String[] jndiBindings,
                                        int prefetchSize) throws Exception
    {
-      deployConnectionFactory(objectName, jndiBindings, prefetchSize, -1, -1, -1);
+      deployConnectionFactory(objectName, jndiBindings, prefetchSize, -1, -1, -1, false, false);
    }
 
    public void deployConnectionFactory(String objectName,
                                        String[] jndiBindings) throws Exception
    {
-      deployConnectionFactory(objectName, jndiBindings, -1, -1, -1, -1);
+      deployConnectionFactory(objectName, jndiBindings, -1, -1, -1, -1, false, false);
+   }
+   
+   public void deployConnectionFactory(String objectName,
+         String[] jndiBindings,
+         int prefetchSize,
+         int defaultTempQueueFullSize,
+         int defaultTempQueuePageSize,
+         int defaultTempQueueDownCacheSize) throws Exception
+   {
+   	this.deployConnectionFactory(objectName, jndiBindings, prefetchSize, defaultTempQueueFullSize,
+   			defaultTempQueuePageSize, defaultTempQueueDownCacheSize, false, false);   			
+   }
+   
+   public void deployConnectionFactory(String objectName,
+         String[] jndiBindings,
+         boolean supportsFailover, boolean supportsLoadBalancing) throws Exception
+   {
+   	this.deployConnectionFactory(objectName, jndiBindings, -1, -1,
+   			-1, -1, supportsFailover, supportsLoadBalancing);   			
    }
 
-   public void deployConnectionFactory(String objectName,
+   private void deployConnectionFactory(String objectName,
                                        String[] jndiBindings,
                                        int prefetchSize,
                                        int defaultTempQueueFullSize,
                                        int defaultTempQueuePageSize,
-                                       int defaultTempQueueDownCacheSize) throws Exception
+                                       int defaultTempQueueDownCacheSize,
+                                       boolean supportsFailover,
+                                       boolean supportsLoadBalancing) throws Exception
    {
       log.trace("deploying connection factory with name: " + objectName);
       
@@ -763,6 +784,9 @@ public class LocalTestServer implements Server
       {
          config += "<attribute name=\"PrefetchSize\">" + prefetchSize + "</attribute>";
       }
+      
+      config += "<attribute name=\"SupportsFailover\">" + supportsFailover + "</attribute>";
+      config += "<attribute name=\"SupportsLoadBalancing\">" + supportsLoadBalancing + "</attribute>";
 
       config += "<attribute name=\"JNDIBindings\"><bindings>";
 

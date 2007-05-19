@@ -45,8 +45,9 @@ public interface ConnectionFactoryManager extends MessagingComponent
                                  int defaultTempQueuePageSize,
                                  int defaultTempQueueDownCacheSize,
                                  int dupsOKBatchSize,
-                                 boolean clustered,
+                                 boolean supportsFailover,
+                                 boolean supportsLoadBalancing,
                                  LoadBalancingFactory loadBalancingPolicy) throws Exception;
 
-   void unregisterConnectionFactory(String uniqueName, boolean clustered) throws Exception;
+   void unregisterConnectionFactory(String uniqueName, boolean supportsFailover, boolean supportsLoadBalancing) throws Exception;
 }

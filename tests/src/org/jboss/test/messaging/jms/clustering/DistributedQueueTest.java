@@ -77,7 +77,7 @@ public class DistributedQueueTest extends MessagingTestCase
          ic0 = new InitialContext(ServerManagement.getJNDIEnvironment(0));
          ic1 = new InitialContext(ServerManagement.getJNDIEnvironment(1));
 
-         ConnectionFactory cf = (ConnectionFactory)ic0.lookup("/ConnectionFactory");
+         ConnectionFactory cf = (ConnectionFactory)ic0.lookup("/ClusteredConnectionFactory");
          Queue queue0 = (Queue)ic0.lookup("/queue/testDistributedQueue");
          Queue queue1 = (Queue)ic1.lookup("/queue/testDistributedQueue");
 

@@ -1036,6 +1036,15 @@ public class ServerManagement
    }
 
    public static void deployConnectionFactory(String objectName,
+													       String[] jndiBindings,
+													       boolean supportsFailover, boolean supportsLoadBalancing)
+   throws Exception
+   {
+   	servers[0].getServer().deployConnectionFactory(objectName,
+   			jndiBindings,supportsFailover, supportsLoadBalancing);
+   }
+
+   public static void deployConnectionFactory(String objectName,
                                               String[] jndiBindings,
                                               int prefetchSize)
       throws Exception

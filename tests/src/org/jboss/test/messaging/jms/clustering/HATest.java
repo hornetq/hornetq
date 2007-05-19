@@ -96,7 +96,7 @@ public class HATest extends ClusteringTestBase
     */
    public void testCloseOnFailover() throws Exception
    {
-      JBossConnectionFactory factory = (JBossConnectionFactory) ic[0].lookup("/ConnectionFactory");
+      JBossConnectionFactory factory = (JBossConnectionFactory) ic[0].lookup("/ClusteredConnectionFactory");
 
       Connection conn1 = factory.createConnection();
       Connection conn2 = factory.createConnection();
@@ -156,7 +156,7 @@ public class HATest extends ClusteringTestBase
     */
    public void testRoundRobinConnectionCreation() throws Exception
    {
-      JBossConnectionFactory factory =  (JBossConnectionFactory )ic[0].lookup("/ConnectionFactory");
+      JBossConnectionFactory factory =  (JBossConnectionFactory )ic[0].lookup("/ClusteredConnectionFactory");
 
       ClientClusteredConnectionFactoryDelegate delegate =
          (ClientClusteredConnectionFactoryDelegate)factory.getDelegate();
@@ -279,7 +279,7 @@ public class HATest extends ClusteringTestBase
    public void testDefaultFailoverMap() throws Exception
    {
       {
-         JBossConnectionFactory factory =  (JBossConnectionFactory )ic[0].lookup("/ConnectionFactory");
+         JBossConnectionFactory factory =  (JBossConnectionFactory )ic[0].lookup("/ClusteredConnectionFactory");
 
          ClientClusteredConnectionFactoryDelegate delegate =
             (ClientClusteredConnectionFactoryDelegate)factory.getDelegate();
@@ -338,7 +338,7 @@ public class HATest extends ClusteringTestBase
       {
          //Lookup another connection factory
 
-         JBossConnectionFactory factory =  (JBossConnectionFactory )ic[1].lookup("/ConnectionFactory");
+         JBossConnectionFactory factory =  (JBossConnectionFactory )ic[1].lookup("/ClusteredConnectionFactory");
 
          log.info("Got connection factory");
 
@@ -386,7 +386,7 @@ public class HATest extends ClusteringTestBase
       {
          //Lookup another connection factory
 
-         JBossConnectionFactory factory =  (JBossConnectionFactory )ic[2].lookup("/ConnectionFactory");
+         JBossConnectionFactory factory =  (JBossConnectionFactory )ic[2].lookup("/ClusteredConnectionFactory");
 
          ClientClusteredConnectionFactoryDelegate delegate =
             (ClientClusteredConnectionFactoryDelegate)factory.getDelegate();
@@ -412,7 +412,7 @@ public class HATest extends ClusteringTestBase
       ServerManagement.start(0, "all");
 
       {
-         JBossConnectionFactory factory =  (JBossConnectionFactory )ic[0].lookup("/ConnectionFactory");
+         JBossConnectionFactory factory =  (JBossConnectionFactory )ic[0].lookup("/ClusteredConnectionFactory");
 
          log.info("Got connection factory");
 
@@ -453,7 +453,7 @@ public class HATest extends ClusteringTestBase
       ServerManagement.start(1, "all");
 
       {
-         JBossConnectionFactory factory =  (JBossConnectionFactory )ic[1].lookup("/ConnectionFactory");
+         JBossConnectionFactory factory =  (JBossConnectionFactory )ic[1].lookup("/ClusteredConnectionFactory");
 
          log.info("Got connection factory");
 
@@ -499,7 +499,7 @@ public class HATest extends ClusteringTestBase
 
    public void testSimpleFailover() throws Exception
    {
-      JBossConnectionFactory factory =  (JBossConnectionFactory )ic[0].lookup("/ConnectionFactory");
+      JBossConnectionFactory factory =  (JBossConnectionFactory )ic[0].lookup("/ClusteredConnectionFactory");
 
       ClientClusteredConnectionFactoryDelegate delegate =
          (ClientClusteredConnectionFactoryDelegate)factory.getDelegate();
@@ -637,7 +637,7 @@ public class HATest extends ClusteringTestBase
 
    public void testFailoverWithUnackedMessagesClientAcknowledge() throws Exception
    {
-      JBossConnectionFactory factory =  (JBossConnectionFactory )ic[0].lookup("/ConnectionFactory");
+      JBossConnectionFactory factory =  (JBossConnectionFactory )ic[0].lookup("/ClusteredConnectionFactory");
 
       ClientClusteredConnectionFactoryDelegate delegate =
          (ClientClusteredConnectionFactoryDelegate)factory.getDelegate();
@@ -832,7 +832,7 @@ public class HATest extends ClusteringTestBase
    TODO: Reactivate this test when http://jira.jboss.org/jira/browse/JBMESSAGING-883 is done
    public void testFailoverWithUnackedMessagesTransactional() throws Exception
    {
-      JBossConnectionFactory factory =  (JBossConnectionFactory )ic[0].lookup("/ConnectionFactory");
+      JBossConnectionFactory factory =  (JBossConnectionFactory )ic[0].lookup("/ClusteredConnectionFactory");
 
       ClientClusteredConnectionFactoryDelegate delegate =
          (ClientClusteredConnectionFactoryDelegate)factory.getDelegate();

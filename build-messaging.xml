@@ -152,7 +152,7 @@
         JBoss dependencies.
         They must available in the repository and declared as <componentrefs> in build-thirdparty.xml.
 
-        NOTE: If one of JBoss dependencies (jboss-remoting.jar, jboss-serialization.jar) is locally
+        NOTE: If one of JBoss dependencies (jboss-remoting.jar) is locally
               present in ./lib, it will take precedence over the corresponding repository instance.
     -->
    <path id="jboss.dependencies.classpath">
@@ -160,7 +160,6 @@
       <path refid="jboss.aop.classpath"/>
       <path refid="jboss.remoting.classpath"/>
       <path refid="jboss.jbossts14.classpath"/>
-      <path refid="jboss.serialization.classpath"/>
    </path>
 
    <property name="jboss.j2ee.lib" value="${project.root}/lib/"/>
@@ -211,7 +210,6 @@
       <path refid="jboss.transaction.classpath"/>
       <path refid="jboss.jmx.classpath"/>
       <path refid="jboss.remoting.classpath"/>
-      <path refid="jboss.serialization.classpath"/>
       <path refid="jboss.classpath"/>
    </path>
 
@@ -440,7 +438,6 @@
          <zipfileset  src="${oswego.concurrent.lib}/concurrent.jar"/>
          <zipfileset  src="${apache.log4j.lib}/log4j.jar"/>
          <zipfileset  src="${apache.logging.lib}/commons-logging.jar"/>
-         <zipfileset  src="${jboss.serialization.lib}/jboss-serialization.jar"/>
       </jar>
    </target>
 
@@ -452,7 +449,7 @@
 
          <manifest>
             <attribute name="Class-path"
-                       value="jboss-aop.jar jboss-remoting.jar jboss-serialization.jar javassist.jar trove.jar jboss-common-core.jar jboss-common-client.jar jboss-j2ee.jar jboss-j2se.jar jnp-client.jar concurrent.jar log4j.jar commons-logging.jar"/>
+                       value="jboss-aop.jar jboss-remoting.jar javassist.jar trove.jar jboss-common-core.jar jboss-common-client.jar jboss-j2ee.jar jboss-j2se.jar jnp-client.jar concurrent.jar log4j.jar commons-logging.jar"/>
          </manifest>
          <fileset dir="${build.classes}">
             <!-- This structur is temporary until we partition the classes

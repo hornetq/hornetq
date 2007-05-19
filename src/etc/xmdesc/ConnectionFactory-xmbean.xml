@@ -88,11 +88,17 @@
       <type>javax.management.ObjectName</type>
    </attribute>
 
-   <attribute access="read-write" getMethod="isClustered" setMethod="setClustered">
-      <description>Is this a clustered connection factory?</description>
-      <name>Clustered</name>
+   <attribute access="read-write" getMethod="isSupportsFailover" setMethod="setSupportsFailover">
+      <description>Does this connection factory support transparent failover?</description>
+      <name>SupportsFailover</name>
       <type>boolean</type>
    </attribute>
+   
+   <attribute access="read-write" getMethod="isSupportsLoadBalancing" setMethod="setSupportsLoadBalancing">
+      <description>Does this connection factory support internal load balancing on createConnection(...) requests?</description>
+      <name>SupportsLoadBalancing</name>
+      <type>boolean</type>
+   </attribute>   
 
    <attribute access="read-write" getMethod="getLoadBalancingFactory" setMethod="setLoadBalancingFactory">
       <description>The pluggable load balancing policy factory that is used to decide the next cluster node to create a clustered connection to</description>

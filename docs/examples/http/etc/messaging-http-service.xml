@@ -8,9 +8,7 @@
 
 <server>
 
-   <!--
-        This Connector will basically run as a standalone http server
-   -->
+   <!-- THIS IS ONLY USED BY TESTS SO SHOULD ONLY EXIST IN THE TESTS CONFIG, NOT IN THE MAIN CONFIG!! -->
    <mbean code="org.jboss.remoting.transport.Connector"
           name="jboss.messaging:service=Connector,transport=http"
           display-name="HTTP transport Connector">
@@ -27,9 +25,6 @@
                <attribute name="serverBindPort">4458</attribute>
                <attribute name="leasePeriod">10000</attribute>
                <attribute name="callbackStore">org.jboss.remoting.callback.CallbackStore</attribute>
-
-
-
                <attribute name="callbackPollPeriod" isParam="true">100</attribute>
             </invoker>
             <handlers>
