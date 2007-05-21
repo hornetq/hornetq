@@ -53,7 +53,7 @@ public class StatelessSessionExampleBean implements SessionBean
          Message m = null;
          do
          {
-            m = consumer.receiveNoWait();
+            m = consumer.receive(1L);
          }
          while(m != null);
       }
