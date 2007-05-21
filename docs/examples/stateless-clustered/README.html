@@ -1,0 +1,131 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <meta content="text/html; charset=ISO-8859-1"
+    http-equiv="content-type">
+  <title>JBoss Messaging Example - Managed Environment</title>
+</head>
+<body>
+
+<h1>Sending JMS messages from a Stateless Clustered Session Bean</h1>
+
+<p>$Revision$</p>
+
+<h2>Overview</h2>
+<p>
+This example deploys in a cluster a stateless session bean that can then
+send and receive messages from a queue. This is a very simple example that
+demonstrates using JBoss Messaging in a managed clustered environment.
+The client uses HA-JNDI to look up the session bean. It then invokes the
+session bean to send a message to a test queue and afterwards pulls the
+message from the queue from a different connection using the JMS API
+directly. The example is considered successful if the message is received
+correctly.
+</p>
+<p>
+This example relies on having access to a running JBoss Messaging cluster.
+The JBoss Messaging cluster must be installed and started according to
+the "JBoss Messaging Clustered Installation" chapter from the release
+documentation.&nbsp; However, the example will automatically deploy its own
+queue, unless a queue with the same name is already deployed.
+</p>
+<p>
+This example also relies on having access to <tt>jboss-messaging-client.jar</tt>
+archive that comes with the release bundle. If you run this example
+from an unzipped installation bundle, the example run script is correctly
+configured to find the client jar. Otherwise, you must modify example's
+<tt>build.xml</tt> accordingly.
+</p>
+<p><em>
+The example was designed to deploy its server-side artifacts under a JBoss'
+<tt>messaging-node0</tt> configuration, into the <tt>farm</tt> directory.
+If you intend to use the script with a JBoss configuration that is named
+differently, please modify the example's <tt>build.xml</tt>.
+</em></p>
+
+<h2>Running the example</h2>
+<p>
+1. Set up the JBOSS_HOME environment variable to point to the JBoss
+instance you deployed JBoss Messaging into. For example, if you
+deployed JBoss Messaging in <tt>C:\jboss-4.2.0.GA\server\messaging-node0\deploy</tt>,
+then your JBOSS_HOME value should be <tt>C:\jboss-4.2.0.GA</tt>.
+</p>
+<p>
+2. Go to the example's home directory
+</p>
+<blockquote>
+  <pre>cd ...\examples\stateless</pre>
+</blockquote>
+<p>
+3. Run the example:
+</p>
+<blockquote>
+  <pre>ant</pre>
+</blockquote>
+<p>
+The output of a successful run should be similar to:
+</p>
+<blockquote>
+  <pre>$ ant
+Buildfile: build.xml
+
+identify:
+     [echo] ###########################################################################
+     [echo] #         Running the STATELESS CLUSTERED SESSION BEAN example            #
+     [echo] ###########################################################################
+     [echo] The queue:      testFarmQueue
+     [echo] The client jar: ../../../output/lib/jboss-messaging-client.jar
+
+sanity-check:
+
+init:
+    [mkdir] Created dir: C:\java\messaging\docs\examples\stateless-clustered\output\classes\META-INF
+    [mkdir] Created dir: C:\java\messaging\docs\examples\stateless-clustered\output\lib
+
+compile:
+    [javac] Compiling 4 source files to C:\java\messaging\docs\examples\stateless-clustered\output\classes
+    [javac] Note: C:\java\messaging\docs\examples\stateless-clustered\src\org\jboss\example\jms\statelessclustered\bean\StatelessClusteredSessionExampleBean.java uses unchecked or unsafe operations.
+    [javac] Note: Recompile with -Xlint:unchecked for details.
+
+jar:
+     [copy] Copying 2 files to C:\java\messaging\docs\examples\stateless-clustered\output\classes\META-INF
+      [jar] Building jar: C:\java\messaging\docs\examples\stateless-clustered\output\lib\stateless-clustered-example.jar
+
+deploy:
+     [copy] Copying 1 file to C:\jboss-4.2.0.GA\server\messaging-node0\farm
+     [copy] Copying 1 file to C:\jboss-4.2.0.GA\server\messaging-node0\farm
+
+sleep:
+     [echo] Sleeping for 15 seconds ...
+
+run:
+
+send-and-receive:
+     [java] The Hello! message was successfully sent to the /queue/testFarmQueue queue
+     [java] Queue browse result: 1
+     [java] blocking to receive message from queue /queue/testFarmQueue ...
+     [java] Message Hello! received
+     [java] 
+     [java] #####################
+     [java] ###    SUCCESS!   ###
+     [java] #####################
+
+undeploy:
+   [delete] Deleting: C:\jboss-4.2.0.GA\server\messaging-node0\farm\stateless-clustered-example.jar
+   [delete] Deleting: C:\jboss-4.2.0.GA\server\messaging-node0\farm\destinations-farm-service.xml
+
+BUILD SUCCESSFUL
+Total time: 19 seconds
+</pre></blockquote>
+
+<h2>Troublesooting</h2>
+<h3>1. I get <tt>"javax.jms.JMSSecurityException: User null is NOT authenticated"</tt></h3>
+<p>
+You probably didn't install JBoss Messaging correctly. A fresh JBoss
+Messaging installation requires changes in the security configuration
+of the JBoss instance, specifically a properly configured "<tt>messaging</tt>"
+security domain. Follow the instructions from the "Installation" paragraph of
+the release documentation.
+</p>
+</body>
+</html>
