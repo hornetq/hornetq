@@ -112,8 +112,6 @@ public class SimpleConnectionManagerTest extends MessagingTestCase
       Map jmsClients = cm.getClients();
       assertEquals(1, jmsClients.size());
       
-      //String jvmId = (String)jmsClients.keySet().iterator().next();
-      
       Map endpoints = (Map)jmsClients.values().iterator().next();
       
       assertEquals(2, endpoints.size());
@@ -123,14 +121,8 @@ public class SimpleConnectionManagerTest extends MessagingTestCase
       Map.Entry entry = (Map.Entry)iter.next();
       
       String sessId1 = (String)entry.getKey();
-      
-      //ConnectionEndpoint endpoint1 = (ConnectionEndpoint)entry.getValue();
-      
+       
       entry = (Map.Entry)iter.next();
-      
-      //String sessId2 = (String)entry.getKey();
-      
-      //ConnectionEndpoint endpoint2 = (ConnectionEndpoint)entry.getValue();
       
       //Simulate failure of connection
       
@@ -139,41 +131,7 @@ public class SimpleConnectionManagerTest extends MessagingTestCase
       //both connections should be shut
       
       jmsClients = cm.getClients();
-      assertEquals(0, jmsClients.size());
-      
-      try
-      {
-         sess1.close();
-         fail();
-      }
-      catch (Exception expected)
-      {}
-      
-      try
-      {
-         sess2.close();
-         fail();
-      }
-      catch (Exception expected)
-      {}
-      
-      try
-      {
-         conn2.close();
-         fail();
-      }
-      catch (Exception expected)
-      {}
-      
-      try
-      {
-         conn1.close();
-         fail();
-      }
-      catch (Exception expected)
-      {}
-      
-      
+      assertEquals(0, jmsClients.size());           
    }
    
 

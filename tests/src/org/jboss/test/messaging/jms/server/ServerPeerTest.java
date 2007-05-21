@@ -442,8 +442,8 @@ public class ServerPeerTest extends MessagingTestCase
       
          assertNotNull(counters);
       
-         //Should now be 7
-         assertEquals(7, counters.size());
+         //Temp queues don't have counters
+         assertEquals(6, counters.size());
          
          //Send some messages
          
@@ -539,7 +539,7 @@ public class ServerPeerTest extends MessagingTestCase
          
          assertNotNull(stats);
          
-         assertEquals(7, stats.size());
+         assertEquals(6, stats.size());
          
          iter = stats.iterator();
          
@@ -566,7 +566,7 @@ public class ServerPeerTest extends MessagingTestCase
       
          assertNotNull(counters);
       
-         assertEquals(4, counters.size());
+         assertEquals(3, counters.size());
                   
          tempQueue.delete();
          
