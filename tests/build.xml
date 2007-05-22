@@ -288,6 +288,7 @@
          <sysproperty key="module.output" value="${tests.output}"/>
          <sysproperty key="test.logfile.suffix" value="${remote.server.test.logfile.suffix}"/>
          <sysproperty key="test.bind.address" value="${test.bind.address}"/>
+         <sysproperty key="jgroups.bind_addr" value="${test.bind.address}"/>
          <sysproperty key="test.database" value="${functional.tests.database}"/>
          <sysproperty key="test.serialization" value="${functional.tests.serialization}"/>
          <sysproperty key="test.remoting" value="${test.remoting}"/>
@@ -308,6 +309,7 @@
          <sysproperty key="module.output" value="${tests.output}"/>
          <sysproperty key="test.logfile.suffix" value="${remote.server.test.logfile.suffix}"/>
          <sysproperty key="test.bind.address" value="${test.bind.address}"/>
+         <sysproperty key="jgroups.bind_addr" value="${test.bind.address}"/>
          <sysproperty key="test.database" value="${functional.tests.database}"/>
          <sysproperty key="test.serialization" value="${functional.tests.serialization}"/>
          <sysproperty key="test.remoting" value="${test.remoting}"/>
@@ -329,6 +331,7 @@
          <sysproperty key="module.output" value="${tests.output}"/>
          <sysproperty key="test.logfile.suffix" value="clustering-server${test.server.index}"/>
          <sysproperty key="test.bind.address" value="${test.bind.address}"/>
+         <sysproperty key="jgroups.bind_addr" value="${test.bind.address}"/>
          <sysproperty key="test.database" value="${clustering.tests.database}"/>
          <sysproperty key="test.serialization" value="${functional.tests.serialization}"/>
          <sysproperty key="test.clustered" value="true"/>
@@ -349,6 +352,7 @@
          <sysproperty key="module.output" value="${tests.output}"/>
          <sysproperty key="test.logfile.suffix" value="remote-server-stress"/>
          <sysproperty key="test.bind.address" value="${test.bind.address}"/>
+         <sysproperty key="jgroups.bind_addr" value="${test.bind.address}"/>
          <sysproperty key="test.database" value="${stress.tests.database}"/>
          <sysproperty key="test.serialization" value="${stress.tests.serialization}"/>
          <sysproperty key="test.remoting" value="${test.remoting}"/>
@@ -441,6 +445,7 @@
          <sysproperty key="remote" value="false"/>
          <sysproperty key="module.output" value="${tests.output}"/>
          <sysproperty key="test.bind.address" value="${test.bind.address}"/>
+         <sysproperty key="jgroups.bind_addr" value="${test.bind.address}"/>
          <sysproperty key="test.database" value="${functional.tests.database}"/>
          <sysproperty key="test.serialization" value="${functional.tests.serialization}"/>
          <sysproperty key="test.logfile.suffix" value="invm"/>
@@ -497,6 +502,7 @@
          <sysproperty key="remote" value="false"/>
          <sysproperty key="module.output" value="${tests.output}"/>
          <sysproperty key="test.bind.address" value="${test.bind.address}"/>
+         <sysproperty key="jgroups.bind_addr" value="${test.bind.address}"/>
          <sysproperty key="test.database" value="${functional.tests.database}"/>
          <sysproperty key="test.serialization" value="${functional.tests.serialization}"/>
          <sysproperty key="test.logfile.suffix" value="invm"/>
@@ -543,6 +549,7 @@
          <sysproperty key="remote" value="false"/>
          <sysproperty key="module.output" value="${tests.output}"/>
          <sysproperty key="test.bind.address" value="${test.bind.address}"/>
+         <sysproperty key="jgroups.bind_addr" value="${test.bind.address}"/>
          <sysproperty key="test.database" value="${functional.tests.database}"/>
          <sysproperty key="test.serialization" value="${functional.tests.serialization}"/>
          <sysproperty key="build.lib" value="${build.lib}"/>
@@ -583,6 +590,7 @@
          <sysproperty key="remote" value="false"/>
          <sysproperty key="module.output" value="${tests.output}"/>
          <sysproperty key="test.bind.address" value="${test.bind.address}"/>
+         <sysproperty key="jgroups.bind_addr" value="${test.bind.address}"/>
          <sysproperty key="test.database" value="${stress.tests.database}"/>
          <sysproperty key="test.serialization" value="${stress.tests.serialization}"/>
          <sysproperty key="test.logfile.suffix" value="invm"/>
@@ -630,6 +638,7 @@
          <sysproperty key="remote" value="true"/>
          <sysproperty key="module.output" value="${tests.output}"/>
          <sysproperty key="test.bind.address" value="${test.bind.address}"/>
+         <sysproperty key="jgroups.bind_addr" value="${test.bind.address}"/>
          <sysproperty key="test.database" value="${functional.tests.database}"/>
          <sysproperty key="test.serialization" value="${functional.tests.serialization}"/>
          <sysproperty key="test.remoting" value="${test.remoting}"/>
@@ -703,6 +712,7 @@
          <sysproperty key="remote" value="true"/>
          <sysproperty key="module.output" value="${tests.output}"/>
          <sysproperty key="test.bind.address" value="${test.bind.address}"/>
+         <sysproperty key="jgroups.bind_addr" value="${test.bind.address}"/>
          <sysproperty key="test.database" value="${stress.tests.database}"/>
          <sysproperty key="test.serialization" value="${stress.tests.serialization}"/>
          <sysproperty key="test.remoting" value="${test.remoting}"/>
@@ -829,6 +839,7 @@
          <sysproperty key="remote" value="true"/>
          <sysproperty key="module.output" value="${tests.output}"/>
          <sysproperty key="test.bind.address" value="${test.bind.address}"/>
+         <sysproperty key="jgroups.bind_addr" value="${test.bind.address}"/>
          <sysproperty key="test.database" value="${clustering.tests.database}"/>
          <sysproperty key="test.serialization" value="${functional.tests.serialization}"/>
          <sysproperty key="test.clustered" value="true"/>
@@ -1024,6 +1035,7 @@
          <sysproperty key="remote" value="true"/>
          <sysproperty key="module.output" value="${tests.output}"/>
          <sysproperty key="test.bind.address" value="${test.bind.address}"/>
+         <sysproperty key="jgroups.bind_addr" value="${test.bind.address}"/>
          <sysproperty key="test.database" value="${functional.tests.database}"/>
          <sysproperty key="test.serialization" value="${functional.tests.serialization}"/>
          <sysproperty key="test.remoting" value="${test.remoting}"/>
@@ -1067,6 +1079,7 @@
          <sysproperty key="remote" value="${build.tests.remote}"/>
          <sysproperty key="module.output" value="${tests.output}"/>
          <sysproperty key="test.bind.address" value="${test.bind.address}"/>
+         <sysproperty key="jgroups.bind_addr" value="${test.bind.address}"/>
          <sysproperty key="test.database" value="${functional.tests.database}"/>
          <sysproperty key="test.serialization" value="${functional.tests.serialization}"/>
          <sysproperty key="objectstore.dir" value="${objectstore.dir}"/>
@@ -1105,6 +1118,7 @@
          <sysproperty key="remote" value="${build.tests.remote}"/>
          <sysproperty key="module.output" value="${tests.output}"/>
          <sysproperty key="test.bind.address" value="${test.bind.address}"/>
+         <sysproperty key="jgroups.bind_addr" value="${test.bind.address}"/>
          <sysproperty key="test.database" value="${functional.tests.database}"/>
          <sysproperty key="test.serialization" value="${functional.tests.serialization}"/>
          <sysproperty key="objectstore.dir" value="${objectstore.dir}"/>
@@ -1139,6 +1153,7 @@
          <sysproperty key="remote" value="${build.tests.remote}"/>
          <sysproperty key="module.output" value="${tests.output}"/>
          <sysproperty key="test.bind.address" value="${test.bind.address}"/>
+         <sysproperty key="jgroups.bind_addr" value="${test.bind.address}"/>
          <sysproperty key="test.database" value="${functional.tests.database}"/>
          <sysproperty key="test.serialization" value="${functional.tests.serialization}"/>
          <jvmarg value="-Xmx512M"/>
@@ -1178,6 +1193,7 @@
          <sysproperty key="remote" value="${build.tests.remote}"/>
          <sysproperty key="module.output" value="${tests.output}"/>
          <sysproperty key="test.bind.address" value="${test.bind.address}"/>
+         <sysproperty key="jgroups.bind_addr" value="${test.bind.address}"/>
          <sysproperty key="test.database" value="${functional.tests.database}"/>
          <sysproperty key="test.serialization" value="${functional.tests.serialization}"/>
          <!--
