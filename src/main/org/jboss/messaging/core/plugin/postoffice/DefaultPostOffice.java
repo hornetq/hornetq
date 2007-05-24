@@ -712,14 +712,8 @@ public class DefaultPostOffice extends JDBCSupport implements PostOffice
       }
       finally
       {
-         if (ps != null)
-         {
-            ps.close();
-         }
-         if (conn != null)
-         {
-            conn.close();
-         }
+      	closeStatement(ps);
+      	closeConnection(conn);
          wrap.end();
       }
    }
@@ -747,14 +741,8 @@ public class DefaultPostOffice extends JDBCSupport implements PostOffice
       }
       finally
       {
-         if (ps != null)
-         {
-            ps.close();
-         }
-         if (conn != null)
-         {
-            conn.close();
-         }
+      	closeStatement(ps);
+      	closeConnection(conn);
          wrap.end();
       }
    }

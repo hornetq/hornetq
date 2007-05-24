@@ -25,6 +25,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -139,18 +140,9 @@ public class JDBCJMSUserManager extends JDBCSupport implements JMSUserManager
       }
       finally
       {
-         if (rs != null)
-         {
-            rs.close();
-         }
-         if (ps != null)
-         {
-            ps.close();
-         }
-         if (conn != null)
-         {
-            conn.close();
-         }
+      	closeResultSet(rs);
+      	closeStatement(ps);
+      	closeConnection(conn);
          wrap.end();
       }     
    }
@@ -185,29 +177,29 @@ public class JDBCJMSUserManager extends JDBCSupport implements JMSUserManager
             {
                String statement = (String)iter.next();
                
+               Statement st = null;
+               
                try
                {
                   if (log.isTraceEnabled()) { log.trace("Executing: " + statement); }
                   
-                  conn.createStatement().executeUpdate(statement);
+                  st = conn.createStatement();
+                  
+                  st.executeUpdate(statement);
                }
                catch (SQLException e) 
                {
                   log.debug("Failed to execute " + statement, e);
-               }  
+               }
+               finally
+               {
+               	closeStatement(st);
+               }
             }      
          }
          finally
          {
-            if (conn != null)
-            {
-               try
-               {
-                  conn.close();
-               }
-               catch (Throwable t)
-               {}
-            }
+         	closeConnection(conn);
             tx.end();
          }    
       }

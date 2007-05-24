@@ -22,6 +22,7 @@
 package org.jboss.messaging.core.plugin;
 
 import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Collections;
@@ -198,6 +199,60 @@ public class JDBCSupport implements MessagingComponent
    protected boolean ignoreVerificationOnStartup(String statementName)
    {
       return false;
+   }
+   
+   protected void closeResultSet(ResultSet rs)
+   {
+   	if (rs != null)
+      {
+         try
+         {
+            rs.close();
+         }
+         catch (Throwable e)
+         {
+         	if (trace)
+         	{
+         		log.trace("Failed to close result set", e);
+         	}
+         }
+      }
+   }
+   
+   protected void closeStatement(Statement st)
+   {
+   	if (st != null)
+      {
+         try
+         {
+         	st.close();
+         }
+         catch (Throwable e)
+         {
+         	if (trace)
+         	{
+         		log.trace("Failed to close statement", e);
+         	}
+         }
+      }
+   }
+   
+   protected void closeConnection(Connection conn)
+   {
+   	if (conn != null)
+      {
+         try
+         {
+         	conn.close();
+         }
+         catch (Throwable e)
+         {
+         	if (trace)
+         	{
+         		log.trace("Failed to close statement", e);
+         	}
+         }
+      }
    }
    // Private ----------------------------------------------------------------
               

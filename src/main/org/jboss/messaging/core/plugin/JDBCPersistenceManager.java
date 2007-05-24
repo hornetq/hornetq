@@ -234,40 +234,13 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
       }
       finally
       {
-         if (rs != null)
-         {
-            try
-            {
-               rs.close();
-            }
-            catch (Throwable e)
-            {
-            }
-         }
-         if (st != null)
-         {
-            try
-            {
-               st.close();
-            }
-            catch (Throwable e)
-            {
-            }
-         }
-         if (conn != null)
-         {
-            try
-            {
-               conn.close();
-            }
-            catch (Throwable e)
-            {
-            }
-         }
+      	closeResultSet(rs);
+      	closeStatement(st);
+      	closeConnection(conn);
          wrap.end();
       }
    }
-   
+         
                
    // Related to counters
    // ===================
@@ -354,26 +327,8 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
       }
       finally
       {
-         if (ps != null)
-         {
-            try
-            {
-               ps.close();
-            }
-            catch (Throwable e)
-            {
-            }
-         }
-         if (conn != null)
-         {
-            try
-            {
-               conn.close();
-            }
-            catch (Throwable e)
-            {
-            }
-         }
+      	closeStatement(ps);
+      	closeConnection(conn);
          wrap.end();
       }     
    }
@@ -496,36 +451,9 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
       }
       finally
       {
-         if (rs != null)
-         {
-            try
-            {
-               rs.close();
-            }
-            catch (Throwable e)
-            {
-            }
-         }
-         if (ps != null)
-         {
-            try
-            {
-               ps.close();
-            }
-            catch (Throwable e)
-            {
-            }
-         }
-         if (conn != null)
-         {
-            try
-            {
-               conn.close();
-            }
-            catch (Throwable e)
-            {
-            }
-         }
+      	closeResultSet(rs);
+      	closeStatement(ps);
+      	closeConnection(conn);
          wrap.end();
       }
    }  
@@ -726,46 +654,10 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
       }
       finally
       {
-         if (psInsertReference != null)
-         {
-            try
-            {
-               psInsertReference.close();
-            }
-            catch (Throwable t)
-            {
-            }
-         }
-         if (psInsertMessage != null)
-         {
-            try
-            {
-               psInsertMessage.close();
-            }
-            catch (Throwable t)
-            {
-            }
-         }
-         if (psUpdateMessage != null)
-         {
-            try
-            {
-               psUpdateMessage.close();
-            }
-            catch (Throwable t)
-            {
-            }
-         }
-         if (conn != null)
-         {
-            try
-            {
-               conn.close();
-            }
-            catch (Throwable t)
-            {
-            }
-         }
+      	closeStatement(psInsertReference);
+      	closeStatement(psInsertMessage);
+      	closeStatement(psUpdateMessage);
+      	closeConnection(conn);         
          try
          {
             wrap.end();                       
@@ -902,46 +794,10 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
       }
       finally
       {
-         if (psDeleteReference != null)
-         {
-            try
-            {
-               psDeleteReference.close();
-            }
-            catch (Throwable t)
-            {
-            }
-         }
-         if (psDeleteMessage != null)
-         {
-            try
-            {
-               psDeleteMessage.close();
-            }
-            catch (Throwable t)
-            {
-            }
-         }
-         if (psUpdateMessage != null)
-         {
-            try
-            {
-               psUpdateMessage.close();
-            }
-            catch (Throwable t)
-            {
-            }
-         }
-         if (conn != null)
-         {
-            try
-            {
-               conn.close();
-            }
-            catch (Throwable t)
-            {
-            }
-         }
+      	closeStatement(psDeleteReference);
+      	closeStatement(psDeleteMessage);
+      	closeStatement(psUpdateMessage);
+      	closeConnection(conn);         
          try
          {
             wrap.end();
@@ -992,26 +848,8 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
       }
       finally
       {
-         if (ps != null)
-         {
-            try
-            {
-               ps.close();
-            }
-            catch (Throwable e)
-            {
-            }
-         }
-         if (conn != null)
-         {
-            try
-            {
-               conn.close();
-            }
-            catch (Throwable e)
-            {
-            }
-         }
+      	closeStatement(ps);
+      	closeConnection(conn);       
          wrap.end();
       }
    }
@@ -1171,36 +1009,9 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
       }
       finally
       {
-         if (ps != null)
-         {
-            try
-            {
-               ps.close();
-            }
-            catch (Throwable e)
-            {
-            }
-         }
-         if (ps2 != null)
-         {
-            try
-            {
-               ps2.close();
-            }
-            catch (Throwable e)
-            {
-            }
-         }
-         if (conn != null)
-         {
-            try
-            {
-               conn.close();
-            }
-            catch (Throwable e)
-            {
-            }
-         }
+      	closeStatement(ps);
+      	closeStatement(ps2);
+      	closeConnection(conn);       
          wrap.end();
       }
    }
@@ -1271,26 +1082,8 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
       }
       finally
       {
-         if (psUpdateReference != null)
-         {
-            try
-            {
-               psUpdateReference.close();
-            }
-            catch (Throwable t)
-            {
-            }
-         }
-         if (conn != null)
-         {
-            try
-            {
-               conn.close();
-            }
-            catch (Throwable t)
-            {
-            }
-         }
+      	closeStatement(psUpdateReference);
+      	closeConnection(conn);       
          wrap.end();
       }    
    }
@@ -1357,36 +1150,9 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
       }
       finally
       {
-         if (rs != null)
-         {
-            try
-            {
-               rs.close();
-            }
-            catch (Throwable e)
-            {
-            }
-         }
-         if (ps != null)
-         {
-            try
-            {
-               ps.close();
-            }
-            catch (Throwable e)
-            {
-            }
-         }
-         if (conn != null)
-         {
-            try
-            {
-               conn.close();
-            }
-            catch (Throwable e)
-            {
-            }
-         }
+      	closeResultSet(rs);
+      	closeStatement(ps);
+      	closeConnection(conn);       
          wrap.end();
       }      
    }   
@@ -1478,36 +1244,9 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
       }
       finally
       {
-         if (rs != null)
-         {
-            try
-            {
-               rs.close();
-            }
-            catch (Throwable e)
-            {
-            }
-         }
-         if (ps != null)
-         {
-            try
-            {
-               ps.close();
-            }
-            catch (Throwable e)
-            {
-            }
-         }
-         if (conn != null)
-         {
-            try
-            {
-               conn.close();
-            }
-            catch (Throwable e)
-            {
-            }
-         }
+      	closeResultSet(rs);
+      	closeStatement(ps);      	
+      	closeConnection(conn);       
          wrap.end();
       }      
    }   
@@ -1583,36 +1322,9 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
          }
          finally
          {
-            if (psReference != null)
-            {
-               try
-               {
-                  psReference.close();
-               }
-               catch (Throwable t)
-               {
-               }
-            }
-            if (psMessage != null)
-            {
-               try
-               {
-                  psMessage.close();
-               }
-               catch (Throwable t)
-               {
-               }
-            }
-            if (conn != null)
-            {
-               try
-               {
-                  conn.close();
-               }
-               catch (Throwable t)
-               {
-               }
-            }
+         	closeStatement(psReference);
+         	closeStatement(psMessage);
+         	closeConnection(conn);  
             try
             {
                wrap.end();
@@ -1655,26 +1367,8 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
       }
       finally
       {
-         if (psReference != null)
-         {
-            try
-            {
-               psReference.close();
-            }
-            catch (Throwable t)
-            {
-            }
-         }         
-         if (conn != null)
-         {
-            try
-            {
-               conn.close();
-            }
-            catch (Throwable t)
-            {
-            }
-         }
+      	closeStatement(psReference);
+      	closeConnection(conn);
          wrap.end();                        
       }  
    }
@@ -1750,46 +1444,10 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
          }
          finally
          {
-            if (psReference != null)
-            {
-               try
-               {
-                  psReference.close();
-               }
-               catch (Throwable t)
-               {
-               }
-            }
-            if (psUpdate != null)
-            {
-               try
-               {
-                  psUpdate.close();
-               }
-               catch (Throwable t)
-               {
-               }
-            }
-            if (psMessage != null)
-            {
-               try
-               {
-                  psMessage.close();
-               }
-               catch (Throwable t)
-               {
-               }
-            }
-            if (conn != null)
-            {
-               try
-               {
-                  conn.close();
-               }
-               catch (Throwable t)
-               {
-               }
-            }
+         	closeStatement(psReference);
+         	closeStatement(psUpdate);
+         	closeStatement(psMessage);
+         	closeConnection(conn);
             try
             {
                wrap.end();               
@@ -1837,36 +1495,9 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
       }
       finally
       {
-         if (rs != null)
-         {
-            try
-            {
-               rs.close();
-            }
-            catch (Throwable e)
-            {
-            }
-         }
-         if (st != null)
-         {
-            try
-            {
-               st.close();
-            }
-            catch (Throwable e)
-            {
-            }
-         }
-         if (conn != null)
-         {
-            try
-            {
-               conn.close();
-            }
-            catch (Throwable e)
-            {
-            }
-         }
+      	closeResultSet(rs);
+      	closeStatement(st);
+      	closeConnection(conn);
          wrap.end();
       }
    }
@@ -1903,36 +1534,9 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
       }
       finally
       {
-         if (rs != null)
-         {
-            try
-            {
-               rs.close();
-            }
-            catch (Throwable e)
-            {
-            }
-         }
-         if (st != null)
-         {
-            try
-            {
-               st.close();
-            }
-            catch (Throwable e)
-            {
-            }
-         }
-         if (conn != null)
-         {
-            try
-            {
-               conn.close();
-            }
-            catch (Throwable e)
-            {
-            }
-         }
+      	closeResultSet(rs);
+      	closeStatement(st);
+      	closeConnection(conn);
          wrap.end();
       }
    }
@@ -2244,67 +1848,12 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
       }
       finally
       {
-         if (psReference != null)
-         {
-            try
-            {
-               psReference.close();
-            }
-            catch (Throwable t)
-            {
-            }
-         }
-         if (psInsertMessage != null)
-         {
-            try
-            {
-               psInsertMessage.close();
-            }
-            catch (Throwable t)
-            {
-            }
-         }
-         if (psIncMessage != null)
-         {
-            try
-            {
-               psIncMessage.close();
-            }
-            catch (Throwable t)
-            {
-            }
-         }
-         if (psDecMessage != null)
-         {
-            try
-            {
-               psDecMessage.close();
-            }
-            catch (Throwable t)
-            {
-            }
-         }
-         if (psDeleteMessage != null)
-         {
-            try
-            {
-               psDeleteMessage.close();
-            }
-            catch (Throwable t)
-            {
-            }
-         }
-         if (conn != null)
-         {
-            try
-            {
-               if (trace) { log.trace("Closing connection"); }
-               conn.close();
-            }
-            catch (Throwable e)
-            {
-            }
-         }
+      	closeStatement(psReference);
+      	closeStatement(psInsertMessage);
+      	closeStatement(psIncMessage);
+      	closeStatement(psDecMessage);
+      	closeStatement(psDeleteMessage);
+      	closeConnection(conn);        
          try
          {
             wrap.end();                        
@@ -2431,36 +1980,9 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
       }
       finally
       {
-         if (psDeleteMessage != null)
-         {
-            try
-            {
-               psDeleteMessage.close();
-            }
-            catch (Throwable t)
-            {
-            }
-         }
-         if (psUpdateMessage != null)
-         {
-            try
-            {
-               psUpdateMessage.close();
-            }
-            catch (Throwable t)
-            {
-            }
-         }
-         if (conn != null)
-         {
-            try
-            {
-               conn.close();
-            }
-            catch (Throwable e)
-            {
-            }
-         }
+      	closeStatement(psDeleteMessage);
+      	closeStatement(psUpdateMessage);
+      	closeConnection(conn);        
          try
          {
             wrap.end();
@@ -2689,46 +2211,10 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
       }
       finally
       {
-         if (psReference != null)
-         {
-            try
-            {
-               psReference.close();
-            }
-            catch (Throwable t)
-            {
-            }
-         }
-         if (psInsertMessage != null)
-         {
-            try
-            {
-               psInsertMessage.close();
-            }
-            catch (Throwable t)
-            {
-            }
-         }
-         if (psUpdateMessage != null)
-         {
-            try
-            {
-               psUpdateMessage.close();
-            }
-            catch (Throwable t)
-            {
-            }
-         }
-         if (conn != null)
-         {
-            try
-            {
-               conn.close();
-            }
-            catch (Throwable e)
-            {
-            }
-         }
+      	closeStatement(psReference);
+      	closeStatement(psInsertMessage);
+      	closeStatement(psUpdateMessage);
+      	closeConnection(conn);         
          try
          {
             wrap.end();            
@@ -2851,36 +2337,9 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
       }
       finally
       {
-         if (psDeleteMessage != null)
-         {
-            try
-            {
-               psDeleteMessage.close();
-            }
-            catch (Throwable t)
-            {
-            }
-         }
-         if (psUpdateMessage != null)
-         {
-            try
-            {
-               psUpdateMessage.close();
-            }
-            catch (Throwable t)
-            {
-            }
-         }
-         if (conn != null)
-         {
-            try
-            {
-               conn.close();
-            }
-            catch (Throwable e)
-            {
-            }
-         }
+      	closeStatement(psDeleteMessage);
+      	closeStatement(psUpdateMessage);      	
+      	closeConnection(conn);                
          try
          {
             wrap.end();
@@ -2934,17 +2393,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
                   new Integer(formatID), "<byte-array>");
             log.trace(s + (rows == -1 ? " failed!" : " inserted " + rows + " row(s)"));
          }
-         try
-         {
-            if (ps != null)
-            {
-               ps.close();
-            }
-         }
-         catch (Throwable e)
-         {
-            //Ignore
-         }
+         closeStatement(ps);      
       }
    }
    
@@ -2966,17 +2415,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
       }
       finally
       {
-         try
-         {
-            if (ps != null)
-            {
-               ps.close();
-            }
-         }
-         catch (Throwable e)
-         {
-            //Ignore
-         }
+      	closeStatement(ps);    
       }
    }  
    
@@ -3075,16 +2514,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
       }
       finally
       {
-         if (ps != null)
-         {
-            try
-            {
-               ps.close();
-            }
-            catch (Throwable e)
-            {
-            }
-         }
+      	closeStatement(ps);
       }
    }
    
@@ -3122,16 +2552,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
       }
       finally
       {
-         if (ps != null)
-         {
-            try
-            {
-               ps.close();
-            }
-            catch (Throwable e)
-            {
-            }
-         }
+      	closeStatement(ps);
       }
    }
    
@@ -3649,36 +3070,9 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
       }
       finally
       {
-         if (rs != null)
-         {
-            try
-            {
-               rs.close();
-            }
-            catch (Throwable e)
-            {
-            }
-         }
-         if (ps != null)
-         {
-            try
-            {
-               ps.close();
-            }
-            catch (Throwable e)
-            {
-            }
-         }
-         if (conn != null)
-         {
-            try
-            {
-               conn.close();
-            }
-            catch (Throwable e)
-            {
-            }
-         }
+      	closeResultSet(rs);
+      	closeStatement(ps);
+      	closeConnection(conn);
          wrap.end();
       }
    }
