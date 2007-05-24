@@ -94,27 +94,11 @@ public class ReconnectTest extends BridgeTestBase
    
    public void testCrashAndReconnectDestBasic_OnceAndOnlyOnce_P() throws Exception
    {
-      if ("http".equals(ServerManagement.getRemotingTransport(0)))
-      {
-         // The ReconnectTest tests consistently time out over HTTP due to cleanup issues.
-         // Temporarily disabling them for HTTP. TODO: MUST BE REENABLED
-         // See http://jira.jboss.org/jira/browse/JBMESSAGING-858
-         return;
-      }
-
       testCrashAndReconnectDestBasic(Bridge.QOS_ONCE_AND_ONLY_ONCE, true);
    }
    
    public void testCrashAndReconnectDestBasic_OnceAndOnlyOnce_NP() throws Exception
    {
-      if ("http".equals(ServerManagement.getRemotingTransport(0)))
-      {
-         // The ReconnectTest tests consistently time out over HTTP due to cleanup issues.
-         // Temporarily disabling them for HTTP. TODO: MUST BE REENABLED
-         // See http://jira.jboss.org/jira/browse/JBMESSAGING-858
-         return;
-      }
-
       testCrashAndReconnectDestBasic(Bridge.QOS_ONCE_AND_ONLY_ONCE, false);
    }
 
@@ -122,27 +106,11 @@ public class ReconnectTest extends BridgeTestBase
 
    public void testCrashAndReconnectDestBasic_DuplicatesOk_P() throws Exception
    {
-      if ("http".equals(ServerManagement.getRemotingTransport(0)))
-      {
-         // The ReconnectTest tests consistently time out over HTTP due to cleanup issues.
-         // Temporarily disabling them for HTTP. TODO: MUST BE REENABLED
-         // See http://jira.jboss.org/jira/browse/JBMESSAGING-858
-         return;
-      }
-
       testCrashAndReconnectDestBasic(Bridge.QOS_DUPLICATES_OK, true);
    }
 
    public void testCrashAndReconnectDestBasic_DuplicatesOk_NP() throws Exception
    {
-      if ("http".equals(ServerManagement.getRemotingTransport(0)))
-      {
-         // The ReconnectTest tests consistently time out over HTTP due to cleanup issues.
-         // Temporarily disabling them for HTTP. TODO: MUST BE REENABLED
-         // See http://jira.jboss.org/jira/browse/JBMESSAGING-858
-         return;
-      }
-
       testCrashAndReconnectDestBasic(Bridge.QOS_DUPLICATES_OK, false);
    }
 
@@ -150,27 +118,11 @@ public class ReconnectTest extends BridgeTestBase
 
    public void testCrashAndReconnectDestBasic_AtMostOnce_P() throws Exception
    {
-      if ("http".equals(ServerManagement.getRemotingTransport(0)))
-      {
-         // The ReconnectTest tests consistently time out over HTTP due to cleanup issues.
-         // Temporarily disabling them for HTTP. TODO: MUST BE REENABLED
-         // See http://jira.jboss.org/jira/browse/JBMESSAGING-858
-         return;
-      }
-
       testCrashAndReconnectDestBasic(Bridge.QOS_AT_MOST_ONCE, true);
    }
 
    public void testCrashAndReconnectDestBasic_AtMostOnce_NP() throws Exception
    {
-      if ("http".equals(ServerManagement.getRemotingTransport(0)))
-      {
-         // The ReconnectTest tests consistently time out over HTTP due to cleanup issues.
-         // Temporarily disabling them for HTTP. TODO: MUST BE REENABLED
-         // See http://jira.jboss.org/jira/browse/JBMESSAGING-858
-         return;
-      }
-
       testCrashAndReconnectDestBasic(Bridge.QOS_AT_MOST_ONCE, false);
    }
 
@@ -178,55 +130,23 @@ public class ReconnectTest extends BridgeTestBase
 
    public void testCrashAndReconnectDestCrashBeforePrepare_P() throws Exception
    {
-      if ("http".equals(ServerManagement.getRemotingTransport(0)))
-      {
-         // The ReconnectTest tests consistently time out over HTTP due to cleanup issues.
-         // Temporarily disabling them for HTTP. TODO: MUST BE REENABLED
-         // See http://jira.jboss.org/jira/browse/JBMESSAGING-858
-         return;
-      }
-
       testCrashAndReconnectDestCrashBeforePrepare(true);
    }
 
    public void testCrashAndReconnectDestCrashBeforePrepare_NP() throws Exception
    {
-      if ("http".equals(ServerManagement.getRemotingTransport(0)))
-      {
-         // The ReconnectTest tests consistently time out over HTTP due to cleanup issues.
-         // Temporarily disabling them for HTTP. TODO: MUST BE REENABLED
-         // See http://jira.jboss.org/jira/browse/JBMESSAGING-858
-         return;
-      }
-
       testCrashAndReconnectDestCrashBeforePrepare(false);
    }
 
    // Note this test will fail until http://jira.jboss.com/jira/browse/JBTM-192 is complete
    public void x_testCrashAndReconnectDestCrashOnCommit_P() throws Exception
    {
-      if ("http".equals(ServerManagement.getRemotingTransport(0)))
-      {
-         // The ReconnectTest tests consistently time out over HTTP due to cleanup issues.
-         // Temporarily disabling them for HTTP. TODO: MUST BE REENABLED
-         // See http://jira.jboss.org/jira/browse/JBMESSAGING-858
-         return;
-      }
-
       testCrashAndReconnectDestCrashOnCommit(true);
    }
    
    // Note this test will fail until http://jira.jboss.com/jira/browse/JBTM-192 is complete
    public void x_testCrashAndReconnectDestCrashOnCommit_NP() throws Exception
    {
-      if ("http".equals(ServerManagement.getRemotingTransport(0)))
-      {
-         // The ReconnectTest tests consistently time out over HTTP due to cleanup issues.
-         // Temporarily disabling them for HTTP. TODO: MUST BE REENABLED
-         // See http://jira.jboss.org/jira/browse/JBMESSAGING-858
-         return;
-      }
-
       testCrashAndReconnectDestCrashOnCommit(false);
    }
 

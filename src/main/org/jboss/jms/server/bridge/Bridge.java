@@ -1043,25 +1043,7 @@ public class Bridge implements MessagingComponent
    
    private void cleanup()
    {
-      if (tx != null)
-      {
-         try
-         {
-            delistResources(tx);
-         }
-         catch (Throwable ignore)
-         {
-         } 
-         try
-         {
-            //Terminate the tx
-            tx.rollback();
-         }
-         catch (Throwable ignore)
-         {
-         } 
-      }
-      
+   	
       //Close the old objects
       try
       {
@@ -1080,6 +1062,26 @@ public class Bridge implements MessagingComponent
       catch (Throwable ignore)
       {            
       }
+
+   	
+      if (tx != null)
+      {
+         try
+         {
+            delistResources(tx);
+         }
+         catch (Throwable ignore)
+         {
+         } 
+         try
+         {
+            //Terminate the tx
+            tx.rollback();
+         }
+         catch (Throwable ignore)
+         {
+         } 
+      }      
    }
    
    private void pause(long interval)
@@ -1235,7 +1237,7 @@ public class Bridge implements MessagingComponent
    private void handleFailure()
    {
       failed = true;
-      
+
       //Failure must be handled on a separate thread to the onMessage thread since we can't close the connection
       //from inside the onMessage method since it will block waiting for onMessage to complete
       Thread t = new Thread(new FailureHandler());
@@ -1249,6 +1251,8 @@ public class Bridge implements MessagingComponent
    {
       public void run()
       {
+      	if (trace) { log.trace("****  Failure handler running"); }
+      	
          // Clear the messages
          messages.clear();
                      

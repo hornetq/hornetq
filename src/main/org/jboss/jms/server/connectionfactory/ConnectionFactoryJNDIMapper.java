@@ -128,8 +128,6 @@ public class ConnectionFactoryJNDIMapper
       log.debug(this + " registering connection factory '" + uniqueName +
          "', bindings: " + jndiBindings);
       
-      log.info("REGISTERING CF " + uniqueName + " supports failover: " + supportsFailover + " suppors LB " + supportsLoadBalancing);
-
       // Sanity check
       if (delegates.containsKey(uniqueName))
       {
@@ -187,8 +185,6 @@ public class ConnectionFactoryJNDIMapper
       {
          // Replicate the change - we will ignore this locally
       	
-      	log.info("REPLICATING CF!!");
-
          replicator.put(CF_PREFIX + uniqueName, localDelegate);
 
          // Create a clustered delegate
@@ -206,8 +202,6 @@ public class ConnectionFactoryJNDIMapper
       else
       {
          delegate = localDelegate;
-         
-         log.info("NOT REPLICATING CF!!");
       }
 
       log.trace(this + " adding delegates factory " + uniqueName + " pointing to " + delegate);
@@ -469,8 +463,6 @@ public class ConnectionFactoryJNDIMapper
       }
 
       LoadBalancingPolicy lbp = loadBalancingFactory.createLoadBalancingPolicy(delegates);
-      
-      log.info("Using lod balancing policy:" + lbp);
       
       return new ClientClusteredConnectionFactoryDelegate(delegates, failoverMap, lbp, supportsFailover);
    }

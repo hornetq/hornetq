@@ -266,7 +266,7 @@ public class BridgeTestBase extends MessagingTestCase
             prod.send(tm);
          }
 
-         log.trace("Sent messages");
+         log.trace("Sent the messages");
       }
       finally
       {
@@ -314,6 +314,8 @@ public class BridgeTestBase extends MessagingTestCase
       Connection conn = null;
       
       log.trace("checkMessagesReceived");
+      
+      log.info("***** CHECKING I GOT THE MESSAGES");
 
       try
       {
@@ -334,6 +336,8 @@ public class BridgeTestBase extends MessagingTestCase
          while (true)
          {
             TextMessage tm = (TextMessage)cons.receive(5000);
+            
+            log.info("GOT MESSAGE: "+tm);
             
             if (tm == null)
             {
