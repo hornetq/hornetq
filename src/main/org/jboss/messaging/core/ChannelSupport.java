@@ -296,7 +296,7 @@ public abstract class ChannelSupport implements Channel
    public void deliver()
    {
       checkClosed();
-
+      
       if (router.getNumberOfReceivers() > 0)
       {                
          synchronized (refLock)
@@ -305,6 +305,7 @@ public abstract class ChannelSupport implements Channel
             
             deliverInternal();
          }
+         
       }
    }      
 
@@ -632,7 +633,21 @@ public abstract class ChannelSupport implements Channel
                   
                   // Receiver accepted the reference
                   
-                  removeReference(iter);
+                  synchronized (refLock)
+                  {
+                     if (iter == null)
+                     {
+                        if (trace) { log.trace(this + " removing first ref in memory"); } 
+                        
+                        removeFirstInMemory();
+                     }
+                     else
+                     {
+                        if (trace) { log.trace(this + " removed current message from iterator"); }                           
+                                    
+                        iter.remove();                                
+                     }
+                  }
                   
                   deliveringCount.increment();                     
                }               
@@ -887,26 +902,7 @@ public abstract class ChannelSupport implements Channel
    }    
    
    // Private --------------------------------------------------------------------------------------
-   
-   private void removeReference(ListIterator iter) throws Exception
-   {
-      synchronized (refLock)
-      {
-         if (iter == null)
-         {
-            if (trace) { log.trace(this + " removing first ref in memory"); } 
-            
-            removeFirstInMemory();
-         }
-         else
-         {
-            if (trace) { log.trace(this + " removed current message from iterator"); }                           
-                        
-            iter.remove();                                
-         }
-      }
-   }
-   
+      
    private MessageReference nextReference(ListIterator iter) throws Throwable
    {
       MessageReference ref;

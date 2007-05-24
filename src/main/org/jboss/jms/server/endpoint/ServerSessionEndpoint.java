@@ -855,7 +855,14 @@ public class ServerSessionEndpoint implements SessionEndpoint
       promptDelivery(channels);
       
       //Close down the executor
-      executor.shutdownAfterProcessingCurrentTask();
+      
+      //Note we need to wait for ALL tasks to complete NOT just one otherwise we can end up with the following situation
+      //prompter is queued and starts to execute
+      //prompter almost finishes executing then a message is cancelled due to this session closing
+      //this causes another prompter to be queued
+      //shutdownAfterProcessingCurrentTask is then called
+      //this means the second prompter never runs and the cancelled message doesn't get redelivered
+      executor.shutdownAfterProcessingCurrentlyQueuedTasks();
 
       deliveries.clear();
       
@@ -955,7 +962,8 @@ public class ServerSessionEndpoint implements SessionEndpoint
          //cancelDeliveries because remoting one way invocations can 
          //overtake each other in flight - this problem will
          //go away when we have our own transport and our dedicated connection
-         this.executor.execute(new Runnable() { public void run() { channel.deliver(); } } );
+         this.executor.execute(new Runnable() { public void run() { channel.deliver();} } );
+         
       }
       catch (Throwable t)
       {
@@ -1531,8 +1539,6 @@ public class ServerSessionEndpoint implements SessionEndpoint
    {
       //Now prompt delivery on the channels
       Iterator iter = channels.iterator();
-      
-      if (trace) { log.trace("Prompting delivery"); }
       
       while (iter.hasNext())
       {
