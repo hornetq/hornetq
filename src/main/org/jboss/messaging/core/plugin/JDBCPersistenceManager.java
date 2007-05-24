@@ -1429,6 +1429,9 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
          {
             maxOrdering = null;
          }
+         
+         ps.close();
+         
          conn.close();
          
          conn = ds.getConnection();         

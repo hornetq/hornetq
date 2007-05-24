@@ -23,6 +23,7 @@ package org.jboss.messaging.core.plugin;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -210,6 +211,8 @@ public class JDBCSupport implements MessagingComponent
       for(Iterator i = defaultDDLStatements.keySet().iterator(); i.hasNext(); )
       {
          Connection conn = null;      
+         
+         Statement st = null;
                   
          TransactionWrapper tx = new TransactionWrapper();
                   
@@ -227,7 +230,9 @@ public class JDBCSupport implements MessagingComponent
                {
                   if (log.isTraceEnabled()) { log.trace("Executing: " + statement); }
                       
-                  conn.createStatement().executeUpdate(statement);
+                  st = conn.createStatement();
+                  
+                  st.executeUpdate(statement);
                }
                catch (SQLException e) 
                {
@@ -239,6 +244,15 @@ public class JDBCSupport implements MessagingComponent
          }
          finally
          {
+         	if (st != null)
+            {
+               try
+               {
+                  st.close();
+               }
+               catch (Throwable t)
+               {}
+            }
             if (conn != null)
             {
                try

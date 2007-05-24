@@ -315,8 +315,6 @@ public class BridgeTestBase extends MessagingTestCase
       
       log.trace("checkMessagesReceived");
       
-      log.info("***** CHECKING I GOT THE MESSAGES");
-
       try
       {
          conn = cf.createConnection();
@@ -336,9 +334,7 @@ public class BridgeTestBase extends MessagingTestCase
          while (true)
          {
             TextMessage tm = (TextMessage)cons.receive(5000);
-            
-            log.info("GOT MESSAGE: "+tm);
-            
+              
             if (tm == null)
             {
                break;
