@@ -20,7 +20,6 @@
 	<classpathentry excluding="**/.svn/**/*" kind="src" path="tests/src"/>
 	<classpathentry kind="lib" path="lib/jboss.jar"/>
 	<classpathentry kind="lib" path="lib/jboss-j2ee.jar"/>
-	<classpathentry kind="lib" path="lib/jboss-j2se.jar"/>
 	<classpathentry kind="lib" path="lib/jboss-jmx.jar"/>
 	<classpathentry kind="lib" path="lib/jbosssx.jar"/>
 	<classpathentry kind="lib" path="lib/jboss-system.jar"/>

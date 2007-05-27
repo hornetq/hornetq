@@ -170,7 +170,7 @@
    <property name="jboss.j2se.lib" value="${project.root}/lib/"/>
    <path id="jboss.j2se.classpath">
       <pathelement location="${project.root}/lib/jboss-j2se.jar"/>
-   </path>
+   </path>   
 
    <path id="jboss.system.classpath">
       <pathelement location="${project.root}/lib/jboss-system.jar"/>
@@ -204,7 +204,7 @@
 
    <path id="local.dependencies.classpath">
       <path refid="jboss.j2ee.classpath"/>
-      <path refid="jboss.j2se.classpath"/>
+      <path refid="jboss.j2se.classpath"/>      
       <path refid="jboss.system.classpath"/>
       <path refid="jboss.security.classpath"/>
       <path refid="jboss.transaction.classpath"/>
@@ -411,37 +411,8 @@
       <copy todir="${build.sar}/META-INF" file="${source.etc}/server/default/deploy/jboss-service.xml"/>
    </target>
 
-   <target name="artifacts" depends="jar, sar, client-jar, fat-client-jar"/>
+   <target name="artifacts" depends="jar, sar, client-jar"/>
 
-   <!-- We DO NOT recommend using the fat client jar, since you may end up using
-        the wrong version of the included jars -->
-   <target name="fat-client-jar" depends="compile">
-
-      <mkdir dir="${build.lib}"/>
-
-      <jar jarfile="${build.lib}/jboss-messaging-fat-client.jar">
-         <fileset dir="${build.classes}">
-            <include name="org/jboss/jms/client/**/*.class"/>
-         </fileset>
-         <fileset dir="${build.etc}">
-            <include name="VERSION"/>
-         </fileset>
-
-         <zipfileset  src="${jboss.aop.lib}/jboss-aop.jar"/>
-         <zipfileset  src="${jboss.remoting.lib}/jboss-remoting.jar"/>
-         <zipfileset  src="${javassist.javassist.lib}/javassist.jar"/>
-         <zipfileset  src="${trove.trove.lib}/trove.jar"/>
-         <zipfileset  src="${jboss.common.lib}/jboss-common-client.jar"/>
-         <zipfileset  src="${jboss.j2ee.lib}/jboss-j2ee.jar"/>
-         <zipfileset  src="${jboss.j2se.lib}/jboss-j2se.jar"/>
-         <zipfileset  src="${jboss.naming.lib}/jnp-client.jar"/>
-         <zipfileset  src="${oswego.concurrent.lib}/concurrent.jar"/>
-         <zipfileset  src="${apache.log4j.lib}/log4j.jar"/>
-         <zipfileset  src="${apache.logging.lib}/commons-logging.jar"/>
-      </jar>
-   </target>
-
-   <!-- This is the thin client jar -->
    <target name="client-jar" depends="compile">
       <mkdir dir="${build.lib}"/>
 
@@ -449,7 +420,7 @@
 
          <manifest>
             <attribute name="Class-path"
-                       value="jboss-aop.jar jboss-remoting.jar javassist.jar trove.jar jboss-common-core.jar jboss-common-client.jar jboss-j2ee.jar jboss-j2se.jar jnp-client.jar concurrent.jar log4j.jar commons-logging.jar"/>
+                       value="jboss-aop.jar jboss-remoting.jar javassist.jar trove.jar jboss-common-core.jar jboss-j2ee.jar jboss-j2se.jar jnp-client.jar concurrent.jar log4j.jar commons-logging.jar"/>
          </manifest>
          <fileset dir="${build.classes}">
             <!-- This structur is temporary until we partition the classes
@@ -517,7 +488,6 @@
 
       <copy todir="${release.output}" file="${build.lib}/jboss-${module.name}.sar"/>
       <copy todir="${release.output}" file="${build.lib}/jboss-${module.name}-client.jar"/>
-      <copy todir="${release.output}" file="${build.lib}/jboss-${module.name}-fat-client.jar"/>
       <copy todir="${release.output}" file="./docs/README.html"/>
       <copy todir="${release.output}" file="./JBossORG-EULA.txt"/>
       <copy todir="${release.output}/api">
