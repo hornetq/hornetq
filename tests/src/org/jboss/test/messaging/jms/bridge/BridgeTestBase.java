@@ -36,6 +36,7 @@ import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.jms.Topic;
+import javax.management.ObjectName;
 import javax.naming.InitialContext;
 
 import org.jboss.jms.server.bridge.Bridge;
@@ -93,7 +94,7 @@ public class BridgeTestBase extends MessagingTestCase
          // make sure all servers are created and started; make sure that database is zapped
          // ONLY for the first server, the others rely on values they expect to find in shared
          // tables; don't clear the database for those.
-            ServerManagement.start(i, "all", i == 0);
+         ServerManagement.start(i, "all", i == 0);
       }
       
       //We need a local transaction and recovery manager
@@ -123,7 +124,24 @@ public class BridgeTestBase extends MessagingTestCase
       
       ServerManagement.deployQueue("localDestQueue", 0);
          
-      ServerManagement.deployQueue("destQueue", 1);                        
+      ServerManagement.deployQueue("destQueue", 1);             
+      
+      // Make sure there are no messages in the queues or topics
+      removeAllMessages("sourceQueue", true, 0);
+      
+      removeAllMessages("sourceTopic", false, 0);
+      
+      removeAllMessages("localDestQueue", true, 0);
+      
+      removeAllMessages("destQueue", true, 1);
+      
+   }
+   
+   private void removeAllMessages(String destName, boolean isQueue, int server) throws Exception
+   {
+   	String on = "jboss.messaging.destination:service=" + (isQueue ? "Queue" : "Topic") + ",name=" + destName;
+   	
+   	ServerManagement.getServer(server).invoke(new ObjectName(on), "removeAllMessages", null, null);
    }
 
    protected void tearDown() throws Exception
