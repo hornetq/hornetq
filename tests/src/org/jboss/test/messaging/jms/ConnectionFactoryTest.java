@@ -200,19 +200,19 @@ public class ConnectionFactoryTest extends MessagingTestCase
       JBossConnectionFactory f1 = (JBossConnectionFactory)initialContext.lookup("/TestConnectionFactory1");            
       ClientConnectionFactoryDelegate del1 = (ClientConnectionFactoryDelegate)f1.getDelegate();      
       
-      assertTrue(del1.getServerLocatorURI().startsWith("socket://localhost:1234"));
+      assertTrue(del1.getServerLocatorURI().startsWith("bisocket://localhost:1234"));
       
       JBossConnectionFactory f2 = (JBossConnectionFactory)initialContext.lookup("/TestConnectionFactory2");            
       ClientConnectionFactoryDelegate del2 = (ClientConnectionFactoryDelegate)f2.getDelegate();      
-      assertTrue(del2.getServerLocatorURI().startsWith("socket://localhost:1235"));
+      assertTrue(del2.getServerLocatorURI().startsWith("bisocket://localhost:1235"));
       
       JBossConnectionFactory f3 = (JBossConnectionFactory)initialContext.lookup("/TestConnectionFactory3");            
       ClientConnectionFactoryDelegate del3 = (ClientConnectionFactoryDelegate)f3.getDelegate();      
-      assertTrue(del3.getServerLocatorURI().startsWith("socket://localhost:1236"));
+      assertTrue(del3.getServerLocatorURI().startsWith("bisocket://localhost:1236"));
       
       JBossConnectionFactory f4 = (JBossConnectionFactory)initialContext.lookup("/TestConnectionFactory4");            
       ClientConnectionFactoryDelegate del4 = (ClientConnectionFactoryDelegate)f4.getDelegate();      
-      assertTrue(del4.getServerLocatorURI().startsWith("socket://localhost:1236"));
+      assertTrue(del4.getServerLocatorURI().startsWith("bisocket://localhost:1236"));
       
       Connection con1 = f1.createConnection();
       Connection con2 = f2.createConnection();
@@ -367,7 +367,7 @@ public class ConnectionFactoryTest extends MessagingTestCase
             "<attribute name=\"dataType\" isParam=\"true\">jms</attribute>" +
             "<attribute name=\"socket.check_connection\" isParam=\"true\">false</attribute>" +
             "<attribute name=\"timeout\" isParam=\"true\">0</attribute>" +
-            "<attribute name=\"serverBindAddress\">${jboss.bind.address}</attribute>" +
+            "<attribute name=\"serverBindAddress\">localhost</attribute>" +
             "<attribute name=\"serverBindPort\">" + port  +"</attribute>" +
             "<attribute name=\"leasePeriod\">10000</attribute>" +
             "<attribute name=\"clientSocketClass\" isParam=\"true\">org.jboss.jms.client.remoting.ClientSocketWrapper</attribute>" +

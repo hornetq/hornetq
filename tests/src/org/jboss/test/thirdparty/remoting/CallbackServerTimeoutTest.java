@@ -6,22 +6,24 @@
  */
 package org.jboss.test.thirdparty.remoting;
 
-import org.jboss.test.messaging.MessagingTestCase;
-import org.jboss.test.messaging.tools.ServerManagement;
-import org.jboss.test.messaging.tools.jmx.ServiceContainer;
-import org.jboss.test.messaging.tools.jmx.ServiceAttributeOverrides;
-import org.jboss.test.thirdparty.remoting.util.RemotingTestSubsystemService;
-import org.jboss.test.thirdparty.remoting.util.OnewayCallbackTrigger;
+import javax.management.ObjectName;
+
+import org.jboss.jms.client.remoting.JMSRemotingConnection;
+import org.jboss.jms.wireformat.JMSWireFormat;
 import org.jboss.logging.Logger;
-import org.jboss.remoting.InvokerLocator;
 import org.jboss.remoting.Client;
+import org.jboss.remoting.InvokerLocator;
 import org.jboss.remoting.ServerInvoker;
 import org.jboss.remoting.callback.Callback;
-import org.jboss.remoting.callback.InvokerCallbackHandler;
 import org.jboss.remoting.callback.HandleCallbackException;
-import org.jboss.jms.client.remoting.JMSRemotingConnection;
-
-import javax.management.ObjectName;
+import org.jboss.remoting.callback.InvokerCallbackHandler;
+import org.jboss.remoting.marshal.MarshalFactory;
+import org.jboss.test.messaging.MessagingTestCase;
+import org.jboss.test.messaging.tools.ServerManagement;
+import org.jboss.test.messaging.tools.jmx.ServiceAttributeOverrides;
+import org.jboss.test.messaging.tools.jmx.ServiceContainer;
+import org.jboss.test.thirdparty.remoting.util.OnewayCallbackTrigger;
+import org.jboss.test.thirdparty.remoting.util.RemotingTestSubsystemService;
 
 import EDU.oswego.cs.dl.util.concurrent.Channel;
 import EDU.oswego.cs.dl.util.concurrent.LinkedQueue;
@@ -211,6 +213,11 @@ public class CallbackServerTimeoutTest extends MessagingTestCase
       ServiceAttributeOverrides sao = new ServiceAttributeOverrides();
       sao.put(ServiceContainer.REMOTING_OBJECT_NAME,
               ServiceContainer.DO_NOT_USE_MESSAGING_MARSHALLERS, Boolean.TRUE);
+      
+      
+      JMSWireFormat wf = new JMSWireFormat();
+      
+      MarshalFactory.addMarshaller("jms", wf, wf);      
 
       ServerManagement.start(0, "remoting", sao, true, false);
 

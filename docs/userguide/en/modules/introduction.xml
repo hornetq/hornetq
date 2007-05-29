@@ -19,34 +19,31 @@
    </para>
 
    <para>
-      JBoss Messaging will soon become an integral component of the JBoss Enterprise Middleware
-      Suite (JEMS). Currently it
-      is available for embedded use within the JBoss Application Server (JBossAS), and as a
-      JBoss Microkernel-based stand-alone server. Work to integrate JBoss Messaging with the new
-      JBoss Microcontainer is under way.
+      JBoss Messaging is destined to become an integral part of the JBoss Enterprise Application Platform, 
+      and the new Service Integration Platform. Currently itis available for embedded use within the JBoss Application Server
+      4.2.0.GA or later (JBossAS). Work to integrate JBoss Messaging with the new JBoss Microcontainer is under way.      
    </para>
-
+   
    <para>
-      The large and vibrant JEMS developer community fosters its continued innovation and
-      enterprise quality. JBoss Messaging enables more agile applications in a wide range of
-      scenarios from simple messaging needs to an enterprise-wide messaging foundation and adds
-      flexibility to any SOA initiative.
+      JBoss Messaging is also an integral part of Red Hat's strategy for messaging.
+      JBoss Messaging is fully committed to AMQP ( <ulink url="http://www.amqp.org">AMQP</ulink>)- the new messaging standard from Red Hat
+      and others. Later versions of JBoss Messaging will support AMQP, and JBoss Messaging will be focussed
+      on becoming the premier AMQP Java broker.
    </para>
 
    <section id="support">
       <title>JBoss Messaging support cover from Red Hat</title>
 
       <para>
-         JBoss Messaging 1.2.GA will become part of both Application Server Platform (JBoss 4.2
+         JBoss Messaging is destained to become part of both Application Server Platform (JBoss 4.2
          series) and Service Integration Platform (JBoss ESB 4 series) as default JMS provider.
-         Production support will be fully available for these plaforms and it will cover JBoss
+         Production support will then be fully available for these plaforms and it will cover JBoss
          Messaging.
       </para>
       <para>
-         Red Hat is also working on introducing a development support program, which is different
-         from production support and caters to companies who want to have a safety net even from
-         the development phase. The estimated availability date of this support progam is April
-         2007.
+         Until that point developer assist support is available for JBoss Messaging when installed in JBoss 4.2.x
+      </para>
+      <para>Exceptions can be made for existing customers or new customers already using or intending to use JBoss Messaging in production environments
       </para>
 
    </section>
@@ -62,8 +59,7 @@
          <listitem>
             <para>
                A fully compatible and Sun certified JMS 1.1 implementation, that currently works
-               with a standard JBossAS 4.0.x, 4.2.x and JBoss 5.x installation and also as a JBoss
-               Microkernel-based standalone deployment.
+               with a standard 4.2.x installation.
             </para>
          </listitem>
          <listitem>

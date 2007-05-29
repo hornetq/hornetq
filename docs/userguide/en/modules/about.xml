@@ -5,12 +5,20 @@
    <para>
        JBoss Messaging is a high performance JMS provider in the JBoss Enterprise Middleware Stack
        (JEMS). It is a complete rewrite of JBossMQ, which is the current default JMS provider in
-       JBoss AS 4.0.x series and JBoss AS 4.2.0. JBoss Messaging will be the default JMS provider in
+       JBoss AS 4.0.x series and JBoss AS 4.2.0.GA JBoss Messaging will be the default JMS provider in
        JBoss AS 4.2.x series, probably starting with 4.2.1, and it is already the default provider
        in JBoss 5.0.0.Beta.
    </para>
+   
+   <para>
+      JBoss Messaging will also be part of the JBoss Enterprise Application Platform and the SOA platform, probably from 4.2.1 onwards
+   <para>
+   
+   <para>
+      JBoss Messaging is an integral part of Red Hat's strategy for messaging.
+   </para>
 
-   <para>JBoss Messaging it is also the backbone of the JBoss ESB infrastructure.</para>
+   <para>JBoss Messaging will also be the default JMS provider for JBoss ESB.</para>
 
    <para>
        Compared with JBossMQ, JBoss Messaging offers vastly improved performance in both single node
@@ -27,7 +35,9 @@
        production users on JBoss AS 4.0.x can still take advantage of the performance improvements
        by easily replacing the JBossMQ module with JBoss Messaging.
    </para>
-
+   
+   <para><warn>From release 1.3.0.GA onwards JBoss Messaging is designed for JBoss 4.2.x only.</warn></para>
+   
    <para>
        The procedure of swapping JMS providers is presented in detail in this manual.
        In <xref linkend="installation"/> we discuss how to install and use JBoss Messaging in
@@ -46,7 +56,7 @@
    </para>
 
    <para>
-      Ovidiu Feodorov, Project Lead
+      Tim Fox, Project Lead
    </para>
 
    <para>
@@ -54,9 +64,13 @@
 
    </para>
 
-    <para>
-       Clebert Suconic, Core Messaging Developer
-    </para>
+   <para>
+       Clebert Suconic, Core Developer
+   </para>
+   
+   <para>
+       Sergey Koshcheyev, Core Developer
+   </para>
 
    <para>
       Other contributions by: Adrian Brock, Bela Ban, Alex Fu, Luc Texier, Aaron Walker,
