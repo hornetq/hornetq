@@ -373,7 +373,7 @@ public class ConnectionFactoryTest extends MessagingTestCase
             "<attribute name=\"clientSocketClass\" isParam=\"true\">org.jboss.jms.client.remoting.ClientSocketWrapper</attribute>" +
             "<attribute name=\"serverSocketClass\">org.jboss.jms.server.remoting.ServerSocketWrapper</attribute>" +
             "<attribute name=\"numberOfRetries\" isParam=\"true\">1</attribute>" +
-            "<attribute name=\"NumberOfCallRetries\" isParam=\"true\">1</attribute>" +
+            "<attribute name=\"numberOfCallRetries\" isParam=\"true\">1</attribute>" +
             "<attribute name=\"clientMaxPoolSize\" isParam=\"true\">50</attribute>" +
          "</invoker>" +
          "<handlers>" +
