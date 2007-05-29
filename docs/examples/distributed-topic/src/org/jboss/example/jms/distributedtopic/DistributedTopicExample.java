@@ -62,7 +62,7 @@ public class DistributedTopicExample extends ExampleSupport
 
          ic = new InitialContext();
 
-         ConnectionFactory cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
+         ConnectionFactory cf = (ConnectionFactory)ic.lookup("/ClusteredConnectionFactory");
          Topic distributedTopic = (Topic)ic.lookup(destinationName);
          log("Distributed topic " + destinationName + " exists");
 

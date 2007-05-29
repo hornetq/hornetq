@@ -51,18 +51,9 @@ import org.jboss.example.jms.statelessclustered.bean.StatelessClusteredSessionEx
  */
 public class Client extends ExampleSupport
 {
-   private InitialContext createHAInitialContext() throws Exception
-   {
-      Properties p = new Properties();
-      p.put(Context.INITIAL_CONTEXT_FACTORY, "org.jnp.interfaces.NamingContextFactory");
-      p.put(Context.URL_PKG_PREFIXES, "jboss.naming:org.jnp.interfaces");
-      p.put(Context.PROVIDER_URL, "localhost:1100,localhost:1200");
-      return new InitialContext(p);
-   }
-
    public void example() throws Exception
    {            
-      InitialContext haic = createHAInitialContext();
+      InitialContext haic = new InitialContext();
       
       StatelessClusteredSessionExampleHome home =
          (StatelessClusteredSessionExampleHome)haic.lookup("ejb/StatelessClusteredSessionExample");            
@@ -85,7 +76,7 @@ public class Client extends ExampleSupport
       log("Queue browse result: " + num);
 
       Queue queue = (Queue)haic.lookup(queueName);
-      ConnectionFactory cf = (ConnectionFactory) new InitialContext().lookup("/XAConnectionFactory");
+      ConnectionFactory cf = (ConnectionFactory) haic.lookup("/XAConnectionFactory");
       Connection conn = cf.createConnection();
 
       try

@@ -63,7 +63,7 @@ public class QueueFailoverExample extends ExampleSupport
 
          ic = new InitialContext();
 
-         ConnectionFactory cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
+         ConnectionFactory cf = (ConnectionFactory)ic.lookup("/ClusteredConnectionFactory");
 
          Queue distributedQueue = (Queue)ic.lookup(destinationName);
          log("Distributed queue " + destinationName + " exists");
