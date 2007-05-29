@@ -83,7 +83,7 @@ public class DistributedQueueTest extends MessagingTestCase
 
          conn = cf.createConnection();
 
-         // make sure we're connecting to node 1
+         // make sure we're connecting to node 0
 
          assertEquals(0, ((JBossConnection)conn).getServerID());
 

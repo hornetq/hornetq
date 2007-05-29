@@ -124,26 +124,9 @@ public class BridgeTestBase extends MessagingTestCase
       
       ServerManagement.deployQueue("localDestQueue", 0);
          
-      ServerManagement.deployQueue("destQueue", 1);             
-      
-      // Make sure there are no messages in the queues or topics
-      removeAllMessages("sourceQueue", true, 0);
-      
-      removeAllMessages("sourceTopic", false, 0);
-      
-      removeAllMessages("localDestQueue", true, 0);
-      
-      removeAllMessages("destQueue", true, 1);
-      
+      ServerManagement.deployQueue("destQueue", 1);                   
    }
    
-   private void removeAllMessages(String destName, boolean isQueue, int server) throws Exception
-   {
-   	String on = "jboss.messaging.destination:service=" + (isQueue ? "Queue" : "Topic") + ",name=" + destName;
-   	
-   	ServerManagement.getServer(server).invoke(new ObjectName(on), "removeAllMessages", null, null);
-   }
-
    protected void tearDown() throws Exception
    {       
       try
@@ -246,6 +229,12 @@ public class BridgeTestBase extends MessagingTestCase
          sourceTopic = (Topic)ic0.lookup("/topic/sourceTopic");
          
          localDestQueue = (Queue)ic0.lookup("/queue/localDestQueue");
+         
+         this.drainDestination(cf0, sourceQueue);
+         
+         this.drainDestination(cf1, destQueue);
+         
+         this.drainDestination(cf0, localDestQueue);
       }
       finally
       {

@@ -179,7 +179,6 @@ public class DefaultRouter implements ClusterRouter
 
    public int getNumberOfReceivers()
    {
-      //FIXME - what about failed over queues????
       return nonLocalQueues.size() + (localQueue != null ? 1 : 0);
    }
 

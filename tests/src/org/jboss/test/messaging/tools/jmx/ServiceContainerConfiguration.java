@@ -75,7 +75,6 @@ class ServiceContainerConfiguration
 
    private String database;
    private Map dbConfigurations;
-   private String serializationType;
    private String remotingTransport;
    private Boolean clusteredMode;
 
@@ -132,14 +131,6 @@ class ServiceContainerConfiguration
    }
 
    /**
-    * @return the serialization type the container wants the Remoting Connector be configured with.
-    */
-   public String getSerializationType()
-   {
-      return serializationType;
-   }
-   
-   /**
     * @return the transport the container wants the Remoting Connector to use.
     */
    public String getRemotingTransport()
@@ -165,7 +156,6 @@ class ServiceContainerConfiguration
    {
       Reader reader = new InputStreamReader(is);
       String currentDatabase = null;
-      String currentSerializationType = null;
       String currentRemotingTransport = null;
       boolean currentClusteredMode = DEFAULT_CLUSTERED_MODE;
 
@@ -202,10 +192,6 @@ class ServiceContainerConfiguration
                {
                   currentDatabase = XMLUtil.getTextContent(n);
                }
-               else if ("serialization-type".equals(name))
-               {
-                  currentSerializationType = XMLUtil.getTextContent(n);
-               }
                else if ("remoting-transport".equals(name))
                {
                   currentRemotingTransport = XMLUtil.getTextContent(n);
@@ -223,7 +209,6 @@ class ServiceContainerConfiguration
          }
 
          setCurrentDatabase(currentDatabase);
-         setCurrentSerializationType(currentSerializationType);
          setCurrentRemotingTransport(currentRemotingTransport);
          setCurrentClusteredMode(currentClusteredMode);
       }
@@ -246,19 +231,6 @@ class ServiceContainerConfiguration
       }
    }
 
-   /**
-    * Always the value of "test.serialization" system property takes precedence over the
-    * configuration file value.
-    */
-   private void setCurrentSerializationType(String xmlConfigSerializationType)
-   {
-      serializationType = System.getProperty("test.serialization");
-      if (serializationType == null)
-      {
-         serializationType = xmlConfigSerializationType;
-      }
-   }
-   
    private void setCurrentRemotingTransport(String xmlRemotingTransport)
    {
       remotingTransport = System.getProperty("test.remoting");

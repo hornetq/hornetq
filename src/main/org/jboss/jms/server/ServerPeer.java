@@ -50,7 +50,6 @@ import org.jboss.jms.server.messagecounter.MessageCounterManager;
 import org.jboss.jms.server.plugin.contract.JMSUserManager;
 import org.jboss.jms.server.remoting.JMSServerInvocationHandler;
 import org.jboss.jms.server.security.SecurityMetadataStore;
-import org.jboss.jms.wireformat.JMSWireFormat;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Queue;
 import org.jboss.messaging.core.memory.MemoryManager;
@@ -71,7 +70,6 @@ import org.jboss.messaging.util.ExceptionUtil;
 import org.jboss.messaging.util.Util;
 import org.jboss.messaging.util.Version;
 import org.jboss.mx.loading.UnifiedClassLoader3;
-import org.jboss.remoting.marshal.MarshalFactory;
 import org.jboss.system.ServiceCreator;
 import org.jboss.system.ServiceMBeanSupport;
 import org.jboss.util.JBossStringBuilder;
@@ -264,8 +262,6 @@ public class ServerPeer extends ServiceMBeanSupport implements ServerPeerMBean
          // eventually cause the server to run out of RAM
          
          txRepository.loadPreparedTransactions();
-         
-         initializeRemoting(mbeanServer);
          
          //Now everything is started we can tell the invocation handler to start handling invocations
          //We do this right at the end otherwise it can start handling invocations before we are properly started
@@ -1245,13 +1241,6 @@ public class ServerPeer extends ServiceMBeanSupport implements ServerPeerMBean
 
    // Private --------------------------------------------------------------------------------------
   
-   private void initializeRemoting(MBeanServer mbeanServer) throws Exception
-   {
-      JMSWireFormat wf = new JMSWireFormat();
-
-      MarshalFactory.addMarshaller("jms", wf, wf);
-   }
-
    private void loadServerAOPConfig() throws Exception
    {
       URL url = this.getClass().getClassLoader().getResource("aop-messaging-server.xml");

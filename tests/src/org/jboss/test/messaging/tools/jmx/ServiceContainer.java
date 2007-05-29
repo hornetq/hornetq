@@ -462,7 +462,6 @@ public class ServiceContainer
          String transport = config.getRemotingTransport();
 
          log.info("Remoting type: .............. " + (remoting ? transport : "DISABLED"));
-         log.info("Serialization type: ......... " + config.getSerializationType());
          log.info("Database: ................... " + config.getDatabaseType());
          log.info("Clustering mode: ............ " +
             (this.isClustered() ? "CLUSTERED" : "NON-CLUSTERED"));
@@ -1357,19 +1356,11 @@ log.info("password:" + config.getDatabasePassword());
       {
          // TODO - use remoting-service.xml parameters, not these ...
 
-         String serializationType = config.getSerializationType();
-
-         //TODO - Actually serializationType is irrelevant since we pass a DataOutput/InputStream
-         //       into the marshaller and don't use serialization apart from one specific case with
-         //       a JMS ObjectMessage in which case Java serialization is always currently used -
-         //       (we could make this configurable)
-
          long clientLeasePeriod = 20000;
 
          String marshallers =
             "marshaller=org.jboss.jms.wireformat.JMSWireFormat&" +
             "unmarshaller=org.jboss.jms.wireformat.JMSWireFormat&";
-         String dataType = "dataType=jms&";
 
          // We use this from thirdparty remoting tests when we don't want to send stuff through
          // JMSWireFormat, but we want everything else in the connector's configuration to be
@@ -1377,8 +1368,6 @@ log.info("password:" + config.getDatabasePassword());
          if (overrideMap != null && overrideMap.get(DO_NOT_USE_MESSAGING_MARSHALLERS) != null)
          {
             marshallers = "";
-            dataType = "";
-            serializationType = "java";
          }
          
          // Note that we DO NOT want the direct thread pool on the server side - since that can lead
@@ -1387,28 +1376,25 @@ log.info("password:" + config.getDatabasePassword());
          String params =
             "/?" +
             marshallers +
-            "serializationtype=" + serializationType + "&" +
-            dataType +
             "socket.check_connection=false&" +
-            "clientLeasePeriod=" + clientLeasePeriod + "&" +
-            "callbackStore=org.jboss.remoting.callback.BlockingCallbackStore&" +
-            "clientSocketClass=org.jboss.jms.client.remoting.ClientSocketWrapper&" +
-            "serverSocketClass=org.jboss.jms.server.remoting.ServerSocketWrapper&" +
-            "NumberOfRetries=1&" +
-            "NumberOfCallRetries=2&" +
-            "callbackErrorsAllowed=1";
-         
-         
-         
+            "clientLeasePeriod=" + clientLeasePeriod +
+            "&dataType=jms";
+
          // specific parameters per transport
 
          if ("http".equals(transport))
          {
-            params += "&callbackPollPeriod=" + HTTP_CONNECTOR_CALLBACK_POLL_PERIOD;
+            params += "&callbackPollPeriod=" + HTTP_CONNECTOR_CALLBACK_POLL_PERIOD +
+                      "&callbackStore=org.jboss.remoting.callback.BlockingCallbackStore";
          }
          else
          {
-            params += "&timeout=0";
+         	//socket transports
+            params += "&timeout=0&" +
+            	"clientSocketClass=org.jboss.jms.client.remoting.ClientSocketWrapper&" +
+               "serverSocketClass=org.jboss.jms.server.remoting.ServerSocketWrapper&" +
+               "NumberOfRetries=1&" +
+               "NumberOfCallRetries=1";
          }
          
          if ("sslbisocket".equals(transport) || "sslsocket".equals(transport))

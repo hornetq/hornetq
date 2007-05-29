@@ -14,23 +14,21 @@
           display-name="SSL Socket Transport Connector">
       <attribute name="Configuration">
          <config>
-            <invoker transport="sslbisocket">
+            <invoker transport="sslbisocket">            
                <attribute name="marshaller" isParam="true">org.jboss.jms.wireformat.JMSWireFormat</attribute>
                <attribute name="unmarshaller" isParam="true">org.jboss.jms.wireformat.JMSWireFormat</attribute>
-               <attribute name="serializationtype" isParam="true">jms</attribute>
                <attribute name="dataType" isParam="true">jms</attribute>
                <attribute name="socket.check_connection" isParam="true">false</attribute>
                <attribute name="timeout" isParam="true">0</attribute>
                <attribute name="serverBindAddress">${jboss.bind.address}</attribute>
                <attribute name="serverBindPort">5457</attribute>
                <attribute name="leasePeriod">10000</attribute>
-               <attribute name="serverSocketFactory">jboss.messaging:service=ServerSocketFactory,type=SSL</attribute>
                <attribute name="clientSocketClass" isParam="true">org.jboss.jms.client.remoting.ClientSocketWrapper</attribute>
                <attribute name="serverSocketClass">org.jboss.jms.server.remoting.ServerSocketWrapper</attribute>
-	       <attribute name="callbackErrorsAllowed">1</attribute>
                <attribute name="numberOfRetries" isParam="true">1</attribute>
-               <attribute name="NumberOfCallRetries" isParam="true">2</attribute>
+               <attribute name="NumberOfCallRetries" isParam="true">1</attribute>
                <attribute name="clientMaxPoolSize" isParam="true">50</attribute>
+               <attribute name="serverSocketFactory">jboss.messaging:service=ServerSocketFactory,type=SSL</attribute>
             </invoker>
             <handlers>
                <handler subsystem="JMS">org.jboss.jms.server.remoting.JMSServerInvocationHandler</handler>

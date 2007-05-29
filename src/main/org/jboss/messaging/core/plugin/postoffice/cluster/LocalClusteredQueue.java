@@ -110,6 +110,8 @@ public class LocalClusteredQueue extends PagingFilteredQueue implements Clustere
       
    public QueueStats getStats()
    {      
+   	if (trace) { log.trace("Getting stats from queue " + this); }
+   	
       // Currently we only return the current message reference count for the channel. Note we are
       // only interested in the number of refs in the main queue, not in any deliveries. Also we are
       // only interested in the value obtained after delivery is complete. This is so we don't end
@@ -117,18 +119,39 @@ public class LocalClusteredQueue extends PagingFilteredQueue implements Clustere
       
       int cnt = getRefCount();
       
+      /*
+       * 
+       * FIXME - temp fix
+       * 
+       * Temporarily commented out for
+       * http://jira.jboss.com/jira/browse/JBMESSAGING-971
+       * 
+       * Will be fixed properly in
+       * http://jira.jboss.com/jira/browse/JBMESSAGING-972
+       *       
+      
+      QueueStats stats = null;
+      
       if (cnt != lastCount)
       {
-         lastCount = cnt;
+         if (trace) { log.trace("Stats have changed, returning count " + cnt); }
          
          // We only return stats if it has changed since last time - this is so when we only
          // broadcast data when necessary.
-         return new QueueStats(name, cnt);
+         stats = new QueueStats(name, cnt);
       }
       else
       {
-         return null;
+      	if (trace) { log.trace("Stats haven't changed, " + cnt + " returning null" ); }	
       } 
+      
+      */
+      
+      QueueStats stats = new QueueStats(name, cnt);
+      
+      lastCount = cnt;
+            
+      return stats;
    }      
     
    public boolean isLocal()

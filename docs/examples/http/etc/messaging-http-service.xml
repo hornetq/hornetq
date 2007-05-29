@@ -8,7 +8,6 @@
 
 <server>
 
-   <!-- THIS IS ONLY USED BY TESTS SO SHOULD ONLY EXIST IN THE TESTS CONFIG, NOT IN THE MAIN CONFIG!! -->
    <mbean code="org.jboss.remoting.transport.Connector"
           name="jboss.messaging:service=Connector,transport=http"
           display-name="HTTP transport Connector">
@@ -17,7 +16,6 @@
             <invoker transport="http">
                <attribute name="marshaller" isParam="true">org.jboss.jms.wireformat.JMSWireFormat</attribute>
                <attribute name="unmarshaller" isParam="true">org.jboss.jms.wireformat.JMSWireFormat</attribute>
-               <attribute name="serializationtype" isParam="true">jms</attribute>
                <attribute name="dataType" isParam="true">jms</attribute>
                <attribute name="socket.check_connection" isParam="true">false</attribute>
                <attribute name="timeout" isParam="true">0</attribute>
@@ -32,7 +30,6 @@
             </handlers>
          </config>
       </attribute>
-      <depends>jboss.messaging:service=NetworkRegistry</depends>
    </mbean>
    
    <mbean code="org.jboss.jms.server.connectionfactory.ConnectionFactory"

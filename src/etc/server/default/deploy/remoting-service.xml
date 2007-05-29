@@ -19,19 +19,16 @@
             <invoker transport="bisocket">
                <attribute name="marshaller" isParam="true">org.jboss.jms.wireformat.JMSWireFormat</attribute>
                <attribute name="unmarshaller" isParam="true">org.jboss.jms.wireformat.JMSWireFormat</attribute>
-               <attribute name="serializationtype" isParam="true">jms</attribute>
                <attribute name="dataType" isParam="true">jms</attribute>
                <attribute name="socket.check_connection" isParam="true">false</attribute>
                <attribute name="timeout" isParam="true">0</attribute>
                <attribute name="serverBindAddress">${jboss.bind.address}</attribute>
                <attribute name="serverBindPort">4457</attribute>
                <attribute name="leasePeriod">10000</attribute>
-               <attribute name="callbackStore">org.jboss.remoting.callback.CallbackStore</attribute>
                <attribute name="clientSocketClass" isParam="true">org.jboss.jms.client.remoting.ClientSocketWrapper</attribute>
                <attribute name="serverSocketClass">org.jboss.jms.server.remoting.ServerSocketWrapper</attribute>
-               <attribute name="callbackErrorsAllowed">1</attribute>
                <attribute name="numberOfRetries" isParam="true">1</attribute>
-               <attribute name="NumberOfCallRetries" isParam="true">2</attribute>
+               <attribute name="NumberOfCallRetries" isParam="true">1</attribute>
                <attribute name="clientMaxPoolSize" isParam="true">50</attribute>
             </invoker>
             <handlers>
@@ -39,12 +36,6 @@
             </handlers>
          </config>
       </attribute>
-      <depends>jboss.messaging:service=NetworkRegistry</depends>
    </mbean>
-
-
-   <!-- TODO: Do I need this> -->
-   <mbean code="org.jboss.remoting.network.NetworkRegistry"
-          name="jboss.messaging:service=NetworkRegistry"/>
 
 </server>

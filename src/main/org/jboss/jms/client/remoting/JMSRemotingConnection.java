@@ -279,10 +279,8 @@ public class JMSRemotingConnection
       client.setUnMarshaller(new JMSWireFormat());
 
       Map metadata = new HashMap();
-
+      
       metadata.put(InvokerLocator.DATATYPE, "jms");
-      // Not actually used at present - but it does no harm
-      metadata.put(InvokerLocator.SERIALIZATIONTYPE, "jms");
 
       addInvokerCallbackHandler(this, client, metadata, serverLocator, callbackManager);
       
@@ -331,15 +329,20 @@ public class JMSRemotingConnection
       // thus silencing both the connection validator and the lease pinger, and also locally
       // cleaning up the callback listener
 
-      client.setDisconnectTimeout(0);
+      try
+      {
+      	client.setDisconnectTimeout(0);
+      }
+      catch (Throwable ignore)
+      {      	
+      	log.trace(this + " failed to set disconnect timeout", ignore);
+      }
       
-      client.disconnect();
-
       try
       {
          client.removeListener(callbackManager);
       }
-      catch(Throwable t)
+      catch(Throwable ignore)
       {
          // very unlikely to get an exception on a local remove (I suspect badly designed API),
          // but we're failed anyway, so we don't care too much
@@ -348,10 +351,17 @@ public class JMSRemotingConnection
          // validator since the validator will disconnect the client before calling the connection
          // listener.
 
-         log.debug(this + " failed to cleanly remove callback manager from the client", t);
+         log.trace(this + " failed to cleanly remove callback manager from the client", ignore);
       }
 
-      client.disconnect();
+      try
+      {
+      	client.disconnect();
+      }
+      catch (Throwable ignore)
+      {      	
+      	log.trace(this + " failed to disconnect the client", ignore);
+      }
    }
 
    /**

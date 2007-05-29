@@ -78,15 +78,6 @@
    </database-configurations>
 
    <!--
-      The serialization type to start the container with. If "test.serialization" is set, it takes
-      precedence. Supported values: "jboss" and "java".
-   -->
-
-   <!-- Must ALWAYS be jms -->
-
-   <serialization-type>jms</serialization-type>
-
-   <!--
        Supported values: "socket", "http"
    -->
    <remoting-transport>socket</remoting-transport>

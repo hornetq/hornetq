@@ -22,7 +22,11 @@
 package org.jboss.test.messaging.jms.clustering;
 
 import javax.jms.Connection;
+import javax.jms.Destination;
+import javax.jms.JMSException;
+import javax.jms.Message;
 import javax.jms.MessageConsumer;
+import javax.jms.MessageListener;
 import javax.jms.MessageProducer;
 import javax.jms.Queue;
 import javax.jms.Session;
@@ -126,6 +130,7 @@ public class TemporaryDestinationTest extends ClusteringTestBase
          
          TextMessage sm = session1.createTextMessage("hoo ja ma flip");
          
+         log.info("Sending message!");
          prod.send(sm);
          
          TextMessage tm = (TextMessage)cons0.receive(3000);
@@ -133,6 +138,8 @@ public class TemporaryDestinationTest extends ClusteringTestBase
          assertNotNull(tm);
          
          assertEquals(sm.getText(), tm.getText());
+         
+         log.info("Received message!");
              
       }
       finally
@@ -206,6 +213,7 @@ public class TemporaryDestinationTest extends ClusteringTestBase
          }
       }
    }
+   
 
    // Package protected ----------------------------------------------------------------------------
 
