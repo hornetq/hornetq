@@ -626,6 +626,8 @@
       <ant dir="./docs/examples/distributed-topic" antfile="build.xml" inheritAll="false" target="clean"/>
       <ant dir="./docs/examples/queue-failover" antfile="build.xml" inheritAll="false" target="clean"/>
       <ant dir="./docs/examples/http" antfile="build.xml" inheritAll="false" target="clean"/>
+      <ant dir="./docs/examples/web-service" antfile="build.xml" inheritAll="false" target="clean"/>
+      <ant dir="./docs/examples/stateless-clustered" antfile="build.xml" inheritAll="false" target="clean"/>
       <ant dir="./tests" antfile="build.xml" inheritAll="false" target="clean"/>
    </target>
 
