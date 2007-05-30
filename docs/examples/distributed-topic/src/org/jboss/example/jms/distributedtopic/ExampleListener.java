@@ -12,9 +12,9 @@ import javax.jms.MessageListener;
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- * @version <tt>$Revision: 536 $</tt>
+ * @version <tt>$Revision$</tt>
 
- * $Id: ExampleListener.java 536 2005-12-22 00:28:39 -0600 (Thu, 22 Dec 2005) ovidiu $
+ * $Id$
  */
 public class ExampleListener implements MessageListener
 {

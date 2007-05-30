@@ -41,9 +41,9 @@ import org.jboss.example.jms.common.ExampleSupport;
  * code 0 in case of successful execution and a non-zero value on failure.
  *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
- * @version <tt>$Revision: 1001 $</tt>
+ * @version <tt>$Revision$</tt>
  *
- * $Id: TopicExample.java 1001 2006-06-24 09:05:40Z timfox $
+ * $Id$
  */
 public class DistributedTopicExample extends ExampleSupport
 {
