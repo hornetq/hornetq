@@ -1051,6 +1051,7 @@ public class Bridge implements MessagingComponent
       }
       catch (Throwable ignore)
       {            
+      	if (trace) { log.trace("Failed to close source connection", ignore); }
       }
       try
       {
@@ -1060,7 +1061,8 @@ public class Bridge implements MessagingComponent
          }
       }
       catch (Throwable ignore)
-      {            
+      {    
+      	if (trace) { log.trace("Failed to close target connection", ignore); }
       }
 
    	
@@ -1072,6 +1074,7 @@ public class Bridge implements MessagingComponent
          }
          catch (Throwable ignore)
          {
+         	if (trace) { log.trace("Failed to delist resources", ignore); }
          } 
          try
          {
@@ -1080,6 +1083,7 @@ public class Bridge implements MessagingComponent
          }
          catch (Throwable ignore)
          {
+         	if (trace) { log.trace("Failed to rollback", ignore); }
          } 
       }      
    }

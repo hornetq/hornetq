@@ -136,9 +136,10 @@ public class ClientClusteredConnectionFactoryDelegate
    }
 
    // Public ---------------------------------------------------------------------------------------
-
+   
    public ClientConnectionFactoryDelegate[] getDelegates()
    {
+   	sanityCheck();
       return delegates;
    }
 
@@ -150,6 +151,7 @@ public class ClientClusteredConnectionFactoryDelegate
 
    public Map getFailoverMap()
    {
+   	sanityCheck();
       return failoverMap;
    }
 
@@ -209,6 +211,14 @@ public class ClientClusteredConnectionFactoryDelegate
    // Protected ------------------------------------------------------------------------------------
 
    // Private --------------------------------------------------------------------------------------
+   
+   private void sanityCheck()
+   {
+   	if (delegates.length != failoverMap.size())
+   	{
+   		throw new IllegalStateException("Number of delegates and failover map size are not equal");
+   	}
+   }
 
    // Inner classes --------------------------------------------------------------------------------
 

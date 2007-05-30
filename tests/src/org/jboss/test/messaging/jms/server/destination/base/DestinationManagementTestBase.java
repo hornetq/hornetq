@@ -78,11 +78,6 @@ public abstract class DestinationManagementTestBase extends MessagingTestCase
 
    public void setUp() throws Exception
    {
-      if (ServerManagement.isRemote())
-      {
-         fail("this test is not supposed to run in a remote configuration!");
-      }
-
       super.setUp();
       ServerManagement.start("all");   
       
@@ -619,6 +614,12 @@ public abstract class DestinationManagementTestBase extends MessagingTestCase
 
    public void testPageableChannelAttributes() throws Exception
    {
+   	if (ServerManagement.isRemote())
+   	{
+   		//This test can't be run in a remote configuration
+   		return;   	
+   	}
+   	
       int fullSize = 7777;
       int pageSize = 234;
       int downCacheSize = 56;
@@ -691,6 +692,12 @@ public abstract class DestinationManagementTestBase extends MessagingTestCase
    
    public void testGetSetMessageCounterHistoryDayLimit() throws Exception
    {
+   	if (ServerManagement.isRemote())
+   	{
+   		//This test can't be run in a remote configuration since MessageCounter is not serializable
+   		return;   	
+   	}
+   	
       int defaultLimit = 12;
       
       ServerManagement.setAttribute(ServerManagement.getServerPeerObjectName(), "DefaultMessageCounterHistoryDayLimit", String.valueOf(defaultLimit));

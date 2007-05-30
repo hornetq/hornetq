@@ -774,6 +774,12 @@ public class QueueManagementTest extends DestinationManagementTestBase
    
    public void testMessageCounter() throws Exception
    {
+   	if (ServerManagement.isRemote())
+   	{
+   		//This test can't be run in a remote configuration since MessageCounter is not serializable
+   		return;   	
+   	}
+   	
       InitialContext ic = new InitialContext(ServerManagement.getJNDIEnvironment());
       ConnectionFactory cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
       

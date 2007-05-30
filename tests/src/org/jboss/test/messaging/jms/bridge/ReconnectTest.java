@@ -163,7 +163,7 @@ public class ReconnectTest extends BridgeTestBase
          
       try
       { 
-         setUpAdministeredObjects();
+         setUpAdministeredObjects(true);
          
          bridge = new Bridge(cff0, cff1, sourceQueue, destQueue,
                   null, null, null, null,
@@ -202,7 +202,7 @@ public class ReconnectTest extends BridgeTestBase
          
          ServerManagement.deployQueue("destQueue", 1);
                                     
-         setUpAdministeredObjects();
+         setUpAdministeredObjects(false);
          
          //Send some more messages
          
@@ -251,7 +251,7 @@ public class ReconnectTest extends BridgeTestBase
             
       try
       {
-         setUpAdministeredObjects();
+         setUpAdministeredObjects(true);
          
          bridge = new Bridge(cff0, cff1, sourceQueue, destQueue,
                   null, null, null, null,
@@ -290,7 +290,7 @@ public class ReconnectTest extends BridgeTestBase
          
          ServerManagement.deployQueue("destQueue", 1);
                            
-         setUpAdministeredObjects();
+         setUpAdministeredObjects(false);
          
          sendMessages(cf0, sourceQueue, NUM_MESSAGES / 2, NUM_MESSAGES / 2, persistent);
                            
@@ -334,7 +334,7 @@ public class ReconnectTest extends BridgeTestBase
             
       try
       {
-         setUpAdministeredObjects();
+         setUpAdministeredObjects(true);
          
          final int NUM_MESSAGES = 10;         
          
@@ -393,7 +393,7 @@ public class ReconnectTest extends BridgeTestBase
          
          log.info("Slept");
                            
-         setUpAdministeredObjects();
+         setUpAdministeredObjects(false);
          
            
          //Send some more messages

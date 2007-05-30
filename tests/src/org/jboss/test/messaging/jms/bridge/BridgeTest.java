@@ -339,7 +339,7 @@ public class BridgeTest extends BridgeTestBase
       
       try
       {               
-         setUpAdministeredObjects();
+         setUpAdministeredObjects(true);
                             
          int qosMode = Bridge.QOS_AT_MOST_ONCE;
          
@@ -514,7 +514,7 @@ public class BridgeTest extends BridgeTestBase
             
       try
       {
-         setUpAdministeredObjects();
+         setUpAdministeredObjects(true);
          
          final int NUM_MESSAGES = 10;
          
@@ -642,7 +642,7 @@ public class BridgeTest extends BridgeTestBase
          
          started = mgr.getTransaction();         
          
-         setUpAdministeredObjects();
+         setUpAdministeredObjects(true);
          
          final int NUM_MESSAGES = 10;
          
@@ -699,7 +699,7 @@ public class BridgeTest extends BridgeTestBase
             
       try
       {
-         this.setUpAdministeredObjects();
+         this.setUpAdministeredObjects(true);
          
          final int NUM_MESSAGES = 10;
          
@@ -733,7 +733,7 @@ public class BridgeTest extends BridgeTestBase
             
       try
       {
-         this.setUpAdministeredObjects();
+         this.setUpAdministeredObjects(true);
          
          final int NUM_MESSAGES = 10;
          
@@ -767,7 +767,7 @@ public class BridgeTest extends BridgeTestBase
             
       try
       {
-         this.setUpAdministeredObjects();
+         this.setUpAdministeredObjects(true);
          
          final int NUM_MESSAGES = 10;
          
@@ -828,7 +828,7 @@ public class BridgeTest extends BridgeTestBase
             
       try
       {
-         this.setUpAdministeredObjects();
+         this.setUpAdministeredObjects(true);
            
          bridge = new Bridge(cff0, cff1, sourceQueue, destQueue,
                   null, null, null, null,
@@ -908,7 +908,7 @@ public class BridgeTest extends BridgeTestBase
             
       try
       {
-         this.setUpAdministeredObjects();
+         this.setUpAdministeredObjects(true);
            
          bridge = new Bridge(cff0, cff0, sourceQueue, localDestQueue,
                   null, null, null, null,
@@ -984,7 +984,7 @@ public class BridgeTest extends BridgeTestBase
             
       try
       {
-         this.setUpAdministeredObjects();
+         this.setUpAdministeredObjects(true);
          
          final int NUM_MESSAGES = 10;
          
@@ -1053,7 +1053,7 @@ public class BridgeTest extends BridgeTestBase
             
       try
       {
-         this.setUpAdministeredObjects();
+         this.setUpAdministeredObjects(true);
          
          final int NUM_MESSAGES = 10;
          
@@ -1119,7 +1119,7 @@ public class BridgeTest extends BridgeTestBase
             
       try
       {
-         this.setUpAdministeredObjects();
+         this.setUpAdministeredObjects(true);
          
          final long MAX_BATCH_TIME = 3000;
          
@@ -1173,7 +1173,7 @@ public class BridgeTest extends BridgeTestBase
             
       try
       {
-         this.setUpAdministeredObjects();
+         this.setUpAdministeredObjects(true);
          
          final long MAX_BATCH_TIME = 3000;
          

@@ -40,9 +40,13 @@ import org.jboss.messaging.util.StreamUtils;
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
  * 
+ * Note this class is only serializable so messages can't be returned from JMX operations
+ * e.g. listAllMessages.
+ * For normal message transportation serialization is not used
+ * 
  * $Id$
  */
-public abstract class MessageSupport implements Message
+public abstract class MessageSupport implements Message, Serializable
 {
 	// Constants -----------------------------------------------------
 
@@ -255,7 +259,8 @@ public abstract class MessageSupport implements Message
 		if (payload != null)
 		{
 			return payload;
-		} else if (payloadAsByteArray != null)
+		}
+		else if (payloadAsByteArray != null)
 		{
 			// deserialize the payload from byte[]
 
@@ -266,7 +271,8 @@ public abstract class MessageSupport implements Message
 			try
 			{
 				payload = readPayload(dis, payloadAsByteArray.length);
-			} catch (Exception e)
+			}
+			catch (Exception e)
 			{
 				RuntimeException e2 = new RuntimeException(e.getMessage());
 				e2.setStackTrace(e.getStackTrace());
@@ -274,8 +280,9 @@ public abstract class MessageSupport implements Message
 			}
 
 			payloadAsByteArray = null;
-			return payload;
-		} else
+		   return payload;
+		}
+		else
 		{
 			return null;
 		}

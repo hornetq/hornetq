@@ -125,7 +125,7 @@ public class ClusteringAspect
                }
             }
 
-            log.debug(this + " has chosen " + delegate + " as target, " +
+            log.trace(this + " has chosen " + delegate + " as target, " +
                (attemptCount == 0 ? "first connection attempt" : attemptCount + " connection attempts"));
 
             CreateConnectionResult res = delegate.
@@ -136,7 +136,7 @@ public class ClusteringAspect
             {
                // valid connection
 
-               log.debug(this + " got local connection delegate " + cd);
+               log.trace(this + " got local connection delegate " + cd);
                
                if (supportsFailover)
                {
@@ -151,7 +151,7 @@ public class ClusteringAspect
 	               state.getRemotingConnection().getConnectionListener().
 	                  setDelegateListener(new ConnectionFailureListener(fcc, state.getRemotingConnection()));
 	
-	               log.debug(this + " installed failure listener on " + cd);
+	               log.trace(this + " installed failure listener on " + cd);
 	
 	               // also cache the username and the password into state, useful in case
 	               // FailoverCommandCenter needs to create a new connection instead of a failed on
@@ -161,6 +161,8 @@ public class ClusteringAspect
 	               // also add a reference to the clustered ConnectionFactory delegate, useful in case
 	               // FailoverCommandCenter needs to create a new connection instead of a failed on
 	               state.setClusteredConnectionFactoryDeleage(clusteredDelegate);
+	               
+	               log.trace("Successfully initialised new connection");
                }
 
                return res;
@@ -201,6 +203,8 @@ public class ClusteringAspect
                   // Server side failover has occurred / is occurring but trying to go to the 'default'
                   // failover node did not succeed. Retry with the node suggested by the cluster.
 
+               	log.trace("Server side failover occurred, but we were non the wrong node! Actual node = " + actualServerID);
+               	
                   delegate = getDelegateForNode(actualServerID);
                }
 
@@ -241,6 +245,8 @@ public class ClusteringAspect
 
    private synchronized ClientConnectionFactoryDelegate getFailoverDelegateForNode(Integer nodeID)
    {
+   	log.trace("Getting failover delegate for node id " + nodeID);
+   	
       ClientConnectionFactoryDelegate[] delegates = clusteredDelegate.getDelegates();
 
       if (nodeID.intValue() < 0)
@@ -259,12 +265,16 @@ public class ClusteringAspect
       
       Integer failoverNodeID = (Integer)failoverMap.get(nodeID);
       
+      log.trace("Found failover node id = " + failoverNodeID);
+      
       // FailoverNodeID is not on the map, that means the ConnectionFactory was updated by another
       // connection in another server. So we will have to guess the failoverID by numeric order.
       // In case we guessed the new server wrongly we will have to rely on redirect from failover.
       if (failoverNodeID == null)
       {
+      	log.trace("Couldn't find failover node id on map so guessing it");
          failoverNodeID = guessFailoverID(failoverMap, nodeID);
+         log.trace("Guess is " + failoverNodeID);
       }
 
       for (int i = 0; i < delegates.length; i++)
@@ -288,6 +298,7 @@ public class ClusteringAspect
     */
    private static Integer guessFailoverID(Map failoverMap, Integer nodeID)
    {
+   	log.trace("Guessing failover id for node " + nodeID);
       Integer failoverNodeID = null;
       Integer[] nodes = (Integer[]) failoverMap.keySet().toArray(new Integer[failoverMap.size()]);
 
@@ -308,21 +319,28 @@ public class ClusteringAspect
       {
          failoverNodeID = nodes[0];
       }
+      
+      log.trace("Returning guess " + failoverNodeID);
+      
       return failoverNodeID;
    }
 
    private synchronized ClientConnectionFactoryDelegate getDelegateForNode(int nodeID)
    {
+   	log.trace("Getting delegate for node id " + nodeID);
+   	
       ClientConnectionFactoryDelegate[] delegates = clusteredDelegate.getDelegates();
 
       for (int i = 0; i < delegates.length; i++)
       {
          if (delegates[i].getServerID() == nodeID)
          {
+         	log.trace("Found " + delegates[i]);
             return delegates[i];
          }
       }
-
+      
+      log.trace("Didn't find any delegate");
       return null;
    }
 

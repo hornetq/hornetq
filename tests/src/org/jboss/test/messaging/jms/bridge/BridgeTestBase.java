@@ -201,7 +201,7 @@ public class BridgeTestBase extends MessagingTestCase
       super.tearDown();      
    }
    
-   protected void setUpAdministeredObjects() throws Exception
+   protected void setUpAdministeredObjects(boolean drain) throws Exception
    {
       InitialContext ic0 = null, ic1 = null;
       try
@@ -230,11 +230,14 @@ public class BridgeTestBase extends MessagingTestCase
          
          localDestQueue = (Queue)ic0.lookup("/queue/localDestQueue");
          
-         this.drainDestination(cf0, sourceQueue);
-         
-         this.drainDestination(cf1, destQueue);
-         
-         this.drainDestination(cf0, localDestQueue);
+         if (drain)
+         {         
+	         this.drainDestination(cf0, sourceQueue);
+	         
+	         this.drainDestination(cf1, destQueue);
+	         
+	         this.drainDestination(cf0, localDestQueue);
+         }
       }
       finally
       {
