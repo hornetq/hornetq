@@ -9,7 +9,6 @@ package org.jboss.example.jms.statelessclustered.bean;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Enumeration;
-import java.util.Properties;
 
 import javax.ejb.EJBException;
 import javax.ejb.SessionBean;
@@ -24,12 +23,11 @@ import javax.jms.Queue;
 import javax.jms.QueueBrowser;
 import javax.jms.Session;
 import javax.jms.TextMessage;
-import javax.naming.Context;
 import javax.naming.InitialContext;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
- * @version <tt>$Revision: 1852 $</tt>
+ * @version <tt>$Revision$</tt>
  
  * $Id$
  */

@@ -12,7 +12,7 @@ import javax.ejb.EJBObject;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
- * @version <tt>$Revision: 1843 $</tt>
+ * @version <tt>$Revision$</tt>
 
  * $Id$
  */

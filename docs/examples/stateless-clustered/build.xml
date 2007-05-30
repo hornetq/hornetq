@@ -4,7 +4,7 @@
 
    To run the example, set JBOSS_HOME and run ant (with no parameters)
 
-   $Id: build.xml 2705 2007-05-17 21:34:07Z clebert.suconic@jboss.com $
+   $Id$
 
  -->
 

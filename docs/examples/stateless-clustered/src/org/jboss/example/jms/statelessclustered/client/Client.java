@@ -21,16 +21,12 @@
  */
 package org.jboss.example.jms.statelessclustered.client;
 
-import java.util.Properties;
-
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
-import javax.jms.TextMessage;
 import javax.jms.MessageConsumer;
 import javax.jms.Queue;
 import javax.jms.Session;
-
-import javax.naming.Context;
+import javax.jms.TextMessage;
 import javax.naming.InitialContext;
 
 import org.jboss.example.jms.common.ExampleSupport;
@@ -45,18 +41,18 @@ import org.jboss.example.jms.statelessclustered.bean.StatelessClusteredSessionEx
  * code 0 in case of successful execution and a non-zero value on failure.
  *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
- * @version <tt>$Revision: 1843 $</tt>
+ * @version <tt>$Revision$</tt>
  *
- * $Id: Client.java 1843 2006-12-21 23:41:19Z timfox $
+ * $Id$
  */
 public class Client extends ExampleSupport
 {
    public void example() throws Exception
    {            
-      InitialContext haic = new InitialContext();
+      InitialContext ic = new InitialContext();
       
       StatelessClusteredSessionExampleHome home =
-         (StatelessClusteredSessionExampleHome)haic.lookup("ejb/StatelessClusteredSessionExample");            
+         (StatelessClusteredSessionExampleHome)ic.lookup("ejb/StatelessClusteredSessionExample");            
       
       StatelessClusteredSessionExample bean = home.create();
 
@@ -71,12 +67,14 @@ public class Client extends ExampleSupport
       int num = bean.browse(queueName);
       bean.remove();
 
-      assertEquals(1, num);
-
       log("Queue browse result: " + num);
 
-      Queue queue = (Queue)haic.lookup(queueName);
-      ConnectionFactory cf = (ConnectionFactory) haic.lookup("/XAConnectionFactory");
+      Queue queue = (Queue)ic.lookup(queueName);
+
+      // Not using ClusteredConnectionFactory since that would require message
+      // redistribution to be enabled, and we don't want to bother with the configuration
+      // at this time.
+      ConnectionFactory cf = (ConnectionFactory) ic.lookup("/ConnectionFactory");
       Connection conn = cf.createConnection();
 
       try

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE log4j:configuration SYSTEM "log4j.dtd">
 
-<!-- $Id: log4j.xml 563 2005-12-30 22:04:19Z ovidiu $ -->
+<!-- $Id$ -->
 
 <log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/" debug="false">
 
