@@ -118,6 +118,9 @@ public class TopicService extends DestinationServiceSupport implements TopicMBea
             "null" : "\n" + XMLUtil.elementToString(destination.getSecurityConfig())));
          
          started = true;
+         
+         // Need to set security config after service is started http://jira.jboss.com/jira/browse/JBMESSAGING-976
+         serverPeer.getSecurityManager().setSecurityConfig(true, destination.getName(), destination.getSecurityConfig());
 
          log.info(this + " started, fullSize=" + destination.getFullSize() + ", pageSize=" + destination.getPageSize() + ", downCacheSize=" + destination.getDownCacheSize());
       }
