@@ -426,96 +426,97 @@ public class RedistributionWithDefaultMessagePullPolicyTest extends PostOfficeTe
 //      }
 //   }
 
-   public void testFailHandleMessagePullResult() throws Throwable
-   {
-      DefaultClusteredPostOffice office1 = null;
-      DefaultClusteredPostOffice office2 = null;
-
-      try
-      {
-         office1 = (DefaultClusteredPostOffice)
-            createClusteredPostOffice(1, "testgroup", 10000, 10000, new DefaultMessagePullPolicy(),
-                                      sc, ms, pm, tr);
-
-         office2 = (DefaultClusteredPostOffice)
-            createClusteredPostOffice(2, "testgroup", 10000, 10000, new DefaultMessagePullPolicy(),
-                                      sc, ms, pm, tr);
-
-         LocalClusteredQueue queue1 =
-            new LocalClusteredQueue(office1, 1, "queue1", channelIDManager.getID(), ms, pm,
-                                    true, true, -1, null, tr);
-         office1.bindClusteredQueue(new SimpleCondition("queue1"), queue1);
-
-         LocalClusteredQueue queue2 =
-            new LocalClusteredQueue(office2, 2, "queue1", channelIDManager.getID(), ms, pm,
-                                    true, true, -1, null, tr);
-         office2.bindClusteredQueue(new SimpleCondition("queue1"), queue2);
-
-         Message msg = CoreMessageFactory.createCoreMessage(1, true, null);
-
-         MessageReference ref = ms.reference(msg);
-
-         office1.route(ref, new SimpleCondition("queue1"), null);
-
-         Thread.sleep(2000);
-
-         //Messages should all be in queue1
-
-         List msgs = queue1.browse();
-         assertEquals(1, msgs.size());
-
-         msgs = queue2.browse();
-         assertTrue(msgs.isEmpty());
-
-         SimpleReceiver receiver1 = new SimpleReceiver("blah", SimpleReceiver.ACCEPTING_TO_MAX);
-         receiver1.setMaxRefs(0);
-         queue1.add(receiver1);
-         SimpleReceiver receiver2 = new SimpleReceiver("blah", SimpleReceiver.ACCEPTING_TO_MAX);
-         receiver2.setMaxRefs(0);
-         queue2.add(receiver2);
-
-         //Prompt delivery so the channels know if the receivers are ready
-         queue1.deliver();
-         Thread.sleep(2000);
-
-         //Pull from 1 to 2
-
-         receiver2.setMaxRefs(1);
-
-         office2.setFail(false, false, true);
-
-         log.trace("delivering");
-         queue2.deliver();
-
-         Thread.sleep(3000);
-
-         //The delivery should be rolled back
-
-         assertTrue(office2.getHoldingTransactions().isEmpty());
-         assertTrue(office2.getHoldingTransactions().isEmpty());
-
-         log.trace("queue1 refs:" + queue1.memoryRefCount() + " dels:" + queue1.getDeliveringCount());
-         log.trace("queue2 refs:" + queue2.memoryRefCount() + " dels:" + queue2.getDeliveringCount());
-
-         assertEquals(1, queue1.memoryRefCount());
-         assertEquals(0, queue1.getDeliveringCount());
-
-         assertEquals(0, queue2.memoryRefCount());
-         assertEquals(0, queue2.getDeliveringCount());
-      }
-      finally
-      {
-         if (office1 != null)
-         {
-            office1.stop();
-         }
-
-         if (office2 != null)
-         {
-            office2.stop();
-         }
-      }
-   }
+// Commented because of http://jira.jboss.com/jira/browse/JBMESSAGING-972    
+//   public void testFailHandleMessagePullResult() throws Throwable
+//   {
+//      DefaultClusteredPostOffice office1 = null;
+//      DefaultClusteredPostOffice office2 = null;
+//
+//      try
+//      {
+//         office1 = (DefaultClusteredPostOffice)
+//            createClusteredPostOffice(1, "testgroup", 10000, 10000, new DefaultMessagePullPolicy(),
+//                                      sc, ms, pm, tr);
+//
+//         office2 = (DefaultClusteredPostOffice)
+//            createClusteredPostOffice(2, "testgroup", 10000, 10000, new DefaultMessagePullPolicy(),
+//                                      sc, ms, pm, tr);
+//
+//         LocalClusteredQueue queue1 =
+//            new LocalClusteredQueue(office1, 1, "queue1", channelIDManager.getID(), ms, pm,
+//                                    true, true, -1, null, tr);
+//         office1.bindClusteredQueue(new SimpleCondition("queue1"), queue1);
+//
+//         LocalClusteredQueue queue2 =
+//            new LocalClusteredQueue(office2, 2, "queue1", channelIDManager.getID(), ms, pm,
+//                                    true, true, -1, null, tr);
+//         office2.bindClusteredQueue(new SimpleCondition("queue1"), queue2);
+//
+//         Message msg = CoreMessageFactory.createCoreMessage(1, true, null);
+//
+//         MessageReference ref = ms.reference(msg);
+//
+//         office1.route(ref, new SimpleCondition("queue1"), null);
+//
+//         Thread.sleep(2000);
+//
+//         //Messages should all be in queue1
+//
+//         List msgs = queue1.browse();
+//         assertEquals(1, msgs.size());
+//
+//         msgs = queue2.browse();
+//         assertTrue(msgs.isEmpty());
+//
+//         SimpleReceiver receiver1 = new SimpleReceiver("blah", SimpleReceiver.ACCEPTING_TO_MAX);
+//         receiver1.setMaxRefs(0);
+//         queue1.add(receiver1);
+//         SimpleReceiver receiver2 = new SimpleReceiver("blah", SimpleReceiver.ACCEPTING_TO_MAX);
+//         receiver2.setMaxRefs(0);
+//         queue2.add(receiver2);
+//
+//         //Prompt delivery so the channels know if the receivers are ready
+//         queue1.deliver();
+//         Thread.sleep(2000);
+//
+//         //Pull from 1 to 2
+//
+//         receiver2.setMaxRefs(1);
+//
+//         office2.setFail(false, false, true);
+//
+//         log.trace("delivering");
+//         queue2.deliver();
+//
+//         Thread.sleep(3000);
+//
+//         //The delivery should be rolled back
+//
+//         assertTrue(office2.getHoldingTransactions().isEmpty());
+//         assertTrue(office2.getHoldingTransactions().isEmpty());
+//
+//         log.trace("queue1 refs:" + queue1.memoryRefCount() + " dels:" + queue1.getDeliveringCount());
+//         log.trace("queue2 refs:" + queue2.memoryRefCount() + " dels:" + queue2.getDeliveringCount());
+//
+//         assertEquals(1, queue1.memoryRefCount());
+//         assertEquals(0, queue1.getDeliveringCount());
+//
+//         assertEquals(0, queue2.memoryRefCount());
+//         assertEquals(0, queue2.getDeliveringCount());
+//      }
+//      finally
+//      {
+//         if (office1 != null)
+//         {
+//            office1.stop();
+//         }
+//
+//         if (office2 != null)
+//         {
+//            office2.stop();
+//         }
+//      }
+//   }
 
    protected void consumeAll(boolean persistent, boolean recoverable) throws Throwable
    {

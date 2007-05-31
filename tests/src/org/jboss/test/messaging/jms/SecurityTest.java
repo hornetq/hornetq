@@ -634,6 +634,244 @@ public class SecurityTest extends MessagingTestCase
          }
       }
    }
+   
+   /**
+    * This test makes sure that changing the queue security configuration on the server has effect
+    * over destinations when they are stopped (this is what happens in a real deployment - the security config
+    * gets set before the queue/topic is started
+    * See http://jira.jboss.com/jira/browse/JBMESSAGING-976
+    */
+   public void testQueueSecurityUpdateStopped() throws Exception
+   {
+      // "john" has the role def, so he should be able to create a producer and a consumer on a queue
+      ServerManagement.deployQueue("SomeQueue");
+      
+      ObjectName on = new ObjectName("jboss.messaging.destination:service=Queue,name=SomeQueue");
+      
+      Connection conn = null;
+
+      try
+      {
+         Queue someQueue = (Queue)ic.lookup("/queue/SomeQueue");
+
+         conn = cf.createConnection("john", "needle");
+         assertTrue(canReadDestination(conn, someQueue));
+         assertTrue(canWriteDestination(conn, someQueue));
+
+
+         String newSecurityConfig =
+            "<security><role name=\"someotherrole\" read=\"true\" write=\"true\" create=\"false\"/></security>";
+
+         ServerManagement.invoke(on, "stop", null, null);         
+         ServerManagement.configureSecurityForDestination("SomeQueue", newSecurityConfig);         
+         ServerManagement.invoke(on, "start", null, null);
+         
+         assertFalse(canReadDestination(conn, someQueue));
+         assertFalse(canWriteDestination(conn, someQueue));
+
+
+         newSecurityConfig =
+            "<security><role name=\"def\" read=\"true\" write=\"false\" create=\"false\"/></security>";
+
+         ServerManagement.invoke(on, "stop", null, null);         
+         ServerManagement.configureSecurityForDestination("SomeQueue", newSecurityConfig);         
+         ServerManagement.invoke(on, "start", null, null);
+
+         assertTrue(canReadDestination(conn, someQueue));
+         assertFalse(canWriteDestination(conn, someQueue));
+
+         newSecurityConfig =
+            "<security><role name=\"def\" read=\"true\" write=\"true\" create=\"false\"/></security>";
+
+         ServerManagement.invoke(on, "stop", null, null);         
+         ServerManagement.configureSecurityForDestination("SomeQueue", newSecurityConfig);         
+         ServerManagement.invoke(on, "start", null, null);
+
+         assertTrue(canReadDestination(conn, someQueue));
+         assertTrue(canWriteDestination(conn, someQueue));
+      }
+      finally
+      {
+         ServerManagement.undeployQueue("SomeQueue");
+         if (conn != null)
+         {
+            conn.close();
+         }
+      }
+   }
+   
+   /**
+    * This test makes sure that changing the topic security configuration on the server has effect
+    * over destinations when they are stopped (this is what happens in a real deployment - the security config
+    * gets set before the queue/topic is started
+    * See http://jira.jboss.com/jira/browse/JBMESSAGING-976
+    */
+   public void testTopicSecurityUpdateStopped() throws Exception
+   {
+      // "john" has the role def, so he should be able to create a producer and a consumer on a queue
+      ServerManagement.deployTopic("SomeTopic");
+      
+      ObjectName on = new ObjectName("jboss.messaging.destination:service=Topic,name=SomeTopic");
+      
+      Connection conn = null;
+
+      try
+      {
+         Topic someTopic = (Topic)ic.lookup("/topic/SomeTopic");
+
+         conn = cf.createConnection("john", "needle");
+         assertTrue(canReadDestination(conn, someTopic));
+         assertTrue(canWriteDestination(conn, someTopic));
+
+
+         String newSecurityConfig =
+            "<security><role name=\"someotherrole\" read=\"true\" write=\"true\" create=\"false\"/></security>";
+
+         ServerManagement.invoke(on, "stop", null, null);         
+         ServerManagement.configureSecurityForDestination("SomeTopic", newSecurityConfig);         
+         ServerManagement.invoke(on, "start", null, null);
+         
+         assertFalse(canReadDestination(conn, someTopic));
+         assertFalse(canWriteDestination(conn, someTopic));
+
+
+         newSecurityConfig =
+            "<security><role name=\"def\" read=\"true\" write=\"false\" create=\"false\"/></security>";
+
+         ServerManagement.invoke(on, "stop", null, null);         
+         ServerManagement.configureSecurityForDestination("SomeTopic", newSecurityConfig);         
+         ServerManagement.invoke(on, "start", null, null);
+
+         assertTrue(canReadDestination(conn, someTopic));
+         assertFalse(canWriteDestination(conn, someTopic));
+
+         newSecurityConfig =
+            "<security><role name=\"def\" read=\"true\" write=\"true\" create=\"false\"/></security>";
+
+         ServerManagement.invoke(on, "stop", null, null);         
+         ServerManagement.configureSecurityForDestination("SomeTopic", newSecurityConfig);         
+         ServerManagement.invoke(on, "start", null, null);
+
+         assertTrue(canReadDestination(conn, someTopic));
+         assertTrue(canWriteDestination(conn, someTopic));
+      }
+      finally
+      {
+         ServerManagement.undeployTopic("SomeTopic");
+         if (conn != null)
+         {
+            conn.close();
+         }
+      }
+   }
+   
+   /**
+    * This test makes sure that changing the queue security configuration on the server has effect
+    * over already deployed destinations.
+    */
+   public void testQueueSecurityUpdate() throws Exception
+   {
+      // "john" has the role def, so he should be able to create a producer and a consumer on a queue
+      ServerManagement.deployQueue("SomeQueue");
+      Connection conn = null;
+
+      try
+      {
+         Queue someQueue = (Queue)ic.lookup("/queue/SomeQueue");
+
+         conn = cf.createConnection("john", "needle");
+         assertTrue(canReadDestination(conn, someQueue));
+         assertTrue(canWriteDestination(conn, someQueue));
+
+
+         String newSecurityConfig =
+            "<security><role name=\"someotherrole\" read=\"true\" write=\"true\" create=\"false\"/></security>";
+
+         ServerManagement.configureSecurityForDestination("SomeQueue", newSecurityConfig);
+         
+         assertFalse(canReadDestination(conn, someQueue));
+         assertFalse(canWriteDestination(conn, someQueue));
+
+
+         newSecurityConfig =
+            "<security><role name=\"def\" read=\"true\" write=\"false\" create=\"false\"/></security>";
+
+         ServerManagement.configureSecurityForDestination("SomeQueue", newSecurityConfig);
+
+         assertTrue(canReadDestination(conn, someQueue));
+         assertFalse(canWriteDestination(conn, someQueue));
+
+         newSecurityConfig =
+            "<security><role name=\"def\" read=\"true\" write=\"true\" create=\"false\"/></security>";
+
+         ServerManagement.configureSecurityForDestination("SomeQueue", newSecurityConfig);
+
+         assertTrue(canReadDestination(conn, someQueue));
+         assertTrue(canWriteDestination(conn, someQueue));
+      }
+      finally
+      {
+         ServerManagement.undeployQueue("SomeQueue");
+         if (conn != null)
+         {
+            conn.close();
+         }
+      }
+   }
+   
+   /**
+    * This test makes sure that changing the topic security configuration on the server has effect
+    * over already deployed destinations.
+    */
+   public void testTopicSecurityUpdate() throws Exception
+   {
+      // "john" has the role def, so he should be able to create a producer and a consumer on a queue
+      ServerManagement.deployTopic("SomeTopic");
+      Connection conn = null;
+
+      try
+      {
+         Topic someTopic = (Topic)ic.lookup("/topic/SomeTopic");
+
+         conn = cf.createConnection("john", "needle");
+         assertTrue(canReadDestination(conn, someTopic));
+         assertTrue(canWriteDestination(conn, someTopic));
+
+
+         String newSecurityConfig =
+            "<security><role name=\"someotherrole\" read=\"true\" write=\"true\" create=\"false\"/></security>";
+
+         ServerManagement.configureSecurityForDestination("SomeTopic", newSecurityConfig);
+         
+         assertFalse(canReadDestination(conn, someTopic));
+         assertFalse(canWriteDestination(conn, someTopic));
+
+
+         newSecurityConfig =
+            "<security><role name=\"def\" read=\"true\" write=\"false\" create=\"false\"/></security>";
+
+         ServerManagement.configureSecurityForDestination("SomeTopic", newSecurityConfig);
+
+         assertTrue(canReadDestination(conn, someTopic));
+         assertFalse(canWriteDestination(conn, someTopic));
+
+         newSecurityConfig =
+            "<security><role name=\"def\" read=\"true\" write=\"true\" create=\"false\"/></security>";
+
+         ServerManagement.configureSecurityForDestination("SomeTopic", newSecurityConfig);
+
+         assertTrue(canReadDestination(conn, someTopic));
+         assertTrue(canWriteDestination(conn, someTopic));
+      }
+      finally
+      {
+         ServerManagement.undeployTopic("SomeTopic");
+         if (conn != null)
+         {
+            conn.close();
+         }
+      }
+   }
 
    public void testSecurityForQueuesAndTopicsWithTheSameName() throws Exception
    {

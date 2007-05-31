@@ -134,7 +134,13 @@ public abstract class DestinationServiceSupport extends ServiceMBeanSupport
                                              "ObjectName");
          }                  
          
-         destination.setName(name);                   
+         destination.setName(name);         
+         
+         // http://jira.jboss.com/jira/browse/JBMESSAGING-976
+         if (destination.getSecurityConfig() != null)
+         {
+         	serverPeer.getSecurityManager().setSecurityConfig(isQueue(), destination.getName(), destination.getSecurityConfig());
+         }
       }
       catch (Throwable t)
       {
