@@ -71,7 +71,13 @@
             <para>This example demonstrates a JMS client interacting with clustered EJB2.1
             stateless session bean, which in turn interactes with JBoss Messaging.
             The example uses HAJNDI to lookup the connection factory</para>
-         </listitem>                                                              
+         </listitem>         
+
+         <listitem>
+            <para>docs/example/bridge</para>
+            <para>This example demonstrates using a message bridge. It deploys a message bridge in JBoss AS which then
+proceeds to move messages from a source to a target queue</para>
+         </listitem>  
                
       </itemizedlist>
   </para>

@@ -713,11 +713,11 @@ public class Bridge implements MessagingComponent
       {
          throw new IllegalArgumentException("If failureRetryInterval == -1 maxRetries must be 0");
       }
-      if (maxBatchSize < 1)
+      if (!(maxBatchSize >= 1))
       {
          throw new IllegalArgumentException("maxBatchSize must be >= 1");
       }
-      if (maxBatchTime < 1 && maxBatchTime != -1)
+      if (!(maxBatchTime == -1 || maxBatchTime >=1))
       {
          throw new IllegalArgumentException("maxBatchTime must be >= 1 or -1 to represent unlimited batch time");
       }
