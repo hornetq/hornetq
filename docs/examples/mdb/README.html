@@ -51,10 +51,10 @@ accordingly.</span><br>
 <h2>Running the example</h2>
 1. Set up the JBOSS_HOME environment variable to point to the JBoss
 instance you deployed JBoss Messaging into. For example, if you
-deployed JBoss Messaging in <span style="font-family: monospace;">C:\jboss-4.0.3SP1\server\default\deploy,</span>
+deployed JBoss Messaging in <span style="font-family: monospace;">C:\jboss-4.2.0.GA\server\messaging\deploy,</span>
 then your JBOSS_HOME value should be <span
  style="font-family: monospace;">C:\</span><span
- style="font-family: monospace;">jboss-4.0.3SP1.</span><br>
+ style="font-family: monospace;">jboss-4.2.0.GA.</span><br>
 <span style="font-family: monospace;"></span><br>
 2. Go to the example's home directory<br>
 <br>
@@ -78,75 +78,55 @@ The output of a successful run should be similar to:<br>
   <tbody>
     <tr>
       <td style="vertical-align: top;">
-      <div style="margin-left: 40px;"><br>
-      </div>
-$ ant<br>
-Buildfile: build.xml<br>
-      <br>
-identify:<br>
-&nbsp;&nbsp;&nbsp;&nbsp; [echo]
-XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX<br>
-&nbsp;&nbsp;&nbsp;&nbsp; [echo]
-X&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-Running the MDB
-example&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-X<br>
-&nbsp;&nbsp;&nbsp;&nbsp; [echo]
-XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX<br>
-&nbsp;&nbsp;&nbsp;&nbsp; [echo] The queue: testQueue<br>
-      <br>
-sanity-check:<br>
-      <br>
-init:<br>
-&nbsp;&nbsp;&nbsp; [mkdir] Created dir:
-C:\work\src\cvs\jboss-head\jms\docs\examples\mdb\output\classes\META-INF<br>
-&nbsp;&nbsp;&nbsp; [mkdir] Created dir:
-C:\work\src\cvs\jboss-head\jms\docs\examples\mdb\output\lib\META-INF<br>
-&nbsp;&nbsp;&nbsp; [mkdir] Created dir:
-C:\work\src\cvs\jboss-head\jms\docs\examples\common\output<br>
-      <br>
-compile:<br>
-&nbsp;&nbsp;&nbsp; [javac] Compiling 2 source files to
-C:\work\src\cvs\jboss-head\jms\docs\examples\common\output<br>
-&nbsp;&nbsp;&nbsp; [javac] Compiling 2 source files to
-C:\work\src\cvs\jboss-head\jms\docs\examples\mdb\output\classes<br>
-      <br>
-jar:<br>
-&nbsp;&nbsp;&nbsp;&nbsp; [copy] Copying 2 files to
-C:\work\src\cvs\jboss-head\jms\docs\examples\mdb\output\classes\META-INF<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; [jar] Building jar:
-C:\work\src\cvs\jboss-head\jms\docs\examples\mdb\output\lib\mdb-example.jar<br>
-      <br>
-deploy:<br>
-&nbsp;&nbsp;&nbsp;&nbsp; [copy] Copying 1 file to
-C:\work\src\jboss-4.0.3SP1-src\build\output\jboss-4.0.3SP1\server\messaging\deploy<br>
-      <br>
-sleep:<br>
-&nbsp;&nbsp;&nbsp;&nbsp; [echo] Sleeping for 5 seconds ...<br>
-      <br>
-run:<br>
-      <br>
-send:<br>
-&nbsp;&nbsp;&nbsp;&nbsp; [java] Queue /queue/testQueue exists<br>
-&nbsp;&nbsp;&nbsp;&nbsp; [java] The Hello! message was successfully
-sent to the testQueue queue<br>
-&nbsp;&nbsp;&nbsp;&nbsp; [java] Received message: !olleH<br>
-&nbsp;&nbsp;&nbsp;&nbsp; [java] The example connected to JBoss
-Messaging version 1.0.1.GA (1.0)<br>
-      <br>
-&nbsp;&nbsp;&nbsp;&nbsp; [java] #####################<br>
-&nbsp;&nbsp;&nbsp;&nbsp; [java] ###&nbsp;&nbsp;&nbsp;
-SUCCESS!&nbsp;&nbsp; ###<br>
-&nbsp;&nbsp;&nbsp;&nbsp; [java] #####################<br>
-      <br>
-undeploy:<br>
-&nbsp;&nbsp; [delete] Deleting:
-C:\work\src\jboss-4.0.3SP1-src\build\output\jboss-4.0.3SP1\server\messaging\deploy\mdb-example.jar<br>
-      <br>
-BUILD SUCCESSFUL<br>
-Total time: 10 seconds<br>
-      <br>
-      <br>
+<pre>$ ant
+Buildfile: build.xml
+
+identify:
+     [echo] ###########################################################################
+     [echo] #                        Running the MDB example                          #
+     [echo] ###########################################################################
+     [echo] The queue:      testQueue
+     [echo] The client jar: ../../../output/lib/jboss-messaging-client.jar
+
+sanity-check:
+
+init:
+    [mkdir] Created dir: C:\java\messaging\docs\examples\mdb\output\classes\META-INF
+    [mkdir] Created dir: C:\java\messaging\docs\examples\mdb\output\lib\META-INF
+    [mkdir] Created dir: C:\java\messaging\docs\examples\common\output\classes
+
+compile:
+    [javac] Compiling 5 source files to C:\java\messaging\docs\examples\common\output\classes
+    [javac] Compiling 2 source files to C:\java\messaging\docs\examples\mdb\output\classes
+
+jar:
+     [copy] Copying 2 files to C:\java\messaging\docs\examples\mdb\output\classes\META-INF
+      [jar] Building jar: C:\java\messaging\docs\examples\mdb\output\lib\mdb-example.jar
+
+deploy:
+     [copy] Copying 1 file to C:\jboss-4.2.0.GA\server\messaging\deploy
+
+sleep:
+     [echo] Sleeping for 5 seconds ...
+
+run:
+
+send:
+     [java] Queue /queue/testQueue exists
+     [java] The Hello! message was successfully sent to the testQueue queue
+     [java] Received message: !olleH
+     [java] The example connected to JBoss Messaging version 1.3.0.GA (1.3)
+     [java] 
+     [java] #####################
+     [java] ###    SUCCESS!   ###
+     [java] #####################
+
+undeploy:
+   [delete] Deleting: C:\jboss-4.2.0.GA\server\messaging\deploy\mdb-example.jar
+
+BUILD SUCCESSFUL
+Total time: 10 seconds
+</pre>
       </td>
     </tr>
   </tbody>
