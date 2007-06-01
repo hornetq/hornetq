@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+
+   To run the example, set JBOSS_HOME and run ant (with no parameters)
+
+   $Id: build.xml 2705 2007-05-17 21:34:07Z clebert.suconic@jboss.com $
+
+ -->
+
+<project name="BridgeExample" default="run">
+
+   <property environment="ENV"/>
+
+   <!-- These properties may be overriden by calling ants when this example is used in a smoke test -->
+   <property file="../examples.properties"/>
+   <property name="messaging.client.jar.path" value="../../"/>
+   <property name="messaging.client.jar.name" value="jboss-messaging-client.jar"/>
+   <property name="jboss.home" value="${ENV.JBOSS_HOME}"/>
+   <property name="jboss.configuration" value="messaging"/>
+   <property name="example.source.queue" value="A"/>
+   <property name="example.target.queue" value="B"/>
+
+   <path id="common.compilation.classpath">
+      <fileset file="${jboss.home}/client/jboss-j2ee.jar"/>
+      <fileset file="${messaging.client.jar.path}/${messaging.client.jar.name}"/>
+   </path>
+
+   <path id="example.compilation.classpath">
+      <path refid="common.compilation.classpath"/>
+      <pathelement path="../common/output/classes"/>
+   </path>
+
+   <path id="execution.classpath">
+      <pathelement path="./etc"/>
+      <pathelement path="../common/output/classes"/>
+      <pathelement path="./output/classes"/>
+      <fileset file="${messaging.client.jar.path}/${messaging.client.jar.name}"/>
+      <fileset file="${jboss.home}/client/jbossall-client.jar"/>
+      <fileset file="${jboss.home}/server/${jboss.configuration}/lib/log4j.jar"/>
+      <fileset file="${jboss.home}/server/${jboss.configuration}/lib/javassist.jar"/>
+      <fileset file="${jboss.home}/server/${jboss.configuration}/deploy/jboss-aop-jdk50.deployer/jboss-aop-jdk50.jar"/>
+      <fileset file="${jboss.home}/server/${jboss.configuration}/deploy/jboss-aop-jdk50.deployer/trove.jar"/>
+   </path>
+
+   <target name="identify">
+      <echo message="###########################################################################"/>
+      <echo message="#                       Running the BRIDGE example                         #"/>
+      <echo message="###########################################################################"/>
+      <echo message="The queue:      ${example.queue.name}"/>
+      <echo message="The client jar: ${messaging.client.jar.path}/${messaging.client.jar.name}"/>
+   </target>
+
+   <target name="sanity-check" depends="identify">
+      <available property="client.jar.present" file="${messaging.client.jar.path}/${messaging.client.jar.name}"/>
+      <fail message="Could not find client jar ${messaging.client.jar.path}/${messaging.client.jar.name}"
+            unless="client.jar.present"/>
+   </target>
+
+   <target name="init" depends="sanity-check">
+      <mkdir dir="./output/classes"/>
+      <mkdir dir="../common/output/classes"/>
+   </target>
+
+   <target name="compile" depends="init">
+      <javac destdir="../common/output/classes" debug="on" debuglevel="lines,vars,source">
+         <src path="../common/src"/>
+         <classpath refid="common.compilation.classpath"/>
+      </javac>
+      <javac destdir="./output/classes" debug="on" debuglevel="lines,vars,source">
+         <src path="./src"/>
+         <classpath refid="example.compilation.classpath"/>
+      </javac>
+   </target>
+   
+   <target name="deploy" depends="compile">
+      <copy file="./etc/test-bridge-service.xml"
+            todir="${jboss.home}/server/${jboss.configuration}/deploy"/>
+      <antcall target="sleep"><param name="sleep.interval" value="5"/></antcall>
+   </target>
+	
+   <target name="undeploy">
+      <delete file="${jboss.home}/server/${jboss.configuration}/deploy/test-bridge-service.xml" quiet="true"/>
+   </target>
+   
+   <target name="run" depends="deploy">
+      <java classname="org.jboss.example.jms.bridge.BridgeExample"
+            classpathref="execution.classpath" fork="yes" failonerror="true">
+         <sysproperty key="example.source.queue" value="${example.source.queue}"/>
+         <sysproperty key="example.target.queue" value="${example.target.queue}"/>
+         <!--
+         <jvmarg line="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_shmem,server=y,suspend=y,address=example"/>
+         -->
+      </java>
+   	  <antcall target="undeploy"/>
+   </target>
+
+   <target name="clean" depends="undeploy">
+      <delete dir="./output" quiet="true"/>
+      <delete dir="../common/output" quiet="true"/>
+   </target>
+	
+   <target name="sleep">
+	  <echo message="Sleeping for ${sleep.interval} seconds ..."/>
+	  <sleep seconds="${sleep.interval}"/>
+   </target>
+
+</project>
+

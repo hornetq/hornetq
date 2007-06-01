@@ -17,18 +17,18 @@
       <type>org.jboss.messaging.core.plugin.contract.MessagingComponent</type>
    </attribute>
 
-	<attribute access="read-write" getMethod="getSourceProviderAdaptorLookup"
-	   setMethod="setSourceProviderAdaptorLookup">
-	   <description>JNDI lookup for the source JMS provider Adaptor</description>
-	   <name>SourceProviderAdaptorLookup</name>
-	   <type>java.lang.String</type>
+	<attribute access="read-write" getMethod="getSourceProviderLoader"
+	   setMethod="setSourceProviderLoader">
+	   <description>JMS Provider Loader for the source destination</description>
+	   <name>SourceProviderLoader</name>
+	   <type>javax.management.ObjectName</type>
 	</attribute>
 	
-	<attribute access="read-write" getMethod="getTargetProviderAdaptorLookup"
-	   setMethod="setTargetProviderAdaptorLookup">
-	   <description>JNDI lookup for the target JMS provider Adaptor</description>
-	   <name>TargetProviderAdaptorLookup</name>
-	   <type>java.lang.String</type>
+	<attribute access="read-write" getMethod="getTargetProviderLoader"
+	   setMethod="setTargetProviderLoader">
+	   <description>JMS Provider Loader for the target destination</description>
+	   <name>TargetProviderLoader</name>
+	   <type>javax.management.ObjectName</type>
 	</attribute>	
 		
 	<attribute access="read-write" getMethod="getSourceDestinationLookup"

@@ -21,6 +21,7 @@
  */
 package org.jboss.test.messaging.jms.bridge;
 
+import java.io.ByteArrayOutputStream;
 import java.util.Properties;
 
 import javax.jms.Connection;
@@ -34,11 +35,9 @@ import javax.jms.TextMessage;
 import javax.management.ObjectName;
 import javax.naming.InitialContext;
 
-import org.jboss.jms.jndi.JMSProviderAdapter;
 import org.jboss.jms.server.bridge.Bridge;
 import org.jboss.logging.Logger;
 import org.jboss.test.messaging.tools.ServerManagement;
-import org.jboss.test.messaging.tools.TestJMSProviderAdaptor;
 
 /**
  * A BridgeMBeanTest
@@ -77,6 +76,8 @@ public class BridgeMBeanTest extends BridgeTestBase
       
    }
    
+   
+   
    public void testStopStartPauseResume() throws Exception
    {
       ServerManagement.deployQueue("sourceQueue", 1);
@@ -88,17 +89,17 @@ public class BridgeMBeanTest extends BridgeTestBase
       Properties props2 = new Properties();
       props2.putAll(ServerManagement.getJNDIEnvironment(2));
       
-      JMSProviderAdapter sourceAdaptor = new TestJMSProviderAdaptor(props1, "/XAConnectionFactory", "adaptor1");
+      installJMSProviderLoader(0, props1, "/XAConnectionFactory", "adaptor1");
       
-      JMSProviderAdapter targetAdaptor = new TestJMSProviderAdaptor(props2, "/XAConnectionFactory", "adaptor2");
-      
-      ServerManagement.installJMSProviderAdaptor(0, "adaptor1", sourceAdaptor);
-      
-      ServerManagement.installJMSProviderAdaptor(0, "adaptor2", targetAdaptor);
+      installJMSProviderLoader(0, props2, "/XAConnectionFactory", "adaptor2");
       
       log.info("Deploying bridge");
       
-      ObjectName on = deployBridge(0, "Bridge1", "adaptor1", "adaptor2",
+      ObjectName sourceProviderLoader = new ObjectName("jboss.messaging:service=JMSProviderLoader,name=adaptor1");
+      ObjectName targetProviderLoader = new ObjectName("jboss.messaging:service=JMSProviderLoader,name=adaptor2");
+      
+      
+      ObjectName on = deployBridge(0, "Bridge1", sourceProviderLoader, targetProviderLoader,
                                    "/queue/sourceQueue", "/queue/targetQueue",
                                    null, null, null, null,
                                    Bridge.QOS_AT_MOST_ONCE, null, 1,
@@ -285,9 +286,9 @@ public class BridgeMBeanTest extends BridgeTestBase
             //Ignore            
          }
          
-         ServerManagement.uninstallJMSProviderAdaptor(0, "adaptor1");
+         uninstallJMSProviderLoader(0, "adaptor1");
          
-         ServerManagement.uninstallJMSProviderAdaptor(0, "adaptor2");
+         uninstallJMSProviderLoader(0,  "adaptor2");
       }
    }
          
@@ -308,15 +309,14 @@ public class BridgeMBeanTest extends BridgeTestBase
          Properties props2 = new Properties();
          props2.putAll(ServerManagement.getJNDIEnvironment(2));
          
-         JMSProviderAdapter sourceAdaptor = new TestJMSProviderAdaptor(props1, "/XAConnectionFactory", "adaptor1");
+         installJMSProviderLoader(0, props1, "/XAConnectionFactory", "adaptor1");
          
-         JMSProviderAdapter targetAdaptor = new TestJMSProviderAdaptor(props2, "/XAConnectionFactory", "adaptor2");
+         installJMSProviderLoader(0, props2, "/XAConnectionFactory", "adaptor2");
          
-         ServerManagement.installJMSProviderAdaptor(0, "adaptor1", sourceAdaptor);
+         ObjectName sourceProviderLoader = new ObjectName("jboss.messaging:service=JMSProviderLoader,name=adaptor1");
+         ObjectName targetProviderLoader = new ObjectName("jboss.messaging:service=JMSProviderLoader,name=adaptor2");
          
-         ServerManagement.installJMSProviderAdaptor(0, "adaptor2", targetAdaptor);
-         
-         on = deployBridge(0, "Bridge1", "adaptor1", "adaptor2",
+         on = deployBridge(0, "Bridge1", sourceProviderLoader, targetProviderLoader,
                            "/queue/sourceQueue", "/queue/targetQueue",
                            null, null, null, null,
                            Bridge.QOS_ONCE_AND_ONLY_ONCE, null, 1,
@@ -329,21 +329,22 @@ public class BridgeMBeanTest extends BridgeTestBase
          log.trace("Created bridge");
             
          {
-            String lookup = (String)ServerManagement.getAttribute(on, "SourceProviderAdaptorLookup");
-            assertEquals("adaptor1", lookup);
-            ServerManagement.setAttribute(on, "SourceProviderAdaptorLookup", "blah");
-            lookup = (String)ServerManagement.getAttribute(on, "SourceProviderAdaptorLookup");
-            assertEquals("blah", lookup);
-            ServerManagement.setAttribute(on, "SourceProviderAdaptorLookup", "adaptor1");
+            ObjectName sourceProviderLoader2 = (ObjectName)ServerManagement.getAttribute(on, "SourceProviderLoader");
+            assertEquals(sourceProviderLoader, sourceProviderLoader2);
+            ServerManagement.setAttribute(on, "SourceProviderLoader", "jboss.messaging:service=JMSProviderLoader,name=blah");
+            sourceProviderLoader2 = (ObjectName)ServerManagement.getAttribute(on, "SourceProviderLoader");
+            assertEquals(new ObjectName("jboss.messaging:service=JMSProviderLoader,name=blah"), sourceProviderLoader2);
+            ServerManagement.setAttribute(on, "SourceProviderLoader", sourceProviderLoader.toString());
          }
               
          {
-            String lookup = (String)ServerManagement.getAttribute(on, "TargetProviderAdaptorLookup");
-            assertEquals("adaptor2", lookup);
-            ServerManagement.setAttribute(on, "TargetProviderAdaptorLookup", "blah");
-            lookup = (String)ServerManagement.getAttribute(on, "TargetProviderAdaptorLookup");
-            assertEquals("blah", lookup);
-            ServerManagement.setAttribute(on, "TargetProviderAdaptorLookup", "adaptor2");
+         	ObjectName targetProviderLoader2 = (ObjectName)ServerManagement.getAttribute(on, "TargetProviderLoader");
+            assertEquals(targetProviderLoader, targetProviderLoader2);
+            ServerManagement.setAttribute(on, "TargetProviderLoader", "jboss.messaging:service=JMSProviderLoader,name=blah2");
+            targetProviderLoader2 = (ObjectName)ServerManagement.getAttribute(on, "TargetProviderLoader");
+            assertEquals(new ObjectName("jboss.messaging:service=JMSProviderLoader,name=blah2"), targetProviderLoader2);
+            ServerManagement.setAttribute(on, "TargetProviderLoader", targetProviderLoader.toString());
+  
          }
          
          {
@@ -477,20 +478,21 @@ public class BridgeMBeanTest extends BridgeTestBase
          //Should not be able to change attributes when bridge is started - need to stop first         
          
          {
-            String cfLookup = (String)ServerManagement.getAttribute(on, "SourceProviderAdaptorLookup");
-            assertEquals("adaptor1", cfLookup);
-            ServerManagement.setAttribute(on, "SourceProviderAdaptorLookup", "blah");
-            cfLookup = (String)ServerManagement.getAttribute(on, "SourceProviderAdaptorLookup");
-            assertEquals("adaptor1", cfLookup);            
+            ObjectName sourceProviderLoader2 = (ObjectName)ServerManagement.getAttribute(on, "SourceProviderLoader");
+            assertEquals(sourceProviderLoader, sourceProviderLoader2);
+            ServerManagement.setAttribute(on, "SourceProviderLoader", "jboss.messaging:service=JMSProviderLoader,name=blah");
+            sourceProviderLoader2 = (ObjectName)ServerManagement.getAttribute(on, "SourceProviderLoader");
+            assertEquals(sourceProviderLoader, sourceProviderLoader2);
          }
-         
+              
          {
-            String cfLookup = (String)ServerManagement.getAttribute(on, "TargetProviderAdaptorLookup");
-            assertEquals("adaptor2", cfLookup);
-            ServerManagement.setAttribute(on, "TargetProviderAdaptorLookup", "blah");
-            cfLookup = (String)ServerManagement.getAttribute(on, "TargetProviderAdaptorLookup");
-            assertEquals("adaptor2", cfLookup); 
-         }
+         	ObjectName targetProviderLoader2 = (ObjectName)ServerManagement.getAttribute(on, "TargetProviderLoader");
+            assertEquals(targetProviderLoader, targetProviderLoader2);
+            ServerManagement.setAttribute(on, "TargetProviderLoader", "jboss.messaging:service=JMSProviderLoader,name=blah2");
+            targetProviderLoader2 = (ObjectName)ServerManagement.getAttribute(on, "TargetProviderLoader");
+            assertEquals(targetProviderLoader, targetProviderLoader2);
+ 
+         }         
          
          {
             String destLookup = (String)ServerManagement.getAttribute(on, "SourceDestinationLookup");
@@ -633,15 +635,16 @@ public class BridgeMBeanTest extends BridgeTestBase
          ServerManagement.undeployQueue("sourceQueue", 1);
          ServerManagement.undeployQueue("targetQueue", 2);
          
-         ServerManagement.uninstallJMSProviderAdaptor(0, "adaptor1");
-         ServerManagement.uninstallJMSProviderAdaptor(0, "adaptor2");
+         uninstallJMSProviderLoader(0, "adaptor1");
+         
+         uninstallJMSProviderLoader(0, "adaptor2");
       }
             
    }
    
    
    private ObjectName deployBridge(int server, String bridgeName,
-            String sourceProviderAdaptorLookup, String targetProviderAdaptorLookup,
+            ObjectName sourceProviderLoader, ObjectName targetProviderLoader,
             String sourceDestLookup, String targetDestLookup,
             String sourceUsername, String sourcePassword,
             String targetUsername, String targetPassword,
@@ -653,8 +656,8 @@ public class BridgeMBeanTest extends BridgeTestBase
          "<mbean code=\"org.jboss.jms.server.bridge.BridgeService\" " +
          "name=\"jboss.messaging:service=Bridge,name=" + bridgeName + "\" " +
          "xmbean-dd=\"xmdesc/Bridge-xmbean.xml\">" +      
-         "<attribute name=\"SourceProviderAdaptorLookup\">" + sourceProviderAdaptorLookup + "</attribute>"+      
-         "<attribute name=\"TargetProviderAdaptorLookup\">" + targetProviderAdaptorLookup + "</attribute>"+     
+         "<attribute name=\"SourceProviderLoader\">" + sourceProviderLoader + "</attribute>"+      
+         "<attribute name=\"TargetProviderLoader\">" + targetProviderLoader + "</attribute>"+     
          "<attribute name=\"SourceDestinationLookup\">" + sourceDestLookup + "</attribute>"+     
          "<attribute name=\"TargetDestinationLookup\">" + targetDestLookup + "</attribute>";
       if (sourceUsername != null)
@@ -771,6 +774,37 @@ public class BridgeMBeanTest extends BridgeTestBase
             connTarget.close();
          }
       }
+   }
+   
+   private void installJMSProviderLoader(int server, Properties props, String factoryRef, String name)
+      throws Exception
+   {
+   	ByteArrayOutputStream boa = new ByteArrayOutputStream();
+   	props.store(boa, "");
+   	String propsString =  new String(boa.toByteArray());
+
+   	String config =
+   		"<mbean code=\"org.jboss.jms.jndi.JMSProviderLoader\"" + 
+   		" name=\"jboss.messaging:service=JMSProviderLoader,name=" + name + "\">" +
+   		"<attribute name=\"ProviderName\">" + name + "</attribute>" +
+   		"<attribute name=\"ProviderAdapterClass\">org.jboss.jms.jndi.JNDIProviderAdapter</attribute>" +
+   		"<attribute name=\"FactoryRef\">" + factoryRef + "</attribute>" +
+   		"<attribute name=\"QueueFactoryRef\">" + factoryRef + "</attribute>" +
+   		"<attribute name=\"TopicFactoryRef\">" + factoryRef + "</attribute>" +
+   		"<attribute name=\"Properties\">" + propsString + "</attribute></mbean>";
+   	
+   	log.info("Installing bridge: " + config);
+
+   	ServerManagement.getServer(0).deploy(config);
+   }
+
+   private void uninstallJMSProviderLoader(int server, String name) throws Exception
+   {
+   	ObjectName on = new ObjectName("jboss.messaging:service=JMSProviderLoader,name=" + name);
+   	
+   	log.info("Uninstalling bridge:" + name);
+   	
+   	ServerManagement.getServer(0).undeploy(on);
    }
    
 }

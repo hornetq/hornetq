@@ -3,775 +3,93 @@
   <title>Running the Examples</title>
 
   <para>
-      Since JBoss Messaging is a fully compliant JMS 1.1 provider, it supports the entire JMS 1.1 API. So, all
-      JMS applications should work without modification. Integrated inside a JBoss AS, we should
-      also be able access the JMS system from EJBs and write message-driven beans against JMS
-      destinations.
+      In the directory <literal>docs/examples</literal>, you will find a set of examples demonstrating
+      JBoss Messaging working in various examples, they include:
+      
+      <itemizedlist>
+         <listitem>
+            <para>docs/example/queue</para>
+            <para>This example shows a simple send and receive to a remote queue using a JMS client</para>
+         </listitem>
+         
+         <listitem>
+            <para>docs/example/topic</para>
+            <para>This example shows a simple send and receive to a remote topic using a JMS client</para>
+         </listitem>
+         
+         <listitem>
+            <para>docs/example/mdb</para>
+            <para>This example demonstrates usage of an EJB2.1 MDB with JBoss Messaging</para>
+         </listitem> 
+         
+         <listitem>
+            <para>docs/example/ejb3mdb</para>
+            <para>This example demonstrates usage of an EJB3 MDB with JBoss Messaging</para>
+         </listitem>   
+         
+         <listitem>
+            <para>docs/example/stateless</para>
+            <para>This example demonstrates an EJB2.1 stateless session bean interacting with JBoss Messaging</para>
+         </listitem>
+         
+         <listitem>
+            <para>docs/example/mdb-failure</para>
+            <para>This example demonstrates rollback and redelivery occuring with an EJB2.1 MDB</para>
+         </listitem> 
+         
+         <listitem>
+            <para>docs/example/secure-socket</para>
+            <para>This example demonstrates a JMS client interacting with a JBoss Messaging server
+            using SSL encrypted transport</para>
+         </listitem>  
+         
+         <listitem>
+            <para>docs/example/http</para>
+            <para>This example demonstrates a JMS client interacting with a JBoss Messaging server
+            tunneling traffic over the HTTP protocol</para>
+         </listitem>   
+         
+         <listitem>
+            <para>docs/example/web-service</para>
+            <para>This example demonstrates JBoss web-service interacting with JBoss Messaging</para>
+         </listitem>   
+         
+         <listitem>
+            <para>docs/example/distributed-queue</para>
+            <para>This example demonstrates a JMS client interacting with a JBoss Messaging distributed
+            queue - it requires two JBoss AS instances to be running</para>
+         </listitem>   
+         
+         <listitem>
+            <para>docs/example/distributed-topic</para>
+            <para>This example demonstrates a JMS client interacting with a JBoss Messaging distributed
+            topic - it requires two JBoss AS instances to be running</para>
+         </listitem>  
+         
+         <listitem>
+            <para>docs/example/stateless-clustered</para>
+            <para>This example demonstrates a JMS client interacting with clustered EJB2.1
+            stateless session bean, which in turn interactes with JBoss Messaging.
+            The example uses HAJNDI to lookup the connection factory</para>
+         </listitem>                                                              
+               
+      </itemizedlist>
   </para>
-
-
+  
+  <para>It is highly recommended that you familiarise yourself with the examples.</para>
+  
   <para>
-      In the following sections, we will look at examples of the various JMS messaging models
-      and message-driven beans. They make use of pre-configured JMS destinations and connection
-      factories that come default with the server. So, no extra configuration is needed to run
-      those examples. Just set JBOSS_HOME and run <literal>ant</literal> in each example
-      directory, as we described in <xref linkend="inst.validation"/>. The example source
-      directories are located in the distribution under <literal>docs/examples</literal>.
+     Make sure you start the JBoss server(s) before running the examples!
   </para>
-
-  <section id="examples.queue">
-    <title>Sending messages to a queue</title>
-
-    <para>
-    Open an new command line. Set the JBOSS_HOME environment variable to point at a JBossAS 4.x
-    installation. Navigate to the folder where you exploded the main archive and drill down to
-    <literal>/examples/queue</literal>. You need to use Apache <literal>ant</literal> to execute
-    the <literal>build.xml</literal> file.
-    </para>
-
-    <para>
-        Make sure the JBoss server reference by the JBOSS_HOME is started.
-   </para>
-
-    <programlisting>
-public class QueueExample extends ExampleSupport
-{
-
-   public void example() throws Exception
-   {
-      String destinationName = getDestinationJNDIName();
-
-      InitialContext ic = null;
-      ConnectionFactory cf = null;
-      Connection connection =  null;
-
-      try
-      {
-         ic = new InitialContext();
-
-         cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
-         Queue queue = (Queue)ic.lookup(destinationName);
-         log("Queue " + destinationName + " exists");
-
-         connection = cf.createConnection();
-         Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer sender = session.createProducer(queue);
-
-         TextMessage message = session.createTextMessage("Hello!");
-         sender.send(message);
-         log("The message was successfully sent to the " + queue.getQueueName() + " queue");
-
-         MessageConsumer consumer =  session.createConsumer(queue);
-
-         connection.start();
-
-         message = (TextMessage)consumer.receive(2000);
-         log("Received message: " + message.getText());
-         assertEquals("Hello!", message.getText());
-
-         displayProviderInfo(connection.getMetaData());
-
-      }
-      finally
-      {
-         if(ic != null)
-         {
-            try
-            {
-               ic.close();
-            }
-            catch(Exception e)
-            {
-               throw e;
-            }
-         }
-
-         // ALWAYS close your connection in a finally block to avoid leaks.
-         // Closing connection also takes care of closing its related objects e.g. sessions.
-         closeConnection(connection);
-      }
-   }
-
-   private void closeConnection(Connection con)
-   {
-      try
-      {
-         if (con != null)
-         {
-            con.close();
-         }
-      }
-      catch(JMSException jmse)
-      {
-         log("Could not close connection " + con +" exception was " + jmse);
-      }
-   }
-
-   protected boolean isQueueExample()
-   {
-      return true;
-   }
-
-   public static void main(String[] args)
-   {
-      new QueueExample().run();
-   }
-
-}
-    </programlisting>
-
-  </section>
-
-
-  <section id="examples.topic">
-    <title>Sending messages to a topic</title>
-    <para>In this example, a standalone Java client publishes a text-based JMS message to a topic and a single subscriber pulls the message off the queue.
-    </para>
-
-    <para>
-    Open an new command line. Set the JBOSS_HOME environment variable to point at a JBossAS 4.x installation. Navigate to the folder where you exploded the main archive and drill down to <literal>/examples/queue</literal>. You need to use Apache Ant to execute the build.xml file
-    Make sure the JBoss server reference by the JBOSS_HOME is started.
-   </para>
-
-   <programlisting>
-public class TopicExample extends ExampleSupport
-{
-   public void example() throws Exception
-   {
-      String destinationName = getDestinationJNDIName();
-
-      InitialContext ic = null;
-      Connection connection = null;
-
-      try
-      {
-         ic = new InitialContext();
-
-         ConnectionFactory cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
-         Topic topic = (Topic)ic.lookup(destinationName);
-         log("Topic " + destinationName + " exists");
-
-         connection = cf.createConnection();
-         Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer publisher = session.createProducer(topic);
-         MessageConsumer subscriber = session.createConsumer(topic);
-
-         ExampleListener messageListener = new ExampleListener();
-         subscriber.setMessageListener(messageListener);
-         connection.start();
-
-         TextMessage message = session.createTextMessage("Hello!");
-         publisher.send(message);
-         log("The message was successfully published on the topic");
-
-         messageListener.waitForMessage();
-
-         message = (TextMessage)messageListener.getMessage();
-         log("Received message: " + message.getText());
-         assertEquals("Hello!", message.getText());
-
-         displayProviderInfo(connection.getMetaData());
-
-      }
-      finally
-      {
-         if (ic != null)
-         {
-            try
-            {
-               ic.close();
-            }
-            catch(Exception e)
-            {
-               throw e;
-            }
-         }
-
-         // ALWAYS close your connection in a finally block to avoid leaks.
-         // Closing connection also takes care of closing its related objects e.g. sessions.
-         closeConnection(connection);
-      }
-   }
-
-   private void closeConnection(Connection con) throws JMSException
-   {
-
-      try
-      {
-         if (con != null)
-         {
-            con.close();
-         }
-      }
-      catch(JMSException jmse)
-      {
-         log("Could not close connection " + con +" exception was " + jmse);
-      }
-   }
-
-   protected boolean isQueueExample()
-   {
-      return false;
-   }
-
-   public static void main(String[] args)
-   {
-      new TopicExample().run();
-   }
-
-}
-   </programlisting>
-
-  </section>
-
-  <section id="examples.stateless">
-    <title>Using JMS from an EJB</title>
-    <para>This example deploys a simple Stateless Session Bean that is used as a proxy to send and receive JMS messages in a managed environment.
-    </para>
-
-      <warning>
-         Receiving a JMS message from inside an EJB (or MBean or servlet) method is considered an anti-pattern since it will require the creation
-         of a new JMS consumer on every send - even when using the JCA adaptor. This is likely to make it very slow. (Users of the Spring JMSTemplate be warned that this is what it uses
-         to implement it's receive.)
-         If you want to receive messages as part of a global transaction then use an MDB instead.
-      </warning>
-
-    <programlisting>
-public class StatelessSessionExampleBean implements SessionBean
-{
-
-   private ConnectionFactory cf = null;
-
-   public void drain(String queueName) throws Exception
-   {
-      InitialContext ic = new InitialContext();
-      Queue queue = (Queue)ic.lookup(queueName);
-      ic.close();
-
-      Session session = null;
-      Connection conn = null;
-
-      try
-      {
-         conn = getConnection();
-         session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageConsumer consumer = session.createConsumer(queue);
-         Message m = null;
-         do
-         {
-            m = consumer.receiveNoWait();
-         }
-         while(m != null);
-      }
-      finally
-      {
-         if (conn != null)
-         {
-            closeConnection(conn);
-         }
-      }
-   }
-
-   public void send(String txt, String queueName) throws Exception
-   {
-      InitialContext ic = new InitialContext();
-
-      Queue queue = (Queue)ic.lookup(queueName);
-
-      ic.close();
-
-      Session session = null;
-      Connection conn = null;
-
-      try
-      {
-         conn = getConnection();
-
-         session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-
-         MessageProducer producer = session.createProducer(queue);
-
-         TextMessage tm = session.createTextMessage(txt);
-
-         producer.send(tm);
-
-         System.out.println("message " + txt + " sent to " + queueName);
-      }
-      finally
-      {
-         if (conn != null)
-         {
-            closeConnection(conn);
-         }
-      }
-   }
-
-   public int browse(String queueName) throws Exception
-   {
-      InitialContext ic = new InitialContext();
-      Queue queue = (Queue)ic.lookup(queueName);
-      ic.close();
-
-      Session session = null;
-      Connection conn = null;
-
-      try
-      {
-         conn = getConnection();
-         session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         QueueBrowser browser = session.createBrowser(queue);
-
-         ArrayList list = new ArrayList();
-         for(Enumeration e = browser.getEnumeration(); e.hasMoreElements(); )
-         {
-            list.add(e.nextElement());
-         }
-
-         return list.size();
-      }
-      finally
-      {
-         if (conn != null)
-         {
-            closeConnection(conn);
-         }
-      }
-   }
-
-   public String receive(String queueName) throws Exception
-   {
-      InitialContext ic = new InitialContext();
-      Queue queue = (Queue)ic.lookup(queueName);
-      ic.close();
-
-      Session session = null;
-      Connection conn = null;
-
-      // WARN! this is an anti-pattern - please see above warning
-
-      try
-      {
-         conn = getConnection();
-         session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-
-         MessageConsumer consumer = session.createConsumer(queue);
-
-         System.out.println("blocking to receive message from queue " + queueName + " ...");
-         TextMessage tm = (TextMessage)consumer.receive(5000);
-
-         if (tm == null)
-         {
-            throw new Exception("No message!");
-         }
-
-         System.out.println("Message " + tm.getText() + " received");
-
-         return tm.getText();
-      }
-      finally
-      {
-         if (conn != null)
-         {
-            closeConnection(conn);
-         }
-      }
-   }
-
-   public Connection getConnection() throws Exception
-   {
-
-      Connection connection = null;
-
-      try
-      {
-         connection = cf.createConnection();
-
-         connection.start();
-      }
-      catch(Exception e )
-      {
-         if(connection != null)
-         {
-            closeConnection(connection);
-         }
-         System.out.println("Failed to get connection...exception is " + e);
-         throw e;
-      }
-
-      return connection;
-   }
-
-   public void closeConnection(Connection con) throws Exception
-   {
-      try
-      {
-         con.close();
-      }
-      catch(JMSException jmse)
-      {
-         System.out.println("Could not close connection " + con +" exception was " + jmse);
-         throw jmse;
-      }
-   }
-
-   public void setSessionContext(SessionContext ctx) throws EJBException, RemoteException
-   {
-   }
-
-   public void ejbCreate()
-   {
-      try
-      {
-         InitialContext ic = new InitialContext();
-
-         cf = (ConnectionFactory)ic.lookup("java:/JmsXA");
-
-         ic.close();
-      }
-      catch(Exception e)
-      {
-         e.printStackTrace();
-         throw new EJBException("Initalization failure: " + e.getMessage());
-      }
-   }
-
-   public void ejbRemove() throws EJBException
-   {
-      try
-      {
-         if(cf != null)
-         {
-            cf = null;
-         }
-      }
-      catch(Exception e)
-      {
-         throw new EJBException("ejbRemove ", e);
-      }
-   }
-
-   public void ejbActivate() throws EJBException, RemoteException
-   {
-   }
-
-   public void ejbPassivate() throws EJBException, RemoteException
-   {
-   }
-
-}
-    </programlisting>
-
-  </section>
-
-  <section id="examples.mdb.ejb21">
-    <title>Using EJB2.1 Message Driven Beans</title>
-    <para>This example deploys a simple Message Driven Bean that processes messages sent to a test queue.  Once it receives a message and "processes" it, the MDB sends an acknowledgment message to a temporary destination created by the sender for this purpose. The example is considered successful if the sender receives the acknowledgment message.
-    </para>
-
-   <para>The MDB ejb-jar.xml descriptor
-    </para>
-    <programlisting>
-&lt;ejb-jar&gt;
-  &lt;enterprise-beans&gt;
-    &lt;message-driven&gt;
-      &lt;ejb-name&gt;MDBExample&lt;/ejb-name&gt;
-      &lt;ejb-class&gt;org.jboss.example.jms.mdb.MDBExample&lt;/ejb-class&gt;
-      &lt;transaction-type&gt;Container&lt;/transaction-type&gt;
-    &lt;/message-driven&gt;
-  &lt;/enterprise-beans&gt;
-&lt;/ejb-jar&gt;
-    </programlisting>
-
-   <para>The MDB jboss.xml descriptor
-   </para>
-    <programlisting>
-&lt;enterprise-beans&gt;
-  &lt;message-driven&gt;
-    &lt;ejb-name&gt;MDBExample&lt;/ejb-name&gt;
-    &lt;destination-jndi-name&gt;queue/@QUEUE_NAME@&lt;/destination-jndi-name&gt;
-  &lt;/message-driven&gt;
-&lt;/enterprise-beans&gt;
-    </programlisting>
-
-   <programlisting>
-public class MDBExample implements MessageDrivenBean, MessageListener
-{
-   private MessageDrivenContext ctx;
-
-   private ConnectionFactory cf = null;
-
-   public void onMessage(Message m)
-   {
-      Session session = null;
-      Connection conn = null;
-
-      try
-      {
-         TextMessage tm = (TextMessage)m;
-
-         String text = tm.getText();
-         System.out.println("message " + text + " received");
-         String result = process(text);
-         System.out.println("message processed, result: " + result);
-
-         conn = getConnection();
-         session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-
-         Destination replyTo = m.getJMSReplyTo();
-         MessageProducer producer = session.createProducer(replyTo);
-         TextMessage reply = session.createTextMessage(result);
-
-         producer.send(reply);
-         producer.close();
-
-      }
-      catch(Exception e)
-      {
-         ctx.setRollbackOnly();
-         e.printStackTrace();
-         System.out.println("The Message Driven Bean failed!");
-      }
-      finally
-      {
-         if (conn != null)
-         {
-            try
-            {
-               closeConnection(conn);
-            }
-            catch(Exception e)
-            {
-               System.out.println("Could not close the connection!" +e);
-            }
-         }
-      }
-   }
-
-   private String process(String s)
-   {
-      // flip the string
-
-      String result = "";
-
-      for (int i = 0; i &lt; text.length(); i++)
-      {
-         result = text.charAt(i) + result;
-      }
-      return result;
-   }
-
-   public Connection getConnection() throws Exception
-   {
-      Connection connection = null;
-
-      try
-      {
-         connection = cf.createConnection();
-         connection.start();
-      }
-      catch(Exception e )
-      {
-         if(connection != null)
-         {
-            closeConnection(connection);
-         }
-         System.out.println("Failed to get connection...exception is " + e);
-         throw e;
-      }
-
-      return connection;
-   }
-
-   public void closeConnection(Connection con) throws Exception
-   {
-      try
-      {
-         con.close();
-      }
-      catch(JMSException e)
-      {
-         System.out.println("Could not close connection " + con + " exception was " + e);
-      }
-   }
-
-   public void ejbCreate()
-   {
-      try
-      {
-         InitialContext ic = new InitialContext();
-
-         cf = (ConnectionFactory)ic.lookup("java:/JmsXA");
-
-         ic.close();
-      }
-      catch(Exception e)
-      {
-         e.printStackTrace();
-         throw new EJBException("Failure to get connection factory: " + e.getMessage());
-      }
-   }
-
-   public void ejbRemove() throws EJBException
-   {
-      try
-      {
-         if(cf != null)
-         {
-            cf = null;
-         }
-      }
-      catch(Exception e)
-      {
-         throw new EJBException("ejbRemove", e);
-      }
-   }
-
-   public void setMessageDrivenContext(MessageDrivenContext ctx)
-   {
-      this.ctx = ctx;
-   }
-
-
-}
-
-   </programlisting>
-
-
-  </section>
-
-
-   <section id="examples.mdb.ejb3">
-     <title>Using EJB3 Message Driven Beans</title>
-
-      <para>
-         This example deploys a simple EJB3 Message Driven Bean that processes messages sent to a
-         test queue.  Once it receives a message and "processes" it, the MDB sends an
-         acknowledgment message to a temporary destination created by the sender for this purpose.
-         The example is considered successful if the sender receives the acknowledgment message.
-      </para>
-
-      <para>
-         This example relies on having access to a running JBoss Messaging instance.
-         The JBoss Messaging instance must be installed and started according to the
-         "Installation" chapter of this document. The example will automatically deploy
-         its own queue, unless a queue with the same name is already deployed.
-      </para>
-
-      <para>
-         This example also relies on having access to the
-         <filename>jboss-messaging-client.jar</filename> archive that comes with the release bundle.
-         If you run this example from an unzipped installation bundle, the example run script
-         is correctly configured to find the client jar. Otherwise, you must modify example's
-         <filename>build.xml</filename> accordingly.
-      </para>
-
-      <para>
-         The example was designed to deploy its server-side artifacts under a JBoss'
-         <literal>messaging</literal> configuration. If you intend to use the script with
-         a JBoss configuration that is named differently, please modify the example's
-         <filename>build.xml</filename> accordingly.
-      </para>
-
-      <important>
-         The JBoss instance that runs the Messaging server must also have EJB3 support
-         previously installed. If the EJB3 support is not installed, the example will fail
-         with an error message similar to:
-
-         <programlisting>
-C:\work\src\cvs\jboss-head\jms\docs\examples\ejb3mdb\build.xml:60: EJB3 does not seem
-to be installed in C:\work\src\jboss-4.0.3-src\build\output\jboss-4.0.3/server/messaging!
-Install it and try again.
-         </programlisting>
-
-         <para>
-            For instructions on how to install EJB3 support,
-            please go to <ulink url="http://docs.jboss.org/ejb3">JBoss EJB3 documentation page</ulink>
-            or use the JBoss Installer.
-         </para>
-      </important>
-
-      <para>
-         The EJB3 Message Driven Bean source code:
-      </para>
-     <programlisting>
-@MessageDriven(activationConfig =
-{
-      @ActivationConfigProperty(propertyName="destinationType", propertyValue="javax.jms.Queue"),
-      @ActivationConfigProperty(propertyName="destination", propertyValue="queue/testQueue"),
-      @ActivationConfigProperty(propertyName="DLQMaxResent", propertyValue="10")
-})
-public class EJB3MDBExample implements MessageListener
-{
-   public void onMessage(Message m)
-   {
-      businessLogic(m);
-   }
-
-   private void businessLogic(Message m)
-   {
-      Connection conn = null;
-      Session session = null;
-
-      try
-      {
-         TextMessage tm = (TextMessage)m;
-
-         String text = tm.getText();
-         System.out.println("message " + text + " received");
-
-         // flip the string
-         String result = "";
-         for(int i = 0; i &lt; text.length(); i++)
-         {
-            result = text.charAt(i) + result;
-         }
-
-         System.out.println("message processed, result: " + result);
-
-
-         InitialContext ic = new InitialContext();
-         ConnectionFactory cf = (ConnectionFactory)ic.lookup("java:/JmsXA");
-         ic.close();
-
-         conn = cf.createConnection();
-         conn.start();
-         session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-
-         Destination replyTo = m.getJMSReplyTo();
-         MessageProducer producer = session.createProducer(replyTo);
-         TextMessage reply = session.createTextMessage(result);
-
-         producer.send(reply);
-         producer.close();
-
-      }
-      catch(Exception e)
-      {
-         e.printStackTrace();
-         System.out.println("The Message Driven Bean failed!");
-      }
-      finally
-      {
-         if (conn != null)
-         {
-            try
-            {
-               conn.close();
-            }
-            catch(Exception e)
-            {
-               System.out.println("Could not close the connection!" +e);
-            }
-         }
-      }
-   }
-}
-     </programlisting>
-
-     <para>The basic test examples in this chapter serve as the sanity check for your JBoss Messaging installation. They also provide basic programming examples. To develop your own JMS services, you probably need to configure JBoss Messaging to setup your own destinations and connection factories etc. In <xref linkend="configuration"/>, we will discuss JBoss Messaging configuration files and options.</para>
-
-   </section>
-
-
+  
+  <para>The non clustered examples expect a JBoss AS instance to be running with all the default settings
+  </para>
+  
+  <para>The clustered examples expect two JBoss AS instances to running with ports settings as per ports-01 and
+  ports-02.</para>
+  
+  <para>For each example, you can always override the default ports it will try to connect to by editing
+  jndi.properties in the particular example directory
+  </para>
 
 </chapter>

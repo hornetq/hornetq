@@ -1384,10 +1384,6 @@ public class ServerPeer extends ServiceMBeanSupport implements ServerPeerMBean
       mbeanServer.invoke(on, "start", new Object[0], new String[0]);
 
       return (String)mbeanServer.getAttribute(on, "JNDIName");
-
-      //
-      // end of TODO
-      //
    }
 
    

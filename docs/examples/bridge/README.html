@@ -1,0 +1,141 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <meta content="text/html; charset=ISO-8859-1"
+ http-equiv="content-type">
+  <title>JBoss Messaging Example - JMS Bridge</title>
+</head>
+<body>
+<br>
+<h1>JBoss Messaging Bridge Example</h1>
+$Revision: 2310 $
+<h2>Overview</h2>
+<br>
+This example deploys a message bridge in JBAS, which is configured to 
+move messages from one destination to another.
+<br>
+The example then sends some message to the source destination, then consumes the
+same messages from the target destionation, demonstrating that the bridge has
+successfully moved the messages from the source to the target
+<br>
+The example is somewhat artificial in that normally a bridge would be used to move messages
+from source and target destinations on different servers, but it serves to illustrate how to 
+use a bridge
+<br>
+This example relies on having access to a running JBoss Messaging
+instance.
+The JBoss Messaging instance must be installed and started according to
+the
+"Installation" paragraph from the release documentation. However, the
+example will automatically deploy its own queues, unless queues with
+the same name is already deployed. <br>
+<span style="font-style: italic;"></span>
+<h2>Running the example</h2>
+1. Set up the JBOSS_HOME environment variable to point to the JBoss
+instance you deployed JBoss Messaging into. For example, if you
+deployed JBoss Messaging in <span style="font-family: monospace;">C:\jboss-4.0.3SP1\server\messaging\deploy,</span>
+then your JBOSS_HOME value should be <span
+ style="font-family: monospace;">C:\</span><span
+ style="font-family: monospace;">jboss-4.0.3SP1</span><br>
+<span style="font-family: monospace;"></span><span
+ style="font-family: monospace;"></span><br>
+2. Go to the example's home directory<br>
+<br>
+<div style="margin-left: 40px;"><span style="font-family: monospace;">cd
+...\examples\queue</span><br>
+</div>
+<br>
+3. Run the example:<br>
+<br>
+<div style="margin-left: 40px;"><span style="font-family: monospace;">ant</span>
+<br>
+<br>
+<br>
+</div>
+The output of a successful run should be similar to:<br>
+<div style="margin-left: 40px;"><br>
+</div>
+<table
+ style="width: 90%; text-align: left; font-family: monospace; background-color: rgb(204, 204, 204); margin-left: 40px;"
+ border="1" cellpadding="2" cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;">
+      <div style="margin-left: 40px;"><br>
+      </div>
+$ ant<br>
+Buildfile: build.xml<br>
+      <br>
+identify:<br>
+&nbsp;&nbsp;&nbsp;&nbsp; [echo]
+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX<br>
+&nbsp;&nbsp;&nbsp;&nbsp; [echo]
+X&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Running the QUEUE
+example&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+X<br>
+&nbsp;&nbsp;&nbsp;&nbsp; [echo]
+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX<br>
+&nbsp;&nbsp;&nbsp;&nbsp; [echo] The queue: testQueue<br>
+      <br>
+sanity-check:<br>
+      <br>
+init:<br>
+&nbsp;&nbsp;&nbsp; [mkdir] Created dir:
+C:\work\src\cvs\jboss-head\jms\docs\examples\queue\output<br>
+&nbsp;&nbsp;&nbsp; [mkdir] Created dir:
+C:\work\src\cvs\jboss-head\jms\docs\examples\common\output<br>
+      <br>
+compile:<br>
+&nbsp;&nbsp;&nbsp; [javac] Compiling 2 source files to
+C:\work\src\cvs\jboss-head\jms\docs\examples\common\output<br>
+&nbsp;&nbsp;&nbsp; [javac] Compiling 1 source file to
+C:\work\src\cvs\jboss-head\jms\docs\examples\queue\output<br>
+      <br>
+run:<br>
+&nbsp;&nbsp;&nbsp;&nbsp; [java] Queue /queue/testQueue exists<br>
+&nbsp;&nbsp;&nbsp;&nbsp; [java] The message was successfully sent to
+the testQueue queue<br>
+&nbsp;&nbsp;&nbsp;&nbsp; [java] Received message: Hello!<br>
+&nbsp;&nbsp;&nbsp;&nbsp; [java] The example connected to JBoss
+Messaging version 1.0.1.GA (1.0)<br>
+      <br>
+&nbsp;&nbsp;&nbsp;&nbsp; [java] #####################<br>
+&nbsp;&nbsp;&nbsp;&nbsp; [java] ###&nbsp;&nbsp;&nbsp;
+SUCCESS!&nbsp;&nbsp; ###<br>
+&nbsp;&nbsp;&nbsp;&nbsp; [java] #####################<br>
+      <br>
+BUILD SUCCESSFUL<br>
+Total time: 5 seconds<br>
+      <br>
+      <br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<div style="margin-left: 40px;"><br>
+</div>
+<br>
+<br>
+<h2>Troublesooting</h2>
+<h3>1. I get <span style="font-family: monospace;">"javax.jms.JMSSecurityException:
+User null is NOT authenticated" <br>
+</span></h3>
+You probably didn't install JBoss Messaging correctly. A fresh JBoss
+Messaging installation requires changes in the security configuration
+of a <span style="font-family: monospace;">default </span>JBoss
+instance, specifically a properly configured "<small><span
+ style="font-family: courier new,courier,monospace;">messaging</span></small>"
+security domain.&nbsp; Follow the instructions from the "Installation"
+paragraph of the release documentation. <br>
+<br>
+<br>
+<hr style="width: 100%; height: 2px;"><br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+</body>
+</html>

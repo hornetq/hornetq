@@ -284,6 +284,13 @@ public class ServiceContainer
          Class implementation = ServiceContainer.class.getClassLoader().loadClass(valueAsString);
          return implementation.newInstance();
       }
+      else if (type.startsWith("java.util.Properties"))
+      {
+      	ByteArrayInputStream is = new ByteArrayInputStream(valueAsString.getBytes());
+         Properties props = new Properties();
+         props.load(is);
+         return props;
+      }
 
       throw new Exception("Don't know to handle type " + type);
 

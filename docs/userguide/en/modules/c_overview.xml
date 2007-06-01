@@ -5,7 +5,7 @@
 
     <para>
       This section of the userguide gives a brief overview of the features available in
-        JBoss Messaging Clustering 1.2.0.GA. It gives a high level explanation of how
+        JBoss Messaging. It gives a high level explanation of how
         clustering works.
      </para>
 
@@ -13,16 +13,16 @@
       <title>JBoss Messaging Clustering Overview</title>
 
       <para>
-      Here's a brief overview of how clustering works in JBoss Messaging 1.2.
+      Here's a brief overview of how clustering works in JBoss Messaging
       </para>
 
 
       <para>
       Clustered destinations (queues and topics) can be deployed at all or none of the nodes of
       the cluster.
-      A JMS client uses HA JNDI to lookup the connection factory. A client side load balancing
-      policy will automatically chose a node to connect to (This is similar to
-      how EJB clustering chooses a node).
+      A JMS client uses HA JNDI to lookup the connection factory. When creating connections
+      using that connection factory a client side load balancing
+      policy will automatically chose a node to connect to.
       </para>
 
       <para>
@@ -72,21 +72,6 @@
       on another node.
       </para>
 
-      <para>
-      Normally, persistent messages are persisted in a shared database which is shared by all nodes
-      in the cluster.
-
-      JBoss Messaging 1.2.1 will contain
-      an option where you can choose to not persist persistent messages in a database, but instead to replicate them between nodes of the cluster.
-
-      The idea here is the network IO on a fast network should be much faster than persisting to disk.
-      This solution should also be more scalable since different nodes replicate their messages onto
-      different other nodes - there is no "master node".
-
-      If the messages are replicated onto sufficient nodes and the hardware is set-up with UPS, then we believe a comparable reliability guarantee to persisting messages to disk
-      can be achieved. Of course, this won't be suitable for all situations, but you use the best tool for the job.
-      </para>
-
    </section>
 
 
@@ -115,7 +100,7 @@
         </para>
 
         <para>
-           Clustering across multiple address spaces is achieved by clustering Post Office instances. Each
+           Clustering across multiple nodes is achieved by clustering Post Office instances. Each
            JBoss Messaging cluster node runs a Clustered Post Office instance, which is aware of the presence
            of all other clustered Post Offices in the cluster. There is an one-to-one relationship between cluster
            nodes and clustered Post Office instances. So, naturally, the most important piece of clustering

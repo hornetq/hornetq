@@ -21,11 +21,13 @@
  */
 package org.jboss.jms.server.bridge;
 
+import java.util.Properties;
+
 import javax.jms.Destination;
+import javax.management.ObjectName;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 
-import org.jboss.jms.jndi.JMSProviderAdapter;
 import org.jboss.messaging.core.plugin.contract.MessagingComponent;
 import org.jboss.messaging.core.plugin.contract.ServerPlugin;
 import org.jboss.system.ServiceMBeanSupport;
@@ -48,9 +50,9 @@ public class BridgeService extends ServiceMBeanSupport
    
    private String targetDestinationLookup;
    
-   private String sourceProviderAdaptorLookup;
+   private ObjectName sourceProviderLoader;
    
-   private String targetProviderAdaptorLookup;
+   private ObjectName targetProviderLoader;
    
       
    public BridgeService()
@@ -60,34 +62,34 @@ public class BridgeService extends ServiceMBeanSupport
    
    // JMX attributes ----------------------------------------------------------------
    
-   public synchronized String getSourceProviderAdaptorLookup()
+   public synchronized ObjectName getSourceProviderLoader()
    {
-      return sourceProviderAdaptorLookup;
+      return sourceProviderLoader;
    }
    
-   public synchronized void setSourceProviderAdaptorLookup(String lookup)
+   public synchronized void setSourceProviderLoader(ObjectName sourceProvider)
    {
       if (bridge.isStarted())
       {
-          log.warn("Cannot set SourceProviderAdaptorLookup when bridge is started");
+          log.warn("Cannot set SourceProvider when bridge is started");
           return;
       }
-      sourceProviderAdaptorLookup = checkAndTrim(lookup);
+      this.sourceProviderLoader = sourceProvider;
    }
    
-   public synchronized String getTargetProviderAdaptorLookup()
+   public synchronized ObjectName getTargetProviderLoader()
    {
-      return targetProviderAdaptorLookup;
+      return targetProviderLoader;
    }
    
-   public synchronized void setTargetProviderAdaptorLookup(String lookup)
+   public synchronized void setTargetProviderLoader(ObjectName targetProvider)
    {
       if (bridge.isStarted())
       {
-          log.warn("Cannot set TargetProviderAdaptorLookup when bridge is started");
+          log.warn("Cannot set TargetProvider when bridge is started");
           return;
       }
-      targetProviderAdaptorLookup = checkAndTrim(lookup);
+      this.targetProviderLoader = targetProvider;
    }
    
    public String getSourceDestinationLookup()
@@ -280,14 +282,14 @@ public class BridgeService extends ServiceMBeanSupport
       
       super.startService();
       
-      if (this.sourceProviderAdaptorLookup == null)
+      if (this.sourceProviderLoader == null)
       {
-         throw new IllegalArgumentException("sourceProviderAdaptorLookup cannot be null");
+         throw new IllegalArgumentException("sourceProvider cannot be null");
       }
       
-      if (this.targetProviderAdaptorLookup == null)
+      if (this.targetProviderLoader == null)
       {
-         throw new IllegalArgumentException("targetProviderAdaptorLookup cannot be null");
+         throw new IllegalArgumentException("targetProvider cannot be null");
       }
       
       if (sourceDestinationLookup == null)
@@ -300,40 +302,37 @@ public class BridgeService extends ServiceMBeanSupport
          throw new IllegalArgumentException("Target destination lookup cannot be null");
       }
       
-      InitialContext ic = new InitialContext();
+      boolean sameSourceAndTarget = sourceProviderLoader.equals(targetProviderLoader);
       
-      JMSProviderAdapter sourceAdaptor = (JMSProviderAdapter)ic.lookup(sourceProviderAdaptorLookup);
-
-      boolean sameSourceAndTarget = sourceProviderAdaptorLookup.equals(targetProviderAdaptorLookup);
+      Properties sourceProps = (Properties)server.getAttribute(sourceProviderLoader, "Properties");
       
-      JMSProviderAdapter targetAdaptor;
+      Properties targetProps = (Properties)server.getAttribute(targetProviderLoader, "Properties");
       
-      if (sameSourceAndTarget)
-      {
-         targetAdaptor = sourceAdaptor;
-      }
-      else
-      {
-         targetAdaptor = (JMSProviderAdapter)ic.lookup(targetProviderAdaptorLookup);
-      }
+      Context icSource = new InitialContext(sourceProps);
       
-      Context icSource = sourceAdaptor.getInitialContext();
-      
-      Context icTarget = targetAdaptor.getInitialContext();
+      Context icTarget = new InitialContext(targetProps);
       
       Destination sourceDest = (Destination)icSource.lookup(sourceDestinationLookup);
       
       Destination targetDest = (Destination)icTarget.lookup(targetDestinationLookup);
             
-      String sourceCFRef = sourceAdaptor.getFactoryRef();
+      String sourceCFRef = (String)server.getAttribute(sourceProviderLoader, "FactoryRef");
       
-      String targetCFRef = targetAdaptor.getFactoryRef();
+      String targetCFRef = (String)server.getAttribute(targetProviderLoader, "FactoryRef");
       
       ConnectionFactoryFactory sourceCff =
-         new JNDIConnectionFactoryFactory(sourceAdaptor.getProperties(), sourceCFRef);
+         new JNDIConnectionFactoryFactory(sourceProps, sourceCFRef);
       
-      ConnectionFactoryFactory destCff =
-         new JNDIConnectionFactoryFactory(targetAdaptor.getProperties(), targetCFRef);
+      ConnectionFactoryFactory destCff;
+      
+      if (sameSourceAndTarget)
+      {
+      	destCff = sourceCff;
+      }
+      else
+      {      
+      	destCff= new JNDIConnectionFactoryFactory(targetProps, targetCFRef);
+      }
       
       bridge.setSourceDestination(sourceDest);
       
@@ -345,7 +344,7 @@ public class BridgeService extends ServiceMBeanSupport
       
       bridge.start();      
       
-      if (log.isTraceEnabled()) { log.trace("Started bridge"); }
+      log.info("Started bridge " + this.getName() + ". Source: " + sourceDestinationLookup + " Target: " + targetDestinationLookup);
    }
    
 
@@ -355,7 +354,7 @@ public class BridgeService extends ServiceMBeanSupport
       
       bridge.stop();
       
-      if (log.isTraceEnabled()) { log.trace("Stopped bridge"); }
+      log.info("Stopped bridge " + this.getName());
    }
    
    // Private ---------------------------------------------------------------------------------

@@ -11,12 +11,26 @@
    </para>
 
    <itemizedlist>
+   
+      <listitem>Choosing the connetion factory</listitem>
 
       <listitem>Choosing the cluster router policy</listitem>
 
       <listitem>Choosing the message redistributon policy</listitem>
 
    </itemizedlist>
+   
+   <section id="clientcluster">
+      <title>Choosing the connection factory</title>
+      
+      <para>JBoss Messaging connections factories can optionally support load balancing and automatic failover. This is determined
+      by the attributes on supportsLoadBalancing and supportsFailover on the connection factory.
+      </para>
+      
+      <para>See the section <xref linkend="conf.connectionfactory">Connection Factory configuration</xref> for more information.
+      </para>
+   </section>
+      
 
    <section id="clusterrouter">
 

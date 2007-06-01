@@ -11,16 +11,24 @@
       JBoss Messaging implements a high performance, robust messaging core that is designed to
       support the largest and most heavily utilized SOAs, enterprise service buses (ESBs) and other
       integration needs ranging from the simplest to the highest demand networks.
+   </para>
+   <para>
       It will allow you to smoothly distribute your application load across your cluster,
       intelligently balancing and utilizing each nodes CPU cycles, with no single point of failure,
-      providing a highly scalable and perform-ant clustering implementation. JBoss Messaging includes
+      providing a highly scalable and perform-ant clustering implementation.
+   </para>
+   <para>   
+    JBoss Messaging includes
       a JMS front-end to deliver messaging in a standards-based format as well as being designed to be
-     able to support other messaging protocols in the future.
+      able to support other messaging protocols in the future.
    </para>
 
    <para>
       JBoss Messaging is destined to become an integral part of the JBoss Enterprise Application Platform, 
-      and the new Service Integration Platform. Currently itis available for embedded use within the JBoss Application Server
+      and the new Service Integration Platform.
+   </para>
+   <para>   
+    Currently it is available for embedded use within the JBoss Application Server
       4.2.0.GA or later (JBossAS). Work to integrate JBoss Messaging with the new JBoss Microcontainer is under way.      
    </para>
    
@@ -41,15 +49,14 @@
          Messaging.
       </para>
       <para>
-         Until that point developer assist support is available for JBoss Messaging when installed in JBoss 4.2.x
+         Currently developer support is available for JBoss Messaging when installed in JBoss 4.2.x
       </para>
-      <para>Exceptions can be made for existing customers or new customers already using or intending to use JBoss Messaging in production environments
-      </para>
+
 
    </section>
 
    <section id="features">
-      <title>JBoss Messaging 1.2.0.GA Features</title>
+      <title>JBoss Messaging Features</title>
 
       <para>
          JBoss Messaging provides:
@@ -59,55 +66,19 @@
          <listitem>
             <para>
                A fully compatible and Sun certified JMS 1.1 implementation, that currently works
-               with a standard 4.2.x installation.
+               with a standard 4.2.x JBoss Application Server installation.
             </para>
          </listitem>
          <listitem>
             <para>
                A strong focus on performance, reliability and scalability with high throughput and
-               low latency. JBoss Messaging already exceeds JBoss MQ in a number of measured
-               performance metrics. Full results will follow.
+               low latency.
             </para>
          </listitem>
          <listitem>
             <para>
                A foundation for JBoss ESB for SOA initiatives; JBoss ESB uses
-               JBoss Messaging as its foundation.
-            </para>
-         </listitem>
-      </itemizedlist>
-
-      <para>
-         JBoss Messaging consists of two major parts:
-      </para>
-
-      <itemizedlist>
-         <listitem>
-            <para>
-               JBoss Messaging Core – a transactional, reliable messaging transport system.
-            </para>
-            <itemizedlist>
-               <listitem>
-                  <para>
-                     Supports generalized messages (not just JMS)
-                  </para>
-               </listitem>
-               <listitem>
-                  <para>
-                     Enables other messaging protocol façades to be added
-                  </para>
-               </listitem>
-               <listitem>
-                  <para>
-                     Distributed, transactional and reliable
-                  </para>
-               </listitem>
-            </itemizedlist>
-         </listitem>
-
-         <listitem>
-            <para>
-               JMS Façade – the JMS "personality" of JBoss Messaging.
+               JBoss Messaging as its default JMS provider.
             </para>
          </listitem>
       </itemizedlist>
@@ -124,17 +95,12 @@
          </listitem>
          <listitem>
             <para>
-               Topics that feed multiple message queues
-            </para>
-         </listitem>
-         <listitem>
-            <para>
                Persistent and non-persistent messages
             </para>
          </listitem>
          <listitem>
             <para>
-               Guaranteed message delivery that ensures that messages arrive once and only once
+               Guaranteed message delivery that ensures that messages arrive once and only once where required
             </para>
          </listitem>
          <listitem>
@@ -167,10 +133,15 @@
                HTTP transport
             </para>
          </listitem>
+         <listitem>
+            <para>
+               SSL transport
+            </para>
+         </listitem>
       </itemizedlist>
 
       <para>
-         JBoss Messaging 1.2.0.GA Clustering provides the following features:
+         Clustering features:
       </para>
 
       <itemizedlist>
@@ -227,7 +198,7 @@
          </listitem>
          <listitem>
             <para>
-               Message bridge. JBoss Messaging 1.2 contains a message bridge component which enables you to bridge messages between any two JMS1.1 destinations
+               Message bridge. JBoss Messaging contains a message bridge component which enables you to bridge messages between any two JMS1.1 destinations
                on the same or physical separate locations. (E.g. separated by a WAN)
          </para>
          </listitem>
@@ -241,52 +212,25 @@
       <title>Compatibility with JBossMQ</title>
 
       <para>
-         JBossMQ is the JMS implementation currently shipped within JBossAS.
+         JBoss MQ is the JMS implementation currently shipped within JBoss AS.
          Since JBoss Messaging is JMS 1.1 and JMS 1.0.2b compatible, the JMS code  written against
          JBossMQ will run with JBoss Messaging without any changes.
+      </para>
+      
+      <para>
+         JBoss Messaging does not have wire format compatibility with JBoss MQ so it would be necessary to upgrade
+         JBoss MQ clients with JBoss Messaging client jars
       </para>
 
       <important>
          Even if JBoss Messaging deployment descriptors are very similar to JBoss MQ
          deployment descriptors, they are <emphasis>not</emphasis> identical, so they will require
          some simple adjustments to get them to work with JBoss Messaging. Also, the database
-         data model is completely different, so don't attempt to use JBoss Messaging with a JBossMQ
+         data model is completely different, so don't attempt to use JBoss Messaging with a JBoss MQ
          data schema and vice-versa.
       </important>
+            
    </section>
-
-   <section id="missingfeatures">
-      <title>
-      Features not yet available in the 1.2.0.GA release, but coming soon
-      </title>
-
-      <para>
-    All the final features are available apart from:
-    </para>
-
-    <itemizedlist>
-
-        <listitem>
-           <para>
-              In a very near future, it will be possible to guarantee persistent level reliability
-               guarantee without persistence. By replicating persistent messages between nodes in
-               memory, we can obtain comparable reliability levels to persisting messages to disk,
-               without actually storing them to disk. However, this feature is not available
-               in the 1.2.0.GA release. If you're interested in how this feature will be available,
-               this is the JIRA issue you can use to track it:
-               <ulink url="http://jira.jboss.org/jira/browse/JBMESSAGING-574">http://jira.jboss.org/jira/browse/JBMESSAGING-574</ulink>
-           </para>
-        </listitem>
-
-        <listitem>
-            <para>
-                The "unreliable link scenario"
-                <ulink url="http://jira.jboss.org/jira/browse/JBMESSAGING-676">http://jira.jboss.org/jira/browse/JBMESSAGING-676</ulink>
-                whose development is still on-going on a parallel branch.
-            </para>
-        </listitem>
-
-    </itemizedlist>
-    </section>
+   
 
 </chapter>

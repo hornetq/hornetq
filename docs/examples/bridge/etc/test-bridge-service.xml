@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+     Example deployment descriptor for a message bridge
+
+     $Id: messaging-secure-socket-service.xml 2737 2007-05-29 17:56:49Z timfox $
+ -->
+
+<server>
+
+
+   <mbean code="org.jboss.jms.server.bridge.BridgeService"
+          name="jboss.messaging:service=Bridge,name=TestBridge"
+          xmbean-dd="xmdesc/Bridge-xmbean.xml">
+          
+      <!-- The JMS provider loader that is used to lookup the source destination -->   
+      <depends optional-attribute-name="SourceProviderLoader">jboss.messaging:service=JMSProviderLoader,name=JMSProvider</depends>     
+      
+      <!-- The JMS provider loader that is used to lookup the target destination -->
+      <depends optional-attribute-name="TargetProviderLoader">jboss.messaging:service=JMSProviderLoader,name=JMSProvider</depends>    
+      
+      <!-- The JNDI lookup for the source destination -->
+      <attribute name="SourceDestinationLookup">/queue/A</attribute> 
+      
+      <!-- The JNDI lookup for the target destination -->
+      <attribute name="TargetDestinationLookup">/queue/B</attribute>
+      
+      <!-- The username to use for the source connection 
+      <attribute name="SourceUsername">bob</attribute>
+      -->
+      
+      <!-- The password to use for the source connection
+      <attribute name="SourcePassword">cheesecake</attribute>
+      -->
+      
+      <!-- The username to use for the target connection
+      <attribute name="TargetUsername">mary</attribute>
+      -->
+      
+      <!-- The password to use for the target connection
+      <attribute name="TargetPassword">hotdog</attribute>
+      -->
+      
+      <!-- Optional: The Quality Of Service mode to use, one of:
+           QOS_AT_MOST_ONCE = 0;
+           QOS_DUPLICATES_OK = 1;
+           QOS_ONCE_AND_ONLY_ONCE = 2; -->
+      <attribute name="QualityOfServiceMode">0</attribute>
+      
+      <!-- JMS selector to use for consuming messages from the source
+      <attribute name="Selector">specify jms selector here</attribute>
+      -->
+      
+      <!-- The maximum number of messages to consume from the source before sending to the target -->
+      <attribute name="MaxBatchSize">5</attribute>     
+      
+      <!-- The maximum time to wait (in ms) before sending a batch to the target even if MaxBatchSize is not exceeded.
+           -1 means wait forever -->   
+      <attribute name="MaxBatchTime">-1</attribute>
+      
+      <!-- If consuming from a durable subscription this is the subscription name
+      <attribute name="SubName">mysub</attribute>
+      -->
+      
+      <!-- If consuming from a durable subscription this is the client ID to use
+      <attribute name="ClientID">myClientID</attribute>
+      -->
+      
+      <!-- The number of ms to wait between connection retrues in the event connections to source or target fail -->
+      <attribute name="FailureRetryInterval">5000</attribute>      
+      
+      <!-- The maximum number of connection retries to make in case of failure, before giving up
+           -1 means try forever-->
+      <attribute name="MaxRetries">-1</attribute>
+ </mbean>
+ 
+ </server>

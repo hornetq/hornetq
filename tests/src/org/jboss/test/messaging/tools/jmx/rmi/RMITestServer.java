@@ -483,16 +483,6 @@ public class RMITestServer extends UnicastRemoteObject implements Server
    {
       server.poisonTheServer(type);
    }
-   
-   public void installJMSProviderAdaptor(String jndi, JMSProviderAdapter adaptor) throws Exception
-   {
-      server.installJMSProviderAdaptor(jndi, adaptor);
-   }
-
-   public void uninstallJMSProviderAdaptor(String jndi) throws Exception
-   {
-      server.uninstallJMSProviderAdaptor(jndi);
-   }
 
    // Public --------------------------------------------------------
 

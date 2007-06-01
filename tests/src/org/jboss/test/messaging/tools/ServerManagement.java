@@ -1138,21 +1138,6 @@ public class ServerManagement
       return servers[serverIndex].getServer().getRemotingTransport();
    }
    
-   public static void installJMSProviderAdaptor(int serverIndex, String jndi, JMSProviderAdapter adaptor)
-      throws Exception
-   {
-      insureStarted(serverIndex);
-      
-      servers[serverIndex].getServer().installJMSProviderAdaptor(jndi, adaptor);
-   }
-   
-   public static void uninstallJMSProviderAdaptor(int serverIndex, String jndi)
-      throws Exception
-   {
-      insureStarted(serverIndex);
-      
-      servers[serverIndex].getServer().uninstallJMSProviderAdaptor(jndi);
-   }
 
    // Attributes ----------------------------------------------------
 

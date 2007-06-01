@@ -21,6 +21,8 @@
  */
 package org.jboss.jms.server.bridge;
 
+import javax.management.ObjectName;
+
 
 /**
  * A BridgeMBean
@@ -35,13 +37,13 @@ public interface BridgeMBean
 {
    // JMX attributes
    
-   void setSourceProviderAdaptorLookup(String lookup);
+   void setSourceProviderLoader(ObjectName sourceProviderLoader);
    
-   String getSourceProviderAdaptorLookup();
+   ObjectName getSourceProviderLoader();
    
-   void setTargetProviderAdaptorLookup(String lookup);
+   void setTargetProviderLoader(ObjectName targetProviderLoader);
    
-   String getTargetProviderAdaptorLookup();
+   ObjectName getTargetProviderLoader();
    
    String getSourceDestinationLookup();
 

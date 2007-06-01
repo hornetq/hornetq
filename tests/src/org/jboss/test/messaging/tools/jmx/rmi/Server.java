@@ -282,8 +282,4 @@ public interface Server extends Remote
 
    void poisonTheServer(int type) throws Exception;
    
-   void installJMSProviderAdaptor(String jndi, JMSProviderAdapter adaptor) throws Exception;
-   
-   void uninstallJMSProviderAdaptor(String jndi) throws Exception;
-
 }
