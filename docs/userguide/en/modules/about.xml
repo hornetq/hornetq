@@ -20,6 +20,8 @@
    <para>
        Compared with JBossMQ, JBoss Messaging offers vastly improved performance in both single node
        and clustered environments.
+   </para>
+   <para>
        Please see
        <ulink url="http://wiki.jboss.org/wiki/Wiki.jsp?page=JBossMessagingPerformanceResultsPre1_0">this wiki page</ulink>
        for performance benchmarks and <xref linkend="performance"/> on how to generate your own
@@ -36,7 +38,7 @@
        in JBoss Application Server 4.2, there will be no need to do any manual installation.
    </para>
    
-   <para>From release 1.3.0.GA onwards JBoss Messaging is designed for JBoss 4.2.x only.</para>
+   <para>From release 1.3.0.GA onwards JBoss Messaging is designed for JBoss 4.2 only.</para>
    
    <para>
        The procedure of swapping JMS providers is presented in detail in this manual.
@@ -47,30 +49,23 @@
 
    <para>
       This guide is work in progress, as new features will be added to the 1.2 baseline at a very
-      quick pace. Please send your suggestions or comments to the
+      quick pace.
+   </para>
+   <para>
+	Please send your suggestions or comments to the
       <ulink url="http://www.jboss.org/index.html?module=bb&amp;op=viewforum&amp;f=238">JBoss Messaging user forum</ulink>.
    </para>
 
-   <para>
-      <emphasis role="bold">Team:</emphasis>
-   </para>
-
-   <para>
-      Tim Fox, Project Lead
-   </para>
-
-   <para>
-      Clebert Suconic, Core Developer
+   <para> Permanent Team:
+      Tim Fox - Project Lead, Clebert Suconic - Core Developer,
+      Sergey Koshcheyev - Core Developer
    </para>
    
-   <para>
-      Sergey Koshcheyev, Core Developer
+   <para>Contributors: Ovidiu Feodorov, Adrian Brock, Alex Fu, Luc Texier, Aaron Walker,
+         Rajdeep Dua, Madhusudhan Konda, Juha Lindfors and Ron Sigal.
    </para>
-
-   <para>
-      Other contributions by: Adrian Brock, Bela Ban, Alex Fu, Luc Texier, Aaron Walker,
-      Rajdeep Dua, Madhusudhan Konda, Juha Lindfors and Ron Sigal.
-   </para>
+   
+   <para>Other thanks to Pete Bennett, Jay Howell and David Boeren</para>
 
 
 </chapter>

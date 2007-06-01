@@ -295,16 +295,7 @@ the JBoss Transactions Recovery Manager</para>
       If you have modifed the JBoss AS 4.2 installation at all since installation then you will need to 
       perform a manual clustered JBoss Messaging installation
          </note>
-      </para>
-      
-      
-      <para>For this procedure we assume you already have your custom configuration located at
-      <literal>JBOSS_CONFIG=$JBOSS_HOME/server/&lt;myconfiguration&gt;</literal>, and that it contains a JBoss MQ
-      installation.
-      </para>
-      
-      <para>You don't actually have to create an environment variable <literal>JBOSS_CONFIG</literal>, this is just
-      used in the installation instructions to describe the steps</para>
+      </para>     
       
       <itemizedlist>
 
@@ -328,6 +319,13 @@ the JBoss Transactions Recovery Manager</para>
          <filename>$JBOSS_HOME/server/messaging-node0</filename> configuration. (If you have chosen <literal>messaging-node0</literal>)</para>
          
       </listitem>
+
+      
+      <para>For the rest of the procedure we assume JBOSS_CONFIG refers to your new messaging configuration (e.g. messaging-node0)
+      </para>
+      
+      <para>You don't actually have to create an environment variable <literal>JBOSS_CONFIG</literal>, this is just
+      used in the installation instructions to describe the steps</para>
       
       <listitem>
           <para><warning>For a clustered installation it is mandatory that a shared database is available to

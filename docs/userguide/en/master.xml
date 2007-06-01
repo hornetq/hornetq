@@ -9,7 +9,6 @@
 <!ENTITY runningexamples SYSTEM "modules/runningexamples.xml">
 <!ENTITY configuration SYSTEM "modules/configuration.xml">
 <!ENTITY c_configuration SYSTEM "modules/c_configuration.xml">
-<!ENTITY performance SYSTEM "modules/performance.xml">
 <!ENTITY recovery_config SYSTEM "modules/recovery_config.xml">
 <!ENTITY bridge SYSTEM "modules/bridge.xml">
 ]>

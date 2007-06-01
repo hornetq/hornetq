@@ -487,6 +487,7 @@
    <target name="release-bundle" depends="artifacts, release-structure, examples, userdoc, bundle-source, bundle-test-results, javadoc">
 
       <copy todir="${release.output}" file="${build.lib}/jboss-${module.name}.sar"/>
+      <copy todir="${release.output}" file="${build.lib}/jboss-${module.name}.jar"/>
       <copy todir="${release.output}" file="${build.lib}/jboss-${module.name}-client.jar"/>
       <copy todir="${release.output}" file="./docs/README.html"/>
       <copy todir="${release.output}" file="./JBossORG-EULA.txt"/>
@@ -555,20 +556,24 @@
       <fail message="Functional test results ${release.output}/test-results/jboss-messaging-functional-test-results-${module.version}.zip not available!"
             unless="functional.test.results.present"/>
 
+<!--
       <available file="${release.output}/test-results/jboss-messaging-functional-test-results-Linux-${module.version}.zip"
                  property="linux.functional.test.results.present" value="true"/>
       <fail message="Linux functional test results ${release.output}/test-results/jboss-messaging-functional-test-results-Linux-${module.version}.zip not available!"
             unless="linux.functional.test.results.present"/>
+-->
 
       <available file="${release.output}/test-results/jboss-messaging-stress-test-results-${module.version}.zip"
                  property="stress.test.results.present" value="true"/>
       <fail message="Stress test results ${release.output}/test-results/jboss-messaging-stress-test-results-${module.version}.zip not available!"
             unless="stress.test.results.present"/>
 
+<!--
       <available file="${release.output}/test-results/jboss-messaging-stress-test-results-Linux-${module.version}.zip"
                  property="linux.stress.test.results.present" value="true"/>
       <fail message="Linux stress test results ${release.output}/test-results/jboss-messaging-stress-test-results-Linux-${module.version}.zip not available!"
             unless="linux.stress.test.results.present"/>
+-->
 
    </target>
 

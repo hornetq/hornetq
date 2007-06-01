@@ -973,7 +973,7 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
 
          RemoteQueueStub remoteQueue = localQueue.getPullQueue();
 
-         if (remoteNodeId != remoteQueue.getNodeId())
+         if (remoteQueue == null || remoteNodeId != remoteQueue.getNodeId())
          {
             //It might have changed since the request was sent
             Map bindings = (Map)nameMaps.get(new Integer(remoteNodeId));

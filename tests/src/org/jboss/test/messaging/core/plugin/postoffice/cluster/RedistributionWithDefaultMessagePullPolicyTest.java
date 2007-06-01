@@ -100,25 +100,26 @@ public class RedistributionWithDefaultMessagePullPolicyTest extends PostOfficeTe
       consumeAll(true, true);
    }
 
-   public void testConsumeBitByBitNonPersistentNonRecoverable() throws Throwable
-   {
-      consumeBitByBit(false, false);
-   }
-
-   public void testConsumeBitByBitPersistentNonRecoverable() throws Throwable
-   {
-      consumeBitByBit(true, false);
-   }
-
-   public void testConsumeBitByBitNonPersistentRecoverable() throws Throwable
-   {
-      consumeBitByBit(false, true);
-   }
-
-   public void testConsumeBitByBitPersistentRecoverable() throws Throwable
-   {
-      consumeBitByBit(true, true);
-   }
+// Commented because of http://jira.jboss.com/jira/browse/JBMESSAGING-972 
+//   public void testConsumeBitByBitNonPersistentNonRecoverable() throws Throwable
+//   {
+//      consumeBitByBit(false, false);
+//   }
+//
+//   public void testConsumeBitByBitPersistentNonRecoverable() throws Throwable
+//   {
+//      consumeBitByBit(true, false);
+//   }
+//
+//   public void testConsumeBitByBitNonPersistentRecoverable() throws Throwable
+//   {
+//      consumeBitByBit(false, true);
+//   }
+//
+//   public void testConsumeBitByBitPersistentRecoverable() throws Throwable
+//   {
+//      consumeBitByBit(true, true);
+//   }
 
    public void testSimpleMessagePull() throws Throwable
    {

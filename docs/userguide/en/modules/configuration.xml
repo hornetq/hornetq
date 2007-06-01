@@ -90,9 +90,11 @@
 
       <section id="conf.serverpeer.attributes">
       
-         <title>
+         <title>ServerPeer attributes and arguments</title>
+
+         <para>
              We now discuss the MBean attributes and constructor arguments of the ServerPeer MBean
-         </title>
+         </para>
        
          <section id="conf.serverpeer.attributes.persistencemanager">
             <title>PersistenceManager</title>
