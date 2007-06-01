@@ -103,7 +103,9 @@ public class MessagingXAResourceRecovery implements XAResourceRecovery
       }
       catch (Exception e)
       {
-         log.error("Failed to look up provider adaptor", e);
+      	//Note - we only log at trace, since this is likely to happen on the first pass since, when
+      	//deployed in JBAS the recovery manager will typically start up before the JMSProviderLoaders
+         log.trace("Failed to look up provider adaptor", e);
          
          return false;
       }

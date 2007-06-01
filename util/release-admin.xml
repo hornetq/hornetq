@@ -29,11 +29,12 @@
         to change them, do it in release-admin.properties.
    -->
 
-   <!-- The location of the sar file -->
-   <property name="sar.location" value="../"/>
+   <!-- The location of the sar and jar files -->
+   <property name="artifacts.location" value="../"/>
 
    <!-- The name of the sar -->
    <property name="sar.name" value="jboss-messaging.sar"/>
+   <property name="jar.name" value="jboss-messaging.jar"/>
 
    <!-- ======================================================================================== -->
    <!-- Top level targets. These are the "modes" this script is supposed to work in.             -->
@@ -64,8 +65,8 @@
 
    <!-- We make sure the sar file exists -->
    <target name="validate-messaging-artifact">
-      <available property="messaging-artifact-exists" type="file" file="${sar.location}/${sar.name}"/>
-      <fail unless="messaging-artifact-exists" message="${sar.location}/${sar.name} does not exist! Build it and try again."/>
+      <available property="messaging-artifact-exists" type="file" file="${artifacts.location}/${sar.name}"/>
+      <fail unless="messaging-artifact-exists" message="${artifacts.location}/${sar.name} does not exist! Build it and try again."/>
    </target>
 
    <!-- Create a server configuration based on a default server configuration -->
@@ -104,6 +105,10 @@
       <!-- we deploy the archive exploded so that users can easily access the configuration files -->
       <antcall target="expand-sar"/>
 
+      <!-- copy jboss-messaging.jar to the lib directory. It needs to be in lib so it can be seen by the JTA
+           recovery manager for example -->
+      <copy file="${artifacts.location}/${jar.name}" todir="${jboss.home}/server/${messaging.config.name}/lib"/>
+
       <!-- Copy the default security properties files to conf/props-->
       <copy todir="${jboss.home}/server/${messaging.config.name}/conf/props">
           <fileset dir="../src/etc/server/default/config">
@@ -125,7 +130,7 @@
 
    <!-- Expand the sar file in the deploy directory -->
    <target name="expand-sar">
-      <unjar src="${sar.location}/${sar.name}"
+      <unjar src="${artifacts.location}/${sar.name}"
              dest="${jboss.home}/server/${messaging.config.name}/deploy/jboss-messaging.sar">
       </unjar>
    </target>

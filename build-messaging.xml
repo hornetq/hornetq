@@ -376,11 +376,12 @@
 
    </target>
 
-
+   <!-- Note that the sar doesn't contain jboss-messaging.jar - this is because jboss-messaging.jar actually needs
+        to go in server/<config_name>/lib directory, since other components e.g. the JTA recovery manager need to access it
+        and won't be able to if it is in the sar -->
    <target name="sar" depends="compile, jar, sar-structure">
       <mkdir dir="${build.lib}"/>
       <jar jarfile="${build.lib}/jboss-${module.name}.sar" manifest="${build.etc}/default.mf">
-         <fileset dir="${build.lib}" includes="jboss-${module.name}.jar"/>
          <fileset dir="${build.sar}" includes="**"/>
          <fileset dir="${build.jar}">
             <exclude name="aop-messaging-*.xml"/>

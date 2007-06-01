@@ -130,7 +130,6 @@
           </itemizedlist>
       </para>
         
-
       <para>There are few extra steps at <xref
       linkend="install.extra-steps" /></para>
       
@@ -228,8 +227,15 @@ guest=guest
         <listitem>
           <para>Unzip jboss-messaging.sar from your download package into the directory
           <literal>JBOSS_CONFIG/deploy/jboss-messaging.sar</literal></para>
-          <para>JBoss Messaging should be deployed unzipped (exploded) so you have easy access to its config
+          <para>JBoss Messaging sar should be deployed unzipped (exploded) so you have easy access to its config
           files which are stored there.</para>
+        </listitem>
+
+        <listitem>
+          <para>Copy jboss-messaging.jar from your download package into the directory
+          <literal>JBOSS_CONFIG/lib</literal></para>
+          <para>jboss-messaging.jar needs to go in the lib directory so it is accessible to other services e.g.
+the JBoss Transactions Recovery Manager</para>
         </listitem>
 
         <listitem>
@@ -531,6 +537,13 @@ guest=guest
           <literal>JBOSS_CONFIG/deploy/jboss-messaging.sar</literal></para>
           <para>JBoss Messaging should be deployed unzipped (exploded) so you have easy access to its config
           files which are stored there.</para>
+        </listitem>
+
+        <listitem>
+          <para>Copy jboss-messaging.jar from your download package into the directory
+          <literal>JBOSS_CONFIG/lib</literal></para>
+          <para>jboss-messaging.jar needs to go in the lib directory so it is accessible to other services e.g.
+the JBoss Transactions Recovery Manager</para>
         </listitem>
 
       <listitem>
