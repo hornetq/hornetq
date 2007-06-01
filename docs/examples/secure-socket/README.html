@@ -3,7 +3,7 @@
 <head>
   <meta content="text/html; charset=ISO-8859-1"
  http-equiv="content-type">
-  <title>JBoss Messaging Example - JMS Queue</title>
+  <title>JBoss Messaging Example - Secure Socket example</title>
 </head>
 <body>
 <br>
@@ -27,13 +27,6 @@ the
 "Installation" paragraph from the release documentation. However, the
 example will automatically deploy its own queue, unless a queue with
 the same name is already deployed. <br>
-<h3 style="margin-left: 40px;">Warning</h3>
-<div style="margin-left: 40px;">A service configuration bug that exists
-in all JBoss versions prior to 4.0.4.RC1 prevents this example from
-working correctly. You shouldn't attempt to run this example with JBoss
-4.0.3.SP1 or lower, unless the patch corresponding to the JIRA issue
-http://jira.jboss.org/jira/browse/JBAS-1709 was applied to your
-installation. The bug has been fixed since JBoss 4.0.4.RC1.<br>
 <span style="font-style: italic;"></span></div>
 <br>
 This example also needs to have access to <span
@@ -48,9 +41,9 @@ accordingly.<br>
 <h2>Running the example</h2>
 1. Set up the JBOSS_HOME environment variable to point to the JBoss
 instance you deployed JBoss Messaging into. For example, if you
-deployed JBoss Messaging in <span style="font-family: monospace;">C:\jboss-4.0.4.GA\server\messaging\deploy,</span>
+deployed JBoss Messaging in <span style="font-family: monospace;">C:\jboss-4.2.0.GA\server\messaging\deploy,</span>
 then your JBOSS_HOME value should be <span
- style="font-family: monospace;">C:\jboss-4.0.4.GA</span><br>
+ style="font-family: monospace;">C:\jboss-4.2.0.GA</span><br>
 <br>
 2. Go to the example's home directory<br>
 <br>
@@ -129,9 +122,9 @@ C:\work\src\cvs\jboss-head\jms\docs\examples\secure-socket\output<br>
       <br>
 deploy:<br>
 &nbsp;&nbsp;&nbsp;&nbsp; [copy] Copying 1 file to
-C:\jboss-4.0.4.GA\server\messaging\deploy\jboss-messaging.sar<br>
+C:\jboss-4.2.0.GA\server\messaging\deploy\jboss-messaging.sar<br>
 &nbsp;&nbsp;&nbsp;&nbsp; [copy] Copying 1 file to
-C:\jboss-4.0.4.GA\server\messaging\deploy<br>
+C:\jboss-4.2.0.GA\server\messaging\deploy<br>
       <br>
 sleep:<br>
 &nbsp;&nbsp;&nbsp;&nbsp; [echo] Sleeping for 10 seconds ...<br>
@@ -142,7 +135,7 @@ run:<br>
 the testQueue queue<br>
 &nbsp;&nbsp;&nbsp;&nbsp; [java] Received message: Hello!<br>
 &nbsp;&nbsp;&nbsp;&nbsp; [java] The example connected to JBoss
-Messaging version 1.0.1.GA (1.0)<br>
+Messaging version 1.3.0.GA (1.0)<br>
       <br>
 &nbsp;&nbsp;&nbsp;&nbsp; [java] #####################<br>
 &nbsp;&nbsp;&nbsp;&nbsp; [java] ###&nbsp;&nbsp;&nbsp;
@@ -168,219 +161,8 @@ that is deployed by the example run script. The secure
 ConnectionFactory relies on a "secured" Remoting Connector to provide
 the SSL connection. The definition of the required services is
 specified in the <span style="font-family: monospace;">etc/messaging-secure-socket-service.xml
-</span>deployment descriptor. The deployment descriptor, as used by the
-example, is listed below. Note that all services (the Connector, the
-secure ConnectionFactory, the SSLServerSocketFactoryService and the
-SSLSocketBuilder) are deployed in the same class loading domain as the
-messaging server:<br>
-<br>
-<br>
-<div style="margin-left: 40px;"><br>
-</div>
-<table
- style="width: 90%; text-align: left; font-family: monospace; background-color: rgb(204, 204, 204); margin-left: 40px;"
- border="1" cellpadding="2" cellspacing="2">
-  <tbody>
-    <tr>
-      <td style="vertical-align: top;"><br>
-&lt;?xml version="1.0" encoding="UTF-8"?&gt;<br>
-      <br>
-&lt;!--<br>
-&nbsp;&nbsp;&nbsp;&nbsp; Secure Socket Transport Example: the
-deployment descriptor for the secure socket factory<br>
-&nbsp;&nbsp;&nbsp;&nbsp; service, secure connector and secure
-connection factory.<br>
-      <br>
-&nbsp;&nbsp;&nbsp;&nbsp; $Id: remoting-service.xml,v 1.2 2006/05/08
-21:35:35 ovidiu Exp $<br>
-&nbsp;--&gt;<br>
-      <br>
-&lt;server&gt;<br>
-      <br>
-&nbsp;&nbsp;
-&lt;loader-repository&gt;jboss.messaging:loader=ScopedLoaderRepository<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-&lt;loader-repository-config&gt;java2ParentDelegation=false&lt;/loader-repository-config&gt;<br>
-&nbsp;&nbsp; &lt;/loader-repository&gt;<br>
-      <br>
-&nbsp;&nbsp; &lt;mbean code="org.jboss.remoting.transport.Connector"<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-name="jboss.messaging:service=Connector,transport=SSLSocket"<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-display-name="SSL Socket Transport Connector"&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;attribute name="Configuration"&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;config&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-&lt;invoker transport="sslsocket"&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-&lt;attribute name="marshaller"<br>
-&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
-&nbsp; &nbsp; &nbsp;
-isParam="true"&gt;org.jboss.jms.server.remoting.JMSWireFormat&lt;/attribute&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-&lt;attribute name="unmarshaller"<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-isParam="true"&gt;org.jboss.jms.server.remoting.JMSWireFormat&lt;/attribute&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-&lt;attribute name="serializationtype"
-isParam="true"&gt;jboss&lt;/attribute&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-&lt;attribute name="dataType" isParam="true"&gt;jms&lt;/attribute&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-&lt;attribute name="socket.check_connection"
-isParam="true"&gt;false&lt;/attribute&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-&lt;attribute name="timeout"&gt;0&lt;/attribute&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-&lt;attribute
-name="serverBindAddress"&gt;${jboss.bind.address}&lt;/attribute&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-&lt;attribute name="serverBindPort"&gt;5457&lt;/attribute&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-&lt;attribute name="leasePeriod"&gt;20000&lt;/attribute&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-&lt;attribute name="serverSocketFactory"&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-jboss.messaging:service=ServerSocketFactory,type=SSL<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-&lt;/attribute&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-&lt;/invoker&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-&lt;handlers&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-&lt;handler subsystem="JMS"&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-org.jboss.jms.server.remoting.JMSServerInvocationHandler&lt;/handler&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-&lt;/handlers&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/config&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/attribute&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-&lt;depends&gt;jboss.messaging:service=ServerSocketFactory,type=SSL&lt;/depends&gt;<br>
-&nbsp;&nbsp; &lt;/mbean&gt;<br>
-      <br>
-&nbsp;&nbsp; &lt;mbean
-code="org.jboss.jms.server.connectionfactory.ConnectionFactory"<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-name="jboss.messaging.destination:service=SecureConnectionFactory"<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-xmbean-dd="xmdesc/ConnectionFactory-xmbean.xml"&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;depends
-optional-attribute-name="ServerPeer"&gt;jboss.messaging:service=ServerPeer&lt;/depends&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;depends
-optional-attribute-name="Connector"&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-jboss.messaging:service=Connector,transport=SSLSocket<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/depends&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;attribute name="JNDIBindings"&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;bindings&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-&lt;binding&gt;/SecureConnectionFactory&lt;/binding&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/bindings&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/attribute&gt;<br>
-&nbsp;&nbsp; &lt;/mbean&gt;<br>
-      <br>
-&nbsp;&nbsp; &lt;!-- This section is for custom (SSL) server socket
-factory&nbsp; --&gt;<br>
-      <br>
-&nbsp;&nbsp; &lt;!--<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; The server socket factory
-mbean to be used as attribute to socket invoker (see<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; serverSocketFactory
-attribute above for where it is used). This service provides the exact<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; same API as the
-ServerSocketFactory, so can be set as an attribute of that type on any<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; MBean requiring an
-ServerSocketFactory.<br>
-&nbsp;&nbsp; --&gt;<br>
-&nbsp;&nbsp; &lt;mbean
-code="org.jboss.remoting.security.SSLServerSocketFactoryService"<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-name="jboss.messaging:service=ServerSocketFactory,type=SSL"<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-display-name="SSL Server Socket Factory"&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;depends
-optional-attribute-name="SSLSocketBuilder"<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-proxy-type="attribute"&gt;jboss.messaging:service=SocketBuilder,type=SSL&lt;/depends&gt;<br>
-&nbsp;&nbsp; &lt;/mbean&gt;<br>
-      <br>
-&nbsp;&nbsp; &lt;!--<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; This service is used to build the
-SSL Server socket factory. This will be where all the<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; store/trust information will be
-set. If do not need to make any custom configurations,<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; no extra attributes need to be set
-for the SSLSocketBuilder and just need to set the<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; javax.net.ssl.keyStore and
-javax.net.ssl.keyStorePassword system properties.<br>
-      <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; This can be done by just adding
-something like the following to the run script for JBoss<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (this one is for run.bat):<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; set
-JAVA_OPTS=-Djavax.net.ssl.keyStore=.keystore <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
--Djavax.net.ssl.keyStorePassword=opensource %JAVA_OPTS%<br>
-      <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Otherwise, if want to customize
-the attributes for SSLSocketBuilder, will need to uncomment<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; them below.<br>
-&nbsp;&nbsp; --&gt;<br>
-&nbsp;&nbsp; &lt;mbean
-code="org.jboss.remoting.security.SSLSocketBuilder"<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-name="jboss.messaging:service=SocketBuilder,type=SSL"<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-display-name="SSL Server Socket Factory Builder"&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;!--<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; IMPORTANT
-- If making ANY customizations, this MUST be set to false.<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Otherwise,
-will used default settings and the following attributes will be ignored.<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; --&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;attribute
-name="UseSSLServerSocketFactory"&gt;false&lt;/attribute&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;!-- This is the url string to the
-key store to use --&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;attribute
-name="KeyStoreURL"&gt;messaging.keystore&lt;/attribute&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;!-- The password for the key store
---&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;attribute
-name="KeyStorePassword"&gt;secureexample&lt;/attribute&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;!-- The password for the keys (will
-use KeystorePassword if this is not set explicitly. --&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;attribute
-name="KeyPassword"&gt;secureexample&lt;/attribute&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;!-- The protocol for the SSLContext.
-Default is TLS. --&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;attribute
-name="SecureSocketProtocol"&gt;TLS&lt;/attribute&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;!-- The algorithm for the key
-manager factory.&nbsp; Default is SunX509. --&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;attribute
-name="KeyManagementAlgorithm"&gt;SunX509&lt;/attribute&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;!--<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; The type
-to be used for the key store.<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Defaults
-to JKS. Some acceptable values are JKS (Java Keystore - Sun's keystore
-format),<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; JCEKS
-(Java Cryptography Extension keystore - More secure version of JKS), and<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; PKCS12
-(Public-Key Cryptography Standards #12 keystore - RSA's Personal
-Information<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Exchange
-Syntax Standard). These are not case sensitive.<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; --&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;attribute
-name="KeyStoreType"&gt;JKS&lt;/attribute&gt;<br>
-&nbsp;&nbsp; &lt;/mbean&gt;<br>
-      <br>
-&lt;/server&gt;<br>
+</span>deployment descriptor. <br>
+
       <br>
       </td>
     </tr>

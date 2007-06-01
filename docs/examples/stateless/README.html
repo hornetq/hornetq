@@ -3,7 +3,7 @@
 <head>
   <meta content="text/html; charset=ISO-8859-1"
  http-equiv="content-type">
-  <title>JBoss Messaging Example - Managed Environment</title>
+  <title>JBoss Messaging Example - Stateless Session Bean</title>
 </head>
 <body>
 <br>
@@ -36,28 +36,13 @@ configured to find the client jar. Otherwise, you must modify example's
 <span style="font-family: monospace;">build.xml</span>
 accordingly.&nbsp;<br>
 <br>
-<span style="font-style: italic;">The example was designed to deploy
-its server-side artifacts </span><span
- style="font-family: monospace; font-style: italic;"></span><span
- style="font-style: italic;">under a JBoss' </span><span
- style="font-family: monospace; font-style: italic;">messaging</span><span
- style="font-style: italic;">
-configuration. If you intend to use the script with a JBoss
-configuration that is named differently, please modify the
-example's</span><span
- style="font-family: monospace; font-style: italic;"> build.xml</span><span
- style="font-style: italic;">
-accordingly.</span><br>
-<span style="font-style: italic;"></span><br>
-<span style="font-style: italic;"></span><br>
-<br>
 <h2>Running the example</h2>
 1. Set up the JBOSS_HOME environment variable to point to the JBoss
 instance you deployed JBoss Messaging into. For example, if you
-deployed JBoss Messaging in <span style="font-family: monospace;">C:\jboss-4.0.3SP1\server\default\deploy,</span>
+deployed JBoss Messaging in <span style="font-family: monospace;">C:\jboss-4.2.0.GA\server\default\deploy,</span>
 then your JBOSS_HOME value should be <span
  style="font-family: monospace;">C:\</span><span
- style="font-family: monospace;">jboss-4.0.3SP1.</span><br>
+ style="font-family: monospace;">jboss-4.2.0.GA.</span><br>
 <span style="font-family: monospace;"></span><br>
 2. Go to the example's home directory<br>
 <br>
@@ -118,7 +103,7 @@ C:\work\src\cvs\jboss-head\jms\docs\examples\stateless\output\lib\stateless-exam
       <br>
 deploy:<br>
 &nbsp;&nbsp;&nbsp;&nbsp; [copy] Copying 1 file to
-C:\work\src\jboss-4.0.3SP1-src\build\output\jboss-4.0.3SP1\server\messaging\deploy<br>
+C:\work\src\jboss-4.2.0.GA\build\output\jboss-4.0.3SP1\server\messaging\deploy<br>
       <br>
 sleep:<br>
 &nbsp;&nbsp;&nbsp;&nbsp; [echo] Sleeping for 5 seconds ...<br>
@@ -138,7 +123,7 @@ SUCCESS!&nbsp;&nbsp; ###<br>
       <br>
 undeploy:<br>
 &nbsp;&nbsp; [delete] Deleting:
-C:\work\src\jboss-4.0.3SP1-src\build\output\jboss-4.0.3SP1\server\messaging\deploy\stateless-example.jar<br>
+C:\work\src\jboss-4.2.0.GA\build\output\jboss-4.0.3SP1\server\messaging\deploy\stateless-example.jar<br>
       <br>
 BUILD SUCCESSFUL<br>
 Total time: 9 seconds<br>

@@ -3,7 +3,7 @@
 <head>
   <meta content="text/html; charset=ISO-8859-1"
     http-equiv="content-type">
-  <title>JBoss Messaging Example - Managed Environment</title>
+  <title>JBoss Messaging Example - Stateless Clustered Session Bean</title>
 </head>
 <body>
 
@@ -15,12 +15,9 @@
 <p>
 This example deploys in a cluster a stateless session bean that can then
 send and receive messages from a queue. This is a very simple example that
-demonstrates using JBoss Messaging in a managed clustered environment.
+demonstrates using JBoss Messaging in a clustered environment.
 The client uses HA-JNDI to look up the session bean. It then invokes the
-session bean to send a message to a test queue and afterwards pulls the
-message from the queue from a different connection using the JMS API
-directly. The example is considered successful if the message is received
-correctly.
+session bean to send a message to a test queue and afterwards consumes the same message.
 </p>
 <p>
 This example relies on having access to a running JBoss Messaging cluster.
@@ -36,12 +33,6 @@ from an unzipped installation bundle, the example run script is correctly
 configured to find the client jar. Otherwise, you must modify example's
 <tt>build.xml</tt> accordingly.
 </p>
-<p><em>
-The example was designed to deploy its server-side artifacts under a JBoss'
-<tt>messaging-node0</tt> configuration, into the <tt>farm</tt> directory.
-If you intend to use the script with a JBoss configuration that is named
-differently, please modify the example's <tt>build.xml</tt>.
-</em></p>
 
 <h2>Running the example</h2>
 <p>

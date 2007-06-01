@@ -28,14 +28,6 @@ the
 example will automatically deploy its own queue, unless a queue with
 the same name is already deployed.
 </p>
-<h3 style="margin-left: 40px;">Warning</h3>
-<div style="margin-left: 40px;">A service configuration bug that exists
-in all JBoss versions prior to 4.0.4.RC1 prevents this example from
-working correctly. You shouldn't attempt to run this example with JBoss
-4.0.3.SP1 or lower, unless the patch corresponding to the JIRA issue
-http://jira.jboss.org/jira/browse/JBAS-1709 was applied to your
-installation. The bug has been fixed since JBoss 4.0.4.RC1.<br>
-<span style="font-style: italic;"></span></div>
 <br>
 This example also needs to have access to <span
  style="font-family: monospace;">jboss-messaging-client.jar</span>
@@ -148,75 +140,6 @@ Total time: 14 seconds</pre>
 <div style="margin-left: 40px;"><br>
 </div>
 <br>
-<h2>Configuration details</h2>
-<br>
-The example client looks up a specially-configured connection factory (<span
- style="font-family: monospace;">"/HttpConnectionFactory"</span>)
-that is deployed by the example run script. The HTTP
-ConnectionFactory relies on a HTTP Remoting Connector to provide
-the connection. The definition of the required services is
-specified in the <span style="font-family: monospace;">etc/messaging-http-service.xml
-</span>deployment descriptor. The deployment descriptor, as used by the
-example, is listed below.<br>
-<br>
-<br>
-<div style="margin-left: 40px;"><br>
-</div>
-<table
- style="width: 90%; text-align: left; font-family: monospace; background-color: rgb(204, 204, 204); margin-left: 40px;"
- border="1" cellpadding="2" cellspacing="2">
-  <tbody>
-    <tr>
-      <td style="vertical-align: top;">
-<pre>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
-
-&lt;!--
-     HTTP Transport Example.
-
-     $Id$
- --&gt;
-
-&lt;server&gt;
-
-   &lt;mbean code="org.jboss.remoting.transport.Connector"
-          name="jboss.messaging:service=Connector,transport=http"
-          display-name="HTTP transport Connector"&gt;
-      &lt;attribute name="Configuration"&gt;
-         &lt;config&gt;
-            &lt;invoker transport="http"&gt;
-               &lt;attribute name="marshaller" isParam="true"&gt;org.jboss.jms.wireformat.JMSWireFormat&lt;/attribute&gt;
-               &lt;attribute name="unmarshaller" isParam="true"&gt;org.jboss.jms.wireformat.JMSWireFormat&lt;/attribute&gt;
-               &lt;attribute name="dataType" isParam="true"&gt;jms&lt;/attribute&gt;
-               &lt;attribute name="serverBindAddress"&gt;${jboss.bind.address}&lt;/attribute&gt;
-               &lt;attribute name="serverBindPort"&gt;4458&lt;/attribute&gt;
-               &lt;attribute name="leasePeriod"&gt;10000&lt;/attribute&gt;
-               &lt;attribute name="callbackStore"&gt;org.jboss.remoting.callback.CallbackStore&lt;/attribute&gt;
-               &lt;attribute name="callbackPollPeriod" isParam="true"&gt;100&lt;/attribute&gt;
-            &lt;/invoker&gt;
-            &lt;handlers&gt;
-               &lt;handler subsystem="JMS"&gt;org.jboss.jms.server.remoting.JMSServerInvocationHandler&lt;/handler&gt;
-            &lt;/handlers&gt;
-         &lt;/config&gt;
-      &lt;/attribute&gt;
-   &lt;/mbean&gt;
-   
-   &lt;mbean code="org.jboss.jms.server.connectionfactory.ConnectionFactory"
-      name="jboss.messaging.destination:service=HttpConnectionFactory"
-      xmbean-dd="xmdesc/ConnectionFactory-xmbean.xml"&gt;
-      &lt;depends optional-attribute-name="ServerPeer"&gt;jboss.messaging:service=ServerPeer&lt;/depends&gt;
-      &lt;depends optional-attribute-name="Connector"&gt;jboss.messaging:service=Connector,transport=http&lt;/depends&gt;
-      &lt;attribute name="JNDIBindings"&gt;
-         &lt;bindings&gt;
-            &lt;binding&gt;/HttpConnectionFactory&lt;/binding&gt;
-         &lt;/bindings&gt;
-      &lt;/attribute&gt;
-   &lt;/mbean&gt;
-
-&lt;/server&gt;</pre>
-      </td>
-    </tr>
-  </tbody>
-</table>
 <h2>Troubleshooting</h2>
 <h3>1. I get <span style="font-family: monospace;">"javax.jms.JMSSecurityException:
 User null is NOT authenticated" <br>

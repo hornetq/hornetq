@@ -3,7 +3,7 @@
 <head>
   <meta content="text/html; charset=ISO-8859-1"
  http-equiv="content-type">
-  <title>JBoss Messaging Example - WebSerivce Environment</title>
+  <title>JBoss Messaging Example - WebService Environment</title>
 </head>
 <body>
 <br>
@@ -34,14 +34,6 @@ accordingly. <br>
 <br>
 This example will also generate client classes using wsdltools from
 JBoss Web Services.<br>
-<br>
-<span style="font-style: italic;">The example was designed to deploy
-its server-side artifacts under a JBoss' messaging
-configuration. If you intend to use the script with a JBoss
-configuration that is named differently, please modify the
-example's build.xml accordingly.<br>
-<span style="font-style: italic;"></span><br>
-<span style="font-style: italic;"></span><br>
 <br>
 <h2>Running the example</h2>
 1. Set up the JBOSS_HOME environment variable to point to the JBoss
@@ -75,7 +67,7 @@ The output of a successful run should be similar to:<br>
       <td style="vertical-align: top;">
       <div style="margin-left: 40px;"><br>
       </div>
-example@example:/workspace/jboss-messaging-1.2.0.SP2/examples/web-services$
+example@example:/workspace/jboss-messaging-1.3.0.GA/examples/web-services$
 ant<br>
 Buildfile: build.xml<br>
       <br>
@@ -102,7 +94,7 @@ compile:<br>
       <br>
 war:<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; [jar] Building jar:
-/workspace/jboss-messaging-1.2.0.SP2/examples/web-services/output/lib/jms-web-service.war<br>
+/workspace/jboss-messaging-1.3.0.GA/examples/web-services/output/lib/jms-web-service.war<br>
       <br>
 deploy:<br>
 &nbsp;&nbsp;&nbsp;&nbsp; [copy] Copying 1 file to
@@ -115,7 +107,7 @@ run-wsdl-client:<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; [get] Getting:
 http://127.0.0.1:8080/jms-web-service/JMSWebServiceExample?wsdl<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; [get] To:
-/workspace/jboss-messaging-1.2.0.SP2/examples/web-services/output/service.wsdl<br>
+/workspace/jboss-messaging-1.3.0.GA/examples/web-services/output/service.wsdl<br>
 &nbsp; [wstools] log4j:WARN No appenders could be found for logger
 (org.jboss.ws.tools.wsdl.WSDLDefinitionsFactory).<br>
 &nbsp; [wstools] log4j:WARN Please initialize the log4j system properly.<br>
