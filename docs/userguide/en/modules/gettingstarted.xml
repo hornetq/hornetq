@@ -22,13 +22,17 @@
       <itemizedlist>
          <listitem>
             <filename>jboss-messaging.sar</filename>
-            - the service archive that contains JBoss Messaging
+            - the service archive that contains JBoss Messaging configuration
             <warning>
                Do not simply attempt to copy the archive under a JBoss instance <filename>deploy</filename> directory,
                since additional steps (such as un-installing JBossMQ and various other configurations
                tasks) are required for a successful installation. See <xref linkend="installation"/> for
                more details.
             </warning>
+         </listitem>
+         <listitem>
+            <filename>jboss-messaging.jar</filename>
+            - the JBoss Messaging jar file
          </listitem>
          <listitem>
             <filename>jboss-messaging-client.jar</filename>
