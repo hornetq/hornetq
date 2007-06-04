@@ -82,11 +82,19 @@
       </copy>
       <jar destfile="./output/lib/mdb-example.jar"
            basedir="./output/classes"
-           includes="META-INF/**,org/jboss/example/**/MDBExample.class"/>
+           includes="META-INF/**,org/jboss/example/**/MDBExample.class">
+      </jar>
    </target>
 
-   <target name="deploy" depends="jar">
-      <copy file="./output/lib/mdb-example.jar"
+   <target name="ear" depends="jar">
+      <jar destfile="./output/lib/mdb-example.ear">
+         <zipfileset dir="./output/lib" includes="mdb-example.jar"/>
+         <zipfileset dir="./etc/EAR-META-INF" prefix="META-INF"/>
+      </jar>
+   </target>
+
+   <target name="deploy" depends="ear">
+      <copy file="./output/lib/mdb-example.ear"
             todir="${jboss.home}/server/${jboss.configuration}/deploy"/>
       <antcall target="sleep"><param name="sleep.interval" value="5"/></antcall>
    </target>
@@ -110,7 +118,7 @@
    </target>
 
    <target name="undeploy">
-      <delete file="${jboss.home}/server/${jboss.configuration}/deploy/mdb-example.jar" quiet="true"/>
+      <delete file="${jboss.home}/server/${jboss.configuration}/deploy/mdb-example.ear" quiet="true"/>
    </target>
 
    <target name="clean" depends="undeploy">

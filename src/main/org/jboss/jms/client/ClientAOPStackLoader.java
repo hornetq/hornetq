@@ -64,11 +64,24 @@ public class ClientAOPStackLoader
          return;
       }
 
-      byte[] clientAOPStack = delegate.getClientAOPStack();
+      ClassLoader savedLoader = Thread.currentThread().getContextClassLoader();
 
-      new JmsClientAspectXMLLoader().deployXML(clientAOPStack);
+      try
+      {
+         // This was done because of some weird behavior of AOP & classLoading
+         // http://jira.jboss.org/jira/browse/JBMESSAGING-980
+         Thread.currentThread().setContextClassLoader(this.getClass().getClassLoader());
 
-      loaded = true;
+         byte[] clientAOPStack = delegate.getClientAOPStack();
+
+         new JmsClientAspectXMLLoader().deployXML(clientAOPStack);
+
+         loaded = true;
+      }
+      finally
+      {
+         Thread.currentThread().setContextClassLoader(savedLoader);
+      }
    }
 
    // Package protected ----------------------------------------------------------------------------
