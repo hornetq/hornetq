@@ -88,6 +88,8 @@ public abstract class ManagedDestination implements MessagingComponent
    protected int maxSize = -1;
    
    protected int messageCounterHistoryDayLimit = -1;
+   
+   protected int maxDeliveryAttempts = -1;
     
    public ManagedDestination()
    {      
@@ -284,6 +286,16 @@ public abstract class ManagedDestination implements MessagingComponent
    public void setMessageCounterHistoryDayLimit(int limit) throws Exception
    {
       this.messageCounterHistoryDayLimit = limit;
+   }
+   
+   public int getMaxDeliveryAttempts()
+   {
+      return this.maxDeliveryAttempts;
+   }
+   
+   public void setMaxDeliveryAttempts(int maxDeliveryAttempts)
+   {
+      this.maxDeliveryAttempts = maxDeliveryAttempts;
    }
      
    public abstract boolean isQueue();

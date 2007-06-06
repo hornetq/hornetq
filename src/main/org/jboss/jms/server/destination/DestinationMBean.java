@@ -90,6 +90,10 @@ public interface DestinationMBean
    
    void setMessageCounterHistoryDayLimit(int limit) throws Exception;
    
+   int getMaxDeliveryAttempts();
+   
+   void setMaxDeliveryAttempts(int maxDeliveryAttempts);
+   
    // JMX operations
    
    void removeAllMessages() throws Exception;

@@ -141,6 +141,12 @@
       <type>int</type>
    </attribute>
    
+   <attribute access="read-write" getMethod="getMaxDeliveryAttempts" setMethod="setMaxDeliveryAttempts">
+      <description>The maximum delivery attempts to the queue</description>
+      <name>MaxDeliveryAttempts</name>
+      <type>int</type>
+   </attribute>
+   
    <attribute access="read-only" getMethod="getConsumerCount">
       <description>The number of consumers on the queue</description>
       <name>ConsumerCount</name>

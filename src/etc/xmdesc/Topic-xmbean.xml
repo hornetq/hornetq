@@ -113,7 +113,13 @@
       <description>The day limit for the message counters of this topic</description>
       <name>MessageCounterHistoryDayLimit</name>
       <type>int</type>
-   </attribute>   
+   </attribute>
+
+   <attribute access="read-write" getMethod="getMaxDeliveryAttempts" setMethod="setMaxDeliveryAttempts">
+      <description>The maximum delivery attempts to the topic</description>
+      <name>MaxDeliveryAttempts</name>
+      <type>int</type>
+   </attribute>
    
    <attribute access="read-only" getMethod="getMessageCounters">
       <description>The message counters for the topic</description>

@@ -143,7 +143,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
    private TransactionRepository tr;
    private PostOffice postOffice;
    private int nodeId;
-   private int maxDeliveryAttempts;
+   private int defaultMaxDeliveryAttempts;
    private Queue defaultDLQ;
    private Queue defaultExpiryQueue;
    
@@ -180,7 +180,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
       defaultDLQ = sp.getDefaultDLQInstance();
       defaultExpiryQueue = sp.getDefaultExpiryQueueInstance();
       tr = sp.getTxRepository();
-      maxDeliveryAttempts = sp.getDefaultMaxDeliveryAttempts();
+      defaultMaxDeliveryAttempts = sp.getDefaultMaxDeliveryAttempts();
       
       deliveries = new ConcurrentHashMap();
       
@@ -465,6 +465,9 @@ public class ServerSessionEndpoint implements SessionEndpoint
             Queue expiryQueueToUse =
                dest.getExpiryQueue() == null ? defaultExpiryQueue : dest.getExpiryQueue();
             
+            int maxDeliveryAttemptsToUse =
+               dest.getMaxDeliveryAttempts() == -1 ? defaultMaxDeliveryAttempts : dest.getMaxDeliveryAttempts();
+            
             List dels = queue.recoverDeliveries(ids);
             
             Iterator iter2 = dels.iterator();
@@ -485,7 +488,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
                
                deliveries.put(new Long(deliveryId),
                               new DeliveryRecord(del, -1, dlqToUse,
-                                                 expiryQueueToUse, dest.getRedeliveryDelay()));
+                                                 expiryQueueToUse, dest.getRedeliveryDelay(), maxDeliveryAttemptsToUse));
             }
          }
          
@@ -885,11 +888,11 @@ public class ServerSessionEndpoint implements SessionEndpoint
       rec.del.cancel();
    }
    
-   long addDelivery(Delivery del, int consumerId, Queue dlq, Queue expiryQueue, long redeliveryDelay)
+   long addDelivery(Delivery del, int consumerId, Queue dlq, Queue expiryQueue, long redeliveryDelay, int maxDeliveryAttempts)
    {
       long deliveryId = deliveryIdSequence.increment();
       
-      deliveries.put(new Long(deliveryId), new DeliveryRecord(del, consumerId, dlq, expiryQueue, redeliveryDelay));
+      deliveries.put(new Long(deliveryId), new DeliveryRecord(del, consumerId, dlq, expiryQueue, redeliveryDelay, maxDeliveryAttempts));
       
       if (trace) { log.trace(this + " added delivery " + deliveryId + ": " + del); }
       
@@ -994,7 +997,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
       //might get changed after the client has sent the cancel - and we don't want to end up cancelling
       //back to the original queue
       boolean reachedMaxDeliveryAttempts =
-         cancel.isReachedMaxDeliveryAttempts() || cancel.getDeliveryCount() >= maxDeliveryAttempts;
+         cancel.isReachedMaxDeliveryAttempts() || cancel.getDeliveryCount() >= rec.maxDeliveryAttempts;
                     
       Delivery del = rec.del;   
          
@@ -1440,6 +1443,8 @@ public class ServerSessionEndpoint implements SessionEndpoint
       
       Queue expiryQueueToUse = mDest.getExpiryQueue() == null ? defaultExpiryQueue : mDest.getExpiryQueue();
       
+      int maxDeliveryAttemptsToUse = mDest.getMaxDeliveryAttempts() == -1 ? defaultMaxDeliveryAttempts : mDest.getMaxDeliveryAttempts();
+      
       long redeliveryDelay = mDest.getRedeliveryDelay();
       
       if (redeliveryDelay == 0)
@@ -1450,7 +1455,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
       ServerConsumerEndpoint ep =
          new ServerConsumerEndpoint(consumerID, (PagingFilteredQueue)binding.getQueue(),
                   binding.getQueue().getName(), this, selectorString, noLocal,
-                  jmsDestination, dlqToUse, expiryQueueToUse, redeliveryDelay);
+                  jmsDestination, dlqToUse, expiryQueueToUse, redeliveryDelay, maxDeliveryAttemptsToUse);
       
       ConsumerAdvised advised;
       
@@ -1465,7 +1470,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
       
       ClientConsumerDelegate stub =
          new ClientConsumerDelegate(consumerID,
-                                    prefetchSize, maxDeliveryAttempts);
+                                    prefetchSize, maxDeliveryAttemptsToUse);
       
       synchronized (consumers)
       {
@@ -1574,7 +1579,9 @@ public class ServerSessionEndpoint implements SessionEndpoint
       
       long redeliveryDelay;
       
-      DeliveryRecord(Delivery del, int consumerId, Queue dlq, Queue expiryQueue, long redeliveryDelay)
+      int maxDeliveryAttempts;
+      
+      DeliveryRecord(Delivery del, int consumerId, Queue dlq, Queue expiryQueue, long redeliveryDelay, int maxDeliveryAttempts)
       {
          this.del = del;
          
@@ -1585,6 +1592,8 @@ public class ServerSessionEndpoint implements SessionEndpoint
          this.expiryQueue = expiryQueue;
          
          this.redeliveryDelay = redeliveryDelay;
+         
+         this.maxDeliveryAttempts = maxDeliveryAttempts;
       }            
    }
    

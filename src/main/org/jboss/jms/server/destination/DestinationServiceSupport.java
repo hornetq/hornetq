@@ -405,6 +405,16 @@ public abstract class DestinationServiceSupport extends ServiceMBeanSupport
       destination.setMessageCounterHistoryDayLimit(limit);
    }
    
+   public int getMaxDeliveryAttempts()
+   {
+      return destination.getMaxDeliveryAttempts();
+   }
+   
+   public void setMaxDeliveryAttempts(int maxDeliveryAttempts)
+   {
+      destination.setMaxDeliveryAttempts(maxDeliveryAttempts);
+   }
+   
    // JMX managed operations ----------------------------------------
    
    public abstract void removeAllMessages() throws Exception;

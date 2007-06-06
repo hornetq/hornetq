@@ -95,6 +95,8 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
    private Queue expiryQueue;
 
    private long redeliveryDelay;
+   
+   private int maxDeliveryAttempts;
 
    private boolean started;
 
@@ -113,7 +115,7 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
    ServerConsumerEndpoint(int id, Channel messageQueue, String queueName,
             ServerSessionEndpoint sessionEndpoint, String selector,
             boolean noLocal, JBossDestination dest, Queue dlq,
-            Queue expiryQueue, long redeliveryDelay)
+            Queue expiryQueue, long redeliveryDelay, int maxDeliveryAttempts)
             throws InvalidSelectorException
    {
       if (trace)
@@ -141,6 +143,8 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
       this.redeliveryDelay = redeliveryDelay;
 
       this.expiryQueue = expiryQueue;
+      
+      this.maxDeliveryAttempts = maxDeliveryAttempts;
 
       // Always start as false - wait for consumer to initiate.
       this.clientAccepting = false;
@@ -246,7 +250,7 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
 
          if (storeDeliveries)
          {
-            deliveryId = sessionEndpoint.addDelivery(delivery, id, dlq, expiryQueue, redeliveryDelay);
+            deliveryId = sessionEndpoint.addDelivery(delivery, id, dlq, expiryQueue, redeliveryDelay, maxDeliveryAttempts);
          }
          else
          {
