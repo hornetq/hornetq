@@ -132,7 +132,7 @@ public class SessionAspect
       if (ackMode == Session.AUTO_ACKNOWLEDGE || isXAAndConsideredNonTransacted(state))
       {
          //Acknowledge or cancel any outstanding auto ack
-         
+      	
          DeliveryInfo remainingAutoAck = state.getAutoAckInfo();
          
          if (remainingAutoAck != null)

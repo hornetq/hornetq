@@ -147,7 +147,7 @@ public abstract class PagingChannelSupport extends ChannelSupport
       
       // Also need to add the paged refs
       
-      synchronized (refLock)
+      synchronized (lock)
       {      
          count += nextPagingOrder - firstPagingOrder;
       }
@@ -160,7 +160,7 @@ public abstract class PagingChannelSupport extends ChannelSupport
    //Only used in testing
    public int downCacheCount()
    {
-      synchronized (refLock)
+      synchronized (lock)
       {
          return downCache.size();
       }
@@ -169,7 +169,7 @@ public abstract class PagingChannelSupport extends ChannelSupport
    //Only used in testing
    public boolean isPaging()
    {
-      synchronized (refLock)
+      synchronized (lock)
       {
          return paging;
       }
@@ -177,7 +177,7 @@ public abstract class PagingChannelSupport extends ChannelSupport
    
    public void setPagingParams(int fullSize, int pageSize, int downCacheSize)
    {
-      synchronized (refLock)
+      synchronized (lock)
       { 
          if (active)
          {
@@ -194,7 +194,7 @@ public abstract class PagingChannelSupport extends ChannelSupport
    
    public void load() throws Exception
    {            
-      synchronized (refLock)
+      synchronized (lock)
       {
          if (active)
          {
@@ -221,7 +221,7 @@ public abstract class PagingChannelSupport extends ChannelSupport
       
    public void unload() throws Exception
    {
-      synchronized (refLock)
+      synchronized (lock)
       {
          if (active)
          {
@@ -240,13 +240,6 @@ public abstract class PagingChannelSupport extends ChannelSupport
       }
    }
    
-   public boolean isActive()
-   {
-      synchronized (refLock)
-      {
-         return active;
-      }
-   }
    
    // Protected ------------------------------------------------------------------------------------
    
@@ -320,7 +313,7 @@ public abstract class PagingChannelSupport extends ChannelSupport
       
    protected void cancelInternal(MessageReference ref) throws Exception
    {
-      synchronized (refLock)
+      synchronized (lock)
       {         
          super.cancelInternal(ref);
          

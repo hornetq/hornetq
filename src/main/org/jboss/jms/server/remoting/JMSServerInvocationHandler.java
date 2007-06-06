@@ -39,6 +39,9 @@ import org.jboss.remoting.ServerInvoker;
 import org.jboss.remoting.callback.InvokerCallbackHandler;
 import org.jboss.remoting.callback.ServerInvokerCallbackHandler;
 
+import EDU.oswego.cs.dl.util.concurrent.ReadWriteLock;
+import EDU.oswego.cs.dl.util.concurrent.WriterPreferenceReadWriteLock;
+
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -54,29 +57,49 @@ public class JMSServerInvocationHandler implements ServerInvocationHandler
    
    // Static ---------------------------------------------------------------------------------------
    
+   private static boolean closed = true;
+   
+   private static ReadWriteLock invokeLock;
+   
+   public static void setClosed(boolean b)
+   {
+   	try
+   	{
+	   	invokeLock.writeLock().acquire();
+	   	
+	   	try
+	   	{
+	   		closed = b;
+	   	}
+	   	finally
+	   	{
+	   		invokeLock.writeLock().release();
+	   	}
+   	}
+   	catch (InterruptedException e)
+   	{
+   		log.error("Failed to set closed to " + closed, e);
+   	}
+   }
+   
    // Attributes -----------------------------------------------------------------------------------
 
    private ServerInvoker invoker;
+   
    private MBeanServer server;
 
    protected Map callbackHandlers;
    
    private boolean trace;
-   
-   //We need some way the server peer can call the invocation handler to make it open/closed
-   private static boolean closed = true;
-   
-   public static synchronized void setClosed(boolean closed)
-   {
-      JMSServerInvocationHandler.closed = closed;
-   }
-   
+             
    // Constructors ---------------------------------------------------------------------------------
 
    public JMSServerInvocationHandler()
    {
       callbackHandlers = new HashMap();
       trace = log.isTraceEnabled();
+      
+      invokeLock = new WriterPreferenceReadWriteLock();      
    }   
      
    // ServerInvocationHandler ----------------------------------------------------------------------
@@ -102,8 +125,9 @@ public class JMSServerInvocationHandler implements ServerInvocationHandler
    {      
       if (trace) { log.trace("invoking " + invocation); }
       
-      synchronized (JMSServerInvocationHandler.class)
-      {         
+      invokeLock.readLock().acquire();
+      try
+      {	              
          if (closed)
          {
             throw new MessagingJMSException("Cannot handle invocation since messaging server is not active (it is either starting up or shutting down)");
@@ -140,6 +164,11 @@ public class JMSServerInvocationHandler implements ServerInvocationHandler
       
          return request.serverInvoke();
       }
+      finally
+      {
+      	invokeLock.readLock().release();
+      }
+      
    }
 
    public void addListener(InvokerCallbackHandler callbackHandler)

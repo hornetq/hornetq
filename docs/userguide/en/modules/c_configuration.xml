@@ -12,7 +12,7 @@
 
    <itemizedlist>
    
-      <listitem>Choosing the connetion factory</listitem>
+      <listitem>Choosing the connection factory</listitem>
 
       <listitem>Choosing the cluster router policy</listitem>
 
@@ -29,6 +29,7 @@
       
       <para>See the section <xref linkend="conf.connectionfactory">Connection Factory configuration</xref> for more information.
       </para>
+      
    </section>
       
 

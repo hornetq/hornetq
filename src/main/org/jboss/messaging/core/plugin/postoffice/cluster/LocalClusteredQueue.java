@@ -253,7 +253,7 @@ public class LocalClusteredQueue extends PagingFilteredQueue implements Clustere
    {
       if (trace) { log.trace("Merging queue " + remoteQueue + " into " + this); }
            
-      synchronized (refLock)
+      synchronized (lock)
       {
          flushDownCache();
                   
@@ -421,7 +421,7 @@ public class LocalClusteredQueue extends PagingFilteredQueue implements Clustere
             {                  
                MessageReference ref;
                
-               synchronized (refLock)
+               synchronized (lock)
                {
                   ref = removeFirstInMemory();
                   

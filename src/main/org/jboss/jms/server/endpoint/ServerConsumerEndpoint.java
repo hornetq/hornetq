@@ -227,7 +227,7 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
          // queue for delivery later.
          if (!started)
          {
-            if (trace) { log.trace(this + " NOT started yet!"); }
+            if (trace) { log.trace(this + " NOT started!"); }
 
             return null;
          }

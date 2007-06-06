@@ -325,14 +325,19 @@ public class MessageCallbackHandler
    
    public void close(long lastDeliveryId) throws JMSException
    {     
+   	log.debug(this + " closing");
+         	
+   	//Wait for the last delivery to arrive
       waitForLastDelivery(lastDeliveryId);
       
+      //Important! We set the listener to null so the next ListenerRunner won't run
+      setMessageListener(null);
+      
+      //Now we wait for any current listener runners to run.
       waitForOnMessageToComplete();   
       
       synchronized (mainLock)
-      {
-         log.debug(this + " closing");
-         
+      {         
          if (closed)
          {
             return;
@@ -837,51 +842,48 @@ public class MessageCallbackHandler
       {         
          MessageProxy mp = null;
          
-         boolean again = false;
-           
+         MessageListener theListener = null;
+         
          synchronized (mainLock)
          {
-            if (listener == null)
+            if (listener == null || buffer.isEmpty())
             {
                listenerRunning = false;
                
-               if (trace) { log.trace("no listener, returning"); }
+               if (trace) { log.trace("no listener or buffer is empty, returning"); }
                
                return;
             }
             
+            theListener = listener;
+            
             // remove a message from the buffer
 
-            if (buffer.isEmpty())
+            mp = (MessageProxy)buffer.removeFirst();
+                          
+            if (!buffer.isEmpty())
             {
-               listenerRunning = false;
-               
-               if (trace) { log.trace("no messages in buffer, marking listener as not running"); }
+            	//Queue up the next runner to run
+            	
+            	if (trace) { log.trace("More messages in buffer so queueing next onMessage to run"); }
+            	
+            	queueRunner(this);
+            	
+            	if (trace) { log.trace("Queued next onMessage to run"); }
             }
             else
-            {               
-               mp = (MessageProxy)buffer.removeFirst();
-               
-               if (mp == null)
-               {
-                  throw new java.lang.IllegalStateException("Cannot find message in buffer!");
-               }
-               
-               again = !buffer.isEmpty();
-               
-               if (!again)
-               {
-                  listenerRunning  = false;
-                  if (trace) { log.trace("no more messages in buffer, marking listener as not running"); }
-               }  
-            }
+            {
+            	if (trace) { log.trace("no more messages in buffer, marking listener as not running"); }
+            	
+            	listenerRunning  = false;
+            }               
          }
                         
          if (mp != null)
          {
             try
             {
-               callOnMessage(sessionDelegate, listener, consumerID, queueName,
+               callOnMessage(sessionDelegate, theListener, consumerID, queueName,
                              false, mp, ackMode, maxDeliveries, null);
             }
             catch (JMSException e)
@@ -890,13 +892,7 @@ public class MessageCallbackHandler
             } 
          }
                   
-         checkStart();
-         
-         if (again)
-         {
-            // Queue it up again
-            queueRunner(this);
-         }                                               
+         checkStart();                                                   
       }
    }   
 }

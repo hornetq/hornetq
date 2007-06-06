@@ -82,7 +82,7 @@ public abstract class ChannelSupport implements Channel
 
    protected PersistenceManager pm;
 
-   protected Object refLock;
+   protected Object lock;
 
    protected boolean active = true;
    
@@ -114,6 +114,7 @@ public abstract class ChannelSupport implements Channel
       {
          throw new IllegalArgumentException("ChannelSupport requires a non-null message store");
       }
+      
       if (pm == null)
       {
          throw new IllegalArgumentException("ChannelSupport requires a " +
@@ -132,7 +133,7 @@ public abstract class ChannelSupport implements Channel
 
       messageRefs = new BasicPriorityLinkedList(10);
 
-      refLock = new Object();
+      lock = new Object();
       
       deliveringCount = new SynchronizedInt(0);
       
@@ -147,7 +148,7 @@ public abstract class ChannelSupport implements Channel
 
    public Delivery handle(DeliveryObserver sender, MessageReference ref, Transaction tx)
    {
-      if (!active)
+      if (!isActive())
       {
          return null;
       }
@@ -176,9 +177,9 @@ public abstract class ChannelSupport implements Channel
       {
          pm.updateDeliveryCount(this.channelID, ref);
       }
-      
+            
       deliveringCount.decrement();
-      
+
       if (!checkAndSchedule(ref))
       {
          cancelInternal(ref);
@@ -190,59 +191,69 @@ public abstract class ChannelSupport implements Channel
    public boolean add(Receiver r)
    {
       if (trace) { log.trace(this + " attempting to add receiver " + r); }
-
-      boolean added = router.add(r);
-
-      if (trace) { log.trace("receiver " + r + (added ? "" : " NOT") + " added"); }
-
-      synchronized (refLock)
-      {
-         receiversReady = true;
+      
+      synchronized (lock)
+      {	
+	      boolean added = router.add(r);
+	
+	      if (trace) { log.trace("receiver " + r + (added ? "" : " NOT") + " added"); }
+	
+	      receiversReady = true;
+	      
+	
+	      return added;
       }
-
-      return added;
    }
 
    public boolean remove(Receiver r)
    {
-      boolean removed = router.remove(r);
-
-      if (removed && !router.iterator().hasNext())
-      {
-         synchronized (refLock)
-         {
-            receiversReady = false;
-         }
-      }
-
-      if (trace) { log.trace(this + (removed ? " removed " : " did NOT remove ") + r); }
-
-      return removed;
+   	synchronized (lock)
+   	{	   	
+	      boolean removed = router.remove(r);
+	
+	      if (removed && !router.iterator().hasNext())
+	      {
+	         receiversReady = false;	         
+	      }
+	
+	      if (trace) { log.trace(this + (removed ? " removed " : " did NOT remove ") + r); }
+	
+	      return removed;
+   	}
    }
 
    public void clear()
    {
-      router.clear();
-      
-      synchronized (refLock)
+      synchronized (lock)
       {
+         router.clear();         
+      	
          receiversReady = false;
       }
    }
 
    public boolean contains(Receiver r)
    {
-      return router.contains(r);
+      synchronized (lock)
+      {
+      	return router.contains(r);
+      }
    }
 
    public Iterator iterator()
    {
-      return router.iterator();
+   	synchronized (lock)
+   	{
+   		return router.iterator();
+   	}
    }
 
    public int getNumberOfReceivers()
    {
-      return router.getNumberOfReceivers();
+   	synchronized (lock)
+   	{
+   		return router.getNumberOfReceivers();
+   	}
    }
 
    // Channel implementation -----------------------------------------------------------------------
@@ -271,7 +282,7 @@ public abstract class ChannelSupport implements Channel
    {
       if (trace) { log.trace(this + " browse" + (filter == null ? "" : ", filter = " + filter)); }
 
-      synchronized (refLock)
+      synchronized (lock)
       {
          //FIXME - This is currently broken since it doesn't take into account
          // refs paged into persistent storage
@@ -297,28 +308,30 @@ public abstract class ChannelSupport implements Channel
    {
       checkClosed();
       
-      if (router.getNumberOfReceivers() > 0)
-      {                
-         synchronized (refLock)
-         {
-            receiversReady = true;
-            
-            deliverInternal();
-         }
-         
-      }
+      synchronized (lock)
+      {      
+	      if (router != null && router.getNumberOfReceivers() > 0)
+	      {                
+	         receiversReady = true;
+	            
+	         deliverInternal();                  
+	      }
+      }     
    }      
 
    public void close()
    {
-      if (router != null)
-      {
-         router.clear();
-         
-         router = null;
-      }
-      
-      clearAllScheduledDeliveries();
+   	synchronized (lock)
+   	{
+	      if (router != null)
+	      {
+	         router.clear();
+	         
+	         router = null;
+	      }
+	      
+	      clearAllScheduledDeliveries();
+   	}
    }
 
    /*
@@ -333,11 +346,12 @@ public abstract class ChannelSupport implements Channel
    {
       log.debug(this + " removing all references");
       
-      synchronized (refLock)
+      synchronized (lock)
       {
          if (deliveringCount.get() > 0)
          {
-            throw new IllegalStateException("Cannot remove references while deliveries are in progress");
+            throw new IllegalStateException("Cannot remove references while deliveries are in progress, there are " +
+            		deliveringCount.get());
          }
          
          //Now we consume the rest of the messages
@@ -370,7 +384,7 @@ public abstract class ChannelSupport implements Channel
    {
       List undelivered = new ArrayList();
 
-      synchronized (refLock)
+      synchronized (lock)
       {
          Iterator iter = messageRefs.getAll().iterator();
 
@@ -401,7 +415,7 @@ public abstract class ChannelSupport implements Channel
     */
    public int getMessageCount()
    {
-      synchronized (refLock)
+      synchronized (lock)
       {
          return messageRefs.size() + getDeliveringCount() + getScheduledCount();
       }
@@ -422,7 +436,7 @@ public abstract class ChannelSupport implements Channel
 
    public void activate()
    {
-      synchronized (refLock)
+      synchronized (lock)
       {
          active = true;         
       }
@@ -430,7 +444,7 @@ public abstract class ChannelSupport implements Channel
 
    public void deactivate()
    {
-      synchronized (refLock)
+      synchronized (lock)
       {
          active = false;         
       }
@@ -438,7 +452,7 @@ public abstract class ChannelSupport implements Channel
 
    public boolean isActive()
    {
-      synchronized (refLock)
+      synchronized (lock)
       {
          return active;         
       }
@@ -451,7 +465,7 @@ public abstract class ChannelSupport implements Channel
                   
       List dels = new ArrayList();
       
-      synchronized (refLock)
+      synchronized (lock)
       {
          ListIterator liter = messageRefs.iterator();
                            
@@ -491,7 +505,7 @@ public abstract class ChannelSupport implements Channel
    
    public int getMaxSize()
    {
-      synchronized (refLock)
+      synchronized (lock)
       {
          return maxSize;
       }
@@ -499,7 +513,7 @@ public abstract class ChannelSupport implements Channel
    
    public void setMaxSize(int newSize)
    {
-      synchronized (refLock)
+      synchronized (lock)
       {
          int count = getMessageCount();
          
@@ -524,7 +538,7 @@ public abstract class ChannelSupport implements Channel
    //Only used for testing
    public int memoryRefCount()
    {
-      synchronized (refLock)
+      synchronized (lock)
       {
          return messageRefs.size();
       }
@@ -564,7 +578,7 @@ public abstract class ChannelSupport implements Channel
    {
       if (trace) { log.trace(this + " cancelling " + ref + " in memory"); }
 
-      synchronized (refLock)
+      synchronized (lock)
       {
          messageRefs.addFirst(ref, ref.getMessage().getPriority());
       }
@@ -633,7 +647,7 @@ public abstract class ChannelSupport implements Channel
                   
                   // Receiver accepted the reference
                   
-                  synchronized (refLock)
+                  synchronized (lock)
                   {
                      if (iter == null)
                      {
@@ -648,7 +662,7 @@ public abstract class ChannelSupport implements Channel
                         iter.remove();                                
                      }
                   }
-                  
+                                  
                   deliveringCount.increment();                     
                }               
             }
@@ -673,7 +687,7 @@ public abstract class ChannelSupport implements Channel
       {      
          // We synchonize on the ref lock to prevent scheduled deivery kicking in before
          // load has finished
-         synchronized (refLock)
+         synchronized (lock)
          {
             // Attempt to push the ref to a receiver
             
@@ -762,7 +776,7 @@ public abstract class ChannelSupport implements Channel
             
             if (!checkAndSchedule(ref))
             {               
-               synchronized (refLock)
+               synchronized (lock)
                {
                   addReferenceInMemory(ref);
                   
@@ -851,7 +865,7 @@ public abstract class ChannelSupport implements Channel
          }
               
          d.getReference().releaseMemoryReference(); 
-         
+                  
          deliveringCount.decrement();
       }
       else
@@ -992,7 +1006,7 @@ public abstract class ChannelSupport implements Channel
 
                try
                {
-                  synchronized (refLock)
+                  synchronized (lock)
                   {
                      addReferenceInMemory(ref);
                   }
@@ -1022,7 +1036,7 @@ public abstract class ChannelSupport implements Channel
             // prompt delivery
             if (promptDelivery)
             {
-            	synchronized (refLock)
+            	synchronized (lock)
             	{
             		deliverInternal();
             	}
