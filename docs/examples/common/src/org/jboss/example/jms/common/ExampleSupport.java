@@ -93,11 +93,18 @@ public abstract class ExampleSupport
          
          ManagementHome home = (ManagementHome)ic.lookup("ejb/Management");
          Management bean = home.create();
-         bean.killAS();
+         try
+         {
+            bean.killAS();
+         }
+         catch(Exception e)
+         {
+            // OK, I expect exceptions following a VM kill
+         }
       }
       catch(Exception e)
       {
-         // OK, I expect exceptions following a VM kill
+         throw new RuntimeException("Could not kill the active node", e);
       }
    }
    
