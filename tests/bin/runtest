@@ -174,7 +174,7 @@ if [ "$remote_debug" = "true" ]; then
    fi
 fi
 
-$JAVA_HOME/bin/java $JAVA_OPTS -cp "$CLASSPATH" \
+"$JAVA_HOME/bin/java" $JAVA_OPTS -cp "$CLASSPATH" \
 org.jboss.test.messaging.tools.junit.SelectiveTestRunner $TARGET_CLASS $TARGET_TEST
 
 #

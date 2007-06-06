@@ -55,5 +55,5 @@ fi
 
 CLASSPATH=`cat $CLASSPATH_FILE`
 
-java $JAVA_OPTS -cp $CLASSPATH -Dtest.bind.address=localhost \
+"$JAVA_HOME/java" $JAVA_OPTS -cp $CLASSPATH -Dtest.bind.address=localhost \
 org.jboss.test.messaging.tools.jmx.rmi.StopRMIServer
