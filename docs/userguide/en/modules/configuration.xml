@@ -1335,7 +1335,16 @@ POPULATE.TABLES.1=INSERT INTO JBM_USER (USER_ID,PASSWD,CLIENTID) VALUES ('dilber
 
                  <section id="conf.destination.queue.attributes.redeliverydelay">
                     <title>RedeliveryDelay</title>
-                    <para>The redlivery delay to be used for this queue. Overrides any value set on the ServerPeer config</para>
+                    <para>The redelivery delay to be used for this queue. Overrides any value set on the ServerPeer config</para>
+                 </section>
+                 
+                 <section id="conf.destination.queue.attributes.maxdeliveryattempts">
+                    <title>MaxDeliveryAttempts</title>
+                    <para>
+                      The maximum number of times delivery of a message will be attempted before sending the message to the DLQ,
+                      if configured. If set to -1 (the default), the value from the ServerPeer config is used. Any other setting
+                      overrides the value set on the ServerPeer config.
+                    </para>
                  </section>
 
                  <section id="conf.destination.queue.attributes.security">
@@ -1651,6 +1660,15 @@ POPULATE.TABLES.1=INSERT INTO JBM_USER (USER_ID,PASSWD,CLIENTID) VALUES ('dilber
                 <section id="conf.destination.topic.attributes.redeliverydelay">
                     <title>RedeliveryDelay</title>
                     <para>The redelivery delay to be used for this topic. Overrides any value set on the ServerPeer config</para>
+                </section>
+
+                <section id="conf.destination.topic.attributes.maxdeliveryattempts">
+                    <title>MaxDeliveryAttempts</title>
+                    <para>
+                      The maximum number of times delivery of a message will be attempted before sending the message to the DLQ,
+                      if configured. If set to -1 (the default), the value from the ServerPeer config is used. Any other setting
+                      overrides the value set on the ServerPeer config.
+                    </para>
                 </section>
 
                 <section id="conf.destination.topic.attributes.security">
