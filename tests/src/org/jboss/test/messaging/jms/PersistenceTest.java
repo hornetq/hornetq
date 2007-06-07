@@ -151,6 +151,91 @@ public class PersistenceTest extends MessagingTestCase
       conn.close();
    }
    
+   /**
+    * Test that the JMSRedelivered and delivery count survives a restart
+    * 
+    */
+   public void testJMSRedeliveredRestart() throws Exception
+   {
+      Connection conn = cf.createConnection();
+      Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      MessageProducer prod = sess.createProducer(queue);
+      prod.setDeliveryMode(DeliveryMode.PERSISTENT);
+      
+      for (int i = 0; i < 10; i++)
+      {
+         TextMessage tm = sess.createTextMessage("message" + i);
+         prod.send(tm);
+      }
+      
+      Session sess2 = conn.createSession(true, Session.SESSION_TRANSACTED);
+      
+      MessageConsumer cons = sess2.createConsumer(queue);
+      
+      conn.start();
+      
+      for (int i = 0; i < 10; i++)
+      {
+         TextMessage tm = (TextMessage)cons.receive(1000);
+         
+         assertNotNull(tm);
+         
+         assertEquals("message" + i, tm.getText());
+         
+         assertFalse(tm.getJMSRedelivered());
+         
+         assertEquals(1, tm.getIntProperty("JMSXDeliveryCount"));
+      }
+      
+      //rollback
+      sess2.rollback();
+      
+      for (int i = 0; i < 10; i++)
+      {
+         TextMessage tm = (TextMessage)cons.receive(1000);
+         
+         assertNotNull(tm);
+         
+         assertEquals("message" + i, tm.getText());
+         
+         assertTrue(tm.getJMSRedelivered());
+         
+         assertEquals(2, tm.getIntProperty("JMSXDeliveryCount"));
+      }
+      
+      conn.close();
+      
+            
+      
+      ServerManagement.stopServerPeer();
+      
+      ServerManagement.startServerPeer();
+      
+      // Messaging server restart implies new ConnectionFactory lookup
+      cf = (ConnectionFactory)initialContext.lookup("/ConnectionFactory");
+
+      ServerManagement.deployQueue("Queue");
+      
+      conn = cf.createConnection();
+      sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      conn.start();
+      cons = sess.createConsumer(queue);
+      for (int i = 0; i < 10; i++)
+      {
+         TextMessage tm = (TextMessage)cons.receive(3000);
+         
+         assertNotNull(tm);
+         
+         assertEquals("message" + i, tm.getText());
+         
+         assertTrue(tm.getJMSRedelivered());
+         
+         assertEquals(3, tm.getIntProperty("JMSXDeliveryCount"));
+      }
+           
+      conn.close();
+   }
+   
    
    /**
     * First test that message order survives a restart 
@@ -258,15 +343,6 @@ public class PersistenceTest extends MessagingTestCase
       conn.close();
    }
 
-   
-   
-//   public void testWibble() throws Exception
-//   {
-//      for (int i = 0; i < 100; i++)
-//      {
-//         dotestMessageOrderPersistence2();
-//      }
- //  }
    
    /**
     * Second test that message order survives a restart 
