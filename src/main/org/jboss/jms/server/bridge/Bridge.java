@@ -1255,7 +1255,7 @@ public class Bridge implements MessagingComponent
    {
       public void run()
       {
-      	if (trace) { log.trace("****  Failure handler running"); }
+      	if (trace) { log.trace("Failure handler running"); }
       	
          // Clear the messages
          messages.clear();
