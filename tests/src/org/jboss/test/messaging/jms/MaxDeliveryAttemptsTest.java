@@ -75,9 +75,11 @@ public class MaxDeliveryAttemptsTest extends MessagingTestCase
 
       try
       {
-         testMaxDeliveryAttempts(
-               "/queue/" + QUEUE_NAME,
-               new ObjectName("jboss.messaging.destination:service=Queue,name=" + QUEUE_NAME));
+         int maxDeliveryAttempts = defaultMaxDeliveryAttempts + 5;
+         setMaxDeliveryAttempts(
+               new ObjectName("jboss.messaging.destination:service=Queue,name=" + QUEUE_NAME),
+               maxDeliveryAttempts);
+         testMaxDeliveryAttempts("/queue/" + QUEUE_NAME, maxDeliveryAttempts);
       }
       finally
       {
@@ -93,9 +95,12 @@ public class MaxDeliveryAttemptsTest extends MessagingTestCase
 
       try
       {
-         testMaxDeliveryAttempts(
-               "/topic/" + TOPIC_NAME,
-               new ObjectName("jboss.messaging.destination:service=Topic,name=" + TOPIC_NAME));
+         int maxDeliveryAttempts = defaultMaxDeliveryAttempts + 5;
+         setMaxDeliveryAttempts(
+               new ObjectName("jboss.messaging.destination:service=Topic,name=" + TOPIC_NAME),
+               maxDeliveryAttempts);
+
+         testMaxDeliveryAttempts("/topic/" + TOPIC_NAME, maxDeliveryAttempts);
       }
       finally
       {
@@ -103,19 +108,62 @@ public class MaxDeliveryAttemptsTest extends MessagingTestCase
       }
    }
       
+   public void testUseDefaultMaxDeliveryAttemptsForQueue() throws Exception
+   {
+      final String QUEUE_NAME = "Queue";
+      
+      ServerManagement.deployQueue(QUEUE_NAME);
+
+      try
+      {
+         setMaxDeliveryAttempts(
+               new ObjectName("jboss.messaging.destination:service=Queue,name=" + QUEUE_NAME),
+               -1);
+
+         // Check that defaultMaxDeliveryAttempts takes effect
+         testMaxDeliveryAttempts("/queue/" + QUEUE_NAME, defaultMaxDeliveryAttempts);
+      }
+      finally
+      {
+         ServerManagement.undeployQueue(QUEUE_NAME);
+      }
+   }
+
+   public void testUseDefaultMaxDeliveryAttemptsForTopic() throws Exception
+   {
+      final String TOPIC_NAME = "Topic";
+      
+      ServerManagement.deployTopic(TOPIC_NAME);
+
+      try
+      {
+         setMaxDeliveryAttempts(
+               new ObjectName("jboss.messaging.destination:service=Topic,name=" + TOPIC_NAME),
+               -1);
+
+         // Check that defaultMaxDeliveryAttempts takes effect
+         testMaxDeliveryAttempts("/topic/" + TOPIC_NAME, defaultMaxDeliveryAttempts);
+      }
+      finally
+      {
+         ServerManagement.undeployTopic(TOPIC_NAME);
+      }
+   }
+
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
    
-   protected void testMaxDeliveryAttempts(String destJndiName, ObjectName destObjectName) throws Exception
+   protected void setMaxDeliveryAttempts(ObjectName dest, int maxDeliveryAttempts) throws Exception
    {
-      int destMaxDeliveryAttempts = defaultMaxDeliveryAttempts + 5;
-
+      ServerManagement.setAttribute(dest, "MaxDeliveryAttempts",
+            Integer.toString(maxDeliveryAttempts));
+   }
+   
+   protected void testMaxDeliveryAttempts(String destJndiName, int destMaxDeliveryAttempts) throws Exception
+   {
       Destination destination = (Destination) ic.lookup(destJndiName);
       
-      ServerManagement.setAttribute(destObjectName, "MaxDeliveryAttempts",
-            Integer.toString(destMaxDeliveryAttempts));
-
       Connection conn = cf.createConnection();
       
       try
