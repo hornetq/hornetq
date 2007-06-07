@@ -86,7 +86,7 @@ import EDU.oswego.cs.dl.util.concurrent.LinkedQueue;
 import EDU.oswego.cs.dl.util.concurrent.PooledExecutor;
 import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
 import EDU.oswego.cs.dl.util.concurrent.ReadWriteLock;
-import EDU.oswego.cs.dl.util.concurrent.WriterPreferenceReadWriteLock;
+import EDU.oswego.cs.dl.util.concurrent.ReentrantWriterPreferenceReadWriteLock;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -276,7 +276,7 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
       
       pooledExecutor.setMinimumPoolSize(poolSize);
       
-      stoplock = new WriterPreferenceReadWriteLock();
+      stoplock = new ReentrantWriterPreferenceReadWriteLock();
    }
 
    // MessagingComponent overrides -----------------------------------------------------------------
@@ -295,7 +295,10 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
 	      }
 	
 	      if (trace) { log.trace(this + " starting"); }
-	
+	      
+	      //We set started = true at the beginning since otherwise when state arrives it will get rejected
+	      started = true;
+	   		
 	      this.syncChannel = jChannelFactory.createSyncChannel();
 	      this.asyncChannel = jChannelFactory.createASyncChannel();
 	
@@ -338,8 +341,6 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
 	
 	      statsSender.start();
 	
-	      started = true;
-	
 	      log.debug(this + " started");
    	}
    	finally
@@ -362,6 +363,8 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
 	         
 	         return;
 	      }
+	      
+	      started = false;	   	
 	      
 	      //Need to send this *before* stopping
 	      syncSendRequest(new LeaveClusterRequest(getNodeId()));
@@ -386,8 +389,6 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
 	      // TODO - what happens if we share the channel? Don't we mess up the other applications this way?
 	      asyncChannel.close();
 	      
-	      started = false;
-	
 	      log.debug(this + " stopped");
       }
       finally
@@ -2347,42 +2348,30 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
          if (bytes != null)
          {         	
          	try
-            {	      	
-   	      	//We need to get the stop lock
-   	         stoplock.readLock().acquire();   	       
-   	      	
-   	      	try
-   	      	{	   
-      	         if (!started)
-      	         {
-      	         	return;
-      	         }
-   	      		
-   	      		//And the general lock
-		            lock.writeLock().acquire();
-	
-		            try
-		            {
-		               processStateBytes(bytes);
-		               
-		               if (trace) { log.trace(DefaultClusteredPostOffice.this + ".ControlMessageListener has set state"); }
-		            }
-		            catch (Exception e)
-		            {
-		               log.error("Caught Exception in MessageListener", e);
-		               IllegalStateException e2 = new IllegalStateException(e.getMessage());
-		               e2.setStackTrace(e.getStackTrace());
-		               throw e2;
-		            }
-		            finally
-		            {
-		               lock.writeLock().release();
-		            }
-		      	}
-		      	finally
-		      	{
-		      		stoplock.readLock().release();
-		      	}
+            {	      	         		
+         		log.info("Receiving state!!!");
+         		
+	            lock.writeLock().acquire();
+
+	            try
+	            {
+	            	log.info("Processing state!");
+	            	
+	               processStateBytes(bytes);
+	               
+	               if (trace) { log.trace(DefaultClusteredPostOffice.this + ".ControlMessageListener has set state"); }
+	            }
+	            catch (Exception e)
+	            {
+	               log.error("Caught Exception in MessageListener", e);
+	               IllegalStateException e2 = new IllegalStateException(e.getMessage());
+	               e2.setStackTrace(e.getStackTrace());
+	               throw e2;
+	            }
+	            finally
+	            {
+	               lock.writeLock().release();
+	            }
             }
          	catch (InterruptedException e)
          	{
@@ -2392,6 +2381,7 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
 
          synchronized (setStateLock)
          {
+         	log.info("notifying set state lock");
             stateSet = true;
             setStateLock.notify();
          }
