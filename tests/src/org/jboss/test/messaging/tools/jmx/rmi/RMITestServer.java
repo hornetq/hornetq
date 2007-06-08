@@ -260,11 +260,6 @@ public class RMITestServer extends UnicastRemoteObject implements Server
       return server.query(pattern);
    }
 
-   public String getDatabaseType()
-   {
-      return server.getDatabaseType();
-   }
-
    public String getRemotingTransport()
    {
       return server.getRemotingTransport();

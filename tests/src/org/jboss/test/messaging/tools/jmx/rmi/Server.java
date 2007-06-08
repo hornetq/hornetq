@@ -105,8 +105,6 @@ public interface Server extends Remote
     */
    Set query(ObjectName pattern) throws Exception;
 
-   String getDatabaseType() throws Exception;
-
    /**
     * @return one of "socket", "http", ...
     */

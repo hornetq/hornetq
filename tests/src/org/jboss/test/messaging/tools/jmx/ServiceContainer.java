@@ -615,13 +615,23 @@ public class ServiceContainer
       return mbeanServer.invoke(on, "getInstance", new Object[0], new String[0]);
    }
 
+   public String getPersistenceConfigFile(boolean clustered)
+   {
+      String databaseName = getDatabaseName();
+
+      if (clustered && !getDatabaseType().equals("hsqldb"))
+      {
+         return "server/default/deploy/clustered-" + databaseName + "-persistence-service.xml";
+      }
+      else
+      {
+         return "server/default/deploy/" + databaseName + "-persistence-service.xml";
+      }
+   }
+
    public Properties getPersistenceManagerSQLProperties() throws Exception
    {
-      String databaseType = getDatabaseType();
-
-      String persistenceConfigFile =
-         "server/default/deploy/" + databaseType + "-persistence-service.xml";
-
+      String persistenceConfigFile = getPersistenceConfigFile(false);
       log.info("Persistence config file: .... " + persistenceConfigFile);
       
       URL persistenceConfigFileURL = getClass().getClassLoader().getResource(persistenceConfigFile);
@@ -655,11 +665,7 @@ public class ServiceContainer
 
    public Properties getPostOfficeSQLProperties() throws Exception
    {
-      String databaseType = getDatabaseType();
-
-      String persistenceConfigFile =
-         "server/default/deploy/" + databaseType + "-persistence-service.xml";
-
+      String persistenceConfigFile = getPersistenceConfigFile(false);
       log.info("Peristence config file: .. " + persistenceConfigFile);
 
       URL persistenceConfigFileURL = getClass().getClassLoader().getResource(persistenceConfigFile);
@@ -693,20 +699,7 @@ public class ServiceContainer
 
    public Properties getClusteredPostOfficeSQLProperties() throws Exception
    {
-      String databaseType = getDatabaseType();
-
-      String persistenceConfigFile;
-      if (databaseType.equals("hsqldb"))
-      {
-         persistenceConfigFile =
-            "server/default/deploy/" + databaseType + "-persistence-service.xml";
-      }
-      else
-      {
-         persistenceConfigFile =
-            "server/default/deploy/clustered-" + databaseType + "-persistence-service.xml";
-      }
-
+      String persistenceConfigFile = getPersistenceConfigFile(true);
       log.info("Persistence config file: .... " + persistenceConfigFile);
 
       URL persistenceConfigFileURL = getClass().getClassLoader().getResource(persistenceConfigFile);
@@ -902,6 +895,11 @@ public class ServiceContainer
       stopConnectionManager(JMS_CONNECTION_MANAGER_OBJECT_NAME);
       stopManagedConnectionPool(JMS_MANAGED_CONNECTION_POOL_OBJECT_NAME);
       undeployJBossJMSRA(JMS_MANAGED_CONNECTION_FACTORY_OBJECT_NAME);
+   }
+   
+   public String getDatabaseName()
+   {
+      return config.getDatabaseName();
    }
 
    public String getDatabaseType()
@@ -1776,6 +1774,6 @@ log.info("password:" + config.getDatabasePassword());
          }
       }
    }
-
+   
    // Inner classes --------------------------------------------------------------------------------
 }

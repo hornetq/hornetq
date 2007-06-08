@@ -138,7 +138,7 @@ public class LocalTestServer implements Server
          sc = new ServiceContainer(containerConfig, null, serverIndex);
          sc.start(clearDatabase, attrOverrides);
 
-         if (this.getDatabaseType().equals("hsqldb") && sc.isClustered())
+         if (sc.getDatabaseType().equals("hsqldb") && sc.isClustered())
          {
             throw new IllegalStateException("The test server cannot be started in clustered mode with hsqldb as a database - must use a shared database");
          }
@@ -245,11 +245,6 @@ public class LocalTestServer implements Server
       return sc.query(pattern);
    }
 
-   public String getDatabaseType()
-   {
-      return sc.getDatabaseType();
-   }
-
    public String getRemotingTransport()
    {
       return sc.getRemotingTransport();
@@ -313,21 +308,8 @@ public class LocalTestServer implements Server
             throw new Exception("Cannot find " + mainConfigFile + " in the classpath");
          }
 
-         String databaseType = sc.getDatabaseType();
-         String persistenceConfigFile;
-
-         if (clustered && !databaseType.equals("hsqldb"))
-         {
-            // HSQL can't be used for clustered server peer - since it's not a shared database
-
-            persistenceConfigFile =
-               "server/default/deploy/clustered-" + databaseType + "-persistence-service.xml";
-         }
-         else
-         {
-            persistenceConfigFile  =
-               "server/default/deploy/" + databaseType + "-persistence-service.xml";
-         }
+         String databaseName = sc.getDatabaseName();
+         String persistenceConfigFile = sc.getPersistenceConfigFile(clustered);
 
          log.info(" Persistence config file .. " + persistenceConfigFile);
 

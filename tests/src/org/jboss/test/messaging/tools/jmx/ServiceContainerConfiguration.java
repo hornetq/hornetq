@@ -89,6 +89,11 @@ class ServiceContainerConfiguration
 
    // Public --------------------------------------------------------
 
+   public String getDatabaseName()
+   {
+      return database;
+   }
+
    /**
     * @return the token that follows after jdbc: in the database URL. So far, we know of
     *         "hsqldb", "mysql", "oracle", "postgresql".

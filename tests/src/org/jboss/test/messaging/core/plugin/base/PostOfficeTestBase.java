@@ -132,11 +132,7 @@ public class PostOfficeTestBase extends MessagingTestCase
 
       // we're testing with priority JGroups stack configurations we're shipping with the release
 
-      // TODO (ovidiu) we're currently using the mysql configuration file. We could refine this even
-      //      further by actually figuring out what database we're currently running on, and use
-      //      that file. Useful when we'll run database matrix tests.
-      //      See http://jira.jboss.org/jira/browse/JBMESSAGING-793
-      String configFilePath = "server/default/deploy/clustered-mysql-persistence-service.xml";
+      String configFilePath = sc.getPersistenceConfigFile(true);
 
       // TODO (ovidiu) we're temporarily ignoring the multiplex option, it doesn't work well
       boolean ignoreMultiplexer = true;
