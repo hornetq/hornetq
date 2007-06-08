@@ -628,22 +628,14 @@ public class ServiceContainer
          return "server/default/deploy/" + databaseName + "-persistence-service.xml";
       }
    }
-
+   
    public Properties getPersistenceManagerSQLProperties() throws Exception
    {
       String persistenceConfigFile = getPersistenceConfigFile(false);
       log.info("Persistence config file: .... " + persistenceConfigFile);
       
-      URL persistenceConfigFileURL = getClass().getClassLoader().getResource(persistenceConfigFile);
-      if (persistenceConfigFileURL == null)
-      {
-         throw new Exception("Cannot find " + persistenceConfigFile + " in the classpath");
-      }
-
-      ServiceDeploymentDescriptor pdd = new ServiceDeploymentDescriptor(persistenceConfigFileURL);
-
       MBeanConfigurationElement persistenceManagerConfig =
-         (MBeanConfigurationElement)pdd.query("service", "PersistenceManager").iterator().next();
+         ServiceConfigHelper.loadServiceConfiguration(persistenceConfigFile, "PersistenceManager");
 
       String props = persistenceManagerConfig.getAttributeValue("SqlProperties");
 
@@ -668,16 +660,8 @@ public class ServiceContainer
       String persistenceConfigFile = getPersistenceConfigFile(false);
       log.info("Peristence config file: .. " + persistenceConfigFile);
 
-      URL persistenceConfigFileURL = getClass().getClassLoader().getResource(persistenceConfigFile);
-      if (persistenceConfigFileURL == null)
-      {
-         throw new Exception("Cannot find " + persistenceConfigFile + " in the classpath");
-      }
-
-      ServiceDeploymentDescriptor pdd = new ServiceDeploymentDescriptor(persistenceConfigFileURL);
-
       MBeanConfigurationElement postOfficeConfig =
-         (MBeanConfigurationElement)pdd.query("service", "PostOffice").iterator().next();
+         ServiceConfigHelper.loadServiceConfiguration(persistenceConfigFile, "PostOffice");
 
       String props = postOfficeConfig.getAttributeValue("SqlProperties");
 
@@ -702,16 +686,8 @@ public class ServiceContainer
       String persistenceConfigFile = getPersistenceConfigFile(true);
       log.info("Persistence config file: .... " + persistenceConfigFile);
 
-      URL persistenceConfigFileURL = getClass().getClassLoader().getResource(persistenceConfigFile);
-      if (persistenceConfigFileURL == null)
-      {
-         throw new Exception("Cannot find " + persistenceConfigFile + " in the classpath");
-      }
-
-      ServiceDeploymentDescriptor pdd = new ServiceDeploymentDescriptor(persistenceConfigFileURL);
-
       MBeanConfigurationElement postOfficeConfig =
-         (MBeanConfigurationElement)pdd.query("service", "PostOffice").iterator().next();
+         ServiceConfigHelper.loadServiceConfiguration(persistenceConfigFile, "PostOffice");
 
       String props = postOfficeConfig.getAttributeValue("SqlProperties");
 
@@ -1564,8 +1540,7 @@ log.info("password:" + config.getDatabasePassword());
          throw new Exception("Cannot find " + multiplexerCofigURL + " in the classpath");
       }
 
-      ServiceDeploymentDescriptor multiplexerDD =
-         new ServiceDeploymentDescriptor(multiplexerCofigURL);
+      ServiceDeploymentDescriptor multiplexerDD = ServiceConfigHelper.loadConfigFile(multiplexerConfigFile);
 
       List services = multiplexerDD.query("name", "Multiplexer");
 
@@ -1608,21 +1583,10 @@ log.info("password:" + config.getDatabasePassword());
    public void deployConnectionFactories(String connFactoryConfigFile,
                                          ServiceAttributeOverrides attrOverrides) throws Exception
    {
-
-      URL connFactoryConfigFileURL =
-         getClass().getClassLoader().getResource(connFactoryConfigFile);
-
-      if (connFactoryConfigFileURL == null)
-      {
-         throw new Exception("Cannot find " + connFactoryConfigFile + " in the classpath");
-      }
-      
       connFactoryObjectNames.clear();
 
-      ServiceDeploymentDescriptor cfdd =
-         new ServiceDeploymentDescriptor(connFactoryConfigFileURL);
-      
-      
+      ServiceDeploymentDescriptor cfdd = ServiceConfigHelper.loadConfigFile(connFactoryConfigFile);
+
       List connFactoryElements = cfdd.query("service", "ConnectionFactory");
 
       for (Iterator i = connFactoryElements.iterator(); i.hasNext();)

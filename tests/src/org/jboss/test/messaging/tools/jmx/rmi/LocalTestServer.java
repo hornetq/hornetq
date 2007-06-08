@@ -49,6 +49,7 @@ import org.jboss.test.messaging.tools.jboss.ServiceDeploymentDescriptor;
 import org.jboss.test.messaging.tools.jmx.MockJBossSecurityManager;
 import org.jboss.test.messaging.tools.jmx.RemotingJMXWrapper;
 import org.jboss.test.messaging.tools.jmx.ServiceAttributeOverrides;
+import org.jboss.test.messaging.tools.jmx.ServiceConfigHelper;
 import org.jboss.test.messaging.tools.jmx.ServiceContainer;
 import org.jboss.test.messaging.tools.jndi.Constants;
 import org.w3c.dom.Element;
@@ -302,39 +303,24 @@ public class LocalTestServer implements Server
          // src/etc/server/default/deploy. This will allow to test the default parameters we ship.
 
          String mainConfigFile = "server/default/deploy/messaging-service.xml";
-         URL mainConfigFileURL = getClass().getClassLoader().getResource(mainConfigFile);
-         if (mainConfigFileURL == null)
-         {
-            throw new Exception("Cannot find " + mainConfigFile + " in the classpath");
-         }
-
-         String databaseName = sc.getDatabaseName();
+         
          String persistenceConfigFile = sc.getPersistenceConfigFile(clustered);
 
          log.info(" Persistence config file .. " + persistenceConfigFile);
 
-         URL persistenceConfigFileURL =
-            getClass().getClassLoader().getResource(persistenceConfigFile);
-
-         if (persistenceConfigFileURL == null)
-         {
-            throw new Exception("Cannot find " + persistenceConfigFile + " in the classpath");
-         }
-
-         ServiceDeploymentDescriptor mdd =
-            new ServiceDeploymentDescriptor(mainConfigFileURL);
-         ServiceDeploymentDescriptor pdd =
-            new ServiceDeploymentDescriptor(persistenceConfigFileURL);
+         ServiceDeploymentDescriptor mdd = ServiceConfigHelper.loadConfigFile(mainConfigFile);
+         
+         ServiceDeploymentDescriptor pdd = ServiceConfigHelper.loadConfigFile(persistenceConfigFile);
 
          MBeanConfigurationElement persistenceManagerConfig =
-            (MBeanConfigurationElement)pdd.query("service", "PersistenceManager").iterator().next();
+            ServiceConfigHelper.getServiceConfiguration(pdd, "PersistenceManager");
          persistenceManagerObjectName = sc.registerAndConfigureService(persistenceManagerConfig);
          overrideAttributes(persistenceManagerObjectName, attrOverrides);
          sc.invoke(persistenceManagerObjectName, "create", new Object[0], new String[0]);
          sc.invoke(persistenceManagerObjectName, "start", new Object[0], new String[0]);
 
          MBeanConfigurationElement jmsUserManagerConfig =
-            (MBeanConfigurationElement)pdd.query("service", "JMSUserManager").iterator().next();
+            ServiceConfigHelper.getServiceConfiguration(pdd, "JMSUserManager");
          jmsUserManagerObjectName = sc.registerAndConfigureService(jmsUserManagerConfig);
          overrideAttributes(jmsUserManagerObjectName, attrOverrides);
          sc.invoke(jmsUserManagerObjectName, "create", new Object[0], new String[0]);
@@ -342,7 +328,7 @@ public class LocalTestServer implements Server
 
          // register server peer as a service, dependencies are injected automatically
          MBeanConfigurationElement serverPeerConfig =
-            (MBeanConfigurationElement)mdd.query("service", "ServerPeer").iterator().next();
+            ServiceConfigHelper.getServiceConfiguration(mdd, "ServerPeer");
 
          // overwrite the file configuration, if needed
          serverPeerConfig.setConstructorArgumentValue(0, 0, String.valueOf(serverPeerID));
@@ -371,7 +357,7 @@ public class LocalTestServer implements Server
          sc.invoke(serverPeerObjectName, "start", new Object[0], new String[0]);
 
          MBeanConfigurationElement postOfficeConfig =
-            (MBeanConfigurationElement)pdd.query("service", "PostOffice").iterator().next();
+            ServiceConfigHelper.getServiceConfiguration(pdd, "PostOffice");
 
          postOfficeObjectName = sc.registerAndConfigureService(postOfficeConfig);
          overrideAttributes(postOfficeObjectName, attrOverrides);

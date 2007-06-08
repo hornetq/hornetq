@@ -6,8 +6,6 @@
  */
 package org.jboss.test.messaging.core.plugin.postoffice.cluster;
 
-import java.net.URL;
-
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
 
@@ -17,6 +15,7 @@ import org.jboss.messaging.core.plugin.postoffice.cluster.jchannelfactory.Multip
 import org.jboss.messaging.util.XMLUtil;
 import org.jboss.test.messaging.tools.jboss.MBeanConfigurationElement;
 import org.jboss.test.messaging.tools.jboss.ServiceDeploymentDescriptor;
+import org.jboss.test.messaging.tools.jmx.ServiceConfigHelper;
 import org.jgroups.JChannel;
 import org.w3c.dom.Element;
 
@@ -116,17 +115,8 @@ public class ClusteredPersistenceServiceConfigFileJChannelFactory implements JCh
    {
       log.debug("using configuration file " + configFilePath);
 
-      URL configFileURL = getClass().getClassLoader().getResource(configFilePath);
-
-      if (configFileURL == null)
-      {
-         throw new Exception("Cannot find " + configFilePath + " in the classpath");
-      }
-
-      ServiceDeploymentDescriptor pdd = new ServiceDeploymentDescriptor(configFileURL);
-
       MBeanConfigurationElement postOfficeConfig =
-         (MBeanConfigurationElement)pdd.query("service", "PostOffice").iterator().next();
+         ServiceConfigHelper.loadServiceConfiguration(configFilePath, "PostOffice");
 
       // first, we try to use a channel factory service, if we find one configured
       String s = (String)postOfficeConfig.getAttributeValue("ChannelFactoryName");
