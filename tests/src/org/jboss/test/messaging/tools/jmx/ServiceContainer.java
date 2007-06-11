@@ -33,6 +33,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
@@ -89,6 +90,9 @@ import org.jboss.test.messaging.tools.jndi.InVMInitialContextFactoryBuilder;
 import org.jboss.tm.TransactionManagerService;
 import org.jboss.tm.TxManager;
 import org.jboss.tm.usertx.client.ServerVMClientUserTransaction;
+import org.w3c.dom.Attr;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
 
 import com.arjuna.ats.arjuna.recovery.RecoveryManager;
 
@@ -1310,6 +1314,94 @@ log.info("password:" + config.getDatabasePassword());
    {
       stopService(managedConnFactoryObjectName);
    }
+   
+   private String buildLocatorURI(String transport, Map overrideMap) throws Exception
+   {
+      // We use this from thirdparty remoting tests when we don't want to send stuff through
+      // JMSWireFormat, but we want everything else in the connector's configuration to be
+      // identical with what we use in Messaging         
+      boolean overrideMarshallers =
+         overrideMap != null && overrideMap.get(DO_NOT_USE_MESSAGING_MARSHALLERS) != null;
+
+      // Note that we DO NOT want the direct thread pool on the server side - since that can lead
+      // to deadlocks
+
+      String params;
+
+      // specific parameters per transport
+      if ("http".equals(transport))
+      {
+         // TODO - use remoting-service.xml parameters, not these ...
+         
+         long clientLeasePeriod = 20000;
+
+         String marshallers = overrideMarshallers ? "" :
+            "marshaller=org.jboss.jms.wireformat.JMSWireFormat&" +
+            "unmarshaller=org.jboss.jms.wireformat.JMSWireFormat&";
+
+         params =
+            "/?" +
+            marshallers +
+            "socket.check_connection=false&" +
+            "clientLeasePeriod=" + clientLeasePeriod +
+            "&dataType=jms";
+
+         params += "&callbackPollPeriod=" + HTTP_CONNECTOR_CALLBACK_POLL_PERIOD +
+                   "&callbackStore=org.jboss.remoting.callback.BlockingCallbackStore";
+      }
+      else
+      {
+         //socket transports
+         MBeanConfigurationElement connectorServiceConfig =
+            ServiceConfigHelper.loadServiceConfiguration("server/default/deploy/remoting-service.xml", "Connector");
+         
+         String invokerConfig = connectorServiceConfig.getAttributeValue("Configuration");
+         
+         Element invokerConfigRoot = XMLUtil.stringToElement(invokerConfig);
+         Element invokerElement = (Element) invokerConfigRoot.getElementsByTagName("invoker").item(0);
+         
+         NodeList invokerAttributes = invokerElement.getElementsByTagName("attribute");
+         
+         StringBuffer paramsBuffer = new StringBuffer();
+
+         for (int i = 0; i < invokerAttributes.getLength(); i++)
+         {
+            Element attr = (Element) invokerAttributes.item(i);
+            if (attr.getAttribute("isParam").equals(""))
+            {
+               continue;
+            }
+            
+            String key = attr.getAttribute("name");
+            String value = attr.getTextContent().trim();
+
+            if (overrideMarshallers &&
+                  (key.equals("marshaller") || key.equals("unmarshaller")))
+            {
+               continue;
+            }
+
+            if (paramsBuffer.length() > 0)
+            {
+               paramsBuffer.append('&');
+            }
+
+            paramsBuffer.append(key).append('=').append(value);
+         }
+
+         params = paramsBuffer.insert(0, "/?").toString();
+      }
+      
+      if ("sslbisocket".equals(transport) || "sslsocket".equals(transport))
+      {
+         System.setProperty("javax.net.ssl.keyStorePassword", "secureexample");
+         String keyStoreFilePath = this.getClass().getResource("../../../../../../../etc/messaging.keystore").getFile();
+         System.setProperty("javax.net.ssl.keyStore", keyStoreFilePath);
+      }
+      
+      int freePort = PortUtil.findFreePort(ipAddressOrHostName);
+      return transport + "://" + ipAddressOrHostName + ":" + freePort + params;
+   }
 
    private void startRemoting(ServiceAttributeOverrides attrOverrides,
                               String transport,
@@ -1335,61 +1427,9 @@ log.info("password:" + config.getDatabasePassword());
 
       if (locatorURI == null)
       {
-         // TODO - use remoting-service.xml parameters, not these ...
-
-         long clientLeasePeriod = 20000;
-
-         String marshallers =
-            "marshaller=org.jboss.jms.wireformat.JMSWireFormat&" +
-            "unmarshaller=org.jboss.jms.wireformat.JMSWireFormat&";
-
-         // We use this from thirdparty remoting tests when we don't want to send stuff through
-         // JMSWireFormat, but we want everything else in the connector's configuration to be
-         // identical with what we use in Messaging
-         if (overrideMap != null && overrideMap.get(DO_NOT_USE_MESSAGING_MARSHALLERS) != null)
-         {
-            marshallers = "";
-         }
-         
-         // Note that we DO NOT want the direct thread pool on the server side - since that can lead
-         // to deadlocks
-
-         String params =
-            "/?" +
-            marshallers +
-            "socket.check_connection=false&" +
-            "clientLeasePeriod=" + clientLeasePeriod +
-            "&dataType=jms";
-
-         // specific parameters per transport
-
-         if ("http".equals(transport))
-         {
-            params += "&callbackPollPeriod=" + HTTP_CONNECTOR_CALLBACK_POLL_PERIOD +
-                      "&callbackStore=org.jboss.remoting.callback.BlockingCallbackStore";
-         }
-         else
-         {
-         	//socket transports
-            params += "&timeout=0&" +
-            	"clientSocketClass=org.jboss.jms.client.remoting.ClientSocketWrapper&" +
-               "serverSocketClass=org.jboss.jms.server.remoting.ServerSocketWrapper&" +
-               "NumberOfRetries=1&" +
-               "NumberOfCallRetries=1";
-         }
-         
-         if ("sslbisocket".equals(transport) || "sslsocket".equals(transport))
-         {
-            System.setProperty("javax.net.ssl.keyStorePassword", "secureexample");
-            String keyStoreFilePath = this.getClass().getResource("../../../../../../../etc/messaging.keystore").getFile();
-            System.setProperty("javax.net.ssl.keyStore", keyStoreFilePath);
-         }
-         
-         int freePort = PortUtil.findFreePort(ipAddressOrHostName);
-         locatorURI = transport + "://" + ipAddressOrHostName + ":" + freePort + params;
+         locatorURI = buildLocatorURI(transport, overrideMap);
          log.info("creating server for: " + locatorURI);
       }
-
 
       log.debug("Using locator uri: " + locatorURI);
 
