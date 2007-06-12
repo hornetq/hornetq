@@ -28,6 +28,7 @@ import java.util.List;
 import org.jboss.messaging.core.Delivery;
 import org.jboss.messaging.core.DeliveryObserver;
 import org.jboss.messaging.core.Filter;
+import org.jboss.messaging.core.Queue;
 import org.jboss.messaging.core.Receiver;
 import org.jboss.messaging.core.SimpleDelivery;
 import org.jboss.messaging.core.message.Message;
@@ -81,19 +82,19 @@ public class RoundRobinRouterTest extends PostOfficeTestBase
    {
       RoundRobinRouter dr = new RoundRobinRouter();
       
-      ClusteredQueue queue1 = new SimpleQueue(true);
+      ClusteredQueue queue1 = new SimpleClusteredQueue(true);
       dr.add(queue1);
       
       assertEquals(1, dr.getNumberOfReceivers());
       assertEquals(1, dr.getQueues().size());
       
-      ClusteredQueue queue2 = new SimpleQueue(false);
+      ClusteredQueue queue2 = new SimpleClusteredQueue(false);
       dr.add(queue2);
       
       assertEquals(2, dr.getNumberOfReceivers());
       assertEquals(2, dr.getQueues().size());
       
-      ClusteredQueue queue3 = new SimpleQueue(false);
+      ClusteredQueue queue3 = new SimpleClusteredQueue(false);
       dr.add(queue3);
       
       assertEquals(3, dr.getNumberOfReceivers());
@@ -121,7 +122,7 @@ public class RoundRobinRouterTest extends PostOfficeTestBase
    {
       RoundRobinRouter dr = new RoundRobinRouter();
                     
-      ClusteredQueue queue = new SimpleQueue(true);
+      ClusteredQueue queue = new SimpleClusteredQueue(true);
       
       SimpleReceiver receiver1 = new SimpleReceiver("blah", SimpleReceiver.ACCEPTING);
       
@@ -136,12 +137,32 @@ public class RoundRobinRouterTest extends PostOfficeTestBase
       sendAndCheck(dr, receiver1);
    }
    
-   //The router has only one non local queues
-   public void testRouterOnlyOneNonLocal() throws Exception
+   //The router has only one non local clustered queue
+   public void testRouterOnlyOneNonLocalClustered() throws Exception
    {
       RoundRobinRouter dr = new RoundRobinRouter();
                     
-      ClusteredQueue queue = new SimpleQueue(false);
+      ClusteredQueue queue = new SimpleClusteredQueue(false);
+      
+      SimpleReceiver receiver1 = new SimpleReceiver("blah", SimpleReceiver.ACCEPTING);
+      
+      queue.add(receiver1);
+      
+      dr.add(queue);
+      
+      sendAndCheck(dr, receiver1);
+      
+      sendAndCheck(dr, receiver1);
+      
+      sendAndCheck(dr, receiver1);              
+   }
+   
+   //The router has only one non local non clustered queue
+   public void testRouterOnlyOneNonLocalNonClustered() throws Exception
+   {
+      RoundRobinRouter dr = new RoundRobinRouter();
+                    
+      ClusteredQueue queue = new SimpleClusteredQueue(false);
       
       SimpleReceiver receiver1 = new SimpleReceiver("blah", SimpleReceiver.ACCEPTING);
       
@@ -161,7 +182,7 @@ public class RoundRobinRouterTest extends PostOfficeTestBase
    {
       RoundRobinRouter dr = new RoundRobinRouter();
                    
-      ClusteredQueue remote1 = new SimpleQueue(false);
+      ClusteredQueue remote1 = new SimpleClusteredQueue(false);
      
       SimpleReceiver receiver1 = new SimpleReceiver("blah", SimpleReceiver.ACCEPTING);
       
@@ -170,7 +191,7 @@ public class RoundRobinRouterTest extends PostOfficeTestBase
       dr.add(remote1);
       
       
-      ClusteredQueue remote2 = new SimpleQueue(false);
+      ClusteredQueue remote2 = new SimpleClusteredQueue(false);
       
       SimpleReceiver receiver2 = new SimpleReceiver("blah", SimpleReceiver.ACCEPTING);
       
@@ -179,7 +200,7 @@ public class RoundRobinRouterTest extends PostOfficeTestBase
       dr.add(remote2);
       
       
-      ClusteredQueue remote3 = new SimpleQueue(false);
+      ClusteredQueue remote3 = new SimpleClusteredQueue(false);
       
       SimpleReceiver receiver3 = new SimpleReceiver("blah", SimpleReceiver.ACCEPTING);
       
@@ -206,7 +227,7 @@ public class RoundRobinRouterTest extends PostOfficeTestBase
    {
       RoundRobinRouter dr = new RoundRobinRouter();
                              
-      ClusteredQueue remote1 = new SimpleQueue(false);
+      ClusteredQueue remote1 = new SimpleClusteredQueue(false);
      
       SimpleReceiver receiver1 = new SimpleReceiver("blah", SimpleReceiver.ACCEPTING);
       
@@ -214,7 +235,7 @@ public class RoundRobinRouterTest extends PostOfficeTestBase
       
       dr.add(remote1);
       
-      ClusteredQueue queue = new SimpleQueue(true);
+      ClusteredQueue queue = new SimpleClusteredQueue(true);
       
       SimpleReceiver receiver2 = new SimpleReceiver("blah", SimpleReceiver.ACCEPTING);
       
@@ -238,7 +259,7 @@ public class RoundRobinRouterTest extends PostOfficeTestBase
    {
       RoundRobinRouter dr = new RoundRobinRouter();            
                   
-      ClusteredQueue remote1 = new SimpleQueue(false);
+      ClusteredQueue remote1 = new SimpleClusteredQueue(false);
       
       SimpleReceiver receiver1 = new SimpleReceiver("blah", SimpleReceiver.ACCEPTING);
       
@@ -247,7 +268,7 @@ public class RoundRobinRouterTest extends PostOfficeTestBase
       dr.add(remote1);
       
       
-      ClusteredQueue remote2 = new SimpleQueue(false);
+      ClusteredQueue remote2 = new SimpleClusteredQueue(false);
       
       SimpleReceiver receiver2 = new SimpleReceiver("blah", SimpleReceiver.ACCEPTING);
       
@@ -256,7 +277,7 @@ public class RoundRobinRouterTest extends PostOfficeTestBase
       dr.add(remote2);
       
       
-      ClusteredQueue remote3 = new SimpleQueue(false);
+      ClusteredQueue remote3 = new SimpleClusteredQueue(false);
       
       SimpleReceiver receiver3 = new SimpleReceiver("blah", SimpleReceiver.ACCEPTING);
       
@@ -265,7 +286,7 @@ public class RoundRobinRouterTest extends PostOfficeTestBase
       dr.add(remote3);
       
       
-      ClusteredQueue queue = new SimpleQueue(true);
+      ClusteredQueue queue = new SimpleClusteredQueue(true);
             
       SimpleReceiver receiver4 = new SimpleReceiver("blah", SimpleReceiver.ACCEPTING);
       
@@ -292,6 +313,7 @@ public class RoundRobinRouterTest extends PostOfficeTestBase
       
       sendAndCheck(dr, receiver1);
    }
+   
    
    private long nextId;
    
@@ -327,35 +349,11 @@ public class RoundRobinRouterTest extends PostOfficeTestBase
    
    // Inner classes -------------------------------------------------
    
-   class SimpleQueue implements ClusteredQueue
+   class SimpleNonClusteredQueue implements Queue
    {
-      private boolean local;
-      
       private Receiver receiver;
       
-      private List refs = new ArrayList();
-        
-      SimpleQueue(boolean local)
-      {
-         this.local = local;
-      }
-
-      public int getNodeId()
-      {
-         // TODO Auto-generated method stub
-         return 0;
-      }
-
-      public QueueStats getStats()
-      {
-         // TODO Auto-generated method stub
-         return null;
-      }
-
-      public boolean isLocal()
-      {
-         return local;
-      }
+      private List refs = new ArrayList();       
 
       public Filter getFilter()
       {
@@ -594,9 +592,34 @@ public class RoundRobinRouterTest extends PostOfficeTestBase
       {
          // TODO Auto-generated method stub
          return 0;
+      }   	
+   }
+   
+   class SimpleClusteredQueue extends SimpleNonClusteredQueue implements ClusteredQueue
+   {
+      private boolean local;
+           
+      SimpleClusteredQueue(boolean local)
+      {
+         this.local = local;
       }
 
-      
+      public int getNodeId()
+      {
+         // TODO Auto-generated method stub
+         return 0;
+      }
+
+      public QueueStats getStats()
+      {
+         // TODO Auto-generated method stub
+         return null;
+      }
+
+      public boolean isLocal()
+      {
+         return local;
+      }
    }
    
 

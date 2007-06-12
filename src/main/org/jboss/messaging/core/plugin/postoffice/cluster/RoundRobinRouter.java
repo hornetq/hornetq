@@ -35,11 +35,7 @@ import org.jboss.messaging.core.tx.Transaction;
 
 /**
  * 
- * This router first favours the failed over queue (if there is one) TODO revisit this
- * 
- * Then it will round robin between the non queues.
- * 
- * FIXME - none of the new failed over functionality has been tested!!
+ * This router round robins between the queues
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
