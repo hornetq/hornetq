@@ -143,6 +143,7 @@ public class ServiceContainer
    public static String USER_TRANSACTION_JNDI_NAME = "UserTransaction";
    public static String JCA_JMS_CONNECTION_FACTORY_JNDI_NAME = "java:/JCAConnectionFactory";
 
+   // Must match the value in remoting-http-service.xml
    public static long HTTP_CONNECTOR_CALLBACK_POLL_PERIOD = 102;
 
    // List<ObjectName>
@@ -1326,81 +1327,53 @@ log.info("password:" + config.getDatabasePassword());
       // Note that we DO NOT want the direct thread pool on the server side - since that can lead
       // to deadlocks
 
-      String params;
+      String configFileName = "remoting/remoting-" + transport + "-service.xml";
 
-      // specific parameters per transport
-      if ("http".equals(transport))
+      MBeanConfigurationElement connectorServiceConfig =
+         ServiceConfigHelper.loadServiceConfiguration(configFileName, "Connector");
+      
+      String invokerConfig = connectorServiceConfig.getAttributeValue("Configuration");
+      
+      Element invokerElement = (Element) XMLUtil
+         .stringToElement(invokerConfig)
+         .getElementsByTagName("invoker").item(0);
+      
+      NodeList invokerAttributes = invokerElement.getElementsByTagName("attribute");
+      
+      StringBuffer paramsBuffer = new StringBuffer();
+
+      for (int i = 0; i < invokerAttributes.getLength(); i++)
       {
-         // TODO - use remoting-service.xml parameters, not these ...
-         
-         long clientLeasePeriod = 20000;
-
-         String marshallers = overrideMarshallers ? "" :
-            "marshaller=org.jboss.jms.wireformat.JMSWireFormat&" +
-            "unmarshaller=org.jboss.jms.wireformat.JMSWireFormat&";
-
-         params =
-            "/?" +
-            marshallers +
-            "socket.check_connection=false&" +
-            "clientLeasePeriod=" + clientLeasePeriod +
-            "&dataType=jms";
-
-         params += "&callbackPollPeriod=" + HTTP_CONNECTOR_CALLBACK_POLL_PERIOD +
-                   "&callbackStore=org.jboss.remoting.callback.BlockingCallbackStore";
-      }
-      else
-      {
-         //socket transports
-         MBeanConfigurationElement connectorServiceConfig =
-            ServiceConfigHelper.loadServiceConfiguration("server/default/deploy/remoting-service.xml", "Connector");
-         
-         String invokerConfig = connectorServiceConfig.getAttributeValue("Configuration");
-         
-         Element invokerConfigRoot = XMLUtil.stringToElement(invokerConfig);
-         Element invokerElement = (Element) invokerConfigRoot.getElementsByTagName("invoker").item(0);
-         
-         NodeList invokerAttributes = invokerElement.getElementsByTagName("attribute");
-         
-         StringBuffer paramsBuffer = new StringBuffer();
-
-         for (int i = 0; i < invokerAttributes.getLength(); i++)
+         Element attr = (Element) invokerAttributes.item(i);
+         if (attr.getAttribute("isParam").equals(""))
          {
-            Element attr = (Element) invokerAttributes.item(i);
-            if (attr.getAttribute("isParam").equals(""))
-            {
-               continue;
-            }
-            
-            String key = attr.getAttribute("name");
-            String value = attr.getTextContent().trim();
+            continue;
+         }
+         
+         String key = attr.getAttribute("name");
+         String value = attr.getTextContent().trim();
 
-            if (overrideMarshallers &&
-                  (key.equals("marshaller") || key.equals("unmarshaller")))
-            {
-               continue;
-            }
-
-            if (paramsBuffer.length() > 0)
-            {
-               paramsBuffer.append('&');
-            }
-
-            paramsBuffer.append(key).append('=').append(value);
+         if (overrideMarshallers &&
+               (key.equals("marshaller") || key.equals("unmarshaller")))
+         {
+            continue;
          }
 
-         params = paramsBuffer.insert(0, "/?").toString();
+         if (paramsBuffer.length() > 0)
+         {
+            paramsBuffer.append('&');
+         }
+
+         paramsBuffer.append(key).append('=').append(value);
       }
-      
-      if ("sslbisocket".equals(transport) || "sslsocket".equals(transport))
-      {
-         System.setProperty("javax.net.ssl.keyStorePassword", "secureexample");
-         String keyStoreFilePath = this.getClass().getResource("../../../../../../../etc/messaging.keystore").getFile();
-         System.setProperty("javax.net.ssl.keyStore", keyStoreFilePath);
-      }
-      
+
       int freePort = PortUtil.findFreePort(ipAddressOrHostName);
-      return transport + "://" + ipAddressOrHostName + ":" + freePort + params;
+      
+      return new StringBuffer()
+         .append(transport).append("://")
+         .append(ipAddressOrHostName).append(':').append(freePort)
+         .append("/?").append(paramsBuffer)
+         .toString();
    }
 
    private void startRemoting(ServiceAttributeOverrides attrOverrides,

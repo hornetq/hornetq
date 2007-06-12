@@ -73,6 +73,8 @@
    </target>
 
    <target name="deploy">
+      <copy file="../../../src/etc/remoting/remoting-http-service.xml"
+            todir="${jboss.home}/server/${jboss.configuration}/deploy"/>
       <copy file="./etc/messaging-http-service.xml"
             todir="${jboss.home}/server/${jboss.configuration}/deploy"/>
       <antcall target="sleep"><param name="sleep.interval" value="10"/></antcall>
@@ -94,6 +96,7 @@
 
    <target name="undeploy">
       <delete file="${jboss.home}/server/${jboss.configuration}/deploy/messaging-http-service.xml" quiet="true"/>
+      <delete file="${jboss.home}/server/${jboss.configuration}/deploy/remoting-http-service.xml" quiet="true"/>
    </target>
 
    <target name="clean" depends="undeploy">

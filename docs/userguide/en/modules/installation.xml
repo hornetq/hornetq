@@ -426,10 +426,10 @@ the JBoss Transactions Recovery Manager</para>
               
               </programlisting>
               
-              <warning>You must ensure that the config (like above) is identical to that in <literal>remoting-service.xml</literal>
+              <warning>You must ensure that the config (like above) is identical to that in <literal>remoting-bisocket-service.xml</literal>
               With the exception of the actual serverBindPort which clearly must be different for each ports range.
               Please note that the default JBoss Messaging service binding manager bindings in <literal>sample-bindings.xml</literal>
-              shipped with JBAS 4.2.0 is out of date and you will need to copy the config from <literal>remoting-service.xml</literal>
+              shipped with JBAS 4.2.0 is out of date and you will need to copy the config from <literal>remoting-bisocket-service.xml</literal>
               </warning>
 
               <para>You should ensure that each node is configured to use a different ports range.</para>
@@ -643,10 +643,10 @@ the JBoss Transactions Recovery Manager</para>
               
               </programlisting>
               
-              <warning>You must ensure that the config (like above) is identical to that in <literal>remoting-service.xml</literal>
+              <warning>You must ensure that the config (like above) is identical to that in <literal>remoting-bisocket-service.xml</literal>
               With the exception of the actual serverBindPort which clearly must be different for each ports range.
               Please note that the default JBoss Messaging service binding manager bindings in <literal>sample-bindings.xml</literal>
-              shipped with JBAS 4.2.0 is out of date and you will need to copy the config from <literal>remoting-service.xml</literal>
+              shipped with JBAS 4.2.0 is out of date and you will need to copy the config from <literal>remoting-bisocket-service.xml</literal>
               </warning>
 
               <para>You should ensure that each node is configured to use a different ports range.</para>

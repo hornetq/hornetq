@@ -78,6 +78,8 @@
    <target name="deploy">
       <copy file="./etc/messaging.keystore"
             todir="${jboss.home}/server/${jboss.configuration}/deploy/jboss-messaging.sar"/>
+      <copy file="../../../src/etc/remoting/remoting-sslbisocket-service.xml"
+            todir="${jboss.home}/server/${jboss.configuration}/deploy"/>
       <copy file="./etc/messaging-secure-socket-service.xml"
             todir="${jboss.home}/server/${jboss.configuration}/deploy"/>
       <antcall target="sleep"><param name="sleep.interval" value="5"/></antcall>
@@ -100,6 +102,7 @@
    </target>
 
    <target name="undeploy">
+      <delete file="${jboss.home}/server/${jboss.configuration}/deploy/remoting-sslbisocket-service.xml" quiet="true"/>
       <delete file="${jboss.home}/server/${jboss.configuration}/deploy/messaging-secure-socket-service.xml" quiet="true"/>
       <delete file="${jboss.home}/server/${jboss.configuration}/deploy/jboss-messaging.sar/messaging.keystore" quiet="true"/>
    </target>

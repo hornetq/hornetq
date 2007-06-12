@@ -21,7 +21,7 @@
       Depending on the functionality provided by the services it configures, the configuration
       data is distributed between
       <filename>messaging-service.xml</filename>,
-      <filename>remoting-service.xml</filename>,
+      <filename>remoting-bisocket-service.xml</filename>,
       <filename>xxx-persistence-service.xml</filename>
        (or <filename>clustered-xxx-persistence-service.xml</filename> for a clustered configuration,
        more about clusterered configuration in <xref linkend="c_configuration"/>) (where xxx is the name
@@ -2230,7 +2230,7 @@ POPULATE.TABLES.1=INSERT INTO JBM_USER (USER_ID,PASSWD,CLIENTID) VALUES ('dilber
 	       </para>
 	
 	       <para>
-	          &lt;JBoss&gt;/server/&lt;YourMessagingServer&gt;/deploy/jboss-messaging.sar/remoting-service.xml
+	          &lt;JBoss&gt;/server/&lt;YourMessagingServer&gt;/deploy/jboss-messaging.sar/remoting-bisocket-service.xml
 	       </para>
 	
 	       <para>
@@ -2239,7 +2239,7 @@ POPULATE.TABLES.1=INSERT INTO JBM_USER (USER_ID,PASSWD,CLIENTID) VALUES ('dilber
 	       </para>
 	
 	       <para>
-	          You can change remoting-service.xml if you want for example use a
+	          You can change remoting-bisocket-service.xml if you want for example use a
 	          different communication port.
 	       </para>
 	
@@ -2251,7 +2251,7 @@ POPULATE.TABLES.1=INSERT INTO JBM_USER (USER_ID,PASSWD,CLIENTID) VALUES ('dilber
 	     <title>ServiceBindingManager</title>
 	
 	     <para>If you are using the JBoss AS ServiceBindingManager to provide different servers with different port ranges, then you must make sure that the JBoss Messaging
-	     remoting configuration specified in the JBoss Messaging section of the ServiceBindingManager xml file exactly matches that in remoting-service.xml
+	     remoting configuration specified in the JBoss Messaging section of the ServiceBindingManager xml file exactly matches that in remoting-bisocket-service.xml
 	    </para>
 	    
 	    <para>See the chapter on installation for a description of how to set-up the service binding manager for

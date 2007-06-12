@@ -67,13 +67,18 @@
            </includes>
         </resource>
         <resource>
+           <directory>src/etc/remoting</directory>
+           <includes>
+              <include>remoting-bisocket-service.xml</include>
+           </includes>
+        </resource>
+        <resource>
            <directory>src/etc/server/default/deploy</directory>
            <includes>
               <include>messaging-service.xml</include>
               <include>connection-factories-service.xml</include>
               <include>destinations-service.xml</include>
               <include>hsqldb-persistence-service.xml</include>
-              <include>remoting-service.xml</include>
               <include>jms-ds.xml</include>
            </includes>
         </resource> 
