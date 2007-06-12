@@ -27,7 +27,7 @@ import org.jboss.remoting.ServerInvocationHandler;
 import java.util.Set;
 
 /**
- * Node: This wrapper MUST NOT allow direct access to the Connector instance. This is necessary
+ * Note: This wrapper MUST NOT allow direct access to the Connector instance. This is necessary
  *       because the wrapper is maintaining the mapping between the Connector's
  *       ServerInvocationHandler instances and their subsystem names. Remoting should do that (it
  *       should have a Connector.getSubsystemNames() or similar), but it doesn't, so I have to do
