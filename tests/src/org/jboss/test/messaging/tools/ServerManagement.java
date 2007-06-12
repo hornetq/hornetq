@@ -37,7 +37,6 @@ import javax.management.NotificationListener;
 import javax.management.ObjectName;
 import javax.transaction.UserTransaction;
 
-import org.jboss.jms.jndi.JMSProviderAdapter;
 import org.jboss.jms.server.DestinationManager;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.plugin.contract.MessageStore;
@@ -436,8 +435,6 @@ public class ServerManagement
 
       String classPath = System.getProperty("java.class.path");
 
-      //System.out.println("CLASSPATH: " + classPath);
-
       if (System.getProperty("os.name").equals("Linux"))
       {
          sb.append("-cp").append(" ").append(classPath).append(" ");
@@ -457,8 +454,6 @@ public class ServerManagement
       sb.append("org.jboss.test.messaging.tools.jmx.rmi.RMITestServer");
       
       String commandLine = sb.toString();
-
-      //System.out.println(commandLine);
 
       Process process = Runtime.getRuntime().exec(commandLine);
 

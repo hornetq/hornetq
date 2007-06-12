@@ -137,9 +137,8 @@ public class MessagingXid implements Xid, Serializable, Streamable
 
    public String toString()
    {
-      return getClass().getName() + "(GID: " + stringRep(getGlobalTransactionId()) +
-                                    ", Branch: " + stringRep(getBranchQualifier()) +
-                                    ", Format: " + getFormatId() + ")";
+     	return "MessagingXid (" + System.identityHashCode(this) + " bq:" + stringRep(branchQualifier) +
+     	" formatID:" + formatId + " gtxid:" + stringRep(globalTransactionId);
    }
    
    private String stringRep(byte[] bytes)

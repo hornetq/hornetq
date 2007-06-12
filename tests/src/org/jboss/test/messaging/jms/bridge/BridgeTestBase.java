@@ -36,7 +36,6 @@ import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.jms.Topic;
-import javax.management.ObjectName;
 import javax.naming.InitialContext;
 
 import org.jboss.jms.server.bridge.Bridge;
@@ -351,6 +350,8 @@ public class BridgeTestBase extends MessagingTestCase
             }
             
             msgs.add(tm.getText());
+            
+            log.info("*** RECEIVED MESSAGE *** " + tm.getText());
             
             count++;
             

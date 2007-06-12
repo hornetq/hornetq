@@ -539,7 +539,7 @@ public abstract class PagingFilteredQueueTestBase extends MessagingTestCase
       MessageReference ref = createReference(0, true, "payload");
       SimpleDeliveryObserver observer = new SimpleDeliveryObserver();
       
-      log.info("ref is reliable:" + ref.getMessage().isReliable());
+      log.trace("ref is reliable:" + ref.getMessage().isReliable());
 
       // non-transacted send, reliable message, one message
       Delivery delivery = queue.handle(observer, ref, null);

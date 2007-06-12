@@ -21,14 +21,9 @@
  */
 package org.jboss.test.messaging.jms.bridge;
 
-import java.util.Properties;
-
-import org.jboss.jms.jndi.JMSProviderAdapter;
 import org.jboss.jms.server.bridge.Bridge;
 import org.jboss.logging.Logger;
 import org.jboss.test.messaging.tools.ServerManagement;
-import org.jboss.test.messaging.tools.TestJMSProviderAdaptor;
-import org.jboss.test.messaging.tools.aop.PoisonInterceptor;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -53,36 +48,13 @@ public class ReconnectTest extends BridgeTestBase
          fail("Test should only be run in a remote configuration");
       }
 
-      useArjuna = true;
+      useArjuna = false;
       
-      super.setUp();         
-      
-      //Now install local JMSProviderAdaptor classes
-      
-      Properties props0 = new Properties();
-      props0.putAll(ServerManagement.getJNDIEnvironment(0));
-      
-      Properties props1 = new Properties();
-      props1.putAll(ServerManagement.getJNDIEnvironment(1));
-        
-      JMSProviderAdapter sourceAdaptor =
-         new TestJMSProviderAdaptor(props0, "/XAConnectionFactory", "adaptor1");
-      JMSProviderAdapter targetAdaptor =
-         new TestJMSProviderAdaptor(props1, "/XAConnectionFactory", "adaptor2");
-      
-      sc.installJMSProviderAdaptor("adaptor1", sourceAdaptor);
-      sc.installJMSProviderAdaptor("adaptor2", targetAdaptor);
-      
-      sc.startRecoveryManager();      
+      super.setUp();                  
    }
 
    protected void tearDown() throws Exception
    {            
-      sc.stopRecoveryManager();
-      
-      sc.uninstallJMSProviderAdaptor("adaptor1");
-      sc.uninstallJMSProviderAdaptor("adaptor2");
-
       super.tearDown();
 
       log.debug(this + " torn down");
@@ -136,18 +108,6 @@ public class ReconnectTest extends BridgeTestBase
    public void testCrashAndReconnectDestCrashBeforePrepare_NP() throws Exception
    {
       testCrashAndReconnectDestCrashBeforePrepare(false);
-   }
-
-   // Note this test will fail until http://jira.jboss.com/jira/browse/JBTM-192 is complete
-   public void x_testCrashAndReconnectDestCrashOnCommit_P() throws Exception
-   {
-      testCrashAndReconnectDestCrashOnCommit(true);
-   }
-   
-   // Note this test will fail until http://jira.jboss.com/jira/browse/JBTM-192 is complete
-   public void x_testCrashAndReconnectDestCrashOnCommit_NP() throws Exception
-   {
-      testCrashAndReconnectDestCrashOnCommit(false);
    }
 
    /*
@@ -266,13 +226,11 @@ public class ReconnectTest extends BridgeTestBase
          //Send some messages
          
          this.sendMessages(cf0, sourceQueue, 0, NUM_MESSAGES / 2, persistent);
-         
-         
+                  
          //verify none are received
          
          this.checkNoneReceived(cf1, destQueue, 2000);
-         
-         
+                  
          //Now crash the dest server
          
          log.info("About to crash server");
@@ -320,114 +278,6 @@ public class ReconnectTest extends BridgeTestBase
          
       }                  
    }
-   
-   /*
-    * Send some messages   
-    * Crash the server after prepare but on commit
-    * Bring up the destination server
-    * Send some more messages
-    * Verify all messages are received
-    */
-   private void testCrashAndReconnectDestCrashOnCommit(boolean persistent) throws Exception
-   {
-      Bridge bridge = null;
-            
-      try
-      {
-         setUpAdministeredObjects(true);
-         
-         final int NUM_MESSAGES = 10;         
-         
-         bridge = new Bridge(cff0, cff1, sourceQueue, destQueue,
-                  null, null, null, null,
-                  null, 1000, -1, Bridge.QOS_ONCE_AND_ONLY_ONCE,
-                  NUM_MESSAGES, 5000,
-                  null, null);
-         
-         bridge.start();
-         
-         //Send some messages
-         
-         sendMessages(cf0, sourceQueue, 0, NUM_MESSAGES / 2, persistent);
-         
-
-         //Verify none are received
-         
-         checkNoneReceived(cf1, destQueue, 2000);
-         
-
-         //Poison server 1 so it crashes on commit of dest but after prepare
-         
-         //This means the transaction branch on source will get commmitted
-         //but the branch on dest won't be - it will remain prepared
-         //This corresponds to a HeuristicMixedException
-         
-         ServerManagement.poisonTheServer(1, PoisonInterceptor.TYPE_2PC_COMMIT);
-         
-         log.info("Poisoned server");
-         
-                     
-         //Wait for maxBatchTime to kick in so a batch is sent
-         //This should cause the server to crash after prepare but before commit
-         
-         //Also the wait must be enough to allow transaction recovery to kick in
-         //Since there will be a heuristically prepared branch on the consumer that needs to be rolled
-         //back
-         
-         Thread.sleep(10000);
-               
-         //Restart the server
-         
-         log.info("Restarting server");
-                  
-         ServerManagement.start(1, "all", false);
-         
-         log.info("Restarted server");
-         
-         ServerManagement.deployQueue("destQueue", 1);
-         
-         //Give enough time for transaction recovery to happen
-         Thread.sleep(20000);
-         
-         log.info("Deployed queue");
-         
-         log.info("Slept");
-                           
-         setUpAdministeredObjects(false);
-         
-           
-         //Send some more messages
-         
-         this.sendMessages(cf0, sourceQueue, NUM_MESSAGES / 2, NUM_MESSAGES / 2, persistent);
-                  
-         checkMessagesReceived(cf1, destQueue, Bridge.QOS_ONCE_AND_ONLY_ONCE, NUM_MESSAGES);
-         
-         //Make sure no messages are left in the source dest
-         
-         this.checkNoneReceived(cf0, sourceQueue, 5000);
-         
-         log.info("Got here");
-         
-      }
-      finally
-      {      
-         log.info("In finally");         
-         
-         if (bridge != null)
-         {
-            try
-            {
-               bridge.stop();
-            }
-            catch (Exception e)
-            {
-               log.error("Failed to stop bridge", e);
-            }
-         }
-      }                  
-   }
-   
-   
    
    // Inner classes -------------------------------------------------------------------
    

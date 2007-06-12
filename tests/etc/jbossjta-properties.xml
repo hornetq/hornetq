@@ -1,18 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
-<!-- Arjuna JTA config for JBoss Messaging test suite
-This config has some quicker settings (like recovery period) than you would
-probably have in a real production config, this is so the tests don't take aeons to run -->
-
 <transaction-service>
-
     <properties depends="common" name="arjuna">
-        <!--
-            (Must be unique across all Arjuna instances.)
-          -->
-        <property name="com.arjuna.ats.arjuna.xa.nodeIdentifier" value="1"/>
-        <property name="com.arjuna.ats.jta.xaRecoveryNode" value="1"/>
-
         <!--
         Transaction Reaper Timeout (default is 120000 microseconds).
       -->
@@ -64,44 +52,47 @@ probably have in a real production config, this is so the tests don't take aeons
       -->
         <property
             name="com.arjuna.ats.arjuna.objectstore.transactionSync" value="ON"/>
-
+        <!--
+        (Must be unique across all Arjuna instances.)
+      -->
+        <property name="com.arjuna.ats.arjuna.xa.nodeIdentifier" value="1"/>
         <!-- property
         name="com.arjuna.ats.arjuna.coordinator.actionStore"
-      value="HashedActionStore"
-      value="JDBCActionStore"
+		value="HashedActionStore"
+		value="JDBCActionStore"
       -->
         <!-- property
         name="com.arjuna.ats.arjuna.objectstore.jdbcTxDbAccess"
-      value="JDBCAccess"
+		value="JDBCAccess"
       -->
         <!-- property
         name="com.arjuna.ats.arjuna.objectstore.objectStoreType"
-      value="ShadowNoFileLockStore"
-      value="JDBCStore"
+		value="ShadowNoFileLockStore"
+		value="JDBCStore"
       -->
         <!-- property
         name="com.arjuna.ats.arjuna.objectstore.jdbcUserDbAccess"
-      value="JDBCAccess"
+		value="JDBCAccess"
       -->
         <!-- property
         name="com.arjuna.ats.arjuna.objectstore.jdbcPoolSizeInitial"
-      value="1"
+		value="1"
       -->
         <!-- property
         name="com.arjuna.ats.arjuna.objectstore.jdbcPoolSizeMaximum"
-      value="1"
+		value="1"
       -->
         <!-- property
         name="com.arjuna.ats.arjuna.objectstore.jdbcPoolPutConnections"
-      value="false"
+		value="false"
       -->
         <!-- property
         name="com.arjuna.ats.arjuna.internal.arjuna.objectstore.cacheStore.size"
-      value=""
+		value=""
       -->
         <!-- property
         name="com.arjuna.ats.arjuna.internal.arjuna.objectstore.cacheStore.period"
-      value=""
+		value=""
       -->
         <!--
         The location for creating temporary files, e.g., Uids.
@@ -114,77 +105,6 @@ probably have in a real production config, this is so the tests don't take aeons
           name="com.arjuna.ats.arjuna.common.varDir"
           value="var"/>
       -->
-    </properties>
-    <properties depends="arjuna" name="recoverymanager">
-
-        <property name="com.arjuna.ats.arjuna.xa.nodeIdentifier" value="1"/>
-        <property name="com.arjuna.ats.jta.xaRecoveryNode" value="1"/>
-
-        <!--
-            (Must be unique across all Arjuna instances.)
-          -->
-        <!--
-        Properties used only by the RecoveryManager.
-      -->
-        <!--
-        Periodic recovery settings.
-        Time values in this section are in seconds.
-      -->
-        <!--
-        Interval in seconds between initiating the periodic recovery modules.
-        Default is 120 seconds.
-      -->
-        <property
-            name="com.arjuna.ats.arjuna.recovery.periodicRecoveryPeriod" value="10"/>
-        <!--
-        Interval in seconds between first and second pass of periodic recovery.
-        Default is 10 seconds.
-      -->
-        <property
-            name="com.arjuna.ats.arjuna.recovery.recoveryBackoffPeriod" value="2"/>
-
-        <!--
-        Expired entry removal
-      -->
-        <!--
-        Expiry scanners to use (order of invocation is random).
-        Names must begin with "com.arjuna.ats.arjuna.recovery.expiryScanner"
-      -->
-        <property
-            name="com.arjuna.ats.arjuna.recovery.expiryScannerTransactionStatusManager" value="com.arjuna.ats.internal.arjuna.recovery.ExpiredTransactionStatusManagerScanner"/>
-        <!--
-        Interval, in hours, between running the expiry scanners.
-        This can be quite long. The absolute value determines the interval -
-        if the value is negative, the scan will NOT be run until after one
-        interval has elapsed. If positive the first scan will be immediately
-        after startup. Zero will prevent any scanning.
-        Default  = 12 = run immediately, then every 12 hours.
-      -->
-        <property
-            name="com.arjuna.ats.arjuna.recovery.expiryScanInterval" value="12"/>
-        <!--
-        Age, in hours, for removal of transaction status manager item.
-        This should be longer than any ts-using process will remain running.
-        Zero = Never removed.  Default is 12.
-      -->
-        <property
-            name="com.arjuna.ats.arjuna.recovery.transactionStatusManagerExpiryTime" value="12"/>
-        <!--
-        Use this to fix the port on which the TransactionStatusManager listens,
-        The default behaviour is to use any free port.
-      -->
-        <property
-            name="com.arjuna.ats.arjuna.recovery.transactionStatusManagerPort" value="0"/>
-        <!--
-        Properties used only by the RecoveryManager.
-      -->
-        <!--
-        Periodic recovery modules to use.  Invoked in sort-order of names.
-      -->
-
-        <property name="com.arjuna.ats.arjuna.recovery.recoveryExtension3" value="com.arjuna.ats.internal.jta.recovery.arjunacore.XARecoveryModule"/>
-
-
     </properties>
     <properties name="common">
         <!-- CLF 2.0 properties -->
@@ -223,34 +143,7 @@ probably have in a real production config, this is so the tests don't take aeons
         <property
             name="com.arjuna.ats.txoj.lockstore.allowNestedLocking" value="YES"/>
     </properties>
-
     <properties depends="arjuna" name="jta">
-        <property name="com.arjuna.ats.arjuna.xa.nodeIdentifier" value="1"/>
-        <property name="com.arjuna.ats.jta.xaRecoveryNode" value="1"/>
-
-
-        <!-- This used when deployed in the app server and we want to do a recovery of a JMS provider, the string after the semi colon
-        must match the JMS provider name from the JMSProviderAdapter -->
-
-        <!--
-        <property name="com.arjuna.ats.jta.recovery.XAResourceRecovery.JBMESSAGING" value="org.jboss.jms.recovery.JMSProviderXAResourceRecovery;DefaultJMSProvider"/>
--->
-
-        <!-- This is used for recovery using the message bridge, in which case JMSProviderAdapters aren't deployed so the string after the semi-colon
-        is first the provider name, then a comma, then the name of a properties file available on the classpath which has the server connection information, e.g:
-        provider1.jndi.prop1=xxxx
-        provider1.jndi.prop2=yyyy
-        provider1.jndi.prop3=zzzz
-        provider1.xaconnectionfactorylookup=xyz
-        provider2.jndi.prop1=xxxx
-        provider2.jndi.prop2=yyyy
-        provider2.jndi.prop3=zzzz
-        provider2.xaconnectionfactorylookup=xyz
-        -->
-
-        <property name="com.arjuna.ats.jta.recovery.XAResourceRecovery.JBMESSAGINGBRIDGE_SERVER0" value="org.jboss.jms.server.recovery.MessagingXAResourceRecovery;adaptor1"/>
-        <property name="com.arjuna.ats.jta.recovery.XAResourceRecovery.JBMESSAGINGBRIDGE_SERVER1" value="org.jboss.jms.server.recovery.MessagingXAResourceRecovery;adaptor2"/>
-
         <!--
         Support subtransactions in the JTA layer?
         Default is NO.
@@ -258,13 +151,80 @@ probably have in a real production config, this is so the tests don't take aeons
         <property name="com.arjuna.ats.jta.supportSubtransactions" value="NO"/>
         <property name="com.arjuna.ats.jta.jtaTMImplementation" value="com.arjuna.ats.internal.jta.transaction.arjunacore.TransactionManagerImple"/>
         <!--
-         com.arjuna.ats.internal.jta.transaction.jts.TransactionManagerImple
-         -->
+			com.arjuna.ats.internal.jta.transaction.jts.TransactionManagerImple
+			-->
         <property name="com.arjuna.ats.jta.jtaUTImplementation" value="com.arjuna.ats.internal.jta.transaction.arjunacore.UserTransactionImple"/>
         <!--
-         com.arjuna.ats.internal.jta.transaction.jts.UserTransactionImple
-         -->
+			com.arjuna.ats.internal.jta.transaction.jts.UserTransactionImple
+			-->
+<property name="com.arjuna.ats.jta.recovery.XAResourceRecovery.JBMESSAGING" value="org.jboss.jms.server.recovery.MessagingXAResourceRecovery;adaptor1"/>
 
+
+
+    </properties>
+    <properties depends="arjuna,txoj,jta" name="recoverymanager">
+        <!--
+        Properties used only by the RecoveryManager.
+      -->
+        <!--
+        Periodic recovery settings.
+        Time values in this section are in seconds.
+      -->
+        <!--
+        Interval in seconds between initiating the periodic recovery modules.
+        Default is 120 seconds.
+      -->
+        <property
+            name="com.arjuna.ats.arjuna.recovery.periodicRecoveryPeriod" value="20"/>
+        <!--
+        Interval in seconds between first and second pass of periodic recovery.
+        Default is 10 seconds.
+      -->
+        <property
+            name="com.arjuna.ats.arjuna.recovery.recoveryBackoffPeriod" value="10"/>
+        <!--
+        Periodic recovery modules to use.  Invoked in sort-order of names.
+      -->
+
+        <property name="com.arjuna.ats.arjuna.recovery.recoveryExtension0" value="com.arjuna.ats.internal.jta.recovery.arjunacore.XARecoveryModule"/>
+
+        <property name="com.arjuna.ats.arjuna.recovery.recoveryExtension1" value="com.arjuna.ats.internal.arjuna.recovery.AtomicActionRecoveryModule"/>
+
+        <property name="com.arjuna.ats.arjuna.recovery.recoveryExtension2" value="com.arjuna.ats.internal.txoj.recovery.TORecoveryModule"/>
+
+
+        <!--
+        Expired entry removal
+      -->
+        <!--
+        Expiry scanners to use (order of invocation is random).
+        Names must begin with "com.arjuna.ats.arjuna.recovery.expiryScanner"
+      -->
+        <property
+            name="com.arjuna.ats.arjuna.recovery.expiryScannerTransactionStatusManager" value="com.arjuna.ats.internal.arjuna.recovery.ExpiredTransactionStatusManagerScanner"/>
+        <!--
+        Interval, in hours, between running the expiry scanners.
+        This can be quite long. The absolute value determines the interval -
+        if the value is negative, the scan will NOT be run until after one
+        interval has elapsed. If positive the first scan will be immediately
+        after startup. Zero will prevent any scanning.
+        Default  = 12 = run immediately, then every 12 hours.
+      -->
+        <property
+            name="com.arjuna.ats.arjuna.recovery.expiryScanInterval" value="12"/>
+        <!--
+        Age, in hours, for removal of transaction status manager item.
+        This should be longer than any ts-using process will remain running.
+        Zero = Never removed.  Default is 12.
+      -->
+        <property
+            name="com.arjuna.ats.arjuna.recovery.transactionStatusManagerExpiryTime" value="12"/>
+        <!--
+        Use this to fix the port on which the TransactionStatusManager listens,
+        The default behaviour is to use any free port.
+      -->
+        <property
+            name="com.arjuna.ats.arjuna.recovery.transactionStatusManagerPort" value="0"/>
     </properties>
     <properties depends="jta" name="jdbc">
         <!--

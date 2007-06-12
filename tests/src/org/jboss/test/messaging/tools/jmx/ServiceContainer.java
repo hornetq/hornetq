@@ -21,7 +21,6 @@
 */
 package org.jboss.test.messaging.tools.jmx;
 
-
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.InputStream;
@@ -33,7 +32,6 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
@@ -90,12 +88,10 @@ import org.jboss.test.messaging.tools.jndi.InVMInitialContextFactoryBuilder;
 import org.jboss.tm.TransactionManagerService;
 import org.jboss.tm.TxManager;
 import org.jboss.tm.usertx.client.ServerVMClientUserTransaction;
-import org.w3c.dom.Attr;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
 import com.arjuna.ats.arjuna.recovery.RecoveryManager;
-
 
 /**
  * An MBeanServer and a configurable set of services (TransactionManager, Remoting, etc) available
@@ -474,7 +470,6 @@ public class ServiceContainer
          String transport = config.getRemotingTransport();
 
          log.info("Remoting type: .............. " + (remoting ? transport : "DISABLED"));
-         log.info("Database: ................... " + config.getDatabaseType());
          log.info("Clustering mode: ............ " +
             (this.isClustered() ? "CLUSTERED" : "NON-CLUSTERED"));
 
@@ -624,7 +619,7 @@ public class ServiceContainer
    {
       String databaseName = getDatabaseName();
 
-      if (clustered && !getDatabaseType().equals("hsqldb"))
+      if (clustered && !getDatabaseName().equals("hsqldb"))
       {
          return "server/default/deploy/clustered-" + databaseName + "-persistence-service.xml";
       }
@@ -883,11 +878,6 @@ public class ServiceContainer
       return config.getDatabaseName();
    }
 
-   public String getDatabaseType()
-   {
-      return config.getDatabaseType();
-   }
-
    public String getRemotingTransport()
    {
       return config.getRemotingTransport();
@@ -1041,13 +1031,13 @@ public class ServiceContainer
 
    private void startInVMDatabase() throws Exception
    {
-      if (!"hsqldb".equals(config.getDatabaseType()))
+      if (!"hsqldb".equals(config.getDatabaseName()))
       {
          // is an out-of-process DB, and it must be stared externally
          return;
       }
 
-      log.debug("starting " + config.getDatabaseType() + " in-VM");
+      log.debug("starting " + config.getDatabaseName() + " in-VM");
 
       String url = config.getDatabaseConnectionURL();
       HsqlProperties props = new HsqlProperties();
@@ -1064,12 +1054,12 @@ public class ServiceContainer
       hsqldbServer.setProperties(props);
       hsqldbServer.start();
 
-      log.debug("started " + config.getDatabaseType() + " in-VM");
+      log.debug("started " + config.getDatabaseName() + " in-VM");
    }
 
    private void stopInVMDatabase() throws Exception
    {
-      if (!"hsqldb".equals(config.getDatabaseType()))
+      if (!"hsqldb".equals(config.getDatabaseName()))
       {
          // is an out-of-process DB, and it must be stopped externally
          return;
@@ -1184,11 +1174,11 @@ public class ServiceContainer
    {
       LocalManagedConnectionFactory mcf = new LocalManagedConnectionFactory();
 
-
-log.info("connection url:" + config.getDatabaseConnectionURL());
-log.info("driver:" + config.getDatabaseConnectionURL());
-log.info("username:" + config.getDatabaseUserName());
-log.info("password:" + config.getDatabasePassword());
+      log.info("connection url:" + config.getDatabaseConnectionURL());
+      log.info("driver:" + config.getDatabaseConnectionURL());
+      log.info("username:" + config.getDatabaseUserName());
+      log.info("password:" + config.getDatabasePassword());
+      
       mcf.setConnectionURL(config.getDatabaseConnectionURL());
       mcf.setDriverClass(config.getDatabaseDriverClass());
       mcf.setUserName(config.getDatabaseUserName());

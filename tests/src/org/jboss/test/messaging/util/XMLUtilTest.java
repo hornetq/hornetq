@@ -213,7 +213,6 @@ public class XMLUtilTest extends MessagingTestCase
       Element e = XMLUtil.stringToElement(s);
       String tostring = XMLUtil.elementToString(e);
       Element convertedAgain = XMLUtil.stringToElement(tostring);
-      //System.out.println(tostring);
       XMLUtil.assertEquivalent(e, convertedAgain);
    }
 
@@ -222,7 +221,6 @@ public class XMLUtilTest extends MessagingTestCase
       String s = "<a b=\"something\"></a>";
       Element e = XMLUtil.stringToElement(s);
       String tostring = XMLUtil.elementToString(e);
-      //System.out.println(tostring);
       Element convertedAgain = XMLUtil.stringToElement(tostring);
       XMLUtil.assertEquivalent(e, convertedAgain);
    }
@@ -232,7 +230,6 @@ public class XMLUtilTest extends MessagingTestCase
       String s = "<a b=\"something\"/>";
       Element e = XMLUtil.stringToElement(s);
       String tostring = XMLUtil.elementToString(e);
-      //System.out.println(tostring);
       Element convertedAgain = XMLUtil.stringToElement(tostring);
       XMLUtil.assertEquivalent(e, convertedAgain);
    }

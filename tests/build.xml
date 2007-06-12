@@ -472,6 +472,7 @@
                <exclude name="**/thirdparty/remoting/CallbackServerTimeoutTest.class"/>
                <exclude name="**/thirdparty/remoting/ClientInvokerTimeoutTest.class"/>
                <exclude name="**/thirdparty/remoting/SocketTransportCausalityTest.class"/>
+               <exclude name="**/jms/XAResourceRecoveryTest.class"/>
             </fileset>
          </batchtest>
       </junit>

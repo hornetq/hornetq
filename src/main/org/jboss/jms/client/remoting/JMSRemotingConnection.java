@@ -287,17 +287,40 @@ public class JMSRemotingConnection
       log.debug(this + " started");
    }
 
-   public void stop() throws Throwable
+   public void stop()
    {
       log.debug(this + " closing");
 
       // explicitly remove the callback listener, to avoid race conditions on server
       // (http://jira.jboss.org/jira/browse/JBMESSAGING-535)
 
-      client.removeListener(callbackManager);
-      client.disconnect();
+      try
+      {
+         client.removeListener(callbackManager);
+      }
+      catch(Throwable ignore)
+      {
+         // very unlikely to get an exception on a local remove (I suspect badly designed API),
+         // but we're failed anyway, so we don't care too much
+         
+         // Actually an exception will always be thrown here if the failure was detected by the connection
+         // validator since the validator will disconnect the client before calling the connection
+         // listener.
+
+         log.trace(this + " failed to cleanly remove callback manager from the client", ignore);
+      }
+
+      try
+      {
+      	client.disconnect();
+      }
+      catch (Throwable ignore)
+      {      	
+      	log.trace(this + " failed to disconnect the client", ignore);
+      }
 
       client = null;
+      
       log.debug(this + " closed");
    }
 
@@ -338,30 +361,7 @@ public class JMSRemotingConnection
       	log.trace(this + " failed to set disconnect timeout", ignore);
       }
       
-      try
-      {
-         client.removeListener(callbackManager);
-      }
-      catch(Throwable ignore)
-      {
-         // very unlikely to get an exception on a local remove (I suspect badly designed API),
-         // but we're failed anyway, so we don't care too much
-         
-         // Actually an exception will always be thrown here if the failure was detected by the connection
-         // validator since the validator will disconnect the client before calling the connection
-         // listener.
-
-         log.trace(this + " failed to cleanly remove callback manager from the client", ignore);
-      }
-
-      try
-      {
-      	client.disconnect();
-      }
-      catch (Throwable ignore)
-      {      	
-      	log.trace(this + " failed to disconnect the client", ignore);
-      }
+      stop();
    }
 
    /**

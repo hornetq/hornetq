@@ -94,17 +94,6 @@ class ServiceContainerConfiguration
       return database;
    }
 
-   /**
-    * @return the token that follows after jdbc: in the database URL. So far, we know of
-    *         "hsqldb", "mysql", "oracle", "postgresql".
-    *
-    */
-   public String getDatabaseType()
-   {
-      DatabaseConfiguration dbc = (DatabaseConfiguration)dbConfigurations.get(database);
-      return dbc.getDatabaseType();
-   }
-
    public String getDatabaseConnectionURL()
    {
       DatabaseConfiguration dbc = (DatabaseConfiguration)dbConfigurations.get(database);
@@ -366,7 +355,6 @@ class ServiceContainerConfiguration
    private class DatabaseConfiguration
    {
       private String connectionURL;
-      private String type;
       private String driverClass;
       private String transactionIsolation;
       private String username;
@@ -385,37 +373,12 @@ class ServiceContainerConfiguration
             throw new IllegalArgumentException("Invalid connection URL: " + s);
          }
          
-         //FIXME - why the heck try and infer the database name from the connection URL
-         //this is not correct
-         //Different databases could be using the same url (this can be the case with sybase and mssql)
-         //why not just get the database name from the system property??
-         this.type = st.nextToken();
          this.connectionURL = s;
       }
 
       String getDatabaseConnectionURL()
       {
          return connectionURL;
-      }
-
-      String getDatabaseType()
-      {
-         //Temporary kludge so I can run the test suite
-         //FIXME - why the heck try and infer the database name from the connection URL
-         //this is not correct
-         //Different databases could be using the same url (this can be the case with sybase and mssql)
-         //why not just get the database name from the system property??
-         
-         String theType = System.getProperty("test.database");
-         
-         if (theType != null)
-         {
-            return theType;
-         }
-         else
-         {         
-            return type;
-         }
       }
 
       void setDatabaseDriverClass(String s)

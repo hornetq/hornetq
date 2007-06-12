@@ -102,7 +102,7 @@ public class ManifestTest extends MessagingTestCase
       Iterator itr = attrs.entrySet().iterator();
       while (itr.hasNext()) {
          Object item = itr.next();
-         System.out.println("MANIFEST--> " + item + " : " + attrs.get(item));
+         log.trace("MANIFEST--> " + item + " : " + attrs.get(item));
       }
       
       assertEquals(attrs.getValue("Implementation-Title"), meta.getJMSProviderName());

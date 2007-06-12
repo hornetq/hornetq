@@ -70,17 +70,25 @@ public class ResourceManager
    
    private ConcurrentHashMap transactions = new ConcurrentHashMap();
    
+   private int serverID;   
+   
    // Static ---------------------------------------------------------------------------------------
    
    private static final Logger log = Logger.getLogger(ResourceManager.class);
    
    // Constructors ---------------------------------------------------------------------------------
    
-   ResourceManager()
+   ResourceManager(int serverID)
    {      
+   	this.serverID = serverID;
    }
     
    // Public ---------------------------------------------------------------------------------------
+   
+   public int getServerID()
+   {
+     	return serverID;
+   }
    
    /*
     * Merge another resource manager into this one - used in failover

@@ -1076,14 +1076,11 @@ public class HATest extends ClusteringTestBase
       // if failover happened, this object was replaced
       assertNotSame(originalRemoting, delegate.getRemotingConnection());
 
-      //System.out.println("Kill server1"); Thread.sleep(10000);
-
       message = session.createTextMessage("Hello After");
       log.info(">>Sending new message");
       producer.send(message);
 
       assertEquals(txID, sessionState.getCurrentTxId());
-      System.out.println("TransactionID on client = " + txID);
       log.info(">>Final commit");
 
       session.commit();

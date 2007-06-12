@@ -150,7 +150,6 @@ public class ObjectMessageTest extends MessageTestBase
          if (!itemLocation.equals(classLocation) &&
                       itemLocation.toString().indexOf(pathIgnore) >= 0)
          {
-            //System.out.println("Location:" + itemLocation);
             urls.add(itemLocation);
          }
       }

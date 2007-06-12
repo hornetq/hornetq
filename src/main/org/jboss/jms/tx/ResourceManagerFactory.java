@@ -87,7 +87,7 @@ public class ResourceManagerFactory
 
       if (h == null)
       {
-         h = new Holder();
+         h = new Holder(serverID);
          holders.put(i, h);
       }
       else
@@ -164,9 +164,9 @@ public class ResourceManagerFactory
    {
       ResourceManager rm;
       
-      Holder()
+      Holder(int serverID)
       {
-         rm = new ResourceManager();
+         rm = new ResourceManager(serverID);
       }
       
       Holder(ResourceManager rm)

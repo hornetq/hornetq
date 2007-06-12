@@ -23,14 +23,8 @@ package org.jboss.jms.server.recovery;
 
 import java.util.StringTokenizer;
 
-import javax.jms.XAConnection;
-import javax.jms.XAConnectionFactory;
-import javax.jms.XASession;
-import javax.naming.Context;
-import javax.naming.InitialContext;
 import javax.transaction.xa.XAResource;
 
-import org.jboss.jms.jndi.JMSProviderAdapter;
 import org.jboss.logging.Logger;
 
 import com.arjuna.ats.jta.recovery.XAResourceRecovery;
@@ -39,13 +33,6 @@ import com.arjuna.ats.jta.recovery.XAResourceRecovery;
  * 
  * A XAResourceRecovery instance that can be used to recover any JMS provider.
  * 
- * 
- * This class will create a new XAConnection/XASession/XAResource on each sweep from the recovery manager.
- * 
- * It can probably be optimised to keep the same XAResource between sweeps and only recreate if
- * a problem with the connection to the provider is detected, but considering that typical sweep periods
- * are of the order of 10s of seconds to several minutes, then the extra complexity of the code required
- * for that does not seem to be a good tradeoff.
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision: 1.1 $</tt>
@@ -61,17 +48,13 @@ public class MessagingXAResourceRecovery implements XAResourceRecovery
    
    private String providerAdaptorName;
    
-   private JMSProviderAdapter providerAdaptor;
-
    private boolean hasMore;
    
    private String username;
    
    private String password;
    
-   private XAConnection conn;
-   
-   private XAResource res;
+   private MessagingXAResourceWrapper res;
 
    public MessagingXAResourceRecovery()
    {
@@ -92,37 +75,7 @@ public class MessagingXAResourceRecovery implements XAResourceRecovery
       }
       
       providerAdaptorName = tok.nextToken();
-      
-      InitialContext ic = null;
-      
-      try
-      {
-         ic = new InitialContext();
-         
-         providerAdaptor = (JMSProviderAdapter)ic.lookup(providerAdaptorName);         
-      }
-      catch (Exception e)
-      {
-      	//Note - we only log at trace, since this is likely to happen on the first pass since, when
-      	//deployed in JBAS the recovery manager will typically start up before the JMSProviderLoaders
-         log.trace("Failed to look up provider adaptor", e);
-         
-         return false;
-      }
-      finally
-      {
-         if (ic != null)
-         {
-            try
-            {
-               ic.close();
-            }
-            catch (Exception ignore)
-            {               
-            }
-         }
-      }
-      
+                  
       //Next two (optional) parameters are the username and password to use for creating the connection
       //for recovery
       
@@ -138,8 +91,8 @@ public class MessagingXAResourceRecovery implements XAResourceRecovery
          password = tok.nextToken();
       }
          
-      hasMore = true;
-      
+      res = new MessagingXAResourceWrapper(providerAdaptorName, username, password);
+             
       if (log.isTraceEnabled()) { log.trace(this + " initialised"); }      
       
       return true;      
@@ -148,12 +101,7 @@ public class MessagingXAResourceRecovery implements XAResourceRecovery
    public boolean hasMoreResources()
    {
       if (log.isTraceEnabled()) { log.trace(this + " hasMoreResources"); }
-      
-      if (providerAdaptor == null)
-      {
-         return false;
-      }
-            
+                        
       /*
        * The way hasMoreResources is supposed to work is as follows:
        * For each "sweep" the recovery manager will call hasMoreResources, then if it returns
@@ -165,89 +113,12 @@ public class MessagingXAResourceRecovery implements XAResourceRecovery
        * In our case where we only need to return one XAResource per sweep,
        * hasMoreResources should basically alternate between true and false.
        * 
-       * And we return a new XAResource every time it is called.
-       * This makes this resilient to failure, since if the network fails
-       * between the XAResource and it's server, on the next pass a new one will
-       * be create and if the server is back up it will work.
-       * This means there is no need for an XAResourceWrapper which is a technique used in the 
-       * old JMSProviderXAResourceRecovery
-       * The recovery manager will throw away the XAResource after every sweep.
        * 
        */
-        
-      if (hasMore)
-      {
-         //Get a new XAResource
-         
-         try
-         {
-            if (conn != null)
-            {
-               conn.close();
-            }
-         }
-         catch (Exception ignore)
-         {         
-         }
-         
-         Context ic = null;
-         
-         try
-         {
-            ic = providerAdaptor.getInitialContext();
-            
-            Object obj = ic.lookup(providerAdaptor.getFactoryRef());
-            
-            if (!(obj instanceof XAConnectionFactory))
-            {
-               throw new IllegalArgumentException("Connection factory from jms provider is not a XAConnectionFactory");
-            }
-            
-            XAConnectionFactory connectionFactory = (XAConnectionFactory)obj;
-            
-            if (username == null)
-            {
-               conn = connectionFactory.createXAConnection();
-            }
-            else
-            {
-               conn = connectionFactory.createXAConnection(username, password);
-            }
-            
-            XASession session = conn.createXASession();
-            
-            res = session.getXAResource();
-            
-            //Note the connection is closed the next time the xaresource is created or by the finalizer
-            
-         }
-         catch (Exception e)
-         {
-            log.warn("Cannot create XAResource", e);
-            
-            hasMore = false;
-         }
-         finally
-         {
-            if (ic != null)
-            {
-               try
-               {
-                  ic.close();
-               }
-               catch (Exception ignore)
-               {               
-               }
-            }
-         }
-         
-      }
-      
-      boolean ret = hasMore;
-            
+                         
       hasMore = !hasMore;
       
-      return ret;      
+      return hasMore;      
    }
 
    public XAResource getXAResource()
@@ -259,16 +130,7 @@ public class MessagingXAResourceRecovery implements XAResourceRecovery
    
    protected void finalize()
    {
-      try
-      {
-         if (conn != null)
-         {
-            conn.close();
-         }
-      }
-      catch (Exception ignore)
-      {         
-      }  
+      res.close();  
    }
 }
 

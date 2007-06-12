@@ -121,14 +121,11 @@ public class DefaultRouter implements ClusterRouter
 
    public boolean contains(Receiver queue)
    {
-      //FIXME - what about failed over queues??
       return localQueue == queue || nonLocalQueues.contains(queue);
    }
 
    public Iterator iterator()
-   {
-      //FIXME - this is broken - where are the failed over queuues?
-      
+   { 
       List queues = new ArrayList();
 
       if (localQueue != null)
@@ -139,11 +136,6 @@ public class DefaultRouter implements ClusterRouter
       queues.addAll(nonLocalQueues);
 
       return queues.iterator();
-   }
-
-   public boolean add(Receiver receiver)
-   {
-      return add(receiver, false);
    }
 
    public boolean remove(Receiver queue)
@@ -203,30 +195,33 @@ public class DefaultRouter implements ClusterRouter
       return localQueue;
    }
 
-   public boolean add(Receiver receiver, boolean failedOver)
+   public boolean add(Receiver receiver)
    {
-      if (receiver instanceof ClusteredQueue)
-      {
-         
-         ClusteredQueue queue = (ClusteredQueue)receiver;
-   
-         if (queue.isLocal())
-         {
-            if (localQueue != null)
-            {
-               throw new IllegalStateException(this + " already has local queue");
-            }
-            localQueue = queue;            
-         }
-         else
-         {
-            nonLocalQueues.add(queue);
-         }
-      }
-      else
-      {
-         localQueue = (Queue)receiver;
-      }
+   	if (receiver instanceof ClusteredQueue)
+   	{         
+   		ClusteredQueue queue = (ClusteredQueue)receiver;
+
+   		if (queue.isLocal())
+   		{
+   			if (localQueue != null)
+   			{
+   				throw new IllegalStateException(this + " already has local queue");
+   			}
+   			localQueue = queue;            
+   		}
+   		else
+   		{
+   			nonLocalQueues.add(queue);
+   		}
+   	}
+   	else
+   	{
+   		if (localQueue != null)
+   		{
+   			throw new IllegalStateException(this + " already has local queue");
+   		}
+   		localQueue = (Queue)receiver;
+   	}
 
       return true;
    }

@@ -323,7 +323,24 @@ public class TransactionRepository implements MessagingComponent
                         
             if (trace) log.trace("Destination for message[ID=" + ref.getMessage().getMessageID() + "] is: " + queue);
    
+            // The actual jmx queue may not have been deployed yet, so we need to activate it if so, 
+            // or the handle will have no effect
+                        
+            boolean deactivate = false;
+
+            if (!queue.isActive())
+            {
+            	queue.activate();
+
+            	deactivate = true;
+            }
+
             queue.handle(null, ref, tx);
+
+            if (deactivate)
+            {
+            	queue.deactivate();
+            }
          }
          finally
          {
@@ -382,7 +399,24 @@ public class TransactionRepository implements MessagingComponent
 
             try
             {
+            	// The actual jmx queue may not have been deployed yet, so we need to activate it if so, 
+               // or the acknowledge will have no effect
+                           
+               boolean deactivate = false;
+
+               if (!queue.isActive())
+               {
+               	queue.activate();
+
+               	deactivate = true;
+               }
+
                del.acknowledge(tx);
+
+               if (deactivate)
+               {
+               	queue.deactivate();
+               }
             }
             catch (Throwable t)
             {

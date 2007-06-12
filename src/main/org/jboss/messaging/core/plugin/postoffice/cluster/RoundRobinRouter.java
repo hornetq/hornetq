@@ -63,7 +63,7 @@ public class RoundRobinRouter implements ClusterRouter
    // ArrayList<>; MUST be an arraylist for fast index access
    private ArrayList queues;
 
-   private ClusteredQueue localQueue;
+   private Queue localQueue;
 
    private int target;
 
@@ -82,11 +82,11 @@ public class RoundRobinRouter implements ClusterRouter
 
       if (!queues.isEmpty())
       {
-         ClusteredQueue queue = (ClusteredQueue)queues.get(target);
+         Queue queue = (Queue)queues.get(target);
 
          Delivery del = queue.handle(observer, ref, tx);
 
-         if (trace) { log.trace(this + " routed to remote queue, it returned " + del); }
+         if (trace) { log.trace(this + " routed to queue, it returned " + del); }
 
          incTarget();
 
@@ -105,14 +105,11 @@ public class RoundRobinRouter implements ClusterRouter
 
    public boolean contains(Receiver queue)
    {
-      //FIXME - what about failed over queues??
       return queues.contains(queue);
    }
 
    public Iterator iterator()
    {
-      //FIXME - this is broken - where are the failed over queuues?
-      
       return queues.iterator();
    }
 
@@ -151,7 +148,6 @@ public class RoundRobinRouter implements ClusterRouter
 
    public int getNumberOfReceivers()
    {
-      //FIXME - what about failed over queues????
       return queues.size();
    }
 
@@ -164,22 +160,32 @@ public class RoundRobinRouter implements ClusterRouter
 
    public boolean add(Receiver receiver, boolean failedOver)
    {
-      ClusteredQueue queue = (ClusteredQueue)receiver;
-      
-      if (queue.isLocal())
-      {
-         if (localQueue == null)
-         {
-            localQueue = queue;
-         }
-         else
-         {
-            throw new IllegalStateException("Local queue already exists");
-         }
-      }
+      Queue queue = (Queue)receiver;
       
       queues.add(receiver);
-      
+            
+      if (queue instanceof ClusteredQueue)
+      {
+      	ClusteredQueue clusteredQueue = (ClusteredQueue)queue;
+      	
+      	if (clusteredQueue.isLocal())
+      	{
+      		 if (localQueue != null)
+             {
+                throw new IllegalStateException(this + " already has local queue");
+             }
+      		localQueue = clusteredQueue;
+      	}
+      }
+      else
+      {
+      	 if (localQueue != null)
+          {
+             throw new IllegalStateException(this + " already has local queue");
+          }
+      	localQueue = queue;
+      }      
+            
       return true;
    }
    

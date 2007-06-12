@@ -331,7 +331,10 @@ public class MessageCallbackHandler
       waitForLastDelivery(lastDeliveryId);
       
       //Important! We set the listener to null so the next ListenerRunner won't run
-      setMessageListener(null);
+      if (listener != null)
+      {
+      	setMessageListener(null);
+      }
       
       //Now we wait for any current listener runners to run.
       waitForOnMessageToComplete();   

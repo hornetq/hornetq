@@ -163,30 +163,37 @@ public class ConnectionAspect
    
    public Object handleClose(Invocation invocation) throws Throwable
    {
-      Object ret = invocation.invokeNext();
-      
-      ConnectionState state = getConnectionState(invocation);
-
-      JMSRemotingConnection remotingConnection = state.getRemotingConnection();
-
-      // remove the consolidated remoting connection listener
-
-      ConsolidatedRemotingConnectionListener l = remotingConnection.removeConnectionListener();
-      if (l != null)
-      {
-         l.clear();
-      }
-
-      // Finished with the connection - we need to shutdown callback server
-      remotingConnection.stop();
-       
-      // Remove reference to message ID generator
-      MessageIdGeneratorFactory.instance.checkInGenerator(state.getServerID());
-      
-      // And to resource manager
-      ResourceManagerFactory.instance.checkInResourceManager(state.getServerID());
-
-      return ret;
+   	try
+   	{
+   		Object ret = invocation.invokeNext();
+   		
+         return ret;
+   	}
+   	finally
+   	{
+	      //Always cleanup in a finally - we need to cleanup if the server call to close fails too
+   		
+	      ConnectionState state = getConnectionState(invocation);
+	
+	      JMSRemotingConnection remotingConnection = state.getRemotingConnection();
+	
+	      // remove the consolidated remoting connection listener
+	
+	      ConsolidatedRemotingConnectionListener l = remotingConnection.removeConnectionListener();
+	      if (l != null)
+	      {
+	         l.clear();
+	      }
+	
+	      // Finished with the connection - we need to shutdown callback server
+	      remotingConnection.stop();
+	       
+	      // Remove reference to message ID generator
+	      MessageIdGeneratorFactory.instance.checkInGenerator(state.getServerID());
+	      
+	      // And to resource manager
+	      ResourceManagerFactory.instance.checkInResourceManager(state.getServerID());
+   	}
    }
 
    public Object  handleRegisterFailoverListener(Invocation invocation) throws Throwable

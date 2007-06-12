@@ -108,7 +108,11 @@ public class MessagingXAResource implements XAResource
          return false;
       }
       
-      return ((MessagingXAResource)xaResource).rm == this.rm;
+      boolean same = ((MessagingXAResource)xaResource).rm.getServerID() == this.rm.getServerID();
+      
+      if (trace) { log.trace("Calling isSameRM, result is " + same); }
+            
+      return same;
    }
    
    public void start(Xid xid, int flags) throws XAException

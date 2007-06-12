@@ -139,7 +139,7 @@ public class LocalTestServer implements Server
          sc = new ServiceContainer(containerConfig, null, serverIndex);
          sc.start(clearDatabase, attrOverrides);
 
-         if (sc.getDatabaseType().equals("hsqldb") && sc.isClustered())
+         if (sc.getDatabaseName().equals("hsqldb") && sc.isClustered())
          {
             throw new IllegalStateException("The test server cannot be started in clustered mode with hsqldb as a database - must use a shared database");
          }

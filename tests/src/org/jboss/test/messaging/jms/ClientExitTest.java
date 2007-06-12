@@ -176,64 +176,9 @@ public class ClientExitTest extends MessagingTestCase
 
       String commandLine = sb.toString();
 
-      //System.out.println(commandLine);
-
       Process process = Runtime.getRuntime().exec(commandLine);
 
       log.trace("process: " + process);
-
-//      final boolean verbose = true;
-//
-//      final BufferedReader rs = new BufferedReader(new InputStreamReader(process.getInputStream()));
-//      final BufferedReader re = new BufferedReader(new InputStreamReader(process.getErrorStream()));
-//
-//      new Thread(new Runnable()
-//      {
-//         public void run()
-//         {
-//            try
-//            {
-//               String line;
-//
-//               while((line = rs.readLine()) != null)
-//               {
-//                  if (verbose)
-//                  {
-//                     System.out.println("GRACEFUL CLIENT STDOUT: " + line);
-//                  }
-//               }
-//            }
-//            catch(Exception e)
-//            {
-//               log.error("exception", e);
-//            }
-//         }
-//
-//      }, "GRACEFUL CLIENT STDOUT reader thread").start();
-//
-//      new Thread(new Runnable()
-//      {
-//         public void run()
-//         {
-//            try
-//            {
-//               String line;
-//
-//               while((line = re.readLine()) != null)
-//               {
-//                  if (verbose)
-//                  {
-//                     System.out.println("GRACEFUL CLIENT  STDERR: " + line);
-//                  }
-//               }
-//            }
-//            catch(Exception e)
-//            {
-//               log.error("exception", e);
-//            }
-//         }
-//
-//      }, "GRACEFUL CLIENT STDERR reader thread").start();
 
       return process;
    }

@@ -116,7 +116,6 @@ public class AcknowledgementTest extends MessagingTestCase
       try
       {
          conn = cf.createTopicConnection();
-         System.out.println("******   ClientID = " + conn.getClientID());
          TopicSession sess = conn.createTopicSession(true, 0);
          TopicPublisher pub = sess.createPublisher(topic);
          pub.setDeliveryMode(DeliveryMode.PERSISTENT);
@@ -432,11 +431,8 @@ public class AcknowledgementTest extends MessagingTestCase
     * recovery.
 	 */
 	public void testIndividualClientAcknowledge() throws Exception
-   {
-		
+   {		
 		Connection conn = cf.createConnection();
-      for (int i=0; i<20; i++) System.out.println("*******************************************");
-      System.out.println("clientID = " + conn.getClientID());
 
       Session producerSess = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
 		MessageProducer producer = producerSess.createProducer(queue);
@@ -1213,9 +1209,7 @@ public class AcknowledgementTest extends MessagingTestCase
             count++;
                   
             TextMessage tm = (TextMessage)m;
-            
-            log.info("Got message: " + tm.getText());            
-                      
+                       
             // Receive first three messages then recover() session
             // Only last message should be redelivered
             if (count == 1)
