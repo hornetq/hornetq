@@ -613,7 +613,7 @@ public class ServerPeer extends ServiceMBeanSupport implements ServerPeerMBean
       return defaultTopicJNDIContext;
    }
 
-   public void setDefaultTopicJNDIContext(String defaultTopicJNDIContext)
+   public synchronized void setDefaultTopicJNDIContext(String defaultTopicJNDIContext)
    {
       if (started)
       {
