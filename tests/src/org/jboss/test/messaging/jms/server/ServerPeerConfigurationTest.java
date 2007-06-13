@@ -128,7 +128,6 @@ public class ServerPeerConfigurationTest extends MessagingTestCase
     */
    private class MyLocalTestServer extends LocalTestServer
    {
-      @Override
       protected void overrideServerPeerConfiguration(MBeanConfigurationElement config,
             int serverPeerID, String defaultQueueJNDIContext, String defaultTopicJNDIContext)
          throws Exception
@@ -143,7 +142,6 @@ public class ServerPeerConfigurationTest extends MessagingTestCase
       }
       
       // Make public
-      @Override
       public ServiceContainer getServiceContainer()
       {
          return super.getServiceContainer();
