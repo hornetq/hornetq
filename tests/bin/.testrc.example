@@ -34,7 +34,7 @@ TEST_SPAWN_VERBOSE=false
 #
 CLUSTERED=false
 
-
+TEST_BIND_ADDRESS=localhost
 
 TARGET_CLASS=org.jboss.test.messaging.jms.JMSTest
 TARGET_TEST=testAll
