@@ -8,6 +8,7 @@ package org.jboss.test.messaging.tools.jboss;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -233,6 +234,24 @@ public class MBeanConfigurationElement
       c.setArgValue(paramIndex, value);
    }
 
+   /**
+    * Removes all &lt;constructor&gt; elements from the configuration.
+    */
+   public void removeConstructors()
+   {
+      if (constructors.isEmpty())
+      {
+         return;
+      }
+
+      for (Iterator iter = constructors.iterator(); iter.hasNext();)
+      {
+         ConstructorElement element = (ConstructorElement) iter.next();
+         element.node.getParentNode().removeChild(element.node);
+      }
+      
+      constructors.clear();
+   }
 
    public String toString()
    {

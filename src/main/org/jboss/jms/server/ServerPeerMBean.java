@@ -43,6 +43,8 @@ public interface ServerPeerMBean
    
    int getServerPeerID();
    
+   void setServerPeerID(int serverPeerID);
+   
    String getJMSVersion();
 
    int getJMSMajorVersion();
@@ -58,8 +60,12 @@ public interface ServerPeerMBean
    int getProviderMinorVersion();
 
    String getDefaultQueueJNDIContext();
+   
+   void setDefaultQueueJNDIContext(String defaultQueueJNDIContext);
 
    String getDefaultTopicJNDIContext();
+   
+   void setDefaultTopicJNDIContext(String defaultQueueJNDIContext);
    
    void setSecurityDomain(String securityDomain) throws Exception;
 

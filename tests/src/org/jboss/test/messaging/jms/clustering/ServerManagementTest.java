@@ -60,7 +60,7 @@ public class ServerManagementTest extends MessagingTestCase
          ServerManagement.start(7, "all");
 
          Integer index = (Integer)ServerManagement.
-            getAttribute(7, new ObjectName("jboss.messaging:service=ServerPeer"), "serverPeerID");
+            getAttribute(7, new ObjectName("jboss.messaging:service=ServerPeer"), "ServerPeerID");
 
          assertEquals(7, index.intValue());
 
@@ -101,7 +101,7 @@ public class ServerManagementTest extends MessagingTestCase
          ServerManagement.start(1, "all");
 
          Integer index = (Integer)ServerManagement.
-            getAttribute(1, new ObjectName("jboss.messaging:service=ServerPeer"), "serverPeerID");
+            getAttribute(1, new ObjectName("jboss.messaging:service=ServerPeer"), "ServerPeerID");
 
          assertEquals(1, index.intValue());
 

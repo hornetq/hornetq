@@ -24,6 +24,10 @@
       </parameter>
    </constructor>
 
+   <constructor>
+      <name>ServerPeer</name>
+   </constructor>
+
    <!-- Managed attributes -->
 
    <!-- plugins ObjectNames -->
@@ -110,19 +114,19 @@
       <type>int</type>
    </attribute>
 
-   <attribute access="read-only" getMethod="getServerPeerID">
+   <attribute access="read-write" getMethod="getServerPeerID" setMethod="setServerPeerID">
       <description>The ID of the ServerPeer. Must be unique per JBoss instance</description>
-      <name>serverPeerID</name>
+      <name>ServerPeerID</name>
       <type>int</type>
    </attribute>
 
-   <attribute access="read-only" getMethod="getDefaultQueueJNDIContext">
+   <attribute access="read-write" getMethod="getDefaultQueueJNDIContext" setMethod="setDefaultQueueJNDIContext">
       <description>The default JNDI context queues are bound under.</description>
       <name>DefaultQueueJNDIContext</name>
       <type>java.lang.String</type>
    </attribute>
 
-   <attribute access="read-only" getMethod="getDefaultTopicJNDIContext">
+   <attribute access="read-write" getMethod="getDefaultTopicJNDIContext" setMethod="setDefaultTopicJNDIContext">
       <description>The default JNDI context topics are bound under.</description>
       <name>DefaultTopicJNDIContext</name>
       <type>java.lang.String</type>

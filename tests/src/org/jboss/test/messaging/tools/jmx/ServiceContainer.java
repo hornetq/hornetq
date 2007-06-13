@@ -133,6 +133,8 @@ public class ServiceContainer
 
    // Used only on testcases where Socket and HTTP are deployed at the same time
    public static ObjectName HTTP_REMOTING_OBJECT_NAME;
+   
+   public static ObjectName SERVER_PEER_OBJECT_NAME;
 
    public static String DATA_SOURCE_JNDI_NAME = "java:/DefaultDS";
    public static String TRANSACTION_MANAGER_JNDI_NAME = "java:/TransactionManager";
@@ -181,6 +183,9 @@ public class ServiceContainer
 
          HTTP_REMOTING_OBJECT_NAME =
          new ObjectName("jboss.messaging:service=Connector,transport=http");
+         
+         SERVER_PEER_OBJECT_NAME =
+         new ObjectName("jboss.messaging:service=ServerPeer");
       }
       catch(Exception e)
       {

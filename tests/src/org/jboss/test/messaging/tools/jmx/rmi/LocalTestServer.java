@@ -331,17 +331,8 @@ public class LocalTestServer implements Server
             ServiceConfigHelper.getServiceConfiguration(mdd, "ServerPeer");
 
          // overwrite the file configuration, if needed
-         serverPeerConfig.setConstructorArgumentValue(0, 0, String.valueOf(serverPeerID));
-
-         if (defaultQueueJNDIContext != null)
-         {
-            serverPeerConfig.setConstructorArgumentValue(0, 1, defaultQueueJNDIContext);
-         }
-         
-         if (defaultTopicJNDIContext != null)
-         {
-            serverPeerConfig.setConstructorArgumentValue(0, 2, defaultTopicJNDIContext);
-         }
+         overrideServerPeerConfiguration(serverPeerConfig, serverPeerID, defaultQueueJNDIContext,
+               defaultTopicJNDIContext);
 
          serverPeerObjectName = sc.registerAndConfigureService(serverPeerConfig);
 
@@ -845,12 +836,30 @@ public class LocalTestServer implements Server
 
    // Package protected ----------------------------------------------------------------------------
 
-   ServiceContainer getServiceContainer()
+   // Protected ------------------------------------------------------------------------------------
+
+   protected ServiceContainer getServiceContainer()
    {
       return sc;
    }
 
-   // Protected ------------------------------------------------------------------------------------
+   protected void overrideServerPeerConfiguration(MBeanConfigurationElement config,
+         int serverPeerID, String defaultQueueJNDIContext, String defaultTopicJNDIContext)
+      throws Exception
+   {
+      // overwrite the file configuration, if needed
+      config.setConstructorArgumentValue(0, 0, String.valueOf(serverPeerID));
+
+      if (defaultQueueJNDIContext != null)
+      {
+         config.setConstructorArgumentValue(0, 1, defaultQueueJNDIContext);
+      }
+      
+      if (defaultTopicJNDIContext != null)
+      {
+         config.setConstructorArgumentValue(0, 2, defaultTopicJNDIContext);
+      }
+   }
 
    // Private --------------------------------------------------------------------------------------
 

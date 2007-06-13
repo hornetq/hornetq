@@ -104,12 +104,12 @@ public class ServerPeer extends ServiceMBeanSupport implements ServerPeerMBean
 
    // Attributes -----------------------------------------------------------------------------------
 
-   private int serverPeerID;
+   private int serverPeerID = -1;
    private byte[] clientAOPStack;
    private Version version;
 
-   private String defaultQueueJNDIContext;
-   private String defaultTopicJNDIContext;
+   private String defaultQueueJNDIContext = "";
+   private String defaultTopicJNDIContext = "";
 
    private boolean started;
 
@@ -168,19 +168,34 @@ public class ServerPeer extends ServiceMBeanSupport implements ServerPeerMBean
    protected Queue defaultExpiryQueue;
 
    // Constructors ---------------------------------------------------------------------------------
+   public ServerPeer() throws Exception
+   {
+      log.info(this + " creating server peer");
+
+      // Some wired components need to be started here
+      securityStore = new SecurityMetadataStore();
+
+      version = Version.instance();
+      
+      failoverStatusLock = new Object();
+      
+      sessions = new ConcurrentReaderHashMap();
+
+      started = false;
+   }
 
    public ServerPeer(int serverPeerID,
                      String defaultQueueJNDIContext,
                      String defaultTopicJNDIContext) throws Exception
    {
+      this();
+
       if (serverPeerID < 0)
       {
          throw new IllegalArgumentException("ID cannot be negative");
       }
       
-      log.info(this + " creating server peer with ID " + serverPeerID);
-
-      this.serverPeerID = serverPeerID;
+      setServerPeerID(serverPeerID);
       this.defaultQueueJNDIContext = defaultQueueJNDIContext;
       this.defaultTopicJNDIContext = defaultTopicJNDIContext;
 
@@ -207,6 +222,11 @@ public class ServerPeer extends ServiceMBeanSupport implements ServerPeerMBean
          if (started)
          {
             return;
+         }
+         
+         if (serverPeerID < 0)
+         {
+            throw new IllegalStateException(" ServerPeerID not set");
          }
 
          log.debug(this + " starting");
@@ -454,21 +474,6 @@ public class ServerPeer extends ServiceMBeanSupport implements ServerPeerMBean
    {
       return version.getProviderMinorVersion();
    }
-
-   public int getServerPeerID()
-   {
-      return serverPeerID;
-   }
-
-   public String getDefaultQueueJNDIContext()
-   {
-      return defaultQueueJNDIContext;
-   }
-
-   public String getDefaultTopicJNDIContext()
-   {
-      return defaultTopicJNDIContext;
-   }
    
    //Read - write attributes
 
@@ -572,6 +577,50 @@ public class ServerPeer extends ServiceMBeanSupport implements ServerPeerMBean
       }
       
       this.defaultMessageCounterHistoryDayLimit = limit;
+   }
+   
+   public synchronized void setServerPeerID(int serverPeerID)
+   {
+      if (started)
+      {
+         throw new IllegalStateException("Cannot set ServerPeerID while the service is running");
+      }
+      this.serverPeerID = serverPeerID;
+   }
+
+   public int getServerPeerID()
+   {
+      return serverPeerID;
+   }
+
+   public String getDefaultQueueJNDIContext()
+   {
+      return defaultQueueJNDIContext;
+   }
+   
+   public synchronized void setDefaultQueueJNDIContext(String defaultQueueJNDIContext)
+   {
+      if (started)
+      {
+         throw new IllegalStateException("Cannot set DefaultQueueJNDIContext while the service is running");
+      }
+
+      this.defaultQueueJNDIContext = defaultQueueJNDIContext;
+   }
+
+   public String getDefaultTopicJNDIContext()
+   {
+      return defaultTopicJNDIContext;
+   }
+
+   public void setDefaultTopicJNDIContext(String defaultTopicJNDIContext)
+   {
+      if (started)
+      {
+         throw new IllegalStateException("Cannot set DefaultTopicJNDIContext while the service is running");
+      }
+
+      this.defaultTopicJNDIContext = defaultTopicJNDIContext;
    }
    
    public void enableMessageCounters()
