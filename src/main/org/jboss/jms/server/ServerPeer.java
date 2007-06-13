@@ -170,7 +170,7 @@ public class ServerPeer extends ServiceMBeanSupport implements ServerPeerMBean
    // Constructors ---------------------------------------------------------------------------------
    public ServerPeer() throws Exception
    {
-      log.info(this + " creating server peer");
+      log.info("creating server peer");
 
       // Some wired components need to be started here
       securityStore = new SecurityMetadataStore();
@@ -198,17 +198,6 @@ public class ServerPeer extends ServiceMBeanSupport implements ServerPeerMBean
       setServerPeerID(serverPeerID);
       this.defaultQueueJNDIContext = defaultQueueJNDIContext;
       this.defaultTopicJNDIContext = defaultTopicJNDIContext;
-
-      // Some wired components need to be started here
-      securityStore = new SecurityMetadataStore();
-
-      version = Version.instance();
-      
-      failoverStatusLock = new Object();
-      
-      sessions = new ConcurrentReaderHashMap();
-
-      started = false;
    }      
 
    // ServiceMBeanSupport overrides ----------------------------------------------------------------
@@ -586,6 +575,7 @@ public class ServerPeer extends ServiceMBeanSupport implements ServerPeerMBean
          throw new IllegalStateException("Cannot set ServerPeerID while the service is running");
       }
       this.serverPeerID = serverPeerID;
+      log.info("ServerPeerID set to " + serverPeerID);
    }
 
    public int getServerPeerID()
