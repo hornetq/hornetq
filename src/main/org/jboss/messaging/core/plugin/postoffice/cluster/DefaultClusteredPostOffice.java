@@ -274,7 +274,7 @@ public class DefaultClusteredPostOffice extends DefaultPostOffice
 
       nbSupport = new NotificationBroadcasterSupport();
 
-      viewExecutor = new QueuedExecutor();
+      viewExecutor = new QueuedExecutor(new LinkedQueue());
 
       this.jChannelFactory = JChannelFactory;
       

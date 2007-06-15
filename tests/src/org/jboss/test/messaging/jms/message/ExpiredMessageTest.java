@@ -35,6 +35,8 @@ public class ExpiredMessageTest extends MessagingTestCase
    // Attributes -----------------------------------------------------------------------------------
 
    private InitialContext ic;
+   private ConnectionFactory cf;
+   private Queue queue;
 
    // Constructors ---------------------------------------------------------------------------------
 
@@ -47,9 +49,6 @@ public class ExpiredMessageTest extends MessagingTestCase
 
    public void testSimpleExpiration() throws Exception
    {
-      ConnectionFactory cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
-      Queue queue = (Queue)ic.lookup("/queue/expiredMessageTestQueue");
-
       Connection conn = cf.createConnection();
 
       Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -70,6 +69,49 @@ public class ExpiredMessageTest extends MessagingTestCase
       conn.start();
 
       assertNull(cons.receive(3000));
+      
+      conn.close();
+   }
+   
+   public void testManyExpiredMessagesAtOnce() throws Exception
+   {
+      Connection conn = cf.createConnection();
+      
+      Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      
+      MessageProducer prod = session.createProducer(queue);
+      prod.setTimeToLive(1);
+      
+      Message m = session.createTextMessage("This message will die");
+      
+      final int MESSAGE_COUNT = 2000;
+
+      log.info("Going to send " + MESSAGE_COUNT + " messages");
+
+      for (int i = 0; i < MESSAGE_COUNT; i++)
+      {
+         prod.send(m);
+         if ((i + 1) % 1000 == 0)
+         {
+            log.info("Sent " + (i + 1) + " messages out of " + MESSAGE_COUNT);
+         }
+      }
+      
+      Thread.sleep(1000);
+      
+      log.info("Creating consumer");
+
+      MessageConsumer cons = session.createConsumer(queue);
+      conn.start();
+      
+      final int TIMEOUT = 3000;
+      log.info("Trying to receive a message, timeout is " + TIMEOUT + " ms");
+
+      assertNull(cons.receive(TIMEOUT));
+      
+      log.info("Done");
+      
+      conn.close();
    }
 
   
@@ -87,6 +129,11 @@ public class ExpiredMessageTest extends MessagingTestCase
       ic = new InitialContext(ServerManagement.getJNDIEnvironment());
 
       ServerManagement.deployQueue("expiredMessageTestQueue");
+      ServerManagement.deployQueue("ExpiryQueue");
+
+      cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
+
+      queue = (Queue)ic.lookup("/queue/expiredMessageTestQueue");
 
       log.debug("setup done");
    }
@@ -94,6 +141,9 @@ public class ExpiredMessageTest extends MessagingTestCase
    protected void tearDown() throws Exception
    {
       ServerManagement.undeployQueue("expiredMessageTestQueue");
+      ServerManagement.undeployQueue("ExpiryQueue");
+      
+      ic.close();
 
       ServerManagement.stop();
 

@@ -86,6 +86,7 @@ import org.jboss.messaging.util.MessageQueueNameHelper;
 import org.jboss.util.id.GUID;
 
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
+import EDU.oswego.cs.dl.util.concurrent.LinkedQueue;
 import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
 import EDU.oswego.cs.dl.util.concurrent.SynchronizedLong;
 
@@ -153,7 +154,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
    private SynchronizedLong deliveryIdSequence;
    
    //Temporary until we have our own NIO transport   
-   QueuedExecutor executor = new QueuedExecutor();
+   QueuedExecutor executor = new QueuedExecutor(new LinkedQueue());
    
    // Constructors ---------------------------------------------------------------------------------
 
@@ -953,7 +954,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
          }
       }      
    } 
-   
+
    void promptDelivery(final Channel channel)
    {
    	if (trace) { log.trace("Prompting delivery on " + channel); }
