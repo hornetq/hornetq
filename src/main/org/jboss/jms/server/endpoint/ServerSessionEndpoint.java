@@ -537,6 +537,8 @@ public class ServerSessionEndpoint implements SessionEndpoint
             mDest = new ManagedQueue(dest.getName(), fullSize, pageSize, downCacheSize, clustered);
          }
          
+         mDest.setTemporary(true);
+         
          dm.registerDestination(mDest);
          
          if (dest.isQueue())

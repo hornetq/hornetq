@@ -132,25 +132,11 @@ class DestinationJNDIMapper implements DestinationManager
          
          if (destination.isQueue())
          {
-            if (destination.isTemporary())
-            {
-               jbDest = new JBossTemporaryQueue(destination.getName());
-            }
-            else
-            {
-               jbDest = new JBossQueue(destination.getName());
-            }
+            jbDest = new JBossQueue(destination.getName());
          }
          else
          {
-            if (destination.isTemporary())
-            {
-               jbDest = new JBossTemporaryTopic(destination.getName());
-            }
-            else
-            {
-               jbDest = new JBossTopic(destination.getName());
-            }
+            jbDest = new JBossTopic(destination.getName());
          }
          
          c.rebind(jndiNameInContext, jbDest);         

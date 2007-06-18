@@ -32,6 +32,7 @@ import javax.jms.TemporaryQueue;
 import javax.jms.TemporaryTopic;
 import javax.jms.TextMessage;
 import javax.naming.InitialContext;
+import javax.naming.NamingException;
 
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
@@ -146,7 +147,7 @@ public class TemporaryDestinationTest extends MessagingTestCase
       MessageProducer producer = producerSession.createProducer(tempQueue);
 
       MessageConsumer consumer = consumerSession.createConsumer(tempQueue);
-
+      
       connection.start();
 
       final String messageText = "This is a message";
@@ -319,7 +320,37 @@ public class TemporaryDestinationTest extends MessagingTestCase
       }
    }
 
+   public void testTemporaryTopicShouldNotBeInJNDI() throws Exception
+   {
+      TemporaryTopic tempTopic = producerSession.createTemporaryTopic();
+      String topicName = tempTopic.getTopicName();
+      
+      try
+      {
+         initialContext.lookup("/topic/" + topicName);
+         fail("The temporary queue should not be bound to JNDI");
+      }
+      catch (NamingException e)
+      {
+         // Expected
+      }
+   }
 
+   public void testTemporaryQueueShouldNotBeInJNDI() throws Exception
+   {
+      TemporaryQueue tempQueue = producerSession.createTemporaryQueue();
+      String queueName = tempQueue.getQueueName();
+      
+      try
+      {
+         initialContext.lookup("/queue/" + queueName);
+         fail("The temporary queue should not be bound to JNDI");
+      }
+      catch (NamingException e)
+      {
+         // Expected
+      }
+   }
 
 
 
