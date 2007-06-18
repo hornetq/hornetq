@@ -184,22 +184,6 @@ public class ServerPeer extends ServiceMBeanSupport implements ServerPeerMBean
       started = false;
    }
 
-   public ServerPeer(int serverPeerID,
-                     String defaultQueueJNDIContext,
-                     String defaultTopicJNDIContext) throws Exception
-   {
-      this();
-
-      if (serverPeerID < 0)
-      {
-         throw new IllegalArgumentException("ID cannot be negative");
-      }
-      
-      setServerPeerID(serverPeerID);
-      this.defaultQueueJNDIContext = defaultQueueJNDIContext;
-      this.defaultTopicJNDIContext = defaultTopicJNDIContext;
-   }      
-
    // ServiceMBeanSupport overrides ----------------------------------------------------------------
 
    public synchronized void startService() throws Exception

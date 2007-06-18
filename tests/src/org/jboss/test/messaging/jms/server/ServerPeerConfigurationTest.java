@@ -25,7 +25,6 @@ import javax.management.ObjectName;
 import javax.management.RuntimeMBeanException;
 
 import org.jboss.test.messaging.MessagingTestCase;
-import org.jboss.test.messaging.tools.jboss.MBeanConfigurationElement;
 import org.jboss.test.messaging.tools.jmx.ServiceAttributeOverrides;
 import org.jboss.test.messaging.tools.jmx.ServiceContainer;
 import org.jboss.test.messaging.tools.jmx.rmi.LocalTestServer;
@@ -55,30 +54,19 @@ public class ServerPeerConfigurationTest extends MessagingTestCase
 
    // Public --------------------------------------------------------
    
-   /**
-    * Test that the ServerPeer can be configured without using
-    * the &lt;constructor&gt; element, only through attributes.
-    */
-   public void testConstructorlessConfiguration() throws Exception
-   {
-      MyLocalTestServer server = new MyLocalTestServer();
-      server.start("all", false);
-      server.stop();
-   }
-   
    public void testServerPeerID() throws Exception
    {
-      testConstructorArgumentAttribute("ServerPeerID", new Integer(5), new Integer(10));
+      testStartupOnlyAttribute("ServerPeerID", new Integer(5), new Integer(10));
    }
 
    public void testDefaultQueueJNDIContext() throws Exception
    {
-      testConstructorArgumentAttribute("DefaultQueueJNDIContext", "/myqueues", "/otherqueues");
+      testStartupOnlyAttribute("DefaultQueueJNDIContext", "/myqueues", "/otherqueues");
    }
 
    public void testDefaultTopicJNDIContext() throws Exception
    {
-      testConstructorArgumentAttribute("DefaultTopicJNDIContext", "/mytopics", "/othertopics");
+      testStartupOnlyAttribute("DefaultTopicJNDIContext", "/mytopics", "/othertopics");
    }
    
    // Package protected ---------------------------------------------
@@ -87,7 +75,7 @@ public class ServerPeerConfigurationTest extends MessagingTestCase
    
    // Private -------------------------------------------------------
 
-   private void testConstructorArgumentAttribute(String attributeName,
+   private void testStartupOnlyAttribute(String attributeName,
          Object initialAttributeValue, Object anotherAttributeValue) throws Exception
    {
       MyLocalTestServer server = new MyLocalTestServer();
@@ -122,27 +110,10 @@ public class ServerPeerConfigurationTest extends MessagingTestCase
 
    // Inner classes -------------------------------------------------
    
-   /**
-    * Configures ServerPeer through attributes instead of constructor
-    * arguments.
-    */
    private class MyLocalTestServer extends LocalTestServer
    {
-      protected void overrideServerPeerConfiguration(MBeanConfigurationElement config,
-            int serverPeerID, String defaultQueueJNDIContext, String defaultTopicJNDIContext)
-         throws Exception
-      {
-         config.removeConstructors();
-         
-         config.setAttribute("ServerPeerID", Integer.toString(serverPeerID));
-         config.setAttribute("DefaultQueueJNDIContext",
-               defaultQueueJNDIContext == null ? "/queue" : defaultQueueJNDIContext);
-         config.setAttribute("DefaultTopicJNDIContext",
-               defaultTopicJNDIContext == null? "/topic" : defaultTopicJNDIContext);
-      }
-      
-      // Make public
-      public ServiceContainer getServiceContainer()
+      // Make accessible from the test
+      protected ServiceContainer getServiceContainer()
       {
          return super.getServiceContainer();
       }

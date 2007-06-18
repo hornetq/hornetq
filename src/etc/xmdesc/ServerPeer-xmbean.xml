@@ -10,22 +10,6 @@
 
    <constructor>
       <name>ServerPeer</name>
-      <parameter>
-         <name>ServerPeerID</name>
-         <type>int</type>
-      </parameter>
-      <parameter>
-         <name>DefaultQueueJNDIContext</name>
-         <type>java.lang.String</type>
-      </parameter>
-      <parameter>
-         <name>DefaultTopicJNDIContext</name>
-         <type>java.lang.String</type>
-      </parameter>
-   </constructor>
-
-   <constructor>
-      <name>ServerPeer</name>
    </constructor>
 
    <!-- Managed attributes -->

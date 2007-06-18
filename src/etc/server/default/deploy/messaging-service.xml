@@ -12,14 +12,9 @@
       name="jboss.messaging:service=ServerPeer"
       xmbean-dd="xmdesc/ServerPeer-xmbean.xml">
 
-      <constructor>
-         <!-- ServerPeerID -->
-         <arg type="int" value="0"/>
-         <!-- DefaultQueueJNDIContext -->
-         <arg type="java.lang.String" value="/queue"/>
-         <!-- DefaultTopicJNDIContext -->
-         <arg type="java.lang.String" value="/topic"/>
-      </constructor>
+      <attribute name="ServerPeerID">0</attribute>
+      <attribute name="DefaultQueueJNDIContext">/queue</attribute>
+      <attribute name="DefaultTopicJNDIContext">/topic</attribute>
 
 	  <attribute name="PostOffice">jboss.messaging:service=PostOffice</attribute>
       <attribute name="SecurityDomain">java:/jaas/messaging</attribute>

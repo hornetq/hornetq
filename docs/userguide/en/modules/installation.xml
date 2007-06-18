@@ -367,7 +367,7 @@ the JBoss Transactions Recovery Manager</para>
       </listitem>      
                   
       <listitem>
-          <para>Ensure the <literal>ServerPeerID</literal> MBean constructor parameter in messaging-service.xml is unique for
+          <para>Ensure the <literal>ServerPeerID</literal> MBean attribute value in messaging-service.xml is unique for
           each node on the cluster. The <literal>ServerPeerID</literal> value must be a valid integer.</para>
           <para><warning>Each node must have a unique <literal>ServerPeerID</literal> for clustering to work!</warning></para>
       </listitem>
@@ -584,7 +584,7 @@ the JBoss Transactions Recovery Manager</para>
       </listitem>      
                   
       <listitem>
-          <para>Ensure the <literal>ServerPeerID</literal> MBean constructor parameter in messaging-service.xml is unique for
+          <para>Ensure the <literal>ServerPeerID</literal> MBean attribute value in messaging-service.xml is unique for
           each node on the cluster. The <literal>ServerPeerID</literal> value must be a valid integer.</para>
           <para><warning>Each node must have a unique <literal>ServerPeerID</literal> for clustering to work!</warning></para>
       </listitem>

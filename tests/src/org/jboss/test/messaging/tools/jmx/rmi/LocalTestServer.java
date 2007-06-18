@@ -847,18 +847,11 @@ public class LocalTestServer implements Server
          int serverPeerID, String defaultQueueJNDIContext, String defaultTopicJNDIContext)
       throws Exception
    {
-      // overwrite the file configuration, if needed
-      config.setConstructorArgumentValue(0, 0, String.valueOf(serverPeerID));
-
-      if (defaultQueueJNDIContext != null)
-      {
-         config.setConstructorArgumentValue(0, 1, defaultQueueJNDIContext);
-      }
-      
-      if (defaultTopicJNDIContext != null)
-      {
-         config.setConstructorArgumentValue(0, 2, defaultTopicJNDIContext);
-      }
+      config.setAttribute("ServerPeerID", Integer.toString(serverPeerID));
+      config.setAttribute("DefaultQueueJNDIContext",
+            defaultQueueJNDIContext == null ? "/queue" : defaultQueueJNDIContext);
+      config.setAttribute("DefaultTopicJNDIContext",
+            defaultTopicJNDIContext == null? "/topic" : defaultTopicJNDIContext);
    }
 
    // Private --------------------------------------------------------------------------------------

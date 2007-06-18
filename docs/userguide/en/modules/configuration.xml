@@ -56,14 +56,9 @@
       name="jboss.messaging:service=ServerPeer"
       xmbean-dd="xmdesc/ServerPeer-xmbean.xml"&gt;
 
-      &lt;constructor&gt;
-         &lt;!-- ServerPeerID --&gt;
-         &lt;arg type="int" value="0"/&gt;
-         &lt;!-- DefaultQueueJNDIContext --&gt;
-         &lt;arg type="java.lang.String" value="/queue"/&gt;
-         &lt;!-- DefaultTopicJNDIContext --&gt;
-         &lt;arg type="java.lang.String" value="/topic"/&gt;
-      &lt;/constructor&gt;
+      &lt;attribute name="ServerPeerID"&gt;0&lt;/attribute&gt;
+      &lt;attribute name="DefaultQueueJNDIContext"&gt;/queue&lt;/attribute&gt;
+      &lt;attribute name="DefaultTopicJNDIContext"&gt;/topic&lt;/attribute&gt;
 
 	  &lt;attribute name="PostOffice"&gt;jboss.messaging:service=PostOffice&lt;/attribute&gt;
       &lt;attribute name="SecurityDomain"&gt;java:/jaas/messaging&lt;/attribute&gt;
@@ -90,10 +85,10 @@
 
       <section id="conf.serverpeer.attributes">
       
-         <title>ServerPeer attributes and arguments</title>
+         <title>ServerPeer attributes</title>
 
          <para>
-             We now discuss the MBean attributes and constructor arguments of the ServerPeer MBean
+             We now discuss the MBean attributes of the ServerPeer MBean
          </para>
        
          <section id="conf.serverpeer.attributes.persistencemanager">
