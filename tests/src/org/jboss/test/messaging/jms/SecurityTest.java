@@ -140,6 +140,7 @@ public class SecurityTest extends MessagingTestCase
       try
       {
          conn1 = cf.createConnection("john", "blobby");
+         fail();
       }
       catch (JMSSecurityException e)
       {
@@ -175,34 +176,26 @@ public class SecurityTest extends MessagingTestCase
 
    /* Now some client id tests */
 
-
-
-   /*
+   /**
     * user/pwd with preconfigured clientID, should return preconf
     */
-   // TODO
-   /*
-
-
-    This test will not work until client id is automatically preconfigured into
-    connection for specific user
-
     public void testPreConfClientID() throws Exception
-    {
-    Connection conn = null;
-    try
-    {
-    conn = cf.createConnection("john", "needle");
-    String clientID = conn.getClientID();
-    assertEquals("Invalid ClientID", "DurableSubscriberExample", clientID);
-    }
-    finally
-    {
-    if (conn != null) conn.close();
-    }
-    }
-    */
-   /*
+   {
+      Connection conn = null;
+      try
+      {
+         conn = cf.createConnection("dilbert", "dogbert");
+         String clientID = conn.getClientID();
+         assertEquals("Invalid ClientID", "dilbert-id", clientID);
+      }
+      finally
+      {
+         if (conn != null)
+            conn.close();
+      }
+   }
+
+   /**
     * Try setting client ID
     */
    public void testSetClientID() throws Exception
@@ -221,36 +214,28 @@ public class SecurityTest extends MessagingTestCase
       }
    }
 
-   // TODO
-   /*
+   /**
     * Try setting client ID on preconfigured connection - should throw exception
     */
-   /*
-    *
-
-
-    This test will not work until client id is automatically preconfigured into
-    connection for specific user
-
-    public void testSetClientIDPreConf() throws Exception
-    {
-    Connection conn = null;
-    try
-    {
-    conn = cf.createConnection("john", "needle");
-    conn.setClientID("myID");
-    fail();
-    }
-    catch (InvalidClientIDException e)
-    {
-    //Expected
-     }
-     finally
-     {
-     if (conn != null) conn.close();
-     }
-     }
-     */
+   public void testSetClientIDPreConf() throws Exception
+   {
+      Connection conn = null;
+      try
+      {
+         conn = cf.createConnection("dilbert", "dogbert");
+         conn.setClientID("myID");
+         fail();
+      }
+      catch (IllegalStateException e)
+      {
+         // Expected
+      }
+      finally
+      {
+         if (conn != null)
+            conn.close();
+      }
+   }
 
    /*
     * Try setting client ID after an operation has been performed on the connection
@@ -452,57 +437,42 @@ public class SecurityTest extends MessagingTestCase
       }
    }
 
-   // TODO
-   /*
+   /**
     * Test valid durable subscription creation for connection preconfigured with client id
     */
-
-   /*
-
-    This test will not work until client id is automatically preconfigured into
-    connection for specific user
-
-    public void testValidDurableSubscriptionCreationPreConf() throws Exception
-    {
-    Connection conn = null;
-    try
-    {
-    conn = cf.createConnection("john", "needle");
-    assertTrue(this.canCreateDurableSub(conn, testTopic, "sub2"));
-    }
-    finally
-    {
-    if (conn != null) conn.close();
-    }
-    }
-
-    */
+   public void testValidDurableSubscriptionCreationPreConf() throws Exception
+   {
+      Connection conn = null;
+      try
+      {
+         conn = cf.createConnection("dilbert", "dogbert");
+         assertTrue(this.canCreateDurableSub(conn, testTopic, "sub2"));
+      }
+      finally
+      {
+         if (conn != null)
+            conn.close();
+      }
+   }
 
    /*
     * Test invalid durable subscription creation for connection preconfigured with client id
     */
 
-
-   // TODO
-   /*
-
-    This test will not work until client id is automatically preconfigured into
-    connection for specific user
-    public void testInvalidDurableSubscriptionCreationPreConf() throws Exception
-    {
-    Connection conn = null;
-    try
-    {
-    conn = cf.createConnection("john", "needle");
-    assertFalse(this.canCreateDurableSub(conn, securedTopic, "sub3"));
-    }
-    finally
-    {
-    if (conn != null) conn.close();
-    }
-    }
-
-    */
+   public void testInvalidDurableSubscriptionCreationPreConf() throws Exception
+   {
+      Connection conn = null;
+      try
+      {
+         conn = cf.createConnection("dilbert", "dogbert");
+         assertFalse(this.canCreateDurableSub(conn, securedTopic, "sub3"));
+      }
+      finally
+      {
+         if (conn != null)
+            conn.close();
+      }
+   }
 
    /*
     * Test valid durable subscription creation for connection not preconfigured with client id
@@ -1058,7 +1028,7 @@ public class SecurityTest extends MessagingTestCase
       }
       catch (JMSSecurityException e)
       {
-         log.trace("Can't create durable sub");
+         log.trace("Can't create durable sub", e);
          return false;
       }
    }
