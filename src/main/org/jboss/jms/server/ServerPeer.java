@@ -558,6 +558,10 @@ public class ServerPeer extends ServiceMBeanSupport implements ServerPeerMBean
       {
          throw new IllegalStateException("Cannot set ServerPeerID while the service is running");
       }
+      if (serverPeerID < 0)
+      {
+         throw new IllegalArgumentException("Attempt to set negative ServerPeerID: " + serverPeerID);
+      }
       this.serverPeerID = serverPeerID;
       log.info("ServerPeerID set to " + serverPeerID);
    }

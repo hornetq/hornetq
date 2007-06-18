@@ -69,6 +69,25 @@ public class ServerPeerConfigurationTest extends MessagingTestCase
       testStartupOnlyAttribute("DefaultTopicJNDIContext", "/mytopics", "/othertopics");
    }
    
+   public void testCannotSetNegativeServerPeerID() throws Exception
+   {
+      LocalTestServer server = new LocalTestServer();
+      ServiceAttributeOverrides overrides = new ServiceAttributeOverrides();
+      // Can't use server.getServerPeerObjectName() here since it's not known to the server yet.
+      overrides.put(ServiceContainer.SERVER_PEER_OBJECT_NAME, "ServerPeerID", "-10");
+      
+      try
+      {
+         server.start("all", overrides, false, true);
+         server.stop();
+         fail("Should have thrown an exception when setting ServerPeerID to a negative value");
+      }
+      catch (RuntimeMBeanException rmbe)
+      {
+         assertTrue(rmbe.getCause() instanceof IllegalArgumentException);
+      }
+   }
+   
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
