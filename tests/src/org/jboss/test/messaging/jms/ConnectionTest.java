@@ -32,6 +32,8 @@ import javax.jms.QueueConnectionFactory;
 import javax.jms.Session;
 import javax.jms.TopicConnection;
 import javax.jms.TopicConnectionFactory;
+import javax.jms.ServerSessionPool;
+import javax.jms.Topic;
 import javax.naming.InitialContext;
 
 import org.jboss.jms.client.JBossConnection;
@@ -471,6 +473,39 @@ public class ConnectionTest extends MessagingTestCase
          //for NullPointerException!!!
                   
       } 
+   }
+
+   /**
+    * This test is similar to a JORAM Test...
+    * (UnifiedTest::testCreateDurableConnectionConsumerOnQueueConnection)
+    *
+    * @throws Exception
+    */
+   public void testDurableSubscriberOnQueueConnection() throws Exception
+   {
+      QueueConnection queueConnection = ((QueueConnectionFactory)cf).createQueueConnection();
+
+      try
+      {
+         queueConnection.createDurableConnectionConsumer((Topic)topic, "subscriptionName", "",
+            (ServerSessionPool) null, 1);
+         fail("Should throw a javax.jms.IllegalStateException");
+      }
+      catch (javax.jms.IllegalStateException e)
+      {
+      }
+      catch (java.lang.IllegalStateException e)
+      {
+         fail ("Should throw a javax.jms.IllegalStateException");
+      }
+      catch (JMSException e)
+      {
+         fail("Should throw a javax.jms.IllegalStateException, not a " + e);
+      }
+      finally
+      {
+         queueConnection.close();
+      }
    }
    
    // TODO - Decide if valid and uncomment or get rid of it!

@@ -103,6 +103,7 @@ public class JBossConnectionMetaData implements Serializable, ConnectionMetaData
       Vector v = new Vector();
       v.add("JMSXGroupID");
       v.add("JMSXGroupSeq");
+      v.add("JMSXDeliveryCount");
       return v.elements();
    }
 

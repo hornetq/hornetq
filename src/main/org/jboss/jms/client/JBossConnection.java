@@ -151,7 +151,7 @@ public class JBossConnection implements
       if (connectionType == TYPE_QUEUE_CONNECTION)
       {
          String msg = "Cannot create a durable connection consumer on a QueueConnection";
-         throw new IllegalStateException(msg);
+         throw new javax.jms.IllegalStateException(msg);
       }
       return delegate.createConnectionConsumer(topic, subscriptionName, messageSelector,
                                                sessionPool, maxMessages);
