@@ -144,6 +144,7 @@ public class ConnectionAspect
    {
       ConnectionState currentState = getConnectionState(invocation);
       currentState.setStarted(true);
+      currentState.setJustCreated(false);
       return invocation.invokeNext();
    }
    
@@ -151,6 +152,7 @@ public class ConnectionAspect
    {
       ConnectionState currentState = getConnectionState(invocation);
       currentState.setStarted(false);
+      currentState.setJustCreated(false);
       return invocation.invokeNext();
    }
    

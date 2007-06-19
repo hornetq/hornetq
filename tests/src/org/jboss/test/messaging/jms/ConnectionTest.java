@@ -265,15 +265,31 @@ public class ConnectionTest extends MessagingTestCase
       connection.close();
    }
 
-   public void testSetClientID2() throws Exception
+   public void testSetClientAfterStart()
    {
-      Connection connection = cf.createConnection();
-      if (connection.getClientID() == null)
+      try
       {
-         connection.setClientID("publisherConnection");
-      }
+         Connection connection = cf.createConnection();
 
-      connection.close();
+         //we start the connection
+         connection.start();
+
+         // an attempt to set the client ID now should throw a IllegalStateException
+         connection.setClientID("testSetClientID_2");
+         fail("Should throw a javax.jms.IllegalStateException");
+      }
+      catch (javax.jms.IllegalStateException e)
+      {
+      }
+      catch (JMSException e)
+      {
+         fail("Should raise a javax.jms.IllegalStateException, not a " + e);
+      }
+      catch (java.lang.IllegalStateException e)
+      {
+         fail("Should raise a javax.jms.IllegalStateException, not a java.lang.IllegalStateException");
+      }
+      
    }
 
    public void testSetClientIDFail() throws Exception
