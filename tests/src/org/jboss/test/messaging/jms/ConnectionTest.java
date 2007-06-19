@@ -108,7 +108,7 @@ public class ConnectionTest extends MessagingTestCase
 
 
    // Public --------------------------------------------------------
-   
+
    public void testResourceManagersForSameServer() throws Exception
    {
       Connection conn1 = cf.createConnection();      
@@ -261,6 +261,17 @@ public class ConnectionTest extends MessagingTestCase
       connection.setClientID(clientID);
 
       assertEquals(clientID, connection.getClientID());
+
+      connection.close();
+   }
+
+   public void testSetClientID2() throws Exception
+   {
+      Connection connection = cf.createConnection();
+      if (connection.getClientID() == null)
+      {
+         connection.setClientID("publisherConnection");
+      }
 
       connection.close();
    }
