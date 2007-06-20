@@ -216,6 +216,14 @@ public class SecurityAspect
    private void check(Destination dest, CheckType checkType, ServerConnectionEndpoint conn)
       throws JMSSecurityException
    {
+      JBossDestination jbd = (JBossDestination)dest;
+
+      if (jbd.isTemporary())
+      {
+         if (trace) { log.trace("skipping permission check on temporary destination " + dest); }
+         return;
+      }
+
       if (trace) { log.trace("checking access permissions to " + dest); }
       
       if (checkCached(dest, checkType))
@@ -224,7 +232,6 @@ public class SecurityAspect
          return;
       }
 
-      JBossDestination jbd = (JBossDestination)dest;
       boolean isQueue = jbd.isQueue();
       String name = jbd.getName();
 

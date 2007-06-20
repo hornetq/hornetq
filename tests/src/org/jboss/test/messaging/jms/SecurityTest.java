@@ -880,6 +880,16 @@ public class SecurityTest extends MessagingTestCase
          }
       }
    }
+   
+   public void testSecurityForTemporaryQueue() throws Exception
+   {
+      testSecurityForTemporaryDestination(true);
+   }
+
+   public void testSecurityForTemporaryTopic() throws Exception
+   {
+      testSecurityForTemporaryDestination(false);
+   }
 
    // Package protected ---------------------------------------------
 
@@ -926,9 +936,7 @@ public class SecurityTest extends MessagingTestCase
 
       ServerManagement.undeployTopic("unsecuredTopic");
       ServerManagement.deployTopic("unsecuredTopic");
-
-
-
+      
       final String defaultSecurityConfig =
          "<security><role name=\"def\" read=\"true\" write=\"true\" create=\"true\"/></security>";
       oldDefaultConfig = ServerManagement.getDefaultSecurityConfig();
@@ -1033,6 +1041,54 @@ public class SecurityTest extends MessagingTestCase
       }
    }
 
+   private void testSecurityForTemporaryDestination(boolean isQueue) throws Exception
+   {
+      Destination dest = isQueue ? (Destination) testQueue : testTopic;
+
+      Connection conn = cf.createConnection("guest", "guest");
+      try
+      {
+         Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         Destination temporaryDestination = isQueue
+            ? (Destination) session.createTemporaryQueue()
+            : session.createTemporaryTopic();
+         Message message = session.createMessage();
+         message.setJMSReplyTo(temporaryDestination);
+         MessageProducer producer = session.createProducer(dest);
+         
+         MessageConsumer tmpConsumer = session.createConsumer(temporaryDestination);
+         conn.start();
+         
+         Connection conn2 = cf.createConnection("john", "needle");
+         try
+         {
+            Session session2 = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+            MessageConsumer consumer = session.createConsumer(dest);
+            conn.start();
+            
+            producer.send(message);
+
+            Message in = consumer.receive(1000L);
+            assertNotNull(in);
+            
+            Message out = session2.createMessage();
+            MessageProducer replyProducer = session2.createProducer(in.getJMSReplyTo());
+            replyProducer.send(out);
+         }
+         finally
+         {
+            conn2.close();
+         }
+         
+         Message reply = tmpConsumer.receive(1000L);
+         assertNotNull(reply);
+      }
+      finally
+      {
+         conn.close();
+      }
+   }
+   
    // Inner classes -------------------------------------------------
 
 }
