@@ -160,24 +160,9 @@
       <path refid="jboss.aop.classpath"/>
       <path refid="jboss.remoting.classpath"/>
       <path refid="jboss.jbossts14.classpath"/>
-   </path>
-
-   <property name="jboss.j2ee.lib" value="${project.root}/lib/"/>
-   <path id="jboss.j2ee.classpath">
-      <pathelement location="${project.root}/lib/jboss-j2ee.jar"/>
-   </path>
-
-   <property name="jboss.j2se.lib" value="${project.root}/lib/"/>
-   <path id="jboss.j2se.classpath">
-      <pathelement location="${project.root}/lib/jboss-j2se.jar"/>
-   </path>   
-
-   <path id="jboss.system.classpath">
-      <pathelement location="${project.root}/lib/jboss-system.jar"/>
-   </path>
-
-   <path id="jboss.security.classpath">
-      <pathelement location="${project.root}/lib/jbosssx.jar"/>
+      <path refid="jbossas.core.libs.classpath"/>
+      <!-- some components at JBoss use JBossSerialization (JCA for instance) -->
+      <path refid="jboss.serialization.classpath"/>
    </path>
 
    <path id="jboss.transaction.classpath">
@@ -203,13 +188,6 @@
    <property name="jboss.naming.lib" value="${project.root}/lib/"/>
 
    <path id="local.dependencies.classpath">
-      <path refid="jboss.j2ee.classpath"/>
-      <path refid="jboss.j2se.classpath"/>      
-      <path refid="jboss.system.classpath"/>
-      <path refid="jboss.security.classpath"/>
-      <path refid="jboss.transaction.classpath"/>
-      <path refid="jboss.jmx.classpath"/>
-      <path refid="jboss.remoting.classpath"/>
       <path refid="jboss.classpath"/>
    </path>
 

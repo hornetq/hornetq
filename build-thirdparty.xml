@@ -91,6 +91,9 @@
       <componentref name="jboss/aop" version="1.5.5.GA"/>
       <componentref name="jboss/remoting" version="2.2.0.SP4"/>
       <componentref name="jboss/jbossts14" version="4.2.3.SP3"/>
+      <componentref name="jboss/jbossts14" version="4.2.3.SP3"/>
+      <componentref name="jbossas/core-libs" version="4.2.0.GA"/>
+
 
       <!--
           Totally unapropriate here, but this is what we need to do for the time being if we
