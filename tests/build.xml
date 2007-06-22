@@ -124,27 +124,6 @@
         Locally maintained dependencies.
    -->
 
-   <path id="jboss.server.classpath">
-      <pathelement location="${jboss.server.lib}/jboss.jar"/>
-   </path>
-
-   <property name="jboss.jca.lib" value="${tests.root}/lib"/>
-   <path id="jboss.jca.classpath">
-      <pathelement path="${jboss.jca.lib}/jboss-jca.jar"/>
-      <pathelement path="${jboss.jca.lib}/jboss-local-jdbc.jar"/>
-      <pathelement path="${jboss.jca.lib}/jboss-common-jdbc-wrapper.jar"/>
-      <pathelement path="${jboss.jca.lib}/jms-ra.jar"/>
-   </path>
-
-   <property name="jboss.mbeans.lib" value="${tests.root}/lib"/>
-   <path id="jboss.mbeans.classpath">
-      <pathelement path="${jboss.mbeans.lib}/jboss-mbeans.jar"/>
-   </path>
-
-   <path id="jboss.naming.classpath">
-      <pathelement path="${jboss.naming.lib}/jnp-client.jar"/>
-   </path>
-
    <!--
        JDBC Drivers.
    -->
@@ -175,8 +154,6 @@
       <path refid="junit.junit.classpath"/>
       <path refid="any.jdbc.driver.classpath"/>
       <path refid="hsqldb.hsqldb.classpath"/>
-      <path refid="jboss.server.classpath"/> <!-- for org.jboss.jms.jndi.JNDIProviderAdapter -->
-      <path refid="jboss.jca.classpath"/>  <!-- for org.jboss.resource.adapter.jdbc.local.LocalManagedConnectionFactory, etc -->
       <path refid="jboss.profiler.jvmti.classpath"/>
       <path refid="jboss.test14.classpath"/>
       <path refid="jboss.jbossretro.rt.classpath"/>
@@ -196,8 +173,6 @@
       <path refid="apache.log4j.classpath"/>
       <path refid="apache.logging.classpath"/>
       <path refid="apache.xerces.classpath"/>
-      <path refid="jboss.mbeans.classpath"/>
-      <path refid="jboss.naming.classpath"/>
       <path refid="jboss.jbossxb.classpath"/>
       <path refid="jgroups.jgroups.classpath"/>
       <path refid="apache.logging.classpath"/>
