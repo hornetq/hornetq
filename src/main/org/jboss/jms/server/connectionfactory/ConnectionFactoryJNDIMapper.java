@@ -382,8 +382,6 @@ public class ConnectionFactoryJNDIMapper
 		            
 		            Map failoverMap = serverPeer.getPostOfficeInstance().getFailoverMap();
 		
-		            log.info("****** CF DEPLOYED/UNDEPLOYED: " + delArr.length + ":" + failoverMap.size());
-		            
 		            endpoint.updateClusteredClients(delArr, failoverMap);
                }
             }

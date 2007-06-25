@@ -1337,7 +1337,7 @@ public class MessagingPostOffice extends JDBCSupport
          		{
          			//Local queue
 
-         			//TODO - There is a temporary hack here -
+         			//TODO - There is a slight kludge here -
          			//When routing to a clustered temp queue, the queue is unreliable - but we always want to route to the local
          			//one so we need to add the check that we only route remotely if it's a topic
          			//We could do this better by making sure that only one queue with the same name is routed to on the cluster
@@ -1406,11 +1406,7 @@ public class MessagingPostOffice extends JDBCSupport
          			
          			multicastRequest(request);
          		}
-         	}
-         	else
-         	{
-         		log.info("************** &&&&&&&&&& not multicasting");
-         	}
+         	}   
          	
          	//If the ref is reliable and there is more than one reliable local queue that accepts the message then we need
          	//to route in a transaction to guarantee once and only once reliability guarantee

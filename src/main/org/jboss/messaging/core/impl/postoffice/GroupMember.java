@@ -465,7 +465,7 @@ public class GroupMember
 
       public void run()
       {
-         log.info(this  + " got new view " + newView);
+         log.debug(this  + " got new view " + newView);
 
          // JGroups will make sure this method is never called by more than one thread concurrently
 

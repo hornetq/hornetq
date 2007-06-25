@@ -73,12 +73,8 @@ public class QueueService extends DestinationServiceSupport implements QueueMBea
          
          Queue queue;
          
-         log.info("*** starting queue service " + destination.getName());
-         
          if (binding != null)
          {                     
-         	log.info("***** queue already exists");
-         	
          	queue = binding.queue;
          	
          	if (queue.isActive())
@@ -102,9 +98,7 @@ public class QueueService extends DestinationServiceSupport implements QueueMBea
          else
          {           
             // Create a new queue
-         	
-         	log.info("**** queue does not already exist");
-            
+
             JMSCondition queueCond = new JMSCondition(true, destination.getName());
             
             queue = new MessagingQueue(nodeId, destination.getName(),
@@ -161,8 +155,6 @@ public class QueueService extends DestinationServiceSupport implements QueueMBea
       {
       	serverPeer.getDestinationManager().unregisterDestination(destination);
       	
-      	log.info("*** stopping service " + destination.getName());
-         
          Queue queue = ((ManagedQueue)destination).getQueue();
          
          String counterName = QUEUE_MESSAGECOUNTER_PREFIX + destination.getName();
@@ -175,8 +167,6 @@ public class QueueService extends DestinationServiceSupport implements QueueMBea
          }
          
          queue.deactivate();
-         
-         log.info("**** deactivated queue");
          
          queue.unload();
          

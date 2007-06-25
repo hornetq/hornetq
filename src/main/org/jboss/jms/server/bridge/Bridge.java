@@ -1285,7 +1285,7 @@ public class Bridge implements MessagingComponent
          }
          else
          {
-            log.info("Succeeded in reconnecting to servers");
+            log.debug("Succeeded in reconnecting to servers");
             
             synchronized (lock)
             {

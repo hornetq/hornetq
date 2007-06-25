@@ -176,8 +176,6 @@ public class ServerPeer extends ServiceMBeanSupport
    // Constructors ---------------------------------------------------------------------------------
    public ServerPeer() throws Exception
    {
-      log.info("creating server peer");
-
       // Some wired components need to be started here
       securityStore = new SecurityMetadataStore();
 
@@ -624,7 +622,6 @@ public class ServerPeer extends ServiceMBeanSupport
          throw new IllegalArgumentException("Attempt to set negative ServerPeerID: " + serverPeerID);
       }
       this.serverPeerID = serverPeerID;
-      log.info("ServerPeerID set to " + serverPeerID);
    }
 
    public int getServerPeerID()

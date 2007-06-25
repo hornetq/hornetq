@@ -44,8 +44,7 @@ import org.jboss.messaging.core.contract.Replicator;
  * 
  * This class handles connections to other nodes that are used to pull messages from remote queues to local queues
  * 
- * TODO - Throttling - we should send a stop message if the local queue is getting full
- * 
+ *
  * TODO - clean closing of suckers
  * 
  * 

@@ -65,15 +65,11 @@ public class TopicService extends DestinationServiceSupport implements TopicMBea
       try
       {
          PostOffice po = serverPeer.getPostOfficeInstance();
-         
-         log.info("*** deploying topic " + destination.getName());
-                    
+                
          // We deploy any queues corresponding to pre-existing durable subscriptions
 
          Collection queues = po.getQueuesForCondition(new JMSCondition(false, destination.getName()), true);
       	
-         log.info("Got " + queues.size() + " queues");
-         
          Iterator iter = queues.iterator();
          while (iter.hasNext())
          {
@@ -85,7 +81,6 @@ public class TopicService extends DestinationServiceSupport implements TopicMBea
             
             queue.setPreserveOrdering(serverPeer.isDefaultPreserveOrdering());
             
-            log.info("**** loading queue");
             queue.load();
                         
             queue.activate();  

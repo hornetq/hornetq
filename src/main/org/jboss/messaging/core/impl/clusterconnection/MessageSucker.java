@@ -103,8 +103,6 @@ public class MessageSucker implements MessageListener
 		
 		if (trace) { log.trace(this + " starting"); }
 		
-		//Only support non XA for now
-		
 		if (!xa)
 		{
 			//If not XA then we use a client ack session for consuming - this allows us to get the message, send it to the destination
