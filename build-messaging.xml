@@ -165,37 +165,10 @@
       <path refid="jboss.serialization.classpath"/>
    </path>
 
-   <path id="jboss.transaction.classpath">
-      <pathelement location="${project.root}/lib/jboss-transaction.jar"/>
-   </path>
-
-   <!--
-       If I don't use directly UnifiedClassLoader3, this should go away.
-   -->
-   <path id="jboss.jmx.classpath">
-      <pathelement location="${project.root}/lib/jboss-jmx.jar"/>
-   </path>
-
-   <!--
-       This is for compiling the JBossAS JBossTS driven JMS recovery code which uses XAResourceWrapper implementation
-   -->
-   <path id="jboss.classpath">
-      <pathelement location="${project.root}/lib/jboss.jar"/>
-   </path>
-
-   <property name="jboss.server.lib" value="${project.root}/lib/"/>
-
-   <property name="jboss.naming.lib" value="${project.root}/lib/"/>
-
-   <path id="local.dependencies.classpath">
-      <path refid="jboss.classpath"/>
-   </path>
-
    <!--
         The compilation classpath.
    -->
    <path id="compilation.classpath">
-      <path refid="local.dependencies.classpath"/>
       <path refid="external.dependencies.classpath"/>
       <path refid="jboss.dependencies.classpath"/>
    </path>

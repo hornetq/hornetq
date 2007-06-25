@@ -23,13 +23,14 @@ package org.jboss.jms.client.remoting;
 
 import java.util.Map;
 
+import org.jboss.jms.client.container.ClientConsumer;
 import org.jboss.jms.client.delegate.ClientConnectionDelegate;
 import org.jboss.jms.message.JBossMessage;
 import org.jboss.jms.message.MessageProxy;
 import org.jboss.jms.wireformat.ClientDelivery;
 import org.jboss.jms.wireformat.ConnectionFactoryUpdate;
 import org.jboss.logging.Logger;
-import org.jboss.messaging.core.message.Message;
+import org.jboss.messaging.core.contract.Message;
 import org.jboss.remoting.callback.Callback;
 import org.jboss.remoting.callback.HandleCallbackException;
 import org.jboss.remoting.callback.InvokerCallbackHandler;
@@ -65,7 +66,7 @@ public class CallbackManager implements InvokerCallbackHandler
 
    // Attributes -----------------------------------------------------------------------------------
 
-   // Map<Long(lookup)-MessageCallbackHandler>
+   // Map<Long(lookup)-ClientConsumer>
    protected Map callbackHandlers;
    protected ConnectionFactoryCallbackHandler connectionfactoryCallbackHandler;
 
@@ -91,8 +92,8 @@ public class CallbackManager implements InvokerCallbackHandler
          MessageProxy proxy = JBossMessage.
             createThinDelegate(dr.getDeliveryId(), (JBossMessage)msg, dr.getDeliveryCount());
 
-         MessageCallbackHandler handler =
-            (MessageCallbackHandler)callbackHandlers.get(new Integer(dr.getConsumerId()));
+         ClientConsumer handler =
+            (ClientConsumer)callbackHandlers.get(new Integer(dr.getConsumerId()));
 
          if (handler == null)
          {
@@ -133,7 +134,7 @@ public class CallbackManager implements InvokerCallbackHandler
 
    // Public ---------------------------------------------------------------------------------------
 
-   public void registerHandler(int consumerID, MessageCallbackHandler handler)
+   public void registerHandler(int consumerID, ClientConsumer handler)
    {
       callbackHandlers.put(new Integer(consumerID), handler);
    }
@@ -144,9 +145,9 @@ public class CallbackManager implements InvokerCallbackHandler
          new ConnectionFactoryCallbackHandler(connectionDelegate);
    }
 
-   public MessageCallbackHandler unregisterHandler(int consumerID)
+   public ClientConsumer unregisterHandler(int consumerID)
    { 
-      return (MessageCallbackHandler)callbackHandlers.remove(new Integer(consumerID));
+      return (ClientConsumer)callbackHandlers.remove(new Integer(consumerID));
    }
 
    public String toString()

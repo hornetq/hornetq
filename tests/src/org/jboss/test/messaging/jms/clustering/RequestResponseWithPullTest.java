@@ -83,8 +83,6 @@ public class RequestResponseWithPullTest extends MessagingTestCase
          put(postOfficeObjectName, "MessagePullPolicy",
              "org.jboss.messaging.core.plugin.postoffice.cluster.DefaultMessagePullPolicy");
 
-      attrOverrides.put(postOfficeObjectName, "StatsSendPeriod", new Long(1000));
-
       ServerManagement.start(0, "all", attrOverrides, true);
       ServerManagement.start(1, "all", attrOverrides, false);
 

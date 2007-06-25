@@ -71,7 +71,9 @@ public class ClusterViewUpdateTest extends ClusteringTestBase
 
       assertEquals(1, getServerId(conn1));
 
+      log.info("*** killing server");
       ServerManagement.killAndWait(1);
+      log.info("killed server");
 
       log.info("sleeping 5 secs ...");
       Thread.sleep(5000);
@@ -80,16 +82,18 @@ public class ClusterViewUpdateTest extends ClusteringTestBase
       assertEquals(2, cfDelegate.getDelegates().length);
       conn.close();
 
-      log.info("sleeping 25 secs ...");
-      Thread.sleep(25000);
+      log.info("sleeping 10 secs ...");
+      Thread.sleep(10000);
 
-      // Second part, verifies a possible racing condition on failoverMap and handleFilover
+      // Second part, verifies a possible race condition on failoverMap and handleFilover
 
       log.info("ServerId=" + getServerId(conn1));
       assertTrue(1 != getServerId(conn1));
 
       //Session sess = conn1.createSession(true, Session.SESSION_TRANSACTED);
       conn1.close();
+      
+      log.info("Done!!");
 
    }
 
@@ -136,8 +140,8 @@ public class ClusterViewUpdateTest extends ClusteringTestBase
       conn.close();
       httpConn.close();
 
-      log.info("sleeping 25 secs ...");
-      Thread.sleep(25000);
+      log.info("sleeping 10 secs ...");
+      Thread.sleep(10000);
 
       // Second part, verifies a possible racing condition on failoverMap and handleFilover
 
@@ -178,7 +182,7 @@ public class ClusterViewUpdateTest extends ClusteringTestBase
 
       ServerManagement.killAndWait(1);
 
-      Thread.sleep(15000);
+      Thread.sleep(10000);
 
       // This will force Failover from Valve to kick in
       conn1.createSession(true, Session.SESSION_TRANSACTED);

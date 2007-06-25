@@ -34,8 +34,8 @@ import org.jboss.jms.server.selector.Selector;
 import org.jboss.messaging.util.ExceptionUtil;
 import org.jboss.jms.wireformat.Dispatcher;
 import org.jboss.logging.Logger;
-import org.jboss.messaging.core.Channel;
-import org.jboss.messaging.core.Filter;
+import org.jboss.messaging.core.contract.Channel;
+import org.jboss.messaging.core.contract.Filter;
 
 /**
  * Concrete implementation of BrowserEndpoint.

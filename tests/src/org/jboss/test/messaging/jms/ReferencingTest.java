@@ -31,9 +31,9 @@ import javax.naming.InitialContext;
 
 import org.jboss.jms.client.JBossConnectionFactory;
 import org.jboss.jms.message.MessageProxy;
-import org.jboss.messaging.core.message.MessageReference;
-import org.jboss.messaging.core.message.SimpleMessageReference;
-import org.jboss.messaging.core.plugin.contract.MessageStore;
+import org.jboss.messaging.core.contract.MessageReference;
+import org.jboss.messaging.core.contract.MessageStore;
+import org.jboss.messaging.core.impl.message.SimpleMessageReference;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
 

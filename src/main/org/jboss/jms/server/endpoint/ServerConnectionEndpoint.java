@@ -53,13 +53,14 @@ import org.jboss.jms.tx.ClientTransaction.SessionTxState;
 import org.jboss.jms.wireformat.Dispatcher;
 import org.jboss.jms.wireformat.JMSWireFormat;
 import org.jboss.logging.Logger;
-import org.jboss.messaging.core.message.Message;
-import org.jboss.messaging.core.message.MessageReference;
-import org.jboss.messaging.core.plugin.contract.ClusteredPostOffice;
-import org.jboss.messaging.core.plugin.contract.MessageStore;
-import org.jboss.messaging.core.plugin.contract.PostOffice;
-import org.jboss.messaging.core.tx.Transaction;
-import org.jboss.messaging.core.tx.TransactionRepository;
+import org.jboss.messaging.core.contract.Binding;
+import org.jboss.messaging.core.contract.Delivery;
+import org.jboss.messaging.core.contract.MessageReference;
+import org.jboss.messaging.core.contract.MessageStore;
+import org.jboss.messaging.core.contract.PostOffice;
+import org.jboss.messaging.core.contract.Queue;
+import org.jboss.messaging.core.impl.tx.Transaction;
+import org.jboss.messaging.core.impl.tx.TransactionRepository;
 import org.jboss.messaging.util.ExceptionUtil;
 import org.jboss.messaging.util.Util;
 import org.jboss.remoting.Client;
@@ -377,8 +378,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
          }
          
          sessions.clear();
-         
-         
+                  
          synchronized (temporaryDestinations)
          {
             for(Iterator i = temporaryDestinations.iterator(); i.hasNext(); )
@@ -387,14 +387,9 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
    
                if (dest.isQueue())
                {     
-               	if (postOffice.isLocal())
-               	{
-               		postOffice.unbindQueue(dest.getName());
-               	}
-               	else
-               	{
-               		((ClusteredPostOffice)postOffice).unbindClusteredQueue(dest.getName());
-               	}
+               	// Temporary queues must be unbound on ALL nodes of the cluster
+               	
+               	postOffice.removeBinding(dest.getName(), true);               	
                }
                else
                {
@@ -405,10 +400,9 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
                	
                	//Sanity check
                	
-               	Collection bindings =
-                     postOffice.getBindingsForCondition(new JMSCondition(false, dest.getName()));
-                  
-                  if (!bindings.isEmpty())
+                  Collection queues = serverPeer.getPostOfficeInstance().getQueuesForCondition(new JMSCondition(false, dest.getName()), true);
+               	
+                  if (!queues.isEmpty())
                	{
                   	//This should never happen
                   	throw new IllegalStateException("Cannot delete temporary destination if it has consumer(s)");
@@ -661,14 +655,6 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
          }
       }
 
-      // messages arriving over a failed-over connections will be give preferential treatment by
-      // routers, which will send them directly to their corresponding failover queues, not to
-      // the "local" queues, to reduce clutter and unnecessary "pull policy" revving.
-      if (failedNodeID != null)
-      {
-         msg.putHeader(Message.FAILED_NODE_ID, failedNodeID);
-      }
-
       // We must reference the message *before* we send it the destination to be handled. This is
       // so we can guarantee that the message doesn't disappear from the store before the
       // handling is complete. Each channel then takes copies of the reference if they decide to
@@ -687,7 +673,27 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
             ref.setScheduledDeliveryTime(schedDeliveryTime);
          }
          
-         if (dest.isQueue())
+         if (dest.isDirect())
+         {
+         	//Route directly to queue - temp kludge for clustering
+         	
+         	Binding binding = postOffice.getBindingForQueueName(dest.getName());
+         	
+         	if (binding == null)
+         	{
+         		throw new IllegalArgumentException("Cannot find binding for queue " + dest.getName());
+         	}
+         	
+         	Queue queue = binding.queue;
+         	
+         	Delivery del = queue.handle(null, ref, tx);
+         	
+         	if (del == null)
+         	{
+         		throw new JMSException("Failed to route " + ref + " to " + dest.getName());
+         	}
+         }
+         else if (dest.isQueue())
          {
             if (!postOffice.route(ref, new JMSCondition(true, dest.getName()), tx))
             {

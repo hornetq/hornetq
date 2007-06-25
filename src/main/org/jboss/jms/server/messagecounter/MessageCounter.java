@@ -30,7 +30,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.jboss.logging.Logger;
-import org.jboss.messaging.core.Queue;
+import org.jboss.messaging.core.contract.Queue;
 
 /**
  * This class stores message count informations for a given queue

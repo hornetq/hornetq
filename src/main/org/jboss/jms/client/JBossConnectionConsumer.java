@@ -100,6 +100,8 @@ public class JBossConnectionConsumer implements ConnectionConsumer, Runnable
    
    private String queueName;
    
+   private boolean shouldAck;
+   
    // Static --------------------------------------------------------
    
    // Constructors --------------------------------------------------
@@ -116,11 +118,11 @@ public class JBossConnectionConsumer implements ConnectionConsumer, Runnable
          this.maxMessages = 1;
       }
 
-      // Create a consumer. The MessageCallbackhandler knows we are a connection consumer so will
+      // Create a consumer. The ClientConsumer knows we are a connection consumer so will
       // not call pre or postDeliver so messages won't be acked, or stored in session/tx.
       sess = conn.createSessionDelegate(false, Session.CLIENT_ACKNOWLEDGE, false);
 
-      cons = sess.createConsumerDelegate(dest, messageSelector, false, subName, true);
+      cons = sess.createConsumerDelegate(dest, messageSelector, false, subName, true, true);
 
       ConsumerState state = (ConsumerState)((DelegateSupport)cons).getState();
 
@@ -128,6 +130,8 @@ public class JBossConnectionConsumer implements ConnectionConsumer, Runnable
         
       this.maxDeliveries = state.getMaxDeliveries();
       
+      shouldAck = state.isShouldAck();      
+            
       if (subName != null)
       {
          queueName = MessageQueueNameHelper.createSubscriptionName(conn.getClientID(), subName);
@@ -283,7 +287,7 @@ public class JBossConnectionConsumer implements ConnectionConsumer, Runnable
                for (int i = 0; i < mesList.size(); i++)
                {
                   MessageProxy m = (MessageProxy)mesList.get(i);
-                  session.addAsfMessage(m, consumerID, queueName, maxDeliveries, sess);
+                  session.addAsfMessage(m, consumerID, queueName, maxDeliveries, sess, shouldAck);
                   if (trace) { log.trace("added " + m + " to session"); }
                }
 

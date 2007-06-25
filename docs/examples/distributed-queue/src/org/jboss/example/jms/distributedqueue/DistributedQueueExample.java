@@ -37,10 +37,6 @@ import org.jboss.example.jms.common.ExampleSupport;
  * The example creates two connections to two distinct cluster nodes on which we have previously
  * deployed a distributed queue. The example sends and receives messages using both connections.
  *
- * NOTE: This is an example that assumes a NullMessagePullPolicy. This is the default configuration
- *       option a release ships with, and also is a very boring options, since messages are *NOT*
- *       redistributed among nodes. An example that assumes a DefaultMessagePullPolicy is coming
- *       soon (http://jira.jboss.org/jira/browse/JBMESSAGING-907).
  *
  * Since this example is also used as a smoke test, it is essential that the VM exits with exit
  * code 0 in case of successful execution and a non-zero value on failure.
@@ -115,9 +111,6 @@ public class DistributedQueueExample extends ExampleSupport
          publisher1.send(message);
 
          log("The messages were successfully sent to the distributed queue");
-
-         // NOTE: We know that this example is extremely boring, but so it's NullMessagePullPolicy.
-         //       However, this is the default configuration option a release ships with.
 
          messageListener0.waitForMessage(3000);
 

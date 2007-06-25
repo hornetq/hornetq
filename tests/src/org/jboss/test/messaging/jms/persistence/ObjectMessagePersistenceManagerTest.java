@@ -24,7 +24,7 @@ package org.jboss.test.messaging.jms.persistence;
 import java.util.HashMap;
 
 import org.jboss.jms.message.JBossObjectMessage;
-import org.jboss.messaging.core.message.Message;
+import org.jboss.messaging.core.contract.Message;
 
 
 /**

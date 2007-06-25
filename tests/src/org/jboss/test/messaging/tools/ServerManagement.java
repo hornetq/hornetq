@@ -39,8 +39,8 @@ import javax.transaction.UserTransaction;
 
 import org.jboss.jms.server.DestinationManager;
 import org.jboss.logging.Logger;
-import org.jboss.messaging.core.plugin.contract.MessageStore;
-import org.jboss.messaging.core.plugin.contract.PersistenceManager;
+import org.jboss.messaging.core.contract.MessageStore;
+import org.jboss.messaging.core.contract.PersistenceManager;
 import org.jboss.remoting.ServerInvocationHandler;
 import org.jboss.test.messaging.tools.jmx.ServiceAttributeOverrides;
 import org.jboss.test.messaging.tools.jmx.rmi.LocalTestServer;

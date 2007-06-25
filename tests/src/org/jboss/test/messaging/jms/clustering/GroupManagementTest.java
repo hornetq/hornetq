@@ -58,6 +58,8 @@ public class GroupManagementTest extends MessagingTestCase
       try
       {
          ServerManagement.start(0, "all");
+         
+         log.info("Started server 0");
 
          ServerManagement.addNotificationListener(0, postOfficeObjectName, listener);
 

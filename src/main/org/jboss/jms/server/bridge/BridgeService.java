@@ -28,8 +28,7 @@ import javax.management.ObjectName;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 
-import org.jboss.messaging.core.plugin.contract.MessagingComponent;
-import org.jboss.messaging.core.plugin.contract.ServerPlugin;
+import org.jboss.messaging.core.contract.MessagingComponent;
 import org.jboss.system.ServiceMBeanSupport;
 
 /**
@@ -41,8 +40,7 @@ import org.jboss.system.ServiceMBeanSupport;
  * $Id$
  *
  */
-public class BridgeService extends ServiceMBeanSupport
-   implements ServerPlugin, BridgeMBean
+public class BridgeService extends ServiceMBeanSupport implements BridgeMBean
 {
    private Bridge bridge;
    

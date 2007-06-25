@@ -26,11 +26,11 @@ import java.util.Iterator;
 
 import org.jboss.jms.server.JMSCondition;
 import org.jboss.jms.server.ServerPeer;
-import org.jboss.messaging.core.Queue;
-import org.jboss.messaging.core.plugin.contract.Condition;
-import org.jboss.messaging.core.plugin.contract.MessagingComponent;
-import org.jboss.messaging.core.plugin.contract.PostOffice;
-import org.jboss.messaging.core.plugin.postoffice.Binding;
+import org.jboss.messaging.core.contract.Binding;
+import org.jboss.messaging.core.contract.Condition;
+import org.jboss.messaging.core.contract.MessagingComponent;
+import org.jboss.messaging.core.contract.PostOffice;
+import org.jboss.messaging.core.contract.Queue;
 import org.w3c.dom.Element;
 
 /**
@@ -206,9 +206,16 @@ public abstract class ManagedDestination implements MessagingComponent
       {            
          Binding binding = serverPeer.getPostOfficeInstance().getBindingForQueueName(dlq.getName());
          
-         if (binding != null && binding.getQueue().isActive())
+         if (binding == null)
          {
-            theQueue =  binding.getQueue();
+         	throw new IllegalStateException("Cannot find binding for queue " + dlq.getName());
+         }
+         
+         Queue queue = binding.queue;
+         
+         if (queue.isActive())
+         {
+         	theQueue = queue;
          }
       }
       
@@ -227,12 +234,20 @@ public abstract class ManagedDestination implements MessagingComponent
       
       if (expiryQueue != null)
       {            
-         Binding binding = serverPeer.getPostOfficeInstance().getBindingForQueueName(expiryQueue.getName());
-         
-         if (binding != null && binding.getQueue().isActive())
+      	Binding binding = serverPeer.getPostOfficeInstance().getBindingForQueueName(expiryQueue.getName());
+      	
+         if (binding == null)
          {
-            theQueue =  binding.getQueue();
+         	throw new IllegalStateException("Cannot find binding for queue " + expiryQueue.getName());
          }
+         
+         Queue queue = binding.queue;
+         
+      	
+      	if (queue.isActive())
+      	{
+      		theQueue = queue;
+      	}
       }
       
       return theQueue;
@@ -264,15 +279,15 @@ public abstract class ManagedDestination implements MessagingComponent
       
       PostOffice postOffice = serverPeer.getPostOfficeInstance();
       
-      Collection subs = postOffice.getBindingsForCondition(cond);
+      Collection subs = postOffice.getQueuesForCondition(cond, true);
       
       Iterator iter = subs.iterator();
 
       while (iter.hasNext())
       {
-         Binding binding = (Binding)iter.next();
+         Queue queue = (Queue)iter.next();
          
-         binding.getQueue().setMaxSize(maxSize);
+         queue.setMaxSize(maxSize);
       }
       
       this.maxSize = maxSize;

@@ -21,8 +21,7 @@
  */
 package org.jboss.test.messaging.core;
 
-import org.jboss.messaging.core.message.MessageReference;
-import org.jboss.messaging.core.plugin.contract.Condition;
+import org.jboss.messaging.core.contract.Condition;
 
 /**
  * A SimpleCondition
@@ -40,11 +39,6 @@ public class SimpleCondition implements Condition
    public SimpleCondition(String name)
    {
       this.name = name;
-   }
-
-   public boolean matches(Condition routingCondition, MessageReference ref)
-   {
-      return equals(routingCondition);            
    }
 
    public String toText()

@@ -27,7 +27,6 @@ import org.jboss.aop.joinpoint.Invocation;
 import org.jboss.aop.joinpoint.MethodInvocation;
 import org.jboss.jms.client.delegate.DelegateSupport;
 import org.jboss.jms.client.remoting.CallbackManager;
-import org.jboss.jms.client.remoting.MessageCallbackHandler;
 import org.jboss.jms.client.state.ConnectionState;
 import org.jboss.jms.client.state.ConsumerState;
 import org.jboss.jms.client.state.SessionState;
@@ -99,21 +98,27 @@ public class ConsumerAspect
          queueName = consumerState.getDestination().getName();
       }
       
-      MessageCallbackHandler messageHandler =
-         new MessageCallbackHandler(isCC, sessionState.getAcknowledgeMode(),
-                                    sessionDelegate, consumerDelegate, consumerID, queueName,
-                                    prefetchSize, sessionExecutor, maxDeliveries);
+      boolean autoFlowControl = ((Boolean)mi.getArguments()[5]).booleanValue();
+      
+      ClientConsumer messageHandler =
+         new ClientConsumer(isCC, sessionState.getAcknowledgeMode(),
+                            sessionDelegate, consumerDelegate, consumerID, queueName,
+                            prefetchSize, sessionExecutor, maxDeliveries, consumerState.isShouldAck(),
+                            autoFlowControl);
       
       sessionState.addCallbackHandler(messageHandler);
       
       CallbackManager cm = connectionState.getRemotingConnection().getCallbackManager();
       cm.registerHandler(consumerID, messageHandler);
          
-      consumerState.setMessageCallbackHandler(messageHandler);
+      consumerState.setClientConsumer(messageHandler);
       
-      //Now we have finished creating the client consumer, we can tell the SCD
-      //we are ready
-      consumerDelegate.changeRate(1);
+      if (autoFlowControl)
+      {
+	      //Now we have finished creating the client consumer, we can tell the SCD
+	      //we are ready
+	      consumerDelegate.changeRate(1);
+      }
 
       return consumerDelegate;
    }
@@ -129,20 +134,20 @@ public class ConsumerAspect
       
       long lastDeliveryId = l.longValue();
       
-      // First we call close on the messagecallbackhandler which waits for onMessage invocations      
+      // First we call close on the ClientConsumer which waits for onMessage invocations      
       // to complete and the last delivery to arrive
-      consumerState.getMessageCallbackHandler().close(lastDeliveryId);
+      consumerState.getClientConsumer().close(lastDeliveryId);
                 
       SessionState sessionState = (SessionState)consumerState.getParent();
       ConnectionState connectionState = (ConnectionState)sessionState.getParent();
                  
-      sessionState.removeCallbackHandler(consumerState.getMessageCallbackHandler());
+      sessionState.removeCallbackHandler(consumerState.getClientConsumer());
 
       CallbackManager cm = connectionState.getRemotingConnection().getCallbackManager();
       cm.unregisterHandler(consumerState.getConsumerID());
          
       //And then we cancel any messages still in the message callback handler buffer     
-      consumerState.getMessageCallbackHandler().cancelBuffer();
+      consumerState.getClientConsumer().cancelBuffer();
                                    
       return l;
    }      
@@ -153,12 +158,12 @@ public class ConsumerAspect
       Object[] args = mi.getArguments();
       long timeout = (args == null || args.length==0) ? 0 : ((Long)args[0]).longValue();
       
-      return getMessageCallbackHandler(invocation).receive(timeout);
+      return getClientConsumer(invocation).receive(timeout);
    }
    
    public Object handleReceiveNoWait(Invocation invocation) throws Throwable
    {      
-      return getMessageCallbackHandler(invocation).receive(-1);
+      return getClientConsumer(invocation).receive(-1);
    }
    
    public Object handleSetMessageListener(Invocation invocation) throws Throwable
@@ -167,14 +172,14 @@ public class ConsumerAspect
       Object[] args = mi.getArguments();
       MessageListener l = (MessageListener)args[0];
       
-      getMessageCallbackHandler(invocation).setMessageListener(l);
+      getClientConsumer(invocation).setMessageListener(l);
       
       return null;
    }
    
    public MessageListener handleGetMessageListener(Invocation invocation) throws Throwable
    {       
-      return getMessageCallbackHandler(invocation).getMessageListener();
+      return getClientConsumer(invocation).getMessageListener();
    }
    
    public Object handleGetDestination(Invocation invocation) throws Throwable
@@ -203,10 +208,10 @@ public class ConsumerAspect
       return (ConsumerState)((DelegateSupport)inv.getTargetObject()).getState();
    }
    
-   private MessageCallbackHandler getMessageCallbackHandler(Invocation inv)
+   private ClientConsumer getClientConsumer(Invocation inv)
    {      
       ConsumerState state = (ConsumerState)((DelegateSupport)inv.getTargetObject()).getState();
-      return state.getMessageCallbackHandler();      
+      return state.getClientConsumer();      
    }
    
    // Inner classes --------------------------------------------------------------------------------

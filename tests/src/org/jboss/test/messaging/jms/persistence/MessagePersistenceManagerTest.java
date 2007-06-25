@@ -29,9 +29,9 @@ import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.destination.JBossQueue;
 import org.jboss.jms.destination.JBossTopic;
 import org.jboss.jms.message.JBossMessage;
-import org.jboss.messaging.core.message.Message;
-import org.jboss.messaging.core.plugin.JDBCPersistenceManager;
-import org.jboss.test.messaging.core.plugin.JDBCPersistenceManagerTest;
+import org.jboss.messaging.core.contract.Message;
+import org.jboss.messaging.core.impl.JDBCPersistenceManager;
+import org.jboss.test.messaging.core.JDBCPersistenceManagerTest;
 import org.jboss.test.messaging.tools.ServerManagement;
 import org.jboss.util.id.GUID;
 

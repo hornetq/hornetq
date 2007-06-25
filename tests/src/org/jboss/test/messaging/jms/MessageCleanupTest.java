@@ -40,7 +40,7 @@ import javax.sql.DataSource;
 import javax.transaction.TransactionManager;
 
 import org.jboss.jms.client.JBossConnectionFactory;
-import org.jboss.messaging.core.message.SimpleMessageStore;
+import org.jboss.messaging.core.impl.message.SimpleMessageStore;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
 import org.jboss.tm.TransactionManagerService;

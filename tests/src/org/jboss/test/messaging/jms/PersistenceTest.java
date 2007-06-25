@@ -468,12 +468,14 @@ public class PersistenceTest extends MessagingTestCase
       MessageProducer p = s.createProducer(thisTopic);
       p.setDeliveryMode(DeliveryMode.PERSISTENT);
       TextMessage tm = s.createTextMessage("thebody");
+      
       p.send(tm);
       log.debug("message sent");
 
       conn.close();
 
       log.debug("stopping the server");
+
       ServerManagement.stopServerPeer();
 
       try

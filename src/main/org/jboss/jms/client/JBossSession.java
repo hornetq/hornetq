@@ -235,7 +235,7 @@ public class JBossSession implements
       log.debug("attempting to create consumer for destination:" + d + (messageSelector == null ? "" : ", messageSelector: " + messageSelector) + (noLocal ? ", noLocal = true" : ""));
 
       ConsumerDelegate cd = delegate.
-         createConsumerDelegate((JBossDestination)d, messageSelector, noLocal, null, false);
+         createConsumerDelegate((JBossDestination)d, messageSelector, noLocal, null, false, true);
 
       return new JBossMessageConsumer(cd);
    }
@@ -277,7 +277,7 @@ public class JBossSession implements
       }
 
       ConsumerDelegate cd =
-         delegate.createConsumerDelegate((JBossTopic)topic, null, false, name, false);
+         delegate.createConsumerDelegate((JBossTopic)topic, null, false, name, false, true);
 
       return new JBossMessageConsumer(cd);
    }
@@ -307,7 +307,7 @@ public class JBossSession implements
       }
 
       ConsumerDelegate cd = delegate.
-         createConsumerDelegate((JBossTopic)topic, messageSelector, noLocal, name, false);
+         createConsumerDelegate((JBossTopic)topic, messageSelector, noLocal, name, false, true);
 
       return new JBossMessageConsumer(cd);
    }
@@ -463,9 +463,9 @@ public class JBossSession implements
     * with messages to be processed by the session's run() method
     */
    void addAsfMessage(MessageProxy m, int consumerID, String queueName, int maxDeliveries,
-                      SessionDelegate connectionConsumerSession)
+                      SessionDelegate connectionConsumerSession, boolean shouldAck)
    {
-      delegate.addAsfMessage(m, consumerID, queueName, maxDeliveries, connectionConsumerSession);
+      delegate.addAsfMessage(m, consumerID, queueName, maxDeliveries, connectionConsumerSession, shouldAck);
    }
       
    // Protected -----------------------------------------------------

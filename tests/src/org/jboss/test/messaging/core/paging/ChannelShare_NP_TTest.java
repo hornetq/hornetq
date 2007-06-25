@@ -23,12 +23,11 @@ package org.jboss.test.messaging.core.paging;
 
 import java.util.List;
 
-import org.jboss.messaging.core.local.PagingFilteredQueue;
-import org.jboss.messaging.core.message.Message;
-import org.jboss.messaging.core.message.MessageReference;
-import org.jboss.messaging.core.plugin.LockMap;
-import org.jboss.messaging.core.tx.Transaction;
-import org.jboss.test.messaging.core.paging.base.PagingStateTestBase;
+import org.jboss.messaging.core.contract.Message;
+import org.jboss.messaging.core.contract.MessageReference;
+import org.jboss.messaging.core.impl.MessagingQueue;
+import org.jboss.messaging.core.impl.tx.Transaction;
+import org.jboss.messaging.util.LockMap;
 import org.jboss.test.messaging.util.CoreMessageFactory;
 
 
@@ -63,11 +62,10 @@ public class ChannelShare_NP_TTest extends PagingStateTestBase
    
    public void testChannelShareNP_Transactional() throws Throwable
    {
-      PagingFilteredQueue queue1 = new PagingFilteredQueue("queue1", 1, ms, pm, true, true, -1, null, 100, 20, 10);
+      MessagingQueue queue1 = new MessagingQueue(1, "queue1", 1, ms, pm, true, -1, null, 100, 20, 10, false, false);
       
-      PagingFilteredQueue queue2 = new PagingFilteredQueue("queue2", 2, ms, pm, true, true, -1, null, 50, 10, 5);
-     
-                               
+      MessagingQueue queue2 = new MessagingQueue(1, "queue2", 2, ms, pm, true, -1, null, 50, 10, 5, false, false);
+                             
       Message[] msgs = new Message[150];
       
       MessageReference[] refs1 = new MessageReference[150];

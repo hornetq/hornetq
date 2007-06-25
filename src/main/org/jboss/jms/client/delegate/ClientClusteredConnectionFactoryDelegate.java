@@ -173,7 +173,7 @@ public class ClientClusteredConnectionFactoryDelegate
    /** Method used to update the delegate and failoverMap during viewChange */
    public synchronized void updateFailoverInfo(ClientConnectionFactoryDelegate[] delegates,
                                                Map failoverMap)
-   {
+   {	
       this.delegates = delegates;
       this.failoverMap = failoverMap;
 

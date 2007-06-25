@@ -1,7 +1,7 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="UTF-8"?>
 
 <!--
-     MS SQL Server non-clustered persistence deployment descriptor.
+     MS SQL Server persistence deployment descriptor.
 
      Tested with SQL Server 2005
 
@@ -10,15 +10,30 @@
 
 <server>
 
-   <mbean code="org.jboss.messaging.core.plugin.JDBCPersistenceManagerService"
-         name="jboss.messaging:service=PersistenceManager"
-         xmbean-dd="xmdesc/JDBCPersistenceManager-xmbean.xml">
-         <depends>jboss.jca:service=DataSourceBinding,name=DefaultDS</depends>
-         <depends optional-attribute-name="TransactionManager">jboss:service=TransactionManager</depends>
-         <attribute name="DataSource">java:/DefaultDS</attribute>
-         <attribute name="CreateTablesOnStartup">true</attribute>
-         <attribute name="UsingBatchUpdates">true</attribute>
-         <attribute name="SqlProperties"><![CDATA[
+   <!-- Persistence Manager MBean configuration
+       ======================================= -->
+   
+   <mbean code="org.jboss.messaging.core.jmx.JDBCPersistenceManagerService"
+      name="jboss.messaging:service=PersistenceManager"
+      xmbean-dd="xmdesc/JDBCPersistenceManager-xmbean.xml">
+      
+      <depends>jboss.jca:service=DataSourceBinding,name=DefaultDS</depends>
+      
+      <depends optional-attribute-name="TransactionManager">jboss:service=TransactionManager</depends>
+      
+      <!-- The datasource to use for the persistence manager -->
+        
+      <attribute name="DataSource">java:/DefaultDS</attribute>
+      
+      <!-- If true will attempt to create tables and indexes on every start-up -->
+      
+      <attribute name="CreateTablesOnStartup">true</attribute>
+      
+      <!-- If true then will use JDBC batch updates -->
+      
+      <attribute name="UsingBatchUpdates">true</attribute>
+      
+      <attribute name="SqlProperties"><![CDATA[
    CREATE_MESSAGE_REFERENCE=CREATE TABLE JBM_MSG_REF (CHANNEL_ID BIGINT, MESSAGE_ID BIGINT, TRANSACTION_ID BIGINT, STATE CHAR(1), ORD BIGINT, PAGE_ORD BIGINT, DELIVERY_COUNT INT, SCHED_DELIVERY BIGINT, PRIMARY KEY(CHANNEL_ID, MESSAGE_ID))
    CREATE_IDX_MESSAGE_REF_TX=CREATE INDEX JBM_MSG_REF_TX ON JBM_MSG_REF (TRANSACTION_ID)
    CREATE_IDX_MESSAGE_REF_ORD=CREATE INDEX JBM_MSG_REF_ORD ON JBM_MSG_REF (ORD)
@@ -41,7 +56,6 @@
    LOAD_REFS=SELECT MESSAGE_ID, DELIVERY_COUNT, SCHED_DELIVERY FROM JBM_MSG_REF WHERE STATE = 'C' AND CHANNEL_ID = ? ORDER BY ORD
    UPDATE_REFS_NOT_PAGED=UPDATE JBM_MSG_REF SET PAGE_ORD = NULL WHERE PAGE_ORD BETWEEN ? AND ? AND CHANNEL_ID=?
    SELECT_MIN_MAX_PAGE_ORD=SELECT MIN(PAGE_ORD), MAX(PAGE_ORD) FROM JBM_MSG_REF WHERE CHANNEL_ID = ?
-   SELECT_EXISTS_REF=SELECT MESSAGE_ID FROM JBM_MSG_REF WHERE CHANNEL_ID = ? AND MESSAGE_ID = ?
    SELECT_EXISTS_REF_MESSAGE_ID=SELECT MESSAGE_ID FROM JBM_MSG_REF WHERE MESSAGE_ID = ?
    UPDATE_DELIVERY_COUNT=UPDATE JBM_MSG_REF SET DELIVERY_COUNT = ? WHERE CHANNEL_ID = ? AND MESSAGE_ID = ?
    UPDATE_CHANNEL_ID=UPDATE JBM_MSG_REF SET CHANNEL_ID = ? WHERE CHANNEL_ID = ?
@@ -61,34 +75,134 @@
    SELECT_COUNTER=SELECT NEXT_ID FROM JBM_COUNTER WITH (HOLDLOCK, ROWLOCK) WHERE NAME=?
    INSERT_COUNTER=INSERT INTO JBM_COUNTER (NAME, NEXT_ID) VALUES (?, ?)
    SELECT_ALL_CHANNELS=SELECT DISTINCT(CHANNEL_ID) FROM JBM_MSG_REF
-         ]]></attribute>
-         <attribute name="MaxParams">500</attribute>
+      ]]></attribute>
+      
+      <!-- The maximum number of parameters to include in a prepared statement -->
+      
+      <attribute name="MaxParams">500</attribute>
    </mbean>
 
-   <mbean code="org.jboss.messaging.core.plugin.DefaultPostOfficeService"
+   <!-- Messaging Post Office MBean configuration
+        ========================================= -->
+   
+   <mbean code="org.jboss.messaging.core.jmx.MessagingPostOfficeService"
       name="jboss.messaging:service=PostOffice"
-      xmbean-dd="xmdesc/DefaultPostOffice-xmbean.xml">
+      xmbean-dd="xmdesc/MessagingPostOffice-xmbean.xml">
+      
       <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
+                 
       <depends>jboss.jca:service=DataSourceBinding,name=DefaultDS</depends>
+      
       <depends optional-attribute-name="TransactionManager">jboss:service=TransactionManager</depends>
-      <attribute name="PostOfficeName">JMS</attribute>
+      
+      <!-- The name of the post office -->      
+      
+      <attribute name="PostOfficeName">JMS post office</attribute>
+      
+      <!-- The datasource used by the post office to access it's binding information -->      
+            
       <attribute name="DataSource">java:/DefaultDS</attribute>
+      
+      <!-- If true will attempt to create tables and indexes on every start-up -->
+            
       <attribute name="CreateTablesOnStartup">true</attribute>
+      
       <attribute name="SqlProperties"><![CDATA[
 CREATE_POSTOFFICE_TABLE=CREATE TABLE JBM_POSTOFFICE (POSTOFFICE_NAME VARCHAR(255), NODE_ID SMALLINT, QUEUE_NAME VARCHAR(1023), COND VARCHAR(1023), SELECTOR VARCHAR(1023), CHANNEL_ID INTEGER, CLSTERED CHAR(1))
 INSERT_BINDING=INSERT INTO JBM_POSTOFFICE (POSTOFFICE_NAME, NODE_ID, QUEUE_NAME, COND, SELECTOR, CHANNEL_ID, CLSTERED) VALUES (?, ?, ?, ?, ?, ?, ?)
 DELETE_BINDING=DELETE FROM JBM_POSTOFFICE WHERE POSTOFFICE_NAME=? AND NODE_ID=? AND QUEUE_NAME=?
-LOAD_BINDINGS=SELECT NODE_ID, QUEUE_NAME, COND, SELECTOR, CHANNEL_ID, CLSTERED FROM JBM_POSTOFFICE WHERE POSTOFFICE_NAME  = ?
+LOAD_BINDINGS=SELECT QUEUE_NAME, COND, SELECTOR, CHANNEL_ID, CLUSTERED FROM JBM_POSTOFFICE WHERE POSTOFFICE_NAME=? AND NODE_ID=?
       ]]></attribute>
+      
+      <!-- This post office is clustered. If you don't want a clustered post office then set to false -->
+      
+      <attribute name="Clustered">true</attribute>
+      
+      <!-- All the remaining properties only have to be specified if the post office is clustered.
+           You can safely comment them out if your post office is non clustered -->
+      
+      <!-- The JGroups group name that the post office will use -->      
+            
+      <attribute name="GroupName">MessagingPostOffice</attribute>
+      
+      <!-- Max time to wait for state to arrive when the post office joins the cluster -->            
+      
+      <attribute name="StateTimeout">5000</attribute>
+      
+      <!-- Max time to wait for a synchronous call to node members using the MessageDispatcher -->            
+      
+      <attribute name="CastTimeout">5000</attribute>
+      
+      <!-- Enable this when the JGroups multiplexer comes of age
+      <attribute name="ChannelFactoryName">jgroups.mux:name=Multiplexer</attribute>      
+      <attribute name="SyncChannelName">udp-sync</attribute>
+      <attribute name="AsyncChannelName">udp</attribute>
+      <attribute name="ChannelPartitionName">${jboss.partition.name:DefaultPartition}-JMS</attribute>
+      -->
+      
+      <!-- JGroups stack configuration for the data channel - used when casting messages across the cluster -->
+                  
+      <attribute name="AsyncChannelConfig">
+         <config>
+            <UDP mcast_recv_buf_size="500000" down_thread="false" ip_mcast="true" mcast_send_buf_size="32000"
+           mcast_port="45567" ucast_recv_buf_size="500000" use_incoming_packet_handler="false"
+           mcast_addr="228.8.8.8" use_outgoing_packet_handler="true" loopback="true" ucast_send_buf_size="32000" ip_ttl="32" />
+            <AUTOCONF down_thread="false" up_thread="false"/>
+            <PING timeout="2000" down_thread="false" num_initial_members="3" up_thread="false"/>
+            <MERGE2 max_interval="10000" down_thread="false" min_interval="5000" up_thread="false"/>
+            <FD_SOCK down_thread="false" up_thread="false"/>
+            <FD timeout="20000" max_tries="3" down_thread="false" up_thread="false" shun="true"/>
+            <VERIFY_SUSPECT timeout="1500" down_thread="false" up_thread="false"/>
+            <pbcast.NAKACK max_xmit_size="8192" down_thread="false" use_mcast_xmit="true" gc_lag="50" up_thread="false"
+                         retransmit_timeout="100,200,600,1200,2400,4800"/>
+            <UNICAST timeout="1200,2400,3600" down_thread="false" up_thread="false"/>
+            <pbcast.STABLE stability_delay="1000" desired_avg_gossip="20000" down_thread="false" max_bytes="0" up_thread="false"/>
+            <FRAG frag_size="8192" down_thread="false" up_thread="false"/>
+            <VIEW_SYNC avg_send_interval="60000" down_thread="false" up_thread="false" />
+            <pbcast.GMS print_local_addr="true" join_timeout="3000" down_thread="false" join_retry_timeout="2000" up_thread="false" shun="true"/>
+         </config>
+      </attribute>
+      
+      <!-- JGroups stack configuration to use for the control channel - used for bind/unbind requests amongst others -->           
+      
+      <attribute name="SyncChannelConfig">
+         <config>
+            <UDP mcast_recv_buf_size="500000" down_thread="false" ip_mcast="true" mcast_send_buf_size="32000"
+           mcast_port="45568" ucast_recv_buf_size="500000" use_incoming_packet_handler="false"
+           mcast_addr="228.8.8.8" use_outgoing_packet_handler="true" loopback="true" ucast_send_buf_size="32000" ip_ttl="32" />
+            <AUTOCONF down_thread="false" up_thread="false"/>
+            <PING timeout="2000" down_thread="false" num_initial_members="3" up_thread="false"/>
+            <MERGE2 max_interval="10000" down_thread="false" min_interval="5000" up_thread="false"/>
+            <FD_SOCK down_thread="false" up_thread="false"/>
+            <FD timeout="20000" max_tries="3" down_thread="false" up_thread="false" shun="true"/>
+            <VERIFY_SUSPECT timeout="1500" down_thread="false" up_thread="false"/>
+            <pbcast.NAKACK max_xmit_size="8192" down_thread="false" use_mcast_xmit="true" gc_lag="50" up_thread="false"
+                         retransmit_timeout="100,200,600,1200,2400,4800"/>
+            <UNICAST timeout="1200,2400,3600" down_thread="false" up_thread="false"/>
+            <pbcast.STABLE stability_delay="1000" desired_avg_gossip="20000" down_thread="false" max_bytes="0" up_thread="false"/>
+            <FRAG frag_size="8192" down_thread="false" up_thread="false"/>
+            <VIEW_SYNC avg_send_interval="60000" down_thread="false" up_thread="false" />
+            <pbcast.GMS print_local_addr="true" join_timeout="3000" down_thread="false" join_retry_timeout="2000" up_thread="false" shun="true"/>
+            <pbcast.STATE_TRANSFER down_thread="false" up_thread="false"/>
+         </config>
+      </attribute>
    </mbean>
-
+   
+   <!-- Messaging JMS User Manager MBean config
+        ======================================= -->
+   
    <mbean code="org.jboss.jms.server.plugin.JDBCJMSUserManagerService"
       name="jboss.messaging:service=JMSUserManager"
       xmbean-dd="xmdesc/JMSUserManager-xmbean.xml">
+      
       <depends>jboss.jca:service=DataSourceBinding,name=DefaultDS</depends>
+      
       <depends optional-attribute-name="TransactionManager">jboss:service=TransactionManager</depends>
+      
       <attribute name="DataSource">java:/DefaultDS</attribute>
+      
       <attribute name="CreateTablesOnStartup">true</attribute>
+      
       <attribute name="SqlProperties"><![CDATA[
 CREATE_USER_TABLE=CREATE TABLE JBM_USER (USER_ID VARCHAR(32) NOT NULL, PASSWD VARCHAR(32) NOT NULL, CLIENTID VARCHAR(128), PRIMARY KEY(USER_ID))
 CREATE_ROLE_TABLE=CREATE TABLE JBM_ROLE (ROLE_ID VARCHAR(32) NOT NULL, USER_ID VARCHAR(32) NOT NULL, PRIMARY KEY(USER_ID, ROLE_ID))

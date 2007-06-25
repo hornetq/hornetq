@@ -714,9 +714,8 @@ public class AcknowledgementTest extends MessagingTestCase
       conn.close();
    }
       
-   public void testDupsOKAcknowledge() throws Exception
-   { 
-      
+   public void testDupsOKAcknowledgeQueue() throws Exception
+   {       
       final int BATCH_SIZE = 10;
       
       String mbeanConfig =
@@ -737,65 +736,155 @@ public class AcknowledgementTest extends MessagingTestCase
       ServerManagement.invoke(on, "create", new Object[0], new String[0]);
       ServerManagement.invoke(on, "start", new Object[0], new String[0]);
       
-      ConnectionFactory myCF = (ConnectionFactory)initialContext.lookup("/mycf");
+      Connection conn = null;
       
-      Connection conn = myCF.createConnection();
-
-      Session producerSess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      MessageProducer producer = producerSess.createProducer(queue);
-
-      Session consumerSess = conn.createSession(false, Session.DUPS_OK_ACKNOWLEDGE);
-      MessageConsumer consumer = consumerSess.createConsumer(queue);
-      conn.start();
-
-      //Send some messages
-      for (int i = 0; i < 19; i++)
+      try
       {
-         Message m = producerSess.createMessage();
-         producer.send(m);
+	      
+	      ConnectionFactory myCF = (ConnectionFactory)initialContext.lookup("/mycf");
+	      
+	      conn = myCF.createConnection();
+	
+	      Session producerSess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+	      MessageProducer producer = producerSess.createProducer(queue);
+	
+	      Session consumerSess = conn.createSession(false, Session.DUPS_OK_ACKNOWLEDGE);
+	      MessageConsumer consumer = consumerSess.createConsumer(queue);
+	      conn.start();
+	
+	      //Send some messages
+	      for (int i = 0; i < 19; i++)
+	      {
+	         Message m = producerSess.createMessage();
+	         producer.send(m);
+	      }
+	      
+	      assertRemainingMessages(19);
+	
+	      log.trace("Sent messages");
+	
+	      Message m = null;
+	      for (int i = 0; i < 10; i++)
+	      {
+	         m = consumer.receive(200);
+	         
+	         assertNotNull(m);
+	          
+	         if (i == 9)
+	         {
+	            assertRemainingMessages(9);
+	         }
+	         else
+	         {
+	            assertRemainingMessages(19);
+	         }
+	      }
+	      
+	      for (int i = 0; i < 9; i++)
+	      {
+	         m = consumer.receive(200);
+	         
+	         assertNotNull(m);
+	         
+	         assertRemainingMessages(9);
+	      }
+	      
+	      //Make sure the last are acked on close
+	      
+	      consumerSess.close();
+	      
+	      assertRemainingMessages(0);
+      }
+      finally
+      {
+      
+      	if (conn != null)
+      	{
+      		conn.close();
+      	}
+      	
+      	ServerManagement.invoke(on, "stop", new Object[0], new String[0]);
+         ServerManagement.invoke(on, "destroy", new Object[0], new String[0]);
       }
       
-      assertRemainingMessages(19);
-
-      log.trace("Sent messages");
-
-      Message m = null;
-      for (int i = 0; i < 10; i++)
-      {
-         m = consumer.receive(200);
-         
-         assertNotNull(m);
-          
-         if (i == 9)
-         {
-            assertRemainingMessages(9);
-         }
-         else
-         {
-            assertRemainingMessages(19);
-         }
-      }
-      
-      for (int i = 0; i < 9; i++)
-      {
-         m = consumer.receive(200);
-         
-         assertNotNull(m);
-         
-         assertRemainingMessages(9);
-      }
-      
-      //Make sure the last are acked on close
-      
-      consumerSess.close();
-      
-      assertRemainingMessages(0);
-      
-      conn.close();
 
    }
+   
+   
+   public void testDupsOKAcknowledgeTopic() throws Exception
+   {       
+      final int BATCH_SIZE = 10;
+      
+      String mbeanConfig =
+         "<mbean code=\"org.jboss.jms.server.connectionfactory.ConnectionFactory\"\n" +
+         "       name=\"jboss.messaging.destination:service=MyConnectionFactory2\"\n" +
+         "       xmbean-dd=\"xmdesc/ConnectionFactory-xmbean.xml\">\n" +
+         "       <depends optional-attribute-name=\"ServerPeer\">jboss.messaging:service=ServerPeer</depends>\n" +
+         "       <depends optional-attribute-name=\"Connector\">jboss.messaging:service=Connector,transport=bisocket</depends>\n" +
+         "       <attribute name=\"JNDIBindings\">\n" +
+         "          <bindings>\n" +
+         "            <binding>/mycf</binding>\n" +
+         "          </bindings>\n" +
+         "       </attribute>\n" +
+         "       <attribute name=\"DupsOKBatchSize\">" + BATCH_SIZE  + "</attribute>" +
+         " </mbean>";
 
+      ObjectName on = ServerManagement.deploy(mbeanConfig);
+      ServerManagement.invoke(on, "create", new Object[0], new String[0]);
+      ServerManagement.invoke(on, "start", new Object[0], new String[0]);
+      
+      Connection conn = null;
+      
+      try
+      {
+	      
+	      ConnectionFactory myCF = (ConnectionFactory)initialContext.lookup("/mycf");
+	      
+	      conn = myCF.createConnection();
+	
+	      Session producerSess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+	      MessageProducer producer = producerSess.createProducer(topic);
+	
+	      Session consumerSess = conn.createSession(false, Session.DUPS_OK_ACKNOWLEDGE);
+	      MessageConsumer consumer = consumerSess.createConsumer(topic);
+	      conn.start();
+	
+	      //Send some messages
+	      for (int i = 0; i < 19; i++)
+	      {
+	         Message m = producerSess.createMessage();
+	         producer.send(m);
+	      }
+	      
+	      log.trace("Sent messages");
+	
+	      Message m = null;
+	      for (int i = 0; i < 19; i++)
+	      {
+	         m = consumer.receive(200);
+	         
+	         assertNotNull(m);
+	      }
+	      	   	      
+	      consumerSess.close();
+      }
+      finally
+      {
+      
+      	if (conn != null)
+      	{
+      		conn.close();
+      	}
+      	
+      	ServerManagement.invoke(on, "stop", new Object[0], new String[0]);
+         ServerManagement.invoke(on, "destroy", new Object[0], new String[0]);
+      }
+      
 
+   }
+   
+   
+   
 	/*
 	 * Send some messages, consume them and verify the messages are not sent upon recovery
 	 *

@@ -116,6 +116,7 @@ public class StateCreationAspect
                                 remotingConnection, versionToUse, idGenerator);
 
          listener.setConnectionState(connectionState);
+          
          connectionDelegate.setState(connectionState);
       }
 

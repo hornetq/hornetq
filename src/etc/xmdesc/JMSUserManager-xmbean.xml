@@ -14,7 +14,7 @@
    <attribute access="read-only" getMethod="getInstance">
       <description>The instance to plug into the server peer</description>
       <name>Instance</name>
-      <type>org.jboss.messaging.core.plugin.contract.MessagingComponent</type>
+      <type>org.jboss.messaging.core.contract.MessagingComponent</type>
    </attribute>
 
    <attribute access="read-write" getMethod="getDataSource" setMethod="setDataSource">

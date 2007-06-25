@@ -624,14 +624,7 @@ public class ServiceContainer
    {
       String databaseName = getDatabaseName();
 
-      if (clustered && !getDatabaseName().equals("hsqldb"))
-      {
-         return "server/default/deploy/clustered-" + databaseName + "-persistence-service.xml";
-      }
-      else
-      {
-         return "server/default/deploy/" + databaseName + "-persistence-service.xml";
-      }
+      return "server/default/deploy/" + databaseName + "-persistence-service.xml";      
    }
    
    public Properties getPersistenceManagerSQLProperties() throws Exception
@@ -661,32 +654,6 @@ public class ServiceContainer
    }
 
    public Properties getPostOfficeSQLProperties() throws Exception
-   {
-      String persistenceConfigFile = getPersistenceConfigFile(false);
-      log.info("Peristence config file: .. " + persistenceConfigFile);
-
-      MBeanConfigurationElement postOfficeConfig =
-         ServiceConfigHelper.loadServiceConfiguration(persistenceConfigFile, "PostOffice");
-
-      String props = postOfficeConfig.getAttributeValue("SqlProperties");
-
-      if (props != null)
-      {
-         ByteArrayInputStream is = new ByteArrayInputStream(props.getBytes());
-
-         Properties sqlProperties = new Properties();
-
-         sqlProperties.load(is);
-
-         return sqlProperties;
-      }
-      else
-      {
-         return null;
-      }
-   }
-
-   public Properties getClusteredPostOfficeSQLProperties() throws Exception
    {
       String persistenceConfigFile = getPersistenceConfigFile(true);
       log.info("Persistence config file: .... " + persistenceConfigFile);
@@ -1622,6 +1589,19 @@ public class ServiceContainer
       }
       
       connFactoryElements = cfdd.query("service", "HTTPConnectionFactory");
+
+      for (Iterator i = connFactoryElements.iterator(); i.hasNext();)
+      {
+         MBeanConfigurationElement connFactoryElement = (MBeanConfigurationElement) i.next();
+         ObjectName on = registerAndConfigureService(connFactoryElement);
+         overrideAttributes(on, attrOverrides);
+         // dependencies have been automatically injected already
+         invoke(on, "create", new Object[0], new String[0]);
+         invoke(on, "start", new Object[0], new String[0]);
+         connFactoryObjectNames.add(on);
+      }
+      
+      connFactoryElements = cfdd.query("service", "ClusterPullConnectionFactory");
 
       for (Iterator i = connFactoryElements.iterator(); i.hasNext();)
       {

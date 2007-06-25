@@ -24,7 +24,7 @@ package org.jboss.test.messaging.util;
 import java.io.Serializable;
 import java.util.Map;
 
-import org.jboss.messaging.core.message.CoreMessage;
+import org.jboss.messaging.core.impl.message.CoreMessage;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>

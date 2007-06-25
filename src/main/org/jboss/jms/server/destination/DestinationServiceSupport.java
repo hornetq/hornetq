@@ -11,18 +11,10 @@ import java.util.StringTokenizer;
 import javax.management.InstanceNotFoundException;
 import javax.management.ObjectName;
 
-import org.jboss.jms.server.DestinationManager;
-import org.jboss.jms.server.SecurityManager;
 import org.jboss.jms.server.ServerPeer;
 import org.jboss.jms.server.messagecounter.MessageCounter;
+import org.jboss.messaging.core.contract.MessagingComponent;
 import org.jboss.messaging.util.ExceptionUtil;
-import org.jboss.messaging.core.plugin.IDManager;
-import org.jboss.messaging.core.plugin.contract.MessageStore;
-import org.jboss.messaging.core.plugin.contract.MessagingComponent;
-import org.jboss.messaging.core.plugin.contract.PersistenceManager;
-import org.jboss.messaging.core.plugin.contract.PostOffice;
-import org.jboss.messaging.core.plugin.contract.ServerPlugin;
-import org.jboss.messaging.core.tx.TransactionRepository;
 import org.jboss.system.ServiceMBeanSupport;
 import org.w3c.dom.Element;
 
@@ -38,8 +30,7 @@ import org.w3c.dom.Element;
  *
  * $Id$
  */
-public abstract class DestinationServiceSupport extends ServiceMBeanSupport
-   implements ServerPlugin, DestinationMBean
+public abstract class DestinationServiceSupport extends ServiceMBeanSupport implements DestinationMBean
 {
    // Constants -----------------------------------------------------
 
@@ -57,21 +48,7 @@ public abstract class DestinationServiceSupport extends ServiceMBeanSupport
    
    protected ManagedDestination destination;
    
-   protected PostOffice postOffice;
-      
    protected ServerPeer serverPeer;
-   
-   protected DestinationManager dm;
-   
-   protected SecurityManager sm;
-   
-   protected PersistenceManager pm;
-   
-   protected MessageStore ms;
-   
-   protected TransactionRepository tr;
-   
-   protected IDManager idm;
    
    protected int nodeId;
     
@@ -105,19 +82,9 @@ public abstract class DestinationServiceSupport extends ServiceMBeanSupport
       try
       {
          serverPeer = (ServerPeer)server.getAttribute(serverPeerObjectName, "Instance");
-         
-         dm = serverPeer.getDestinationManager();
-         
-         sm = serverPeer.getSecurityManager();
-         
-         pm = serverPeer.getPersistenceManagerInstance(); 
-           
-         ms = serverPeer.getMessageStore();
-         
-         tr = serverPeer.getTxRepository();
-         
-         idm = serverPeer.getChannelIDManager();
-         
+               	      
+         destination.setServerPeer(serverPeer);
+               	
          nodeId = serverPeer.getServerPeerID();
          
          String name = null;
@@ -295,7 +262,7 @@ public abstract class DestinationServiceSupport extends ServiceMBeanSupport
          if (started)
          {
             // push security update to the server
-            sm.setSecurityConfig(isQueue(), destination.getName(), securityConfig);  
+            serverPeer.getSecurityManager().setSecurityConfig(isQueue(), destination.getName(), securityConfig);  
          }
    
          destination.setSecurityConfig(securityConfig);

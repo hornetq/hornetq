@@ -46,7 +46,7 @@ import javax.jms.TextMessage;
 import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.exception.MessagingJMSException;
 import org.jboss.logging.Logger;
-import org.jboss.messaging.core.message.MessageSupport;
+import org.jboss.messaging.core.impl.message.MessageSupport;
 import org.jboss.util.Primitives;
 import org.jboss.util.Strings;
 

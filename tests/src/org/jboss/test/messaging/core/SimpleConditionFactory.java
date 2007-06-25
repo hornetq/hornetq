@@ -21,8 +21,8 @@
  */
 package org.jboss.test.messaging.core;
 
-import org.jboss.messaging.core.plugin.contract.Condition;
-import org.jboss.messaging.core.plugin.contract.ConditionFactory;
+import org.jboss.messaging.core.contract.Condition;
+import org.jboss.messaging.core.contract.ConditionFactory;
 
 /**
  * A SimpleConditionFactory

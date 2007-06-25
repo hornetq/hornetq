@@ -38,7 +38,7 @@ import javax.transaction.TransactionManager;
 
 import org.jboss.jms.server.plugin.contract.JMSUserManager;
 import org.jboss.logging.Logger;
-import org.jboss.messaging.core.plugin.JDBCSupport;
+import org.jboss.messaging.core.impl.JDBCSupport;
 
 /**
  * A JDBCJMSUserManager
@@ -164,44 +164,44 @@ public class JDBCJMSUserManager extends JDBCSupport implements JMSUserManager
 
       if (!populateTables.isEmpty())
       {         
-         Connection conn = null;      
-         TransactionWrapper tx = new TransactionWrapper();
+
+         Iterator iter = populateTables.iterator();
          
-         try
+         while (iter.hasNext())
          {
-            conn = ds.getConnection();
+            String statement = (String)iter.next();
             
-            Iterator iter = populateTables.iterator();
+            Statement st = null;
             
-            while (iter.hasNext())
+            Connection conn = null;         
+            
+            TransactionWrapper tx = null;
+                           
+            try
             {
-               String statement = (String)iter.next();
+               if (log.isTraceEnabled()) { log.trace("Executing: " + statement); }
                
-               Statement st = null;
+               tx = new TransactionWrapper();
                
-               try
-               {
-                  if (log.isTraceEnabled()) { log.trace("Executing: " + statement); }
-                  
-                  st = conn.createStatement();
-                  
-                  st.executeUpdate(statement);
-               }
-               catch (SQLException e) 
-               {
-                  log.debug("Failed to execute " + statement, e);
-               }
-               finally
-               {
-               	closeStatement(st);
-               }
-            }      
-         }
-         finally
-         {
-         	closeConnection(conn);
-            tx.end();
-         }    
+               conn = ds.getConnection();
+               
+               st = conn.createStatement();
+               
+               st.executeUpdate(statement);
+            }
+            catch (Exception e) 
+            {
+               log.debug("Failed to execute " + statement, e);
+               
+               tx.exceptionOccurred();
+            }
+            finally
+            {
+            	closeStatement(st);
+            	closeConnection(conn);
+            	tx.end();
+            }
+         }      
       }
    }
    

@@ -51,8 +51,8 @@ public interface SessionEndpoint extends Closeable
     */
    ConsumerDelegate createConsumerDelegate(JBossDestination destination, String selector,
                                            boolean noLocal, String subscriptionName,
-                                           boolean connectionConsumer) throws JMSException;
-
+                                           boolean connectionConsumer, boolean autoFlowControl) throws JMSException;
+   
    /**
     * @param failoverChannelID - the ID of the channel for which there is a failover process in
     *        progress. -1 means regular (non-failover) browser delegate creation.

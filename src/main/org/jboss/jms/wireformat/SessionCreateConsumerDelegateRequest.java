@@ -47,6 +47,7 @@ public class SessionCreateConsumerDelegateRequest extends RequestSupport
    private boolean noLocal;
    private String subName;
    private boolean connectionConsumer;
+   private boolean autoFlowControl;
 
    public SessionCreateConsumerDelegateRequest()
    {      
@@ -56,7 +57,8 @@ public class SessionCreateConsumerDelegateRequest extends RequestSupport
                                                byte version,
                                                JBossDestination destination,
                                                String selector, boolean noLocal,
-                                               String subName, boolean connectionConsumer)
+                                               String subName, boolean connectionConsumer,
+                                               boolean autoFlowControl)
    {
       super(objectId, PacketSupport.REQ_SESSION_CREATECONSUMERDELEGATE, version);
       
@@ -65,6 +67,7 @@ public class SessionCreateConsumerDelegateRequest extends RequestSupport
       this.noLocal = noLocal;
       this.subName = subName;
       this.connectionConsumer = connectionConsumer;
+      this.autoFlowControl = autoFlowControl;
    }
 
    public void read(DataInputStream is) throws Exception
@@ -80,6 +83,8 @@ public class SessionCreateConsumerDelegateRequest extends RequestSupport
       subName = readNullableString(is);
       
       connectionConsumer = is.readBoolean();
+      
+      autoFlowControl = is.readBoolean();
    }
 
    public ResponseSupport serverInvoke() throws Exception
@@ -92,7 +97,7 @@ public class SessionCreateConsumerDelegateRequest extends RequestSupport
          throw new IllegalStateException("Cannot find object in dispatcher with id " + objectId);
       }
       
-      return new SessionCreateConsumerDelegateResponse((ClientConsumerDelegate)endpoint.createConsumerDelegate(dest, selector, noLocal, subName, connectionConsumer));
+      return new SessionCreateConsumerDelegateResponse((ClientConsumerDelegate)endpoint.createConsumerDelegate(dest, selector, noLocal, subName, connectionConsumer, autoFlowControl));
    }
 
    public void write(DataOutputStream os) throws Exception
@@ -108,6 +113,8 @@ public class SessionCreateConsumerDelegateRequest extends RequestSupport
       writeNullableString(subName, os);
       
       os.writeBoolean(connectionConsumer);
+      
+      os.writeBoolean(autoFlowControl);
       
       os.flush();
    }

@@ -26,15 +26,15 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.jboss.logging.Logger;
-import org.jboss.messaging.core.Channel;
-import org.jboss.messaging.core.Delivery;
-import org.jboss.messaging.core.DeliveryObserver;
-import org.jboss.messaging.core.Receiver;
-import org.jboss.messaging.core.SimpleDelivery;
-import org.jboss.messaging.core.message.Message;
-import org.jboss.messaging.core.message.MessageReference;
-import org.jboss.messaging.core.tx.Transaction;
-import org.jboss.messaging.core.tx.TxCallback;
+import org.jboss.messaging.core.contract.Channel;
+import org.jboss.messaging.core.contract.Delivery;
+import org.jboss.messaging.core.contract.DeliveryObserver;
+import org.jboss.messaging.core.contract.Message;
+import org.jboss.messaging.core.contract.MessageReference;
+import org.jboss.messaging.core.contract.Receiver;
+import org.jboss.messaging.core.impl.SimpleDelivery;
+import org.jboss.messaging.core.impl.tx.Transaction;
+import org.jboss.messaging.core.impl.tx.TxCallback;
 import org.jboss.util.id.GUID;
 
 /**
@@ -120,6 +120,8 @@ public class SimpleReceiver implements Receiver
    public Delivery handle(DeliveryObserver observer, MessageReference ref, Transaction tx)
    {
       log.trace(this + " got routable:" + ref);
+      
+      log.info(this + " got routable:" + ref);
           
       try
       {
@@ -132,7 +134,7 @@ public class SimpleReceiver implements Receiver
          if (SELECTOR_REJECTING.equals(state))
          {
             log.trace(this + " is rejecting message since doesn't match selector");
-            return new SimpleDelivery(null, null, true, false);
+            return new SimpleDelivery(null, null, false);
          }
 
          if (REJECTING.equals(state))
@@ -166,7 +168,7 @@ public class SimpleReceiver implements Receiver
          
          Message m = ref.getMessage();
          
-         SimpleDelivery delivery = new SimpleDelivery(observer, ref, done);
+         SimpleDelivery delivery = new SimpleDelivery(observer, ref, true);
          messages.add(new Object[] {m, done ? null : delivery});
          
          if (immediateAsynchronousAcknowledgment)
@@ -355,7 +357,7 @@ public class SimpleReceiver implements Receiver
 
    public String toString()
    {
-      return "Receiver["+ name +"](" + state + ")";
+      return "Receiver["+ name +":" + System.identityHashCode(this) + "](" + state + ")";
    }
 
    // Package protected ---------------------------------------------

@@ -119,11 +119,12 @@ public class ClusteringTestBase extends MessagingTestCase
 
    protected void tearDown() throws Exception
    {
-
+   	log.info("tearing down");
       for(int i = 0; i < nodeCount; i++)
       {
          if (ServerManagement.isStarted(i))
          {
+         	log.info("stopping server " + i);
             ServerManagement.log(ServerManagement.INFO, "Undeploying Server " + i, i);
             ServerManagement.undeployQueue("testDistributedQueue", i);
             ServerManagement.undeployTopic("testDistributedTopic", i);

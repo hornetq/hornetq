@@ -23,7 +23,7 @@ package org.jboss.jms.server;
 
 import org.jboss.jms.client.plugin.LoadBalancingFactory;
 import org.jboss.jms.server.connectionfactory.JNDIBindings;
-import org.jboss.messaging.core.plugin.contract.MessagingComponent;
+import org.jboss.messaging.core.contract.MessagingComponent;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>

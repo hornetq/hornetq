@@ -149,7 +149,7 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
                "connection to replace connection to failed node " + failedNodeID);
 
             // Wait for server side failover to complete
-            int failoverNodeID = serverPeer.waitForFailover(failedNodeID);
+            int failoverNodeID = serverPeer.getFailoverWaiter().waitForFailover(failedNodeID);
             
             if (failoverNodeID == -1 || failoverNodeID != serverPeer.getServerPeerID())
             {

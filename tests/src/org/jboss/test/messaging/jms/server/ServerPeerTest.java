@@ -376,15 +376,15 @@ public class ServerPeerTest extends MessagingTestCase
          
          assertEquals(-1, i.intValue());
          
-         Long l = (Long)ServerManagement.getAttribute(ServerManagement.getServerPeerObjectName(), "QueueStatsSamplePeriod");
+         Long l = (Long)ServerManagement.getAttribute(ServerManagement.getServerPeerObjectName(), "MessageCounterSamplePeriod");
          
          assertNotNull(l);
          
          assertEquals(5000, l.longValue()); //default value
          
-         ServerManagement.setAttribute(ServerManagement.getServerPeerObjectName(), "QueueStatsSamplePeriod", String.valueOf(1000));
+         ServerManagement.setAttribute(ServerManagement.getServerPeerObjectName(), "MessageCounterSamplePeriod", String.valueOf(1000));
          
-         l = (Long)ServerManagement.getAttribute(ServerManagement.getServerPeerObjectName(), "QueueStatsSamplePeriod");
+         l = (Long)ServerManagement.getAttribute(ServerManagement.getServerPeerObjectName(), "MessageCounterSamplePeriod");
          
          assertNotNull(l);
          

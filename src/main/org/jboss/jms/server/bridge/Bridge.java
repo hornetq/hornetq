@@ -42,7 +42,7 @@ import javax.transaction.TransactionManager;
 import javax.transaction.xa.XAResource;
 
 import org.jboss.logging.Logger;
-import org.jboss.messaging.core.plugin.contract.MessagingComponent;
+import org.jboss.messaging.core.contract.MessagingComponent;
 import org.jboss.tm.TransactionManagerLocator;
 import org.jboss.tm.TxManager;
 
@@ -204,10 +204,6 @@ public class Bridge implements MessagingComponent
       this.lock = new Object();      
    }
    
-   
-   /*
-    * This constructor is used when source and destination are on different servers
-    */
    public Bridge(ConnectionFactoryFactory sourceCff, ConnectionFactoryFactory destCff,
                  Destination sourceDestination, Destination targetDestination,         
                  String sourceUsername, String sourcePassword,

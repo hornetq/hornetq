@@ -783,7 +783,7 @@ public class QueueManagementTest extends DestinationManagementTestBase
       InitialContext ic = new InitialContext(ServerManagement.getJNDIEnvironment());
       ConnectionFactory cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
       
-      ServerManagement.setAttribute(ServerManagement.getServerPeerObjectName(), "QueueStatsSamplePeriod", String.valueOf(1000));
+      ServerManagement.setAttribute(ServerManagement.getServerPeerObjectName(), "MessageCounterSamplePeriod", String.valueOf(1000));
       
       ServerManagement.invoke(ServerManagement.getServerPeerObjectName(), "enableMessageCounters", null, null);
       

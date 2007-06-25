@@ -23,14 +23,13 @@ package org.jboss.test.messaging.core.paging;
 
 import java.util.List;
 
-import org.jboss.messaging.core.local.PagingFilteredQueue;
-import org.jboss.messaging.core.message.Message;
-import org.jboss.messaging.core.message.MessageReference;
-import org.jboss.messaging.core.message.SimpleMessageStore;
-import org.jboss.messaging.core.plugin.JDBCPersistenceManager;
-import org.jboss.messaging.core.plugin.LockMap;
-import org.jboss.messaging.core.tx.TransactionRepository;
-import org.jboss.test.messaging.core.paging.base.PagingStateTestBase;
+import org.jboss.messaging.core.contract.Message;
+import org.jboss.messaging.core.contract.MessageReference;
+import org.jboss.messaging.core.impl.JDBCPersistenceManager;
+import org.jboss.messaging.core.impl.MessagingQueue;
+import org.jboss.messaging.core.impl.message.SimpleMessageStore;
+import org.jboss.messaging.core.impl.tx.TransactionRepository;
+import org.jboss.messaging.util.LockMap;
 import org.jboss.test.messaging.util.CoreMessageFactory;
 
 /**
@@ -66,10 +65,8 @@ public class SingleChannel_ReloadTest extends PagingStateTestBase
    
    public void testRecoverableQueueCrash() throws Throwable
    {
-      PagingFilteredQueue queue =
-         new PagingFilteredQueue("queue1", 1, ms, pm, true, true,
-                                 -1, null, 100, 20, 10);
-
+      MessagingQueue queue = new MessagingQueue(1, "queue1", 1, ms, pm, true, -1, null, 100, 20, 10, false, false);
+      
       Message[] msgs = new Message[200];
       
       MessageReference[] refs = new MessageReference[200];
@@ -129,9 +126,8 @@ public class SingleChannel_ReloadTest extends PagingStateTestBase
 
       tr.start();
          
-      PagingFilteredQueue queue2 =
-         new PagingFilteredQueue("queue1", 1, ms, pm, true, true,
-                                 -1, null, 100, 20, 10);
+      MessagingQueue queue2 = new MessagingQueue(1, "queue1", 1, ms, pm, true, -1, null, 100, 20, 10, false, false);
+      
       queue2.deactivate();
       queue2.load();
       
@@ -166,10 +162,8 @@ public class SingleChannel_ReloadTest extends PagingStateTestBase
    {
       //Non recoverable queue - eg temporary queue
       
-      PagingFilteredQueue queue =
-         new PagingFilteredQueue("queue1", 1, ms, pm, true, true,
-                                 -1, null, 100, 20, 10);
-      
+      MessagingQueue queue = new MessagingQueue(1, "queue1", 1, ms, pm, false, -1, null, 100, 20, 10, false, false);
+         	      
       Message[] msgs = new Message[200];
       
       MessageReference[] refs = new MessageReference[200];
@@ -229,9 +223,8 @@ public class SingleChannel_ReloadTest extends PagingStateTestBase
       tr = new TransactionRepository(pm, ms, idm);
       tr.start();
 
-      PagingFilteredQueue queue2 =
-         new PagingFilteredQueue("queue1", 1, ms, pm, true, true,
-                                 -1, null, 100, 20, 10);
+      MessagingQueue queue2 = new MessagingQueue(1, "queue1", 1, ms, pm, false, -1, null, 100, 20, 10, false, false);
+      
       queue2.deactivate();
       queue2.load();
       
@@ -260,10 +253,8 @@ public class SingleChannel_ReloadTest extends PagingStateTestBase
    {
       //Non recoverable queue - eg temporary queue
       
-      PagingFilteredQueue queue =
-         new PagingFilteredQueue("queue1", 1, ms, pm, true, true,
-                                 -1, null, 100, 20, 10);
-  
+      MessagingQueue queue = new MessagingQueue(1, "queue1", 1, ms, pm, false, -1, null, 100, 20, 10, false, false);
+        
       Message[] msgs = new Message[200];
       
       MessageReference[] refs = new MessageReference[200];

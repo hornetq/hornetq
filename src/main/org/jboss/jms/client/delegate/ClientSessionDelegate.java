@@ -222,10 +222,11 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
 
    public ConsumerDelegate createConsumerDelegate(JBossDestination destination, String selector,
                                                   boolean noLocal, String subscriptionName,
-                                                  boolean connectionConsumer) throws JMSException
+                                                  boolean connectionConsumer, boolean started) throws JMSException
    {
       RequestSupport req = new SessionCreateConsumerDelegateRequest(id, version, destination,
-                                                                    selector, noLocal, subscriptionName, connectionConsumer);
+                                                                    selector, noLocal, subscriptionName,
+                                                                    connectionConsumer, started);
 
       return (ConsumerDelegate)doInvoke(client, req);
    }
@@ -434,7 +435,7 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
     * server-side endpoint.
     */
    public void addAsfMessage(MessageProxy m, int consumerID, String queueName, int maxDeliveries,
-                             SessionDelegate connectionConsumerSession)
+                             SessionDelegate connectionConsumerSession, boolean shouldAck)
    {
       throw new IllegalStateException("This invocation should not be handled here!");
    }

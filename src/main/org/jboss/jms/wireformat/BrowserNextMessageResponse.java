@@ -25,7 +25,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 
 import org.jboss.jms.message.JBossMessage;
-import org.jboss.messaging.core.message.MessageFactory;
+import org.jboss.messaging.core.impl.message.MessageFactory;
 
 /**
  * 

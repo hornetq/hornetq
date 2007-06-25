@@ -26,7 +26,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.jboss.jms.message.JBossMapMessage;
-import org.jboss.messaging.core.message.Message;
+import org.jboss.messaging.core.contract.Message;
 
 
 /**

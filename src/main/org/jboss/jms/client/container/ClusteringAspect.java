@@ -127,9 +127,10 @@ public class ClusteringAspect
 
             log.trace(this + " has chosen " + delegate + " as target, " +
                (attemptCount == 0 ? "first connection attempt" : attemptCount + " connection attempts"));
-
+  
             CreateConnectionResult res = delegate.
                createConnectionDelegate(username, password, failedNodeIDToServer);
+            
             ClientConnectionDelegate cd = (ClientConnectionDelegate)res.getDelegate();
 
             if (cd != null)

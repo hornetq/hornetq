@@ -21,8 +21,8 @@
  */
 package org.jboss.jms.server;
 
-import org.jboss.messaging.core.message.MessageReference;
-import org.jboss.messaging.core.plugin.contract.Condition;
+import org.jboss.messaging.core.contract.Condition;
+import org.jboss.messaging.core.contract.MessageReference;
 
 /**
  * A JMSCondition
@@ -50,7 +50,7 @@ public class JMSCondition implements Condition
 
    // cache the hash code
    private int hash = -1;
-
+   
    // Constructors ---------------------------------------------------------------------------------
 
    public JMSCondition(boolean queue, String name)
@@ -78,11 +78,6 @@ public class JMSCondition implements Condition
    }
 
    // Condition implementation ---------------------------------------------------------------------
-
-   public boolean matches(Condition routingCondition, MessageReference ref)
-   {
-      return equals(routingCondition);
-   }
 
    public String toText()
    {

@@ -169,7 +169,7 @@
    <attribute access="read-only" getMethod="getInstance">
       <description>The instance to be accessed by select plugins via a typed hard reference</description>
       <name>Instance</name>
-      <type>org.jboss.messaging.core.plugin.contract.MessagingComponent</type>
+      <type>org.jboss.messaging.core.contract.MessagingComponent</type>
    </attribute>
 
    <!-- Managed operations -->

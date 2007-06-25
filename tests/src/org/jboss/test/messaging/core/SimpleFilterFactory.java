@@ -21,8 +21,8 @@
  */
 package org.jboss.test.messaging.core;
 
-import org.jboss.messaging.core.Filter;
-import org.jboss.messaging.core.FilterFactory;
+import org.jboss.messaging.core.contract.Filter;
+import org.jboss.messaging.core.contract.FilterFactory;
 
 /**
  * A SimpleFilterFactory

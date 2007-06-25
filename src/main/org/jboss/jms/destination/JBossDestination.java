@@ -90,6 +90,7 @@ public abstract class JBossDestination implements Destination, Serializable /*, 
             }
          }
          out.writeUTF(jb.getName());
+         out.writeBoolean(jb.direct);
       }
    }
    
@@ -104,6 +105,8 @@ public abstract class JBossDestination implements Destination, Serializable /*, 
       else
       {
          String name = in.readUTF();
+         
+         boolean direct = in.readBoolean();
 
          JBossDestination dest;
          
@@ -128,6 +131,8 @@ public abstract class JBossDestination implements Destination, Serializable /*, 
             throw new IllegalStateException("Invalid value:" + b);
          }
          
+         dest.direct = direct;
+         
          return dest;
       }
    }
@@ -136,6 +141,8 @@ public abstract class JBossDestination implements Destination, Serializable /*, 
    // Attributes ----------------------------------------------------
 
    protected String name;
+   
+   protected boolean direct;
    
    // Constructors --------------------------------------------------
 
@@ -167,6 +174,11 @@ public abstract class JBossDestination implements Destination, Serializable /*, 
    public boolean isTemporary()
    {
       return false;
+   }
+   
+   public boolean isDirect()
+   {
+   	return direct;
    }
 
    public boolean equals(Object o)

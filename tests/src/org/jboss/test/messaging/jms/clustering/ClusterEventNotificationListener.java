@@ -6,13 +6,13 @@
  */
 package org.jboss.test.messaging.jms.clustering;
 
-import EDU.oswego.cs.dl.util.concurrent.Slot;
-
-import javax.management.NotificationListener;
 import javax.management.Notification;
+import javax.management.NotificationListener;
 
-import org.jboss.messaging.core.plugin.contract.ClusteredPostOffice;
 import org.jboss.logging.Logger;
+import org.jboss.messaging.core.impl.postoffice.MessagingPostOffice;
+
+import EDU.oswego.cs.dl.util.concurrent.Slot;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -48,7 +48,7 @@ class ClusterEventNotificationListener implements NotificationListener
 
       log.info("received " + type + " notification");
 
-      if (ClusteredPostOffice.VIEW_CHANGED_NOTIFICATION.equals(type))
+      if (MessagingPostOffice.VIEW_CHANGED_NOTIFICATION.equals(type))
       {
          try
          {
@@ -59,7 +59,7 @@ class ClusterEventNotificationListener implements NotificationListener
             log.error(e);
          }
       }
-      else if (ClusteredPostOffice.FAILOVER_COMPLETED_NOTIFICATION.equals(type))
+      else if (MessagingPostOffice.FAILOVER_COMPLETED_NOTIFICATION.equals(type))
       {
          try
          {

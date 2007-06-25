@@ -35,7 +35,7 @@ import org.jboss.jms.delegate.DefaultAck;
 import org.jboss.jms.delegate.DeliveryInfo;
 import org.jboss.jms.message.JBossMessage;
 import org.jboss.logging.Logger;
-import org.jboss.messaging.core.message.MessageFactory;
+import org.jboss.messaging.core.impl.message.MessageFactory;
 
 /**
  * Holds the state of a transaction on the client side
@@ -71,6 +71,9 @@ public class ClientTransaction
    private boolean hasPersistentAcks;
    
    private boolean failedOver;
+   
+   private boolean removeAcks;
+
 
    // Static --------------------------------------------------------
 
@@ -98,7 +101,7 @@ public class ClientTransaction
 
       sessionTxState.addMessage(msg);
    }
-
+   
    public void addAck(int sessionId, DeliveryInfo info)
    {
       if (!clientSide)
@@ -113,6 +116,11 @@ public class ClientTransaction
       {
          hasPersistentAcks = true;
       }
+      
+      if (!info.isShouldAck())
+      {
+      	removeAcks = true;
+      }
    }
    
    public boolean hasPersistentAcks()
@@ -124,7 +132,7 @@ public class ClientTransaction
    {
       return failedOver;
    }
-
+   
    public void clearMessages()
    {
       if (!clientSide)
@@ -236,6 +244,45 @@ public class ClientTransaction
    }
 
    // Streamable implementation ---------------------------------
+   
+   //For message consumed using a non durable subscriber - we don't need to ack to the server
+   //so we remove them here
+   //TODO this could be optimised to prevent this extra removal stage before sending
+   public void removeUnnecessaryAcks()
+   {
+   	if (removeAcks)
+   	{
+	   	Iterator iter = sessionStatesMap.values().iterator();
+	
+	      while (iter.hasNext())
+	      {
+	         SessionTxState state = (SessionTxState)iter.next();
+	
+	         List acks = state.getAcks();
+	
+	         Iterator iter2 = acks.iterator();
+	         
+	         List newAcks = new ArrayList();
+	
+	         while (iter2.hasNext())
+	         {
+	            DeliveryInfo ack = (DeliveryInfo)iter2.next();
+	
+	            if (ack.isShouldAck())
+	            {
+	            	if (newAcks == null)
+	            	{
+	            		newAcks = new ArrayList();
+	            	}
+	            	newAcks.add(ack);
+	            }
+	         }
+	         
+	         state.setAcks(newAcks);
+	      }
+   	}
+   }
+   
 
    public void write(DataOutputStream out) throws Exception
    {
@@ -400,6 +447,11 @@ public class ClientTransaction
       public int getSessionId()
       {
          return sessionID;
+      }
+      
+      public void setAcks(List acks)
+      {
+      	this.acks = acks;
       }
 
       void handleFailover(int newServerID, int oldSessionID, int newSessionID)

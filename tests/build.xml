@@ -636,6 +636,8 @@
             <fileset dir="${build.tests.classes}">
                <include name="**/jms/**/${test-mask}.class"/>
                <include name="**/thirdparty/**/${test-mask}.class"/>
+<exclude name="**/jms/bridge/**/*Test.class"/>
+
                <exclude name="**/messaging/graveyard/**/*Test.class"/>
                <exclude name="**/jms/WireFormatTest.class"/>
                <exclude name="**/jms/stress/**"/>

@@ -5,21 +5,20 @@
  * See terms of license at gnu.org.
  */
 
-
 package org.jboss.test.messaging.core;
 
 import java.util.Iterator;
 import java.util.List;
 
 import org.jboss.logging.Logger;
-import org.jboss.messaging.core.Channel;
-import org.jboss.messaging.core.Delivery;
-import org.jboss.messaging.core.DeliveryObserver;
-import org.jboss.messaging.core.Filter;
-import org.jboss.messaging.core.Receiver;
-import org.jboss.messaging.core.message.MessageReference;
-import org.jboss.messaging.core.plugin.contract.MessageStore;
-import org.jboss.messaging.core.tx.Transaction;
+import org.jboss.messaging.core.contract.Channel;
+import org.jboss.messaging.core.contract.Delivery;
+import org.jboss.messaging.core.contract.DeliveryObserver;
+import org.jboss.messaging.core.contract.Filter;
+import org.jboss.messaging.core.contract.MessageReference;
+import org.jboss.messaging.core.contract.MessageStore;
+import org.jboss.messaging.core.contract.Receiver;
+import org.jboss.messaging.core.impl.tx.Transaction;
 import org.jboss.messaging.util.NotYetImplementedException;
 
 /**

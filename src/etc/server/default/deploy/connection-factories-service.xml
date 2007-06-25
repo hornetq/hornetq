@@ -31,8 +31,7 @@
 
    <!-- A clustered connection factory that supports automatic failover and load balancing of created
         connections.
-        This factory is not suitable to be used by MDBs,
-        see http://www.jboss.com/index.html?module=bb&op=viewtopic&t=108961
+        This factory is not suitable to be used by MDBs.
    -->
    <mbean code="org.jboss.jms.server.connectionfactory.ConnectionFactory"
       name="jboss.messaging.connectionfactory:service=ClusteredConnectionFactory"
@@ -53,5 +52,90 @@
       <attribute name="SupportsFailover">true</attribute>
       <attribute name="SupportsLoadBalancing">true</attribute>      
    </mbean>
+   
+   <!-- A connection factory with no JNDI bindings that is used in clustering to create the connections that
+        pull messages from one node to another
+   -->
+   <mbean code="org.jboss.jms.server.connectionfactory.ConnectionFactory"
+      name="jboss.messaging.connectionfactory:service=ClusterPullConnectionFactory"
+      xmbean-dd="xmdesc/ConnectionFactory-xmbean.xml">
+      <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
+      <depends optional-attribute-name="Connector">jboss.messaging:service=Connector,transport=bisocket</depends>
+      <depends>jboss.messaging:service=PostOffice</depends>
+      <attribute name="SupportsFailover">false</attribute>
+      <attribute name="SupportsLoadBalancing">false</attribute>      
+   </mbean>
+   
+   <!-- An example connection factory with all attributes shown 
+   
+   <mbean code="org.jboss.jms.server.connectionfactory.ConnectionFactory"
+      name="jboss.messaging.connectionfactory:service=MyExampleConnectionFactory"
+      xmbean-dd="xmdesc/ConnectionFactory-xmbean.xml">
+      
+      <constructor>
+      
+         <!- - You can specify the default Client ID to use for connections created using this factory - -> 
+         
+         <arg type="java.lang.String" value="MyClientID"/>
+         
+      </constructor>
+      
+      <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
+      
+      <!- - The transport to use - can be bisocket, sslbisocket or http - ->
+      
+      <depends optional-attribute-name="Connector">jboss.messaging:service=Connector,transport=http</depends>
+      
+      <depends>jboss.messaging:service=PostOffice</depends>
+      
+      <!- - PrefetchSize determines the approximate maximum number of messages the client consumer will buffer locally - ->
+      
+      <attribute name="PrefetchSize">150</attribute>
+      
+      <!- - Paging params to be used for temporary queues - ->
+      
+      <attribute name="DefaultTempQueueFullSize">200000</attribute>
+      
+      <attribute name="DefaultTempQueuePageSizeSize">2000</attribute>
+      
+      <attribute name="DefaultTempQueueDownCacheSize">2000</attribute>
+      
+      <!- - The batch size to use when using the DUPS_OK_ACKNOWLEDGE acknowledgement mode - ->
+      
+      <attribute name="DupsOKBatchSize">5000</attribute>
+      
+      <!- - Does this connection factory support automatic failover? - ->
+      
+      <attribute name="SupportsFailover">false</attribute>
+      
+      <!- - Does this connection factory support automatic client side load balancing? - ->
+      
+      <attribute name="SupportsLoadBalancing">false</attribute>  
+            
+      <!- - The class name of the factory used to create the load balancing policy to use on the client side - ->
+      
+      <attribute name="LoadBalancingFactory">org.jboss.jms.client.plugin.RoundRobinLoadBalancingFactory</attribute>  
+      
+      <!- - The connection factory will be bound in the following places in JNDI - ->
+
+      <attribute name="JNDIBindings">
+      
+         <bindings>
+         
+            <binding>/acme/MyExampleConnectionFactory</binding>
+            
+            <binding>/acme/MyExampleConnectionFactoryDupe</binding>
+            
+            <binding>java:/xyz/CF1</binding>
+            
+            <binding>java:/connectionfactories/acme/connection_factory</binding>
+            
+         </bindings>
+         
+      </attribute>   
+       
+   </mbean>
+   
+   -->
 
 </server>

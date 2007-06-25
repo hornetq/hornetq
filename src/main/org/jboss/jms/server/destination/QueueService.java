@@ -14,11 +14,10 @@ import javax.jms.IllegalStateException;
 import org.jboss.jms.server.JMSCondition;
 import org.jboss.jms.server.messagecounter.MessageCounter;
 import org.jboss.jms.server.messagecounter.MessageStatistics;
-import org.jboss.messaging.core.Queue;
-import org.jboss.messaging.core.local.PagingFilteredQueue;
-import org.jboss.messaging.core.plugin.contract.ClusteredPostOffice;
-import org.jboss.messaging.core.plugin.postoffice.Binding;
-import org.jboss.messaging.core.plugin.postoffice.cluster.LocalClusteredQueue;
+import org.jboss.messaging.core.contract.Binding;
+import org.jboss.messaging.core.contract.PostOffice;
+import org.jboss.messaging.core.contract.Queue;
+import org.jboss.messaging.core.impl.MessagingQueue;
 import org.jboss.messaging.util.ExceptionUtil;
 import org.jboss.messaging.util.XMLUtil;
 
@@ -64,60 +63,61 @@ public class QueueService extends DestinationServiceSupport implements QueueMBea
       
       try
       {                           
-         postOffice = serverPeer.getPostOfficeInstance();
-         
-         destination.setServerPeer(serverPeer);
-
          // Binding must be added before destination is registered in JNDI otherwise the user could
          // get a reference to the destination and use it while it is still being loaded. Also,
          // binding might already exist.
            
-         PagingFilteredQueue queue = null;
+         PostOffice po = serverPeer.getPostOfficeInstance();
+                           
+         Binding binding = po.getBindingForQueueName(destination.getName());
          
-         Binding binding = postOffice.getBindingForQueueName(destination.getName());
-                  
+         Queue queue;
+         
+         log.info("*** starting queue service " + destination.getName());
+         
          if (binding != null)
          {                     
-            queue = (PagingFilteredQueue)binding.getQueue();
-            
+         	log.info("***** queue already exists");
+         	
+         	queue = binding.queue;
+         	
+         	if (queue.isActive())
+         	{
+         		throw new IllegalStateException("Cannot deploy queue " + destination.getName() + " it is already deployed");
+         	}
+         	
             queue.setPagingParams(destination.getFullSize(),
-                              destination.getPageSize(),
-                              destination.getDownCacheSize());
+                                  destination.getPageSize(),
+                                  destination.getDownCacheSize());  
+            
+            queue.setPreserveOrdering(serverPeer.isDefaultPreserveOrdering());
+            
             queue.load();
                
             // Must be done after load
             queue.setMaxSize(destination.getMaxSize());
+            
             queue.activate();           
          }
-                     
-         if (queue == null)
+         else
          {           
             // Create a new queue
+         	
+         	log.info("**** queue does not already exist");
             
             JMSCondition queueCond = new JMSCondition(true, destination.getName());
             
-            if (postOffice.isLocal() || !destination.isClustered())
-            {
-               queue = new PagingFilteredQueue(destination.getName(),
-                                               idm.getID(), ms, pm, true, true,
-                                               destination.getMaxSize(), null,
-                                               destination.getFullSize(), destination.getPageSize(),
-                                               destination.getDownCacheSize());
-               postOffice.bindQueue(queueCond, queue);
-            }
-            else
-            {
-               ClusteredPostOffice cpo = (ClusteredPostOffice)postOffice;
-               
-               queue = new LocalClusteredQueue((ClusteredPostOffice)postOffice, nodeId, destination.getName(),
-                        idm.getID(), ms, pm, true, true,
-                        destination.getMaxSize(), null, tr,
-                        destination.getFullSize(), destination.getPageSize(),
-                        destination.getDownCacheSize());
-               
-               cpo.bindClusteredQueue(queueCond, (LocalClusteredQueue)queue);
-               
-            }                             
+            queue = new MessagingQueue(nodeId, destination.getName(),
+            		                     serverPeer.getChannelIDManager().getID(),
+                                       serverPeer.getMessageStore(), serverPeer.getPersistenceManagerInstance(),
+                                       true,
+                                       destination.getMaxSize(), null,
+                                       destination.getFullSize(), destination.getPageSize(),
+                                       destination.getDownCacheSize(), destination.isClustered(),
+                                       serverPeer.isDefaultPreserveOrdering());
+            po.addBinding(new Binding(queueCond, queue), false);         
+            
+            queue.activate();
          }
          
          ((ManagedQueue)destination).setQueue(queue);
@@ -139,7 +139,7 @@ public class QueueService extends DestinationServiceSupport implements QueueMBea
                   
          serverPeer.getMessageCounterManager().registerMessageCounter(counterName, counter);
                        
-         dm.registerDestination(destination);
+         serverPeer.getDestinationManager().registerDestination(destination);
         
          log.debug(this + " security configuration: " + (destination.getSecurityConfig() == null ?
             "null" : "\n" + XMLUtil.elementToString(destination.getSecurityConfig())));
@@ -159,7 +159,9 @@ public class QueueService extends DestinationServiceSupport implements QueueMBea
    {
       try
       {
-         dm.unregisterDestination(destination);
+      	serverPeer.getDestinationManager().unregisterDestination(destination);
+      	
+      	log.info("*** stopping service " + destination.getName());
          
          Queue queue = ((ManagedQueue)destination).getQueue();
          
@@ -173,6 +175,9 @@ public class QueueService extends DestinationServiceSupport implements QueueMBea
          }
          
          queue.deactivate();
+         
+         log.info("**** deactivated queue");
+         
          queue.unload();
          
          started = false;

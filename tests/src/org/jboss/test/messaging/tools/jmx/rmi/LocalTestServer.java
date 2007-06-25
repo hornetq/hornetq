@@ -38,8 +38,8 @@ import org.jboss.aop.AspectXmlLoader;
 import org.jboss.jms.server.DestinationManager;
 import org.jboss.jms.server.ServerPeer;
 import org.jboss.logging.Logger;
-import org.jboss.messaging.core.plugin.contract.MessageStore;
-import org.jboss.messaging.core.plugin.contract.PersistenceManager;
+import org.jboss.messaging.core.contract.MessageStore;
+import org.jboss.messaging.core.contract.PersistenceManager;
 import org.jboss.messaging.util.XMLUtil;
 import org.jboss.remoting.ServerInvocationHandler;
 import org.jboss.test.messaging.tools.ServerManagement;
@@ -350,7 +350,11 @@ public class LocalTestServer implements Server
          MBeanConfigurationElement postOfficeConfig =
             ServiceConfigHelper.getServiceConfiguration(pdd, "PostOffice");
 
-         postOfficeObjectName = sc.registerAndConfigureService(postOfficeConfig);
+         postOfficeObjectName = sc.registerAndConfigureService(postOfficeConfig);         
+         sc.setAttribute(postOfficeObjectName, "Clustered", clustered ? "true" : "false"); 
+         
+         log.info("************* SET CLUSTERED ATTRIBUTE TO " + clustered);
+         
          overrideAttributes(postOfficeObjectName, attrOverrides);
          sc.invoke(postOfficeObjectName, "create", new Object[0], new String[0]);
          sc.invoke(postOfficeObjectName, "start", new Object[0], new String[0]);

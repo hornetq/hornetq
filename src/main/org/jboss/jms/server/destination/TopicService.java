@@ -14,9 +14,8 @@ import javax.jms.JMSException;
 
 import org.jboss.jms.server.JMSCondition;
 import org.jboss.jms.server.messagecounter.MessageCounter;
-import org.jboss.messaging.core.local.PagingFilteredQueue;
-import org.jboss.messaging.core.plugin.contract.ClusteredPostOffice;
-import org.jboss.messaging.core.plugin.postoffice.Binding;
+import org.jboss.messaging.core.contract.PostOffice;
+import org.jboss.messaging.core.contract.Queue;
 import org.jboss.messaging.util.ExceptionUtil;
 import org.jboss.messaging.util.MessageQueueNameHelper;
 import org.jboss.messaging.util.XMLUtil;
@@ -65,27 +64,28 @@ public class TopicService extends DestinationServiceSupport implements TopicMBea
       
       try
       {
-         postOffice = serverPeer.getPostOfficeInstance();
-
-         if (postOffice == null)
-          throw new IllegalArgumentException("Post Office instance not found. Check your destination configuration.");
-         destination.setServerPeer(serverPeer);
+         PostOffice po = serverPeer.getPostOfficeInstance();
          
-         JMSCondition topicCond = new JMSCondition(false, destination.getName());
+         log.info("*** deploying topic " + destination.getName());
                     
          // We deploy any queues corresponding to pre-existing durable subscriptions
-         Collection bindings = postOffice.getBindingsForCondition(topicCond);
-         Iterator iter = bindings.iterator();
+
+         Collection queues = po.getQueuesForCondition(new JMSCondition(false, destination.getName()), true);
+      	
+         log.info("Got " + queues.size() + " queues");
+         
+         Iterator iter = queues.iterator();
          while (iter.hasNext())
          {
-            Binding binding = (Binding)iter.next();
-            
-            PagingFilteredQueue queue = (PagingFilteredQueue)binding.getQueue();
+            Queue queue = (Queue)iter.next();
                      
             //TODO We need to set the paging params this way since the post office doesn't store them
             //instead we should never create queues inside the postoffice - only do it at deploy time
             queue.setPagingParams(destination.getFullSize(), destination.getPageSize(), destination.getDownCacheSize());
             
+            queue.setPreserveOrdering(serverPeer.isDefaultPreserveOrdering());
+            
+            log.info("**** loading queue");
             queue.load();
                         
             queue.activate();  
@@ -112,7 +112,7 @@ public class TopicService extends DestinationServiceSupport implements TopicMBea
             serverPeer.getMessageCounterManager().registerMessageCounter(counterName, counter);            
          }
 
-         dm.registerDestination(destination);
+         serverPeer.getDestinationManager().registerDestination(destination);
          
          log.debug(this + " security configuration: " + (destination.getSecurityConfig() == null ?
             "null" : "\n" + XMLUtil.elementToString(destination.getSecurityConfig())));
@@ -131,7 +131,7 @@ public class TopicService extends DestinationServiceSupport implements TopicMBea
    {
       try
       {
-         dm.unregisterDestination(destination);
+         serverPeer.getDestinationManager().unregisterDestination(destination);
          
          //When undeploying a topic, any non durable subscriptions will be removed
          //Any durable subscriptions will survive in persistent storage, but be removed
@@ -140,33 +140,24 @@ public class TopicService extends DestinationServiceSupport implements TopicMBea
          //First we remove any data for a non durable sub - a non durable sub might have data in the
          //database since it might have paged
          
-         JMSCondition topicCond = new JMSCondition(false, destination.getName());         
+         PostOffice po = serverPeer.getPostOfficeInstance();
+                  
+         Collection queues = serverPeer.getPostOfficeInstance().getQueuesForCondition(new JMSCondition(false, destination.getName()), true);
+      	
+         Iterator iter = queues.iterator();
          
-         Collection bindings = postOffice.getBindingsForCondition(topicCond);
-         
-         Iterator iter = bindings.iterator();
          while (iter.hasNext())            
          {
-            Binding binding = (Binding)iter.next();
-            
-            PagingFilteredQueue queue = (PagingFilteredQueue)binding.getQueue();
+            Queue queue = (Queue)iter.next();
             
             if (!queue.isRecoverable())
             {
-               queue.removeAllReferences();
-               
                // Unbind
-               if (!queue.isClustered())
-               {
-                  postOffice.unbindQueue(queue.getName());
-               }
-               else
-               {
-                  ((ClusteredPostOffice)postOffice).unbindClusteredQueue(queue.getName());
-               }
+               po.removeBinding(queue.getName(), false);
             }
                         
             queue.deactivate();
+            
             queue.unload();
             
             //unregister counter

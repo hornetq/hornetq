@@ -1,0 +1,2132 @@
+/*
+ * JBoss, Home of Professional Open Source
+ * Copyright 2005, JBoss Inc., and individual contributors as indicated
+ * by the @authors tag. See the copyright.txt in the distribution for a
+ * full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
+package org.jboss.messaging.core.impl.postoffice;
+
+import java.io.Serializable;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.Types;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+
+import javax.management.ListenerNotFoundException;
+import javax.management.MBeanNotificationInfo;
+import javax.management.Notification;
+import javax.management.NotificationBroadcasterSupport;
+import javax.management.NotificationFilter;
+import javax.management.NotificationListener;
+import javax.sql.DataSource;
+import javax.transaction.TransactionManager;
+
+import org.jboss.jms.server.JMSCondition;
+import org.jboss.logging.Logger;
+import org.jboss.messaging.core.contract.Binding;
+import org.jboss.messaging.core.contract.ClusterNotification;
+import org.jboss.messaging.core.contract.ClusterNotifier;
+import org.jboss.messaging.core.contract.Condition;
+import org.jboss.messaging.core.contract.ConditionFactory;
+import org.jboss.messaging.core.contract.Delivery;
+import org.jboss.messaging.core.contract.FailoverMapper;
+import org.jboss.messaging.core.contract.Filter;
+import org.jboss.messaging.core.contract.FilterFactory;
+import org.jboss.messaging.core.contract.JChannelFactory;
+import org.jboss.messaging.core.contract.Message;
+import org.jboss.messaging.core.contract.MessageReference;
+import org.jboss.messaging.core.contract.MessageStore;
+import org.jboss.messaging.core.contract.PersistenceManager;
+import org.jboss.messaging.core.contract.PostOffice;
+import org.jboss.messaging.core.contract.Queue;
+import org.jboss.messaging.core.contract.Replicator;
+import org.jboss.messaging.core.impl.IDManager;
+import org.jboss.messaging.core.impl.JDBCSupport;
+import org.jboss.messaging.core.impl.MessagingQueue;
+import org.jboss.messaging.core.impl.tx.Transaction;
+import org.jboss.messaging.core.impl.tx.TransactionRepository;
+import org.jboss.messaging.util.StreamUtils;
+import org.jgroups.Address;
+
+import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
+import EDU.oswego.cs.dl.util.concurrent.ReadWriteLock;
+import EDU.oswego.cs.dl.util.concurrent.ReentrantWriterPreferenceReadWriteLock;
+
+/**
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
+ * @version <tt>$Revision: 2782 $</tt>
+ *
+ * $Id: DefaultClusteredPostOffice.java 2782 2007-06-14 12:16:17Z timfox $
+ *
+ */
+public class MessagingPostOffice extends JDBCSupport
+   implements PostOffice, RequestTarget, GroupListener, Replicator
+{
+   // Constants ------------------------------------------------------------------------------------
+
+   private static final Logger log = Logger.getLogger(MessagingPostOffice.class);
+
+   //This are only used in testing
+   
+   public static final String VIEW_CHANGED_NOTIFICATION = "VIEW_CHANGED";
+   
+   public static final String FAILOVER_COMPLETED_NOTIFICATION = "FAILOVER_COMPLETED";
+   
+   //End only used in testing
+
+   // Static ---------------------------------------------------------------------------------------
+
+   /**
+    * @param map - Map<Integer(nodeID)-Integer(failoverNodeID)>
+    */
+   public static String dumpFailoverMap(Map map)
+   {
+      StringBuffer sb = new StringBuffer("\n");
+
+      for(Iterator i = map.entrySet().iterator(); i.hasNext(); )
+      {
+         Map.Entry entry = (Map.Entry)i.next();
+         Integer primary = (Integer)entry.getKey();
+         Integer secondary = (Integer)entry.getValue();
+         sb.append("             ").append(primary).append("->").append(secondary).append("\n");
+      }
+      return sb.toString();
+   }
+
+   /**
+    * @param map - Map<Integer(nodeID)-PostOfficeAddressInfo>
+    */
+   public static String dumpClusterMap(Map map)
+   {
+      StringBuffer sb = new StringBuffer("\n");
+
+      for(Iterator i = map.entrySet().iterator(); i.hasNext(); )
+      {
+         Map.Entry entry = (Map.Entry)i.next();
+         Integer nodeID = (Integer)entry.getKey();
+         PostOfficeAddressInfo info = (PostOfficeAddressInfo)entry.getValue();
+         sb.append("             ").append(nodeID).append("->").append(info).append("\n");
+      }
+      return sb.toString();
+   }
+
+   // Attributes -----------------------------------------------------------------------------------
+
+   // End of failure testing attributes
+
+   private boolean trace = log.isTraceEnabled();
+      
+   private MessageStore ms;
+   
+   private PersistenceManager pm;
+   
+   private TransactionRepository tr;
+   
+   private FilterFactory filterFactory;
+   
+   private ConditionFactory conditionFactory;
+   
+   private int thisNodeID;
+
+   // Map <Condition, List <Queue>> - for ALL nodes
+   private Map mappings;
+   
+   // Map <queue name, Binding> - only for the current node
+   private Map nameMap;
+   
+   // Map <channel id, Binding> - only for the current node
+   private Map channelIDMap;
+
+   // this lock protects the bindings
+   private ReadWriteLock bindingsLock;
+   
+   private String officeName;
+   
+   private boolean clustered;
+   
+   private volatile boolean started;
+   
+   //FIXME using a stopping flag is not a good approach and introduces a race condition
+   //http://jira.jboss.org/jira/browse/JBMESSAGING-819
+   //the code can check stopping and find it to be false, then the service can stop, setting stopping to true
+   //then actually stopping the post office, then the same thread that checked stopping continues and performs
+   //its action only to find the service stopped
+   //Should use a read-write lock instead
+   //One way to minimise the chance of the race happening is to sleep for a little while after setting stopping to true
+   //before actually stopping the service (see below)
+   private volatile boolean stopping;
+
+   private GroupMember groupMember;
+
+   private Map replicatedData;
+
+   // Map <Integer(nodeID)->Integer(failoverNodeID)>
+   private Map failoverMap;
+
+   private Set leftSet;
+
+   private FailoverMapper failoverMapper;
+
+   private NotificationBroadcasterSupport nbSupport;
+   
+   private IDManager channelIDManager;
+   
+   private ClusterNotifier clusterNotifier;
+   
+   // Map <node id, PostOfficeAddressInfo>
+   private Map nodeIDAddressMap;
+
+   // Constructors ---------------------------------------------------------------------------------
+
+   /*
+    * Constructor for a non clustered post office
+    */
+   public MessagingPostOffice(DataSource ds,
+                              TransactionManager tm,
+                              Properties sqlProperties,
+                              boolean createTablesOnStartup,
+                              int nodeId,
+                              String officeName,
+                              MessageStore ms,
+                              PersistenceManager pm,
+                              TransactionRepository tr,
+                              FilterFactory filterFactory,
+                              ConditionFactory conditionFactory,
+                              IDManager channelIDManager,
+                              ClusterNotifier clusterNotifier)
+      throws Exception
+   {
+   	super (ds, tm, sqlProperties, createTablesOnStartup);
+
+      this.thisNodeID = nodeId;
+      
+      this.ms = ms;
+      
+      this.pm = pm;
+      
+      this.tr = tr;
+      
+      this.filterFactory = filterFactory;
+      
+      this.conditionFactory = conditionFactory;
+      
+      this.officeName = officeName;
+      
+      this.clustered = false;
+      
+      this.channelIDManager = channelIDManager;
+      
+      this.clusterNotifier = clusterNotifier;
+
+      bindingsLock = new ReentrantWriterPreferenceReadWriteLock();
+      
+      mappings = new HashMap();
+      
+      nameMap = new HashMap();
+      
+      channelIDMap = new HashMap(); 
+      
+      nodeIDAddressMap = new ConcurrentHashMap();           
+   }
+   
+   /*
+    * Constructor for a clustered post office
+    */
+   public MessagingPostOffice(DataSource ds,
+                              TransactionManager tm,
+                              Properties sqlProperties,
+                              boolean createTablesOnStartup,
+                              int nodeId,
+                              String officeName,
+                              MessageStore ms,
+                              PersistenceManager pm,
+                              TransactionRepository tr,
+                              FilterFactory filterFactory,
+                              ConditionFactory conditionFactory,
+                              IDManager channelIDManager,
+                              ClusterNotifier clusterNotifier,
+                              String groupName,
+                              JChannelFactory jChannelFactory,
+                              long stateTimeout, long castTimeout,
+                              FailoverMapper failoverMapper)
+      throws Exception
+   {
+   	this(ds, tm, sqlProperties, createTablesOnStartup, nodeId, officeName, ms, pm, tr,
+   		  filterFactory, conditionFactory, channelIDManager, clusterNotifier);
+     
+      this.failoverMapper = failoverMapper;
+      
+      this.clustered = true;
+
+      replicatedData = new HashMap();
+
+      failoverMap = new LinkedHashMap();
+
+      leftSet = new HashSet();
+
+      groupMember = new GroupMember(groupName, stateTimeout, castTimeout, jChannelFactory, this, this);
+      
+      nbSupport = new NotificationBroadcasterSupport();           
+   }
+
+   // MessagingComponent overrides -----------------------------------------------------------------
+
+   public synchronized void start() throws Exception
+   {
+      if (started)
+      {
+         log.warn("Attempt to start() but " + this + " is already started");
+      }
+
+      if (trace) { log.trace(this + " starting"); }
+      
+      super.start();
+
+      if (clustered)
+      {
+	      groupMember.start();
+
+      	//First get the shared state from the cluster if appropriate
+      	
+      	if (!groupMember.getState())
+      	{
+      		if (trace) { log.trace(this + " is the first member of group"); }
+      	}
+      	else
+      	{
+      		if (trace) { log.trace(this + " is not the first member of group"); }
+      	}
+
+	      //Sanity check - we check there aren't any other nodes already in the cluster with the same node id
+	      if (knowAboutNodeId(thisNodeID))
+	      {
+	      	throw new IllegalArgumentException("Cannot start post office since there is already a post office in the " +
+	      			"cluster with the same node id (" + this.thisNodeID + "). " +
+	      			"Are you sure you have given each node a unique node id during installation?");
+	      }
+	
+	      PostOfficeAddressInfo info = new PostOfficeAddressInfo(groupMember.getSyncAddress(), groupMember.getAsyncAddress());
+	      
+	      nodeIDAddressMap.put(new Integer(thisNodeID), info);	     
+	      
+	      //calculate the failover map
+	      calculateFailoverMap();
+	      
+	      syncSendRequest(new JoinClusterRequest(thisNodeID, info));
+      }
+      
+      //Now load the bindings for this node
+      
+      loadBindingsFromStorage();  
+      
+      started = true;
+      
+      log.debug(this + " started");
+   }
+
+   public synchronized void stop() throws Exception
+   {
+      if (trace) { log.trace(this + " stopping"); }
+
+      if (!started)
+      {
+         log.warn("Attempt to stop() but " + this + " is not started");
+         return;
+      }
+      
+      super.stop();      
+      
+      if (clustered)
+      {	      
+      	try
+      	{
+		      //Need to send this *before* stopping
+		      syncSendRequest(new LeaveClusterRequest(thisNodeID));
+		
+		      stopping = true;
+		      
+		      //FIXME http://jira.jboss.org/jira/browse/JBMESSAGING-819 this is a temporary kludge for now
+		      Thread.sleep(999);
+	      
+		      groupMember.stop();
+      	}
+      	catch (Throwable t)
+      	{
+      		if (trace) { log.trace("Failure in stopping post office", t); }
+      	}
+      }
+      
+      started = false;
+
+      log.debug(this + " stopped");
+   }
+
+   // NotificationBroadcaster implementation -------------------------------------------------------
+
+   public void addNotificationListener(NotificationListener listener,
+                                       NotificationFilter filter,
+                                       Object object) throws IllegalArgumentException
+   {
+      nbSupport.addNotificationListener(listener, filter, object);
+   }
+
+   public void removeNotificationListener(NotificationListener listener)
+      throws ListenerNotFoundException
+   {
+      nbSupport.removeNotificationListener(listener);
+   }
+
+   public MBeanNotificationInfo[] getNotificationInfo()
+   {
+      return new MBeanNotificationInfo[0];
+   }
+   
+   // PostOffice implementation -------------------------------------------------------------------------
+   
+   public String getOfficeName()
+   {
+   	return officeName;
+   }
+   
+   public void addBinding(Binding binding, boolean allNodes) throws Exception
+   {
+   	if (trace) { log.trace(this.thisNodeID + " binding " + binding.queue + " with condition " + binding.condition + " all nodes " + allNodes); }
+
+   	if (binding == null)
+      {
+         throw new IllegalArgumentException("Binding is null");
+      }
+   	
+   	Condition condition = binding.condition;
+   	
+   	Queue queue = binding.queue;
+   	
+   	if (queue == null)
+      {
+         throw new IllegalArgumentException("Queue is null");
+      }
+   	
+   	if (queue.getNodeID() != thisNodeID)
+   	{
+   		throw new IllegalArgumentException("Cannot bind a queue from another node");
+   	}
+
+      if (condition == null)
+      {
+         throw new IllegalArgumentException("Condition is null");
+      }
+
+      bindingsLock.writeLock().acquire();
+
+      try
+      {
+      	addBindingInMemory(binding);
+      }
+      finally
+      {
+         bindingsLock.writeLock().release();
+      }   	
+      
+      if (queue.isRecoverable())
+      {
+         // Need to write the mapping to the database
+         insertBindingInStorage(condition, queue);
+      }
+
+      if (clustered && queue.isClustered())
+      {
+      	String filterString = queue.getFilter() == null ? null : queue.getFilter().getFilterString();      	
+      	
+      	MappingInfo info = new MappingInfo(thisNodeID, queue.getName(), condition.toText(), filterString, queue.getChannelID(),
+      			                             queue.isRecoverable(), true,
+      			                             queue.getFullSize(), queue.getPageSize(), queue.getDownCacheSize(),
+      			                             queue.getMaxSize(),
+      			                             queue.isPreserveOrdering());
+      	
+         ClusterRequest request = new BindRequest(info, allNodes);
+
+         syncSendRequest(request);         
+      }
+   }
+   
+   public void removeBinding(String queueName, boolean allNodes) throws Throwable
+   {
+      if (trace) { log.trace(this.thisNodeID + " unbind queue: " + queueName + " all nodes " + allNodes); }
+
+      if (queueName == null)
+      {
+         throw new IllegalArgumentException("Queue name is null");
+      }
+
+      bindingsLock.writeLock().acquire();
+      
+      Binding removed;
+      
+      try
+      {
+      	removed = (Binding)nameMap.get(queueName);
+      	
+         if (removed == null)
+         {
+         	throw new IllegalStateException("Cannot find queue to unbind " + queueName);
+         }
+         
+         removeBindingInMemory(removed);                  
+      }
+      finally
+      {
+         bindingsLock.writeLock().release();
+      }
+      
+      Queue queue = removed.queue;
+      
+      Condition condition = removed.condition;
+      	     	
+      if (queue.isRecoverable())
+      {
+         //Need to remove from db too
+
+         deleteBindingFromStorage(queue);
+      }
+
+      queue.removeAllReferences();
+      
+      if (clustered && queue.isClustered())
+      {
+      	String filterString = queue.getFilter() == null ? null : queue.getFilter().getFilterString();      	
+      	
+      	MappingInfo info = new MappingInfo(thisNodeID, queue.getName(), condition.toText(), filterString, queue.getChannelID(),
+      			                             queue.isRecoverable(), true);
+      	
+	      UnbindRequest request = new UnbindRequest(info, allNodes);
+	
+	      syncSendRequest(request);
+      }
+   }
+                  
+   public boolean route(MessageReference ref, Condition condition, Transaction tx) throws Exception
+   {
+      if (ref == null)
+      {
+         throw new IllegalArgumentException("Message reference is null");
+      }
+
+      if (condition == null)
+      {
+         throw new IllegalArgumentException("Condition is null");
+      }
+      
+      return routeInternal(ref, condition, tx, false);
+   }
+
+   public Collection getQueuesForCondition(Condition condition, boolean localOnly) throws Exception
+   {
+   	if (condition == null)
+   	{
+   		throw new IllegalArgumentException("Condition is null");
+   	}
+   	
+   	if (!localOnly && !clustered)
+   	{
+   		throw new IllegalArgumentException("Cannot request clustered queues on non clustered post office");
+   	}
+
+   	bindingsLock.readLock().acquire();
+
+   	try
+   	{
+   		//We should only list the bindings for the local node
+
+   		List queues = (List)mappings.get(condition);
+
+   		if (queues == null)
+   		{
+   			return Collections.EMPTY_LIST;
+   		}
+   		else
+   		{
+   			List list = new ArrayList();
+
+   			Iterator iter = queues.iterator();
+
+   			while (iter.hasNext())
+   			{
+   				Queue queue = (Queue)iter.next();
+
+   				if (!localOnly || (queue.getNodeID() == this.thisNodeID))
+   				{
+   					list.add(queue);
+   				}
+   			}
+
+   			return list;
+   		}
+   	}
+   	finally
+   	{
+   		bindingsLock.readLock().release();
+   	}
+   }
+   
+   public Binding getBindingForQueueName(String queueName) throws Exception
+   {
+   	if (queueName == null)
+   	{
+   		throw new IllegalArgumentException("Queue name is null");
+   	}
+   	
+   	bindingsLock.readLock().acquire();
+
+   	try
+   	{
+   		Binding binding = (Binding)nameMap.get(queueName);
+   		
+   		return binding;
+   	}
+   	finally
+   	{
+   		bindingsLock.readLock().release();
+   	}
+   }
+   
+   public Binding getBindingForChannelID(long channelID) throws Exception
+   {
+   	bindingsLock.readLock().acquire();
+
+   	try
+   	{
+   		Binding binding = (Binding)channelIDMap.get(new Long(channelID));
+   		
+   		return binding;
+   	}
+   	finally
+   	{
+   		bindingsLock.readLock().release();
+   	}
+   }
+              
+   public boolean isClustered()
+   {
+      return clustered;
+   }
+   
+   public Map getFailoverMap()
+   {
+   	synchronized (failoverMap)
+   	{
+	   	Map map = new HashMap(failoverMap);
+	   	
+	   	return map;
+   	}
+   }
+   
+   public Collection getAllBindingsForQueueName(String queueName) throws Exception
+   {
+   	return getBindings(queueName);
+   }
+      
+   public Collection getAllBindings() throws Exception
+   {
+   	return getBindings(null);
+   }
+   
+   public Set nodeIDView()
+   {
+   	return new HashSet(nodeIDAddressMap.keySet());
+   }
+   
+   // GroupListener implementation -------------------------------------------------------------
+
+   public void setState(byte[] bytes) throws Exception
+   {
+      if (trace) { log.trace(this + " received state from group"); }
+
+      SharedState state = new SharedState();
+
+      StreamUtils.fromBytes(state, bytes);
+
+      if (trace) { log.trace(this + " received " + state.getMappings().size() + " bindings and map " + state.getReplicatedData()); }
+
+      //No need to lock since only called when starting
+      
+      mappings.clear();
+
+      List mappings = state.getMappings();
+      
+      Iterator iter = mappings.iterator();
+
+      while (iter.hasNext())
+      {
+         MappingInfo mapping = (MappingInfo)iter.next();
+
+         Filter filter = null;
+         
+         if (mapping.getFilterString() != null)
+         {
+         	filter = filterFactory.createFilter(mapping.getFilterString());
+         }
+         
+         Queue queue = new MessagingQueue(mapping.getNodeId(), mapping.getQueueName(), mapping.getChannelId(),
+                                          mapping.isRecoverable(), filter, mapping.isClustered());
+         
+         Condition condition = conditionFactory.createCondition(mapping.getConditionText());
+         
+         addBindingInMemory(new Binding(condition, queue));
+      }
+
+      //Update the replicated data
+
+      synchronized (replicatedData)
+      {
+         replicatedData = copyReplicatedData(state.getReplicatedData());
+      }
+          
+      nodeIDAddressMap = new ConcurrentHashMap(state.getNodeIDAddressMap());      
+   }
+      
+   public byte[] getState() throws Exception
+   {
+      List list = new ArrayList();
+      
+      bindingsLock.readLock().acquire();
+      
+      try
+      {
+	      Iterator iter = mappings.entrySet().iterator();
+	      
+	      while (iter.hasNext())
+	      {
+	      	Map.Entry entry = (Map.Entry)iter.next();
+	      	
+	      	Condition condition = (Condition)entry.getKey();
+	      	
+	      	List queues = (List)entry.getValue();
+	      	
+	      	Iterator iter2 = queues.iterator();
+	      	
+	      	while (iter2.hasNext())
+	      	{
+	      		Queue queue = (Queue)iter2.next();
+	      		
+	      		//We only get the clustered queues
+	      		if (queue.isClustered())
+	      		{		      		
+		      		String filterString = queue.getFilter() == null ? null : queue.getFilter().getFilterString();
+		      		
+		      		MappingInfo mapping = new MappingInfo(queue.getNodeID(), queue.getName(), condition.toText(),
+		      				                                filterString, queue.getChannelID(), queue.isRecoverable(),
+		      				                                true);		      		
+		      		list.add(mapping);
+	      		}
+	      	}
+	      }     
+      }
+      finally
+      {
+      	bindingsLock.readLock().release();
+      }
+
+      //Need to copy
+
+      Map copy;
+
+      synchronized (replicatedData)
+      {
+         copy = copyReplicatedData(replicatedData);
+      }
+
+      SharedState state = new SharedState(list, copy, new HashMap(nodeIDAddressMap));
+
+      return StreamUtils.toBytes(state);
+   }
+   
+   /*
+    * A new node has joined the group
+    */
+   public void nodeJoined(Address address) throws Exception
+   {
+      log.debug(this + ": " + address + " joined");
+      
+      // Currently does nothing
+   }
+
+   /*
+    * A node has left the group
+    */
+   public void nodeLeft(Address address) throws Throwable
+   {
+      log.debug(this + ": " + address + " left");
+
+      Integer leftNodeID = getNodeIDForSyncAddress(address);
+
+      if (leftNodeID == null)
+      {
+         throw new IllegalStateException(this + " cannot find node ID for address " + address);
+      }
+
+      boolean crashed = !this.leaveMessageReceived(leftNodeID);
+
+      log.debug(this + ": node " + leftNodeID + " has " + (crashed ? "crashed" : "cleanly left the group"));
+      
+      if (crashed)
+      {	      
+	      // Need to evaluate this before we regenerate the failover map
+	      Integer failoverNode = (Integer)failoverMap.get(leftNodeID);
+	
+	      if (failoverNode == null)
+	      {
+	         throw new IllegalStateException(this + " cannot find failover node for node " + leftNodeID);
+	      }
+		      
+	      if (thisNodeID == failoverNode.intValue())
+	      {
+	         // The node crashed and we are the failover node so let's perform failover
+	
+	         log.info(this + ": I am the failover node for node " + leftNodeID + " that crashed");
+	
+	         performFailover(leftNodeID);
+	      }
+      }
+      
+      // Remove any replicant data and non durable bindings for the node - again we need to do
+      // this irrespective of whether we crashed. This will notify any listeners which will
+      // recalculate the connection factory delegates and failover delegates.
+
+      cleanDataForNode(leftNodeID);
+      
+      this.sendJMXNotification(VIEW_CHANGED_NOTIFICATION);
+   }
+   
+   // RequestTarget implementation ------------------------------------------------------------
+   
+   /*
+    * Called when another node adds a binding
+    */
+   public void addBindingFromCluster(MappingInfo mapping, boolean allNodes) throws Exception
+   {
+      log.debug(this + " adding binding from node " + mapping.getNodeId() + ", queue " + mapping.getQueueName() +
+                " with condition " + mapping.getConditionText() + " all nodes " + allNodes);
+      
+      //Sanity
+   	
+      if (!knowAboutNodeId(mapping.getNodeId()))
+      {
+         throw new IllegalStateException("Don't know about node id: " + mapping.getNodeId());
+      }
+      
+   	//Create a mapping corresponding to the remote queue
+   	Filter filter = null;
+      
+      if (mapping.getFilterString() != null)
+      {
+      	filter = filterFactory.createFilter(mapping.getFilterString());
+      }
+      
+      Queue queue = new MessagingQueue(mapping.getNodeId(), mapping.getQueueName(), mapping.getChannelId(),
+                                       mapping.isRecoverable(), filter, mapping.isClustered());
+      
+      Condition condition = conditionFactory.createCondition(mapping.getConditionText());
+      
+      
+      bindingsLock.writeLock().acquire();
+
+      try
+      {
+         addBindingInMemory(new Binding(condition, queue));  	
+      }
+      finally
+      {
+      	bindingsLock.writeLock().release();
+      }
+      
+      if (allNodes)
+   	{
+   		if (trace) { log.trace("allNodes is true, so also forcing a local bind"); }
+   		
+   		//Also bind locally
+
+   		long channelID = channelIDManager.getID();
+   		
+   		Queue queue2 = new MessagingQueue(thisNodeID, mapping.getQueueName(), channelID, ms, pm,
+   				                            mapping.isRecoverable(), mapping.getMaxSize(), filter,
+   				                            mapping.getFullSize(), mapping.getPageSize(), mapping.getDownCacheSize(), true,
+   				                            mapping.isPreserveOrdering());
+
+   		addBinding(new Binding(condition, queue2), false);
+   		
+   		queue2.load();
+   		
+   		queue2.activate();
+   	}
+   }
+ 
+   /*
+    * Called when another node removes a binding
+    */
+   public void removeBindingFromCluster(MappingInfo mapping, boolean allNodes) throws Throwable
+   {
+      log.debug(this + " removing binding from node " + mapping.getNodeId() + ", queue " + mapping.getQueueName() +
+                " with condition " + mapping.getConditionText());
+      // Sanity
+      if (!knowAboutNodeId(mapping.getNodeId()))
+      {
+      	throw new IllegalStateException("Don't know about node id: " + mapping.getNodeId());
+      }
+
+      Filter filter = null;
+
+      if (mapping.getFilterString() != null)
+      {
+      	filter = filterFactory.createFilter(mapping.getFilterString());
+      }
+
+      Queue queue = new MessagingQueue(mapping.getNodeId(), mapping.getQueueName(), mapping.getChannelId(),
+      		                           mapping.isRecoverable(), filter, mapping.isClustered());
+
+      Condition condition = conditionFactory.createCondition(mapping.getConditionText());
+
+
+      bindingsLock.writeLock().acquire();
+
+      try
+      {
+         removeBindingInMemory(new Binding(condition, queue));        
+      }
+      finally
+      {
+         bindingsLock.writeLock().release();
+      }
+      
+      if (allNodes)
+      {
+      	//Also unbind locally
+      	
+   		if (trace) { log.trace("allNodes is true, so also forcing a local unbind"); }
+   		         	
+   		removeBinding(mapping.getQueueName(), false);
+      }
+   }
+
+   public void handleNodeLeft(int nodeId) throws Exception
+   {
+   	//No need to remove the nodeid-address map info, this will be removed when data cleaned for node
+   	
+      synchronized (leftSet)
+      {
+         leftSet.add(new Integer(nodeId));
+      }
+      
+      //We don't update the failover map here since this doesn't get called if the node crashed
+   }
+   
+   public void handleNodeJoined(int nodeId, PostOfficeAddressInfo info) throws Exception
+   {	   	   	   	
+   	nodeIDAddressMap.put(new Integer(nodeId), info);
+   	
+   	log.info(this + " handleNodeJoined: " + nodeId + " size: " + nodeIDAddressMap.size());
+   	   
+   	calculateFailoverMap();
+      
+      log.debug("Updated failover map:\n" + dumpFailoverMap(failoverMap));   	
+      
+      // Send a notification
+      
+      ClusterNotification notification = new ClusterNotification(ClusterNotification.TYPE_NODE_JOIN, nodeId, null);
+      
+      clusterNotifier.sendNotification(notification);
+      
+      this.sendJMXNotification(VIEW_CHANGED_NOTIFICATION);
+   }
+
+   /**
+    * @param originatorNodeID - the ID of the node that initiated the modification.
+    */
+   public void putReplicantLocally(int originatorNodeID, Serializable key, Serializable replicant) throws Exception
+   {
+      Map m = null;
+      
+      synchronized (replicatedData)
+      {
+         log.debug(this + " puts replicant locally: " + key + "->" + replicant);
+
+         m = (Map)replicatedData.get(key);
+
+         if (m == null)
+         {
+            m = new LinkedHashMap();
+
+            replicatedData.put(key, m);
+         }
+
+         m.put(new Integer(originatorNodeID), replicant);
+
+         if (trace) { log.trace(this + " putReplicantLocally completed"); }
+      }
+      
+      ClusterNotification notification = new ClusterNotification(ClusterNotification.TYPE_REPLICATOR_PUT, originatorNodeID, key);
+      
+      clusterNotifier.sendNotification(notification);
+   }
+
+   /**
+    * @param originatorNodeID - the ID of the node that initiated the modification.
+    */
+   public boolean removeReplicantLocally(int originatorNodeID, Serializable key) throws Exception
+   {
+      Map m = null;
+      
+      synchronized (replicatedData)
+      {
+         if (trace) { log.trace(this + " removes " + originatorNodeID + "'s replicant locally for key " + key); }
+
+         m = (Map)replicatedData.get(key);
+
+         if (m == null)
+         {
+            return false;
+         }
+
+         Object obj = m.remove(new Integer(originatorNodeID));
+
+         if (obj == null)
+         {
+            return false;
+         }
+
+         if (m.isEmpty())
+         {
+            replicatedData.remove(key);
+         }
+      }
+      
+      ClusterNotification notification = new ClusterNotification(ClusterNotification.TYPE_REPLICATOR_REMOVE, originatorNodeID, key);
+      
+      clusterNotifier.sendNotification(notification);
+      
+      return true;
+   }
+
+   public void routeFromCluster(Message message, String routingKeyText) throws Exception
+   {
+      if (trace) { log.trace(this + " routing from cluster " + message + ", routing key " + routingKeyText); }
+
+      Condition routingKey = conditionFactory.createCondition(routingKeyText);
+
+      MessageReference ref = null;
+      
+      try
+      {
+         ref = ms.reference(message);
+         
+         routeInternal(ref, routingKey, null, true);        
+      }
+      finally
+      {
+         if (ref != null)
+         {
+            ref.releaseMemoryReference();
+         }
+      }
+   }
+
+   // Replicator implementation --------------------------------------------------------------------
+
+   public void put(Serializable key, Serializable replicant) throws Exception
+   {
+      putReplicantLocally(thisNodeID, key, replicant);
+
+      PutReplicantRequest request = new PutReplicantRequest(thisNodeID, key, replicant);
+
+      syncSendRequest(request);
+   }
+
+   public Map get(Serializable key) throws Exception
+   {
+      synchronized (replicatedData)
+      {
+         Map m = (Map)replicatedData.get(key);
+
+         return m == null ? Collections.EMPTY_MAP : Collections.unmodifiableMap(m);
+      }
+   }
+
+   public boolean remove(Serializable key) throws Exception
+   {
+      if (removeReplicantLocally(this.thisNodeID, key))
+      {
+         RemoveReplicantRequest request = new RemoveReplicantRequest(this.thisNodeID, key);
+
+         syncSendRequest(request);
+
+         return true;
+      }
+      else
+      {
+         return false;
+      }
+   }
+
+   public FailoverMapper getFailoverMapper()
+   {
+      return failoverMapper;
+   }
+   
+   // JDBCSupport overrides ------------------------------------------------------------------------
+   
+   protected Map getDefaultDMLStatements()
+   {
+      Map map = new LinkedHashMap();
+
+      map.put("INSERT_BINDING",
+              "INSERT INTO JBM_POSTOFFICE (" +
+                 "POSTOFFICE_NAME, " +
+                 "NODE_ID, " +
+                 "QUEUE_NAME, " +
+                 "CONDITION, " +
+                 "SELECTOR, " +
+                 "CHANNEL_ID, " +
+                 "CLUSTERED) " +
+              "VALUES (?, ?, ?, ?, ?, ?, ?)");
+
+      map.put("DELETE_BINDING",
+              "DELETE FROM JBM_POSTOFFICE WHERE POSTOFFICE_NAME=? AND NODE_ID=? AND QUEUE_NAME=?");
+
+      map.put("LOAD_BINDINGS",
+              "SELECT " +                
+                 "QUEUE_NAME, " +
+                 "CONDITION, " +
+                 "SELECTOR, " +
+                 "CHANNEL_ID, " +
+                 "CLUSTERED " +
+                 "FROM JBM_POSTOFFICE WHERE POSTOFFICE_NAME=? AND NODE_ID=?");
+
+      return map;
+   }
+
+   protected Map getDefaultDDLStatements()
+   {
+      Map map = new LinkedHashMap();
+      map.put("CREATE_POSTOFFICE_TABLE",
+              "CREATE TABLE JBM_POSTOFFICE (POSTOFFICE_NAME VARCHAR(255), NODE_ID INTEGER," +
+              "QUEUE_NAME VARCHAR(1023), CONDITION VARCHAR(1023), " +
+              "SELECTOR VARCHAR(1023), CHANNEL_ID BIGINT, " +
+              "CLUSTERED CHAR(1))");
+      return map;
+   }
+
+   // Public ---------------------------------------------------------------------------------------
+
+   public String printBindingInformation()
+   {
+//      StringWriter buffer = new StringWriter();
+//      PrintWriter out = new PrintWriter(buffer);
+//      out.println("Ocurrencies of nameMaps:");
+//      out.println("<table border=1>");
+//      for (Iterator mapIterator = nameMaps.entrySet().iterator();mapIterator.hasNext();)
+//      {
+//          Map.Entry entry = (Map.Entry)mapIterator.next();
+//          out.println("<tr><td colspan=3><b>Map on node " + entry.getKey() + "</b></td></tr>");
+//          Map valuesOnNode = (Map)entry.getValue();
+//
+//          out.println("<tr><td>Key</td><td>Value</td><td>Class of Value</td></tr>");
+//          for (Iterator valuesIterator=valuesOnNode.entrySet().iterator();valuesIterator.hasNext();)
+//          {
+//              Map.Entry entry2 = (Map.Entry)valuesIterator.next();
+//
+//              out.println("<tr>");
+//              out.println("<td>" + entry2.getKey() + "</td><td>" + entry2.getValue()+
+//                 "</td><td>" + entry2.getValue().getClass().getName() + "</td>");
+//              out.println("</tr>");
+//
+//              if (entry2.getValue() instanceof Binding &&
+//                 ((Binding)entry2.getValue()).getQueue() instanceof Queue)
+//              {
+//                  Queue queue =
+//                     ((Binding)entry2.getValue()).getQueue();
+//                  List undelivered = queue.undelivered(null);
+//                  if (!undelivered.isEmpty())
+//                  {
+//                      out.println("<tr><td>List of undelivered messages on Paging</td>");
+//
+//                      out.println("<td colspan=2><table border=1>");
+//                      out.println("<tr><td>Reference#</td><td>Message</td></tr>");
+//                      for (Iterator i = undelivered.iterator();i.hasNext();)
+//                      {
+//                          SimpleMessageReference reference = (SimpleMessageReference)i.next();
+//                          out.println("<tr><td>" + reference.getInMemoryChannelCount() +
+//                             "</td><td>" + reference.getMessage() +"</td></tr>");
+//                      }
+//                      out.println("</table></td>");
+//                      out.println("</tr>");
+//                  }
+//              }
+//          }
+//      }
+//
+//      out.println("</table>");
+//      out.println("<br>Ocurrencies of conditionMap:");
+//      out.println("<table border=1>");
+//      out.println("<tr><td>EntryName</td><td>Value</td>");
+//
+//      for (Iterator iterConditions = conditionMap.entrySet().iterator();iterConditions.hasNext();)
+//      {
+//          Map.Entry entry = (Map.Entry)iterConditions.next();
+//          out.println("<tr><td>" + entry.getKey() + "</td><td>" + entry.getValue() + "</td></tr>");
+//
+//          if (entry.getValue() instanceof Bindings)
+//          {
+//              out.println("<tr><td>Binding Information:</td><td>");
+//              out.println("<table border=1>");
+//              out.println("<tr><td>Binding</td><td>Queue</td></tr>");
+//              Bindings bindings = (Bindings)entry.getValue();
+//              for (Iterator i = bindings.getAllBindings().iterator();i.hasNext();)
+//              {
+//
+//                  Binding binding = (Binding)i.next();
+//                  out.println("<tr><td>" + binding + "</td><td>" + binding.getQueue() +
+//                     "</td></tr>");
+//              }
+//              out.println("</table></td></tr>");
+//          }
+//      }
+//      out.println("</table>");
+//          
+//      out.println("Replicator's Information");
+//
+//      out.println("<table border=1><tr><td>Node</td><td>Key</td><td>Value</td></tr>");
+//
+//      for (Iterator iter = replicatedData.entrySet().iterator(); iter.hasNext();)
+//      {
+//         Map.Entry entry = (Map.Entry) iter.next();
+//         Map subMap = (Map)entry.getValue();
+//
+//         for (Iterator subIterator = subMap.entrySet().iterator(); subIterator.hasNext();)
+//         {
+//            Map.Entry subValue = (Map.Entry) subIterator.next();
+//            out.println("<tr><td>" + entry.getKey() + "</td>");
+//            out.println("<td>" + subValue.getKey() + "</td><td>" + subValue.getValue() + "</td></tr>" );
+//         }
+//
+//      }
+//
+//      out.println("</table>");
+//      
+//      return buffer.toString();
+   	
+   	return "";
+   }
+
+   // Package protected ----------------------------------------------------------------------------
+
+   // Protected ------------------------------------------------------------------------------------
+   
+   // Private ------------------------------------------------------------------------------------
+     
+   private void calculateFailoverMap()
+   {
+   	 //calculate the failover map
+      synchronized (failoverMap)
+   	{
+	   	// A node-address mapping has been added/removed from global state, we need to update
+	      // the failover map.
+	      failoverMap = failoverMapper.generateMapping(nodeIDAddressMap.keySet());
+   	}
+   }
+   
+   private Collection getBindings(String queueName) throws Exception
+   {
+   	bindingsLock.readLock().acquire();
+
+   	try
+   	{
+   		Iterator iter = this.mappings.entrySet().iterator();
+   		
+   		List bindings = new ArrayList();
+   		
+   		while (iter.hasNext())
+   		{
+   			Map.Entry entry = (Map.Entry)iter.next();
+   			
+   			Condition condition = (Condition)entry.getKey();
+   			
+   			List queues = (List)entry.getValue();
+   			
+   			Iterator iter2 = queues.iterator();
+   			
+   			while (iter2.hasNext())
+   			{
+   				Queue queue = (Queue)iter2.next();
+   				
+   				if (queueName == null || queue.getName().equals(queueName))
+   				{
+   					bindings.add(new Binding(condition, queue));
+   				}
+   			}
+   		}
+   		
+   		return bindings;
+   	}
+   	finally
+   	{
+   		bindingsLock.readLock().release();
+   	}
+   }
+
+   
+   private boolean routeInternal(MessageReference ref, Condition condition, Transaction tx, boolean fromCluster) throws Exception
+   {
+   	if (trace) { log.trace(this + " routing " + ref + " with condition '" +
+   			                 condition + "'" + (tx == null ? "" : " transactionally in " + tx) + 
+   			                 " from cluster " + fromCluster); }
+   	
+      boolean routed = false;
+
+      bindingsLock.readLock().acquire();
+      
+      try
+      {
+         List queues = (List)mappings.get(condition);
+         
+         if (queues != null)
+         {
+         	Iterator iter = queues.iterator();
+         	
+         	int localReliableCount = 0;
+         	
+         	Set remoteSet = null;
+         	
+         	List targets = new ArrayList();
+         	
+         	log.info("routing to " + queues.size() + " queues");
+         	
+         	while (iter.hasNext())
+         	{
+         		Queue queue = (Queue)iter.next();
+         		
+         		//TODO optimise this
+         		
+         		if (queue.getNodeID() == thisNodeID)
+         		{
+         			//Local queue
+
+         			//TODO - There is a temporary hack here -
+         			//When routing to a clustered temp queue, the queue is unreliable - but we always want to route to the local
+         			//one so we need to add the check that we only route remotely if it's a topic
+         			//We could do this better by making sure that only one queue with the same name is routed to on the cluster
+         			if (!fromCluster || (!queue.isRecoverable() && !((JMSCondition)condition).isQueue()))
+         			{
+         				//If we're not routing from the cluster OR the queue is unreliable then we consider it
+         				
+         				//When we route from the cluster we never route to reliable queues
+         				
+	         			Filter filter = queue.getFilter();
+	         			
+	         			if (filter == null || filter.accept(ref.getMessage()))
+	         			{                		
+	         				log.info("Added queue " + queue + " to list of targets");
+	      					targets.add(queue);
+	      					
+	      					if (ref.getMessage().isReliable() && queue.isRecoverable())
+	         				{
+	         					localReliableCount++;
+	         				}         				
+	         			}   
+         			}
+         		}
+         		else if (!fromCluster)
+         		{
+         			//Remote queue
+         			
+         			if (!queue.isRecoverable())
+         			{	         			
+         				//When we send to the cluster we never send to reliable queues
+         				
+	         			Filter filter = queue.getFilter();
+	         			
+	         			if (filter == null || filter.accept(ref.getMessage()))
+	         			{
+	         				if (remoteSet == null)
+	         				{
+	         					remoteSet = new HashSet();
+	         				}
+	         				
+	         				remoteSet.add(new Integer(queue.getNodeID()));
+	         			}
+         			}
+         		}
+         	}
+         	
+         	if (remoteSet != null)
+         	{
+         		//There are queues on other nodes that want the message too
+         		
+         		//If the message is non reliable then we can unicast or multicast the message to the group so it
+         		//can get picked up by other nodes
+         		
+         		ClusterRequest request = new MessageRequest(condition.toText(), ref.getMessage());
+         		
+         		if (remoteSet.size() == 1)
+         		{
+         			//Only one node requires the message, so we can unicast
+         			
+         			unicastRequest(request, thisNodeID);
+         		}
+         		else
+         		{
+         			//More than one node requires the message - so we multicast         			
+         			//Whether it is reliable or unreliable multicast is determined by the JGroups stack config
+         			
+         			multicastRequest(request);
+         		}
+         	}
+         	else
+         	{
+         		log.info("************** &&&&&&&&&& not multicasting");
+         	}
+         	
+         	//If the ref is reliable and there is more than one reliable local queue that accepts the message then we need
+         	//to route in a transaction to guarantee once and only once reliability guarantee
+         	
+         	boolean startedTx = false;
+         	
+         	if (tx == null && localReliableCount > 1)
+         	{
+         		if (trace) { log.trace("Starting internal tx, reliableCount = " + localReliableCount); }
+         		
+         		tx = tr.createTransaction();
+         		
+         		startedTx = true;
+         	}
+         	
+         	//Now actually route the ref
+         	
+         	iter = targets.iterator();
+         	
+         	while (iter.hasNext())
+         	{
+         		Queue queue = (Queue)iter.next();
+         		
+         		if (trace) { log.trace("Routing ref to queue " + queue); }
+         		         	
+         		log.info("Routing ref " + ref + " to queue " + queue);
+         		
+         		Delivery del = queue.handle(null, ref, tx);
+         		
+         		if (trace) { log.trace("Queue returned " + del); }
+
+               if (del != null && del.isSelectorAccepted())
+               {
+                  routed = true;
+               }
+         	}
+         	
+            if (startedTx)
+            {
+               if (trace) { log.trace(this + " committing " + tx); }
+               
+               tx.commit();
+               
+               if (trace) { log.trace(this + " committed " + tx); }
+            }
+         }
+      }
+      finally
+      {
+         bindingsLock.readLock().release();
+      }
+
+      return routed;
+   }   
+   
+   private void removeBindingInMemory(Binding binding)
+   {
+   	Queue queue = binding.queue;
+   	
+   	Condition condition = binding.condition;
+   	
+   	if (queue.getNodeID() == this.thisNodeID)
+   	{
+   		Binding b = (Binding)nameMap.remove(queue.getName());
+   		
+   		if (b == null)
+   		{
+   			throw new IllegalStateException("Cannot find binding in name map for queue " + queue.getName());
+   		}
+   		
+   		b = (Binding)channelIDMap.remove(new Long(queue.getChannelID()));
+   		
+   		if (b == null)
+   		{
+   			throw new IllegalStateException("Cannot find binding in channel id map for queue " + queue.getName());
+   		}
+   	}
+   	
+   	List queues = (List)mappings.get(condition);
+	      
+      if (queues == null)
+      {
+      	throw new IllegalStateException("Cannot find queues in condition map for condition " + condition);
+      }	     
+      
+      boolean removed = queues.remove(queue);
+      
+      if (!removed)
+      {
+      	throw new IllegalStateException("Cannot find queue in list for queue " + queue.getName());
+      }
+      
+      if (queues.isEmpty())
+      {
+      	mappings.remove(condition);
+      }
+      
+      // Send a notification
+      ClusterNotification notification = new ClusterNotification(ClusterNotification.TYPE_UNBIND, queue.getNodeID(), queue.getName());
+      
+      clusterNotifier.sendNotification(notification);
+   }
+   
+   private void addBindingInMemory(Binding binding)
+   {
+   	Queue queue = binding.queue;
+   	
+   	//The name map and the channel id map only hold the bindings for the *current* node
+   	
+   	if (queue.getNodeID() == this.thisNodeID)
+   	{	   	
+	   	if (nameMap.get(queue.getName()) != null)
+	   	{
+	   		throw new IllegalArgumentException("Cannot bind queue, it is already bound " + queue.getName());
+	   	}
+	   	
+	   	log.info("*********** putting queue name " + queue.getName() + " in map");
+	   	nameMap.put(queue.getName(), binding);
+	   	
+	   	channelIDMap.put(new Long(queue.getChannelID()), binding);
+   	}
+   	
+   	Condition condition = binding.condition;   	
+   	
+   	List queues = (List)mappings.get(condition);
+   	
+   	if (queues == null)
+   	{
+   		queues = new ArrayList();
+   		
+   		if (queues.contains(queue))
+   		{
+   			throw new IllegalArgumentException("Queue is already bound with condition " + condition);
+   		}
+   		
+   		mappings.put(condition, queues);
+   	}
+   	
+   	queues.add(queue);   
+   	
+      //Send a notification
+      ClusterNotification notification = new ClusterNotification(ClusterNotification.TYPE_BIND, queue.getNodeID(), queue.getName());
+      
+      clusterNotifier.sendNotification(notification);
+   }
+   
+   /*
+    * Multicast a message to all members of the group
+    */
+   private void multicastRequest(ClusterRequest request) throws Exception
+   {
+      if (stopping)
+      {
+         return;
+      }
+      
+      if (trace) { log.trace(this + " Unicasting request " + request); }
+      
+      groupMember.multicastRequest(request);
+   }
+
+   /*
+    * Unicast a message to one member of the group
+    */
+   private void unicastRequest(ClusterRequest request, int nodeId) throws Exception
+   {
+      if (stopping)
+      {
+         return;
+      }
+      
+      Address address = this.getAddressForNodeId(nodeId, false);
+
+      if (address == null)
+      {
+         throw new IllegalArgumentException("Cannot find address for node " + nodeId);
+      }
+      
+      if (trace) { log.trace(this + "Unicasting request " + request + " to node " + nodeId); }
+
+      groupMember.unicastRequest(request, address);
+   }
+   
+   private void loadBindingsFromStorage() throws Exception
+   {
+      bindingsLock.writeLock().acquire();
+
+      Connection conn = null;
+      PreparedStatement ps  = null;
+      ResultSet rs = null;
+      TransactionWrapper wrap = new TransactionWrapper();
+
+      try
+      {
+         conn = ds.getConnection();
+
+         ps = conn.prepareStatement(getSQLStatement("LOAD_BINDINGS"));
+
+         ps.setString(1, officeName);
+         
+         ps.setInt(2, thisNodeID);
+
+         rs = ps.executeQuery();
+
+         while (rs.next())
+         {
+            String queueName = rs.getString(1);
+            String conditionText = rs.getString(2);
+            String selector = rs.getString(3);
+
+            if (rs.wasNull())
+            {
+               selector = null;
+            }
+
+            long channelID = rs.getLong(4);
+                       
+            boolean bindingClustered = rs.getString(5).equals("Y");
+            
+            //If the node is not clustered then we load the bindings as non clustered
+                    	
+            Filter filter = null;
+            
+            if (selector != null)
+            {
+            	filter = filterFactory.createFilter(selector);
+            }
+            
+            Queue queue = new MessagingQueue(thisNodeID, queueName, channelID, ms, pm,
+                                             true, filter, bindingClustered && clustered);
+            
+            log.info("**** loaded binding from storage: " + queueName);
+            
+            Condition condition = conditionFactory.createCondition(conditionText);
+            
+            addBindingInMemory(new Binding(condition, queue));          
+            
+            //Need to broadcast it too
+            if (clustered && queue.isClustered())
+            {
+            	String filterString = queue.getFilter() == null ? null : queue.getFilter().getFilterString();      	            	
+            	
+            	MappingInfo info = new MappingInfo(thisNodeID, queue.getName(), condition.toText(), filterString, queue.getChannelID(),
+            			                             queue.isRecoverable(), true,
+            			                             queue.getFullSize(), queue.getPageSize(), queue.getDownCacheSize(),
+            			                             queue.getMaxSize(),
+            			                             queue.isPreserveOrdering());
+            	
+               ClusterRequest request = new BindRequest(info, false);
+
+               syncSendRequest(request);         
+            }
+         }
+      }
+      catch (Exception e)
+      {
+      	wrap.exceptionOccurred();
+      	throw e;
+      }
+      finally
+      {
+         bindingsLock.writeLock().release();
+         
+         closeResultSet(rs);
+         
+         closeStatement(ps);
+         
+         closeConnection(conn);
+
+         wrap.end();
+      }
+   }
+
+   private void insertBindingInStorage(Condition condition, Queue queue) throws Exception
+   {
+      Connection conn = null;
+      PreparedStatement ps  = null;
+      TransactionWrapper wrap = new TransactionWrapper();
+
+      try
+      {
+         conn = ds.getConnection();
+
+         ps = conn.prepareStatement(getSQLStatement("INSERT_BINDING"));
+
+         ps.setString(1, officeName);
+         ps.setInt(2, thisNodeID);
+         ps.setString(3, queue.getName());
+         ps.setString(4, condition.toText());
+         String filterString = queue.getFilter() != null ? queue.getFilter().getFilterString() : null;
+         if (filterString != null)
+         {
+            ps.setString(5, filterString);
+         }
+         else
+         {
+            ps.setNull(5, Types.VARCHAR);
+         }
+         ps.setLong(6, queue.getChannelID());        
+         if (queue.isClustered())
+         {
+            ps.setString(7, "Y");
+         }
+         else
+         {
+            ps.setString(7, "N");
+         }
+
+         ps.executeUpdate();
+      }
+      catch (Exception e)
+      {
+      	wrap.exceptionOccurred();
+      	throw e;
+      }
+      finally
+      {
+      	closeStatement(ps);
+      	closeConnection(conn);
+         wrap.end();
+      }
+   }
+
+   private boolean deleteBindingFromStorage(Queue queue) throws Exception
+   {
+      Connection conn = null;
+      PreparedStatement ps  = null;
+      TransactionWrapper wrap = new TransactionWrapper();
+
+      try
+      {
+         conn = ds.getConnection();
+
+         ps = conn.prepareStatement(getSQLStatement("DELETE_BINDING"));
+
+         ps.setString(1, this.officeName);
+         ps.setInt(2, queue.getNodeID());
+         ps.setString(3, queue.getName());
+
+         int rows = ps.executeUpdate();
+
+         return rows == 1;
+      }
+      catch (Exception e)
+      {
+      	wrap.exceptionOccurred();
+      	throw e;
+      }
+      finally
+      {
+      	closeStatement(ps);
+      	closeConnection(conn);
+         wrap.end();
+      }
+   }
+
+   private boolean leaveMessageReceived(Integer nodeId) throws Exception
+   {
+      synchronized (leftSet)
+      {
+         return leftSet.remove(nodeId);
+      }
+   }
+
+   /*
+    * Removes all binding data, and any replicant data for the specified node.
+    */
+   private void cleanDataForNode(Integer nodeToRemove) throws Exception
+   {
+      log.debug(this + " cleaning data for node " + nodeToRemove);
+
+      bindingsLock.writeLock().acquire();
+
+      log.info("** cleaning data for node " + nodeToRemove);
+      
+      try
+      {
+      	Iterator iter = mappings.entrySet().iterator();
+      	
+      	List toRemove = new ArrayList();
+      	
+      	while (iter.hasNext())
+      	{
+      		Map.Entry entry = (Map.Entry)iter.next();
+      		
+      		Condition condition = (Condition)entry.getKey();
+      		
+      		List queues = (List)entry.getValue();
+      		
+      		Iterator iter2 = queues.iterator();
+      		
+      		while (iter2.hasNext())
+      		{
+      			Queue queue = (Queue)iter2.next();
+      			
+      			if (queue.getNodeID() == nodeToRemove.intValue())
+      			{
+      				log.info("** removing queue " + queue);
+      				
+      				toRemove.add(new Binding(condition, queue));
+      			}
+      			else
+      			{
+      				log.info("** not removing " + queue);
+      			}
+      		}
+      	}
+      	
+      	iter = toRemove.iterator();
+      	
+      	while (iter.hasNext())
+      	{
+      		Binding binding = (Binding)iter.next();
+
+      		removeBindingInMemory(binding);
+      	}
+      }
+      finally
+      {
+         bindingsLock.writeLock().release();
+      }
+
+      Map toNotify = new HashMap();
+      
+      synchronized (replicatedData)
+      {
+         // We need to remove any replicant data for the node.
+         for (Iterator i = replicatedData.entrySet().iterator(); i.hasNext(); )
+         {
+            Map.Entry entry = (Map.Entry)i.next();
+            String key = (String)entry.getKey();
+            Map replicants = (Map)entry.getValue();
+
+            replicants.remove(nodeToRemove);
+
+            if (replicants.isEmpty())
+            {
+               i.remove();
+            }
+
+            toNotify.put(key, replicants);           
+         }
+      }
+      
+      //remove node id - address info
+      nodeIDAddressMap.remove(nodeToRemove);      
+      
+      //Recalculate the failover map
+      calculateFailoverMap();
+      
+      //Notify outside the lock to prevent deadlock
+      
+      //Send notifications for the replicant data removed
+      
+      for (Iterator i = toNotify.entrySet().iterator(); i.hasNext(); )
+      {
+         Map.Entry entry = (Map.Entry)i.next();
+         String key = (String)entry.getKey();
+
+         ClusterNotification notification = new ClusterNotification(ClusterNotification.TYPE_REPLICATOR_REMOVE, nodeToRemove.intValue(), key);
+         
+         clusterNotifier.sendNotification(notification);
+      }
+   }
+
+   /*
+    * Multicast a sync request
+    */
+   private void syncSendRequest(ClusterRequest request) throws Exception
+   {
+      if (stopping)
+      {
+         return;
+      }
+      
+      if (trace) { log.trace(this + " sending sync request " + request); }
+      
+      groupMember.sendSyncRequest(request);
+   }
+
+   //TODO - can optimise this with a reverse map
+   private Integer getNodeIDForSyncAddress(Address address) throws Exception
+   {
+   	Iterator iter = nodeIDAddressMap.entrySet().iterator();
+   	
+   	Integer nodeID = null;
+   	
+   	while (iter.hasNext())
+   	{
+   		Map.Entry entry = (Map.Entry)iter.next();
+   			
+   		PostOfficeAddressInfo info = (PostOfficeAddressInfo)entry.getValue();
+   		
+   		if (info.getSyncChannelAddress().equals(address))
+   		{
+   			nodeID = (Integer)entry.getKey();
+   			
+   			break;
+   		}
+   	}   	
+   	
+   	return nodeID;   	
+   }
+   	      
+   private boolean knowAboutNodeId(int nodeID)
+   {
+   	return nodeIDAddressMap.get(new Integer(nodeID)) != null;   	
+   }
+
+   private Map copyReplicatedData(Map toCopy)
+   {
+      Map copy = new HashMap();
+
+      Iterator iter = toCopy.entrySet().iterator();
+
+      while (iter.hasNext())
+      {
+         Map.Entry entry = (Map.Entry)iter.next();
+
+         Serializable key = (Serializable)entry.getKey();
+
+         Map replicants = (Map)entry.getValue();
+
+         Map m = new LinkedHashMap();
+
+         m.putAll(replicants);
+
+         copy.put(key, m);
+      }
+
+      return copy;
+   }
+
+   private Address getAddressForNodeId(int nodeId, boolean sync) throws Exception
+   {   	
+   	PostOfficeAddressInfo info = (PostOfficeAddressInfo)nodeIDAddressMap.get(new Integer(nodeId));
+   	
+   	if (info == null)
+   	{
+   		return null;
+   	}
+   	else if (sync)
+   	{
+   		return info.getSyncChannelAddress();
+   	}
+   	else
+   	{
+   		return info.getAsyncChannelAddress();
+   	}     	
+   }
+   
+
+   /**
+    * This method fails over all the queues from node <failedNodeId> onto this node. It is triggered
+    * when a JGroups view change occurs due to a member leaving and it's determined the member
+    * didn't leave cleanly.
+    * 
+    * On failover we basically merge any queues with the same name on the failed node into any corresponding queue
+    * on this node
+    */
+   private void performFailover(Integer failedNodeID) throws Exception
+   {
+      log.debug(this + " performing failover for failed node " + failedNodeID);
+      
+      ClusterNotification notification = new ClusterNotification(ClusterNotification.TYPE_FAILOVER_START, failedNodeID.intValue(), null);
+      
+      clusterNotifier.sendNotification(notification);
+
+      log.debug(this + " announced it is starting failover procedure");
+   	
+      // Need to lock
+      bindingsLock.writeLock().acquire();
+
+      try
+      {
+         Iterator iter = mappings.entrySet().iterator();
+         	
+      	List toRemove = new ArrayList();
+      	
+      	while (iter.hasNext())
+      	{
+      		Map.Entry entry = (Map.Entry)iter.next();
+      		
+      		Condition condition = (Condition)entry.getKey();
+      		
+      		List queues = (List)entry.getValue();
+      		
+      		Iterator iter2 = queues.iterator();
+      		
+      		while (iter2.hasNext())
+      		{
+      			Queue queue = (Queue)iter2.next();
+      			
+      			if (queue.isRecoverable() && queue.getNodeID() == failedNodeID.intValue())
+      			{
+      				toRemove.add(new Binding(condition, queue));
+      			}
+      		}
+      	}
+         	
+      	iter = toRemove.iterator();
+      	
+      	while (iter.hasNext())
+      	{
+      		Binding binding = (Binding)iter.next();
+      		
+      		Condition condition = binding.condition;
+      		
+      		Queue queue = binding.queue;
+      		
+      		// Sanity check
+            if (!queue.isRecoverable())
+            {
+               throw new IllegalStateException("Found non recoverable queue " +
+                                               queue.getName() + "in map, these should have been removed!");
+            }
+
+            // Sanity check
+            if (!queue.isClustered())
+            {
+               throw new IllegalStateException("Queue " + queue.getName() +
+                                               " is not clustered!");
+            }
+      		
+            //Remove from the in-memory map
+            removeBindingInMemory(binding);
+      		
+      		//Delete from storage
+      		deleteBindingFromStorage(queue);
+      	
+            log.debug(this + " deleted binding for " + queue.getName());
+
+            // Note we do not need to send an unbind request across the cluster - this is because
+            // when the node crashes a view change will hit the other nodes and that will cause
+            // all binding data for that node to be removed anyway.
+            
+            Collection queues = getQueuesForCondition(condition, true);
+            
+            Iterator iter2 = queues.iterator();
+            
+            Queue localQueue = null;
+            
+            while (iter2.hasNext())
+            {
+            	Queue q = (Queue)iter2.next();
+            	
+            	if (queue.getName().equals(q.getName()))
+            	{
+            		localQueue = q;
+            		
+            		break;
+            	}
+            	
+            }
+            	
+            if (localQueue != null)
+            {
+               //need to merge the queues
+            	
+            	log.debug(this + " has already a queue: " + queue.getName() + " queue so merging queues");
+            	  
+               localQueue.mergeIn(queue.getChannelID());
+               
+               log.debug("Merged queue");       
+            }
+            else
+            {
+            	log.debug(this + " did not have a queue: " + queue.getName() + " queue so no need to merge");
+            	
+              	Queue newQueue = new MessagingQueue(thisNodeID, queue.getName(), queue.getChannelID(), queue.isRecoverable(),
+              			                              queue.getFilter(), true);
+
+               addBinding(new Binding(condition, newQueue), false);
+               
+               newQueue.deactivate();
+               
+               newQueue.load();
+               
+               //TODO - do we really want to activate ALL the queues - surely only the ones that correspond to deployed destinations??
+               newQueue.activate();
+
+               //FIXME there is a problem in the above code.
+               //If the server crashes between deleting the binding from the database
+               //and creating the new binding in the database, then the binding will be completely
+               //lost from the database when the server is resurrected.
+               //To remedy, both db operations need to be done in the same JBDC tx
+            }            
+         }
+
+         log.debug(this + " finished failing over destinations");
+        
+         log.info(this + ": server side fail over is now complete");
+      }
+      finally
+      {
+         bindingsLock.writeLock().release();
+      }
+      
+      log.debug(this + " announcing that failover procedure is complete");
+
+      notification = new ClusterNotification(ClusterNotification.TYPE_FAILOVER_END, failedNodeID.intValue(), null);
+      
+      clusterNotifier.sendNotification(notification);
+      
+      //for testing only
+      this.sendJMXNotification(FAILOVER_COMPLETED_NOTIFICATION);
+
+   }
+
+   private void sendJMXNotification(String notificationType)
+   {
+      Notification n = new Notification(notificationType, "", 0l);
+      nbSupport.sendNotification(n);
+      log.debug(this + " sent " + notificationType + " JMX notification");
+   }
+
+   // Inner classes --------------------------------------------------------------------------------
+
+}

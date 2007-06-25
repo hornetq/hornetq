@@ -29,11 +29,10 @@ import javax.management.NotificationListener;
 import javax.management.ObjectName;
 import javax.transaction.UserTransaction;
 
-import org.jboss.jms.jndi.JMSProviderAdapter;
 import org.jboss.jms.server.DestinationManager;
 import org.jboss.jms.server.ServerPeer;
-import org.jboss.messaging.core.plugin.contract.MessageStore;
-import org.jboss.messaging.core.plugin.contract.PersistenceManager;
+import org.jboss.messaging.core.contract.MessageStore;
+import org.jboss.messaging.core.contract.PersistenceManager;
 import org.jboss.remoting.ServerInvocationHandler;
 import org.jboss.test.messaging.tools.jmx.ServiceAttributeOverrides;
 

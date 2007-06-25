@@ -24,8 +24,8 @@ package org.jboss.jms.wireformat;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 
-import org.jboss.messaging.core.message.Message;
-import org.jboss.messaging.core.message.MessageFactory;
+import org.jboss.messaging.core.contract.Message;
+import org.jboss.messaging.core.impl.message.MessageFactory;
 
 /**
  * 

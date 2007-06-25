@@ -536,7 +536,7 @@ public class WireFormatTest extends MessagingTestCase
       public void testSessionCreateConsumerDelegateRequest() throws Exception
       {
          RequestSupport req =
-            new SessionCreateConsumerDelegateRequest(23, (byte)77, new JBossQueue("wibble"), null, false, null, false);
+            new SessionCreateConsumerDelegateRequest(23, (byte)77, new JBossQueue("wibble"), null, false, null, false, true);
                  
          testPacket(req, PacketSupport.REQ_SESSION_CREATECONSUMERDELEGATE);                           
       } 

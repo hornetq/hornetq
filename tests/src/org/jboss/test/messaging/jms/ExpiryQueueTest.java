@@ -106,7 +106,7 @@ public class ExpiryQueueTest extends MessagingTestCase
          
          assertEquals("/queue/ExpiryQueue", jndiName);
          
-         org.jboss.messaging.core.Queue expiryQueue = ServerManagement.getServer().getServerPeer().getDefaultExpiryQueueInstance();
+         org.jboss.messaging.core.contract.Queue expiryQueue = ServerManagement.getServer().getServerPeer().getDefaultExpiryQueueInstance();
    
          assertNotNull(expiryQueue);
    
@@ -136,7 +136,7 @@ public class ExpiryQueueTest extends MessagingTestCase
          return;
       }
       
-      org.jboss.messaging.core.Queue expiryQueue = ServerManagement.getServer().getServerPeer().getDefaultExpiryQueueInstance();
+      org.jboss.messaging.core.contract.Queue expiryQueue = ServerManagement.getServer().getServerPeer().getDefaultExpiryQueueInstance();
 
       assertNull(expiryQueue);
 

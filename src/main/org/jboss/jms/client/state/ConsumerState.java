@@ -23,10 +23,10 @@ package org.jboss.jms.client.state;
 
 import java.util.Collections;
 
+import org.jboss.jms.client.container.ClientConsumer;
 import org.jboss.jms.client.delegate.ClientConnectionDelegate;
 import org.jboss.jms.client.delegate.DelegateSupport;
 import org.jboss.jms.client.remoting.CallbackManager;
-import org.jboss.jms.client.remoting.MessageCallbackHandler;
 import org.jboss.jms.delegate.ConsumerDelegate;
 import org.jboss.jms.destination.JBossDestination;
 import org.jboss.messaging.util.Version;
@@ -56,7 +56,7 @@ public class ConsumerState extends HierarchicalStateSupport
    private String subscriptionName;
    private boolean noLocal;
    private boolean isConnectionConsumer;
-   private MessageCallbackHandler messageCallbackHandler;
+   private ClientConsumer clientConsumer;
    private int bufferSize;
    private int maxDeliveries;
 
@@ -137,8 +137,8 @@ public class ConsumerState extends HierarchicalStateSupport
 
       // We need to synchronize the old message callback handler using the new one
 
-      MessageCallbackHandler handler = oldCallbackManager.unregisterHandler(oldConsumerID);
-      MessageCallbackHandler newHandler = newCallbackManager.unregisterHandler(consumerID);
+      ClientConsumer handler = oldCallbackManager.unregisterHandler(oldConsumerID);
+      ClientConsumer newHandler = newCallbackManager.unregisterHandler(consumerID);
    
       handler.synchronizeWith(newHandler);
       newCallbackManager.registerHandler(consumerID, handler);
@@ -171,14 +171,14 @@ public class ConsumerState extends HierarchicalStateSupport
       return isConnectionConsumer;
    }
 
-   public void setMessageCallbackHandler(MessageCallbackHandler handler)
+   public void setClientConsumer(ClientConsumer handler)
    {
-      this.messageCallbackHandler = handler;
+      this.clientConsumer = handler;
    }
 
-   public MessageCallbackHandler getMessageCallbackHandler()
+   public ClientConsumer getClientConsumer()
    {
-      return messageCallbackHandler;
+      return clientConsumer;
    }
 
    public int getBufferSize()
@@ -204,6 +204,15 @@ public class ConsumerState extends HierarchicalStateSupport
    public boolean isStoringDeliveries()
    {
       return storingDeliveries;
+   }
+   
+   public boolean isShouldAck()
+   {
+   	//If e are a non durable subscriber to a topic then there is no need
+   	//to send acks to the server - we wouldn't have stored them on the server side anyway
+   	
+      return !(destination.isTopic() && subscriptionName == null);
+      
    }
 
    // Package protected ----------------------------------------------------------------------------

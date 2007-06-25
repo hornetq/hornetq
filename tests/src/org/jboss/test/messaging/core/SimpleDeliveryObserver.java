@@ -21,9 +21,9 @@
 */
 package org.jboss.test.messaging.core;
 
-import org.jboss.messaging.core.DeliveryObserver;
-import org.jboss.messaging.core.Delivery;
-import org.jboss.messaging.core.tx.Transaction;
+import org.jboss.messaging.core.contract.Delivery;
+import org.jboss.messaging.core.contract.DeliveryObserver;
+import org.jboss.messaging.core.impl.tx.Transaction;
 import org.jboss.logging.Logger;
 
 /**
@@ -85,11 +85,6 @@ public class SimpleDeliveryObserver implements DeliveryObserver
    {
       try
       {
-         if (delivery.isDone())
-         {
-            return true;
-         }
-
          if (toBeAcknowledged != null)
          {
             throw new IllegalStateException("already waiting for another delivery acknowlegment");

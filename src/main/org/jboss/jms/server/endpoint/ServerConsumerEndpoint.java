@@ -36,18 +36,15 @@ import org.jboss.jms.server.selector.Selector;
 import org.jboss.jms.wireformat.ClientDelivery;
 import org.jboss.jms.wireformat.Dispatcher;
 import org.jboss.logging.Logger;
-import org.jboss.messaging.core.Channel;
-import org.jboss.messaging.core.Delivery;
-import org.jboss.messaging.core.DeliveryObserver;
-import org.jboss.messaging.core.Queue;
-import org.jboss.messaging.core.Receiver;
-import org.jboss.messaging.core.SimpleDelivery;
-import org.jboss.messaging.core.message.Message;
-import org.jboss.messaging.core.message.MessageReference;
-import org.jboss.messaging.core.plugin.contract.ClusteredPostOffice;
-import org.jboss.messaging.core.plugin.contract.PostOffice;
-import org.jboss.messaging.core.plugin.postoffice.Binding;
-import org.jboss.messaging.core.tx.Transaction;
+import org.jboss.messaging.core.contract.Delivery;
+import org.jboss.messaging.core.contract.DeliveryObserver;
+import org.jboss.messaging.core.contract.Message;
+import org.jboss.messaging.core.contract.MessageReference;
+import org.jboss.messaging.core.contract.PostOffice;
+import org.jboss.messaging.core.contract.Queue;
+import org.jboss.messaging.core.contract.Receiver;
+import org.jboss.messaging.core.impl.SimpleDelivery;
+import org.jboss.messaging.core.impl.tx.Transaction;
 import org.jboss.messaging.util.ExceptionUtil;
 import org.jboss.remoting.Client;
 import org.jboss.remoting.callback.Callback;
@@ -76,7 +73,7 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
 
    private int id;
 
-   private Channel messageQueue;
+   private Queue messageQueue;
 
    private String queueName;
 
@@ -106,17 +103,19 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
    // Must be volatile
    private volatile boolean clientAccepting;
 
-   private boolean storeDeliveries;
+   private boolean retainDeliveries;
    
    private long lastDeliveryID = -1;
    
+   private boolean remote;
+   
    // Constructors ---------------------------------------------------------------------------------
 
-   ServerConsumerEndpoint(int id, Channel messageQueue, String queueName,
-            ServerSessionEndpoint sessionEndpoint, String selector,
-            boolean noLocal, JBossDestination dest, Queue dlq,
-            Queue expiryQueue, long redeliveryDelay, int maxDeliveryAttempts)
-            throws InvalidSelectorException
+   ServerConsumerEndpoint(int id, Queue messageQueue, String queueName,
+					           ServerSessionEndpoint sessionEndpoint, String selector,
+					           boolean noLocal, JBossDestination dest, Queue dlq,
+					           Queue expiryQueue, long redeliveryDelay, int maxDeliveryAttempts,
+					           boolean remote) throws InvalidSelectorException
    {
       if (trace)
       {
@@ -131,8 +130,7 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
 
       this.sessionEndpoint = sessionEndpoint;
 
-      this.callbackHandler = sessionEndpoint.getConnectionEndpoint()
-               .getCallbackHandler();
+      this.callbackHandler = sessionEndpoint.getConnectionEndpoint().getCallbackHandler();
 
       this.noLocal = noLocal;
 
@@ -148,6 +146,8 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
 
       // Always start as false - wait for consumer to initiate.
       this.clientAccepting = false;
+      
+      this.remote = remote;
 
       this.startStopLock = new Object();
 
@@ -155,16 +155,13 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
       {
          // This is a consumer of a non durable topic subscription. We don't need to store
          // deliveries since if the consumer is closed or dies the refs go too.
-         this.storeDeliveries = false;
+         this.retainDeliveries = false;
       }
       else
       {
-         this.storeDeliveries = true;
+         this.retainDeliveries = true;
       }
-
-      //For now always true - revisit later
-      storeDeliveries = true;
-
+      
       if (selector != null)
       {
          if (trace) { log.trace("creating selector:" + selector); }
@@ -176,7 +173,14 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
       this.started = this.sessionEndpoint.getConnectionEndpoint().isStarted();
       
       // adding the consumer to the queue
-      this.messageQueue.add(this);
+      if (remote)
+      {
+      	this.messageQueue.getRemoteDistributor().add(this);
+      }
+      else
+      {
+      	this.messageQueue.getLocalDistributor().add(this);
+      }
 
       // We don't need to prompt delivery - this will come from the client in a changeRate request
 
@@ -237,24 +241,33 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
          Message message = ref.getMessage();
 
          boolean selectorRejected = !this.accept(message);
-
-         SimpleDelivery delivery = new SimpleDelivery(observer, ref,
-                  !storeDeliveries, !selectorRejected);
+         
+         SimpleDelivery delivery = new SimpleDelivery(observer, ref, !selectorRejected);
 
          if (selectorRejected)
          {
             return delivery;
          }
-
+         
          long deliveryId;
 
-         if (storeDeliveries)
+         if (retainDeliveries)
          {
             deliveryId = sessionEndpoint.addDelivery(delivery, id, dlq, expiryQueue, redeliveryDelay, maxDeliveryAttempts);
          }
          else
          {
             deliveryId = -1;
+         	//Acknowledge it now
+         	try
+         	{
+         		//This basically just releases the memory reference
+         		delivery.acknowledge(null);
+         	}
+         	catch (Throwable t)
+         	{
+         		log.error("Failed to acknowledge delivery", t);
+         	}
          }
 
          // We send the message to the client on the current thread. The message is written onto the
@@ -474,7 +487,14 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
    {
       if (trace) { log.trace(this + " grabbed the main lock in close() " + this); }
 
-      messageQueue.remove(this);
+      if (remote)
+      {
+      	messageQueue.getRemoteDistributor().remove(this);
+      }
+      else
+      {
+      	messageQueue.getLocalDistributor().remove(this);
+      }
 
       Dispatcher.instance.unregisterTarget(id, this);
 
@@ -483,32 +503,17 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
 
       if (destination.isTopic())
       {
-         PostOffice postOffice = sessionEndpoint.getConnectionEndpoint()
-                  .getServerPeer().getPostOfficeInstance();
-
-         Binding binding = postOffice.getBindingForQueueName(queueName);
-
-         if (binding == null)
-         {
-         	//Sanity check
-         	throw new IllegalStateException("Cannot find binding for topic sub with queue name: " + queueName);
-         }
+         PostOffice postOffice = sessionEndpoint.getConnectionEndpoint().getServerPeer().getPostOfficeInstance();
                   
          ServerPeer sp = sessionEndpoint.getConnectionEndpoint().getServerPeer();
          
+         Queue queue = sp.getPostOfficeInstance().getBindingForQueueName(queueName).queue;        
+         
          ManagedDestination mDest = sp.getDestinationManager().getDestination(destination.getName(), false);
          
-         if (!binding.getQueue().isRecoverable())
+         if (!queue.isRecoverable())
          {
-            Queue queue = binding.getQueue();
-            if (!mDest.isClustered())
-            {
-               postOffice.unbindQueue(queue.getName());
-            }
-            else
-            {
-               ((ClusteredPostOffice)postOffice).unbindClusteredQueue(queue.getName());
-            }
+            postOffice.removeBinding(queueName, false);            
 
             if (!mDest.isTemporary())
             {
@@ -554,17 +559,17 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
          started = false;
          
          // Any message deliveries already transit to the consumer, will just be ignored by the
-         // MessageCallbackHandler since it will be closed.
+         // ClientConsumer since it will be closed.
          //
          // To clarify, the close protocol (from connection) is as follows:
          //
-         // 1) MessageCallbackHandler::close() - any messages in buffer are cancelled to the server
+         // 1) ClientConsumer::close() - any messages in buffer are cancelled to the server
          // session, and any subsequent receive messages will be ignored.
          //
          // 2) ServerConsumerEndpoint::closing() causes stop() this flushes any deliveries yet to
          // deliver to the client callback handler.
          //
-         // 3) MessageCallbackHandler waits for all deliveries to arrive at client side
+         // 3) ClientConsumer waits for all deliveries to arrive at client side
          //
          // 4) ServerConsumerEndpoint:close() - endpoint is deregistered.
          //

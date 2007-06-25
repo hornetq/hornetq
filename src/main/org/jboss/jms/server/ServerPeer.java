@@ -23,7 +23,6 @@ package org.jboss.jms.server;
 
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
-import java.io.Serializable;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -52,21 +51,21 @@ import org.jboss.jms.server.remoting.JMSServerInvocationHandler;
 import org.jboss.jms.server.security.SecurityMetadataStore;
 import org.jboss.jms.wireformat.JMSWireFormat;
 import org.jboss.logging.Logger;
-import org.jboss.messaging.core.Queue;
-import org.jboss.messaging.core.memory.MemoryManager;
-import org.jboss.messaging.core.memory.SimpleMemoryManager;
-import org.jboss.messaging.core.message.SimpleMessageStore;
-import org.jboss.messaging.core.plugin.IDManager;
-import org.jboss.messaging.core.plugin.contract.ClusteredPostOffice;
-import org.jboss.messaging.core.plugin.contract.MessageStore;
-import org.jboss.messaging.core.plugin.contract.PersistenceManager;
-import org.jboss.messaging.core.plugin.contract.PostOffice;
-import org.jboss.messaging.core.plugin.contract.ReplicationListener;
-import org.jboss.messaging.core.plugin.contract.Replicator;
-import org.jboss.messaging.core.plugin.postoffice.Binding;
-import org.jboss.messaging.core.plugin.postoffice.cluster.DefaultClusteredPostOffice;
-import org.jboss.messaging.core.plugin.postoffice.cluster.FailoverStatus;
-import org.jboss.messaging.core.tx.TransactionRepository;
+import org.jboss.messaging.core.contract.Binding;
+import org.jboss.messaging.core.contract.ClusterNotifier;
+import org.jboss.messaging.core.contract.MemoryManager;
+import org.jboss.messaging.core.contract.MessageStore;
+import org.jboss.messaging.core.contract.PersistenceManager;
+import org.jboss.messaging.core.contract.PostOffice;
+import org.jboss.messaging.core.contract.Queue;
+import org.jboss.messaging.core.contract.Replicator;
+import org.jboss.messaging.core.impl.DefaultClusterNotifier;
+import org.jboss.messaging.core.impl.FailoverWaiter;
+import org.jboss.messaging.core.impl.IDManager;
+import org.jboss.messaging.core.impl.clusterconnection.ClusterConnectionManager;
+import org.jboss.messaging.core.impl.memory.SimpleMemoryManager;
+import org.jboss.messaging.core.impl.message.SimpleMessageStore;
+import org.jboss.messaging.core.impl.tx.TransactionRepository;
 import org.jboss.messaging.util.ExceptionUtil;
 import org.jboss.messaging.util.Util;
 import org.jboss.messaging.util.Version;
@@ -90,7 +89,7 @@ import EDU.oswego.cs.dl.util.concurrent.ConcurrentReaderHashMap;
  *
  * $Id$
  */
-public class ServerPeer extends ServiceMBeanSupport implements ServerPeerMBean
+public class ServerPeer extends ServiceMBeanSupport
 {
    // Constants ------------------------------------------------------------------------------------
 
@@ -119,8 +118,6 @@ public class ServerPeer extends ServiceMBeanSupport implements ServerPeerMBean
    // the destination
    private int defaultMaxDeliveryAttempts = 10;
 
-   private Object failoverStatusLock;
-   
    // Default is 1 minute
    private long failoverStartTimeout = 60 * 1000;
    
@@ -131,9 +128,15 @@ public class ServerPeer extends ServiceMBeanSupport implements ServerPeerMBean
    
    private long defaultRedeliveryDelay;
    
-   private long queueStatsSamplePeriod = 10000;
+   private long messageCounterSamplePeriod = 10000;
    
    private int defaultMessageCounterHistoryDayLimit;
+   
+   private String clusterPullConnectionFactoryName;
+   
+   private boolean useXAForMessagePull;
+   
+   private boolean defaultPreserveOrdering;
       
    // wired components
 
@@ -149,6 +152,9 @@ public class ServerPeer extends ServiceMBeanSupport implements ServerPeerMBean
    private MemoryManager memoryManager;  
    private MessageStore messageStore;
    private MessageCounterManager messageCounterManager;
+   private ClusterConnectionManager clusterConnectionManager;
+   private ClusterNotifier clusterNotifier;
+   private FailoverWaiter failoverWaiter;   
 
    // plugins
 
@@ -176,8 +182,6 @@ public class ServerPeer extends ServiceMBeanSupport implements ServerPeerMBean
       securityStore = new SecurityMetadataStore();
 
       version = Version.instance();
-      
-      failoverStatusLock = new Object();
       
       sessions = new ConcurrentReaderHashMap();
 
@@ -235,7 +239,19 @@ public class ServerPeer extends ServiceMBeanSupport implements ServerPeerMBean
          messageStore = new SimpleMessageStore();
          txRepository =
             new TransactionRepository(persistenceManager, messageStore, transactionIDManager);
-         messageCounterManager = new MessageCounterManager(queueStatsSamplePeriod);
+         messageCounterManager = new MessageCounterManager(messageCounterSamplePeriod);
+                
+         clusterNotifier = new DefaultClusterNotifier();             
+         clusterNotifier.registerListener(connFactoryJNDIMapper);
+         failoverWaiter = new FailoverWaiter(serverPeerID, failoverStartTimeout, failoverCompleteTimeout, txRepository);
+         clusterNotifier.registerListener(failoverWaiter);
+         
+         if (clusterPullConnectionFactoryName != null)
+         {         
+	         clusterConnectionManager = new ClusterConnectionManager(useXAForMessagePull, serverPeerID, clusterPullConnectionFactoryName);
+	         clusterNotifier.registerListener(clusterConnectionManager);
+         }
+         
 
          // Start the wired components
 
@@ -250,6 +266,7 @@ public class ServerPeer extends ServiceMBeanSupport implements ServerPeerMBean
          messageStore.start();
          securityStore.start();
          txRepository.start();
+         clusterConnectionManager.start();
          
          // Note we do not start the message counter manager by default. This must be done
          // explicitly by the user by calling enableMessageCounters(). This is because message
@@ -320,7 +337,9 @@ public class ServerPeer extends ServiceMBeanSupport implements ServerPeerMBean
          txRepository = null;
          messageCounterManager.stop();
          messageCounterManager = null;
-
+         clusterConnectionManager.stop();
+         clusterConnectionManager = null;
+         
          unloadServerAOPConfig();
 
          // TODO unloadClientAOPConfig();
@@ -507,24 +526,24 @@ public class ServerPeer extends ServiceMBeanSupport implements ServerPeerMBean
       this.defaultMaxDeliveryAttempts = attempts;
    }
    
-   public synchronized long getQueueStatsSamplePeriod()
+   public synchronized long getMessageCounterSamplePeriod()
    {
-      return queueStatsSamplePeriod;
+      return messageCounterSamplePeriod;
    }
 
-   public synchronized void setQueueStatsSamplePeriod(long newPeriod)
+   public synchronized void setMessageCounterSamplePeriod(long newPeriod)
    {
       if (newPeriod < 1000)
       {
-         throw new IllegalArgumentException("Cannot set QueueStatsSamplePeriod < 1000 ms");
+         throw new IllegalArgumentException("Cannot set MessageCounterSamplePeriod < 1000 ms");
       }
       
-      if (messageCounterManager != null && newPeriod != queueStatsSamplePeriod)
+      if (messageCounterManager != null && newPeriod != messageCounterSamplePeriod)
       {
          messageCounterManager.reschedule(newPeriod);
       }            
       
-      this.queueStatsSamplePeriod = newPeriod;
+      this.messageCounterSamplePeriod = newPeriod;
    }
    
    public synchronized long getDefaultRedeliveryDelay()
@@ -550,6 +569,48 @@ public class ServerPeer extends ServiceMBeanSupport implements ServerPeerMBean
       }
       
       this.defaultMessageCounterHistoryDayLimit = limit;
+   }
+   
+   public String getClusterPullConnectionFactoryName()
+   {
+   	return clusterPullConnectionFactoryName;
+   }
+   
+   public void setClusterPullConnectionFactoryName(String name)
+   {
+      if (started)
+      {
+         throw new IllegalStateException("Cannot set ClusterPullConnectionFactoryName while the service is running");
+      }
+   	this.clusterPullConnectionFactoryName = name;
+   }
+   
+   public boolean isUseXAForMessagePull()
+   {
+   	return useXAForMessagePull;
+   }
+   
+   public void setUseXAForMessagePull(boolean useXA)
+   {
+   	if (started)
+      {
+         throw new IllegalStateException("Cannot set UseXAForMessagePull while the service is running");
+      }
+   	this.useXAForMessagePull = useXA;
+   }
+   
+   public boolean isDefaultPreserveOrdering()
+   {
+   	return defaultPreserveOrdering;
+   }
+   
+   public void setDefaultPreserveOrdering(boolean preserve)
+   {
+   	if (started)
+      {
+         throw new IllegalStateException("Cannot set DefaultPreserveOrdering while the service is running");
+      }
+   	this.defaultPreserveOrdering = preserve;
    }
    
    public synchronized void setServerPeerID(int serverPeerID)
@@ -987,8 +1048,7 @@ public class ServerPeer extends ServiceMBeanSupport implements ServerPeerMBean
          
          try
          {         
-            dest = (ManagedQueue)getServer().
-               getAttribute(defaultDLQObjectName, "Instance");
+            dest = (ManagedQueue)getServer().getAttribute(defaultDLQObjectName, "Instance");
          }
          catch (InstanceNotFoundException e)
          {
@@ -997,13 +1057,18 @@ public class ServerPeer extends ServiceMBeanSupport implements ServerPeerMBean
          
          if (dest != null)
          {            
-            PostOffice po = getPostOfficeInstance();
+            Binding binding = postOffice.getBindingForQueueName(dest.getName());
             
-            Binding binding = po.getBindingForQueueName(dest.getName());
-            
-            if (binding != null && binding.getQueue().isActive())
+            if (binding == null)
             {
-               dlq =  binding.getQueue();
+            	throw new IllegalStateException("Cannot find binding for queue " + dest.getName());
+            }
+            
+            Queue queue = binding.queue;
+            
+            if (queue.isActive())
+            {
+            	dlq = queue;
             }
          }
       }
@@ -1021,8 +1086,7 @@ public class ServerPeer extends ServiceMBeanSupport implements ServerPeerMBean
          
          try
          {         
-            dest = (ManagedQueue)getServer().
-               getAttribute(defaultExpiryQueueObjectName, "Instance");
+            dest = (ManagedQueue)getServer().getAttribute(defaultExpiryQueueObjectName, "Instance");
          }
          catch (InstanceNotFoundException e)
          {
@@ -1031,20 +1095,25 @@ public class ServerPeer extends ServiceMBeanSupport implements ServerPeerMBean
 
          if (dest != null)
          {            
-            PostOffice po = getPostOfficeInstance();
+         	Binding binding = postOffice.getBindingForQueueName(dest.getName());
             
-            Binding binding = po.getBindingForQueueName(dest.getName());
-            
-            if (binding != null && binding.getQueue().isActive())
+            if (binding == null)
             {
-               expiryQueue =  binding.getQueue();
+            	throw new IllegalStateException("Cannot find binding for queue " + dest.getName());
+            }
+            
+            Queue queue = binding.queue;            
+         	
+            if (queue.isActive())
+            {
+            	expiryQueue = queue;
             }
          }
       }
       
       return expiryQueue;
    }
-
+      
    public TransactionRepository getTxRepository()
    {
       return txRepository;
@@ -1120,148 +1189,40 @@ public class ServerPeer extends ServiceMBeanSupport implements ServerPeerMBean
          // a bit messy but we have a circular dependency POJOContainer should be able to help us
          // here. Yes, this is nasty.
 
-         if (!postOffice.isLocal())
+         if (postOffice.isClustered())
          {
             Replicator rep = (Replicator)postOffice;
-            connFactoryJNDIMapper.injectReplicator(rep);            
-            rep.registerListener(new FailoverListener());
+            
+            connFactoryJNDIMapper.injectReplicator(rep);          
+            
+            // Also inject into the cluster connection manager
+            
+            this.clusterConnectionManager.injectPostOffice(postOffice);
+            
+            this.clusterConnectionManager.injectReplicator((Replicator)postOffice);
          }
          
          // Also need to inject into txRepository
-         txRepository.injectPostOffice(postOffice);
+         txRepository.injectPostOffice(postOffice);                          
       }
       return postOffice;
    }
 
-   public Replicator getReplicator() throws Exception
+   public ClusterNotifier getClusterNotifier()
    {
-      PostOffice postOffice = getPostOfficeInstance();
-      if (!(postOffice instanceof Replicator))
-      {
-         throw new  IllegalAccessException("This operations is only legal on clustering configurations");
-      }
-      return (Replicator)postOffice;
+   	return clusterNotifier;
+   }
+   
+   public FailoverWaiter getFailoverWaiter()
+   {
+   	return failoverWaiter;
    }
 
    public synchronized int getNextObjectID()
    {
       return objectIDSequence++;
    }
-
-   /*
-    * Wait for failover from the specified node to complete.
-    */
-   public int waitForFailover(int failedNodeID) throws Exception
-   {
-      // This node may be failing over for another node - in which case we must wait for that to be
-      // complete.
-      
-      log.debug(this + " waiting for server-side failover for failed node " + failedNodeID + " to complete");
-      
-      Replicator replicator = getReplicator();
-
-      long startToWait = getFailoverStartTimeout();
-      long completeToWait = getFailoverCompleteTimeout();
-                     
-      // Must lock here
-      synchronized (failoverStatusLock)
-      {         
-         while (true)
-         {         
-            //TODO we shouldn't have a dependency on DefaultClusteredPostOffice - where should we put the constants?
-
-            Map replicants = replicator.get(DefaultClusteredPostOffice.FAILED_OVER_FOR_KEY);
-            
-            boolean foundEntry = false;
-                        
-            if (replicants != null)
-            {
-               for(Iterator i = replicants.entrySet().iterator(); i.hasNext(); )
-               {
-                  Map.Entry entry = (Map.Entry)i.next();
-                  Integer nid = (Integer)entry.getKey();
-                  FailoverStatus status = (FailoverStatus)entry.getValue();
-                  
-                  if (status.isFailedOverForNode(failedNodeID))
-                  {
-                     log.debug(this + ": failover is complete on node " + nid);
-                     return nid.intValue();
-                  }
-                  else if (status.isFailingOverForNode(failedNodeID))
-                  {
-                     log.debug(this + ": fail over is in progress on node " + nid);
-                     
-                     // A server has started failing over for the failed node, but not completed.
-                     // If it's not this node then we immediately return so the connection can be
-                     // redirected to another node.
-                     if (nid.intValue() != this.getServerPeerID())
-                     {
-                        return nid.intValue();
-                     }
-                     
-                     // Otherwise we wait for failover to complete
-                     
-                     if (completeToWait <= 0)
-                     {
-                        // Give up now
-                        log.debug(this + " already waited long enough for failover to complete, giving up");
-                        return -1;
-                     }
-                     
-                     // Note - we have to count the time since other unrelated nodes may fail and
-                     // wake up the lock - in this case we don't want to give up too early.
-                     long start = System.currentTimeMillis();
-
-                     try
-                     {
-                        log.debug(this + " blocking on the failover lock, waiting for failover to complete");
-                        failoverStatusLock.wait(completeToWait);
-                        log.debug(this + " releasing the failover lock, checking again whether failover completed ...");
-                     }
-                     catch (InterruptedException ignore)
-                     {                  
-                     }
-                     completeToWait -= System.currentTimeMillis() - start;
-                     foundEntry = true;
-                  }
-               }        
-            }
-            
-            if (!foundEntry)
-            {              
-               // No trace of failover happening so we wait a maximum of FAILOVER_START_TIMEOUT for
-               // some replicated data to arrive. This should arrive fairly quickly since this is
-               // added at the beginning of the failover process. If it doesn't arrive it would
-               // imply that no failover has actually happened on the server or the timeout is too
-               // short. It is possible that no failover has actually happened on the server, if for
-               // example there is a problem with the client side network but the server side
-               // network is ok.
-   
-               if (startToWait <= 0)
-               {
-                  // Don't want to wait again
-                  log.debug(this + " already waited long enough for failover to start, giving up");
-                  return -1;
-               }
-               
-               // Note - we have to count the time since other unrelated nodes may fail and wake
-               // up the lock - in this case we don't want to give up too early.
-               long start = System.currentTimeMillis(); 
-               try
-               {
-                  log.debug(this + " blocking on the failover lock, waiting for failover to start");
-                  failoverStatusLock.wait(startToWait);
-                  log.debug(this + " releasing the failover lock, checking again whether failover started ...");
-               }
-               catch (InterruptedException ignore)
-               {                  
-               }
-               startToWait -= System.currentTimeMillis() - start;              
-            }
-         }        
-      }
-   }
-   
+         
    public String toString()
    {
       return "ServerPeer[" + getServerPeerID() + "]";
@@ -1272,7 +1233,7 @@ public class ServerPeer extends ServiceMBeanSupport implements ServerPeerMBean
    // Protected ------------------------------------------------------------------------------------
 
    // Private --------------------------------------------------------------------------------------
-  
+     
    private void loadServerAOPConfig() throws Exception
    {
       URL url = this.getClass().getClassLoader().getResource("aop-messaging-server.xml");
@@ -1446,7 +1407,7 @@ public class ServerPeer extends ServiceMBeanSupport implements ServerPeerMBean
    /*
     * Undeploy the MBean and delete the underlying data
     */
-   private boolean destroyDestination(boolean isQueue, String name) throws Exception
+   private boolean destroyDestination(boolean isQueue, String name) throws Throwable
    {
       String destType = isQueue ? "Queue" : "Topic";
       String ons ="jboss.messaging.destination:service=" + destType + ",name=" + name;
@@ -1460,130 +1421,32 @@ public class ServerPeer extends ServiceMBeanSupport implements ServerPeerMBean
          return false;
       }
                   
-      //First deactivate
-      
-      if (isQueue)
-      {
-         Binding binding = postOffice.getBindingForQueueName(name);
-         
-         if (binding != null)
-         {
-            binding.getQueue().deactivate();
-         }
-      }
-      else
-      {
-         JMSCondition topicCond = new JMSCondition(false, name);    
-         
-         Collection bindings = postOffice.getBindingsForCondition(topicCond);
-         
-         Iterator iter = bindings.iterator();
-         while (iter.hasNext())            
-         {
-            Binding binding = (Binding)iter.next();
-            
-            binding.getQueue().deactivate();
-         }
-      }
-            
-      //Delete any message data
-      
-      mbeanServer.invoke(on, "removeAllMessages", null, null);
-      
       //undeploy the mbean
       if (!undeployDestination(isQueue, name))
       {
          return false;
       }
             
-      //Unbind from the post office
+      //Unbind the destination's queues
       
-      if (isQueue)
+      JMSCondition condition = new JMSCondition(isQueue, name);  
+      
+      Collection queues = postOffice.getQueuesForCondition(condition, true);
+      
+      Iterator iter = queues.iterator();
+      
+      while (iter.hasNext())            
       {
-         Binding binding = postOffice.getBindingForQueueName(name);
+         Queue queue = (Queue)iter.next();
          
-         if (binding != null)
-         {
-            try
-            {
-               Queue queue = binding.getQueue();
-               if (!queue.isClustered())
-               {
-                  postOffice.unbindQueue(queue.getName());
-               }
-               else
-               {
-                  ((ClusteredPostOffice)postOffice).unbindClusteredQueue(queue.getName());
-               }
-            }
-            catch (Throwable t)
-            {
-               throw new Exception("Failed to unbind queue", t);
-            }
-         }
+         postOffice.removeBinding(queue.getName(), false);
       }
-      else
-      {
-         JMSCondition topicCond = new JMSCondition(false, name);    
-         
-         Collection bindings = postOffice.getBindingsForCondition(topicCond);
-         
-         Iterator iter = bindings.iterator();
-         while (iter.hasNext())            
-         {
-            Binding binding = (Binding)iter.next();
-            
-            try
-            {
-               postOffice.unbindQueue(binding.getQueue().getName());
-            }
-            catch (Throwable t)
-            {
-               throw new Exception("Failed to unbind queue", t);
-            }
-         }
-      }
+      
       return true;
    }
    
 
    // Inner classes --------------------------------------------------------------------------------
    
-   private class FailoverListener implements ReplicationListener
-   {
-      public void onReplicationChange(Serializable key, Map updatedReplicantMap,
-                                      boolean added, int originatingNodeId)
-      {
-         if (key.equals(DefaultClusteredPostOffice.FAILED_OVER_FOR_KEY))
-         {
-            if (updatedReplicantMap != null && originatingNodeId == serverPeerID)
-            {
-               FailoverStatus status =
-                  (FailoverStatus)updatedReplicantMap.get(new Integer(serverPeerID));
-               
-               if (status != null && status.isFailedOver())
-               {                     
-                  // We prompt txRepository to load any prepared txs - so we can take over
-                  // responsibility for in doubt transactions from other nodes
-                  try
-                  {
-                     txRepository.loadPreparedTransactions();
-                  }
-                  catch (Exception e)
-                  {
-                     log.error("Failed to load prepared transactions", e);
-                  }
-               }
-            }
-            
-            synchronized (failoverStatusLock)
-            {
-               log.debug(ServerPeer.this +
-                  ".FailoverListener got failover event, notifying those waiting on lock");
-               
-               failoverStatusLock.notifyAll();
-            }
-         }         
-      }      
-   }
+  
 }

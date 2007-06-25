@@ -30,7 +30,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import org.jboss.logging.Logger;
-import org.jboss.messaging.core.plugin.contract.MessagingComponent;
+import org.jboss.messaging.core.contract.MessagingComponent;
 
 /**
  * 

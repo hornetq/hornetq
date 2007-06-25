@@ -21,7 +21,7 @@
  */
 package org.jboss.jms.server.plugin.contract;
 
-import org.jboss.messaging.core.plugin.contract.MessagingComponent;
+import org.jboss.messaging.core.contract.MessagingComponent;
 
 /**
  * A JMSUserManager

@@ -25,7 +25,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import org.jboss.jms.message.JBossStreamMessage;
-import org.jboss.messaging.core.message.Message;
+import org.jboss.messaging.core.contract.Message;
 
 
 /**

@@ -29,7 +29,7 @@ import javax.jms.JMSException;
 import javax.jms.Message;
 
 import org.jboss.logging.Logger;
-import org.jboss.messaging.core.Filter;
+import org.jboss.messaging.core.contract.Filter;
 
 
 /**
@@ -114,7 +114,7 @@ public class Selector implements Filter
       return selector;
    }
 	
-	public synchronized boolean accept(org.jboss.messaging.core.message.Message message)
+	public synchronized boolean accept(org.jboss.messaging.core.contract.Message message)
    {
       try
       {			         

@@ -35,6 +35,7 @@ import javax.jms.MessageProducer;
 import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.TextMessage;
+import javax.jms.Topic;
 import javax.management.ObjectName;
 import javax.naming.InitialContext;
 import javax.naming.NameNotFoundException;
@@ -101,7 +102,7 @@ public class DLQTest extends MessagingTestCase
       
       assertEquals("/queue/DLQ", jndiName);
       
-      org.jboss.messaging.core.Queue dlq = ServerManagement.getServer().getServerPeer().getDefaultDLQInstance();
+      org.jboss.messaging.core.contract.Queue dlq = ServerManagement.getServer().getServerPeer().getDefaultDLQInstance();
 
       assertNotNull(dlq);
 
@@ -133,7 +134,7 @@ public class DLQTest extends MessagingTestCase
          return;
       }
       
-      org.jboss.messaging.core.Queue dlq = ServerManagement.getServer().getServerPeer().getDefaultDLQInstance();
+      org.jboss.messaging.core.contract.Queue dlq = ServerManagement.getServer().getServerPeer().getDefaultDLQInstance();
 
       assertNull(dlq);
 
@@ -501,11 +502,11 @@ public class DLQTest extends MessagingTestCase
 
       try
       {
-         int maxDeliveryAttempts = getDefaultMaxDeliveryAttempts() + 5;
+         int maxDeliveryAttempts = getDefaultMaxDeliveryAttempts() - 5;
          setMaxDeliveryAttempts(
                new ObjectName("jboss.messaging.destination:service=Queue,name=" + QUEUE_NAME),
                maxDeliveryAttempts);
-         testMaxDeliveryAttempts("/queue/" + QUEUE_NAME, maxDeliveryAttempts);
+         testMaxDeliveryAttempts("/queue/" + QUEUE_NAME, maxDeliveryAttempts, true);
       }
       finally
       {
@@ -521,12 +522,12 @@ public class DLQTest extends MessagingTestCase
 
       try
       {
-         int maxDeliveryAttempts = getDefaultMaxDeliveryAttempts() + 5;
+         int maxDeliveryAttempts = getDefaultMaxDeliveryAttempts() - 5;
          setMaxDeliveryAttempts(
                new ObjectName("jboss.messaging.destination:service=Topic,name=" + TOPIC_NAME),
                maxDeliveryAttempts);
 
-         testMaxDeliveryAttempts("/topic/" + TOPIC_NAME, maxDeliveryAttempts);
+         testMaxDeliveryAttempts("/topic/" + TOPIC_NAME, maxDeliveryAttempts, false);
       }
       finally
       {
@@ -547,7 +548,7 @@ public class DLQTest extends MessagingTestCase
                -1);
 
          // Check that defaultMaxDeliveryAttempts takes effect
-         testMaxDeliveryAttempts("/queue/" + QUEUE_NAME, getDefaultMaxDeliveryAttempts());
+         testMaxDeliveryAttempts("/queue/" + QUEUE_NAME, getDefaultMaxDeliveryAttempts(), true);
       }
       finally
       {
@@ -568,7 +569,7 @@ public class DLQTest extends MessagingTestCase
                -1);
 
          // Check that defaultMaxDeliveryAttempts takes effect
-         testMaxDeliveryAttempts("/topic/" + TOPIC_NAME, getDefaultMaxDeliveryAttempts());
+         testMaxDeliveryAttempts("/topic/" + TOPIC_NAME, getDefaultMaxDeliveryAttempts(), false);
       }
       finally
       {
@@ -892,7 +893,7 @@ public class DLQTest extends MessagingTestCase
             Integer.toString(maxDeliveryAttempts));
    }
    
-   protected void testMaxDeliveryAttempts(String destJndiName, int destMaxDeliveryAttempts) throws Exception
+   protected void testMaxDeliveryAttempts(String destJndiName, int destMaxDeliveryAttempts, boolean queue) throws Exception
    {
       ServerManagement.deployQueue("DLQ");
       Queue dlq = (Queue) ic.lookup("/queue/DLQ");
@@ -902,12 +903,27 @@ public class DLQTest extends MessagingTestCase
       
       Connection conn = cf.createConnection();
       
+      if (!queue)
+      {
+      	conn.setClientID("wib123");
+      }
+      
       try
       {
          // Create the consumer before the producer so that the message we send doesn't
          // get lost if the destination is a Topic.
          Session consumingSession = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);         
-         MessageConsumer destinationConsumer = consumingSession.createConsumer(destination);
+         MessageConsumer destinationConsumer;
+         
+         if (queue)
+         {
+            destinationConsumer = consumingSession.createConsumer(destination);
+         }
+         else
+         {
+         	//For topics we only keep a delivery record on the server side for durable subs         	
+         	destinationConsumer = consumingSession.createDurableSubscriber((Topic)destination, "testsub1");
+         }
          
          {
             Session producingSession = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -920,7 +936,7 @@ public class DLQTest extends MessagingTestCase
 
          // Make delivery attempts up to the maximum. The message should not end up in the DLQ.
          for (int i = 0; i < destMaxDeliveryAttempts; i++)
-         {
+         {         	         
             TextMessage tm = (TextMessage)destinationConsumer.receive(1000);
             assertNotNull("No message received on delivery attempt number " + (i + 1), tm);
             assertEquals("Message", tm.getText());
@@ -942,6 +958,13 @@ public class DLQTest extends MessagingTestCase
          assertNotNull(m);
          assertTrue(m instanceof TextMessage);
          assertEquals("Message", ((TextMessage) m).getText());
+         
+         if (!queue)
+         {
+         	destinationConsumer.close();
+         	
+         	consumingSession.unsubscribe("testsub1");
+         }
       }
       finally
       {

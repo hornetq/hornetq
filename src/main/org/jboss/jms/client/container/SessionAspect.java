@@ -39,7 +39,6 @@ import org.jboss.aop.joinpoint.MethodInvocation;
 import org.jboss.jms.client.JBossConnectionConsumer;
 import org.jboss.jms.client.delegate.ClientSessionDelegate;
 import org.jboss.jms.client.delegate.DelegateSupport;
-import org.jboss.jms.client.remoting.MessageCallbackHandler;
 import org.jboss.jms.client.state.ConnectionState;
 import org.jboss.jms.client.state.SessionState;
 import org.jboss.jms.delegate.ConnectionDelegate;
@@ -159,7 +158,7 @@ public class SessionAspect
          {               
             try
             {
-               del.acknowledgeDeliveries(state.getClientAckList());
+               acknowledgeDeliveries(del, state.getClientAckList());
             }
             finally
             {            
@@ -196,8 +195,7 @@ public class SessionAspect
          
          cancelDeliveries(del, dels);        
       }
-            
-      
+                  
       return invocation.invokeNext();
    }      
    
@@ -305,15 +303,13 @@ public class SessionAspect
       SessionState state = getState(invocation);
       
       int ackMode = state.getAcknowledgeMode();
+      
+      SessionDelegate sd = (SessionDelegate)mi.getTargetObject();
 
       // if XA and there is no transaction enlisted on XA we will act as AutoAcknowledge
       // However if it's a MDB (if there is a DistinguishedListener) we should behaved as transacted
       if (ackMode == Session.AUTO_ACKNOWLEDGE || isXAAndConsideredNonTransacted(state))
       {
-         // We auto acknowledge.
-
-         SessionDelegate sd = (SessionDelegate)mi.getTargetObject();
-
          // It is possible that session.recover() is called inside a message listener onMessage
          // method - i.e. between the invocations of preDeliver and postDeliver. In this case we
          // don't want to acknowledge the last delivered messages - since it will be redelivered.
@@ -328,7 +324,6 @@ public class SessionAspect
                                  
             if (trace) { log.trace(this + " auto acknowledging delivery " + delivery); }
               
-
             // We clear the state in a finally so then we don't get a knock on
             // exception on the next ack since we haven't cleared the state. See
             // http://jira.jboss.org/jira/browse/JBMESSAGING-852
@@ -362,12 +357,10 @@ public class SessionAspect
             {
                // We clear the state in a finally
                // http://jira.jboss.org/jira/browse/JBMESSAGING-852
-   
-               SessionDelegate sd = (SessionDelegate)mi.getTargetObject();
-                                          
+         
                try
                {
-                  sd.acknowledgeDeliveries(acks);
+                  acknowledgeDeliveries(sd, acks);
                }
                finally
                {                  
@@ -402,7 +395,7 @@ public class SessionAspect
       {                 
          //CLIENT_ACKNOWLEDGE can't be used with a MDB so it is safe to always acknowledge all
          //on this session (rather than the connection consumer session)
-         del.acknowledgeDeliveries(state.getClientAckList());
+         acknowledgeDeliveries(del, state.getClientAckList());
       
          state.getClientAckList().clear();
       }      
@@ -516,7 +509,7 @@ public class SessionAspect
          DeliveryInfo info = (DeliveryInfo)toRedeliver.get(i);
          MessageProxy proxy = info.getMessageProxy();        
          
-         MessageCallbackHandler handler = state.getCallbackHandler(info.getConsumerId());
+         ClientConsumer handler = state.getCallbackHandler(info.getConsumerId());
               
          if (handler == null)
          {
@@ -703,10 +696,8 @@ public class SessionAspect
       }
       
       return new TextMessageProxy(jbm);
-   }   
-   
-   
-   
+   }      
+      
    public Object handleSetMessageListener(Invocation invocation) throws Throwable
    {
       if (trace) { log.trace("setMessageListener()"); }
@@ -762,6 +753,7 @@ public class SessionAspect
       String queueName = (String)mi.getArguments()[2];
       int maxDeliveries = ((Integer)mi.getArguments()[3]).intValue();
       SessionDelegate connectionConsumerDelegate = ((SessionDelegate)mi.getArguments()[4]);
+      boolean shouldAck = ((Boolean)mi.getArguments()[5]).booleanValue();
       
       if (m == null)
       {
@@ -774,6 +766,7 @@ public class SessionAspect
       holder.queueName = queueName;
       holder.maxDeliveries = maxDeliveries;
       holder.connectionConsumerDelegate = connectionConsumerDelegate;
+      holder.shouldAck = shouldAck;
       
       getState(invocation).getASFMessages().add(holder);
       
@@ -801,10 +794,10 @@ public class SessionAspect
 
          if (trace) { log.trace("sending " + holder.msg + " to the message listener" ); }
          
-         MessageCallbackHandler.callOnMessage(del, state.getDistinguishedListener(), holder.consumerID,
+         ClientConsumer.callOnMessage(del, state.getDistinguishedListener(), holder.consumerID,
                                               holder.queueName, false,
                                               holder.msg, ackMode, holder.maxDeliveries,
-                                              holder.connectionConsumerDelegate);                          
+                                              holder.connectionConsumerDelegate, holder.shouldAck);                          
       }
       
       return null;
@@ -834,27 +827,33 @@ public class SessionAspect
    
    private void ackDelivery(SessionDelegate sess, DeliveryInfo delivery) throws Exception
    {
-      SessionDelegate connectionConsumerSession = delivery.getConnectionConsumerSession();
-      
-      //If the delivery was obtained via a connection consumer we need to ack via that
-      //otherwise we just use this session
-      
-      SessionDelegate sessionToUse = connectionConsumerSession != null ? connectionConsumerSession : sess;
-      
-      sessionToUse.acknowledgeDelivery(delivery);      
+   	if (delivery.isShouldAck())
+   	{
+	      SessionDelegate connectionConsumerSession = delivery.getConnectionConsumerSession();
+	      
+	      //If the delivery was obtained via a connection consumer we need to ack via that
+	      //otherwise we just use this session
+	      
+	      SessionDelegate sessionToUse = connectionConsumerSession != null ? connectionConsumerSession : sess;
+	      
+	      sessionToUse.acknowledgeDelivery(delivery);
+   	}
    }
    
    private void cancelDelivery(SessionDelegate sess, DeliveryInfo delivery) throws Exception
    {
-      SessionDelegate connectionConsumerSession = delivery.getConnectionConsumerSession();
-      
-      //If the delivery was obtained via a connection consumer we need to cancel via that
-      //otherwise we just use this session
-      
-      SessionDelegate sessionToUse = connectionConsumerSession != null ? connectionConsumerSession : sess;
-      
-      sessionToUse.cancelDelivery(new DefaultCancel(delivery.getDeliveryID(),
-                                  delivery.getMessageProxy().getDeliveryCount(), false, false));      
+   	if (delivery.isShouldAck())
+   	{
+	      SessionDelegate connectionConsumerSession = delivery.getConnectionConsumerSession();
+	      
+	      //If the delivery was obtained via a connection consumer we need to cancel via that
+	      //otherwise we just use this session
+	      
+	      SessionDelegate sessionToUse = connectionConsumerSession != null ? connectionConsumerSession : sess;
+	      
+	      sessionToUse.cancelDelivery(new DefaultCancel(delivery.getDeliveryID(),
+	                                  delivery.getMessageProxy().getDeliveryCount(), false, false));      
+   	}
    }
    
    private void cancelDeliveries(SessionDelegate del, List deliveryInfos) throws Exception
@@ -863,18 +862,41 @@ public class SessionAspect
       
       for (Iterator i = deliveryInfos.iterator(); i.hasNext(); )
       {
-         DeliveryInfo ack = (DeliveryInfo)i.next();            
+         DeliveryInfo ack = (DeliveryInfo)i.next();      
          
-         DefaultCancel cancel = new DefaultCancel(ack.getMessageProxy().getDeliveryId(),
-                                                  ack.getMessageProxy().getDeliveryCount(),
-                                                  false, false);
-         
-         cancels.add(cancel);
+         if (ack.isShouldAck())
+         {         
+	         DefaultCancel cancel = new DefaultCancel(ack.getMessageProxy().getDeliveryId(),
+	                                                  ack.getMessageProxy().getDeliveryCount(),
+	                                                  false, false);
+	         
+	         cancels.add(cancel);
+         }
       }  
       
       if (!cancels.isEmpty())
       {
          del.cancelDeliveries(cancels);
+      }
+   }
+   
+   private void acknowledgeDeliveries(SessionDelegate del, List deliveryInfos) throws Exception
+   {
+      List acks = new ArrayList();
+      
+      for (Iterator i = deliveryInfos.iterator(); i.hasNext(); )
+      {
+         DeliveryInfo ack = (DeliveryInfo)i.next();      
+         
+         if (ack.isShouldAck())
+         {         
+	         acks.add(ack);
+         }
+      }  
+      
+      if (!acks.isEmpty())
+      {
+         del.acknowledgeDeliveries(acks);
       }
    }
 
@@ -898,6 +920,7 @@ public class SessionAspect
       private String queueName;
       private int maxDeliveries;
       private SessionDelegate connectionConsumerDelegate;
+      private boolean shouldAck;
    }
    
 }

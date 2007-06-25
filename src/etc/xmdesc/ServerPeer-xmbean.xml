@@ -33,19 +33,7 @@
       <name>JMSUserManager</name>
       <type>javax.management.ObjectName</type>
    </attribute>   
-   
-   <attribute access="read-write" getMethod="getDefaultDLQ" setMethod="setDefaultDLQ">
-      <description>The ObjectName of the default DLQ - used when an individual queue does not specify a DLQ</description>
-      <name>DefaultDLQ</name>
-      <type>javax.management.ObjectName</type>
-   </attribute>  
-   
-   <attribute access="read-write" getMethod="getDefaultExpiryQueue" setMethod="setDefaultExpiryQueue">
-      <description>The ObjectName of the default expiry queue - used when an individual queue does not specify an expiry queue</description>
-      <name>DefaultExpiryQueue</name>
-      <type>javax.management.ObjectName</type>
-   </attribute>    
-     
+         
    <!-- instance access -->
 
    <attribute access="read-only" getMethod="getInstance">
@@ -97,6 +85,36 @@
       <name>ProviderMinorVersion</name>
       <type>int</type>
    </attribute>
+   
+   <attribute access="read-only" getMethod="getDestinations">
+      <description>Returns a Set of javax.jms.Destinations (Queues and Topics) containing the current active destinations</description>
+      <name>Destinations</name>
+      <type>java.util.Set</type>
+   </attribute>
+   
+   <attribute access="read-only" getMethod="getMessageCounters">
+      <description>The message counters</description>
+      <name>MessageCounters</name>
+      <type>java.util.List</type>
+   </attribute>
+
+   <attribute access="read-only" getMethod="getMessageStatistics">
+      <description>The message statistics</description>
+      <name>MessageStatistics</name>
+      <type>java.util.List</type>
+   </attribute>
+      
+   <attribute access="read-write" getMethod="getDefaultDLQ" setMethod="setDefaultDLQ">
+      <description>The ObjectName of the default DLQ - used when an individual queue does not specify a DLQ</description>
+      <name>DefaultDLQ</name>
+      <type>javax.management.ObjectName</type>
+   </attribute>  
+   
+   <attribute access="read-write" getMethod="getDefaultExpiryQueue" setMethod="setDefaultExpiryQueue">
+      <description>The ObjectName of the default expiry queue - used when an individual queue does not specify an expiry queue</description>
+      <name>DefaultExpiryQueue</name>
+      <type>javax.management.ObjectName</type>
+   </attribute>   
 
    <attribute access="read-write" getMethod="getServerPeerID" setMethod="setServerPeerID">
       <description>The ID of the ServerPeer. Must be unique per JBoss instance</description>
@@ -114,12 +132,6 @@
       <description>The default JNDI context topics are bound under.</description>
       <name>DefaultTopicJNDIContext</name>
       <type>java.lang.String</type>
-   </attribute>
-
-   <attribute access="read-only" getMethod="getDestinations">
-      <description>Returns a Set of javax.jms.Destinations (Queues and Topics) containing the current active destinations</description>
-      <name>Destinations</name>
-      <type>java.util.Set</type>
    </attribute>
 
    <attribute access="read-write" getMethod="getSecurityDomain" setMethod="setSecurityDomain">
@@ -158,28 +170,34 @@
       <type>long</type>
    </attribute>  
    
-   <attribute access="read-write" getMethod="getQueueStatsSamplePeriod" setMethod="setQueueStatsSamplePeriod">
-      <description>The period between which queue statistics are obtained</description>
-      <name>QueueStatsSamplePeriod</name>
+   <attribute access="read-write" getMethod="getMessageCounterSamplePeriod" setMethod="setMessageCounterSamplePeriod">
+      <description>The period between which the message counter manager enquires for statistics from queues</description>
+      <name>MessageCounterSamplePeriod</name>
       <type>long</type>
    </attribute> 
+   
+   <attribute access="read-write" getMethod="getClusterPullConnectionFactoryName" setMethod="setClusterPullConnectionFactoryName">
+      <description>The name of the connection factory used to create connections to pull messages from one node to another</description>
+      <name>ClusterPullConnectionFactoryName</name>
+      <type>java.lang.String</type>
+   </attribute> 
+   
+   <attribute access="read-write" getMethod="isUseXAForMessagePull" setMethod="setUseXAForMessagePull">
+      <description>When pulling persistent messages from a remote durable queue to a local one, should XA be used?</description>
+      <name>UseXAForMessagePull</name>
+      <type>boolean</type>
+   </attribute>  
+   
+   <attribute access="read-write" getMethod="isDefaultPreserveOrdering" setMethod="setDefaultPreserveOrdering">
+      <description>When pulling messages do we need to preserve the ordering of messages consumed from a particular producer, for a particular consumer?</description>
+      <name>DefaultPreserveOrdering</name>
+      <type>boolean</type>
+   </attribute>    
    
    <attribute access="read-write" getMethod="getDefaultMessageCounterHistoryDayLimit" setMethod="setDefaultMessageCounterHistoryDayLimit">
       <description>The default max number of messages per day in message counter history</description>
       <name>DefaultMessageCounterHistoryDayLimit</name>
       <type>int</type>
-   </attribute>
-
-   <attribute access="read-only" getMethod="getMessageCounters">
-      <description>The message counters</description>
-      <name>MessageCounters</name>
-      <type>java.util.List</type>
-   </attribute>
-
-   <attribute access="read-only" getMethod="getMessageStatistics">
-      <description>The message statistics</description>
-      <name>MessageStatistics</name>
-      <type>java.util.List</type>
    </attribute>
 
    <!-- Managed operations -->

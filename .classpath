@@ -19,19 +19,7 @@
 	<classpathentry kind="src" path="docs/examples/topic/src"/>
 	<classpathentry excluding="**/.svn/**/*" kind="src" path="src/main"/>
 	<classpathentry excluding="**/.svn/**/*" kind="src" path="tests/src"/>
-	<classpathentry kind="lib" path="lib/jboss.jar"/>
-	<classpathentry kind="lib" path="lib/jboss-j2ee.jar"/>
-	<classpathentry kind="lib" path="lib/jboss-jmx.jar"/>
-	<classpathentry kind="lib" path="lib/jbosssx.jar"/>
-	<classpathentry kind="lib" path="lib/jboss-system.jar"/>
-	<classpathentry kind="lib" path="lib/jboss-transaction.jar"/>
-	<classpathentry kind="lib" path="lib/jnp-client.jar"/>
 	<classpathentry kind="lib" path="thirdparty/oswego-concurrent/lib/concurrent.jar"/>
-	<classpathentry kind="lib" path="tests/lib/jboss-common-jdbc-wrapper.jar"/>
-	<classpathentry kind="lib" path="tests/lib/jboss-jca.jar"/>
-	<classpathentry kind="lib" path="tests/lib/jboss-local-jdbc.jar"/>
-	<classpathentry kind="lib" path="tests/lib/jboss-mbeans.jar"/>
-	<classpathentry kind="lib" path="tests/lib/jms-ra.jar"/>
 	<classpathentry kind="lib" path="thirdparty/jgroups/lib/jgroups.jar"/>
 	<classpathentry kind="lib" path="thirdparty/apache-log4j/lib/log4j.jar"/>
 	<classpathentry kind="lib" path="thirdparty/junit/lib/junit.jar"/>
@@ -45,8 +33,6 @@
 	<classpathentry kind="lib" path="thirdparty/dom4j/lib/dom4j.jar"/>
 	<classpathentry kind="lib" path="thirdparty/javassist/lib/javassist.jar"/>
 	<classpathentry kind="lib" path="thirdparty/jboss/aop/lib/common-softvaluehashmap.jar"/>
-	<classpathentry kind="lib" path="thirdparty/jboss/aop/lib/jboss-aop-jdk50.jar"/>
-	<classpathentry kind="lib" path="thirdparty/jboss/aop/lib/jboss-aop-jdk50-client.jar"/>
 	<classpathentry kind="lib" path="thirdparty/jboss/aop/lib/jdk14-pluggable-instrumentor.jar"/>
 	<classpathentry kind="lib" path="thirdparty/jboss/aop/lib/jrockit-pluggable-instrumentor.jar"/>
 	<classpathentry kind="lib" path="thirdparty/jboss/aop/lib/pluggable-instrumentor.jar"/>
@@ -61,6 +47,19 @@
 	<classpathentry kind="var" path="ANT_HOME/lib/ant-junit.jar"/>
 	<classpathentry kind="lib" path="thirdparty/jboss/common/lib/jboss-common.jar"/>
 	<classpathentry kind="src" path=".apt_generated"/>
-	<classpathentry kind="lib" path="lib/jboss-j2se.jar"/>
+	<classpathentry kind="lib" path="thirdparty/jbossas/core-libs/lib/jboss-j2ee.jar"/>
+	<classpathentry kind="lib" path="thirdparty/jboss/aop/lib/jboss-aop.jar"/>
+	<classpathentry kind="lib" path="thirdparty/jbossas/core-libs/lib/jboss-system.jar"/>
+	<classpathentry kind="lib" path="thirdparty/jbossas/core-libs/lib/jboss-jmx.jar"/>
+	<classpathentry kind="lib" path="thirdparty/jbossas/core-libs/lib/jboss-transaction-client.jar"/>
+	<classpathentry kind="lib" path="thirdparty/jbossas/core-libs/lib/jbosssx-client.jar"/>
+	<classpathentry kind="lib" path="thirdparty/jbossas/core-libs/lib/jboss.jar"/>
+	<classpathentry kind="lib" path="thirdparty/jbossas/core-libs/lib/jms-ra.jar"/>
+	<classpathentry kind="lib" path="thirdparty/jbossas/core-libs/lib/jboss-common.jar"/>
+	<classpathentry kind="lib" path="thirdparty/jbossas/core-libs/lib/jboss-common-jdbc-wrapper.jar"/>
+	<classpathentry kind="lib" path="thirdparty/jbossas/core-libs/lib/jbosscx-client.jar"/>
+	<classpathentry kind="lib" path="thirdparty/jbossas/core-libs/lib/jboss-jca.jar"/>
+	<classpathentry kind="lib" path="thirdparty/jbossas/core-libs/lib/jboss-local-jdbc.jar"/>
+	<classpathentry kind="lib" path="thirdparty/jbossas/core-libs/lib/jboss-xml-binding.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

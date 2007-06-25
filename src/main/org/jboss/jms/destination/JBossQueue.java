@@ -46,6 +46,13 @@ public class JBossQueue extends JBossDestination implements Queue
    {
       super(name);
    }
+   
+   public JBossQueue(String name, boolean direct)
+   {
+   	super(name);
+   	
+   	this.direct = direct;
+   }
 
    // JBossDestination overrides ------------------------------------
 

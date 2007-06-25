@@ -24,7 +24,7 @@ package org.jboss.jms.server;
 import java.util.Set;
 
 import org.jboss.jms.server.destination.ManagedDestination;
-import org.jboss.messaging.core.plugin.contract.MessagingComponent;
+import org.jboss.messaging.core.contract.MessagingComponent;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>

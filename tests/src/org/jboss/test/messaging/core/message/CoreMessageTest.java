@@ -21,7 +21,6 @@
 */
 package org.jboss.test.messaging.core.message;
 
-import org.jboss.test.messaging.core.message.base.RoutableSupportTestBase;
 import org.jboss.test.messaging.util.CoreMessageFactory;
 
 
@@ -31,7 +30,7 @@ import org.jboss.test.messaging.util.CoreMessageFactory;
  *
  * $Id$
  */
-public class CoreMessageTest extends RoutableSupportTestBase
+public class CoreMessageTest extends MessageSupportTestBase
 {
    // Constants -----------------------------------------------------
 

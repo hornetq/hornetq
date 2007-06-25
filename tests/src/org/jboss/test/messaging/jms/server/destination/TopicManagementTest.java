@@ -110,10 +110,10 @@ public class TopicManagementTest extends DestinationManagementTestBase
    
          Connection conn = cf.createConnection();
          
+         conn.setClientID("wibble765");         
+         
          conn.start();
-         
-         conn.setClientID("wibble765");
-         
+             
          Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
          
          MessageConsumer cons = sess.createDurableSubscriber(topic, "subxyz");
@@ -236,6 +236,13 @@ public class TopicManagementTest extends DestinationManagementTestBase
          //Need to pause since delivery may still be in progress
          Thread.sleep(2000);
          
+         count = ((Integer)ServerManagement.getAttribute(destObjectName, "AllMessageCount")).intValue();
+         
+         //Note we only keep track of deliveries for DURABLE subs so count should be 1
+         //no durable are effectively acked immediately
+         
+         assertEquals(1, count);
+         
          //This should fail since you cannot remove messages if there are deliveries in progress
          try
          {
@@ -249,7 +256,7 @@ public class TopicManagementTest extends DestinationManagementTestBase
    
          count = ((Integer)ServerManagement.getAttribute(destObjectName, "AllMessageCount")).intValue();
          
-         assertEquals(2, count);
+         assertEquals(1, count);
                   
          // Now close the connection
          conn.close();

@@ -29,9 +29,9 @@ import java.util.List;
 import org.jboss.jms.server.JMSCondition;
 import org.jboss.jms.server.messagecounter.MessageCounter;
 import org.jboss.jms.server.selector.Selector;
-import org.jboss.messaging.core.Queue;
-import org.jboss.messaging.core.message.Message;
-import org.jboss.messaging.core.plugin.postoffice.Binding;
+import org.jboss.messaging.core.contract.Binding;
+import org.jboss.messaging.core.contract.Message;
+import org.jboss.messaging.core.contract.Queue;
 import org.jboss.messaging.util.MessageQueueNameHelper;
 
 /**
@@ -58,16 +58,13 @@ public class ManagedTopic extends ManagedDestination
 
    public void removeAllMessages() throws Throwable
    {
-      JMSCondition topicCond = new JMSCondition(false, name);
-      
-      Collection subs = serverPeer.getPostOfficeInstance().getBindingsForCondition(topicCond);
-      
+      Collection queues = serverPeer.getPostOfficeInstance().getQueuesForCondition(new JMSCondition(false, name), true);
+   	
       //XXX How to lock down all subscriptions?
-      Iterator iter = subs.iterator();
+      Iterator iter = queues.iterator();
       while (iter.hasNext())
       {
-         Binding binding = (Binding)iter.next();
-         Queue queue = binding.getQueue();
+         Queue queue = (Queue)iter.next();
          queue.removeAllReferences();
       }
    }
@@ -89,11 +86,9 @@ public class ManagedTopic extends ManagedDestination
    
    public int getAllSubscriptionsCount() throws Exception
    {
-      JMSCondition topicCond = new JMSCondition(false, name);
-      
-      Collection subs = serverPeer.getPostOfficeInstance().getBindingsForCondition(topicCond);
-      
-      return subs.size();         
+      Collection queues = serverPeer.getPostOfficeInstance().getQueuesForCondition(new JMSCondition(false, name), true);
+   	
+      return queues.size();         
    }
       
    public int getDurableSubscriptionsCount() throws Exception
@@ -155,18 +150,16 @@ public class ManagedTopic extends ManagedDestination
    
    public List getMessageCounters() throws Exception
    {
-      JMSCondition topicCond = new JMSCondition(false, name);
-      
       List counters = new ArrayList();
       
       // We deploy any queues corresponding to pre-existing durable subscriptions
-      Collection bindings = serverPeer.getPostOfficeInstance().getBindingsForCondition(topicCond);
-      Iterator iter = bindings.iterator();
+      Collection queues = serverPeer.getPostOfficeInstance().getQueuesForCondition(new JMSCondition(false, name), true);
+   	
+      Iterator iter = queues.iterator();
+      
       while (iter.hasNext())
       {
-         Binding binding = (Binding)iter.next();
-         
-         Queue queue = binding.getQueue();
+         Queue queue = (Queue)iter.next();
          
          String counterName = TopicService.SUBSCRIPTION_MESSAGECOUNTER_PREFIX + queue.getName();
          
@@ -217,7 +210,7 @@ public class ManagedTopic extends ManagedDestination
       
       Binding binding = serverPeer.getPostOfficeInstance().getBindingForQueueName(subId);
       
-      if (binding == null)
+      if (binding == null || !binding.queue.isActive())
       {
          throw new IllegalArgumentException("Cannot find subscription with id " + subId);
       }
@@ -234,7 +227,7 @@ public class ManagedTopic extends ManagedDestination
          sel = new Selector(selector);
       }
       
-      List allMsgs = binding.getQueue().browse(sel);
+      List allMsgs = binding.queue.browse(sel);
       
       Iterator iter = allMsgs.iterator();
       
@@ -255,17 +248,13 @@ public class ManagedTopic extends ManagedDestination
    {      
       List subs = new ArrayList();
    
-      JMSCondition topicCond = new JMSCondition(false, name);      
-      
-      Collection bindings = serverPeer.getPostOfficeInstance().getBindingsForCondition(topicCond);
-      
-      Iterator iter = bindings.iterator();
+      Collection queues = serverPeer.getPostOfficeInstance().getQueuesForCondition(new JMSCondition(false, name), true);
+   	
+      Iterator iter = queues.iterator();
       
       while (iter.hasNext())
       {
-         Binding binding = (Binding)iter.next();
-         
-         Queue queue = binding.getQueue();
+         Queue queue = (Queue)iter.next();
          
          if (type == ALL || (type == DURABLE && queue.isRecoverable()) || (type == NON_DURABLE && !queue.isRecoverable()))
          {         
@@ -291,22 +280,20 @@ public class ManagedTopic extends ManagedDestination
    
    private int getMessageCount(int type) throws Exception
    {
-      JMSCondition topicCond = new JMSCondition(false, name);
-      
-      Collection subs = serverPeer.getPostOfficeInstance().getBindingsForCondition(topicCond);
-      
-      Iterator iter = subs.iterator();
+      Collection queues = serverPeer.getPostOfficeInstance().getQueuesForCondition(new JMSCondition(false, name), true);
+   	
+      Iterator iter = queues.iterator();
       
       int count = 0;
       
       while (iter.hasNext())
       {
-         Binding binding = (Binding)iter.next();
+         Queue queue = (Queue)iter.next();
          
-         if (type == ALL || (type == DURABLE && binding.getQueue().isRecoverable())
-             || (type == NON_DURABLE && !binding.getQueue().isRecoverable()))
+         if (type == ALL || (type == DURABLE && queue.isRecoverable())
+             || (type == NON_DURABLE && !queue.isRecoverable()))
          {            
-            count += binding.getQueue().getMessageCount();
+            count += queue.getMessageCount();
          }
       }
 
@@ -315,19 +302,17 @@ public class ManagedTopic extends ManagedDestination
    
    private int getSubscriptionsCount(boolean durable) throws Exception
    {
-      JMSCondition topicCond = new JMSCondition(false, name);
-      
-      Collection subs = serverPeer.getPostOfficeInstance().getBindingsForCondition(topicCond);
-      
-      Iterator iter = subs.iterator();
+      Collection queues = serverPeer.getPostOfficeInstance().getQueuesForCondition(new JMSCondition(false, name), true);
+   	
+      Iterator iter = queues.iterator();
       
       int count = 0;
       
       while (iter.hasNext())
       {
-         Binding binding = (Binding)iter.next();
+         Queue queue = (Queue)iter.next();
          
-         if ((binding.getQueue().isRecoverable() && durable) || (!binding.getQueue().isRecoverable() && !durable))
+         if ((queue.isRecoverable() && durable) || (!queue.isRecoverable() && !durable))
          {
             count++;
          }
@@ -339,10 +324,8 @@ public class ManagedTopic extends ManagedDestination
    
    private String listSubscriptionsAsHTML(int type) throws Exception
    {
-      JMSCondition topicCond = new JMSCondition(false, name);
-      
-      Collection bindings = serverPeer.getPostOfficeInstance().getBindingsForCondition(topicCond);
-           
+      Collection queues = serverPeer.getPostOfficeInstance().getQueuesForCondition(new JMSCondition(false, name), true);
+   	  
       StringBuffer sb = new StringBuffer();
       
       sb.append("<table width=\"100%\" border=\"1\" cellpadding=\"1\" cellspacing=\"1\">"  +
@@ -356,18 +339,16 @@ public class ManagedTopic extends ManagedDestination
                   "<th>Max Size</th>"   +
                   "</tr>");
       
-      Iterator iter = bindings.iterator();
+      Iterator iter = queues.iterator();
       while (iter.hasNext())
       {
-         Binding binding = (Binding)iter.next();
-         
-         Queue queue = binding.getQueue();
-         
+         Queue queue = (Queue)iter.next();
+
          if (type == ALL || (type == DURABLE && queue.isRecoverable())
                   || (type == NON_DURABLE && !queue.isRecoverable()))
          {
             
-            String filterString = queue.getFilter() != null ? binding.getQueue().getFilter().getFilterString() : null;
+            String filterString = queue.getFilter() != null ? queue.getFilter().getFilterString() : null;
                      
             String subName = null;
             String clientID = null;

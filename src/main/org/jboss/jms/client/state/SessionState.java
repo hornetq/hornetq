@@ -33,12 +33,12 @@ import java.util.Map;
 import javax.jms.MessageListener;
 import javax.jms.Session;
 
+import org.jboss.jms.client.container.ClientConsumer;
 import org.jboss.jms.client.delegate.ClientBrowserDelegate;
 import org.jboss.jms.client.delegate.ClientConsumerDelegate;
 import org.jboss.jms.client.delegate.ClientProducerDelegate;
 import org.jboss.jms.client.delegate.ClientSessionDelegate;
 import org.jboss.jms.client.delegate.DelegateSupport;
-import org.jboss.jms.client.remoting.MessageCallbackHandler;
 import org.jboss.jms.delegate.DeliveryInfo;
 import org.jboss.jms.delegate.DeliveryRecovery;
 import org.jboss.jms.delegate.SessionDelegate;
@@ -221,7 +221,7 @@ public class SessionState extends HierarchicalStateSupport
                                       consState.getSelector(),
                                       consState.isNoLocal(),
                                       consState.getSubscriptionName(),
-                                      consState.isConnectionConsumer());
+                                      consState.isConnectionConsumer(), true);
             log.debug(this + " created new consumer " + newConsDelegate);
 
             consDelegate.synchronizeWith(newConsDelegate);
@@ -419,17 +419,17 @@ public class SessionState extends HierarchicalStateSupport
       this.recoverCalled = recoverCalled;
    }
 
-   public MessageCallbackHandler getCallbackHandler(int consumerID)
+   public ClientConsumer getCallbackHandler(int consumerID)
    {
-      return (MessageCallbackHandler)callbackHandlers.get(new Integer(consumerID));
+      return (ClientConsumer)callbackHandlers.get(new Integer(consumerID));
    }
 
-   public void addCallbackHandler(MessageCallbackHandler handler)
+   public void addCallbackHandler(ClientConsumer handler)
    {
       callbackHandlers.put(new Integer(handler.getConsumerId()), handler);
    }
 
-   public void removeCallbackHandler(MessageCallbackHandler handler)
+   public void removeCallbackHandler(ClientConsumer handler)
    {
       callbackHandlers.remove(new Integer(handler.getConsumerId()));
    }

@@ -271,22 +271,6 @@ public class JBossConnection implements
       return new JBossSession(sessionDelegate, type);
    }
 
-   // Temporarily commented out as it seems to produce random test failures
-   // See http://jira.jboss.org/jira/browse/JBMESSAGING-548
-   
-//   protected void finalize() throws Throwable
-//   {
-//      super.finalize();
-//
-//      // If a user hasn't explicitly closed the connection due to sloppy programming then
-//      // we close it here
-//
-//      if (!delegate.isClosed())
-//      {
-//         close();
-//      }
-//   }
-
    // Private --------------------------------------------------------------------------------------
 
    // Inner classes --------------------------------------------------------------------------------
