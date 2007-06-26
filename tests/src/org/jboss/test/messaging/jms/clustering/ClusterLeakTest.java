@@ -34,6 +34,7 @@ import javax.jms.MessageProducer;
 import org.jboss.jms.client.JBossConnection;
 import org.jboss.jms.client.JBossMessageProducer;
 import org.jboss.jms.client.FailoverValve2;
+import org.jboss.jms.client.container.ClientConsumer;
 import org.jboss.jms.client.delegate.DelegateSupport;
 import org.jboss.jms.client.delegate.ClientConnectionDelegate;
 import org.jboss.jms.client.state.ConnectionState;
@@ -80,7 +81,7 @@ public class ClusterLeakTest extends ClusteringTestBase
       Connection conn = null;
       for (int i=0;i<100;i++)
       {
-         System.out.println("Creating connection " + i);
+         log.info("Creating connection " + i);
          conn = cf.createConnection();
          Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
          MessageProducer producer = session.createProducer(queue[0]);
@@ -104,6 +105,7 @@ public class ClusterLeakTest extends ClusteringTestBase
       Map inventory2 = jvmti.produceInventory();
 
       validateInstances(jvmti, FailoverValve2.class, inventory2, 1);
+      validateInstances(jvmti, ClientConsumer.class, inventory2, 1);
 
       assertTrue("Test produced unexpected objects", jvmti.compareInventories(System.out,
           inventory1, inventory2, null, null,
@@ -183,6 +185,7 @@ public class ClusterLeakTest extends ClusteringTestBase
          validateInstances(jvmti, MessageConsumer.class, inventory2, 1);
          validateInstances(jvmti, ProducerState.class, inventory2, 1);
          validateInstances(jvmti, FailoverValve2.class, inventory2, 1);
+         validateInstances(jvmti, ClientConsumer.class, inventory2, 1);
 
       }
       finally
@@ -201,7 +204,7 @@ public class ClusterLeakTest extends ClusteringTestBase
       InventoryDataPoint dataPoint = (InventoryDataPoint) inventory.get(clazz);
       if (dataPoint != null && dataPoint.getInstances() > 1)
       {
-         System.out.println(clazz.getName() + " report -> " + jvmti.exploreObjectReferences(clazz.getName(),5,true));
+         log.info(clazz.getName() + " report -> " + jvmti.exploreObjectReferences(clazz.getName(),5,true));
          fail("Produced unexpected objects (" + dataPoint.getInstances() + " objects, while it was expecting " + maxExpectedResult + ") on " + clazz.getName());
       }
    }
