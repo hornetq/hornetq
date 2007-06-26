@@ -116,7 +116,6 @@ public class ReconnectTest extends BridgeTestBase
    {
       setUpAdministeredObjects(true);
       ServerManagement.kill(1);
-      Thread.sleep(5000);
 
       Bridge bridge = new Bridge(cff0, cff1, sourceQueue, destQueue,
             null, null, null, null,
@@ -124,33 +123,15 @@ public class ReconnectTest extends BridgeTestBase
             10, -1,
             null, null);
       
-      new Thread(new Runnable()
-      {
-         public void run()
-         {
-            try
-            {
-               Thread.sleep(2000);
-            }
-            catch (InterruptedException e)
-            {
-               log.debug("Server startup thread interrupted while sleeping", e);
-            }
-            
-            try
-            {
-               ServerManagement.start(1, "all", false);               
-            }
-            catch (Exception e)
-            {
-               throw new RuntimeException("Failed to start server", e);
-            }
-         }
-      }).start();
-
       try
       {
          bridge.start();
+         assertFalse(bridge.isStarted());
+         assertTrue(bridge.isFailed());
+
+         ServerManagement.start(1, "all", false);
+         Thread.sleep(3000);
+         
          assertTrue(bridge.isStarted());
          assertFalse(bridge.isFailed());
       }

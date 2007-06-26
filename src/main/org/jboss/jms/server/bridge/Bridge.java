@@ -280,7 +280,7 @@ public class Bridge implements MessagingComponent
       {
          toResume = tm.suspend();
          
-         ok = setupJMSObjectsWithRetry();
+         ok = setupJMSObjects();
       }
       finally
       {
@@ -318,8 +318,7 @@ public class Bridge implements MessagingComponent
       else
       {
          log.warn("Failed to start bridge");
-         
-         failed = true;
+         handleFailureOnStartup();
       }
    }
    
@@ -1230,17 +1229,29 @@ public class Bridge implements MessagingComponent
       {
          log.warn("Failed to send + acknowledge batch, closing JMS objects", e);
          
-         handleFailure();                                                 
+         handleFailureOnSend();                                                 
       }
    }
    
-   private void handleFailure()
+   private void handleFailureOnSend()
+   {
+      handleFailure(new FailureHandler());
+   }
+   
+   private void handleFailureOnStartup()
+   {
+      handleFailure(new StartupFailureHandler());
+   }
+   
+   private void handleFailure(Runnable failureHandler)
    {
       failed = true;
 
-      //Failure must be handled on a separate thread to the onMessage thread since we can't close the connection
-      //from inside the onMessage method since it will block waiting for onMessage to complete
-      Thread t = new Thread(new FailureHandler());
+      //Failure must be handled on a separate thread to the calling thread (either onMessage or start).
+      //In the case of onMessage we can't close the connection from inside the onMessage method
+      //since it will block waiting for onMessage to complete. In the case of start we want to return
+      //from the call before the connections are reestablished so that the caller is not blocked unnecessarily.
+      Thread t = new Thread(failureHandler);
       
       t.start();         
    }
@@ -1249,13 +1260,55 @@ public class Bridge implements MessagingComponent
    
    private class FailureHandler implements Runnable
    {
+      /**
+       * Start the source connection - note the source connection must not be started before
+       * otherwise messages will be received and ignored
+       */
+      protected void startSourceConnection()
+      {
+         try
+         {
+            sourceConn.start();
+         }
+         catch (JMSException e)
+         {
+            log.error("Failed to start source connection", e);
+         }
+      }
+
+      protected void succeeded()
+      {
+         log.debug("Succeeded in reconnecting to servers");
+         
+         synchronized (lock)
+         {
+            failed = false;
+
+            startSourceConnection();
+         }
+      }
+      
+      protected void failed()
+      {
+         //We haven't managed to recreate connections or maxRetries = 0
+         log.warn("Unable to set up connections, bridge will be stopped");
+         
+         try
+         {                  
+            stop();
+         }
+         catch (Exception ignore)
+         {                  
+         }
+      }
+
       public void run()
       {
       	if (trace) { log.trace("Failure handler running"); }
       	
          // Clear the messages
          messages.clear();
-                     
+
          cleanup();
          
          boolean ok = false;
@@ -1272,38 +1325,45 @@ public class Bridge implements MessagingComponent
          
          if (!ok)
          {
-            //We haven't managed to recreate connections or maxRetries = 0
-            log.warn("Unable to set up connections, bridge will be stopped");
-            
-            try
-            {                  
-               stop();
-            }
-            catch (Exception ignore)
-            {                  
-            }
+            failed();
          }
          else
          {
-            log.debug("Succeeded in reconnecting to servers");
-            
-            synchronized (lock)
-            {
-               failed = false;
-               
-               //Start the source connection - note the source connection must not be started before
-               //otherwise messages will be received and ignored
-               
-               try
-               {
-                  sourceConn.start();
-               }
-               catch (JMSException e)
-               {
-                  log.error("Failed to start source connection", e);
-               }
-            }
+            succeeded();
          }    
+      }
+   }
+   
+   private class StartupFailureHandler extends FailureHandler
+   {
+      protected void failed()
+      {
+         // Don't call super
+         log.warn("Unable to set up connections, bridge will not be started");
+      }
+      
+      protected void succeeded()
+      {
+         // Don't call super - a bit ugly in this case but better than taking the lock twice.
+         log.debug("Succeeded in connecting to servers");
+         
+         synchronized (lock)
+         {
+            failed = false;
+            started = true;
+            
+            //Start the source connection - note the source connection must not be started before
+            //otherwise messages will be received and ignored
+            
+            try
+            {
+               sourceConn.start();
+            }
+            catch (JMSException e)
+            {
+               log.error("Failed to start source connection", e);
+            }
+         }
       }
    }
    
