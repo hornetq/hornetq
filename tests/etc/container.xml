@@ -50,7 +50,7 @@
       </database-configuration>
 
       <database-configuration name="mssql">
-          <url>jdbc:jtds:sqlserver://dev16-priv:3918/messaging</url>
+          <url>jdbc:jtds:sqlserver://dev30.qa.atl.jboss.com:3918/messaging</url>
           <driver>net.sourceforge.jtds.jdbc.Driver</driver>
           <isolation>TRANSACTION_READ_COMMITTED</isolation>
           <username>messaging</username>
