@@ -109,6 +109,63 @@ public class ReconnectTest extends BridgeTestBase
    {
       testCrashAndReconnectDestCrashBeforePrepare(false);
    }
+   
+   // Crash before bridge is started
+
+   public void testRetryConnectionOnStartup() throws Exception
+   {
+      setUpAdministeredObjects(true);
+      ServerManagement.kill(1);
+      Thread.sleep(5000);
+
+      Bridge bridge = new Bridge(cff0, cff1, sourceQueue, destQueue,
+            null, null, null, null,
+            null, 1000, -1, Bridge.QOS_DUPLICATES_OK,
+            10, -1,
+            null, null);
+      
+      new Thread(new Runnable()
+      {
+         public void run()
+         {
+            try
+            {
+               Thread.sleep(2000);
+            }
+            catch (InterruptedException e)
+            {
+               log.debug("Server startup thread interrupted while sleeping", e);
+            }
+            
+            try
+            {
+               ServerManagement.start(1, "all", false);               
+            }
+            catch (Exception e)
+            {
+               throw new RuntimeException("Failed to start server", e);
+            }
+         }
+      }).start();
+
+      try
+      {
+         bridge.start();
+         assertTrue(bridge.isStarted());
+         assertFalse(bridge.isFailed());
+      }
+      finally
+      {
+         try
+         {
+            bridge.stop();
+         }
+         catch (Exception e)
+         {
+            log.error("Failed to stop bridge", e);
+         }
+      }
+   }
 
    /*
     * Send some messages

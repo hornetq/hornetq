@@ -280,7 +280,7 @@ public class Bridge implements MessagingComponent
       {
          toResume = tm.suspend();
          
-         ok = setupJMSObjects();
+         ok = setupJMSObjectsWithRetry();
       }
       finally
       {
