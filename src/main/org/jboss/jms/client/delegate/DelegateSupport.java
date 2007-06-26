@@ -247,7 +247,7 @@ public abstract class DelegateSupport implements Streamable, Serializable
       return new MessagingJMSException("Failed to invoke", t);
       
    }
-   
+
    public Client getClient()
    {
       return client;

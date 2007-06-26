@@ -132,6 +132,11 @@ public class ClientConnectionDelegate extends DelegateSupport implements Connect
       // There is one RM per server, so we need to merge the rms if necessary
       ResourceManagerFactory.instance.handleFailover(serverID, newDelegate.getServerID());
 
+
+      // The remoting connection was replaced by a new one..
+      // we have to set the connection Delegate on the CallbackManager to avoid leaks
+      remotingConnection.getCallbackManager().setConnectionDelegate(this);
+
       client = thisState.getRemotingConnection().getRemotingClient();
 
       serverID = newDelegate.getServerID();

@@ -152,7 +152,11 @@ public class ConnectionState extends HierarchicalStateSupport
       idGenerator = newState.idGenerator;
       serverID = newState.serverID;
       versionToUse = newState.versionToUse;
-      
+
+      // The remoting connection was replaced by a new one..
+      // we have to set the connection state on the ConnectionListener to avoid leaks
+      remotingConnection.getConnectionListener().setConnectionState(this);
+
       ConnectionDelegate newDelegate = (ConnectionDelegate)newState.getDelegate();
       
       for(Iterator i = getChildren().iterator(); i.hasNext(); )
