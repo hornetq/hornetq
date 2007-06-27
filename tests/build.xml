@@ -128,7 +128,7 @@
        JDBC Drivers.
    -->
    <path id="any.jdbc.driver.classpath">
-          <fileset dir="${tests.root}/lib/jdbc-drivers" includes="*.jar"/>
+      <fileset dir="${tests.root}/lib/jdbc-drivers" includes="*.jar"/>
    </path>
 
 

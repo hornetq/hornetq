@@ -186,18 +186,36 @@ public class SimpleConnectionManager implements ConnectionManager, ConnectionLis
          {
             ConnectionEndpoint sce = (ConnectionEndpoint)i.next();
 
-            try
-            {
-               sce.closing();
-               sce.close();
-               log.debug("cleared up state for connection " + sce);
-            }
-            catch (JMSException e)
-            {
-               log.error("Failed to close connection", e);
-            }
+            //Close on own thread
+            
+            new Thread(new Closer(sce)).start();           
          }
       }
+   }
+   
+   class Closer implements Runnable
+   {
+   	private ConnectionEndpoint ce;
+   	
+   	Closer(ConnectionEndpoint ce)
+   	{
+   		this.ce = ce;
+   	}
+   	
+   	public void run()
+   	{
+   		try
+         {
+   			log.debug("clearing up state for connection " + ce);
+            ce.closing();
+            ce.close();
+            log.debug("cleared up state for connection " + ce);
+         }
+         catch (JMSException e)
+         {
+            log.error("Failed to close connection", e);
+         }
+   	}
    }
 
    // ConnectionListener implementation ------------------------------------------------------------

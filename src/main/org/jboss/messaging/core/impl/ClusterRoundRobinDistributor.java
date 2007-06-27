@@ -105,6 +105,14 @@ public class ClusterRoundRobinDistributor implements Distributor
    		
    		log.info("*** sending to remote distributor");
    		
+   		String wib = (String)ref.getMessage().getHeader("wib");
+   		if (wib == null)
+   		{
+   			wib = "nodes:";
+   		}
+   		wib += ((MessagingQueue)observer).getNodeID() + "-";
+   		ref.getMessage().putHeader("wib", wib);
+   		
    		del = remoteDistributor.handle(observer, ref, tx);
    		
    		log.info("** remote distributor returned " + del);

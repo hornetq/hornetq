@@ -51,8 +51,8 @@ class PostOfficeAddressInfo implements Streamable, Serializable
 
    // Attributes ----------------------------------------------------
 
-   private Address syncChannelAddress;
-   private Address asyncChannelAddress;
+   private Address controlChannelAddress;
+   private Address dataChannelAddress;
 
    // Constructors --------------------------------------------------
 
@@ -60,40 +60,40 @@ class PostOfficeAddressInfo implements Streamable, Serializable
    {
    }
 
-   PostOfficeAddressInfo(Address syncChannelAddress, Address asyncChannelAddress)
+   PostOfficeAddressInfo(Address controlChannelAddress, Address dataChannelAddress)
    {
-      this.syncChannelAddress = syncChannelAddress;
-      this.asyncChannelAddress = asyncChannelAddress;
+      this.controlChannelAddress = controlChannelAddress;
+      this.dataChannelAddress = dataChannelAddress;
    }
 
    // Streamable implementation -------------------------------------
 
    public void read(DataInputStream in) throws Exception
    {
-      syncChannelAddress = new IpAddress();
+      controlChannelAddress = new IpAddress();
 
-      syncChannelAddress.readFrom(in);
+      controlChannelAddress.readFrom(in);
 
-      asyncChannelAddress = new IpAddress();
+      dataChannelAddress = new IpAddress();
 
-      asyncChannelAddress.readFrom(in);
+      dataChannelAddress.readFrom(in);
    }
 
    public void write(DataOutputStream out) throws Exception
    {
-      if (!(syncChannelAddress instanceof IpAddress))
+      if (!(controlChannelAddress instanceof IpAddress))
       {
          throw new IllegalStateException("Address must be IpAddress");
       }
 
-      if (!(asyncChannelAddress instanceof IpAddress))
+      if (!(dataChannelAddress instanceof IpAddress))
       {
          throw new IllegalStateException("Address must be IpAddress");
       }
 
-      syncChannelAddress.writeTo(out);
+      controlChannelAddress.writeTo(out);
 
-      asyncChannelAddress.writeTo(out);
+      dataChannelAddress.writeTo(out);
    }
 
    // Public --------------------------------------------------------
@@ -101,8 +101,8 @@ class PostOfficeAddressInfo implements Streamable, Serializable
    public String toString()
    {
       StringBuffer sb = new StringBuffer("[");
-      sb.append("synch addr ").append(syncChannelAddress);
-      sb.append(", asynch addr ").append(asyncChannelAddress);
+      sb.append("synch addr ").append(controlChannelAddress);
+      sb.append(", asynch addr ").append(dataChannelAddress);
       sb.append("]");
 
       return sb.toString();
@@ -111,14 +111,14 @@ class PostOfficeAddressInfo implements Streamable, Serializable
 
    // Package protected ---------------------------------------------
 
-   Address getSyncChannelAddress()
+   Address getControlChannelAddress()
    {
-      return syncChannelAddress;
+      return controlChannelAddress;
    }
 
-   Address getAsyncChannelAddress()
+   Address getDataChannelAddress()
    {
-      return asyncChannelAddress;
+      return dataChannelAddress;
    }
 
    // Protected -----------------------------------------------------

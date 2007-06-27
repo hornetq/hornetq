@@ -74,12 +74,12 @@ public class XMLJChannelFactory implements JChannelFactory
    }
 
    // implementation of JChannelFactory ------------------------------------------------------------
-   public JChannel createSyncChannel() throws Exception
+   public JChannel createControlChannel() throws Exception
    {
       return new JChannel(syncConfig);
    }
 
-   public JChannel createASyncChannel() throws Exception
+   public JChannel createDataChannel() throws Exception
    {
       return new JChannel(asyncConfig);
    }

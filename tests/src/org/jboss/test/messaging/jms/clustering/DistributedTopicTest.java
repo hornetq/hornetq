@@ -21,11 +21,9 @@
  */
 package org.jboss.test.messaging.jms.clustering;
 
-import java.util.HashSet;
-import java.util.Set;
-
 import javax.jms.Connection;
 import javax.jms.DeliveryMode;
+import javax.jms.InvalidDestinationException;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageListener;
@@ -37,7 +35,7 @@ import org.jboss.test.messaging.jms.clustering.base.ClusteringTestBase;
 
 /**
  * 
- * A DistributedDestinationsTest
+ * A DistributedTopicTest
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
@@ -45,7 +43,7 @@ import org.jboss.test.messaging.jms.clustering.base.ClusteringTestBase;
  * $Id$
  *
  */
-public class DistributedDestinationsTest extends ClusteringTestBase
+public class DistributedTopicTest extends ClusteringTestBase
 {
 
    // Constants -----------------------------------------------------
@@ -56,22 +54,12 @@ public class DistributedDestinationsTest extends ClusteringTestBase
 
    // Constructors --------------------------------------------------
 
-   public DistributedDestinationsTest(String name)
+   public DistributedTopicTest(String name)
    {
       super(name);
    }
 
    // Public --------------------------------------------------------
-
-   public void testClusteredQueueNonPersistent() throws Exception
-   {
-      clusteredQueue(false);
-   }
-
-   public void testClusteredQueuePersistent() throws Exception
-   {
-      clusteredQueue(true);
-   }
 
    public void testClusteredTopicNonDurableNonPersistent() throws Exception
    {
@@ -139,481 +127,6 @@ public class DistributedDestinationsTest extends ClusteringTestBase
    protected void tearDown() throws Exception
    {
       super.tearDown();
-   }
-
-   protected void clusteredQueue(boolean persistent) throws Exception
-   {
-      Connection conn0 = null;
-      Connection conn1 = null;
-      Connection conn2 = null;
-
-      try
-      {
-         //This will create 3 different connection on 3 different nodes, since
-         //the cf is clustered
-         conn0 = cf.createConnection();
-         conn1 = cf.createConnection();
-         conn2 = cf.createConnection();
-         
-         log.info("Created connections");
-         
-         checkConnectionsDifferentServers(new Connection[] {conn0, conn1, conn2});
-
-         Session sess0 = conn0.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         Session sess1 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         Session sess2 = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         
-         log.info("Created sessions");
-
-         MessageConsumer cons0 = sess0.createConsumer(queue[0]);
-         MessageConsumer cons1 = sess1.createConsumer(queue[1]);
-         MessageConsumer cons2 = sess2.createConsumer(queue[2]);
-         
-         log.info("Created consumers");
-
-         conn0.start();
-         conn1.start();
-         conn2.start();
-
-         // Send at node 0
-
-         MessageProducer prod0 = sess0.createProducer(queue[0]);
-
-         prod0.setDeliveryMode(persistent ? DeliveryMode.PERSISTENT : DeliveryMode.NON_PERSISTENT);
-
-         final int NUM_MESSAGES = 100;
-
-         for (int i = 0; i < NUM_MESSAGES; i++)
-         {
-            TextMessage tm = sess0.createTextMessage("message" + i);
-
-            prod0.send(tm);
-         }
-         
-         log.info("Sent messages");
-
-         for (int i = 0; i < NUM_MESSAGES; i++)
-         {
-            TextMessage tm = (TextMessage)cons0.receive(1000);
-
-            assertNotNull(tm);
-            
-            assertEquals("message" + i, tm.getText());
-         }                 
-
-         Message m = cons0.receive(2000);
-
-         assertNull(m);
-         
-         m = cons1.receive(2000);
-
-         assertNull(m);
-
-         m = cons2.receive(2000);
-
-         assertNull(m);
-
-         // Send at node 1
-
-         MessageProducer prod1 = sess1.createProducer(queue[1]);
-
-         prod1.setDeliveryMode(persistent ? DeliveryMode.PERSISTENT : DeliveryMode.NON_PERSISTENT);
-
-         for (int i = 0; i < NUM_MESSAGES; i++)
-         {
-            TextMessage tm = sess1.createTextMessage("message" + i);
-
-            prod1.send(tm);
-         }
-
-         for (int i = 0; i < NUM_MESSAGES; i++)
-         {
-            TextMessage tm = (TextMessage)cons1.receive(1000);
-
-            assertNotNull(tm);
-
-            assertEquals("message" + i, tm.getText());
-         }
-
-         m = cons0.receive(2000);
-
-         assertNull(m);
-         
-         m = cons1.receive(2000);
-
-         assertNull(m);
-
-         m = cons2.receive(2000);
-
-         assertNull(m);
-
-         // Send at node 2
-         
-         MessageProducer prod2 = sess2.createProducer(queue[2]);
-
-         prod2.setDeliveryMode(persistent ? DeliveryMode.PERSISTENT : DeliveryMode.NON_PERSISTENT);
-
-         for (int i = 0; i < NUM_MESSAGES; i++)
-         {
-            TextMessage tm = sess2.createTextMessage("message" + i);
-
-            prod2.send(tm);
-         }
-
-         for (int i = 0; i < NUM_MESSAGES; i++)
-         {
-            TextMessage tm = (TextMessage)cons2.receive(1000);
-
-            assertNotNull(tm);
-
-            assertEquals("message" + i, tm.getText());
-         }
-
-         m = cons0.receive(2000);
-
-         assertNull(m);
-         
-         m = cons1.receive(2000);
-
-         assertNull(m);
-
-         m = cons2.receive(2000);
-
-         assertNull(m);
-         
-         
-         //Now close the consumers at node 0 and node 1
-         
-         cons0.close();
-         
-         cons1.close();
-         
-         //Send more messages at node 0
-         
-         log.info("Sending more at node 0");
-         
-         for (int i = 0; i < NUM_MESSAGES; i++)
-         {
-            TextMessage tm = sess0.createTextMessage("message2-" + i);
-
-            prod0.send(tm);
-         }
-         
-         log.info("Sent messages");
-         
-         // consume them on node2
-
-         for (int i = 0; i < NUM_MESSAGES; i++)
-         {
-            TextMessage tm = (TextMessage)cons2.receive(1000);
-            
-            log.info("*** got message " + tm.getText());
-            
-            assertNotNull(tm);
-            
-            assertEquals("message2-" + i, tm.getText());
-         }                 
-
-         m = cons2.receive(2000);
-
-         assertNull(m);
-         
-         //Send more messages at node 0 and node 1
-         
-         for (int i = 0; i < NUM_MESSAGES / 2; i++)
-         {
-            TextMessage tm = sess0.createTextMessage("message3-" + i);
-
-            prod0.send(tm);
-         }
-         
-         for (int i = NUM_MESSAGES / 2; i < NUM_MESSAGES; i++)
-         {
-            TextMessage tm = sess1.createTextMessage("message3-" + i);
-
-            prod2.send(tm);
-         }
-         
-         //consume them on node 2 - we will get messages from both nodes so the order is undefined
-         
-         Set msgs = new HashSet();
-         
-         TextMessage tm = null;
-         
-         do
-         {
-            tm = (TextMessage)cons2.receive(1000);
-            
-            if (tm != null)
-            {            
-	            log.info("*** got message " + tm.getText());
-	            
-	            assertNotNull(tm);
-	            
-	            msgs.add(tm.getText());
-            }
-         }           
-         while (tm != null);
-
-         for (int i = 0; i < NUM_MESSAGES; i++)
-         {
-         	assertTrue(msgs.contains("message3-" + i));
-         }
-         
-         // Now repeat but this time creating the consumer after send
-         
-         cons2.close();
-         
-         //	Send more messages at node 0 and node 1
-         
-         for (int i = 0; i < NUM_MESSAGES / 2; i++)
-         {
-            tm = sess0.createTextMessage("message3-" + i);
-
-            prod0.send(tm);
-         }
-         
-         for (int i = NUM_MESSAGES / 2; i < NUM_MESSAGES; i++)
-         {
-            tm = sess1.createTextMessage("message3-" + i);
-
-            prod2.send(tm);
-         }
-         
-         cons2 = sess2.createConsumer(queue[2]);
-         
-         //consume them on node 2 - we will get messages from both nodes so the order is undefined
-         
-         msgs = new HashSet();
-         
-         do
-         {
-            tm = (TextMessage)cons2.receive(1000);
-            
-            if (tm != null)
-            {            
-	            log.info("*** got message " + tm.getText());
-	            
-	            assertNotNull(tm);
-	            
-	            msgs.add(tm.getText());
-            }
-         }     
-         while (tm != null);
-
-         for (int i = 0; i < NUM_MESSAGES; i++)
-         {
-         	assertTrue(msgs.contains("message3-" + i));
-         }
-         
-         
-         //Now send messages at node 0 - but consume from node 1 AND node 2
-         
-         //order is undefined
-         
-         cons2.close();
-         
-         cons1 = sess1.createConsumer(queue[1]);
-         
-         cons2 = sess2.createConsumer(queue[2]);
-         
-         for (int i = 0; i < NUM_MESSAGES; i++)
-         {
-            tm = sess0.createTextMessage("message4-" + i);
-
-            prod0.send(tm);
-         }
-         
-         msgs = new HashSet();
-         
-         int count = 0;
-         
-         do
-         {
-            tm = (TextMessage)cons1.receive(1000);
-            
-            if (tm != null)
-            {            
-	            log.info("*** got message " + tm.getText());
-	            
-	            msgs.add(tm.getText());
-	            
-	            count++;
-            }
-         }
-         while (tm != null);
-         
-         do
-         {
-            tm = (TextMessage)cons2.receive(1000);
-            
-            if (tm != null)
-            {            
-	            log.info("*** got message " + tm.getText());
-	            
-	
-	            msgs.add(tm.getText());
-	            
-	            count++;
-            }
-         } 
-         while (tm != null);
-         
-         for (int i = 0; i < NUM_MESSAGES; i++)
-         {
-         	assertTrue(msgs.contains("message4-" + i));
-         }
-         
-         assertEquals(NUM_MESSAGES, count);
-         
-         //as above but start consumers AFTER sending
-         
-         cons1.close();
-         
-         cons2.close();
-         
-         for (int i = 0; i < NUM_MESSAGES; i++)
-         {
-            tm = sess0.createTextMessage("message4-" + i);
-
-            prod0.send(tm);
-         }
-         
-         cons1 = sess1.createConsumer(queue[1]);
-         
-         cons2 = sess2.createConsumer(queue[2]);
-         
-         
-         msgs = new HashSet();
-         
-         count = 0;
-         
-         do
-         {
-            tm = (TextMessage)cons1.receive(1000);
-            
-            if (tm != null)
-            {            
-	            log.info("*** got message " + tm.getText());
-	            
-	            msgs.add(tm.getText());
-	            
-	            count++;
-            }
-         }
-         while (tm != null);
-         
-         do
-         {
-            tm = (TextMessage)cons2.receive(1000);
-            
-            if (tm != null)
-            {
-	            
-	            log.info("*** got message " + tm.getText());
-	            
-	            msgs.add(tm.getText());
-	            
-	            count++;
-            }
-         } 
-         while (tm != null);
-         
-         for (int i = 0; i < NUM_MESSAGES; i++)
-         {
-         	assertTrue(msgs.contains("message4-" + i));
-         }
-         
-         assertEquals(NUM_MESSAGES, count);         
-         
-         
-         // Now send message on node 0, consume on node2, then cancel, consume on node1, cancel, consume on node 0
-         
-         cons1.close();
-         
-         cons2.close();
-         
-         sess2.close();
-         
-         sess2 = conn2.createSession(false, Session.CLIENT_ACKNOWLEDGE);
-         
-         cons2 = sess2.createConsumer(queue[2]);
-         
-         for (int i = 0; i < NUM_MESSAGES; i++)
-         {
-            tm = sess0.createTextMessage("message5-" + i);
-
-            prod0.send(tm);
-         }
-         
-         for (int i = 0; i < NUM_MESSAGES; i++)
-         {
-            tm = (TextMessage)cons2.receive(1000);
-            
-            log.info("*** got message " + tm.getText());
-            
-            assertNotNull(tm);
-               
-            assertEquals("message5-" + i, tm.getText());
-         } 
-         
-         sess2.close(); // messages should go back on queue
-         
-         //Now try on node 1
-         
-         sess1.close();
-         
-         sess1 = conn1.createSession(false, Session.CLIENT_ACKNOWLEDGE);
-         
-         cons1 = sess1.createConsumer(queue[1]);
-         
-         for (int i = 0; i < NUM_MESSAGES; i++)
-         {
-            tm = (TextMessage)cons1.receive(1000);
-            
-            log.info("*** got message " + tm.getText());
-            
-            assertNotNull(tm);
-               
-            assertEquals("message5-" + i, tm.getText());
-         } 
-         
-         sess1.close(); // messages should go back on queue
-         
-         //Now try on node 0
-         
-         cons0 = sess0.createConsumer(queue[0]);
-         
-         for (int i = 0; i < NUM_MESSAGES; i++)
-         {
-            tm = (TextMessage)cons0.receive(1000);
-            
-            log.info("*** got message " + tm.getText());
-            
-            assertNotNull(tm);
-               
-            assertEquals("message5-" + i, tm.getText());
-         }
-                  
-                  
-      }
-      finally
-      {
-         if (conn0 != null)
-         {
-            conn0.close();
-         }
-
-         if (conn1 != null)
-         {
-            conn1.close();
-         }
-
-         if (conn2 != null)
-         {
-            conn2.close();
-         }
-      }
    }
 
    // Private -------------------------------------------------------
@@ -908,10 +421,6 @@ public class DistributedDestinationsTest extends ClusteringTestBase
       }
    }
 
-   /**
-    * Create durable subscriptions on all nodes of the cluster. Include a couple with selectors.
-    * Ensure all messages are receive as appropriate. None of the durable subs are shared.
-    */
    private void clusteredTopicDurable(boolean persistent) throws Exception
    {
       Connection conn0 = null;
@@ -983,20 +492,22 @@ public class DistributedDestinationsTest extends ClusteringTestBase
          MessageConsumer epsilon = sess1.createDurableSubscriber(topic[1], "epsilon");
          
          log.info("created 4");
-
+         
          conn0.start();
          conn1.start();
          conn2.start();
          
+         Thread.sleep(5000);
+         
          log.info("started");
 
-         // Send at node 0
+         // Send at node 0 - and make sure the messages are consumable from all the durable subs
 
          MessageProducer prod = sess0.createProducer(topic[0]);
 
          prod.setDeliveryMode(persistent ? DeliveryMode.PERSISTENT : DeliveryMode.NON_PERSISTENT);
 
-         final int NUM_MESSAGES = 1;
+         final int NUM_MESSAGES = 100;
 
          log.info("sending messages");
 
@@ -1011,6 +522,7 @@ public class DistributedDestinationsTest extends ClusteringTestBase
          {
             TextMessage tm = (TextMessage)alpha.receive(1000);
             assertNotNull(tm);
+            log.info("**** got message" + tm.getText());
             assertEquals("message" + i, tm.getText());
          }
          
@@ -1023,6 +535,7 @@ public class DistributedDestinationsTest extends ClusteringTestBase
          {
             TextMessage tm = (TextMessage)beta.receive(1000);
             assertNotNull(tm);
+            log.info("**** got message" + tm.getText());
             assertEquals("message" + i, tm.getText());
          }
          
@@ -1035,6 +548,7 @@ public class DistributedDestinationsTest extends ClusteringTestBase
          {
             TextMessage tm = (TextMessage)gamma.receive(1000);
             assertNotNull(tm);
+            log.info("**** got message" + tm.getText());
             assertEquals("message" + i, tm.getText());
          }
          
@@ -1047,9 +561,10 @@ public class DistributedDestinationsTest extends ClusteringTestBase
          {
             TextMessage tm = (TextMessage)delta.receive(1000);
             assertNotNull(tm);
+            log.info("**** got message" + tm.getText());
             assertEquals("message" + i, tm.getText());
          }
-         
+
          log.info("got 4");
          
          msg = delta.receive(1000);
@@ -1059,14 +574,108 @@ public class DistributedDestinationsTest extends ClusteringTestBase
          {
             TextMessage tm = (TextMessage)epsilon.receive(1000);
             assertNotNull(tm);
+            log.info("**** got message" + tm.getText());
             assertEquals("message" + i, tm.getText());
          }
+         
          
          log.info("got 5");
          
          msg = epsilon.receive(1000);
          assertNull(msg);
+         
+         
+         //close beta
+         beta.close();
+         
+         
+         log.info("Sent messages");
+         
+         // Create another beta - this one node 0
+         MessageConsumer beta0 = sess0.createDurableSubscriber(topic[0], "beta");
+         
+         //And one node node1
+         MessageConsumer beta1 = sess1.createDurableSubscriber(topic[1], "beta");
+         
+         //Now send some more messages at node 2
+         
+         MessageProducer prod2 = sess2.createProducer(topic[2]);
 
+         prod2.setDeliveryMode(persistent ? DeliveryMode.PERSISTENT : DeliveryMode.NON_PERSISTENT);
+
+         log.info("sending more messages");
+
+         for (int i = 0; i < NUM_MESSAGES; i++)
+         {
+            prod2.send(sess1.createTextMessage("message2-" + i));
+         }
+         
+         //They should be round - robined - but we don't know which one will get them first
+
+         int offset = 0;
+         
+         for (int i = 0; i < NUM_MESSAGES / 2; i++)
+         {
+            TextMessage tm = (TextMessage)beta0.receive(1000);
+            assertNotNull(tm);
+            log.info("**** got message" + tm.getText());
+            
+            if (tm.getText().substring("message2-".length()).equals("1"))
+            {
+            	offset = 1;
+            }
+            
+            assertEquals("message2-" + (i * 2 + offset), tm.getText());
+         }
+         
+         msg = beta0.receive(2000);
+         assertNull(msg);
+         
+         if (offset == 1)
+         {
+         	offset = 0;
+         }
+         else
+         {
+         	offset = 1;
+         }      
+         
+         for (int i = 0; i < NUM_MESSAGES / 2; i++)
+         {
+            TextMessage tm = (TextMessage)beta1.receive(1000);
+            assertNotNull(tm);
+            log.info("**** got message" + tm.getText());
+            assertEquals("message2-" + (i * 2 + offset), tm.getText());
+         }
+         
+         msg = beta1.receive(2000);
+         assertNull(msg);
+         
+         //Send some more at node 0
+         
+         for (int i = 0; i < NUM_MESSAGES; i++)
+         {
+            prod.send(sess1.createTextMessage("message3-" + i));
+         }
+         
+         //This should go straight to the local queue
+         
+         for (int i = 0; i < NUM_MESSAGES; i++)
+         {
+            TextMessage tm = (TextMessage)beta0.receive(1000);
+            assertNotNull(tm);
+            log.info("**** got message" + tm.getText());
+            assertEquals("message3-" + i, tm.getText());
+         }
+         
+         msg = beta0.receive(2000);
+         assertNull(msg);
+         
+         //So now we have a beta on node 1 and a beta on node 0 and the messages are on node2
+         
+         beta0.close();
+         beta1.close();	
+         
          alpha.close();
          beta.close();
          gamma.close();
@@ -1102,6 +711,8 @@ public class DistributedDestinationsTest extends ClusteringTestBase
          }
       }
    }
+   
+   
 
    /*
     * Create shared durable subs on multiple nodes, the local instance should always get the message
@@ -1147,9 +758,13 @@ public class DistributedDestinationsTest extends ClusteringTestBase
          }
          catch (Exception ignore) {}
 
+         log.info("** creating 1");
          MessageConsumer cons1 = sess1.createDurableSubscriber(topic[0], "sub");
+         log.info("** creating 2");
          MessageConsumer cons2 = sess2.createDurableSubscriber(topic[1], "sub");
+         log.info("** creating 3");
          MessageConsumer cons3 = sess3.createDurableSubscriber(topic[2], "sub");
+         log.info("** creating 4");
 
          conn1.start();
          conn2.start();
@@ -1249,13 +864,48 @@ public class DistributedDestinationsTest extends ClusteringTestBase
 
          cons1.close();
          cons2.close();
+         
+         //Try and unsubscribe now - this should fail since there is still a consumer open on another node
+         
+         try
+         {
+         	sess1.unsubscribe("sub");
+         	
+         	fail("Did not throw IllegalStateException");
+         }
+         catch (javax.jms.IllegalStateException e)
+         {
+         	//Ok 
+         }
+         
          cons3.close();
-
+         
          // Need to unsubscribe on any node that the durable sub was created on
 
          sess1.unsubscribe("sub");
-         sess2.unsubscribe("sub");
-         sess3.unsubscribe("sub");
+         
+         //Next unsubscribe should fail since it's already unsubscribed from a different node of the cluster
+         try
+         {
+         	sess2.unsubscribe("sub");
+         	
+         	fail("Did not throw InvalidDestinationException");
+         }
+         catch (InvalidDestinationException e)
+         {
+         	//Ok
+         }
+         
+         try
+         {
+         	sess3.unsubscribe("sub");
+         	
+         	fail("Did not throw InvalidDestinationException");
+         }
+         catch (InvalidDestinationException e)
+         {
+         	//Ok
+         }
       }
       finally
       {
@@ -1386,34 +1036,8 @@ public class DistributedDestinationsTest extends ClusteringTestBase
       }
    }
 
-   class MyListener implements MessageListener
-   {
-      private int i;
-
-      MyListener(int i)
-      {
-         this.i = i;
-      }
-
-      public void onMessage(Message m)
-      {
-         try
-         {
-            int count = m.getIntProperty("count");
-
-            log.info("Listener " + i + " received message " + count);
-         }
-         catch (Exception e)
-         {
-            e.printStackTrace();
-         }
-      }
-
-   }
-
-
+  
    // Inner classes -------------------------------------------------
-
    
 
 }

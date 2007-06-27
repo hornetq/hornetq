@@ -42,4 +42,9 @@ public class Binding
 	public Condition condition;
 	
 	public Queue queue;
+	
+	public String toString()
+	{
+		return "Binding:" + System.identityHashCode(this) + " condition: " + condition + " queue: " + queue;
+	}
 }

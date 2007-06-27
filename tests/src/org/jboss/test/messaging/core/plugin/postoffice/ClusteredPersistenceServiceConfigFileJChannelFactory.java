@@ -47,8 +47,8 @@ public class ClusteredPersistenceServiceConfigFileJChannelFactory implements JCh
    private JChannelFactory multiplexorDelegate;
 
    // ... or just plain XML configuration.
-   private Element syncConfig;
-   private Element asyncConfig;
+   private Element controlConfig;
+   private Element dataConfig;
 
    // Constructors ---------------------------------------------------------------------------------
 
@@ -73,27 +73,27 @@ public class ClusteredPersistenceServiceConfigFileJChannelFactory implements JCh
 
    // JChannelFactory ------------------------------------------------------------------------------
 
-   public JChannel createSyncChannel() throws Exception
+   public JChannel createControlChannel() throws Exception
    {
       if (multiplexorDelegate != null)
       {
-         return multiplexorDelegate.createSyncChannel();
+         return multiplexorDelegate.createControlChannel();
       }
       else
       {
-         return new JChannel(syncConfig);
+         return new JChannel(controlConfig);
       }
    }
 
-   public JChannel createASyncChannel() throws Exception
+   public JChannel createDataChannel() throws Exception
    {
       if (multiplexorDelegate != null)
       {
-         return multiplexorDelegate.createASyncChannel();
+         return multiplexorDelegate.createDataChannel();
       }
       else
       {
-         return new JChannel(asyncConfig);
+         return new JChannel(dataConfig);
       }
    }
 
@@ -134,18 +134,18 @@ public class ClusteredPersistenceServiceConfigFileJChannelFactory implements JCh
             throw new IllegalStateException("Cannot find ChannelPartitionName");
          }
 
-         String syncChannelName = (String)postOfficeConfig.getAttributeValue("SyncChannelName");
+         String controlChannelName = (String)postOfficeConfig.getAttributeValue("ControlChannelName");
 
-         if (syncChannelName == null)
+         if (controlChannelName == null)
          {
-            throw new IllegalStateException("Cannot find SyncChannelName");
+            throw new IllegalStateException("Cannot find ControlChannelName");
          }
 
-         String asyncChannelName = (String)postOfficeConfig.getAttributeValue("AsyncChannelName");
+         String dataChannelName = (String)postOfficeConfig.getAttributeValue("DataChannelName");
 
-         if (asyncChannelName == null)
+         if (dataChannelName == null)
          {
-            throw new IllegalStateException("Cannot find AsyncChannelName");
+            throw new IllegalStateException("Cannot find DataChannelName");
          }
 
          try
@@ -154,8 +154,8 @@ public class ClusteredPersistenceServiceConfigFileJChannelFactory implements JCh
             {
                multiplexorDelegate =
                   new MultiplexerJChannelFactory(mbeanServer, channelFactoryName,
-                                                 channelPartitionName, syncChannelName,
-                                                 asyncChannelName);
+                                                 channelPartitionName, controlChannelName,
+                                                 dataChannelName);
 
                // initialization ends here, we've found what we were looking for
                return;
@@ -170,23 +170,23 @@ public class ClusteredPersistenceServiceConfigFileJChannelFactory implements JCh
 
       // the only chance now is to use the XML configurations
 
-      s = (String)postOfficeConfig.getAttributeValue("SyncChannelConfig");
+      s = (String)postOfficeConfig.getAttributeValue("ControlChannelConfig");
 
       if (s == null)
       {
-         throw new IllegalStateException("Cannot find SyncChannelConfig");
+         throw new IllegalStateException("Cannot find ControlChannelConfig");
       }
 
-      syncConfig = XMLUtil.stringToElement(s);
+      controlConfig = XMLUtil.stringToElement(s);
 
-      s = (String)postOfficeConfig.getAttributeValue("AsyncChannelConfig");
+      s = (String)postOfficeConfig.getAttributeValue("DataChannelConfig");
 
       if (s == null)
       {
-         throw new IllegalStateException("Cannot find AsyncChannelConfig");
+         throw new IllegalStateException("Cannot find DataChannelConfig");
       }
 
-      asyncConfig = XMLUtil.stringToElement(s);
+      dataConfig = XMLUtil.stringToElement(s);
    }
 
    // Inner classes --------------------------------------------------------------------------------

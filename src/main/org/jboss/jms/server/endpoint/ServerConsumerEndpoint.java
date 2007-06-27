@@ -43,6 +43,7 @@ import org.jboss.messaging.core.contract.MessageReference;
 import org.jboss.messaging.core.contract.PostOffice;
 import org.jboss.messaging.core.contract.Queue;
 import org.jboss.messaging.core.contract.Receiver;
+import org.jboss.messaging.core.contract.Replicator;
 import org.jboss.messaging.core.impl.SimpleDelivery;
 import org.jboss.messaging.core.impl.tx.Transaction;
 import org.jboss.messaging.util.ExceptionUtil;
@@ -507,7 +508,7 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
                   
          ServerPeer sp = sessionEndpoint.getConnectionEndpoint().getServerPeer();
          
-         Queue queue = sp.getPostOfficeInstance().getBindingForQueueName(queueName).queue;        
+         Queue queue = postOffice.getBindingForQueueName(queueName).queue;        
          
          ManagedDestination mDest = sp.getDestinationManager().getDestination(destination.getName(), false);
          
@@ -525,6 +526,19 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
 	            {
 	               throw new IllegalStateException("Cannot find counter to remove " + counterName);
 	            }
+            }
+         }
+         else
+         {
+         	//Durable sub consumer
+         	
+         	if (queue.isClustered() && postOffice.isClustered())
+            {
+            	//Clustered durable sub consumer created - we need to remove this info from the replicator
+            	
+            	Replicator rep = (Replicator)postOffice;
+            	
+            	rep.put(queue.getName(), ServerSessionEndpoint.DUR_SUB_STATE_NO_CONSUMERS);
             }
          }
       }

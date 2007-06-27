@@ -73,15 +73,15 @@ public class MessagingPostOfficeService extends JDBCServiceSupport
    private boolean started;
 
    // This group of properties is used on JGroups Channel configuration
-   private Element syncChannelConfig;
+   private Element controlChannelConfig;
    
-   private Element asyncChannelConfig;
+   private Element dataChannelConfig;
    
    private ObjectName channelFactoryName;
    
-   private String syncChannelName;
+   private String controlChannelName;
    
-   private String asyncChannelName;
+   private String dataChannelName;
    
    private String channelPartitionName;
 
@@ -176,34 +176,34 @@ public class MessagingPostOfficeService extends JDBCServiceSupport
       this.channelFactoryName = channelFactoryName;
    }
 
-   public String getSyncChannelName()
+   public String getControlChannelName()
    {
-      return syncChannelName;
+      return controlChannelName;
    }
 
-   public void setSyncChannelName(String syncChannelName)
+   public void setControlChannelName(String controlChannelName)
    {
       if (started)
       {
          log.warn("Cannot set attribute when service is started");
          return;
       }
-      this.syncChannelName = syncChannelName;
+      this.controlChannelName = controlChannelName;
    }
 
-   public String getAsyncChannelName()
+   public String getDataChannelName()
    {
-      return asyncChannelName;
+      return dataChannelName;
    }
 
-   public void setAsyncChannelName(String asyncChannelName)
+   public void setDataChannelName(String dataChannelName)
    {
       if (started)
       {
          log.warn("Cannot set attribute when service is started");
          return;
       }
-      this.asyncChannelName = asyncChannelName;
+      this.dataChannelName = dataChannelName;
    }
 
    public String getChannelPartitionName()
@@ -221,34 +221,34 @@ public class MessagingPostOfficeService extends JDBCServiceSupport
       this.channelPartitionName = channelPartitionName;
    }
 
-   public void setSyncChannelConfig(Element config) throws Exception
+   public void setControlChannelConfig(Element config) throws Exception
    {
       if (started)
       {
          log.warn("Cannot set attribute when service is started");
          return;
       }
-      syncChannelConfig = config;
+      controlChannelConfig = config;
    }
 
-   public Element getSyncChannelConfig()
+   public Element getControlChannelConfig()
    {
-      return syncChannelConfig;
+      return controlChannelConfig;
    }
 
-   public void setAsyncChannelConfig(Element config) throws Exception
+   public void setDataChannelConfig(Element config) throws Exception
    {
       if (started)
       {
          log.warn("Cannot set attribute when service is started");
          return;
       }
-      asyncChannelConfig = config;
+      dataChannelConfig = config;
    }
 
-   public Element getAsyncChannelConfig()
+   public Element getDataChannelConfig()
    {
-      return asyncChannelConfig;
+      return dataChannelConfig;
    }
 
    public void setStateTimeout(long timeout)
@@ -377,18 +377,18 @@ public class MessagingPostOfficeService extends JDBCServiceSupport
 
                jChannelFactory =
                   new MultiplexerJChannelFactory(server, channelFactoryName, channelPartitionName,
-                                                 syncChannelName, asyncChannelName);
+                                                 controlChannelName, dataChannelName);
             }
             else
             {
                log.debug(this + " uses XMLJChannelFactory");
-               jChannelFactory = new XMLJChannelFactory(syncChannelConfig, asyncChannelConfig);
+               jChannelFactory = new XMLJChannelFactory(controlChannelConfig, dataChannelConfig);
             }
          }
          else
          {
             log.debug(this + " uses XMLJChannelFactory");
-            jChannelFactory = new XMLJChannelFactory(syncChannelConfig, asyncChannelConfig);
+            jChannelFactory = new XMLJChannelFactory(controlChannelConfig, dataChannelConfig);
          }
 
          if (clustered)

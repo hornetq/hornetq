@@ -72,6 +72,7 @@ import org.jboss.messaging.core.contract.MessageStore;
 import org.jboss.messaging.core.contract.PersistenceManager;
 import org.jboss.messaging.core.contract.PostOffice;
 import org.jboss.messaging.core.contract.Queue;
+import org.jboss.messaging.core.contract.Replicator;
 import org.jboss.messaging.core.impl.IDManager;
 import org.jboss.messaging.core.impl.MessagingQueue;
 import org.jboss.messaging.core.impl.tx.Transaction;
@@ -113,6 +114,10 @@ public class ServerSessionEndpoint implements SessionEndpoint
    // Constants ------------------------------------------------------------------------------------
 
    private static final Logger log = Logger.getLogger(ServerSessionEndpoint.class);
+   
+   static final String DUR_SUB_STATE_CONSUMERS = "C";
+   
+   static final String DUR_SUB_STATE_NO_CONSUMERS = "N";
    
    static final String TEMP_QUEUE_MESSAGECOUNTER_PREFIX = "TempQueue.";
    
@@ -684,10 +689,21 @@ public class ServerSessionEndpoint implements SessionEndpoint
                                             subscriptionName + " since it has active subscribers");
          }
          
-         //Unbind it
+         //Also if it is clustered we must disallow unsubscribing if it has active consumers on other nodes
          
-         // Durable subs must be unbound on ALL nodes of the cluster
-    
+         if (sub.isClustered() && postOffice.isClustered())
+         {
+         	Replicator rep = (Replicator)postOffice;
+         	
+         	Map map = rep.get(sub.getName());
+         	
+         	if (!map.isEmpty())
+         	{
+         		throw new IllegalStateException("Cannot unsubscribe durable subscription " +
+                     subscriptionName + " since it has active subscribers on other nodes");
+         	}
+         }
+         
          postOffice.removeBinding(sub.getName(), true);         
          
          String counterName = TopicService.SUBSCRIPTION_MESSAGECOUNTER_PREFIX + sub.getName();
@@ -1351,6 +1367,18 @@ public class ServerSessionEndpoint implements SessionEndpoint
                {
                	throw new IllegalStateException("Cannot create a subscriber on the durable subscription since it already has subscriber(s)");
                }
+               
+               // If the durable sub exists because it is clustered and was created on this node due to a bind on another node
+               // then it will have no message counter
+               
+               String counterName = TopicService.SUBSCRIPTION_MESSAGECOUNTER_PREFIX + queue.getName();    
+               
+               boolean createCounter = false;
+               
+               if (sp.getMessageCounterManager().getMessageCounter(counterName) == null)
+               {
+               	createCounter = true;
+               }
                               
                // From javax.jms.Session Javadoc (and also JMS 1.1 6.11.1):
                // A client can change an existing durable subscription by creating a durable
@@ -1397,17 +1425,20 @@ public class ServerSessionEndpoint implements SessionEndpoint
                   // Durable subs must be bound on ALL nodes of the cluster
                   
                   postOffice.addBinding(new Binding(new JMSCondition(false, jmsDestination.getName()), queue), true);
-
-                  String counterName = TopicService.SUBSCRIPTION_MESSAGECOUNTER_PREFIX + queue.getName();
-                  
+  
                   if (!mDest.isTemporary())
                   {
-	                  MessageCounter counter =
-	                     new MessageCounter(counterName, subscriptionName, queue, true, true,
-	                                        mDest.getMessageCounterHistoryDayLimit());
-	                  
-	                  sp.getMessageCounterManager().registerMessageCounter(counterName, counter);
+	                  createCounter = true;
                   }
+               }
+               
+               if (createCounter)
+               {
+               	MessageCounter counter =
+                     new MessageCounter(counterName, subscriptionName, queue, true, true,
+                                        mDest.getMessageCounterHistoryDayLimit());
+                  
+                  sp.getMessageCounterManager().registerMessageCounter(counterName, counter);
                }
             }
          }
@@ -1445,6 +1476,20 @@ public class ServerSessionEndpoint implements SessionEndpoint
          new ServerConsumerEndpoint(consumerID, queue,
                                     queue.getName(), this, selectorString, noLocal,
                                     jmsDestination, dlqToUse, expiryQueueToUse, redeliveryDelay, maxDeliveryAttemptsToUse, false);
+      
+      if (queue.isClustered() && postOffice.isClustered() && jmsDestination.isTopic() && subscriptionName != null)
+      {
+      	//Clustered durable sub consumer created - we need to add this info in the replicator - it is needed by other nodes
+      	
+      	//This is also used to prevent a possible race condition where a clustered durable sub is bound on all nodes
+      	//but then unsubscribed before the bind is complete on all nodes, leaving it bound on some nodes and not on others
+      	//The bind all is synchronous so by the time we add the x to the replicator we know it is bound on all nodes
+      	//and same to unsubscribe
+      	
+      	Replicator rep = (Replicator)postOffice;
+      	
+      	rep.put(queue.getName(), DUR_SUB_STATE_CONSUMERS);
+      }
       
       ConsumerAdvised advised;
       

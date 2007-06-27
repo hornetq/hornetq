@@ -77,6 +77,11 @@ public class MessageSucker implements MessageListener
 	private boolean consuming;
 	
 	private ConsumerDelegate consumer;
+	
+	public String toString()
+	{
+		return "MessageSucker:" + System.identityHashCode(this) + " queue:" + localQueue.getName();
+	}
 			
 	MessageSucker(Queue localQueue, JBossConnection sourceConnection, JBossConnection localConnection, boolean xa)
 	{	
@@ -147,6 +152,8 @@ public class MessageSucker implements MessageListener
 		
 		if (trace) { log.trace(this + " Registering sucker"); }
 		
+		log.info("**** starting sucker sucking from queue " + this.getQueueName());
+		
 		localQueue.registerSucker(this);
 		
 		if (trace) { log.trace(this + " Registered sucker"); }
@@ -161,8 +168,6 @@ public class MessageSucker implements MessageListener
 		
 		setConsuming(false);
 				
-		//FIXME - need to do the stopping properly
-		
 		localQueue.unregisterSucker(this);
 		
 		try
@@ -171,7 +176,7 @@ public class MessageSucker implements MessageListener
 		}
 		catch (Throwable t)
 		{
-			if (trace) { log.trace("Failure in closing source session", t); }
+			//Ignore
 		}
 		
 		try
@@ -180,7 +185,7 @@ public class MessageSucker implements MessageListener
 		}
 		catch (Throwable t)
 		{
-			if (trace) { log.trace("Failure in closing local session", t); }
+			//Ignore
 		}
 	}
 	
@@ -254,8 +259,7 @@ public class MessageSucker implements MessageListener
 			if (trace) { log.trace(this + " forwarded message to queue"); }
 
 			if (startTx)
-			{
-				
+			{				
 				if (trace) { log.trace("Committing JTA transaction"); }
 			
 				tx.delistResource(sourceSession.getXAResource(), XAResource.TMSUCCESS);

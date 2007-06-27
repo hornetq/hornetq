@@ -215,11 +215,15 @@ public class MessagingQueue extends PagingChannelSupport implements Queue
 	   	
    			handleFlowControlForConsumers = true;
    			
-   			if (getReceiversReady())
+   			if (getReceiversReady() && localDistributor.getNumberOfReceivers() > 0)
    			{   				
    				if (trace) { log.trace(this + " receivers ready so setting consumer to true"); }
    			
    				sucker.setConsuming(true);
+   			}
+   			else
+   			{
+   				log.info("No receivers ready set setting consuming to false");
    			}
    		}
    	}
@@ -352,13 +356,13 @@ public class MessagingQueue extends PagingChannelSupport implements Queue
 			if (trace) { log.trace(this + " attempting to add receiver " + receiver); }
 	      
 	      synchronized (lock)
-	      {	
+	      {	   
 		      boolean added = distributor.add(receiver);
-		
+				     
 		      if (trace) { log.trace("receiver " + receiver + (added ? "" : " NOT") + " added"); }
-		
+		      
 		      setReceiversReady(true);
-		      		
+		      		      	
 		      return added;
 	      }
 		}

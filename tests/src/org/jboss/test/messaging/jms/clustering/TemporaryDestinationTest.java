@@ -22,11 +22,7 @@
 package org.jboss.test.messaging.jms.clustering;
 
 import javax.jms.Connection;
-import javax.jms.Destination;
-import javax.jms.JMSException;
-import javax.jms.Message;
 import javax.jms.MessageConsumer;
-import javax.jms.MessageListener;
 import javax.jms.MessageProducer;
 import javax.jms.Queue;
 import javax.jms.Session;
@@ -175,6 +171,8 @@ public class TemporaryDestinationTest extends ClusteringTestBase
          Session session0 = conn0.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
          Topic topic = session0.createTemporaryTopic();
+         
+         Thread.sleep(1000);
          
          MessageConsumer cons0 = session0.createConsumer(topic);
          

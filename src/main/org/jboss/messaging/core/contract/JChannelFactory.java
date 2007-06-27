@@ -10,7 +10,7 @@ import org.jgroups.JChannel;
  */
 public interface JChannelFactory
 {
-   JChannel createSyncChannel() throws Exception;
+   JChannel createControlChannel() throws Exception;
    
-   JChannel createASyncChannel() throws Exception;
+   JChannel createDataChannel() throws Exception;
 }

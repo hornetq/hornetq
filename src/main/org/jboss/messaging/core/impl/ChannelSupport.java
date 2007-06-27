@@ -38,7 +38,6 @@ import org.jboss.messaging.core.contract.Filter;
 import org.jboss.messaging.core.contract.MessageReference;
 import org.jboss.messaging.core.contract.MessageStore;
 import org.jboss.messaging.core.contract.PersistenceManager;
-import org.jboss.messaging.core.contract.Receiver;
 import org.jboss.messaging.core.impl.tx.Transaction;
 import org.jboss.messaging.core.impl.tx.TransactionException;
 import org.jboss.messaging.core.impl.tx.TxCallback;
@@ -222,7 +221,9 @@ public abstract class ChannelSupport implements Channel
       synchronized (lock)
       {      
 	      if (distributor != null && distributor.getNumberOfReceivers() > 0)
-	      {                
+	      {         
+	      	log.info("Deliver was called");
+	      	
 	         setReceiversReady(true);
 	            
 	         deliverInternal();                  

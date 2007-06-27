@@ -132,7 +132,7 @@ public class ClusterConnectionManager implements ClusterNotificationListener
 		
       if (trace) { log.trace(this + " stopped"); }
 	}
-
+	
 	/*
 	 * We respond to two types of events -
 	 * 
@@ -233,9 +233,13 @@ public class ClusterConnectionManager implements ClusterNotificationListener
 	         		{
 	         			Integer nid = (Integer)iter.next();
 	         			
+		         		log.info("*********** CLOSING CLUSTER CONNECTION FOR NODE " + nid);
+		         			         			
 	         			ConnectionInfo info = (ConnectionInfo)connections.remove(nid);
-	         			
+	         				         			
 	         			info.close();
+	         					         		
+		         		log.info("******* CLOSED");
 	         		}
 	      		}         	
 	         }
@@ -250,7 +254,7 @@ public class ClusterConnectionManager implements ClusterNotificationListener
 				{
 					//Local bind
 					
-					if (trace) { log.trace("Local bind"); }
+					if (trace) { log.trace(this + " Local bind"); }
 					
 					ensureAllConnectionsCreated();
 					
@@ -260,14 +264,20 @@ public class ClusterConnectionManager implements ClusterNotificationListener
 					
 					Iterator iter = bindings.iterator();
 					
+					if (trace) { log.trace(this + " Looking for remote bindings"); }
+					
 					while (iter.hasNext())
 					{
 						Binding binding = (Binding)iter.next();
 						
+						if (trace) { log.trace(this + " Remote binding is " + binding); }
+						
 						//This will only create it if it doesn't already exist
 						
 						if (binding.queue.getNodeID() != this.nodeID)
-					   {
+					   {							
+							if (trace) { log.trace(this + " Creating sucker"); }
+					   
 							createSucker(queueName, binding.queue.getNodeID());
 						}
 					}										
@@ -276,7 +286,7 @@ public class ClusterConnectionManager implements ClusterNotificationListener
 				{
 					//Remote bind
 					
-					if (trace) { log.trace("Remote bind"); }
+					if (trace) { log.trace(this + " Remote bind"); }
 					
 					ensureAllConnectionsCreated();
 										
@@ -287,10 +297,13 @@ public class ClusterConnectionManager implements ClusterNotificationListener
 					if (localBinding == null)
 					{
 						//This is ok - the queue was deployed on the remote node before being deployed on the local node - do nothing for now
+						if (trace) { log.trace(this + " There's no local binding"); }
 					}
 					else
 					{
 						//The queue has already been deployed on the local node so create a sucker
+						
+						if (trace) { log.trace(this + " Creating sucker"); }
 						
 						createSucker(queueName, notification.nodeID);
 					}
@@ -426,10 +439,12 @@ public class ClusterConnectionManager implements ClusterNotificationListener
 		
 		if (sucker == null)
 		{
-			throw new IllegalStateException("Cannot find sucker to remove " + sucker);
+			//This is OK too
 		}
-		
-		sucker.stop();
+		else
+		{		
+			sucker.stop();
+		}
 	}
 	
 	private void removeAllSuckers(String queueName)
@@ -589,7 +604,7 @@ public class ClusterConnectionManager implements ClusterNotificationListener
 			}
 			catch (Throwable t)
 			{
-				if (trace) { log.trace("Failure in closing source connection", t); }
+				//Ignore - the other server might have closed so this is ok
 			}
 			
 			connection = null;

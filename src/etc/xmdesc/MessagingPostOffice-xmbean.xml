@@ -77,15 +77,15 @@
       <type>boolean</type>
    </attribute>   
       
-   <attribute access="read-write" getMethod="getSyncChannelConfig" setMethod="setSyncChannelConfig">
-      <description>The JGroups stack configuration for the synchronous channel</description>
-      <name>SyncChannelConfig</name>
+   <attribute access="read-write" getMethod="getControlChannelConfig" setMethod="setControlChannelConfig">
+      <description>The JGroups stack configuration for the control channel</description>
+      <name>ControlChannelConfig</name>
       <type>org.w3c.dom.Element</type>
    </attribute>
    
-   <attribute access="read-write" getMethod="getAsyncChannelConfig" setMethod="setAsyncChannelConfig">
-      <description>The JGroups stack configuration for the asynchronous channel</description>
-      <name>AsyncChannelConfig</name>
+   <attribute access="read-write" getMethod="getDataChannelConfig" setMethod="setDataChannelConfig">
+      <description>The JGroups stack configuration for the data channel</description>
+      <name>DataChannelConfig</name>
       <type>org.w3c.dom.Element</type>
    </attribute>   
    
@@ -101,15 +101,15 @@
       <type>javax.management.ObjectName</type>
    </attribute>
 
-   <attribute access="read-write" getMethod="getSyncChannelName" setMethod="setSyncChannelName">
-      <description>The name of the stack used on multiplexer for Sync Channels</description>
-      <name>SyncChannelName</name>
+   <attribute access="read-write" getMethod="getControlChannelName" setMethod="setControlChannelName">
+      <description>The name of the stack used on multiplexer for Control Channels</description>
+      <name>ControlChannelName</name>
       <type>java.lang.String</type>
    </attribute>
 
-   <attribute access="read-write" getMethod="getAsyncChannelName" setMethod="setAsyncChannelName">
-      <description>The name of the stack used on multiplexer for Async Channels</description>
-      <name>AsyncChannelName</name>
+   <attribute access="read-write" getMethod="getDataChannelName" setMethod="setDataChannelName">
+      <description>The name of the stack used on multiplexer for Data Channels</description>
+      <name>DataChannelName</name>
       <type>java.lang.String</type>
    </attribute>
 

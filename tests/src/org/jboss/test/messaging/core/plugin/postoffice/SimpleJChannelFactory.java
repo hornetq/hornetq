@@ -54,12 +54,12 @@ public class SimpleJChannelFactory implements JChannelFactory
 
    // JChannelFactory ------------------------------------------------------------------------------
 
-   public JChannel createSyncChannel() throws Exception
+   public JChannel createControlChannel() throws Exception
    {
       return new JChannel(syncConfig);
    }
 
-   public JChannel createASyncChannel() throws Exception
+   public JChannel createDataChannel() throws Exception
    {
       return new JChannel(asyncConfig);
    }

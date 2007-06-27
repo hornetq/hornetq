@@ -71,6 +71,7 @@ import org.jboss.messaging.core.impl.JDBCSupport;
 import org.jboss.messaging.core.impl.MessagingQueue;
 import org.jboss.messaging.core.impl.tx.Transaction;
 import org.jboss.messaging.core.impl.tx.TransactionRepository;
+import org.jboss.messaging.util.ConcurrentHashSet;
 import org.jboss.messaging.util.StreamUtils;
 import org.jgroups.Address;
 
@@ -159,31 +160,24 @@ public class MessagingPostOffice extends JDBCSupport
    // Map <Condition, List <Queue>> - for ALL nodes
    private Map mappings;
    
-   // Map <queue name, Binding> - only for the current node
-   private Map nameMap;
+   // Map <node, Map < queue name, binding> >
+   private Map nameMaps;
+   
+   //We cache a reference to the local name map for fast lookup
+   private Map localNameMap;
    
    // Map <channel id, Binding> - only for the current node
    private Map channelIDMap;
 
-   // this lock protects the bindings
-   private ReadWriteLock bindingsLock;
+   private ReadWriteLock lock;
    
    private String officeName;
    
    private boolean clustered;
    
+   //Started still needs to be volatile since the ReadWriteLock won't synchronize between threads
    private volatile boolean started;
-   
-   //FIXME using a stopping flag is not a good approach and introduces a race condition
-   //http://jira.jboss.org/jira/browse/JBMESSAGING-819
-   //the code can check stopping and find it to be false, then the service can stop, setting stopping to true
-   //then actually stopping the post office, then the same thread that checked stopping continues and performs
-   //its action only to find the service stopped
-   //Should use a read-write lock instead
-   //One way to minimise the chance of the race happening is to sleep for a little while after setting stopping to true
-   //before actually stopping the service (see below)
-   private volatile boolean stopping;
-
+      
    private GroupMember groupMember;
 
    private Map replicatedData;
@@ -246,11 +240,11 @@ public class MessagingPostOffice extends JDBCSupport
       
       this.clusterNotifier = clusterNotifier;
 
-      bindingsLock = new ReentrantWriterPreferenceReadWriteLock();
+      lock = new ReentrantWriterPreferenceReadWriteLock();
       
       mappings = new HashMap();
       
-      nameMap = new HashMap();
+      nameMaps = new HashMap();
       
       channelIDMap = new HashMap(); 
       
@@ -290,7 +284,7 @@ public class MessagingPostOffice extends JDBCSupport
 
       failoverMap = new LinkedHashMap();
 
-      leftSet = new HashSet();
+      leftSet = new ConcurrentHashSet();
 
       groupMember = new GroupMember(groupName, stateTimeout, castTimeout, jChannelFactory, this, this);
       
@@ -299,13 +293,8 @@ public class MessagingPostOffice extends JDBCSupport
 
    // MessagingComponent overrides -----------------------------------------------------------------
 
-   public synchronized void start() throws Exception
+   public void start() throws Exception
    {
-      if (started)
-      {
-         log.warn("Attempt to start() but " + this + " is already started");
-      }
-
       if (trace) { log.trace(this + " starting"); }
       
       super.start();
@@ -313,17 +302,6 @@ public class MessagingPostOffice extends JDBCSupport
       if (clustered)
       {
 	      groupMember.start();
-
-      	//First get the shared state from the cluster if appropriate
-      	
-      	if (!groupMember.getState())
-      	{
-      		if (trace) { log.trace(this + " is the first member of group"); }
-      	}
-      	else
-      	{
-      		if (trace) { log.trace(this + " is not the first member of group"); }
-      	}
 
 	      //Sanity check - we check there aren't any other nodes already in the cluster with the same node id
 	      if (knowAboutNodeId(thisNodeID))
@@ -340,22 +318,22 @@ public class MessagingPostOffice extends JDBCSupport
 	      //calculate the failover map
 	      calculateFailoverMap();
 	      
-	      syncSendRequest(new JoinClusterRequest(thisNodeID, info));
+	      groupMember.multicastControl(new JoinClusterRequest(thisNodeID, info), true);
       }
-      
+   
       //Now load the bindings for this node
       
       loadBindingsFromStorage();  
       
       started = true;
-      
-      log.debug(this + " started");
+
+      log.debug(this + " started");      
    }
 
    public synchronized void stop() throws Exception
    {
       if (trace) { log.trace(this + " stopping"); }
-
+      
       if (!started)
       {
          log.warn("Attempt to stop() but " + this + " is not started");
@@ -365,23 +343,11 @@ public class MessagingPostOffice extends JDBCSupport
       super.stop();      
       
       if (clustered)
-      {	      
-      	try
-      	{
-		      //Need to send this *before* stopping
-		      syncSendRequest(new LeaveClusterRequest(thisNodeID));
-		
-		      stopping = true;
-		      
-		      //FIXME http://jira.jboss.org/jira/browse/JBMESSAGING-819 this is a temporary kludge for now
-		      Thread.sleep(999);
-	      
-		      groupMember.stop();
-      	}
-      	catch (Throwable t)
-      	{
-      		if (trace) { log.trace("Failure in stopping post office", t); }
-      	}
+      {	       
+	      //Need to send this *before* stopping
+      	groupMember.multicastControl(new LeaveClusterRequest(thisNodeID), true);
+	
+	      groupMember.stop();
       }
       
       started = false;
@@ -418,6 +384,11 @@ public class MessagingPostOffice extends JDBCSupport
    
    public void addBinding(Binding binding, boolean allNodes) throws Exception
    {
+   	internalAddBinding(binding, allNodes, true);
+   }
+   
+   public void internalAddBinding(Binding binding, boolean allNodes, boolean sync) throws Exception
+   {
    	if (trace) { log.trace(this.thisNodeID + " binding " + binding.queue + " with condition " + binding.condition + " all nodes " + allNodes); }
 
    	if (binding == null)
@@ -444,21 +415,12 @@ public class MessagingPostOffice extends JDBCSupport
          throw new IllegalArgumentException("Condition is null");
       }
 
-      bindingsLock.writeLock().acquire();
-
-      try
-      {
-      	addBindingInMemory(binding);
-      }
-      finally
-      {
-         bindingsLock.writeLock().release();
-      }   	
+      addBindingInMemory(binding);  	
       
       if (queue.isRecoverable())
       {
          // Need to write the mapping to the database
-         insertBindingInStorage(condition, queue);
+         insertBindingInStorage(condition, queue, allNodes);
       }
 
       if (clustered && queue.isClustered())
@@ -473,11 +435,26 @@ public class MessagingPostOffice extends JDBCSupport
       	
          ClusterRequest request = new BindRequest(info, allNodes);
 
-         syncSendRequest(request);         
+//         if (sync)
+//         {
+//         	syncSendRequest(request);
+//         }
+//         else
+//         {
+         	//When sending as a result of an all binding being received from the cluster we send the bind on asynchronously
+         	//To avoid a deadlock which happens when you have one sync request hitting a node which then tries to send another back
+         	//to the original node
+           groupMember.multicastControl(request, sync);
+      //   }
       }
    }
    
    public void removeBinding(String queueName, boolean allNodes) throws Throwable
+   {
+   	this.internalRemoveBinding(queueName, allNodes, true);
+   }
+   
+   private void internalRemoveBinding(String queueName, boolean allNodes, boolean sync) throws Throwable
    {
       if (trace) { log.trace(this.thisNodeID + " unbind queue: " + queueName + " all nodes " + allNodes); }
 
@@ -486,25 +463,7 @@ public class MessagingPostOffice extends JDBCSupport
          throw new IllegalArgumentException("Queue name is null");
       }
 
-      bindingsLock.writeLock().acquire();
-      
-      Binding removed;
-      
-      try
-      {
-      	removed = (Binding)nameMap.get(queueName);
-      	
-         if (removed == null)
-         {
-         	throw new IllegalStateException("Cannot find queue to unbind " + queueName);
-         }
-         
-         removeBindingInMemory(removed);                  
-      }
-      finally
-      {
-         bindingsLock.writeLock().release();
-      }
+      Binding removed = removeBindingInMemory(thisNodeID, queueName);
       
       Queue queue = removed.queue;
       
@@ -528,7 +487,7 @@ public class MessagingPostOffice extends JDBCSupport
       	
 	      UnbindRequest request = new UnbindRequest(info, allNodes);
 	
-	      syncSendRequest(request);
+	      groupMember.multicastControl(request, sync);
       }
    }
                   
@@ -559,7 +518,7 @@ public class MessagingPostOffice extends JDBCSupport
    		throw new IllegalArgumentException("Cannot request clustered queues on non clustered post office");
    	}
 
-   	bindingsLock.readLock().acquire();
+   	lock.readLock().acquire();
 
    	try
    	{
@@ -592,7 +551,7 @@ public class MessagingPostOffice extends JDBCSupport
    	}
    	finally
    	{
-   		bindingsLock.readLock().release();
+   		lock.readLock().release();
    	}
    }
    
@@ -603,23 +562,30 @@ public class MessagingPostOffice extends JDBCSupport
    		throw new IllegalArgumentException("Queue name is null");
    	}
    	
-   	bindingsLock.readLock().acquire();
+   	lock.readLock().acquire();
 
    	try
    	{
-   		Binding binding = (Binding)nameMap.get(queueName);
-   		
-   		return binding;
+   		if (localNameMap != null)
+   		{
+   			Binding binding = (Binding)localNameMap.get(queueName);
+      		
+      		return binding;
+   		}
+   		else
+   		{
+   			return null;
+   		}   		   		
    	}
    	finally
    	{
-   		bindingsLock.readLock().release();
+   		lock.readLock().release();
    	}
    }
    
    public Binding getBindingForChannelID(long channelID) throws Exception
    {
-   	bindingsLock.readLock().acquire();
+   	lock.readLock().acquire();
 
    	try
    	{
@@ -629,7 +595,7 @@ public class MessagingPostOffice extends JDBCSupport
    	}
    	finally
    	{
-   		bindingsLock.readLock().release();
+   		lock.readLock().release();
    	}
    }
               
@@ -709,14 +675,14 @@ public class MessagingPostOffice extends JDBCSupport
          replicatedData = copyReplicatedData(state.getReplicatedData());
       }
           
-      nodeIDAddressMap = new ConcurrentHashMap(state.getNodeIDAddressMap());      
+      nodeIDAddressMap = new HashMap(state.getNodeIDAddressMap());      
    }
       
    public byte[] getState() throws Exception
    {
       List list = new ArrayList();
       
-      bindingsLock.readLock().acquire();
+      lock.readLock().acquire();
       
       try
       {
@@ -751,7 +717,7 @@ public class MessagingPostOffice extends JDBCSupport
       }
       finally
       {
-      	bindingsLock.readLock().release();
+      	lock.readLock().release();
       }
 
       //Need to copy
@@ -763,7 +729,7 @@ public class MessagingPostOffice extends JDBCSupport
          copy = copyReplicatedData(replicatedData);
       }
 
-      SharedState state = new SharedState(list, copy, new HashMap(nodeIDAddressMap));
+      SharedState state = new SharedState(list, copy, new ConcurrentHashMap(nodeIDAddressMap));
 
       return StreamUtils.toBytes(state);
    }
@@ -799,18 +765,25 @@ public class MessagingPostOffice extends JDBCSupport
       if (crashed)
       {	      
 	      // Need to evaluate this before we regenerate the failover map
-	      Integer failoverNode = (Integer)failoverMap.get(leftNodeID);
+	      Integer failoverNode;
+	      
+	      synchronized (failoverMap)
+	      {
+	      	failoverNode = (Integer)failoverMap.get(leftNodeID);
+	      }
 	
 	      if (failoverNode == null)
 	      {
 	         throw new IllegalStateException(this + " cannot find failover node for node " + leftNodeID);
 	      }
+	      
+	      log.debug(this + " the failover node for the crashed node is " + failoverNode);
 		      
 	      if (thisNodeID == failoverNode.intValue())
 	      {
 	         // The node crashed and we are the failover node so let's perform failover
 	
-	         log.info(this + ": I am the failover node for node " + leftNodeID + " that crashed");
+	         log.debug(this + ": I am the failover node for node " + leftNodeID + " that crashed");
 	
 	         performFailover(leftNodeID);
 	      }
@@ -855,36 +828,51 @@ public class MessagingPostOffice extends JDBCSupport
       
       Condition condition = conditionFactory.createCondition(mapping.getConditionText());
       
-      
-      bindingsLock.writeLock().acquire();
-
-      try
-      {
-         addBindingInMemory(new Binding(condition, queue));  	
-      }
-      finally
-      {
-      	bindingsLock.writeLock().release();
-      }
+      addBindingInMemory(new Binding(condition, queue));  	
       
       if (allNodes)
    	{
    		if (trace) { log.trace("allNodes is true, so also forcing a local bind"); }
    		
-   		//Also bind locally
-
-   		long channelID = channelIDManager.getID();
+   		//There is the possibility that two nodes send a bind all with the same name simultaneously OR
+   		//a node starts and sends a bind "ALL" and the other nodes already have a queue with that name
+   		//This is ok - but we must check for this and not create the local binding in this case
    		
-   		Queue queue2 = new MessagingQueue(thisNodeID, mapping.getQueueName(), channelID, ms, pm,
+   		lock.readLock().acquire();
+   		
+   		Queue queue2 = null;
+   		
+   		try
+   		{
+   			if (localNameMap != null && localNameMap.get(mapping.getQueueName()) != null)
+   			{
+   				//Already exists - don't create it again!
+   			}
+   			else
+   			{		   				   		
+		   		//Bind locally
+		
+		   		long channelID = channelIDManager.getID();
+		   		
+		   		queue2 = new MessagingQueue(thisNodeID, mapping.getQueueName(), channelID, ms, pm,
    				                            mapping.isRecoverable(), mapping.getMaxSize(), filter,
    				                            mapping.getFullSize(), mapping.getPageSize(), mapping.getDownCacheSize(), true,
    				                            mapping.isPreserveOrdering());
-
-   		addBinding(new Binding(condition, queue2), false);
+		
+		   		internalAddBinding(new Binding(condition, queue2), false, false);
+   			}
+   		}
+   		finally
+   		{
+   			lock.readLock().release();
+   		}
    		
-   		queue2.load();
-   		
-   		queue2.activate();
+   		if (queue2 != null)
+   		{   		
+	   		queue2.load();
+	   		
+	   		queue2.activate();
+   		}
    	}
    }
  
@@ -901,29 +889,7 @@ public class MessagingPostOffice extends JDBCSupport
       	throw new IllegalStateException("Don't know about node id: " + mapping.getNodeId());
       }
 
-      Filter filter = null;
-
-      if (mapping.getFilterString() != null)
-      {
-      	filter = filterFactory.createFilter(mapping.getFilterString());
-      }
-
-      Queue queue = new MessagingQueue(mapping.getNodeId(), mapping.getQueueName(), mapping.getChannelId(),
-      		                           mapping.isRecoverable(), filter, mapping.isClustered());
-
-      Condition condition = conditionFactory.createCondition(mapping.getConditionText());
-
-
-      bindingsLock.writeLock().acquire();
-
-      try
-      {
-         removeBindingInMemory(new Binding(condition, queue));        
-      }
-      finally
-      {
-         bindingsLock.writeLock().release();
-      }
+      removeBindingInMemory(mapping.getNodeId(), mapping.getQueueName());      
       
       if (allNodes)
       {
@@ -939,10 +905,7 @@ public class MessagingPostOffice extends JDBCSupport
    {
    	//No need to remove the nodeid-address map info, this will be removed when data cleaned for node
    	
-      synchronized (leftSet)
-      {
-         leftSet.add(new Integer(nodeId));
-      }
+      leftSet.add(new Integer(nodeId));      
       
       //We don't update the failover map here since this doesn't get called if the node crashed
    }
@@ -951,7 +914,7 @@ public class MessagingPostOffice extends JDBCSupport
    {	   	   	   	
    	nodeIDAddressMap.put(new Integer(nodeId), info);
    	
-   	log.info(this + " handleNodeJoined: " + nodeId + " size: " + nodeIDAddressMap.size());
+   	log.debug(this + " handleNodeJoined: " + nodeId + " size: " + nodeIDAddressMap.size());
    	   
    	calculateFailoverMap();
       
@@ -1065,7 +1028,7 @@ public class MessagingPostOffice extends JDBCSupport
 
       PutReplicantRequest request = new PutReplicantRequest(thisNodeID, key, replicant);
 
-      syncSendRequest(request);
+      groupMember.multicastControl(request, true);
    }
 
    public Map get(Serializable key) throws Exception
@@ -1084,7 +1047,7 @@ public class MessagingPostOffice extends JDBCSupport
       {
          RemoveReplicantRequest request = new RemoveReplicantRequest(this.thisNodeID, key);
 
-         syncSendRequest(request);
+         groupMember.multicastControl(request, true);
 
          return true;
       }
@@ -1094,11 +1057,6 @@ public class MessagingPostOffice extends JDBCSupport
       }
    }
 
-   public FailoverMapper getFailoverMapper()
-   {
-      return failoverMapper;
-   }
-   
    // JDBCSupport overrides ------------------------------------------------------------------------
    
    protected Map getDefaultDMLStatements()
@@ -1113,7 +1071,8 @@ public class MessagingPostOffice extends JDBCSupport
                  "CONDITION, " +
                  "SELECTOR, " +
                  "CHANNEL_ID, " +
-                 "CLUSTERED) " +
+                 "CLUSTERED, " +
+                 "ALL_NODES) " +
               "VALUES (?, ?, ?, ?, ?, ?, ?)");
 
       map.put("DELETE_BINDING",
@@ -1125,7 +1084,8 @@ public class MessagingPostOffice extends JDBCSupport
                  "CONDITION, " +
                  "SELECTOR, " +
                  "CHANNEL_ID, " +
-                 "CLUSTERED " +
+                 "CLUSTERED, " +
+                 "ALL_NODES " +
                  "FROM JBM_POSTOFFICE WHERE POSTOFFICE_NAME=? AND NODE_ID=?");
 
       return map;
@@ -1138,7 +1098,7 @@ public class MessagingPostOffice extends JDBCSupport
               "CREATE TABLE JBM_POSTOFFICE (POSTOFFICE_NAME VARCHAR(255), NODE_ID INTEGER," +
               "QUEUE_NAME VARCHAR(1023), CONDITION VARCHAR(1023), " +
               "SELECTOR VARCHAR(1023), CHANNEL_ID BIGINT, " +
-              "CLUSTERED CHAR(1))");
+              "CLUSTERED CHAR(1), ALL_NODES CHAR(1))");
       return map;
    }
 
@@ -1263,32 +1223,23 @@ public class MessagingPostOffice extends JDBCSupport
    
    private Collection getBindings(String queueName) throws Exception
    {
-   	bindingsLock.readLock().acquire();
+   	lock.readLock().acquire();
 
    	try
    	{
-   		Iterator iter = this.mappings.entrySet().iterator();
+   		Iterator iter = this.nameMaps.values().iterator();
    		
    		List bindings = new ArrayList();
    		
    		while (iter.hasNext())
    		{
-   			Map.Entry entry = (Map.Entry)iter.next();
+   			Map nameMap = (Map)iter.next();
    			
-   			Condition condition = (Condition)entry.getKey();
+   			Binding binding = (Binding)nameMap.get(queueName);
    			
-   			List queues = (List)entry.getValue();
-   			
-   			Iterator iter2 = queues.iterator();
-   			
-   			while (iter2.hasNext())
+   			if (binding != null)
    			{
-   				Queue queue = (Queue)iter2.next();
-   				
-   				if (queueName == null || queue.getName().equals(queueName))
-   				{
-   					bindings.add(new Binding(condition, queue));
-   				}
+   				bindings.add(binding);
    			}
    		}
    		
@@ -1296,10 +1247,9 @@ public class MessagingPostOffice extends JDBCSupport
    	}
    	finally
    	{
-   		bindingsLock.readLock().release();
+   		lock.readLock().release();
    	}
    }
-
    
    private boolean routeInternal(MessageReference ref, Condition condition, Transaction tx, boolean fromCluster) throws Exception
    {
@@ -1309,7 +1259,7 @@ public class MessagingPostOffice extends JDBCSupport
    	
       boolean routed = false;
 
-      bindingsLock.readLock().acquire();
+      lock.readLock().acquire();
       
       try
       {
@@ -1331,10 +1281,14 @@ public class MessagingPostOffice extends JDBCSupport
          	{
          		Queue queue = (Queue)iter.next();
          		
+         		if (trace) { log.trace(this + " considering queue " + queue); }
+         		
          		//TODO optimise this
          		
          		if (queue.getNodeID() == thisNodeID)
          		{
+         			if (trace) { log.trace(this + " is a local queue"); }
+         		
          			//Local queue
 
          			//TODO - There is a slight kludge here -
@@ -1365,6 +1319,8 @@ public class MessagingPostOffice extends JDBCSupport
          		{
          			//Remote queue
          			
+         			if (trace) { log.trace(this + " is a remote queue"); }
+         			
          			if (!queue.isRecoverable())
          			{	         			
          				//When we send to the cluster we never send to reliable queues
@@ -1379,7 +1335,13 @@ public class MessagingPostOffice extends JDBCSupport
 	         				}
 	         				
 	         				remoteSet.add(new Integer(queue.getNodeID()));
+	         				
+	         				if (trace) { log.trace(this + " added it to the remote set for casting"); }
 	         			}
+         			}
+         			else
+         			{
+         				if (trace) { log.trace(this + " is recoverable so not casting"); }
          			}
          		}
          	}
@@ -1393,11 +1355,13 @@ public class MessagingPostOffice extends JDBCSupport
          		
          		ClusterRequest request = new MessageRequest(condition.toText(), ref.getMessage());
          		
+         		if (trace) { log.trace(this + " casting message to other node(s)"); }
+         		
          		if (remoteSet.size() == 1)
          		{
          			//Only one node requires the message, so we can unicast
          			
-         			unicastRequest(request, thisNodeID);
+         			unicastRequest(request, ((Integer)remoteSet.iterator().next()).intValue());
          		}
          		else
          		{
@@ -1456,96 +1420,149 @@ public class MessagingPostOffice extends JDBCSupport
       }
       finally
       {
-         bindingsLock.readLock().release();
+         lock.readLock().release();
       }
 
       return routed;
    }   
    
-   private void removeBindingInMemory(Binding binding)
+   private Binding removeBindingInMemory(int nodeID, String queueName) throws Exception
    {
-   	Queue queue = binding.queue;
+   	lock.writeLock().acquire();
    	
-   	Condition condition = binding.condition;
-   	
-   	if (queue.getNodeID() == this.thisNodeID)
+   	try
    	{
-   		Binding b = (Binding)nameMap.remove(queue.getName());
+   		Integer nid = new Integer(nodeID);
    		
-   		if (b == null)
-   		{
-   			throw new IllegalStateException("Cannot find binding in name map for queue " + queue.getName());
-   		}
-   		
-   		b = (Binding)channelIDMap.remove(new Long(queue.getChannelID()));
-   		
-   		if (b == null)
-   		{
-   			throw new IllegalStateException("Cannot find binding in channel id map for queue " + queue.getName());
-   		}
-   	}
-   	
-   	List queues = (List)mappings.get(condition);
-	      
-      if (queues == null)
-      {
-      	throw new IllegalStateException("Cannot find queues in condition map for condition " + condition);
-      }	     
-      
-      boolean removed = queues.remove(queue);
-      
-      if (!removed)
-      {
-      	throw new IllegalStateException("Cannot find queue in list for queue " + queue.getName());
-      }
-      
-      if (queues.isEmpty())
-      {
-      	mappings.remove(condition);
-      }
-      
-      // Send a notification
-      ClusterNotification notification = new ClusterNotification(ClusterNotification.TYPE_UNBIND, queue.getNodeID(), queue.getName());
-      
-      clusterNotifier.sendNotification(notification);
-   }
-   
-   private void addBindingInMemory(Binding binding)
-   {
-   	Queue queue = binding.queue;
-   	
-   	//The name map and the channel id map only hold the bindings for the *current* node
-   	
-   	if (queue.getNodeID() == this.thisNodeID)
-   	{	   	
-	   	if (nameMap.get(queue.getName()) != null)
+	   	Map nameMap = (Map)this.nameMaps.get(nid);
+	   	
+	   	if (nameMap == null)
 	   	{
-	   		throw new IllegalArgumentException("Cannot bind queue, it is already bound " + queue.getName());
+	   		throw new IllegalArgumentException("Cannot find name maps for node " + nodeID);
 	   	}
 	   	
-	   	log.info("*********** putting queue name " + queue.getName() + " in map");
-	   	nameMap.put(queue.getName(), binding);
+	   	Binding binding = (Binding)nameMap.remove(queueName);
 	   	
-	   	channelIDMap.put(new Long(queue.getChannelID()), binding);
+	   	if (binding == null)
+	   	{
+	   		throw new IllegalArgumentException("Cannot find binding for queue name " + queueName);
+	   	}
+	   	
+	   	if (nameMap.isEmpty())
+	   	{
+	   		nameMaps.remove(nid);
+	   		
+	   		if (nodeID == thisNodeID)
+	   		{
+	   			localNameMap = null;
+	   		}
+	   	}
+	   	
+	   	binding = (Binding)channelIDMap.remove(new Long(binding.queue.getChannelID()));
+			
+			if (binding == null)
+			{
+				throw new IllegalStateException("Cannot find binding in channel id map for queue " + queueName);
+			}
+	   	   	
+	   	List queues = (List)mappings.get(binding.condition);
+		      
+	      if (queues == null)
+	      {
+	      	throw new IllegalStateException("Cannot find queues in condition map for condition " + binding.condition);
+	      }	     
+	      
+	      boolean removed = queues.remove(binding.queue);
+	      
+	      if (!removed)
+	      {
+	      	throw new IllegalStateException("Cannot find queue in list for queue " + queueName);
+	      }
+	      
+	      if (queues.isEmpty())
+	      {
+	      	mappings.remove(binding.condition);
+	      }
+	      
+	      // Send a notification
+	      ClusterNotification notification = new ClusterNotification(ClusterNotification.TYPE_UNBIND, nodeID, queueName);
+	      
+	      clusterNotifier.sendNotification(notification);
+	      
+	      return binding;
    	}
-   	
-   	Condition condition = binding.condition;   	
-   	
-   	List queues = (List)mappings.get(condition);
-   	
-   	if (queues == null)
+   	finally
    	{
-   		queues = new ArrayList();
+   		lock.writeLock().release();
+   	}
+   }
+   
+   private void addBindingInMemory(Binding binding) throws Exception
+   {
+   	Queue queue = binding.queue;
+   	   	
+   	lock.writeLock().acquire();
+   	
+   	if (trace) { log.trace(this + " Adding binding in memory " + binding); }
+   	
+   	try
+   	{	  
+   		Integer nid = new Integer(queue.getNodeID());
    		
-   		if (queues.contains(queue))
+   		Map nameMap = (Map)this.nameMaps.get(nid);
+   		   		
+   		if (nameMap != null && nameMap.containsKey(queue.getName()))
    		{
-   			throw new IllegalArgumentException("Queue is already bound with condition " + condition);
+   			throw new IllegalArgumentException("Name map for node " + nid + " already contains binding for queue " + queue.getName());
    		}
    		
-   		mappings.put(condition, queues);
+   		Long cid = new Long(queue.getChannelID());
+   		
+   		if (channelIDMap.containsKey(cid))
+   		{
+   			throw new IllegalArgumentException("Channel id map for node " + nid + " already contains binding for queue " + cid);
+   		}
+   		
+   		if (nameMap == null)
+   		{
+   			nameMap = new HashMap();
+   			
+   			nameMaps.put(nid, nameMap);
+   			
+   			if (queue.getNodeID() == thisNodeID)
+   			{
+   				localNameMap = nameMap;
+   			}
+   		}
+   		
+   		nameMap.put(queue.getName(), binding);
+   		
+   		channelIDMap.put(cid, binding);
+   			   	
+	   	Condition condition = binding.condition;   	
+	   	
+	   	List queues = (List)mappings.get(condition);
+	   	
+	   	if (queues == null)
+	   	{
+	   		queues = new ArrayList();
+	   		
+	   		if (queues.contains(queue))
+	   		{
+	   			throw new IllegalArgumentException("Queue is already bound with condition " + condition);
+	   		}
+	   		
+	   		mappings.put(condition, queues);
+	   	}
+	   	
+	   	queues.add(queue);  
+   	}
+   	finally
+   	{
+   		lock.writeLock().release();
    	}
    	
-   	queues.add(queue);   
+   	if (trace) { log.trace(this + " Sending cluster notification"); }
    	
       //Send a notification
       ClusterNotification notification = new ClusterNotification(ClusterNotification.TYPE_BIND, queue.getNodeID(), queue.getName());
@@ -1554,30 +1571,20 @@ public class MessagingPostOffice extends JDBCSupport
    }
    
    /*
-    * Multicast a message to all members of the group
+    * Multicast a message on the data channel to all members of the group
     */
    private void multicastRequest(ClusterRequest request) throws Exception
    {
-      if (stopping)
-      {
-         return;
-      }
-      
       if (trace) { log.trace(this + " Unicasting request " + request); }
       
-      groupMember.multicastRequest(request);
+      groupMember.multicastData(request);
    }
 
    /*
-    * Unicast a message to one member of the group
+    * Unicast a message on the data channel to one member of the group
     */
    private void unicastRequest(ClusterRequest request, int nodeId) throws Exception
    {
-      if (stopping)
-      {
-         return;
-      }
-      
       Address address = this.getAddressForNodeId(nodeId, false);
 
       if (address == null)
@@ -1587,12 +1594,12 @@ public class MessagingPostOffice extends JDBCSupport
       
       if (trace) { log.trace(this + "Unicasting request " + request + " to node " + nodeId); }
 
-      groupMember.unicastRequest(request, address);
+      groupMember.unicastData(request, address);
    }
    
    private void loadBindingsFromStorage() throws Exception
    {
-      bindingsLock.writeLock().acquire();
+      lock.writeLock().acquire();
 
       Connection conn = null;
       PreparedStatement ps  = null;
@@ -1626,6 +1633,8 @@ public class MessagingPostOffice extends JDBCSupport
                        
             boolean bindingClustered = rs.getString(5).equals("Y");
             
+            boolean allNodes = rs.getString(6).equals("Y");
+            
             //If the node is not clustered then we load the bindings as non clustered
                     	
             Filter filter = null;
@@ -1655,9 +1664,9 @@ public class MessagingPostOffice extends JDBCSupport
             			                             queue.getMaxSize(),
             			                             queue.isPreserveOrdering());
             	
-               ClusterRequest request = new BindRequest(info, false);
+               ClusterRequest request = new BindRequest(info, allNodes);
 
-               syncSendRequest(request);         
+               groupMember.multicastControl(request, false);         
             }
          }
       }
@@ -1668,7 +1677,7 @@ public class MessagingPostOffice extends JDBCSupport
       }
       finally
       {
-         bindingsLock.writeLock().release();
+         lock.writeLock().release();
          
          closeResultSet(rs);
          
@@ -1680,7 +1689,7 @@ public class MessagingPostOffice extends JDBCSupport
       }
    }
 
-   private void insertBindingInStorage(Condition condition, Queue queue) throws Exception
+   private void insertBindingInStorage(Condition condition, Queue queue, boolean allNodes) throws Exception
    {
       Connection conn = null;
       PreparedStatement ps  = null;
@@ -1713,6 +1722,14 @@ public class MessagingPostOffice extends JDBCSupport
          else
          {
             ps.setString(7, "N");
+         }
+         if (allNodes)
+         {
+         	ps.setString(8, "Y");
+         }
+         else
+         {
+         	ps.setString(8, "N");
          }
 
          ps.executeUpdate();
@@ -1765,10 +1782,7 @@ public class MessagingPostOffice extends JDBCSupport
 
    private boolean leaveMessageReceived(Integer nodeId) throws Exception
    {
-      synchronized (leftSet)
-      {
-         return leftSet.remove(nodeId);
-      }
+      return leftSet.remove(nodeId);      
    }
 
    /*
@@ -1778,7 +1792,7 @@ public class MessagingPostOffice extends JDBCSupport
    {
       log.debug(this + " cleaning data for node " + nodeToRemove);
 
-      bindingsLock.writeLock().acquire();
+      lock.writeLock().acquire();
 
       log.info("** cleaning data for node " + nodeToRemove);
       
@@ -1821,12 +1835,12 @@ public class MessagingPostOffice extends JDBCSupport
       	{
       		Binding binding = (Binding)iter.next();
 
-      		removeBindingInMemory(binding);
+      		removeBindingInMemory(nodeToRemove.intValue(), binding.queue.getName());
       	}
       }
       finally
       {
-         bindingsLock.writeLock().release();
+         lock.writeLock().release();
       }
 
       Map toNotify = new HashMap();
@@ -1872,21 +1886,6 @@ public class MessagingPostOffice extends JDBCSupport
       }
    }
 
-   /*
-    * Multicast a sync request
-    */
-   private void syncSendRequest(ClusterRequest request) throws Exception
-   {
-      if (stopping)
-      {
-         return;
-      }
-      
-      if (trace) { log.trace(this + " sending sync request " + request); }
-      
-      groupMember.sendSyncRequest(request);
-   }
-
    //TODO - can optimise this with a reverse map
    private Integer getNodeIDForSyncAddress(Address address) throws Exception
    {
@@ -1900,7 +1899,7 @@ public class MessagingPostOffice extends JDBCSupport
    			
    		PostOfficeAddressInfo info = (PostOfficeAddressInfo)entry.getValue();
    		
-   		if (info.getSyncChannelAddress().equals(address))
+   		if (info.getControlChannelAddress().equals(address))
    		{
    			nodeID = (Integer)entry.getKey();
    			
@@ -1950,11 +1949,11 @@ public class MessagingPostOffice extends JDBCSupport
    	}
    	else if (sync)
    	{
-   		return info.getSyncChannelAddress();
+   		return info.getControlChannelAddress();
    	}
    	else
    	{
-   		return info.getAsyncChannelAddress();
+   		return info.getDataChannelAddress();
    	}     	
    }
    
@@ -1978,7 +1977,7 @@ public class MessagingPostOffice extends JDBCSupport
       log.debug(this + " announced it is starting failover procedure");
    	
       // Need to lock
-      bindingsLock.writeLock().acquire();
+      lock.writeLock().acquire();
 
       try
       {
@@ -2032,7 +2031,7 @@ public class MessagingPostOffice extends JDBCSupport
             }
       		
             //Remove from the in-memory map
-            removeBindingInMemory(binding);
+            removeBindingInMemory(binding.queue.getNodeID(), binding.queue.getName());
       		
       		//Delete from storage
       		deleteBindingFromStorage(queue);
@@ -2096,13 +2095,11 @@ public class MessagingPostOffice extends JDBCSupport
             }            
          }
 
-         log.debug(this + " finished failing over destinations");
-        
-         log.info(this + ": server side fail over is now complete");
+         log.debug(this + ": server side fail over is now complete");
       }
       finally
       {
-         bindingsLock.writeLock().release();
+         lock.writeLock().release();
       }
       
       log.debug(this + " announcing that failover procedure is complete");

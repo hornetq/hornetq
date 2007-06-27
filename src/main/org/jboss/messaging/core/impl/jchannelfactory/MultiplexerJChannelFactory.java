@@ -120,13 +120,13 @@ public class MultiplexerJChannelFactory implements JChannelFactory
       this.uniqueID = uniqueID;
    }
 
-   public JChannel createSyncChannel() throws Exception
+   public JChannel createControlChannel() throws Exception
    {
       return (JChannel) server.invoke(this.channelFactory, MUX_OPERATION,
          new Object[]{syncStack, uniqueID, Boolean.TRUE, uniqueID}, MUX_SIGNATURE);
    }
 
-   public JChannel createASyncChannel() throws Exception
+   public JChannel createDataChannel() throws Exception
    {
       return (JChannel) server.invoke(this.channelFactory, MUX_OPERATION,
          new Object[]{asyncStack, uniqueID, Boolean.TRUE, uniqueID}, MUX_SIGNATURE);

@@ -108,10 +108,10 @@
       <attribute name="CreateTablesOnStartup">true</attribute>
       
       <attribute name="SqlProperties"><![CDATA[
-CREATE_POSTOFFICE_TABLE=CREATE TABLE JBM_POSTOFFICE (POSTOFFICE_NAME VARCHAR(255), NODE_ID SMALLINT, QUEUE_NAME VARCHAR(1023), COND VARCHAR(1023), SELECTOR VARCHAR(1023), CHANNEL_ID INTEGER, CLSTERED CHAR(1))
-INSERT_BINDING=INSERT INTO JBM_POSTOFFICE (POSTOFFICE_NAME, NODE_ID, QUEUE_NAME, COND, SELECTOR, CHANNEL_ID, CLSTERED) VALUES (?, ?, ?, ?, ?, ?, ?)
+CREATE_POSTOFFICE_TABLE=CREATE TABLE JBM_POSTOFFICE (POSTOFFICE_NAME VARCHAR(255), NODE_ID SMALLINT, QUEUE_NAME VARCHAR(1023), COND VARCHAR(1023), SELECTOR VARCHAR(1023), CHANNEL_ID INTEGER, CLSTERED CHAR(1), ALL_NODES CHAR(1))
+INSERT_BINDING=INSERT INTO JBM_POSTOFFICE (POSTOFFICE_NAME, NODE_ID, QUEUE_NAME, COND, SELECTOR, CHANNEL_ID, CLSTERED, ALL_NODES) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
 DELETE_BINDING=DELETE FROM JBM_POSTOFFICE WHERE POSTOFFICE_NAME=? AND NODE_ID=? AND QUEUE_NAME=?
-LOAD_BINDINGS=SELECT QUEUE_NAME, COND, SELECTOR, CHANNEL_ID, CLSTERED FROM JBM_POSTOFFICE WHERE POSTOFFICE_NAME=? AND NODE_ID=?
+LOAD_BINDINGS=SELECT QUEUE_NAME, COND, SELECTOR, CHANNEL_ID, CLSTERED, ALL_NODES FROM JBM_POSTOFFICE WHERE POSTOFFICE_NAME=? AND NODE_ID=?
       ]]></attribute>
       
       <!-- This post office is clustered. If you don't want a clustered post office then set to false -->
@@ -135,14 +135,14 @@ LOAD_BINDINGS=SELECT QUEUE_NAME, COND, SELECTOR, CHANNEL_ID, CLSTERED FROM JBM_P
       
       <!-- Enable this when the JGroups multiplexer comes of age
       <attribute name="ChannelFactoryName">jgroups.mux:name=Multiplexer</attribute>      
-      <attribute name="SyncChannelName">udp-sync</attribute>
-      <attribute name="AsyncChannelName">udp</attribute>
+      <attribute name="ControlChannelName">udp-sync</attribute>
+      <attribute name="DataChannelName">udp</attribute>
       <attribute name="ChannelPartitionName">${jboss.partition.name:DefaultPartition}-JMS</attribute>
       -->
       
       <!-- JGroups stack configuration for the data channel - used when casting messages across the cluster -->
                   
-      <attribute name="AsyncChannelConfig">
+      <attribute name="DataChannelConfig">
          <config>
             <UDP mcast_recv_buf_size="500000" down_thread="false" ip_mcast="true" mcast_send_buf_size="32000"
            mcast_port="45567" ucast_recv_buf_size="500000" use_incoming_packet_handler="false"
@@ -165,7 +165,7 @@ LOAD_BINDINGS=SELECT QUEUE_NAME, COND, SELECTOR, CHANNEL_ID, CLSTERED FROM JBM_P
       
       <!-- JGroups stack configuration to use for the control channel - used for bind/unbind requests amongst others -->           
       
-      <attribute name="SyncChannelConfig">
+      <attribute name="ControlChannelConfig">
          <config>
             <UDP mcast_recv_buf_size="500000" down_thread="false" ip_mcast="true" mcast_send_buf_size="32000"
            mcast_port="45568" ucast_recv_buf_size="500000" use_incoming_packet_handler="false"

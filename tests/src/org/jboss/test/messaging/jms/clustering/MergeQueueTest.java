@@ -156,7 +156,7 @@ public class MergeQueueTest extends ClusteringTestBase
 
          MessageConsumer consumer0 = session0.createConsumer(queue[0]);
 
-         for (int i=0; i<10; i++)
+         for (int i=0; i < 10; i++)
          {
             producer0.send(session0.createTextMessage("message " + i));
          }
@@ -176,6 +176,7 @@ public class MergeQueueTest extends ClusteringTestBase
          session0.commit();
          consumer0.close();
 
+         log.info("** sent first five on node0");
 
          // Objects Server1
          conn1 = cf.createConnection();
@@ -190,22 +191,32 @@ public class MergeQueueTest extends ClusteringTestBase
 
          producer1.setDeliveryMode(DeliveryMode.PERSISTENT);
 
-         for (int i=10; i<20; i++)
+         for (int i = 10; i < 20; i++)
          {
             producer1.send(session0.createTextMessage("message " + i));
          }
 
          session1.commit();
+         
+         log.info("Sent next 15 on node 1");
 
          // creates another consumer... before killing the server
          MessageConsumer consumer1 = session1.createConsumer(queue[1]);
 
+         log.info("Killing node1");
          ServerManagement.killAndWait(1);
+         log.info("Killed node1");
 
          // close the consumer .. .and this should cause failover to kick in
+         log.info("closing the consumer");
          consumer1.close();
+         
+         log.info("closed the consumer");
 
          consumer0 = session0.createConsumer(queue[0]);
+         
+         log.info("creating new consumer");
+         
          for (int i = 5; i < 20; i++)
          {
             msg = (TextMessage)consumer0.receive(5000);
@@ -217,6 +228,8 @@ public class MergeQueueTest extends ClusteringTestBase
          assertNull(consumer0.receive(5000));
 
          session0.commit();
+         
+         log.info("end");
       }
       finally
       {
