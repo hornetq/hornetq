@@ -24,7 +24,6 @@ package org.jboss.jms.server.endpoint;
 import javax.jms.IllegalStateException;
 import javax.jms.InvalidSelectorException;
 import javax.jms.JMSException;
-import javax.jms.TextMessage;
 
 import org.jboss.jms.delegate.ConsumerEndpoint;
 import org.jboss.jms.destination.JBossDestination;
@@ -241,17 +240,6 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
 
          Message message = ref.getMessage();
          
-         TextMessage tm = (TextMessage)message;
-         
-         try
-         {
-         	log.info("TRYING TO DELIVER " + tm.getText());
-         }
-         catch (Exception e)
-         {
-         	
-         }
-
          boolean selectorRejected = !this.accept(message);
          
          SimpleDelivery delivery = new SimpleDelivery(observer, ref, !selectorRejected);
