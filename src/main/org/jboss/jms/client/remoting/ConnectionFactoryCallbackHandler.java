@@ -65,16 +65,21 @@ public class ConnectionFactoryCallbackHandler
 
       ConnectionFactoryUpdate viewChange = (ConnectionFactoryUpdate)message;
 
-      Object d = getState().getClusteredConnectionFactoryDelegate();
+      ConnectionState state = getState();
+            
+      if (state != null)
+      {      
+      	Object d = state.getClusteredConnectionFactoryDelegate();
+      	
+      	if (d instanceof ClientClusteredConnectionFactoryDelegate)
+         {
+            ClientClusteredConnectionFactoryDelegate clusteredDelegate =
+               (ClientClusteredConnectionFactoryDelegate)d;
 
-      if (d instanceof ClientClusteredConnectionFactoryDelegate)
-      {
-         ClientClusteredConnectionFactoryDelegate clusteredDelegate =
-            (ClientClusteredConnectionFactoryDelegate)d;
-
-         clusteredDelegate.updateFailoverInfo(viewChange.getDelegates(),
-                                              viewChange.getFailoverMap());
-      }
+            clusteredDelegate.updateFailoverInfo(viewChange.getDelegates(),
+                                                 viewChange.getFailoverMap());
+         }
+      }      
    }
 
    public String toString()

@@ -24,6 +24,7 @@ package org.jboss.jms.server.endpoint;
 import javax.jms.IllegalStateException;
 import javax.jms.InvalidSelectorException;
 import javax.jms.JMSException;
+import javax.jms.TextMessage;
 
 import org.jboss.jms.delegate.ConsumerEndpoint;
 import org.jboss.jms.destination.JBossDestination;
@@ -49,7 +50,6 @@ import org.jboss.messaging.core.impl.tx.Transaction;
 import org.jboss.messaging.util.ExceptionUtil;
 import org.jboss.remoting.Client;
 import org.jboss.remoting.callback.Callback;
-import org.jboss.remoting.callback.HandleCallbackException;
 import org.jboss.remoting.callback.ServerInvokerCallbackHandler;
 
 /**
@@ -240,6 +240,17 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
          if (trace) { log.trace(this + " has startStopLock lock, preparing the message for delivery"); }
 
          Message message = ref.getMessage();
+         
+         TextMessage tm = (TextMessage)message;
+         
+         try
+         {
+         	log.info("TRYING TO DELIVER " + tm.getText());
+         }
+         catch (Exception e)
+         {
+         	
+         }
 
          boolean selectorRejected = !this.accept(message);
          
@@ -317,18 +328,24 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
                this.lastDeliveryID = deliveryId;
             }
          }
-         catch (HandleCallbackException e)
+         catch (Throwable t)
          {
             // it's an oneway callback, so exception could only have happened on the server, while
             // trying to send the callback. This is a good reason to smack the whole connection.
             // I trust remoting to have already done its own cleanup via a CallbackErrorHandler,
             // I need to do my own cleanup at ConnectionManager level.
 
-            log.debug(this + " failed to handle callback", e);
+            log.debug(this + " failed to handle callback", t);
             
-            //We stop the consumer - some time later the lease will expire and the connection will be closed                       
+            //We stop the consumer - some time later the lease will expire and the connection will be closed        
+            //which will remove the consumer
+            
+            started = false;
 
-            return null;
+            //** IMPORTANT NOTE! We must return the delivery NOT null. **
+            //This is because if we return NULL then message will remain in the queue, but later
+            //the connection checker will cleanup and close this consumer which will cancel all the deliveries in it
+            //including this one, so the message will go back on the queue twice!
          }
 
          return delivery;

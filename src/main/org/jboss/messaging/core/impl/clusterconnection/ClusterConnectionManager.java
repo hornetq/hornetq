@@ -155,7 +155,7 @@ public class ClusterConnectionManager implements ClusterNotificationListener
 	 * 
 	 */
 	public synchronized void notify(ClusterNotification notification)
-	{
+	{	
 		if (replicator == null)
 		{
 			//Non clustered
