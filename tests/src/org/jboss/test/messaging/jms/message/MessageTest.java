@@ -1232,6 +1232,51 @@ public class MessageTest extends MessagingTestCase
 
       ensureEquivalent(foreignTextMessage, copy);
    }
+   
+   public void testForeignJMSDestination() throws JMSException
+   {
+      Message message = queueProducerSession.createMessage();
+      
+      Destination foreignDestination = new ForeignDestination();
+      
+      message.setJMSDestination(foreignDestination);
+      
+      assertSame(foreignDestination, message.getJMSDestination());
+      
+      queueProducer.send(message);
+      
+      assertSame(queue, message.getJMSDestination());
+      
+      Message receivedMessage = queueConsumer.receive(100L);
+      
+      ensureEquivalent(receivedMessage, ((MessageProxy) message).getMessage());
+   }
+   
+   public void testForeignJMSReplyTo() throws JMSException
+   {
+      JBossMessage jbossMessage = ((MessageProxy) queueProducerSession.createTextMessage()).getMessage();
+      
+      Destination foreignDestination = new ForeignDestination();
+      
+      jbossMessage.setJMSReplyTo(foreignDestination);
+      
+      queueProducer.send(jbossMessage);
+      
+      Message receivedMessage = queueConsumer.receive(100L);
+
+      ensureEquivalent(receivedMessage, jbossMessage);
+   }
+   
+   public void testCopyForeignDestinationAndReplyTo() throws JMSException
+   {
+      Message foreignMessage = new SimpleJMSMessage();
+      foreignMessage.setJMSDestination(new ForeignDestination());
+      foreignMessage.setJMSReplyTo(new ForeignDestination());
+
+      JBossMessage copy = new JBossMessage(foreignMessage, 0);
+
+      ensureEquivalent(foreignMessage, copy);
+   }
 
    // Package protected ---------------------------------------------
 
@@ -1241,4 +1286,8 @@ public class MessageTest extends MessagingTestCase
 
    // Inner classes -------------------------------------------------
 
+   private static class ForeignDestination implements Destination, Serializable
+   {
+   }
+   
 }

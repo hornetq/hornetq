@@ -34,7 +34,6 @@ import java.util.Map;
 import javax.jms.BytesMessage;
 import javax.jms.DeliveryMode;
 import javax.jms.Destination;
-import javax.jms.InvalidDestinationException;
 import javax.jms.JMSException;
 import javax.jms.MapMessage;
 import javax.jms.Message;
@@ -275,7 +274,7 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message, S
    
    //Optimisation - we could just store this as a header like everything else - but we store
    //As an attribute so we can prevent an extra lookup on the server
-   private JBossDestination destination;
+   private Destination destination;
    
    // Constructors --------------------------------------------------
  
@@ -339,14 +338,9 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message, S
             setJMSCorrelationID(corrIDString);
          }
       }
-      if (foreign.getJMSReplyTo() instanceof JBossDestination)
-      {
-         setJMSReplyTo(foreign.getJMSReplyTo());
-      }
-      if (foreign.getJMSDestination() instanceof JBossDestination)
-      {
-         setJMSDestination(foreign.getJMSDestination());
-      }
+      
+      setJMSReplyTo(foreign.getJMSReplyTo());
+      setJMSDestination(foreign.getJMSDestination());
       setJMSDeliveryMode(foreign.getJMSDeliveryMode());
       setJMSExpiration(foreign.getJMSExpiration());
       setJMSPriority(foreign.getJMSPriority());
@@ -435,19 +429,7 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message, S
 
    public void setJMSReplyTo(Destination replyTo) throws JMSException
    {
-      //Need to be able to set null too
-      if (replyTo == null)
-      {
-         headers.put(REPLYTO_HEADER_NAME, null);
-      }
-      else
-      {      
-         if (!(replyTo instanceof JBossDestination))
-         {
-            throw new InvalidDestinationException("Replyto cannot be foreign");
-         }
-         headers.put(REPLYTO_HEADER_NAME, (JBossDestination)replyTo);
-      }
+      headers.put(REPLYTO_HEADER_NAME, replyTo);
    }
 
    public Destination getJMSDestination() throws JMSException
@@ -464,14 +446,9 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message, S
 
    public void setJMSDestination(Destination destination) throws JMSException
    {
-      if (!(destination instanceof JBossDestination))
-      {
-         throw new InvalidDestinationException("Destination cannot be foreign");
-      }
-      
       //We don't store as a header when setting - this allows us to avoid a lookup on the server
       //when routing the message
-      this.destination = (JBossDestination)destination; 
+      this.destination = destination; 
    }
    
    //We need to override getHeaders - so the JMSDestination header gets persisted to the db
