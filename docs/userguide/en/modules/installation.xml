@@ -673,15 +673,15 @@ the JBoss Transactions Recovery Manager</para>
 
       <itemizedlist>
         <listitem>
-          <para>Edit <literal>$JBOSS_CONFIG/jms-ds.xml</literal> and replace
+          <para>Edit <literal>$JBOSS_CONFIG/deploy/jms-ds.xml</literal> and replace
           jboss.mq by jboss.messaging on every occurrence</para>
           <para>If you are in a clustered installation, then do the above with the file
-          <literal>$JBOSS_CONFIG/hajndi-jms-ds.xml</literal>
+          <literal>$JBOSS_CONFIG/deploy/hajndi-jms-ds.xml</literal>
           </para>
         </listitem>
         
         <listitem>
-          <para>Edit <literal>$JBOSS_CONFIG/config/standardjboss.xml</literal>
+          <para>Edit <literal>$JBOSS_CONFIG/conf/standardjboss.xml</literal>
           and set <literal>CreateJBossMQDestination</literal> to false on every occurrence</para>
 
           <para>Make sure it looks like this:</para>
@@ -694,7 +694,7 @@ the JBoss Transactions Recovery Manager</para>
         </listitem>
 
         <listitem>
-          <para>Edit $JBOSS_CONFIG/config/jboss-service.xml
+          <para>Edit $JBOSS_CONFIG/conf/jboss-service.xml
           and remove the reference to JBoss MQ on JSR-77 Management
           Bean:</para>
 
