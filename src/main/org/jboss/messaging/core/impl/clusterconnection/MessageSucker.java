@@ -152,8 +152,6 @@ public class MessageSucker implements MessageListener
 		
 		if (trace) { log.trace(this + " Registering sucker"); }
 		
-		log.info("**** starting sucker sucking from queue " + this.getQueueName());
-		
 		localQueue.registerSucker(this);
 		
 		if (trace) { log.trace(this + " Registered sucker"); }

@@ -153,7 +153,6 @@ public class ServerManagement
             {
                // most likely the remote server is not started, so spawn it
                servers[i] = new ServerHolder(ServerManagement.spawn(i), true);
-               log.info("server " + i + " online");
             }
          }
       }

@@ -221,10 +221,6 @@ public class MessagingQueue extends PagingChannelSupport implements Queue
    			
    				sucker.setConsuming(true);
    			}
-   			else
-   			{
-   				log.info("No receivers ready set setting consuming to false");
-   			}
    		}
    	}
    }

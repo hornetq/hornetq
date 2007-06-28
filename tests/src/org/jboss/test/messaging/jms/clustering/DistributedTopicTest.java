@@ -26,7 +26,6 @@ import javax.jms.DeliveryMode;
 import javax.jms.InvalidDestinationException;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
-import javax.jms.MessageListener;
 import javax.jms.MessageProducer;
 import javax.jms.Session;
 import javax.jms.TextMessage;
@@ -186,6 +185,8 @@ public class DistributedTopicTest extends ClusteringTestBase
             TextMessage tm = (TextMessage)cons0.receive(1000);
 
             assertNotNull(tm);
+            
+            log.info("Got message " + tm.getText());
 
             assertEquals("message" + i, tm.getText());
          }
@@ -199,6 +200,8 @@ public class DistributedTopicTest extends ClusteringTestBase
             TextMessage tm = (TextMessage)cons1.receive(1000);
 
             assertNotNull(tm);
+            
+            log.info("Got message " + tm.getText());
 
             assertEquals("message" + i, tm.getText());
          }
@@ -212,6 +215,8 @@ public class DistributedTopicTest extends ClusteringTestBase
             TextMessage tm = (TextMessage)cons2.receive(1000);
 
             assertNotNull(tm);
+            
+            log.info("Got message " + tm.getText());
 
             assertEquals("message" + i, tm.getText());
          }
@@ -225,6 +230,8 @@ public class DistributedTopicTest extends ClusteringTestBase
             TextMessage tm = (TextMessage)cons3.receive(1000);
 
             assertNotNull(tm);
+            
+            log.info("Got message " + tm.getText());
 
             assertEquals("message" + i, tm.getText());
          }
@@ -238,6 +245,8 @@ public class DistributedTopicTest extends ClusteringTestBase
             TextMessage tm = (TextMessage)cons4.receive(1000);
 
             assertNotNull(tm);
+            
+            log.info("Got message " + tm.getText());
 
             assertEquals("message" + i, tm.getText());
          }
@@ -496,8 +505,6 @@ public class DistributedTopicTest extends ClusteringTestBase
          conn0.start();
          conn1.start();
          conn2.start();
-         
-         Thread.sleep(5000);
          
          log.info("started");
 
@@ -963,11 +970,6 @@ public class DistributedTopicTest extends ClusteringTestBase
             sess2.unsubscribe("sub");
          }
          catch (Exception ignore) {}
-         try
-         {
-            sess3.unsubscribe("sub");
-         }
-         catch (Exception ignore) {}
 
          MessageConsumer cons1 = sess2.createDurableSubscriber(topic[1], "sub");
          MessageConsumer cons2 = sess3.createDurableSubscriber(topic[2], "sub");
@@ -987,34 +989,65 @@ public class DistributedTopicTest extends ClusteringTestBase
 
          for (int i = 0; i < NUM_MESSAGES; i++)
          {
-            TextMessage tm = sess1.createTextMessage("message" + i);
+            TextMessage tm = sess1.createTextMessage("message2-" + i);
 
             prod.send(tm);
          }
-
+         
+         
+         int offset = 0;
+         
          for (int i = 0; i < NUM_MESSAGES / 2; i++)
          {
             TextMessage tm = (TextMessage)cons1.receive(1000);
-
             assertNotNull(tm);
-
-            assertEquals("message" + i * 2, tm.getText());
+            log.info("**** got message" + tm.getText());
+            
+            if (tm.getText().substring("message2-".length()).equals("1"))
+            {
+            	offset = 1;
+            }
+            
+            assertEquals("message2-" + (i * 2 + offset), tm.getText());
          }
-
+         
+         Message msg = cons1.receive(2000);
+         assertNull(msg);
+         
+         if (offset == 1)
+         {
+         	offset = 0;
+         }
+         else
+         {
+         	offset = 1;
+         }      
+         
          for (int i = 0; i < NUM_MESSAGES / 2; i++)
          {
             TextMessage tm = (TextMessage)cons2.receive(1000);
-
             assertNotNull(tm);
-
-            assertEquals("message" + (i * 2 + 1), tm.getText());
+            log.info("**** got message" + tm.getText());
+            assertEquals("message2-" + (i * 2 + offset), tm.getText());
          }
-
+         
+         msg = cons2.receive(2000);
+         assertNull(msg);
+                 
          cons1.close();
          cons2.close();
 
          sess2.unsubscribe("sub");
-         sess3.unsubscribe("sub");
+         
+         try
+         {
+         	sess3.unsubscribe("sub");
+         	fail("Should already be unsubscribed");
+         }
+         catch (InvalidDestinationException e)
+         {
+         	//Ok - the previous unsubscribe should do a cluster wide unsubscribe
+         }
 
       }
       finally

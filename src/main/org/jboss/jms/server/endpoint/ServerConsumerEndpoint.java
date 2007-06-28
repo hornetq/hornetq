@@ -543,7 +543,7 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
             	
             	Replicator rep = (Replicator)postOffice;
             	
-            	rep.put(queue.getName(), ServerSessionEndpoint.DUR_SUB_STATE_NO_CONSUMERS);
+            	rep.remove(queue.getName());
             }
          }
       }

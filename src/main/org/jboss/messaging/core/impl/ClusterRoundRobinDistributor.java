@@ -54,6 +54,8 @@ public class ClusterRoundRobinDistributor implements Distributor
    
    // Attributes -----------------------------------------------------------------------------------
    
+   private boolean trace = log.isTraceEnabled();
+   
    private Distributor localDistributor;
    
    private Distributor remoteDistributor;
@@ -75,23 +77,23 @@ public class ClusterRoundRobinDistributor implements Distributor
    {             
       //First try the local distributor
    	
-   	log.info("** first trying with local distributor");
+   	if (trace) { log.trace(this + " first trying with local distributor"); }
    	
    	Delivery del = localDistributor.handle(observer, ref, tx);
    	
-   	log.info("*** local distributor returned " + del);
+   	if (trace) { log.trace(this + " local distributor returned " + del); }
    	
    	if (del == null)
    	{
    		//If no local distributor takes the ref then we try the remote distributor
-   		
-   		log.info("** preserve ordering is " + preserveOrdering);
    		
    		if (preserveOrdering)
    		{
    			if (ref.getMessage().getHeader(Message.CLUSTER_SUCKED) != null)
    			{
    				//The message has already been sucked once - don't suck it again
+   				
+   				if (trace) { log.trace(this + " preserveOrdering is true and has already been sucked so not allowing message to be sucked again"); }
    				
    				return null;
    			}
@@ -103,19 +105,11 @@ public class ClusterRoundRobinDistributor implements Distributor
    			}
    		}
    		
-   		log.info("*** sending to remote distributor");
-   		
-   		String wib = (String)ref.getMessage().getHeader("wib");
-   		if (wib == null)
-   		{
-   			wib = "nodes:";
-   		}
-   		wib += ((MessagingQueue)observer).getNodeID() + "-";
-   		ref.getMessage().putHeader("wib", wib);
-   		
+   		if (trace) { log.trace(this + " trying with remote distributor"); }
+   		   		
    		del = remoteDistributor.handle(observer, ref, tx);
-   		
-   		log.info("** remote distributor returned " + del);
+   		   		   	
+   		if (trace) { log.trace(this + " remote distributor returned " + del); }
    	}
    	
    	return del;

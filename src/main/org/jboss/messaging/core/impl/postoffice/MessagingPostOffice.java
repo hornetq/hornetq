@@ -197,6 +197,8 @@ public class MessagingPostOffice extends JDBCSupport
    
    // Map <node id, PostOfficeAddressInfo>
    private Map nodeIDAddressMap;
+   
+   private Object waitForBindUnbindLock;   
 
    // Constructors ---------------------------------------------------------------------------------
 
@@ -249,6 +251,8 @@ public class MessagingPostOffice extends JDBCSupport
       channelIDMap = new HashMap(); 
       
       nodeIDAddressMap = new ConcurrentHashMap();           
+      
+      waitForBindUnbindLock = new Object();
    }
    
    /*
@@ -381,116 +385,33 @@ public class MessagingPostOffice extends JDBCSupport
    {
    	return officeName;
    }
-   
+  
    public void addBinding(Binding binding, boolean allNodes) throws Exception
    {
    	internalAddBinding(binding, allNodes, true);
-   }
-   
-   public void internalAddBinding(Binding binding, boolean allNodes, boolean sync) throws Exception
-   {
-   	if (trace) { log.trace(this.thisNodeID + " binding " + binding.queue + " with condition " + binding.condition + " all nodes " + allNodes); }
-
-   	if (binding == null)
-      {
-         throw new IllegalArgumentException("Binding is null");
-      }
    	
-   	Condition condition = binding.condition;
-   	
-   	Queue queue = binding.queue;
-   	
-   	if (queue == null)
-      {
-         throw new IllegalArgumentException("Queue is null");
-      }
-   	
-   	if (queue.getNodeID() != thisNodeID)
+   	if (allNodes)
    	{
-   		throw new IllegalArgumentException("Cannot bind a queue from another node");
+	   	//Now we must wait for all the bindings to appear in state
+	   	//This is necessary since the second bind in an all bind is sent asynchronously to avoid deadlock
+   		
+   		waitForBindUnbind(binding.queue.getName(), true);
    	}
-
-      if (condition == null)
-      {
-         throw new IllegalArgumentException("Condition is null");
-      }
-
-      addBindingInMemory(binding);  	
-      
-      if (queue.isRecoverable())
-      {
-         // Need to write the mapping to the database
-         insertBindingInStorage(condition, queue, allNodes);
-      }
-
-      if (clustered && queue.isClustered())
-      {
-      	String filterString = queue.getFilter() == null ? null : queue.getFilter().getFilterString();      	
-      	
-      	MappingInfo info = new MappingInfo(thisNodeID, queue.getName(), condition.toText(), filterString, queue.getChannelID(),
-      			                             queue.isRecoverable(), true,
-      			                             queue.getFullSize(), queue.getPageSize(), queue.getDownCacheSize(),
-      			                             queue.getMaxSize(),
-      			                             queue.isPreserveOrdering());
-      	
-         ClusterRequest request = new BindRequest(info, allNodes);
-
-//         if (sync)
-//         {
-//         	syncSendRequest(request);
-//         }
-//         else
-//         {
-         	//When sending as a result of an all binding being received from the cluster we send the bind on asynchronously
-         	//To avoid a deadlock which happens when you have one sync request hitting a node which then tries to send another back
-         	//to the original node
-           groupMember.multicastControl(request, sync);
-      //   }
-      }
    }
-   
+          
    public void removeBinding(String queueName, boolean allNodes) throws Throwable
    {
-   	this.internalRemoveBinding(queueName, allNodes, true);
-   }
-   
-   private void internalRemoveBinding(String queueName, boolean allNodes, boolean sync) throws Throwable
-   {
-      if (trace) { log.trace(this.thisNodeID + " unbind queue: " + queueName + " all nodes " + allNodes); }
-
-      if (queueName == null)
-      {
-         throw new IllegalArgumentException("Queue name is null");
-      }
-
-      Binding removed = removeBindingInMemory(thisNodeID, queueName);
-      
-      Queue queue = removed.queue;
-      
-      Condition condition = removed.condition;
-      	     	
-      if (queue.isRecoverable())
-      {
-         //Need to remove from db too
-
-         deleteBindingFromStorage(queue);
-      }
-
-      queue.removeAllReferences();
-      
-      if (clustered && queue.isClustered())
-      {
-      	String filterString = queue.getFilter() == null ? null : queue.getFilter().getFilterString();      	
-      	
-      	MappingInfo info = new MappingInfo(thisNodeID, queue.getName(), condition.toText(), filterString, queue.getChannelID(),
-      			                             queue.isRecoverable(), true);
-      	
-	      UnbindRequest request = new UnbindRequest(info, allNodes);
-	
-	      groupMember.multicastControl(request, sync);
-      }
-   }
-                  
+   	internalRemoveBinding(queueName, allNodes, true);
+   	
+   	if (allNodes)
+   	{
+	   	//Now we must wait for all the bindings to be removed from state
+	   	//This is necessary since the second unbind in an all unbind is sent asynchronously to avoid deadlock
+   	
+   		waitForBindUnbind(queueName, false);
+   	}
+   }      
+                 
    public boolean route(MessageReference ref, Condition condition, Transaction tx) throws Exception
    {
       if (ref == null)
@@ -828,7 +749,7 @@ public class MessagingPostOffice extends JDBCSupport
       
       Condition condition = conditionFactory.createCondition(mapping.getConditionText());
       
-      addBindingInMemory(new Binding(condition, queue));  	
+      addBindingInMemory(new Binding(condition, queue));
       
       if (allNodes)
    	{
@@ -837,43 +758,34 @@ public class MessagingPostOffice extends JDBCSupport
    		//There is the possibility that two nodes send a bind all with the same name simultaneously OR
    		//a node starts and sends a bind "ALL" and the other nodes already have a queue with that name
    		//This is ok - but we must check for this and not create the local binding in this case
+   					   				   	
+   		//Bind locally
+
+   		long channelID = channelIDManager.getID();
    		
-   		lock.readLock().acquire();
+   		Queue queue2 = new MessagingQueue(thisNodeID, mapping.getQueueName(), channelID, ms, pm,
+			                                  mapping.isRecoverable(), mapping.getMaxSize(), filter,
+			                                  mapping.getFullSize(), mapping.getPageSize(), mapping.getDownCacheSize(), true,
+			                                  mapping.isPreserveOrdering());
+
+   		//We must cast back asynchronously to avoid deadlock
+   		boolean added = internalAddBinding(new Binding(condition, queue2), false, false);
    		
-   		Queue queue2 = null;
-   		
-   		try
-   		{
-   			if (localNameMap != null && localNameMap.get(mapping.getQueueName()) != null)
-   			{
-   				//Already exists - don't create it again!
-   			}
-   			else
-   			{		   				   		
-		   		//Bind locally
-		
-		   		long channelID = channelIDManager.getID();
-		   		
-		   		queue2 = new MessagingQueue(thisNodeID, mapping.getQueueName(), channelID, ms, pm,
-   				                            mapping.isRecoverable(), mapping.getMaxSize(), filter,
-   				                            mapping.getFullSize(), mapping.getPageSize(), mapping.getDownCacheSize(), true,
-   				                            mapping.isPreserveOrdering());
-		
-		   		internalAddBinding(new Binding(condition, queue2), false, false);
-   			}
-   		}
-   		finally
-   		{
-   			lock.readLock().release();
-   		}
-   		
-   		if (queue2 != null)
-   		{   		
-	   		queue2.load();
+   		if (added)
+   		{	   		
+	   		if (trace) { log.trace(this + " inserted in binding locally"); }			
 	   		
-	   		queue2.activate();
+	   		queue2.load();
+		   		
+		      queue2.activate();	   		
    		}
    	}
+      
+      synchronized (waitForBindUnbindLock)
+      {
+      	if (trace) { log.trace(this + " notifying bind unbind lock"); }
+      	waitForBindUnbindLock.notifyAll();
+      }
    }
  
    /*
@@ -891,13 +803,20 @@ public class MessagingPostOffice extends JDBCSupport
 
       removeBindingInMemory(mapping.getNodeId(), mapping.getQueueName());      
       
+      synchronized (waitForBindUnbindLock)
+      {
+      	if (trace) { log.trace(this + " notifying bind unbind lock"); }
+      	waitForBindUnbindLock.notifyAll();
+      }
+      
       if (allNodes)
       {
       	//Also unbind locally
       	
    		if (trace) { log.trace("allNodes is true, so also forcing a local unbind"); }
    		         	
-   		removeBinding(mapping.getQueueName(), false);
+   		// We must cast back asynchronously to avoid deadlock
+   		internalRemoveBinding(mapping.getQueueName(), false, false);
       }
    }
 
@@ -1210,6 +1129,192 @@ public class MessagingPostOffice extends JDBCSupport
    
    // Private ------------------------------------------------------------------------------------
      
+   private void waitForBindUnbind(String queueName, boolean bind) throws Exception
+   {
+   	if (trace) { log.trace(this + " waiting for " + (bind ? "bind" : "unbind") + " of "+ queueName + " on all nodes"); }
+   	
+   	Set nodesToWaitFor = new HashSet(nodeIDAddressMap.keySet());
+		
+		long timeToWait = groupMember.getCastTimeout();
+		
+		long start = System.currentTimeMillis();
+		
+		boolean boundAll = true;
+		
+		boolean unboundAll = true;
+				
+		synchronized (waitForBindUnbindLock)
+		{			
+			do
+			{		
+				boundAll = true;
+				
+				unboundAll = true;
+								
+				lock.readLock().acquire();
+						
+				try
+				{
+					// Refresh the to wait for map - a node might have left
+					
+					Iterator iter = nodesToWaitFor.iterator();
+					
+					while (iter.hasNext())
+					{
+						Integer node = (Integer)iter.next();
+						
+						if (!nodeIDAddressMap.containsKey(node))
+						{
+							iter.remove();
+						}
+						else
+						{
+							Map nameMap = (Map)this.nameMaps.get(node);
+							
+							if (nameMap != null && nameMap.get(queueName) != null)
+							{
+								if (trace) { log.trace(this + " queue " + queueName + " exists on node " + node); }
+								unboundAll = false;
+							}
+							else
+							{
+								if (trace) { log.trace(this + " queue " + queueName + " does not exist on node " + node); }
+								boundAll = false;
+							}
+						}
+					}
+				}
+				finally
+				{
+					lock.readLock().release();
+				}	
+					
+				if ((bind && !boundAll) || (!bind && !unboundAll))
+				{	
+					try
+					{
+						if (trace) { log.trace(this + " waiting for bind unbind lock"); }
+						waitForBindUnbindLock.wait(groupMember.getCastTimeout());
+						if (trace) { log.trace(this + " woke up"); }
+					}
+					catch (InterruptedException e)
+					{
+						//Ignore
+					}
+					timeToWait -= System.currentTimeMillis() - start;
+				}												
+			}
+			while (((bind && !boundAll) || (!bind && !unboundAll)) && timeToWait > 0);
+			
+			if (trace) { log.trace(this + " waited ok"); }
+		}
+		if ((bind && !boundAll) || (!bind && !unboundAll))
+		{
+			throw new IllegalStateException(this + " timed out waiting for " + (bind ? " bind " : " unbind ") + "ALL to occur");
+		}
+   }
+   
+   private boolean internalAddBinding(Binding binding, boolean allNodes, boolean sync) throws Exception
+   {
+   	if (trace) { log.trace(this.thisNodeID + " binding " + binding.queue + " with condition " + binding.condition + " all nodes " + allNodes); }
+
+   	if (binding == null)
+      {
+         throw new IllegalArgumentException("Binding is null");
+      }
+   	
+   	Condition condition = binding.condition;
+   	
+   	Queue queue = binding.queue;
+   	
+   	if (queue == null)
+      {
+         throw new IllegalArgumentException("Queue is null");
+      }
+   	
+   	if (queue.getNodeID() != thisNodeID)
+   	{
+   		throw new IllegalArgumentException("Cannot bind a queue from another node");
+   	}
+
+      if (condition == null)
+      {
+         throw new IllegalArgumentException("Condition is null");
+      }
+           
+   	//The binding might already exist - this could happen if the queue is bind all simultaneously from more than one node of the cluster
+      boolean added = addBindingInMemory(binding);  			      	     
+
+      if (added)
+      {
+      	if (queue.isRecoverable())
+      	{
+      		// Need to write the mapping to the database
+      		insertBindingInStorage(condition, queue, allNodes);
+      	}
+      	
+      	if (clustered && queue.isClustered())
+         {
+         	String filterString = queue.getFilter() == null ? null : queue.getFilter().getFilterString();      	
+         	
+         	MappingInfo info = new MappingInfo(thisNodeID, queue.getName(), condition.toText(), filterString, queue.getChannelID(),
+         			                             queue.isRecoverable(), true,
+         			                             queue.getFullSize(), queue.getPageSize(), queue.getDownCacheSize(),
+         			                             queue.getMaxSize(),
+         			                             queue.isPreserveOrdering());
+         	
+            ClusterRequest request = new BindRequest(info, allNodes);
+
+            groupMember.multicastControl(request, sync);
+         }      	
+      }      
+      
+      return added;
+   }   
+   
+   private Binding internalRemoveBinding(String queueName, boolean allNodes, boolean sync) throws Throwable
+   {
+      if (trace) { log.trace(this.thisNodeID + " unbind queue: " + queueName + " all nodes " + allNodes); }
+
+      if (queueName == null)
+      {
+         throw new IllegalArgumentException("Queue name is null");
+      }
+
+      Binding removed = removeBindingInMemory(thisNodeID, queueName);
+      
+      //The queue might not be removed (it's already removed) if two unbind all requests are sent simultaneously on the cluster
+      if (removed != null)
+      {	      
+	      Queue queue = removed.queue;
+	      
+	      Condition condition = removed.condition;
+	      	     	
+	      if (queue.isRecoverable())
+	      {
+	         //Need to remove from db too
+	
+	         deleteBindingFromStorage(queue);
+	      }
+	
+	      queue.removeAllReferences();
+	      
+	      if (clustered && queue.isClustered())
+	      {
+	      	String filterString = queue.getFilter() == null ? null : queue.getFilter().getFilterString();      	
+	      	
+	      	MappingInfo info = new MappingInfo(thisNodeID, queue.getName(), condition.toText(), filterString, queue.getChannelID(),
+	      			                             queue.isRecoverable(), true);
+	      	
+		      UnbindRequest request = new UnbindRequest(info, allNodes);
+		
+		      groupMember.multicastControl(request, sync);
+	      }
+      }
+      
+      return removed;
+   }
+   
    private void calculateFailoverMap()
    {
    	 //calculate the failover map
@@ -1275,8 +1380,6 @@ public class MessagingPostOffice extends JDBCSupport
          	
          	List targets = new ArrayList();
          	
-         	log.info("routing to " + queues.size() + " queues");
-         	
          	while (iter.hasNext())
          	{
          		Queue queue = (Queue)iter.next();
@@ -1305,7 +1408,8 @@ public class MessagingPostOffice extends JDBCSupport
 	         			
 	         			if (filter == null || filter.accept(ref.getMessage()))
 	         			{                		
-	         				log.info("Added queue " + queue + " to list of targets");
+	         				if (trace) { log.trace(this + " Added queue " + queue + " to list of targets"); }
+	         				
 	      					targets.add(queue);
 	      					
 	      					if (ref.getMessage().isReliable() && queue.isRecoverable())
@@ -1394,10 +1498,8 @@ public class MessagingPostOffice extends JDBCSupport
          	{
          		Queue queue = (Queue)iter.next();
          		
-         		if (trace) { log.trace("Routing ref to queue " + queue); }
+         		if (trace) { log.trace(this + " Routing ref to queue " + queue); }
          		         	
-         		log.info("Routing ref " + ref + " to queue " + queue);
-         		
          		Delivery del = queue.handle(null, ref, tx);
          		
          		if (trace) { log.trace("Queue returned " + del); }
@@ -1438,14 +1540,17 @@ public class MessagingPostOffice extends JDBCSupport
 	   	
 	   	if (nameMap == null)
 	   	{
-	   		throw new IllegalArgumentException("Cannot find name maps for node " + nodeID);
+	   		log.warn("Cannot find name maps for node " + nodeID);
+	   		
+	   		return null;
 	   	}
 	   	
 	   	Binding binding = (Binding)nameMap.remove(queueName);
 	   	
 	   	if (binding == null)
 	   	{
-	   		throw new IllegalArgumentException("Cannot find binding for queue name " + queueName);
+	   		log.warn("Cannot find binding for queue name " + queueName);
+	   		return null;
 	   	}
 	   	
 	   	if (nameMap.isEmpty())
@@ -1497,13 +1602,13 @@ public class MessagingPostOffice extends JDBCSupport
    	}
    }
    
-   private void addBindingInMemory(Binding binding) throws Exception
+   private boolean addBindingInMemory(Binding binding) throws Exception
    {
    	Queue queue = binding.queue;
    	   	
-   	lock.writeLock().acquire();
-   	
    	if (trace) { log.trace(this + " Adding binding in memory " + binding); }
+   	
+   	lock.writeLock().acquire();
    	
    	try
    	{	  
@@ -1513,14 +1618,16 @@ public class MessagingPostOffice extends JDBCSupport
    		   		
    		if (nameMap != null && nameMap.containsKey(queue.getName()))
    		{
-   			throw new IllegalArgumentException("Name map for node " + nid + " already contains binding for queue " + queue.getName());
+   			log.warn("Name map for node " + nid + " already contains binding for queue " + queue.getName());
+   			
+   			return false;
    		}
    		
    		Long cid = new Long(queue.getChannelID());
    		
    		if (channelIDMap.containsKey(cid))
    		{
-   			throw new IllegalArgumentException("Channel id map for node " + nid + " already contains binding for queue " + cid);
+   			throw new IllegalStateException("Channel id map for node " + nid + " already contains binding for queue " + cid);
    		}
    		
    		if (nameMap == null)
@@ -1568,6 +1675,8 @@ public class MessagingPostOffice extends JDBCSupport
       ClusterNotification notification = new ClusterNotification(ClusterNotification.TYPE_BIND, queue.getNodeID(), queue.getName());
       
       clusterNotifier.sendNotification(notification);
+      
+      return true;
    }
    
    /*
@@ -1647,7 +1756,7 @@ public class MessagingPostOffice extends JDBCSupport
             Queue queue = new MessagingQueue(thisNodeID, queueName, channelID, ms, pm,
                                              true, filter, bindingClustered && clustered);
             
-            log.info("**** loaded binding from storage: " + queueName);
+            if (trace) { log.trace(this + " loaded binding from storage: " + queueName); }
             
             Condition condition = conditionFactory.createCondition(conditionText);
             
@@ -1794,7 +1903,7 @@ public class MessagingPostOffice extends JDBCSupport
 
       lock.writeLock().acquire();
 
-      log.info("** cleaning data for node " + nodeToRemove);
+      if (trace) { log.trace(this + " cleaning data for node " + nodeToRemove); }
       
       try
       {
@@ -1818,13 +1927,7 @@ public class MessagingPostOffice extends JDBCSupport
       			
       			if (queue.getNodeID() == nodeToRemove.intValue())
       			{
-      				log.info("** removing queue " + queue);
-      				
       				toRemove.add(new Binding(condition, queue));
-      			}
-      			else
-      			{
-      				log.info("** not removing " + queue);
       			}
       		}
       	}
@@ -1866,7 +1969,13 @@ public class MessagingPostOffice extends JDBCSupport
       }
       
       //remove node id - address info
-      nodeIDAddressMap.remove(nodeToRemove);      
+      nodeIDAddressMap.remove(nodeToRemove);  
+      
+      synchronized (waitForBindUnbindLock)
+      {
+      	if (trace) { log.trace(this + " notifying bind unbind lock"); }
+      	waitForBindUnbindLock.notifyAll();
+      }
       
       //Recalculate the failover map
       calculateFailoverMap();

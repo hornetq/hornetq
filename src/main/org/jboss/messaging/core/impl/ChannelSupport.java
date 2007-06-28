@@ -35,6 +35,7 @@ import org.jboss.messaging.core.contract.Delivery;
 import org.jboss.messaging.core.contract.DeliveryObserver;
 import org.jboss.messaging.core.contract.Distributor;
 import org.jboss.messaging.core.contract.Filter;
+import org.jboss.messaging.core.contract.Message;
 import org.jboss.messaging.core.contract.MessageReference;
 import org.jboss.messaging.core.contract.MessageStore;
 import org.jboss.messaging.core.contract.PersistenceManager;
@@ -222,8 +223,6 @@ public abstract class ChannelSupport implements Channel
       {      
 	      if (distributor != null && distributor.getNumberOfReceivers() > 0)
 	      {         
-	      	log.info("Deliver was called");
-	      	
 	         setReceiversReady(true);
 	            
 	         deliverInternal();                  
@@ -456,13 +455,6 @@ public abstract class ChannelSupport implements Channel
       }
    }
 
-   //Only used for testing
-
-   public String toString()
-   {
-      return "ChannelSupport[" + channelID + "]";
-   }
-
    // Package protected ----------------------------------------------------------------------------
    
    // Protected ------------------------------------------------------------------------------------
@@ -519,8 +511,6 @@ public abstract class ChannelSupport implements Channel
          if (!getReceiversReady())
          {
          	if (trace) { log.trace(this + " receivers not ready so not delivering"); }
-         	
-         	log.info("There are " + this.distributor.getNumberOfReceivers() + " receivers");
          	
             return;
          }
@@ -667,6 +657,22 @@ public abstract class ChannelSupport implements Channel
 
       try
       {  
+      	if (trace)
+   		{
+   			//We add a header that tracks the route of the message across the cluster
+   			
+   			String route = (String)ref.getMessage().getHeader(Message.HEADER_JBM_TRACE_ROUTE);
+   			
+   			if (route == null)
+      		{
+      			route = "nodes:";
+      		}
+   			
+      		route += this + "-";
+      		
+      		ref.getMessage().putHeader(Message.HEADER_JBM_TRACE_ROUTE, route);
+   		}
+      	
          if (tx == null)
          {
             if (persist && ref.getMessage().isReliable() && recoverable)

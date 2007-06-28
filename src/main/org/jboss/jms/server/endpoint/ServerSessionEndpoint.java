@@ -117,8 +117,6 @@ public class ServerSessionEndpoint implements SessionEndpoint
    
    static final String DUR_SUB_STATE_CONSUMERS = "C";
    
-   static final String DUR_SUB_STATE_NO_CONSUMERS = "N";
-   
    static final String TEMP_QUEUE_MESSAGECOUNTER_PREFIX = "TempQueue.";
    
    // Static ---------------------------------------------------------------------------------------

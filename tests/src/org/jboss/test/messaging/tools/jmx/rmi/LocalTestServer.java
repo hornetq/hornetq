@@ -352,9 +352,7 @@ public class LocalTestServer implements Server
 
          postOfficeObjectName = sc.registerAndConfigureService(postOfficeConfig);         
          sc.setAttribute(postOfficeObjectName, "Clustered", clustered ? "true" : "false"); 
-         
-         log.info("************* SET CLUSTERED ATTRIBUTE TO " + clustered);
-         
+             
          overrideAttributes(postOfficeObjectName, attrOverrides);
          sc.invoke(postOfficeObjectName, "create", new Object[0], new String[0]);
          sc.invoke(postOfficeObjectName, "start", new Object[0], new String[0]);

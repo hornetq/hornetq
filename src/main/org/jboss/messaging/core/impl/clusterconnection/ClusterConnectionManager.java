@@ -232,14 +232,10 @@ public class ClusterConnectionManager implements ClusterNotificationListener
 	         		while (iter.hasNext())
 	         		{
 	         			Integer nid = (Integer)iter.next();
-	         			
-		         		log.info("*********** CLOSING CLUSTER CONNECTION FOR NODE " + nid);
-		         			         			
+	         			        			
 	         			ConnectionInfo info = (ConnectionInfo)connections.remove(nid);
 	         				         			
 	         			info.close();
-	         					         		
-		         		log.info("******* CLOSED");
 	         		}
 	      		}         	
 	         }

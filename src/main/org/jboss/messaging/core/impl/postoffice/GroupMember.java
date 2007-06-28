@@ -200,6 +200,11 @@ public class GroupMember
    	return dataChannel.getLocalAddress();
    }
    
+   public long getCastTimeout()
+   {
+   	return castTimeout;
+   }
+   
    public void multicastControl(ClusterRequest request, boolean sync) throws Exception
    {
    	lock.readLock().acquire();
@@ -382,8 +387,6 @@ public class GroupMember
    {
    	boolean retrievedState = false;
    	
-   	log.info("***** waiting for state to arrive");
-   	
    	if (controlChannel.getState(null, stateTimeout))
    	{
    		//We are not the first member of the group, so let's wait for state to be got and processed
@@ -453,8 +456,6 @@ public class GroupMember
    {
       public byte[] getState()
       {
-      	log.info("*** getting state");
-      	
          try
          {
 	      	lock.readLock().acquire();
@@ -472,8 +473,6 @@ public class GroupMember
 	
 		         byte[] state = groupListener.getState();
 		         
-		         log.info("**** got state " + state);
-		         	
 		         return state;		        
 	      	}
 	      	finally
@@ -495,13 +494,11 @@ public class GroupMember
 
       public void setState(byte[] bytes)
       {
-      	log.info("************* setting state");
          synchronized (setStateLock)
          {
          	try
          	{
          		groupListener.setState(bytes);
-         		log.info("* set it");
          	}
          	catch (Exception e)
          	{
