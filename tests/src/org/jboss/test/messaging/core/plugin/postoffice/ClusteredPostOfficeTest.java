@@ -197,14 +197,14 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
 
          Condition condition1 = new SimpleCondition("topic1");
          
-         office1.addBinding(new Binding(condition1, queue1), false);
+         office1.addBinding(new Binding(condition1, queue1, false), false);
          
          log.info("Added binding1");
          
          Queue queue2 = new MessagingQueue(1, "sub2", channelIDManager.getID(), ms, pm, false, -1, null, true, false);
          queue2.activate();
 
-         office1.addBinding(new Binding(condition1, queue2), false);
+         office1.addBinding(new Binding(condition1, queue2, false), false);
          
          log.info("Added binding2");
          
@@ -227,7 +227,7 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
          Queue queue3 = new MessagingQueue(2, "sub3", channelIDManager.getID(), ms, pm, false, -1, null, true, false);
          queue3.activate();
 
-         office2.addBinding(new Binding(condition1, queue3), false);
+         office2.addBinding(new Binding(condition1, queue3, false), false);
   
          // Make sure both nodes pick it up
          
@@ -251,7 +251,7 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
          Queue queue4 = new MessagingQueue(2, "sub4", channelIDManager.getID(), ms, pm, false, -1, null, true, false);
          queue4.activate();
 
-         office2.addBinding(new Binding(condition1, queue4), false);
+         office2.addBinding(new Binding(condition1, queue4, false), false);
          
          // Make sure both nodes pick it up
          
@@ -308,7 +308,7 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
          Queue queue5 = new MessagingQueue(3, "sub5", channelIDManager.getID(), ms, pm, false, -1, null, true, false);
          queue5.activate();
          
-         office3.addBinding(new Binding(condition1, queue5), false);
+         office3.addBinding(new Binding(condition1, queue5, false), false);
          
          // Make sure all nodes pick it up
          
@@ -338,12 +338,12 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
          Queue queue6 = new MessagingQueue(1, "sub6", channelIDManager.getID(), ms, pm, true, -1, null, true, false);
          queue6.activate();
          
-         office1.addBinding(new Binding(condition1, queue6), false);
+         office1.addBinding(new Binding(condition1, queue6, false), false);
          
          Queue queue7 = new MessagingQueue(1, "sub7", channelIDManager.getID(), ms, pm, false, -1, null, true, false);
          queue7.activate();
          
-         office1.addBinding(new Binding(condition1, queue7), false);
+         office1.addBinding(new Binding(condition1, queue7, false), false);
          
          
          // Make sure all nodes pick them up
@@ -489,13 +489,13 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
          
          //Bind on different conditions
          
-         office1.addBinding(new Binding(condition1, queue8), false);
+         office1.addBinding(new Binding(condition1, queue8, false), false);
          
-         office2.addBinding(new Binding(condition1, queue9), false);
+         office2.addBinding(new Binding(condition1, queue9, false), false);
          
          Condition condition2 = new SimpleCondition("topic2");
          
-         office2.addBinding(new Binding(condition2, queue10), false);
+         office2.addBinding(new Binding(condition2, queue10, false), false);
          
          queues = office1.getQueuesForCondition(condition1, false);
          assertNotNull(queues);
@@ -523,9 +523,9 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
          Queue queue12 = new MessagingQueue(2, "sub12", channelIDManager.getID(), ms, pm, false, -1, null, false, false);
          queue12.activate();
          
-         office1.addBinding(new Binding(condition1, queue11), false);
+         office1.addBinding(new Binding(condition1, queue11, false), false);
          
-         office2.addBinding(new Binding(condition1, queue12), false);
+         office2.addBinding(new Binding(condition1, queue12, false), false);
          
          queues = office1.getQueuesForCondition(condition1, false);
          assertNotNull(queues);
@@ -594,7 +594,7 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
          
          Condition condition1 = new SimpleCondition("condition1");         
          
-         office1.addBinding(new Binding(condition1, queue1), true);
+         office1.addBinding(new Binding(condition1, queue1, false), true);
          
          Collection queues = office1.getQueuesForCondition(condition1, false);
                   
@@ -614,7 +614,7 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
          Queue queue2 = new MessagingQueue(2, "sub2", channelIDManager.getID(), ms, pm, false, -1, null, true, false);
          queue2.activate();
          
-         office2.addBinding(new Binding(condition1, queue2), true);
+         office2.addBinding(new Binding(condition1, queue2, false), true);
          
          queues = office1.getQueuesForCondition(condition1, false);
          
@@ -883,19 +883,19 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
          
          Condition condition1 = new SimpleCondition("queue1");
          
-         office1.addBinding(new Binding(condition1, queue1), false);
+         office1.addBinding(new Binding(condition1, queue1, false), false);
 
          Queue queue2 = new MessagingQueue(2, "queue1", channelIDManager.getID(), ms, pm, false, -1, null, true, false);
          queue2.activate();
 
-         office2.addBinding(new Binding(condition1, queue2), false);
+         office2.addBinding(new Binding(condition1, queue2, false), false);
 
          Queue queue3 = new MessagingQueue(1, "queue1", channelIDManager.getID(), ms, pm, false, -1, null, true, false);
          queue3.activate();
          
          try
          {
-            office1.addBinding(new Binding(condition1, queue3), false);
+            office1.addBinding(new Binding(condition1, queue3, false), false);
             fail();
          }
          catch (Exception e)
@@ -908,7 +908,7 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
          
          try
          {
-            office2.addBinding(new Binding(condition1, queue4), false);
+            office2.addBinding(new Binding(condition1, queue4, false), false);
             fail();
          }
          catch (Exception e)

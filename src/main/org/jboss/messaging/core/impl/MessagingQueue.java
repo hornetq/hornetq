@@ -183,7 +183,7 @@ public class MessagingQueue extends PagingChannelSupport implements Queue
     * over to another node, but a queue with the same name already exists. In this case we merge the
     * two queues.
     */
-   public void mergeIn(long channelID) throws Exception
+   public void mergeIn(long theChannelID) throws Exception
    {
       if (trace) { log.trace("Merging queue " + channelID + " into " + this); }
            
@@ -192,7 +192,7 @@ public class MessagingQueue extends PagingChannelSupport implements Queue
          flushDownCache();
                   
          PersistenceManager.InitialLoadInfo ili =
-            pm.mergeAndLoad(channelID, channelID, fullSize - messageRefs.size(),
+            pm.mergeAndLoad(theChannelID, this.channelID, fullSize - messageRefs.size(),
                             firstPagingOrder, nextPagingOrder);
             
          if (trace) { log.trace("Loaded " + ili.getRefInfos().size() + " refs"); }            

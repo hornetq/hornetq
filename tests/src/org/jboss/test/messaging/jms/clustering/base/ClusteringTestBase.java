@@ -204,17 +204,17 @@ public class ClusteringTestBase extends MessagingTestCase
 
       // wait for the client-side failover to complete
 
-      while(true)
-         {
-            FailoverEvent event = failoverListener.getEvent(120000);
-         if (event != null && FailoverEvent.FAILOVER_COMPLETED == event.getType())
-         {
-            break;
-         }
-         if (event == null)
-         {
-            fail("Did not get expected FAILOVER_COMPLETED event");
-         }
+      while (true)
+      {
+      	FailoverEvent event = failoverListener.getEvent(120000);
+      	if (event != null && FailoverEvent.FAILOVER_COMPLETED == event.getType())
+      	{
+      		break;
+      	}
+      	if (event == null)
+      	{
+      		fail("Did not get expected FAILOVER_COMPLETED event");
+      	}
       }
 
       // failover complete

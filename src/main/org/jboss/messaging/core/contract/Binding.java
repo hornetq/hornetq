@@ -32,19 +32,23 @@ package org.jboss.messaging.core.contract;
  */
 public class Binding
 {
-	public Binding(Condition condition, Queue queue)
+	public Binding(Condition condition, Queue queue, boolean allNodes)
 	{
 		this.condition = condition;
 		
 		this.queue = queue;
+		
+		this.allNodes = allNodes;
 	}
 	
 	public Condition condition;
 	
 	public Queue queue;
 	
+	public boolean allNodes;
+	
 	public String toString()
 	{
-		return "Binding:" + System.identityHashCode(this) + " condition: " + condition + " queue: " + queue;
+		return "Binding:" + System.identityHashCode(this) + " condition: " + condition + " queue: " + queue +" allNodes: " + allNodes;
 	}
 }

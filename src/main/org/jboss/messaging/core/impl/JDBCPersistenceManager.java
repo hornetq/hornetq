@@ -859,6 +859,13 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
    {
       if (trace) { log.trace("Merging channel from " + fromChannelID + " to " + toChannelID + " numberToLoad:" + numberToLoad + " firstPagingOrder:" + firstPagingOrder + " nextPagingOrder:" + nextPagingOrder); }
       
+      //Sanity
+      
+      if (fromChannelID == toChannelID)
+      {
+      	throw new IllegalArgumentException("Cannot merge queues - they have the same channel id!!");
+      }
+      
       Connection conn = null;
       PreparedStatement ps = null;
       ResultSet rs = null;

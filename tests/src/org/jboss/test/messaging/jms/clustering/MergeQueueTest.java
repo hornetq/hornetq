@@ -491,6 +491,8 @@ public class MergeQueueTest extends ClusteringTestBase
 
          MessageProducer producer0 = session0.createProducer(queue0);
 
+         log.info("sending messages on node 0");
+         
          for (int i = 0; i < messages0; i++)
          {
             producer0.send(session0.createTextMessage("message " + i));
@@ -502,6 +504,8 @@ public class MergeQueueTest extends ClusteringTestBase
          
          
          //Send some more on node 1
+         
+         log.info("Sending some messages on node 1");
          
          Session session1 = conn1.createSession(true, Session.SESSION_TRANSACTED);
 
@@ -586,8 +590,7 @@ public class MergeQueueTest extends ClusteringTestBase
          catch (Exception ignore)
          {            
          }
-         
-         
+                  
          if (conn0!=null)
          {
             conn0.close();

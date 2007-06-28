@@ -1436,7 +1436,10 @@ public class ServerPeer extends ServiceMBeanSupport
       {
          Queue queue = (Queue)iter.next();
          
-         postOffice.removeBinding(queue.getName(), false);
+         //Durable subs need to be removed on all nodes
+         boolean all = !isQueue && queue.isRecoverable();
+         
+         postOffice.removeBinding(queue.getName(), all);
       }
       
       return true;

@@ -85,12 +85,12 @@ public class PostOfficeTest extends PostOfficeTestBase
          
          Condition condition1 = new SimpleCondition("condition1");
                   
-         office1.addBinding(new Binding(condition1, queue1), false);
+         office1.addBinding(new Binding(condition1, queue1, false), false);
          
          //Binding twice with the same name should fail      
          try
          {
-            office1.addBinding(new Binding(condition1, queue1), false);
+            office1.addBinding(new Binding(condition1, queue1, false), false);
             fail();
          }
          catch (IllegalArgumentException e)
@@ -106,7 +106,7 @@ public class PostOfficeTest extends PostOfficeTestBase
 	         MessagingQueue queuexx =
 	            new MessagingQueue(777, "durableQueue", channelIDManager.getID(), ms, pm, true, 1, null, false, false);
 	         queuexx.activate();
-	         office1.addBinding(new Binding(condition1, queuexx), false);
+	         office1.addBinding(new Binding(condition1, queuexx, false), false);
             fail();
          }
          catch (IllegalArgumentException e)
@@ -122,7 +122,7 @@ public class PostOfficeTest extends PostOfficeTestBase
          
          Condition condition2 = new SimpleCondition("condition2");         
          
-         office1.addBinding(new Binding(condition2, queue2), false);
+         office1.addBinding(new Binding(condition2, queue2, false), false);
          
          //Check they're there
          
@@ -222,44 +222,44 @@ public class PostOfficeTest extends PostOfficeTestBase
          MessagingQueue queue1 = new MessagingQueue(1, "queue1", channelIDManager.getID(), ms, pm, false, -1, null, false, false);
          queue1.activate();
          
-         office.addBinding(new Binding(condition1, queue1), false);
+         office.addBinding(new Binding(condition1, queue1, false), false);
          
          MessagingQueue queue2 = new MessagingQueue(1, "queue2", channelIDManager.getID(), ms, pm, false, -1, null, false, false);
          queue2.activate();
          
-         office.addBinding(new Binding(condition1, queue2), false);
+         office.addBinding(new Binding(condition1, queue2, false), false);
          
          MessagingQueue queue3 = new MessagingQueue(1, "queue3", channelIDManager.getID(), ms, pm, false, -1, null, false, false);
          queue3.activate();
          
-         office.addBinding(new Binding(condition1, queue3), false);
+         office.addBinding(new Binding(condition1, queue3, false), false);
          
          MessagingQueue queue4 = new MessagingQueue(1, "queue4", channelIDManager.getID(), ms, pm, false, -1, null, false, false);
          queue4.activate();
          
-         office.addBinding(new Binding(condition1, queue4), false);
+         office.addBinding(new Binding(condition1, queue4, false), false);
          
          MessagingQueue queue5 = new MessagingQueue(1, "queue5", channelIDManager.getID(), ms, pm, false, -1, null, false, false);
          queue5.activate();
          
          Condition condition2 = new SimpleCondition("condition2");         
          
-         office.addBinding(new Binding(condition2, queue5), false);
+         office.addBinding(new Binding(condition2, queue5, false), false);
          
          MessagingQueue queue6 = new MessagingQueue(1, "queue6", channelIDManager.getID(), ms, pm, false, -1, null, false, false);
          queue6.activate();
          
-         office.addBinding(new Binding(condition2, queue6), false);
+         office.addBinding(new Binding(condition2, queue6, false), false);
          
          MessagingQueue queue7 = new MessagingQueue(1, "queue7", channelIDManager.getID(), ms, pm, false, -1, null, false, false);
          queue7.activate();
          
-         office.addBinding(new Binding(condition2, queue7), false);
+         office.addBinding(new Binding(condition2, queue7, false), false);
          
          MessagingQueue queue8 = new MessagingQueue(1, "queue8", channelIDManager.getID(), ms, pm,  false, -1, null, false, false);
          queue8.activate();
          
-         office.addBinding(new Binding(condition2, queue8), false);
+         office.addBinding(new Binding(condition2, queue8, false), false);
                   
          Collection queues = office.getQueuesForCondition(new SimpleCondition("dummy"), true);
          assertNotNull(queues);
@@ -342,15 +342,15 @@ public class PostOfficeTest extends PostOfficeTestBase
          Condition condition1 = new SimpleCondition("condition1");  
          
          MessagingQueue queue1 = new MessagingQueue(1, "queue1", channelIDManager.getID(), ms, pm, false, -1, null, false, false);
-         office.addBinding(new Binding(condition1, queue1), false);
+         office.addBinding(new Binding(condition1, queue1, false), false);
                          
          MessagingQueue queue2 = new MessagingQueue(1, "queue2", channelIDManager.getID(), ms, pm, false, -1, null, false, false);
-         office.addBinding(new Binding(condition1, queue2), false);
+         office.addBinding(new Binding(condition1, queue2, false), false);
          
          Condition condition2 = new SimpleCondition("condition2");  
                   
          MessagingQueue queue3 = new MessagingQueue(1, "queue3", channelIDManager.getID(), ms, pm, false, -1, null, false, false);
-         office.addBinding(new Binding(condition2, queue3), false);
+         office.addBinding(new Binding(condition2, queue3, false), false);
          
          Binding b1 = office.getBindingForQueueName("queue1");
          assertNotNull(b1);
@@ -420,15 +420,15 @@ public class PostOfficeTest extends PostOfficeTestBase
          Condition condition1 = new SimpleCondition("condition1");  
          
          MessagingQueue queue1 = new MessagingQueue(1, "queue1", channelIDManager.getID(), ms, pm, false, -1, null, false, false);
-         office.addBinding(new Binding(condition1, queue1), false);
+         office.addBinding(new Binding(condition1, queue1, false), false);
                          
          MessagingQueue queue2 = new MessagingQueue(1, "queue2", channelIDManager.getID(), ms, pm, false, -1, null, false, false);
-         office.addBinding(new Binding(condition1, queue2), false);
+         office.addBinding(new Binding(condition1, queue2, false), false);
          
          Condition condition2 = new SimpleCondition("condition2");  
                   
          MessagingQueue queue3 = new MessagingQueue(1, "queue3", channelIDManager.getID(), ms, pm, false, -1, null, false, false);
-         office.addBinding(new Binding(condition2, queue3), false);
+         office.addBinding(new Binding(condition2, queue3, false), false);
          
          Binding b1 = office.getBindingForChannelID(queue1.getChannelID());
          assertNotNull(b1);
@@ -530,17 +530,17 @@ public class PostOfficeTest extends PostOfficeTestBase
          MessagingQueue queue1 =  new MessagingQueue(1, "queue1", channelIDManager.getID(), ms, pm, false, -1, null, false, false);
          queue1.activate();
          
-         postOffice.addBinding(new Binding(condition1, queue1), false);
+         postOffice.addBinding(new Binding(condition1, queue1, false), false);
          
          MessagingQueue queue2 =  new MessagingQueue(1, "queue2", channelIDManager.getID(), ms, pm, false, -1, null, false, false);
          queue2.activate();
          
-         postOffice.addBinding(new Binding(condition1, queue2), false);
+         postOffice.addBinding(new Binding(condition1, queue2, false), false);
          
          MessagingQueue queue3 = new MessagingQueue(1, "queue3", channelIDManager.getID(), ms, pm, false, -1, null, false, false);
          queue3.activate();
          
-         postOffice.addBinding(new Binding(condition1, queue3), false);
+         postOffice.addBinding(new Binding(condition1, queue3, false), false);
          
          MessagingQueue queue4 = new MessagingQueue(1, "queue4", channelIDManager.getID(), ms, pm, false, -1, null, false, false);
          queue4.activate();
@@ -548,17 +548,17 @@ public class PostOfficeTest extends PostOfficeTestBase
          Condition condition2 = new SimpleCondition("topic2");
          
          
-         postOffice.addBinding(new Binding(condition2, queue4), false);
+         postOffice.addBinding(new Binding(condition2, queue4, false), false);
          
          MessagingQueue queue5 = new MessagingQueue(1, "queue5", channelIDManager.getID(), ms, pm, false,-1, null, false, false);
          queue5.activate();
          
-         postOffice.addBinding(new Binding(condition2, queue5), false);
+         postOffice.addBinding(new Binding(condition2, queue5, false), false);
          
          MessagingQueue queue6 = new MessagingQueue(1, "queue6", channelIDManager.getID(), ms, pm, false, -1, null, false, false);
          queue6.activate();
          
-         postOffice.addBinding(new Binding(condition2, queue6), false);
+         postOffice.addBinding(new Binding(condition2, queue6, false), false);
       
          SimpleReceiver receiver1 = new SimpleReceiver("blah", SimpleReceiver.ACCEPTING);
          queue1.getLocalDistributor().add(receiver1);
@@ -686,7 +686,7 @@ public class PostOfficeTest extends PostOfficeTestBase
          MessagingQueue queue1 = new MessagingQueue(1, "queue1", channelIDManager.getID(), ms, pm, false, -1, null, false, false);
          queue1.activate();
          
-         postOffice.addBinding(new Binding(new SimpleCondition("condition1"), queue1), false);
+         postOffice.addBinding(new Binding(new SimpleCondition("condition1"), queue1, false), false);
               
          SimpleReceiver receiver1 = new SimpleReceiver("blah", SimpleReceiver.ACCEPTING);;
          
@@ -743,17 +743,17 @@ public class PostOfficeTest extends PostOfficeTestBase
          MessagingQueue queue1 = new MessagingQueue(1, "queue1", channelIDManager.getID(), ms, pm, false, -1, filter, false, false);
          queue1.activate();
          
-         postOffice.addBinding(new Binding(condition1, queue1), false);
+         postOffice.addBinding(new Binding(condition1, queue1, false), false);
          
          MessagingQueue queue2 = new MessagingQueue(1, "queue2", channelIDManager.getID(), ms, pm, false, -1, null, false, false);
          queue2.activate();
          
-         postOffice.addBinding(new Binding(condition1, queue2), false);
+         postOffice.addBinding(new Binding(condition1, queue2, false), false);
          
          MessagingQueue queue3 = new MessagingQueue(1, "queue3", channelIDManager.getID(), ms, pm, false, -1, null, false, false);
          queue3.activate();
          
-         postOffice.addBinding(new Binding(condition1, queue3), false);
+         postOffice.addBinding(new Binding(condition1, queue3, false), false);
          
          SimpleReceiver receiver1 = new SimpleReceiver("blah", SimpleReceiver.ACCEPTING);
          queue1.getLocalDistributor().add(receiver1);
@@ -848,34 +848,34 @@ public class PostOfficeTest extends PostOfficeTestBase
          MessagingQueue queue1 = new MessagingQueue(1, "queue1", channelIDManager.getID(), ms, pm, false, -1, null, false, false);
          queue1.activate();
          
-         postOffice.addBinding(new Binding(condition1, queue1), false);
+         postOffice.addBinding(new Binding(condition1, queue1, false), false);
          
          MessagingQueue queue2 = new MessagingQueue(1, "queue2", channelIDManager.getID(), ms, pm, false, -1, null, false, false);
          queue2.activate();
          
-         postOffice.addBinding(new Binding(condition1, queue2), false);
+         postOffice.addBinding(new Binding(condition1, queue2, false), false);
          
          MessagingQueue queue3 = new MessagingQueue(1, "queue3", channelIDManager.getID(), ms, pm, false, -1, null, false, false);
          queue3.activate();
          
-         postOffice.addBinding(new Binding(condition1, queue3), false);
+         postOffice.addBinding(new Binding(condition1, queue3, false), false);
          
          MessagingQueue queue4 = new MessagingQueue(1, "queue4", channelIDManager.getID(), ms, pm, true, -1, null, false, false);
          queue4.activate();
          
          Condition condition2 = new SimpleCondition("topic2");
          
-         postOffice.addBinding(new Binding(condition2, queue4), false);
+         postOffice.addBinding(new Binding(condition2, queue4, false), false);
          
          MessagingQueue queue5 = new MessagingQueue(1, "queue5", channelIDManager.getID(), ms, pm, true, -1, null, false, false);
          queue5.activate();
          
-         postOffice.addBinding(new Binding(condition2, queue5), false);
+         postOffice.addBinding(new Binding(condition2, queue5, false), false);
          
          MessagingQueue queue6 = new MessagingQueue(1, "queue6", channelIDManager.getID(), ms, pm, true, -1, null, false, false);
          queue6.activate();
          
-         postOffice.addBinding(new Binding(condition2, queue6), false);
+         postOffice.addBinding(new Binding(condition2, queue6, false), false);
       
          SimpleReceiver receiver1 = new SimpleReceiver("blah", SimpleReceiver.ACCEPTING);;
          queue1.getLocalDistributor().add(receiver1);
@@ -1026,12 +1026,12 @@ public class PostOfficeTest extends PostOfficeTestBase
          MessagingQueue queue1 = new MessagingQueue(1, "queue1", channelIDManager.getID(), ms, pm, false, -1, null, false, false);
          queue1.activate();
          
-         postOffice.addBinding(new Binding(condition1, queue1), false);
+         postOffice.addBinding(new Binding(condition1, queue1, false), false);
          
          MessagingQueue queue2 = new MessagingQueue(1, "queue2", channelIDManager.getID(), ms, pm, true,-1, null, false, false);
          queue2.activate();
          
-         postOffice.addBinding(new Binding(condition1, queue2), false);
+         postOffice.addBinding(new Binding(condition1, queue2, false), false);
           
          SimpleReceiver receiver1 = new SimpleReceiver("blah", SimpleReceiver.ACCEPTING);;
          queue1.getLocalDistributor().add(receiver1);

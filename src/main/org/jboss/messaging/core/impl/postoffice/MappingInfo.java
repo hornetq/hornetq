@@ -66,12 +66,14 @@ class MappingInfo implements Streamable
    
    private boolean preserveOrdering;
    
+   private boolean allNodes;
+   
    MappingInfo()
    {      
    }
    
    MappingInfo(int nodeId, String queueName, String conditionText, String filterString,
-               long channelId, boolean recoverable, boolean clustered)
+               long channelId, boolean recoverable, boolean clustered, boolean allNodes)
    {
       this.nodeId = nodeId;
       
@@ -86,13 +88,16 @@ class MappingInfo implements Streamable
       this.recoverable = recoverable;
         
       this.clustered = clustered;
+      
+      this.allNodes = allNodes;
    }   
    
    MappingInfo(int nodeId, String queueName, String conditionText, String filterString,
-   		      long channelId, boolean recoverable, boolean clustered, int fullSize, int pageSize, int downCacheSize,
+   		      long channelId, boolean recoverable, boolean clustered, boolean allNodes,
+   		      int fullSize, int pageSize, int downCacheSize,
    		      int maxSize, boolean preserveOrdering)
    {
-   	this (nodeId, queueName, conditionText, filterString, channelId, recoverable, clustered);
+   	this (nodeId, queueName, conditionText, filterString, channelId, recoverable, clustered, allNodes);
    	
    	this.fullSize = fullSize;
    	
@@ -123,6 +128,8 @@ class MappingInfo implements Streamable
       
       clustered = in.readBoolean();
       
+      allNodes = in.readBoolean();
+      
       fullSize = in.readInt();
       
       pageSize = in.readInt();
@@ -149,6 +156,8 @@ class MappingInfo implements Streamable
       out.writeBoolean(recoverable);
       
       out.writeBoolean(clustered);
+      
+      out.writeBoolean(allNodes);
       
       out.writeInt(fullSize);
       
@@ -194,6 +203,11 @@ class MappingInfo implements Streamable
    boolean isClustered()
    {
    	return clustered;
+   }
+   
+   boolean isAllNodes()
+   {
+   	return allNodes;
    }
 
    int getFullSize()
