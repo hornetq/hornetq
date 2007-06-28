@@ -1426,6 +1426,8 @@ public class ServerSessionEndpoint implements SessionEndpoint
                   
                   postOffice.addBinding(new Binding(new JMSCondition(false, jmsDestination.getName()), queue), true);
   
+                  queue.activate();                  
+                  
                   if (!mDest.isTemporary())
                   {
 	                  createCounter = true;

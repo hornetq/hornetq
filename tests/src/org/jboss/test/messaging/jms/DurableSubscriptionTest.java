@@ -236,6 +236,9 @@ public class DurableSubscriptionTest extends MessagingTestCase
       TextMessage tm = s.createTextMessage("A red square message");
       tm.setStringProperty("color", "red");
       tm.setStringProperty("shape", "square");
+      
+      log.info("**Sending the message");
+      
       prod.send(tm);
 
       conn.start();
