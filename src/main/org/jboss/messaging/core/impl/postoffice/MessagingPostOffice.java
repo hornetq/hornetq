@@ -1024,7 +1024,7 @@ public class MessagingPostOffice extends JDBCSupport
                  "CHANNEL_ID, " +
                  "CLUSTERED, " +
                  "ALL_NODES) " +
-              "VALUES (?, ?, ?, ?, ?, ?, ?)");
+              "VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
 
       map.put("DELETE_BINDING",
               "DELETE FROM JBM_POSTOFFICE WHERE POSTOFFICE_NAME=? AND NODE_ID=? AND QUEUE_NAME=?");

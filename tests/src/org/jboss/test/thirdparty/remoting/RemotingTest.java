@@ -153,51 +153,51 @@ public class RemotingTest extends MessagingTestCase
    /**
     * TODO: Commented out until fixed. See http://jira.jboss.org/jira/browse/JBMESSAGING-287
     */
-//   public void testConnectionListener() throws Throwable
-//   {
-//      // Start a server
-//
-//      Connector serverConnector = new Connector();
-//
-//      InvokerLocator serverLocator = new InvokerLocator("socket://localhost:9099");
-//
-//      serverConnector.setInvokerLocator(serverLocator.getLocatorURI());
-//
-//      serverConnector.create();
-//
-//      SimpleServerInvocationHandler invocationHandler = new SimpleServerInvocationHandler();
-//
-//      serverConnector.addInvocationHandler("JMS", invocationHandler);
-//
-//      serverConnector.setLeasePeriod(1000);
-//
-//      serverConnector.addConnectionListener(new SimpleConnectionListener());
-//
-//      serverConnector.start();
-//
-//      try
-//      {
-//         Client client = new Client(serverLocator);
-//
-//         client.connect();
-//
-//         Thread.sleep(5000);
-//
-//         client.disconnect();
-//
-//         // Connection Listener should now be called
-//
-//         Thread.sleep(5000);
-//
-//         assertTrue(connListenerCalled);
-//      }
-//      finally
-//      {
-//         serverConnector.stop();
-//         serverConnector.destroy();
-//      }
-//
-//   }
+   public void testConnectionListener() throws Throwable
+   {
+      // Start a server
+
+      Connector serverConnector = new Connector();
+
+      InvokerLocator serverLocator = new InvokerLocator("socket://localhost:9099");
+
+      serverConnector.setInvokerLocator(serverLocator.getLocatorURI());
+
+      serverConnector.create();
+
+      SimpleServerInvocationHandler invocationHandler = new SimpleServerInvocationHandler();
+
+      serverConnector.addInvocationHandler("JMS", invocationHandler);
+
+      serverConnector.setLeasePeriod(1000);
+
+      serverConnector.addConnectionListener(new SimpleConnectionListener());
+
+      serverConnector.start();
+
+      try
+      {
+         Client client = new Client(serverLocator);
+
+         client.connect();
+
+         Thread.sleep(5000);
+
+         client.disconnect();
+
+         // Connection Listener should now be called
+
+         Thread.sleep(5000);
+
+         assertTrue(connListenerCalled);
+      }
+      finally
+      {
+         serverConnector.stop();
+         serverConnector.destroy();
+      }
+
+   }
 
    /**
     * JIRA issue: http://jira.jboss.org/jira/browse/JBMESSAGING-371

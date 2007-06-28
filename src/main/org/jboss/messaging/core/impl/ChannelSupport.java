@@ -898,30 +898,37 @@ public abstract class ChannelSupport implements Channel
       {         
          try
          {
-            // We add the references to the state
+            // We add the references to the state (or schedule them if appropriate)
          	
          	boolean promptDelivery = false;
             
             for(Iterator i = refsToAdd.iterator(); i.hasNext(); )
             {
                MessageReference ref = (MessageReference)i.next();
-
-               if (trace) { log.trace(this + ": adding " + ref + " to non-recoverable state"); }
-
-               try
-               {
-                  synchronized (lock)
-                  {
-                     addReferenceInMemory(ref);
-                  }
-               }
-               catch (Throwable t)
-               {
-                  throw new TransactionException("Failed to add reference", t);
-               }
                
-               //Only need to prompt delivery if refs were added
-               promptDelivery = true;
+               if (checkAndSchedule(ref))
+               {
+               	if (trace) { log.trace(this + ": scheduled " + ref); }
+               }
+               else
+               {	
+	               if (trace) { log.trace(this + ": adding " + ref + " to non-recoverable state"); }
+	
+	               try
+	               {
+	                  synchronized (lock)
+	                  {
+	                     addReferenceInMemory(ref);
+	                  }
+	               }
+	               catch (Throwable t)
+	               {
+	                  throw new TransactionException("Failed to add reference", t);
+	               }
+               
+	               //Only need to prompt delivery if refs were added
+	               promptDelivery = true;
+               }
             }
 
             // Remove deliveries
