@@ -1288,6 +1288,16 @@ public class MessageTest extends MessagingTestCase
 
    private static class ForeignDestination implements Destination, Serializable
    {
+      // A ForeignDestination equals any other ForeignDestination, for simplicity
+      public boolean equals(Object obj)
+      {
+         return obj instanceof ForeignDestination;
+      }
+      
+      public int hashCode()
+      {
+         return 157;
+      }
    }
    
 }
