@@ -64,7 +64,8 @@ public class SingleChannel_NP_NTTest extends PagingStateTestBase
    public void test1() throws Throwable
    {
       MessagingQueue queue = new MessagingQueue(1, "queue1", 1, ms, pm, true, -1, null, 100, 20, 10, false, false);
-       
+      queue.activate(); 
+      
       Message[] msgs = new Message[241];
       
       MessageReference[] refs = new MessageReference[241];

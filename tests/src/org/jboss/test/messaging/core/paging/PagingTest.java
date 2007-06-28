@@ -62,6 +62,7 @@ public class PagingTest extends MessagingTestCase
    public void testPaging() throws Exception
    {
       MessagingQueue p = new MessagingQueue(1, "queue0", 1, ms, pm, true, -1, null, 100, 20, 10, false, false);
+      p.activate();
            
       CoreMessage m = null;
 

@@ -197,43 +197,6 @@ public abstract class MessagingQueueTestBase extends MessagingTestCase
 
    // Channel tests -------------------------------------------------
    
-
-   public void testWithFilter()
-   {
-      Filter f = new SimpleFilter(3);
-                        
-      MessagingQueue queue = new MessagingQueue(1, "queue1", 1, ms, pm, false, -1, f, false, false);
-      queue.activate();
-      
-      Message m1 = new CoreMessage(1, false, 0, 0, (byte)0, null, null);
-      Message m2 = new CoreMessage(2, false, 0, 0, (byte)0, null, null);
-      Message m3 = new CoreMessage(3, false, 0, 0, (byte)0, null, null);
-      Message m4 = new CoreMessage(4, false, 0, 0, (byte)0, null, null);
-      Message m5 = new CoreMessage(5, false, 0, 0, (byte)0, null, null);
-      
-      MessageReference ref1 = ms.reference(m1);
-      MessageReference ref2 = ms.reference(m2);
-      MessageReference ref3 = ms.reference(m3);
-      MessageReference ref4 = ms.reference(m4);
-      MessageReference ref5 = ms.reference(m5);
-      
-      Delivery del = queue.handle(null, ref1, null);
-      assertFalse(del.isSelectorAccepted());
-      
-      del = queue.handle(null, ref2, null);
-      assertFalse(del.isSelectorAccepted());
-      
-      del = queue.handle(null, ref3, null);
-      assertTrue(del.isSelectorAccepted());
-      
-      del = queue.handle(null, ref4, null);
-      assertFalse(del.isSelectorAccepted());
-      
-      del = queue.handle(null, ref5, null);
-      assertFalse(del.isSelectorAccepted());
-   }
-   
-   
    public void testUnreliableSynchronousDeliveryTwoReceivers() throws Exception
    {
       if (queue.isRecoverable())
@@ -730,20 +693,11 @@ public abstract class MessagingQueueTestBase extends MessagingTestCase
       // no messages in the channel yet
       assertEquals(0, queue.browse(null).size());
 
-      try
-      {
-         tx.commit();
-         fail("this should throw exception");
-      }
-      catch(Exception e)
-      {
-         // OK
-      }
-
-      // still no messages in the channel
-      assertEquals(0, queue.browse(null).size());
-
+      tx.commit();
+        
+      assertEqualSets(refs, queue.browse(null));
    }
+   
   
 
    ///////////
@@ -1357,21 +1311,10 @@ public abstract class MessagingQueueTestBase extends MessagingTestCase
       // no message at the receiver
       assertTrue(r.getMessages().isEmpty());
 
-      try
-      {
-         tx.commit();
-         fail("this should throw exception");
-      }
-      catch(Exception e)
-      {
-         // OK
-      }
+      tx.commit();
 
-      // no messages in the channel
-      assertEquals(0, queue.browse(null).size());
-
-      // no message at the receiver
-      assertTrue(r.getMessages().isEmpty());
+      // messages at the receiver
+      assertEqualSets(refs, r.getMessages());
    }
 
    ///////////
