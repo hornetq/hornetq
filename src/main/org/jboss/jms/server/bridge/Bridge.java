@@ -21,8 +21,11 @@
  */
 package org.jboss.jms.server.bridge;
 
+import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.Map;
 
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
@@ -41,6 +44,7 @@ import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
 import javax.transaction.xa.XAResource;
 
+import org.jboss.jms.message.JBossMessage;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.contract.MessagingComponent;
 import org.jboss.tm.TransactionManagerLocator;
@@ -153,6 +157,10 @@ public class Bridge implements MessagingComponent
    
    private String clientID;
    
+   private volatile boolean addMessageIDInHeader;
+   
+      
+   
    private boolean started;
    
    private LinkedList messages;
@@ -193,7 +201,6 @@ public class Bridge implements MessagingComponent
    
    private boolean usingXA;
    
-   
    /*
     * Constructor for MBean
     */
@@ -212,7 +219,8 @@ public class Bridge implements MessagingComponent
                  int maxRetries,
                  int qosMode,
                  int maxBatchSize, long maxBatchTime,
-                 String subName, String clientID)
+                 String subName, String clientID,
+                 boolean addMessageIDInHeader)
    {            
       this();
       
@@ -247,6 +255,8 @@ public class Bridge implements MessagingComponent
       this.subName = subName;
       
       this.clientID = clientID;
+      
+      this.addMessageIDInHeader = addMessageIDInHeader;
             
       if (trace)
       {
@@ -639,6 +649,16 @@ public class Bridge implements MessagingComponent
       }
       
       this.clientID = clientID; 
+   }
+   
+   public boolean isAddMessageIDInHeader()
+   {
+   	return this.addMessageIDInHeader;
+   }
+   
+   public void setAddMessageIDInHeader(boolean value)
+   {
+   	this.addMessageIDInHeader = value;
    }
       
    public synchronized boolean isPaused()
@@ -1167,6 +1187,11 @@ public class Bridge implements MessagingComponent
          {
             msg = (Message)iter.next();
             
+            if (addMessageIDInHeader)
+            {
+            	addMessageIDInHeader(msg);            	
+            }
+            
             if (trace) { log.trace("Sending message " + msg); }
             
             producer.send(msg);
@@ -1254,6 +1279,70 @@ public class Bridge implements MessagingComponent
       Thread t = new Thread(failureHandler);
       
       t.start();         
+   }
+   
+   private void addMessageIDInHeader(Message msg) throws Exception
+   {
+   	//We concatenate the old message id as a header in the message
+   	//This allows the target to then use this as the JMSCorrelationID of any response message
+   	//thus enabling a distributed request-response pattern.
+   	//Each bridge (if there are more than one) in the chain can contenate the message id
+   	//So in the case of multiple bridges having routed the message this can be used in a multi-hop
+   	//distributed request/response
+   	if (trace) { log.trace("Adding old message id in Message header"); }
+   	
+   	//Now JMS is really dumb and does not let you add a property on received message without first
+   	//calling clearProperties, so we need to save and re-add all the old properties so we
+   	//don't lose them!!
+   	
+   	Enumeration en = msg.getPropertyNames();
+   	
+   	Map oldProps = null;
+   	
+   	while (en.hasMoreElements())
+   	{
+   		String propName = (String)en.nextElement();
+   		
+   		if (oldProps == null)
+   		{
+   			oldProps = new HashMap();
+   		}
+   		
+   		oldProps.put(propName, msg.getObjectProperty(propName));
+   	}
+   	            	
+   	msg.clearProperties();
+   	
+   	if (oldProps != null)
+   	{
+   		Iterator iter2 = oldProps.entrySet().iterator();
+   		
+   		while (iter2.hasNext())
+   		{
+   			Map.Entry entry = (Map.Entry)iter2.next();
+   			
+   			msg.setObjectProperty((String)entry.getKey(), entry.getValue());
+   		}
+   	}
+   	
+   	String val = null;
+   	
+   	val = msg.getStringProperty(JBossMessage.JBOSS_MESSAGING_BRIDGE_MESSAGE_ID_LIST);
+   	
+   	if (val == null)
+   	{
+   		val = msg.getJMSMessageID();
+   	}
+   	else
+   	{
+   		StringBuffer sb = new StringBuffer(val);
+   		
+   		sb.append(",").append(msg.getJMSMessageID());
+   		
+   		val = sb.toString();
+   	}
+   	
+   	msg.setStringProperty(JBossMessage.JBOSS_MESSAGING_BRIDGE_MESSAGE_ID_LIST, val);            	   
    }
    
    // Inner classes ---------------------------------------------------------------

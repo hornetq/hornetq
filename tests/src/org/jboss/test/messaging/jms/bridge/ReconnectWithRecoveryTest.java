@@ -102,7 +102,7 @@ public class ReconnectWithRecoveryTest extends BridgeTestBase
                   null, null, null, null,
                   null, 1000, -1, Bridge.QOS_ONCE_AND_ONLY_ONCE,
                   NUM_MESSAGES, -1,
-                  null, null);
+                  null, null, false);
          
          bridge.start();
          

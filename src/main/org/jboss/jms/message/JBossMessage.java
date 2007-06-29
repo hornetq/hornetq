@@ -94,11 +94,17 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message, S
    
    public static final String JMS_JBOSS_SCHEDULED_DELIVERY_PROP_NAME = "JMS_JBOSS_SCHEDULED_DELIVERY";
    
+   //Used when sending a message to the DLQ
    public static final String JBOSS_MESSAGING_ORIG_DESTINATION = "JBM_ORIG_DESTINATION";
 
+   //Used when sending a message to the DLQ
    public static final String JBOSS_MESSAGING_ORIG_MESSAGE_ID = "JBM_ORIG_MESSAGE_ID";
    
+   //Used when sending a mesage to the DLQ
    public static final String JBOSS_MESSAGING_ACTUAL_EXPIRY_TIME = "JBM_ACTUAL_EXPIRY";
+   
+   //Used when bridging a message
+   public static final String JBOSS_MESSAGING_BRIDGE_MESSAGE_ID_LIST = "JBM_BRIDGE_MSG_ID_LIST";
    
    private static final Logger log = Logger.getLogger(JBossMessage.class);   
       

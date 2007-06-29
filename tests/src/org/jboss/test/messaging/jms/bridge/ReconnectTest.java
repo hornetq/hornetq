@@ -121,7 +121,7 @@ public class ReconnectTest extends BridgeTestBase
             null, null, null, null,
             null, 1000, -1, Bridge.QOS_DUPLICATES_OK,
             10, -1,
-            null, null);
+            null, null, false);
       
       try
       {
@@ -167,7 +167,7 @@ public class ReconnectTest extends BridgeTestBase
                   null, null, null, null,
                   null, 1000, -1, qosMode,
                   10, -1,
-                  null, null);
+                  null, null, false);
          
          bridge.start();
             
@@ -255,7 +255,7 @@ public class ReconnectTest extends BridgeTestBase
                   null, null, null, null,
                   null, 1000, -1, Bridge.QOS_ONCE_AND_ONLY_ONCE,
                   10, 5000,
-                  null, null);
+                  null, null, false);
          
          bridge.start();
          

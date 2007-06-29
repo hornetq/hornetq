@@ -64,7 +64,7 @@ public class PostOfficeTest extends PostOfficeTestBase
    }
 
    // Public --------------------------------------------------------
-
+   
    public final void testBindUnbind() throws Throwable
    {
       PostOffice office1 = null;
@@ -80,7 +80,7 @@ public class PostOfficeTest extends PostOfficeTestBase
          //Bind one durable
              
          MessagingQueue queue1 =
-            new MessagingQueue(1, "durableQueue", channelIDManager.getID(), ms, pm, true, 1, null, false, false);
+            new MessagingQueue(1, "durableQueue", channelIDManager.getID(), ms, pm, true, -1, null, false, false);
          queue1.activate();
          
          Condition condition1 = new SimpleCondition("condition1");
@@ -104,7 +104,7 @@ public class PostOfficeTest extends PostOfficeTestBase
          {
          
 	         MessagingQueue queuexx =
-	            new MessagingQueue(777, "durableQueue", channelIDManager.getID(), ms, pm, true, 1, null, false, false);
+	            new MessagingQueue(777, "durableQueue", channelIDManager.getID(), ms, pm, true, -1, null, false, false);
 	         queuexx.activate();
 	         office1.addBinding(new Binding(condition1, queuexx, false), false);
             fail();

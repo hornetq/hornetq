@@ -103,7 +103,7 @@ public class BridgeMBeanTest extends BridgeTestBase
                                    "/queue/sourceQueue", "/queue/targetQueue",
                                    null, null, null, null,
                                    Bridge.QOS_AT_MOST_ONCE, null, 1,
-                                   -1, null, null, 5000, -1);
+                                   -1, null, null, 5000, -1, false);
       log.info("Deployed bridge");
       
       ServerManagement.getServer(0).invoke(on, "create", new Object[0], new String[0]);
@@ -320,7 +320,7 @@ public class BridgeMBeanTest extends BridgeTestBase
                            "/queue/sourceQueue", "/queue/targetQueue",
                            null, null, null, null,
                            Bridge.QOS_ONCE_AND_ONLY_ONCE, null, 1,
-                           -1, null, null, 5000, -1);
+                           -1, null, null, 5000, -1, false);
          
          log.trace("Constructed bridge");
          
@@ -650,7 +650,7 @@ public class BridgeMBeanTest extends BridgeTestBase
             String targetUsername, String targetPassword,
             int qos, String selector, int maxBatchSize,
             long maxBatchTime, String subName, String clientID,
-            long failureRetryInterval, int maxRetries) throws Exception
+            long failureRetryInterval, int maxRetries, boolean addMessageIDInHeader) throws Exception
    {
       String config = 
          "<mbean code=\"org.jboss.jms.server.bridge.BridgeService\" " +
@@ -691,8 +691,11 @@ public class BridgeMBeanTest extends BridgeTestBase
       {
          config += "<attribute name=\"ClientID\">" + clientID + "</attribute>";
       }
-      config += "<attribute name=\"FailureRetryInterval\">" + failureRetryInterval + "</attribute>"+      
-      "<attribute name=\"MaxRetries\">" + maxRetries +"</attribute>";
+      config += "<attribute name=\"FailureRetryInterval\">" + failureRetryInterval + "</attribute>";    
+      
+      config += "<attribute name=\"MaxRetries\">" + maxRetries +"</attribute>";
+      
+      config += "<attribute name=\"AddMessageIDInHeader\">" + addMessageIDInHeader + "</attribute>";
       config += "</mbean>";
       
       return ServerManagement.getServer(server).deploy(config);            

@@ -21,6 +21,8 @@
   */
 package org.jboss.test.thirdparty.remoting;
 
+import java.util.HashMap;
+
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
@@ -150,9 +152,6 @@ public class RemotingTest extends MessagingTestCase
       }
    }
 
-   /**
-    * TODO: Commented out until fixed. See http://jira.jboss.org/jira/browse/JBMESSAGING-287
-    */
    public void testConnectionListener() throws Throwable
    {
       // Start a server
@@ -177,7 +176,13 @@ public class RemotingTest extends MessagingTestCase
 
       try
       {
-         Client client = new Client(serverLocator);
+         HashMap metadata = new HashMap();
+         
+         metadata.put(InvokerLocator.FORCE_REMOTE, "true");
+         
+         metadata.put(Client.ENABLE_LEASE, "true");
+         
+         Client client = new Client(serverLocator, metadata);
 
          client.connect();
 

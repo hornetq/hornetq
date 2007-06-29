@@ -240,6 +240,16 @@ public class BridgeService extends ServiceMBeanSupport implements BridgeMBean
       bridge.setMaxRetries(retries);
    }
    
+   public boolean isAddMessageIDInHeader()
+   {
+   	return bridge.isAddMessageIDInHeader();
+   }
+   
+   public void setAddMessageIDInHeader(boolean value)
+   {
+   	bridge.setAddMessageIDInHeader(value);
+   }
+   
    public boolean isFailed()
    {
       return bridge.isFailed();

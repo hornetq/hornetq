@@ -21,6 +21,10 @@
  */
 package org.jboss.test.messaging.jms.bridge;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
 import javax.jms.Connection;
 import javax.jms.DeliveryMode;
 import javax.jms.Message;
@@ -31,6 +35,7 @@ import javax.jms.TextMessage;
 import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
 
+import org.jboss.jms.message.JBossMessage;
 import org.jboss.jms.server.bridge.Bridge;
 import org.jboss.logging.Logger;
 import org.jboss.test.messaging.tools.ServerManagement;
@@ -371,7 +376,7 @@ public class BridgeTest extends BridgeTestBase
                                sourceUsername, sourcePassword, destUsername, destPassword,
                                selector, failureRetryInterval, maxRetries, qosMode,
                                batchSize, maxBatchTime,
-                               subName, clientID);
+                               subName, clientID, false);
          }
          catch (IllegalArgumentException e)
          {
@@ -384,7 +389,7 @@ public class BridgeTest extends BridgeTestBase
                                sourceUsername, sourcePassword, destUsername, destPassword,
                                selector, failureRetryInterval, maxRetries, qosMode,
                                batchSize, maxBatchTime,
-                               subName, clientID);
+                               subName, clientID, false);
          }
          catch (IllegalArgumentException e)
          {
@@ -397,7 +402,7 @@ public class BridgeTest extends BridgeTestBase
                                sourceUsername, sourcePassword, destUsername, destPassword,
                                selector, failureRetryInterval, maxRetries, qosMode,
                                batchSize, maxBatchTime,
-                               subName, clientID);
+                               subName, clientID, false);
          }
          catch (IllegalArgumentException e)
          {
@@ -410,7 +415,7 @@ public class BridgeTest extends BridgeTestBase
                                sourceUsername, sourcePassword, destUsername, destPassword,
                                selector, failureRetryInterval, maxRetries, qosMode,
                                batchSize, maxBatchTime,
-                               subName, clientID);
+                               subName, clientID, false);
          }
          catch (IllegalArgumentException e)
          {
@@ -423,7 +428,7 @@ public class BridgeTest extends BridgeTestBase
                                sourceUsername, sourcePassword, destUsername, destPassword,
                                selector, -2, maxRetries, qosMode,
                                batchSize, maxBatchTime,
-                               subName, clientID);
+                               subName, clientID, false);
          }
          catch (IllegalArgumentException e)
          {
@@ -436,7 +441,7 @@ public class BridgeTest extends BridgeTestBase
                                sourceUsername, sourcePassword, destUsername, destPassword,
                                selector, -1, 10, qosMode,
                                batchSize, maxBatchTime,
-                               subName, clientID);
+                               subName, clientID, false);
          }
          catch (IllegalArgumentException e)
          {
@@ -449,7 +454,7 @@ public class BridgeTest extends BridgeTestBase
                                sourceUsername, sourcePassword, destUsername, destPassword,
                                selector, failureRetryInterval, maxRetries, -2,
                                batchSize, maxBatchTime,
-                               subName, clientID);
+                               subName, clientID, false);
          }
          catch (IllegalArgumentException e)
          {
@@ -462,7 +467,7 @@ public class BridgeTest extends BridgeTestBase
                                sourceUsername, sourcePassword, destUsername, destPassword,
                                selector, failureRetryInterval, maxRetries, 3,
                                batchSize, maxBatchTime,
-                               subName, clientID);
+                               subName, clientID, false);
          }
          catch (IllegalArgumentException e)
          {
@@ -475,7 +480,7 @@ public class BridgeTest extends BridgeTestBase
                                sourceUsername, sourcePassword, destUsername, destPassword,
                                selector, failureRetryInterval, maxRetries, 3,
                                0, maxBatchTime,
-                               subName, clientID);
+                               subName, clientID, false);
          }
          catch (IllegalArgumentException e)
          {
@@ -488,7 +493,7 @@ public class BridgeTest extends BridgeTestBase
                                sourceUsername, sourcePassword, destUsername, destPassword,
                                selector, failureRetryInterval, maxRetries, 3,
                                batchSize, -2,
-                               subName, clientID);
+                               subName, clientID, false);
          }
          catch (IllegalArgumentException e)
          {
@@ -524,7 +529,7 @@ public class BridgeTest extends BridgeTestBase
                   null, null, null, null,
                   selector, 5000, 10, Bridge.QOS_AT_MOST_ONCE,
                   1, -1,
-                  null, null);
+                  null, null, false);
          
          bridge.start();
             
@@ -650,7 +655,7 @@ public class BridgeTest extends BridgeTestBase
                   null, null, null, null,
                   null, 5000, 10, Bridge.QOS_AT_MOST_ONCE,
                   1, -1,
-                  null, null);
+                  null, null, false);
          
          bridge.start();
          
@@ -707,7 +712,7 @@ public class BridgeTest extends BridgeTestBase
                   null, null, null, null,
                   null, 5000, 10, Bridge.QOS_AT_MOST_ONCE,
                   1, -1,
-                  null, null);
+                  null, null, false);
          
          bridge.start();
             
@@ -741,7 +746,7 @@ public class BridgeTest extends BridgeTestBase
                   null, null, null, null,
                   null, 5000, 10, Bridge.QOS_AT_MOST_ONCE,
                   1, -1,
-                  "subTest", "clientid123");
+                  "subTest", "clientid123", false);
          
          bridge.start();
             
@@ -775,7 +780,7 @@ public class BridgeTest extends BridgeTestBase
                   null, null, null, null,
                   null, 5000, 10, Bridge.QOS_AT_MOST_ONCE,
                   NUM_MESSAGES, -1,
-                  null, null);
+                  null, null, false);
          
          bridge.start();
          
@@ -815,6 +820,229 @@ public class BridgeTest extends BridgeTestBase
       }                  
    }
    
+   public void testMessageIDInHeader() throws Exception
+   { 
+      Bridge bridge = null;
+      
+      Connection connSource = null;
+      
+      Connection connTarget = null;
+            
+      try
+      {
+         this.setUpAdministeredObjects(true);
+         
+         final int NUM_MESSAGES = 10;
+         
+         bridge = new Bridge(cff0, cff1, sourceQueue, destQueue,
+                  null, null, null, null,
+                  null, 5000, 10, Bridge.QOS_AT_MOST_ONCE,
+                  1, -1,
+                  null, null, true);
+         
+         bridge.start();
+         
+         connSource = cf0.createConnection();
+         
+         connTarget = cf1.createConnection();
+                    
+         log.trace("Sending " + NUM_MESSAGES + " messages");
+         
+         List ids1 = new ArrayList();
+     
+         Session sessSource = connSource.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         
+         MessageProducer prod = sessSource.createProducer(sourceQueue);
+         
+         for (int i = 0; i < NUM_MESSAGES; i++)
+         {
+            TextMessage tm = sessSource.createTextMessage("message" + i);
+            
+            //We add some headers to make sure they get passed through ok
+            tm.setStringProperty("wib", "uhuh");
+            tm.setBooleanProperty("cheese", true);
+            tm.setIntProperty("Sausages", 23);
+            
+            prod.send(tm);
+            
+            ids1.add(tm.getJMSMessageID());
+         }
+
+         log.trace("Sent the first messages");
+         
+         Session sessTarget = connTarget.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         
+         MessageConsumer cons = sessTarget.createConsumer(destQueue);
+         
+         connTarget.start();
+         
+         List msgs = new ArrayList();
+         
+         for (int i = 0; i < NUM_MESSAGES; i++)
+         {
+            TextMessage tm = (TextMessage)cons.receive(5000);
+            
+            assertNotNull(tm);
+            
+            assertEquals("message" + i, tm.getText());
+            
+            assertEquals("uhuh", tm.getStringProperty("wib"));
+            assertTrue(tm.getBooleanProperty("cheese"));
+            assertEquals(23, tm.getIntProperty("Sausages"));
+            
+            String header = tm.getStringProperty(JBossMessage.JBOSS_MESSAGING_BRIDGE_MESSAGE_ID_LIST);
+            
+            assertNotNull(header);
+            
+            assertEquals(ids1.get(i), header);
+            
+            msgs.add(tm);
+         }
+         
+         //Now we send them again back to the source
+         
+         Iterator iter = msgs.iterator();
+         
+         List ids2 = new ArrayList();
+         
+         while (iter.hasNext())
+         {
+         	Message msg = (Message)iter.next();
+         	
+         	prod.send(msg);
+            
+            ids2.add(msg.getJMSMessageID());
+         }
+                               
+         //And consume them again
+         
+         for (int i = 0; i < NUM_MESSAGES; i++)
+         {
+            TextMessage tm = (TextMessage)cons.receive(5000);
+            
+            assertNotNull(tm);
+            
+            assertEquals("message" + i, tm.getText());
+            
+            assertEquals("uhuh", tm.getStringProperty("wib"));
+            assertTrue(tm.getBooleanProperty("cheese"));
+            assertEquals(23, tm.getIntProperty("Sausages"));
+            
+            String header = tm.getStringProperty(JBossMessage.JBOSS_MESSAGING_BRIDGE_MESSAGE_ID_LIST);
+            
+            assertNotNull(header);
+            
+            assertEquals(ids1.get(i) + "," + ids2.get(i), header);
+         }
+         
+      }
+      finally
+      {                        
+         if (bridge != null)
+         {
+            bridge.stop();
+         }
+         
+         if (connSource != null)
+         {
+            connSource.close();
+         }
+         
+         if (connTarget != null)
+         {
+            connTarget.close();
+         }
+      }                  
+   }
+   
+   public void testNoMessageIDInHeader() throws Exception
+   { 
+      Bridge bridge = null;
+      
+      Connection connSource = null;
+      
+      Connection connTarget = null;
+            
+      try
+      {
+         this.setUpAdministeredObjects(true);
+         
+         final int NUM_MESSAGES = 10;
+         
+         bridge = new Bridge(cff0, cff1, sourceQueue, destQueue,
+                  null, null, null, null,
+                  null, 5000, 10, Bridge.QOS_AT_MOST_ONCE,
+                  1, -1,
+                  null, null, false);
+         
+         bridge.start();
+         
+         connSource = cf0.createConnection();
+         
+         connTarget = cf1.createConnection();
+                    
+         log.trace("Sending " + NUM_MESSAGES + " messages");
+         
+         Session sessSource = connSource.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         
+         MessageProducer prod = sessSource.createProducer(sourceQueue);
+         
+         for (int i = 0; i < NUM_MESSAGES; i++)
+         {
+            TextMessage tm = sessSource.createTextMessage("message" + i);
+            
+            //We add some headers to make sure they get passed through ok
+            tm.setStringProperty("wib", "uhuh");
+            tm.setBooleanProperty("cheese", true);
+            tm.setIntProperty("Sausages", 23);
+            
+            prod.send(tm);
+         }
+
+         log.trace("Sent the first messages");
+         
+         Session sessTarget = connTarget.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         
+         MessageConsumer cons = sessTarget.createConsumer(destQueue);
+         
+         connTarget.start();
+         
+         for (int i = 0; i < NUM_MESSAGES; i++)
+         {
+            TextMessage tm = (TextMessage)cons.receive(5000);
+            
+            assertNotNull(tm);
+            
+            assertEquals("message" + i, tm.getText());
+            
+            assertEquals("uhuh", tm.getStringProperty("wib"));
+            assertTrue(tm.getBooleanProperty("cheese"));
+            assertEquals(23, tm.getIntProperty("Sausages"));
+            
+            String header = tm.getStringProperty(JBossMessage.JBOSS_MESSAGING_BRIDGE_MESSAGE_ID_LIST);
+            
+            assertNull(header);
+         }                 
+      }
+      finally
+      {                        
+         if (bridge != null)
+         {
+            bridge.stop();
+         }
+         
+         if (connSource != null)
+         {
+            connSource.close();
+         }
+         
+         if (connTarget != null)
+         {
+            connTarget.close();
+         }
+      }                  
+   }
+   
    
    // Private -------------------------------------------------------------------------------
              
@@ -834,7 +1062,7 @@ public class BridgeTest extends BridgeTestBase
                   null, null, null, null,
                   null, 5000, 10, qosMode,
                   batchSize, -1,
-                  null, null);
+                  null, null, false);
          
          bridge.start();
             
@@ -914,7 +1142,7 @@ public class BridgeTest extends BridgeTestBase
                   null, null, null, null,
                   null, 5000, 10, qosMode,
                   batchSize, -1,
-                  null, null);
+                  null, null, false);
          
          bridge.start();
             
@@ -992,7 +1220,7 @@ public class BridgeTest extends BridgeTestBase
                   null, null, null, null,
                   null, 5000, 10, qosMode,
                   NUM_MESSAGES, -1,
-                  null, null);
+                  null, null, false);
          
          bridge.start();
             
@@ -1061,7 +1289,7 @@ public class BridgeTest extends BridgeTestBase
                   null, null, null, null,
                   null, 5000, 10, qosMode,
                   NUM_MESSAGES, -1,
-                  null, null);
+                  null, null, false);
          
          bridge.start();
             
@@ -1129,7 +1357,7 @@ public class BridgeTest extends BridgeTestBase
                   null, null, null, null,
                   null, 5000, 10, qosMode,
                   MAX_BATCH_SIZE, MAX_BATCH_TIME,
-                  null, null);
+                  null, null, false);
          
          bridge.start();
             
@@ -1183,7 +1411,7 @@ public class BridgeTest extends BridgeTestBase
                   null, null, null, null,
                   null, 5000, 10, qosMode,
                   MAX_BATCH_SIZE, MAX_BATCH_TIME,
-                  null, null);
+                  null, null, false);
          
          bridge.start();
          
