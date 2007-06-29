@@ -236,185 +236,54 @@ public class ScheduledDeliveryTest extends MessagingTestCase
    public void testDelayedRedeliveryDefault() throws Exception
    {   
       ObjectName serverPeerObjectName = ServerManagement.getServerPeerObjectName();
-      
-      String queueObjectName = "jboss.messaging.destination:service=Queue,name=Queue";            
-      
-      Connection conn = null;      
-      
-      try
-      {
-         ServerManagement.setAttribute(new ObjectName(queueObjectName), "RedeliveryDelay", String.valueOf(0));
-         
-         final long delay = 3000;
-         
-         ServerManagement.setAttribute(serverPeerObjectName, "DefaultRedeliveryDelay", String.valueOf(delay));
-                  
-         conn = cf.createConnection();
-         
-         Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         
-         MessageProducer prod = sess.createProducer(queue);
-         
-         final int NUM_MESSAGES = 5;
-         
-         for (int i = 0; i < NUM_MESSAGES; i++)
-         {
-            TextMessage tm = sess.createTextMessage("message" + i);
-            
-            prod.send(tm);
-         }
-
-         log.info("Sent messages");
-         
-         Session sess2 = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
-         
-         MessageConsumer cons = sess2.createConsumer(queue);
-         
-         conn.start();
-
-         log.info("Started connection");
-         
-         for (int i = 0; i < NUM_MESSAGES; i++)
-         {
-            TextMessage tm = (TextMessage)cons.receive(500);
-            
-            assertNotNull(tm);
-            
-	    log.info("Got message:" + tm.getText());
-
-            assertEquals("message" + i, tm.getText());
-         }
-         
-         //Now close the session
-         //This should cancel back to the queue with a delayed redelivery
-         
-         long now = System.currentTimeMillis();
-         
-         sess2.close();
-
-         log.info("Closed session");
-         
-         Session sess3 = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         
-         MessageConsumer cons2 = sess3.createConsumer(queue);
-         
-         for (int i = 0; i < NUM_MESSAGES; i++)
-         {
-            TextMessage tm = (TextMessage)cons2.receive(delay + 1000);
-            
-            assertNotNull(tm);
-
-            log.info("Got message 2nd time: " + tm.getText());
-
-            long time = System.currentTimeMillis();
-            
-            assertTrue(time - now >= delay);
-            assertTrue(time - now < delay + 1000);
-         }
-         
-         TextMessage tm = (TextMessage)cons2.receive(1000);
-         
-         assertNull(tm);
-      }
-      finally
-      {
-         if (conn != null)
-         {
-            conn.close();
-         }
-         
-         ServerManagement.setAttribute(serverPeerObjectName, "DefaultRedeliveryDelay", "0");
-         
-      }
+  	 
+   	try
+   	{     
+	      ObjectName queueObjectName = new ObjectName("jboss.messaging.destination:service=Queue,name=Queue");            
+	      
+	      ServerManagement.setAttribute(queueObjectName, "RedeliveryDelay", "-1");
+	            
+	      long delay = 3000;
+	      
+	      ServerManagement.setAttribute(serverPeerObjectName, "DefaultRedeliveryDelay", String.valueOf(delay));
+	      
+	      this.delayedRedeliveryDefaultOnClose(delay);
+	      
+	      this.delayedRedeliveryDefaultOnRollback(delay);            
+   	}
+   	finally
+   	{
+   		ServerManagement.setAttribute(serverPeerObjectName, "DefaultRedeliveryDelay", "0");	      
+   	}
    }
    
    public void testDelayedRedeliveryOverride() throws Exception
    {   
-      ObjectName serverPeerObjectName = ServerManagement.getServerPeerObjectName();
-      
-      String queueObjectName = "jboss.messaging.destination:service=Queue,name=Queue";
-      
-
-      Connection conn = null;
-      
-      try
-      {
-         final long delay = 3000;
-         
-         ServerManagement.setAttribute(new ObjectName(queueObjectName), "RedeliveryDelay", String.valueOf(delay));
-           
-         ServerManagement.setAttribute(serverPeerObjectName, "DefaultRedeliveryDelay", String.valueOf(delay * 3));
-                  
-         conn = cf.createConnection();
-         
-         Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         
-         MessageProducer prod = sess.createProducer(queue);
-         
-         final int NUM_MESSAGES = 5;
-         
-         for (int i = 0; i < NUM_MESSAGES; i++)
-         {
-            TextMessage tm = sess.createTextMessage("message" + i);
-            
-            prod.send(tm);
-         }
-         
-         Session sess2 = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
-         
-         MessageConsumer cons = sess2.createConsumer(queue);
-         
-         conn.start();
-         
-         for (int i = 0; i < NUM_MESSAGES; i++)
-         {
-            TextMessage tm = (TextMessage)cons.receive(500);
-            
-            assertNotNull(tm);
-            
-            assertEquals("message" + i, tm.getText());
-         }
-         
-         //Now close the session
-         //This should cancel back to the queue with a delayed redelivery
-         
-         long now = System.currentTimeMillis();
-         
-         sess2.close();
-         
-         Session sess3 = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         
-         MessageConsumer cons2 = sess3.createConsumer(queue);
-         
-         for (int i = 0; i < NUM_MESSAGES; i++)
-         {
-            TextMessage tm = (TextMessage)cons2.receive(delay + 1000);
-            
-            long time = System.currentTimeMillis();
-            
-            assertTrue(time - now >= delay);
-            assertTrue(time - now < delay + 1000);
-            
-            assertNotNull(tm);
-         }
-         
-         TextMessage tm = (TextMessage)cons2.receive(1000);
-         
-         assertNull(tm);
-      }
-      finally
-      {
-         if (conn != null)
-         {
-            conn.close();
-         }
-         
-         ServerManagement.setAttribute(serverPeerObjectName, "DefaultRedeliveryDelay", "0");
-         
-      }
+   	ObjectName serverPeerObjectName = ServerManagement.getServerPeerObjectName();
+   	
+	   ObjectName queueObjectName = new ObjectName("jboss.messaging.destination:service=Queue,name=Queue");            	   
+    	 
+   	try
+   	{     
+		   long delay = 6000;
+		         
+		   ServerManagement.setAttribute(queueObjectName, "RedeliveryDelay", String.valueOf(delay));
+		         
+		   ServerManagement.setAttribute(serverPeerObjectName, "DefaultRedeliveryDelay", "3000");
+		   
+		   this.delayedRedeliveryDefaultOnClose(delay);
+		   
+		   this.delayedRedeliveryDefaultOnRollback(delay);  
+   	}
+   	finally
+   	{
+   		ServerManagement.setAttribute(serverPeerObjectName, "DefaultRedeliveryDelay", "0");	      
+   		
+   		ServerManagement.setAttribute(queueObjectName, "RedeliveryDelay", "-1");
+   	}
    }
-
       
+         
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
@@ -462,6 +331,165 @@ public class ScheduledDeliveryTest extends MessagingTestCase
    }
 
    // Private -------------------------------------------------------
+   
+   private void delayedRedeliveryDefaultOnClose(long delay) throws Exception
+   {   
+      Connection conn = null;      
+      
+      try
+      {     
+         conn = cf.createConnection();
+         
+         Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         
+         MessageProducer prod = sess.createProducer(queue);
+         
+         final int NUM_MESSAGES = 5;
+         
+         for (int i = 0; i < NUM_MESSAGES; i++)
+         {
+            TextMessage tm = sess.createTextMessage("message" + i);
+            
+            prod.send(tm);
+         }
+
+         log.info("Sent messages");
+         
+         Session sess2 = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
+         
+         MessageConsumer cons = sess2.createConsumer(queue);
+         
+         conn.start();
+
+         log.info("Started connection");
+         
+         for (int i = 0; i < NUM_MESSAGES; i++)
+         {
+            TextMessage tm = (TextMessage)cons.receive(500);
+            
+            assertNotNull(tm);
+            
+	         log.info("Got message:" + tm.getText());
+
+            assertEquals("message" + i, tm.getText());
+         }
+         
+         //Now close the session
+         //This should cancel back to the queue with a delayed redelivery
+         
+         long now = System.currentTimeMillis();
+         
+         sess2.close();
+
+         log.info("Closed session");
+         
+         Session sess3 = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         
+         MessageConsumer cons2 = sess3.createConsumer(queue);
+         
+         for (int i = 0; i < NUM_MESSAGES; i++)
+         {
+            TextMessage tm = (TextMessage)cons2.receive(delay + 1000);
+            
+            assertNotNull(tm);
+
+            log.info("Got message 2nd time: " + tm.getText());
+
+            long time = System.currentTimeMillis();
+            
+            assertTrue(time - now >= delay);
+            assertTrue(time - now < delay + 1000);
+         }
+         
+         TextMessage tm = (TextMessage)cons2.receive(1000);
+         
+         assertNull(tm);
+      }
+      finally
+      {
+         if (conn != null)
+         {
+            conn.close();
+         } 
+      }
+   }
+   
+   private void delayedRedeliveryDefaultOnRollback(long delay) throws Exception
+   {   
+   	Connection conn = null;      
+
+   	try
+   	{
+   		conn = cf.createConnection();
+
+   		Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+   		MessageProducer prod = sess.createProducer(queue);
+
+   		final int NUM_MESSAGES = 5;
+
+   		for (int i = 0; i < NUM_MESSAGES; i++)
+   		{
+   			TextMessage tm = sess.createTextMessage("message" + i);
+
+   			prod.send(tm);
+   		}
+
+   		log.info("Sent messages");
+
+   		Session sess2 = conn.createSession(true, Session.SESSION_TRANSACTED);
+
+   		MessageConsumer cons = sess2.createConsumer(queue);
+
+   		conn.start();
+
+   		log.info("Started connection");
+
+   		for (int i = 0; i < NUM_MESSAGES; i++)
+   		{
+   			TextMessage tm = (TextMessage)cons.receive(500);
+
+   			assertNotNull(tm);
+
+   			log.info("Got message:" + tm.getText());
+
+   			assertEquals("message" + i, tm.getText());
+   		}
+
+   		//Now rollback
+
+   		sess2.rollback();
+
+   		//This should redeliver with a delayed redelivery
+
+   		long now = System.currentTimeMillis();
+
+   		for (int i = 0; i < NUM_MESSAGES; i++)
+   		{
+   			TextMessage tm = (TextMessage)cons.receive(delay + 1000);
+
+   			assertNotNull(tm);
+
+   			log.info("Got message 2nd time: " + tm.getText());
+
+   			long time = System.currentTimeMillis();
+
+   			assertTrue(time - now >= delay);
+   			assertTrue(time - now < delay + 1000);
+   		}
+
+   		TextMessage tm = (TextMessage)cons.receive(1000);
+
+   		assertNull(tm);
+   	}
+   	finally
+   	{
+   		if (conn != null)
+   		{
+   			conn.close();
+   		}
+   	}
+   }
    
    private void scheduledDelivery(boolean tx) throws Exception
    {

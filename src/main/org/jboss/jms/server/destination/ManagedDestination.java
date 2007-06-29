@@ -83,7 +83,7 @@ public abstract class ManagedDestination implements MessagingComponent
    
    protected ManagedQueue expiryQueue;
    
-   protected long redeliveryDelay;
+   protected long redeliveryDelay = -1;
    
    protected int maxSize = -1;
    

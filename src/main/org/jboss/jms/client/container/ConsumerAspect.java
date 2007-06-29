@@ -79,6 +79,7 @@ public class ConsumerAspect
       int prefetchSize = consumerState.getBufferSize();
       QueuedExecutor sessionExecutor = sessionState.getExecutor();
       int maxDeliveries = consumerState.getMaxDeliveries();
+      long redeliveryDelay = consumerState.getRedeliveryDelay();
       
       //We need the queue name for recovering any deliveries after failover
       String queueName = null;
@@ -104,7 +105,7 @@ public class ConsumerAspect
          new ClientConsumer(isCC, sessionState.getAcknowledgeMode(),
                             sessionDelegate, consumerDelegate, consumerID, queueName,
                             prefetchSize, sessionExecutor, maxDeliveries, consumerState.isShouldAck(),
-                            autoFlowControl);
+                            autoFlowControl, redeliveryDelay);
       
       sessionState.addCallbackHandler(messageHandler);
       

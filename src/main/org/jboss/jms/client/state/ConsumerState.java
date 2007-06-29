@@ -59,6 +59,7 @@ public class ConsumerState extends HierarchicalStateSupport
    private ClientConsumer clientConsumer;
    private int bufferSize;
    private int maxDeliveries;
+   private long redeliveryDelay;
 
    private boolean storingDeliveries;
    
@@ -69,7 +70,7 @@ public class ConsumerState extends HierarchicalStateSupport
 
    public ConsumerState(SessionState parent, ConsumerDelegate delegate, JBossDestination dest,
                         String selector, boolean noLocal, String subscriptionName, int consumerID,
-                        boolean isCC, int bufferSize, int maxDeliveries)
+                        boolean isCC, int bufferSize, int maxDeliveries, long redeliveryDelay)
    {
       super(parent, (DelegateSupport)delegate);
       children = Collections.EMPTY_SET;
@@ -81,6 +82,7 @@ public class ConsumerState extends HierarchicalStateSupport
       this.bufferSize = bufferSize;
       this.subscriptionName=subscriptionName;
       this.maxDeliveries = maxDeliveries;
+      this.redeliveryDelay = redeliveryDelay;
     
       //We don't store deliveries if this a non durable subscriber
       
@@ -211,8 +213,12 @@ public class ConsumerState extends HierarchicalStateSupport
    	//If e are a non durable subscriber to a topic then there is no need
    	//to send acks to the server - we wouldn't have stored them on the server side anyway
    	
-      return !(destination.isTopic() && subscriptionName == null);
-      
+      return !(destination.isTopic() && subscriptionName == null);      
+   }
+   
+   public long getRedeliveryDelay()
+   {
+   	return redeliveryDelay;
    }
 
    // Package protected ----------------------------------------------------------------------------

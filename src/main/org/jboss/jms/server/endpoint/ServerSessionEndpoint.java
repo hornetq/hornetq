@@ -145,6 +145,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
    private PostOffice postOffice;
    private int nodeId;
    private int defaultMaxDeliveryAttempts;
+   private long defaultRedeliveryDelay;
    private Queue defaultDLQ;
    private Queue defaultExpiryQueue;
    
@@ -182,6 +183,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
       defaultExpiryQueue = sp.getDefaultExpiryQueueInstance();
       tr = sp.getTxRepository();
       defaultMaxDeliveryAttempts = sp.getDefaultMaxDeliveryAttempts();
+      defaultRedeliveryDelay = sp.getDefaultRedeliveryDelay();
       
       deliveries = new ConcurrentHashMap();
       
@@ -1172,10 +1174,12 @@ public class ServerSessionEndpoint implements SessionEndpoint
       
       JBossDestination dest = new JBossQueue(queueName);
       
+      //We don't care about redelivery delays and number of attempts for a direct consumer
+      
       ServerConsumerEndpoint ep =
          new ServerConsumerEndpoint(consumerID, binding.queue,
                                     binding.queue.getName(), this, selectorString, false,
-                                    dest, null, null, sp.getDefaultRedeliveryDelay(), defaultMaxDeliveryAttempts, true);
+                                    dest, null, null, 0, 0, true);
       
       ConsumerAdvised advised;
       
@@ -1189,7 +1193,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
       Dispatcher.instance.registerTarget(consumerID, advised);
       
       ClientConsumerDelegate stub =
-         new ClientConsumerDelegate(consumerID, prefetchSize, defaultMaxDeliveryAttempts);
+         new ClientConsumerDelegate(consumerID, prefetchSize, 0, 0);
       
       synchronized (consumers)
       {
@@ -1465,17 +1469,12 @@ public class ServerSessionEndpoint implements SessionEndpoint
       
       int maxDeliveryAttemptsToUse = mDest.getMaxDeliveryAttempts() == -1 ? defaultMaxDeliveryAttempts : mDest.getMaxDeliveryAttempts();
       
-      long redeliveryDelay = mDest.getRedeliveryDelay();
-      
-      if (redeliveryDelay == 0)
-      {
-         redeliveryDelay = sp.getDefaultRedeliveryDelay();
-      }
+      long redeliveryDelayToUse = mDest.getRedeliveryDelay() == -1 ? defaultRedeliveryDelay : mDest.getRedeliveryDelay();
       
       ServerConsumerEndpoint ep =
          new ServerConsumerEndpoint(consumerID, queue,
                                     queue.getName(), this, selectorString, noLocal,
-                                    jmsDestination, dlqToUse, expiryQueueToUse, redeliveryDelay, maxDeliveryAttemptsToUse, false);
+                                    jmsDestination, dlqToUse, expiryQueueToUse, redeliveryDelayToUse, maxDeliveryAttemptsToUse, false);
       
       if (queue.isClustered() && postOffice.isClustered() && jmsDestination.isTopic() && subscriptionName != null)
       {
@@ -1503,8 +1502,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
       Dispatcher.instance.registerTarget(consumerID, advised);
       
       ClientConsumerDelegate stub =
-         new ClientConsumerDelegate(consumerID,
-                                    prefetchSize, maxDeliveryAttemptsToUse);
+         new ClientConsumerDelegate(consumerID, prefetchSize, maxDeliveryAttemptsToUse, redeliveryDelayToUse);
       
       synchronized (consumers)
       {

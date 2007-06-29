@@ -510,14 +510,18 @@ public class SessionAspect
          MessageProxy proxy = info.getMessageProxy();        
          
          ClientConsumer handler = state.getCallbackHandler(info.getConsumerId());
-              
+         
          if (handler == null)
          {
             // This is ok. The original consumer has closed, so we cancel the message
             
-            //FIXME - this needs to be done atomically for all cancels
-            
             cancelDelivery(del, info);
+         }
+         else if (handler.getRedeliveryDelay() != 0)
+         {
+         	//We have a redelivery delay in action - all delayed redeliveries are handled on the server
+         	
+         	cancelDelivery(del, info);
          }
          else
          {

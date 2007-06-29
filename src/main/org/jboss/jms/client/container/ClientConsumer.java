@@ -210,6 +210,7 @@ public class ClientConsumer
    private boolean waitingForLastDelivery;
    private boolean shouldAck;
    private boolean handleFlowControl;
+   private long redeliveryDelay;
         
    
    // Constructors ---------------------------------------------------------------------------------
@@ -218,7 +219,8 @@ public class ClientConsumer
                          SessionDelegate sess, ConsumerDelegate cons, int consumerID,
                          String queueName,
                          int bufferSize, QueuedExecutor sessionExecutor,
-                         int maxDeliveries, boolean shouldAck, boolean handleFlowControl)
+                         int maxDeliveries, boolean shouldAck, boolean handleFlowControl,
+                         long redeliveryDelay)
    {
       if (bufferSize < 1)
       {
@@ -239,6 +241,7 @@ public class ClientConsumer
       this.maxDeliveries = maxDeliveries;
       this.shouldAck = shouldAck;
       this.handleFlowControl = handleFlowControl;
+      this.redeliveryDelay = redeliveryDelay;
    }
         
    // Public ---------------------------------------------------------------------------------------
@@ -545,6 +548,12 @@ public class ClientConsumer
       // need to reset toggle state
       serverSending = true;      
    }
+   
+   public long getRedeliveryDelay()
+   {
+   	return redeliveryDelay;
+   }
+   
    
    // Package protected ----------------------------------------------------------------------------
    

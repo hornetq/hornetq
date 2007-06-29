@@ -160,11 +160,12 @@ public class StateCreationAspect
       int consumerID = consumerDelegate.getID();
       int bufferSize = consumerDelegate.getBufferSize();
       int maxDeliveries = consumerDelegate.getMaxDeliveries();
+      long redeliveryDelay = consumerDelegate.getRedeliveryDelay();
 
       ConsumerState consumerState =
          new ConsumerState(sessionState, consumerDelegate, dest, selector, noLocal,
                            subscriptionName, consumerID, connectionConsumer, bufferSize,
-                           maxDeliveries);
+                           maxDeliveries, redeliveryDelay);
 
       delegate.setState(consumerState);
       return consumerDelegate;

@@ -781,7 +781,7 @@ public class WireFormatTest extends MessagingTestCase
       
       public void testSessionCreateConsumerDelegateResponse() throws Exception
       { 
-         ClientConsumerDelegate del = new ClientConsumerDelegate(786, 13123, 213);
+         ClientConsumerDelegate del = new ClientConsumerDelegate(786, 13123, 213, 0);
          
          ResponseSupport resp =
             new SessionCreateConsumerDelegateResponse(del);

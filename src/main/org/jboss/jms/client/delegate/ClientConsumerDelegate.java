@@ -60,16 +60,18 @@ public class ClientConsumerDelegate extends DelegateSupport implements ConsumerD
 
    private int bufferSize;
    private int maxDeliveries;
+   private long redeliveryDelay;
 
    // Static ---------------------------------------------------------------------------------------
 
    // Constructors ---------------------------------------------------------------------------------
 
-   public ClientConsumerDelegate(int objectID, int bufferSize, int maxDeliveries)
+   public ClientConsumerDelegate(int objectID, int bufferSize, int maxDeliveries, long redeliveryDelay)
    {
       super(objectID);
       this.bufferSize = bufferSize;
       this.maxDeliveries = maxDeliveries;
+      this.redeliveryDelay = redeliveryDelay;
    }
 
    public ClientConsumerDelegate()
@@ -197,6 +199,8 @@ public class ClientConsumerDelegate extends DelegateSupport implements ConsumerD
       bufferSize = in.readInt();
 
       maxDeliveries = in.readInt();
+      
+      redeliveryDelay = in.readLong();
    }
 
    public void write(DataOutputStream out) throws Exception
@@ -206,6 +210,8 @@ public class ClientConsumerDelegate extends DelegateSupport implements ConsumerD
       out.writeInt(bufferSize);
 
       out.writeInt(maxDeliveries);
+      
+      out.writeLong(redeliveryDelay);
    }
 
    // Public ---------------------------------------------------------------------------------------
@@ -223,6 +229,11 @@ public class ClientConsumerDelegate extends DelegateSupport implements ConsumerD
    public int getMaxDeliveries()
    {
       return maxDeliveries;
+   }
+   
+   public long getRedeliveryDelay()
+   {
+   	return redeliveryDelay;
    }
 
    // Protected ------------------------------------------------------------------------------------
