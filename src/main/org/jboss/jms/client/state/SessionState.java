@@ -337,7 +337,16 @@ public class SessionState extends HierarchicalStateSupport
          }
 
          log.debug(this + " sending delivery recovery " + recoveryInfos + " on failover");
-         newDelegate.recoverDeliveries(recoveryInfos);
+         try
+         {
+            newDelegate.recoverDeliveries(recoveryInfos);
+         }
+         catch (Exception e)
+         {
+            log.error(e.toString(),e);
+            log.info("RecoverDeliveries failed, marking session as invalidated!");
+            this.getDelegate().invalidate();
+         }
       }
       else
       {

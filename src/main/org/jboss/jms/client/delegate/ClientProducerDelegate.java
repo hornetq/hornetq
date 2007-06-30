@@ -57,6 +57,12 @@ public class ClientProducerDelegate extends DelegateSupport implements ProducerD
 
    // DelegateSupport overrides --------------------------------------------------------------------
 
+   public void invalidate()
+   {
+      throw new IllegalStateException("This invocation should not be handled here!");
+   }
+
+
    public void synchronizeWith(DelegateSupport nd) throws Exception
    {
       super.synchronizeWith(nd);

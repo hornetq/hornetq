@@ -59,7 +59,8 @@ public class ClosedInterceptor implements Interceptor
    private static final int CLOSING = 2;
    private static final int IN_CLOSE = 3; // performing the close
    private static final int CLOSED = -1;
-   
+   private static final int INVALID = -2; // the Delegate was marked invalid by a bad failover
+
    // Attributes ----------------------------------------------------
    
    private boolean trace = log.isTraceEnabled();
@@ -81,7 +82,8 @@ public class ClosedInterceptor implements Interceptor
          state == IN_CLOSING ? "IN_CLOSING" :
             state == CLOSING ? "CLOSING" :
                state == IN_CLOSE ? "IN_CLOSE" :
-                  state == CLOSED ? "CLOSED" : "UNKNOWN";
+                  state == CLOSED ? "CLOSED" :
+                     state == INVALID ? "INVALID" : "UNKNOWN";
    }
    
    // Constructors --------------------------------------------------
@@ -126,9 +128,12 @@ public class ClosedInterceptor implements Interceptor
       }
       
       String methodName = ((MethodInvocation)invocation).getMethod().getName();
+
+      log.trace("Invoke on ClosedInterceptor = " + methodName + " with state = " + stateToString(state));
         
       boolean isClosing = methodName.equals("closing");
       boolean isClose = methodName.equals("close");
+      boolean isInvalidate = methodName.equals("invalidate");
       
       if (isClosing)
       {         
@@ -144,11 +149,22 @@ public class ClosedInterceptor implements Interceptor
             return null;
          }
       }
+      else if (isInvalidate)
+      {
+         state = INVALID;
+         invalidateRelatives(invocation);
+         return null;
+      }
       else
       {
          synchronized(this)
          {
             // object "in use", increment inUseCount
+            if (state == INVALID)
+            {
+                throw new IllegalStateException("The delegator is invalid, look at logs as failover probably couldn't complete");
+            }
+            else
             if (state == IN_CLOSE || state == CLOSED)
             {
                log.error(this + ": method " + methodName + "() did not go through, " +
@@ -271,9 +287,46 @@ public class ClosedInterceptor implements Interceptor
       }
    }
 
+
+   /**
+    * Invalidate children
+    *
+    * @param invocation the invocation
+    */
+   protected void invalidateRelatives(Invocation invocation)
+   {
+      HierarchicalState state = ((DelegateSupport)invocation.getTargetObject()).getState();
+
+      // We use a clone to avoid a deadlock where requests are made to close parent and child
+      // concurrently
+
+      Set clone;
+
+      Set children = state.getChildren();
+
+      if (children == null)
+      {
+         if (trace) { log.trace(this + " has no children"); }
+         return;
+      }
+
+      synchronized (children)
+      {
+         clone = new HashSet(children);
+      }
+
+      // Cycle through the children this will do a depth first close
+      for (Iterator i = clone.iterator(); i.hasNext();)
+      {
+         HierarchicalState child = (HierarchicalState)i.next();
+         DelegateSupport del = (DelegateSupport)child.getDelegate();
+         del.invalidate();
+      }
+   }
+
    /**
     * Close children and remove from parent
-    * 
+    *
     * @param invocation the invocation
     */
    protected void maintainRelatives(Invocation invocation)

@@ -136,6 +136,9 @@ public abstract class DelegateSupport implements Streamable, Serializable
    {
       return id;
    }
+
+   public abstract void invalidate();
+
    
    /**
     * During HA events, delegates corresponding to new enpoints on the new server are created and

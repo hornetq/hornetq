@@ -24,15 +24,9 @@ package org.jboss.test.messaging.jms.clustering;
 
 import java.util.Map;
 import java.util.Set;
+import java.util.ArrayList;
 
-import javax.jms.Connection;
-import javax.jms.Message;
-import javax.jms.MessageConsumer;
-import javax.jms.MessageProducer;
-import javax.jms.Session;
-import javax.jms.TextMessage;
-import javax.jms.Destination;
-import javax.jms.Topic;
+import javax.jms.*;
 
 import org.jboss.jms.client.JBossConnection;
 import org.jboss.jms.client.JBossConnectionFactory;
@@ -635,117 +629,78 @@ public class HATest extends ClusteringTestBase
       }
    }
 
-   public void testFailoverWithUnackedMessagesClientAcknowledge() throws Exception
+
+   // This test needs to be removed when http://jira.jboss.org/jira/browse/JBMESSAGING-883
+   //  is fixed.
+   // 
+   // This test will create two sessions on server1
+   // One consumer on each session... one for queue, another to anotherQueue
+   // Send 100 messages on producer1
+   // Receive 50 messages on consumer1
+   // Kill the server
+   // Validate if the session was invalidated after failover
+   // Receive 100 messages again in another consumer on server2
+   // Validate if session1b was still valid.. sending and consuming messages...
+   //    the session should still be avlie
+   //
+   //
+   public void testInvalidateSession() throws Exception
    {
       JBossConnectionFactory factory =  (JBossConnectionFactory )ic[0].lookup("/ClusteredConnectionFactory");
+
+      for (int i=0; i< nodeCount; i++)
+      {
+         ServerManagement.deployQueue("anotherQueue", i);
+      }
+
+      Queue anotherQueue = (Queue)ic[1].lookup("queue/anotherQueue");
 
       ClientClusteredConnectionFactoryDelegate delegate =
          (ClientClusteredConnectionFactoryDelegate)factory.getDelegate();
 
-      Set nodeIDView = ServerManagement.getServer(0).getNodeIDView();
-      assertEquals(3, nodeIDView.size());
 
-      ClientConnectionFactoryDelegate[] delegates = delegate.getDelegates();
-
-      ClientConnectionFactoryDelegate cf1 = delegates[0];
-
-      ClientConnectionFactoryDelegate cf2 = delegates[1];
-
-      ClientConnectionFactoryDelegate cf3 = delegates[2];
-
-      int server0Id = cf1.getServerID();
-
-      int server1Id = cf2.getServerID();
-
-      int server2Id = cf3.getServerID();
-
-      log.info("server 0 id: " + server0Id);
-
-      log.info("server 1 id: " + server1Id);
-
-      log.info("server 2 id: " + server2Id);
-      
-      assertEquals(0, server0Id);
-      
-      assertEquals(1, server1Id);
-      
-      assertEquals(2, server2Id);
-
-      Map failoverMap = delegate.getFailoverMap();
-
-      log.info(failoverMap.get(new Integer(server0Id)));
-      log.info(failoverMap.get(new Integer(server1Id)));
-      log.info(failoverMap.get(new Integer(server2Id)));
-
-      int server1FailoverId = ((Integer)failoverMap.get(new Integer(server1Id))).intValue();
-
-      // server 1 should failover onto server 2
-
-      assertEquals(server2Id, server1FailoverId);
-
-      Connection conn = null;
-
-      boolean killed = false;
+      JBossConnection conn0 = (JBossConnection) factory.createConnection();
+      JBossConnection conn1 = (JBossConnection) factory.createConnection();
+      JBossConnection conn2 = (JBossConnection) factory.createConnection();
 
       try
       {
-         conn = factory.createConnection(); //connection on server 0
+         assertEquals(0, getServerId(conn0));
+         assertEquals(1, getServerId(conn1));
+         assertEquals(2, getServerId(conn2));
 
-         conn.close();
 
-         conn = factory.createConnection(); //connection on server 1
+         Session session1 = conn1.createSession(false, Session.CLIENT_ACKNOWLEDGE);
+         MessageProducer producer1 = session1.createProducer(queue[1]);
+         MessageConsumer consumer1 = session1.createConsumer(queue[1]);
 
-         JBossConnection jbc = (JBossConnection)conn;
+         Session session1b = conn1.createSession(false, Session.CLIENT_ACKNOWLEDGE);
+         MessageProducer producer1b = session1b.createProducer(anotherQueue);
+         MessageConsumer consumer1b = session1b.createConsumer(anotherQueue);
 
-         ClientConnectionDelegate del = (ClientConnectionDelegate)jbc.getDelegate();
+         conn1.start();
 
-         ConnectionState state = (ConnectionState)del.getState();
 
-         int initialServerID = state.getServerID();
 
-         assertEquals(1, initialServerID);
+         Session session2 = conn2.createSession(false, Session.CLIENT_ACKNOWLEDGE);
+         MessageConsumer consumer2 = session2.createConsumer(queue[2]);
+         conn2.start();
 
-         Session sess = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
-
-         MessageProducer prod = sess.createProducer(queue[1]);
-
-         MessageConsumer cons = sess.createConsumer(queue[1]);
-
-         final int NUM_MESSAGES = 100;
-
-         for (int i = 0; i < NUM_MESSAGES; i++)
+         for (int i=0; i<100; i++)
          {
-            TextMessage tm = sess.createTextMessage("message:" + i);
-
-            prod.send(tm);
+            producer1.send(session1.createTextMessage("Message:" + i));
          }
 
-         conn.start();
-
-         //Now consume half of the messages but don't ack them these will end up in
-         //client side toAck list
-
-         for (int i = 0; i < NUM_MESSAGES / 2; i++)
+         for (int i=0; i<50; i++)
          {
-            TextMessage tm = (TextMessage)cons.receive(500);
-
-            assertNotNull(tm);
-
-            assertEquals("message:" + i, tm.getText());
+            TextMessage msg = (TextMessage )consumer1.receive(1000);
+            assertEquals("Message:" + i, msg.getText());
          }
 
-         //So now, messages should be in queue[1] on server 1
-         //So we now kill server 1
-         //Which should cause transparent failover of connection conn onto server 1
-
-         log.info("here we go");
-         log.info("######");
          log.info("###### KILLING (CRASHING) SERVER 1");
          log.info("######");
 
          ServerManagement.kill(1);
-
-         killed = true;
 
          long sleepTime = 30;
 
@@ -756,77 +711,270 @@ public class HATest extends ClusteringTestBase
 
          log.info("done wait");
 
-         state = (ConnectionState)del.getState();
+         assertEquals(2, getServerId(conn1));
 
-         int finalServerID = state.getServerID();
-
-         log.info("final server id= " + finalServerID);
-
-         //server id should now be 2
-
-         assertEquals(2, finalServerID);
-
-         conn.start();
-
-         //Now should be able to consume the rest of the messages
-
-         log.info("here1");
-
-         TextMessage tm = null;
-
-         for (int i = NUM_MESSAGES / 2; i < NUM_MESSAGES; i++)
+         try
          {
-            tm = (TextMessage)cons.receive(1000);
-
-            assertNotNull(tm);
-            
-            log.debug("message is " + tm.getText());
-
-            assertEquals("message:" + i, tm.getText());
+            log.info("########################## Consuming message on failed consumer");
+            Message msg = consumer1.receive(1000);
+            log.info("########################## Message consumed on failed consumer! " + msg);
+            // It is supposed to fail, as ACKs won't be recovered due to the other active client
+            fail("Consumer on server1 was supposed to fail!");
+         }
+         catch (JMSException failed)
+         {
+            log.info("Expected exception after consumer.receive - " + failed);
          }
 
-         log.info("here2");
+         for (int i=0; i<100; i++)
+         {
+            TextMessage msg = (TextMessage)consumer2.receive(1000);
+            log.info("Received " + msg.getText());
+         }
 
-         //Now should be able to acknowledge them
 
-         tm.acknowledge();
+         // While one session was failed... session1b is supposed to be valid
+         for (int i=0; i<10; i++)
+         {
+            producer1b.send(session1b.createTextMessage("MessageB:" + i));
+         }
 
-         //Now check there are no more messages there
-         sess.close();
+         for (int i=0; i<10; i++)
+         {
+            TextMessage msg = (TextMessage)consumer1b.receive(1000);
+            assertNotNull(msg);
+            assertEquals("MessageB:" + i, msg.getText());
+            log.info("Received " + msg.getText());
+         }
 
-         sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         cons = sess.createConsumer(queue[1]);
+         try
+         {
+            session1.createConsumer(queue[1]);
+            // the session was invalidated!
+            fail("This call was supposed to fail!");
+         }
+         catch (JMSException failed)
+         {
+            log.info("Expected exception on session1.createConsumer(queue[1])" + failed);
+         }
 
-         Message m = cons.receive(500);
 
-         assertNull(m);
+         // this is not supposed to fail
+         session1b.createConsumer(anotherQueue);
 
-         log.info("got to end of test");
+
       }
       finally
       {
-         if (conn != null)
+         try { conn0.close();} catch (Throwable ignored){}
+         try { conn1.close();} catch (Throwable ignored){}
+         try { conn2.close();} catch (Throwable ignored){}
+
+         for (int i=0; i< nodeCount; i++)
          {
-            try
-            {
-               conn.close();
-            }
-            catch (Exception e)
-            {
-               e.printStackTrace();
-            }
+            try{ServerManagement.undeployQueue("anotherQueue", i);} catch (Throwable ignored){}
          }
 
-         // Resurrect dead server
-         if (killed)
-         {
-            ServerManagement.start(1, "all");
-         }
       }
-
    }
 
+
+
+
+//   TODO: Reactivate this test when http://jira.jboss.org/jira/browse/JBMESSAGING-883 is done
+//   public void testFailoverWithUnackedMessagesClientAcknowledge() throws Exception
+//   {
+//      JBossConnectionFactory factory =  (JBossConnectionFactory )ic[0].lookup("/ClusteredConnectionFactory");
+//
+//      ClientClusteredConnectionFactoryDelegate delegate =
+//         (ClientClusteredConnectionFactoryDelegate)factory.getDelegate();
+//
+//      Set nodeIDView = ServerManagement.getServer(0).getNodeIDView();
+//      assertEquals(3, nodeIDView.size());
+//
+//      ClientConnectionFactoryDelegate[] delegates = delegate.getDelegates();
+//
+//      ClientConnectionFactoryDelegate cf1 = delegates[0];
+//
+//      ClientConnectionFactoryDelegate cf2 = delegates[1];
+//
+//      ClientConnectionFactoryDelegate cf3 = delegates[2];
+//
+//      int server0Id = cf1.getServerID();
+//
+//      int server1Id = cf2.getServerID();
+//
+//      int server2Id = cf3.getServerID();
+//
+//      log.info("server 0 id: " + server0Id);
+//
+//      log.info("server 1 id: " + server1Id);
+//
+//      log.info("server 2 id: " + server2Id);
+//
+//      assertEquals(0, server0Id);
+//
+//      assertEquals(1, server1Id);
+//
+//      assertEquals(2, server2Id);
+//
+//      Map failoverMap = delegate.getFailoverMap();
+//
+//      log.info(failoverMap.get(new Integer(server0Id)));
+//      log.info(failoverMap.get(new Integer(server1Id)));
+//      log.info(failoverMap.get(new Integer(server2Id)));
+//
+//      int server1FailoverId = ((Integer)failoverMap.get(new Integer(server1Id))).intValue();
+//
+//      // server 1 should failover onto server 2
+//
+//      assertEquals(server2Id, server1FailoverId);
+//
+//      Connection conn = null;
+//
+//      boolean killed = false;
+//
+//      try
+//      {
+//         conn = factory.createConnection(); //connection on server 0
+//
+//         conn.close();
+//
+//         conn = factory.createConnection(); //connection on server 1
+//
+//         JBossConnection jbc = (JBossConnection)conn;
+//
+//         ClientConnectionDelegate del = (ClientConnectionDelegate)jbc.getDelegate();
+//
+//         ConnectionState state = (ConnectionState)del.getState();
+//
+//         int initialServerID = state.getServerID();
+//
+//         assertEquals(1, initialServerID);
+//
+//         Session sess = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
+//
+//         MessageProducer prod = sess.createProducer(queue[1]);
+//
+//         MessageConsumer cons = sess.createConsumer(queue[1]);
+//
+//         final int NUM_MESSAGES = 100;
+//
+//         for (int i = 0; i < NUM_MESSAGES; i++)
+//         {
+//            TextMessage tm = sess.createTextMessage("message:" + i);
+//
+//            prod.send(tm);
+//         }
+//
+//         conn.start();
+//
+//         //Now consume half of the messages but don't ack them these will end up in
+//         //client side toAck list
+//
+//         for (int i = 0; i < NUM_MESSAGES / 2; i++)
+//         {
+//            TextMessage tm = (TextMessage)cons.receive(500);
+//
+//            assertNotNull(tm);
+//
+//            assertEquals("message:" + i, tm.getText());
+//         }
+//
+//         //So now, messages should be in queue[1] on server 1
+//         //So we now kill server 1
+//         //Which should cause transparent failover of connection conn onto server 1
+//
+//         log.info("here we go");
+//         log.info("######");
+//         log.info("###### KILLING (CRASHING) SERVER 1");
+//         log.info("######");
+//
+//         ServerManagement.kill(1);
+//
+//         killed = true;
+//
+//         long sleepTime = 30;
+//
+//         log.info("killed server, now waiting for " + sleepTime + " seconds");
+//
+//         // NOTE: the sleep time needs to be longer than the Remoting connector's lease period
+//         Thread.sleep(sleepTime * 1000);
+//
+//         log.info("done wait");
+//
+//         state = (ConnectionState)del.getState();
+//
+//         int finalServerID = state.getServerID();
+//
+//         log.info("final server id= " + finalServerID);
+//
+//         //server id should now be 2
+//
+//         assertEquals(2, finalServerID);
+//
+//         conn.start();
+//
+//         //Now should be able to consume the rest of the messages
+//
+//         log.info("here1");
+//
+//         TextMessage tm = null;
+//
+//         for (int i = NUM_MESSAGES / 2; i < NUM_MESSAGES; i++)
+//         {
+//            tm = (TextMessage)cons.receive(1000);
+//
+//            assertNotNull(tm);
+//
+//            log.debug("message is " + tm.getText());
+//
+//            assertEquals("message:" + i, tm.getText());
+//         }
+//
+//         log.info("here2");
+//
+//         //Now should be able to acknowledge them
+//
+//         tm.acknowledge();
+//
+//         //Now check there are no more messages there
+//         sess.close();
+//
+//         sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+//
+//         cons = sess.createConsumer(queue[1]);
+//
+//         Message m = cons.receive(500);
+//
+//         assertNull(m);
+//
+//         log.info("got to end of test");
+//      }
+//      finally
+//      {
+//         if (conn != null)
+//         {
+//            try
+//            {
+//               conn.close();
+//            }
+//            catch (Exception e)
+//            {
+//               e.printStackTrace();
+//            }
+//         }
+//
+//         // Resurrect dead server
+//         if (killed)
+//         {
+//            ServerManagement.start(1, "all");
+//         }
+//      }
+//
+//   }
+//
    
    /*
    TODO: Reactivate this test when http://jira.jboss.org/jira/browse/JBMESSAGING-883 is done
@@ -1095,7 +1243,57 @@ public class HATest extends ClusteringTestBase
       conn2.close();
    }
 
-   
+   public void testInvalidate() throws Exception
+   {
+      JBossConnectionFactory factory = (JBossConnectionFactory) ic[0].lookup("/ClusteredConnectionFactory");
+
+      Connection conn1 = factory.createConnection();
+      JBossConnection conn2 = (JBossConnection)factory.createConnection();
+      conn1.close();
+
+      try
+      {
+         Session session = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+         conn2.getDelegate().invalidate();
+
+         try
+         {
+            Session session2 = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
+            fail ("delegate supposed to fail as connection was invalidated!");
+         }
+         catch (javax.jms.IllegalStateException e)
+         {
+            log.info("Caught expected exception - " + e);
+         }
+
+         try
+         {
+            conn2.start();
+            fail ("delegate supposed to fail as connection was invalidated!");
+         }
+         catch (javax.jms.IllegalStateException e)
+         {
+            log.info("Caught expected exception - " + e);
+         }
+
+         try
+         {
+            MessageConsumer consumer = session.createConsumer(queue[1]);
+            fail ("delegate supposed to fail as connection was invalidated!");
+         }
+         catch (javax.jms.IllegalStateException e)
+         {
+            log.info("Caught expected exception - " + e);
+         }
+      }
+      finally
+      {
+         conn2.close(); // we should still be able to close invalidated clients!
+      }
+
+   }
+
    // Package protected ---------------------------------------------
    
    // Protected -----------------------------------------------------

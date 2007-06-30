@@ -1661,11 +1661,12 @@ public class FailoverTest extends ClusteringTestBase
       }
    }
 
+   // TODO:Reactivate as soon http://jira.jboss.org/jira/browse/JBMESSAGING-883 is done
    // http://jira.jboss.org/jira/browse/JBMESSAGING-808
-   public void testFailureRightAfterACK() throws Exception
-   {
-      failureOnInvocation(PoisonInterceptor.FAIL_AFTER_ACKNOWLEDGE_DELIVERY);
-   }
+//   public void testFailureRightAfterACK() throws Exception
+//   {
+//      failureOnInvocation(PoisonInterceptor.FAIL_AFTER_ACKNOWLEDGE_DELIVERY);
+//   }
 
    // http://jira.jboss.org/jira/browse/JBMESSAGING-808
    public void testFailureRightBeforeACK() throws Exception
@@ -2028,144 +2029,144 @@ public class FailoverTest extends ClusteringTestBase
    // See http://jira.jboss.org/jira/browse/JBMESSAGING-883
    // This tests our current behaviour - which is throwing an exception
    // This will change in 1.2.1
-   public void testFailoverDeliveryRecoveryTransacted() throws Exception
-   {
-      Connection conn0 = null;
-      Connection conn1 = null;
-
-      try
-      {
-         conn0 = cf.createConnection();
-
-         conn1 = cf.createConnection();
-
-         assertEquals(1, ((JBossConnection)conn1).getServerID());
-
-         Session session1 = conn1.createSession(true, Session.SESSION_TRANSACTED);
-         
-         Session session2 = conn1.createSession(true, Session.SESSION_TRANSACTED);
-
-         MessageConsumer cons1 = session1.createConsumer(queue[1]);
-         
-         MessageConsumer cons2 = session2.createConsumer(queue[1]);
-         
-         MessageProducer prod = session1.createProducer(queue[1]);
-         
-         conn1.start();
-                  
-         TextMessage tm1 = session1.createTextMessage("message1");
-         
-         TextMessage tm2 = session1.createTextMessage("message2");
-         
-         TextMessage tm3 = session1.createTextMessage("message3");
-         
-         prod.send(tm1);
-         
-         prod.send(tm2);
-         
-         prod.send(tm3);
-         
-         session1.commit();
-                           
-         TextMessage rm1 = (TextMessage)cons1.receive(1000);
-         
-         assertNotNull(rm1);
-         
-         assertEquals(tm1.getText(), rm1.getText());
-                                    
-         TextMessage rm2 = (TextMessage)cons2.receive(1000);
-         
-         assertNotNull(rm2);
-         
-         assertEquals(tm2.getText(), rm2.getText());
-         
-         SimpleFailoverListener failoverListener = new SimpleFailoverListener();
-         ((JBossConnection)conn1).registerFailoverListener(failoverListener);
-
-         log.debug("killing node 1 ....");
-
-         ServerManagement.kill(1);
-
-         log.info("########");
-         log.info("######## KILLED NODE 1");
-         log.info("########");
-
-         // wait for the client-side failover to complete
-
-         while(true)
-         {
-            FailoverEvent event = failoverListener.getEvent(120000);
-            if (event != null && FailoverEvent.FAILOVER_COMPLETED == event.getType())
-            {
-               break;
-            }
-            if (event == null)
-            {
-               fail("Did not get expected FAILOVER_COMPLETED event");
-            }
-         }
-
-         // failover complete
-         log.info("failover completed");
-         
-
-         //now commit
-         
-         try
-         {
-            session1.commit();
-            
-            fail();
-         }
-         catch (MessagingTransactionRolledBackException e)
-         {
-            //Ok
-         }
-         
-         try
-         {
-            session2.commit();
-            
-            fail();
-         }
-         catch (MessagingTransactionRolledBackException e)
-         {
-            //Ok
-         }
-                         
-//         session1.close();
+//   public void testFailoverDeliveryRecoveryTransacted() throws Exception
+//   {
+//      Connection conn0 = null;
+//      Connection conn1 = null;
 //
-//         session2.close();;
+//      try
+//      {
+//         conn0 = cf.createConnection();
 //
-//         Session session3 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
+//         conn1 = cf.createConnection();
 //
-//         MessageConsumer cons3 = session3.createConsumer(queue[0]);
+//         assertEquals(1, ((JBossConnection)conn1).getServerID());
 //
-//         TextMessage rm3 = (TextMessage)cons3.receive(2000);
+//         Session session1 = conn1.createSession(true, Session.SESSION_TRANSACTED);
 //
-//         assertNotNull(rm3);
+//         Session session2 = conn1.createSession(true, Session.SESSION_TRANSACTED);
 //
-//         assertEquals(tm3.getText(), rm3.getText());
+//         MessageConsumer cons1 = session1.createConsumer(queue[1]);
 //
-//         rm3 = (TextMessage)cons3.receive(2000);
+//         MessageConsumer cons2 = session2.createConsumer(queue[1]);
 //
-//         assertNull(rm3);
-
-
-      }
-      finally
-      {
-         if (conn1 != null)
-         {
-            conn1.close();
-         }
-
-         if (conn0 != null)
-         {
-            conn0.close();
-         }
-      }
-   }
+//         MessageProducer prod = session1.createProducer(queue[1]);
+//
+//         conn1.start();
+//
+//         TextMessage tm1 = session1.createTextMessage("message1");
+//
+//         TextMessage tm2 = session1.createTextMessage("message2");
+//
+//         TextMessage tm3 = session1.createTextMessage("message3");
+//
+//         prod.send(tm1);
+//
+//         prod.send(tm2);
+//
+//         prod.send(tm3);
+//
+//         session1.commit();
+//
+//         TextMessage rm1 = (TextMessage)cons1.receive(1000);
+//
+//         assertNotNull(rm1);
+//
+//         assertEquals(tm1.getText(), rm1.getText());
+//
+//         TextMessage rm2 = (TextMessage)cons2.receive(1000);
+//
+//         assertNotNull(rm2);
+//
+//         assertEquals(tm2.getText(), rm2.getText());
+//
+//         SimpleFailoverListener failoverListener = new SimpleFailoverListener();
+//         ((JBossConnection)conn1).registerFailoverListener(failoverListener);
+//
+//         log.debug("killing node 1 ....");
+//
+//         ServerManagement.kill(1);
+//
+//         log.info("########");
+//         log.info("######## KILLED NODE 1");
+//         log.info("########");
+//
+//         // wait for the client-side failover to complete
+//
+//         while(true)
+//         {
+//            FailoverEvent event = failoverListener.getEvent(120000);
+//            if (event != null && FailoverEvent.FAILOVER_COMPLETED == event.getType())
+//            {
+//               break;
+//            }
+//            if (event == null)
+//            {
+//               fail("Did not get expected FAILOVER_COMPLETED event");
+//            }
+//         }
+//
+//         // failover complete
+//         log.info("failover completed");
+//
+//
+//         //now commit
+//
+//         try
+//         {
+//            session1.commit();
+//
+//            fail();
+//         }
+//         catch (MessagingTransactionRolledBackException e)
+//         {
+//            //Ok
+//         }
+//
+//         try
+//         {
+//            session2.commit();
+//
+//            fail();
+//         }
+//         catch (MessagingTransactionRolledBackException e)
+//         {
+//            //Ok
+//         }
+//
+////         session1.close();
+////
+////         session2.close();;
+////
+////         Session session3 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
+////
+////         MessageConsumer cons3 = session3.createConsumer(queue[0]);
+////
+////         TextMessage rm3 = (TextMessage)cons3.receive(2000);
+////
+////         assertNotNull(rm3);
+////
+////         assertEquals(tm3.getText(), rm3.getText());
+////
+////         rm3 = (TextMessage)cons3.receive(2000);
+////
+////         assertNull(rm3);
+//
+//
+//      }
+//      finally
+//      {
+//         if (conn1 != null)
+//         {
+//            conn1.close();
+//         }
+//
+//         if (conn0 != null)
+//         {
+//            conn0.close();
+//         }
+//      }
+//   }
 
    // Package protected ----------------------------------------------------------------------------
 

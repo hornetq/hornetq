@@ -604,7 +604,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
          }
       }
    }
-   
+
    void addTemporaryDestination(Destination dest)
    {
       synchronized (temporaryDestinations)

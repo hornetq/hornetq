@@ -80,6 +80,12 @@ public class ClientConsumerDelegate extends DelegateSupport implements ConsumerD
 
    // DelegateSupport overrides --------------------------------------------------------------------
 
+   public void invalidate()
+   {
+      throw new IllegalStateException("This invocation should not be handled here!");
+   }
+
+
    public void synchronizeWith(DelegateSupport nd) throws Exception
    {
       log.debug(this + " synchronizing with " + nd);
@@ -87,6 +93,10 @@ public class ClientConsumerDelegate extends DelegateSupport implements ConsumerD
       super.synchronizeWith(nd);
 
       ClientConsumerDelegate newDelegate = (ClientConsumerDelegate)nd;
+
+      // The client needs to be set first
+      client = ((ConnectionState)state.getParent().getParent()).getRemotingConnection().
+         getRemotingClient();
 
       // synchronize server endpoint state
 
@@ -99,8 +109,6 @@ public class ClientConsumerDelegate extends DelegateSupport implements ConsumerD
       bufferSize = newDelegate.getBufferSize();
       maxDeliveries = newDelegate.getMaxDeliveries();
 
-      client = ((ConnectionState)state.getParent().getParent()).getRemotingConnection().
-         getRemotingClient();
    }
 
    public void setState(HierarchicalState state)

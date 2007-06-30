@@ -69,5 +69,6 @@ public interface ProducerDelegate extends Closeable
              int deliveryMode,
              int priority,
              long timeToLive) throws JMSException;
-     
+
+   void invalidate();
 }

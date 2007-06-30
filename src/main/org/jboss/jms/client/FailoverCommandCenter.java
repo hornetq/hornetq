@@ -153,7 +153,10 @@ public class FailoverCommandCenter
       catch (Exception e)
       {
          log.error("Failover failed", e);
-         
+
+         // Marking delegate as invalid!
+         state.getDelegate().invalidate();
+
          throw e;
       }
       finally
@@ -171,6 +174,10 @@ public class FailoverCommandCenter
          else
          {
             log.debug(this + " aborted failover");
+            ClientConnectionDelegate connDelegate = (ClientConnectionDelegate)state.getDelegate();
+            connDelegate.closing();
+            connDelegate.close();
+            
             broadcastFailoverEvent(new FailoverEvent(FailoverEvent.FAILOVER_FAILED, this));
          }
       }

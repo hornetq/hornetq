@@ -99,6 +99,11 @@ public class ClientConnectionDelegate extends DelegateSupport implements Connect
 
    // DelegateSupport overrides --------------------------------------------------------------------
 
+   public void invalidate()
+   {
+      throw new IllegalStateException("This invocation should not be handled here!");
+   }
+
    public void synchronizeWith(DelegateSupport nd) throws Exception
    {
       log.debug(this + " synchronizing with " + nd);

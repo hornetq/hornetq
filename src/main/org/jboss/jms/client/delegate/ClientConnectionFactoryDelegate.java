@@ -258,7 +258,11 @@ public class ClientConnectionFactoryDelegate
    {
       super.synchronizeWith(newDelegate);
    }
-   
+
+   public void invalidate()
+   {
+      throw new IllegalStateException("This invocation should not be handled here!");
+   }
 
    // Protected ------------------------------------------------------------------------------------
 

@@ -132,18 +132,6 @@
    </path>
 
 
-   <path id="mysql.jdbc.driver.classpath">
-      <pathelement path="${tests.root}/lib/mysql-connector-java-3.1.13-bin.jar"/>
-   </path>
-
-   <path id="oracle.jdbc.driver.classpath">
-      <pathelement path="${tests.root}/lib/ojdbc14.jar"/>
-   </path>
-
-   <path id="postgres.jdbc.driver.classpath">
-      <pathelement path="${tests.root}/postgresql-8.1-405.jdbc3.jar"/>
-   </path>
-
    <!--
         The compilation classpath.
    -->
@@ -176,9 +164,8 @@
       <path refid="jboss.jbossxb.classpath"/>
       <path refid="jgroups.jgroups.classpath"/>
       <path refid="apache.logging.classpath"/>
-      <path refid="mysql.jdbc.driver.classpath"/>
-      <path refid="oracle.jdbc.driver.classpath"/>
-      <path refid="postgres.jdbc.driver.classpath"/>
+      <path refid="any.jdbc.driver.classpath"/>
+      <path refid="hsqldb.hsqldb.classpath"/>
       <path refid="apache.tomcat.classpath"/>
       <path refid="apache.logging.classpath"/>
    </path>
