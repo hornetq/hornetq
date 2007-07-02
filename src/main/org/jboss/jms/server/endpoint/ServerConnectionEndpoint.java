@@ -28,6 +28,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.ArrayList;
 
 import javax.jms.Destination;
 import javax.jms.IllegalStateException;
@@ -549,6 +550,16 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
    public ServerConnectionFactoryEndpoint getConnectionFactoryEndpoint()
    {
       return cfendpoint;
+   }
+
+   public Collection getSessions()
+   {
+      ArrayList list = new ArrayList();
+      synchronized (sessions)
+      {
+         list.addAll(sessions.values());
+      }
+      return list;
    }
 
    public String toString()

@@ -726,7 +726,7 @@ public class ServerManagement
    {
       insureStarted();
       servers[0].getServer().startServerPeer(serverPeerID, defaultQueueJNDIContext,
-                                             defaultTopicJNDIContext, attrOverrids, false);
+                                             defaultTopicJNDIContext, attrOverrids, false, false);
    }
 
    public static void stopServerPeer() throws Exception

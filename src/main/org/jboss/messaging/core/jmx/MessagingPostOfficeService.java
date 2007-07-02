@@ -402,7 +402,8 @@ public class MessagingPostOfficeService extends JDBCServiceSupport
 	                                               groupName,
 	                                               jChannelFactory,
 	                                               stateTimeout, castTimeout,
-	                                               mapper);
+	                                               mapper,
+                                                  serverPeer.isSupportsFailover());
          }
          else
          {

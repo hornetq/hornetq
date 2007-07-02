@@ -151,7 +151,7 @@ public class LocalTestServer implements Server
 
          if (startMessagingServer)
          {
-            startServerPeer(serverIndex, null, null, attrOverrides, sc.isClustered());
+            startServerPeer(serverIndex, null, null, attrOverrides, sc.isClustered(), sc.isSupportsFailover());
          }
 
          log.info("Server " + serverIndex + " started");
@@ -293,7 +293,8 @@ public class LocalTestServer implements Server
                                String defaultQueueJNDIContext,
                                String defaultTopicJNDIContext,
                                ServiceAttributeOverrides attrOverrides,
-                               boolean clustered) throws Exception
+                               boolean clustered,
+                               boolean supportsFailover) throws Exception
    {
       try
       {
@@ -341,6 +342,8 @@ public class LocalTestServer implements Server
          // overwrite the config file security domain
          sc.setAttribute(serverPeerObjectName, "SecurityDomain",
                          MockJBossSecurityManager.TEST_SECURITY_DOMAIN);
+
+         sc.setAttribute(serverPeerObjectName,"SupportsFailover", supportsFailover?"true":"false");
 
          log.debug("starting JMS server");
 

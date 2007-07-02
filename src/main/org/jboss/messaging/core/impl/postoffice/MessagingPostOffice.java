@@ -200,7 +200,9 @@ public class MessagingPostOffice extends JDBCSupport
    
    private Object waitForBindUnbindLock;   
    
-   private Map loadedBindings;   
+   private Map loadedBindings;
+
+   private boolean supportsFailover = true;
 
    // Constructors ---------------------------------------------------------------------------------
 
@@ -253,7 +255,7 @@ public class MessagingPostOffice extends JDBCSupport
       channelIDMap = new HashMap(); 
       
       nodeIDAddressMap = new ConcurrentHashMap();           
-      
+
       waitForBindUnbindLock = new Object();
    }
    
@@ -276,7 +278,8 @@ public class MessagingPostOffice extends JDBCSupport
                               String groupName,
                               JChannelFactory jChannelFactory,
                               long stateTimeout, long castTimeout,
-                              FailoverMapper failoverMapper)
+                              FailoverMapper failoverMapper,
+                              boolean supportsFailover)
       throws Exception
    {
    	this(ds, tm, sqlProperties, createTablesOnStartup, nodeId, officeName, ms, pm, tr,
@@ -293,8 +296,10 @@ public class MessagingPostOffice extends JDBCSupport
       leftSet = new ConcurrentHashSet();
 
       groupMember = new GroupMember(groupName, stateTimeout, castTimeout, jChannelFactory, this, this);
+
+      this.supportsFailover = supportsFailover;
       
-      nbSupport = new NotificationBroadcasterSupport();           
+      nbSupport = new NotificationBroadcasterSupport();
    }
 
    // MessagingComponent overrides -----------------------------------------------------------------
@@ -715,7 +720,7 @@ public class MessagingPostOffice extends JDBCSupport
 
       log.debug(this + ": node " + leftNodeID + " has " + (crashed ? "crashed" : "cleanly left the group"));
       
-      if (crashed)
+      if (crashed && isSupportsFailover())
       {	      
 	      // Need to evaluate this before we regenerate the failover map
 	      Integer failoverNode;
@@ -1054,6 +1059,11 @@ public class MessagingPostOffice extends JDBCSupport
    }
 
    // Public ---------------------------------------------------------------------------------------
+
+   public boolean isSupportsFailover()
+   {
+      return supportsFailover;
+   }
 
    public String printBindingInformation()
    {

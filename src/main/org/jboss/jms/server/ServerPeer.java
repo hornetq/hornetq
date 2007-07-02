@@ -23,6 +23,8 @@ package org.jboss.jms.server;
 
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
+import java.io.CharArrayWriter;
+import java.io.PrintWriter;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -44,6 +46,7 @@ import org.jboss.jms.server.connectionmanager.SimpleConnectionManager;
 import org.jboss.jms.server.connectormanager.SimpleConnectorManager;
 import org.jboss.jms.server.destination.ManagedQueue;
 import org.jboss.jms.server.endpoint.ServerSessionEndpoint;
+import org.jboss.jms.server.endpoint.ServerConnectionEndpoint;
 import org.jboss.jms.server.messagecounter.MessageCounter;
 import org.jboss.jms.server.messagecounter.MessageCounterManager;
 import org.jboss.jms.server.plugin.contract.JMSUserManager;
@@ -113,6 +116,8 @@ public class ServerPeer extends ServiceMBeanSupport
    private boolean started;
 
    private int objectIDSequence = 1;
+
+   private boolean supportsFailover = true;
 
    // The default maximum number of delivery attempts before sending to DLQ - can be overridden on
    // the destination
@@ -994,7 +999,33 @@ public class ServerPeer extends ServiceMBeanSupport
       buffer.append("</table>");
       return buffer.toString();
    }
-   
+
+   public String showActiveClientsAsHTML() throws Exception
+   {
+      CharArrayWriter charArray = new CharArrayWriter();
+      PrintWriter out = new PrintWriter(charArray);
+
+      List endpoints = connectionManager.getActiveConnections();
+
+      out.println("<table><tr><td>ID</td><td>Host</td><td>User</td><td>#Sessions</td></tr>");
+      for (Iterator iter = endpoints.iterator(); iter.hasNext();)
+      {
+         ServerConnectionEndpoint endpoint = (ServerConnectionEndpoint) iter.next();
+
+         out.println("<tr>");
+         out.println("<td>" + endpoint.toString() + "</td>");
+         out.println("<td>" + endpoint.getCallbackHandler().getCallbackClient().getInvoker().getLocator().getHost() + "</td>");
+         out.println("<td>" + endpoint.getUsername() + "</td>");
+         out.println("<td>" + endpoint.getSessions().size() + "</td>");
+         out.println("</tr>");
+      }
+
+      out.println("</table>");
+
+
+      return charArray.toString();
+   }
+
    // Public ---------------------------------------------------------------------------------------
    
    public byte[] getClientAOPStack()
@@ -1219,7 +1250,23 @@ public class ServerPeer extends ServiceMBeanSupport
    {
       return objectIDSequence++;
    }
-         
+
+
+   public boolean isSupportsFailover()
+   {
+      return supportsFailover;
+   }
+
+   public void setSupportsFailover(boolean supportsFailover) throws Exception
+   {
+      if (started)
+      {
+         throw new IllegalAccessException("supportsFailover can only be changed when " +
+                                          "connection factory is stopped");
+      }
+      this.supportsFailover = supportsFailover;
+   }
+
    public String toString()
    {
       return "ServerPeer[" + getServerPeerID() + "]";

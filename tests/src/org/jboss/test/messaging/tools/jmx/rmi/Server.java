@@ -123,7 +123,8 @@ public interface Server extends Remote
                         String defaultQueueJNDIContext,
                         String defaultTopicJNDIContext,
                         ServiceAttributeOverrides attrOverrides,
-                        boolean clustered) throws Exception;
+                        boolean clustered,
+                        boolean supportsFailover) throws Exception;
 
    void stopServerPeer() throws Exception;
 

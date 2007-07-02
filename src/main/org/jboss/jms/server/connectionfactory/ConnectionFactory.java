@@ -110,7 +110,12 @@ public class ConnectionFactory extends ServiceMBeanSupport
       
          String locatorURI = (String)server.getAttribute(connectorObjectName, "InvokerLocator");
          ServerPeer serverPeer = (ServerPeer)server.getAttribute(serverPeerObjectName, "Instance");
-         
+
+         if (!serverPeer.isSupportsFailover())
+         {
+            this.supportsFailover = false;
+         }
+
          connectionFactoryManager = serverPeer.getConnectionFactoryManager();
          connectorManager = serverPeer.getConnectorManager();
          connectionManager = serverPeer.getConnectionManager();

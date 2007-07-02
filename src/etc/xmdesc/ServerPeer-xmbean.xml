@@ -200,6 +200,13 @@
       <type>int</type>
    </attribute>
 
+   <attribute access="read-write" getMethod="isSupportsFailover" setMethod="setSupportsFailover">
+      <description>Should Server Side Failover be executed</description>
+      <name>SupportsFailover</name>
+      <type>boolean</type>
+   </attribute>
+
+
    <!-- Managed operations -->
 
    <operation>
@@ -408,7 +415,15 @@
       </description>
       <name>showPreparedTransactionsAsHTML</name>
       <return-type>java.lang.String</return-type>
-   </operation>      
-   
+   </operation>
+
+   <operation>
+      <description>
+         Show of all information about active clients
+      </description>
+      <name>showActiveClientsAsHTML</name>
+      <return-type>java.lang.String</return-type>
+   </operation>
+
 
 </mbean>
