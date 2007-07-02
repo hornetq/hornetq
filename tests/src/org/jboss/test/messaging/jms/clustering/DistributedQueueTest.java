@@ -104,22 +104,16 @@ public class DistributedQueueTest extends ClusteringTestBase
          conn1 = cf.createConnection();
          conn2 = cf.createConnection();
          
-         log.info("Created connections");
-         
          checkConnectionsDifferentServers(new Connection[] {conn0, conn1, conn2});
 
          Session sess0 = conn0.createSession(false, Session.AUTO_ACKNOWLEDGE);
          Session sess1 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
          Session sess2 = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
          
-         log.info("Created sessions");
-
          MessageConsumer cons0 = sess0.createConsumer(queue[0]);
          MessageConsumer cons1 = sess1.createConsumer(queue[1]);
          MessageConsumer cons2 = sess2.createConsumer(queue[2]);
          
-         log.info("Created consumers");
-
          conn0.start();
          conn1.start();
          conn2.start();
@@ -139,8 +133,6 @@ public class DistributedQueueTest extends ClusteringTestBase
             prod0.send(tm);
          }
          
-         log.info("Sent messages");
-
          for (int i = 0; i < NUM_MESSAGES; i++)
          {
             TextMessage tm = (TextMessage)cons0.receive(1000);
@@ -239,25 +231,19 @@ public class DistributedQueueTest extends ClusteringTestBase
          
          //Send more messages at node 0
          
-         log.info("Sending more at node 0");
-         
          for (int i = 0; i < NUM_MESSAGES; i++)
          {
             TextMessage tm = sess0.createTextMessage("message2-" + i);
 
             prod0.send(tm);
          }
-         
-         log.info("Sent messages");
-         
+              
          // consume them on node2
 
          for (int i = 0; i < NUM_MESSAGES; i++)
          {
             TextMessage tm = (TextMessage)cons2.receive(1000);
-            
-            log.info("*** got message " + tm.getText());
-            
+                  
             assertNotNull(tm);
             
             assertEquals("message2-" + i, tm.getText());
@@ -294,9 +280,7 @@ public class DistributedQueueTest extends ClusteringTestBase
             tm = (TextMessage)cons2.receive(1000);
             
             if (tm != null)
-            {            
-	            log.info("*** got message " + tm.getText());
-	            
+            {                     
 	            assertNotNull(tm);
 	            
 	            msgs.add(tm.getText());
@@ -341,8 +325,6 @@ public class DistributedQueueTest extends ClusteringTestBase
             
             if (tm != null)
             {            
-	            log.info("*** got message " + tm.getText());
-	            
 	            assertNotNull(tm);
 	            
 	            msgs.add(tm.getText());
@@ -382,9 +364,7 @@ public class DistributedQueueTest extends ClusteringTestBase
             tm = (TextMessage)cons1.receive(1000);
             
             if (tm != null)
-            {            
-	            log.info("*** got message " + tm.getText());
-	            
+            {                
 	            msgs.add(tm.getText());
 	            
 	            count++;
@@ -398,9 +378,6 @@ public class DistributedQueueTest extends ClusteringTestBase
             
             if (tm != null)
             {            
-	            log.info("*** got message " + tm.getText());
-	            
-	
 	            msgs.add(tm.getText());
 	            
 	            count++;
@@ -443,8 +420,6 @@ public class DistributedQueueTest extends ClusteringTestBase
             
             if (tm != null)
             {            
-	            log.info("*** got message " + tm.getText());
-	            
 	            msgs.add(tm.getText());
 	            
 	            count++;
@@ -458,9 +433,6 @@ public class DistributedQueueTest extends ClusteringTestBase
             
             if (tm != null)
             {
-	            
-	            log.info("*** got message " + tm.getText());
-	            
 	            msgs.add(tm.getText());
 	            
 	            count++;
@@ -499,8 +471,6 @@ public class DistributedQueueTest extends ClusteringTestBase
          {
             tm = (TextMessage)cons2.receive(1000);
             
-            log.info("*** got message " + tm.getText());
-            
             assertNotNull(tm);
                
             assertEquals("message5-" + i, tm.getText());
@@ -520,8 +490,6 @@ public class DistributedQueueTest extends ClusteringTestBase
          {
             tm = (TextMessage)cons1.receive(1000);
             
-            log.info("*** got message " + tm.getText());
-            
             assertNotNull(tm);
                
             assertEquals("message5-" + i, tm.getText());
@@ -537,13 +505,10 @@ public class DistributedQueueTest extends ClusteringTestBase
          {
             tm = (TextMessage)cons0.receive(1000);
             
-            log.info("*** got message " + tm.getText());
-            
             assertNotNull(tm);
                
             assertEquals("message5-" + i, tm.getText());
-         }
-                  
+         }                  
                   
       }
       finally

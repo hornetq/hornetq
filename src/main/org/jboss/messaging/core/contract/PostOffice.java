@@ -61,7 +61,7 @@ public interface PostOffice extends MessagingComponent
     * @param allNodes Add this binding on ALL nodes?
     * @throws Exception
     */
-   void addBinding(Binding binding, boolean allNodes) throws Exception;
+   boolean addBinding(Binding binding, boolean allNodes) throws Exception;
 
    /**
     * Remove a binding from the post office
@@ -69,7 +69,7 @@ public interface PostOffice extends MessagingComponent
     * @param allNodes Remove this binding from ALL node?
     * @throws Throwable
     */
-   void removeBinding(String queueName, boolean allNodes) throws Throwable;
+   Binding removeBinding(String queueName, boolean allNodes) throws Throwable;
    
    /**
     * Route a reference.

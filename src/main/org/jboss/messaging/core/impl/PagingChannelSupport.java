@@ -107,7 +107,7 @@ public abstract class PagingChannelSupport extends ChannelSupport
       
       if (pageSize >= fullSize)
       {
-         throw new IllegalArgumentException("pageSize must be less than full size");
+         throw new IllegalArgumentException("pageSize must be less than full size " + pageSize + ", " + fullSize);
       }
       if (downCacheSize > pageSize)
       {

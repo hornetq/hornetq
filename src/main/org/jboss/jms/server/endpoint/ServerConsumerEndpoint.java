@@ -109,6 +109,8 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
    
    private boolean remote;
    
+   private boolean preserveOrdering;
+   
    // Constructors ---------------------------------------------------------------------------------
 
    ServerConsumerEndpoint(int id, Queue messageQueue, String queueName,
@@ -151,6 +153,8 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
 
       this.startStopLock = new Object();
 
+      this.preserveOrdering = sessionEndpoint.getConnectionEndpoint().getServerPeer().isDefaultPreserveOrdering();
+      
       if (dest.isTopic() && !messageQueue.isRecoverable())
       {
          // This is a consumer of a non durable topic subscription. We don't need to store
@@ -223,6 +227,18 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
          }
 
          return delivery;
+      }
+      
+      if (preserveOrdering && remote)
+      {
+      	//If the header exists it means the message has already been sucked once - so reject.
+      	
+      	if (ref.getMessage().getHeader(Message.CLUSTER_SUCKED) != null)
+      	{
+      		if (trace) { log.trace("Message has already been sucked once - not sucking again"); }
+      		
+      		return null;
+      	}      	    
       }
 
       synchronized (startStopLock)

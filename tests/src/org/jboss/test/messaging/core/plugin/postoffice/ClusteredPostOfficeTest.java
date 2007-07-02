@@ -23,16 +23,22 @@ package org.jboss.test.messaging.core.plugin.postoffice;
 
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import org.jboss.messaging.core.contract.Binding;
 import org.jboss.messaging.core.contract.Condition;
+import org.jboss.messaging.core.contract.Message;
+import org.jboss.messaging.core.contract.MessageReference;
 import org.jboss.messaging.core.contract.PostOffice;
 import org.jboss.messaging.core.contract.Queue;
 import org.jboss.messaging.core.impl.MessagingQueue;
 import org.jboss.test.messaging.core.PostOfficeTestBase;
 import org.jboss.test.messaging.core.SimpleCondition;
+import org.jboss.test.messaging.core.SimpleFilter;
+import org.jboss.test.messaging.core.SimpleReceiver;
+import org.jboss.test.messaging.util.CoreMessageFactory;
 
 /**
  * 
@@ -187,33 +193,27 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
          // Start one office
          
          office1 = createClusteredPostOffice(1, "testgroup");
-         
-         log.info("Created office1");
-         
+          
          // Add a couple of queues
          
-         Queue queue1 = new MessagingQueue(1, "sub1", channelIDManager.getID(), ms, pm, false, -1, null, true, false);
+         Queue queue1 = new MessagingQueue(1, "sub1", channelIDManager.getID(), ms, pm, false, -1, null, true);
          queue1.activate();
 
          Condition condition1 = new SimpleCondition("topic1");
          
-         office1.addBinding(new Binding(condition1, queue1, false), false);
-         
-         log.info("Added binding1");
-         
-         Queue queue2 = new MessagingQueue(1, "sub2", channelIDManager.getID(), ms, pm, false, -1, null, true, false);
+         boolean added = office1.addBinding(new Binding(condition1, queue1, false), false);
+         assertTrue(added);
+               
+         Queue queue2 = new MessagingQueue(1, "sub2", channelIDManager.getID(), ms, pm, false, -1, null, true);
          queue2.activate();
 
-         office1.addBinding(new Binding(condition1, queue2, false), false);
-         
-         log.info("Added binding2");
-         
+         added = office1.addBinding(new Binding(condition1, queue2, false), false);
+         assertTrue(added);
+               
          // Start another office - make sure it picks up the bindings from the first node
          
          office2 = createClusteredPostOffice(2, "testgroup");
-         
-         log.info("Created office 2");
-         
+           
          // Should return all queues
          Collection queues = office2.getQueuesForCondition(condition1, false);
          assertNotNull(queues);
@@ -224,10 +224,11 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
          
          // Add another queue on node 2
          
-         Queue queue3 = new MessagingQueue(2, "sub3", channelIDManager.getID(), ms, pm, false, -1, null, true, false);
+         Queue queue3 = new MessagingQueue(2, "sub3", channelIDManager.getID(), ms, pm, false, -1, null, true);
          queue3.activate();
 
-         office2.addBinding(new Binding(condition1, queue3, false), false);
+         added = office2.addBinding(new Binding(condition1, queue3, false), false);
+         assertTrue(added);
   
          // Make sure both nodes pick it up
          
@@ -248,10 +249,11 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
 
          // Add another binding on node 2
          
-         Queue queue4 = new MessagingQueue(2, "sub4", channelIDManager.getID(), ms, pm, false, -1, null, true, false);
+         Queue queue4 = new MessagingQueue(2, "sub4", channelIDManager.getID(), ms, pm, false, -1, null, true);
          queue4.activate();
 
-         office2.addBinding(new Binding(condition1, queue4, false), false);
+         added = office2.addBinding(new Binding(condition1, queue4, false), false);
+         assertTrue(added);
          
          // Make sure both nodes pick it up
          
@@ -272,9 +274,11 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
          assertTrue(queues.contains(queue4));
          
          // Unbind binding 1 and binding 2
-         office1.removeBinding(queue1.getName(), false);
-         
-         office1.removeBinding(queue2.getName(), false);
+         Binding removed = office1.removeBinding(queue1.getName(), false);
+         assertNotNull(removed);
+                  
+         removed = office1.removeBinding(queue2.getName(), false);
+         assertNotNull(removed);
          
          // Make sure bindings are not longer available on either node
          
@@ -305,10 +309,11 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
          
          // Add another binding on node 3
                   
-         Queue queue5 = new MessagingQueue(3, "sub5", channelIDManager.getID(), ms, pm, false, -1, null, true, false);
+         Queue queue5 = new MessagingQueue(3, "sub5", channelIDManager.getID(), ms, pm, false, -1, null, true);
          queue5.activate();
          
-         office3.addBinding(new Binding(condition1, queue5, false), false);
+         added = office3.addBinding(new Binding(condition1, queue5, false), false);
+         assertTrue(added);
          
          // Make sure all nodes pick it up
          
@@ -335,15 +340,17 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
          
          // Add a durable and a non durable binding on node 1
          
-         Queue queue6 = new MessagingQueue(1, "sub6", channelIDManager.getID(), ms, pm, true, -1, null, true, false);
+         Queue queue6 = new MessagingQueue(1, "sub6", channelIDManager.getID(), ms, pm, true, -1, null, true);
          queue6.activate();
          
-         office1.addBinding(new Binding(condition1, queue6, false), false);
+         added = office1.addBinding(new Binding(condition1, queue6, false), false);
+         assertTrue(added);
          
-         Queue queue7 = new MessagingQueue(1, "sub7", channelIDManager.getID(), ms, pm, false, -1, null, true, false);
+         Queue queue7 = new MessagingQueue(1, "sub7", channelIDManager.getID(), ms, pm, false, -1, null, true);
          queue7.activate();
          
-         office1.addBinding(new Binding(condition1, queue7, false), false);
+         added = office1.addBinding(new Binding(condition1, queue7, false), false);
+         assertTrue(added);
          
          
          // Make sure all nodes pick them up
@@ -375,7 +382,6 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
          assertTrue(queues.contains(queue6));
          assertTrue(queues.contains(queue7));
                
-         log.info("****** stopping office1");
          // Stop office 1
          office1.stop();
   
@@ -409,9 +415,9 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
          assertTrue(queues.contains(queue5));
          
          // Restart office 1 and office 2
-         office1 = createClusteredPostOffice(1, "testgroup");
+         office1.start();
          
-         office2 = createClusteredPostOffice(2, "testgroup");
+         office2.start();
                   
          queues = office1.getQueuesForCondition(condition1, false);
          assertNotNull(queues);
@@ -438,9 +444,9 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
          office3.stop();
          
          // Start them all
-         office1 = createClusteredPostOffice(1, "testgroup");
-         office2 = createClusteredPostOffice(2, "testgroup");
-         office3 = createClusteredPostOffice(3, "testgroup");
+         office1.start();
+         office2.start();
+         office3.start();
          
          // Only the durable queue should survive
          
@@ -461,7 +467,8 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
          
          //Unbind it
          
-         office1.removeBinding(queue6.getName(), false);
+         removed = office1.removeBinding(queue6.getName(), false);
+         assertNotNull(removed);
          
          queues = office1.getQueuesForCondition(condition1, false);
          assertNotNull(queues);
@@ -478,24 +485,27 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
          
          //Bind another few more clustered
                            
-         Queue queue8 = new MessagingQueue(1, "sub8", channelIDManager.getID(), ms, pm, false, -1, null, true, false);
+         Queue queue8 = new MessagingQueue(1, "sub8", channelIDManager.getID(), ms, pm, false, -1, null, true);
          queue8.activate();
          
-         Queue queue9 = new MessagingQueue(2, "sub9", channelIDManager.getID(), ms, pm, false, -1, null, true, false);
+         Queue queue9 = new MessagingQueue(2, "sub9", channelIDManager.getID(), ms, pm, false, -1, null, true);
          queue9.activate();
          
-         Queue queue10 = new MessagingQueue(2, "sub10", channelIDManager.getID(), ms, pm, false, -1, null, true, false);
+         Queue queue10 = new MessagingQueue(2, "sub10", channelIDManager.getID(), ms, pm, false, -1, null, true);
          queue10.activate();
          
          //Bind on different conditions
          
-         office1.addBinding(new Binding(condition1, queue8, false), false);
+         added = office1.addBinding(new Binding(condition1, queue8, false), false);
+         assertTrue(added);
          
-         office2.addBinding(new Binding(condition1, queue9, false), false);
+         added = office2.addBinding(new Binding(condition1, queue9, false), false);
+         assertTrue(added);
          
          Condition condition2 = new SimpleCondition("topic2");
          
-         office2.addBinding(new Binding(condition2, queue10, false), false);
+         added = office2.addBinding(new Binding(condition2, queue10, false), false);
+         assertTrue(added);
          
          queues = office1.getQueuesForCondition(condition1, false);
          assertNotNull(queues);
@@ -517,15 +527,17 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
          
          //Now a couple of non clustered queues
          
-         Queue queue11 = new MessagingQueue(1, "sub11", channelIDManager.getID(), ms, pm, false, -1, null, false, false);
+         Queue queue11 = new MessagingQueue(1, "sub11", channelIDManager.getID(), ms, pm, false, -1, null, false);
          queue11.activate();
          
-         Queue queue12 = new MessagingQueue(2, "sub12", channelIDManager.getID(), ms, pm, false, -1, null, false, false);
+         Queue queue12 = new MessagingQueue(2, "sub12", channelIDManager.getID(), ms, pm, false, -1, null, false);
          queue12.activate();
          
-         office1.addBinding(new Binding(condition1, queue11, false), false);
+         added = office1.addBinding(new Binding(condition1, queue11, false), false);
+         assertTrue(added);
          
-         office2.addBinding(new Binding(condition1, queue12, false), false);
+         added = office2.addBinding(new Binding(condition1, queue12, false), false);
+         assertTrue(added);
          
          queues = office1.getQueuesForCondition(condition1, false);
          assertNotNull(queues);
@@ -571,205 +583,880 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
       }
    }
    
+   /*
+    * Bind / Unbind all tests
+    * 
+    * 1.
+    * a) queue is not known by cluster
+    * b) bind all
+    * c) verify all nodes get queue
+    * d) unbind - verify unbound from all nodes
+    * e) close down all nodes
+    * f) start all nodes
+    * g) verify queue is not known
+    * 
+    * 2.
+    * a) queue is known by cluster
+    * b) bind all
+    * c) verify nothing changes on cluster
+    * 
+    * 3
+    * a) start one node
+    * b) queue is not known to cluster
+    * c) bind all
+    * d) start other nodes
+    * d) verify other nodes pick it up
+    * 
+    * 4
+    * a) start one node
+    * b) queue is not known to cluster
+    * c) bind all
+    * d) shutdown all nodes
+    * e) startup all nodes
+    * f) verify queue is on all nodes
+    * 
+    * 5
+    * a) start one node
+    * b) queue is not known
+    * c) bind all
+    * d) shutdown node
+    * e) start other nodes
+    * f) verify queue is not known
+    * g) restart first node, verify queue is now known
+    * 
+    * 6
+    * 
+    * non durable bind all
+    * a) bind all non durable
+    * b) make sure is picked up by all nodes
+    * c) close down all nodes
+    * d) restart them all - make sure is not there
+    * e) bind again
+    * f) make sure is picked up
+    * g) take down one node
+    * h) bring it back up
+    * i) make sure it has quuee again
+    */
    
-
-   public final void testClusteredBindUnbindAll() throws Throwable
+   public void testBindUnbindAll1() throws Throwable
    {
+   	/*
+      * 1.
+      * a) queue is not known by cluster
+      * b) bind all
+      * c) verify all nodes get queue
+      * d) unbind - verify unbound from all nodes
+      * e) close down all nodes
+      * f) start all nodes
+      * g) verify queue is not known
+      * */
+   	
       PostOffice office1 = null;
       PostOffice office2 = null;
       PostOffice office3 = null;
       
       try
-      {         
-         // Start one office
-         
-      	log.info("Creating office1");
-      	
+      {                          
          office1 = createClusteredPostOffice(1, "testgroup");
-         
-         log.info("Created office1");
-                
-         Queue queue1 = new MessagingQueue(1, "sub1", channelIDManager.getID(), ms, pm, false, -1, null, true, false);
+         office2 = createClusteredPostOffice(2, "testgroup");
+         office3 = createClusteredPostOffice(3, "testgroup");         
+                             
+         //Durable
+         Queue queue1 = new MessagingQueue(1, "sub1", channelIDManager.getID(), ms, pm, true, -1, null, true);
          queue1.activate();
+
+         Condition condition1 = new SimpleCondition("topic1");
          
-         Condition condition1 = new SimpleCondition("condition1");         
+         //Add all binding
+         boolean added = office1.addBinding(new Binding(condition1, queue1, true), true);
+         assertTrue(added);
          
-         office1.addBinding(new Binding(condition1, queue1, false), true);
+         Thread.sleep(1000);
+          
+         Collection bindings = office1.getAllBindings();         
+         assertGotAll(1, bindings, queue1.getName());
          
-         Collection queues = office1.getQueuesForCondition(condition1, false);
-                  
-         assertNotNull(queues);
+         bindings = office2.getAllBindings();         
+         assertGotAll(2, bindings, queue1.getName());
          
-         assertEquals(1, queues.size());
+         bindings = office3.getAllBindings();         
+         assertGotAll(3, bindings, queue1.getName());
          
-         assertTrue(queues.contains(queue1));
+         //Now unbind same node
          
-         // Start another office -
+         Binding removed = office1.removeBinding(queue1.getName(), true);
+         assertNotNull(removed);
          
-         log.info("creating office2");
-         office2 = createClusteredPostOffice(2, "testgroup");   
-         log.info("created office2");
+         Thread.sleep(1000);
          
+         bindings = office1.getAllBindings();         
+         assertTrue(bindings.isEmpty());
          
-         Queue queue2 = new MessagingQueue(2, "sub2", channelIDManager.getID(), ms, pm, false, -1, null, true, false);
+         bindings = office2.getAllBindings();         
+         assertTrue(bindings.isEmpty());
+         
+         bindings = office3.getAllBindings();         
+         assertTrue(bindings.isEmpty());
+         
+         //Bind again different node
+         Queue queue2 = new MessagingQueue(2, "sub2", channelIDManager.getID(), ms, pm, true, -1, null, true);
          queue2.activate();
          
-         office2.addBinding(new Binding(condition1, queue2, false), true);
+         added = office2.addBinding(new Binding(condition1, queue2, true), true);
+         assertTrue(added);
          
-         queues = office1.getQueuesForCondition(condition1, false);
+         Thread.sleep(1000);
          
-         assertNotNull(queues);
+         bindings = office1.getAllBindings();         
+         assertGotAll(1, bindings, queue2.getName());
          
-         assertEquals(4, queues.size());
+         bindings = office2.getAllBindings();         
+         assertGotAll(2, bindings, queue2.getName());
          
-         assertTrue(queues.contains(queue1));
-         assertTrue(queues.contains(queue2));
-         Iterator iter = queues.iterator();
+         bindings = office3.getAllBindings();         
+         assertGotAll(3, bindings, queue2.getName());
          
-         // TODO - when a new node joins the cluster it has to locally bind any queues previously bodun with all on other nodes.
+         //Close down all nodes
          
-         while (iter.hasNext())
-         {
-         	Queue queue = (Queue)iter.next();
-         	
-         	if (!queue.equals(queue1) && !queue.equals(queue2))
-         	{
-         		if (queue.getName().equals("sub1"))
-         		{
-         			assertEquals(2, queue.getNodeID());
-         		}
-         		else if (queue.getName().equals("sub2"))
-         		{
-         			assertEquals(1, queue.getNodeID());
-         		}
-         		else
-         		{
-         			fail("Invalid queue name " + queue.getName());
-         		}
-         	}
-         }
+         office1.stop();
          
-         queues = office2.getQueuesForCondition(condition1, false);
+         dumpNodeIDView(office2);
          
-         assertNotNull(queues);
+         office2.stop();
          
-         assertEquals(4, queues.size());
+         dumpNodeIDView(office3);
          
-         assertTrue(queues.contains(queue1));
-         assertTrue(queues.contains(queue2));
-         iter = queues.iterator();
+         office3.stop();        
          
-         // TODO - when a new node joins the cluster it has to locally bind any queues previously bodun with all on other nodes.
+         //Start all nodes
          
-         while (iter.hasNext())
-         {
-         	Queue queue = (Queue)iter.next();
-         	
-         	if (!queue.equals(queue1) && !queue.equals(queue2))
-         	{
-         		if (queue.getName().equals("sub1"))
-         		{
-         			assertEquals(1, queue.getNodeID());
-         		}
-         		else if (queue.getName().equals("sub2"))
-         		{
-         			assertEquals(2, queue.getNodeID());
-         		}
-         		else
-         		{
-         			fail("Invalid queue name " + queue.getName());
-         		}
-         	}
-         }
+         office1.start();
+         office2.start();
+         office3.start();
          
+         Thread.sleep(1000);
          
-         office2.removeBinding("sub2", true);
+         //Verify the binding is there
          
-         queues = office1.getQueuesForCondition(condition1, false);
+         bindings = office1.getAllBindings();         
+         assertGotAll(1, bindings, queue2.getName());
          
-         assertNotNull(queues);
+         bindings = office2.getAllBindings();         
+         assertGotAll(2, bindings, queue2.getName());
          
-         assertEquals(2, queues.size());
+         bindings = office3.getAllBindings();         
+         assertGotAll(3, bindings, queue2.getName());
          
-         assertTrue(queues.contains(queue1));
-         iter = queues.iterator();
+         //Unbind different node
          
-
-         while (iter.hasNext())
-         {
-         	Queue queue = (Queue)iter.next();
-         	
-         	if (!queue.equals(queue1))
-         	{
-         		if (queue.getName().equals("sub1"))
-         		{
-         			assertEquals(2, queue.getNodeID());
-         		}         		
-         		else
-         		{
-         			fail("Invalid queue name " + queue.getName());
-         		}
-         	}
-         }
+         removed = office3.removeBinding(queue2.getName(), true);
+         assertNotNull(removed);
          
-         queues = office2.getQueuesForCondition(condition1, false);
+         Thread.sleep(1000);
          
-         assertNotNull(queues);
+         bindings = office1.getAllBindings();         
+         assertTrue(bindings.isEmpty());
          
-         assertEquals(2, queues.size());
+         bindings = office2.getAllBindings();         
+         assertTrue(bindings.isEmpty());
          
-         assertTrue(queues.contains(queue1));
-         iter = queues.iterator();
-         
-
-         while (iter.hasNext())
-         {
-         	Queue queue = (Queue)iter.next();
-         	
-         	if (!queue.equals(queue1))
-         	{
-         		if (queue.getName().equals("sub1"))
-         		{
-         			assertEquals(1, queue.getNodeID());
-         		}         		
-         		else
-         		{
-         			fail("Invalid queue name " + queue.getName());
-         		}
-         	}
-         }
-         
-         office2.removeBinding("sub1", true);
-         
-         queues = office2.getQueuesForCondition(condition1, false);
-         
-         assertNotNull(queues);
-         
-         assertTrue(queues.isEmpty());                
-      }
-      finally
-      {
-         if (office1 != null)
-         {
-            office1.stop();
-         }
-         
-         if (office2 != null)
-         {
-            office2.stop();
-         }
-         
-         if (office3 != null)
-         {
-            office3.stop();
-         }
+         bindings = office3.getAllBindings();         
+         assertTrue(bindings.isEmpty());
          
          if (checkNoBindingData())
          {
             fail("data still in database");
-         }
+         }                                  
+      }
+      finally
+      {
+      	if (office1 != null)
+      	{
+      		try
+      		{
+      			office1.stop();
+      		}
+      		catch (Exception ignore)
+      		{         		
+      		}
+      	}
+
+      	if (office2 != null)
+      	{
+      		try
+      		{
+      			office2.stop();
+      		}
+      		catch (Exception ignore)
+      		{         		
+      		}
+      	}
+
+      	if (office3 != null)
+      	{
+      		try
+      		{
+      			office3.stop();
+      		}         
+      		catch (Exception ignore)
+      		{         		
+      		}
+      	}
       }
    }
+   
+   public void testBindUnbindAll2() throws Throwable
+   {
+      /* 
+      * a) queue is known by cluster
+      * b) bind all
+      * c) verify nothing changes on cluster
+      */
+   	
+      PostOffice office1 = null;
+      PostOffice office2 = null;
+      PostOffice office3 = null;
+      
+      try
+      {                          
+         office1 = createClusteredPostOffice(1, "testgroup");
+         office2 = createClusteredPostOffice(2, "testgroup");
+         office3 = createClusteredPostOffice(3, "testgroup");         
+                           
+         //Durable
+         Queue queue1 = new MessagingQueue(1, "sub1", channelIDManager.getID(), ms, pm, true, -1, null, true);
+         queue1.activate();
+
+         Condition condition1 = new SimpleCondition("topic1");
+         
+         //Add all binding
+         boolean added = office1.addBinding(new Binding(condition1, queue1, true), true);
+         assertTrue(added);
+         
+         Thread.sleep(1000);
+          
+         Collection bindings = office1.getAllBindings();         
+         assertGotAll(1, bindings, queue1.getName());
+         
+         bindings = office2.getAllBindings();         
+         assertGotAll(2, bindings, queue1.getName());
+         
+         bindings = office3.getAllBindings();         
+         assertGotAll(3, bindings, queue1.getName());
+         
+         //Bind again
+         added = office1.addBinding(new Binding(condition1, queue1, true), true);
+         assertFalse(added);
+         
+         Thread.sleep(1000);
+          
+         bindings = office1.getAllBindings();         
+         assertGotAll(1, bindings, queue1.getName());
+         
+         bindings = office2.getAllBindings();         
+         assertGotAll(2, bindings, queue1.getName());
+         
+         bindings = office3.getAllBindings();         
+         assertGotAll(3, bindings, queue1.getName());
+                  
+         //Now unbind same node
+         
+         Binding removed = office1.removeBinding(queue1.getName(), true);
+         assertNotNull(removed);
+         
+         removed = office1.removeBinding(queue1.getName(), true);
+         assertNull(removed);
+         
+         Thread.sleep(1000);
+         
+         bindings = office1.getAllBindings();         
+         assertTrue(bindings.isEmpty());
+         
+         bindings = office2.getAllBindings();         
+         assertTrue(bindings.isEmpty());
+         
+         bindings = office3.getAllBindings();         
+         assertTrue(bindings.isEmpty());
+                  
+         if (checkNoBindingData())
+         {
+            fail("data still in database");
+         }                                  
+      }
+      finally
+      {
+      	if (office1 != null)
+      	{
+      		try
+      		{
+      			office1.stop();
+      		}
+      		catch (Exception ignore)
+      		{         		
+      		}
+      	}
+
+      	if (office2 != null)
+      	{
+      		try
+      		{
+      			office2.stop();
+      		}
+      		catch (Exception ignore)
+      		{         		
+      		}
+      	}
+
+      	if (office3 != null)
+      	{
+      		try
+      		{
+      			office3.stop();
+      		}         
+      		catch (Exception ignore)
+      		{         		
+      		}
+      	}
+      }
+   }
+   
+   public void testBindUnbindAll3() throws Throwable
+   {
+      /* a) start one node
+      * b) queue is not known to cluster
+      * c) bind all
+      * d) start other nodes
+      * d) verify other nodes pick it up
+      */
+   	
+      PostOffice office1 = null;
+      PostOffice office2 = null;
+      PostOffice office3 = null;
+      
+      try
+      {                          
+         office1 = createClusteredPostOffice(1, "testgroup");       
+                              
+         //Durable
+         Queue queue1 = new MessagingQueue(1, "sub1", channelIDManager.getID(), ms, pm, true, -1, null, true);
+         queue1.activate();
+
+         Condition condition1 = new SimpleCondition("topic1");
+         
+         //Add all binding
+         boolean added = office1.addBinding(new Binding(condition1, queue1, true), true);
+         assertTrue(added);
+         
+         Thread.sleep(1000);
+          
+         office2 = createClusteredPostOffice(2, "testgroup");       
+         office3 = createClusteredPostOffice(3, "testgroup");       
+                  
+         Thread.sleep(1000);
+         
+         Collection bindings = office1.getAllBindings();         
+         assertGotAll(1, bindings, queue1.getName());
+         
+         bindings = office2.getAllBindings();         
+         assertGotAll(2, bindings, queue1.getName());
+         
+         bindings = office3.getAllBindings();         
+         assertGotAll(3, bindings, queue1.getName());
+               
+         //Unbind
+         
+         Binding removed = office1.removeBinding(queue1.getName(), true);
+         assertNotNull(removed);
+         
+         Thread.sleep(1000);
+         
+         bindings = office1.getAllBindings();         
+         assertTrue(bindings.isEmpty());
+         
+         bindings = office2.getAllBindings();         
+         assertTrue(bindings.isEmpty());
+         
+         bindings = office3.getAllBindings();         
+         assertTrue(bindings.isEmpty());
+         
+         if (checkNoBindingData())
+         {
+            fail("data still in database");
+         }                                  
+      }
+      finally
+      {
+      	if (office1 != null)
+      	{
+      		try
+      		{
+      			office1.stop();
+      		}
+      		catch (Exception ignore)
+      		{         		
+      		}
+      	}
+
+      	if (office2 != null)
+      	{
+      		try
+      		{
+      			office2.stop();
+      		}
+      		catch (Exception ignore)
+      		{         		
+      		}
+      	}
+
+      	if (office3 != null)
+      	{
+      		try
+      		{
+      			office3.stop();
+      		}         
+      		catch (Exception ignore)
+      		{         		
+      		}
+      	}
+      }
+   }
+   
+   public void testBindUnbindAll4() throws Throwable
+   {
+      /* a) start one node
+      * b) queue is not known to cluster
+      * c) bind all
+      * d) shutdown all nodes
+      * e) startup all nodes
+      * f) verify queue is on all nodes
+      */
+   	
+      PostOffice office1 = null;
+      PostOffice office2 = null;
+      PostOffice office3 = null;
+      
+      try
+      {                          
+         office1 = createClusteredPostOffice(1, "testgroup");       
+                           
+         //Durable
+         Queue queue1 = new MessagingQueue(1, "sub1", channelIDManager.getID(), ms, pm, true, -1, null, true);
+         queue1.activate();
+
+         Condition condition1 = new SimpleCondition("topic1");
+         
+         //Add all binding
+         boolean added = office1.addBinding(new Binding(condition1, queue1, true), true);
+         assertTrue(added);
+         
+         Thread.sleep(1000);
+         
+         office1.stop();
+         
+         //office1 = createClusteredPostOffice(1, "testgroup"); 
+         office1.start();
+         office2 = createClusteredPostOffice(2, "testgroup"); 
+         office3 = createClusteredPostOffice(3, "testgroup"); 
+          
+         Thread.sleep(1000);
+         
+         Collection bindings = office1.getAllBindings();         
+         assertGotAll(1, bindings, queue1.getName());
+         
+         bindings = office2.getAllBindings();         
+         assertGotAll(2, bindings, queue1.getName());
+         
+         bindings = office3.getAllBindings();         
+         assertGotAll(3, bindings, queue1.getName());
+         
+         //Now unbind same node
+         
+         Binding removed = office1.removeBinding(queue1.getName(), true);
+         assertNotNull(removed);
+         
+         Thread.sleep(1000);
+         
+         bindings = office1.getAllBindings();         
+         assertTrue(bindings.isEmpty());
+         
+         bindings = office2.getAllBindings();         
+         assertTrue(bindings.isEmpty());
+         
+         bindings = office3.getAllBindings();         
+         assertTrue(bindings.isEmpty());
+         
+         
+         if (checkNoBindingData())
+         {
+            fail("data still in database");
+         }                                  
+      }
+      finally
+      {
+      	if (office1 != null)
+      	{
+      		try
+      		{
+      			office1.stop();
+      		}
+      		catch (Exception ignore)
+      		{         		
+      		}
+      	}
+
+      	if (office2 != null)
+      	{
+      		try
+      		{
+      			office2.stop();
+      		}
+      		catch (Exception ignore)
+      		{         		
+      		}
+      	}
+
+      	if (office3 != null)
+      	{
+      		try
+      		{
+      			office3.stop();
+      		}         
+      		catch (Exception ignore)
+      		{         		
+      		}
+      	}
+      }
+   }
+   
+   public void testBindUnbindAll5() throws Throwable
+   {
+   	/*
+    * a) start one node
+    * b) queue is not known
+    * c) bind all
+    * d) shutdown node
+    * e) start other nodes
+    * f) verify queue is not known
+    * g) restart first node, verify queue is now known
+      * */
+   	
+      PostOffice office1 = null;
+      PostOffice office2 = null;
+      PostOffice office3 = null;
+      
+      try
+      {                          
+         office1 = createClusteredPostOffice(1, "testgroup");
+                                   
+         //Durable
+         Queue queue1 = new MessagingQueue(1, "sub1", channelIDManager.getID(), ms, pm, true, -1, null, true);
+         queue1.activate();
+
+         Condition condition1 = new SimpleCondition("topic1");
+         
+         //Add all binding
+         boolean added = office1.addBinding(new Binding(condition1, queue1, true), true);
+         assertTrue(added);
+         
+         Thread.sleep(1000);
+         
+         office1.stop();
+         
+         office2 = createClusteredPostOffice(2, "testgroup");
+         office3 = createClusteredPostOffice(3, "testgroup");
+         
+         Collection bindings = office2.getAllBindings();         
+         assertTrue(bindings.isEmpty());
+         
+         bindings = office3.getAllBindings();         
+         assertTrue(bindings.isEmpty());
+             
+         office1.start();
+         
+         Thread.sleep(1000);
+            
+         bindings = office1.getAllBindings();         
+         assertGotAll(1, bindings, queue1.getName());
+         
+         bindings = office2.getAllBindings();         
+         assertGotAll(2, bindings, queue1.getName());
+         
+         bindings = office3.getAllBindings();         
+         assertGotAll(3, bindings, queue1.getName());
+         
+         //Now unbind same node                  
+         
+         Binding removed = office1.removeBinding(queue1.getName(), true);
+         assertNotNull(removed);
+
+         Thread.sleep(1000);
+         
+         bindings = office1.getAllBindings();         
+         assertTrue(bindings.isEmpty());
+         
+         bindings = office2.getAllBindings();         
+         assertTrue(bindings.isEmpty());
+         
+         bindings = office3.getAllBindings();         
+         assertTrue(bindings.isEmpty());
+         
+         if (checkNoBindingData())
+         {
+            fail("data still in database");
+         }                                  
+      }
+      finally
+      {
+      	if (office1 != null)
+      	{
+      		try
+      		{
+      			office1.stop();
+      		}
+      		catch (Exception ignore)
+      		{         		
+      		}
+      	}
+
+      	if (office2 != null)
+      	{
+      		try
+      		{
+      			office2.stop();
+      		}
+      		catch (Exception ignore)
+      		{         		
+      		}
+      	}
+
+      	if (office3 != null)
+      	{
+      		try
+      		{
+      			office3.stop();
+      		}         
+      		catch (Exception ignore)
+      		{         		
+      		}
+      	}
+      }
+   }
+   
+   public void testBindUnbindAll6() throws Throwable
+   {
+   	/*
+      * 1.
+    * a) bind all non durable
+    * b) make sure is picked up by all nodes
+    * c) close down all nodes
+    * d) restart them all - make sure is not there
+    * e) bind again
+    * f) make sure is picked up
+    * g) take down one node
+    * h) bring it back up
+    * i) make sure it has quuee again
+      * */
+   	
+      PostOffice office1 = null;
+      PostOffice office2 = null;
+      PostOffice office3 = null;
+      
+      try
+      {                          
+         office1 = createClusteredPostOffice(1, "testgroup");
+         office2 = createClusteredPostOffice(2, "testgroup");
+         office3 = createClusteredPostOffice(3, "testgroup");         
+                           
+         //Durable
+         Queue queue1 = new MessagingQueue(1, "sub1", channelIDManager.getID(), ms, pm, false, -1, null, true);
+         queue1.activate();
+
+         Condition condition1 = new SimpleCondition("topic1");
+         
+         //Add all binding
+         boolean added = office1.addBinding(new Binding(condition1, queue1, true), true);
+         assertTrue(added);
+         
+         Thread.sleep(1000);
+          
+         Collection bindings = office1.getAllBindings();         
+         assertGotAll(1, bindings, queue1.getName());
+         
+         bindings = office2.getAllBindings();         
+         assertGotAll(2, bindings, queue1.getName());
+         
+         bindings = office3.getAllBindings();         
+         assertGotAll(3, bindings, queue1.getName());
+         
+         office1.stop();
+         office2.stop();
+         office3.stop();
+      
+         office1.start();
+         office2.start();
+         office3.start();
+         
+         Thread.sleep(1000);
+         
+         bindings = office1.getAllBindings();         
+         assertTrue(bindings.isEmpty());
+         
+         bindings = office2.getAllBindings();         
+         assertTrue(bindings.isEmpty());
+         
+         bindings = office3.getAllBindings();         
+         assertTrue(bindings.isEmpty());
+         
+         added = office1.addBinding(new Binding(condition1, queue1, true), true);
+         assertTrue(added);
+         
+         Thread.sleep(1000);
+         
+         bindings = office1.getAllBindings();         
+         assertGotAll(1, bindings, queue1.getName());
+         
+         bindings = office2.getAllBindings();         
+         assertGotAll(2, bindings, queue1.getName());
+         
+         bindings = office3.getAllBindings();         
+         assertGotAll(3, bindings, queue1.getName());
+         
+         office3.stop();
+
+         Thread.sleep(1000);
+          
+         bindings = office1.getAllBindings();         
+         assertEquals(2, bindings.size());
+         
+         office3.start();
+
+         Thread.sleep(1000);
+         
+         bindings = office1.getAllBindings();         
+         assertGotAll(1, bindings, queue1.getName());
+         
+         bindings = office2.getAllBindings();         
+         assertGotAll(2, bindings, queue1.getName());
+         
+         bindings = office3.getAllBindings();         
+         assertGotAll(3, bindings, queue1.getName());
+         
+                  
+         if (checkNoBindingData())
+         {
+            fail("data still in database");
+         }                                  
+      }
+      finally
+      {
+      	if (office1 != null)
+      	{
+      		try
+      		{
+      			office1.stop();
+      		}
+      		catch (Exception ignore)
+      		{         		
+      		}
+      	}
+
+      	if (office2 != null)
+      	{
+      		try
+      		{
+      			office2.stop();
+      		}
+      		catch (Exception ignore)
+      		{         		
+      		}
+      	}
+
+      	if (office3 != null)
+      	{
+      		try
+      		{
+      			office3.stop();
+      		}         
+      		catch (Exception ignore)
+      		{         		
+      		}
+      	}
+      }
+   }
+   
+   private void dumpNodeIDView(PostOffice postOffice)
+   {
+   	Set view = postOffice.nodeIDView();
+   	
+   	log.info("=== node id view ==");
+   	
+   	Iterator iter = view.iterator();
+   	
+   	while (iter.hasNext())
+   	{
+   		log.info("Node:" + iter.next());
+   	}
+   	
+   	log.info("==================");
+   }
+   
+   private void assertGotAll(int nodeId, Collection bindings, String queueName)
+   {
+   	
+   	log.info("============= dumping bindings ========");
+   	
+   	Iterator iter = bindings.iterator();
+   	
+   	while (iter.hasNext())
+   	{
+   		Binding binding = (Binding)iter.next();
+   		
+   		log.info("Binding: " + binding);
+   	}
+   	
+   	log.info("========= end dump==========");
+   	
+      assertEquals(3, bindings.size());
+      
+      iter = bindings.iterator();
+      
+      boolean got1 = false;
+      boolean got2 = false;
+      boolean got3 = false;         
+      while (iter.hasNext())
+      {
+      	Binding binding = (Binding)iter.next();
+      	
+      	log.info("binding node id " + binding.queue.getNodeID());
+      	
+      	assertEquals(queueName, binding.queue.getName());
+      	if (binding.queue.getNodeID() == nodeId)
+      	{
+      		assertTrue(binding.allNodes);
+      	}
+      	else
+      	{
+      		assertFalse(binding.allNodes);
+      	}
+      	
+      	if (binding.queue.getNodeID() == 1)
+      	{
+      		got1 = true;
+      	}
+      	if (binding.queue.getNodeID() == 2)
+      	{
+      		got2 = true;
+      	}
+      	if (binding.queue.getNodeID() == 3)
+      	{
+      		got3 = true;
+      	}    	
+      }         
+      assertTrue(got1 && got2 && got3);
+   }
+   
+   
+
 //   
 //   public final void testClusteredRoutePersistent() throws Throwable
 //   {
@@ -798,7 +1485,7 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
 //   
 //   public void testClusteredPersistentRouteWithFilterNonRecoverable() throws Throwable
 //   {
-//      this.clusteredRouteWithFilter(true, false);
+//      this.clusteredRouteWithFilter(true);
 //   }
 //   
 //   public void testClusteredNonPersistentRouteWithFilterRecoverable() throws Throwable
@@ -813,7 +1500,7 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
 //      
 //   public void testRouteSharedPointToPointQueuePersistentNonRecoverable() throws Throwable
 //   {
-//      this.routeSharedQueue(true, false);
+//      this.routeSharedQueue(true);
 //   }
 //   
 //   public void testRouteSharedPointToPointQueueNonPersistentNonRecoverable() throws Throwable
@@ -843,7 +1530,7 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
 //         
 //   public void testRouteLocalQueuesPersistentNonRecoverable() throws Throwable
 //   {
-//      this.routeLocalQueues(true, false);
+//      this.routeLocalQueues(true);
 //   }
 //   
 //   public void testRouteLocalQueuesNonPersistentNonRecoverable() throws Throwable
@@ -862,10 +1549,6 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
 //   }
    
    
-   /*
-    * We should allow the clustered bind of queues with the same queue name on different nodes of the
-    * cluster
-    */
    public void testBindSameName() throws Throwable
    {
       PostOffice office1 = null;
@@ -878,47 +1561,40 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
          
          office2 = createClusteredPostOffice(2, "testgroup");
          
-         Queue queue1 = new MessagingQueue(1, "queue1", channelIDManager.getID(), ms, pm, false, -1, null, true, false);
+         Queue queue1 = new MessagingQueue(1, "queue1", channelIDManager.getID(), ms, pm, false, -1, null, true);
          queue1.activate();
          
          Condition condition1 = new SimpleCondition("queue1");
          
-         office1.addBinding(new Binding(condition1, queue1, false), false);
+         boolean added = office1.addBinding(new Binding(condition1, queue1, false), false);
+         assertTrue(added);
 
-         Queue queue2 = new MessagingQueue(2, "queue1", channelIDManager.getID(), ms, pm, false, -1, null, true, false);
+         Queue queue2 = new MessagingQueue(2, "queue1", channelIDManager.getID(), ms, pm, false, -1, null, true);
          queue2.activate();
 
-         office2.addBinding(new Binding(condition1, queue2, false), false);
+         added = office2.addBinding(new Binding(condition1, queue2, false), false);
+         assertTrue(added);
 
-         Queue queue3 = new MessagingQueue(1, "queue1", channelIDManager.getID(), ms, pm, false, -1, null, true, false);
+         Queue queue3 = new MessagingQueue(1, "queue1", channelIDManager.getID(), ms, pm, false, -1, null, true);
          queue3.activate();
          
-         try
-         {
-            office1.addBinding(new Binding(condition1, queue3, false), false);
-            fail();
-         }
-         catch (Exception e)
-         {
-            //Ok
-         }
+         added = office1.addBinding(new Binding(condition1, queue3, false), false);         
+         assertFalse(added);
 
-         Queue queue4 =  new MessagingQueue(2, "queue1", channelIDManager.getID(), ms, pm, false, -1, null, true, false);
+         Queue queue4 =  new MessagingQueue(2, "queue1", channelIDManager.getID(), ms, pm, false, -1, null, true);
          queue4.activate();
          
-         try
-         {
-            office2.addBinding(new Binding(condition1, queue4, false), false);
-            fail();
-         }
-         catch (Exception e)
-         {
-            //Ok
-         }
+         added = office2.addBinding(new Binding(condition1, queue4, false), false);
+         assertFalse(added);
          
-         office1.removeBinding(queue1.getName(), false);
+         Binding removed = office1.removeBinding("does not exist", false);
+         assertNull(removed);
+         
+         removed = office1.removeBinding(queue1.getName(), false);
+         assertNotNull(removed);
 
-         office2.removeBinding(queue2.getName(), false);                
+         removed = office2.removeBinding(queue2.getName(), false);                
+         assertNotNull(removed);                  
       }
       finally
       {
@@ -933,6 +1609,7 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
          }
       }
    }
+   
  
    // Package protected ----------------------------------------------------------------------------
 

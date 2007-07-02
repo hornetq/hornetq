@@ -109,9 +109,7 @@ public class GroupMember
    	this.requestTarget = requestTarget;
    	
    	this.groupListener = groupListener;
-   	
-   	this.viewExecutor = new QueuedExecutor(new LinkedQueue());
-   	
+   	 	
    	this.lock = new ReentrantWriterPreferenceReadWriteLock();
    }
      
@@ -121,6 +119,8 @@ public class GroupMember
    	
    	try
    	{
+      	this.viewExecutor = new QueuedExecutor(new LinkedQueue());
+      	     		
 	   	this.controlChannel = jChannelFactory.createControlChannel();
 	   	
 	      this.dataChannel = jChannelFactory.createDataChannel();
@@ -182,7 +182,17 @@ public class GroupMember
 	   	
 	   	dataChannel.close();
 	   	
+	   	controlChannel = null;
+	   	
+	   	dataChannel = null;
+	   	
+	   	currentView = null;
+	   	
+	   	viewExecutor = null;
+
 	   	started = false;
+	   	
+	   	log.info("** group member shutdown");
    	}
    	finally
    	{
@@ -536,6 +546,9 @@ public class GroupMember
             // same thread that delivered the view change and this is what we need to do in
             // failover, for example.
 
+         	
+         	log.info("**** got view change " + newView);
+         	
             viewExecutor.execute(new HandleViewAcceptedRunnable(newView));
          }
          catch (InterruptedException e)

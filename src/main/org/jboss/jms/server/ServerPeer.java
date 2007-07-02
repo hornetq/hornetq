@@ -251,7 +251,7 @@ public class ServerPeer extends ServiceMBeanSupport
          
          if (clusterPullConnectionFactoryName != null)
          {         
-	         clusterConnectionManager = new ClusterConnectionManager(useXAForMessagePull, serverPeerID, clusterPullConnectionFactoryName);
+	         clusterConnectionManager = new ClusterConnectionManager(useXAForMessagePull, serverPeerID, clusterPullConnectionFactoryName, defaultPreserveOrdering);
 	         clusterNotifier.registerListener(clusterConnectionManager);
          }
          

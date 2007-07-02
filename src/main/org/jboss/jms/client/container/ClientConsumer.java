@@ -90,7 +90,7 @@ public class ClientConsumer
             }
             else
             {
-               log.trace(proxy.getMessage() + " has reached maximum delivery number, cancelling to server");
+               log.trace(proxy.getMessage() + " has reached maximum delivery number " + maxDeliveries +", cancelling to server");
             }
          }
          

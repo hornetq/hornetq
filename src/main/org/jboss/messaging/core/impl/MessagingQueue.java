@@ -79,18 +79,15 @@ public class MessagingQueue extends PagingChannelSupport implements Queue
    
    private boolean handleFlowControlForConsumers;
    
-   private boolean preserveOrdering;
-            
    // Constructors --------------------------------------------------
        
    public MessagingQueue(int nodeID, String name, long id, MessageStore ms, PersistenceManager pm,             
                          boolean recoverable, int maxSize, Filter filter,
-                         int fullSize, int pageSize, int downCacheSize, boolean clustered,
-                         boolean preserveOrdering)
+                         int fullSize, int pageSize, int downCacheSize, boolean clustered)
    {
       super(id, ms, pm, recoverable, maxSize, fullSize, pageSize, downCacheSize);
-      
-      setup(nodeID, name, filter, clustered, preserveOrdering);
+            
+      setup(nodeID, name, filter, clustered);
    }
    
    /** This constructor is used when loading queue from storage - the paging params, maxSize and preserveOrdering don't matter
@@ -102,17 +99,16 @@ public class MessagingQueue extends PagingChannelSupport implements Queue
 	{
 		super(id, ms, pm, recoverable, -1, 100000, 2000, 2000); //paging params etc are actually ignored
 		
-		setup(nodeID, name, filter, clustered, false);
+		setup(nodeID, name, filter, clustered);
 	}
    
    /* This constructor is only used in tests - should we remove it? */
    public MessagingQueue(int nodeID, String name, long id, MessageStore ms, PersistenceManager pm,             
-   		                boolean recoverable, int maxSize, Filter filter, boolean clustered,
-   		                boolean preserveOrdering)
+   		                boolean recoverable, int maxSize, Filter filter, boolean clustered)
    {
    	super(id, ms, pm, recoverable, maxSize);
 
-   	setup(nodeID, name, filter, clustered, preserveOrdering);
+   	setup(nodeID, name, filter, clustered);
    }
    
    /* Constructor for a remote queue representation in a cluster */
@@ -121,10 +117,10 @@ public class MessagingQueue extends PagingChannelSupport implements Queue
    {
    	super(id, null, null, recoverable, -1);
    	
-   	setup(nodeID, name, filter, clustered, false);   	
+   	setup(nodeID, name, filter, clustered);   	
    }
    
-   private void setup(int nodeID, String name, Filter filter, boolean clustered, boolean preserveOrdering)
+   private void setup(int nodeID, String name, Filter filter, boolean clustered)
    {
    	this.nodeID = nodeID;
 
@@ -134,13 +130,11 @@ public class MessagingQueue extends PagingChannelSupport implements Queue
 
    	this.clustered = clustered;
    	
-   	this.preserveOrdering = preserveOrdering;
-   	
    	localDistributor = new DistributorWrapper(new RoundRobinDistributor());
    	
    	remoteDistributor = new DistributorWrapper(new RoundRobinDistributor());
    	
-   	distributor = new ClusterRoundRobinDistributor(localDistributor, remoteDistributor, preserveOrdering);
+   	distributor = new ClusterRoundRobinDistributor(localDistributor, remoteDistributor);
    	
    	suckers = new HashSet();
    }
@@ -253,16 +247,6 @@ public class MessagingQueue extends PagingChannelSupport implements Queue
    public int getDownCacheSize()
    {
    	return downCacheSize;
-   }
-   
-   public boolean isPreserveOrdering()
-   {
-   	return this.preserveOrdering;
-   }
-   
-   public void setPreserveOrdering(boolean preserveOrdering)
-   {
-      this.preserveOrdering = preserveOrdering;   	
    }
    
    // ChannelSupport overrides --------------------------------------

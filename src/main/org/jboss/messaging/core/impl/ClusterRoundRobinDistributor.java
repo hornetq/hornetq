@@ -27,7 +27,6 @@ import org.jboss.logging.Logger;
 import org.jboss.messaging.core.contract.Delivery;
 import org.jboss.messaging.core.contract.DeliveryObserver;
 import org.jboss.messaging.core.contract.Distributor;
-import org.jboss.messaging.core.contract.Message;
 import org.jboss.messaging.core.contract.MessageReference;
 import org.jboss.messaging.core.contract.Receiver;
 import org.jboss.messaging.core.impl.tx.Transaction;
@@ -60,11 +59,9 @@ public class ClusterRoundRobinDistributor implements Distributor
    
    private Distributor remoteDistributor;
    
-   private boolean preserveOrdering;
-   
    // Constructors ---------------------------------------------------------------------------------
 
-   public ClusterRoundRobinDistributor(Distributor local, Distributor remote, boolean preserveOrdering)
+   public ClusterRoundRobinDistributor(Distributor local, Distributor remote)
    {
       localDistributor = local;
       
@@ -87,28 +84,10 @@ public class ClusterRoundRobinDistributor implements Distributor
    	{
    		//If no local distributor takes the ref then we try the remote distributor
    		
-   		if (preserveOrdering)
-   		{
-   			if (ref.getMessage().getHeader(Message.CLUSTER_SUCKED) != null)
-   			{
-   				//The message has already been sucked once - don't suck it again
-   				
-   				if (trace) { log.trace(this + " preserveOrdering is true and has already been sucked so not allowing message to be sucked again"); }
-   				
-   				return null;
-   			}
-   			else
-   			{
-   				//Add the header - so it doesn't get sucked more than once
-   				
-   				ref.getMessage().putHeader(Message.CLUSTER_SUCKED, new Integer(333));
-   			}
-   		}
-   		
    		if (trace) { log.trace(this + " trying with remote distributor"); }
    		   		
    		del = remoteDistributor.handle(observer, ref, tx);
-   		   		   	
+   		 		   	
    		if (trace) { log.trace(this + " remote distributor returned " + del); }
    	}
    	
@@ -171,13 +150,12 @@ public class ClusterRoundRobinDistributor implements Distributor
    {
    	return remoteDistributor.remove(r);
    }
-
+   
    // Package protected ----------------------------------------------------------------------------
    
    // Protected ------------------------------------------------------------------------------------
 
-   // Private --------------------------------------------------------------------------------------
-   
+   // Private --------------------------------------------------------------------------------------   
    
    // Inner classes --------------------------------------------------------------------------------
 }

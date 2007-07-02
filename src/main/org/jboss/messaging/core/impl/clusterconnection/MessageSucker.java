@@ -38,6 +38,7 @@ import org.jboss.jms.delegate.ProducerDelegate;
 import org.jboss.jms.delegate.SessionDelegate;
 import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.destination.JBossQueue;
+import org.jboss.jms.message.MessageProxy;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.contract.Queue;
 import org.jboss.tm.TransactionManagerLocator;
@@ -78,12 +79,14 @@ public class MessageSucker implements MessageListener
 	
 	private ConsumerDelegate consumer;
 	
+	private boolean preserveOrdering;
+	
 	public String toString()
 	{
 		return "MessageSucker:" + System.identityHashCode(this) + " queue:" + localQueue.getName();
 	}
 			
-	MessageSucker(Queue localQueue, JBossConnection sourceConnection, JBossConnection localConnection, boolean xa)
+	MessageSucker(Queue localQueue, JBossConnection sourceConnection, JBossConnection localConnection, boolean xa, boolean preserveOrdering)
 	{	
 		this.localQueue = localQueue;
 		
@@ -92,6 +95,8 @@ public class MessageSucker implements MessageListener
 		this.localConnection = localConnection;
 		
 		this.xa = xa;
+		
+		this.preserveOrdering = preserveOrdering;
 		
 		if (xa)
 		{
@@ -250,6 +255,12 @@ public class MessageSucker implements MessageListener
 				tx.enlistResource(localSession.getXAResource());
 				
 				if (trace) { log.trace("Started JTA transaction"); }
+			}
+			
+			if (preserveOrdering)
+			{
+				//Add a header saying we have sucked the message
+				((MessageProxy)msg).getMessage().putHeader(org.jboss.messaging.core.contract.Message.CLUSTER_SUCKED, "x");
 			}
 			
 			producer.send(null, msg, -1, -1, Long.MIN_VALUE);

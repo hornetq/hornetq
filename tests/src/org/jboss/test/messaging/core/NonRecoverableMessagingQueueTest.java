@@ -52,7 +52,7 @@ public class NonRecoverableMessagingQueueTest extends MessagingQueueTestBase
    {
       super.setUp();
       
-      queue = new MessagingQueue(1, "queue1", 1, ms, pm, false, -1, null, false, false);
+      queue = new MessagingQueue(1, "queue1", 1, ms, pm, false, -1, null, false);
       queue.activate();
    }
    

@@ -39,6 +39,7 @@ import org.jboss.jms.client.delegate.DelegateSupport;
 import org.jboss.jms.client.state.ConnectionState;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
+import org.jboss.test.messaging.tools.jmx.ServiceAttributeOverrides;
 
 import EDU.oswego.cs.dl.util.concurrent.LinkedQueue;
 
@@ -63,6 +64,8 @@ public class ClusteringTestBase extends MessagingTestCase
    protected Context[] ic;
    protected Queue queue[];
    protected Topic topic[];
+   
+   protected ServiceAttributeOverrides overrides;
 
    // No need to have multiple conncetion factories since a clustered connection factory will create
    // connections in a round robin fashion on different servers.
@@ -100,7 +103,7 @@ public class ClusteringTestBase extends MessagingTestCase
          // make sure all servers are created and started; make sure that database is zapped
          // ONLY for the first server, the others rely on values they expect to find in shared
          // tables; don't clear the database for those.
-         ServerManagement.start(i, config, i == 0);
+         ServerManagement.start(i, config, overrides, i == 0);
 
          ServerManagement.deployQueue("testDistributedQueue", i);
          ServerManagement.deployTopic("testDistributedTopic", i);

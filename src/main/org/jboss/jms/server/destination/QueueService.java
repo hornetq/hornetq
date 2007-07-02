@@ -86,8 +86,6 @@ public class QueueService extends DestinationServiceSupport implements QueueMBea
                                   destination.getPageSize(),
                                   destination.getDownCacheSize());  
             
-            queue.setPreserveOrdering(serverPeer.isDefaultPreserveOrdering());
-            
             queue.load();
                
             // Must be done after load
@@ -107,8 +105,7 @@ public class QueueService extends DestinationServiceSupport implements QueueMBea
                                        true,
                                        destination.getMaxSize(), null,
                                        destination.getFullSize(), destination.getPageSize(),
-                                       destination.getDownCacheSize(), destination.isClustered(),
-                                       serverPeer.isDefaultPreserveOrdering());
+                                       destination.getDownCacheSize(), destination.isClustered());
             po.addBinding(new Binding(queueCond, queue, false), false);         
             
             queue.activate();

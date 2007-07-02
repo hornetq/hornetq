@@ -79,8 +79,6 @@ public class TopicService extends DestinationServiceSupport implements TopicMBea
             //instead we should never create queues inside the postoffice - only do it at deploy time
             queue.setPagingParams(destination.getFullSize(), destination.getPageSize(), destination.getDownCacheSize());
             
-            queue.setPreserveOrdering(serverPeer.isDefaultPreserveOrdering());
-            
             queue.load();
                         
             queue.activate();  

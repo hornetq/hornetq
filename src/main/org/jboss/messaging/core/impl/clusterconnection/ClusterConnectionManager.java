@@ -74,8 +74,10 @@ public class ClusterConnectionManager implements ClusterNotificationListener
 	
 	private PostOffice postOffice;
 	
+	private boolean preserveOrdering;
+	
 	public ClusterConnectionManager(boolean xa, int nodeID,
-			                          String connectionFactoryUniqueName)
+			                          String connectionFactoryUniqueName, boolean preserveOrdering)
 	{
 		connections = new HashMap();
 		
@@ -84,6 +86,8 @@ public class ClusterConnectionManager implements ClusterNotificationListener
 		this.nodeID = nodeID;
 		
 		this.connectionFactoryUniqueName = connectionFactoryUniqueName;
+		
+		this.preserveOrdering = preserveOrdering;
 		
 		if (trace) { log.trace("Created " + this); }
 	}
@@ -131,6 +135,11 @@ public class ClusterConnectionManager implements ClusterNotificationListener
 		started = false;
 		
       if (trace) { log.trace(this + " stopped"); }
+	}
+	
+	public Map getAllConnections()
+	{
+		return connections;
 	}
 	
 	/*
@@ -407,7 +416,7 @@ public class ClusterConnectionManager implements ClusterNotificationListener
 			
 			Queue localQueue = binding.queue;
 						
-			MessageSucker sucker = new MessageSucker(localQueue, info.connection, localInfo.connection, xa);
+			MessageSucker sucker = new MessageSucker(localQueue, info.connection, localInfo.connection, xa, preserveOrdering);
 			
 			info.addSucker(sucker);
 			

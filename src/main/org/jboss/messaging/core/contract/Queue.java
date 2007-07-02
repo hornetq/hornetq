@@ -56,10 +56,6 @@ public interface Queue extends Channel
    
    int getDownCacheSize();
    
-   boolean isPreserveOrdering();
-   
-   void setPreserveOrdering(boolean preserveOrdering);
-   
    boolean isClustered();
    
    String getName();

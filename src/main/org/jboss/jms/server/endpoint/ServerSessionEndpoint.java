@@ -590,8 +590,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
          {            
             Queue coreQueue = new MessagingQueue(nodeId, dest.getName(),
             												 idm.getID(), ms, pm, false, -1, null,
-										                   fullSize, pageSize, downCacheSize, postOffice.isClustered(),
-										                   sp.isDefaultPreserveOrdering());
+										                   fullSize, pageSize, downCacheSize, postOffice.isClustered());
 
         
             Condition cond = new JMSCondition(true, dest.getName());
@@ -1210,7 +1209,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
       ServerConsumerEndpoint ep =
          new ServerConsumerEndpoint(consumerID, binding.queue,
                                     binding.queue.getName(), this, selectorString, false,
-                                    dest, null, null, 0, 0, true);
+                                    dest, null, null, 0, -1, true);
       
       ConsumerAdvised advised;
       
@@ -1224,7 +1223,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
       Dispatcher.instance.registerTarget(consumerID, advised);
       
       ClientConsumerDelegate stub =
-         new ClientConsumerDelegate(consumerID, prefetchSize, 0, 0);
+         new ClientConsumerDelegate(consumerID, prefetchSize, -1, 0);
       
       synchronized (consumers)
       {
@@ -1306,8 +1305,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
 							                  mDest.getFullSize(),
 							                  mDest.getPageSize(),
 							                  mDest.getDownCacheSize(),
-							                  mDest.isClustered(),
-							                  sp.isDefaultPreserveOrdering());
+							                  mDest.isClustered());
             
             JMSCondition topicCond = new JMSCondition(false, jmsDestination.getName());
                         
@@ -1364,8 +1362,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
                                           mDest.getFullSize(),
                                           mDest.getPageSize(),
                                           mDest.getDownCacheSize(),
-                                          mDest.isClustered(),
-                                          sp.isDefaultPreserveOrdering());
+                                          mDest.isClustered());
                
                // Durable subs must be bound on ALL nodes of the cluster (if clustered)
                
@@ -1452,8 +1449,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
 					                              mDest.getFullSize(),
 					                              mDest.getPageSize(),
 					                              mDest.getDownCacheSize(),
-					                              mDest.isClustered(),
-					                              sp.isDefaultPreserveOrdering());
+					                              mDest.isClustered());
                   
                   // Durable subs must be bound on ALL nodes of the cluster
                   

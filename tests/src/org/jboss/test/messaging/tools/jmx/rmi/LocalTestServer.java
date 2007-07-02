@@ -751,13 +751,17 @@ public class LocalTestServer implements Server
       config += "<attribute name=\"SupportsFailover\">" + supportsFailover + "</attribute>";
       config += "<attribute name=\"SupportsLoadBalancing\">" + supportsLoadBalancing + "</attribute>";
 
-      config += "<attribute name=\"JNDIBindings\"><bindings>";
-
-      for(int i = 0; i < jndiBindings.length; i++)
+      if (jndiBindings != null)
       {
-         config += "<binding>" + jndiBindings[i] + "</binding>\n";
+	      config += "<attribute name=\"JNDIBindings\"><bindings>";
+	
+	      for (int i = 0; i < jndiBindings.length; i++)
+	      {
+	         config += "<binding>" + jndiBindings[i] + "</binding>\n";
+	      }
+	      config += "</bindings></attribute>";
       }
-      config += "</bindings></attribute></mbean>";
+      config += "</mbean>";
 
       MBeanConfigurationElement mc = new MBeanConfigurationElement(XMLUtil.stringToElement(config));
       ObjectName on = sc.registerAndConfigureService(mc);

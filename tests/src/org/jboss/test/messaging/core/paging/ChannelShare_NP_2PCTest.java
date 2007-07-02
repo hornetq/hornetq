@@ -62,10 +62,10 @@ public class ChannelShare_NP_2PCTest extends PagingStateTestBase
    
    public void testChannelShareNP_2PC() throws Throwable
    {   	   	
-      MessagingQueue queue1 = new MessagingQueue(1, "queue1", 1, ms, pm, true, -1, null, 100, 20, 10, false, false);
+      MessagingQueue queue1 = new MessagingQueue(1, "queue1", 1, ms, pm, true, -1, null, 100, 20, 10, false);
       queue1.activate();
       
-      MessagingQueue queue2 = new MessagingQueue(1, "queue2", 2, ms, pm, true, -1, null, 50, 10, 5, false, false);
+      MessagingQueue queue2 = new MessagingQueue(1, "queue2", 2, ms, pm, true, -1, null, 50, 10, 5, false);
       queue2.activate();
      
       Message[] msgs = new Message[150];
