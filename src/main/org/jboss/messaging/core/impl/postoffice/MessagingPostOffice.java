@@ -646,8 +646,6 @@ public class MessagingPostOffice extends JDBCSupport
       
       lock.readLock().acquire();
       
-      log.info(this + " getting state");
-      
       try
       {
       	Iterator iter = nameMaps.values().iterator();
@@ -1681,13 +1679,6 @@ public class MessagingPostOffice extends JDBCSupport
 	      	throw new IllegalStateException("Cannot find queues in condition map for condition " + binding.condition);
 	      }	     
 	      
-	      Iterator i = queues.iterator();
-	      while (i.hasNext())
-	      {
-	      	Queue q = (Queue)i.next();
-	      	log.info("q:" + q);
-	      }
-
 	      boolean removed = queues.remove(binding.queue);
 	      
 	      if (!removed)

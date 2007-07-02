@@ -130,6 +130,38 @@ public class ClusterConnectionManagerTest extends ClusteringTestBase
    	      	     	   
    	suck();
    }
+   // Package protected ----------------------------------------------------------------------------
+
+   // Protected ------------------------------------------------------------------------------------
+
+   protected void setUp() throws Exception
+   {
+      nodeCount = 2;
+      super.setUp();
+
+      log.debug("setup done");
+      
+      //undeploy CF
+      
+      String cfName =
+   		(String)ServerManagement.getServer(1).getAttribute(ServerManagement.getServerPeerObjectName(), "ClusterPullConnectionFactoryName");
+
+   	//undeploy cf on node 1   	
+   	ServerManagement.undeployConnectionFactory(new ObjectName(cfName));            
+   }
+
+   protected void tearDown() throws Exception
+   {
+   	ServerManagement.undeployQueue("suckQueue", 0);
+
+   	ServerManagement.undeployQueue("suckQueue", 1);
+
+   	super.tearDown();
+   }
+
+   // Private --------------------------------------------------------------------------------------
+   
+
    
    private void deployCF() throws Exception
    {
@@ -221,36 +253,6 @@ public class ClusterConnectionManagerTest extends ClusteringTestBase
    }
 
 
-   // Package protected ----------------------------------------------------------------------------
-
-   // Protected ------------------------------------------------------------------------------------
-
-   protected void setUp() throws Exception
-   {
-      nodeCount = 2;
-      super.setUp();
-
-      log.debug("setup done");
-      
-      //undeploy CF
-      
-      String cfName =
-   		(String)ServerManagement.getServer(1).getAttribute(ServerManagement.getServerPeerObjectName(), "ClusterPullConnectionFactoryName");
-
-   	//undeploy cf on node 1   	
-   	ServerManagement.undeployConnectionFactory(new ObjectName(cfName));            
-   }
-
-   protected void tearDown() throws Exception
-   {
-   	ServerManagement.undeployQueue("suckQueue", 0);
-
-   	ServerManagement.undeployQueue("suckQueue", 1);
-
-   	super.tearDown();
-   }
-
-   // Private --------------------------------------------------------------------------------------
 
    // Inner classes --------------------------------------------------------------------------------
 

@@ -74,7 +74,6 @@ public class CorruptMessageStressTest extends MessagingTestCase
       {
          threads[i] = new Thread(new Sender(sessions[i], producers[i]), "Sender Thread #" + i);
          threads[i].start();
-         log.info(threads[i].getName() + " started");
       }
 
       // wait for the threads to finish
@@ -130,8 +129,7 @@ public class CorruptMessageStressTest extends MessagingTestCase
          while(true)
          {
             if (count == MESSAGE_COUNT)
-            {
-               log.info(Thread.currentThread().getName() + " done");
+            {               
                break;
             }
 

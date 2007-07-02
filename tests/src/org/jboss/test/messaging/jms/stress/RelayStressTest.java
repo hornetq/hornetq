@@ -105,25 +105,12 @@ public class RelayStressTest extends MessagingTestCase
          {
             try
             {
-               //log.info(this + " got message");
-               
-               //log.info("blah");               
-               
                m.clearProperties();
                m.setStringProperty("name", "Tim");
                
-               //log.info("set property");
- 
                prod.send(m);
                
-               //log.info("sent");
-               
-               count++;
-               
-               if (count % 100 == 0)
-               {
-                 // log.info("relayed " + count + " messages");
-               }
+               count++;               
                
                if (count == numMessages)
                {
@@ -158,19 +145,13 @@ public class RelayStressTest extends MessagingTestCase
          public void onMessage(Message m)
          {
             count++; 
-            
-            if (count % 100 == 0)
-            {
-               //log.info("consumed " + count + " messages");
-            }
-            
+             
             if (count == numMessages * numRelayers)
             {
                synchronized (this)
                {  
                   done = true;                  
                   notify();
-                  //log.info(this + " done");
                }
             }
          }
@@ -221,14 +202,7 @@ public class RelayStressTest extends MessagingTestCase
          m.setStringProperty("name", "Watt");
          
          prod.send(m);
-         
-         if (i % 100 == 0)
-         {
-            log.info("sent " + i + " messages");
-         }
       }
-      
-      log.info("sent messages");
       
       for (int i = 0; i < numRelayers; i++)
       {

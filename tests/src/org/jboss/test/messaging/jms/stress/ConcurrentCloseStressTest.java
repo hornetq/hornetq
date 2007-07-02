@@ -147,13 +147,6 @@ public class ConcurrentCloseStressTest extends MessagingTestCase
          messagesRead += readerThread[i].messagesRead;
       }
 
-      log.info("The test produced " + messagesProduced + " and read " + messagesRead);
-
-      // This test bounces between commits and rollbacks in between several threads...
-      // The test is then non deterministic to provide a counter... I will keep the log.info
-      // but won't be doing an assertion here
-      //assertEquals("Messages Produced must be the same as Messages Read", messagesProduced, messagesRead);
-
       if (hasFailure)
       {
          fail ("An exception has occurred in one of the threads");
@@ -228,11 +221,6 @@ public class ConcurrentCloseStressTest extends MessagingTestCase
                   session = conn.createSession(true, Session.SESSION_TRANSACTED);
                   consumer = session.createConsumer((Destination)queue);
                }
-
-               if (messageCount % 50 == 0)
-               {
-                  log.info("Reader " + index + " read " + messageCount + " messages");
-               }
             }
 
             messagesRead += (messageCount - lastCount);
@@ -245,8 +233,6 @@ public class ConcurrentCloseStressTest extends MessagingTestCase
          {
             e.printStackTrace();
             exceptions.add(e);
-//            log.debug("ReaderThread " + index + " died");
-//            System.exit(1);
          }
       }
 
@@ -304,19 +290,11 @@ public class ConcurrentCloseStressTest extends MessagingTestCase
                messagesProduced += ((messageCount) - lastMessage);
                sess.commit();
                sess.close();
-
-               if (messageCount % 50 == 0)
-               {
-                  log.info("Producer " + index + " sent " + messageCount + " messages");
-               }
-
             }
             catch (Exception e)
             {
                e.printStackTrace();
                exceptions.add(e);
-//               log.debug("ProducerThread " + index + " died");
-//               System.exit(1);
             }
          }
       }

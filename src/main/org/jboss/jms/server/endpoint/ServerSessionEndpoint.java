@@ -598,7 +598,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
          	// make a binding for this temporary queue
             
             // temporary queues need to bound on ALL nodes of the cluster
-            postOffice.addBinding(new Binding(cond, coreQueue, true), true);   
+            postOffice.addBinding(new Binding(cond, coreQueue, true), postOffice.isClustered());   
             
             coreQueue.activate();
          }         
@@ -647,7 +647,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
          	
          	// temporary queues must be unbound on ALL nodes of the cluster
          	
-            postOffice.removeBinding(dest.getName(), true);         	        
+            postOffice.removeBinding(dest.getName(), postOffice.isClustered());         	        
          }
          else
          {
@@ -1366,7 +1366,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
                
                // Durable subs must be bound on ALL nodes of the cluster (if clustered)
                
-               postOffice.addBinding(new Binding(new JMSCondition(false, jmsDestination.getName()), queue, true), true);
+               postOffice.addBinding(new Binding(new JMSCondition(false, jmsDestination.getName()), queue, true), postOffice.isClustered());
                
                queue.activate();
                   
@@ -1453,7 +1453,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
                   
                   // Durable subs must be bound on ALL nodes of the cluster
                   
-                  postOffice.addBinding(new Binding(new JMSCondition(false, jmsDestination.getName()), queue, true), true);
+                  postOffice.addBinding(new Binding(new JMSCondition(false, jmsDestination.getName()), queue, true), postOffice.isClustered());
   
                   queue.activate();                  
                   

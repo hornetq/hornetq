@@ -284,12 +284,6 @@ public class OpenCloseStressTest extends MessagingTestCase
 				{
 					TextMessage tm = sess.createTextMessage("message" + i);
 					
-					
-//					if (i % 1000 == 0)
-//					{
-//						log.info("Publisher " + this + " sending message " + i);
-//					}
-					
 					prod.send(tm);
 														
 					try
@@ -300,8 +294,6 @@ public class OpenCloseStressTest extends MessagingTestCase
 					{						
 					}
 				}
-				
-				log.info("Publisher " + this + " sent all messages");
 			}
 			catch (JMSException e)
 			{
@@ -350,12 +342,7 @@ public class OpenCloseStressTest extends MessagingTestCase
    	   	
    	synchronized void msgReceived()
    	{   		
-   		msgsReceived++;
-   		
-//   		if (msgsReceived % 1000 == 0)
-//			{
-//				log.info("Subscriber " + this + " received " + msgsReceived + " messages");
-//			}
+   		msgsReceived++;   		
    	}
    	
    	synchronized int getMessagesReceived()
