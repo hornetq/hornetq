@@ -672,23 +672,7 @@ public abstract class ChannelSupport implements Channel
       ref = ref.copy();
 
       try
-      {  
-      	if (trace)
-   		{
-   			//We add a header that tracks the route of the message across the cluster
-   			
-   			String route = (String)ref.getMessage().getHeader(Message.HEADER_JBM_TRACE_ROUTE);
-   			
-   			if (route == null)
-      		{
-      			route = "nodes:";
-      		}
-   			
-      		route += this + "-";
-      		
-      		ref.getMessage().putHeader(Message.HEADER_JBM_TRACE_ROUTE, route);
-   		}
-      	
+      {        	
          if (tx == null)
          {
             if (persist && ref.getMessage().isReliable() && recoverable)

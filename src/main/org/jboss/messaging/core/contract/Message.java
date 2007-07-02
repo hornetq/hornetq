@@ -38,11 +38,6 @@ import org.jboss.messaging.util.Streamable;
 public interface Message extends Streamable
 {
 	/**
-	 * This header can be used to trace a message across the cluster 
-	 */
-   public static final String HEADER_JBM_TRACE_ROUTE = "HEADER_JBM_TRACE_ROUTE";   
-	
-	/**
 	 * This header is set on a message when a message is sucked from one node of the cluster to another
 	 * and order preservation is true.
 	 * The header is checked when sucking messages and if order preservation is true then the message is not accepted.
