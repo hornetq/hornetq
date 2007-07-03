@@ -191,8 +191,6 @@ public class GroupMember
 	   	viewExecutor = null;
 
 	   	started = false;
-	   	
-	   	log.info("** group member shutdown");
    	}
    	finally
    	{
@@ -546,9 +544,6 @@ public class GroupMember
             // same thread that delivered the view change and this is what we need to do in
             // failover, for example.
 
-         	
-         	log.info("**** got view change " + newView);
-         	
             viewExecutor.execute(new HandleViewAcceptedRunnable(newView));
          }
          catch (InterruptedException e)

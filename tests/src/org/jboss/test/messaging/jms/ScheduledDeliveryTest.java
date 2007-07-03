@@ -398,7 +398,7 @@ public class ScheduledDeliveryTest extends MessagingTestCase
             long time = System.currentTimeMillis();
             
             assertTrue(time - now >= delay);
-            assertTrue(time - now < delay + 1000);
+            assertTrue(time - now < delay + 250);
          }
          
          TextMessage tm = (TextMessage)cons2.receive(1000);
@@ -458,12 +458,12 @@ public class ScheduledDeliveryTest extends MessagingTestCase
 
    		//Now rollback
 
+   		long now = System.currentTimeMillis();
+      	   		
    		sess2.rollback();
 
    		//This should redeliver with a delayed redelivery
-
-   		long now = System.currentTimeMillis();
-
+	
    		for (int i = 0; i < NUM_MESSAGES; i++)
    		{
    			TextMessage tm = (TextMessage)cons.receive(delay + 1000);
@@ -474,8 +474,11 @@ public class ScheduledDeliveryTest extends MessagingTestCase
 
    			long time = System.currentTimeMillis();
 
+   			log.info("time-now:" + (time-now));
+   			log.info("delay:" + delay);
+   			
    			assertTrue(time - now >= delay);
-   			assertTrue(time - now < delay + 1000);
+   			assertTrue(time - now < delay + 250);
    		}
 
    		TextMessage tm = (TextMessage)cons.receive(1000);
