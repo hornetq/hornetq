@@ -294,7 +294,8 @@ public class MessagingPostOffice extends JDBCSupport
    {
    	if (started)
    	{
-   		throw new IllegalStateException(this + " is already started");
+   		log.warn(this + " is already started");
+   		return;
    	}
    	
       if (trace) { log.trace(this + " starting"); }
@@ -340,7 +341,9 @@ public class MessagingPostOffice extends JDBCSupport
    {
       if (!started)
    	{
-   		throw new IllegalStateException(this + " is not started");
+   		log.warn(this + " is not started");
+   		
+   		return;
    	}
    	
       if (trace) { log.trace(this + " stopping"); }
@@ -1499,11 +1502,6 @@ public class MessagingPostOffice extends JDBCSupport
          		
          			//Local queue
 
-         			//TODO - There is a slight kludge here -
-         			//When routing to a clustered temp queue, the queue is unreliable - but we always want to route to the local
-         			//one so we need to add the check that we only route remotely if it's a topic
-         			//We could do this better by making sure that only one queue with the same name is routed to on the cluster
-         			
          			boolean routeLocal = false;
          			
          			if (!fromCluster)
@@ -1514,10 +1512,11 @@ public class MessagingPostOffice extends JDBCSupport
          			else
          			{
          				//From the cluster
-         				if (!queue.isRecoverable())
+         				if (!queue.isRecoverable() && queue.isClustered())
          				{
          					//When routing from the cluster we only route to non recoverable queues
          					//who haven't already been routed to on the sending node (same name)
+         					//Also we don't route to non clustered queues
          					if (names == null || !names.contains(queue.getName()))
          					{
          						routeLocal = true;

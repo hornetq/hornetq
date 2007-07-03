@@ -85,18 +85,12 @@ public class PostOfficeTest extends PostOfficeTestBase
          
          Condition condition1 = new SimpleCondition("condition1");
                   
-         office1.addBinding(new Binding(condition1, queue1, false), false);
+         boolean added = office1.addBinding(new Binding(condition1, queue1, false), false);
+         assertTrue(added);
          
          //Binding twice with the same name should fail      
-         try
-         {
-            office1.addBinding(new Binding(condition1, queue1, false), false);
-            fail();
-         }
-         catch (IllegalArgumentException e)
-         {
-            //Ok
-         }
+         added = office1.addBinding(new Binding(condition1, queue1, false), false);
+         assertFalse(added);
          
          //Can't bind a queue from another node
          
@@ -122,7 +116,8 @@ public class PostOfficeTest extends PostOfficeTestBase
          
          Condition condition2 = new SimpleCondition("condition2");         
          
-         office1.addBinding(new Binding(condition2, queue2, false), false);
+         added = office1.addBinding(new Binding(condition2, queue2, false), false);
+         assertTrue(added);
          
          //Check they're there
          
@@ -137,9 +132,7 @@ public class PostOfficeTest extends PostOfficeTestBase
          assertEquals(1, queues.size());
          Queue rqueue2 = (Queue)queues.iterator().next();
          assertEquals(queue2, rqueue2);
-         
-         
-         
+                          
          office1.stop();
          
          //Throw away the office and create another
@@ -157,8 +150,7 @@ public class PostOfficeTest extends PostOfficeTestBase
          assertTrue(queues.isEmpty());
          
          //Unbind the binding
-         office2.removeBinding(queue1.getName(), false);
-         
+         office2.removeBinding(queue1.getName(), false);         
          
          //Make sure no longer there
          queues = office2.getQueuesForCondition(condition1, true);
@@ -182,6 +174,11 @@ public class PostOfficeTest extends PostOfficeTestBase
          queues = office3.getQueuesForCondition(condition2, true);
          assertNotNull(queues);
          assertTrue(queues.isEmpty());
+         
+         if (checkNoBindingData())
+         {
+            fail("Binding data still in database");
+         }
                   
       }
       finally
@@ -199,12 +196,7 @@ public class PostOfficeTest extends PostOfficeTestBase
          if (office3 != null)
          {
             office2.stop();
-         }
-         
-         if (checkNoBindingData())
-         {
-            fail("Binding data still in database");
-         }
+         }         
       }
             
    }
@@ -315,6 +307,11 @@ public class PostOfficeTest extends PostOfficeTestBase
          assertTrue(queues.contains(queue7));
          assertTrue(queues.contains(queue8));
          
+         if (checkNoBindingData())
+         {
+            fail("Binding data still in database");
+         }
+         
       }
       finally
       {
@@ -322,11 +319,7 @@ public class PostOfficeTest extends PostOfficeTestBase
          {
             office.stop();
          }
-         
-         if (checkNoBindingData())
-         {
-            fail("Binding data still in database");
-         }
+        
       }
          
    }
@@ -393,6 +386,11 @@ public class PostOfficeTest extends PostOfficeTestBase
  
          b3 = office.getBindingForQueueName("queue3");
          assertNull(b3);                     
+                  
+         if (checkNoBindingData())
+         {
+            fail("Binding data still in database");
+         }
       }
       finally
       {
@@ -400,13 +398,7 @@ public class PostOfficeTest extends PostOfficeTestBase
          {
             office.stop();
          }
-         
-         if (checkNoBindingData())
-         {
-            fail("Binding data still in database");
-         }
-      }
-         
+      }         
    }
    
    public void testGetBindingForChannelID() throws Throwable
@@ -471,6 +463,11 @@ public class PostOfficeTest extends PostOfficeTestBase
  
          b3 = office.getBindingForChannelID(queue3.getChannelID());
          assertNull(b3);                     
+         
+         if (checkNoBindingData())
+         {
+            fail("Binding data still in database");
+         }
       }
       finally
       {
@@ -478,11 +475,7 @@ public class PostOfficeTest extends PostOfficeTestBase
          {
             office.stop();
          }
-         
-         if (checkNoBindingData())
-         {
-            fail("Binding data still in database");
-         }
+        
       }
          
    }

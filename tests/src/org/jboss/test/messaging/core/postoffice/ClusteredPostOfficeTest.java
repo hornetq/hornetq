@@ -1285,8 +1285,7 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
          assertGotAll(2, bindings, queue1.getName());
          
          bindings = office3.getAllBindings();         
-         assertGotAll(3, bindings, queue1.getName());
-         
+         assertGotAll(3, bindings, queue1.getName());         
                   
          if (checkNoBindingData())
          {
@@ -1379,6 +1378,16 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
    public void testClusteredRouteFourNodesNonPersistent() throws Throwable
    {
    	this.clusteredRouteFourNodes(false);
+   }
+   
+   public void testRouteWithNonClusteredQueuesNonPersistent() throws Throwable
+   {
+   	this.routeWithNonClusteredQueues(false);
+   }
+   
+   public void testRouteWithNonClusteredQueuesPersistent() throws Throwable
+   {
+   	this.routeWithNonClusteredQueues(true);
    }
    
    public void testStartTxInternally() throws Throwable
@@ -2385,6 +2394,205 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
    		for (int i = 0; i < 16; i++)
    		{
    			if (i < 8 || (queues[i].getNodeID() == 1 && queues[i].isRecoverable()))
+   			{
+   				//Shouldn't get the message
+   				this.checkNotGetsMessage(queues[i], receivers[i]);
+   			}
+   			else
+   			{
+   				//Should get the message
+   				this.checkGetsMessage(queues[i], receivers[i], msg);
+   			}
+
+   		}
+
+   		if (checkNoMessageData())
+   		{
+   			fail("Message data still in database");
+   		}
+   	}
+   	finally
+   	{
+   		if (office1 != null)
+   		{
+   			try
+   			{              
+   				office1.removeBinding("sub7", false);
+   				office1.removeBinding("sub8", false);               
+   				office1.removeBinding("sub15", false);
+   				office1.removeBinding("sub16", false);
+   			}
+   			catch (Exception ignore)
+   			{
+   				ignore.printStackTrace();
+   			}
+
+   			office1.stop();
+   		}
+
+   		if (office2 != null)
+   		{
+   			try
+   			{
+   				office2.removeBinding("sub5", false);
+   				office2.removeBinding("sub13", false);
+   			}
+   			catch (Exception ignore)
+   			{     
+   				ignore.printStackTrace();
+   			}
+   			office2.stop();
+   		}
+
+   	}
+   }
+   
+   
+   private void routeWithNonClusteredQueues(boolean persistentMessage) throws Throwable
+   {
+   	PostOffice office1 = null;
+
+   	PostOffice office2 = null;
+
+   	try
+   	{   
+   		office1 = createClusteredPostOffice(1, "testgroup");
+   		office2 = createClusteredPostOffice(2, "testgroup");
+
+   		Queue[] queues = new Queue[16];
+
+   		//condition1
+
+   		queues[0] = new MessagingQueue(1, "sub1", channelIDManager.getID(), ms, pm, false, -1, null, false);
+   		queues[0].activate();
+   		boolean added = office1.addBinding(new Binding(new SimpleCondition("condition1"), queues[0], false), false);
+   		assertTrue(added);
+
+   		queues[1] = new MessagingQueue(1, "sub2", channelIDManager.getID(), ms, pm, false, -1, null, true);
+   		queues[1].activate();
+   		added = office1.addBinding(new Binding(new SimpleCondition("condition1"), queues[1], false), false);
+   		assertTrue(added);
+
+   		queues[2] = new MessagingQueue(2, "sub3", channelIDManager.getID(), ms, pm, false, -1, null, false);
+   		queues[2].activate();
+   		added = office2.addBinding(new Binding(new SimpleCondition("condition1"), queues[2], false), false);
+   		assertTrue(added);
+
+   		queues[3] = new MessagingQueue(2, "sub4", channelIDManager.getID(), ms, pm, false, -1, null, true);
+   		queues[3].activate();
+   		added = office2.addBinding(new Binding(new SimpleCondition("condition1"), queues[3], false), false);
+   		assertTrue(added);
+
+   		queues[4] = new MessagingQueue(2, "sub5", channelIDManager.getID(), ms, pm, true, -1, null, false);
+   		queues[4].activate();
+   		added = office2.addBinding(new Binding(new SimpleCondition("condition1"), queues[4], false), false);
+   		assertTrue(added);
+
+   		queues[5] = new MessagingQueue(1, "sub6", channelIDManager.getID(), ms, pm, false, -1, null, true);
+   		queues[5].activate();
+   		added = office1.addBinding(new Binding(new SimpleCondition("condition1"), queues[5], false), false);
+   		assertTrue(added);
+
+   		queues[6] = new MessagingQueue(1, "sub7", channelIDManager.getID(), ms, pm, true, -1, null, false);
+   		queues[6].activate();
+   		added = office1.addBinding(new Binding(new SimpleCondition("condition1"), queues[6], false), false);
+   		assertTrue(added);
+
+   		queues[7] = new MessagingQueue(1, "sub8", channelIDManager.getID(), ms, pm, true, -1, null, true);
+   		queues[7].activate();
+   		added = office1.addBinding(new Binding(new SimpleCondition("condition1"), queues[7], false), false);
+   		assertTrue(added);
+
+   		//condition2
+
+
+   		queues[8] = new MessagingQueue(1, "sub9", channelIDManager.getID(), ms, pm, false, -1, null, false);
+   		queues[8].activate();
+   		added = office1.addBinding(new Binding(new SimpleCondition("condition2"), queues[8], false), false);
+   		assertTrue(added);
+
+   		queues[9] = new MessagingQueue(1, "sub10", channelIDManager.getID(), ms, pm, false, -1, null, true);
+   		queues[9].activate();
+   		added = office1.addBinding(new Binding(new SimpleCondition("condition2"), queues[9], false), false);
+   		assertTrue(added);
+
+   		queues[10] = new MessagingQueue(2, "sub11", channelIDManager.getID(), ms, pm, false, -1, null, false);
+   		queues[10].activate();
+   		added = office2.addBinding(new Binding(new SimpleCondition("condition2"), queues[10], false), false);
+   		assertTrue(added);
+
+   		queues[11] = new MessagingQueue(2, "sub12", channelIDManager.getID(), ms, pm, false, -1, null, true);
+   		queues[11].activate();
+   		added = office2.addBinding(new Binding(new SimpleCondition("condition2"), queues[11], false), false);
+   		assertTrue(added);
+
+   		queues[12] = new MessagingQueue(2, "sub13", channelIDManager.getID(), ms, pm, true, -1, null, false);
+   		queues[12].activate();
+   		added = office2.addBinding(new Binding(new SimpleCondition("condition2"), queues[12], false), false);
+   		assertTrue(added);
+
+   		queues[13] = new MessagingQueue(1, "sub14", channelIDManager.getID(), ms, pm, false, -1, null, true);
+   		queues[13].activate();
+   		added = office1.addBinding(new Binding(new SimpleCondition("condition2"), queues[13], false), false);
+   		assertTrue(added);
+
+   		queues[14] = new MessagingQueue(1, "sub15", channelIDManager.getID(), ms, pm, true, -1, null, false);
+   		queues[14].activate();
+   		added = office1.addBinding(new Binding(new SimpleCondition("condition2"), queues[14], false), false);
+   		assertTrue(added);
+
+   		queues[15] = new MessagingQueue(1, "sub16", channelIDManager.getID(), ms, pm, true, -1, null, true);
+   		queues[15].activate();
+   		added = office1.addBinding(new Binding(new SimpleCondition("condition2"), queues[15], false), false);
+   		assertTrue(added);
+
+   		SimpleReceiver[] receivers = new SimpleReceiver[16];
+
+   		for (int i = 0; i < 16; i++)
+   		{
+   			receivers[i] = new SimpleReceiver("blah", SimpleReceiver.ACCEPTING);
+   			queues[i].getLocalDistributor().add(receivers[i]);
+   		}
+
+   		Message msg = CoreMessageFactory.createCoreMessage(1, persistentMessage, null);      
+   		MessageReference ref = ms.reference(msg);         
+
+   		boolean routed = office1.route(ref, new SimpleCondition("condition1"), null);         
+   		assertTrue(routed);
+
+   		//Messages are sent asych so may take some finite time to arrive
+   		Thread.sleep(1000);
+
+   		//Durable queues on remote node should never get the message - neither should non clustered ones
+
+   		for (int i = 0; i < 16; i++)
+   		{
+   			if (i >= 8 || (queues[i].getNodeID() == 2 && queues[i].isRecoverable())
+   					|| (queues[i].getNodeID() == 2 && !queues[i].isClustered()))
+   			{
+   				this.checkNotGetsMessage(queues[i], receivers[i]);
+   			}
+   			else
+   			{
+   				//Should get the message
+   				this.checkGetsMessage(queues[i], receivers[i], msg);
+   			}
+   		}
+
+   		//Now route to condition2
+
+   		msg = CoreMessageFactory.createCoreMessage(2, persistentMessage, null);;      
+   		ref = ms.reference(msg);         
+
+   		routed = office2.route(ref, new SimpleCondition("condition2"), null);         
+   		assertTrue(routed);
+   		//Messages are sent asych so may take some finite time to arrive
+   		Thread.sleep(1000);
+
+   		for (int i = 0; i < 16; i++)
+   		{
+   			if (i < 8 || (queues[i].getNodeID() == 1 && queues[i].isRecoverable())
+   					|| (queues[i].getNodeID() == 1 && !queues[i].isClustered()))
    			{
    				//Shouldn't get the message
    				this.checkNotGetsMessage(queues[i], receivers[i]);
