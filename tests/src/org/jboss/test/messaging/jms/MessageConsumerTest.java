@@ -52,6 +52,7 @@ import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
 
 import EDU.oswego.cs.dl.util.concurrent.Latch;
+import EDU.oswego.cs.dl.util.concurrent.SynchronizedInt;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
@@ -2070,6 +2071,99 @@ public class MessageConsumerTest extends MessagingTestCase
       }
    }
 
+   public void testStopConnectionDuringOnMessage() throws Exception
+   {
+      if (log.isTraceEnabled()) log.trace("testStopConnectionWhileOnMessageIsExecuting");
+      
+      final SynchronizedInt messagesReceived = new SynchronizedInt(0);
+      
+      MessageListener myListener = new MessageListener() {
+         public void onMessage(Message message)
+         {
+            messagesReceived.increment();
+            try
+            {
+               Thread.sleep(100L);
+            }
+            catch (InterruptedException e)
+            {
+               // Ignore
+            }
+         }
+      };
+      
+      queueConsumer.setMessageListener(myListener);
+      
+      log.trace("Starting consumer connection");
+      consumerConnection.start();
+      
+      final int MESSAGE_COUNT = 100;
+      
+      log.trace("Sending the first batch of messages");
+
+      for (int i = 0; i < MESSAGE_COUNT / 2; i++)
+      {
+         queueProducer.send(producerSession.createTextMessage("Message #" + Integer.toString(i)));
+      }
+
+      Thread.sleep(500L);
+      
+      log.trace("Stopping consumer connection");
+      consumerConnection.stop();
+
+      int countAfterStop = messagesReceived.get();
+      assertTrue("Should have received some messages before stopping", countAfterStop > 0);
+      
+      log.trace("Sending the second batch of messages");
+      for (int i = MESSAGE_COUNT / 2; i < MESSAGE_COUNT; i++)
+      {
+         queueProducer.send(producerSession.createTextMessage("Message #" + Integer.toString(i)));
+      }
+
+      log.trace("Sleeping a bit to check that no messages are received");
+      Thread.sleep(2000);
+
+      assertEquals("Should not receive any messages after the connection has been stopped", countAfterStop, messagesReceived.get());
+
+      log.trace("Restarting consumer connection");
+      consumerConnection.start();
+      
+      log.trace("Sleeping to allow remaining messages to arrive");
+      Thread.sleep(15000);
+      assertEquals("Should have received all messages after restarting", MESSAGE_COUNT, messagesReceived.get());
+   }
+   
+   // Test that stop doesn't in any way break subsequent close 
+   public void testCloseAfterStop() throws Exception
+   {
+      MessageListener myListener = new MessageListener() {
+         public void onMessage(Message message)
+         {
+            try
+            {
+               Thread.sleep(100);
+            }
+            catch (InterruptedException e)
+            {
+               // Ignore
+            }
+         }
+      };
+      
+      queueConsumer.setMessageListener(myListener);
+
+      consumerConnection.start();
+
+      for (int i = 0; i < 100; i++)
+      {
+         queueProducer.send(producerSession.createTextMessage("Message #" + Integer.toString(i)));
+      }
+
+      Thread.sleep(500);
+      consumerConnection.stop();
+      Thread.sleep(500);
+      consumerConnection.close();
+   }
 
    //
    // Multiple consumers
