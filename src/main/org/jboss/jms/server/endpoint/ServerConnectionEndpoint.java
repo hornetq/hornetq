@@ -390,7 +390,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
                {     
                	// Temporary queues must be unbound on ALL nodes of the cluster
                	
-               	postOffice.removeBinding(dest.getName(), true);               	
+               	postOffice.removeBinding(dest.getName(), postOffice.isClustered());               	
                }
                else
                {

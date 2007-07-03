@@ -734,7 +734,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
          	}
          }
          
-         postOffice.removeBinding(sub.getName(), sub.isClustered());         
+         postOffice.removeBinding(sub.getName(), sub.isClustered() && postOffice.isClustered());         
          
          String counterName = TopicService.SUBSCRIPTION_MESSAGECOUNTER_PREFIX + sub.getName();
          
@@ -1366,7 +1366,8 @@ public class ServerSessionEndpoint implements SessionEndpoint
                
                // Durable subs must be bound on ALL nodes of the cluster (if clustered)
                
-               postOffice.addBinding(new Binding(new JMSCondition(false, jmsDestination.getName()), queue, true), postOffice.isClustered());
+               postOffice.addBinding(new Binding(new JMSCondition(false, jmsDestination.getName()), queue, true),
+                                     postOffice.isClustered() && mDest.isClustered());
                
                queue.activate();
                   
@@ -1440,7 +1441,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
                   
                   // Durable subs must be unbound on ALL nodes of the cluster
                   
-                  postOffice.removeBinding(queue.getName(), mDest.isClustered());                  
+                  postOffice.removeBinding(queue.getName(), postOffice.isClustered() && mDest.isClustered());                  
                   
                   // create a fresh new subscription
                                     
@@ -1453,7 +1454,8 @@ public class ServerSessionEndpoint implements SessionEndpoint
                   
                   // Durable subs must be bound on ALL nodes of the cluster
                   
-                  postOffice.addBinding(new Binding(new JMSCondition(false, jmsDestination.getName()), queue, true), postOffice.isClustered());
+                  postOffice.addBinding(new Binding(new JMSCondition(false, jmsDestination.getName()), queue, true),
+                  		                postOffice.isClustered() && mDest.isClustered());
   
                   queue.activate();                  
                   

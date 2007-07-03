@@ -1551,7 +1551,7 @@ public class MessagingPostOffice extends JDBCSupport
          			
          			if (trace) { log.trace(this + " is a remote queue"); }
          			
-         			if (!queue.isRecoverable())
+         			if (!queue.isRecoverable() && queue.isClustered())
          			{	         			
          				//When we send to the cluster we never send to reliable queues
          				

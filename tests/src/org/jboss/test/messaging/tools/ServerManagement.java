@@ -868,6 +868,13 @@ public class ServerManagement
       insureStarted();
       servers[0].getServer().deployTopic(name, jndiName, fullSize, pageSize, downCacheSize, false);
    }
+   
+   public static void deployTopic(String name, String jndiName, int fullSize, int pageSize,
+   		                         int downCacheSize, int serverIndex, boolean clustered) throws Exception
+   {
+   	insureStarted();
+   	servers[serverIndex].getServer().deployTopic(name, jndiName, fullSize, pageSize, downCacheSize, clustered);
+    }
 
    /**
     * Simulates a topic un-deployment (deleting the topic descriptor from the deploy directory).

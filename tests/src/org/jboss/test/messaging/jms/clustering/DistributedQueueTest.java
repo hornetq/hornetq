@@ -29,8 +29,11 @@ import javax.jms.DeliveryMode;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
+import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.TextMessage;
+
+import org.jboss.test.messaging.tools.ServerManagement;
 
 
 /**
@@ -69,6 +72,16 @@ public class DistributedQueueTest extends ClusteringTestBase
    public void testClusteredQueuePersistent() throws Exception
    {
       clusteredQueue(true);
+   }
+   
+   public void testLocalNonPersistent() throws Exception
+   {
+      localQueue(false);
+   }
+
+   public void testLocalPersistent() throws Exception
+   {
+      localQueue(true);
    }
 
    // Package protected ---------------------------------------------
@@ -526,6 +539,231 @@ public class DistributedQueueTest extends ClusteringTestBase
          {
             conn2.close();
          }
+      }
+   }
+   
+   
+   /* Check that non clustered queues behave properly when deployed on a cluster */
+   protected void localQueue(boolean persistent) throws Exception
+   {
+   	Connection conn0 = null;
+      Connection conn1 = null;
+      Connection conn2 = null;
+      
+      //Deploy three non clustered queues with same name on different nodes
+          
+      try
+      {
+         ServerManagement.deployQueue("nonClusteredQueue", "nonClusteredQueue", 200000, 2000, 2000, 0, false);
+         
+         ServerManagement.deployQueue("nonClusteredQueue", "nonClusteredQueue", 200000, 2000, 2000, 1, false);
+         
+         ServerManagement.deployQueue("nonClusteredQueue", "nonClusteredQueue", 200000, 2000, 2000, 2, false);
+         
+         Queue queue0 = (Queue)ic[0].lookup("/nonClusteredQueue");
+         Queue queue1 = (Queue)ic[1].lookup("/nonClusteredQueue");
+         Queue queue2 = (Queue)ic[2].lookup("/nonClusteredQueue");
+      	
+         //This will create 3 different connection on 3 different nodes, since
+         //the cf is clustered
+         conn0 = cf.createConnection();
+         conn1 = cf.createConnection();
+         conn2 = cf.createConnection();
+         
+         checkConnectionsDifferentServers(new Connection[] {conn0, conn1, conn2});
+
+         Session sess0 = conn0.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         Session sess1 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         Session sess2 = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         
+         conn0.start();
+         conn1.start();
+         conn2.start();
+
+         // ==============
+         // Send at node 0
+
+         MessageProducer prod0 = sess0.createProducer(queue0);
+
+         prod0.setDeliveryMode(persistent ? DeliveryMode.PERSISTENT : DeliveryMode.NON_PERSISTENT);
+
+         final int NUM_MESSAGES = 100;
+
+         for (int i = 0; i < NUM_MESSAGES; i++)
+         {
+            TextMessage tm = sess0.createTextMessage("message" + i);
+
+            prod0.send(tm);
+         }
+         
+         // Try and consume at node 1
+         
+         MessageConsumer cons1 = sess1.createConsumer(queue1);
+         
+         Message m = cons1.receive(2000);
+
+         assertNull(m);
+         
+         cons1.close();
+         
+         //And at node 2
+         
+         MessageConsumer cons2 = sess2.createConsumer(queue2);
+         
+         m = cons2.receive(2000);
+
+         assertNull(m);
+         
+         cons2.close();
+         
+         // Now consume at node 0
+         
+         MessageConsumer cons0 = sess0.createConsumer(queue0);
+          
+         for (int i = 0; i < NUM_MESSAGES; i++)
+         {
+            TextMessage tm = (TextMessage)cons0.receive(1000);
+
+            assertNotNull(tm);
+            
+            assertEquals("message" + i, tm.getText());
+         }                 
+
+         m = cons0.receive(2000);
+
+         assertNull(m);
+         
+         cons0.close();
+         
+         // ==============
+         // Send at node 1
+
+         MessageProducer prod1 = sess1.createProducer(queue1);
+
+         prod1.setDeliveryMode(persistent ? DeliveryMode.PERSISTENT : DeliveryMode.NON_PERSISTENT);
+
+         for (int i = 0; i < NUM_MESSAGES; i++)
+         {
+            TextMessage tm = sess1.createTextMessage("message" + i);
+
+            prod1.send(tm);
+         }
+         
+         // Try and consume at node 0
+         
+         cons0 = sess0.createConsumer(queue0);
+         
+         m = cons0.receive(2000);
+
+         assertNull(m);
+         
+         cons0.close();
+         
+         //And at node 2
+         
+         cons2 = sess2.createConsumer(queue2);
+         
+         m = cons2.receive(2000);
+
+         assertNull(m);
+         
+         cons2.close();
+         
+         // Now consume at node 1
+         
+         cons1 = sess1.createConsumer(queue1);
+          
+         for (int i = 0; i < NUM_MESSAGES; i++)
+         {
+            TextMessage tm = (TextMessage)cons1.receive(1000);
+
+            assertNotNull(tm);
+            
+            assertEquals("message" + i, tm.getText());
+         }                 
+
+         m = cons1.receive(2000);
+
+         assertNull(m);
+         
+         cons1.close();
+         
+         // ==============
+         // Send at node 2
+
+         MessageProducer prod2 = sess2.createProducer(queue2);
+
+         prod2.setDeliveryMode(persistent ? DeliveryMode.PERSISTENT : DeliveryMode.NON_PERSISTENT);
+
+         for (int i = 0; i < NUM_MESSAGES; i++)
+         {
+            TextMessage tm = sess2.createTextMessage("message" + i);
+
+            prod2.send(tm);
+         }
+         
+         // Try and consume at node 0
+         
+         cons0 = sess0.createConsumer(queue0);
+         
+         m = cons0.receive(2000);
+
+         assertNull(m);
+         
+         cons0.close();
+         
+         //And at node 1
+         
+         cons1 = sess1.createConsumer(queue1);
+         
+         m = cons1.receive(2000);
+
+         assertNull(m);
+         
+         cons1.close();
+         
+         // Now consume at node 2
+         
+         cons2 = sess2.createConsumer(queue2);
+          
+         for (int i = 0; i < NUM_MESSAGES; i++)
+         {
+            TextMessage tm = (TextMessage)cons2.receive(1000);
+
+            assertNotNull(tm);
+            
+            assertEquals("message" + i, tm.getText());
+         }                 
+
+         m = cons2.receive(2000);
+
+         assertNull(m);
+         
+         cons2.close();
+           
+      }
+      finally
+      {
+         if (conn0 != null)
+         {
+            conn0.close();
+         }
+
+         if (conn1 != null)
+         {
+            conn1.close();
+         }
+
+         if (conn2 != null)
+         {
+            conn2.close();
+         }
+         
+         ServerManagement.undeployQueue("nonClusteredQueue", 0);
+         
+         ServerManagement.undeployQueue("nonClusteredQueue", 1);
+         
+         ServerManagement.undeployQueue("nonClusteredQueue", 2);
       }
    }
 
