@@ -20,7 +20,7 @@
    * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
    */
 
-package org.jboss.test.messaging.jms.clustering.base;
+package org.jboss.test.messaging.jms.clustering;
 
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;

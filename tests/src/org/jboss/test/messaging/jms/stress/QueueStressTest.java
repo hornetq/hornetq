@@ -29,7 +29,6 @@ import javax.jms.Session;
 import javax.jms.XAConnection;
 import javax.jms.XASession;
 
-import org.jboss.test.messaging.jms.stress.base.StressTestBase;
 
 /**
  * 

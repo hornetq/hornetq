@@ -21,7 +21,6 @@
   */
 package org.jboss.test.messaging.jms.stress;
 
-import org.jboss.test.messaging.jms.stress.base.StressTestBase;
 
 import javax.jms.Connection;
 import javax.jms.DeliveryMode;

@@ -32,7 +32,6 @@ import javax.jms.TextMessage;
 import javax.management.ObjectName;
 import javax.naming.InitialContext;
 
-import org.jboss.test.messaging.jms.clustering.base.ClusteringTestBase;
 import org.jboss.test.messaging.tools.ServerManagement;
 
 /**

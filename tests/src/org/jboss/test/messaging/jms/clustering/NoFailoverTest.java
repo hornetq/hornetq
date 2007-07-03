@@ -22,7 +22,6 @@
 
 package org.jboss.test.messaging.jms.clustering;
 
-import org.jboss.test.messaging.jms.clustering.base.ClusteringTestBase;
 import org.jboss.jms.client.JBossConnectionFactory;
 import org.jboss.jms.client.delegate.ClientClusteredConnectionFactoryDelegate;
 

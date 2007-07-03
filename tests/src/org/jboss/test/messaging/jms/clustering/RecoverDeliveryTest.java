@@ -30,7 +30,6 @@ import org.jboss.jms.delegate.DeliveryRecovery;
 import org.jboss.jms.delegate.SessionDelegate;
 import org.jboss.jms.message.MessageProxy;
 import org.jboss.jms.exception.MessagingJMSException;
-import org.jboss.test.messaging.jms.clustering.base.ClusteringTestBase;
 import javax.jms.Session;
 import javax.jms.MessageProducer;
 import javax.jms.MessageConsumer;

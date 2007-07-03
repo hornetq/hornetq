@@ -19,13 +19,13 @@
   * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   */
-package org.jboss.test.messaging.jms.message.base;
+package org.jboss.test.messaging.jms.message;
 
 import javax.jms.DeliveryMode;
 import javax.jms.JMSException;
 import javax.jms.Message;
 
-import org.jboss.test.messaging.jms.base.JMSTestBase;
+import org.jboss.test.messaging.jms.JMSTestBase;
 
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>

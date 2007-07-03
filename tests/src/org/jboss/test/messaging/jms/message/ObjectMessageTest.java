@@ -26,7 +26,6 @@ import javax.jms.Message;
 import javax.jms.ObjectMessage;
 import javax.jms.DeliveryMode;
 
-import org.jboss.test.messaging.jms.message.base.MessageTestBase;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.io.File;

@@ -23,8 +23,8 @@ package org.jboss.test.messaging.jms.message.foreign;
 
 import javax.jms.Message;
 
+import org.jboss.test.messaging.jms.message.MessageTestBase;
 import org.jboss.test.messaging.jms.message.SimpleJMSMessage;
-import org.jboss.test.messaging.jms.message.base.MessageTestBase;
 
 
 /**

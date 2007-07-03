@@ -30,7 +30,6 @@ import javax.jms.MessageProducer;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 
-import org.jboss.test.messaging.jms.clustering.base.ClusteringTestBase;
 
 /**
  * 

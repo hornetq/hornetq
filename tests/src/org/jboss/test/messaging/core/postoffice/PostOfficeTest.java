@@ -19,7 +19,7 @@
   * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   */
-package org.jboss.test.messaging.core.plugin.postoffice;
+package org.jboss.test.messaging.core.postoffice;
 
 import java.util.Collection;
 import java.util.List;
@@ -728,114 +728,21 @@ public class PostOfficeTest extends PostOfficeTestBase
 
    // Protected -----------------------------------------------------
    
-   protected void routeWithFilter(boolean persistentMessage) throws Throwable
+      
+   protected void setUp() throws Exception
    {
-      PostOffice postOffice = null;
-      
-      try
-      {      
-         postOffice = createNonClusteredPostOffice();
-         
-         SimpleFilter filter = new SimpleFilter(2);
-         
-         Condition condition1 = new SimpleCondition("topic1");
-      
-         MessagingQueue queue1 = new MessagingQueue(1, "queue1", channelIDManager.getID(), ms, pm, false, -1, filter, false);
-         queue1.activate();
-         
-         postOffice.addBinding(new Binding(condition1, queue1, false), false);
-         
-         MessagingQueue queue2 = new MessagingQueue(1, "queue2", channelIDManager.getID(), ms, pm, false, -1, null, false);
-         queue2.activate();
-         
-         postOffice.addBinding(new Binding(condition1, queue2, false), false);
-         
-         MessagingQueue queue3 = new MessagingQueue(1, "queue3", channelIDManager.getID(), ms, pm, false, -1, null, false);
-         queue3.activate();
-         
-         postOffice.addBinding(new Binding(condition1, queue3, false), false);
-         
-         SimpleReceiver receiver1 = new SimpleReceiver("blah", SimpleReceiver.ACCEPTING);
-         queue1.getLocalDistributor().add(receiver1);
-         SimpleReceiver receiver2 = new SimpleReceiver("blah", SimpleReceiver.ACCEPTING);
-         queue2.getLocalDistributor().add(receiver2);
-         SimpleReceiver receiver3 = new SimpleReceiver("blah", SimpleReceiver.ACCEPTING);
-         queue3.getLocalDistributor().add(receiver3);
-         
-         Message msg1 = CoreMessageFactory.createCoreMessage(1);      
-         MessageReference ref1 = ms.reference(msg1);         
-         boolean routed = postOffice.route(ref1, condition1, null);      
-         assertTrue(routed);
-         Message msg2 = CoreMessageFactory.createCoreMessage(2);      
-         MessageReference ref2 = ms.reference(msg2);         
-         routed = postOffice.route(ref2, condition1, null);      
-         assertTrue(routed);
-         Message msg3 = CoreMessageFactory.createCoreMessage(3);      
-         MessageReference ref3 = ms.reference(msg3);         
-         routed = postOffice.route(ref3, condition1, null);      
-         assertTrue(routed);
-         
-         List msgs = receiver1.getMessages();
-         assertNotNull(msgs);           
-         assertEquals(1, msgs.size());                  
-         Message msgRec = (Message)msgs.get(0);
-         assertTrue(msg2 == msgRec);
-         receiver1.acknowledge(msgRec, null);
-         msgs = queue1.browse(null);
-         assertNotNull(msgs);
-         assertTrue(msgs.isEmpty());  
-         
-         msgs = receiver2.getMessages();
-         assertNotNull(msgs);
-         assertEquals(3, msgs.size());
-         Message msgRec1 = (Message)msgs.get(0);
-         assertTrue(msg1 == msgRec1);
-         Message msgRec2 = (Message)msgs.get(1);
-         assertTrue(msg2 == msgRec2);
-         Message msgRec3 = (Message)msgs.get(2);
-         assertTrue(msg3 == msgRec3);
-          
-         receiver2.acknowledge(msgRec1, null);
-         receiver2.acknowledge(msgRec2, null);
-         receiver2.acknowledge(msgRec3, null);
-         msgs = queue2.browse(null);
-         assertNotNull(msgs);
-         assertTrue(msgs.isEmpty());  
-         
-         msgs = receiver3.getMessages();
-         assertNotNull(msgs);
-         assertEquals(3, msgs.size());
-         msgRec1 = (Message)msgs.get(0);
-         assertTrue(msg1 == msgRec1);
-         msgRec2 = (Message)msgs.get(1);
-         assertTrue(msg2 == msgRec2);
-         msgRec3 = (Message)msgs.get(2);
-         assertTrue(msg3 == msgRec3);
-          
-         receiver3.acknowledge(msgRec1, null);
-         receiver3.acknowledge(msgRec2, null);
-         receiver3.acknowledge(msgRec3, null);
-         msgs = queue3.browse(null);
-         assertNotNull(msgs);
-         assertTrue(msgs.isEmpty()); 
-         
-         if (checkNoMessageData())
-         {
-            fail("data still in database");
-         }
-         
-      }
-      finally
-      {
-         if (postOffice != null)
-         {
-            postOffice.stop();
-         }
-        
-      }
+      super.setUp();
+
    }
+
+   protected void tearDown() throws Exception
+   {
+      super.tearDown();
+   }
+
+   // Private -------------------------------------------------------
    
-   protected void route(boolean persistentMessage) throws Throwable
+   private void route(boolean persistentMessage) throws Throwable
    {
       PostOffice postOffice = null;
       
@@ -1013,7 +920,7 @@ public class PostOfficeTest extends PostOfficeTestBase
       }
    }
    
-   protected void routeTransactional(boolean persistentMessage) throws Throwable
+   private void routeTransactional(boolean persistentMessage) throws Throwable
    {
       PostOffice postOffice = null;
       
@@ -1264,19 +1171,113 @@ public class PostOfficeTest extends PostOfficeTestBase
          }         
       }
    }
-
-   protected void setUp() throws Exception
+   
+   private void routeWithFilter(boolean persistentMessage) throws Throwable
    {
-      super.setUp();
-
+      PostOffice postOffice = null;
+      
+      try
+      {      
+         postOffice = createNonClusteredPostOffice();
+         
+         SimpleFilter filter = new SimpleFilter(2);
+         
+         Condition condition1 = new SimpleCondition("topic1");
+      
+         MessagingQueue queue1 = new MessagingQueue(1, "queue1", channelIDManager.getID(), ms, pm, false, -1, filter, false);
+         queue1.activate();
+         
+         postOffice.addBinding(new Binding(condition1, queue1, false), false);
+         
+         MessagingQueue queue2 = new MessagingQueue(1, "queue2", channelIDManager.getID(), ms, pm, false, -1, null, false);
+         queue2.activate();
+         
+         postOffice.addBinding(new Binding(condition1, queue2, false), false);
+         
+         MessagingQueue queue3 = new MessagingQueue(1, "queue3", channelIDManager.getID(), ms, pm, false, -1, null, false);
+         queue3.activate();
+         
+         postOffice.addBinding(new Binding(condition1, queue3, false), false);
+         
+         SimpleReceiver receiver1 = new SimpleReceiver("blah", SimpleReceiver.ACCEPTING);
+         queue1.getLocalDistributor().add(receiver1);
+         SimpleReceiver receiver2 = new SimpleReceiver("blah", SimpleReceiver.ACCEPTING);
+         queue2.getLocalDistributor().add(receiver2);
+         SimpleReceiver receiver3 = new SimpleReceiver("blah", SimpleReceiver.ACCEPTING);
+         queue3.getLocalDistributor().add(receiver3);
+         
+         Message msg1 = CoreMessageFactory.createCoreMessage(1);      
+         MessageReference ref1 = ms.reference(msg1);         
+         boolean routed = postOffice.route(ref1, condition1, null);      
+         assertTrue(routed);
+         Message msg2 = CoreMessageFactory.createCoreMessage(2);      
+         MessageReference ref2 = ms.reference(msg2);         
+         routed = postOffice.route(ref2, condition1, null);      
+         assertTrue(routed);
+         Message msg3 = CoreMessageFactory.createCoreMessage(3);      
+         MessageReference ref3 = ms.reference(msg3);         
+         routed = postOffice.route(ref3, condition1, null);      
+         assertTrue(routed);
+         
+         List msgs = receiver1.getMessages();
+         assertNotNull(msgs);           
+         assertEquals(1, msgs.size());                  
+         Message msgRec = (Message)msgs.get(0);
+         assertTrue(msg2 == msgRec);
+         receiver1.acknowledge(msgRec, null);
+         msgs = queue1.browse(null);
+         assertNotNull(msgs);
+         assertTrue(msgs.isEmpty());  
+         
+         msgs = receiver2.getMessages();
+         assertNotNull(msgs);
+         assertEquals(3, msgs.size());
+         Message msgRec1 = (Message)msgs.get(0);
+         assertTrue(msg1 == msgRec1);
+         Message msgRec2 = (Message)msgs.get(1);
+         assertTrue(msg2 == msgRec2);
+         Message msgRec3 = (Message)msgs.get(2);
+         assertTrue(msg3 == msgRec3);
+          
+         receiver2.acknowledge(msgRec1, null);
+         receiver2.acknowledge(msgRec2, null);
+         receiver2.acknowledge(msgRec3, null);
+         msgs = queue2.browse(null);
+         assertNotNull(msgs);
+         assertTrue(msgs.isEmpty());  
+         
+         msgs = receiver3.getMessages();
+         assertNotNull(msgs);
+         assertEquals(3, msgs.size());
+         msgRec1 = (Message)msgs.get(0);
+         assertTrue(msg1 == msgRec1);
+         msgRec2 = (Message)msgs.get(1);
+         assertTrue(msg2 == msgRec2);
+         msgRec3 = (Message)msgs.get(2);
+         assertTrue(msg3 == msgRec3);
+          
+         receiver3.acknowledge(msgRec1, null);
+         receiver3.acknowledge(msgRec2, null);
+         receiver3.acknowledge(msgRec3, null);
+         msgs = queue3.browse(null);
+         assertNotNull(msgs);
+         assertTrue(msgs.isEmpty()); 
+         
+         if (checkNoMessageData())
+         {
+            fail("data still in database");
+         }
+         
+      }
+      finally
+      {
+         if (postOffice != null)
+         {
+            postOffice.stop();
+         }
+        
+      }
    }
-
-   protected void tearDown() throws Exception
-   {
-      super.tearDown();
-   }
-
-   // Private -------------------------------------------------------
 
    // Inner classes -------------------------------------------------
 

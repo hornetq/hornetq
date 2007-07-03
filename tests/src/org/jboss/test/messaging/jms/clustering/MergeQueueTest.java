@@ -18,7 +18,6 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 
 import org.jboss.jms.client.JBossConnection;
-import org.jboss.test.messaging.jms.clustering.base.ClusteringTestBase;
 import org.jboss.test.messaging.tools.ServerManagement;
 
 /**

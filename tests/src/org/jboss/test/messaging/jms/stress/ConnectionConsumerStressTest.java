@@ -26,7 +26,6 @@ import javax.jms.DeliveryMode;
 import javax.jms.MessageProducer;
 import javax.jms.Session;
 
-import org.jboss.test.messaging.jms.stress.base.StressTestBase;
 
 /**
  * 

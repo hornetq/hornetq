@@ -19,7 +19,7 @@
   * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   */
-package org.jboss.test.messaging.jms.stress.base;
+package org.jboss.test.messaging.jms.stress;
 
 import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
@@ -28,7 +28,6 @@ import javax.naming.InitialContext;
 
 import org.jboss.messaging.util.LockMap;
 import org.jboss.test.messaging.MessagingTestCase;
-import org.jboss.test.messaging.jms.stress.Runner;
 import org.jboss.test.messaging.tools.ServerManagement;
 
 /**

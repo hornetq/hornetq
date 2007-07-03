@@ -21,7 +21,6 @@
   */
 package org.jboss.test.messaging.jms.message;
 
-import org.jboss.test.messaging.jms.message.base.MessageTestBase;
 
 import javax.jms.JMSException;
 import javax.jms.Message;

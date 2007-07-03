@@ -45,7 +45,7 @@ import org.jboss.messaging.core.impl.postoffice.MessagingPostOffice;
 import org.jboss.messaging.core.impl.tx.Transaction;
 import org.jboss.messaging.core.impl.tx.TransactionRepository;
 import org.jboss.test.messaging.MessagingTestCase;
-import org.jboss.test.messaging.core.plugin.postoffice.ClusteredPersistenceServiceConfigFileJChannelFactory;
+import org.jboss.test.messaging.core.postoffice.ClusteredPersistenceServiceConfigFileJChannelFactory;
 import org.jboss.test.messaging.tools.ServerManagement;
 import org.jboss.test.messaging.tools.jmx.ServiceContainer;
 import org.jboss.test.messaging.util.CoreMessageFactory;
