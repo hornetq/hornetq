@@ -555,6 +555,38 @@ public class DurableSubscriptionTest extends MessagingTestCase
       conn.close();
    }
 
+   public void testDurableSubscriptionWithPeriodsInName() throws Exception
+   {
+      ConnectionFactory cf = (ConnectionFactory)ic.lookup("ConnectionFactory");
+      Topic topic = (Topic)ic.lookup("/topic/Topic");
+
+      Connection conn = cf.createConnection();
+      conn.setClientID(".client.id.with.periods.");
+
+      Session s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+      TopicSubscriber subscriber = s.createDurableSubscriber(topic, ".subscription.name.with.periods.");
+      
+      ServerManagement.undeployTopic("Topic");
+      ServerManagement.deployTopic("Topic");
+      
+      topic = (Topic)ic.lookup("/topic/Topic");
+      s.createProducer(topic).send(s.createTextMessage("Subscription test"));
+      
+      conn.start();
+
+      Message m = subscriber.receive(1000L);
+      
+      assertNotNull(m);
+      assertTrue(m instanceof TextMessage);
+
+      subscriber.close();
+      
+      s.unsubscribe(".subscription.name.with.periods.");
+
+      conn.close();
+   }
+
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------

@@ -59,6 +59,20 @@ public class MessageQueueNameHelperTest extends TestCase
       
       assertEquals("clientid456.mysub2", name);
    }
+   
+   public void testEscaping()
+   {
+      String clientID = ".client.id.";
+      String subscriptionName = ".subscription.name.";
+      
+      String queueName = MessageQueueNameHelper.createSubscriptionName(clientID, subscriptionName);
+      assertEquals("\\.client\\.id\\..\\.subscription\\.name\\.", queueName);
+      
+      MessageQueueNameHelper helper = MessageQueueNameHelper.createHelper(queueName);
+      
+      assertEquals(clientID, helper.getClientId());
+      assertEquals(subscriptionName, helper.getSubName());
+   }
 
    // Package protected ---------------------------------------------
    

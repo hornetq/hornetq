@@ -21,7 +21,6 @@
  */
 package org.jboss.messaging.util;
 
-import java.util.StringTokenizer;
 
 /**
  * A MessageQueueNameHelper
@@ -45,6 +44,8 @@ public class MessageQueueNameHelper
    
    private String subName;
    
+   private static char ESCAPE = '\\';
+   private static char SEPARATOR_CHAR = '.';
    private static String SEPARATOR = ".";
    
    private MessageQueueNameHelper(String messageQueueName)
@@ -54,29 +55,54 @@ public class MessageQueueNameHelper
          throw new IllegalArgumentException("Message queue name is null");
       }
       
-      StringTokenizer tok = new StringTokenizer(messageQueueName, SEPARATOR);
+      StringBuffer[] parts = new StringBuffer[2];
+      int currentPart = 0;
       
-      int count = 0;
+      parts[0] = new StringBuffer();
+      parts[1] = new StringBuffer();
       
-      while (tok.hasMoreElements())
+      int pos = 0;
+      while (pos < messageQueueName.length())
       {
-         String token = (String)tok.nextElement();
-         
-         if (count == 0)
+         char ch = messageQueueName.charAt(pos);
+         pos++;
+
+         if (ch == SEPARATOR_CHAR)
          {
-            clientId = token;
+            currentPart++;
+            if (currentPart >= parts.length)
+            {
+               throw new IllegalArgumentException("Invalid message queue name: " + messageQueueName);
+            }
+            
+            continue;
          }
-         else if (count == 1)
+
+         if (ch == ESCAPE)
          {
-            subName = token;
+            if (pos >= messageQueueName.length())
+            {
+               throw new IllegalArgumentException("Invalid message queue name: " + messageQueueName);
+            }
+            ch = messageQueueName.charAt(pos);
+            pos++;
          }
-         count++;   
+
+         parts[currentPart].append(ch);
       }
       
-      if (count != 2)
+      if (currentPart != 1)
       {
          throw new IllegalArgumentException("Invalid message queue name: " + messageQueueName);
       }
+      
+      clientId = parts[0].toString();
+      subName = parts[1].toString();
+   }
+   
+   private static String escape(String input)
+   {
+      return input.replace("\\", "\\\\").replace(".", "\\.");
    }
 
    public String getClientId()
@@ -105,6 +131,6 @@ public class MessageQueueNameHelper
          throw new IllegalArgumentException("Subscription name is null");
       }
       
-      return clientID + SEPARATOR + subName;
+      return escape(clientID) + SEPARATOR + escape(subName);
    }      
 }
