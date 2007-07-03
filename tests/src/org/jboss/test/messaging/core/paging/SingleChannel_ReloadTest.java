@@ -128,10 +128,9 @@ public class SingleChannel_ReloadTest extends PagingStateTestBase
       tr.start();
          
       MessagingQueue queue2 = new MessagingQueue(1, "queue1", 1, ms, pm, true, -1, null, 100, 20, 10, false);
-      queue2.activate();
-      
-      queue2.deactivate();
+    
       queue2.load();
+      queue2.activate();
       
       refIds = getReferenceIdsOrderedByPageOrd(queue2.getChannelID());
       assertEquals(50, refIds.size());
@@ -206,9 +205,7 @@ public class SingleChannel_ReloadTest extends PagingStateTestBase
       
       assertEquals(0, queue.getDeliveringCount());
       
-      //Stop and restart the persistence manager
-      //Only the paged messages will survive
-      //This is what would happen if the server crashed
+      //Stop and restart      
 
       pm.stop();
       tr.stop();
@@ -227,16 +224,17 @@ public class SingleChannel_ReloadTest extends PagingStateTestBase
       tr.start();
 
       MessagingQueue queue2 = new MessagingQueue(1, "queue1", 1, ms, pm, false, -1, null, 100, 20, 10, false);
-      queue2.activate();
       
-      queue2.deactivate();
       queue2.load();
       
-      refIds = getReferenceIdsOrderedByPageOrd(queue.getChannelID());
-      assertEquals(50, refIds.size());
+      queue2.activate();
+      
+      //There should be none in the db - the queue is non recoverable
+      refIds = getReferenceIdsOrderedByPageOrd(queue2.getChannelID());
+      assertEquals(0, refIds.size());
       
       List msgIds = getMessageIds();
-      assertEquals(50, msgIds.size());
+      assertEquals(0, msgIds.size());
                                                                   
       assertEquals(100, queue2.memoryRefCount());
       
