@@ -22,6 +22,7 @@
 package org.jboss.messaging.core.impl.postoffice;
 
 import java.io.Serializable;
+import java.util.Set;
 
 import org.jboss.messaging.core.contract.Message;
 
@@ -49,5 +50,5 @@ interface RequestTarget
    
    boolean removeReplicantLocally(int nodeId, Serializable key) throws Exception;
    
-   void routeFromCluster(Message message, String routingKeyText) throws Exception;
+   void routeFromCluster(Message message, String routingKeyText, Set queueNames) throws Exception;
 }

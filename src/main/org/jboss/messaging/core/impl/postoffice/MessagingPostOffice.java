@@ -47,7 +47,6 @@ import javax.management.NotificationListener;
 import javax.sql.DataSource;
 import javax.transaction.TransactionManager;
 
-import org.jboss.jms.server.JMSCondition;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.contract.Binding;
 import org.jboss.messaging.core.contract.ClusterNotification;
@@ -71,6 +70,7 @@ import org.jboss.messaging.core.impl.JDBCSupport;
 import org.jboss.messaging.core.impl.MessagingQueue;
 import org.jboss.messaging.core.impl.tx.Transaction;
 import org.jboss.messaging.core.impl.tx.TransactionRepository;
+import org.jboss.messaging.core.impl.tx.TxCallback;
 import org.jboss.messaging.util.ConcurrentHashSet;
 import org.jboss.messaging.util.StreamUtils;
 import org.jgroups.Address;
@@ -436,7 +436,7 @@ public class MessagingPostOffice extends JDBCSupport
          throw new IllegalArgumentException("Condition is null");
       }
       
-      return routeInternal(ref, condition, tx, false);
+      return routeInternal(ref, condition, tx, false, null);
    }
 
    public Collection getQueuesForCondition(Condition condition, boolean localOnly) throws Exception
@@ -967,9 +967,9 @@ public class MessagingPostOffice extends JDBCSupport
       return true;
    }
 
-   public void routeFromCluster(Message message, String routingKeyText) throws Exception
+   public void routeFromCluster(Message message, String routingKeyText, Set queueNames) throws Exception
    {
-      if (trace) { log.trace(this + " routing from cluster " + message + ", routing key " + routingKeyText); }
+      if (trace) { log.trace(this + " routing from cluster " + message + ", routing key " + routingKeyText + ", queue names " + queueNames); }
 
       Condition routingKey = conditionFactory.createCondition(routingKeyText);
 
@@ -979,7 +979,7 @@ public class MessagingPostOffice extends JDBCSupport
       {
          ref = ms.reference(message);
          
-         routeInternal(ref, routingKey, null, true);        
+         routeInternal(ref, routingKey, null, true, queueNames);        
       }
       finally
       {
@@ -1463,7 +1463,7 @@ public class MessagingPostOffice extends JDBCSupport
    	}
    }
    
-   private boolean routeInternal(MessageReference ref, Condition condition, Transaction tx, boolean fromCluster) throws Exception
+   private boolean routeInternal(MessageReference ref, Condition condition, Transaction tx, boolean fromCluster, Set names) throws Exception
    {
    	if (trace) { log.trace(this + " routing " + ref + " with condition '" +
    			                 condition + "'" + (tx == null ? "" : " transactionally in " + tx) + 
@@ -1503,7 +1503,29 @@ public class MessagingPostOffice extends JDBCSupport
          			//When routing to a clustered temp queue, the queue is unreliable - but we always want to route to the local
          			//one so we need to add the check that we only route remotely if it's a topic
          			//We could do this better by making sure that only one queue with the same name is routed to on the cluster
-         			if (!fromCluster || (!queue.isRecoverable() && !((JMSCondition)condition).isQueue()))
+         			
+         			boolean routeLocal = false;
+         			
+         			if (!fromCluster)
+         			{
+         				//Same node
+         				routeLocal = true;
+         			}
+         			else
+         			{
+         				//From the cluster
+         				if (!queue.isRecoverable())
+         				{
+         					//When routing from the cluster we only route to non recoverable queues
+         					//who haven't already been routed to on the sending node (same name)
+         					if (names == null || !names.contains(queue.getName()))
+         					{
+         						routeLocal = true;
+         					}
+         				}
+         			}
+         			
+         			if (routeLocal)
          			{
          				//If we're not routing from the cluster OR the queue is unreliable then we consider it
          				
@@ -1554,33 +1576,7 @@ public class MessagingPostOffice extends JDBCSupport
          			}
          		}
          	}
-         	
-         	if (remoteSet != null)
-         	{
-         		//There are queues on other nodes that want the message too
-         		
-         		//If the message is non reliable then we can unicast or multicast the message to the group so it
-         		//can get picked up by other nodes
-         		
-         		ClusterRequest request = new MessageRequest(condition.toText(), ref.getMessage());
-         		
-         		if (trace) { log.trace(this + " casting message to other node(s)"); }
-         		
-         		if (remoteSet.size() == 1)
-         		{
-         			//Only one node requires the message, so we can unicast
-         			
-         			unicastRequest(request, ((Integer)remoteSet.iterator().next()).intValue());
-         		}
-         		else
-         		{
-         			//More than one node requires the message - so we multicast         			
-         			//Whether it is reliable or unreliable multicast is determined by the JGroups stack config
-         			
-         			multicastRequest(request);
-         		}
-         	}   
-         	
+         	         	         	
          	//If the ref is reliable and there is more than one reliable local queue that accepts the message then we need
          	//to route in a transaction to guarantee once and only once reliability guarantee
          	
@@ -1599,6 +1595,8 @@ public class MessagingPostOffice extends JDBCSupport
          	
          	iter = targets.iterator();
          	
+         	Set queueNames = null;
+         	
          	while (iter.hasNext())
          	{
          		Queue queue = (Queue)iter.next();
@@ -1612,9 +1610,56 @@ public class MessagingPostOffice extends JDBCSupport
                if (del != null && del.isSelectorAccepted())
                {
                   routed = true;
+                  
+                  if (remoteSet != null)
+                  {
+                  	if (queueNames == null)
+                  	{
+                  		queueNames = new HashSet();
+                  	}
+                  	
+                  	//We put the queue name in a set - this is used on other nodes after routing from the cluster so it
+                  	//doesn't route to queues with the same name on other nodes
+                  	queueNames.add(queue.getName());
+                  }
                }
          	}
-         	
+         	            
+            if (remoteSet != null)
+         	{
+         		//There are queues on other nodes that want the message too
+         		
+         		//If the message is non reliable then we can unicast or multicast the message to the group so it
+         		//can get picked up by other nodes         		
+         		
+         		ClusterRequest request = new MessageRequest(condition.toText(), ref.getMessage(), queueNames);
+         		
+         		if (trace) { log.trace(this + " casting message to other node(s)"); }
+         		
+         		Integer nodeID = null;
+         		
+         		if (remoteSet.size() == 1)
+         		{
+         			//Only one node requires the message, so we can unicast
+         			
+         			nodeID = (Integer)remoteSet.iterator().next();
+         		}
+         		
+         		TxCallback callback = new CastMessageCallback(nodeID, request);
+         		
+         		if (tx != null)
+         		{
+         			tx.addCallback(callback, this);
+         		}
+         		else
+         		{
+         			//Execute it now
+         			callback.afterCommit(true);
+         		}
+         		
+         		routed = true;
+         	}          
+            
             if (startedTx)
             {
                if (trace) { log.trace(this + " committing " + tx); }
@@ -1632,7 +1677,7 @@ public class MessagingPostOffice extends JDBCSupport
 
       return routed;
    }   
-   
+         
    private Binding removeBindingInMemory(int nodeID, String queueName) throws Exception
    {
    	lock.writeLock().acquire();
@@ -2333,5 +2378,57 @@ public class MessagingPostOffice extends JDBCSupport
    }
 
    // Inner classes --------------------------------------------------------------------------------
+   
+   private class CastMessageCallback implements TxCallback
+   {
+   	private Integer nodeID;
+   	
+   	private ClusterRequest request;
+   	
+   	CastMessageCallback(Integer nodeID, ClusterRequest request)
+   	{
+   		this.nodeID = nodeID;
+   		
+   		this.request = request;
+   	}
+
+		public void afterCommit(boolean onePhase) throws Exception
+		{
+			if (nodeID == null)
+			{
+				multicastRequest(request);
+			}
+			else
+			{
+				unicastRequest(request, nodeID.intValue());
+			}
+		}
+
+		public void afterPrepare() throws Exception
+		{	
+			//NOOP
+		}
+
+		public void afterRollback(boolean onePhase) throws Exception
+		{
+			//NOOP
+		}
+
+		public void beforeCommit(boolean onePhase) throws Exception
+		{
+			//NOOP
+		}
+
+		public void beforePrepare() throws Exception
+		{
+			//NOOP
+		}
+
+		public void beforeRollback(boolean onePhase) throws Exception
+		{
+			//NOOP
+		}
+   	
+   }
 
 }

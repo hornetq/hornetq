@@ -344,7 +344,6 @@ public class SessionState extends HierarchicalStateSupport
          catch (Exception e)
          {
             log.error(e.toString(),e);
-            log.info("RecoverDeliveries failed, marking session as invalidated!");
             this.getDelegate().invalidate();
          }
       }

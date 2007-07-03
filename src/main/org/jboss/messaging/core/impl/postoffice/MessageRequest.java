@@ -23,11 +23,12 @@ package org.jboss.messaging.core.impl.postoffice;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
-import java.util.Map;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
 
 import org.jboss.messaging.core.contract.Message;
 import org.jboss.messaging.core.impl.message.MessageFactory;
-import org.jboss.messaging.util.StreamUtils;
 
 /**
  * A MessageRequest
@@ -42,24 +43,32 @@ import org.jboss.messaging.util.StreamUtils;
  */
 class MessageRequest extends ClusterRequest
 {
+   private static final byte NULL = 0;
+   
+   private static final byte NOT_NULL = 1;
+	
    private String routingConditionText;   
    
    private Message message;
+   
+   private Set queueNames;
    
    MessageRequest()
    {      
    }
    
-   MessageRequest(String routingConditionText, Message message)
+   MessageRequest(String routingConditionText, Message message, Set queueNames)
    {
       this.routingConditionText = routingConditionText;
       
       this.message = message;
+      
+      this.queueNames = queueNames;
    }
    
    Object execute(RequestTarget office) throws Exception
    {
-      office.routeFromCluster(message, routingConditionText);      
+      office.routeFromCluster(message, routingConditionText, queueNames);      
       
       return null;
    }  
@@ -77,9 +86,25 @@ class MessageRequest extends ClusterRequest
       
       message = MessageFactory.createMessage(type);
       
-      message.read(in);        
+      message.read(in);  
+      
+      byte b = in.readByte();
+      
+      if (b != NULL)
+      {
+      	int size = in.readInt();
+      	
+      	queueNames = new HashSet(size);
+      	
+      	for (int i = 0; i < size; i++)
+      	{
+      		String queueName = in.readUTF();
+      		
+      		queueNames.add(queueName);
+      	}
+      }
    }
-
+   
    public void write(DataOutputStream out) throws Exception
    {
       out.writeUTF(routingConditionText);
@@ -87,5 +112,25 @@ class MessageRequest extends ClusterRequest
       out.writeByte(message.getType());      
       
       message.write(out);
+      
+      if (queueNames == null)
+      {
+      	out.writeByte(NULL);
+      }
+      else
+      {
+      	out.writeByte(NOT_NULL);
+      	
+      	out.writeInt(queueNames.size());
+      	
+      	Iterator iter = queueNames.iterator();
+      	
+      	while (iter.hasNext())
+      	{
+      		String queueName = (String)iter.next();
+      		
+      		out.writeUTF(queueName);
+      	}      	     
+      }
    }
 }

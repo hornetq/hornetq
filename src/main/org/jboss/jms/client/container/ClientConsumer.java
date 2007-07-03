@@ -47,6 +47,7 @@ import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox/a>
+ * @author <a href="mailto:sergey.koshcheyev@jboss.com">Sergey Koscheyev/a>
  * @version <tt>$Revision: 2774 $</tt>
  *
  * $Id: MessageCallbackHandler.java 2774 2007-06-12 22:43:54Z timfox $

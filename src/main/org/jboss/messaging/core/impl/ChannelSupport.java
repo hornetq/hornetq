@@ -911,8 +911,8 @@ public abstract class ChannelSupport implements Channel
                }
                else
                {	
-	               if (trace) { log.trace(this + ": adding " + ref + " to non-recoverable state"); }
-	
+	               if (trace) { log.trace(this + ": adding " + ref + " to memory"); }
+	               
 	               try
 	               {
 	                  synchronized (lock)
