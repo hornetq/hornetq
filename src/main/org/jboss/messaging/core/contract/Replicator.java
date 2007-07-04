@@ -45,6 +45,8 @@ import java.util.Map;
 public interface Replicator
 {
    public static final String CF_PREFIX = "CF_";
+   
+   public static final String JVM_ID_KEY = "JVMID";
  
    /**
     * Broadcast data across the cluster, updating replication maps on all nodes, including the local

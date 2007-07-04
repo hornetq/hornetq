@@ -150,7 +150,7 @@ public class ServerPeer extends ServiceMBeanSupport
    private SecurityMetadataStore securityStore;
    private ConnectionFactoryJNDIMapper connFactoryJNDIMapper;
    private TransactionRepository txRepository;
-   private ConnectionManager connectionManager;
+   private SimpleConnectionManager connectionManager;
    private ConnectorManager connectorManager;
    private IDManager messageIDManager;
    private IDManager channelIDManager;
@@ -1230,6 +1230,8 @@ public class ServerPeer extends ServiceMBeanSupport
             this.clusterConnectionManager.injectPostOffice(postOffice);
             
             this.clusterConnectionManager.injectReplicator((Replicator)postOffice);
+            
+            this.connectionManager.injectReplicator((Replicator)postOffice);
          }
          
          // Also need to inject into txRepository

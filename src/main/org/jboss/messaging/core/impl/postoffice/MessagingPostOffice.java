@@ -47,6 +47,7 @@ import javax.management.NotificationListener;
 import javax.sql.DataSource;
 import javax.transaction.TransactionManager;
 
+import org.jboss.jms.client.container.JMSClientVMIdentifier;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.contract.Binding;
 import org.jboss.messaging.core.contract.ClusterNotification;
@@ -324,6 +325,9 @@ public class MessagingPostOffice extends JDBCSupport
 	      
 	      //calculate the failover map
 	      calculateFailoverMap();
+	      
+	      //add our vm identifier to the replicator
+	      put(Replicator.JVM_ID_KEY, JMSClientVMIdentifier.instance);
 	      
 	      groupMember.multicastControl(new JoinClusterRequest(thisNodeID, info), true);
       }
