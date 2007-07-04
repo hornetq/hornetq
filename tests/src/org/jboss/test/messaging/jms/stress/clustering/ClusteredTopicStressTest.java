@@ -4,13 +4,12 @@
  * Distributable under LGPL license.
  * See terms of license at gnu.org.
  */
-package org.jboss.test.messaging.jms.stress;
+package org.jboss.test.messaging.jms.stress.clustering;
 
 import java.util.HashSet;
 import java.util.Set;
 
 import javax.jms.Connection;
-import javax.jms.ConnectionFactory;
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
@@ -18,49 +17,33 @@ import javax.jms.MessageListener;
 import javax.jms.MessageProducer;
 import javax.jms.Session;
 import javax.jms.TextMessage;
-import javax.jms.Topic;
-import javax.naming.InitialContext;
 
 import org.jboss.logging.Logger;
-import org.jboss.test.messaging.MessagingTestCase;
-import org.jboss.test.messaging.tools.ServerManagement;
+import org.jboss.test.messaging.jms.clustering.ClusteringTestBase;
 
 
-/**
- * 
- * Create 500 connections each with a consumer, consuming from a topic
- * 
- * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * @version <tt>$Revision: $</tt>4 Jul 2007
- *
- * $Id: $
- *
- */
-public class ManyConnectionsStressTest extends MessagingTestCase
+public class ClusteredTopicStressTest extends ClusteringTestBase
 {
    // Constants -----------------------------------------------------
 
-   private static Logger log = Logger.getLogger(RelayStressTest.class);
+   private static Logger log = Logger.getLogger(ClusteredTopicStressTest.class);
    
-	private static final int NUM_CONNECTIONS = 500;
-	
-	private static final int NUM_MESSAGES = 100;
-	
 
    // Static --------------------------------------------------------
-
-   // Attributes ----------------------------------------------------
-
-   private InitialContext ic;
    
-   private volatile boolean failed;
+   private static final int NODE_COUNT = 10;
+   
+   private static final int NUM_MESSAGES = 100000;
+   
+   // Attributes ----------------------------------------------------
    
    private Set listeners = new HashSet();
    
-
+   private volatile boolean failed;
+   
    // Constructors --------------------------------------------------
 
-   public ManyConnectionsStressTest(String name)
+   public ClusteredTopicStressTest(String name)
    {
       super(name);
    }
@@ -69,45 +52,36 @@ public class ManyConnectionsStressTest extends MessagingTestCase
 
    protected void setUp() throws Exception
    {
-      super.setUp();
-
-      ServerManagement.start("all");
-      
-      ic = new InitialContext(ServerManagement.getJNDIEnvironment());
-      
-      ServerManagement.deployTopic("StressTestTopic");
-
-      log.debug("setup done");
+   	this.nodeCount = NODE_COUNT;
+   	
+      super.setUp();      
    }
 
    protected void tearDown() throws Exception
    {
-      ServerManagement.undeployTopic("StressTestTopic");
-      
-      ic.close();
-      
       super.tearDown();
    }
    
-   public void testManyConnections() throws Exception
+   public void testTopic() throws Throwable
    {
-   	ConnectionFactory cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
-   	
-   	Topic topic = (Topic)ic.lookup("/topic/StressTestTopic");
-   	
-   	Connection[] conns = new Connection[NUM_CONNECTIONS];
+   	Connection[] conns = new Connection[nodeCount];
    	
    	Connection connSend = null;
    	
    	try
    	{
-   		for (int i = 0; i < NUM_CONNECTIONS; i++)
+   		for (int i = 0; i < nodeCount; i++)
    		{
    			conns[i] = cf.createConnection();
+   		}
+   		
+   		this.checkConnectionsDifferentServers(conns);
    			
+   		for (int i = 0; i < nodeCount; i++)
+   		{
    			Session sess = conns[i].createSession(false, Session.AUTO_ACKNOWLEDGE);
    			
-   			MessageConsumer cons = sess.createConsumer(topic);
+   			MessageConsumer cons = sess.createConsumer(topic[i]);
    			
    			MyListener listener = new MyListener();
    			
@@ -123,13 +97,11 @@ public class ManyConnectionsStressTest extends MessagingTestCase
    			log.info("Created " + i);
    		}
    		
-   		//Thread.sleep(100 * 60 * 1000);
-   		
    		connSend = cf.createConnection();
    		
    		Session sessSend = connSend.createSession(false, Session.AUTO_ACKNOWLEDGE);
    		
-   		MessageProducer prod = sessSend.createProducer(topic);
+   		MessageProducer prod = sessSend.createProducer(topic[0]);
    		
    		for (int i = 0; i < NUM_MESSAGES; i++)
    		{
@@ -165,12 +137,10 @@ public class ManyConnectionsStressTest extends MessagingTestCase
    		}
    		
    		assertFalse(failed);
-
-   		log.info("Done");
    	}
    	finally
    	{
-   		for (int i = 0; i < NUM_CONNECTIONS; i++)
+   		for (int i = 0; i < nodeCount; i++)
    		{
    			try
    			{
@@ -226,7 +196,10 @@ public class ManyConnectionsStressTest extends MessagingTestCase
 			{
 				int count = msg.getIntProperty("count");
 				
-				//log.info(this + " got message " + msg);
+				if (count % 100 == 0)
+				{
+					log.info(this + " got message " + msg);
+				}
 				
 				if (count == NUM_MESSAGES - 1)
 				{
@@ -242,6 +215,7 @@ public class ManyConnectionsStressTest extends MessagingTestCase
 		}
    	
    }
+   
 }
 
 
