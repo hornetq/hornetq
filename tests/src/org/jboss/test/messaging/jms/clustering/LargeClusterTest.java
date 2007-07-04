@@ -283,7 +283,7 @@ public class LargeClusterTest extends ClusteringTestBase
 
       try
       {
-         conn0 = cf.createConnection();
+         conn0 = this.createConnectionOnServer(cf, 0);
          assertEquals(0, ((ClientConnectionDelegate)((JBossConnection)conn0).
             getDelegate()).getServerID());
          Session s0 = conn0.createSession(false, Session.AUTO_ACKNOWLEDGE);

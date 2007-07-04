@@ -112,9 +112,9 @@ public class DistributedQueueTest extends ClusteringTestBase
       {
          //This will create 3 different connection on 3 different nodes, since
          //the cf is clustered
-         conn0 = cf.createConnection();
-         conn1 = cf.createConnection();
-         conn2 = cf.createConnection();
+         conn0 = this.createConnectionOnServer(cf, 0);
+         conn1 = this.createConnectionOnServer(cf, 1);
+         conn2 = this.createConnectionOnServer(cf, 2);
          
          checkConnectionsDifferentServers(new Connection[] {conn0, conn1, conn2});
 
@@ -566,9 +566,9 @@ public class DistributedQueueTest extends ClusteringTestBase
       	
          //This will create 3 different connection on 3 different nodes, since
          //the cf is clustered
-         conn0 = cf.createConnection();
-         conn1 = cf.createConnection();
-         conn2 = cf.createConnection();
+         conn0 = this.createConnectionOnServer(cf, 0);
+         conn1 = this.createConnectionOnServer(cf, 1);
+         conn2 = this.createConnectionOnServer(cf, 2);
          
          checkConnectionsDifferentServers(new Connection[] {conn0, conn1, conn2});
 

@@ -31,6 +31,8 @@ import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.Session;
 import javax.jms.Topic;
+import javax.jms.XAConnection;
+import javax.jms.XAConnectionFactory;
 import javax.naming.InitialContext;
 import javax.sql.DataSource;
 import javax.transaction.TransactionManager;
@@ -289,6 +291,52 @@ public class MessagingTestCase extends ProxyAssertSupport
    protected int getServerId(Connection conn)
    {
       return ((JBossConnection) conn).getServerID();
+   }
+   
+   protected Connection createConnectionOnServer(ConnectionFactory factory, int serverId)
+   throws Exception
+   {
+   	int count=0;
+
+   	while (true)
+   	{
+   		if (count++>10)
+   			return null;
+
+   		Connection connection = factory.createConnection();
+
+   		if (getServerId(connection) == serverId)
+   		{
+   			return connection;
+   		}
+   		else
+   		{
+   			connection.close();
+   		}
+   	}
+   }
+
+   protected XAConnection createXAConnectionOnServer(XAConnectionFactory factory, int serverId)
+   throws Exception
+   {
+   	int count=0;
+
+   	while (true)
+   	{
+   		if (count++>10)
+   			return null;
+
+   		XAConnection connection = factory.createXAConnection();
+
+   		if (getServerId(connection) == serverId)
+   		{
+   			return connection;
+   		}
+   		else
+   		{
+   			connection.close();
+   		}
+   	}
    }
 
    // Private -------------------------------------------------------

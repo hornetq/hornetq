@@ -29,8 +29,6 @@ import javax.jms.MessageConsumer;
 import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.Topic;
-import javax.jms.XAConnection;
-import javax.jms.XAConnectionFactory;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 
@@ -69,7 +67,7 @@ public class ClusteringTestBase extends MessagingTestCase
    
    protected ServiceAttributeOverrides overrides;
 
-   // No need to have multiple conncetion factories since a clustered connection factory will create
+   // No need to have multiple connection factories since a clustered connection factory will create
    // connections in a round robin fashion on different servers.
 
    protected ConnectionFactory cf;
@@ -165,51 +163,7 @@ public class ClusteringTestBase extends MessagingTestCase
          getDelegate()).getState());
    }
 
-   protected Connection createConnectionOnServer(ConnectionFactory factory, int serverId)
-      throws Exception
-   {
-      int count=0;
-
-      while (true)
-      {
-         if (count++>10)
-            return null;
-
-         Connection connection = factory.createConnection();
-
-         if (getServerId(connection) == serverId)
-         {
-            return connection;
-         }
-         else
-         {
-            connection.close();
-         }
-      }
-   }
-
-   protected XAConnection createXAConnectionOnServer(XAConnectionFactory factory, int serverId)
-      throws Exception
-   {
-      int count=0;
    
-      while (true)
-      {
-         if (count++>10)
-            return null;
-   
-         XAConnection connection = factory.createXAConnection();
-   
-         if (getServerId(connection) == serverId)
-         {
-            return connection;
-         }
-         else
-         {
-            connection.close();
-         }
-      }
-   }
 
    protected void waitForFailoverComplete(int serverID, Connection conn1)
       throws Exception

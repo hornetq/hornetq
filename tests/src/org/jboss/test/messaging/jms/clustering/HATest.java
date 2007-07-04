@@ -95,6 +95,8 @@ public class HATest extends ClusteringTestBase
       Connection conn3 = factory.createConnection();
 
       Connection[] conn = new Connection[]{conn1, conn2, conn3};
+      
+      this.checkConnectionsDifferentServers(conn);
 
       log.info("Connection delegate information after creation");
 

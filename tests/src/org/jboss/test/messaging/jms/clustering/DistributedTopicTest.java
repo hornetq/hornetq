@@ -165,9 +165,9 @@ public class DistributedTopicTest extends ClusteringTestBase
       {
          //This will create 3 different connection on 3 different nodes, since
          //the cf is clustered
-         conn0 = cf.createConnection();
-         conn1 = cf.createConnection();
-         conn2 = cf.createConnection();
+         conn0 = this.createConnectionOnServer(cf, 0);
+         conn1 = this.createConnectionOnServer(cf, 1);
+         conn2 = this.createConnectionOnServer(cf, 2);
          
          checkConnectionsDifferentServers(new Connection[] {conn0, conn1, conn2});
 
@@ -300,9 +300,9 @@ public class DistributedTopicTest extends ClusteringTestBase
       {
          //This will create 3 different connection on 3 different nodes, since
          //the cf is clustered
-         conn0 = cf.createConnection();
-         conn1 = cf.createConnection();
-         conn2 = cf.createConnection();
+      	conn0 = this.createConnectionOnServer(cf, 0);
+         conn1 = this.createConnectionOnServer(cf, 1);
+         conn2 = this.createConnectionOnServer(cf, 2);
          
          checkConnectionsDifferentServers(new Connection[] {conn0, conn1, conn2});
 
@@ -448,9 +448,9 @@ public class DistributedTopicTest extends ClusteringTestBase
       try
       {
          // This will create 3 different connection on 3 different nodes, since the cf is clustered
-         conn0 = cf.createConnection();
-         conn1 = cf.createConnection();
-         conn2 = cf.createConnection();
+      	conn0 = this.createConnectionOnServer(cf, 0);
+         conn1 = this.createConnectionOnServer(cf, 1);
+         conn2 = this.createConnectionOnServer(cf, 2);
          
          checkConnectionsDifferentServers(new Connection[] {conn0, conn1, conn2});
 
@@ -695,9 +695,9 @@ public class DistributedTopicTest extends ClusteringTestBase
       {
          //This will create 3 different connection on 3 different nodes, since
          //the cf is clustered
-         conn1 = cf.createConnection();
-         conn2 = cf.createConnection();
-         conn3 = cf.createConnection();
+      	conn1 = this.createConnectionOnServer(cf, 0);
+         conn2 = this.createConnectionOnServer(cf, 1);
+         conn3 = this.createConnectionOnServer(cf, 2);
          
          checkConnectionsDifferentServers(new Connection[] {conn1, conn2, conn3});
          conn1.setClientID("wib1");
@@ -907,9 +907,9 @@ public class DistributedTopicTest extends ClusteringTestBase
       {
          //This will create 3 different connection on 3 different nodes, since
          //the cf is clustered
-         conn1 = cf.createConnection();
-         conn2 = cf.createConnection();
-         conn3 = cf.createConnection();
+      	conn1 = this.createConnectionOnServer(cf, 0);
+         conn2 = this.createConnectionOnServer(cf, 1);
+         conn3 = this.createConnectionOnServer(cf, 2);
          
          checkConnectionsDifferentServers(new Connection[] {conn1, conn2, conn3});
          
@@ -1045,9 +1045,9 @@ public class DistributedTopicTest extends ClusteringTestBase
 
          //This will create 3 different connection on 3 different nodes, since
          //the cf is clustered
-         conn0 = cf.createConnection();
-         conn1 = cf.createConnection();
-         conn2 = cf.createConnection();
+         conn0 = this.createConnectionOnServer(cf, 0);
+         conn1 = this.createConnectionOnServer(cf, 1);
+         conn2 = this.createConnectionOnServer(cf, 2);
          
          checkConnectionsDifferentServers(new Connection[] {conn0, conn1, conn2});
 
@@ -1236,9 +1236,9 @@ public class DistributedTopicTest extends ClusteringTestBase
 
          //This will create 3 different connection on 3 different nodes, since
          //the cf is clustered
-         conn0 = cf.createConnection();
-         conn1 = cf.createConnection();
-         conn2 = cf.createConnection();
+         conn0 = this.createConnectionOnServer(cf, 0);
+         conn1 = this.createConnectionOnServer(cf, 1);
+         conn2 = this.createConnectionOnServer(cf, 2);
          
          conn0.setClientID("cl123");
          conn1.setClientID("cl123");

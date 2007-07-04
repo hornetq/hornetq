@@ -170,9 +170,9 @@ public class ClusterViewUpdateTest extends ClusteringTestBase
 
       Connection conn2 = cf.createConnection();
 
-      assertEquals(2, getServerId(conn2));
-
       assertEquals(1, getServerId(conn1));
+      
+      assertEquals(2, getServerId(conn2));
 
       ConnectionState state = this.getConnectionState(conn1);
 

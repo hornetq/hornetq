@@ -201,7 +201,7 @@ public class ClusterConnectionManagerTest extends ClusteringTestBase
       
       try
       {
-      	conn0 = cf0.createConnection();
+      	conn0 = this.createConnectionOnServer(cf0, 0);
       	
       	//Send some messages on node 0
       	
@@ -220,7 +220,7 @@ public class ClusterConnectionManagerTest extends ClusteringTestBase
       	
       	//Consume them on node 1
       	
-      	conn1 = cf1.createConnection();
+      	conn1 = this.createConnectionOnServer(cf1, 1);
       	
       	Session sess1 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
       	

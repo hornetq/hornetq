@@ -237,7 +237,7 @@ public class DisableLoadBalancingAndFailoverTest extends ClusteringTestBase
          	long end = System.currentTimeMillis();
          	
          	//Make sure it doesn't take too long
-         	assertTrue((end - start) <= 20);
+         	assertTrue((end - start) <= 100);
          }                 
       }
       finally

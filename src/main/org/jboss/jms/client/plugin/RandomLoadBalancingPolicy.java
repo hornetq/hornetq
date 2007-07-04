@@ -70,10 +70,14 @@ public class RandomLoadBalancingPolicy implements LoadBalancingPolicy
    {
       if (random == null)
       {
-         random = new Random();
+      	long seed = System.currentTimeMillis() ^ (long)new Object().hashCode();
+      	
+         random = new Random(seed);
       }
+      
       int nextInt = random.nextInt() % delegates.length;
-      if (nextInt<0)
+      
+      if (nextInt < 0)
       {
          nextInt *= -1;
       }

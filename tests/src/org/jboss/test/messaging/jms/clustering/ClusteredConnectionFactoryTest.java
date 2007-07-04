@@ -87,7 +87,6 @@ public class ClusteredConnectionFactoryTest extends ClusteringTestBase
 
       try
       {
-
          ServerManagement.killAndWait(0);
          ServerManagement.killAndWait(1);
 
@@ -145,7 +144,6 @@ public class ClusteredConnectionFactoryTest extends ClusteringTestBase
 
       try
       {
-
          // Poison each server with a different pointcut crash
          ServerManagement.poisonTheServer(1, PoisonInterceptor.CF_CREATE_CONNECTION);
 

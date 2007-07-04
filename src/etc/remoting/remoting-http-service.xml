@@ -23,7 +23,7 @@
                <attribute name="socket.check_connection" isParam="true">false</attribute>
                <attribute name="callbackStore">org.jboss.remoting.callback.BlockingCallbackStore</attribute>
                <attribute name="callbackPollPeriod" isParam="true">102</attribute>
-               <attribute name="clientLeasePeriod" isParam="true">20000</attribute>
+               <attribute name="clientLeasePeriod" isParam="true">10000</attribute>
             </invoker>
             <handlers>
                <handler subsystem="JMS">org.jboss.jms.server.remoting.JMSServerInvocationHandler</handler>

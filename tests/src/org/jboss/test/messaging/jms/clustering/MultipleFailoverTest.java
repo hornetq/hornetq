@@ -75,7 +75,7 @@ public class MultipleFailoverTest extends ClusteringTestBase
       {
          // we start with a cluster of two (server 0 and server 1)
 
-         conn = cf.createConnection();
+         conn = this.createConnectionOnServer(cf, 0);
          conn.start();
 
          // send/receive message
@@ -200,7 +200,7 @@ public class MultipleFailoverTest extends ClusteringTestBase
 
       try
       {
-         conn = cf.createConnection();
+         conn = this.createConnectionOnServer(cf, 0);
 
          Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 

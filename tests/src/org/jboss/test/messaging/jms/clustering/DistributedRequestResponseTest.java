@@ -134,7 +134,7 @@ public class DistributedRequestResponseTest extends MessagingTestCase
 	      Queue queue0 = (Queue)ic0.lookup("/queue/testDistributedQueue");
 	      Queue queue1 = (Queue)ic1.lookup("/queue/testDistributedQueue");
 	   	
-         conn0 = cf.createConnection();
+         conn0 = this.createConnectionOnServer(cf, 0);
          
          conn1 = cf.createConnection();
          
