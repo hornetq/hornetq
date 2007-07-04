@@ -24,7 +24,6 @@ package org.jboss.test.messaging.jms.clustering;
 
 import java.util.Map;
 import java.util.Set;
-import java.util.ArrayList;
 
 import javax.jms.*;
 
@@ -185,7 +184,7 @@ public class HATest extends ClusteringTestBase
 
       try
       {
-         conn1 = factory.createConnection();  //server 0
+         conn1 = createConnectionOnServer(factory, 0);  //server 0
 
          conn2 = factory.createConnection();  //server 1
 
@@ -195,25 +194,15 @@ public class HATest extends ClusteringTestBase
 
          conn5 = factory.createConnection();  //server 1
 
-         ConnectionState state1 = (ConnectionState)(((DelegateSupport)((JBossConnection)conn1).getDelegate()).getState());
+         int serverID1 = getServerId(conn1);
 
-         ConnectionState state2 = (ConnectionState)(((DelegateSupport)((JBossConnection)conn2).getDelegate()).getState());
+         int serverID2 = getServerId(conn2);
 
-         ConnectionState state3 = (ConnectionState)(((DelegateSupport)((JBossConnection)conn3).getDelegate()).getState());
+         int serverID3 = getServerId(conn3);
 
-         ConnectionState state4 = (ConnectionState)(((DelegateSupport)((JBossConnection)conn4).getDelegate()).getState());
+         int serverID4 = getServerId(conn4);
 
-         ConnectionState state5 = (ConnectionState)(((DelegateSupport)((JBossConnection)conn5).getDelegate()).getState());
-
-         int serverID1 = state1.getServerID();
-
-         int serverID2 = state2.getServerID();
-
-         int serverID3 = state3.getServerID();
-
-         int serverID4 = state4.getServerID();
-
-         int serverID5 = state5.getServerID();
+         int serverID5 = getServerId(conn5);
 
          log.info("server id 1: " + serverID1);
 
@@ -536,21 +525,9 @@ public class HATest extends ClusteringTestBase
 
       try
       {
-         conn = factory.createConnection(); //connection on server 0
+         conn = createConnectionOnServer(factory, 1);
 
-         conn.close();
-
-         conn = factory.createConnection(); //connection on server 1
-
-         JBossConnection jbc = (JBossConnection)conn;
-
-         ClientConnectionDelegate del = (ClientConnectionDelegate)jbc.getDelegate();
-
-         ConnectionState state = (ConnectionState)del.getState();
-
-         int initialServerID = state.getServerID();
-
-         assertEquals(1, initialServerID);
+         assertEquals(1, getServerId(conn));
 
          Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
@@ -586,9 +563,7 @@ public class HATest extends ClusteringTestBase
 
          log.info("done wait");
 
-         state = (ConnectionState)del.getState();
-
-         int finalServerID = state.getServerID();
+         int finalServerID = getServerId(conn);
 
          log.info("final server id= " + finalServerID);
 
@@ -653,10 +628,6 @@ public class HATest extends ClusteringTestBase
       }
 
       Queue anotherQueue = (Queue)ic[1].lookup("queue/anotherQueue");
-
-      ClientClusteredConnectionFactoryDelegate delegate =
-         (ClientClusteredConnectionFactoryDelegate)factory.getDelegate();
-
 
       JBossConnection conn0 = (JBossConnection) factory.createConnection();
       JBossConnection conn1 = (JBossConnection) factory.createConnection();

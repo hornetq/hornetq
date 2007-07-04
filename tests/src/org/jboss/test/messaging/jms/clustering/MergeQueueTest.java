@@ -52,9 +52,9 @@ public class MergeQueueTest extends ClusteringTestBase
       {
 
          // Objects Server0
-         conn0 = cf.createConnection();
+         conn0 = createConnectionOnServer(cf, 0);
 
-         assertEquals(0, ((JBossConnection)conn0).getServerID());
+         assertEquals(0, getServerId(conn0));
 
          Session session0 = conn0.createSession(true, Session.SESSION_TRANSACTED);
 
@@ -90,7 +90,7 @@ public class MergeQueueTest extends ClusteringTestBase
          // Objects Server1
          conn1 = cf.createConnection();
 
-         assertEquals(1, ((JBossConnection)conn1).getServerID());
+         assertEquals(1, getServerId(conn1));
 
          conn1.start();
 
@@ -144,9 +144,9 @@ public class MergeQueueTest extends ClusteringTestBase
       {
 
          // Objects Server0
-         conn0 = cf.createConnection();
+         conn0 = createConnectionOnServer(cf, 0);
 
-         assertEquals(0, ((JBossConnection)conn0).getServerID());
+         assertEquals(0, getServerId(conn0));
 
          Session session0 = conn0.createSession(true, Session.SESSION_TRANSACTED);
 
@@ -183,7 +183,7 @@ public class MergeQueueTest extends ClusteringTestBase
          // Objects Server1
          conn1 = cf.createConnection();
 
-         assertEquals(1, ((JBossConnection)conn1).getServerID());
+         assertEquals(1, getServerId(conn1));
 
          conn1.start();
 
@@ -276,13 +276,13 @@ public class MergeQueueTest extends ClusteringTestBase
       try
       {
          // Objects Server0
-         conn0 = cf.createConnection();
+         conn0 = createConnectionOnServer(cf, 0);
 
-         assertEquals(0, ((JBossConnection)conn0).getServerID());
+         assertEquals(0, getServerId(conn0));
          
          conn1 = cf.createConnection();
          
-         assertEquals(1, ((JBossConnection)conn1).getServerID());
+         assertEquals(1, getServerId(conn1));
          
          //Send some messages on node 0
          
@@ -476,13 +476,13 @@ public class MergeQueueTest extends ClusteringTestBase
          Queue queue1 = (Queue)ic[1].lookup("queue/constrainedQueue");
          
          // Objects Server0
-         conn0 = cf.createConnection();
+         conn0 = createConnectionOnServer(cf, 0);
 
-         assertEquals(0, ((JBossConnection)conn0).getServerID());
+         assertEquals(0, getServerId(conn0));
          
          conn1 = cf.createConnection();
          
-         assertEquals(1, ((JBossConnection)conn1).getServerID());
+         assertEquals(1, getServerId(conn1));
          
          //Send some messages on node 0
          

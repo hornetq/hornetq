@@ -106,31 +106,31 @@ public class DisableLoadBalancingAndFailoverTest extends ClusteringTestBase
       {
       	conn = theCF.createConnection();
       	
-      	int serverID = ((JBossConnection)conn).getServerID();
+      	int serverID = getServerId(conn);
       	
          conn.close();
          
          conn = theCF.createConnection();
       	
-         assertEquals(serverID, ((JBossConnection)conn).getServerID());
+         assertEquals(serverID, getServerId(conn));
          
          conn.close();
          
          conn = theCF.createConnection();
       	
-         assertEquals(serverID, ((JBossConnection)conn).getServerID());
+         assertEquals(serverID, getServerId(conn));
          
          conn.close();
          
          conn = theCF.createConnection();
       	
-         assertEquals(serverID, ((JBossConnection)conn).getServerID());
+         assertEquals(serverID, getServerId(conn));
          
          conn.close();
          
          conn = theCF.createConnection();
       	
-         assertEquals(serverID, ((JBossConnection)conn).getServerID());                
+         assertEquals(serverID, getServerId(conn));                
       }
       finally
       {
@@ -151,7 +151,7 @@ public class DisableLoadBalancingAndFailoverTest extends ClusteringTestBase
       	      	
       	conn = theCF.createConnection();
       	
-      	int serverID = ((JBossConnection)conn).getServerID();
+      	int serverID = getServerId(conn);
       	log.info("server id is " + serverID);
       	
          conn.close();
@@ -159,7 +159,7 @@ public class DisableLoadBalancingAndFailoverTest extends ClusteringTestBase
          conn = theCF.createConnection();
       	
          serverID = ++serverID % 3;
-         assertEquals(serverID, ((JBossConnection)conn).getServerID());
+         assertEquals(serverID, getServerId(conn));
          
       	log.info("server id is " + serverID);
          
@@ -168,7 +168,7 @@ public class DisableLoadBalancingAndFailoverTest extends ClusteringTestBase
          conn = theCF.createConnection();
       	
          serverID = ++serverID % 3;
-         assertEquals(serverID, ((JBossConnection)conn).getServerID());
+         assertEquals(serverID, getServerId(conn));
       	log.info("server id is " + serverID);
          
          conn.close();
@@ -176,7 +176,7 @@ public class DisableLoadBalancingAndFailoverTest extends ClusteringTestBase
          conn = theCF.createConnection();
       	
          serverID = ++serverID % 3;
-         assertEquals(serverID, ((JBossConnection)conn).getServerID());
+         assertEquals(serverID, getServerId(conn));
       	log.info("server id is " + serverID);
          
          conn.close();
@@ -184,7 +184,7 @@ public class DisableLoadBalancingAndFailoverTest extends ClusteringTestBase
          conn = theCF.createConnection();
       	
          serverID = ++serverID % 3;
-         assertEquals(serverID, ((JBossConnection)conn).getServerID());
+         assertEquals(serverID, getServerId(conn));
       	log.info("server id is " + serverID);
       }
       finally
@@ -203,17 +203,9 @@ public class DisableLoadBalancingAndFailoverTest extends ClusteringTestBase
 
       try
       {
-      	do
-      	{
-      		if (conn != null)
-      		{
-      			conn.close();
-      		}
-      		conn = theCF.createConnection();
-      	}
-      	while (((JBossConnection)conn).getServerID() != 1);
+         conn = createConnectionOnServer(theCF, 1);
       	
-         assertEquals(1, ((JBossConnection)conn).getServerID());
+         assertEquals(1, getServerId(conn));
          
          Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
          
@@ -263,21 +255,13 @@ public class DisableLoadBalancingAndFailoverTest extends ClusteringTestBase
 
       try
       {
-      	do
-      	{
-      		if (conn != null)
-      		{
-      			conn.close();
-      		}
-      		conn = theCF1.createConnection();
-      	}
-      	while (((JBossConnection)conn).getServerID() != 1);
+         conn = createConnectionOnServer(theCF1, 1);
       	
       	MyListener listener = new MyListener();
       	
       	conn.setExceptionListener(listener);
       	
-         assertEquals(1, ((JBossConnection)conn).getServerID());
+         assertEquals(1, getServerId(conn));
          
          //Now kill server 1
          
@@ -331,21 +315,13 @@ public class DisableLoadBalancingAndFailoverTest extends ClusteringTestBase
 
       try
       {
-      	do
-      	{
-      		if (conn != null)
-      		{
-      			conn.close();
-      		}
-      		conn = theCF.createConnection();
-      	}
-      	while (((JBossConnection)conn).getServerID() != 1);
+         conn = createConnectionOnServer(theCF, 1);
       	
       	// register a failover listener
          SimpleFailoverListener failoverListener = new SimpleFailoverListener();
          ((JBossConnection)conn).registerFailoverListener(failoverListener);
       	
-         assertEquals(1, ((JBossConnection)conn).getServerID());
+         assertEquals(1, getServerId(conn));
          
          Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
          

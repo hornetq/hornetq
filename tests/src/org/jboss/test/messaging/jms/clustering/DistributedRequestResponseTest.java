@@ -138,9 +138,9 @@ public class DistributedRequestResponseTest extends MessagingTestCase
          
          conn1 = cf.createConnection();
          
-         assertEquals(0, ((JBossConnection)conn0).getServerID());
+         assertEquals(0, getServerId(conn0));
          
-         assertEquals(1, ((JBossConnection)conn1).getServerID());
+         assertEquals(1, getServerId(conn1));
          
          // Make sure the connections are on different servers
          

@@ -57,7 +57,7 @@ public class ClusterViewUpdateTest extends ClusteringTestBase
 
    public void testUpdateConnectionFactory() throws Exception
    {
-      Connection conn = cf.createConnection();
+      Connection conn = createConnectionOnServer(cf, 0);
 
       JBossConnectionFactory jbcf = (JBossConnectionFactory)cf;
 
@@ -98,7 +98,7 @@ public class ClusterViewUpdateTest extends ClusteringTestBase
 
    public void testUpdateMixedConnectionFactory() throws Exception
    {
-      Connection conn = cf.createConnection();
+      Connection conn = createConnectionOnServer(cf, 0);
       JBossConnectionFactory jbcf = (JBossConnectionFactory)cf;
 
       ClientClusteredConnectionFactoryDelegate cfDelegate =
@@ -109,7 +109,7 @@ public class ClusterViewUpdateTest extends ClusteringTestBase
       ConnectionFactory httpCF = (ConnectionFactory)ic[0].lookup("/HTTPConnectionFactory");
       JBossConnectionFactory jbhttpCF = (JBossConnectionFactory) httpCF;
       
-      Connection httpConn = httpCF.createConnection();
+      Connection httpConn = createConnectionOnServer(httpCF, 0);
 
       ClientClusteredConnectionFactoryDelegate httpcfDelegate =
          (ClientClusteredConnectionFactoryDelegate)jbhttpCF.getDelegate();
@@ -160,7 +160,7 @@ public class ClusterViewUpdateTest extends ClusteringTestBase
    public void testUpdateConnectionFactoryRaceCondition() throws Exception
    {
       // This connection needs to be opened, as we need the callback to update CF from this conn
-      Connection conn = cf.createConnection();
+      Connection conn = createConnectionOnServer(cf, 0);
       JBossConnectionFactory jbcf = (JBossConnectionFactory) cf;
       ClientClusteredConnectionFactoryDelegate cfDelegate =
          (ClientClusteredConnectionFactoryDelegate) jbcf.getDelegate();

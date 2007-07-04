@@ -29,6 +29,8 @@ import javax.jms.MessageConsumer;
 import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.Topic;
+import javax.jms.XAConnection;
+import javax.jms.XAConnectionFactory;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 
@@ -186,6 +188,28 @@ public class ClusteringTestBase extends MessagingTestCase
       }
    }
 
+   protected XAConnection createXAConnectionOnServer(XAConnectionFactory factory, int serverId)
+      throws Exception
+   {
+      int count=0;
+   
+      while (true)
+      {
+         if (count++>10)
+            return null;
+   
+         XAConnection connection = factory.createXAConnection();
+   
+         if (getServerId(connection) == serverId)
+         {
+            return connection;
+         }
+         else
+         {
+            connection.close();
+         }
+      }
+   }
 
    protected void waitForFailoverComplete(int serverID, Connection conn1)
       throws Exception

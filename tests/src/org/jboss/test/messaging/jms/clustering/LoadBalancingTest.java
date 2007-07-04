@@ -70,15 +70,15 @@ public class LoadBalancingTest extends MessagingTestCase
 
          Connection conn0 = cf.createConnection();
 
-         assertEquals(0, ((JBossConnection)conn0).getServerID());
+         assertEquals(0, getServerId(conn0));
 
          Connection conn1 = cf.createConnection();
 
-         assertEquals(0, ((JBossConnection)conn1).getServerID());
+         assertEquals(0, getServerId(conn1));
 
          Connection conn2 = cf.createConnection();
 
-         assertEquals(0, ((JBossConnection)conn2).getServerID());
+         assertEquals(0, getServerId(conn2));
 
          conn0.close();
          conn1.close();
@@ -117,24 +117,27 @@ public class LoadBalancingTest extends MessagingTestCase
             clusteredDelegate.getLoadBalancingPolicy().getClass());
 
          Connection conn0 = cf.createConnection();
+         
+         final int oneId = getServerId(conn0);
+         final int otherId = 1 - oneId;
 
-         assertEquals(0, ((JBossConnection)conn0).getServerID());
+         assertEquals(oneId, getServerId(conn0));
 
          Connection conn1 = cf.createConnection();
 
-         assertEquals(1, ((JBossConnection)conn1).getServerID());
+         assertEquals(otherId, getServerId(conn1));
 
          Connection conn2 = cf.createConnection();
 
-         assertEquals(0, ((JBossConnection)conn2).getServerID());
+         assertEquals(oneId, getServerId(conn2));
 
          Connection conn3 = cf.createConnection();
 
-         assertEquals(1, ((JBossConnection)conn3).getServerID());
+         assertEquals(otherId, getServerId(conn3));
 
          Connection conn4 = cf.createConnection();
 
-         assertEquals(0, ((JBossConnection)conn4).getServerID());
+         assertEquals(oneId, getServerId(conn4));
 
          conn0.close();
          conn1.close();
@@ -143,6 +146,41 @@ public class LoadBalancingTest extends MessagingTestCase
          conn4.close();
 
          ic0.close();
+      }
+      finally
+      {
+         ServerManagement.stop(1);
+         ServerManagement.stop(0);
+      }
+   }
+   
+   public void testRoundRobinLoadBalancingStartsWithRandomNode() throws Exception
+   {
+      // Make sure all servers are created and started; make sure that database is zapped ONLY for
+      // the first server, the others rely on values they expect to find in shared tables; don't
+      // clear the database for those.
+
+      ServerManagement.start(0, "all", true);
+      ServerManagement.start(1, "all", false);
+
+      try
+      {
+         int[] counts = new int[2];
+         
+         for (int i = 0; i < 10; i++)
+         {
+            InitialContext ic = new InitialContext(ServerManagement.getJNDIEnvironment(0));
+            ConnectionFactory cf = (ConnectionFactory)ic.lookup("/ClusteredConnectionFactory");
+            Connection firstConnection = cf.createConnection();
+            int serverPeerID = getServerId(firstConnection);
+            firstConnection.close();
+            ic.close();
+
+            counts[serverPeerID]++;
+         }
+         
+         assertTrue("Should have connected to ServerPeer 0 at least once", counts[0] > 0);
+         assertTrue("Should have connected to ServerPeer 1 at least once", counts[1] > 0);
       }
       finally
       {

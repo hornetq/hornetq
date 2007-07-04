@@ -23,6 +23,8 @@
 package org.jboss.test.messaging.jms.clustering;
 
 import javax.jms.Connection;
+import javax.jms.ConnectionFactory;
+import javax.jms.JMSException;
 
 import org.jboss.jms.client.JBossConnection;
 import org.jboss.jms.client.JBossConnectionFactory;
@@ -92,7 +94,7 @@ public class ClusteredConnectionFactoryTest extends ClusteringTestBase
          assertNotNull(((JBossConnectionFactory)cf).getDelegate().getClientAOPStack());
 
          conn = cf.createConnection();
-         assertEquals(2, ((JBossConnection)conn).getServerID());
+         assertEquals(2, getServerId(conn));
       }
       finally
       {
@@ -112,22 +114,21 @@ public class ClusteredConnectionFactoryTest extends ClusteringTestBase
          ServerManagement.start(0, "all", true);
       }
    }
-
+   
    public void testCreateConnectionOnBrokenServer() throws Exception
    {
       Connection conn = null;
 
       try
       {
-         conn = cf.createConnection();
-         assertEquals(0, ((JBossConnection)conn).getServerID());
+         conn = createConnectionOnServer(cf, 0);
          conn.close();
          conn = null;
 
          ServerManagement.killAndWait(1);
          conn = cf.createConnection();
 
-         assertEquals(2,((JBossConnection)conn).getServerID());
+         assertEquals(2, getServerId(conn));
       }
       finally
       {
@@ -148,8 +149,7 @@ public class ClusteredConnectionFactoryTest extends ClusteringTestBase
          // Poison each server with a different pointcut crash
          ServerManagement.poisonTheServer(1, PoisonInterceptor.CF_CREATE_CONNECTION);
 
-         conn = cf.createConnection();
-         assertEquals(0, ((JBossConnection)conn).getServerID());
+         conn = createConnectionOnServer(cf, 0);
          conn.close();
          conn = null;
 
@@ -157,7 +157,7 @@ public class ClusteredConnectionFactoryTest extends ClusteringTestBase
          log.info("creating connection on server 1");
          conn = cf.createConnection();
 
-         assertEquals(2, ((JBossConnection)conn).getServerID());
+         assertEquals(2, getServerId(conn));
       }
       finally
       {
@@ -174,15 +174,14 @@ public class ClusteredConnectionFactoryTest extends ClusteringTestBase
 
       try
       {
-         conn = cf.createConnection();
-         assertEquals(0, ((JBossConnection)conn).getServerID());
+         conn = createConnectionOnServer(cf, 0);
          conn.close();
 
          ServerManagement.killAndWait(1);
          ServerManagement.killAndWait(2);
          conn = cf.createConnection();
 
-         assertEquals(0, ((JBossConnection)conn).getServerID());
+         assertEquals(0, getServerId(conn));
       }
       finally
       {
@@ -199,15 +198,14 @@ public class ClusteredConnectionFactoryTest extends ClusteringTestBase
 
       try
       {
-         conn = cf.createConnection();
-         assertEquals(0, ((JBossConnection)conn).getServerID());
+         conn = createConnectionOnServer(cf, 0);
          conn.close();
 
          ServerManagement.killAndWait(1);
          ServerManagement.killAndWait(2);
          conn = cf.createConnection();
 
-         assertEquals(0, ((JBossConnection)conn).getServerID());
+         assertEquals(0, getServerId(conn));
       }
       finally
       {

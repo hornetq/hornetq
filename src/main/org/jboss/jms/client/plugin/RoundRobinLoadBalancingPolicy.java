@@ -6,6 +6,8 @@
  */
 package org.jboss.jms.client.plugin;
 
+import java.util.Random;
+
 import org.jboss.jms.delegate.ConnectionFactoryDelegate;
 
 /**
@@ -24,6 +26,8 @@ public class RoundRobinLoadBalancingPolicy implements LoadBalancingPolicy
 
    // Attributes -----------------------------------------------------------------------------------
 
+   private static final Random random = new Random();
+
    // The index of the next delegate to be used
    private int next;
 
@@ -33,6 +37,7 @@ public class RoundRobinLoadBalancingPolicy implements LoadBalancingPolicy
 
    public RoundRobinLoadBalancingPolicy(ConnectionFactoryDelegate[] delegates)
    {
+      next = -1;
       this.delegates = delegates;
    }
 
@@ -44,13 +49,18 @@ public class RoundRobinLoadBalancingPolicy implements LoadBalancingPolicy
       {
          next = 0;
       }
+      
+      if (next < 0)
+      {
+         next = random.nextInt(delegates.length);
+      }
 
       return delegates[next++];
    }
 
    public synchronized void updateView(ConnectionFactoryDelegate[] delegates)
    {
-      next = 0;
+      next = -1;
       this.delegates = delegates;
    }
 

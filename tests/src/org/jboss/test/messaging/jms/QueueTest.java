@@ -133,11 +133,11 @@ public class QueueTest extends MessagingTestCase
 
          Connection conn1 = cf.createConnection();
 
-         assertEquals(0, ((JBossConnection) conn1).getServerID());
+         assertEquals(0, getServerId(conn1));
 
          Connection conn2 = cf.createConnection();
 
-         assertEquals(0, ((JBossConnection) conn2).getServerID());
+         assertEquals(0, getServerId(conn2));
 
          try
          {

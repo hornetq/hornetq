@@ -58,15 +58,8 @@ public class FailoverTest extends ClusteringTestBase
 
       try
       {
-         // skip connection to node 0
-         conn = cf.createConnection();
-         conn.close();
-
-         // create a connection to node 1
-         conn = cf.createConnection();
+         conn = createConnectionOnServer1();
          conn.start();
-
-         assertEquals(1, ((JBossConnection)conn).getServerID());
 
          // register a failover listener
          SimpleFailoverListener failoverListener = new SimpleFailoverListener();
@@ -98,7 +91,7 @@ public class FailoverTest extends ClusteringTestBase
          // failover complete
          log.info("failover completed");
 
-         assertEquals(0, ((JBossConnection)conn).getServerID());
+         assertEquals(0, getServerId(conn));
 
       }
       finally
@@ -116,15 +109,8 @@ public class FailoverTest extends ClusteringTestBase
 
       try
       {
-         // skip connection to node 0
-         conn = cf.createConnection();
-         conn.close();
-
-         // create a connection to node 1
-         conn = cf.createConnection();
+         conn = createConnectionOnServer1();
          conn.start();
-
-         assertEquals(1, ((JBossConnection)conn).getServerID());
 
          Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
@@ -158,7 +144,7 @@ public class FailoverTest extends ClusteringTestBase
          // failover complete
          log.info("failover completed");
 
-         assertEquals(0, ((JBossConnection)conn).getServerID());
+         assertEquals(0, getServerId(conn));
 
          // use the old session to send/receive a message
          session.createProducer(queue[0]).send(session.createTextMessage("blik"));
@@ -182,16 +168,9 @@ public class FailoverTest extends ClusteringTestBase
 
       try
       {
-         // skip connection to node 0
-         conn = cf.createConnection();
-         conn.close();
-
-         // create a connection to node 1
-         conn = cf.createConnection();
+         conn = createConnectionOnServer1();
 
          conn.start();
-
-         assertEquals(1, ((JBossConnection)conn).getServerID());
 
          Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
          MessageProducer prod = session.createProducer(queue[1]);
@@ -226,7 +205,7 @@ public class FailoverTest extends ClusteringTestBase
          // failover complete
          log.info("failover completed");
 
-         assertEquals(0, ((JBossConnection)conn).getServerID());
+         assertEquals(0, getServerId(conn));
 
          // send a message, send it with the failed over producer and make sure I can receive it
          Message m = session.createTextMessage("clik");
@@ -253,14 +232,7 @@ public class FailoverTest extends ClusteringTestBase
 
       try
       {
-         // skip connection to node 0
-         conn = cf.createConnection();
-         conn.close();
-
-         // create a connection to node 1
-         conn = cf.createConnection();
-
-         assertEquals(1, ((JBossConnection)conn).getServerID());
+         conn = createConnectionOnServer1();
 
          Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
          MessageConsumer cons = session.createConsumer(queue[1]);
@@ -303,7 +275,7 @@ public class FailoverTest extends ClusteringTestBase
          // failover complete
          log.info("failover completed");
 
-         assertEquals(0, ((JBossConnection)conn).getServerID());
+         assertEquals(0, getServerId(conn));
 
          // activate the failed-over consumer
          conn.start();
@@ -327,14 +299,7 @@ public class FailoverTest extends ClusteringTestBase
 
       try
       {
-         // skip connection to node 0
-         conn = cf.createConnection();
-         conn.close();
-
-         // create a connection to node 1
-         conn = cf.createConnection();
-
-         assertEquals(1, ((JBossConnection)conn).getServerID());
+         conn = createConnectionOnServer1();
 
          Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
          MessageConsumer cons = session.createConsumer(queue[1]);
@@ -382,7 +347,7 @@ public class FailoverTest extends ClusteringTestBase
          // failover complete
          log.info("failover completed");
 
-         assertEquals(0, ((JBossConnection)conn).getServerID());
+         assertEquals(0, getServerId(conn));
 
          TextMessage rm = (TextMessage)cons.receive(2000);
          assertNotNull(rm);
@@ -403,14 +368,8 @@ public class FailoverTest extends ClusteringTestBase
 
       try
       {
-         // skip connection to node 0
-         conn = cf.createConnection();
-         conn.close();
-
          // create a connection to node 1
-         conn = cf.createConnection();
-
-         assertEquals(1, ((JBossConnection)conn).getServerID());
+         conn = createConnectionOnServer1();
 
          Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
@@ -457,7 +416,7 @@ public class FailoverTest extends ClusteringTestBase
          // failover complete
          log.info("failover completed");
 
-         assertEquals(0, ((JBossConnection)conn).getServerID());
+         assertEquals(0, getServerId(conn));
 
          en = browser.getEnumeration();
 
@@ -483,14 +442,8 @@ public class FailoverTest extends ClusteringTestBase
 
       try
       {
-         // skip connection to node 0
-         conn = cf.createConnection();
-         conn.close();
-
          // create a connection to node 1
-         conn = cf.createConnection();
-
-         assertEquals(1, ((JBossConnection)conn).getServerID());
+         conn = createConnectionOnServer1();
 
          Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
@@ -529,7 +482,7 @@ public class FailoverTest extends ClusteringTestBase
          // failover complete
          log.info("failover completed");
 
-         assertEquals(0, ((JBossConnection)conn).getServerID());
+         assertEquals(0, getServerId(conn));
 
          // send one persistent and one non-persistent message
 
@@ -575,16 +528,9 @@ public class FailoverTest extends ClusteringTestBase
 
       try
       {
-         // skip connection to node 0
-         conn = cf.createConnection();
-         conn.close();
-
-         // create a connection to node 1
-         conn = cf.createConnection();
+         conn = createConnectionOnServer1();
 
          conn.start();
-
-         assertEquals(1, ((JBossConnection)conn).getServerID());
 
          Session session = conn.createSession(true, Session.SESSION_TRANSACTED);
 
@@ -636,7 +582,7 @@ public class FailoverTest extends ClusteringTestBase
          // failover complete
          log.info("failover completed");
 
-         assertEquals(0, ((JBossConnection)conn).getServerID());
+         assertEquals(0, getServerId(conn));
 
          // commit the failed-over session
          session.commit();
@@ -666,16 +612,9 @@ public class FailoverTest extends ClusteringTestBase
 
       try
       {
-         // skip connection to node 0
-         conn = cf.createConnection();
-         conn.close();
-
-         // create a connection to node 1
-         conn = cf.createConnection();
+         conn = createConnectionOnServer1();
 
          conn.start();
-
-         assertEquals(1, ((JBossConnection)conn).getServerID());
 
          Session session = conn.createSession(true, Session.SESSION_TRANSACTED);
 
@@ -727,7 +666,7 @@ public class FailoverTest extends ClusteringTestBase
          // failover complete
          log.info("failover completed");
 
-         assertEquals(0, ((JBossConnection)conn).getServerID());
+         assertEquals(0, getServerId(conn));
 
          // commit the failed-over session
          session.commit();
@@ -757,16 +696,9 @@ public class FailoverTest extends ClusteringTestBase
 
       try
       {
-         // skip connection to node 0
-         conn = cf.createConnection();
-         conn.close();
-
-         // create a connection to node 1
-         conn = cf.createConnection();
+         conn = createConnectionOnServer1();
 
          conn.start();
-
-         assertEquals(1, ((JBossConnection)conn).getServerID());
 
          Session session = conn.createSession(true, Session.SESSION_TRANSACTED);
 
@@ -819,7 +751,7 @@ public class FailoverTest extends ClusteringTestBase
          // failover complete
          log.info("failover completed");
 
-         assertEquals(0, ((JBossConnection)conn).getServerID());
+         assertEquals(0, getServerId(conn));
 
          // commit the failed-over session
          session.commit();
@@ -852,16 +784,9 @@ public class FailoverTest extends ClusteringTestBase
 
       try
       {
-         // skip connection to node 0
-         conn = cf.createConnection();
-         conn.close();
-
-         // create a connection to node 1
-         conn = cf.createConnection();
+         conn = createConnectionOnServer1();
 
          conn.start();
-
-         assertEquals(1, ((JBossConnection)conn).getServerID());
 
          Session session = conn.createSession(true, Session.SESSION_TRANSACTED);
 
@@ -914,7 +839,7 @@ public class FailoverTest extends ClusteringTestBase
          // failover complete
          log.info("failover completed");
 
-         assertEquals(0, ((JBossConnection)conn).getServerID());
+         assertEquals(0, getServerId(conn));
 
          // commit the failed-over session
          session.commit();
@@ -948,16 +873,9 @@ public class FailoverTest extends ClusteringTestBase
 
       try
       {
-         // skip connection to node 0
-         conn = cf.createConnection();
-         conn.close();
-
-         // create a connection to node 1
-         conn = cf.createConnection();
+         conn = createConnectionOnServer1();
 
          conn.start();
-
-         assertEquals(1, ((JBossConnection)conn).getServerID());
 
          Session session = conn.createSession(true, Session.SESSION_TRANSACTED);
 
@@ -1012,7 +930,7 @@ public class FailoverTest extends ClusteringTestBase
          // failover complete
          log.info("failover completed");
 
-         assertEquals(0, ((JBossConnection)conn).getServerID());
+         assertEquals(0, getServerId(conn));
 
          // commit the failed-over session
          session.commit();
@@ -1043,16 +961,9 @@ public class FailoverTest extends ClusteringTestBase
 
       try
       {
-         // skip connection to node 0
-         conn = cf.createConnection();
-         conn.close();
-
-         // create a connection to node 1
-         conn = cf.createConnection();
+         conn = createConnectionOnServer1();
 
          conn.start();
-
-         assertEquals(1, ((JBossConnection)conn).getServerID());
 
          Session session = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
 
@@ -1106,7 +1017,7 @@ public class FailoverTest extends ClusteringTestBase
          // failover complete
          log.info("failover completed");
 
-         assertEquals(0, ((JBossConnection)conn).getServerID());
+         assertEquals(0, getServerId(conn));
 
          // acknowledge the messages
          clik.acknowledge();
@@ -1141,7 +1052,7 @@ public class FailoverTest extends ClusteringTestBase
 //
 //         conn.start();
 //
-//         assertEquals(1, ((JBossConnection)conn).getServerID());
+//         assertEquals(1, getServerId(conn));
 //
 //         Session session = conn.createSession(true, Session.SESSION_TRANSACTED);
 //
@@ -1198,7 +1109,7 @@ public class FailoverTest extends ClusteringTestBase
 //         // failover complete
 //         log.info("failover completed");
 //
-//         assertEquals(0, ((JBossConnection)conn).getServerID());
+//         assertEquals(0, getServerId(conn));
 //
 //         // acknowledge the messages
 //         session.commit();
@@ -1223,16 +1134,9 @@ public class FailoverTest extends ClusteringTestBase
 
       try
       {
-         // skip connection to node 0
-         conn = cf.createConnection();
-         conn.close();
-
-         // create a connection to node 1
-         conn = cf.createConnection();
+         conn = createConnectionOnServer1();
 
          conn.start();
-
-         assertEquals(1, ((JBossConnection)conn).getServerID());
 
          Session session = conn.createSession(true, Session.SESSION_TRANSACTED);
 
@@ -1288,7 +1192,7 @@ public class FailoverTest extends ClusteringTestBase
          // failover complete
          log.info("failover completed");
 
-         assertEquals(0, ((JBossConnection)conn).getServerID());
+         assertEquals(0, getServerId(conn));
 
          session.rollback();
 
@@ -1315,18 +1219,7 @@ public class FailoverTest extends ClusteringTestBase
 
       try
       {
-         conn = cf.createConnection();
-         conn.close();
-
-         conn = cf.createConnection();
-         conn.start();
-
-         // create a producer/consumer on node 1 and make sure we're connecting to node 1
-
-         int nodeID = ((ConnectionState)((DelegateSupport)((JBossConnection)conn).
-            getDelegate()).getState()).getServerID();
-
-         assertEquals(1, nodeID);
+         conn = createConnectionOnServer1();
 
          SimpleFailoverListener failoverListener = new SimpleFailoverListener();
          ((JBossConnection)conn).registerFailoverListener(failoverListener);
@@ -1374,13 +1267,7 @@ public class FailoverTest extends ClusteringTestBase
 
       try
       {
-         conn = cf.createConnection();
-         conn.close();
-
-         conn = cf.createConnection();
-         conn.start();
-
-         assertEquals(1, ((JBossConnection)conn).getServerID());
+         conn = createConnectionOnServer1();
 
          SimpleFailoverListener listener = new SimpleFailoverListener();
          ((JBossConnection)conn).registerFailoverListener(listener);
@@ -1441,13 +1328,7 @@ public class FailoverTest extends ClusteringTestBase
 
       try
       {
-         conn = cf.createConnection();
-         conn.close();
-
-         conn = cf.createConnection();
-         conn.start();
-
-         assertEquals(1, ((JBossConnection)conn).getServerID());
+         conn = createConnectionOnServer1();
 
          SimpleFailoverListener listener = new SimpleFailoverListener();
          ((JBossConnection)conn).registerFailoverListener(listener);
@@ -1519,12 +1400,7 @@ public class FailoverTest extends ClusteringTestBase
 
       try
       {
-         conn = cf.createConnection();
-         conn.close();
-
-         conn = cf.createConnection();
-
-         assertEquals(1, ((JBossConnection)conn).getServerID());
+         conn = createConnectionOnServer1();
 
          // we "cripple" the remoting connection by removing ConnectionListener. This way, failures
          // cannot be "cleanly" detected by the client-side pinger, and we'll fail on an invocation
@@ -1555,12 +1431,7 @@ public class FailoverTest extends ClusteringTestBase
 
       try
       {
-         conn = cf.createConnection();
-         conn.close();
-
-         conn = cf.createConnection();
-
-         assertEquals(1, ((JBossConnection)conn).getServerID());
+         conn = createConnectionOnServer1();
 
          // we "cripple" the remoting connection by removing ConnectionListener. This way, failures
          // cannot be "cleanly" detected by the client-side pinger, and we'll fail on an invocation
@@ -1607,18 +1478,8 @@ public class FailoverTest extends ClusteringTestBase
 
       try
       {
-         conn = cf.createConnection();
-         conn.close();
-
-         conn = cf.createConnection();
+         conn = createConnectionOnServer1();
          conn.start();
-
-         // make sure we're connecting to node 1
-
-         int nodeID = ((ConnectionState)((DelegateSupport)((JBossConnection)conn).
-            getDelegate()).getState()).getServerID();
-
-         assertEquals(1, nodeID);
 
          Session s1 = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
          MessageConsumer c1 = s1.createConsumer(queue[1]);
@@ -1700,7 +1561,7 @@ public class FailoverTest extends ClusteringTestBase
 //
 //         conn = cf.createConnection();
 //
-//         assertEquals(1, ((JBossConnection)conn).getServerID());
+//         assertEquals(1, getServerId(conn));
 //
 //         // we "cripple" the remoting connection by removing ConnectionListener. This way, failures
 //         // cannot be "cleanly" detected by the client-side pinger, and we'll fail on an invocation
@@ -1760,12 +1621,12 @@ public class FailoverTest extends ClusteringTestBase
 
       try
       {
-         conn0 = cf.createConnection();
+         conn0 = createConnectionOnServer(cf, 0);
 
          // Objects Server1
          conn1 = cf.createConnection();
 
-         assertEquals(1, ((JBossConnection)conn1).getServerID());
+         assertEquals(1, getServerId(conn1));
 
          JMSRemotingConnection rc = ((ClientConnectionDelegate)((JBossConnection)conn1).
             getDelegate()).getRemotingConnection();
@@ -1800,12 +1661,12 @@ public class FailoverTest extends ClusteringTestBase
 
       try
       {
-         conn0 = cf.createConnection();
+         conn0 = createConnectionOnServer(cf, 0);
 
          // Objects Server1
          conn1 = cf.createConnection();
 
-         assertEquals(1, ((JBossConnection)conn1).getServerID());
+         assertEquals(1, getServerId(conn1));
 
          JMSRemotingConnection rc = ((ClientConnectionDelegate)((JBossConnection)conn1).
             getDelegate()).getRemotingConnection();
@@ -1841,11 +1702,11 @@ public class FailoverTest extends ClusteringTestBase
 
       try
       {
-         conn0 = cf.createConnection();
+         conn0 = createConnectionOnServer(cf, 0);
 
          conn1 = cf.createConnection();
 
-         assertEquals(1, ((JBossConnection)conn1).getServerID());
+         assertEquals(1, getServerId(conn1));
 
          JMSRemotingConnection rc = ((ClientConnectionDelegate)((JBossConnection)conn1).
             getDelegate()).getRemotingConnection();
@@ -1878,11 +1739,11 @@ public class FailoverTest extends ClusteringTestBase
 
       try
       {
-         conn0 = cf.createConnection();
+         conn0 = createConnectionOnServer(cf, 0);
 
          conn1 = cf.createConnection();
 
-         assertEquals(1, ((JBossConnection)conn1).getServerID());
+         assertEquals(1, getServerId(conn1));
 
          JMSRemotingConnection rc = ((ClientConnectionDelegate)((JBossConnection)conn1).
             getDelegate()).getRemotingConnection();
@@ -2186,6 +2047,11 @@ public class FailoverTest extends ClusteringTestBase
    }
 
    // Private --------------------------------------------------------------------------------------
+   
+   private Connection createConnectionOnServer1() throws Exception
+   {
+      return createConnectionOnServer(cf, 1);
+   }
 
    private void simpleFailover(String userName, String password) throws Exception
    {
@@ -2271,15 +2137,9 @@ public class FailoverTest extends ClusteringTestBase
 
       try
       {
-         conn0 = cf.createConnection();
+         conn = createConnectionOnServer(cf, 1);
 
-         assertEquals(0, ((JBossConnection)conn0).getServerID());
-
-         conn0.close();
-
-         conn = cf.createConnection();
-
-         assertEquals(1, ((JBossConnection)conn).getServerID());
+         assertEquals(1, getServerId(conn));
 
          // we "cripple" the remoting connection by removing ConnectionListener. This way, failures
          // cannot be "cleanly" detected by the client-side pinger, and we'll fail on an invocation

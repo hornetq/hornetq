@@ -35,6 +35,7 @@ import javax.naming.InitialContext;
 import javax.sql.DataSource;
 import javax.transaction.TransactionManager;
 
+import org.jboss.jms.client.JBossConnection;
 import org.jboss.jms.message.MessageIdGeneratorFactory;
 import org.jboss.logging.Logger;
 import org.jboss.test.messaging.tools.ServerManagement;
@@ -279,6 +280,15 @@ public class MessagingTestCase extends ProxyAssertSupport
    protected boolean isRemote()
    {
       return ServerManagement.isRemote();
+   }
+
+   /**
+    * @param conn a JMS connection
+    * @return the ID of the ServerPeer the connection is communicating with.
+    */
+   protected int getServerId(Connection conn)
+   {
+      return ((JBossConnection) conn).getServerID();
    }
 
    // Private -------------------------------------------------------

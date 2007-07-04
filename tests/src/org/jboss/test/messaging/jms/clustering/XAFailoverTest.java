@@ -100,15 +100,11 @@ public class XAFailoverTest extends ClusteringTestBase
 
       try
       {
-         // skip connection to node 0
-         conn = xaCF.createXAConnection();
-         conn.close();
-
          // create a connection to node 1
-         conn = xaCF.createXAConnection();
+         conn = createXAConnectionOnServer(xaCF, 1);
          conn.start();
 
-         assertEquals(1, ((JBossConnection)conn).getServerID());
+         assertEquals(1, getServerId(conn));
 
          // register a failover listener
          SimpleFailoverListener failoverListener = new SimpleFailoverListener();
@@ -140,7 +136,7 @@ public class XAFailoverTest extends ClusteringTestBase
          // failover complete
          log.info("failover completed");
 
-         assertEquals(0, ((JBossConnection)conn).getServerID());
+         assertEquals(0, getServerId(conn));
 
       }
       finally
@@ -163,20 +159,14 @@ public class XAFailoverTest extends ClusteringTestBase
       
       try
       {
-         // skip connection to node 0
-         xaConn = xaCF.createXAConnection();
-         xaConn.close();
-
          // create a connection to node 1
-         xaConn = xaCF.createXAConnection();
+         xaConn = createXAConnectionOnServer(xaCF, 1);
          
-         assertEquals(1, ((JBossConnection)xaConn).getServerID());
+         assertEquals(1, getServerId(xaConn));
 
-         conn = cf.createConnection();
-         conn.close();
-         conn = cf.createConnection();         
+         conn = createConnectionOnServer(cf, 1);
          
-         assertEquals(1, ((JBossConnection)conn).getServerID());
+         assertEquals(1, getServerId(conn));
          
          conn.start();
 
@@ -269,7 +259,7 @@ public class XAFailoverTest extends ClusteringTestBase
          
          assertNull(m);
 
-         assertEquals(0, ((JBossConnection)xaConn).getServerID());
+         assertEquals(0, getServerId(xaConn));
 
       }
       finally
@@ -692,15 +682,13 @@ public class XAFailoverTest extends ClusteringTestBase
       // Sending a messages
       {
 
-         Connection conn1 = null;
+         Connection conn1 = createConnectionOnServer(cf, 0);
+
+         assertEquals(0, getServerId(conn1));
 
          conn1 = cf.createConnection();
 
-         assertEquals(0, ((JBossConnection)conn1).getServerID());
-
-         conn1 = cf.createConnection();
-
-         assertEquals(1, ((JBossConnection)conn1).getServerID());
+         assertEquals(1, getServerId(conn1));
 
          //Send a message
         
@@ -718,13 +706,8 @@ public class XAFailoverTest extends ClusteringTestBase
 
       try
       {
-         xaConn1 = xaCF.createXAConnection();
-         
-         assertEquals(0, ((JBossConnection)xaConn1).getServerID());
-
-         xaConn1 = xaCF.createXAConnection();
-         
-         assertEquals(1, ((JBossConnection)xaConn1).getServerID());
+         xaConn1 = createXAConnectionOnServer(xaCF, 1);
+         assertEquals(1, getServerId(xaConn1));
 
          xaConn1.start();
                   
@@ -814,7 +797,7 @@ public class XAFailoverTest extends ClusteringTestBase
          {
             conn = cf.createConnection();
             
-            assertEquals(0, ((JBossConnection)conn).getServerID());
+            assertEquals(0, getServerId(conn));
 
             conn.start();
 
@@ -847,7 +830,7 @@ public class XAFailoverTest extends ClusteringTestBase
 
             assertEquals(1, numberOfReceivedMessages);
 
-            assertEquals(0, ((JBossConnection)xaConn1).getServerID());
+            assertEquals(0, getServerId(xaConn1));
          }
          finally
          {
@@ -857,7 +840,7 @@ public class XAFailoverTest extends ClusteringTestBase
             }
          }
                   
-         assertEquals(0, ((JBossConnection)xaConn1).getServerID());
+         assertEquals(0, getServerId(xaConn1));
       }
       finally
       {
