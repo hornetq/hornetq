@@ -65,6 +65,7 @@ import org.jboss.messaging.core.contract.Replicator;
 import org.jboss.messaging.core.impl.DefaultClusterNotifier;
 import org.jboss.messaging.core.impl.FailoverWaiter;
 import org.jboss.messaging.core.impl.IDManager;
+import org.jboss.messaging.core.impl.JDBCPersistenceManager;
 import org.jboss.messaging.core.impl.clusterconnection.ClusterConnectionManager;
 import org.jboss.messaging.core.impl.memory.SimpleMemoryManager;
 import org.jboss.messaging.core.impl.message.SimpleMessageStore;
@@ -223,6 +224,7 @@ public class ServerPeer extends ServiceMBeanSupport
 
          persistenceManager = (PersistenceManager)mbeanServer.
             getAttribute(persistenceManagerObjectName, "Instance");
+         ((JDBCPersistenceManager)persistenceManager).injectNodeID(serverPeerID);
 
          jmsUserManager = (JMSUserManager)mbeanServer.
             getAttribute(jmsUserManagerObjectName, "Instance");

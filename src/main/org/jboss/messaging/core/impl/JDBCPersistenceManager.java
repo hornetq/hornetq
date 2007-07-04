@@ -31,7 +31,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -98,7 +97,10 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
    
    private short orderCount;
    
+   private int nodeID;
    
+   private boolean nodeIDSet;
+      
    // Constructors --------------------------------------------------
     
    public JDBCPersistenceManager(DataSource ds, TransactionManager tm, Properties sqlProperties,
@@ -166,6 +168,17 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
       super.stop();
    }
    
+   // Injection -------------------------------------------------
+   
+   // This is only known by server peer so we inject it after startup
+   
+   public void injectNodeID(int nodeID)
+   {
+   	this.nodeID = nodeID;
+   	
+   	this.nodeIDSet = true;
+   }
+   
    // PersistenceManager implementation -------------------------
    
    // Related to XA Recovery
@@ -185,11 +198,17 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
    
    public List retrievePreparedTransactions() throws Exception
    {
+      if (!this.nodeIDSet)
+      {
+      	//Sanity
+      	throw new IllegalStateException("Node id has not been set");
+      }
+   	
       /* Note the API change for 1.0.2 XA Recovery -- List now contains instances of PreparedTxInfo<TxId, Xid>
        * instead of direct Xids [JPL] */
       
       Connection conn = null;
-      Statement st = null;
+      PreparedStatement st = null;
       ResultSet rs = null;
       PreparedTxInfo txInfo = null;
       TransactionWrapper wrap = new TransactionWrapper();
@@ -200,11 +219,11 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
          
          conn = ds.getConnection();
          
-         st = conn.createStatement();
+         st = conn.prepareStatement(getSQLStatement("SELECT_PREPARED_TRANSACTIONS"));
          
-         String sql = this.getSQLStatement("SELECT_PREPARED_TRANSACTIONS");
+         st.setInt(1, nodeID);
          
-         rs = st.executeQuery(sql);
+         rs = st.executeQuery();
          
          while (rs.next())
          {
@@ -2327,6 +2346,12 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
          log.trace("Inserting tx record for " + tx);
       }
       
+      if (!this.nodeIDSet)
+      {
+      	//Sanity
+      	throw new IllegalStateException("Node id has not been set");
+      }
+      
       PreparedStatement ps = null;
       String statement = "UNDEFINED";
       int rows = -1;
@@ -2337,17 +2362,19 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
          
          ps = conn.prepareStatement(statement);
          
-         ps.setLong(1, tx.getId());
+         ps.setInt(1, nodeID);
+         
+         ps.setLong(2, tx.getId());
          
          Xid xid = tx.getXid();
          
          formatID = xid.getFormatId();
          
-         setVarBinaryColumn(2, ps, xid.getBranchQualifier());
+         setVarBinaryColumn(3, ps, xid.getBranchQualifier());
          
-         ps.setInt(3, formatID);
+         ps.setInt(4, formatID);
          
-         setVarBinaryColumn(4, ps, xid.getGlobalTransactionId());
+         setVarBinaryColumn(5, ps, xid.getGlobalTransactionId());
          
          rows = updateWithRetry(ps);
          
@@ -2356,7 +2383,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
       {
          if (trace)
          {
-            String s = JDBCUtil.statementToString(statement, new Long(tx.getId()), "<byte-array>",
+            String s = JDBCUtil.statementToString(statement, new Integer(nodeID), new Long(tx.getId()), "<byte-array>",
                   new Integer(formatID), "<byte-array>");
             log.trace(s + (rows == -1 ? " failed!" : " inserted " + rows + " row(s)"));
          }
@@ -2366,18 +2393,26 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
    
    protected void removeTXRecord(Connection conn, Transaction tx) throws Exception
    {
+      if (!this.nodeIDSet)
+      {
+      	//Sanity
+      	throw new IllegalStateException("Node id has not been set");
+      }
+   	
       PreparedStatement ps = null;
       try
       {
          ps = conn.prepareStatement(getSQLStatement("DELETE_TRANSACTION"));
          
-         ps.setLong(1, tx.getId());
+         ps.setInt(1, nodeID);
+         
+         ps.setLong(2, tx.getId());
          
          int rows = updateWithRetry(ps);
          
          if (trace)
          {
-            log.trace(JDBCUtil.statementToString(getSQLStatement("DELETE_TRANSACTION"), new Long(tx.getId())) + " removed " + rows + " row(s)");
+            log.trace(JDBCUtil.statementToString(getSQLStatement("DELETE_TRANSACTION"), new Integer(nodeID), new Long(tx.getId())) + " removed " + rows + " row(s)");
          }
       }
       finally
@@ -2814,7 +2849,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
       //Transaction
       map.put("CREATE_TRANSACTION",
               "CREATE TABLE JBM_TX (" +
-              "TRANSACTION_ID BIGINT, BRANCH_QUAL VARBINARY(254), " +
+              "NODE_ID INTEGER, TRANSACTION_ID BIGINT, BRANCH_QUAL VARBINARY(254), " +
               "FORMAT_ID INTEGER, GLOBAL_TXID VARBINARY(254), PRIMARY KEY (TRANSACTION_ID))");
       //Counter
       map.put("CREATE_COUNTER",
@@ -2869,10 +2904,10 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
       map.put("MESSAGE_EXISTS", "SELECT MESSAGE_ID FROM JBM_MSG WHERE MESSAGE_ID = ?");
       //Transaction
       map.put("INSERT_TRANSACTION",
-              "INSERT INTO JBM_TX (TRANSACTION_ID, BRANCH_QUAL, FORMAT_ID, GLOBAL_TXID) " +
-              "VALUES(?, ?, ?, ?)");
-      map.put("DELETE_TRANSACTION", "DELETE FROM JBM_TX WHERE TRANSACTION_ID = ?");
-      map.put("SELECT_PREPARED_TRANSACTIONS", "SELECT TRANSACTION_ID, BRANCH_QUAL, FORMAT_ID, GLOBAL_TXID FROM JBM_TX");
+              "INSERT INTO JBM_TX (NODE_ID, TRANSACTION_ID, BRANCH_QUAL, FORMAT_ID, GLOBAL_TXID) " +
+              "VALUES(?, ?, ?, ?, ?)");
+      map.put("DELETE_TRANSACTION", "DELETE FROM JBM_TX WHERE NODE_ID = ? AND TRANSACTION_ID = ?");
+      map.put("SELECT_PREPARED_TRANSACTIONS", "SELECT TRANSACTION_ID, BRANCH_QUAL, FORMAT_ID, GLOBAL_TXID FROM JBM_TX WHERE NODE_ID = ?");
       map.put("SELECT_MESSAGE_ID_FOR_REF", "SELECT MESSAGE_ID, CHANNEL_ID FROM JBM_MSG_REF WHERE TRANSACTION_ID = ? AND STATE = '+' ORDER BY ORD");
       map.put("SELECT_MESSAGE_ID_FOR_ACK", "SELECT MESSAGE_ID, CHANNEL_ID FROM JBM_MSG_REF WHERE TRANSACTION_ID = ? AND STATE = '-' ORDER BY ORD");
       
@@ -2947,6 +2982,12 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
    {
       if (trace) log.trace("loading message and channel ids for tx [" + transactionId + "]");
       
+      if (!this.nodeIDSet)
+      {
+      	//Sanity
+      	throw new IllegalStateException("Node id has not been set");
+      }
+      
       Connection conn = null;
       PreparedStatement ps = null;
       ResultSet rs = null;
@@ -2956,10 +2997,12 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
       {
          conn = ds.getConnection();
          
+         log.info("********** sql query:" + sqlQuery);
+         
          ps = conn.prepareStatement(sqlQuery);
          
          ps.setLong(1, transactionId);
-         
+           
          rs = ps.executeQuery();
          
          //Don't use a Map. A message could be in multiple channels in a tx, so if you use a map

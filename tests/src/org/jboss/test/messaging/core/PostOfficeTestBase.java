@@ -249,6 +249,7 @@ public class PostOfficeTestBase extends MessagingTestCase
          new JDBCPersistenceManager(sc.getDataSource(), sc.getTransactionManager(),
                   sc.getPersistenceManagerSQLProperties(),
                   true, true, true, false, 100);
+      ((JDBCPersistenceManager)pm).injectNodeID(1);
       pm.start();
 
       transactionIDManager = new IDManager("TRANSACTION_ID", 10, pm);

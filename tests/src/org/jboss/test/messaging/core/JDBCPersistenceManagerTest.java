@@ -106,6 +106,7 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
          new JDBCPersistenceManager(sc.getDataSource(), sc.getTransactionManager(),
                   sc.getPersistenceManagerSQLProperties(),
                   true, batch, useBinaryStream, trailingByte, maxParams);
+      ((JDBCPersistenceManager)p).injectNodeID(1);
       p.start();
       return p;
    }

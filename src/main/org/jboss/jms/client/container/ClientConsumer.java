@@ -63,8 +63,7 @@ public class ClientConsumer
    private static boolean trace;      
    
    private static final int WAIT_TIMEOUT = 30000;
-   
-   
+      
    static
    {
       log = Logger.getLogger(ClientConsumer.class);

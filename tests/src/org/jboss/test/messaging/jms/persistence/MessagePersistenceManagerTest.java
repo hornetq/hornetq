@@ -74,6 +74,7 @@ public class MessagePersistenceManagerTest extends JDBCPersistenceManagerTest
          new JDBCPersistenceManager(sc.getDataSource(), sc.getTransactionManager(),
                   sc.getPersistenceManagerSQLProperties(),
                   true, batch, true, false, maxParams);      
+      ((JDBCPersistenceManager)pm).injectNodeID(1);
       p.start();
       return p;
    }
