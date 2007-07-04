@@ -192,13 +192,21 @@ public class SimpleConnectionManager implements ConnectionManager, ConnectionLis
       }
    }
    
-   // FailoverWaiter implementation ---------------------------------------------------------------
-   
+   // ClusterNotificationListener implementation ---------------------------------------------------
+
+
+   /**
+    * Closing connections that are coming from a failed node
+    * @param notification
+    */
    public void notify(ClusterNotification notification)
 	{
 		if (notification.type == ClusterNotification.TYPE_FAILOVER_START)
 		{
-			try
+
+         log.trace("SimpleConnectionManager was notified about FailoverStart from node " +
+            notification.nodeID);
+         try
 			{
 				//We remove any consumers with the same JVMID as the node that just failed
 				//This will remove any message suckers from a failed node
@@ -211,6 +219,7 @@ public class SimpleConnectionManager implements ConnectionManager, ConnectionLis
 				
 				if (ids == null)
 				{
+               log.trace("Cannot find jvmid map");
 					throw new IllegalStateException("Cannot find jvmid map");
 				}
 				
@@ -220,12 +229,15 @@ public class SimpleConnectionManager implements ConnectionManager, ConnectionLis
 				
 				if (clientVMID == null)
 				{
+               log.error("Cannot find ClientVMID for failed node " + failedNodeID);
 					throw new IllegalStateException("Cannot find clientVMID for failed node " + failedNodeID);
 				}
 				
 				//Close the consumers corresponding to that VM
-				
-				closeConsumersForClientVMID(clientVMID);
+
+            log.trace("Closing consumers for clientVMID=" + clientVMID);
+
+            closeConsumersForClientVMID(clientVMID);
 			}
 			catch (Exception e)
 			{
