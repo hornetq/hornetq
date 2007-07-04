@@ -967,6 +967,7 @@ public class MessagingPostOffice extends JDBCSupport
          }
       }
       
+      log.info("*** sending remove notification");
       ClusterNotification notification = new ClusterNotification(ClusterNotification.TYPE_REPLICATOR_REMOVE, originatorNodeID, key);
       
       clusterNotifier.sendNotification(notification);

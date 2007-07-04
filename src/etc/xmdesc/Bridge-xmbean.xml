@@ -129,6 +129,12 @@
 	   <type>int</type>
 	</attribute>		
 	
+    <attribute access="read-write" getMethod="isAddMessageIDInHeader" setMethod="setAddMessageIDInHeader">
+	   <description>Should the message id be added as a header in the message when bridging?</description>
+	   <name>AddMessageIDInHeader</name>
+	   <type>boolean</type>
+	</attribute>	
+	
 	<attribute access="read-only" getMethod="isFailed">
 	   <description>Has the bridge failed?</description>
 	   <name>Failed</name>
@@ -146,6 +152,7 @@
 	   <name>Started</name>
 	   <type>boolean</type>
 	</attribute>	
+	
 	
    <!-- Managed operations -->
 

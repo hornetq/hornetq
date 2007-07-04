@@ -177,7 +177,7 @@ public class ClusterConnectionManager implements ClusterNotificationListener
 		try
 		{
 			if (notification.type == ClusterNotification.TYPE_REPLICATOR_PUT && notification.data instanceof String)
-			{
+			{	
 				String key = (String)notification.data;
 				
 				if (key.startsWith(Replicator.CF_PREFIX))
@@ -189,8 +189,8 @@ public class ClusterConnectionManager implements ClusterNotificationListener
 		      	
 		      	if (uniqueName.equals(connectionFactoryUniqueName))
 		      	{	      	
-						log.trace(this + " deployment of ClusterConnectionFactory");			      	
-		      		
+						log.trace(this + " deployment of ClusterConnectionFactory");			      
+							
 		         	synchronized (this)
 		         	{
 		         		ensureAllConnectionsCreated();
@@ -215,9 +215,7 @@ public class ClusterConnectionManager implements ClusterNotificationListener
 		      	String uniqueName = key.substring(Replicator.CF_PREFIX.length());
 	
 		      	if (uniqueName.equals(connectionFactoryUniqueName))
-		      	{
-		      		log.trace(this + " undeployment of ClusterConnectionFactory");	
-		      		
+		      	{	
 		      		Map updatedReplicantMap = replicator.get(key);
 		      		
 	      			List toRemove = new ArrayList();
@@ -298,7 +296,7 @@ public class ClusterConnectionManager implements ClusterNotificationListener
 					//Look for local queue
 					
 					Binding localBinding = postOffice.getBindingForQueueName(queueName);
-					
+												
 					if (localBinding == null)
 					{
 						//This is ok - the queue was deployed on the remote node before being deployed on the local node - do nothing for now
@@ -311,11 +309,11 @@ public class ClusterConnectionManager implements ClusterNotificationListener
 						if (trace) { log.trace(this + " Creating sucker"); }
 						
 						createSucker(queueName, notification.nodeID);
-					}
+					}					
 				}
 			}
 			else if (notification.type == ClusterNotification.TYPE_UNBIND)
-			{
+			{		
 				String queueName = (String)notification.data;
 				
 				if (notification.nodeID == this.nodeID)
@@ -332,8 +330,7 @@ public class ClusterConnectionManager implements ClusterNotificationListener
 					
 					//We need to remove the sucker corresponding to the remote queue
 					
-					removeSucker(queueName, notification.nodeID);
-					
+					removeSucker(queueName, notification.nodeID);					
 				}
 			}
 		}
@@ -402,6 +399,8 @@ public class ClusterConnectionManager implements ClusterNotificationListener
 		if (info == null)
 		{
 			if (trace) { log.trace("Cluster pull connection factory has not yet been deployed on local node"); }
+			
+			return;
 		}
 		
 		//Only create if it isn't already there
@@ -415,14 +414,17 @@ public class ClusterConnectionManager implements ClusterNotificationListener
 			Binding binding = this.postOffice.getBindingForQueueName(queueName);
 			
 			Queue localQueue = binding.queue;
+			
+			if (localQueue.isClustered())
+			{							
+				MessageSucker sucker = new MessageSucker(localQueue, info.connection, localInfo.connection, xa, preserveOrdering);
+				
+				info.addSucker(sucker);
+				
+				sucker.start();
 						
-			MessageSucker sucker = new MessageSucker(localQueue, info.connection, localInfo.connection, xa, preserveOrdering);
-			
-			info.addSucker(sucker);
-			
-			sucker.start();
-			
-			if (trace) { log.trace("Started it"); }
+				if (trace) { log.trace("Started it"); }
+			}
 		}
 		else
 		{
@@ -478,23 +480,26 @@ public class ClusterConnectionManager implements ClusterNotificationListener
 		Iterator iter = allBindings.iterator();
 		
 		Map nameMap = new HashMap();
-				
+								
 		//This can probably be greatly optimised
 		
 		while (iter.hasNext())
 		{
 			Binding binding = (Binding)iter.next();
 			
-			List queues = (List)nameMap.get(binding.queue.getName());
-			
-			if (queues == null)
-			{
-				queues = new ArrayList();
+			if (binding.queue.isClustered())
+			{				
+				List queues = (List)nameMap.get(binding.queue.getName());
 				
-				nameMap.put(binding.queue.getName(), queues);
+				if (queues == null)
+				{
+					queues = new ArrayList();
+					
+					nameMap.put(binding.queue.getName(), queues);
+				}
+				
+				queues.add(binding.queue);
 			}
-			
-			queues.add(binding.queue);
 		}
 		
 		iter = nameMap.entrySet().iterator();
@@ -529,14 +534,14 @@ public class ClusterConnectionManager implements ClusterNotificationListener
 			{
 				iter2 = queues.iterator();
 				
-				while (iter.hasNext())
+				while (iter2.hasNext())
 				{
 					Queue queue = (Queue)iter2.next();
 					
-					if (queue.getNodeID() != this.nodeID)
+					if (queue.getNodeID() != this.nodeID && queue.isClustered())
 					{
 						//Now we have found a local and remote with matching names - so we can create a sucker
-						
+																		
 						createSucker(queueName, queue.getNodeID());
 					}
 				}

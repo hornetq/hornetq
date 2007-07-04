@@ -322,6 +322,8 @@ public class HATest extends ClusteringTestBase
 
       log.info("************** STOPPING SERVER 0");
       ServerManagement.stop(0);
+      
+      Thread.sleep(10000);
 
       log.info("server stopped");
 
@@ -372,6 +374,8 @@ public class HATest extends ClusteringTestBase
       log.info("Server 1 is started: " + ServerManagement.getServer(1).isServerPeerStarted());
 
       ServerManagement.stop(1);
+      
+      Thread.sleep(10000);
 
       assertEquals(1, ServerManagement.getServer(2).getNodeIDView().size());
 

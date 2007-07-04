@@ -72,12 +72,10 @@ public class BridgeMBeanTest extends BridgeTestBase
    
    protected void tearDown() throws Exception
    {
-      super.tearDown();
-      
+      super.tearDown();      
    }
    
-   
-   
+      
    public void testStopStartPauseResume() throws Exception
    {
       ServerManagement.deployQueue("sourceQueue", 1);

@@ -35,8 +35,7 @@ import org.jboss.example.jms.common.ExampleSupport;
 
 /**
  * The example creates two connections to two distinct cluster nodes on which we have previously
- * deployed a distributed queue. The example sends and receives messages using both connections.
- *
+ * deployed a distributed queue. The example sends messages on one node and consumes them from another
  *
  * Since this example is also used as a smoke test, it is essential that the VM exits with exit
  * code 0 in case of successful execution and a non-zero value on failure.
@@ -81,18 +80,14 @@ public class DistributedQueueExample extends ExampleSupport
          // Let's make sure that (this example is also a smoke test)
          assertNotEquals(getServerID(connection0), getServerID(connection1));
 
-         // Create a session, a producer and a consumer on the first connection
+         // Create a session, and a producer on the first connection
 
          Session session0 = connection0.createSession(false, Session.AUTO_ACKNOWLEDGE);
          MessageProducer publisher0 = session0.createProducer(distributedQueue);
-         MessageConsumer consumer0 = session0.createConsumer(distributedQueue);
-         ExampleListener messageListener0 = new ExampleListener("MessageListener0");
-         consumer0.setMessageListener(messageListener0);
+         
+         // Create another session, and consumer on the second connection
 
-         // Create another session, producer and consumer on the second connection
-
-         Session session1 = connection1.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer publisher1 = session1.createProducer(distributedQueue);
+         Session session1 = connection1.createSession(false, Session.AUTO_ACKNOWLEDGE);      
          MessageConsumer consumer1 = session1.createConsumer(distributedQueue);
          ExampleListener messageListener1 = new ExampleListener("MessageListener1");
          consumer1.setMessageListener(messageListener1);
@@ -107,25 +102,15 @@ public class DistributedQueueExample extends ExampleSupport
          TextMessage message = session0.createTextMessage("Hello!");
          publisher0.send(message);
 
-         message = session1.createTextMessage("Another Hello!");
-         publisher1.send(message);
-
-         log("The messages were successfully sent to the distributed queue");
-
-         messageListener0.waitForMessage(3000);
-
-         message = (TextMessage)messageListener0.getMessage();
-         log(messageListener0.getName() + " received message: " + message.getText());
-         assertEquals("Hello!", message.getText());
-
+         log("The message was successfully sent to the distributed queue");
+         
          messageListener1.waitForMessage(3000);
 
          message = (TextMessage)messageListener1.getMessage();
          log(messageListener1.getName() + " received message: " + message.getText());
-         assertEquals("Another Hello!", message.getText());
-
+         assertEquals("Hello!", message.getText());
+        
          displayProviderInfo(connection0.getMetaData());
-
       }
       finally
       {

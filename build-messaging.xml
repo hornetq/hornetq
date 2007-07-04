@@ -386,7 +386,8 @@
 	    <include name="org/jboss/jms/exception/*.class"/>
             <include name="org/jboss/jms/wireformat/*.class"/>
             <include name="org/jboss/messaging/util/**/*.class"/>
-	    <include name="org/jboss/messaging/core/message/**/*.class"/>
+	    <include name="org/jboss/messaging/core/impl/message/**/*.class"/>
+            <include name="org/jboss/messaging/core/contract/**/*.class"/>
             <include name="org/jboss/jms/server/remoting/**/*.class"/>
          </fileset>
          <fileset dir="${build.etc}">

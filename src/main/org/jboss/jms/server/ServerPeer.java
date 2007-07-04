@@ -1085,7 +1085,7 @@ public class ServerPeer extends ServiceMBeanSupport
             //Ok
          }
          
-         if (dest != null)
+         if (dest != null && dest.getName() != null)
          {            
             Binding binding = postOffice.getBindingForQueueName(dest.getName());
             
@@ -1123,7 +1123,7 @@ public class ServerPeer extends ServiceMBeanSupport
             //Ok
          }
 
-         if (dest != null)
+         if (dest != null && dest.getName() != null)
          {            
          	Binding binding = postOffice.getBindingForQueueName(dest.getName());
             

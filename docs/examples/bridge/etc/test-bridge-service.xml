@@ -72,6 +72,10 @@
       <!-- The maximum number of connection retries to make in case of failure, before giving up
            -1 means try forever-->
       <attribute name="MaxRetries">-1</attribute>
+
+      <!-- If true then the message id of the message before bridging will be added as a header to the message so it is available
+           to the receiver. Can then be sent as correlation id to correlate in a distributed request-response -->
+      <attribute name="AddMessageIDInHeader">false</attribute>
       
     </mbean>
  

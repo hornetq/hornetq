@@ -254,21 +254,14 @@ public class ConnectionFactoryJNDIMapper
          throw new IllegalArgumentException("Cannot find factory with name " + uniqueName);
       }
 
-      if (supportsFailover || supportsLoadBalancing)
+      if (replicator != null)
       {
-         setupReplicator();
-
-         // Remove from replicants
-         if (replicator != null)
-         {
-            //There may be no clustered post office deployed
-            if (!replicator.remove(Replicator.CF_PREFIX + uniqueName))
-            {
-               throw new IllegalStateException("Cannot find replicant to remove: " +
-               		Replicator.CF_PREFIX + uniqueName);
-            }
+      	if (!replicator.remove(Replicator.CF_PREFIX + uniqueName))
+         {            	
+            throw new IllegalStateException("Cannot find replicant to remove: " +
+            		Replicator.CF_PREFIX + uniqueName);
          }
-      }
+      }      
 
       Dispatcher.instance.unregisterTarget(endpoint.getID(), endpoint);
    }

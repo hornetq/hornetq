@@ -34,7 +34,7 @@ import javax.naming.InitialContext;
 import org.jboss.example.jms.common.ExampleSupport;
 
 /**
- * The example sends a message to a distributed topic depolyed on the JMS cluster. The message is
+ * The example sends a message to a distributed topic deployed on the JMS cluster. The message is
  * subsequently received by two different subscribers, connected to two distinct cluster nodes.
  *
  * Since this example is also used as a smoke test, it is essential that the VM exits with exit

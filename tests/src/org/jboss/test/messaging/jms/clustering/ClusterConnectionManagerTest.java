@@ -65,68 +65,218 @@ public class ClusterConnectionManagerTest extends ClusteringTestBase
    // Public ---------------------------------------------------------------------------------------
    
    public void test1() throws Exception
-   {
-   	deployCF();
-   	
+   {   
+   	deployCFLocal();
+   	deployCFRemote();
    	deployLocal();
-   	
    	deployRemote();
-   	
    	suck();
    }
-   
+
    public void test2() throws Exception
-   {
-   	deployCF();
-   	
+   {   
+   	deployCFLocal();
+   	deployCFRemote();
    	deployRemote();
-   	
    	deployLocal();
-   	   	
    	suck();
    }
-   
+
    public void test3() throws Exception
-   {
-   	deployRemote();
-   	
-   	deployCF();
-   	   	
+   {   
+   	deployCFLocal();
    	deployLocal();
-   	   	
+   	deployCFRemote();
+   	deployRemote();
    	suck();
    }
-   
+
    public void test4() throws Exception
-   {
-   	deployRemote();
-   	
+   {   
+   	deployCFLocal();
    	deployLocal();
-   	
-   	deployCF();
-   	     	   	
+   	deployRemote();
+   	deployCFRemote();
    	suck();
    }
-   
+
    public void test5() throws Exception
-   {
-   	deployLocal();
-   	
+   {   
+   	deployCFLocal();
    	deployRemote();
-   	   	
-   	deployCF();
-   	     	   	
+   	deployCFRemote();
+   	deployLocal();
    	suck();
    }
-   
+
    public void test6() throws Exception
-   {
-   	deployLocal();
-   	
-   	deployCF();
-   	
+   {   
+   	deployCFLocal();
    	deployRemote();
-   	      	     	   
+   	deployLocal();
+   	deployCFRemote();
+   	suck();
+   }
+
+   public void test7() throws Exception
+   {   
+   	deployCFRemote();
+   	deployCFLocal();
+   	deployLocal();
+   	deployRemote();
+   	suck();
+   }
+
+   public void test8() throws Exception
+   {   
+   	deployCFRemote();
+   	deployCFLocal();
+   	deployRemote();
+   	deployLocal();
+   	suck();
+   }
+
+   public void test9() throws Exception
+   {   
+   	deployCFRemote();
+   	deployLocal();
+   	deployCFLocal();
+   	deployRemote();
+   	suck();
+   }
+
+   public void test10() throws Exception
+   {   
+   	deployCFRemote();
+   	deployLocal();
+   	deployRemote();
+   	deployCFLocal();
+   	suck();
+   }
+
+   public void test11() throws Exception
+   {   
+   	deployCFRemote();
+   	deployRemote();
+   	deployCFLocal();
+   	deployLocal();
+   	suck();
+   }
+
+   public void test12() throws Exception
+   {   
+   	deployCFRemote();
+   	deployRemote();
+   	deployLocal();
+   	deployCFLocal();
+   	suck();
+   }
+
+   public void test13() throws Exception
+   {   
+   	deployLocal();
+   	deployCFLocal();
+   	deployCFRemote();
+   	deployRemote();
+   	suck();
+   }
+
+   public void test14() throws Exception
+   {   
+   	deployLocal();
+   	deployCFLocal();
+   	deployRemote();
+   	deployCFRemote();
+   	suck();
+   }
+
+   public void test15() throws Exception
+   {   
+   	deployLocal();
+   	deployCFRemote();
+   	deployCFLocal();
+   	deployRemote();
+   	suck();
+   }
+
+   public void test16() throws Exception
+   {   
+   	deployLocal();
+   	deployCFRemote();
+   	deployRemote();
+   	deployCFLocal();
+   	suck();
+   }
+
+   public void test17() throws Exception
+   {   
+   	deployLocal();
+   	deployRemote();
+   	deployCFLocal();
+   	deployCFRemote();
+   	suck();
+   }
+
+   public void test18() throws Exception
+   {   
+   	deployLocal();
+   	deployRemote();
+   	deployCFRemote();
+   	deployCFLocal();
+   	suck();
+   }
+
+   public void test19() throws Exception
+   {   
+   	deployRemote();
+   	deployCFLocal();
+   	deployCFRemote();
+   	deployLocal();
+   	suck();
+   }
+
+   public void test20() throws Exception
+   {   
+   	deployRemote();
+   	deployCFLocal();
+   	deployLocal();
+   	deployCFRemote();
+   	suck();
+   }
+
+   public void test21() throws Exception
+   {   
+   	deployRemote();
+   	deployCFRemote();
+   	deployCFLocal();
+   	deployLocal();
+   	suck();
+   }
+
+   public void test22() throws Exception
+   {   
+   	deployRemote();
+   	deployCFRemote();
+   	deployLocal();
+   	deployCFLocal();
+   	suck();
+   }
+
+   public void test23() throws Exception
+   {   
+   	deployRemote();
+   	deployLocal();
+   	deployCFLocal();
+   	deployCFRemote();
+   	suck();
+   }
+
+   public void test24() throws Exception
+   {   
+   	deployRemote();
+   	deployLocal();
+   	deployCFRemote();
+   	deployCFLocal();
    	suck();
    }
    // Package protected ----------------------------------------------------------------------------
@@ -136,39 +286,70 @@ public class ClusterConnectionManagerTest extends ClusteringTestBase
    protected void setUp() throws Exception
    {
       nodeCount = 2;
+      
       super.setUp();
 
       log.debug("setup done");
       
       //undeploy CF
       
-      String cfName =
-   		(String)ServerManagement.getServer(1).getAttribute(ServerManagement.getServerPeerObjectName(), "ClusterPullConnectionFactoryName");
-
-   	//undeploy cf on node 1   	
-   	ServerManagement.undeployConnectionFactory(new ObjectName(cfName));            
+      undeployAll();   	
    }
 
-   protected void tearDown() throws Exception
+   private void undeployAll() throws Exception
    {
    	ServerManagement.undeployQueue("suckQueue", 0);
 
    	ServerManagement.undeployQueue("suckQueue", 1);
+   	
+      String cfName =
+   		(String)ServerManagement.getServer(1).getAttribute(ServerManagement.getServerPeerObjectName(), "ClusterPullConnectionFactoryName");
+
+      log.info("CF name is " + cfName);
+      
+      
+   	//undeploy cf on node 0  	
+      try
+      {
+      	ServerManagement.getServer(0).undeployConnectionFactory(new ObjectName(cfName));
+      }
+      catch (Exception ignore)
+      {}
+   	
+   	//undeploy cf on node 0  
+      try
+      {
+      	ServerManagement.getServer(1).undeployConnectionFactory(new ObjectName(cfName));
+      }
+      catch (Exception ignore)
+      {}
+   }
+   
+   protected void tearDown() throws Exception
+   {
+   	undeployAll();
 
    	super.tearDown();
    }
 
    // Private --------------------------------------------------------------------------------------
-   
-
-   
-   private void deployCF() throws Exception
+      
+   private void deployCFRemote() throws Exception
    {
    	String cfName =
    		(String)ServerManagement.getServer(1).getAttribute(ServerManagement.getServerPeerObjectName(), "ClusterPullConnectionFactoryName");
 
    	//Deploy cf on node 1   	
-   	ServerManagement.deployConnectionFactory(cfName, null, 150);
+   	ServerManagement.getServer(1).deployConnectionFactory(cfName, null, 150);
+   }
+   
+   private void deployCFLocal() throws Exception
+   {
+   	String cfName =
+   		(String)ServerManagement.getServer(0).getAttribute(ServerManagement.getServerPeerObjectName(), "ClusterPullConnectionFactoryName");
+
+   	//Deploy cf on node 0  	
+   	ServerManagement.getServer(0).deployConnectionFactory(cfName, null, 150);
    }
    
    private void deployLocal() throws Exception
@@ -203,6 +384,8 @@ public class ClusterConnectionManagerTest extends ClusteringTestBase
       {
       	conn0 = this.createConnectionOnServer(cf0, 0);
       	
+      	assertEquals(0, this.getServerId(conn0));
+      	
       	//Send some messages on node 0
       	
       	final int NUM_MESSAGES = 100;
@@ -221,6 +404,8 @@ public class ClusterConnectionManagerTest extends ClusteringTestBase
       	//Consume them on node 1
       	
       	conn1 = this.createConnectionOnServer(cf1, 1);
+      	
+      	assertEquals(1, this.getServerId(conn1));
       	
       	Session sess1 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
       	
