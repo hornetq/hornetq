@@ -105,7 +105,7 @@ public class MultipleFailoverTest extends ClusteringTestBase
          log.info("######## STARTING NODE 2");
          log.info("########");
 
-         ServerManagement.start(2, "all");
+         ServerManagement.start(2, "all", false);
          ServerManagement.deployQueue("testDistributedQueue", 2);
 
          // send/receive message
@@ -132,7 +132,7 @@ public class MultipleFailoverTest extends ClusteringTestBase
          log.info("######## STARTING NODE 3");
          log.info("########");
 
-         ServerManagement.start(3, "all");
+         ServerManagement.start(3, "all", false);
          ServerManagement.deployQueue("testDistributedQueue", 3);
 
          // send/receive message
@@ -159,7 +159,7 @@ public class MultipleFailoverTest extends ClusteringTestBase
          log.info("######## STARTING NODE 0");
          log.info("########");
 
-         ServerManagement.start(0, "all");
+         ServerManagement.start(0, "all", false);
          ServerManagement.deployQueue("testDistributedQueue", 0);
 
          // send/receive message
@@ -285,7 +285,7 @@ public class MultipleFailoverTest extends ClusteringTestBase
       {
          if (!ServerManagement.isStarted(0))
          {
-            ServerManagement.start(0, "all");
+            ServerManagement.start(0, "all", false);
          }
          
          
