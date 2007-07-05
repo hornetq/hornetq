@@ -2061,22 +2061,14 @@ public class FailoverTest extends ClusteringTestBase
       {
          if (userName!=null)
          {
-            conn = cf.createConnection(userName, password);
+            conn = createConnectionOnServer(cf, 1, userName, password);
          }
          else
          {
-            conn = cf.createConnection();
+            conn = createConnectionOnServer(cf, 1);
          }
          conn.close();
 
-         if (userName!=null)
-         {
-            conn = cf.createConnection(userName, password);
-         }
-         else
-         {
-            conn = cf.createConnection();
-         }
          conn.start();
 
          // Disable Lease for this test.. as the ValveAspect should capture this
@@ -2084,8 +2076,7 @@ public class FailoverTest extends ClusteringTestBase
 
          // make sure we're connecting to node 1
 
-         int nodeID = ((ConnectionState)((DelegateSupport)((JBossConnection)conn).
-            getDelegate()).getState()).getServerID();
+         int nodeID = getServerId(conn);
 
          assertEquals(1, nodeID);
 

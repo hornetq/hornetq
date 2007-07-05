@@ -316,6 +316,29 @@ public class MessagingTestCase extends ProxyAssertSupport
    	}
    }
 
+   protected Connection createConnectionOnServer(ConnectionFactory factory, int serverId, String user, String password)
+   throws Exception
+   {
+   	int count=0;
+
+   	while (true)
+   	{
+   		if (count++>10)
+   			return null;
+
+   		Connection connection = factory.createConnection(user, password);
+
+   		if (getServerId(connection) == serverId)
+   		{
+   			return connection;
+   		}
+   		else
+   		{
+   			connection.close();
+   		}
+   	}
+   }
+
    protected XAConnection createXAConnectionOnServer(XAConnectionFactory factory, int serverId)
    throws Exception
    {
