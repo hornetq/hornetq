@@ -1220,6 +1220,7 @@ public class FailoverTest extends ClusteringTestBase
       try
       {
          conn = createConnectionOnServer1();
+         conn.start();
 
          SimpleFailoverListener failoverListener = new SimpleFailoverListener();
          ((JBossConnection)conn).registerFailoverListener(failoverListener);
@@ -1268,6 +1269,7 @@ public class FailoverTest extends ClusteringTestBase
       try
       {
          conn = createConnectionOnServer1();
+         conn.start();
 
          SimpleFailoverListener listener = new SimpleFailoverListener();
          ((JBossConnection)conn).registerFailoverListener(listener);
@@ -1329,6 +1331,7 @@ public class FailoverTest extends ClusteringTestBase
       try
       {
          conn = createConnectionOnServer1();
+         conn.start();
 
          SimpleFailoverListener listener = new SimpleFailoverListener();
          ((JBossConnection)conn).registerFailoverListener(listener);
@@ -1354,22 +1357,32 @@ public class FailoverTest extends ClusteringTestBase
          // wait until the failure (not the completion of client-side failover) is detected
 
          assertEquals(FailoverEvent.FAILURE_DETECTED, listener.getEvent(60000).getType());
+         
+         log.info("Failure detected");
 
          // create a consumer the very next moment the failure is detected. This way, we also
          // test the client-side failover valve
+         
+         log.info("**** CREATING CONSUMER");
 
-         MessageConsumer cons = session.createConsumer(queue[0]);
+         MessageConsumer cons = session.createConsumer(queue[1]);
+         
+         log.info("Created consumer");
 
          // we must receive the message
 
          TextMessage tm = (TextMessage)cons.receive(60000);
          assertEquals("blip", tm.getText());
+         
+         log.info("Got message");
       }
       finally
       {
          if (conn != null)
          {
+         	log.info("Closing connection");
             conn.close();
+            log.info("Closed");
          }
       }
    }
@@ -2067,8 +2080,7 @@ public class FailoverTest extends ClusteringTestBase
          {
             conn = createConnectionOnServer(cf, 1);
          }
-         conn.close();
-
+         
          conn.start();
 
          // Disable Lease for this test.. as the ValveAspect should capture this

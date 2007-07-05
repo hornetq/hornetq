@@ -200,12 +200,12 @@ public class SimpleConnectionManager implements ConnectionManager, ConnectionLis
     * @param notification
     */
    public void notify(ClusterNotification notification)
-	{
+	{	
 		if (notification.type == ClusterNotification.TYPE_FAILOVER_START)
 		{
 
          log.trace("SimpleConnectionManager was notified about FailoverStart from node " +
-            notification.nodeID);
+                    notification.nodeID);
          try
 			{
 				//We remove any consumers with the same JVMID as the node that just failed

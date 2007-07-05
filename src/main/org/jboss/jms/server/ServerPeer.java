@@ -238,7 +238,7 @@ public class ServerPeer extends ServiceMBeanSupport
          transactionIDManager = new IDManager("TRANSACTION_ID", 1024, persistenceManager);
          destinationJNDIMapper = new DestinationJNDIMapper(this);
          connFactoryJNDIMapper = new ConnectionFactoryJNDIMapper(this);
-         connectionManager = new SimpleConnectionManager();
+         connectionManager = new SimpleConnectionManager();         
          connectorManager = new SimpleConnectorManager();
          memoryManager = new SimpleMemoryManager();
          messageStore = new SimpleMessageStore();
@@ -246,10 +246,11 @@ public class ServerPeer extends ServiceMBeanSupport
             new TransactionRepository(persistenceManager, messageStore, transactionIDManager);
          messageCounterManager = new MessageCounterManager(messageCounterSamplePeriod);
                 
-         clusterNotifier = new DefaultClusterNotifier();             
+         clusterNotifier = new DefaultClusterNotifier();      
+         clusterNotifier.registerListener(connectionManager);
          clusterNotifier.registerListener(connFactoryJNDIMapper);
          failoverWaiter = new FailoverWaiter(serverPeerID, failoverStartTimeout, failoverCompleteTimeout, txRepository);
-         clusterNotifier.registerListener(failoverWaiter);
+         clusterNotifier.registerListener(failoverWaiter);         
          
          if (clusterPullConnectionFactoryName != null)
          {         

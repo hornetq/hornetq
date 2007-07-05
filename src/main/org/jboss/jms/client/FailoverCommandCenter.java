@@ -77,6 +77,7 @@ public class FailoverCommandCenter
       broadcastFailoverEvent(new FailoverEvent(FailoverEvent.FAILURE_DETECTED, source));
 
       CreateConnectionResult res = null;
+      
       boolean failoverSuccessful = false;
       
       boolean valveOpened = false;
@@ -97,6 +98,8 @@ public class FailoverCommandCenter
             {
                log.debug(this + " ignoring failure detection notification, as failover was " +
                   "already (or is in process of being) performed on this connection");
+               
+               failoverSuccessful = true;
                
                //Return true since failover already completed ok
                return true;

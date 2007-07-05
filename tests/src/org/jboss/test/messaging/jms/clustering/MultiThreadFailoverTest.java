@@ -99,7 +99,7 @@ public class MultiThreadFailoverTest extends ClusteringTestBase
       consumerThread.start();
 
       // Just give some time to line up the thread on receive
-      Thread.sleep(1000);
+      Thread.sleep(2000);
 
       Session session = conn.createSession(false,Session.AUTO_ACKNOWLEDGE);
 
@@ -297,9 +297,9 @@ public class MultiThreadFailoverTest extends ClusteringTestBase
       messageCounterConsumer = 0;
       messageCounterProducer = 0;
 
-      Connection conn1 = cf.createConnection();
-      Connection conn2 = cf.createConnection();
-      Connection conn3 = cf.createConnection();
+      Connection conn1 = this.createConnectionOnServer(cf, 0);
+      Connection conn2 = this.createConnectionOnServer(cf, 1);
+      Connection conn3 = this.createConnectionOnServer(cf, 2);
 
       try
       {
@@ -598,7 +598,7 @@ public class MultiThreadFailoverTest extends ClusteringTestBase
                }
             }
 
-            if (transacted)
+            if (transacted && !shouldStop)
             {
                session.commit();
             }
