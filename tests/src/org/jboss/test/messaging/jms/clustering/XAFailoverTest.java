@@ -759,7 +759,9 @@ public class XAFailoverTest extends ClusteringTestBase
          // We poison node 1 so that it crashes after prepare but before commit is processed
          
          ServerManagement.poisonTheServer(1, PoisonInterceptor.TYPE_2PC_COMMIT);
-         
+
+
+         log.info("################################################################## Sending a commit");
          tm.commit();
          
          log.info("########");

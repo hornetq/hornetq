@@ -52,6 +52,4 @@ public interface ConsumerDelegate extends ConsumerEndpoint
    String getMessageSelector();
 
    Message receive(long timeout) throws JMSException;
-
-   void invalidate();
 }

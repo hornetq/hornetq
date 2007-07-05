@@ -95,6 +95,4 @@ public interface SessionDelegate extends SessionEndpoint
    ProducerDelegate createProducerDelegate(JBossDestination destination) throws JMSException;
 
    void acknowledgeAll() throws JMSException;
-
-   void invalidate();
 }

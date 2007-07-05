@@ -434,11 +434,6 @@ public class ServerSessionEndpoint implements SessionEndpoint
             acks.add(deliveryInfo);
          }  
 
-         // A result for each queue's recovery result
-         // Putting results on a separate HashMap to guarantee atomicity on the execution
-         //   on this method
-         Map resultRecoveredAck = new HashMap();
-
          Iterator iter = ackMap.entrySet().iterator();
          
          while (iter.hasNext())
@@ -486,34 +481,11 @@ public class ServerSessionEndpoint implements SessionEndpoint
             Queue expiryQueueToUse =
                dest.getExpiryQueue() == null ? defaultExpiryQueue : dest.getExpiryQueue();
             
+            int maxDeliveryAttemptsToUse =
+               dest.getMaxDeliveryAttempts() == -1 ? defaultMaxDeliveryAttempts : dest.getMaxDeliveryAttempts();
+
             List dels = queue.recoverDeliveries(ids);
 
-            resultRecoveredAck.put(queue, new Object[]{dels, acks, dlqToUse, expiryQueueToUse, dest});
-         }
-
-         // queue.recoverDeliveries could fail...
-         // I have separated this next loop from the previous loop, as I wanted the whole recoveryDeliveries
-         // to be an atomic operation. If anything goes wrong on recoverDeliveries we will keep everything
-         // as it used to be.. no changes whatsoever until every single message was found on recoverDeliveries
-
-         Iterator iterResults = resultRecoveredAck.entrySet().iterator();
-         
-
-         while (iterResults.hasNext())
-         {
-
-            Map.Entry entry = (Map.Entry) iterResults.next();
-
-            Queue queue = (Queue)entry.getKey();
-
-            Object[] value = (Object[]) entry.getValue();
-
-            List dels = (List)value[0];
-            List acks = (List)value[1];
-            Queue dlqToUse = (Queue)value[2];
-            Queue expiryQueueToUse = (Queue) value[3];
-            ManagedDestination dest = (ManagedDestination) value[4];
-            
             Iterator iter2 = dels.iterator();
             
             Iterator iter3 = acks.iterator();
@@ -530,9 +502,6 @@ public class ServerSessionEndpoint implements SessionEndpoint
                
                if (trace) { log.trace(this + " Recovered delivery " + deliveryId + ", " + del); }
                
-               int maxDeliveryAttemptsToUse =
-                  dest.getMaxDeliveryAttempts() == -1 ? defaultMaxDeliveryAttempts : dest.getMaxDeliveryAttempts();
-
                deliveries.put(new Long(deliveryId),
                               new DeliveryRecord(del, -1, dlqToUse,
                                                  expiryQueueToUse, dest.getRedeliveryDelay(), maxDeliveryAttemptsToUse));

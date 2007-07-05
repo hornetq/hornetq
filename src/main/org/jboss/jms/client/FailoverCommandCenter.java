@@ -157,9 +157,6 @@ public class FailoverCommandCenter
       {
          log.error("Failover failed", e);
 
-         // Marking delegate as invalid!
-         state.getDelegate().invalidate();
-
          throw e;
       }
       finally

@@ -375,9 +375,6 @@ public abstract class ChannelSupport implements Channel
                   
       List dels = new ArrayList();
 
-      // This operation needs to be atomic.. if it fails we will rollback before throwing the exception
-      ArrayList refsRemoved = new ArrayList();
-      
       synchronized (lock)
       {
          ListIterator liter = messageRefs.iterator();
@@ -394,26 +391,13 @@ public abstract class ChannelSupport implements Channel
                   // TODO we need to look in paging state too - currently not supported
                   //http://jira.jboss.com/jira/browse/JBMESSAGING-839
                   log.warn(this + " cannot find reference " + id + " (Might be paged!)");
-
-                  log.trace(this + " Adding references back to the list");
-
-                  // Adding references back to messageRefs... keeping the same order they were removed
-                  while (refsRemoved.size()>0)
-                  {
-                     MessageReference refAddBack = (MessageReference)refsRemoved.remove(refsRemoved.size()-1);
-                     log.trace("Adding " + refAddBack + " back to messageRefs before throwing exception");
-                     messageRefs.addFirst(refAddBack, refAddBack.getMessage().getPriority());
-                  }
-
-                  throw new IllegalStateException("Cannot find reference " + id);
+                  break;
                }
-               
+
                MessageReference ref = (MessageReference)liter.next();
                
                if (ref.getMessage().getMessageID() == id.longValue())
                {
-                  refsRemoved.add(ref);
-                  
                   liter.remove();
                   
                   Delivery del = new SimpleDelivery(this, ref);

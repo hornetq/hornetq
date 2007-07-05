@@ -57,6 +57,4 @@ public interface ConnectionDelegate extends ConnectionEndpoint
    void registerFailoverListener(FailoverListener failoverListener);
    
    boolean unregisterFailoverListener(FailoverListener failoverListener);
-
-   void invalidate();
 }
