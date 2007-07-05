@@ -321,7 +321,7 @@ public class ConnectionFactoryJNDIMapper
          else if ((notification.type == ClusterNotification.TYPE_REPLICATOR_PUT || notification.type == ClusterNotification.TYPE_REPLICATOR_REMOVE) &&
          		   (notification.data instanceof String) && ((String)notification.data).startsWith(Replicator.CF_PREFIX))
          {
-            // A connection factory has been deployed / undeployed 
+            // A connection factory has been deployed / undeployed
 
          	// NOTE! All connection factories MUST be deployed on all nodes!
          	// Otherwise the server might failover onto a node which doesn't have that connection factory deployed
@@ -361,8 +361,11 @@ public class ConnectionFactoryJNDIMapper
 		               (ClientConnectionFactoryDelegate[])newDels.
 		                  toArray(new ClientConnectionFactoryDelegate[newDels.size()]);
 		
+                  Map failoverMap = serverPeer.getPostOfficeInstance().getFailoverMap();
+
 		            del.setDelegates(delArr);
-		
+                  del.setFailoverMap(failoverMap);
+
 		            ServerConnectionFactoryEndpoint endpoint =
 		               (ServerConnectionFactoryEndpoint)endpoints.get(uniqueName);
 		
@@ -372,9 +375,7 @@ public class ConnectionFactoryJNDIMapper
 		            }
 		
 		            rebindConnectionFactory(initialContext, endpoint.getJNDIBindings(), del);
-		            
-		            Map failoverMap = serverPeer.getPostOfficeInstance().getFailoverMap();
-		
+
 		            endpoint.updateClusteredClients(delArr, failoverMap);
                }
             }

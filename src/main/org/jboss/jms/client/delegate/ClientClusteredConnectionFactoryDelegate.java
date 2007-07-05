@@ -216,7 +216,7 @@ public class ClientClusteredConnectionFactoryDelegate
    {
    	if (delegates.length != failoverMap.size())
    	{
-   		throw new IllegalStateException("Number of delegates and failover map size are not equal");
+         throw new IllegalStateException("Number of delegates (" + delegates.length + ") and failover map size (" + failoverMap.size() + " )are not equal");
    	}
    }
 
