@@ -288,7 +288,7 @@ public class MessagingTestCase extends ProxyAssertSupport
     * @param conn a JMS connection
     * @return the ID of the ServerPeer the connection is communicating with.
     */
-   protected int getServerId(Connection conn)
+   protected static int getServerId(Connection conn)
    {
       return ((JBossConnection) conn).getServerID();
    }

@@ -146,11 +146,6 @@ public class ClusteringTestBase extends MessagingTestCase
          getRemotingClient().getInvoker().getLocator().getLocatorURI();
    }
 
-   protected int getServerId(Connection conn)
-   {
-      return getConnectionState(conn).getServerID();
-   }
-
    protected int getObjectId(Connection conn)
    {
       return ((DelegateSupport) ((JBossConnection) conn).
