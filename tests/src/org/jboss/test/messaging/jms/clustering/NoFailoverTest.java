@@ -24,6 +24,16 @@ package org.jboss.test.messaging.jms.clustering;
 
 import org.jboss.jms.client.JBossConnectionFactory;
 import org.jboss.jms.client.delegate.ClientClusteredConnectionFactoryDelegate;
+import org.jboss.test.messaging.tools.ServerManagement;
+import javax.jms.ConnectionFactory;
+import javax.jms.Connection;
+import javax.jms.JMSException;
+import javax.jms.Session;
+import javax.jms.MessageProducer;
+import javax.jms.MessageConsumer;
+import javax.jms.TextMessage;
+import javax.jms.ExceptionListener;
+import EDU.oswego.cs.dl.util.concurrent.Latch;
 
 /**
  * Test situations where supports failover is marked false
@@ -49,12 +59,109 @@ public class NoFailoverTest extends ClusteringTestBase
 
    // Public ---------------------------------------------------------------------------------------
 
-   public void testConnectionFactory()
+   public void testCrashNoFailover() throws Exception
    {
-      JBossConnectionFactory cfLocal = (JBossConnectionFactory)cf;
-      assertFalse(((ClientClusteredConnectionFactoryDelegate)cfLocal.getDelegate()).isSupportsFailover());
+      Connection conn = null;
 
+      try
+      {
+         assertFalse(((ClientClusteredConnectionFactoryDelegate)((JBossConnectionFactory)cf).getDelegate()).isSupportsFailover());
+
+         conn = createConnectionOnServer(cf, 1);
+
+      	MyListener listener = new MyListener();
+
+      	conn.setExceptionListener(listener);
+
+         assertEquals(1, getServerId(conn));
+
+         Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+         MessageProducer prod = sess.createProducer(queue[1]);
+
+         prod.send(sess.createTextMessage("Before Crash"));
+
+         //Now kill server 1
+
+         log.info("KILLING SERVER 1");
+         ServerManagement.kill(1);
+         log.info("KILLED SERVER 1");
+
+         JMSException e = listener.waitForException(20000);
+
+         assertNotNull(e);
+
+         assertTrue(e.getMessage().equals("Failure on underlying remoting connection"));
+
+         // Connection should still be on server 1 (no client failover taken)
+         assertEquals(1, getServerId(conn));
+
+         //Now try and recreate connection on different node
+
+         conn.close();
+
+         conn = createConnectionOnServer(cf, 2); 
+            cf.createConnection();
+
+         sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+         prod = sess.createProducer(queue[2]);
+
+         MessageConsumer cons = sess.createConsumer(queue[2]);
+
+         conn.start();
+
+         TextMessage tm = sess.createTextMessage("After Crash");
+
+         prod.send(tm);
+
+         TextMessage rm = (TextMessage)cons.receive(1000);
+
+         assertNotNull(rm);
+
+         assertEquals(tm.getText(), rm.getText());
+
+         rm = (TextMessage)cons.receive(1000);
+
+         assertNull(rm);
+
+         conn.close();
+
+         // Restarting the server
+         ServerManagement.start(1, "all-failover", false);
+         ServerManagement.deployQueue("testDistributedQueue", 1);
+         ServerManagement.deployTopic("testDistributedTopic", 1);
+
+
+         // Since there is no active connection, the cf won't be notified about the change on nodes
+         lookups();
+
+         conn = createConnectionOnServer(cf, 1);
+            cf.createConnection();
+
+         sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+         cons = sess.createConsumer(queue[2]);
+
+         conn.start();
+
+         // message should still be on server.. no server failover taken
+         rm = (TextMessage) cons.receive(1000);
+
+         assertEquals(rm.getText(), "Before Crash");
+
+
+      }
+      finally
+      {
+         if (conn != null)
+         {
+            conn.close();
+         }
+      }
    }
+
+
    // Package protected ----------------------------------------------------------------------------
 
    // Protected ------------------------------------------------------------------------------------
@@ -74,5 +181,28 @@ public class NoFailoverTest extends ClusteringTestBase
    // Private --------------------------------------------------------------------------------------
 
    // Inner classes --------------------------------------------------------------------------------
+   // Inner classes --------------------------------------------------------------------------------
+
+	private class MyListener implements ExceptionListener
+   {
+		private JMSException e;
+
+		Latch l = new Latch();
+
+		public void onException(JMSException e)
+		{
+			this.e = e;
+
+			l.release();
+		}
+
+		JMSException waitForException(long timeout) throws Exception
+		{
+			l.attempt(timeout);
+
+			return e;
+		}
+
+	}
 
 }
