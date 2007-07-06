@@ -873,6 +873,43 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
          wrap.end();
       }
    }
+
+   public void mergeTransactions (long fromChannelID, long toChannelID) throws Exception
+   {
+      if (trace) { log.trace("Merging transactions from channel " + fromChannelID + " to " + toChannelID); }
+
+      // Sanity check
+      
+      if (fromChannelID == toChannelID)
+      {
+      	throw new IllegalArgumentException("Cannot merge transactions - they have the same channel id!!");
+      }
+
+      Connection conn = null;
+      PreparedStatement statement = null;
+      TransactionWrapper wrap = new TransactionWrapper();
+      try
+      {
+         conn = ds.getConnection();
+         statement = conn.prepareStatement(getSQLStatement("UPDATE_TX"));
+         statement.setLong(1, toChannelID);
+         statement.setLong(2, fromChannelID);
+         int affected = statement.executeUpdate();
+
+         log.debug("Merged " + affected + " transactions from channel " + fromChannelID + " into node " + toChannelID);
+      }
+      catch (Exception e)
+      {
+         wrap.exceptionOccurred();
+         throw e;
+      }
+      finally
+      {
+         closeConnection(conn);
+         closeStatement(statement);
+         wrap.end();
+      }
+   }
    
    public InitialLoadInfo mergeAndLoad(long fromChannelID, long toChannelID, int numberToLoad, long firstPagingOrder, long nextPagingOrder) throws Exception
    {
@@ -2910,13 +2947,15 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
       map.put("SELECT_PREPARED_TRANSACTIONS", "SELECT TRANSACTION_ID, BRANCH_QUAL, FORMAT_ID, GLOBAL_TXID FROM JBM_TX WHERE NODE_ID = ?");
       map.put("SELECT_MESSAGE_ID_FOR_REF", "SELECT MESSAGE_ID, CHANNEL_ID FROM JBM_MSG_REF WHERE TRANSACTION_ID = ? AND STATE = '+' ORDER BY ORD");
       map.put("SELECT_MESSAGE_ID_FOR_ACK", "SELECT MESSAGE_ID, CHANNEL_ID FROM JBM_MSG_REF WHERE TRANSACTION_ID = ? AND STATE = '-' ORDER BY ORD");
+      map.put("UPDATE_TX", "UPDATE JBM_TX SET NODE_ID=? WHERE NODE_ID=?");
       
       //Counter
       map.put("UPDATE_COUNTER", "UPDATE JBM_COUNTER SET NEXT_ID = ? WHERE NAME=?");
       map.put("SELECT_COUNTER", "SELECT NEXT_ID FROM JBM_COUNTER WHERE NAME=?");
       map.put("INSERT_COUNTER", "INSERT INTO JBM_COUNTER (NAME, NEXT_ID) VALUES (?, ?)");
       //Other
-      map.put("SELECT_ALL_CHANNELS", "SELECT DISTINCT(CHANNEL_ID) FROM JBM_MSG_REF");      
+      map.put("SELECT_ALL_CHANNELS", "SELECT DISTINCT(CHANNEL_ID) FROM JBM_MSG_REF");
+
       return map;
    }
    

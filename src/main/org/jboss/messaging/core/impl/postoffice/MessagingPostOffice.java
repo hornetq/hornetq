@@ -2254,9 +2254,11 @@ public class MessagingPostOffice extends JDBCSupport
    	
       // Need to lock
       lock.writeLock().acquire();
-      
+
       try
       {
+         this.pm.mergeTransactions(failedNodeID.intValue(), thisNodeID);
+
       	Map nameMap = (Map)this.nameMaps.get(failedNodeID);
       	
       	List toRemove = new ArrayList();
