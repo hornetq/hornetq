@@ -94,10 +94,6 @@ public class ClusteringTestBase extends MessagingTestCase
          throw new Exception("Node count not defined! Initalize nodeCount in the test's setUp()");
       }
 
-      ic = new Context[nodeCount];
-      queue = new Queue[nodeCount];
-      topic = new Topic[nodeCount];
-
       for (int i = 0; i < nodeCount; i++)
       {
          // make sure all servers are created and started; make sure that database is zapped
@@ -107,7 +103,24 @@ public class ClusteringTestBase extends MessagingTestCase
 
          ServerManagement.deployQueue("testDistributedQueue", i);
          ServerManagement.deployTopic("testDistributedTopic", i);
+      }
 
+
+      lookups();
+
+      drainQueues();
+   }
+
+   // Perform Context creation and lookups on queues and factories
+   // Case a server is restarted, a test may want to recreate contexts in certain scenarios
+   protected void lookups() throws Exception
+   {
+      ic = new Context[nodeCount];
+      queue = new Queue[nodeCount];
+      topic = new Topic[nodeCount];
+
+      for (int i = 0; i < nodeCount; i++)
+      {
          ic[i] = new InitialContext(ServerManagement.getJNDIEnvironment(i));
          queue[i] = (Queue)ic[i].lookup("queue/testDistributedQueue");
          topic[i] = (Topic)ic[i].lookup("topic/testDistributedTopic");
@@ -117,7 +130,6 @@ public class ClusteringTestBase extends MessagingTestCase
       // actually create connections on different servers (round robin).
       cf = (ConnectionFactory)ic[0].lookup("/ClusteredConnectionFactory");
 
-      drainQueues();
    }
 
    protected void tearDown() throws Exception
