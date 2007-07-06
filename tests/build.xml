@@ -107,6 +107,7 @@
    <property name="junit.fork" value="true"/>
    <property name="junit.includeantruntime" value="true"/>
    <property name="junit.timeout" value="600000"/>
+   <property name="clustering.junit.timeout" value="900000"/>
    <property name="stress.timeout" value="600000"/>
 
    <property name="junit.showoutput" value="true"/>
@@ -717,7 +718,7 @@
              haltonerror="${junit.haltonerror}"
              haltonfailure="${junit.haltonfailure}"
              showoutput="${junit.showoutput}"
-             timeout="${junit.timeout}">
+             timeout="${clustering.junit.timeout}">
 
          <sysproperty key="remote" value="true"/>
          <sysproperty key="module.output" value="${tests.output}"/>
