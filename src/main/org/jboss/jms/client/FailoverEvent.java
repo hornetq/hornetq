@@ -22,6 +22,8 @@ public class FailoverEvent extends EventObject
 	public static final int FAILURE_DETECTED = 10;
    public static final int FAILOVER_STARTED = 20;
    public static final int FAILOVER_COMPLETED = 30;
+   /** Failover was completed in parallel by another thread */
+   public static final int FAILOVER_ALREADY_COMPLETED = 40;
    public static final int FAILOVER_FAILED = 100;
 
    // Static ---------------------------------------------------------------------------------------

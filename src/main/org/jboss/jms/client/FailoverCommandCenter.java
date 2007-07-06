@@ -81,6 +81,8 @@ public class FailoverCommandCenter
       boolean failoverSuccessful = false;
       
       boolean valveOpened = false;
+
+      int failoverEvent = FailoverEvent.FAILOVER_COMPLETED;
       
       try
       {
@@ -100,6 +102,8 @@ public class FailoverCommandCenter
                   "already (or is in process of being) performed on this connection");
                
                failoverSuccessful = true;
+
+               failoverEvent = FailoverEvent.FAILOVER_ALREADY_COMPLETED;
                
                //Return true since failover already completed ok
                return true;
@@ -169,7 +173,7 @@ public class FailoverCommandCenter
          if (failoverSuccessful)
          {
             log.debug(this + " completed successful failover");
-            broadcastFailoverEvent(new FailoverEvent(FailoverEvent.FAILOVER_COMPLETED, this));
+            broadcastFailoverEvent(new FailoverEvent(failoverEvent, this));
          }
          else
          {
