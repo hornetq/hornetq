@@ -297,7 +297,7 @@ public class DisableLoadBalancingAndFailoverTest extends ClusteringTestBase
          
          assertNotNull(rm);
          
-         assertEquals(tm.getText(), tm.getText());
+         assertEquals(tm.getText(), rm.getText());
            
       }
       finally
