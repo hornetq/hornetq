@@ -106,9 +106,9 @@
    <property name="junit.haltonfailure" value="false"/>
    <property name="junit.fork" value="true"/>
    <property name="junit.includeantruntime" value="true"/>
-   <property name="junit.timeout" value="600000"/>
-   <property name="clustering.junit.timeout" value="900000"/>
-   <property name="stress.timeout" value="600000"/>
+   <property name="junit.timeout" value="1800000"/>
+   <property name="clustering.junit.timeout" value="1800000"/>
+   <property name="stress.timeout" value="1800000"/>
 
    <property name="junit.showoutput" value="true"/>
    <property name="junit.jvm" value=""/>
