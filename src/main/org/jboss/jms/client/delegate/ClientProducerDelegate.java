@@ -50,11 +50,6 @@ public class ClientProducerDelegate extends DelegateSupport implements ProducerD
 
    // Constructors ---------------------------------------------------------------------------------
 
-   public ClientProducerDelegate()
-   {
-      super(-1);
-   }
-
    // DelegateSupport overrides --------------------------------------------------------------------
 
    public void synchronizeWith(DelegateSupport nd) throws Exception

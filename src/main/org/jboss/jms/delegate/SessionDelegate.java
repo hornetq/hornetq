@@ -76,7 +76,7 @@ public interface SessionDelegate extends SessionEndpoint
 
    XAResource getXAResource();
 
-   void addAsfMessage(MessageProxy m, int consumerID, String queueName,
+   void addAsfMessage(MessageProxy m, String consumerID, String queueName,
                       int maxDeliveries, SessionDelegate connectionConsumerDelegate,
                       boolean shouldAck);
 

@@ -43,7 +43,7 @@ public class DeliveryInfo implements Ack
    
    //This is needed when doing local redelivery of messages, since we need to know which
    //consumer gets the message
-   private int consumerId;      
+   private String consumerId;      
 
    private MessageProxy msg;
    
@@ -63,7 +63,7 @@ public class DeliveryInfo implements Ack
    
    // Constructors --------------------------------------------------
    
-   public DeliveryInfo(MessageProxy msg, int consumerId, String queueName,
+   public DeliveryInfo(MessageProxy msg, String consumerId, String queueName,
                        SessionDelegate connectionConsumerSession, boolean shouldAck)
    {      
       this.msg = msg;
@@ -84,7 +84,7 @@ public class DeliveryInfo implements Ack
       return queueName;
    }
    
-   public int getConsumerId()
+   public String getConsumerId()
    {
       return consumerId;
    }

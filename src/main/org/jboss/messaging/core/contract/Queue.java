@@ -21,6 +21,8 @@
  */
 package org.jboss.messaging.core.contract;
 
+import java.util.Set;
+
 import org.jboss.messaging.core.impl.clusterconnection.MessageSucker;
 
 
@@ -42,7 +44,7 @@ public interface Queue extends Channel
     * over to another node, but a queue with the same name already exists. In this case we merge the
     * two queues.
     */
-   void mergeIn(long channelID) throws Exception;
+   void mergeIn(long channelID, int nodeID) throws Exception;
    
    /* 
     * TODO - this method does not really belong here - the only reason it is, is because we create the 
@@ -62,6 +64,8 @@ public interface Queue extends Channel
    
    int getNodeID();
    
+   long getRecoverDeliveriesTimeout();
+   
    Distributor getLocalDistributor();
    
    Distributor getRemoteDistributor();   
@@ -69,4 +73,12 @@ public interface Queue extends Channel
    void registerSucker(MessageSucker sucker);
    
    boolean unregisterSucker(MessageSucker sucker);
+   
+   void addToRecoveryArea(int nodeID, long messageID);
+   
+   void removeFromRecoveryArea(int nodeID, long messageID);
+   
+   void removeAllFromRecoveryArea(int nodeID);
+   
+   void addAllToRecoveryArea(int nodeID, Set ids);
 }

@@ -66,6 +66,8 @@ class MappingInfo implements Streamable
    
    private boolean allNodes;
    
+   private long recoverDeliveriesTimeout;
+   
    MappingInfo()
    {      
    }
@@ -93,7 +95,7 @@ class MappingInfo implements Streamable
    MappingInfo(int nodeId, String queueName, String conditionText, String filterString,
    		      long channelId, boolean recoverable, boolean clustered, boolean allNodes,
    		      int fullSize, int pageSize, int downCacheSize,
-   		      int maxSize)
+   		      int maxSize, long recoverDeliveriesTimeout)
    {
    	this (nodeId, queueName, conditionText, filterString, channelId, recoverable, clustered, allNodes);
    	
@@ -104,6 +106,8 @@ class MappingInfo implements Streamable
    	this.downCacheSize = downCacheSize;
    	
    	this.maxSize = maxSize;
+   	
+   	this.recoverDeliveriesTimeout = recoverDeliveriesTimeout;
    }   
 	
 	// Streamable implementation ---------------------------------------------------------------------
@@ -133,6 +137,8 @@ class MappingInfo implements Streamable
       downCacheSize = in.readInt();
       
       maxSize = in.readInt();
+      
+      recoverDeliveriesTimeout = in.readLong();
    }
 
    public void write(DataOutputStream out) throws Exception
@@ -160,6 +166,8 @@ class MappingInfo implements Streamable
       out.writeInt(downCacheSize);
       
       out.writeInt(maxSize);
+      
+      out.writeLong(recoverDeliveriesTimeout);
    }
    
    int getNodeId()
@@ -220,6 +228,11 @@ class MappingInfo implements Streamable
    int getMaxSize()
    {
    	return maxSize;
+   }
+   
+   long getRecoverDeliveriesTimeout()
+   {
+   	return recoverDeliveriesTimeout;
    }
 
 }

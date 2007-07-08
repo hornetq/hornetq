@@ -47,7 +47,7 @@ public class ConnectionFactoryGetClientAOPStackRequest extends RequestSupport
    {
    }
 
-   public ConnectionFactoryGetClientAOPStackRequest(int objectId, byte version)
+   public ConnectionFactoryGetClientAOPStackRequest(String objectId, byte version)
    {
       super(objectId, PacketSupport.REQ_CONNECTIONFACTORY_GETCLIENTAOPSTACK, version);
    }

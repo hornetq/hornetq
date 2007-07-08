@@ -36,7 +36,7 @@ import org.jboss.remoting.InvocationRequest;
  */
 public abstract class RequestSupport extends PacketSupport
 {    
-   protected int objectId;
+   protected String objectId;
   
    protected byte version;
    
@@ -44,7 +44,7 @@ public abstract class RequestSupport extends PacketSupport
    {      
    }  
    
-   public RequestSupport(int objectId, int methodId, byte version)
+   public RequestSupport(String objectId, int methodId, byte version)
    {
       super(methodId);
       
@@ -68,7 +68,7 @@ public abstract class RequestSupport extends PacketSupport
       return methodId;
    }
 
-   public int getObjectId()
+   public String getObjectId()
    {
       return objectId;
    }
@@ -86,14 +86,14 @@ public abstract class RequestSupport extends PacketSupport
       
       os.writeByte(version);
 
-      os.writeInt(objectId);
+      os.writeUTF(objectId);
    }
    
    public void read(DataInputStream is) throws Exception
    {     
       version = is.readByte();
       
-      objectId = is.readInt();
+      objectId = is.readUTF();
    }
    
 }

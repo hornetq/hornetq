@@ -76,7 +76,7 @@ public class SessionState extends HierarchicalStateSupport
    private ConnectionState parent;
    private SessionDelegate delegate;
 
-   private int sessionID;
+   private String sessionID;
    private int acknowledgeMode;
    private boolean transacted;
    private boolean xa;
@@ -196,7 +196,7 @@ public class SessionState extends HierarchicalStateSupport
    {
       SessionState newState = (SessionState)ns;
 
-      int oldSessionID = sessionID;
+      String oldSessionID = sessionID;
       sessionID = newState.sessionID;
       
       // We need to clear anything waiting in the session executor - since there may be messages
@@ -419,22 +419,22 @@ public class SessionState extends HierarchicalStateSupport
       this.recoverCalled = recoverCalled;
    }
 
-   public ClientConsumer getCallbackHandler(int consumerID)
+   public ClientConsumer getCallbackHandler(String consumerID)
    {
-      return (ClientConsumer)callbackHandlers.get(new Integer(consumerID));
+      return (ClientConsumer)callbackHandlers.get(consumerID);
    }
 
    public void addCallbackHandler(ClientConsumer handler)
    {
-      callbackHandlers.put(new Integer(handler.getConsumerId()), handler);
+      callbackHandlers.put(handler.getConsumerId(), handler);
    }
 
    public void removeCallbackHandler(ClientConsumer handler)
    {
-      callbackHandlers.remove(new Integer(handler.getConsumerId()));
+      callbackHandlers.remove(handler.getConsumerId());
    }
 
-   public int getSessionID()
+   public String getSessionID()
    {
       return sessionID;
    }

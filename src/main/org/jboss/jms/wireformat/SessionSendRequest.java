@@ -49,7 +49,7 @@ public class SessionSendRequest extends RequestSupport
    {      
    }
    
-   public SessionSendRequest(int objectId,
+   public SessionSendRequest(String objectId,
                              byte version,
                              JBossMessage msg,
                              boolean checkForDuplicates)

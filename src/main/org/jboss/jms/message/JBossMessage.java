@@ -270,7 +270,7 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message, S
 
    // Attributes ----------------------------------------------------
 
-   protected transient int connectionID;
+   protected transient String connectionID;
    
    protected transient String jmsMessageID;
    
@@ -951,12 +951,12 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message, S
    {      
    }
    
-   public int getConnectionID()
+   public String getConnectionID()
    {
       return connectionID;
    }
    
-   public void setConnectionID(int connectionID)
+   public void setConnectionID(String connectionID)
    {
       this.connectionID = connectionID;
    }

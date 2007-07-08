@@ -94,7 +94,7 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
 
    // Constructors ---------------------------------------------------------------------------------
 
-   public ClientSessionDelegate(int objectID, int dupsOKBatchSize)
+   public ClientSessionDelegate(String objectID, int dupsOKBatchSize)
    {
       super(objectID);
 
@@ -434,7 +434,7 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
     * This invocation should either be handled by the client-side interceptor chain or by the
     * server-side endpoint.
     */
-   public void addAsfMessage(MessageProxy m, int consumerID, String queueName, int maxDeliveries,
+   public void addAsfMessage(MessageProxy m, String consumerID, String queueName, int maxDeliveries,
                              SessionDelegate connectionConsumerSession, boolean shouldAck)
    {
       throw new IllegalStateException("This invocation should not be handled here!");

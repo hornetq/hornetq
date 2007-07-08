@@ -86,7 +86,7 @@ public class ClientConnectionDelegate extends DelegateSupport implements Connect
 
    // Constructors ---------------------------------------------------------------------------------
 
-   public ClientConnectionDelegate(int objectID, int serverID)
+   public ClientConnectionDelegate(String objectID, int serverID)
    {
       super(objectID);
 

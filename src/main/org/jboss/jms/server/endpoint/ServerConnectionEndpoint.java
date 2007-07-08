@@ -21,6 +21,7 @@
   */
 package org.jboss.jms.server.endpoint;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -28,7 +29,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.ArrayList;
 
 import javax.jms.Destination;
 import javax.jms.IllegalStateException;
@@ -63,9 +63,11 @@ import org.jboss.messaging.core.contract.Queue;
 import org.jboss.messaging.core.impl.tx.Transaction;
 import org.jboss.messaging.core.impl.tx.TransactionRepository;
 import org.jboss.messaging.util.ExceptionUtil;
+import org.jboss.messaging.util.GUIDGenerator;
 import org.jboss.messaging.util.Util;
 import org.jboss.remoting.Client;
 import org.jboss.remoting.callback.ServerInvokerCallbackHandler;
+import org.jboss.util.id.GUID;
 
 /**
  * Concrete implementation of ConnectionEndpoint.
@@ -88,7 +90,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
 
    // Attributes -----------------------------------------------------------------------------------
 
-   private int id;
+   private String id;
 
    private volatile boolean closed;
    private volatile boolean started;
@@ -161,7 +163,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
  
       started = false;
 
-      this.id = serverPeer.getNextObjectID();
+      this.id = GUIDGenerator.generateGUID();
       this.clientID = clientID;
       this.prefetchSize = prefetchSize;
       
@@ -234,7 +236,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
             throw new IllegalStateException("Connection is closed");
          }
                   
-         int sessionID = serverPeer.getNextObjectID();
+         String sessionID = GUIDGenerator.generateGUID();
            
          // create the corresponding server-side session endpoint and register it with this
          // connection endpoint instance
@@ -242,7 +244,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
          
          synchronized (sessions)
          {
-            sessions.put(new Integer(sessionID), ep);
+            sessions.put(sessionID, ep);
          }
          
          SessionAdvised advised;
@@ -256,11 +258,9 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
          
          SessionAdvised sessionAdvised = advised;
          
-         Integer iSessionID = new Integer(sessionID);
-         
-         serverPeer.addSession(iSessionID, ep);
+         serverPeer.addSession(sessionID, ep);
 
-         Dispatcher.instance.registerTarget(iSessionID, sessionAdvised);
+         Dispatcher.instance.registerTarget(sessionID, sessionAdvised);
 
          log.debug("created and registered " + ep);
 
@@ -594,7 +594,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
       return defaultTempQueueDownCacheSize;
    }
    
-   int getConnectionID()
+   String getConnectionID()
    {
       return id;
    }
@@ -604,14 +604,13 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
       return started;    
    }
    
-   void removeSession(int sessionId) throws Exception
+   void removeSession(String sessionId) throws Exception
    {
       synchronized (sessions)
       {
-         if (sessions.remove(new Integer(sessionId)) == null)
+         if (sessions.remove(sessionId) == null)
          {
-            throw new IllegalStateException("Cannot find session with id " +
-               sessionId + " to remove");
+            throw new IllegalStateException("Cannot find session with id " + sessionId + " to remove");
          }
       }
    }
@@ -810,8 +809,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
             // of a connection consumer, the message might be delivered through one connection and
             // the transaction committed/rolledback through another. ConnectionConsumers suck.
             
-            ServerSessionEndpoint session =
-               serverPeer.getSession(new Integer(sessionState.getSessionId()));
+            ServerSessionEndpoint session = serverPeer.getSession(sessionState.getSessionId());
             
             if (session == null)
             {               

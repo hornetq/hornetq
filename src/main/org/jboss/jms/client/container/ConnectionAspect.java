@@ -21,10 +21,6 @@
  */
 package org.jboss.jms.client.container;
 
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
-
 import javax.jms.ExceptionListener;
 import javax.jms.IllegalStateException;
 
@@ -36,8 +32,6 @@ import org.jboss.jms.client.delegate.ClientConnectionDelegate;
 import org.jboss.jms.client.remoting.ConsolidatedRemotingConnectionListener;
 import org.jboss.jms.client.remoting.JMSRemotingConnection;
 import org.jboss.jms.client.state.ConnectionState;
-import org.jboss.jms.client.state.ConsumerState;
-import org.jboss.jms.client.state.SessionState;
 import org.jboss.jms.message.MessageIdGeneratorFactory;
 import org.jboss.jms.tx.ResourceManagerFactory;
 
@@ -66,7 +60,7 @@ public class ConnectionAspect
    protected ConnectionState state;
 
    // The identity of the delegate this interceptor is associated with
-   private Integer id;
+   private String id;
 
    // Constructors --------------------------------------------------
    
@@ -151,15 +145,6 @@ public class ConnectionAspect
       ConnectionState currentState = getConnectionState(invocation);
       currentState.setStarted(true);
       currentState.setJustCreated(false);
-      
-      // Start all consumers
-      forEachConsumer(currentState, new ConsumerAction() {
-         public void run(ClientConsumer consumer) throws Exception
-         {
-            consumer.start();
-         }
-      });
-
       return invocation.invokeNext();
    }
    
@@ -168,27 +153,7 @@ public class ConnectionAspect
       ConnectionState currentState = getConnectionState(invocation);
       currentState.setStarted(false);
       currentState.setJustCreated(false);
-      
-      Object ret = invocation.invokeNext();
-      
-      // Stop all consumers - in two steps, first tell each one to stop,
-      // then actually wait until all have stopped.
-
-      forEachConsumer(currentState, new ConsumerAction() {
-         public void run(ClientConsumer consumer) throws Exception
-         {
-            consumer.stop();
-         }
-      });
-      
-      forEachConsumer(currentState, new ConsumerAction() {
-         public void run(ClientConsumer consumer) throws Exception
-         {
-            consumer.waitUntilStopped();
-         }
-      });
-
-      return ret;
+      return invocation.invokeNext();
    }
    
    public Object handleCreateSessionDelegate(Invocation invocation) throws Throwable
@@ -286,37 +251,12 @@ public class ConnectionAspect
             ((ClientConnectionDelegate)invocation.getTargetObject());
          
          state = (ConnectionState)currentDelegate.getState();
-         id = new Integer(state.getDelegate().getID());
+         id = state.getDelegate().getID();
 
       }
       return state;
    }
-      
-   private static void forEachConsumer(ConnectionState connectionState, ConsumerAction action) throws Exception
-   {
-      Set sessions = connectionState.getChildren();
-      
-      for (Iterator sessionsIter = sessions.iterator(); sessionsIter.hasNext();)
-      {
-         SessionState sessionState = (SessionState) sessionsIter.next();
-         
-         for (Iterator childrenIter = sessionState.getChildren().iterator(); childrenIter.hasNext();)
-         {
-            Object childState = childrenIter.next();
-            if (!(childState instanceof ConsumerState))
-            {
-               continue;
-            }
-            ClientConsumer consumer = ((ConsumerState) childState).getClientConsumer();
-            action.run(consumer);
-         }
-      }
-   }
+   
    
    // Inner classes -------------------------------------------------
-
-   private interface ConsumerAction
-   {
-      void run(ClientConsumer consumer) throws Exception;
-   }
 }

@@ -43,7 +43,7 @@ public class ConnectionGetClientIDRequest extends RequestSupport
    {      
    }
    
-   public ConnectionGetClientIDRequest(int objectId,
+   public ConnectionGetClientIDRequest(String objectId,
                                        byte version)
    {
       super(objectId, PacketSupport.REQ_CONNECTION_GETCLIENTID, version);

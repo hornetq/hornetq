@@ -462,7 +462,7 @@ public class JBossSession implements
     * This method is used by the JBossConnectionConsumer to load up the session
     * with messages to be processed by the session's run() method
     */
-   void addAsfMessage(MessageProxy m, int consumerID, String queueName, int maxDeliveries,
+   void addAsfMessage(MessageProxy m, String consumerID, String queueName, int maxDeliveries,
                       SessionDelegate connectionConsumerSession, boolean shouldAck)
    {
       delegate.addAsfMessage(m, consumerID, queueName, maxDeliveries, connectionConsumerSession, shouldAck);

@@ -45,7 +45,7 @@ public class BrowserNextMessageBlockRequest extends RequestSupport
    {      
    }
    
-   public BrowserNextMessageBlockRequest(int objectId,
+   public BrowserNextMessageBlockRequest(String objectId,
                                          byte version,
                                          int maxMessages)
    {

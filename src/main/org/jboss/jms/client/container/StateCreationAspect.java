@@ -157,7 +157,7 @@ public class StateCreationAspect
       String subscriptionName = (String)mi.getArguments()[3];
       boolean connectionConsumer = ((Boolean)mi.getArguments()[4]).booleanValue();
 
-      int consumerID = consumerDelegate.getID();
+      String consumerID = consumerDelegate.getID();
       int bufferSize = consumerDelegate.getBufferSize();
       int maxDeliveries = consumerDelegate.getMaxDeliveries();
       long redeliveryDelay = consumerDelegate.getRedeliveryDelay();

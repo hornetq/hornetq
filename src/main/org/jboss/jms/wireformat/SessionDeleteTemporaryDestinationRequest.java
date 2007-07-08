@@ -46,7 +46,7 @@ public class SessionDeleteTemporaryDestinationRequest extends RequestSupport
    {      
    }
    
-   public SessionDeleteTemporaryDestinationRequest(int objectId,
+   public SessionDeleteTemporaryDestinationRequest(String objectId,
                                        byte version,
                                        JBossDestination dest)
    {

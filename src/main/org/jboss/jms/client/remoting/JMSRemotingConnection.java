@@ -27,6 +27,7 @@ import java.util.Map;
 import org.jboss.jms.server.ServerPeer;
 import org.jboss.jms.wireformat.JMSWireFormat;
 import org.jboss.logging.Logger;
+import org.jboss.messaging.util.GUIDGenerator;
 import org.jboss.remoting.Client;
 import org.jboss.remoting.InvokerLocator;
 import org.jboss.remoting.ServerInvoker;
@@ -140,7 +141,7 @@ public class JMSRemotingConnection
                {
                   if (hash == 0)
                   {
-                     guid = new GUID().toString();
+                     guid = GUIDGenerator.generateGUID();
                      hash = guid.hashCode();
                   }
                   if (hash < 0)

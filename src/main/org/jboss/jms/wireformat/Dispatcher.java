@@ -50,27 +50,17 @@ public class Dispatcher
       targets = new ConcurrentReaderHashMap();
    }
    
-   public Object getTarget(int id)
-   {
-      return getTarget(new Integer(id));
-   }
-   
-   public Object getTarget(Integer id)
+   public Object getTarget(String id)
    {
       return targets.get(id);
    }
-   
-   public void registerTarget(Integer id, AdvisedSupport obj)
+      
+   public void registerTarget(String id, AdvisedSupport obj)
    {
       targets.put(id, obj);
    }
-   
-   public void registerTarget(int id, AdvisedSupport obj)
-   {
-      registerTarget(new Integer(id), obj);
-   }
-   
-   public boolean unregisterTarget(Integer id, Object endpoint)
+      
+   public boolean unregisterTarget(String id, Object endpoint)
    {
       // Note that we pass the object id in, this is as a sanity check to ensure the object we are
       // deregistering is the correct one since there have been bugs related to deregistering the
@@ -100,10 +90,5 @@ public class Dispatcher
          return targets.remove(id) != null;
       }
    }
-   
-   public boolean unregisterTarget(int id, Object obj)
-   {      
-      return unregisterTarget(new Integer(id), obj);
-   }
-   
+     
 }

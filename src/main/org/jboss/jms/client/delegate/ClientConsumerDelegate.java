@@ -66,7 +66,7 @@ public class ClientConsumerDelegate extends DelegateSupport implements ConsumerD
 
    // Constructors ---------------------------------------------------------------------------------
 
-   public ClientConsumerDelegate(int objectID, int bufferSize, int maxDeliveries, long redeliveryDelay)
+   public ClientConsumerDelegate(String objectID, int bufferSize, int maxDeliveries, long redeliveryDelay)
    {
       super(objectID);
       this.bufferSize = bufferSize;

@@ -43,7 +43,7 @@ public class ConnectionGetPreparedTransactionsRequest extends RequestSupport
    {      
    }
    
-   public ConnectionGetPreparedTransactionsRequest(int objectId,
+   public ConnectionGetPreparedTransactionsRequest(String objectId,
                                                    byte version)
    {
       super(objectId, PacketSupport.REQ_CONNECTION_GETPREPAREDTRANSACTIONS, version);

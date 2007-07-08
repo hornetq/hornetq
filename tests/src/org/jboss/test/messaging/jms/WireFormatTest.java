@@ -448,7 +448,7 @@ public class WireFormatTest extends MessagingTestCase
       public void testConnectionFactoryCreateConnectionDelegate() throws Exception
       {
          RequestSupport req =
-            new ConnectionFactoryCreateConnectionDelegateRequest(23, (byte)77, "session123", "vm123", null, null, -1);;
+            new ConnectionFactoryCreateConnectionDelegateRequest("23", (byte)77, "session123", "vm123", null, null, -1);;
                  
          testPacket(req, PacketSupport.REQ_CONNECTIONFACTORY_CREATECONNECTIONDELEGATE);                           
       }
@@ -456,7 +456,7 @@ public class WireFormatTest extends MessagingTestCase
       public void testConnectionFactoryGetIDBlock() throws Exception
       {
          RequestSupport req =
-            new ConnectionGetIDBlockRequest(23, (byte)77, 66);;
+            new ConnectionGetIDBlockRequest("23", (byte)77, 66);;
                  
          testPacket(req, PacketSupport.REQ_CONNECTIONFACTORY_GETIDBLOCK);                           
       }
@@ -464,7 +464,7 @@ public class WireFormatTest extends MessagingTestCase
       public void testConnectionFactoryGetClientAOPStack() throws Exception
       {
          RequestSupport req =
-            new ConnectionFactoryGetClientAOPStackRequest(23, (byte)77);;
+            new ConnectionFactoryGetClientAOPStackRequest("23", (byte)77);;
                  
          testPacket(req, PacketSupport.REQ_CONNECTIONFACTORY_GETCLIENTAOPSTACK);                           
       }
@@ -474,7 +474,7 @@ public class WireFormatTest extends MessagingTestCase
       public void testConnectionCreateSessionDelegateRequest() throws Exception
       {
          RequestSupport req =
-            new ConnectionCreateSessionDelegateRequest(23, (byte)77, true, 23, true);;
+            new ConnectionCreateSessionDelegateRequest("23", (byte)77, true, 23, true);;
                  
          testPacket(req, PacketSupport.REQ_CONNECTION_CREATESESSIONDELEGATE);                           
       }
@@ -482,7 +482,7 @@ public class WireFormatTest extends MessagingTestCase
       public void testConnectionGetClientIDRequest() throws Exception
       {
          RequestSupport req =
-            new ConnectionGetClientIDRequest(23, (byte)77);;
+            new ConnectionGetClientIDRequest("23", (byte)77);;
                  
          testPacket(req, PacketSupport.REQ_CONNECTION_GETCLIENTID);                           
       }
@@ -490,7 +490,7 @@ public class WireFormatTest extends MessagingTestCase
       public void testConnectionSetClientIDRequest() throws Exception
       {
          RequestSupport req =
-            new ConnectionSetClientIDRequest(23, (byte)77, "blah");;
+            new ConnectionSetClientIDRequest("23", (byte)77, "blah");;
                  
          testPacket(req, PacketSupport.REQ_CONNECTION_SETCLIENTID);                           
       }
@@ -498,7 +498,7 @@ public class WireFormatTest extends MessagingTestCase
       public void testConnectionStartRequest() throws Exception
       {
          RequestSupport req =
-            new ConnectionStartRequest(23, (byte)77);;
+            new ConnectionStartRequest("23", (byte)77);;
                  
          testPacket(req, PacketSupport.REQ_CONNECTION_START);                           
       }
@@ -506,7 +506,7 @@ public class WireFormatTest extends MessagingTestCase
       public void testConnectionStopRequest() throws Exception
       {
          RequestSupport req =
-            new ConnectionStopRequest(23, (byte)77);;
+            new ConnectionStopRequest("23", (byte)77);;
                  
          testPacket(req, PacketSupport.REQ_CONNECTION_STOP);                           
       }
@@ -518,7 +518,7 @@ public class WireFormatTest extends MessagingTestCase
          TransactionRequest tr = new TransactionRequest(TransactionRequest.ONE_PHASE_COMMIT_REQUEST, null, tx);
          
          RequestSupport req =
-            new ConnectionSendTransactionRequest(23, (byte)77, tr, false);
+            new ConnectionSendTransactionRequest("23", (byte)77, tr, false);
                  
          testPacket(req, PacketSupport.REQ_CONNECTION_SENDTRANSACTION);                           
       }      
@@ -526,7 +526,7 @@ public class WireFormatTest extends MessagingTestCase
       public void testConnectionGetPreparedTransactionsRequest() throws Exception
       {
          RequestSupport req =
-            new ConnectionGetPreparedTransactionsRequest(23, (byte)77);
+            new ConnectionGetPreparedTransactionsRequest("23", (byte)77);
                  
          testPacket(req, PacketSupport.REQ_CONNECTION_GETPREPAREDTRANSACTIONS);                           
       }  
@@ -536,7 +536,7 @@ public class WireFormatTest extends MessagingTestCase
       public void testSessionCreateConsumerDelegateRequest() throws Exception
       {
          RequestSupport req =
-            new SessionCreateConsumerDelegateRequest(23, (byte)77, new JBossQueue("wibble"), null, false, null, false, true);
+            new SessionCreateConsumerDelegateRequest("23", (byte)77, new JBossQueue("wibble"), null, false, null, false, true);
                  
          testPacket(req, PacketSupport.REQ_SESSION_CREATECONSUMERDELEGATE);                           
       } 
@@ -544,7 +544,7 @@ public class WireFormatTest extends MessagingTestCase
       public void testSessionCreateBrowserDelegateRequest() throws Exception
       {
          RequestSupport req =
-            new SessionCreateBrowserDelegateRequest(23, (byte)77, new JBossQueue("wibble"), null);
+            new SessionCreateBrowserDelegateRequest("23", (byte)77, new JBossQueue("wibble"), null);
                  
          testPacket(req, PacketSupport.REQ_SESSION_CREATEBROWSERDELEGATE);                           
       }
@@ -552,7 +552,7 @@ public class WireFormatTest extends MessagingTestCase
       public void testSessionCreateQueueRequest() throws Exception
       {
          RequestSupport req =
-            new SessionCreateQueueRequest(23, (byte)77, "wibble");
+            new SessionCreateQueueRequest("23", (byte)77, "wibble");
                  
          testPacket(req, PacketSupport.REQ_SESSION_CREATEQUEUE);                           
       }      
@@ -560,7 +560,7 @@ public class WireFormatTest extends MessagingTestCase
       public void testSessionCreateTopicRequest() throws Exception
       {
          RequestSupport req =
-            new SessionCreateTopicRequest(23, (byte)77, "wibble");
+            new SessionCreateTopicRequest("23", (byte)77, "wibble");
                  
          testPacket(req, PacketSupport.REQ_SESSION_CREATETOPIC);                           
       }
@@ -572,7 +572,7 @@ public class WireFormatTest extends MessagingTestCase
          acks.add(new DefaultAck(12323));
          
          RequestSupport req =
-            new SessionAcknowledgeDeliveriesRequest(23, (byte)77, acks);
+            new SessionAcknowledgeDeliveriesRequest("23", (byte)77, acks);
                  
          testPacket(req, PacketSupport.REQ_SESSION_ACKNOWLEDGEDELIVERIES);                           
       }   
@@ -582,7 +582,7 @@ public class WireFormatTest extends MessagingTestCase
          Ack ack = new DefaultAck(12323);
          
          RequestSupport req =
-            new SessionAcknowledgeDeliveryRequest(23, (byte)77, ack);
+            new SessionAcknowledgeDeliveryRequest("23", (byte)77, ack);
                  
          testPacket(req, PacketSupport.REQ_SESSION_ACKNOWLEDGEDELIVERY);                           
       } 
@@ -594,7 +594,7 @@ public class WireFormatTest extends MessagingTestCase
          cancels.add(new DefaultCancel(12323, 12, false, false));
          
          RequestSupport req =
-            new SessionCancelDeliveriesRequest(23, (byte)77, cancels);
+            new SessionCancelDeliveriesRequest("23", (byte)77, cancels);
                  
          testPacket(req, PacketSupport.REQ_SESSION_CANCELDELIVERIES);                           
       }   
@@ -604,7 +604,7 @@ public class WireFormatTest extends MessagingTestCase
          Cancel cancel = (new DefaultCancel(12323, 12, false, false));
          
          RequestSupport req =
-            new SessionCancelDeliveryRequest(23, (byte)77, cancel);
+            new SessionCancelDeliveryRequest("23", (byte)77, cancel);
                  
          testPacket(req, PacketSupport.REQ_SESSION_CANCELDELIVERY);                           
       } 
@@ -612,7 +612,7 @@ public class WireFormatTest extends MessagingTestCase
       public void testSessionAddTemporaryDestinationRequest() throws Exception
       {
          RequestSupport req =
-            new SessionAddTemporaryDestinationRequest(23, (byte)77, new JBossTemporaryQueue("blah"));
+            new SessionAddTemporaryDestinationRequest("23", (byte)77, new JBossTemporaryQueue("blah"));
                  
          testPacket(req, PacketSupport.REQ_SESSION_ADDTEMPORARYDESTINATION);                           
       } 
@@ -620,7 +620,7 @@ public class WireFormatTest extends MessagingTestCase
       public void testSessionDeleteTemporaryDestinationRequest() throws Exception
       {
          RequestSupport req =
-            new SessionDeleteTemporaryDestinationRequest(23, (byte)77, new JBossTemporaryQueue("blah"));
+            new SessionDeleteTemporaryDestinationRequest("23", (byte)77, new JBossTemporaryQueue("blah"));
                  
          testPacket(req, PacketSupport.REQ_SESSION_DELETETEMPORARYDESTINATION);                           
       } 
@@ -628,7 +628,7 @@ public class WireFormatTest extends MessagingTestCase
       public void testSessionUnsubscribeRequest() throws Exception
       {
          RequestSupport req =
-            new SessionUnsubscribeRequest(23, (byte)77, "blah");
+            new SessionUnsubscribeRequest("23", (byte)77, "blah");
                  
          testPacket(req, PacketSupport.REQ_SESSION_UNSUBSCRIBE);                           
       }
@@ -638,7 +638,7 @@ public class WireFormatTest extends MessagingTestCase
          JBossMessage msg = new JBossMessage(123);
          
          RequestSupport req =
-            new SessionSendRequest(23, (byte)77, msg, false);
+            new SessionSendRequest("23", (byte)77, msg, false);
                  
          testPacket(req, PacketSupport.REQ_SESSION_SEND);                           
       }
@@ -652,7 +652,7 @@ public class WireFormatTest extends MessagingTestCase
          dels.add(info);
          
          RequestSupport req =
-            new SessionRecoverDeliveriesRequest(23, (byte)77, dels);
+            new SessionRecoverDeliveriesRequest("23", (byte)77, dels);
                  
          testPacket(req, PacketSupport.REQ_SESSION_RECOVERDELIVERIES);                           
       }
@@ -662,7 +662,7 @@ public class WireFormatTest extends MessagingTestCase
       public void testConsumerChangeRateRequest() throws Exception
       { 
          RequestSupport req =
-            new ConsumerChangeRateRequest(23, (byte)77, 123.23f);
+            new ConsumerChangeRateRequest("23", (byte)77, 123.23f);
                  
          testPacket(req, PacketSupport.REQ_CONSUMER_CHANGERATE);                           
       }
@@ -672,7 +672,7 @@ public class WireFormatTest extends MessagingTestCase
       public void testBrowserNextMessageRequest() throws Exception
       { 
          RequestSupport req =
-            new BrowserNextMessageRequest(23, (byte)77);
+            new BrowserNextMessageRequest("23", (byte)77);
                  
          testPacket(req, PacketSupport.REQ_BROWSER_NEXTMESSAGE);                           
       }
@@ -680,7 +680,7 @@ public class WireFormatTest extends MessagingTestCase
       public void testBrowserHasNextMessageRequest() throws Exception
       { 
          RequestSupport req =
-            new BrowserHasNextMessageRequest(23, (byte)77);
+            new BrowserHasNextMessageRequest("23", (byte)77);
                  
          testPacket(req, PacketSupport.REQ_BROWSER_HASNEXTMESSAGE);                           
       }
@@ -688,7 +688,7 @@ public class WireFormatTest extends MessagingTestCase
       public void testBrowserNextMessageBlockRequest() throws Exception
       { 
          RequestSupport req =
-            new BrowserNextMessageBlockRequest(23, (byte)77, 123);
+            new BrowserNextMessageBlockRequest("23", (byte)77, 123);
                  
          testPacket(req, PacketSupport.REQ_BROWSER_NEXTMESSAGEBLOCK);                           
       }
@@ -696,14 +696,14 @@ public class WireFormatTest extends MessagingTestCase
       
       public void testClosingRequest() throws Exception
       { 
-         RequestSupport req =  new ClosingRequest(23, (byte)77);
+         RequestSupport req =  new ClosingRequest("23", (byte)77);
                  
          testPacket(req, PacketSupport.REQ_CLOSING);                           
       }
       
       public void testCloseRequest() throws Exception
       { 
-         RequestSupport req =  new CloseRequest(23, (byte)77);
+         RequestSupport req =  new CloseRequest("23", (byte)77);
                  
          testPacket(req, PacketSupport.REQ_CLOSE);                           
       }
@@ -749,7 +749,7 @@ public class WireFormatTest extends MessagingTestCase
       
       public void testConnectionCreateSessionDelegateResponse() throws Exception
       { 
-         ClientSessionDelegate del = new ClientSessionDelegate(786, 1000);
+         ClientSessionDelegate del = new ClientSessionDelegate("786", 1000);
          
          ResponseSupport resp =
             new ConnectionCreateSessionDelegateResponse(del);
@@ -781,7 +781,7 @@ public class WireFormatTest extends MessagingTestCase
       
       public void testSessionCreateConsumerDelegateResponse() throws Exception
       { 
-         ClientConsumerDelegate del = new ClientConsumerDelegate(786, 13123, 213, 0);
+         ClientConsumerDelegate del = new ClientConsumerDelegate("786", 13123, 213, 0);
          
          ResponseSupport resp =
             new SessionCreateConsumerDelegateResponse(del);
@@ -792,7 +792,7 @@ public class WireFormatTest extends MessagingTestCase
       
       public void testSessionCreateBrowserDelegateResponse() throws Exception
       { 
-         ClientBrowserDelegate del = new ClientBrowserDelegate(786);
+         ClientBrowserDelegate del = new ClientBrowserDelegate("786");
          
          ResponseSupport resp =
             new SessionCreateBrowserDelegateResponse(del);

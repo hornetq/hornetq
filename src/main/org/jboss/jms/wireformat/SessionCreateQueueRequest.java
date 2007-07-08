@@ -45,7 +45,7 @@ public class SessionCreateQueueRequest extends RequestSupport
    {      
    }
    
-   public SessionCreateQueueRequest(int objectId,
+   public SessionCreateQueueRequest(String objectId,
                                     byte version,
                                     String queueName)
    {

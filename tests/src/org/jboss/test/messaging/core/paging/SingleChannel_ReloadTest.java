@@ -65,7 +65,7 @@ public class SingleChannel_ReloadTest extends PagingStateTestBase
    
    public void testRecoverableQueueCrash() throws Throwable
    {
-      MessagingQueue queue = new MessagingQueue(1, "queue1", 1, ms, pm, true, -1, null, 100, 20, 10, false);
+      MessagingQueue queue = new MessagingQueue(1, "queue1", 1, ms, pm, true, -1, null, 100, 20, 10, false, 300000);
       queue.activate();
       
       Message[] msgs = new Message[200];
@@ -128,7 +128,7 @@ public class SingleChannel_ReloadTest extends PagingStateTestBase
 
       tr.start();
          
-      MessagingQueue queue2 = new MessagingQueue(1, "queue1", 1, ms, pm, true, -1, null, 100, 20, 10, false);
+      MessagingQueue queue2 = new MessagingQueue(1, "queue1", 1, ms, pm, true, -1, null, 100, 20, 10, false, 300000);
     
       queue2.load();
       queue2.activate();
@@ -164,7 +164,7 @@ public class SingleChannel_ReloadTest extends PagingStateTestBase
    {
       //Non recoverable queue - eg temporary queue
       
-      MessagingQueue queue = new MessagingQueue(1, "queue1", 1, ms, pm, false, -1, null, 100, 20, 10, false);
+      MessagingQueue queue = new MessagingQueue(1, "queue1", 1, ms, pm, false, -1, null, 100, 20, 10, false, 300000);
       queue.activate();
          	      
       Message[] msgs = new Message[200];
@@ -225,7 +225,7 @@ public class SingleChannel_ReloadTest extends PagingStateTestBase
       tr = new TransactionRepository(pm, ms, idm);
       tr.start();
 
-      MessagingQueue queue2 = new MessagingQueue(1, "queue1", 1, ms, pm, false, -1, null, 100, 20, 10, false);
+      MessagingQueue queue2 = new MessagingQueue(1, "queue1", 1, ms, pm, false, -1, null, 100, 20, 10, false, 300000);
       
       queue2.load();
       
@@ -257,7 +257,7 @@ public class SingleChannel_ReloadTest extends PagingStateTestBase
    {
       //Non recoverable queue - eg temporary queue
       
-      MessagingQueue queue = new MessagingQueue(1, "queue1", 1, ms, pm, false, -1, null, 100, 20, 10, false);
+      MessagingQueue queue = new MessagingQueue(1, "queue1", 1, ms, pm, false, -1, null, 100, 20, 10, false, 300000);
       queue.activate();
         
       Message[] msgs = new Message[200];

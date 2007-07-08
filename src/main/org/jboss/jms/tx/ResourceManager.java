@@ -126,7 +126,7 @@ public class ResourceManager
     * @param xid - The id of the transaction to add the message to
     * @param m The message
     */
-   public void addMessage(Object xid, int sessionId, JBossMessage m)
+   public void addMessage(Object xid, String sessionId, JBossMessage m)
    {
       if (trace) { log.trace("addding message " + m + " for xid " + xid); }
       
@@ -138,7 +138,7 @@ public class ResourceManager
    /*
     * Failover session from old session ID -> new session ID
     */
-   public void handleFailover(int newServerID, int oldSessionID, int newSessionID)
+   public void handleFailover(int newServerID, String oldSessionID, String newSessionID)
    {
       for(Iterator i = this.transactions.values().iterator(); i.hasNext(); )
       {
@@ -150,7 +150,7 @@ public class ResourceManager
    /*
     * Get all the deliveries corresponding to the session ID
     */
-   public List getDeliveriesForSession(int sessionID)
+   public List getDeliveriesForSession(String sessionID)
    {
       List ackInfos = new ArrayList();
 
@@ -172,7 +172,7 @@ public class ResourceManager
     * @param xid - The id of the transaction to add the message to
     * @param ackInfo Information describing the acknowledgement
     */
-   public void addAck(Object xid, int sessionId, DeliveryInfo ackInfo) throws JMSException
+   public void addAck(Object xid, String sessionId, DeliveryInfo ackInfo) throws JMSException
    {
       if (trace) { log.trace("adding " + ackInfo + " to transaction " + xid); }
       
@@ -191,8 +191,6 @@ public class ResourceManager
       if (trace) { log.trace("committing " + xid); }
       
       ClientTransaction tx = this.getTxInternal(xid);
-      
-      checkAndRollbackJMS(tx, xid);
       
       // Invalid xid
       if (tx == null)
@@ -260,7 +258,7 @@ public class ResourceManager
    }
       
    
-   public boolean checkForAcksInSession(int sessionId)
+   public boolean checkForAcksInSession(String sessionId)
    {         
       Iterator iter = transactions.entrySet().iterator();
       
@@ -330,8 +328,6 @@ public class ResourceManager
          throw new MessagingXAException(XAException.XAER_NOTA, "Cannot find transaction with xid:" + xid);
       } 
       
-      checkAndRollbackXA(state, xid);
-      
       TransactionRequest request =
          new TransactionRequest(TransactionRequest.TWO_PHASE_PREPARE_REQUEST, xid, state);
       
@@ -359,8 +355,6 @@ public class ResourceManager
          {       
             throw new MessagingXAException(XAException.XAER_NOTA, "Cannot find transaction with xid:" + xid);
          }
-         
-         checkAndRollbackXA(tx, xid);
          
          TransactionRequest request =
             new TransactionRequest(TransactionRequest.ONE_PHASE_COMMIT_REQUEST, null, tx);
@@ -657,60 +651,6 @@ public class ResourceManager
          
          throw new MessagingXAException(XAException.XA_RETRY, "A Throwable was caught in sending the transaction", t);
       }
-   }
-   
-   private void checkAndRollbackJMS(ClientTransaction state, Object xid) throws JMSException
-   {
-      Exception e = checkAndRollback(state, xid, false);
-      if (e != null)
-      {
-         throw (JMSException)e;
-      }
-   }
-   
-   private void checkAndRollbackXA(ClientTransaction state, Object xid) throws XAException
-   {
-      Exception e = checkAndRollback(state, xid, true);
-      if (e != null)
-      {
-         throw (XAException)e;
-      }
-   }
-   
-   private Exception checkAndRollback(ClientTransaction state, Object xid, boolean xa)
-   {
-      if (state.isFailedOver() && state.hasPersistentAcks())
-      {
-         // http://jira.jboss.org/jira/browse/JBMESSAGING-883
-         // If a transaction has persistent acks in it and it has failed over from another server
-         // then it's possible that on failover another consumer got the messages that we have already
-         // received. Therfore to be strict and avoid any possibility of duplicate delivery we must
-         // doom the transaction
-         removeTx(xid);
-         
-         try
-         {
-            redeliverMessages(state);
-         }
-         catch (JMSException e)
-         {
-            log.error("Failed to redeliver messages", e);
-         }
-          
-         
-         final String msg = "Rolled back tx branch to avoid possibility of duplicates http://jira.jboss.org/jira/browse/JBMESSAGING-883";
-         
-         if (xa)
-         {
-            return new MessagingXAException(XAException.XA_HEURRB, msg);
-         }
-         else
-         {
-            return new MessagingTransactionRolledBackException(msg);
-         }            
-      }
-      
-      return null;
    }
    
    // Inner Classes --------------------------------------------------------------------------------

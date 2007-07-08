@@ -40,7 +40,7 @@ public class ClosingRequest extends RequestSupport
    {      
    }
    
-   public ClosingRequest(int objectId, byte version)
+   public ClosingRequest(String objectId, byte version)
    {
       super(objectId, PacketSupport.REQ_CLOSING, version);
    }

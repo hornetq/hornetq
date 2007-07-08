@@ -51,6 +51,7 @@ import org.jboss.logging.Logger;
 import org.jboss.messaging.core.contract.ClusterNotification;
 import org.jboss.messaging.core.contract.ClusterNotificationListener;
 import org.jboss.messaging.core.contract.Replicator;
+import org.jboss.messaging.util.GUIDGenerator;
 import org.jboss.messaging.util.JNDIUtil;
 import org.jboss.messaging.util.Version;
 
@@ -130,7 +131,7 @@ public class ConnectionFactoryJNDIMapper
                                             "registered with name " + uniqueName);
       }
 
-      int id = serverPeer.getNextObjectID();
+      String id = GUIDGenerator.generateGUID();
       Version version = serverPeer.getVersion();
 
       ServerConnectionFactoryEndpoint endpoint =
@@ -139,7 +140,8 @@ public class ConnectionFactoryJNDIMapper
                                              defaultTempQueueFullSize,
                                              defaultTempQueuePageSize,
                                              defaultTempQueueDownCacheSize,
-                                             dupsOKBatchSize);
+                                             dupsOKBatchSize,
+                                             supportsFailover);
       endpoints.put(uniqueName, endpoint);
 
       ConnectionFactoryDelegate delegate = null;
@@ -376,6 +378,7 @@ public class ConnectionFactoryJNDIMapper
 		
 		            rebindConnectionFactory(initialContext, endpoint.getJNDIBindings(), del);
 
+		            log.info("**** Updating clustered clients");
 		            endpoint.updateClusteredClients(delArr, failoverMap);
                }
             }

@@ -50,7 +50,7 @@ public class ConsumerState extends HierarchicalStateSupport
 
    // Attributes -----------------------------------------------------------------------------------
 
-   private int consumerID;
+   private String consumerID;
    private JBossDestination destination;
    private String selector;
    private String subscriptionName;
@@ -69,7 +69,7 @@ public class ConsumerState extends HierarchicalStateSupport
    // Constructors ---------------------------------------------------------------------------------
 
    public ConsumerState(SessionState parent, ConsumerDelegate delegate, JBossDestination dest,
-                        String selector, boolean noLocal, String subscriptionName, int consumerID,
+                        String selector, boolean noLocal, String subscriptionName, String consumerID,
                         boolean isCC, int bufferSize, int maxDeliveries, long redeliveryDelay)
    {
       super(parent, (DelegateSupport)delegate);
@@ -129,7 +129,7 @@ public class ConsumerState extends HierarchicalStateSupport
    {
       ConsumerState newState = (ConsumerState)ns;
 
-      int oldConsumerID = consumerID;
+      String oldConsumerID = consumerID;
       consumerID = newState.consumerID;
       
       CallbackManager oldCallbackManager = ((ClientConnectionDelegate)getParent().getParent().
@@ -163,7 +163,7 @@ public class ConsumerState extends HierarchicalStateSupport
       return noLocal;
    }
 
-   public int getConsumerID()
+   public String getConsumerID()
    {
       return consumerID;
    }

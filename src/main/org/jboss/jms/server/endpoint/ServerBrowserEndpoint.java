@@ -58,7 +58,7 @@ public class ServerBrowserEndpoint implements BrowserEndpoint
 
    // Attributes -----------------------------------------------------------------------------------
 
-   private int id;
+   private String id;
    private boolean closed;
    private ServerSessionEndpoint session;
    private Channel destination;
@@ -67,7 +67,7 @@ public class ServerBrowserEndpoint implements BrowserEndpoint
 
    // Constructors ---------------------------------------------------------------------------------
 
-   ServerBrowserEndpoint(ServerSessionEndpoint session, int id,
+   ServerBrowserEndpoint(ServerSessionEndpoint session, String id,
                          Channel destination, String messageSelector) throws JMSException
    {     
       this.session = session;

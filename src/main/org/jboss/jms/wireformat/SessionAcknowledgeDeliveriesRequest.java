@@ -50,7 +50,7 @@ public class SessionAcknowledgeDeliveriesRequest extends RequestSupport
    {      
    }
    
-   public SessionAcknowledgeDeliveriesRequest(int objectId,
+   public SessionAcknowledgeDeliveriesRequest(String objectId,
                                               byte version,
                                               List acks)
    {

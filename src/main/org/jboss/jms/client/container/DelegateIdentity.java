@@ -24,7 +24,7 @@ public class DelegateIdentity
    {
       DelegateSupport ds = (DelegateSupport)i.getTargetObject();
 
-      Integer id = new Integer(ds.getID());
+      String id = ds.getID();
       String type = ds.getClass().getName();
 
       type = type.substring(type.lastIndexOf('.') + 1);
@@ -34,12 +34,12 @@ public class DelegateIdentity
 
    // Attributes ----------------------------------------------------
 
-   private Integer id;
+   private String id;
    private String type;
 
    // Constructors --------------------------------------------------
 
-   public DelegateIdentity(Integer id, String type)
+   public DelegateIdentity(String id, String type)
    {
       this.id = id;
       this.type = type;
@@ -47,7 +47,7 @@ public class DelegateIdentity
 
    // Public --------------------------------------------------------
 
-   public Integer getID()
+   public String getID()
    {
       return id;
    }

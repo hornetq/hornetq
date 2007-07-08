@@ -75,7 +75,7 @@ public class JBossConnectionConsumer implements ConnectionConsumer, Runnable
    
    private SessionDelegate sess;
    
-   private int consumerID;
+   private String consumerID;
    
    /** The ServerSessionPool that is implemented by the AS */
    private ServerSessionPool serverSessionPool;

@@ -47,7 +47,7 @@ public class SessionCancelDeliveryRequest extends RequestSupport
    {      
    }
    
-   public SessionCancelDeliveryRequest(int objectId,
+   public SessionCancelDeliveryRequest(String objectId,
                                        byte version,
                                        Cancel cancel)
    {

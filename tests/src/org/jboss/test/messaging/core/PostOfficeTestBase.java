@@ -27,7 +27,6 @@ import java.util.List;
 import org.jboss.messaging.core.contract.ClusterNotifier;
 import org.jboss.messaging.core.contract.Condition;
 import org.jboss.messaging.core.contract.ConditionFactory;
-import org.jboss.messaging.core.contract.FailoverMapper;
 import org.jboss.messaging.core.contract.FilterFactory;
 import org.jboss.messaging.core.contract.JChannelFactory;
 import org.jboss.messaging.core.contract.Message;
@@ -40,7 +39,6 @@ import org.jboss.messaging.core.impl.DefaultClusterNotifier;
 import org.jboss.messaging.core.impl.IDManager;
 import org.jboss.messaging.core.impl.JDBCPersistenceManager;
 import org.jboss.messaging.core.impl.message.SimpleMessageStore;
-import org.jboss.messaging.core.impl.postoffice.DefaultFailoverMapper;
 import org.jboss.messaging.core.impl.postoffice.MessagingPostOffice;
 import org.jboss.messaging.core.impl.tx.Transaction;
 import org.jboss.messaging.core.impl.tx.TransactionRepository;
@@ -78,7 +76,6 @@ public class PostOfficeTestBase extends MessagingTestCase
       throws Exception
    {
       FilterFactory ff = new SimpleFilterFactory();
-      FailoverMapper mapper = new DefaultFailoverMapper();
       ConditionFactory cf = new SimpleConditionFactory();
       IDManager idm = new IDManager("channel_id", 10, pm);
       idm.start();
@@ -100,7 +97,7 @@ public class PostOfficeTestBase extends MessagingTestCase
                                  sc.getPostOfficeSQLProperties(), true, nodeID,
                                  "Clustered", ms, pm, tr, ff, cf, idm, cn,
                                  groupName, jChannelFactory,
-                                 stateTimeout, castTimeout, mapper, true);
+                                 stateTimeout, castTimeout, true);
       
       postOffice.start();
 

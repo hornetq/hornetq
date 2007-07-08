@@ -34,7 +34,7 @@ public class ConnectionGetIDBlockRequest extends RequestSupport
    {      
    }
 
-   public ConnectionGetIDBlockRequest(int objectId,
+   public ConnectionGetIDBlockRequest(String objectId,
                                       byte version,
                                       int size)
    {

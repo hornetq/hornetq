@@ -86,7 +86,8 @@ public class MessageSucker implements MessageListener
 		return "MessageSucker:" + System.identityHashCode(this) + " queue:" + localQueue.getName();
 	}
 			
-	MessageSucker(Queue localQueue, JBossConnection sourceConnection, JBossConnection localConnection, boolean xa, boolean preserveOrdering)
+	MessageSucker(Queue localQueue, JBossConnection sourceConnection, JBossConnection localConnection,
+			        boolean xa, boolean preserveOrdering)
 	{	
 		this.localQueue = localQueue;
 		
@@ -235,6 +236,19 @@ public class MessageSucker implements MessageListener
 		Transaction tx = null;
 		
 		if (trace) { log.trace(this + " sucked message " + msg); }
+		
+//		org.jboss.messaging.core.contract.Message m = ((MessageProxy)msg).getMessage();
+//		
+//		String hdr = (String)m.getHeader("eeek");
+//				
+//		if (hdr == null)
+//		{
+//			hdr = "";
+//		}
+//		
+//		hdr = hdr + "-sucked";
+//		
+//		m.putHeader("eeek", hdr);
 		
 		try
 		{

@@ -194,6 +194,12 @@
       <type>boolean</type>
    </attribute>    
    
+   <attribute access="read-write" getMethod="getRecoverDeliveriesTimeout" setMethod="setRecoverDeliveriesTimeout">
+      <description>When a failover occurs the max. amount of time the server will keep messages in its recovery area. waiting for clients to reconnect</description>
+      <name>RecoverDeliveriesTimeout</name>
+      <type>long</type>
+   </attribute> 
+   
    <attribute access="read-write" getMethod="getDefaultMessageCounterHistoryDayLimit" setMethod="setDefaultMessageCounterHistoryDayLimit">
       <description>The default max number of messages per day in message counter history</description>
       <name>DefaultMessageCounterHistoryDayLimit</name>

@@ -25,7 +25,7 @@ import javax.jms.JMSException;
 import javax.jms.TemporaryQueue;
 
 import org.jboss.jms.delegate.SessionDelegate;
-import org.jboss.util.id.GUID;
+import org.jboss.messaging.util.GUIDGenerator;
 
 
 /**
@@ -51,7 +51,7 @@ public class JBossTemporaryQueue extends JBossQueue implements TemporaryQueue
    
    public JBossTemporaryQueue(SessionDelegate delegate)
    {
-      super(new GUID().toString());
+      super(GUIDGenerator.generateGUID());
       this.delegate = delegate;
    }
    

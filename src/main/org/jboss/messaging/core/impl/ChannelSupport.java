@@ -366,52 +366,7 @@ public abstract class ChannelSupport implements Channel
       {
          return active;         
       }
-   }
-   
-   public List recoverDeliveries(List messageIds)
-   {
-      //debug
-      Iterator iter = messageIds.iterator();
-                  
-      List dels = new ArrayList();
-
-      synchronized (lock)
-      {
-         ListIterator liter = messageRefs.iterator();
-                           
-         while (iter.hasNext())
-         {
-            Long id = (Long)iter.next();
-            
-            //Scan the queue
-            while (true)
-            {               
-               if (!liter.hasNext())
-               {
-                  // TODO we need to look in paging state too - currently not supported
-                  //http://jira.jboss.com/jira/browse/JBMESSAGING-839
-                  log.warn(this + " cannot find reference " + id + " (Might be paged!)");
-                  break;
-               }
-
-               MessageReference ref = (MessageReference)liter.next();
-               
-               if (ref.getMessage().getMessageID() == id.longValue())
-               {
-                  liter.remove();
-                  
-                  Delivery del = new SimpleDelivery(this, ref);
-                  
-                  dels.add(del);
-                                 
-                  break;
-               }
-            }
-         }           
-      }
-            
-      return dels;
-   }
+   }   
    
    public int getMaxSize()
    {

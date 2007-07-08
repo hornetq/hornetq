@@ -46,7 +46,7 @@ public class SessionAddTemporaryDestinationRequest extends RequestSupport
    {      
    }
    
-   public SessionAddTemporaryDestinationRequest(int objectId,
+   public SessionAddTemporaryDestinationRequest(String objectId,
                                                 byte version,
                                                 JBossDestination dest)
    {

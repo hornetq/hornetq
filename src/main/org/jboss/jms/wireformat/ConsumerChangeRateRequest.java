@@ -45,7 +45,7 @@ public class ConsumerChangeRateRequest extends RequestSupport
    {      
    }
    
-   public ConsumerChangeRateRequest(int objectId,
+   public ConsumerChangeRateRequest(String objectId,
                                     byte version,
                                     float newRate)
    {

@@ -99,7 +99,7 @@ public class ClientConnectionFactoryDelegate
 
    // Constructors ---------------------------------------------------------------------------------
 
-   public ClientConnectionFactoryDelegate(int objectID, int serverID, String serverLocatorURI,
+   public ClientConnectionFactoryDelegate(String objectID, int serverID, String serverLocatorURI,
                                           Version serverVersion, boolean clientPing)
    {
       super(objectID);

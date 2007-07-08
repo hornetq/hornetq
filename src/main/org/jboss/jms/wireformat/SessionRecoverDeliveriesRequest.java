@@ -49,7 +49,7 @@ public class SessionRecoverDeliveriesRequest extends RequestSupport
    {      
    }
    
-   public SessionRecoverDeliveriesRequest(int objectId,
+   public SessionRecoverDeliveriesRequest(String objectId,
                                           byte version,
                                           List dels)
    {

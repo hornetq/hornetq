@@ -25,7 +25,7 @@ import javax.jms.JMSException;
 import javax.jms.TemporaryTopic;
 
 import org.jboss.jms.delegate.SessionDelegate;
-import org.jboss.util.id.GUID;
+import org.jboss.messaging.util.GUIDGenerator;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -49,7 +49,7 @@ public class JBossTemporaryTopic extends JBossTopic implements TemporaryTopic
    
    public JBossTemporaryTopic(SessionDelegate delegate)
    {
-      super(new GUID().toString());
+      super(GUIDGenerator.generateGUID());
       this.delegate = delegate;
    }
     

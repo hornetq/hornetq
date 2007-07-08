@@ -55,7 +55,7 @@ public class ConnectionFactoryCreateConnectionDelegateRequest extends RequestSup
    {      
    }
 
-   public ConnectionFactoryCreateConnectionDelegateRequest(int objectId,
+   public ConnectionFactoryCreateConnectionDelegateRequest(String objectId,
                                                            byte version,
                                                            String remotingSessionId,
                                                            String clientVMId,

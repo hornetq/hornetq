@@ -133,7 +133,9 @@ public class MultipleFailoverTest extends ClusteringTestBase
          log.info("########");
 
          ServerManagement.start(3, "all", false);
+         log.info("deploying queue on3");
          ServerManagement.deployQueue("testDistributedQueue", 3);
+         log.info("deployed it");
 
          // send/receive message
          prod.send(s.createTextMessage("step5"));
@@ -181,6 +183,8 @@ public class MultipleFailoverTest extends ClusteringTestBase
          m = (TextMessage)cons.receive();
          assertNotNull(m);
          assertEquals("step8", m.getText());
+         
+         log.info("Got to the end");
 
       }
       finally

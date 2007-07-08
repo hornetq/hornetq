@@ -45,7 +45,7 @@ public class SessionCreateTopicRequest extends RequestSupport
    {      
    }
    
-   public SessionCreateTopicRequest(int objectId,
+   public SessionCreateTopicRequest(String objectId,
                                     byte version,
                                     String topicName)
    {

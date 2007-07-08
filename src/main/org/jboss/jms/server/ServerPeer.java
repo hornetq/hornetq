@@ -22,8 +22,8 @@
 package org.jboss.jms.server;
 
 import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
 import java.io.CharArrayWriter;
+import java.io.InputStream;
 import java.io.PrintWriter;
 import java.net.URL;
 import java.util.ArrayList;
@@ -45,8 +45,8 @@ import org.jboss.jms.server.connectionfactory.ConnectionFactoryJNDIMapper;
 import org.jboss.jms.server.connectionmanager.SimpleConnectionManager;
 import org.jboss.jms.server.connectormanager.SimpleConnectorManager;
 import org.jboss.jms.server.destination.ManagedQueue;
-import org.jboss.jms.server.endpoint.ServerSessionEndpoint;
 import org.jboss.jms.server.endpoint.ServerConnectionEndpoint;
+import org.jboss.jms.server.endpoint.ServerSessionEndpoint;
 import org.jboss.jms.server.messagecounter.MessageCounter;
 import org.jboss.jms.server.messagecounter.MessageCounterManager;
 import org.jboss.jms.server.plugin.contract.JMSUserManager;
@@ -69,6 +69,7 @@ import org.jboss.messaging.core.impl.JDBCPersistenceManager;
 import org.jboss.messaging.core.impl.clusterconnection.ClusterConnectionManager;
 import org.jboss.messaging.core.impl.memory.SimpleMemoryManager;
 import org.jboss.messaging.core.impl.message.SimpleMessageStore;
+import org.jboss.messaging.core.impl.postoffice.MessagingPostOffice;
 import org.jboss.messaging.core.impl.tx.TransactionRepository;
 import org.jboss.messaging.util.ExceptionUtil;
 import org.jboss.messaging.util.Util;
@@ -116,8 +117,6 @@ public class ServerPeer extends ServiceMBeanSupport
 
    private boolean started;
 
-   private int objectIDSequence = 1;
-
    private boolean supportsFailover = true;
 
    // The default maximum number of delivery attempts before sending to DLQ - can be overridden on
@@ -143,6 +142,8 @@ public class ServerPeer extends ServiceMBeanSupport
    private boolean useXAForMessagePull;
    
    private boolean defaultPreserveOrdering;
+   
+   private long recoverDeliveriesTimeout = 5 * 60 * 1000;
       
    // wired components
 
@@ -619,6 +620,16 @@ public class ServerPeer extends ServiceMBeanSupport
    	this.defaultPreserveOrdering = preserve;
    }
    
+   public long getRecoverDeliveriesTimeout()
+   {
+   	return this.recoverDeliveriesTimeout;
+   }
+   
+   public void setRecoverDeliveriesTimeout(long timeout)
+   {
+   	this.recoverDeliveriesTimeout = timeout;
+   }
+   
    public synchronized void setServerPeerID(int serverPeerID)
    {
       if (started)
@@ -1051,17 +1062,22 @@ public class ServerPeer extends ServiceMBeanSupport
       return channelIDManager;
    }
    
-   public ServerSessionEndpoint getSession(Integer sessionID)
+   public ServerSessionEndpoint getSession(String sessionID)
    {
       return (ServerSessionEndpoint)sessions.get(sessionID);
    }
    
-   public void addSession(Integer id, ServerSessionEndpoint session)
+   public Collection getSessions()
+   {
+   	return sessions.values();
+   }
+   
+   public void addSession(String id, ServerSessionEndpoint session)
    {
       sessions.put(id, session);      
    }
    
-   public void removeSession(Integer id)
+   public void removeSession(String id)
    {
       if (sessions.remove(id) == null)
       {
@@ -1233,6 +1249,8 @@ public class ServerPeer extends ServiceMBeanSupport
             this.clusterConnectionManager.injectReplicator((Replicator)postOffice);
             
             this.connectionManager.injectReplicator((Replicator)postOffice);
+            
+            ((MessagingPostOffice)postOffice).injectServerPeer(this);
          }
          
          // Also need to inject into txRepository
@@ -1251,11 +1269,11 @@ public class ServerPeer extends ServiceMBeanSupport
    	return failoverWaiter;
    }
 
-   public synchronized int getNextObjectID()
-   {
-      return objectIDSequence++;
-   }
-
+//   public synchronized int getNextObjectID()
+//   {
+//      return objectIDSequence++;
+//   }
+//
 
    public boolean isSupportsFailover()
    {

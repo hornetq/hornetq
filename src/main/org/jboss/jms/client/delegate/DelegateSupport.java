@@ -71,7 +71,7 @@ public abstract class DelegateSupport implements Streamable, Serializable
    // Attributes -----------------------------------------------------------------------------------
 
    // This is set on the server.
-   protected int id;
+   protected String id;
 
    // This is set on the client.
    // The reason we don't use the meta-data to store the state for the delegate is to avoid the
@@ -87,7 +87,7 @@ public abstract class DelegateSupport implements Streamable, Serializable
 
    // Constructors ---------------------------------------------------------------------------------
 
-   public DelegateSupport(int id)
+   public DelegateSupport(String id)
    {
       this.id = id;
       this.state = null;
@@ -95,7 +95,7 @@ public abstract class DelegateSupport implements Streamable, Serializable
 
    public DelegateSupport()
    {
-      this(Integer.MIN_VALUE);
+      this("NO_ID_SET");
    }
 
    // Interceptor implementation -------------------------------------------------------------------
@@ -110,12 +110,12 @@ public abstract class DelegateSupport implements Streamable, Serializable
    
    public void read(DataInputStream in) throws Exception
    {
-      id = in.readInt();
+      id = in.readUTF();
    }
 
    public void write(DataOutputStream out) throws Exception
    {
-      out.writeInt(id);
+      out.writeUTF(id);
    }
 
    // Public ---------------------------------------------------------------------------------------
@@ -132,7 +132,7 @@ public abstract class DelegateSupport implements Streamable, Serializable
       this.version = state.getVersionToUse().getProviderIncrementingVersion();
    }
 
-   public int getID()
+   public String getID()
    {
       return id;
    }

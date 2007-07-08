@@ -53,7 +53,7 @@ public class SessionCreateConsumerDelegateRequest extends RequestSupport
    {      
    }
    
-   public SessionCreateConsumerDelegateRequest(int objectId,
+   public SessionCreateConsumerDelegateRequest(String objectId,
                                                byte version,
                                                JBossDestination destination,
                                                String selector, boolean noLocal,

@@ -68,7 +68,7 @@ public class LargeClusterTest extends ClusteringTestBase
 
       ServerManagement.addNotificationListener(4, postOfficeObjectName, clusterEvent);
 
-      // We start programatically the eight node.
+      // We start programatically the eighth node.
 
       ServerManagement.start(7, "all");
 

@@ -91,7 +91,7 @@ public class ClientTransaction
       return state;
    }
 
-   public void addMessage(int sessionId, JBossMessage msg)
+   public void addMessage(String sessionId, JBossMessage msg)
    {
       if (!clientSide)
       {
@@ -102,7 +102,7 @@ public class ClientTransaction
       sessionTxState.addMessage(msg);
    }
    
-   public void addAck(int sessionId, DeliveryInfo info)
+   public void addAck(String sessionId, DeliveryInfo info)
    {
       if (!clientSide)
       {
@@ -177,7 +177,7 @@ public class ClientTransaction
    /*
    * Substitute newSessionID for oldSessionID
    */
-   public void handleFailover(int newServerID, int oldSessionID, int newSessionID)
+   public void handleFailover(int newServerID, String oldSessionID, String newSessionID)
    {
       if (!clientSide)
       {
@@ -193,15 +193,15 @@ public class ClientTransaction
       {
          for(Iterator i = sessionStatesMap.values().iterator(); i.hasNext();)
          {
-
             SessionTxState state = (SessionTxState)i.next();
+            
             state.handleFailover(newServerID, oldSessionID, newSessionID);
 
             if (tmpMap == null)
             {
                tmpMap = new LinkedHashMap();
             }
-            tmpMap.put(new Integer(newSessionID), state);
+            tmpMap.put(newSessionID, state);
          }
       }
 
@@ -217,7 +217,7 @@ public class ClientTransaction
    /**
     * May return an empty list, but never null.
     */
-   public List getDeliveriesForSession(int sessionID)
+   public List getDeliveriesForSession(String sessionID)
    {
       if (!clientSide)
       {
@@ -230,7 +230,7 @@ public class ClientTransaction
       }
       else
       {         
-         SessionTxState state = (SessionTxState)sessionStatesMap.get(new Integer(sessionID));
+         SessionTxState state = (SessionTxState)sessionStatesMap.get(sessionID);
    
          if (state != null)
          {
@@ -302,7 +302,7 @@ public class ClientTransaction
          {
             SessionTxState state = (SessionTxState)iter.next();
 
-            out.writeInt(state.getSessionId());
+            out.writeUTF(state.getSessionId());
 
             List msgs = state.getMsgs();
 
@@ -351,7 +351,7 @@ public class ClientTransaction
 
       for (int i = 0; i < numSessions; i++)
       {
-         int sessionId = in.readInt();
+         String sessionId = in.readUTF();
 
          SessionTxState sessionState = new SessionTxState(sessionId);
 
@@ -387,19 +387,20 @@ public class ClientTransaction
 
    // Private -------------------------------------------------------
 
-   private SessionTxState getSessionTxState(int sessionID)
+   private SessionTxState getSessionTxState(String sessionID)
    {
       if (sessionStatesMap == null)
       {
          sessionStatesMap = new LinkedHashMap();
       }
 
-      SessionTxState sessionTxState = (SessionTxState)sessionStatesMap.get(new Integer(sessionID));
+      SessionTxState sessionTxState = (SessionTxState)sessionStatesMap.get(sessionID);
 
       if (sessionTxState == null)
       {
          sessionTxState = new SessionTxState(sessionID);
-         sessionStatesMap.put(new Integer(sessionID), sessionTxState);
+         
+         sessionStatesMap.put(sessionID, sessionTxState);
       }
 
       return sessionTxState;
@@ -409,7 +410,7 @@ public class ClientTransaction
 
    public class SessionTxState
    {
-      private int sessionID;
+      private String sessionID;
 
       // We record the server id when doing failover to avoid overwriting the sesion ID again if
       // multiple connections fail on the same resource mamanger but fail onto old values of the
@@ -419,7 +420,7 @@ public class ClientTransaction
       private List msgs = new ArrayList();
       private List acks = new ArrayList();
 
-      SessionTxState(int sessionID)
+      SessionTxState(String sessionID)
       {
          this.sessionID = sessionID;
       }
@@ -444,7 +445,7 @@ public class ClientTransaction
          return acks;
       }
 
-      public int getSessionId()
+      public String getSessionId()
       {
          return sessionID;
       }
@@ -454,9 +455,9 @@ public class ClientTransaction
       	this.acks = acks;
       }
 
-      void handleFailover(int newServerID, int oldSessionID, int newSessionID)
+      void handleFailover(int newServerID, String oldSessionID, String newSessionID)
       {
-         if (sessionID == oldSessionID && serverID != newServerID)
+         if (sessionID.equals(oldSessionID) && serverID != newServerID)
          {
             sessionID = newSessionID;
             serverID = newServerID;

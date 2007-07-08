@@ -24,6 +24,7 @@ package org.jboss.messaging.util;
 import java.util.AbstractSet;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
 
@@ -47,6 +48,18 @@ public class ConcurrentHashSet extends AbstractSet
    public ConcurrentHashSet()
    {
       theMap = new ConcurrentHashMap();
+   }
+   
+   public ConcurrentHashSet(Set other)
+   {
+   	this();
+   	
+   	addAll(other);
+   }
+   
+   public ConcurrentHashSet(int size)
+   {
+   	theMap = new ConcurrentHashMap(size);
    }
    
    public int size()

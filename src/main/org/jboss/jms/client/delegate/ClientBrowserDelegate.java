@@ -60,7 +60,7 @@ public class ClientBrowserDelegate extends DelegateSupport implements BrowserDel
 
    // Constructors ---------------------------------------------------------------------------------
 
-	public ClientBrowserDelegate(int objectID)
+	public ClientBrowserDelegate(String objectID)
    {
       super(objectID);
    }

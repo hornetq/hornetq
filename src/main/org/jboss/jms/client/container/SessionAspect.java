@@ -287,7 +287,7 @@ public class SessionAspect
             ClientSessionDelegate connectionConsumerDelegate =
                (ClientSessionDelegate)info.getConnectionConsumerSession();
             
-            int sessionId = connectionConsumerDelegate != null ?
+            String sessionId = connectionConsumerDelegate != null ?
                connectionConsumerDelegate.getID() : state.getSessionID();
             
             connState.getResourceManager().addAck(txID, sessionId, info);
@@ -753,7 +753,7 @@ public class SessionAspect
       // Load the session with a message to be processed during a subsequent call to run()
 
       MessageProxy m = (MessageProxy)mi.getArguments()[0];
-      int theConsumerID = ((Integer)mi.getArguments()[1]).intValue();
+      String theConsumerID = (String)mi.getArguments()[1];
       String queueName = (String)mi.getArguments()[2];
       int maxDeliveries = ((Integer)mi.getArguments()[3]).intValue();
       SessionDelegate connectionConsumerDelegate = ((SessionDelegate)mi.getArguments()[4]);
@@ -920,7 +920,7 @@ public class SessionAspect
    private static class AsfMessageHolder
    {
       private MessageProxy msg;
-      private int consumerID;
+      private String consumerID;
       private String queueName;
       private int maxDeliveries;
       private SessionDelegate connectionConsumerDelegate;

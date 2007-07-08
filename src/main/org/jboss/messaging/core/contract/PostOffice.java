@@ -140,4 +140,12 @@ public interface PostOffice extends MessagingComponent
     * @return
     */
    Set nodeIDView();
+   
+   //FIXME - these do not belong here - only here temporarily until we implement generic Handler/Message abstraction
+   
+   void sendReplicateDeliveryMessage(String queueName, String sessionID, long messageID, long deliveryID, boolean reply, boolean sync)
+   	throws Exception;
+
+	void sendReplicateAckMessage(String queueName, long messageID) throws Exception;
 }
+

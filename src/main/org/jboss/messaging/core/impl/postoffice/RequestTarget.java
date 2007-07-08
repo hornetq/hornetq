@@ -22,9 +22,11 @@
 package org.jboss.messaging.core.impl.postoffice;
 
 import java.io.Serializable;
+import java.util.Map;
 import java.util.Set;
 
 import org.jboss.messaging.core.contract.Message;
+import org.jgroups.Address;
 
 /**
  * 
@@ -51,4 +53,17 @@ interface RequestTarget
    boolean removeReplicantLocally(int nodeId, Serializable key) throws Exception;
    
    void routeFromCluster(Message message, String routingKeyText, Set queueNames) throws Exception;
+   
+   //TODO - these don't belong here
+   
+   void handleReplicateDelivery(String queueName, String sessionID, long messageID,
+   		                       long deliveryID, Address replyAddress, int nodeID) throws Exception;
+   
+   void handleReplicateAck(String queueName, long messageID, int nodeID) throws Exception;
+   
+   void handleReplicateDeliveryAck(String sessionID, long deliveryID) throws Exception;
+   
+   void handleAckAllReplicatedDeliveries(int nodeID) throws Exception;
+   
+   void handleAddAllReplicatedDeliveries(Map deliveries, int nodeID) throws Exception;
 }

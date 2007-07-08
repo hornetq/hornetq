@@ -47,7 +47,7 @@ public class ConnectionSendTransactionRequest extends RequestSupport
    {      
    }
    
-   public ConnectionSendTransactionRequest(int objectId,
+   public ConnectionSendTransactionRequest(String objectId,
                                            byte version,
                                            TransactionRequest req,
                                            boolean checkForDuplicates)

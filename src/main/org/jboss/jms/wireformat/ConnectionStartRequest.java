@@ -44,7 +44,7 @@ public class ConnectionStartRequest extends RequestSupport
    {      
    }
    
-   public ConnectionStartRequest(int objectId,
+   public ConnectionStartRequest(String objectId,
                                  byte version)
    {
       super(objectId, PacketSupport.REQ_CONNECTION_START, version);

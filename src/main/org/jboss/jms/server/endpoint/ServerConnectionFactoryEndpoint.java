@@ -66,19 +66,21 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
 
    private String clientID;
 
-   private int id;
+   private String id;
 
    private JNDIBindings jndiBindings;
 
    private int prefetchSize;
 
-   protected int defaultTempQueueFullSize;
+   private int defaultTempQueueFullSize;
 
-   protected int defaultTempQueuePageSize;
+   private int defaultTempQueuePageSize;
 
-   protected int defaultTempQueueDownCacheSize;
+   private int defaultTempQueueDownCacheSize;
 
-   protected int dupsOKBatchSize;
+   private int dupsOKBatchSize;
+   
+   private boolean supportsFailover;
    
    // Constructors ---------------------------------------------------------------------------------
 
@@ -86,14 +88,15 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
     * @param jndiBindings - names under which the corresponding JBossConnectionFactory is bound in
     *        JNDI.
     */
-   public ServerConnectionFactoryEndpoint(int id, ServerPeer serverPeer,
+   public ServerConnectionFactoryEndpoint(String id, ServerPeer serverPeer,
                                           String defaultClientID,
                                           JNDIBindings jndiBindings,
                                           int preFetchSize,
                                           int defaultTempQueueFullSize,
                                           int defaultTempQueuePageSize,
                                           int defaultTempQueueDownCacheSize,
-                                          int dupsOKBatchSize)
+                                          int dupsOKBatchSize,
+                                          boolean supportsFailover)
    {
       this.serverPeer = serverPeer;
       this.clientID = defaultClientID;
@@ -104,6 +107,7 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
       this.defaultTempQueuePageSize = defaultTempQueuePageSize;
       this.defaultTempQueueDownCacheSize = defaultTempQueueDownCacheSize;
       this.dupsOKBatchSize = dupsOKBatchSize;
+      this.supportsFailover = supportsFailover;
    }
 
    // ConnectionFactoryDelegate implementation -----------------------------------------------------
@@ -224,7 +228,7 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
                                       remotingSessionID, clientVMID, versionToUse,
                                       callbackHandler, dupsOKBatchSize);
 
-      int connectionID = endpoint.getConnectionID();
+      String connectionID = endpoint.getConnectionID();
 
       ConnectionAdvised connAdvised;
       
@@ -261,7 +265,7 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
 
    // Public ---------------------------------------------------------------------------------------
    
-   public int getID()
+   public String getID()
    {
       return id;
    }
@@ -320,6 +324,11 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
    }
 
    // Package protected ----------------------------------------------------------------------------
+   
+   boolean isSupportsFailover()
+   {
+   	return supportsFailover;
+   }
    
    // Protected ------------------------------------------------------------------------------------
    

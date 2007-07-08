@@ -49,7 +49,7 @@ public class SessionCreateBrowserDelegateRequest extends RequestSupport
    {      
    }
    
-   public SessionCreateBrowserDelegateRequest(int objectId,
+   public SessionCreateBrowserDelegateRequest(String objectId,
                                                byte version,
                                                JBossDestination destination,
                                                String selector)

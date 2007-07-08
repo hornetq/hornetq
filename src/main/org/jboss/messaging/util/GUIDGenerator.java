@@ -19,46 +19,39 @@
   * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   */
-package org.jboss.messaging.core.contract;
+package org.jboss.messaging.util;
+
+import org.jboss.util.id.GUID;
 
 /**
- * A reference to a message.
  * 
- * Channels store message references rather than the messages themselves.
- * 
- * If many channels have contain the same reference this makes a lot of sense
- * 
- * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * @version <tt>$Revision$</tt>
+ * @version <tt>$Revision: $</tt>6 Jul 2007
  *
- * $Id$
+ * $Id: $
+ *
  */
-public interface MessageReference
-{      
-   long getPagingOrder();
-   
-   void setPagingOrder(long order);   
-   
-   void releaseMemoryReference();
-   
-   MessageReference copy();
-   
-   Message getMessage();
-   
-   /**
-    * 
-    * @return The time in the future that delivery will be delayed until, or zero if
-    * no scheduled delivery will occur
-    */
-   long getScheduledDeliveryTime();
-   
-   void setScheduledDeliveryTime(long scheduledDeliveryTime);
-   
-   /**
-    * @return the number of times delivery has been attempted for this routable
-    */
-   int getDeliveryCount();
-   
-   void setDeliveryCount(int deliveryCount);     
+public class GUIDGenerator
+{
+	public static String generateGUID()
+	{
+		String guid = new GUID().toString();
+		
+		//We reverse the guid - this is because the JBoss GUID generates strings which are often the same up until
+		//the last few characters, this means comparing them can be slow (when they're not equal) since many characters need
+		//to be scanned
+		
+		int i;
+		
+		int len = guid.length();
+		
+		StringBuffer res = new StringBuffer(len);
+
+		for (i = len -1; i >= 0; i--)
+		{
+			res.append(guid.charAt(i));
+		}
+		
+		return res.toString();
+	}
 }

@@ -89,6 +89,10 @@
             by a particular consumer from a particular producer? -->
             
       <attribute name="DefaultPreserveOrdering">false</attribute>
+      
+      <!-- Max. time to hold previously delivered messages back waiting for clients to reconnect after failover -->
+      
+      <attribute name="RecoverDeliveriesTimeout">300000</attribute>
 
       <depends optional-attribute-name="PersistenceManager">jboss.messaging:service=PersistenceManager</depends>
       

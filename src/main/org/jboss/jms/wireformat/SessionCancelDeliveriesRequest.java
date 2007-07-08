@@ -50,7 +50,7 @@ public class SessionCancelDeliveriesRequest extends RequestSupport
    {      
    }
    
-   public SessionCancelDeliveriesRequest(int objectId,
+   public SessionCancelDeliveriesRequest(String objectId,
                                          byte version,
                                          List cancels)
    {

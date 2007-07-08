@@ -35,6 +35,8 @@ import javax.naming.InitialContext;
 import org.jboss.jms.client.FailoverEvent;
 import org.jboss.jms.client.FailoverListener;
 import org.jboss.jms.client.JBossConnection;
+import org.jboss.jms.client.JBossConnectionFactory;
+import org.jboss.jms.client.delegate.ClientClusteredConnectionFactoryDelegate;
 import org.jboss.jms.client.delegate.DelegateSupport;
 import org.jboss.jms.client.state.ConnectionState;
 import org.jboss.test.messaging.MessagingTestCase;
@@ -78,13 +80,20 @@ public class ClusteringTestBase extends MessagingTestCase
    {
       super(name);
    }
-
+   
    // Public ---------------------------------------------------------------------------------------
 
    // Package protected ----------------------------------------------------------------------------
 
    // Protected ------------------------------------------------------------------------------------
 
+   protected int getFailoverNodeForNode(JBossConnectionFactory factory, int nodeID)
+   {
+   	Integer l = (Integer)((ClientClusteredConnectionFactoryDelegate)(factory.getDelegate())).getFailoverMap().get(new Integer(nodeID));
+   	
+      return l.intValue();
+   }
+   
    protected void setUp() throws Exception
    {
       super.setUp();
@@ -158,7 +167,7 @@ public class ClusteringTestBase extends MessagingTestCase
          getRemotingClient().getInvoker().getLocator().getLocatorURI();
    }
 
-   protected int getObjectId(Connection conn)
+   protected String getObjectId(Connection conn)
    {
       return ((DelegateSupport) ((JBossConnection) conn).
          getDelegate()).getID();

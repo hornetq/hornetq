@@ -105,7 +105,8 @@ public class QueueService extends DestinationServiceSupport implements QueueMBea
                                        true,
                                        destination.getMaxSize(), null,
                                        destination.getFullSize(), destination.getPageSize(),
-                                       destination.getDownCacheSize(), destination.isClustered());
+                                       destination.getDownCacheSize(), destination.isClustered(),
+                                       serverPeer.getRecoverDeliveriesTimeout());
             po.addBinding(new Binding(queueCond, queue, false), false);         
             
             queue.activate();

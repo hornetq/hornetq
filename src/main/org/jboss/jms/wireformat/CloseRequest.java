@@ -43,7 +43,7 @@ public class CloseRequest extends RequestSupport
    {      
    }
    
-   public CloseRequest(int objectId, byte version)
+   public CloseRequest(String objectId, byte version)
    {
       super(objectId, PacketSupport.REQ_CLOSE, version);
    }

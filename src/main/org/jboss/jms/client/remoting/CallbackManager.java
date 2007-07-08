@@ -93,16 +93,14 @@ public class CallbackManager implements InvokerCallbackHandler
             createThinDelegate(dr.getDeliveryId(), (JBossMessage)msg, dr.getDeliveryCount());
 
          ClientConsumer handler =
-            (ClientConsumer)callbackHandlers.get(new Integer(dr.getConsumerId()));
+            (ClientConsumer)callbackHandlers.get(dr.getConsumerId());
 
          if (handler == null)
          {
             // This should never happen since we wait for all deliveries to arrive before closing
             // the consumer
 
-            log.warn(this + " callback handler not found, message arrived after consumer is closed. Cancelling it bacdk to queue");
-            
-            return;
+            throw new IllegalStateException(this + " callback handler not found, message arrived after consumer is closed.");
          }
 
          try
@@ -134,20 +132,20 @@ public class CallbackManager implements InvokerCallbackHandler
 
    // Public ---------------------------------------------------------------------------------------
 
-   public void registerHandler(int consumerID, ClientConsumer handler)
+   public void registerHandler(String consumerID, ClientConsumer handler)
    {
-      callbackHandlers.put(new Integer(consumerID), handler);
+      callbackHandlers.put(consumerID, handler);
    }
 
-   public void setConnectionDelegate (ClientConnectionDelegate connectionDelegate)
+   public void setConnectionDelegate(ClientConnectionDelegate connectionDelegate)
    {
       this.connectionfactoryCallbackHandler =
          new ConnectionFactoryCallbackHandler(connectionDelegate);
    }
 
-   public ClientConsumer unregisterHandler(int consumerID)
+   public ClientConsumer unregisterHandler(String consumerID)
    { 
-      return (ClientConsumer)callbackHandlers.remove(new Integer(consumerID));
+      return (ClientConsumer)callbackHandlers.remove(consumerID);
    }
 
    public String toString()

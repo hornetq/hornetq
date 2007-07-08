@@ -43,7 +43,7 @@ public class BrowserNextMessageRequest extends RequestSupport
    {      
    }
    
-   public BrowserNextMessageRequest(int objectId,
+   public BrowserNextMessageRequest(String objectId,
                                     byte version)
    {
       super(objectId, PacketSupport.REQ_BROWSER_NEXTMESSAGE, version);

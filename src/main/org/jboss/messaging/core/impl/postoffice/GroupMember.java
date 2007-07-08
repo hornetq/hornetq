@@ -25,12 +25,10 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
-import java.util.Collection;
 import java.util.Iterator;
 
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.contract.JChannelFactory;
-import org.jboss.messaging.util.Future;
 import org.jgroups.Address;
 import org.jgroups.Channel;
 import org.jgroups.MembershipListener;
@@ -83,7 +81,7 @@ public class GroupMember
    
    private MessageDispatcher dispatcher;
    
-   private View currentView;
+   private volatile View currentView;
    
    private QueuedExecutor viewExecutor;
    
@@ -137,10 +135,6 @@ public class GroupMember
 	      RequestHandler requestHandler = new ControlRequestHandler();
 	      
 	      dispatcher = new MessageDispatcher(controlChannel, messageListener, membershipListener, requestHandler, true);
-	      	      
-	      //Receiver controlReceiver = new ControlReceiver();
-	      
-	      //controlChannel.setReceiver(controlReceiver);
 	      	      
 	      Receiver dataReceiver = new DataReceiver();
 	      
@@ -213,6 +207,11 @@ public class GroupMember
    	return castTimeout;
    }
    
+   public View getCurrentView()
+   {
+   	return currentView;
+   }
+   
    public void multicastControl(ClusterRequest request, boolean sync) throws Exception
    {
    	lock.readLock().acquire();
@@ -223,32 +222,11 @@ public class GroupMember
 	   	{   		
 		   	if (trace) { log.trace(this + " multicasting " + request + " to control channel, sync=" + sync); }
 		
-		      byte[] bytes = writeRequest(request);
-		      
-		      controlChannel.send(new Message(null, null, bytes));
-		   	
 		   	Message message = new Message(null, null, writeRequest(request));
 
 		   	RspList rspList =
 		   		dispatcher.castMessage(null, message, sync ? GroupRequest.GET_ALL: GroupRequest.GET_NONE, castTimeout);	
 		   	
-//		   	Future future = new Future();
-//		   	
-//		   	new Thread(new CastRunner(request, sync, future)).start();
-//		   	
-//		   	Object result = future.getResult();
-//		   	
-//		   	if (result instanceof Exception)
-//		   	{
-//		   		throw (Exception)result;
-//		   	}
-//		   	else if (result instanceof Error)
-//		   	{
-//		   		throw (Error)result;
-//		   	}
-//		   	
-//		   	RspList list = (RspList)result;
-		   			   	
 		   	if (sync)
 		   	{			   	
 			   	Iterator iter = rspList.values().iterator();
@@ -271,40 +249,31 @@ public class GroupMember
    	}
    }
    
-//   class CastRunner implements Runnable
-//   {
-//   	private ClusterRequest request;
-//   	
-//   	private boolean sync;
-//   	
-//   	private Future future;
-//   	
-//   	CastRunner(ClusterRequest request, boolean sync, Future future)
-//   	{
-//   		this.request = request;
-//   		
-//   		this.sync = sync;
-//   		
-//   		this.future = future;
-//   	}
-//   	
-//   	public void run()
-//   	{
-//   		try
-//   		{
-//	   		Message message = new Message(null, null, writeRequest(request));
-//	
-//		   	RspList rspList =
-//		   		dispatcher.castMessage(null, message, sync ? GroupRequest.GET_ALL: GroupRequest.GET_NONE, castTimeout);
-//		   	
-//		   	future.setResult(rspList);
-//   		}
-//   		catch (Throwable t)
-//   		{
-//   			future.setException(t);
-//   		}
-//   	}
-//   }
+   public void unicastControl(ClusterRequest request, Address address, boolean sync) throws Exception
+   {
+   	lock.readLock().acquire();
+   	
+   	try
+   	{   	
+	   	if (started)
+	   	{   		
+		   	if (trace) { log.trace(this + " multicasting " + request + " to control channel, sync=" + sync); }
+		
+		   	Message message = new Message(address, null, writeRequest(request));
+
+		   	String ret = (String)dispatcher.sendMessage(message, sync ? GroupRequest.GET_ALL: GroupRequest.GET_NONE, castTimeout);
+		   				   	
+		   	if (sync && !"ok".equals(ret))
+		   	{			   				   	
+		   		throw new IllegalStateException("Invalid response received " + ret);		   				   				   			   		
+		   	}
+	   	}
+   	}
+   	finally
+   	{
+   		lock.readLock().release();
+   	}
+   }
    
    public void multicastData(ClusterRequest request) throws Exception
    {
@@ -348,48 +317,6 @@ public class GroupMember
    	}
    }
    
-//   public void sendSyncRequest(ClusterRequest request) throws Exception
-//   {
-//   	lock.readLock().acquire();
-//   	
-//   	try
-//   	{
-//	   	if (started)
-//	   	{
-//		   	if (trace) { log.trace(this + " Sending sync request " + request); }
-//		   	
-//		   	Message message = new Message(null, null, writeRequest(request));
-//		
-//		      RspList rspList = dispatcher.castMessage(null, message, GroupRequest.GET_ALL, castTimeout);		      		      
-//	   	}
-//   	}
-//   	finally
-//   	{
-//   		lock.readLock().release();
-//   	}
-//   }
-//   
-//   //These methods need renaming
-//   public void sendAsyncRequest(ClusterRequest request) throws Exception
-//   {
-//   	lock.readLock().acquire();
-//   	
-//   	try
-//   	{
-//	   	if (started)
-//	   	{
-//		   	if (trace) { log.trace(this + " Sending async request " + request); }
-//		   	
-//		   	byte[] bytes = writeRequest(request);
-//		      
-//		      controlChannel.send(new Message(null, null, bytes));
-//	   	}
-//   	}
-//   	finally
-//   	{
-//   		lock.readLock().release();
-//   	}
-//   }
       
    public boolean getState() throws Exception
    {
@@ -628,146 +555,6 @@ public class GroupMember
       }
    }
    
-//   private class ControlReceiver implements Receiver
-//   {
-//      public void block()
-//      {
-//         //NOOP
-//      }
-//
-//      public void suspect(Address address)
-//      {
-//         //NOOP
-//      }
-//
-//      public void viewAccepted(View newView)
-//      {
-//      	try
-//         {
-//         	lock.readLock().acquire();
-//         	         	
-//         	try
-//         	{	    
-//            	if (!started)
-//            	{
-//            		//Ignore any views received after stopped
-//            		return;
-//            	}
-//         		
-//	            // We queue up changes and execute them asynchronously.
-//	            // This is because JGroups will not let us do stuff like send synch messages using the
-//	            // same thread that delivered the view change and this is what we need to do in
-//	            // failover, for example.
-//	
-//	            viewExecutor.execute(new HandleViewAcceptedRunnable(newView));
-//         	}
-//         	finally
-//         	{
-//         		lock.readLock().release();
-//         	}
-//         }
-//         catch (InterruptedException e)
-//         {
-//            log.warn("Caught InterruptedException", e);
-//         }
-//      }
-//
-//      public byte[] getState()
-//      {
-//      	log.info("*** getting state");
-//      	
-//         try
-//         {
-//	      	lock.readLock().acquire();
-//	      		      
-//	      	try
-//	      	{	      	
-//		      	if (!started)
-//		      	{
-//		      		//Ignore if received after stopped
-//		      		
-//		      		return null;
-//		      	}
-//	      		
-//		         if (trace) { log.trace(this + ".ControlMessageListener got state"); }		         
-//	
-//		         byte[] state = groupListener.getState();
-//		         
-//		         log.info("**** got state " + state);
-//		         	
-//		         return state;		        
-//	      	}
-//	      	finally
-//	      	{
-//	      		lock.readLock().release();
-//	      	}
-//      	}
-//         catch (Exception e)
-//         {
-//         	log.error("Failed to get state", e);
-//         	
-//         	return null;
-//         }
-//      }
-//
-//      public void receive(Message message)
-//      {
-//         if (trace) { log.trace(this + " received " + message + " on the ASYNC channel"); }
-//
-//         try
-//         {
-//         	lock.readLock().acquire();
-//         	
-//         	try
-//         	{
-//         		if (!started)
-//         		{
-//         			//Ignore messages received when not started
-//         			
-//         			return;
-//         		}
-//         		
-//	            byte[] bytes = message.getBuffer();
-//	
-//	            ClusterRequest request = readRequest(bytes);
-//	            
-//	            request.execute(requestTarget);
-//         	}
-//         	finally
-//         	{
-//         		lock.readLock().release();
-//         	}
-//         }
-//         catch (Throwable e)
-//         {
-//            log.error("Caught Exception in Receiver", e);
-//            IllegalStateException e2 = new IllegalStateException(e.getMessage());
-//            e2.setStackTrace(e.getStackTrace());
-//            throw e2;
-//         }
-//      }
-//
-//      public void setState(byte[] bytes)
-//      {
-//      	log.info("************* setting state");
-//         synchronized (setStateLock)
-//         {
-//         	try
-//         	{
-//         		groupListener.setState(bytes);
-//         		log.info("* set it");
-//         	}
-//         	catch (Exception e)
-//         	{
-//         		log.error("Failed to set state", e);
-//         	}
-//         	
-//         	started = true;
-//         	
-//            setStateLock.notify();
-//         }
-//      }
-//   }
 
    /*
     * This class is used to handle control channel requests

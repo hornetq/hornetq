@@ -43,7 +43,7 @@ public class ConnectionStopRequest extends RequestSupport
    {      
    }
    
-   public ConnectionStopRequest(int objectId,
+   public ConnectionStopRequest(String objectId,
                                 byte version)
    {
       super(objectId, PacketSupport.REQ_CONNECTION_STOP, version);

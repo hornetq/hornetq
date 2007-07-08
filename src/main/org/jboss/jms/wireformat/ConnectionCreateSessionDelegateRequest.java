@@ -49,7 +49,7 @@ public class ConnectionCreateSessionDelegateRequest extends RequestSupport
    {      
    }
    
-   public ConnectionCreateSessionDelegateRequest(int objectId,
+   public ConnectionCreateSessionDelegateRequest(String objectId,
                                                  byte version,
                                                  boolean transacted, int ackMode,
                                                  boolean xa)

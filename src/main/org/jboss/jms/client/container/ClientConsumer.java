@@ -47,7 +47,6 @@ import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
 /**
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox/a>
- * @author <a href="mailto:sergey.koshcheyev@jboss.com">Sergey Koscheyev/a>
  * @version <tt>$Revision: 2774 $</tt>
  *
  * $Id: MessageCallbackHandler.java 2774 2007-06-12 22:43:54Z timfox $
@@ -63,7 +62,8 @@ public class ClientConsumer
    private static boolean trace;      
    
    private static final int WAIT_TIMEOUT = 30000;
-      
+   
+   
    static
    {
       log = Logger.getLogger(ClientConsumer.class);
@@ -119,7 +119,7 @@ public class ClientConsumer
    //This is static so it can be called by the asf layer too
    public static void callOnMessage(SessionDelegate sess,
                                     MessageListener listener,
-                                    int consumerID,
+                                    String consumerID,
                                     String queueName,
                                     boolean isConnectionConsumer,
                                     MessageProxy m,
@@ -192,13 +192,12 @@ public class ClientConsumer
    private PriorityLinkedList buffer;
    private SessionDelegate sessionDelegate;
    private ConsumerDelegate consumerDelegate;
-   private int consumerID;
+   private String consumerID;
    private boolean isConnectionConsumer;
    private volatile Thread receiverThread;
    private MessageListener listener;
    private int ackMode;
    private boolean closed;
-   private volatile boolean paused;
    private Object mainLock;
    private int maxBufferSize;
    private int minBufferSize;
@@ -217,7 +216,7 @@ public class ClientConsumer
    // Constructors ---------------------------------------------------------------------------------
 
    public ClientConsumer(boolean isCC, int ackMode,                                
-                         SessionDelegate sess, ConsumerDelegate cons, int consumerID,
+                         SessionDelegate sess, ConsumerDelegate cons, String consumerID,
                          String queueName,
                          int bufferSize, QueuedExecutor sessionExecutor,
                          int maxDeliveries, boolean shouldAck, boolean handleFlowControl,
@@ -288,12 +287,12 @@ public class ClientConsumer
          
          this.listener = listener;
                             
-         if (listener != null && isMessageAvailableForConsuming())
+         if (listener != null && !buffer.isEmpty())
          {  
             listenerRunning = true;
             
             this.queueRunner(new ListenerRunner());
-         }
+         }        
       }   
    }
    
@@ -338,15 +337,18 @@ public class ClientConsumer
    public void close(long lastDeliveryId) throws JMSException
    {     
    	log.debug(this + " closing");
-      
-      //Wait for the last delivery to arrive
+         	
+   	//Wait for the last delivery to arrive
       waitForLastDelivery(lastDeliveryId);
       
-      //Important! We set paused to true so the next ListenerRunner won't run
-      paused = true;
+      //Important! We set the listener to null so the next ListenerRunner won't run
+      if (listener != null)
+      {
+      	setMessageListener(null);
+      }
       
       //Now we wait for any current listener runners to run.
-      waitForOnMessageToComplete();
+      waitForOnMessageToComplete();   
       
       synchronized (mainLock)
       {         
@@ -367,32 +369,6 @@ public class ClientConsumer
       }
                            
       if (trace) { log.trace(this + " closed"); }
-   }
-   
-   public void start()
-   {
-      paused = false;
-      synchronized (mainLock)
-      {
-         if (!buffer.isEmpty())
-         {
-            // Messages arrived while the consumer was paused
-            messageAdded();
-         }
-      }
-   }
-   
-   public void stop()
-   {
-      log.debug(this + " stopping");
-      paused = true;
-   }
-
-   public void waitUntilStopped() throws JMSException
-   {
-      log.debug(this + " waiting until paused");
-      waitForOnMessageToComplete();
-      if (trace) { log.trace(this + " stopped"); }
    }
      
    /**
@@ -534,12 +510,12 @@ public class ClientConsumer
       return "ClientConsumer[" + consumerID + "]";
    }
    
-   public int getConsumerId()
+   public String getConsumerId()
    {
       return consumerID;
    }
 
-   public void setConsumerId(int consumerId)
+   public void setConsumerId(String consumerId)
    {
        this.consumerID = consumerId;
    }
@@ -592,6 +568,14 @@ public class ClientConsumer
    {
       if (trace) { log.trace("Waiting for last delivery id " + id); }
       
+      if (id == -1)
+      {
+      	//No need to wait - nothing to wait for      	
+      	return;
+      }
+      
+      log.info("waiting for last delivery " + id);
+      
       synchronized (mainLock)
       {          
          waitingForLastDelivery = true;
@@ -617,7 +601,7 @@ public class ClientConsumer
              
             if (lastDeliveryId != id)
             {
-               log.warn("Timed out waiting for last delivery"); 
+               log.warn("Timed out waiting for last delivery " + id + " got " + lastDeliveryId); 
             }
          }
          finally
@@ -637,11 +621,9 @@ public class ClientConsumer
       {
          if (closed)
          {
-            // This should never happen - we should always wait for all deliveries to arrive
+            // Sanity - this should never happen - we should always wait for all deliveries to arrive
             // when closing
-            log.warn(this + " is closed, so ignoring message");
-            
-            return;
+            throw new IllegalStateException(this + " is closed, so ignoring message");
          }
 
          proxy.setSessionDelegate(sessionDelegate, isConnectionConsumer);
@@ -753,30 +735,27 @@ public class ClientConsumer
    {
       boolean notified = false;
       
-      if (!paused)
+      // If we have a thread waiting on receive() we notify it
+      if (receiverThread != null)
       {
-         // If we have a thread waiting on receive() we notify it
-         if (receiverThread != null)
+         if (trace) { log.trace(this + " notifying receiver/waiter thread"); }   
+         
+         mainLock.notifyAll();
+         
+         notified = true;
+      }     
+      else if (listener != null)
+      { 
+         // We have a message listener
+         if (!listenerRunning)
          {
-            if (trace) { log.trace(this + " notifying receiver/waiter thread"); }   
-            
-            mainLock.notifyAll();
-   
-            notified = true;
-         }
-         else if (listener != null)
-         {
-            // We have a message listener
-            if (!listenerRunning && !paused)
-            {
-               listenerRunning = true;
-   
-               if (trace) { log.trace(this + " scheduled a new ListenerRunner"); }
-               this.queueRunner(new ListenerRunner());
-            }     
-            
-            //TODO - Execute onMessage on same thread for even better throughput 
-         }
+            listenerRunning = true;
+
+            if (trace) { log.trace(this + " scheduled a new ListenerRunner"); }
+            this.queueRunner(new ListenerRunner());
+         }     
+         
+         //TODO - Execute onMessage on same thread for even better throughput 
       }
       
       // Make sure we notify any thread waiting for last delivery
@@ -820,7 +799,7 @@ public class ClientConsumer
             if (timeout == 0)
             {
                // wait for ever potentially
-               while (!closed && !isMessageAvailableForConsuming())
+               while (!closed && buffer.isEmpty())
                {
                   if (trace) { log.trace(this + " waiting on main lock, no timeout"); }
 
@@ -834,7 +813,7 @@ public class ClientConsumer
                // wait with timeout
                long toWait = timeout;
              
-               while (!closed && !isMessageAvailableForConsuming() && toWait > 0)
+               while (!closed && buffer.isEmpty() && toWait > 0)
                {
                   if (trace) { log.trace(this + " waiting on main lock, timeout " + toWait + " ms"); }
 
@@ -859,14 +838,6 @@ public class ClientConsumer
       }
 
       return m;
-   }
-   
-   /**
-    * @return true if the ClientConsumer is not paused and has a message in its buffer.
-    */
-   private boolean isMessageAvailableForConsuming()
-   {
-      return !paused && !buffer.isEmpty();
    }
    
    // Inner classes --------------------------------------------------------------------------------
@@ -907,11 +878,11 @@ public class ClientConsumer
          
          synchronized (mainLock)
          {
-            if (listener == null || !isMessageAvailableForConsuming())
+            if (listener == null || buffer.isEmpty())
             {
                listenerRunning = false;
                
-               if (trace) { log.trace("no listener or no message available for processing, returning"); }
+               if (trace) { log.trace("no listener or buffer is empty, returning"); }
                
                return;
             }
@@ -922,7 +893,7 @@ public class ClientConsumer
 
             mp = (MessageProxy)buffer.removeFirst();
                           
-            if (isMessageAvailableForConsuming())
+            if (!buffer.isEmpty())
             {
             	//Queue up the next runner to run
             	

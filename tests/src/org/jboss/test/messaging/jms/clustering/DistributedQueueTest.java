@@ -33,6 +33,7 @@ import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 
+import org.jboss.jms.client.JBossConnectionFactory;
 import org.jboss.test.messaging.tools.ServerManagement;
 
 
@@ -82,6 +83,174 @@ public class DistributedQueueTest extends ClusteringTestBase
    public void testLocalPersistent() throws Exception
    {
       localQueue(true);
+   }
+   
+   
+   public void testWithConnectionsOnAllNodesClientAck() throws Exception
+   {
+   	JBossConnectionFactory factory = (JBossConnectionFactory) ic[0].lookup("/ClusteredConnectionFactory");
+
+      Connection conn0 = createConnectionOnServer(factory, 0);
+      
+      Connection conn1 = createConnectionOnServer(factory, 1);
+      
+      Connection conn2 = createConnectionOnServer(factory, 2);
+      
+      try
+      {
+      	conn0.start();
+      	
+      	conn1.start();
+      	
+      	conn2.start();
+      	
+      	//Send a load of messages on node 0
+      	      	         
+      	Session sess0_1 = conn0.createSession(false, Session.CLIENT_ACKNOWLEDGE);
+      	
+      	MessageConsumer cons0_1 = sess0_1.createConsumer(queue[0]);
+      	
+      	MessageProducer prod0 = sess0_1.createProducer(queue[0]);
+      	
+      	Set msgIds = new HashSet();
+      	
+      	final int numMessages = 60;
+      	      	      	 
+      	for (int i = 0; i < numMessages; i++)
+      	{
+      		TextMessage tm = sess0_1.createTextMessage("message-" + i);
+      		
+      		prod0.send(tm);      		
+      	}
+      		
+      	TextMessage tm0_1 = null;
+      	
+      	for (int i = 0; i < numMessages / 6; i++)
+      	{
+      		tm0_1 = (TextMessage)cons0_1.receive(5000000);
+      		
+      		assertNotNull(tm0_1);
+      		
+      		msgIds.add(tm0_1.getText());
+      	}
+      	
+      	cons0_1.close();
+      	
+      	Session sess0_2 = conn0.createSession(false, Session.CLIENT_ACKNOWLEDGE);
+      	
+      	MessageConsumer cons0_2 = sess0_2.createConsumer(queue[0]);
+      	
+      	TextMessage tm0_2 = null;
+      	
+      	for (int i = 0; i < numMessages / 6; i++)
+      	{
+      		tm0_2 = (TextMessage)cons0_2.receive(5000000);
+      		
+      		assertNotNull(tm0_2);
+      		
+      		msgIds.add(tm0_2.getText());
+      	}
+      	
+      	cons0_2.close();
+      	
+      	
+      	//Two on node 1
+      	
+      	Session sess1_1 = conn1.createSession(false, Session.CLIENT_ACKNOWLEDGE);
+      	
+      	MessageConsumer cons1_1 = sess1_1.createConsumer(queue[1]);      	
+      	
+      	TextMessage tm1_1 = null;
+      	
+      	for (int i = 0; i < numMessages / 6; i++)
+      	{
+      		tm1_1 = (TextMessage)cons1_1.receive(5000000);
+      		
+      		assertNotNull(tm1_1);
+      		
+      		msgIds.add(tm1_1.getText());
+      	}
+      	
+      	cons1_1.close();
+     
+      	Session sess1_2 = conn1.createSession(false, Session.CLIENT_ACKNOWLEDGE);
+      	
+      	MessageConsumer cons1_2 = sess1_2.createConsumer(queue[1]);
+      	
+      	TextMessage tm1_2 = null;
+      	
+      	for (int i = 0; i < numMessages / 6; i++)
+      	{
+      		tm1_2 = (TextMessage)cons1_2.receive(5000000);
+      		      		      		
+      		assertNotNull(tm1_2);
+      		
+      		msgIds.add(tm1_2.getText());
+      	}
+      	
+      	cons1_2.close();
+      	
+      	
+      	//Two on node 2
+      	
+      	Session sess2_1 = conn2.createSession(false, Session.CLIENT_ACKNOWLEDGE);
+      	
+      	MessageConsumer cons2_1 = sess2_1.createConsumer(queue[2]);
+      	
+      	TextMessage tm2_1 = null;
+      	
+      	for (int i = 0; i < numMessages / 6; i++)
+      	{
+      		tm2_1 = (TextMessage)cons2_1.receive(5000000);
+      		
+      		assertNotNull(tm2_1);
+      		
+      		msgIds.add(tm2_1.getText());
+      	}
+      	
+      	cons2_1.close();
+      	
+      	Session sess2_2 = conn2.createSession(false, Session.CLIENT_ACKNOWLEDGE);
+      	
+      	MessageConsumer cons2_2 = sess2_2.createConsumer(queue[2]);
+      	
+      	TextMessage tm2_2 = null;
+      	
+      	for (int i = 0; i < numMessages / 6; i++)
+      	{
+      		tm2_2 = (TextMessage)cons2_2.receive(5000000);
+      		
+      		assertNotNull(tm2_2);
+      		
+      		msgIds.add(tm2_2.getText());
+      	}
+      	
+      	cons2_2.close();
+      	
+      	assertEquals(numMessages, msgIds.size());
+      	
+      	for (int i = 0; i < numMessages; i++)
+      	{
+      		assertTrue(msgIds.contains("message-" + i));
+      	}      	      
+      }
+      finally
+      {
+         if (conn0 != null)
+         {
+            conn0.close();
+         }
+         
+         if (conn1 != null)
+         {
+            conn1.close();
+         }
+         
+         if (conn2 != null)
+         {
+            conn2.close();
+         }
+      }
    }
 
    // Package protected ---------------------------------------------

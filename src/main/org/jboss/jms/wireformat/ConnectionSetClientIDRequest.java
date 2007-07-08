@@ -44,7 +44,7 @@ public class ConnectionSetClientIDRequest extends RequestSupport
    {      
    }
    
-   public ConnectionSetClientIDRequest(int objectId,
+   public ConnectionSetClientIDRequest(String objectId,
                                        byte version,
                                        String clientID)
    {

@@ -30,7 +30,7 @@ public class BrowserResetRequest extends RequestSupport
    {
    }
 
-   public BrowserResetRequest(int objectId, byte version)
+   public BrowserResetRequest(String objectId, byte version)
    {
       super(objectId, PacketSupport.REQ_BROWSER_RESET, version);
    }

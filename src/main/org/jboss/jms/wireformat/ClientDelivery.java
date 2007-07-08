@@ -48,7 +48,7 @@ public class ClientDelivery extends CallbackSupport
    
    private Message msg;
          
-   private int consumerId;
+   private String consumerId;
    
    private long deliveryId;
    
@@ -60,7 +60,7 @@ public class ClientDelivery extends CallbackSupport
    {      
    }
 
-   public ClientDelivery(Message msg, int consumerId, long deliveryId, int deliveryCount)
+   public ClientDelivery(Message msg, String consumerId, long deliveryId, int deliveryCount)
    {
       super (PacketSupport.CLIENT_DELIVERY);
       
@@ -80,7 +80,7 @@ public class ClientDelivery extends CallbackSupport
 
       super.write(out);
       
-      out.writeInt(consumerId);
+      out.writeUTF(consumerId);
 
       out.writeInt(deliveryCount);
  
@@ -95,9 +95,8 @@ public class ClientDelivery extends CallbackSupport
 
    public void read(DataInputStream in) throws Exception
    {
-      consumerId = in.readInt();
+      consumerId = in.readUTF();
       
-
       deliveryCount = in.readInt();
        
       deliveryId = in.readLong();
@@ -116,7 +115,7 @@ public class ClientDelivery extends CallbackSupport
       return msg;
    }
    
-   public int getConsumerId()
+   public String getConsumerId()
    {
       return consumerId;
    }

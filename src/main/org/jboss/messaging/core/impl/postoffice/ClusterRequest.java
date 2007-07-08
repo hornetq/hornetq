@@ -51,6 +51,18 @@ abstract class ClusterRequest implements Streamable
 	public static final int PUT_REPLICANT_REQUEST = 6;
 	
 	public static final int REMOVE_REPLICANT_REQUEST = 7;
+	
+	//TODO - these don't really belong here
+	
+	public static final int REPLICATE_DELIVERY_REQUEST = 8;
+	
+	public static final int REPLICATE_DELIVERY_ACK_REQUEST = 9;
+	
+	public static final int REPLICATE_ACK_REQUEST = 10;
+	
+	public static final int ACK_ALL_REPLICATED_DELIVERIES_REQUEST = 11;
+	
+	public static final int ADD_ALL_REPLICATED_DELIVERIES_REQUEST = 12;
 		
 	
    /*
@@ -94,10 +106,36 @@ abstract class ClusterRequest implements Streamable
             request = new PutReplicantRequest();
             break;
          }
+         //TODO move this out
          case REMOVE_REPLICANT_REQUEST:
          {
             request = new RemoveReplicantRequest();
             break;
+         }
+         case REPLICATE_DELIVERY_REQUEST:
+         {
+         	request = new ReplicateDeliveryMessage();
+         	break;
+         }
+         case REPLICATE_DELIVERY_ACK_REQUEST:
+         {
+         	request = new ReplicateDeliveryAckMessage();
+         	break;
+         }
+         case REPLICATE_ACK_REQUEST:
+         {
+         	request = new ReplicateAckMessage();
+         	break;
+         }
+         case ACK_ALL_REPLICATED_DELIVERIES_REQUEST:
+         {
+         	request = new AckAllReplicatedDeliveriesMessage();
+         	break;
+         }
+         case ADD_ALL_REPLICATED_DELIVERIES_REQUEST:
+         {
+         	request = new AddAllReplicatedDeliveriesMessage();
+         	break;
          }
          default:
          {

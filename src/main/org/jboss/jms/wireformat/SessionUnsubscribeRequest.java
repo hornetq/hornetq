@@ -45,7 +45,7 @@ public class SessionUnsubscribeRequest extends RequestSupport
    {      
    }
    
-   public SessionUnsubscribeRequest(int objectId,
+   public SessionUnsubscribeRequest(String objectId,
                                     byte version,
                                     String subName)
    {

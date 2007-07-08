@@ -33,7 +33,6 @@ import org.jboss.jms.server.destination.ManagedDestination;
 import org.jboss.jms.server.destination.TopicService;
 import org.jboss.jms.server.messagecounter.MessageCounter;
 import org.jboss.jms.server.selector.Selector;
-import org.jboss.jms.wireformat.ClientDelivery;
 import org.jboss.jms.wireformat.Dispatcher;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.contract.Delivery;
@@ -47,9 +46,6 @@ import org.jboss.messaging.core.contract.Replicator;
 import org.jboss.messaging.core.impl.SimpleDelivery;
 import org.jboss.messaging.core.impl.tx.Transaction;
 import org.jboss.messaging.util.ExceptionUtil;
-import org.jboss.remoting.Client;
-import org.jboss.remoting.callback.Callback;
-import org.jboss.remoting.callback.ServerInvokerCallbackHandler;
 
 /**
  * Concrete implementation of ConsumerEndpoint. Lives on the boundary between Messaging Core and the
@@ -71,15 +67,13 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
 
    private boolean trace = log.isTraceEnabled();
 
-   private int id;
+   private String id;
 
    private Queue messageQueue;
 
    private String queueName;
 
    private ServerSessionEndpoint sessionEndpoint;
-
-   private ServerInvokerCallbackHandler callbackHandler;
 
    private boolean noLocal;
 
@@ -111,13 +105,15 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
    
    private boolean preserveOrdering;
    
+   private boolean replicating;
+   
    // Constructors ---------------------------------------------------------------------------------
 
-   ServerConsumerEndpoint(int id, Queue messageQueue, String queueName,
+   ServerConsumerEndpoint(String id, Queue messageQueue, String queueName,
 					           ServerSessionEndpoint sessionEndpoint, String selector,
 					           boolean noLocal, JBossDestination dest, Queue dlq,
 					           Queue expiryQueue, long redeliveryDelay, int maxDeliveryAttempts,
-					           boolean remote) throws InvalidSelectorException
+					           boolean remote, boolean replicating) throws InvalidSelectorException
    {
       if (trace)
       {
@@ -131,8 +127,6 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
       this.queueName = queueName;
 
       this.sessionEndpoint = sessionEndpoint;
-
-      this.callbackHandler = sessionEndpoint.getConnectionEndpoint().getCallbackHandler();
 
       this.noLocal = noLocal;
 
@@ -154,6 +148,8 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
       this.startStopLock = new Object();
 
       this.preserveOrdering = sessionEndpoint.getConnectionEndpoint().getServerPeer().isDefaultPreserveOrdering();
+      
+      this.replicating = replicating;
       
       if (dest.isTopic() && !messageQueue.isRecoverable())
       {
@@ -197,8 +193,7 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
     * The queue ensures that handle is never called concurrently by more than
     * one thread.
     */
-   public Delivery handle(DeliveryObserver observer, MessageReference ref,
-            Transaction tx)
+   public Delivery handle(DeliveryObserver observer, MessageReference ref, Transaction tx)
    {
       if (trace)
       {
@@ -265,96 +260,21 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
             return delivery;
          }
          
-         long deliveryId;
-
-         if (retainDeliveries)
-         {
-            deliveryId = sessionEndpoint.addDelivery(delivery, id, dlq, expiryQueue, redeliveryDelay, maxDeliveryAttempts);
-         }
-         else
-         {
-            deliveryId = -1;
-         	//Acknowledge it now
-         	try
-         	{
-         		//This basically just releases the memory reference
-         		delivery.acknowledge(null);
-         	}
-         	catch (Throwable t)
-         	{
-         		log.error("Failed to acknowledge delivery", t);
-         	}
-         }
-
-         // We send the message to the client on the current thread. The message is written onto the
-         // transport and then the thread returns immediately without waiting for a response.
-
-         Client callbackClient = callbackHandler.getCallbackClient();
-
-         ClientDelivery del = new ClientDelivery(message, id, deliveryId, ref.getDeliveryCount());
-
-         Callback callback = new Callback(del);
-
          try
          {
-            // FIXME - due a design (flaw??) in the socket based transports, they use a pool of TCP
-            // connections, so subsequent invocations can end up using different underlying
-            // connections meaning that later invocations can overtake earlier invocations, if there
-            // are more than one user concurrently invoking on the same transport. We need someway
-            // of pinning the client object to the underlying invocation. For now we just serialize
-            // all access so that only the first connection in the pool is ever used - bit this is
-            // far from ideal!!!
-            // See http://jira.jboss.com/jira/browse/JBMESSAGING-789
-
-            Object invoker = null;
-
-            if (callbackClient != null)
-            {
-               invoker = callbackClient.getInvoker();                              
-            }
-            else
-            {
-               // TODO: dummy synchronization object, in case there's no clientInvoker. This will
-               // happen during the first invocation anyway. It's a kludge, I know, but this whole
-               // synchronization thing is a huge kludge. Needs to be reviewed.
-               invoker = new Object();
-            }
-            
-            synchronized (invoker)
-            {
-               // one way invocation, no acknowledgment sent back by the client
-               if (trace) { log.trace(this + " submitting message " + message + " to the remoting layer to be sent asynchronously"); }
-               
-               callbackHandler.handleCallbackOneway(callback);
-               
-               //We store the delivery id so we know to wait for any deliveries in transit on close
-               this.lastDeliveryID = deliveryId;
-            }
+         	sessionEndpoint.handleDelivery(delivery, this);
          }
-         catch (Throwable t)
+         catch (Exception e)
          {
-            // it's an oneway callback, so exception could only have happened on the server, while
-            // trying to send the callback. This is a good reason to smack the whole connection.
-            // I trust remoting to have already done its own cleanup via a CallbackErrorHandler,
-            // I need to do my own cleanup at ConnectionManager level.
-
-            log.debug(this + " failed to handle callback", t);
-            
-            //We stop the consumer - some time later the lease will expire and the connection will be closed        
-            //which will remove the consumer
-            
-            started = false;
-
-            //** IMPORTANT NOTE! We must return the delivery NOT null. **
-            //This is because if we return NULL then message will remain in the queue, but later
-            //the connection checker will cleanup and close this consumer which will cancel all the deliveries in it
-            //including this one, so the message will go back on the queue twice!
+         	log.error("Failed to handle delivery", e);
+         	
+         	this.started = false; // DO NOT return null or the message might get delivered more than once
          }
-
+                                  
          return delivery;
       }
    }
-
+   
    // Filter implementation ------------------------------------------------------------------------
 
    public boolean accept(Message msg)
@@ -377,11 +297,11 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
       {
          if (noLocal)
          {
-            int conId = ((JBossMessage) msg).getConnectionID();
+            String conId = ((JBossMessage) msg).getConnectionID();
 
             if (trace) { log.trace("message connection id: " + conId + " current connection connection id: " + sessionEndpoint.getConnectionEndpoint().getConnectionID()); }
 
-            accept = conId != sessionEndpoint.getConnectionEndpoint().getConnectionID();
+            accept = !conId.equals(sessionEndpoint.getConnectionEndpoint().getConnectionID());
 
             if (trace) { log.trace("accepting? " + accept); }
          }
@@ -488,7 +408,32 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
    }
 
    // Package protected ----------------------------------------------------------------------------
+   
+   boolean isReplicating()
+   {
+   	return replicating;
+   }
+   
+   String getID()
+   {
+   	return this.id;
+   }
 
+   boolean isRetainDeliveries()
+   {
+   	return this.retainDeliveries;
+   }
+   
+   void setLastDeliveryID(long id)
+   {
+   	this.lastDeliveryID = id;
+   }
+   
+   void setStarted(boolean started)
+   {
+   	this.started = started;
+   }
+   
    Queue getDLQ()
    {
       return dlq;
@@ -502,6 +447,16 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
    long getRedliveryDelay()
    {
       return redeliveryDelay;
+   }
+   
+   int getMaxDeliveryAttempts()
+   {
+   	return maxDeliveryAttempts;
+   }
+   
+   String getQueueName()
+   {
+   	return queueName;
    }
 
    void localClose() throws Throwable
@@ -619,6 +574,11 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
          //
          // 9) Remoting connection listener is removed and remoting connection stopped.
 
+      }
+      
+      if (replicating)
+      {      	
+      	sessionEndpoint.waitForDeliveriesFromConsumer(id);
       }
    }
 

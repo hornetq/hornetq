@@ -47,7 +47,7 @@ public class SessionAcknowledgeDeliveryRequest extends RequestSupport
    {      
    }
    
-   public SessionAcknowledgeDeliveryRequest(int objectId,
+   public SessionAcknowledgeDeliveryRequest(String objectId,
                                             byte version,
                                             Ack ack)
    {

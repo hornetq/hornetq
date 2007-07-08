@@ -75,7 +75,7 @@ public class ConsumerAspect
       ConnectionState connectionState = (ConnectionState)sessionState.getParent();
       SessionDelegate sessionDelegate = (SessionDelegate)invocation.getTargetObject();
       ConsumerState consumerState = (ConsumerState)((DelegateSupport)consumerDelegate).getState();
-      int consumerID = consumerState.getConsumerID();
+      String consumerID = consumerState.getConsumerID();
       int prefetchSize = consumerState.getBufferSize();
       QueuedExecutor sessionExecutor = sessionState.getExecutor();
       int maxDeliveries = consumerState.getMaxDeliveries();
