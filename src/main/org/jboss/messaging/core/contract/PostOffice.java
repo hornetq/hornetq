@@ -149,5 +149,11 @@ public interface PostOffice extends MessagingComponent
 	void sendReplicateAckMessage(String queueName, long messageID) throws Exception;
 	
 	boolean isFirstNode();
+	
+	
+	//For testing only
+	Map getRecoveryArea(String queueName);
+   
+   int getRecoveryMapSize(String queueName);
 }
 

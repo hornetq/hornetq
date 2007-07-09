@@ -23,6 +23,7 @@ package org.jboss.test.messaging.tools.jmx.rmi;
 
 import java.rmi.Remote;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.management.NotificationListener;
@@ -272,6 +273,12 @@ public interface Server extends Remote
     * USE IT ONLY FOR CLUSTERING TESTS!
     */
    Set getNodeIDView() throws Exception;
+   
+   Map getFailoverMap() throws Exception;
+   
+   Map getRecoveryArea(String queueName) throws Exception;
+   
+   int getRecoveryMapSize(String queueName) throws Exception;
 
    /**
     * @return List<Notification>

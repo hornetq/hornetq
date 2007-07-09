@@ -22,6 +22,9 @@
 
 package org.jboss.test.messaging.jms.clustering;
 
+import java.util.Iterator;
+import java.util.Map;
+
 import javax.jms.Connection;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
@@ -52,8 +55,7 @@ public class ChangeFailoverNodeTest extends ClusteringTestBase
    // Attributes ----------------------------------------------------
    
    // Constructors --------------------------------------------------
-   
-	
+   	
 	
    public ChangeFailoverNodeTest(String name)
    {
@@ -62,17 +64,15 @@ public class ChangeFailoverNodeTest extends ClusteringTestBase
    
    // Public --------------------------------------------------------
    
-//   public void testKillFailoverNodeTransactional() throws Exception
-//   {
-//   	this.killFailoverNode(true);
-//   }
-//   
-//   public void testKillFailoverNodeNonTransactional() throws Exception
-//   {
-//   	this.killFailoverNode(false);
-//   }
+   public void testKillFailoverNodeTransactional() throws Exception
+   {
+   	this.killFailoverNode(true);
+   }
    
-   
+   public void testKillFailoverNodeNonTransactional() throws Exception
+   {
+   	this.killFailoverNode(false);
+   }      
    
    public void testStopFailoverNodeTransactional() throws Exception
    {
@@ -84,6 +84,30 @@ public class ChangeFailoverNodeTest extends ClusteringTestBase
    	this.stopFailoverNode(false);
    }
       
+   public void testAddNodeToGetNewFailoverNodeNonTransactional() throws Exception
+   {
+   	this.addNodeToGetNewFailoverNode(false);
+   }
+   
+   public void testkillTwoFailoverNodesNonTransactional() throws Exception
+   {
+   	this.killTwoFailoverNodes(false);
+   }
+   
+   public void testkillTwoFailoverNodesTransactional() throws Exception
+   {
+   	this.killTwoFailoverNodes(true);
+   }
+   
+   public void testKillAllTooOneAndBackAgainNonTransactional() throws Exception
+   {
+   	this.killAllTooOneAndBackAgain(false);
+   }
+   
+   public void testKillAllTooOneAndBackAgainTransactional() throws Exception
+   {
+   	this.killAllTooOneAndBackAgain(true);
+   }
   
    
    // Package protected ---------------------------------------------
@@ -106,6 +130,653 @@ public class ChangeFailoverNodeTest extends ClusteringTestBase
    
    // Private -------------------------------------------------------
 
+   private void killAllTooOneAndBackAgain(boolean transactional) throws Exception
+   {
+   	JBossConnectionFactory factory = (JBossConnectionFactory) ic[0].lookup("/ClusteredConnectionFactory");
+
+      Connection conn0 = createConnectionOnServer(factory, 0);
+ 
+      try
+      {
+      	SimpleFailoverListener failoverListener = new SimpleFailoverListener();
+         ((JBossConnection)conn0).registerFailoverListener(failoverListener);
+      	
+         Session sessSend = conn0.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      		
+      	MessageProducer prod0 = sessSend.createProducer(queue[0]);
+      	
+      	final int numMessages = 10;
+      	
+      	for (int i = 0; i < numMessages; i++)
+      	{
+      		TextMessage tm = sessSend.createTextMessage("message" + i);
+      		
+      		prod0.send(tm);      		
+      	}
+      	
+      	Session sess0 = conn0.createSession(transactional, transactional ? Session.SESSION_TRANSACTED : Session.CLIENT_ACKNOWLEDGE);
+      	
+      	MessageConsumer cons0 = sess0.createConsumer(queue[0]);
+      
+      	
+      	conn0.start();
+      	
+      	TextMessage tm = null;
+      	
+      	for (int i = 0; i < numMessages; i++)
+      	{
+      		tm = (TextMessage)cons0.receive(2000);
+      		
+      		assertNotNull(tm);
+      		
+      		assertEquals("message" + i, tm.getText());
+      	}
+      	
+      	//Don't ack
+      	
+      	int failoverNodeId = this.getFailoverNodeForNode(factory, 0);
+      	
+      	log.info("Failover node for node 0 is " + failoverNodeId);
+      	
+      	//Now kill the failover node
+      	
+      	log.info("killing node " + failoverNodeId);
+      	ServerManagement.kill(failoverNodeId);
+      	
+      	Thread.sleep(5000);
+      	
+      	int newFailoverNodeId = this.getFailoverNodeForNode(factory, 0);      	    
+      	
+      	//Now kill the second failover node
+      	
+      	log.info("killing node " + newFailoverNodeId);
+      	ServerManagement.kill(newFailoverNodeId);
+      	
+      	Thread.sleep(5000);
+      	
+      	int evennewerFailoverNodeId = this.getFailoverNodeForNode(factory, 0);
+      	
+      	//Now kill the third failover node
+      	
+      	log.info("killing node " + evennewerFailoverNodeId);
+      	ServerManagement.kill(evennewerFailoverNodeId);
+      	
+      	//This just leaves the current node
+      	
+      	//Add a node
+      	
+      	ServerManagement.start(1, "all", false);
+      	
+      	log.info("started node 1");
+      	
+         //Now kill the node itself
+      	
+      	ServerManagement.kill(0);
+
+         log.info("########");
+         log.info("######## KILLED NODE 0");
+         log.info("########");
+
+         // wait for the client-side failover to complete
+
+         log.info("Waiting for failover to complete");
+         
+         while(true)
+         {
+            FailoverEvent event = failoverListener.getEvent(120000);
+            if (event != null && FailoverEvent.FAILOVER_COMPLETED == event.getType())
+            {
+               break;
+            }
+            if (event == null)
+            {
+               fail("Did not get expected FAILOVER_COMPLETED event");
+            }
+         }
+         
+         log.info("Failover completed");
+         
+         assertEquals(1, getServerId(conn0));
+                            
+         //Now ack
+         if (transactional)
+         {
+         	sess0.commit();
+         }
+         else
+         {
+         	tm.acknowledge();
+         }
+         
+         log.info("acked");
+         
+         sess0.close();
+         
+         log.info("closed");
+         
+	      sess0 = conn0.createSession(false, Session.AUTO_ACKNOWLEDGE);
+	      
+	      log.info("created new session");
+      	
+      	cons0 = sess0.createConsumer(queue[0]);
+      	
+      	log.info("Created consumer");
+      	
+         //Messages should be gone
+      	
+      	tm = (TextMessage)cons0.receive(5000);
+      	
+      	assertNull(tm); 	
+      }
+      finally
+      {
+         if (conn0 != null)
+         {
+            conn0.close();
+         }
+      }
+   }
+   
+   
+   private void killTwoFailoverNodes(boolean transactional) throws Exception
+   {
+   	JBossConnectionFactory factory = (JBossConnectionFactory) ic[0].lookup("/ClusteredConnectionFactory");
+
+      Connection conn0 = createConnectionOnServer(factory, 0);
+ 
+      try
+      {
+      	SimpleFailoverListener failoverListener = new SimpleFailoverListener();
+         ((JBossConnection)conn0).registerFailoverListener(failoverListener);
+      	
+         Session sessSend = conn0.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      		
+      	MessageProducer prod0 = sessSend.createProducer(queue[0]);
+      	
+      	final int numMessages = 10;
+      	
+      	for (int i = 0; i < numMessages; i++)
+      	{
+      		TextMessage tm = sessSend.createTextMessage("message" + i);
+      		
+      		prod0.send(tm);      		
+      	}
+      	
+      	Session sess0 = conn0.createSession(transactional, transactional ? Session.SESSION_TRANSACTED : Session.CLIENT_ACKNOWLEDGE);
+      	
+      	MessageConsumer cons0 = sess0.createConsumer(queue[0]);
+      
+      	
+      	conn0.start();
+      	
+      	TextMessage tm = null;
+      	
+      	for (int i = 0; i < numMessages; i++)
+      	{
+      		tm = (TextMessage)cons0.receive(2000);
+      		
+      		assertNotNull(tm);
+      		
+      		assertEquals("message" + i, tm.getText());
+      	}
+      	
+      	//Don't ack
+      	
+      	int failoverNodeId = this.getFailoverNodeForNode(factory, 0);
+      	
+      	log.info("Failover node for node 0 is " + failoverNodeId);
+      	
+      	dumpFailoverMap(ServerManagement.getServer(0).getFailoverMap());
+      	
+      	int recoveryMapSize = ServerManagement.getServer(failoverNodeId).getRecoveryMapSize(queue[failoverNodeId].getQueueName());
+      	assertEquals(0, recoveryMapSize);
+      	Map recoveryArea = ServerManagement.getServer(failoverNodeId).getRecoveryArea(queue[failoverNodeId].getQueueName());
+      	Map ids = (Map)recoveryArea.get(new Integer(0));
+      	assertNotNull(ids);
+      	assertEquals(numMessages, ids.size());
+      	
+      	//Now kill the failover node
+      	
+      	log.info("killing node " + failoverNodeId);
+      	ServerManagement.kill(failoverNodeId);
+      	
+      	Thread.sleep(5000);
+      	
+      	int newFailoverNodeId = this.getFailoverNodeForNode(factory, 0);
+      	
+      	log.info("New Failover node for node 0 is " + newFailoverNodeId);
+      	
+      	recoveryMapSize = ServerManagement.getServer(failoverNodeId).getRecoveryMapSize(queue[failoverNodeId].getQueueName());
+      	assertEquals(0, recoveryMapSize);
+      	recoveryArea = ServerManagement.getServer(newFailoverNodeId).getRecoveryArea(queue[newFailoverNodeId].getQueueName());
+      	ids = (Map)recoveryArea.get(new Integer(0));
+      	assertNotNull(ids);
+      	assertEquals(numMessages, ids.size());
+      	
+      	//Now kill the second failover node
+      	
+      	log.info("killing node " + newFailoverNodeId);
+      	ServerManagement.kill(newFailoverNodeId);
+      	
+      	Thread.sleep(5000);
+      	
+      	int evennewerFailoverNodeId = this.getFailoverNodeForNode(factory, 0);
+      	
+      	recoveryMapSize = ServerManagement.getServer(failoverNodeId).getRecoveryMapSize(queue[failoverNodeId].getQueueName());
+      	assertEquals(0, recoveryMapSize);
+      	recoveryArea = ServerManagement.getServer(evennewerFailoverNodeId).getRecoveryArea(queue[evennewerFailoverNodeId].getQueueName());
+      	ids = (Map)recoveryArea.get(new Integer(0));
+      	assertNotNull(ids);
+      	assertEquals(numMessages, ids.size());
+      	
+      	log.info("New Failover node for node 0 is " + evennewerFailoverNodeId);
+      	      	         
+         //Now kill the node itself
+      	
+      	ServerManagement.kill(0);
+
+         log.info("########");
+         log.info("######## KILLED NODE 0");
+         log.info("########");
+
+         // wait for the client-side failover to complete
+
+         log.info("Waiting for failover to complete");
+         
+         while(true)
+         {
+            FailoverEvent event = failoverListener.getEvent(120000);
+            if (event != null && FailoverEvent.FAILOVER_COMPLETED == event.getType())
+            {
+               break;
+            }
+            if (event == null)
+            {
+               fail("Did not get expected FAILOVER_COMPLETED event");
+            }
+         }
+         
+         log.info("Failover completed");
+         
+         assertEquals(evennewerFailoverNodeId, getServerId(conn0));
+         
+         recoveryMapSize = ServerManagement.getServer(failoverNodeId).getRecoveryMapSize(queue[failoverNodeId].getQueueName());
+      	assertEquals(0, recoveryMapSize);
+      	recoveryArea = ServerManagement.getServer(evennewerFailoverNodeId).getRecoveryArea(queue[evennewerFailoverNodeId].getQueueName());
+      	ids = (Map)recoveryArea.get(new Integer(3));
+      	assertNull(ids);
+                           
+         
+                  
+         //Now ack
+         if (transactional)
+         {
+         	sess0.commit();
+         }
+         else
+         {
+         	tm.acknowledge();
+         }
+         
+         log.info("acked");
+         
+         sess0.close();
+         
+         log.info("closed");
+         
+	      sess0 = conn0.createSession(false, Session.AUTO_ACKNOWLEDGE);
+	      
+	      log.info("created new session");
+      	
+      	cons0 = sess0.createConsumer(queue[0]);
+      	
+      	log.info("Created consumer");
+      	
+         //Messages should be gone
+      	
+      	tm = (TextMessage)cons0.receive(5000);
+      	
+      	assertNull(tm); 	
+      }
+      finally
+      {
+         if (conn0 != null)
+         {
+            conn0.close();
+         }
+      }
+   }
+   
+   
+   private void addNodeToGetNewFailoverNode(boolean transactional) throws Exception
+   {
+   	JBossConnectionFactory factory = (JBossConnectionFactory) ic[0].lookup("/ClusteredConnectionFactory");
+
+      Connection conn3 = createConnectionOnServer(factory, 3);
+ 
+      try
+      {
+      	SimpleFailoverListener failoverListener = new SimpleFailoverListener();
+         ((JBossConnection)conn3).registerFailoverListener(failoverListener);
+      	
+         Session sessSend = conn3.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      		
+      	MessageProducer prod2 = sessSend.createProducer(queue[2]);
+      	
+      	final int numMessages = 10;
+      	
+      	for (int i = 0; i < numMessages; i++)
+      	{
+      		TextMessage tm = sessSend.createTextMessage("message" + i);
+      		
+      		prod2.send(tm);      		
+      	}
+      	
+      	Session sess3 = conn3.createSession(transactional, transactional ? Session.SESSION_TRANSACTED : Session.CLIENT_ACKNOWLEDGE);
+      	
+      	MessageConsumer cons3 = sess3.createConsumer(queue[3]);
+      
+      	
+      	conn3.start();
+      	
+      	TextMessage tm = null;
+      	
+      	for (int i = 0; i < numMessages; i++)
+      	{
+      		tm = (TextMessage)cons3.receive(2000);
+      		
+      		assertNotNull(tm);
+      		
+      		assertEquals("message" + i, tm.getText());
+      	}
+      	
+      	//Don't ack
+      	
+      	int failoverNodeId = this.getFailoverNodeForNode(factory, 3);
+      	
+      	log.info("Failover node for node 3 is " + failoverNodeId);
+      	
+      	dumpFailoverMap(ServerManagement.getServer(3).getFailoverMap());
+      	
+      	int recoveryMapSize = ServerManagement.getServer(failoverNodeId).getRecoveryMapSize(queue[failoverNodeId].getQueueName());
+      	assertEquals(0, recoveryMapSize);
+      	Map recoveryArea = ServerManagement.getServer(failoverNodeId).getRecoveryArea(queue[failoverNodeId].getQueueName());
+      	Map ids = (Map)recoveryArea.get(new Integer(3));
+      	assertNotNull(ids);
+      	assertEquals(numMessages, ids.size());
+      	
+      	
+      	
+      	//We now add a new node - this should cause the failover node to change
+      	
+         ServerManagement.start(4, "all", false);
+         
+         ServerManagement.deployQueue("testDistributedQueue", 4);
+         
+         Thread.sleep(5000);
+         
+         
+         recoveryMapSize = ServerManagement.getServer(failoverNodeId).getRecoveryMapSize(queue[failoverNodeId].getQueueName());
+      	assertEquals(0, recoveryMapSize);
+      	recoveryArea = ServerManagement.getServer(failoverNodeId).getRecoveryArea(queue[failoverNodeId].getQueueName());
+      	ids = (Map)recoveryArea.get(new Integer(3));
+      	assertNull(ids);
+
+         
+         
+         dumpFailoverMap(ServerManagement.getServer(3).getFailoverMap());
+      	
+         int newFailoverNodeId = this.getFailoverNodeForNode(factory, 3);
+         
+         recoveryMapSize = ServerManagement.getServer(failoverNodeId).getRecoveryMapSize(queue[failoverNodeId].getQueueName());
+      	assertEquals(0, recoveryMapSize);
+      	recoveryArea = ServerManagement.getServer(newFailoverNodeId).getRecoveryArea(queue[3].getQueueName());
+      	ids = (Map)recoveryArea.get(new Integer(3));
+      	assertNotNull(ids);
+      	assertEquals(numMessages, ids.size());
+         
+         
+         log.info("New failover node is " + newFailoverNodeId);
+         
+         assertTrue(failoverNodeId != newFailoverNodeId);
+         
+         //Now kill the node
+      	
+      	ServerManagement.kill(3);
+
+         log.info("########");
+         log.info("######## KILLED NODE 3");
+         log.info("########");
+
+         // wait for the client-side failover to complete
+
+         log.info("Waiting for failover to complete");
+         
+         while(true)
+         {
+            FailoverEvent event = failoverListener.getEvent(120000);
+            if (event != null && FailoverEvent.FAILOVER_COMPLETED == event.getType())
+            {
+               break;
+            }
+            if (event == null)
+            {
+               fail("Did not get expected FAILOVER_COMPLETED event");
+            }
+         }
+         
+         log.info("Failover completed");
+         
+         assertEquals(newFailoverNodeId, getServerId(conn3));
+         
+         recoveryMapSize = ServerManagement.getServer(failoverNodeId).getRecoveryMapSize(queue[failoverNodeId].getQueueName());
+      	assertEquals(0, recoveryMapSize);
+      	recoveryArea = ServerManagement.getServer(newFailoverNodeId).getRecoveryArea(queue[3].getQueueName());
+      	ids = (Map)recoveryArea.get(new Integer(3));
+      	assertNull(ids);
+                           
+         
+                  
+         //Now ack
+         if (transactional)
+         {
+         	sess3.commit();
+         }
+         else
+         {
+         	tm.acknowledge();
+         }
+         
+         log.info("acked");
+         
+         sess3.close();
+         
+         log.info("closed");
+         
+	      sess3 = conn3.createSession(false, Session.AUTO_ACKNOWLEDGE);
+	      
+	      log.info("created new session");
+      	
+      	cons3 = sess3.createConsumer(queue[3]);
+      	
+      	log.info("Created consumer");
+      	
+         //Messages should be gone
+      	
+      	tm = (TextMessage)cons3.receive(5000);
+      	
+      	assertNull(tm);      		  	
+      }
+      finally
+      {
+         if (conn3 != null)
+         {
+            conn3.close();
+         }
+         
+         try
+         {
+         	ServerManagement.stop(4);
+         }
+         catch (Exception e)
+         {}
+      }
+   }
+   
+   public void testFailoverToNodeWithNoQueueDeployed() throws Exception
+   {
+   	JBossConnectionFactory factory = (JBossConnectionFactory) ic[0].lookup("/ClusteredConnectionFactory");
+
+      Connection conn3 = createConnectionOnServer(factory, 3);
+ 
+      try
+      {
+      	SimpleFailoverListener failoverListener = new SimpleFailoverListener();
+         ((JBossConnection)conn3).registerFailoverListener(failoverListener);
+      	
+         Session sessSend = conn3.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      		
+      	MessageProducer prod2 = sessSend.createProducer(queue[2]);
+      	
+      	final int numMessages = 10;
+      	
+      	for (int i = 0; i < numMessages; i++)
+      	{
+      		TextMessage tm = sessSend.createTextMessage("message" + i);
+      		
+      		prod2.send(tm);      		
+      	}
+      	
+      	Session sess3 = conn3.createSession(false, Session.CLIENT_ACKNOWLEDGE);
+      	
+      	MessageConsumer cons3 = sess3.createConsumer(queue[3]);
+      
+      	
+      	conn3.start();
+      	
+      	TextMessage tm = null;
+      	
+      	for (int i = 0; i < numMessages; i++)
+      	{
+      		tm = (TextMessage)cons3.receive(2000);
+      		
+      		assertNotNull(tm);
+      		
+      		assertEquals("message" + i, tm.getText());
+      	}
+      	
+      	//Don't ack
+      	
+      	int failoverNodeId = this.getFailoverNodeForNode(factory, 3);
+      	
+      	log.info("Failover node for node 3 is " + failoverNodeId);
+      	
+      	dumpFailoverMap(ServerManagement.getServer(3).getFailoverMap());
+      	
+      	//We now add a new node - this should cause the failover node to change
+      	
+         ServerManagement.start(4, "all", false);
+         
+         //DO NOT deploy the queue on it
+         
+         Thread.sleep(5000);
+         
+         dumpFailoverMap(ServerManagement.getServer(3).getFailoverMap());
+      	
+         int newFailoverNodeId = this.getFailoverNodeForNode(factory, 3);
+         
+         log.info("New failover node is " + newFailoverNodeId);
+         
+         assertTrue(failoverNodeId != newFailoverNodeId);
+         
+         //Now kill the node
+      	
+         // The queue does not exist on the new node so it tests the case where queue merging DOES NOT occur
+         
+         ServerManagement.kill(3);
+
+         log.info("########");
+         log.info("######## KILLED NODE 3");
+         log.info("########");
+
+         // wait for the client-side failover to complete
+
+         log.info("Waiting for failover to complete");
+         
+         while(true)
+         {
+            FailoverEvent event = failoverListener.getEvent(120000);
+            if (event != null && FailoverEvent.FAILOVER_COMPLETED == event.getType())
+            {
+               break;
+            }
+            if (event == null)
+            {
+               fail("Did not get expected FAILOVER_COMPLETED event");
+            }
+         }
+         
+         log.info("Failover completed");
+         
+         assertEquals(newFailoverNodeId, getServerId(conn3));
+                  
+         //Now ack
+         
+         tm.acknowledge();
+         
+         
+         log.info("acked");
+         
+         sess3.close();
+         
+         log.info("closed");
+         
+	      sess3 = conn3.createSession(false, Session.AUTO_ACKNOWLEDGE);
+	      
+	      log.info("created new session");
+      	
+      	cons3 = sess3.createConsumer(queue[3]);
+      	
+      	log.info("Created consumer");
+      	
+         //Messages should be gone
+      	
+         tm = (TextMessage)cons3.receive(5000);
+      		
+      	assertNull(tm);      		
+      }
+      finally
+      {
+         if (conn3 != null)
+         {
+            conn3.close();
+         }
+         
+         try
+         {
+         	ServerManagement.stop(4);
+         }
+         catch (Exception e)
+         {}
+      }
+   }
+   
+   private void dumpFailoverMap(Map map)
+   {
+   	Iterator iter = map.entrySet().iterator();
+   	
+   	log.info("*** dumping failover map ***");
+   	
+   	while (iter.hasNext())
+   	{
+   		Map.Entry entry = (Map.Entry)iter.next();
+   		
+   		log.info(entry.getKey() + "-->" + entry.getValue());
+   	}
+   	
+   	log.info("*** end dump ***");
+   }
+   
    private void killFailoverNode(boolean transactional) throws Exception
    {
    	JBossConnectionFactory factory = (JBossConnectionFactory) ic[0].lookup("/ClusteredConnectionFactory");

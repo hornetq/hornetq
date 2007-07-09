@@ -24,16 +24,16 @@ package org.jboss.test.messaging.tools.jmx.rmi;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
-import java.util.Set;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.HashMap;
-import java.util.Collections;
-import javax.management.ObjectName;
+import java.util.Set;
+
 import javax.management.NotificationListener;
+import javax.management.ObjectName;
 import javax.transaction.UserTransaction;
 
-import org.jboss.jms.jndi.JMSProviderAdapter;
 import org.jboss.jms.server.DestinationManager;
 import org.jboss.jms.server.ServerPeer;
 import org.jboss.logging.Logger;
@@ -457,7 +457,22 @@ public class RMITestServer extends UnicastRemoteObject implements Server
    {
       return server.getNodeIDView();
    }
-
+   
+   public Map getFailoverMap() throws Exception
+   {
+   	return server.getFailoverMap();
+   }
+   
+   public Map getRecoveryArea(String queueName) throws Exception
+   {
+   	return server.getRecoveryArea(queueName);
+   }
+   
+   public int getRecoveryMapSize(String queueName) throws Exception
+   {
+   	return server.getRecoveryMapSize(queueName);
+   }
+   
    public List pollNotificationListener(long listenerID) throws Exception
    {
       ProxyNotificationListener pl = null;

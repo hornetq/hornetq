@@ -64,6 +64,7 @@ import org.jboss.messaging.core.contract.JChannelFactory;
 import org.jboss.messaging.core.contract.Message;
 import org.jboss.messaging.core.contract.MessageReference;
 import org.jboss.messaging.core.contract.MessageStore;
+import org.jboss.messaging.core.contract.MessagingComponent;
 import org.jboss.messaging.core.contract.PersistenceManager;
 import org.jboss.messaging.core.contract.PostOffice;
 import org.jboss.messaging.core.contract.Queue;
@@ -306,6 +307,11 @@ public class MessagingPostOffice extends JDBCSupport
    }
       
    // MessagingComponent overrides -----------------------------------------------------------------
+   
+   public MessagingComponent getInstance()
+   {
+   	return this;
+   }
 
    public void start() throws Exception
    {
@@ -570,6 +576,7 @@ public class MessagingPostOffice extends JDBCSupport
    	}
    }
    
+   
    public Collection getAllBindingsForQueueName(String queueName) throws Exception
    {
    	return getBindings(queueName);
@@ -641,6 +648,39 @@ public class MessagingPostOffice extends JDBCSupport
 	{
 		return firstNode;
 	}
+	
+	
+	//	Testing only
+   
+   public Map getRecoveryArea(String queueName)
+   {
+   	Binding binding = (Binding)localNameMap.get(queueName);
+   	
+   	if (binding != null)
+   	{
+   		return binding.queue.getRecoveryArea();
+   	}
+   	else
+   	{
+   		return null;
+   	}
+   }
+   
+   public int getRecoveryMapSize(String queueName)
+   {
+   	Binding binding = (Binding)localNameMap.get(queueName);
+   	
+   	if (binding != null)
+   	{
+   		return binding.queue.getRecoveryMapSize();
+   	}
+   	else
+   	{
+   		return 0;
+   	}
+   }
+   
+   //End testing only
    
    // GroupListener implementation -------------------------------------------------------------
  
@@ -1255,9 +1295,17 @@ public class MessagingPostOffice extends JDBCSupport
    	
    	try
    	{
+   		log.info("local name map is " + localNameMap);
+   		
+   		if (localNameMap == null)
+   		{
+   			throw new IllegalStateException("Cannot add all replicated deliveries since there are no bindings - probably the queues aren't deployed");
+   		}
+   		
    		if (localNameMap != null)
    		{
    			Iterator iter = deliveries.entrySet().iterator();
+   			log.info("deliveries is " + deliveries);
    			
    			while (iter.hasNext())
    			{
@@ -1267,14 +1315,18 @@ public class MessagingPostOffice extends JDBCSupport
    				
    				Map ids = (Map)entry.getValue();
    				
+   				log.info("queue;" + queueName + " ids: " + ids.size());
+   				
    				Binding binding = (Binding)localNameMap.get(queueName);
    				
    				if (binding == null)
    				{
-   					throw new IllegalStateException("Cannot find binding with name " + queueName);
+   					throw new IllegalStateException("Cannot find binding with name " + queueName + " maybe it hasn't been deployed");
    				}
    				
+   				log.info("adding");
    				binding.queue.addAllToRecoveryArea(nodeID, ids);
+   				log.info("added");
    			}   			   			
    		}
    	}
@@ -2615,7 +2667,7 @@ public class MessagingPostOffice extends JDBCSupport
 	   	{
 	   		if (trace) { log.trace("Old failover node still exists, telling it remove replicated deliveries"); }
 	   		
-	   		ClusterRequest request = new AckAllReplicatedDeliveriesMessage(oldFailoverNodeID);
+	   		ClusterRequest request = new AckAllReplicatedDeliveriesMessage(thisNodeID);
 	   		
 	   		groupMember.unicastControl(request, info.getControlChannelAddress(), true);
 	   		

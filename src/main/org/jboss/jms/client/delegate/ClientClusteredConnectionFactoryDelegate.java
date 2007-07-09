@@ -170,6 +170,12 @@ public class ClientClusteredConnectionFactoryDelegate
    	return supportsFailover;
    }
    
+   //Only used in testing
+   public void setSupportsFailover(boolean failover)
+   {
+   	this.supportsFailover = failover;
+   }
+   
    /** Method used to update the delegate and failoverMap during viewChange */
    public synchronized void updateFailoverInfo(ClientConnectionFactoryDelegate[] delegates,
                                                Map failoverMap)

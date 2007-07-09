@@ -40,6 +40,7 @@ import org.jboss.jms.server.ServerPeer;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.contract.MessageStore;
 import org.jboss.messaging.core.contract.PersistenceManager;
+import org.jboss.messaging.core.contract.PostOffice;
 import org.jboss.messaging.util.XMLUtil;
 import org.jboss.remoting.ServerInvocationHandler;
 import org.jboss.test.messaging.tools.ServerManagement;
@@ -819,7 +820,30 @@ public class LocalTestServer implements Server
 
    public Set getNodeIDView() throws Exception
    {
-      return (Set)sc.getAttribute(postOfficeObjectName, "NodeIDView");
+   	PostOffice postOffice = (PostOffice)sc.getAttribute(postOfficeObjectName, "Instance");
+   	
+   	return postOffice.nodeIDView();
+   }
+   
+   public Map getFailoverMap() throws Exception
+   {
+   	PostOffice postOffice = (PostOffice)sc.getAttribute(postOfficeObjectName, "Instance");
+   	
+   	return postOffice.getFailoverMap();
+   }
+   
+   public Map getRecoveryArea(String queueName) throws Exception
+   {
+   	PostOffice postOffice = (PostOffice)sc.getAttribute(postOfficeObjectName, "Instance");
+   	
+   	return postOffice.getRecoveryArea(queueName);
+   }
+   
+   public int getRecoveryMapSize(String queueName) throws Exception
+   {
+   	PostOffice postOffice = (PostOffice)sc.getAttribute(postOfficeObjectName, "Instance");
+   	
+   	return postOffice.getRecoveryMapSize(queueName);
    }
 
    public List pollNotificationListener(long listenerID) throws Exception

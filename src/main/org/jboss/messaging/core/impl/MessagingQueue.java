@@ -475,6 +475,8 @@ public class MessagingQueue extends PagingChannelSupport implements Queue
    		ids = new ConcurrentHashMap(ids);
    	}
    	
+   	if (trace) { log.trace("Adding " + ids.size() + " ids to recovery area for node " + nodeID); }
+   	
    	recoveryArea.put(nid, ids);
    	
    	if (trace) { log.trace("Added"); }
@@ -483,6 +485,18 @@ public class MessagingQueue extends PagingChannelSupport implements Queue
    public long getRecoverDeliveriesTimeout()
    {
    	return recoverDeliveriesTimeout;
+   }
+   
+   //testing only
+   
+   public Map getRecoveryArea()
+   {
+   	return this.recoveryArea;
+   }
+   
+   public int getRecoveryMapSize()
+   {
+   	return this.recoveryMap.size();
    }
    
    // ChannelSupport overrides --------------------------------------
@@ -642,9 +656,10 @@ public class MessagingQueue extends PagingChannelSupport implements Queue
 		}   	
    }
    
-   private class RecoveryEntry
+   static class RecoveryEntry
    {
    	String sessionID;
+   	
    	MessageReference ref;
    }
 

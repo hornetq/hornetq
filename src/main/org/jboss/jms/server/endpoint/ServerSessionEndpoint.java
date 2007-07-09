@@ -36,7 +36,6 @@ import java.util.Set;
 import javax.jms.IllegalStateException;
 import javax.jms.InvalidDestinationException;
 import javax.jms.JMSException;
-import javax.jms.TextMessage;
 
 import org.jboss.aop.AspectManager;
 import org.jboss.jms.client.delegate.ClientBrowserDelegate;

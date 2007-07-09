@@ -86,4 +86,9 @@ public interface Queue extends Channel
    List recoverDeliveries(List messageIds);  
    
    void removeStrandedReferences(String sessionID);
+   
+   //For testing only
+   Map getRecoveryArea();
+   
+   int getRecoveryMapSize();
 }
