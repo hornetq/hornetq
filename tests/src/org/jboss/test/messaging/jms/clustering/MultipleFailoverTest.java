@@ -260,6 +260,8 @@ public class MultipleFailoverTest extends ClusteringTestBase
          conn.close();
          conn = null;
          
+         fail("this test is BS - it doesn't check it receives all the messages");
+         
          Iterator iter = list.msgs.iterator();
          
          count = 0;
@@ -274,7 +276,7 @@ public class MultipleFailoverTest extends ClusteringTestBase
             
             count++;
          }
-         
+             
          if (list.failed)
          {
             fail();

@@ -67,7 +67,6 @@ import org.jboss.messaging.util.GUIDGenerator;
 import org.jboss.messaging.util.Util;
 import org.jboss.remoting.Client;
 import org.jboss.remoting.callback.ServerInvokerCallbackHandler;
-import org.jboss.util.id.GUID;
 
 /**
  * Concrete implementation of ConnectionEndpoint.
@@ -264,8 +263,6 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
 
          log.debug("created and registered " + ep);
          
-         log.info("*********** CREATING SESSION WITH ID:" + sessionID);
-
          ClientSessionDelegate d = new ClientSessionDelegate(sessionID, dupsOKBatchSize);
 
          log.debug("created " + d);

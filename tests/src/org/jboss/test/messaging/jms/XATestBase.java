@@ -1225,7 +1225,12 @@ public abstract class XATestBase extends MessagingTestCase
          ServerManagement.startServerPeer();
 
          ServerManagement.deployQueue("Queue");
-
+         
+         cf = (JBossConnectionFactory)initialContext.lookup("/ConnectionFactory");
+         
+         conn1.close();
+         
+         conn1 = cf.createXAConnection();
 
          XAResource res = cf.createXAConnection().createXASession().getXAResource();
 

@@ -380,9 +380,7 @@ public class PreserveOrderingTest extends ClusteringTestBase
             {
             	tm.acknowledge();
             }
-         }     
-         
-     
+         }                   
       }
       finally
       {

@@ -64,6 +64,16 @@ public class DistributedQueueTest extends ClusteringTestBase
    }
 
    // Public --------------------------------------------------------
+   
+   public void testMessagePropertiesPreservedOnSuckPersistent() throws Exception
+   {
+   	this.messagePropertiesPreservedOnSuck(true);
+   }
+   
+   public void testMessagePropertiesPreservedOnSuckNonPersistent() throws Exception
+   {
+   	this.messagePropertiesPreservedOnSuck(false);
+   }
 
    public void testClusteredQueueNonPersistent() throws Exception
    {
@@ -83,8 +93,7 @@ public class DistributedQueueTest extends ClusteringTestBase
    public void testLocalPersistent() throws Exception
    {
       localQueue(true);
-   }
-   
+   }   
    
    public void testWithConnectionsOnAllNodesClientAck() throws Exception
    {
@@ -252,11 +261,123 @@ public class DistributedQueueTest extends ClusteringTestBase
          }
       }
    }
+   
+   public void testMixedSuck() throws Exception
+   {
+      Connection conn0 = null;
+      Connection conn1 = null;
+      Connection conn2 = null;
 
-   // Package protected ---------------------------------------------
+      try
+      {
 
-   // Protected -----------------------------------------------------
+         conn0 = this.createConnectionOnServer(cf, 0);
+         conn1 = this.createConnectionOnServer(cf, 1);
+         conn2 = this.createConnectionOnServer(cf, 2);
+         
+         checkConnectionsDifferentServers(new Connection[] {conn0, conn1, conn2});
 
+         Session sess0 = conn0.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         Session sess2 = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         
+         MessageConsumer cons2 = sess2.createConsumer(queue[2]);
+         
+         conn0.start();
+         conn2.start();
+
+         final int NUM_MESSAGES = 300;
+
+         
+         // Send at node 0
+
+         MessageProducer prod0 = sess0.createProducer(queue[0]);
+
+         MessageProducer prod2 = sess2.createProducer(queue[2]);
+
+         //Send more messages at node 0 and node 2
+         
+         boolean persistent = false;
+         for (int i = 0; i < NUM_MESSAGES / 2 ; i++)
+         {
+            TextMessage tm = sess0.createTextMessage("message4-" + i);
+
+            prod0.setDeliveryMode(persistent ? DeliveryMode.PERSISTENT : DeliveryMode.NON_PERSISTENT);
+            
+            prod0.send(tm);
+            
+            persistent = !persistent;
+         }
+         
+         for (int i = NUM_MESSAGES / 2; i < NUM_MESSAGES; i++)
+         {
+            TextMessage tm = sess2.createTextMessage("message4-" + i);
+
+            prod2.setDeliveryMode(persistent ? DeliveryMode.PERSISTENT : DeliveryMode.NON_PERSISTENT);
+                        
+            prod2.send(tm);
+            
+            persistent = !persistent;
+         }
+         
+         //consume them on node 2 - we will get messages from both nodes so the order is undefined
+         
+         Set msgs = new HashSet();
+         
+         TextMessage tm = null;
+         
+         do
+         {
+            tm = (TextMessage)cons2.receive(1000);
+            
+            if (tm != null)
+            {                     
+	            msgs.add(tm.getText());
+            }
+         }           
+         while (tm != null);
+
+         for (int i = 0; i < NUM_MESSAGES; i++)
+         {
+         	assertTrue(msgs.contains("message4-" + i));
+         }
+         
+         assertEquals(NUM_MESSAGES, msgs.size());
+                
+         cons2.close();
+         
+         sess2.close();
+         
+         sess2 = conn2.createSession(false, Session.CLIENT_ACKNOWLEDGE);
+         
+         cons2 = sess2.createConsumer(queue[2]);
+                  
+         Message msg = cons2.receive(5000);
+         
+         assertNull(msg);                            
+      }
+      finally
+      {
+         if (conn0 != null)
+         {
+            conn0.close();
+         }
+
+         if (conn1 != null)
+         {
+            conn1.close();
+         }
+
+         if (conn2 != null)
+         {
+            conn2.close();
+         }
+      }
+   }
+
+   // Package private ---------------------------------------------
+   
+   // protected ----------------------------------------------------
+   
    protected void setUp() throws Exception
    {
       nodeCount = 3;
@@ -271,7 +392,10 @@ public class DistributedQueueTest extends ClusteringTestBase
       super.tearDown();
    }
 
-   protected void clusteredQueue(boolean persistent) throws Exception
+   // private -----------------------------------------------------
+
+
+   private void clusteredQueue(boolean persistent) throws Exception
    {
       Connection conn0 = null;
       Connection conn1 = null;
@@ -309,7 +433,7 @@ public class DistributedQueueTest extends ClusteringTestBase
 
          for (int i = 0; i < NUM_MESSAGES; i++)
          {
-            TextMessage tm = sess0.createTextMessage("message" + i);
+            TextMessage tm = sess0.createTextMessage("message0-" + i);
 
             prod0.send(tm);
          }
@@ -320,7 +444,7 @@ public class DistributedQueueTest extends ClusteringTestBase
 
             assertNotNull(tm);
             
-            assertEquals("message" + i, tm.getText());
+            assertEquals("message0-" + i, tm.getText());
          }                 
 
          Message m = cons0.receive(2000);
@@ -343,7 +467,7 @@ public class DistributedQueueTest extends ClusteringTestBase
 
          for (int i = 0; i < NUM_MESSAGES; i++)
          {
-            TextMessage tm = sess1.createTextMessage("message" + i);
+            TextMessage tm = sess1.createTextMessage("message1-" + i);
 
             prod1.send(tm);
          }
@@ -354,7 +478,7 @@ public class DistributedQueueTest extends ClusteringTestBase
 
             assertNotNull(tm);
 
-            assertEquals("message" + i, tm.getText());
+            assertEquals("message1-" + i, tm.getText());
          }
 
          m = cons0.receive(2000);
@@ -377,7 +501,7 @@ public class DistributedQueueTest extends ClusteringTestBase
 
          for (int i = 0; i < NUM_MESSAGES; i++)
          {
-            TextMessage tm = sess2.createTextMessage("message" + i);
+            TextMessage tm = sess2.createTextMessage("message2-" + i);
 
             prod2.send(tm);
          }
@@ -388,7 +512,7 @@ public class DistributedQueueTest extends ClusteringTestBase
 
             assertNotNull(tm);
 
-            assertEquals("message" + i, tm.getText());
+            assertEquals("message2-" + i, tm.getText());
          }
 
          m = cons0.receive(2000);
@@ -414,7 +538,7 @@ public class DistributedQueueTest extends ClusteringTestBase
          
          for (int i = 0; i < NUM_MESSAGES; i++)
          {
-            TextMessage tm = sess0.createTextMessage("message2-" + i);
+            TextMessage tm = sess0.createTextMessage("message3-" + i);
 
             prod0.send(tm);
          }
@@ -427,7 +551,7 @@ public class DistributedQueueTest extends ClusteringTestBase
                   
             assertNotNull(tm);
             
-            assertEquals("message2-" + i, tm.getText());
+            assertEquals("message3-" + i, tm.getText());
          }                 
 
          m = cons2.receive(2000);
@@ -438,14 +562,14 @@ public class DistributedQueueTest extends ClusteringTestBase
          
          for (int i = 0; i < NUM_MESSAGES / 2; i++)
          {
-            TextMessage tm = sess0.createTextMessage("message3-" + i);
+            TextMessage tm = sess0.createTextMessage("message4-" + i);
 
             prod0.send(tm);
          }
          
          for (int i = NUM_MESSAGES / 2; i < NUM_MESSAGES; i++)
          {
-            TextMessage tm = sess1.createTextMessage("message3-" + i);
+            TextMessage tm = sess2.createTextMessage("message4-" + i);
 
             prod2.send(tm);
          }
@@ -462,8 +586,6 @@ public class DistributedQueueTest extends ClusteringTestBase
             
             if (tm != null)
             {                     
-	            assertNotNull(tm);
-	            
 	            msgs.add(tm.getText());
             }
          }           
@@ -471,8 +593,12 @@ public class DistributedQueueTest extends ClusteringTestBase
 
          for (int i = 0; i < NUM_MESSAGES; i++)
          {
-         	assertTrue(msgs.contains("message3-" + i));
+         	assertTrue(msgs.contains("message4-" + i));
          }
+         
+         assertEquals(NUM_MESSAGES, msgs.size());
+         
+         msgs.clear();
          
          // Now repeat but this time creating the consumer after send
          
@@ -482,14 +608,14 @@ public class DistributedQueueTest extends ClusteringTestBase
          
          for (int i = 0; i < NUM_MESSAGES / 2; i++)
          {
-            tm = sess0.createTextMessage("message3-" + i);
+            tm = sess0.createTextMessage("message5-" + i);
 
             prod0.send(tm);
          }
          
          for (int i = NUM_MESSAGES / 2; i < NUM_MESSAGES; i++)
          {
-            tm = sess1.createTextMessage("message3-" + i);
+            tm = sess1.createTextMessage("message5-" + i);
 
             prod2.send(tm);
          }
@@ -506,8 +632,6 @@ public class DistributedQueueTest extends ClusteringTestBase
             
             if (tm != null)
             {            
-	            assertNotNull(tm);
-	            
 	            msgs.add(tm.getText());
             }
          }     
@@ -515,8 +639,12 @@ public class DistributedQueueTest extends ClusteringTestBase
 
          for (int i = 0; i < NUM_MESSAGES; i++)
          {
-         	assertTrue(msgs.contains("message3-" + i));
+         	assertTrue(msgs.contains("message5-" + i));
          }
+         
+         assertEquals(NUM_MESSAGES, msgs.size());
+         
+         msgs.clear();
          
          
          //Now send messages at node 0 - but consume from node 1 AND node 2
@@ -531,7 +659,7 @@ public class DistributedQueueTest extends ClusteringTestBase
          
          for (int i = 0; i < NUM_MESSAGES; i++)
          {
-            tm = sess0.createTextMessage("message4-" + i);
+            tm = sess0.createTextMessage("message6-" + i);
 
             prod0.send(tm);
          }
@@ -568,10 +696,12 @@ public class DistributedQueueTest extends ClusteringTestBase
          
          for (int i = 0; i < NUM_MESSAGES; i++)
          {
-         	assertTrue(msgs.contains("message4-" + i));
+         	assertTrue(msgs.contains("message6-" + i));
          }
          
          assertEquals(NUM_MESSAGES, count);
+         
+         msgs.clear();
          
          //as above but start consumers AFTER sending
          
@@ -581,7 +711,7 @@ public class DistributedQueueTest extends ClusteringTestBase
          
          for (int i = 0; i < NUM_MESSAGES; i++)
          {
-            tm = sess0.createTextMessage("message4-" + i);
+            tm = sess0.createTextMessage("message7-" + i);
 
             prod0.send(tm);
          }
@@ -623,10 +753,12 @@ public class DistributedQueueTest extends ClusteringTestBase
          
          for (int i = 0; i < NUM_MESSAGES; i++)
          {
-         	assertTrue(msgs.contains("message4-" + i));
+         	assertTrue(msgs.contains("message7-" + i));
          }
          
          assertEquals(NUM_MESSAGES, count);         
+         
+         msgs.clear();
          
          
          // Now send message on node 0, consume on node2, then cancel, consume on node1, cancel, consume on node 0
@@ -643,7 +775,7 @@ public class DistributedQueueTest extends ClusteringTestBase
          
          for (int i = 0; i < NUM_MESSAGES; i++)
          {
-            tm = sess0.createTextMessage("message5-" + i);
+            tm = sess0.createTextMessage("message8-" + i);
 
             prod0.send(tm);
          }
@@ -654,7 +786,7 @@ public class DistributedQueueTest extends ClusteringTestBase
             
             assertNotNull(tm);
                
-            assertEquals("message5-" + i, tm.getText());
+            assertEquals("message8-" + i, tm.getText());
          } 
          
          sess2.close(); // messages should go back on queue
@@ -673,7 +805,7 @@ public class DistributedQueueTest extends ClusteringTestBase
             
             assertNotNull(tm);
                
-            assertEquals("message5-" + i, tm.getText());
+            assertEquals("message8-" + i, tm.getText());
          } 
          
          sess1.close(); // messages should go back on queue
@@ -688,9 +820,124 @@ public class DistributedQueueTest extends ClusteringTestBase
             
             assertNotNull(tm);
                
-            assertEquals("message5-" + i, tm.getText());
-         }                  
+            assertEquals("message8-" + i, tm.getText());
+         }     
+         
+         Message msg = cons0.receive(5000);
+         
+         assertNull(msg);                          
+      }
+      finally
+      {
+         if (conn0 != null)
+         {
+            conn0.close();
+         }
+
+         if (conn1 != null)
+         {
+            conn1.close();
+         }
+
+         if (conn2 != null)
+         {
+            conn2.close();
+         }
+      }
+   }
+   
+   private void messagePropertiesPreservedOnSuck(boolean persistent) throws Exception
+   {
+      Connection conn0 = null;
+      Connection conn1 = null;
+      Connection conn2 = null;
+
+      try
+      {
+
+         conn0 = this.createConnectionOnServer(cf, 0);
+         conn1 = this.createConnectionOnServer(cf, 1);
+         conn2 = this.createConnectionOnServer(cf, 2);
+         
+         checkConnectionsDifferentServers(new Connection[] {conn0, conn1, conn2});
+
+         Session sess0 = conn0.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         Session sess2 = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         
+         MessageConsumer cons2 = sess2.createConsumer(queue[2]);
+         
+         conn0.start();
+         conn2.start();
+
+         // Send at node 0
+
+         MessageProducer prod0 = sess0.createProducer(queue[0]);
+
+         prod0.setDeliveryMode(persistent ? DeliveryMode.PERSISTENT : DeliveryMode.NON_PERSISTENT);
+         
+
+
+         TextMessage tm = sess0.createTextMessage("blahmessage");
+            
+         prod0.setPriority(7);
+         
+         prod0.setTimeToLive(1 * 60 * 60 * 1000);
+
+         prod0.send(tm);
+         
+         long expiration = tm.getJMSExpiration();
+         
+         assertEquals(persistent ? DeliveryMode.PERSISTENT : DeliveryMode.NON_PERSISTENT, tm.getJMSDeliveryMode());
+         
+                         
+
+         tm = (TextMessage)cons2.receive(1000);
+         
+         assertNotNull(tm);
+         
+         assertEquals("blahmessage", tm.getText());
+
+         assertEquals(persistent ? DeliveryMode.PERSISTENT : DeliveryMode.NON_PERSISTENT, tm.getJMSDeliveryMode());
+         
+         assertEquals(7, tm.getJMSPriority());
+        
+         assertTrue(Math.abs(expiration - tm.getJMSExpiration()) < 100);
                   
+         Message m = cons2.receive(5000);
+         
+         assertNull(m);
+         
+         
+         //Now do one with expiration = 0
+         
+         
+         tm = sess0.createTextMessage("blahmessage2");
+         
+         prod0.setPriority(7);
+         
+         prod0.setTimeToLive(0);
+
+         prod0.send(tm);
+         
+         assertEquals(persistent ? DeliveryMode.PERSISTENT : DeliveryMode.NON_PERSISTENT, tm.getJMSDeliveryMode());
+         
+                         
+
+         tm = (TextMessage)cons2.receive(1000);
+         
+         assertNotNull(tm);
+         
+         assertEquals("blahmessage2", tm.getText());
+
+         assertEquals(persistent ? DeliveryMode.PERSISTENT : DeliveryMode.NON_PERSISTENT, tm.getJMSDeliveryMode());
+         
+         assertEquals(7, tm.getJMSPriority());
+        
+         assertEquals(0, tm.getJMSExpiration());
+                  
+         m = cons2.receive(5000);
+         
+         assertNull(m);                          
       }
       finally
       {
@@ -713,7 +960,7 @@ public class DistributedQueueTest extends ClusteringTestBase
    
    
    /* Check that non clustered queues behave properly when deployed on a cluster */
-   protected void localQueue(boolean persistent) throws Exception
+   private void localQueue(boolean persistent) throws Exception
    {
    	Connection conn0 = null;
       Connection conn1 = null;

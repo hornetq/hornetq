@@ -2638,35 +2638,40 @@ public class MessagingPostOffice extends JDBCSupport
 	   		
 				//FIXME - this is ugly
 				//Find a better way of getting the sessions
-				
-				Collection sessions = serverPeer.getSessions();
-				
-				Iterator iter2 = sessions.iterator();
-				
-				while (iter2.hasNext())
-				{
-					ServerSessionEndpoint session = (ServerSessionEndpoint)iter2.next();
+	   		//We shouldn't know abou the server peer
+	   		
+	   		if (serverPeer != null)
+	   		{
 					
-					session.collectDeliveries(deliveries, firstNode);				
-				}   				  
-				
-				if (!firstNode)
-				{			
-		   		PostOfficeAddressInfo info = (PostOfficeAddressInfo)nodeIDAddressMap.get(new Integer(failoverNodeID));
-		   		
-		   		if (info == null)
-		   		{
-		   			throw new IllegalStateException("Cannot find address for failover node " + failoverNodeID);
-		   		}		   		
+					Collection sessions = serverPeer.getSessions();
 					
-					ClusterRequest request = new AddAllReplicatedDeliveriesMessage(thisNodeID, deliveries);
+					Iterator iter2 = sessions.iterator();
 					
-					//send sync
+					while (iter2.hasNext())
+					{
+						ServerSessionEndpoint session = (ServerSessionEndpoint)iter2.next();
+						
+						session.collectDeliveries(deliveries, firstNode);				
+					}   				  
 					
-					groupMember.unicastControl(request, info.getControlChannelAddress(), true);
-		   		
-		   		if (trace) { log.trace("Sent AddAllReplicatedDeliveriesMessage"); }
-				}
+					if (!firstNode)
+					{			
+			   		PostOfficeAddressInfo info = (PostOfficeAddressInfo)nodeIDAddressMap.get(new Integer(failoverNodeID));
+			   		
+			   		if (info == null)
+			   		{
+			   			throw new IllegalStateException("Cannot find address for failover node " + failoverNodeID);
+			   		}		   		
+						
+						ClusterRequest request = new AddAllReplicatedDeliveriesMessage(thisNodeID, deliveries);
+						
+						//send sync
+						
+						groupMember.unicastControl(request, info.getControlChannelAddress(), true);
+			   		
+			   		if (trace) { log.trace("Sent AddAllReplicatedDeliveriesMessage"); }
+					}
+	   		}
 	   	}
    	}
    	finally

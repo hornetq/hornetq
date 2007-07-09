@@ -36,6 +36,7 @@ import java.util.Set;
 import javax.jms.IllegalStateException;
 import javax.jms.InvalidDestinationException;
 import javax.jms.JMSException;
+import javax.jms.TextMessage;
 
 import org.jboss.aop.AspectManager;
 import org.jboss.jms.client.delegate.ClientBrowserDelegate;
@@ -1009,7 +1010,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
    	if (trace) { log.trace("Collected " + map.size() + " deliveries"); }
    }
    
-   public void replicateDeliveryResponseReceived(long deliveryID) throws Exception
+   public synchronized void replicateDeliveryResponseReceived(long deliveryID) throws Exception
    {
    	//We look up the delivery in the list and actually perform the delivery
    	
@@ -1061,7 +1062,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
    		{
    			toDeliver.take();
    			
-   			performDelivery(dr.del.getReference(), deliveryID, dr.getConsumer()); 
+   			performDelivery(dr.del.getReference(), dr.deliveryID, dr.getConsumer()); 
    			
    			delivered = true;
    	   	
@@ -1086,8 +1087,6 @@ public class ServerSessionEndpoint implements SessionEndpoint
     */
    void waitForDeliveriesFromConsumer(String consumerID) throws Exception
    {   
-   	log.info("Waiting for deliveries for consumer " + consumerID);
-   	
 		long toWait = CLOSE_TIMEOUT;
 		
 		boolean wait;
@@ -1136,14 +1135,11 @@ public class ServerSessionEndpoint implements SessionEndpoint
    			while (toDeliver.take() != null) {}
    			
    			log.warn("Timed out waiting for response to arrive");
-   		}
-   		
-   		
+   		}   		   		
    	}
-   	log.info("Done Waiting for deliveries for consumer " + consumerID);
    }
    
-   void handleDelivery(Delivery delivery, ServerConsumerEndpoint consumer) throws Exception
+   synchronized void handleDelivery(Delivery delivery, ServerConsumerEndpoint consumer) throws Exception
    {
    	 long deliveryId = -1;
    	 
@@ -1151,12 +1147,13 @@ public class ServerSessionEndpoint implements SessionEndpoint
    	 
    	 DeliveryRecord rec = null;
    	 
+   	 deliveryId = deliveryIdSequence.increment();   	 
+   	 
    	 //TODO can't we combine flags isRetainDeliveries and isReplicating - surely they're mutually exclusive?
        if (consumer.isRetainDeliveries())
-       {
+       {      	 
       	 // Add a delivery
-      	 deliveryId = deliveryIdSequence.increment();
-      	 
+
       	 rec = new DeliveryRecord(delivery, consumer, deliveryId);
           
           deliveries.put(new Long(deliveryId), rec);

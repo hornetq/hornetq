@@ -268,7 +268,17 @@ public class MessageSucker implements MessageListener
 				((MessageProxy)msg).getMessage().putHeader(org.jboss.messaging.core.contract.Message.CLUSTER_SUCKED, "x");
 			}
 			
-			producer.send(null, msg, -1, -1, Long.MIN_VALUE);
+			long timeToLive = msg.getJMSExpiration();
+			if (timeToLive != 0)
+			{
+				timeToLive -=  System.currentTimeMillis();
+				if (timeToLive <= 0)
+				{
+					timeToLive = 1; //Should have already expired - set to 1 so it expires when it is consumed or delivered
+				}
+			}
+			
+			producer.send(null, msg, msg.getJMSDeliveryMode(), msg.getJMSPriority(), timeToLive);
 			
 			if (trace) { log.trace(this + " forwarded message to queue"); }
 

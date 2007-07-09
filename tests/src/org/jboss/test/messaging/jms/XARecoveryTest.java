@@ -773,7 +773,9 @@ public class XARecoveryTest extends MessagingTestCase
          ServerManagement.deployQueue("QA");
          
          ServerManagement.deployQueue("QB");
-                           
+         
+         cf = (JBossConnectionFactory)initialContext.lookup("/ConnectionFactory");
+                  
          conn3 = cf.createXAConnection();
          
          XASession sess3 = conn3.createXASession();
@@ -1042,6 +1044,8 @@ public class XARecoveryTest extends MessagingTestCase
          
          ServerManagement.deployQueue("QB");
                            
+         cf = (JBossConnectionFactory)initialContext.lookup("/ConnectionFactory");         
+         
          conn3 = cf.createXAConnection();
          
          XASession sess3 = conn3.createXASession();
@@ -1608,6 +1612,8 @@ public class XARecoveryTest extends MessagingTestCase
          
          //Now recover
          
+         cf = (JBossConnectionFactory)initialContext.lookup("/ConnectionFactory");         
+         
          conn3 = cf.createXAConnection();
          
          XASession sess3 = conn3.createXASession();
@@ -1911,6 +1917,7 @@ public class XARecoveryTest extends MessagingTestCase
          
          ServerManagement.deployQueue("TXQ");
          
+         cf = (JBossConnectionFactory)initialContext.lookup("/ConnectionFactory");         
          
          //Now recover
          
@@ -2390,6 +2397,7 @@ public class XARecoveryTest extends MessagingTestCase
          
          ServerManagement.deployTopic("TXTOPIC");
          
+         cf = (JBossConnectionFactory)initialContext.lookup("/ConnectionFactory");         
                            
          conn3 = cf.createXAConnection();
          
@@ -2608,6 +2616,8 @@ public class XARecoveryTest extends MessagingTestCase
          ServerManagement.deployQueue("TXQ");
    
          //Try and recover
+         
+         cf = (JBossConnectionFactory)initialContext.lookup("/ConnectionFactory");         
    
          XAResource res = cf.createXAConnection().createXASession().getXAResource();
    
@@ -2795,6 +2805,7 @@ public class XARecoveryTest extends MessagingTestCase
    
          ServerManagement.deployQueue("QA");
    
+         cf = (JBossConnectionFactory)initialContext.lookup("/ConnectionFactory");         
    
          XAResource res = cf.createXAConnection().createXASession().getXAResource();
    
@@ -2954,6 +2965,7 @@ public class XARecoveryTest extends MessagingTestCase
    
          ServerManagement.deployQueue("Queue");
    
+         cf = (JBossConnectionFactory)initialContext.lookup("/ConnectionFactory");         
    
          XAResource res = cf.createXAConnection().createXASession().getXAResource();
    
@@ -3095,7 +3107,7 @@ public class XARecoveryTest extends MessagingTestCase
    
          ServerManagement.deployQueue("Queue");
    
-   
+         cf = (JBossConnectionFactory)initialContext.lookup("/ConnectionFactory");         
    
          XAResource res = cf.createXAConnection().createXASession().getXAResource();
    
@@ -3243,7 +3255,8 @@ public class XARecoveryTest extends MessagingTestCase
          ServerManagement.deployQueue("QB");
    
    
-   
+         cf = (JBossConnectionFactory)initialContext.lookup("/ConnectionFactory");
+         
          XAResource res = cf.createXAConnection().createXASession().getXAResource();
    
          Xid[] xids = res.recover(XAResource.TMSTARTRSCAN);
