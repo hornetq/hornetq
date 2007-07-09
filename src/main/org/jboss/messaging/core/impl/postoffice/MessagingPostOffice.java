@@ -593,7 +593,7 @@ public class MessagingPostOffice extends JDBCSupport
    {
    	//There is no need to lock this while failover node change is occuring since the receiving node is tolerant to duplicate
 		//adds or acks
-  	
+   	   	   		   
    	Address replyAddress = null;
    	
    	if (reply)
@@ -608,15 +608,12 @@ public class MessagingPostOffice extends JDBCSupport
    	ClusterRequest request = new ReplicateDeliveryMessage(queueName, sessionID, messageID, deliveryID, replyAddress, thisNodeID);
    	
    	if (trace) { log.trace(this + " sending replicate delivery message " + queueName + " " + sessionID + " " + messageID); }
-   	
-   	if (!firstNode)
-	   {		   
-		   Address address = getFailoverNodeControlChannelAddress();
-		   	
-		   if (address != null)
-		   {	   
-		      groupMember.unicastControl(request, address, false);
-		   }
+			   
+	   Address address = getFailoverNodeControlChannelAddress();
+	   	
+	   if (address != null)
+	   {	   
+	      groupMember.unicastControl(request, address, false);
 	   }
    }
 
@@ -625,22 +622,24 @@ public class MessagingPostOffice extends JDBCSupport
 		//There is no need to lock this while failover node change is occuring since the receiving node is tolerant to duplicate
 		//adds or acks
 	
-	   ClusterRequest request = new ReplicateAckMessage(queueName, messageID, thisNodeID);
-	   
-	   if (!firstNode)
-	   {		   
-		   Address address = getFailoverNodeControlChannelAddress();
-		   	
-		   if (address != null)
-		   {	   
-		      groupMember.unicastControl(request, address, false);
-		   }
+	   ClusterRequest request = new ReplicateAckMessage(queueName, messageID, thisNodeID);		   
+   	
+	   Address address = getFailoverNodeControlChannelAddress();
+	   	
+	   if (address != null)
+	   {	   
+	      groupMember.unicastControl(request, address, false);
 	   }
 	}
 	
 	public void injectServerPeer(ServerPeer serverPeer)
 	{
 		this.serverPeer = serverPeer;
+	}
+	
+	public boolean isFirstNode()
+	{
+		return firstNode;
 	}
    
    // GroupListener implementation -------------------------------------------------------------
@@ -816,17 +815,27 @@ public class MessagingPostOffice extends JDBCSupport
 
       log.debug(this + ": node " + leftNodeID + " has " + (crashed ? "crashed" : "cleanly left the group"));
       
+      // Need to evaluate this before we regenerate the failover map	      
+      
+      Integer fnodeID = (Integer)failoverMap.get(leftNodeID);
+      
+      log.debug(this + " the failover node for the crashed node is " + fnodeID);
+	         
+      //Recalculate the failover map
+      
+      int oldFailoverNodeID = failoverNodeID;
+      
+      if (trace) { log.trace("Old failover node id: " + oldFailoverNodeID); }
+      
+      calculateFailoverMap();
+      
+      if (trace) { log.trace("First node is now " + firstNode); }
+      
       boolean doneFailover = false;
       
       if (crashed && isSupportsFailover())
       {	      
-	      // Need to evaluate this before we regenerate the failover map	      
-	         
-	      Integer fnodeID = (Integer)failoverMap.get(leftNodeID);
-	      
-	      log.debug(this + " the failover node for the crashed node is " + fnodeID);
-   	   
-	      
+
 	      if (fnodeID == null)
 	      {
 	      	throw new IllegalStateException("Cannot find failover node for node " + leftNodeID);
@@ -850,6 +859,15 @@ public class MessagingPostOffice extends JDBCSupport
 	      // recalculate the connection factory delegates and failover delegates.
 	
 	      cleanDataForNode(leftNodeID);
+      }
+      
+      if (trace) {log.trace("First node: " + firstNode + " oldFailoverNodeID: " + oldFailoverNodeID + " failoverNodeID: " + failoverNodeID); }
+      
+      if (oldFailoverNodeID != failoverNodeID)
+      {
+      	//Failover node for this node has changed
+      	
+      	failoverNodeChanged(oldFailoverNodeID, firstNode);      	
       }
       
       sendJMXNotification(VIEW_CHANGED_NOTIFICATION);
@@ -988,7 +1006,7 @@ public class MessagingPostOffice extends JDBCSupport
 	   			{
 	   				try
 	   				{
-	   					failoverNodeChanged(oldFailoverNodeID);
+	   					failoverNodeChanged(oldFailoverNodeID, firstNode);
 	   				}
 	   				catch (Exception e)
 	   				{
@@ -1068,7 +1086,6 @@ public class MessagingPostOffice extends JDBCSupport
          }
       }
       
-      log.info("*** sending remove notification");
       ClusterNotification notification = new ClusterNotification(ClusterNotification.TYPE_REPLICATOR_REMOVE, originatorNodeID, key);
       
       clusterNotifier.sendNotification(notification);
@@ -1115,7 +1132,7 @@ public class MessagingPostOffice extends JDBCSupport
    	
    	Queue queue = binding.queue;
    	
-   	queue.addToRecoveryArea(nodeID, messageID);   	
+   	queue.addToRecoveryArea(nodeID, messageID, sessionID);   	
    	
    	if (trace) { log.trace(this + " reply address is " + replyAddress); }
    	
@@ -1248,7 +1265,7 @@ public class MessagingPostOffice extends JDBCSupport
    				
    				String queueName = (String)entry.getKey();
    				
-   				Set ids = (Set)entry.getValue();
+   				Map ids = (Map)entry.getValue();
    				
    				Binding binding = (Binding)localNameMap.get(queueName);
    				
@@ -1748,7 +1765,7 @@ public class MessagingPostOffice extends JDBCSupport
 	   	if (fid == thisNodeID)
 	   	{
 	   		firstNode = true;
-	   		fid = -1;
+	   		failoverNodeID = -1;
 	   	}
 	   	else
 	   	{
@@ -2494,20 +2511,7 @@ public class MessagingPostOffice extends JDBCSupport
       {
       	if (trace) { log.trace(this + " notifying bind unbind lock"); }
       	waitForBindUnbindLock.notifyAll();
-      }
-      
-      //Recalculate the failover map
-      
-      int oldFailoverNodeID = failoverNodeID;
-      
-      calculateFailoverMap();
-      
-      if (!firstNode && oldFailoverNodeID != failoverNodeID)
-      {
-      	//Failover node for this node has changed
-      	
-      	failoverNodeChanged(oldFailoverNodeID);      	
-      }
+      }     
       
       //Notify outside the lock to prevent deadlock
       
@@ -2595,25 +2599,28 @@ public class MessagingPostOffice extends JDBCSupport
    	}     	
    }
    
-   private void failoverNodeChanged(int oldFailoverNodeID) throws Exception
+   private void failoverNodeChanged(int oldFailoverNodeID, boolean firstNode) throws Exception
    {   	   	
    	//The failover node has changed - we need to move our replicated deliveries
    	
    	if (trace) { log.trace("Failover node has changed from " + oldFailoverNodeID + " to " + failoverNodeID); }
    	   	
-   	//If the old node still exists we need to send a message to remove any replicated deliveries
-   	
-   	PostOfficeAddressInfo info = (PostOfficeAddressInfo)nodeIDAddressMap.get(new Integer(oldFailoverNodeID));
-   	
-   	if (info != null)
-   	{
-   		if (trace) { log.trace("Old failover node still exists, telling it remove replicated deliveries"); }
-   		
-   		ClusterRequest request = new AckAllReplicatedDeliveriesMessage(oldFailoverNodeID);
-   		
-   		groupMember.unicastControl(request, info.getControlChannelAddress(), true);
-   		
-   		if (trace) { log.trace("Sent AckAllReplicatedDeliveriesMessage"); }
+   	if (!firstNode)
+   	{	   	
+	   	//If the old node still exists we need to send a message to remove any replicated deliveries
+	   	
+	   	PostOfficeAddressInfo info = (PostOfficeAddressInfo)nodeIDAddressMap.get(new Integer(oldFailoverNodeID));
+	   	
+	   	if (info != null)
+	   	{
+	   		if (trace) { log.trace("Old failover node still exists, telling it remove replicated deliveries"); }
+	   		
+	   		ClusterRequest request = new AckAllReplicatedDeliveriesMessage(oldFailoverNodeID);
+	   		
+	   		groupMember.unicastControl(request, info.getControlChannelAddress(), true);
+	   		
+	   		if (trace) { log.trace("Sent AckAllReplicatedDeliveriesMessage"); }
+	   	}
    	}
    	
    	//Now send the deliveries to the new node
@@ -2625,15 +2632,8 @@ public class MessagingPostOffice extends JDBCSupport
    	
    	try
    	{	   	
-	   	if (this.localNameMap != null)
+	   	if (localNameMap != null)
 	   	{
-	   		info = (PostOfficeAddressInfo)nodeIDAddressMap.get(new Integer(failoverNodeID));
-	   		
-	   		if (info == null)
-	   		{
-	   			throw new IllegalStateException("Cannot find address for failover node " + failoverNodeID);
-	   		}
-	   		
 	   		Map deliveries = new HashMap();
 	   		
 				//FIXME - this is ugly
@@ -2647,22 +2647,32 @@ public class MessagingPostOffice extends JDBCSupport
 				{
 					ServerSessionEndpoint session = (ServerSessionEndpoint)iter2.next();
 					
-					session.collectDeliveries(deliveries);				
+					session.collectDeliveries(deliveries, firstNode);				
 				}   				  
 				
-				ClusterRequest request = new AddAllReplicatedDeliveriesMessage(thisNodeID, deliveries);
-				
-				//send sync
-				
-				groupMember.unicastControl(request, info.getControlChannelAddress(), true);
-	   		
-	   		if (trace) { log.trace("Sent AddAllReplicatedDeliveriesMessage"); }
+				if (!firstNode)
+				{			
+		   		PostOfficeAddressInfo info = (PostOfficeAddressInfo)nodeIDAddressMap.get(new Integer(failoverNodeID));
+		   		
+		   		if (info == null)
+		   		{
+		   			throw new IllegalStateException("Cannot find address for failover node " + failoverNodeID);
+		   		}		   		
+					
+					ClusterRequest request = new AddAllReplicatedDeliveriesMessage(thisNodeID, deliveries);
+					
+					//send sync
+					
+					groupMember.unicastControl(request, info.getControlChannelAddress(), true);
+		   		
+		   		if (trace) { log.trace("Sent AddAllReplicatedDeliveriesMessage"); }
+				}
 	   	}
    	}
    	finally
    	{
    		replicateDeliveryLock.writeLock().release();
-   	}
+   	}   	
    }
    
 
@@ -2684,13 +2694,13 @@ public class MessagingPostOffice extends JDBCSupport
 
       log.debug(this + " announced it is starting failover procedure");
    	
+      pm.mergeTransactions(failedNodeID.intValue(), thisNodeID);
+      
       // Need to lock
       lock.writeLock().acquire();
 
       try
       {
-         pm.mergeTransactions(failedNodeID.intValue(), thisNodeID);
-
       	Map nameMap = (Map)nameMaps.get(failedNodeID);
       	
       	List toRemove = new ArrayList();

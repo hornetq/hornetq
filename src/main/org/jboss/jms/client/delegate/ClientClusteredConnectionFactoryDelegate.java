@@ -174,7 +174,6 @@ public class ClientClusteredConnectionFactoryDelegate
    public synchronized void updateFailoverInfo(ClientConnectionFactoryDelegate[] delegates,
                                                Map failoverMap)
    {	
-   	log.info(this  +"  **** UPDATING FAILOVER INFO");
       this.delegates = delegates;
       this.failoverMap = failoverMap;
 

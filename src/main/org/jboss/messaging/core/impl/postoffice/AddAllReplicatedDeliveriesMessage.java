@@ -28,7 +28,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
-import org.jboss.messaging.util.ConcurrentHashSet;
+import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
 
 /**
  * 
@@ -81,13 +81,15 @@ public class AddAllReplicatedDeliveriesMessage extends ClusterRequest
 			
 			int size2 = in.readInt();
 			
-			Set ids = new ConcurrentHashSet(size2);
+			Map ids = new ConcurrentHashMap(size2);
 			
 			for (int j = 0; j < size2; j++)
 			{
 				long id = in.readLong();
 				
-				ids.add(new Long(id));
+				String sessionID = in.readUTF();
+				
+				ids.put(new Long(id), sessionID);
 			}
 			
 			deliveries.put(queueName, ids);
@@ -110,17 +112,23 @@ public class AddAllReplicatedDeliveriesMessage extends ClusterRequest
 			
 			out.writeUTF(queueName);
 			
-			Set ids = (Set)entry.getValue();
+			Map ids = (Map)entry.getValue();
 			
 			out.writeInt(ids.size());
 			
-			Iterator iter2 = ids.iterator();
+			Iterator iter2 = ids.entrySet().iterator();
 			
 			while (iter2.hasNext())
 			{
-				Long id = (Long)iter2.next();
+				Map.Entry entry2 = (Map.Entry)iter2.next();
+				
+				Long id = (Long)entry2.getKey();
+				
+				String sessionID = (String)entry2.getValue();
 				
 				out.writeLong(id.longValue());
+				
+				out.writeUTF(sessionID);
 			}
 		}
 	}

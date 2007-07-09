@@ -557,8 +557,6 @@ public class RecoverDeliveriesTest extends ClusteringTestBase
       		
       		assertNotNull(tm0_1);
       		
-      		log.info("got:" + tm0_1.getText());      		
-      		
       		msgIds.add(tm0_1.getText());
       	}
       	
@@ -576,8 +574,6 @@ public class RecoverDeliveriesTest extends ClusteringTestBase
       		
       		assertNotNull(tm0_2);
       		
-      		log.info("got:" + tm0_2.getText());      		
-      		
       		msgIds.add(tm0_2.getText());
       	}
       	
@@ -587,7 +583,7 @@ public class RecoverDeliveriesTest extends ClusteringTestBase
       	//Two on node 1
       	
       	Session sess1_1 = conn1.createSession(transactional, transactional ? Session.SESSION_TRANSACTED : Session.CLIENT_ACKNOWLEDGE);
-      	
+
       	MessageConsumer cons1_1 = sess1_1.createConsumer(queue[1]);      	
       	
       	TextMessage tm1_1 = null;
@@ -597,16 +593,14 @@ public class RecoverDeliveriesTest extends ClusteringTestBase
       		tm1_1 = (TextMessage)cons1_1.receive(5000000);
       		
       		assertNotNull(tm1_1);
-      		
-      		log.info("got:" + tm1_1.getText());      		
-      		
+      		    
       		msgIds.add(tm1_1.getText());
       	}
       	
       	cons1_1.close();
       	
       	Session sess1_2 = conn1.createSession(transactional, transactional ? Session.SESSION_TRANSACTED : Session.CLIENT_ACKNOWLEDGE);
-      	
+
       	MessageConsumer cons1_2 = sess1_2.createConsumer(queue[1]);
       	
       	TextMessage tm1_2 = null;
@@ -616,9 +610,7 @@ public class RecoverDeliveriesTest extends ClusteringTestBase
       		tm1_2 = (TextMessage)cons1_2.receive(5000000);
       		      		      		
       		assertNotNull(tm1_2);
-      		
-      		log.info("got:" + tm1_2.getText());
-      		
+
       		msgIds.add(tm1_2.getText());
       	}
       	
@@ -639,8 +631,6 @@ public class RecoverDeliveriesTest extends ClusteringTestBase
       		
       		assertNotNull(tm2_1);
       		
-      		log.info("got:" + tm2_1.getText());      		
-      		
       		msgIds.add(tm2_1.getText());
       	}
       	
@@ -657,8 +647,6 @@ public class RecoverDeliveriesTest extends ClusteringTestBase
       		tm2_2 = (TextMessage)cons2_2.receive(5000000);
       		
       		assertNotNull(tm2_2);
-      		
-      		log.info("got:" + tm2_2.getText());
       		
       		msgIds.add(tm2_2.getText());
       	}
@@ -677,8 +665,6 @@ public class RecoverDeliveriesTest extends ClusteringTestBase
       	//Now kill server
       	
       	int failoverNodeId = this.getFailoverNodeForNode(factory, 1);    
-      	
-      	log.info("Failover node is " + failoverNodeId);
       	
       	ServerManagement.kill(1);
 
@@ -705,11 +691,7 @@ public class RecoverDeliveriesTest extends ClusteringTestBase
          
          log.info("Failover completed");
                            
-         log.info("server id is now " + getServerId(conn1));
-         
          assertEquals(failoverNodeId, getServerId(conn1));
-         
-         log.info("ok, committing");
                   
          //Now ack
          if (transactional)
@@ -731,16 +713,12 @@ public class RecoverDeliveriesTest extends ClusteringTestBase
 	         tm2_2.acknowledge();
          }
          
-         log.info("acked");
-         
          sess0_1.close();
          sess0_2.close();
          sess1_1.close();
          sess1_2.close();
          sess2_1.close();
          sess2_2.close();
-         
-         log.info("closed");
          
 	      Session sess0 = conn0.createSession(false, Session.AUTO_ACKNOWLEDGE);
 	      	

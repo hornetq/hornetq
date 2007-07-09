@@ -45,17 +45,22 @@ public class SessionRecoverDeliveriesRequest extends RequestSupport
 {
    private List dels;
    
+   private String sessionID;
+   
    public SessionRecoverDeliveriesRequest()
    {      
    }
    
    public SessionRecoverDeliveriesRequest(String objectId,
                                           byte version,
-                                          List dels)
+                                          List dels,
+                                          String sessionID)
    {
       super(objectId, PacketSupport.REQ_SESSION_RECOVERDELIVERIES, version);
       
       this.dels = dels;
+      
+      this.sessionID = sessionID;
    }
 
    public void read(DataInputStream is) throws Exception
@@ -74,6 +79,8 @@ public class SessionRecoverDeliveriesRequest extends RequestSupport
          
          dels.add(del);
       }
+      
+      sessionID = is.readUTF();
    }
 
    public ResponseSupport serverInvoke() throws Exception
@@ -86,7 +93,7 @@ public class SessionRecoverDeliveriesRequest extends RequestSupport
          throw new IllegalStateException("Cannot find object in dispatcher with id " + objectId);
       }
       
-      endpoint.recoverDeliveries(dels);
+      endpoint.recoverDeliveries(dels, sessionID);
       
       return null;
    }
@@ -105,6 +112,8 @@ public class SessionRecoverDeliveriesRequest extends RequestSupport
          
          del.write(os);
       }
+      
+      os.writeUTF(sessionID);
       
       os.flush();
    }

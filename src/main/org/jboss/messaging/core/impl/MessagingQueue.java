@@ -45,10 +45,10 @@ import org.jboss.messaging.core.contract.Queue;
 import org.jboss.messaging.core.contract.Receiver;
 import org.jboss.messaging.core.impl.clusterconnection.MessageSucker;
 import org.jboss.messaging.core.impl.tx.Transaction;
-import org.jboss.messaging.util.ConcurrentHashSet;
 import org.jboss.util.timeout.Timeout;
 import org.jboss.util.timeout.TimeoutTarget;
 
+import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentReaderHashMap;
 
 /**
@@ -219,15 +219,19 @@ public class MessagingQueue extends PagingChannelSupport implements Queue
             
          if (trace) { log.trace("Loaded " + ili.getRefInfos().size() + " refs"); }            
 
+         log.info("Merging, there are already " + messageRefs.size() + " refs in queue");
+         
          doLoad(ili);         
          
-         Set toRecover = (Set)this.recoveryArea.remove(new Integer(nodeID));
+         Map toRecover = (Map)recoveryArea.remove(new Integer(nodeID));
+         
+         if (trace) { log.trace("To recover is: " + toRecover); }
          
          LinkedList toTimeout = new LinkedList();
          
          if (toRecover != null)
          {         	
-            //TODO this can be optimised to avoid a second scan
+            //TODO this can be optimised to avoid a second scan - we could do this in load
          
          	if (trace) { log.trace("Recovery area is not empty, putting refs in recovery map"); }
          	
@@ -239,13 +243,17 @@ public class MessagingQueue extends PagingChannelSupport implements Queue
          		
          		Message message = ref.getMessage();
          		
-         		boolean exists = toRecover.remove(new Long(message.getMessageID()));
+         		String sessionID = (String)toRecover.remove(new Long(message.getMessageID()));
          		
-         		if (exists)
+         		if (sessionID != null)
          		{
          			if (trace) { log.trace("Added ref " + ref + " to recovery map"); }
          			
-         			recoveryMap.put(new Long(message.getMessageID()), ref);
+         			RecoveryEntry re = new RecoveryEntry();
+         			re.ref = ref;
+         			re.sessionID = sessionID;
+         			
+         			recoveryMap.put(new Long(message.getMessageID()), re);
          			
          			iter.remove();
          			
@@ -274,6 +282,8 @@ public class MessagingQueue extends PagingChannelSupport implements Queue
    
    public List recoverDeliveries(List messageIds)
    {
+   	if (trace) { log.trace("Recovering deliveries"); }
+   	
    	List refs = new ArrayList();
    	
    	Iterator iter = messageIds.iterator();
@@ -282,21 +292,68 @@ public class MessagingQueue extends PagingChannelSupport implements Queue
    	{
    		Long messageID = (Long)iter.next();
    		
-   		MessageReference ref = (MessageReference)recoveryMap.get(messageID);
+   		RecoveryEntry re = (RecoveryEntry)recoveryMap.remove(messageID);
    		
-   		if (ref == null)
-   		{
-   			throw new IllegalStateException("Cannot find ref in recovery map " + messageID);
+   		//This can actually be null - e.g. if failure happened right after a successful Ack so the client doesn't
+   		//remove the delivery but is no longer on the server
+   		if (re != null)
+   		{   			   		
+	   		Delivery del = new SimpleDelivery(this, re.ref);
+	   		
+	   		if (trace) { log.trace("Recovered ref " + re.ref); }
+	   		
+	   		refs.add(del);
    		}
-   		
-   		Delivery del = new SimpleDelivery(this, ref);
-   		
-   		refs.add(del);
    	}
-            
+   	   
       return refs;
    }
-
+   
+   public void removeStrandedReferences(String sessionID)
+   {
+   	if (trace) { log.trace("Removing stranded references for session " + sessionID); }
+   	
+   	// TODO this can be optimised - remove any remaining deliveries for the session id
+   	//these correspond to messages buffered on the client side for that client and should go back on the queue
+   	
+   	Iterator iter = recoveryMap.values().iterator();
+   	
+   	if (trace) { log.trace("Scanning recovery map for stray entries for session"); }
+   	
+   	List toCancel = new ArrayList();
+   	
+   	while (iter.hasNext())
+   	{
+   		RecoveryEntry re = (RecoveryEntry)iter.next();
+   		
+   		if (trace) { log.trace("Session id id " + re.sessionID); }
+   		
+   		if (re.sessionID.equals(sessionID))
+   		{
+   			MessageReference ref = re.ref;
+   			
+   			iter.remove();
+   			
+   			//Put back on queue
+   			
+   			toCancel.add(ref);   			   						
+   		}
+   	}
+   	
+   	for (int i = toCancel.size() - 1; i >= 0; i--)
+   	{
+   		MessageReference ref = (MessageReference)toCancel.get(i);
+   		
+   		synchronized (lock)
+			{
+				messageRefs.addFirst(ref, ref.getMessage().getPriority());
+			}
+							
+			if (trace) { log.trace("Found one, added back on queue"); }   
+   	}
+   	
+   }
+   
    public void registerSucker(MessageSucker sucker)
    {
    	if (trace) { log.trace(this + " Registering sucker " + sucker); }
@@ -349,7 +406,7 @@ public class MessagingQueue extends PagingChannelSupport implements Queue
    	return downCacheSize;
    }
    
-   public void addToRecoveryArea(int nodeID, long messageID)
+   public void addToRecoveryArea(int nodeID, long messageID, String sessionID)
    {
    	if (trace) { log.trace("Adding message id " + messageID + " to recovery area from node " + nodeID); }
    	
@@ -359,16 +416,16 @@ public class MessagingQueue extends PagingChannelSupport implements Queue
    	
    	Integer nid = new Integer(nodeID);
    	
-   	Set ids = (Set)recoveryArea.get(nid);
+   	Map ids = (Map)recoveryArea.get(nid);
    	
    	if (ids == null)
    	{
-   		ids = new ConcurrentHashSet();
+   		ids = new ConcurrentHashMap();
    		
    		recoveryArea.put(nid, ids);
    	}
    	
-   	ids.add(new Long(messageID));
+   	ids.put(new Long(messageID), sessionID);
    }
    
    public void removeFromRecoveryArea(int nodeID, long messageID)
@@ -377,13 +434,13 @@ public class MessagingQueue extends PagingChannelSupport implements Queue
    	
    	Integer nid = new Integer(nodeID);
    	
-   	Set ids = (Set)recoveryArea.get(nid);
+   	Map ids = (Map)recoveryArea.get(nid);
    	
    	//The remove might fail to find the id
       //This can happen if the removal has already be done - this could happen after the failover node has moved
    	//When the batch add happens, then an ack comes in shortly after but has already been taken into account
 
-   	if (ids != null && ids.remove(new Long(messageID)))
+   	if (ids != null && ids.remove(new Long(messageID)) != null)
    	{
    		if (ids.isEmpty())
       	{
@@ -401,7 +458,7 @@ public class MessagingQueue extends PagingChannelSupport implements Queue
    	if (trace) { log.trace("Removed:" + removed); }
    }
    
-   public void addAllToRecoveryArea(int nodeID, Set ids)
+   public void addAllToRecoveryArea(int nodeID, Map ids)
    {
    	if (trace) { log.trace("Adding all from recovery area for node " + nodeID +" set " + ids); }
    	
@@ -413,9 +470,9 @@ public class MessagingQueue extends PagingChannelSupport implements Queue
    		throw new IllegalStateException("There are already message ids for node " + nodeID);
    	}
    	   	
-   	if (!(ids instanceof ConcurrentHashSet))
+   	if (!(ids instanceof ConcurrentHashMap))
    	{
-   		ids = new ConcurrentHashSet(ids);
+   		ids = new ConcurrentHashMap(ids);
    	}
    	
    	recoveryArea.put(nid, ids);
@@ -585,6 +642,13 @@ public class MessagingQueue extends PagingChannelSupport implements Queue
 		}   	
    }
    
+   private class RecoveryEntry
+   {
+   	String sessionID;
+   	MessageReference ref;
+   }
+
+   
    private class ClearRecoveryMapTimeoutTarget implements TimeoutTarget
    {
    	private List ids;
@@ -600,6 +664,8 @@ public class MessagingQueue extends PagingChannelSupport implements Queue
 			
 			Iterator iter = ids.iterator();
 			
+			boolean added = false;
+					
 			while (iter.hasNext())
 			{
 				MessageReference ref = (MessageReference)iter.next();
@@ -609,11 +675,22 @@ public class MessagingQueue extends PagingChannelSupport implements Queue
 				if (obj != null)
 				{
 					if (trace) { log.trace("Adding ref " + ref + " back into queue"); }
+						
+					synchronized (lock)
+					{		
+						messageRefs.addFirst(ref, ref.getMessage().getPriority());		
+					}					
 					
-					messageRefs.addFirst(ref, ref.getMessage().getPriority());					
-					
-					deliverInternal();
+					added = true;
 				}
+			}
+			
+			if (added)
+			{
+				synchronized (lock)
+				{		
+					deliverInternal();
+				}	
 			}
 		}   	
    }

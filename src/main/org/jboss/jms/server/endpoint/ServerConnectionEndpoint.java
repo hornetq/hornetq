@@ -263,6 +263,8 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
          Dispatcher.instance.registerTarget(sessionID, sessionAdvised);
 
          log.debug("created and registered " + ep);
+         
+         log.info("*********** CREATING SESSION WITH ID:" + sessionID);
 
          ClientSessionDelegate d = new ClientSessionDelegate(sessionID, dupsOKBatchSize);
 

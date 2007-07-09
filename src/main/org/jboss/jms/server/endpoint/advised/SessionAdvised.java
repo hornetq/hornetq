@@ -138,9 +138,9 @@ public class SessionAdvised extends AdvisedSupport implements SessionEndpoint
       endpoint.cancelDelivery(cancel);
    }
    
-   public void recoverDeliveries(List ackInfos) throws JMSException
+   public void recoverDeliveries(List ackInfos, String oldSessionID) throws JMSException
    {
-      endpoint.recoverDeliveries(ackInfos);
+      endpoint.recoverDeliveries(ackInfos, oldSessionID);
    }
 
    // AdvisedSupport overrides --------------------------------------

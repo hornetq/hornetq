@@ -139,10 +139,11 @@ public class ResourceManager
     * Failover session from old session ID -> new session ID
     */
    public void handleFailover(int newServerID, String oldSessionID, String newSessionID)
-   {
-      for(Iterator i = this.transactions.values().iterator(); i.hasNext(); )
+   {	
+      for (Iterator i = transactions.values().iterator(); i.hasNext(); )
       {
          ClientTransaction tx = (ClientTransaction)i.next();
+         
          tx.handleFailover(newServerID, oldSessionID, newSessionID);
       }                
    }   
@@ -153,15 +154,16 @@ public class ResourceManager
    public List getDeliveriesForSession(String sessionID)
    {
       List ackInfos = new ArrayList();
-
-      for(Iterator i = transactions.values().iterator(); i.hasNext(); )
+           
+      for (Iterator i = transactions.values().iterator(); i.hasNext(); )
       {
          ClientTransaction tx = (ClientTransaction)i.next();
+                 
          List acks = tx.getDeliveriesForSession(sessionID);
          
          ackInfos.addAll(acks);
       }
-
+      
       return ackInfos;
    }
    

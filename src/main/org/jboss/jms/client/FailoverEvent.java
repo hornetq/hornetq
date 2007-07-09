@@ -54,7 +54,8 @@ public class FailoverEvent extends EventObject
          type == FAILURE_DETECTED ? "FAILURE_DETECTED" :
             type == FAILOVER_STARTED ? "FAILOVER_STARTED" :
                type == FAILOVER_COMPLETED ? "FAILOVER_COMPLETED" :
-                  type == FAILOVER_FAILED ? "FAILOVER_FAILED" : "UNKNOWN_FAILOVER_EVENT";
+               	type == FAILOVER_ALREADY_COMPLETED ? "FAILOVER_ALREADY_COMPLETED" :
+                     type == FAILOVER_FAILED ? "FAILOVER_FAILED" : "UNKNOWN_FAILOVER_EVENT";
    }
 
    // Package protected ----------------------------------------------------------------------------
@@ -68,7 +69,8 @@ public class FailoverEvent extends EventObject
       if (type != FAILURE_DETECTED &&
          type != FAILOVER_STARTED &&
          type != FAILOVER_COMPLETED &&
-         type != FAILOVER_FAILED)
+         type != FAILOVER_FAILED &&
+         type != FAILOVER_ALREADY_COMPLETED)
       {
          throw new IllegalArgumentException("Illegal failover event type: " + type);
       }

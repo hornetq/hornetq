@@ -195,13 +195,16 @@ public class ClientTransaction
          {
             SessionTxState state = (SessionTxState)i.next();
             
-            state.handleFailover(newServerID, oldSessionID, newSessionID);
+            boolean handled = state.handleFailover(newServerID, oldSessionID, newSessionID);
 
-            if (tmpMap == null)
+            if (handled)
             {
-               tmpMap = new LinkedHashMap();
+	            if (tmpMap == null)
+	            {
+	               tmpMap = new LinkedHashMap();
+	            }
+	            tmpMap.put(newSessionID, state);
             }
-            tmpMap.put(newSessionID, state);
          }
       }
 
@@ -218,7 +221,7 @@ public class ClientTransaction
     * May return an empty list, but never null.
     */
    public List getDeliveriesForSession(String sessionID)
-   {
+   {   	   	
       if (!clientSide)
       {
          throw new IllegalStateException("Cannot call this method on the server side");
@@ -234,7 +237,9 @@ public class ClientTransaction
    
          if (state != null)
          {
-            return state.getAcks();
+            List list = state.getAcks();
+            
+            return list;
          }
          else
          {
@@ -455,7 +460,7 @@ public class ClientTransaction
       	this.acks = acks;
       }
 
-      void handleFailover(int newServerID, String oldSessionID, String newSessionID)
+      boolean handleFailover(int newServerID, String oldSessionID, String newSessionID)
       {
          if (sessionID.equals(oldSessionID) && serverID != newServerID)
          {
@@ -473,6 +478,11 @@ public class ClientTransaction
                   i.remove();
                }
             }
+            return true;
+         }
+         else
+         {
+         	return false;
          }
       }
 

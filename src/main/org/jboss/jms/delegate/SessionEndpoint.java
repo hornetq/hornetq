@@ -127,6 +127,6 @@ public interface SessionEndpoint extends Closeable
     * Send delivery info to the server so the delivery lists can be repopulated. Used only in
     * failover.
     */
-   void recoverDeliveries(List createInfos) throws JMSException;
+   void recoverDeliveries(List createInfos, String oldSessionID) throws JMSException;
 }
 

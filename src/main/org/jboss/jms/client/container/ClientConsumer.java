@@ -298,6 +298,8 @@ public class ClientConsumer
    
    public void cancelBuffer() throws JMSException
    {
+   	if (trace) { log.trace("Cancelling buffer: " + buffer.size()); }
+   	
       synchronized (mainLock)
       {      
          // Now we cancel anything left in the buffer. The reason we do this now is that otherwise
@@ -327,7 +329,9 @@ public class ClientConsumer
                cancels.add(cancel);
             }
                   
+            if (trace) { log.trace("Calling cancelDeliveries"); }
             sessionDelegate.cancelDeliveries(cancels);
+            if (trace) { log.trace("Done call"); }
             
             buffer.clear();
          }    
@@ -573,8 +577,6 @@ public class ClientConsumer
       	//No need to wait - nothing to wait for      	
       	return;
       }
-      
-      log.info("waiting for last delivery " + id);
       
       synchronized (mainLock)
       {          

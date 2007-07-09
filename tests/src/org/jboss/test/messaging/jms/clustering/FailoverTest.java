@@ -625,7 +625,6 @@ public class FailoverTest extends ClusteringTestBase
 
          Session session = conn.createSession(true, Session.SESSION_TRANSACTED);
 
-         // send 2 transacted messages (one persistent and one non-persistent) but don't commit
          MessageProducer prod = session.createProducer(queue[1]);
 
          prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
@@ -985,7 +984,7 @@ public class FailoverTest extends ClusteringTestBase
 
          // close the producer
          prod.close();
-
+         
          // create a consumer and receive messages, but don't acknowledge
 
          MessageConsumer cons = session.createConsumer(queue[1]);
@@ -1031,7 +1030,7 @@ public class FailoverTest extends ClusteringTestBase
          clak.acknowledge();
 
          // make sure no messages are left in the queue
-         Message m = cons.receive(1000);
+         Message m = cons.receive(3000);
          assertNull(m);
       }
       finally
@@ -1049,12 +1048,8 @@ public class FailoverTest extends ClusteringTestBase
 
       try
       {
-         // skip connection to node 0
-         conn = cf.createConnection();
-         conn.close();
-
          // create a connection to node 1
-         conn = cf.createConnection();
+         conn = this.createConnectionOnServer(cf, 1);
 
          conn.start();
 
@@ -1121,7 +1116,7 @@ public class FailoverTest extends ClusteringTestBase
          session.commit();
 
          // make sure no messages are left in the queue
-         Message m = cons.receive(1000);
+         Message m = cons.receive(3000);
          assertNull(m);
       }
       finally
@@ -1527,7 +1522,7 @@ public class FailoverTest extends ClusteringTestBase
 
          // we must receive the message
 
-         TextMessage tm = (TextMessage)c1.receive(1000);
+         TextMessage tm = (TextMessage)c1.receive(3000);
          assertEquals("blip", tm.getText());
 
       }
@@ -1540,13 +1535,11 @@ public class FailoverTest extends ClusteringTestBase
       }
    }
 
-   // http://jira.jboss.org/jira/browse/JBMESSAGING-808
    public void testFailureRightAfterACK() throws Exception
    {
       failureOnInvocation(PoisonInterceptor.FAIL_AFTER_ACKNOWLEDGE_DELIVERY);
    }
 
-   // http://jira.jboss.org/jira/browse/JBMESSAGING-808
    public void testFailureRightBeforeACK() throws Exception
    {
       failureOnInvocation(PoisonInterceptor.FAIL_BEFORE_ACKNOWLEDGE_DELIVERY);
@@ -1562,75 +1555,63 @@ public class FailoverTest extends ClusteringTestBase
       failureOnInvocation(PoisonInterceptor.FAIL_AFTER_SEND);
    }
 
-   // Commented out until this is complete:
-   // http://jira.jboss.org/jira/browse/JBMESSAGING-604
-   public void testFailureRightAfterSendTransaction() throws Exception
-   {
-      Connection conn = null;
-      Connection conn0 = null;
-
-      try
-      {
-         conn0 = cf.createConnection();
-
-         assertEquals(0, ((JBossConnection)conn0).getServerID());
-
-         conn0.close();
-
-         conn = cf.createConnection();
-
-         assertEquals(1, getServerId(conn));
-
-         // we "cripple" the remoting connection by removing ConnectionListener. This way, failures
-         // cannot be "cleanly" detected by the client-side pinger, and we'll fail on an invocation
-         JMSRemotingConnection rc = ((ClientConnectionDelegate)((JBossConnection)conn).
-            getDelegate()).getRemotingConnection();
-         rc.removeConnectionListener();
-
-         // poison the server
-         ServerManagement.poisonTheServer(1, PoisonInterceptor.FAIL_AFTER_SENDTRANSACTION);
-
-         Session session = conn.createSession(true, Session.SESSION_TRANSACTED);
-
-         conn.start();
-
-         MessageProducer producer = session.createProducer(queue[0]);
-
-         producer.setDeliveryMode(DeliveryMode.PERSISTENT);
-
-         MessageConsumer consumer = session.createConsumer(queue[0]);
-
-         producer.send(session.createTextMessage("before-poison1"));
-         producer.send(session.createTextMessage("before-poison2"));
-         producer.send(session.createTextMessage("before-poison3"));
-         session.commit();
-
-         Thread.sleep(2000);
-
-         for (int i = 1; i <= 10; i++)
-         {
-            TextMessage tm = (TextMessage) consumer.receive(5000);
-
-            assertNotNull(tm);
-
-            assertEquals("before-poison" + i, tm.getText());
-         }
-
-         assertNull(consumer.receive(1000));
-
-      }
-      finally
-      {
-         if (conn != null)
-         {
-            conn.close();
-         }
-         if (conn0 != null)
-         {
-            conn0.close();
-         }
-      }
-   }
+   // This test is commented out until http://jira.jboss.com/jira/browse/JBMESSAGING-604 is complete
+//   public void testFailureRightAfterSendTransaction() throws Exception
+//   {
+//      Connection conn = null;
+// 
+//      try
+//      {
+//         conn = this.createConnectionOnServer(cf, 1);
+//
+//         assertEquals(1, getServerId(conn));
+//
+//         // we "cripple" the remoting connection by removing ConnectionListener. This way, failures
+//         // cannot be "cleanly" detected by the client-side pinger, and we'll fail on an invocation
+//         JMSRemotingConnection rc = ((ClientConnectionDelegate)((JBossConnection)conn).
+//            getDelegate()).getRemotingConnection();
+//         rc.removeConnectionListener();
+//
+//         // poison the server
+//         ServerManagement.poisonTheServer(1, PoisonInterceptor.FAIL_AFTER_SENDTRANSACTION);
+//
+//         Session session = conn.createSession(true, Session.SESSION_TRANSACTED);
+//
+//         conn.start();
+//
+//         MessageProducer producer = session.createProducer(queue[0]);
+//
+//         producer.setDeliveryMode(DeliveryMode.PERSISTENT);
+//
+//         MessageConsumer consumer = session.createConsumer(queue[0]);
+//
+//         producer.send(session.createTextMessage("before-poison1"));
+//         producer.send(session.createTextMessage("before-poison2"));
+//         producer.send(session.createTextMessage("before-poison3"));
+//         session.commit();
+//
+//         Thread.sleep(2000);
+//
+//         for (int i = 1; i <= 3; i++)
+//         {
+//            TextMessage tm = (TextMessage) consumer.receive(5000);
+//
+//            assertNotNull(tm);
+//
+//            assertEquals("before-poison" + i, tm.getText());
+//         }         
+//
+//         assertNull(consumer.receive(3000));
+//
+//      }
+//      finally
+//      {
+//         if (conn != null)
+//         {
+//            conn.close();
+//         }
+//      }
+//   }
 
    public void testCloseConsumer() throws Exception
    {
@@ -1642,7 +1623,7 @@ public class FailoverTest extends ClusteringTestBase
          conn0 = createConnectionOnServer(cf, 0);
 
          // Objects Server1
-         conn1 = cf.createConnection();
+         conn1 = createConnectionOnServer(cf, 1);
 
          assertEquals(1, getServerId(conn1));
 
@@ -1682,7 +1663,7 @@ public class FailoverTest extends ClusteringTestBase
          conn0 = createConnectionOnServer(cf, 0);
 
          // Objects Server1
-         conn1 = cf.createConnection();
+         conn1 = createConnectionOnServer(cf, 1);
 
          assertEquals(1, getServerId(conn1));
 
@@ -1722,7 +1703,7 @@ public class FailoverTest extends ClusteringTestBase
       {
          conn0 = createConnectionOnServer(cf, 0);
 
-         conn1 = cf.createConnection();
+         conn1 = createConnectionOnServer(cf, 1);
 
          assertEquals(1, getServerId(conn1));
 
@@ -1759,7 +1740,7 @@ public class FailoverTest extends ClusteringTestBase
       {
          conn0 = createConnectionOnServer(cf, 0);
 
-         conn1 = cf.createConnection();
+         conn1 = createConnectionOnServer(cf, 1);
 
          assertEquals(1, getServerId(conn1));
 
@@ -1787,10 +1768,12 @@ public class FailoverTest extends ClusteringTestBase
 
       try
       {
-         conn0 = cf.createConnection();
+         conn0 = this.createConnectionOnServer(cf, 0);
+         
+         assertEquals(0, ((JBossConnection)conn0).getServerID());
 
          // Objects Server1
-         conn1 = cf.createConnection();
+         conn1 = this.createConnectionOnServer(cf, 1);
 
          assertEquals(1, ((JBossConnection)conn1).getServerID());
 
@@ -1820,13 +1803,13 @@ public class FailoverTest extends ClusteringTestBase
          
          session1.commit();
                            
-         TextMessage rm1 = (TextMessage)cons1.receive(1000);
+         TextMessage rm1 = (TextMessage)cons1.receive(3000);
          
          assertNotNull(rm1);
          
          assertEquals(tm1.getText(), rm1.getText());
                                     
-         TextMessage rm2 = (TextMessage)cons2.receive(1000);
+         TextMessage rm2 = (TextMessage)cons2.receive(3000);
          
          assertNotNull(rm2);
          
@@ -1981,7 +1964,7 @@ public class FailoverTest extends ClusteringTestBase
 
          // we must receive the message
 
-         TextMessage tm = (TextMessage)c1.receive(1000);
+         TextMessage tm = (TextMessage)c1.receive(3000);
          assertEquals("blip", tm.getText());
 
       }
@@ -2033,7 +2016,7 @@ public class FailoverTest extends ClusteringTestBase
 
          assertEquals("before-poison", tm.getText());
 
-         tm = (TextMessage)consumer.receive(1000);
+         tm = (TextMessage)consumer.receive(3000);
 
          assertNull(tm);
 

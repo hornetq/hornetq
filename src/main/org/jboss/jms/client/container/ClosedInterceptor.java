@@ -169,16 +169,13 @@ public class ClosedInterceptor implements Interceptor
       {
          return invocation.invokeNext();
       }
-      catch (Throwable t)
+      catch (Exception t)
       {
       	if (isClosing || isClose)
       	{
 	      	//We swallow exceptions in close/closing, this is because if the connection fails, it is naturally for code to then close
 	      	//in a finally block, it would not then be appropriate to throw an exception. This is a common technique
-	      	if (trace)
-	      	{
-	      		log.trace("Failed to close", t);
-	      	}
+	      	//Close should ALWAYS (well apart from Errors) succeed irrespective of whether the actual connection to the server is alive.
 	      	return new Long(-1);
       	}
       	throw t;

@@ -113,13 +113,6 @@ public interface Channel extends DeliveryObserver, Receiver
    boolean isActive();
    
    /**
-    * Given a List of message ids, create a list of deliveries for them
-    * @param messageIds
-    * @return
-    */
-   List recoverDeliveries(List messageIds);
-  
-   /**
     * 
     * @return The maxiumum number of references this channel can store
     */

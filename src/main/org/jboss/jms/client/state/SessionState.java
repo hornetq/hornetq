@@ -322,9 +322,9 @@ public class SessionState extends HierarchicalStateSupport
          ackInfos = rm.getDeliveriesForSession(getSessionID());
       }
 
+      List recoveryInfos = new ArrayList();
       if (!ackInfos.isEmpty())
-      {
-         List recoveryInfos = new ArrayList();
+      {         
          for (Iterator i = ackInfos.iterator(); i.hasNext(); )
          {
             DeliveryInfo del = (DeliveryInfo)i.next();
@@ -334,15 +334,14 @@ public class SessionState extends HierarchicalStateSupport
                                     del.getQueueName());
 
             recoveryInfos.add(recInfo);
-         }
-
-         log.debug(this + " sending delivery recovery " + recoveryInfos + " on failover");
-         newDelegate.recoverDeliveries(recoveryInfos);
+         }         
       }
-      else
-      {
-         log.debug(this + " no delivery recovery info to send on failover");
-      }           
+
+      //Note! We ALWAYS call recoverDeliveries even if there are no deliveries since it also does other stuff
+      //like remove from recovery Area refs corresponding to messages in client consumer buffers
+      
+      log.debug(this + " sending delivery recovery " + recoveryInfos + " on failover");
+      newDelegate.recoverDeliveries(recoveryInfos, oldSessionID);
    }
    
    // Public ---------------------------------------------------------------------------------------

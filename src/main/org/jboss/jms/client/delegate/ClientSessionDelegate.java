@@ -461,9 +461,9 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
       doInvoke(client, req);
    }
 
-   public void recoverDeliveries(List acks) throws JMSException
+   public void recoverDeliveries(List acks, String sessionID) throws JMSException
    {
-      RequestSupport req = new SessionRecoverDeliveriesRequest(id, version, acks);
+      RequestSupport req = new SessionRecoverDeliveriesRequest(id, version, acks, sessionID);
 
       doInvoke(client, req);
    }

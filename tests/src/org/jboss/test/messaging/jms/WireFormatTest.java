@@ -652,7 +652,7 @@ public class WireFormatTest extends MessagingTestCase
          dels.add(info);
          
          RequestSupport req =
-            new SessionRecoverDeliveriesRequest("23", (byte)77, dels);
+            new SessionRecoverDeliveriesRequest("23", (byte)77, dels, "xyz");
                  
          testPacket(req, PacketSupport.REQ_SESSION_RECOVERDELIVERIES);                           
       }

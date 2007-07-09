@@ -378,7 +378,6 @@ public class ConnectionFactoryJNDIMapper
 		
 		            rebindConnectionFactory(initialContext, endpoint.getJNDIBindings(), del);
 
-		            log.info("**** Updating clustered clients");
 		            endpoint.updateClusteredClients(delArr, failoverMap);
                }
             }

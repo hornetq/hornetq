@@ -21,7 +21,8 @@
  */
 package org.jboss.messaging.core.contract;
 
-import java.util.Set;
+import java.util.List;
+import java.util.Map;
 
 import org.jboss.messaging.core.impl.clusterconnection.MessageSucker;
 
@@ -74,11 +75,15 @@ public interface Queue extends Channel
    
    boolean unregisterSucker(MessageSucker sucker);
    
-   void addToRecoveryArea(int nodeID, long messageID);
+   void addToRecoveryArea(int nodeID, long messageID, String sessionID);
    
    void removeFromRecoveryArea(int nodeID, long messageID);
    
    void removeAllFromRecoveryArea(int nodeID);
    
-   void addAllToRecoveryArea(int nodeID, Set ids);
+   void addAllToRecoveryArea(int nodeID, Map ids);
+   
+   List recoverDeliveries(List messageIds);  
+   
+   void removeStrandedReferences(String sessionID);
 }

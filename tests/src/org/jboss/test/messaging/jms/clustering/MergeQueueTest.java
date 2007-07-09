@@ -50,7 +50,6 @@ public class MergeQueueTest extends ClusteringTestBase
 
       try
       {
-
          // Objects Server0
          conn0 = createConnectionOnServer(cf, 0);
 
@@ -66,7 +65,7 @@ public class MergeQueueTest extends ClusteringTestBase
 
          MessageConsumer consumer0 = session0.createConsumer(queue[0]);
 
-         for (int i=0; i<10; i++)
+         for (int i = 0; i < 10; i++)
          {
             producer0.send(session0.createTextMessage("message " + i));
          }
@@ -84,11 +83,12 @@ public class MergeQueueTest extends ClusteringTestBase
          }
 
          session0.commit();
+         log.info("****Closing consumer");
          consumer0.close();
 
 
          // Objects Server1
-         conn1 = cf.createConnection();
+         conn1 = createConnectionOnServer(cf, 1);
 
          assertEquals(1, getServerId(conn1));
 
@@ -105,16 +105,25 @@ public class MergeQueueTest extends ClusteringTestBase
             producer1.send(session0.createTextMessage("message " + i));
          }
 
+         //At this point there should be 5 messages on the node 0 queue (5-9)
+         //and 10 messages on the node 1 queue (10-19)
+         
          ServerManagement.killAndWait(1);
 
          consumer0 = session0.createConsumer(queue[0]);
 
-         for (int i=5;i<20;i++)
+         Set ids = new HashSet();
+         for (int i = 5; i < 20; i++)
          {
             msg = (TextMessage)consumer0.receive(5000);
             assertNotNull(msg);
             log.info("msg = " + msg.getText());
-            assertEquals("message " + i,msg.getText());
+            ids.add(msg.getText());
+         }
+         
+         for (int i = 5; i < 20; i++)
+         {
+         	assertTrue(ids.contains("message " + i));
          }
 
          assertNull(consumer0.receive(5000));
@@ -181,7 +190,7 @@ public class MergeQueueTest extends ClusteringTestBase
          log.info("** sent first five on node0");
 
          // Objects Server1
-         conn1 = cf.createConnection();
+         conn1 = createConnectionOnServer(cf, 1);
 
          assertEquals(1, getServerId(conn1));
 
@@ -280,7 +289,7 @@ public class MergeQueueTest extends ClusteringTestBase
 
          assertEquals(0, getServerId(conn0));
          
-         conn1 = cf.createConnection();
+         conn1 = createConnectionOnServer(cf, 1);
          
          assertEquals(1, getServerId(conn1));
          
@@ -480,7 +489,7 @@ public class MergeQueueTest extends ClusteringTestBase
 
          assertEquals(0, getServerId(conn0));
          
-         conn1 = cf.createConnection();
+         conn1 = createConnectionOnServer(cf, 1);
          
          assertEquals(1, getServerId(conn1));
          

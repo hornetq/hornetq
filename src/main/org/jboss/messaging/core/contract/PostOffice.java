@@ -147,5 +147,7 @@ public interface PostOffice extends MessagingComponent
    	throws Exception;
 
 	void sendReplicateAckMessage(String queueName, long messageID) throws Exception;
+	
+	boolean isFirstNode();
 }
 
