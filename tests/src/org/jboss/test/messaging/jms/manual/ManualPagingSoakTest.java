@@ -32,6 +32,7 @@ import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.jms.Topic;
+import javax.jms.JMSException;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 
@@ -60,7 +61,7 @@ public class ManualPagingSoakTest extends MessagingTestCase
       Properties props1 = new Properties();
       
       props1.put(Context.INITIAL_CONTEXT_FACTORY, "org.jnp.interfaces.NamingContextFactory");
-      props1.put(Context.PROVIDER_URL, "jnp://localhost:1199");
+      props1.put(Context.PROVIDER_URL, "jnp://localhost:1099");
       props1.put(Context.URL_PKG_PREFIXES, "org.jnp.interfaces");
       
       ic1 = new InitialContext(props1);
@@ -87,14 +88,24 @@ public class ManualPagingSoakTest extends MessagingTestCase
       try
       {
          conn = cf.createConnection();
-         
+
          Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-              
+         
+         conn.start();
+         MessageConsumer cons = sess.createConsumer(queue);
+         receiveMessages(cons);
+         cons.close();
+         cons = null;
+
+         conn.stop();
+
+
+
          MessageProducer prod = sess.createProducer(queue);
          
          prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
          
-         final int NUM_MESSAGES = 1000000;
+         final int NUM_MESSAGES = 150000;
          
          byte[] bytes = new byte[2048];
          
@@ -114,26 +125,43 @@ public class ManualPagingSoakTest extends MessagingTestCase
          
          log.info("Receiving");
          
-         MessageConsumer cons = sess.createConsumer(queue);
+         cons = sess.createConsumer(queue);
          
          conn.start();
-         
-         for (int i = 0; i < NUM_MESSAGES; i++)
-         {
-            TextMessage tm = (TextMessage)cons.receive(2000);
-            
-            assertNotNull(tm);
-            
-            if (i % 1000 == 0)
-            {
-               log.info("Received " + i);
-            }
-         }
-                  
+
+         int numberOfMessages = receiveMessages(cons);
+
+
+         log.info("Received " + numberOfMessages + " messages");
+
+         assertEquals(NUM_MESSAGES, numberOfMessages);   
+
+
+
       }
       finally
       {      
          if (conn != null) conn.close();
       }
-   }       
+   }
+
+   private int receiveMessages(MessageConsumer cons)
+      throws JMSException
+   {
+      TextMessage msg = null;
+
+      int numberOfMessages=0;
+      do
+         {
+            msg = (TextMessage)cons.receive(20000);
+
+         if (msg!=null) numberOfMessages++;
+
+         if (numberOfMessages % 1000 == 0)
+         {
+            log.info("Received " + numberOfMessages);
+         }
+      } while (msg!=null);
+      return numberOfMessages;
+   }
 }
