@@ -187,8 +187,8 @@
       <mkdir dir="${build.tests.classes}"/>
       <javac destdir="${build.tests.classes}"
              optimize="${javac.optimize}"
-             target="1.5"
-             source="1.5"
+             target="1.4"
+             source="1.4"
              debug="${javac.debug}"
              depend="${javac.depend}"
              verbose="${javac.verbose}"

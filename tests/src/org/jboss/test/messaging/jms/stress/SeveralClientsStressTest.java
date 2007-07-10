@@ -28,6 +28,7 @@ import org.jboss.test.messaging.tools.jmx.ServiceAttributeOverrides;
 import org.jboss.test.messaging.tools.jmx.ServiceContainer;
 import org.jboss.logging.Logger;
 import EDU.oswego.cs.dl.util.concurrent.SynchronizedInt;
+import EDU.oswego.cs.dl.util.concurrent.LinkedQueue;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.jms.ConnectionFactory;
@@ -37,11 +38,8 @@ import javax.jms.Queue;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.jms.Message;
-import javax.management.ObjectName;
-import java.util.Properties;
 import java.util.HashSet;
-import java.util.concurrent.SynchronousQueue;
-import java.util.concurrent.TimeUnit;
+import java.util.Iterator;
 
 /**
  * In order for this test to run, you will need to edit /etc/security/limits.conf and change your max sockets to something bigger than 1024
@@ -75,8 +73,8 @@ public class SeveralClientsStressTest extends MessagingTestCase
    protected static long PRODUCER_ALIVE_FOR=60000; // half minute
    protected static long CONSUMER_ALIVE_FOR=60000; // 1 minutes
    protected static long TEST_ALIVE_FOR=5 * 60 * 1000; // 5 minutes
-   protected static int NUMBER_OF_PRODUCERS=200;
-   protected static int NUMBER_OF_CONSUMERS=200;
+   protected static int NUMBER_OF_PRODUCERS=10;
+   protected static int NUMBER_OF_CONSUMERS=10;
 
    protected static SynchronizedInt producedMessages = new SynchronizedInt(0);
    protected static SynchronizedInt readMessages = new SynchronizedInt(0);
@@ -101,10 +99,10 @@ public class SeveralClientsStressTest extends MessagingTestCase
       Context ctx = createContext();
 
 
-      HashSet<Worker> threads = new HashSet<SeveralClientsStressTest.Worker>();
+      HashSet threads = new HashSet();
 
       // A chhanel of communication between workers and the test method
-      SynchronousQueue<InternalMessage> testChannel = new SynchronousQueue<SeveralClientsStressTest.InternalMessage>();
+      LinkedQueue testChannel = new LinkedQueue();
 
 
       for (int i=0; i< NUMBER_OF_PRODUCERS; i++)
@@ -118,8 +116,9 @@ public class SeveralClientsStressTest extends MessagingTestCase
       }
 
 
-      for (SeveralClientsStressTest.Worker worker: threads)
+      for (Iterator iter = threads.iterator(); iter.hasNext();)
       {
+         Worker worker = (Worker)iter.next();
          worker.start();
       }
 
@@ -130,7 +129,7 @@ public class SeveralClientsStressTest extends MessagingTestCase
 
       while (threads.size()>0)
       {
-         SeveralClientsStressTest.InternalMessage msg = testChannel.poll(5, TimeUnit.SECONDS);
+         SeveralClientsStressTest.InternalMessage msg = (SeveralClientsStressTest.InternalMessage)testChannel.poll(5000);
 
          if (msg!=null)
          {
@@ -219,8 +218,8 @@ public class SeveralClientsStressTest extends MessagingTestCase
          override.put(ServiceContainer.REMOTING_OBJECT_NAME,
             "clientMaxPoolSize", "600");
 
-         override.put(ServiceContainer.REMOTING_OBJECT_NAME,
-            "leasePeriod", "60000");
+         /* override.put(ServiceContainer.REMOTING_OBJECT_NAME,
+            "leasePeriod", "60000"); */
 
          ServerManagement.start(0, "all", override, true);
          ServerManagement.deployQueue("testQueue");
@@ -245,7 +244,7 @@ public class SeveralClientsStressTest extends MessagingTestCase
       private int workerId;
       private Exception ex;
 
-      SynchronousQueue<SeveralClientsStressTest.InternalMessage> messageQueue;
+      LinkedQueue  messageQueue;
 
 
       public int getWorkerId()
@@ -290,7 +289,7 @@ public class SeveralClientsStressTest extends MessagingTestCase
       }
 
 
-      public Worker(String name, int workerId, SynchronousQueue<SeveralClientsStressTest.InternalMessage> messageQueue)
+      public Worker(String name, int workerId, LinkedQueue  messageQueue)
       {
          super(name);
          this.workerId = workerId;
@@ -306,7 +305,7 @@ public class SeveralClientsStressTest extends MessagingTestCase
 
    class Producer extends SeveralClientsStressTest.Worker
    {
-      public Producer(int producerId, SynchronousQueue<SeveralClientsStressTest.InternalMessage> messageQueue)
+      public Producer(int producerId, LinkedQueue messageQueue)
       {
          super("Producer:" + producerId, producerId, messageQueue);
       }
@@ -361,7 +360,7 @@ public class SeveralClientsStressTest extends MessagingTestCase
 
    class Consumer extends SeveralClientsStressTest.Worker
    {
-      public Consumer(int consumerId, SynchronousQueue<SeveralClientsStressTest.InternalMessage> messageQueue)
+      public Consumer(int consumerId, LinkedQueue messageQueue)
       {
          super("Consumer:" + consumerId, consumerId, messageQueue);
       }
