@@ -55,11 +55,11 @@ public class ManualQueueSoakTest extends MessagingTestCase
 
    // Static ---------------------------------------------------------------------------------------
 
-   static long PRODUCER_ALIVE_FOR=10000; // 1 minutes
-   static long CONSUMER_ALIVE_FOR=10000; // 1 minutes
-   static long TEST_ALIVE_FOR=600*1000; // 10 minutes
-   static int NUMBER_OF_PRODUCERS=10;
-   static int NUMBER_OF_CONSUMERS=10;
+   static long PRODUCER_ALIVE_FOR=60000; // 1 minutes
+   static long CONSUMER_ALIVE_FOR=60000; // 1 minutes
+   static long TEST_ALIVE_FOR=20000; // 10 minutes
+   static int NUMBER_OF_PRODUCERS=30;
+   static int NUMBER_OF_CONSUMERS=30;
 
    static SynchronizedInt producedMessages = new SynchronizedInt(0);
    static SynchronizedInt readMessages = new SynchronizedInt(0);
@@ -138,7 +138,7 @@ public class ManualQueueSoakTest extends MessagingTestCase
                   {
                      if (finished.getWorker() instanceof Producer)
                      {
-                        log.info("Scheduling new Producer");
+                        log.info("Scheduling new Producer " + numberOfProducers);
                         Producer producer = new Producer(numberOfProducers++, testChannel);
                         threads.add(producer);
                         producer.start();
@@ -146,7 +146,7 @@ public class ManualQueueSoakTest extends MessagingTestCase
                      else
                      if (finished.getWorker() instanceof Consumer)
                      {
-                        log.info("Scheduling new Consumer");
+                        log.info("Scheduling new Consumer " + numberOfConsumers);
                         Consumer consumer = new Consumer(numberOfConsumers++, testChannel);
                         threads.add(consumer);
                         consumer.start();
@@ -162,10 +162,22 @@ public class ManualQueueSoakTest extends MessagingTestCase
       }
 
 
-      ctx = createContext();
+      clearMessages();
+      
+      assertEquals(producedMessages.get(), readMessages.get());
+   }
+
+
+   // Package protected ----------------------------------------------------------------------------
+
+   // Protected ------------------------------------------------------------------------------------
+
+   protected void clearMessages() throws Exception
+   {
+      Context ctx = createContext();
       ConnectionFactory cf = (ConnectionFactory) ctx.lookup("/ClusteredConnectionFactory");
       Connection conn = cf.createConnection();
-      Session sess = conn.createSession(true, Session.SESSION_TRANSACTED);
+      Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
       Queue queue = (Queue )ctx.lookup("queue/testQueue");
       MessageConsumer consumer = sess.createConsumer(queue);
 
@@ -174,17 +186,11 @@ public class ManualQueueSoakTest extends MessagingTestCase
       while (consumer.receive(1000)!=null)
       {
          readMessages.increment();
+         log.info("Received JMS message on clearMessages");
       }
 
-
       conn.close();
-
-      assertEquals(producedMessages.get(), readMessages.get());
    }
-
-   // Package protected ----------------------------------------------------------------------------
-
-   // Protected ------------------------------------------------------------------------------------
 
    protected void tearDown() throws Exception
    {
@@ -194,6 +200,7 @@ public class ManualQueueSoakTest extends MessagingTestCase
    protected void setUp() throws Exception
    {
       super.setUp();
+      clearMessages();
       producedMessages = new SynchronizedInt(0);
       readMessages = new SynchronizedInt(0);
 
@@ -297,12 +304,17 @@ public class ManualQueueSoakTest extends MessagingTestCase
 
             try
             {
+               int messageSent=0;
                while(System.currentTimeMillis() < timeToFinish)
                {
                   prod.send(sess.createTextMessage("Message sent at " + System.currentTimeMillis()));
                   producedMessages.increment();
+                  messageSent++;
+                  if (messageSent%50==0)
+                  {
+                     log.info("Sent " + messageSent + " Messages");
+                  }
                   Thread.sleep(100);
-                  log.info("Sending message");
                }
                sendInternalMessage(new WorkedFinishedMessages(this));
             }
@@ -349,7 +361,7 @@ public class ManualQueueSoakTest extends MessagingTestCase
 
             int transactions = 0;
 
-            long timeToFinish = System.currentTimeMillis() + PRODUCER_ALIVE_FOR;
+            long timeToFinish = System.currentTimeMillis() + CONSUMER_ALIVE_FOR;
 
             try
             {
@@ -358,7 +370,6 @@ public class ManualQueueSoakTest extends MessagingTestCase
                   Message msg = consumer.receive(1000);
                   if (msg != null)
                   {
-                     log.info("Received JMS message");
                      msgs ++;
                      if (msgs>=50)
                      {
