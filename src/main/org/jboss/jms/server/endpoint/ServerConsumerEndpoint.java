@@ -51,7 +51,7 @@ import org.jboss.messaging.util.ExceptionUtil;
  * Concrete implementation of ConsumerEndpoint. Lives on the boundary between Messaging Core and the
  * JMS Facade. Handles delivery of messages from the server to the client side consumer.
  * 
- * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt> $Id$
  */

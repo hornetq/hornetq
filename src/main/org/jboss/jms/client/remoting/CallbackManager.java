@@ -45,7 +45,7 @@ import EDU.oswego.cs.dl.util.concurrent.ConcurrentReaderHashMap;
  * therefore there is no need to add the server id to the key when doing look ups.
  * 
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
- * @author <a href="ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  *
  * $Id$

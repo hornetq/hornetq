@@ -26,7 +26,7 @@ import org.jboss.messaging.core.impl.tx.Transaction;
 /**
  * A message delivery. It can be "done" or active.
  * 
- * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
  *

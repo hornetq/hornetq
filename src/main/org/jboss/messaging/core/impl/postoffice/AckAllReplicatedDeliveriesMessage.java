@@ -49,7 +49,7 @@ public class AckAllReplicatedDeliveriesMessage extends ClusterRequest
 	{		
 		office.handleAckAllReplicatedDeliveries(nodeID);
 		
-		return "ok";
+		return null;
 	}
 
 	byte getType()

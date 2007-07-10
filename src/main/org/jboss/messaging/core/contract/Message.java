@@ -29,7 +29,7 @@ import org.jboss.messaging.util.Streamable;
  * A message is a routable instance that has a payload.
  * The payload is opaque to the messaging system.
  *
- * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox"jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
  *

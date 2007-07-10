@@ -54,7 +54,7 @@ import org.w3c.dom.Element;
  * MBean wrapper for a messaging post office
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @version <tt>$Revision: 2684 $</tt>
  *
  * $Id: ClusteredPostOfficeService.java 2684 2007-05-15 07:31:30Z timfox $

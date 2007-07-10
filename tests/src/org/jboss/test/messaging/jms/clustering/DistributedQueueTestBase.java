@@ -47,7 +47,7 @@ import org.jboss.test.messaging.tools.ServerManagement;
  * $Id: DistributedDestinationsTest.java 2796 2007-06-25 22:24:41Z timfox $
  *
  */
-public class DistributedQueueTest extends ClusteringTestBase
+public abstract class DistributedQueueTestBase extends ClusteringTestBase
 {
 
    // Constants -----------------------------------------------------
@@ -58,7 +58,7 @@ public class DistributedQueueTest extends ClusteringTestBase
 
    // Constructors --------------------------------------------------
 
-   public DistributedQueueTest(String name)
+   public DistributedQueueTestBase(String name)
    {
       super(name);
    }

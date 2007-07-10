@@ -37,7 +37,7 @@ import org.jboss.messaging.util.Version;
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
- * @author <a href="mailto:ovidiu@jboss.org">Clebert Suconic</a>
+ * @author <a href="mailto:ovidiu@feodorov.com">Clebert Suconic</a>
  * @version <tt>$Revision$</tt>
  *
  * $Id$

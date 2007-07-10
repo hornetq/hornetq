@@ -88,25 +88,167 @@ public class ChangeFailoverNodeTest extends ClusteringTestBase
    {
    	this.addNodeToGetNewFailoverNode(false);
    }
+
+   public void testAddNodeToGetNewFailoverNodeTransactional() throws Exception
+   {
+   	this.addNodeToGetNewFailoverNode(true);
+   }
    
-   public void testkillTwoFailoverNodesNonTransactional() throws Exception
+   public void testKillTwoFailoverNodesNonTransactional() throws Exception
    {
    	this.killTwoFailoverNodes(false);
    }
    
-   public void testkillTwoFailoverNodesTransactional() throws Exception
+   public void testKillTwoFailoverNodesTransactional() throws Exception
    {
    	this.killTwoFailoverNodes(true);
    }
    
-   public void testKillAllTooOneAndBackAgainNonTransactional() throws Exception
+   public void testKillAllToOneAndBackAgainNonTransactional() throws Exception
    {
-   	this.killAllTooOneAndBackAgain(false);
+   	this.killAllToOneAndBackAgain(false);
    }
    
-   public void testKillAllTooOneAndBackAgainTransactional() throws Exception
+   public void testKillAllToOneAndBackAgainTransactional() throws Exception
    {
-   	this.killAllTooOneAndBackAgain(true);
+   	this.killAllToOneAndBackAgain(true);
+   }
+   
+   public void testFailoverToNodeWithNoQueueDeployed() throws Exception
+   {
+   	JBossConnectionFactory factory = (JBossConnectionFactory) ic[0].lookup("/ClusteredConnectionFactory");
+
+      Connection conn3 = createConnectionOnServer(factory, 3);
+ 
+      try
+      {
+      	SimpleFailoverListener failoverListener = new SimpleFailoverListener();
+         ((JBossConnection)conn3).registerFailoverListener(failoverListener);
+      	
+         Session sessSend = conn3.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      		
+      	MessageProducer prod2 = sessSend.createProducer(queue[2]);
+      	
+      	final int numMessages = 10;
+      	
+      	for (int i = 0; i < numMessages; i++)
+      	{
+      		TextMessage tm = sessSend.createTextMessage("message" + i);
+      		
+      		prod2.send(tm);      		
+      	}
+      	
+      	Session sess3 = conn3.createSession(false, Session.CLIENT_ACKNOWLEDGE);
+      	
+      	MessageConsumer cons3 = sess3.createConsumer(queue[3]);
+            	
+      	conn3.start();
+      	
+      	TextMessage tm = null;
+      	
+      	for (int i = 0; i < numMessages; i++)
+      	{
+      		tm = (TextMessage)cons3.receive(2000);
+      		
+      		assertNotNull(tm);
+      		
+      		assertEquals("message" + i, tm.getText());
+      	}
+      	
+      	//Don't ack
+      	
+      	int failoverNodeId = this.getFailoverNodeForNode(factory, 3);
+      	
+      	log.info("Failover node for node 3 is " + failoverNodeId);
+      	
+      	dumpFailoverMap(ServerManagement.getServer(3).getFailoverMap());
+      	
+      	//We now add a new node - this should cause the failover node to change
+      	
+         ServerManagement.start(4, "all", false);
+         
+         //DO NOT deploy the queue on it
+         
+         Thread.sleep(5000);
+         
+         dumpFailoverMap(ServerManagement.getServer(3).getFailoverMap());
+      	
+         int newFailoverNodeId = this.getFailoverNodeForNode(factory, 3);
+         
+         log.info("New failover node is " + newFailoverNodeId);
+         
+         assertTrue(failoverNodeId != newFailoverNodeId);
+         
+         //Now kill the node
+      	
+         // The queue does not exist on the new node so it tests the case where queue merging DOES NOT occur
+         
+         ServerManagement.kill(3);
+
+         log.info("########");
+         log.info("######## KILLED NODE 3");
+         log.info("########");
+
+         // wait for the client-side failover to complete
+
+         log.info("Waiting for failover to complete");
+         
+         while(true)
+         {
+            FailoverEvent event = failoverListener.getEvent(120000);
+            if (event != null && FailoverEvent.FAILOVER_COMPLETED == event.getType())
+            {
+               break;
+            }
+            if (event == null)
+            {
+               fail("Did not get expected FAILOVER_COMPLETED event");
+            }
+         }
+         
+         log.info("Failover completed");
+         
+         assertEquals(newFailoverNodeId, getServerId(conn3));
+                  
+         //Now ack
+         
+         tm.acknowledge();
+         
+         
+         log.info("acked");
+         
+         sess3.close();
+         
+         log.info("closed");
+         
+	      sess3 = conn3.createSession(false, Session.AUTO_ACKNOWLEDGE);
+	      
+	      log.info("created new session");
+      	
+      	cons3 = sess3.createConsumer(queue[3]);
+      	
+      	log.info("Created consumer");
+      	
+         //Messages should be gone
+      	
+         tm = (TextMessage)cons3.receive(5000);
+      		
+      	assertNull(tm);      		
+      }
+      finally
+      {
+         if (conn3 != null)
+         {
+            conn3.close();
+         }
+         
+         try
+         {
+         	ServerManagement.stop(4);
+         }
+         catch (Exception e)
+         {}
+      }
    }
   
    
@@ -130,7 +272,7 @@ public class ChangeFailoverNodeTest extends ClusteringTestBase
    
    // Private -------------------------------------------------------
 
-   private void killAllTooOneAndBackAgain(boolean transactional) throws Exception
+   private void killAllToOneAndBackAgain(boolean transactional) throws Exception
    {
    	JBossConnectionFactory factory = (JBossConnectionFactory) ic[0].lookup("/ClusteredConnectionFactory");
 
@@ -153,6 +295,8 @@ public class ChangeFailoverNodeTest extends ClusteringTestBase
       		
       		prod0.send(tm);      		
       	}
+      	
+      	sessSend.close();
       	
       	Session sess0 = conn0.createSession(transactional, transactional ? Session.SESSION_TRANSACTED : Session.CLIENT_ACKNOWLEDGE);
       	
@@ -178,6 +322,13 @@ public class ChangeFailoverNodeTest extends ClusteringTestBase
       	
       	log.info("Failover node for node 0 is " + failoverNodeId);
       	
+      	int recoveryMapSize = ServerManagement.getServer(failoverNodeId).getRecoveryMapSize(queue[failoverNodeId].getQueueName());
+      	assertEquals(0, recoveryMapSize);
+      	Map recoveryArea = ServerManagement.getServer(failoverNodeId).getRecoveryArea(queue[failoverNodeId].getQueueName());
+      	Map ids = (Map)recoveryArea.get(new Integer(0));
+      	assertNotNull(ids);
+      	assertEquals(numMessages, ids.size());
+      	
       	//Now kill the failover node
       	
       	log.info("killing node " + failoverNodeId);
@@ -186,6 +337,13 @@ public class ChangeFailoverNodeTest extends ClusteringTestBase
       	Thread.sleep(5000);
       	
       	int newFailoverNodeId = this.getFailoverNodeForNode(factory, 0);      	    
+      	
+      	recoveryMapSize = ServerManagement.getServer(newFailoverNodeId).getRecoveryMapSize(queue[newFailoverNodeId].getQueueName());
+      	assertEquals(0, recoveryMapSize);
+      	recoveryArea = ServerManagement.getServer(newFailoverNodeId).getRecoveryArea(queue[newFailoverNodeId].getQueueName());
+      	ids = (Map)recoveryArea.get(new Integer(0));
+      	assertNotNull(ids);
+      	assertEquals(numMessages, ids.size());
       	
       	//Now kill the second failover node
       	
@@ -196,6 +354,13 @@ public class ChangeFailoverNodeTest extends ClusteringTestBase
       	
       	int evennewerFailoverNodeId = this.getFailoverNodeForNode(factory, 0);
       	
+      	recoveryMapSize = ServerManagement.getServer(evennewerFailoverNodeId).getRecoveryMapSize(queue[evennewerFailoverNodeId].getQueueName());
+      	assertEquals(0, recoveryMapSize);
+      	recoveryArea = ServerManagement.getServer(evennewerFailoverNodeId).getRecoveryArea(queue[evennewerFailoverNodeId].getQueueName());
+      	ids = (Map)recoveryArea.get(new Integer(0));
+      	assertNotNull(ids);
+      	assertEquals(numMessages, ids.size());
+      	
       	//Now kill the third failover node
       	
       	log.info("killing node " + evennewerFailoverNodeId);
@@ -203,11 +368,30 @@ public class ChangeFailoverNodeTest extends ClusteringTestBase
       	
       	//This just leaves the current node
       	
+      	Thread.sleep(5000);
+      	
+      	int evenevennewerFailoverNodeId = this.getFailoverNodeForNode(factory, 0);
+      	
+      	assertEquals(0, evenevennewerFailoverNodeId);
+      	
       	//Add a node
       	
       	ServerManagement.start(1, "all", false);
       	
+      	ServerManagement.deployQueue("testDistributedQueue", 1);
+      	
+      	Thread.sleep(5000);
+      	
       	log.info("started node 1");
+      	
+      	int evenevenevennewerFailoverNodeId = this.getFailoverNodeForNode(factory, 0);
+      	
+      	recoveryMapSize = ServerManagement.getServer(evenevenevennewerFailoverNodeId).getRecoveryMapSize(queue[evenevenevennewerFailoverNodeId].getQueueName());
+      	assertEquals(0, recoveryMapSize);
+      	recoveryArea = ServerManagement.getServer(evenevenevennewerFailoverNodeId).getRecoveryArea(queue[evenevenevennewerFailoverNodeId].getQueueName());
+      	ids = (Map)recoveryArea.get(new Integer(0));
+      	assertNotNull(ids);
+      	assertEquals(numMessages, ids.size());
       	
          //Now kill the node itself
       	
@@ -236,7 +420,8 @@ public class ChangeFailoverNodeTest extends ClusteringTestBase
          
          log.info("Failover completed");
          
-         assertEquals(1, getServerId(conn0));
+         assertEquals(evenevenevennewerFailoverNodeId, getServerId(conn0));
+         
                             
          //Now ack
          if (transactional)
@@ -267,6 +452,12 @@ public class ChangeFailoverNodeTest extends ClusteringTestBase
       	tm = (TextMessage)cons0.receive(5000);
       	
       	assertNull(tm); 	
+      	
+         recoveryMapSize = ServerManagement.getServer(evenevenevennewerFailoverNodeId).getRecoveryMapSize(queue[evenevenevennewerFailoverNodeId].getQueueName());
+      	assertEquals(0, recoveryMapSize);
+      	recoveryArea = ServerManagement.getServer(evenevenevennewerFailoverNodeId).getRecoveryArea(queue[evenevenevennewerFailoverNodeId].getQueueName());
+      	ids = (Map)recoveryArea.get(new Integer(0));
+      	assertNull(ids);
       }
       finally
       {
@@ -305,8 +496,7 @@ public class ChangeFailoverNodeTest extends ClusteringTestBase
       	Session sess0 = conn0.createSession(transactional, transactional ? Session.SESSION_TRANSACTED : Session.CLIENT_ACKNOWLEDGE);
       	
       	MessageConsumer cons0 = sess0.createConsumer(queue[0]);
-      
-      	
+            	
       	conn0.start();
       	
       	TextMessage tm = null;
@@ -346,7 +536,7 @@ public class ChangeFailoverNodeTest extends ClusteringTestBase
       	
       	log.info("New Failover node for node 0 is " + newFailoverNodeId);
       	
-      	recoveryMapSize = ServerManagement.getServer(failoverNodeId).getRecoveryMapSize(queue[failoverNodeId].getQueueName());
+      	recoveryMapSize = ServerManagement.getServer(newFailoverNodeId).getRecoveryMapSize(queue[newFailoverNodeId].getQueueName());
       	assertEquals(0, recoveryMapSize);
       	recoveryArea = ServerManagement.getServer(newFailoverNodeId).getRecoveryArea(queue[newFailoverNodeId].getQueueName());
       	ids = (Map)recoveryArea.get(new Integer(0));
@@ -362,7 +552,7 @@ public class ChangeFailoverNodeTest extends ClusteringTestBase
       	
       	int evennewerFailoverNodeId = this.getFailoverNodeForNode(factory, 0);
       	
-      	recoveryMapSize = ServerManagement.getServer(failoverNodeId).getRecoveryMapSize(queue[failoverNodeId].getQueueName());
+      	recoveryMapSize = ServerManagement.getServer(evennewerFailoverNodeId).getRecoveryMapSize(queue[evennewerFailoverNodeId].getQueueName());
       	assertEquals(0, recoveryMapSize);
       	recoveryArea = ServerManagement.getServer(evennewerFailoverNodeId).getRecoveryArea(queue[evennewerFailoverNodeId].getQueueName());
       	ids = (Map)recoveryArea.get(new Integer(0));
@@ -400,14 +590,12 @@ public class ChangeFailoverNodeTest extends ClusteringTestBase
          
          assertEquals(evennewerFailoverNodeId, getServerId(conn0));
          
-         recoveryMapSize = ServerManagement.getServer(failoverNodeId).getRecoveryMapSize(queue[failoverNodeId].getQueueName());
+         recoveryMapSize = ServerManagement.getServer(evennewerFailoverNodeId).getRecoveryMapSize(queue[evennewerFailoverNodeId].getQueueName());
       	assertEquals(0, recoveryMapSize);
       	recoveryArea = ServerManagement.getServer(evennewerFailoverNodeId).getRecoveryArea(queue[evennewerFailoverNodeId].getQueueName());
-      	ids = (Map)recoveryArea.get(new Integer(3));
+      	ids = (Map)recoveryArea.get(new Integer(0));
       	assertNull(ids);
-                           
-         
-                  
+                                                      
          //Now ack
          if (transactional)
          {
@@ -528,7 +716,11 @@ public class ChangeFailoverNodeTest extends ClusteringTestBase
       	
          int newFailoverNodeId = this.getFailoverNodeForNode(factory, 3);
          
-         recoveryMapSize = ServerManagement.getServer(failoverNodeId).getRecoveryMapSize(queue[failoverNodeId].getQueueName());
+         assertTrue(failoverNodeId != newFailoverNodeId);
+         
+         log.info("New failover node is " + newFailoverNodeId);
+         
+         recoveryMapSize = ServerManagement.getServer(newFailoverNodeId).getRecoveryMapSize(queue[3].getQueueName());
       	assertEquals(0, recoveryMapSize);
       	recoveryArea = ServerManagement.getServer(newFailoverNodeId).getRecoveryArea(queue[3].getQueueName());
       	ids = (Map)recoveryArea.get(new Integer(3));
@@ -536,9 +728,6 @@ public class ChangeFailoverNodeTest extends ClusteringTestBase
       	assertEquals(numMessages, ids.size());
          
          
-         log.info("New failover node is " + newFailoverNodeId);
-         
-         assertTrue(failoverNodeId != newFailoverNodeId);
          
          //Now kill the node
       	
@@ -569,13 +758,11 @@ public class ChangeFailoverNodeTest extends ClusteringTestBase
          
          assertEquals(newFailoverNodeId, getServerId(conn3));
          
-         recoveryMapSize = ServerManagement.getServer(failoverNodeId).getRecoveryMapSize(queue[failoverNodeId].getQueueName());
+         recoveryMapSize = ServerManagement.getServer(failoverNodeId).getRecoveryMapSize(queue[3].getQueueName());
       	assertEquals(0, recoveryMapSize);
       	recoveryArea = ServerManagement.getServer(newFailoverNodeId).getRecoveryArea(queue[3].getQueueName());
       	ids = (Map)recoveryArea.get(new Integer(3));
-      	assertNull(ids);
-                           
-         
+      	assertNull(ids);                                    
                   
          //Now ack
          if (transactional)
@@ -623,143 +810,7 @@ public class ChangeFailoverNodeTest extends ClusteringTestBase
       }
    }
    
-   public void testFailoverToNodeWithNoQueueDeployed() throws Exception
-   {
-   	JBossConnectionFactory factory = (JBossConnectionFactory) ic[0].lookup("/ClusteredConnectionFactory");
-
-      Connection conn3 = createConnectionOnServer(factory, 3);
- 
-      try
-      {
-      	SimpleFailoverListener failoverListener = new SimpleFailoverListener();
-         ((JBossConnection)conn3).registerFailoverListener(failoverListener);
-      	
-         Session sessSend = conn3.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      		
-      	MessageProducer prod2 = sessSend.createProducer(queue[2]);
-      	
-      	final int numMessages = 10;
-      	
-      	for (int i = 0; i < numMessages; i++)
-      	{
-      		TextMessage tm = sessSend.createTextMessage("message" + i);
-      		
-      		prod2.send(tm);      		
-      	}
-      	
-      	Session sess3 = conn3.createSession(false, Session.CLIENT_ACKNOWLEDGE);
-      	
-      	MessageConsumer cons3 = sess3.createConsumer(queue[3]);
-      
-      	
-      	conn3.start();
-      	
-      	TextMessage tm = null;
-      	
-      	for (int i = 0; i < numMessages; i++)
-      	{
-      		tm = (TextMessage)cons3.receive(2000);
-      		
-      		assertNotNull(tm);
-      		
-      		assertEquals("message" + i, tm.getText());
-      	}
-      	
-      	//Don't ack
-      	
-      	int failoverNodeId = this.getFailoverNodeForNode(factory, 3);
-      	
-      	log.info("Failover node for node 3 is " + failoverNodeId);
-      	
-      	dumpFailoverMap(ServerManagement.getServer(3).getFailoverMap());
-      	
-      	//We now add a new node - this should cause the failover node to change
-      	
-         ServerManagement.start(4, "all", false);
-         
-         //DO NOT deploy the queue on it
-         
-         Thread.sleep(5000);
-         
-         dumpFailoverMap(ServerManagement.getServer(3).getFailoverMap());
-      	
-         int newFailoverNodeId = this.getFailoverNodeForNode(factory, 3);
-         
-         log.info("New failover node is " + newFailoverNodeId);
-         
-         assertTrue(failoverNodeId != newFailoverNodeId);
-         
-         //Now kill the node
-      	
-         // The queue does not exist on the new node so it tests the case where queue merging DOES NOT occur
-         
-         ServerManagement.kill(3);
-
-         log.info("########");
-         log.info("######## KILLED NODE 3");
-         log.info("########");
-
-         // wait for the client-side failover to complete
-
-         log.info("Waiting for failover to complete");
-         
-         while(true)
-         {
-            FailoverEvent event = failoverListener.getEvent(120000);
-            if (event != null && FailoverEvent.FAILOVER_COMPLETED == event.getType())
-            {
-               break;
-            }
-            if (event == null)
-            {
-               fail("Did not get expected FAILOVER_COMPLETED event");
-            }
-         }
-         
-         log.info("Failover completed");
-         
-         assertEquals(newFailoverNodeId, getServerId(conn3));
-                  
-         //Now ack
-         
-         tm.acknowledge();
-         
-         
-         log.info("acked");
-         
-         sess3.close();
-         
-         log.info("closed");
-         
-	      sess3 = conn3.createSession(false, Session.AUTO_ACKNOWLEDGE);
-	      
-	      log.info("created new session");
-      	
-      	cons3 = sess3.createConsumer(queue[3]);
-      	
-      	log.info("Created consumer");
-      	
-         //Messages should be gone
-      	
-         tm = (TextMessage)cons3.receive(5000);
-      		
-      	assertNull(tm);      		
-      }
-      finally
-      {
-         if (conn3 != null)
-         {
-            conn3.close();
-         }
-         
-         try
-         {
-         	ServerManagement.stop(4);
-         }
-         catch (Exception e)
-         {}
-      }
-   }
+   
    
    private void dumpFailoverMap(Map map)
    {
@@ -949,14 +1000,30 @@ public class ChangeFailoverNodeTest extends ClusteringTestBase
       	
       	//Don't ack
       	
-      	//We kill the failover node for node 1
+      	//We stop the failover node for node 1
       	int failoverNodeId = this.getFailoverNodeForNode(factory, 1);
+      	
+      	int recoveryMapSize = ServerManagement.getServer(failoverNodeId).getRecoveryMapSize(queue[failoverNodeId].getQueueName());
+      	assertEquals(0, recoveryMapSize);
+      	Map recoveryArea = ServerManagement.getServer(failoverNodeId).getRecoveryArea(queue[failoverNodeId].getQueueName());
+      	Map ids = (Map)recoveryArea.get(new Integer(1));
+      	assertNotNull(ids);
+      	assertEquals(numMessages, ids.size());
       	
       	log.info("Killing failover node:" + failoverNodeId);
       	
       	ServerManagement.stop(failoverNodeId);
       	
       	log.info("Killed failover node");
+      	
+      	int newfailoverNode = this.getFailoverNodeForNode(factory, 1);
+      	
+      	recoveryMapSize = ServerManagement.getServer(newfailoverNode).getRecoveryMapSize(queue[newfailoverNode].getQueueName());
+      	assertEquals(0, recoveryMapSize);
+      	recoveryArea = ServerManagement.getServer(newfailoverNode).getRecoveryArea(queue[newfailoverNode].getQueueName());
+      	ids = (Map)recoveryArea.get(new Integer(1));
+      	assertNotNull(ids);
+      	assertEquals(numMessages, ids.size());
       	
       	Thread.sleep(5000);
       	
@@ -991,7 +1058,14 @@ public class ChangeFailoverNodeTest extends ClusteringTestBase
          
          log.info("Failover completed");
          
-         assertEquals(failoverNodeId, getServerId(conn1));
+         assertEquals(newfailoverNode, getServerId(conn1));
+         
+         recoveryMapSize = ServerManagement.getServer(newfailoverNode).getRecoveryMapSize(queue[newfailoverNode].getQueueName());
+      	assertEquals(0, recoveryMapSize);
+      	recoveryArea = ServerManagement.getServer(newfailoverNode).getRecoveryArea(queue[newfailoverNode].getQueueName());
+      	ids = (Map)recoveryArea.get(new Integer(1));
+      	assertNull(ids);
+
                   
          //Now ack
          if (transactional)

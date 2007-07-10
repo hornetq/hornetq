@@ -46,7 +46,7 @@ import org.jboss.messaging.util.JNDIUtil;
  * Keeps track of destinations - including temporary destinations
  * Also manages the mapping of non temporary destinations to JNDI context
  *
- * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
  *

@@ -13,7 +13,7 @@ import javax.ejb.SessionBean;
 import javax.ejb.SessionContext;
 
 /**
- * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @version <tt>$Revision: 1766 $</tt>
 
  * $Id: StatelessSessionExampleBean.java 1766 2006-12-11 22:29:27Z ovidiu.feodorov@jboss.com $

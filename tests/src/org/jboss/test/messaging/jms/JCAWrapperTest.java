@@ -37,7 +37,7 @@ import org.jboss.test.messaging.tools.ServerManagement;
 import org.jboss.tm.TransactionManagerLocator;
 
 /**
- * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  *
  * $Id: JCAWrapperTest.java 1019 2006-07-17 17:15:04Z timfox $
  */

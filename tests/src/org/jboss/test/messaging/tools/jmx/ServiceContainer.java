@@ -97,7 +97,7 @@ import com.arjuna.ats.arjuna.recovery.RecoveryManager;
  * An MBeanServer and a configurable set of services (TransactionManager, Remoting, etc) available
  * for testing.
  *
- * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  *
  * $Id$

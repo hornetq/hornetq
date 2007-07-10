@@ -33,7 +33,7 @@ import java.io.FileInputStream;
 /**
  * Code to be run in an external VM, via main().
  *
- * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  *
  * $Id$

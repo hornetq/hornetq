@@ -27,7 +27,7 @@ import org.jboss.invocation.Invocation;
 import org.jboss.invocation.Invoker;
 
 /**
- * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  *
  * $Id$

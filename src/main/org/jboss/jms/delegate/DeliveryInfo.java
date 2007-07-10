@@ -29,7 +29,7 @@ import org.jboss.jms.message.MessageProxy;
  * on the client side - this is never passed to the server
  * 
  * @author <a href="mailto:tim.fox@jboss.com>Tim Fox </a>
- * @author <a href="mailto:ovidiu@jboss.com>Ovidiu Feodorov</a>
+ * @author <a href="mailto:ovidiu@feodorov.com>Ovidiu Feodorov</a>
  *
  * $Id: AckInfo.java 1770 2006-12-12 10:49:42Z timfox $
  */

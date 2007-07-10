@@ -26,7 +26,7 @@ import javax.management.ObjectName;
  * This test DOESN'T extend ClusteringTestBase because I want to have control over first invocations
  * to the server (which are outside of of my control if I use ClusteringTestBase).
  *
- * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  *
  * $Id$

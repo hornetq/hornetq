@@ -28,7 +28,7 @@ package org.jboss.messaging.core.contract;
  * 
  * If many channels have contain the same reference this makes a lot of sense
  * 
- * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
  *

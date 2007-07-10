@@ -34,7 +34,7 @@ import javax.jms.MessageNotWriteableException;
 import org.jboss.util.Primitives;
 
 /**
- * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @version $Revision$
  *
  * $Id$

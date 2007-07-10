@@ -16,7 +16,7 @@ import javax.jms.Connection;
 /**
  * Tests the very first server invocation, when the client-side AOP stack is initialized.
  *
- * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @version <tt>$Revision: 1843 $</tt>
  *
  * $Id: JMSTest.java 1843 2006-12-21 23:41:19Z timfox $

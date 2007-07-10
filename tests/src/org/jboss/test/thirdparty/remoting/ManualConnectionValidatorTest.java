@@ -18,7 +18,7 @@ import org.jboss.remoting.Client;
  * client ping for a long time. To be used with netstat to see if it creates new sockets for each
  * invocation.
  *
- * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  *
  * $Id$

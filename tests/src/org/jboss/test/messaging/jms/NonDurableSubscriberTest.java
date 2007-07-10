@@ -34,7 +34,7 @@ import javax.jms.TopicSession;
 /**
  * Non-durable subscriber tests.
  *
- * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  *
  * $Id$
  */

@@ -89,7 +89,7 @@ import EDU.oswego.cs.dl.util.concurrent.WriterPreferenceReadWriteLock;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  * @version <tt>$Revision: 2782 $</tt>
  *
@@ -417,7 +417,8 @@ public class MessagingPostOffice extends JDBCSupport
    {
    	return officeName;
    }
-  
+    
+   
    public boolean addBinding(Binding binding, boolean allNodes) throws Exception
    {
    	if (allNodes && !binding.queue.isClustered())
@@ -433,6 +434,46 @@ public class MessagingPostOffice extends JDBCSupport
 	   	//This is necessary since the second bind in an all bind is sent asynchronously to avoid deadlock
    		
    		waitForBindUnbind(binding.queue.getName(), true);
+   	}
+   	
+   	if (added && !firstNode && supportsFailover && clustered && binding.queue.isClustered())
+   	{
+   		//reverse lookup in failover map
+   		
+   		Integer masterNodeID = getMasterForFailoverNodeID(thisNodeID);
+   		   		   		
+   		if (masterNodeID != null)
+   		{
+   			Map nameMap = (Map)nameMaps.get(masterNodeID);
+   			
+   			if (nameMap != null)
+   			{
+   				Binding b = (Binding)nameMap.get(binding.queue.getName());
+   				
+   				if (b != null)
+   				{
+   					//Already deployed on master node - tell the master to send us the deliveries
+   					//This copes with the case when queues were deployed on the failover before being deployed on the master
+   					
+   					if (trace) { log.trace("Telling master to send us deliveries"); }
+   					
+   					PostOfficeAddressInfo info = (PostOfficeAddressInfo)nodeIDAddressMap.get(new Integer(thisNodeID));
+   		   		
+   		   		Address replyAddress = info.getControlChannelAddress();
+   					
+   					ClusterRequest request = new GetReplicatedDeliveriesRequest(binding.queue.getName(), replyAddress);
+   					
+   				   info = (PostOfficeAddressInfo)nodeIDAddressMap.get(masterNodeID);
+   				   
+   				   Address address = info.getControlChannelAddress();
+   				   	
+   				   if (address != null)
+   				   {	   
+   				   	groupMember.unicastControl(request, address, false);
+   				   }
+   				}
+   			}
+   		}
    	}
    	
    	return added;
@@ -612,15 +653,16 @@ public class MessagingPostOffice extends JDBCSupport
    		replyAddress = info.getControlChannelAddress();
    	}
    	
-   	ClusterRequest request = new ReplicateDeliveryMessage(queueName, sessionID, messageID, deliveryID, replyAddress, thisNodeID);
+   	ClusterRequest request = new ReplicateDeliveryMessage(thisNodeID, queueName, sessionID, messageID, deliveryID, replyAddress);
    	
    	if (trace) { log.trace(this + " sending replicate delivery message " + queueName + " " + sessionID + " " + messageID); }
 			   
-	   Address address = getFailoverNodeControlChannelAddress();
+   	//TODO could be optimised too
+	   Address address = getFailoverNodeForControlChannelAddress();
 	   	
 	   if (address != null)
 	   {	   
-	      groupMember.unicastControl(request, address, false);
+	   	groupMember.unicastControl(request, address, false);
 	   }
    }
 
@@ -629,13 +671,13 @@ public class MessagingPostOffice extends JDBCSupport
 		//There is no need to lock this while failover node change is occuring since the receiving node is tolerant to duplicate
 		//adds or acks
 	
-	   ClusterRequest request = new ReplicateAckMessage(queueName, messageID, thisNodeID);		   
+	   ClusterRequest request = new ReplicateAckMessage(thisNodeID, queueName, messageID);		   
    	
-	   Address address = getFailoverNodeControlChannelAddress();
+	   Address address = getFailoverNodeForControlChannelAddress();
 	   	
 	   if (address != null)
 	   {	   
-	      groupMember.unicastControl(request, address, false);
+	   	groupMember.unicastControl(request, address, false);
 	   }
 	}
 	
@@ -907,7 +949,7 @@ public class MessagingPostOffice extends JDBCSupport
       {
       	//Failover node for this node has changed
       	
-      	failoverNodeChanged(oldFailoverNodeID, firstNode);      	
+      	failoverNodeChanged(oldFailoverNodeID, firstNode, false);      	
       }
       
       sendJMXNotification(VIEW_CHANGED_NOTIFICATION);
@@ -1036,6 +1078,9 @@ public class MessagingPostOffice extends JDBCSupport
    	
    	calculateFailoverMap();
    	
+   	//Note - when a node joins, we DO NOT send it replicated data - this is because it won't have deployed it's queues
+   	//the data is requested by the new node when it deploys its queues      
+   	
    	if (!wasFirstNode && oldFailoverNodeID != this.failoverNodeID)
    	{
    		//Need to execute this on it's own thread since it uses the MessageDispatcher
@@ -1046,7 +1091,7 @@ public class MessagingPostOffice extends JDBCSupport
 	   			{
 	   				try
 	   				{
-	   					failoverNodeChanged(oldFailoverNodeID, firstNode);
+	   					failoverNodeChanged(oldFailoverNodeID, firstNode, true);
 	   				}
 	   				catch (Exception e)
 	   				{
@@ -1055,7 +1100,7 @@ public class MessagingPostOffice extends JDBCSupport
 	   			}
 	   		}).start();   		   		
    	}
-      
+   	
       // Send a notification
       
       ClusterNotification notification = new ClusterNotification(ClusterNotification.TYPE_NODE_JOIN, nodeId, null);
@@ -1158,8 +1203,8 @@ public class MessagingPostOffice extends JDBCSupport
       
    //TODO - these do not belong here
    
-   public void handleReplicateDelivery(String queueName, String sessionID, long messageID,
-   		                              long deliveryID, final Address replyAddress, int nodeID) throws Exception
+   public void handleReplicateDelivery(int nodeID, String queueName, String sessionID, long messageID,
+   		                              long deliveryID, final Address replyAddress) throws Exception
    {
    	if (trace) { log.trace(this + " handleReplicateDelivery for queue " + queueName + " session " + sessionID + " message " + messageID); }
    	
@@ -1202,23 +1247,29 @@ public class MessagingPostOffice extends JDBCSupport
 		   		}
 		   	});	   		   	   
    	}
-   }
-   
-   private Address getFailoverNodeControlChannelAddress()
+   } 
+
+   public void handleGetReplicatedDeliveries(String queueName, Address returnAddress) throws Exception
    {
-   	PostOfficeAddressInfo info = (PostOfficeAddressInfo)nodeIDAddressMap.get(new Integer(failoverNodeID));
-   	
-   	if (info == null)
+   	if (trace) { log.trace(this + " handleGetReplicateDelivery for queue " + queueName); }
+
+   	Binding binding = getBindingForQueueName(queueName);
+
+   	if (binding == null)
    	{
-   		return null;
+   		//This is ok -the queue might have been undeployed since we thought it was deployed and sent the request
+   		
+   		if (trace) { log.trace("Binding has not been deployed"); }
    	}
-   	
-   	Address address = info.getControlChannelAddress();
-   	
-   	return address;
-   }
+   	else
+   	{
+	   	//Needs to be executed on a different thread
+	  
+	   	replyExecutor.execute(new SendReplicatedDeliveriesRunnable(queueName, returnAddress));
+   	}
+   }          
    
-   public void handleReplicateAck(String queueName, long messageID, int nodeID) throws Exception
+   public void handleReplicateAck(int nodeID, String queueName, long messageID) throws Exception
    {
       Binding binding = getBindingForQueueName(queueName);
    	
@@ -1287,7 +1338,7 @@ public class MessagingPostOffice extends JDBCSupport
    	}   	
    }
    
-   public void handleAddAllReplicatedDeliveries(Map deliveries, int nodeID) throws Exception
+   public void handleAddAllReplicatedDeliveries(int nodeID, Map deliveries) throws Exception
    {
    	if (trace) { log.trace(this + " handleAddAllReplicatedDeliveries " + nodeID); }
    	
@@ -1295,8 +1346,6 @@ public class MessagingPostOffice extends JDBCSupport
    	
    	try
    	{
-   		log.info("local name map is " + localNameMap);
-   		
    		if (localNameMap == null)
    		{
    			throw new IllegalStateException("Cannot add all replicated deliveries since there are no bindings - probably the queues aren't deployed");
@@ -1305,8 +1354,7 @@ public class MessagingPostOffice extends JDBCSupport
    		if (localNameMap != null)
    		{
    			Iterator iter = deliveries.entrySet().iterator();
-   			log.info("deliveries is " + deliveries);
-   			
+
    			while (iter.hasNext())
    			{
    				Map.Entry entry = (Map.Entry)iter.next();
@@ -1315,8 +1363,7 @@ public class MessagingPostOffice extends JDBCSupport
    				
    				Map ids = (Map)entry.getValue();
    				
-   				log.info("queue;" + queueName + " ids: " + ids.size());
-   				
+		
    				Binding binding = (Binding)localNameMap.get(queueName);
    				
    				if (binding == null)
@@ -1324,9 +1371,7 @@ public class MessagingPostOffice extends JDBCSupport
    					throw new IllegalStateException("Cannot find binding with name " + queueName + " maybe it hasn't been deployed");
    				}
    				
-   				log.info("adding");
    				binding.queue.addAllToRecoveryArea(nodeID, ids);
-   				log.info("added");
    			}   			   			
    		}
    	}
@@ -1546,7 +1591,7 @@ public class MessagingPostOffice extends JDBCSupport
       {
       	replicatedData = new HashMap();
 
-         failoverMap = new HashMap();
+         failoverMap = new ConcurrentHashMap();
 
          leftSet = new ConcurrentHashSet();
       }
@@ -1574,6 +1619,47 @@ public class MessagingPostOffice extends JDBCSupport
       }
    	
    	replyExecutor.shutdownNow();   	
+   }
+   
+   private Integer getMasterForFailoverNodeID(long failoverNodeID)
+   {
+   	//reverse lookup of master node id given failover node id
+   	
+   	Iterator iter = failoverMap.entrySet().iterator();
+		
+		Integer nodeID = null;
+		
+		while (iter.hasNext())
+		{
+			Map.Entry entry = (Map.Entry)iter.next();
+			
+			Integer fnodeID = (Integer)entry.getValue();
+			
+			nodeID = (Integer)entry.getKey();
+			
+			if (fnodeID.intValue() == failoverNodeID)
+			{
+				//We are the failover node for another node
+				
+				break;
+			}
+		}
+		
+   	return nodeID;
+   }
+   
+   private Address getFailoverNodeForControlChannelAddress()
+   {
+   	PostOfficeAddressInfo info = (PostOfficeAddressInfo)nodeIDAddressMap.get(new Integer(failoverNodeID));
+   	
+   	if (info == null)
+   	{
+   		return null;
+   	}
+   	
+   	Address address = info.getControlChannelAddress();
+   	
+   	return address;
    }
 
    
@@ -2651,7 +2737,7 @@ public class MessagingPostOffice extends JDBCSupport
    	}     	
    }
    
-   private void failoverNodeChanged(int oldFailoverNodeID, boolean firstNode) throws Exception
+   private void failoverNodeChanged(int oldFailoverNodeID, boolean firstNode, boolean joined) throws Exception
    {   	   	
    	//The failover node has changed - we need to move our replicated deliveries
    	
@@ -2669,67 +2755,72 @@ public class MessagingPostOffice extends JDBCSupport
 	   		
 	   		ClusterRequest request = new AckAllReplicatedDeliveriesMessage(thisNodeID);
 	   		
-	   		groupMember.unicastControl(request, info.getControlChannelAddress(), true);
+	   		groupMember.unicastControl(request, info.getControlChannelAddress(), false);
 	   		
 	   		if (trace) { log.trace("Sent AckAllReplicatedDeliveriesMessage"); }
 	   	}
    	}
    	
-   	//Now send the deliveries to the new node
+   	//Now send the deliveries to the new node - we only do this if the new failover node came about by
+   	//another node LEAVING, we DON'T do this if the new failover node has just joined - this is because it won't have deployed
+   	//it's queues yet - the new failover node will request its replicated data when it deploys its queues
    	
-   	//We must lock any responses to delivery adds coming in in this period - otherwise we could end up with the same
-   	//message being delivered more than once
-   	
-   	replicateDeliveryLock.writeLock().acquire();
-   	
-   	try
-   	{	   	
-	   	if (localNameMap != null)
-	   	{
-	   		Map deliveries = new HashMap();
-	   		
-				//FIXME - this is ugly
-				//Find a better way of getting the sessions
-	   		//We shouldn't know abou the server peer
-	   		
-	   		if (serverPeer != null)
-	   		{
-					
-					Collection sessions = serverPeer.getSessions();
-					
-					Iterator iter2 = sessions.iterator();
-					
-					while (iter2.hasNext())
-					{
-						ServerSessionEndpoint session = (ServerSessionEndpoint)iter2.next();
-						
-						session.collectDeliveries(deliveries, firstNode);				
-					}   				  
-					
-					if (!firstNode)
-					{			
-			   		PostOfficeAddressInfo info = (PostOfficeAddressInfo)nodeIDAddressMap.get(new Integer(failoverNodeID));
-			   		
-			   		if (info == null)
-			   		{
-			   			throw new IllegalStateException("Cannot find address for failover node " + failoverNodeID);
-			   		}		   		
-						
-						ClusterRequest request = new AddAllReplicatedDeliveriesMessage(thisNodeID, deliveries);
-						
-						//send sync
-						
-						groupMember.unicastControl(request, info.getControlChannelAddress(), true);
-			   		
-			   		if (trace) { log.trace("Sent AddAllReplicatedDeliveriesMessage"); }
-					}
-	   		}
-	   	}
-   	}
-   	finally
+   	if (!joined)
    	{
-   		replicateDeliveryLock.writeLock().release();
-   	}   	
+	   	//We must lock any responses to delivery adds coming in in this period - otherwise we could end up with the same
+	   	//message being delivered more than once
+	   	
+	   	replicateDeliveryLock.writeLock().acquire();
+	   	
+	   	try
+	   	{	   	
+		   	if (localNameMap != null)
+		   	{
+		   		Map deliveries = new HashMap();
+		   		
+					//FIXME - this is ugly
+					//Find a better way of getting the sessions
+		   		//We shouldn't know abou the server peer
+		   		
+		   		if (serverPeer != null)
+		   		{
+						
+						Collection sessions = serverPeer.getSessions();
+						
+						Iterator iter2 = sessions.iterator();
+						
+						while (iter2.hasNext())
+						{
+							ServerSessionEndpoint session = (ServerSessionEndpoint)iter2.next();
+							
+							session.deliverAnyWaitingDeliveries(null);
+							
+							session.collectDeliveries(deliveries, firstNode, null);				
+						}   				  
+						
+						if (!firstNode)
+						{			
+				   		PostOfficeAddressInfo info = (PostOfficeAddressInfo)nodeIDAddressMap.get(new Integer(failoverNodeID));
+				   		
+				   		if (info == null)
+				   		{
+				   			throw new IllegalStateException("Cannot find address for failover node " + failoverNodeID);
+				   		}		   		
+							
+							ClusterRequest request = new AddAllReplicatedDeliveriesMessage(thisNodeID, deliveries);
+							
+							groupMember.unicastControl(request, info.getControlChannelAddress(), false);
+				   		
+				   		if (trace) { log.trace("Sent AddAllReplicatedDeliveriesMessage"); }
+						}
+		   		}
+		   	}
+	   	}
+	   	finally
+	   	{
+	   		replicateDeliveryLock.writeLock().release();
+	   	}   	
+   	}
    }
    
 
@@ -2887,6 +2978,61 @@ public class MessagingPostOffice extends JDBCSupport
    }
 
    // Inner classes --------------------------------------------------------------------------------
+   
+   private class SendReplicatedDeliveriesRunnable implements Runnable
+   {
+   	private String queueName;
+   	
+   	private Address address;
+   	
+   	SendReplicatedDeliveriesRunnable(String queueName, Address address)
+   	{
+   		this.queueName = queueName;
+   		
+   		this.address = address;
+   	}
+   	
+   	public void run()
+   	{
+			try
+			{
+      		if (serverPeer != null)
+      		{			
+      			Collection sessions = serverPeer.getSessions();
+      			
+      			Iterator iter = sessions.iterator();
+      			
+      			Map dels = new HashMap();			
+      			
+      			boolean gotSome = false;
+      			
+      			while (iter.hasNext())
+      			{
+      				ServerSessionEndpoint session = (ServerSessionEndpoint)iter.next();
+      				
+      				session.deliverAnyWaitingDeliveries(queueName);
+      				
+      				if (session.collectDeliveries(dels, firstNode, queueName))
+      				{
+      					gotSome = true;
+      				}
+      			}   				  
+      			
+      			if (gotSome)
+      			{
+   	   			ClusterRequest req = new AddAllReplicatedDeliveriesMessage(thisNodeID, dels);
+   	   			
+   	   			groupMember.unicastControl(req, address, false);
+      			}
+      			   			
+      		}
+			}
+			catch (Exception e)
+			{
+				log.error("Failed to collect and send request", e);
+			}
+   	}	
+   }
    
    private class CastMessageCallback implements TxCallback
    {

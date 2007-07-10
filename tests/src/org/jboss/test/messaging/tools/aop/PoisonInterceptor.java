@@ -26,7 +26,7 @@ import org.jboss.test.messaging.tools.jmx.rmi.RMITestServer;
 /**
  * Used to force a "poisoned" server to do all sorts of bad things. Used for testing.
  *
- * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  * $Id$
  */

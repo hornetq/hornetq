@@ -38,9 +38,9 @@ public class FailoverWaiter implements ClusterNotificationListener
 {
    private static final Logger log = Logger.getLogger(FailoverWaiter.class);
 	
-	private int failingOverFor;
+	private int failingOverFor = -1;
 	
-	private int failedOverFor;
+	private int failedOverFor = -1;
 	
    private Object failoverStatusLock;
    
@@ -70,7 +70,10 @@ public class FailoverWaiter implements ClusterNotificationListener
     * Wait for failover from the specified node to complete.
     */
    public int waitForFailover(int failedNodeID) throws Exception
-   {
+   {   	
+   	log.trace("Waiting for failover for " + failedNodeID +
+   			    " failingOverFor: " + failingOverFor + " failedOverFor: " + failedOverFor);   	
+   	
       // This node may be failing over for another node - in which case we must wait for that to be
       // complete.
    	

@@ -51,7 +51,7 @@ import org.jboss.remoting.marshal.UnMarshaller;
  * object whose type is only known at run-time. In this case we use serialization.
  * 
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
- * @author <a href="ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  *
  * $Id$

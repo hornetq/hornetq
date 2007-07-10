@@ -29,7 +29,7 @@ import org.jboss.logging.Logger;
 import java.lang.reflect.Method;
 
 /**
- * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  */
 public class ServerLogInterceptor implements Interceptor

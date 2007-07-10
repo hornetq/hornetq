@@ -22,7 +22,7 @@ import javax.jms.DeliveryMode;
 /**
  * A stress test written to investigate http://jira.jboss.org/jira/browse/JBMESSAGING-362
  *
- * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  * $Id$
  */

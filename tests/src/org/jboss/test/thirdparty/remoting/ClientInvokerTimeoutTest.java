@@ -22,7 +22,7 @@ import org.jboss.remoting.transport.PortUtil;
  * http://jira.jboss.org/jira/browse/JBREM-691. Test written entirely at the Remoting level. If
  * fails with Remoting 2.2.0.Alpha6.
  *
- * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  *
  * @version <tt>$Revision$</tt>
  *

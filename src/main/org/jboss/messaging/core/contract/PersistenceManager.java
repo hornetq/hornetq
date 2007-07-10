@@ -28,7 +28,7 @@ import org.jboss.messaging.core.impl.tx.Transaction;
 /**
  * The interface to the persistence manager.
  *
- * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:Konda.Madhu@uk.mizuho-sc.com">Madhu Konda</a>
  * @author <a href="mailto:juha@jboss.org">Juha Lindfors</a>

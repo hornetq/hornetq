@@ -31,7 +31,7 @@ import org.jboss.messaging.core.contract.PersistenceManager;
  * A IDManager.
  * 
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
- * @author <a href="ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @version <tt>$Revision: 2686 $</tt>
  *
  * $Id: IDManager.java 2686 2007-05-15 08:47:20Z timfox $

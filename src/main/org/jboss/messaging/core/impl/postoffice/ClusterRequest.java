@@ -63,7 +63,13 @@ abstract class ClusterRequest implements Streamable
 	public static final int ACK_ALL_REPLICATED_DELIVERIES_REQUEST = 11;
 	
 	public static final int ADD_ALL_REPLICATED_DELIVERIES_REQUEST = 12;
+	
+	public static final int GET_REPLICATED_DELIVERIES_REQUEST = 13;
 		
+	
+	protected static final int NULL = 0;
+	
+	protected static final int NOT_NULL = 1;
 	
    /*
     * Factory method
@@ -135,6 +141,11 @@ abstract class ClusterRequest implements Streamable
          case ADD_ALL_REPLICATED_DELIVERIES_REQUEST:
          {
          	request = new AddAllReplicatedDeliveriesMessage();
+         	break;
+         }
+         case GET_REPLICATED_DELIVERIES_REQUEST:
+         {
+         	request = new GetReplicatedDeliveriesRequest();
          	break;
          }
          default:

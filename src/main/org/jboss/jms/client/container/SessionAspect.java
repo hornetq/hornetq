@@ -69,7 +69,7 @@ import org.jboss.logging.Logger;
  *
  * @author <a href="mailto:tim.fox@jboss.com>Tim Fox</a>
  * @author <a href="mailto:clebert.suconic@jboss.com>Clebert Suconic</a>
- * @author <a href="mailto:ovidiu@jboss.com>Ovidiu Feodorov</a>
+ * @author <a href="mailto:ovidiu@feodorov.com>Ovidiu Feodorov</a>
  *
  * $Id$
  */

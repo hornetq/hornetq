@@ -35,7 +35,7 @@ import javax.jms.TopicSubscriber;
 import org.jboss.jms.delegate.ConsumerDelegate;
 
 /**
- * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  *
  * $Id$

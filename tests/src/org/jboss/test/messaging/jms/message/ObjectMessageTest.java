@@ -35,7 +35,7 @@ import java.util.StringTokenizer;
 /**
  * A test that sends/receives object messages to the JMS provider and verifies their integrity.
  *
- * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  * @version <tt>$Revision$</tt>
  *

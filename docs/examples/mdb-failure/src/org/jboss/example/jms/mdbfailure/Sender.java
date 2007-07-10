@@ -49,7 +49,7 @@ import javax.jms.MessageConsumer;
  * Since this example is also used by the smoke test, it is essential that the VM exits with exit
  * code 0 in case of successful execution and a non-zero value on failure.
  *
- * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @version <tt>$Revision: 884 $</tt>
  *
  * $Id: Sender.java 884 2006-04-12 01:04:10Z ovidiu $

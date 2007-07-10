@@ -40,7 +40,7 @@ import org.jboss.messaging.core.impl.tx.Transaction;
  * If the router has several receivers (e.g. the case of multiple consumers on a queue)
  * then if the consumers are fast then the first receiver will tend to get most or all of the references
  * 
- * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision: 1174 $</tt>
  * $Id: PointToPointRouter.java 1174 2006-08-02 14:14:32Z timfox $

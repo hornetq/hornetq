@@ -15,7 +15,7 @@ import java.util.Set;
 import java.util.HashSet;
 
 /**
- * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @version <tt>$Revision: 849 $</tt>
 
  * $Id: MDBFailureExample.java 849 2006-03-31 17:17:09Z ltexier $

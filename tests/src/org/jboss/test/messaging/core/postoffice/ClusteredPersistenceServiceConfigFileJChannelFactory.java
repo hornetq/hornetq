@@ -24,7 +24,7 @@ import org.w3c.dom.Element;
  * Messaging-style clustered persistence service configuration file (usually shipped with a
  * Messaging installation). The idea is to test with priority whatever we ship.
  *
- * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  *
  * $Id$

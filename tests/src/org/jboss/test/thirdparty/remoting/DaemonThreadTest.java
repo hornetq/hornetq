@@ -12,7 +12,7 @@ import org.jboss.test.messaging.MessagingTestCase;
  * This test makes sure that all client-side threads employed by Messaging are well behaved and
  * don't prevent a client from exiting cleanly.
  *
- * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  *
  * $Id$

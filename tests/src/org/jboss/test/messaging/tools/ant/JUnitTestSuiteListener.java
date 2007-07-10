@@ -26,7 +26,7 @@ import junit.framework.AssertionFailedError;
  * notified on a endTestSuite() event. Very important, it is run in the same address space as the
  * tests themselves.
  *
- * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  * $Id$
  */

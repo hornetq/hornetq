@@ -12,7 +12,7 @@ import javax.ejb.CreateException;
 import javax.ejb.EJBHome;
 
 /**
- * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @version <tt>$Revision: 563 $</tt>
 
  * $Id: StatelessSessionExampleHome.java 563 2005-12-30 22:04:19Z ovidiu $

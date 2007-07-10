@@ -16,7 +16,7 @@ import org.jboss.remoting.Client;
  * The listener that detects a connection failure and initiates the failover process. Each physical
  * connection created under the supervision of ClusteredAspect has one of these.
  *
- * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
  *

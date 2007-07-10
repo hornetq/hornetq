@@ -22,7 +22,7 @@ import org.jboss.remoting.ConnectionListener;
  * and the HA's connection failure detector) are registered with this consolidated listener and not
  * with the remoting connection directly.
  *
- * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  *
  * $Id$

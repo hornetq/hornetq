@@ -20,7 +20,7 @@ import org.jboss.logging.Logger;
 /**
  * The class in charge with performing the failover.
  *
- * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  *
  * $Id$

@@ -1025,7 +1025,6 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
    
    public void updatePageOrder(long channelID, List references) throws Exception
    {
-      log.info("updatePageOrder", new Exception());
       Connection conn = null;
       PreparedStatement psUpdateReference = null;  
       TransactionWrapper wrap = new TransactionWrapper();

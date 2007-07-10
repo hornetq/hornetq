@@ -42,7 +42,7 @@ import java.util.StringTokenizer;
 /**
  * Generates a HTML smoke test report based on raw smoke run data.
  *
- * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  *
  * $Id$
  */

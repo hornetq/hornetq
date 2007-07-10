@@ -45,7 +45,7 @@ import org.jboss.util.id.GUID;
  * Each JMS connection maintains a single Client instance for invoking on the server.
  *
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
- * @author <a href="ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  * $Id$
  */

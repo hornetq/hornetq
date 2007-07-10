@@ -36,7 +36,7 @@ import org.jboss.messaging.core.impl.tx.Transaction;
 /**
  * A simple Receiver that "breaks" after the
  *
- * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
  *

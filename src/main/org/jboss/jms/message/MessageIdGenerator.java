@@ -32,7 +32,7 @@ import org.jboss.logging.Logger;
  * A MessageIdGenerator.
  * 
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
- * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  *
  * $Id$

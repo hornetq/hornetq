@@ -59,7 +59,7 @@ import org.jboss.util.Strings;
  * Java serialization is not used to serialize messages between client and server
  * in normal JMS operations
  * 
- * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:bershath@yahoo.com">Tyronne Wickramarathne</a>
  * 

@@ -33,7 +33,7 @@ import java.util.Set;
  *       should have a Connector.getSubsystemNames() or similar), but it doesn't, so I have to do
  *       this by myself.
  *
- * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  *
  * $Id$

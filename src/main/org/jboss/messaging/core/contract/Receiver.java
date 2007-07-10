@@ -30,7 +30,7 @@ import org.jboss.messaging.core.impl.tx.Transaction;
  * 
  * Handling can be done transactionally or non transactionally
  *
- * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
  *

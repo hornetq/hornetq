@@ -38,7 +38,7 @@ import org.jboss.logging.Logger;
  * It mainly delegates to the resource manager.
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:juha@jboss.org">Juha Lindfors</a>
  * 
  * Parts based on JBoss MQ XAResource implementation by:

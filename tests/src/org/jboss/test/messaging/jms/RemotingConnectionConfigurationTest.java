@@ -45,7 +45,7 @@ import org.jboss.test.messaging.tools.jmx.ServiceContainer;
 /**
  *  
  * @author <a href="ron.sigal@jboss.com">Ron Sigal</a>
- * @author <a href="ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="ovidiu@feodorov.com">Ovidiu Feodorov</a>
  *
  * $Id$
  */

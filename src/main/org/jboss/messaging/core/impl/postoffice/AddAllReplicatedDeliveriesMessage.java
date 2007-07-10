@@ -26,7 +26,6 @@ import java.io.DataOutputStream;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Set;
 
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
 
@@ -57,9 +56,9 @@ public class AddAllReplicatedDeliveriesMessage extends ClusterRequest
 		
 	Object execute(RequestTarget office) throws Throwable
 	{		
-		office.handleAddAllReplicatedDeliveries(deliveries, nodeID);
+		office.handleAddAllReplicatedDeliveries(nodeID, deliveries);
 		
-		return "ok";
+		return null;
 	}
 
 	byte getType()
@@ -132,5 +131,4 @@ public class AddAllReplicatedDeliveriesMessage extends ClusterRequest
 			}
 		}
 	}
-
 }

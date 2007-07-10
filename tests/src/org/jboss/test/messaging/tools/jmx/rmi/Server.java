@@ -40,7 +40,7 @@ import org.jboss.test.messaging.tools.jmx.ServiceAttributeOverrides;
 /**
  * The remote interface exposed by TestServer.
  *
- * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  *
  * $Id$

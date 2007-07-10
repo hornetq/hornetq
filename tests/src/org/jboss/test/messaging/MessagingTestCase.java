@@ -48,7 +48,7 @@ import org.jboss.tm.TransactionManagerService;
  * The base case for messaging tests.
  *
  * @author <a href="mailto:adrian@jboss.org">Adrian Brock</a>
- * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.org">Tim Fox</a>
  * @author <a href="mailto:juha@jboss.org">Juha Lindfors</a>
  *

@@ -54,7 +54,7 @@ import EDU.oswego.cs.dl.util.concurrent.SynchronizedInt;
  * 
  * This partial implementation supports atomicity, isolation and recoverability for reliable messages.
  * 
- * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt> $Id: ChannelSupport.java,v 1.65
  *          2006/06/27 19:44:39 timfox Exp $

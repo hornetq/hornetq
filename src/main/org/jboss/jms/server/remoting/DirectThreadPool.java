@@ -14,7 +14,7 @@ import org.jboss.util.threadpool.Task;
  * A "noop" thread pool that just forwards the invocations, without doing any kind of pooling.
  * We use it for the "socket" remoting callback server.
  *
- * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  * $Id$
  */

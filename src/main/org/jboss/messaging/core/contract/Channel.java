@@ -27,7 +27,7 @@ import java.util.List;
  * A Channel is a transactional, reliable message delivery mechanism that forwards a message from a
  * sender to one or more receivers.
  *
- * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
  *

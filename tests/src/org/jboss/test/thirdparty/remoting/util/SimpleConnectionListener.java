@@ -17,7 +17,7 @@ import EDU.oswego.cs.dl.util.concurrent.LinkedQueue;
 /**
  * It is Serializable so it can be used both on client and on server.
  *
- * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  *
  * $Id$

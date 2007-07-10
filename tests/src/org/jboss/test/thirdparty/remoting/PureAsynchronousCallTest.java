@@ -29,7 +29,7 @@ import EDU.oswego.cs.dl.util.concurrent.LinkedQueue;
 /**
  * A test case in which we play with "pure" remoting asynchronous calls.
  *
- * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  *
  * @version <tt>$Revision$</tt>
  *

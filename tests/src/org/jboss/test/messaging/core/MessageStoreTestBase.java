@@ -47,7 +47,7 @@ import org.jboss.messaging.core.contract.MessageStore;
  * 3. One or more strong references may be maintain for the same MessageReference.
  * 4. A recoverable message store may be forcibly crashed and tested if it recovers.
  *
- * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
  *

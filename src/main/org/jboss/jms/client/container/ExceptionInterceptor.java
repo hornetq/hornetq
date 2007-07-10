@@ -35,7 +35,7 @@ import org.jboss.logging.Logger;
  * TODO: This interceptor seem a bit useless. For logging, we can use the ClientLoggingInterceptor.
  *       Remove it?
  *
- * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
  *

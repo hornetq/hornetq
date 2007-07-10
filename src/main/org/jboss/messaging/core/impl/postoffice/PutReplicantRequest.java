@@ -47,7 +47,9 @@ class PutReplicantRequest extends ClusterRequest
    // Attributes ----------------------------------------------------
 
    private int nodeId;
+   
    private Serializable key;
+   
    private Serializable replicant;
 
    // Constructors --------------------------------------------------

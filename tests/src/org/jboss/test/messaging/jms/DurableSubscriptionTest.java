@@ -50,7 +50,7 @@ import org.jboss.test.messaging.tools.ServerManagement;
  * Tests focused on durable subscription behavior. More durable subscription tests can be found in
  * MessageConsumerTest.
  *
- * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  * $Id: DurableSubscriberTest.java 1319 2006-09-19 17:17:53Z ovidiu.feodorov@jboss.com $

@@ -45,7 +45,7 @@ import java.io.File;
  * This is not technically a crash test, but it uses the same type of topology as the crash tests
  * (local server, remote VM client).
  *
- * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @version 1.1
  *
  * $Id$

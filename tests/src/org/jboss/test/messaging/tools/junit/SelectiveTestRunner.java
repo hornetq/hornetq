@@ -33,7 +33,7 @@ import java.util.StringTokenizer;
 /**
  * A text TestRunner than runs only test methods specified on command line with "-t".
  *
- * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  *
  * $Id$

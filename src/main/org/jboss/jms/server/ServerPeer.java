@@ -86,7 +86,7 @@ import EDU.oswego.cs.dl.util.concurrent.ConcurrentReaderHashMap;
 /**
  * A JMS server peer.
  *
- * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:juha@jboss.org">Juha Lindfors</a>
  * 
@@ -208,7 +208,7 @@ public class ServerPeer extends ServiceMBeanSupport
          
          if (serverPeerID < 0)
          {
-            throw new IllegalStateException(" ServerPeerID not set");
+            throw new IllegalStateException("ServerPeerID not set");
          }
 
          log.debug(this + " starting");

@@ -57,7 +57,7 @@ import EDU.oswego.cs.dl.util.concurrent.ConcurrentReaderHashMap;
  * 
  * Can be used to implement a point to point queue, or a subscription fed from a topic
  *
- * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision: 1295 $</tt>
  *
@@ -219,8 +219,6 @@ public class MessagingQueue extends PagingChannelSupport implements Queue
             
          if (trace) { log.trace("Loaded " + ili.getRefInfos().size() + " refs"); }            
 
-         log.info("Merging, there are already " + messageRefs.size() + " refs in queue");
-         
          doLoad(ili);         
          
          Map toRecover = (Map)recoveryArea.remove(new Integer(nodeID));

@@ -27,7 +27,7 @@ import java.util.Iterator;
 /**
  * A Distributor takes a message and distributes it to one or more Receivers
  * 
- * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * 
  * $Id$

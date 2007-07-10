@@ -26,7 +26,7 @@ import org.jboss.test.messaging.MessagingTestCase;
 
 
 /**
- * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @version <tt>$Revision: 2202 $</tt>
  *
  * $Id: RoutableSupportTestBase.java 2202 2007-02-08 10:50:26Z timfox $

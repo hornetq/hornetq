@@ -32,7 +32,7 @@ import java.util.Iterator;
 /**
  * Greps fror WARN and ERROR entries in the specified file.
  *
- * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  *
  * $Id$
  */

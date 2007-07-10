@@ -31,7 +31,7 @@ import java.util.ArrayList;
 /**
  * An in-VM JNDI InitialContextFactory. Lightweight JNDI implementation used for testing.
 
- * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  *
  * $Id$

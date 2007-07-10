@@ -51,7 +51,7 @@ import EDU.oswego.cs.dl.util.concurrent.Slot;
 
 /**
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
- * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  *
  * @version <tt>$Revision: 1935 $</tt>
  *

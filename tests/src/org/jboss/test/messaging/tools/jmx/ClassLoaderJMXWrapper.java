@@ -30,7 +30,7 @@ import java.net.URL;
  * (in this case): "Tried to add non-URLClassLoader. Ignored". Extending ClassLoader would be fine
  * otherwise.
  *
- * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  *
  * $Id$

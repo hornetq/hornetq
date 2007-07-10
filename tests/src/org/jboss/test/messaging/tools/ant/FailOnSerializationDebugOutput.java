@@ -29,7 +29,7 @@ import java.io.FileReader;
 /**
  * Throws an exception if it finds a jboss-serialization DEBUG output in the given file
  *
- * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  *
  * $Id$
  */

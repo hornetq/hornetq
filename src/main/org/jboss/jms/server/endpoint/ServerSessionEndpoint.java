@@ -108,7 +108,7 @@ import EDU.oswego.cs.dl.util.concurrent.SynchronizedLong;
  * different threads, but the acks/cancels/etc will end up back here on the connection consumer
  * session instance.
  * 
- * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  * @version <tt>$Revision$</tt>
@@ -126,8 +126,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
    static final String TEMP_QUEUE_MESSAGECOUNTER_PREFIX = "TempQueue.";
    
    private static final long CLOSE_TIMEOUT = 10 * 10000;
-   
-   
+      
    // Static ---------------------------------------------------------------------------------------
 
    // Attributes -----------------------------------------------------------------------------------
@@ -936,13 +935,13 @@ public class ServerSessionEndpoint implements SessionEndpoint
       rec.del.cancel();
    }
    
-   public void collectDeliveries(Map map, boolean firstNode) throws Exception
+   public void deliverAnyWaitingDeliveries(String queueName) throws Exception
    {
-   	if (trace) { log.trace("Collecting deliveries"); }
-   	   	
-   	//First deliver any waiting deliveries
+   	//	First deliver any waiting deliveries
    	
    	if (trace) { log.trace("Delivering any waiting deliveries"); }
+   	
+   	List toAddBack = null;
    	
    	while (true)
    	{
@@ -953,13 +952,42 @@ public class ServerSessionEndpoint implements SessionEndpoint
    			break;
    		}
    		
-   		performDelivery(dr.del.getReference(), dr.deliveryID, dr.getConsumer()); 
-			
-	   	dr.waitingForResponse = false;
+   		if (dr.queueName == null || dr.queueName.equals(queueName))
+   		{   		
+	   		performDelivery(dr.del.getReference(), dr.deliveryID, dr.getConsumer()); 
+				
+		   	dr.waitingForResponse = false;
+   		}
+   		else
+   		{
+   			if (toAddBack == null)
+   			{
+   				toAddBack = new ArrayList();
+   			}
+   			
+   			toAddBack.add(dr);
+   		}
+   	}
+   	
+   	if (toAddBack != null)
+   	{
+   		Iterator iter = toAddBack.iterator();
+   		
+   		while (iter.hasNext())
+   		{
+   			toDeliver.put(iter.next());
+   		}
    	}
    	
    	if (trace) { log.trace("Done delivering"); }
-   		
+   }
+   
+   public boolean collectDeliveries(Map map, boolean firstNode, String queueName) throws Exception
+   {
+   	if (trace) { log.trace("Collecting deliveries"); }
+   	
+   	boolean gotSome = false;
+   	   	
    	if (!firstNode)
    	{	   	
 	   	if (trace) { log.trace("Now collecting"); }
@@ -976,7 +1004,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
 	   		
 	   		DeliveryRecord rec = (DeliveryRecord)entry.getValue();
 	   		
-	   		if (rec.replicating)
+	   		if (rec.replicating && (queueName == null || rec.queueName.equals(queueName)))
 	   		{
 	   			Map ids = (Map)map.get(rec.queueName);
 	   			
@@ -988,6 +1016,8 @@ public class ServerSessionEndpoint implements SessionEndpoint
 	   			}
 	   			
 	   			ids.put(new Long(rec.del.getReference().getMessage().getMessageID()), id);
+	   			
+	   			gotSome = true;
 	   			
 	   			if (rec.waitingForResponse)
 	   			{
@@ -1007,6 +1037,8 @@ public class ServerSessionEndpoint implements SessionEndpoint
    	}
    	
    	if (trace) { log.trace("Collected " + map.size() + " deliveries"); }
+   	
+   	return gotSome;
    }
    
    public synchronized void replicateDeliveryResponseReceived(long deliveryID) throws Exception
@@ -1165,6 +1197,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
        	try
        	{
        		//This basically just releases the memory reference
+       		
        		delivery.acknowledge(null);
        	}
        	catch (Throwable t)
@@ -1560,7 +1593,6 @@ public class ServerSessionEndpoint implements SessionEndpoint
       
       if (rec.replicating)
       {
-      	//this.sendReplicateAckMessage(rec.del.getReference().getMessage().getMessageID());
       	postOffice.sendReplicateAckMessage(rec.queueName, rec.del.getReference().getMessage().getMessageID());
       }
       
@@ -1660,7 +1692,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
       
       if (mDest == null)
       {
-         throw new InvalidDestinationException("No such destination: " + jmsDestination);
+         throw new InvalidDestinationException("No such destination: " + jmsDestination + " has it been deployed?");
       }
       
       if (jmsDestination.isTemporary())
@@ -1900,13 +1932,10 @@ public class ServerSessionEndpoint implements SessionEndpoint
           
       long redeliveryDelayToUse = mDest.getRedeliveryDelay() == -1 ? defaultRedeliveryDelay : mDest.getRedeliveryDelay();
       
-      //Is the consumer going to have its session state replicated onto a backup node?
-      //We don't replicate temp destinations or non durable topic subscribers
-      boolean replicating = supportsFailover && !jmsDestination.isTemporary() &&
-                            ((jmsDestination.isTopic() && subscriptionName != null) ||
-                             jmsDestination.isQueue()) &&
-                            mDest.isClustered(); 
-                                 
+      //Is the consumer going to have its session state replicated onto a backup node?      
+      
+      boolean replicating = supportsFailover && queue.isClustered() && !(jmsDestination.isTopic() && !queue.isRecoverable());
+      
       ServerConsumerEndpoint ep =
          new ServerConsumerEndpoint(consumerID, queue,
                                     queue.getName(), this, selectorString, noLocal,

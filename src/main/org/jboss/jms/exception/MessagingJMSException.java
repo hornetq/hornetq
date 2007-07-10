@@ -24,7 +24,7 @@ package org.jboss.jms.exception;
 import javax.jms.JMSException;
 
 /**
- * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @version <tt>1.1</tt>
  *
  * MessagingJMSException.java,v 1.1 2006/03/28 14:26:17 timfox Exp

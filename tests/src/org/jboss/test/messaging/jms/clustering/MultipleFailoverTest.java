@@ -36,13 +36,11 @@ import javax.jms.TextMessage;
 
 import org.jboss.test.messaging.tools.ServerManagement;
 
-import EDU.oswego.cs.dl.util.concurrent.Latch;
-
 /**
  * A test where we kill multiple nodes and make sure the failover works correctly in these condtions
  * too.
  *
- * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  *
  * $Id$
@@ -212,9 +210,7 @@ public class MultipleFailoverTest extends ClusteringTestBase
 
          MessageConsumer cons = sessCons.createConsumer(queue[0]);
 
-         Latch latch = new Latch();
-         
-         MyListener list = new MyListener(latch);
+         MyListener list = new MyListener();
 
          cons.setMessageListener(list);
 
@@ -260,11 +256,13 @@ public class MultipleFailoverTest extends ClusteringTestBase
          conn.close();
          conn = null;
          
-         fail("this test is BS - it doesn't check it receives all the messages");
-         
-         Iterator iter = list.msgs.iterator();
-         
+         if (!list.waitFor(count))
+         {
+         	fail("Timed out waiting for message");
+         }
+                  
          count = 0;
+         Iterator iter = list.msgs.iterator();
          while (iter.hasNext())
          {
             Integer i = (Integer)iter.next();
@@ -273,10 +271,9 @@ public class MultipleFailoverTest extends ClusteringTestBase
             {
                fail("Missing message " + i);
             }
-            
             count++;
          }
-             
+         
          if (list.failed)
          {
             fail();
@@ -417,18 +414,37 @@ public class MultipleFailoverTest extends ClusteringTestBase
    class MyListener implements MessageListener
    {
       int count = 0;
-      
-      Latch latch;
-      
+          
       volatile boolean failed;
       
       Set msgs = new TreeSet();
       
-      MyListener(Latch latch)
-      {
-         this.latch = latch;
-      }
+      int maxcnt = 0;
       
+      private Object obj = new Object();
+      
+      boolean waitFor(int i)
+      {
+      	synchronized (obj)
+      	{
+      		long toWait = 30000;
+      		while (maxcnt < i && toWait > 0)
+      		{
+      			long start = System.currentTimeMillis();
+      			try
+      			{      				
+      				obj.wait(30000);
+      			}
+      			catch (InterruptedException e)
+      			{}
+      			if (i <= maxcnt)
+      			{
+      				toWait -= System.currentTimeMillis() - start;
+      			}            			      
+      		}
+      		return maxcnt < i;
+      	}
+      }
    
       public void onMessage(Message msg)
       {
@@ -466,9 +482,15 @@ public class MultipleFailoverTest extends ClusteringTestBase
             Therefore we only count that the total messages were received
             */      
             
-            msgs.add(new Integer(msg.getIntProperty("cnt")));
+            int cnt = msg.getIntProperty("cnt");
             
+            msgs.add(new Integer(cnt));
             
+            maxcnt = Math.max(maxcnt, cnt);
+            synchronized (obj)
+            {
+            	obj.notify();
+            }                        
          }
          catch (Exception e)
          {

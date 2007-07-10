@@ -48,7 +48,7 @@ import EDU.oswego.cs.dl.util.concurrent.SynchronizedInt;
  * This class implements javax.jms.ConnectionConsumer
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * 
  * Partially based on JBossMQ version by:
  * 

@@ -28,7 +28,7 @@ import javax.jms.JMSException;
  * Implemented by JMS classes that can be closed
  * 
  * @author <a href="mailto:adrian@jboss.org>Adrian Brock</a>
- * @author <a href="mailto:ovidiu@jboss.org>Ovidiu Feodorov</a>
+ * @author <a href="mailto:ovidiu@feodorov.com>Ovidiu Feodorov</a>
  *
  * @version $Revision$
  */

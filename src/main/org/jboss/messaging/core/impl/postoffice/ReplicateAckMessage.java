@@ -34,28 +34,28 @@ import java.io.DataOutputStream;
  */
 public class ReplicateAckMessage extends ClusterRequest
 {
+	private int nodeID;
+		
 	private String queueName;
 	
 	private long messageID;
-	
-	private int nodeID;
 	
 	public ReplicateAckMessage()
 	{		
 	}
 	
-	public ReplicateAckMessage(String queueName, long messageID, int nodeID)
+	public ReplicateAckMessage(int nodeID, String queueName, long messageID)
 	{
+		this.nodeID = nodeID;
+		
 		this.queueName = queueName;
 		
-		this.messageID = messageID;
-		
-		this.nodeID = nodeID;
+		this.messageID = messageID;	
 	}
 	
 	Object execute(RequestTarget office) throws Throwable
 	{
-		office.handleReplicateAck(queueName, messageID, nodeID);
+		office.handleReplicateAck(nodeID, queueName, messageID);
 		
 		return null;
 	}
@@ -66,21 +66,21 @@ public class ReplicateAckMessage extends ClusterRequest
 	}
 
 	public void read(DataInputStream in) throws Exception
-	{
+	{		
+		nodeID = in.readInt();
+		
 		queueName = in.readUTF();
 		
 		messageID = in.readLong();
-		
-		nodeID = in.readInt();
 	}
 
 	public void write(DataOutputStream out) throws Exception
-	{
+	{		
+		out.writeInt(nodeID);
+		
 		out.writeUTF(queueName);
 		
 		out.writeLong(messageID);
-		
-		out.writeInt(nodeID);
 	}
 
 }

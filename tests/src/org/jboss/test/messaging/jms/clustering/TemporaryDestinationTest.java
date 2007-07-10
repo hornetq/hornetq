@@ -34,7 +34,7 @@ import javax.jms.Topic;
  * A test for temporary destinations in a clustered enviroment.
  * See http://jira.jboss.org/jira/browse/JBMESSAGING-841.
  *
- * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
  *

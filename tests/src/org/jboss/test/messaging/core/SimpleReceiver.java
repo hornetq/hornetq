@@ -42,7 +42,7 @@ import org.jboss.util.id.GUID;
  * testing. The receiver can be configured to immediately return a "done" delivery (ACKING),
  * an "active" delivery (NACKING) undelivered, or throw unchecked exceptions.
  *
- * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
  *

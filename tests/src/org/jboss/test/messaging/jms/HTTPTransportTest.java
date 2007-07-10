@@ -24,7 +24,7 @@ import javax.management.ObjectName;
  * This class contain tests that only make sense for a HTTP transport. They will be ignored for
  * any other kind of transport.
  *
- * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  * $Id$
  */

@@ -36,7 +36,7 @@ import org.jboss.logging.Logger;
  * A JMS Server local transaction
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * @author <a href="mailto:ovidiu@jboss.com">Ovidiu Feodorov</a>
+ * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * 
  * @version $Revision 1.1$
  *

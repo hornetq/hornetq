@@ -30,7 +30,7 @@ import java.sql.ResultSet;
 /**
  * An example how to use ServiceContainer to get access to an in-memory database.
  *
- * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  *
  * $Id$

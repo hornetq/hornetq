@@ -26,7 +26,7 @@ class LeaveClusterRequest extends ClusterRequest
 
    LeaveClusterRequest(int nodeId)
    {
-      this.nodeId=nodeId;
+      this.nodeId = nodeId;
    }
 
    /**

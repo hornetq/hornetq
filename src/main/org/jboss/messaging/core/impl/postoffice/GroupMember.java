@@ -514,7 +514,7 @@ public class GroupMember
 
       public void receive(Message message)
       {
-         if (trace) { log.trace(this + " received " + message + " on the ASYNC channel"); }
+         if (trace) { log.trace(this + " received " + message + " on the data channel"); }
 
          try
          {

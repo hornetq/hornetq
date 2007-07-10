@@ -22,7 +22,7 @@ import org.w3c.dom.Element;
  * The base of a JBoss Messaging destination service. Both deployed or programatically created
  * destinations will eventually get one of these.
  *
- * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:alex.fu@novell.com">Alex Fu</a>
  * 

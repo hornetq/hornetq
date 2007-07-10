@@ -25,7 +25,7 @@ import org.w3c.dom.NodeList;
 /**
  * The convenience object model of a JBoss <mbean> service descriptor configuration element.
  *
- * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  * 
  * $Id$

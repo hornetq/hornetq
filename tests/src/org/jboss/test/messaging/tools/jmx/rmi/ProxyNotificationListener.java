@@ -15,7 +15,7 @@ import java.util.Collections;
 /**
  * Stores notifications until they're transferred to the remote client.
  *
- * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  * $Id$
  */

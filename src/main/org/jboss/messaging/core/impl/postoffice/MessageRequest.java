@@ -43,10 +43,6 @@ import org.jboss.messaging.core.impl.message.MessageFactory;
  */
 class MessageRequest extends ClusterRequest
 {
-   private static final byte NULL = 0;
-   
-   private static final byte NOT_NULL = 1;
-	
    private String routingConditionText;   
    
    private Message message;

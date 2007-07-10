@@ -33,7 +33,7 @@ import org.jboss.jms.destination.JBossDestination;
  * Some of the methods may be implemented on the server, others
  * will be handled in the advice stack.
  *
- * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
  *

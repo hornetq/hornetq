@@ -10,7 +10,7 @@ import org.jboss.aop.joinpoint.Invocation;
 import org.jboss.jms.client.delegate.DelegateSupport;
 
 /**
- * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  * $Id$
  */

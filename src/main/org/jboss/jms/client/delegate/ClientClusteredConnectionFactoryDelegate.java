@@ -40,7 +40,7 @@ import org.jboss.logging.Logger;
  * there is no corresponding enpoint on the server, there's no ID, etc. This is just a "shallow"
  * delegate, that in turn delegates to its sub-delegates (ClientConnectionFactoryDelegate instances)
  *
- * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *

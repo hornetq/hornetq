@@ -89,6 +89,8 @@ public class MessageSucker implements MessageListener
 	MessageSucker(Queue localQueue, JBossConnection sourceConnection, JBossConnection localConnection,
 			        boolean xa, boolean preserveOrdering)
 	{	
+		if (trace) { log.trace("Creating message sucker, localQueue:" + localQueue + " xa:" + xa + " preserveOrdering:" + preserveOrdering); }
+		
 		this.localQueue = localQueue;
 		
 		this.sourceConnection = sourceConnection;
@@ -298,7 +300,7 @@ public class MessageSucker implements MessageListener
 			{
 				msg.acknowledge();
 				
-				if (trace) { log.trace("Acnowledged message"); }
+				if (trace) { log.trace("Acknowledged message"); }
 			}
 			
 			//if (queue.)

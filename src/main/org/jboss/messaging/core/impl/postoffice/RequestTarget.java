@@ -56,14 +56,16 @@ interface RequestTarget
    
    //TODO - these don't belong here
    
-   void handleReplicateDelivery(String queueName, String sessionID, long messageID,
-   		                       long deliveryID, Address replyAddress, int nodeID) throws Exception;
+   void handleReplicateDelivery(int nodeID, String queueName, String sessionID, long messageID,
+   		                       long deliveryID, Address replyAddress) throws Exception;
    
-   void handleReplicateAck(String queueName, long messageID, int nodeID) throws Exception;
+   void handleReplicateAck(int nodeID, String queueName, long messageID) throws Exception;
    
    void handleReplicateDeliveryAck(String sessionID, long deliveryID) throws Exception;
    
    void handleAckAllReplicatedDeliveries(int nodeID) throws Exception;
    
-   void handleAddAllReplicatedDeliveries(Map deliveries, int nodeID) throws Exception;
+   void handleAddAllReplicatedDeliveries(int nodeID, Map deliveries) throws Exception;
+   
+   void handleGetReplicatedDeliveries(String queueName, Address returnAddress) throws Exception;
 }

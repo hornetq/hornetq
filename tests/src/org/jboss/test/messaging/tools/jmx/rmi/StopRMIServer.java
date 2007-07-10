@@ -30,7 +30,7 @@ import org.jboss.logging.Logger;
 /**
  * A utility to stop runaway rmi servers.
  *
- * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  *
  * $Id$

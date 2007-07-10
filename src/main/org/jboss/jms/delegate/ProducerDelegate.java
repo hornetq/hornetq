@@ -30,7 +30,7 @@ import org.jboss.jms.destination.JBossDestination;
 /**
  * Represents the minimal set of operations to provide producer functionality.
  * 
- * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
+ * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
  */

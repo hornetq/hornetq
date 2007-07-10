@@ -37,6 +37,8 @@ import org.jgroups.stack.IpAddress;
  */
 public class ReplicateDeliveryMessage extends ClusterRequest
 {
+	private int nodeID;
+	
 	private String queueName;
 	
 	private String sessionID;
@@ -45,21 +47,17 @@ public class ReplicateDeliveryMessage extends ClusterRequest
 	
 	private long deliveryID;
 	
-	private Address replyAddress;
-	
-	private int nodeID;
-	
-	private static final int NULL = 0;
-	
-	private static final int NOT_NULL = 1;
+	private Address returnAddress;
 	
 	public ReplicateDeliveryMessage()
 	{		
 	}
 	
-	public ReplicateDeliveryMessage(String queueName, String sessionID, long messageID, long deliveryID,
-			                          Address replyAddress, int nodeID)
-	{
+	public ReplicateDeliveryMessage(int nodeID, String queueName, String sessionID, long messageID, long deliveryID,
+			                          Address returnAddress)
+	{		
+		this.nodeID = nodeID;
+		
 		this.queueName = queueName;
 		
 		this.sessionID = sessionID;
@@ -68,16 +66,14 @@ public class ReplicateDeliveryMessage extends ClusterRequest
 		
 		this.deliveryID = deliveryID;
 		
-		this.replyAddress = replyAddress;
-		
-		this.nodeID = nodeID;
+		this.returnAddress = returnAddress;
 	}
 		
 	Object execute(RequestTarget office) throws Throwable
 	{		
-		office.handleReplicateDelivery(queueName, sessionID, messageID, deliveryID, replyAddress, nodeID);
+		office.handleReplicateDelivery(nodeID, queueName, sessionID, messageID, deliveryID, returnAddress);
 		
-		return "ok";
+		return null;
 	}
 
 	byte getType()
@@ -86,7 +82,9 @@ public class ReplicateDeliveryMessage extends ClusterRequest
 	}
 
 	public void read(DataInputStream in) throws Exception
-	{
+	{		
+		nodeID = in.readInt();
+		
 		queueName = in.readUTF();
 		
 		sessionID = in.readUTF();
@@ -99,16 +97,16 @@ public class ReplicateDeliveryMessage extends ClusterRequest
 		
 		if (b != NULL)
 		{
-			replyAddress = new IpAddress();
+			returnAddress = new IpAddress();
 			
-			replyAddress.readFrom(in);
+			returnAddress.readFrom(in);
 		}
-		
-		nodeID = in.readInt();
 	}
 
 	public void write(DataOutputStream out) throws Exception
 	{
+		out.writeInt(nodeID);
+		
 		out.writeUTF(queueName);
 		
 		out.writeUTF(sessionID);
@@ -117,7 +115,7 @@ public class ReplicateDeliveryMessage extends ClusterRequest
 		
 		out.writeLong(deliveryID);
 		
-		if (replyAddress == null)
+		if (returnAddress == null)
 		{
 			out.writeByte(NULL);
 		}
@@ -125,15 +123,13 @@ public class ReplicateDeliveryMessage extends ClusterRequest
 		{
 			out.writeByte(NOT_NULL);
 			
-			if (!(replyAddress instanceof IpAddress))
+			if (!(returnAddress instanceof IpAddress))
 	      {
 	         throw new IllegalStateException("Address must be IpAddress");
 	      }
 
-	      replyAddress.writeTo(out);
-		}
-		
-		out.writeInt(nodeID);
+	      returnAddress.writeTo(out);
+		}				
 	}
 
 }
