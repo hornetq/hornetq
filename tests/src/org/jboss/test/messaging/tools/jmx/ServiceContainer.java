@@ -1332,6 +1332,12 @@ public class ServiceContainer
             paramsBuffer.append('&');
          }
 
+         String valueOverride = (String)overrideMap.get(key);
+         if (valueOverride != null)
+         {
+            value = valueOverride;
+         }
+
          paramsBuffer.append(key).append('=').append(value);
       }
 
