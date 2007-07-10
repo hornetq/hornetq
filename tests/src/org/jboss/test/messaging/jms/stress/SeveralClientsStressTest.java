@@ -68,7 +68,7 @@ public class SeveralClientsStressTest extends MessagingTestCase
    // Attributes -----------------------------------------------------------------------------------
 
    protected boolean info=true;
-   protected boolean startServer=false;
+   protected boolean startServer=true;
 
    // Static ---------------------------------------------------------------------------------------
 
