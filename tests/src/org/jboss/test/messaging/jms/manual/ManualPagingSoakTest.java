@@ -80,8 +80,14 @@ public class ManualPagingSoakTest extends MessagingTestCase
       
       ic1.close();
    }
-   
-   public void test1() throws Exception
+
+   /** Use these attributes on testQueue for this test:
+
+      <attribute name="FullSize">10000</attribute>
+      <attribute name="PageSize">1000</attribute>
+      <attribute name="DownCacheSize">1000</attribute>
+    * */
+   public void testPaging() throws Exception
    {
       Connection conn = null;
          
