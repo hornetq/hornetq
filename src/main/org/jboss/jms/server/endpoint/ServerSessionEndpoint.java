@@ -125,7 +125,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
    
    static final String TEMP_QUEUE_MESSAGECOUNTER_PREFIX = "TempQueue.";
    
-   private static final long CLOSE_TIMEOUT = 10 * 10000;
+   private static final long CLOSE_TIMEOUT = 5 * 1000;
       
    // Static ---------------------------------------------------------------------------------------
 
@@ -1163,7 +1163,8 @@ public class ServerSessionEndpoint implements SessionEndpoint
    		
    		if (toWait <= 0)
    		{
-   			while (toDeliver.take() != null) {}
+   			//Clear toDeliver
+   			while (toDeliver.poll(0) != null) {}
    			
    			log.warn("Timed out waiting for response to arrive");
    		}   		   		

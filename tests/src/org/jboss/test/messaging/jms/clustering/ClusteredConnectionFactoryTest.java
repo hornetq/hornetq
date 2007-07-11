@@ -56,9 +56,9 @@ public class ClusteredConnectionFactoryTest extends ClusteringTestBase
    {
       try
       {
-         ServerManagement.killAndWait(0);
-         ServerManagement.killAndWait(1);
-         ServerManagement.killAndWait(2);
+         ServerManagement.kill(0);
+         ServerManagement.kill(1);
+         ServerManagement.kill(2);
 
          try
          {
@@ -84,8 +84,8 @@ public class ClusteredConnectionFactoryTest extends ClusteringTestBase
 
       try
       {
-         ServerManagement.killAndWait(0);
-         ServerManagement.killAndWait(1);
+         ServerManagement.kill(0);
+         ServerManagement.kill(1);
 
          assertNotNull(((JBossConnectionFactory)cf).getDelegate().getClientAOPStack());
 
@@ -105,7 +105,7 @@ public class ClusteredConnectionFactoryTest extends ClusteringTestBase
             }
          }
 
-         ServerManagement.killAndWait(2);
+         ServerManagement.kill(2);
          // need to re-start 0, it's the RMI server the other servers use
          ServerManagement.start(0, "all", true);
       }
@@ -121,7 +121,7 @@ public class ClusteredConnectionFactoryTest extends ClusteringTestBase
          conn.close();
          conn = null;
 
-         ServerManagement.killAndWait(1);
+         ServerManagement.kill(1);
          conn = cf.createConnection();
 
          assertEquals(2, getServerId(conn));
@@ -172,8 +172,8 @@ public class ClusteredConnectionFactoryTest extends ClusteringTestBase
          conn = createConnectionOnServer(cf, 0);
          conn.close();
 
-         ServerManagement.killAndWait(1);
-         ServerManagement.killAndWait(2);
+         ServerManagement.kill(1);
+         ServerManagement.kill(2);
          conn = cf.createConnection();
 
          assertEquals(0, getServerId(conn));
@@ -196,8 +196,8 @@ public class ClusteredConnectionFactoryTest extends ClusteringTestBase
          conn = createConnectionOnServer(cf, 0);
          conn.close();
 
-         ServerManagement.killAndWait(1);
-         ServerManagement.killAndWait(2);
+         ServerManagement.kill(1);
+         ServerManagement.kill(2);
          conn = cf.createConnection();
 
          assertEquals(0, getServerId(conn));

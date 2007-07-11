@@ -85,7 +85,7 @@ public class GroupMember
    
    private QueuedExecutor viewExecutor;
    
-   private Object setStateLock = new Object();
+   private Object waitLock = new Object();
 
    //Still needs to be volatile since the ReadWriteLock won't synchronize between threads
    private volatile boolean started;
@@ -155,6 +155,32 @@ public class GroupMember
       		if (trace) { log.trace(this + " is not the first member of group"); }
       	}
 	      
+	      //Wait for the first view to arrive
+
+      	synchronized (waitLock)
+      	{ 
+   			long timeRemaining = 5000; //Hardcoded for now
+   			
+   			long start = System.currentTimeMillis();
+   			
+      		while (currentView == null && timeRemaining > 0)
+      		{
+      			waitLock.wait(stateTimeout);
+      			
+      			if (currentView == null)
+      			{
+      				long waited = System.currentTimeMillis() - start;
+      				
+      				timeRemaining -= waited;
+      			}
+      		}
+      		
+      		if (currentView == null)
+      		{
+      			throw new IllegalStateException("Timed out waiting for first view to arrive");
+      		}
+      	}
+	      	      
 	   	//Now we can be considered started
 	   	started = true;	   	
    	}
@@ -326,7 +352,7 @@ public class GroupMember
    	{
    		//We are not the first member of the group, so let's wait for state to be got and processed
    		
-   		synchronized (setStateLock)
+   		synchronized (waitLock)
       	{ 
    			long timeRemaining = stateTimeout;
    			
@@ -334,7 +360,7 @@ public class GroupMember
    			
       		while (!started && timeRemaining > 0)
       		{
-      			setStateLock.wait(stateTimeout);
+      			waitLock.wait(stateTimeout);
       			
       			if (!started)
       			{
@@ -429,7 +455,7 @@ public class GroupMember
 
       public void setState(byte[] bytes)
       {
-         synchronized (setStateLock)
+         synchronized (waitLock)
          {
          	try
          	{
@@ -442,7 +468,7 @@ public class GroupMember
          	
          	started = true;
          	
-            setStateLock.notify();
+            waitLock.notify();
          }
       }
    }

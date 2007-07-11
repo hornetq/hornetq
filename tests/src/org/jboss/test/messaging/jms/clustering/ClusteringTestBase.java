@@ -130,6 +130,7 @@ public class ClusteringTestBase extends MessagingTestCase
 
       for (int i = 0; i < nodeCount; i++)
       {
+      	log.info("Getting lookups for " + i);
          ic[i] = new InitialContext(ServerManagement.getJNDIEnvironment(i));
          queue[i] = (Queue)ic[i].lookup("queue/testDistributedQueue");
          topic[i] = (Topic)ic[i].lookup("topic/testDistributedTopic");
@@ -203,7 +204,7 @@ public class ClusteringTestBase extends MessagingTestCase
 
       while (true)
       {
-      	FailoverEvent event = failoverListener.getEvent(120000);
+      	FailoverEvent event = failoverListener.getEvent(30000);
       	if (event != null && FailoverEvent.FAILOVER_COMPLETED == event.getType())
       	{
       		break;

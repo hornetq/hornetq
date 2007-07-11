@@ -67,7 +67,7 @@ public class GroupManagementTest extends MessagingTestCase
 
          log.info("Blocking to receive notification ...");
 
-         if (!listener.viewChanged(120000))
+         if (!listener.viewChanged(30000))
          {
             fail("Did not receive view change!");
          }
@@ -255,7 +255,7 @@ public class GroupManagementTest extends MessagingTestCase
 
          // Wait for membership change notification
 
-         if (!clusterEvent.viewChanged(120000))
+         if (!clusterEvent.viewChanged(30000))
          {
             fail("Did not receive view change after killing server 2!");
          }
@@ -303,7 +303,7 @@ public class GroupManagementTest extends MessagingTestCase
 
          // Wait for FAILOVER_COMPLETED notification
 
-         if (!clusterEvent.failoverCompleted(120000))
+         if (!clusterEvent.failoverCompleted(30000))
          {
             fail("Did not receive a FAILOVER_COMPLETED event after killing server 2!");
          }
@@ -325,7 +325,7 @@ public class GroupManagementTest extends MessagingTestCase
 
          // Wait for FAILOVER_COMPLETED notification
 
-         if (!clusterEvent.failoverCompleted(120000))
+         if (!clusterEvent.failoverCompleted(30000))
          {
             fail("Did not receive a FAILOVER_COMPLETED event after killing server 1!");
          }
@@ -367,7 +367,7 @@ public class GroupManagementTest extends MessagingTestCase
          // start the ninth node, as there is no chance to be started by scripts
          ServerManagement.start(9, "all");
 
-         if (!clusterEvent.viewChanged(120000))
+         if (!clusterEvent.viewChanged(30000))
          {
             fail("Did not receive a VIEW_CHANGED event after spawning new server!");
          }

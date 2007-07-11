@@ -105,7 +105,7 @@ public class MultiThreadFailoverTest extends ClusteringTestBase
 
       MessageProducer producer = session.createProducer(queue[1]);
 
-      ServerManagement.killAndWait(1);
+      ServerManagement.kill(1);
 
       producer.send(session.createTextMessage("Have a nice day!"));
 
@@ -383,7 +383,7 @@ public class MultiThreadFailoverTest extends ClusteringTestBase
 
 
 
-         ServerManagement.killAndWait(1);
+         ServerManagement.kill(1);
 
          int producedRightAfterKill;
          int consumedRightAfterKill;

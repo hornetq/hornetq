@@ -71,9 +71,8 @@ public class MultipleFailoverTest extends ClusteringTestBase
 
       try
       {
-         // we start with a cluster of two (server 0 and server 1)
 
-         conn = this.createConnectionOnServer(cf, 0);
+         conn = this.createConnectionOnServer(cf, 1);
          conn.start();
 
          // send/receive message
@@ -85,33 +84,6 @@ public class MultipleFailoverTest extends ClusteringTestBase
          assertNotNull(m);
          assertEquals("step1", m.getText());
 
-         log.info("killing node 0 ....");
-
-         ServerManagement.kill(0);
-
-         log.info("########");
-         log.info("######## KILLED NODE 0");
-         log.info("########");
-
-         // send/receive message
-         prod.send(s.createTextMessage("step2"));
-         m = (TextMessage)cons.receive();
-         assertNotNull(m);
-         assertEquals("step2", m.getText());
-
-         log.info("########");
-         log.info("######## STARTING NODE 2");
-         log.info("########");
-
-         ServerManagement.start(2, "all", false);
-         ServerManagement.deployQueue("testDistributedQueue", 2);
-
-         // send/receive message
-         prod.send(s.createTextMessage("step3"));
-         m = (TextMessage)cons.receive();
-         assertNotNull(m);
-         assertEquals("step3", m.getText());
-
          log.info("killing node 1 ....");
 
          ServerManagement.kill(1);
@@ -121,25 +93,23 @@ public class MultipleFailoverTest extends ClusteringTestBase
          log.info("########");
 
          // send/receive message
-         prod.send(s.createTextMessage("step4"));
+         prod.send(s.createTextMessage("step2"));
          m = (TextMessage)cons.receive();
          assertNotNull(m);
-         assertEquals("step4", m.getText());
+         assertEquals("step2", m.getText());
 
          log.info("########");
          log.info("######## STARTING NODE 3");
          log.info("########");
 
          ServerManagement.start(3, "all", false);
-         log.info("deploying queue on3");
          ServerManagement.deployQueue("testDistributedQueue", 3);
-         log.info("deployed it");
 
          // send/receive message
-         prod.send(s.createTextMessage("step5"));
+         prod.send(s.createTextMessage("step3"));
          m = (TextMessage)cons.receive();
          assertNotNull(m);
-         assertEquals("step5", m.getText());
+         assertEquals("step3", m.getText());
 
          log.info("killing node 2 ....");
 
@@ -150,23 +120,25 @@ public class MultipleFailoverTest extends ClusteringTestBase
          log.info("########");
 
          // send/receive message
-         prod.send(s.createTextMessage("step6"));
+         prod.send(s.createTextMessage("step4"));
          m = (TextMessage)cons.receive();
          assertNotNull(m);
-         assertEquals("step6", m.getText());
+         assertEquals("step4", m.getText());
 
          log.info("########");
-         log.info("######## STARTING NODE 0");
+         log.info("######## STARTING NODE 4");
          log.info("########");
 
-         ServerManagement.start(0, "all", false);
-         ServerManagement.deployQueue("testDistributedQueue", 0);
+         ServerManagement.start(4, "all", false);
+         log.info("deploying queue on4");
+         ServerManagement.deployQueue("testDistributedQueue", 4);
+         log.info("deployed it");
 
          // send/receive message
-         prod.send(s.createTextMessage("step7"));
+         prod.send(s.createTextMessage("step5"));
          m = (TextMessage)cons.receive();
          assertNotNull(m);
-         assertEquals("step7", m.getText());
+         assertEquals("step5", m.getText());
 
          log.info("killing node 3 ....");
 
@@ -174,6 +146,33 @@ public class MultipleFailoverTest extends ClusteringTestBase
 
          log.info("########");
          log.info("######## KILLED NODE 3");
+         log.info("########");
+
+         // send/receive message
+         prod.send(s.createTextMessage("step6"));
+         m = (TextMessage)cons.receive();
+         assertNotNull(m);
+         assertEquals("step6", m.getText());
+
+         log.info("########");
+         log.info("######## STARTING NODE 1");
+         log.info("########");
+
+         ServerManagement.start(1, "all", false);
+         ServerManagement.deployQueue("testDistributedQueue", 1);
+
+         // send/receive message
+         prod.send(s.createTextMessage("step7"));
+         m = (TextMessage)cons.receive();
+         assertNotNull(m);
+         assertEquals("step7", m.getText());
+
+         log.info("killing node 4 ....");
+
+         ServerManagement.kill(4);
+
+         log.info("########");
+         log.info("######## KILLED NODE 4");
          log.info("########");
 
          // send/receive message
@@ -202,7 +201,7 @@ public class MultipleFailoverTest extends ClusteringTestBase
 
       try
       {
-         conn = this.createConnectionOnServer(cf, 0);
+         conn = this.createConnectionOnServer(cf, 1);
 
          Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
@@ -243,7 +242,7 @@ public class MultipleFailoverTest extends ClusteringTestBase
             count++;
          }
               
-         t.join();
+         t.join(5 * 60 * 60 * 1000);
          
          if (killer.failed)
          {
@@ -285,13 +284,7 @@ public class MultipleFailoverTest extends ClusteringTestBase
          throw e;
       }
       finally
-      {
-         if (!ServerManagement.isStarted(0))
-         {
-            ServerManagement.start(0, "all", false);
-         }
-         
-         
+      {         
          if (conn != null)
          {
             log.info("closing connection");
@@ -313,7 +306,7 @@ public class MultipleFailoverTest extends ClusteringTestBase
 
    protected void setUp() throws Exception
    {
-      nodeCount = 2;
+      nodeCount = 3;
 
       super.setUp();
 
@@ -346,14 +339,25 @@ public class MultipleFailoverTest extends ClusteringTestBase
          {                                     
             Thread.sleep(10000);
                
-            log.info("Killing server 0");
-            ServerManagement.kill(0);
+            log.info("Killing server 1");
+            ServerManagement.kill(1);
             
             Thread.sleep(5000);
             
-            log.info("starting server 0");
-            ServerManagement.start(0, "all", false);
-            ServerManagement.deployQueue("testDistributedQueue", 0);
+            log.info("starting server 1");
+            ServerManagement.start(1, "all", false);
+            ServerManagement.deployQueue("testDistributedQueue", 1);
+            
+            Thread.sleep(5000);
+            
+            log.info("Killing server 2");
+            ServerManagement.kill(2);
+            
+            Thread.sleep(5000);
+            
+            log.info("Starting server 2");
+            ServerManagement.start(2, "all", false);
+            ServerManagement.deployQueue("testDistributedQueue", 2);
             
             Thread.sleep(5000);
             
@@ -368,14 +372,14 @@ public class MultipleFailoverTest extends ClusteringTestBase
             
             Thread.sleep(5000);
             
-            log.info("Killing server 0");
-            ServerManagement.kill(0);
+            log.info("Killing server 2");
+            ServerManagement.kill(2);
             
             Thread.sleep(5000);
             
-            log.info("Starting server 0");
-            ServerManagement.start(0, "all", false);
-            ServerManagement.deployQueue("testDistributedQueue", 0);
+            log.info("Starting server 2");
+            ServerManagement.start(2, "all", false);
+            ServerManagement.deployQueue("testDistributedQueue", 2);
             
             Thread.sleep(5000);
             
@@ -387,17 +391,6 @@ public class MultipleFailoverTest extends ClusteringTestBase
             log.info("Starting server 1");
             ServerManagement.start(1, "all", false);
             ServerManagement.deployQueue("testDistributedQueue", 1);
-            
-            Thread.sleep(5000);
-            
-            log.info("Killing server 0");
-            ServerManagement.kill(0);
-            
-            Thread.sleep(5000);
-            
-            log.info("Starting server 0");
-            ServerManagement.start(0, "all", false);
-            ServerManagement.deployQueue("testDistributedQueue", 0);
             
             log.info("killer DONE");
          }

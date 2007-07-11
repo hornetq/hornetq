@@ -74,7 +74,7 @@ public class LargeClusterTest extends ClusteringTestBase
 
       // wait for change to propagate
 
-      if (!clusterEvent.viewChanged(120000))
+      if (!clusterEvent.viewChanged(30000))
       {
          fail("Did not receive a VIEW_CHANGED event after spawning new server!");
       }
@@ -125,7 +125,7 @@ public class LargeClusterTest extends ClusteringTestBase
 
       ServerManagement.stop(3);
 
-      if (!clusterEvent.viewChanged(120000))
+      if (!clusterEvent.viewChanged(30000))
       {
          fail("Did not receive a VIEW_CHANGED event after spawning new server!");
       }
@@ -140,7 +140,7 @@ public class LargeClusterTest extends ClusteringTestBase
 
       ServerManagement.stop(6);
 
-      if (!clusterEvent.viewChanged(120000))
+      if (!clusterEvent.viewChanged(30000))
       {
          fail("Did not receive a VIEW_CHANGED event after spawning new server!");
       }
@@ -154,7 +154,7 @@ public class LargeClusterTest extends ClusteringTestBase
 
       ServerManagement.stop(1);
 
-      if (!clusterEvent.viewChanged(120000))
+      if (!clusterEvent.viewChanged(30000))
       {
          fail("Did not receive a VIEW_CHANGED event after spawning new server!");
       }
@@ -167,7 +167,7 @@ public class LargeClusterTest extends ClusteringTestBase
 
       ServerManagement.stop(2);
 
-      if (!clusterEvent.viewChanged(120000))
+      if (!clusterEvent.viewChanged(30000))
       {
          fail("Did not receive a VIEW_CHANGED event after spawning new server!");
       }
@@ -179,7 +179,7 @@ public class LargeClusterTest extends ClusteringTestBase
 
       ServerManagement.stop(4);
 
-      if (!clusterEvent.viewChanged(120000))
+      if (!clusterEvent.viewChanged(30000))
       {
          fail("Did not receive a VIEW_CHANGED event after spawning new server!");
       }
@@ -193,7 +193,7 @@ public class LargeClusterTest extends ClusteringTestBase
 
       ServerManagement.stop(0);
 
-      if (!clusterEvent.viewChanged(120000))
+      if (!clusterEvent.viewChanged(30000))
       {
          fail("Did not receive a VIEW_CHANGED event after spawning new server!");
       }
@@ -231,7 +231,7 @@ public class LargeClusterTest extends ClusteringTestBase
 
       ServerManagement.stop(0);
 
-      if (!clusterEvent.viewChanged(120000))
+      if (!clusterEvent.viewChanged(30000))
       {
          fail("Did not receive a VIEW_CHANGED event after spawning new server!");
       }
@@ -251,7 +251,7 @@ public class LargeClusterTest extends ClusteringTestBase
 
       ServerManagement.start(0, "all");
 
-      if (!clusterEvent.viewChanged(120000))
+      if (!clusterEvent.viewChanged(30000))
       {
          fail("Did not receive a VIEW_CHANGED event after spawning new server!");
       }

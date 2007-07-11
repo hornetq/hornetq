@@ -112,146 +112,8 @@ public class ChangeFailoverNodeTest extends ClusteringTestBase
    public void testKillAllToOneAndBackAgainTransactional() throws Exception
    {
    	this.killAllToOneAndBackAgain(true);
-   }
-   
-   public void testFailoverToNodeWithNoQueueDeployed() throws Exception
-   {
-   	JBossConnectionFactory factory = (JBossConnectionFactory) ic[0].lookup("/ClusteredConnectionFactory");
-
-      Connection conn3 = createConnectionOnServer(factory, 3);
- 
-      try
-      {
-      	SimpleFailoverListener failoverListener = new SimpleFailoverListener();
-         ((JBossConnection)conn3).registerFailoverListener(failoverListener);
-      	
-         Session sessSend = conn3.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      		
-      	MessageProducer prod2 = sessSend.createProducer(queue[2]);
-      	
-      	final int numMessages = 10;
-      	
-      	for (int i = 0; i < numMessages; i++)
-      	{
-      		TextMessage tm = sessSend.createTextMessage("message" + i);
-      		
-      		prod2.send(tm);      		
-      	}
-      	
-      	Session sess3 = conn3.createSession(false, Session.CLIENT_ACKNOWLEDGE);
-      	
-      	MessageConsumer cons3 = sess3.createConsumer(queue[3]);
-            	
-      	conn3.start();
-      	
-      	TextMessage tm = null;
-      	
-      	for (int i = 0; i < numMessages; i++)
-      	{
-      		tm = (TextMessage)cons3.receive(2000);
-      		
-      		assertNotNull(tm);
-      		
-      		assertEquals("message" + i, tm.getText());
-      	}
-      	
-      	//Don't ack
-      	
-      	int failoverNodeId = this.getFailoverNodeForNode(factory, 3);
-      	
-      	log.info("Failover node for node 3 is " + failoverNodeId);
-      	
-      	dumpFailoverMap(ServerManagement.getServer(3).getFailoverMap());
-      	
-      	//We now add a new node - this should cause the failover node to change
-      	
-         ServerManagement.start(4, "all", false);
-         
-         //DO NOT deploy the queue on it
-         
-         Thread.sleep(5000);
-         
-         dumpFailoverMap(ServerManagement.getServer(3).getFailoverMap());
-      	
-         int newFailoverNodeId = this.getFailoverNodeForNode(factory, 3);
-         
-         log.info("New failover node is " + newFailoverNodeId);
-         
-         assertTrue(failoverNodeId != newFailoverNodeId);
-         
-         //Now kill the node
-      	
-         // The queue does not exist on the new node so it tests the case where queue merging DOES NOT occur
-         
-         ServerManagement.kill(3);
-
-         log.info("########");
-         log.info("######## KILLED NODE 3");
-         log.info("########");
-
-         // wait for the client-side failover to complete
-
-         log.info("Waiting for failover to complete");
-         
-         while(true)
-         {
-            FailoverEvent event = failoverListener.getEvent(120000);
-            if (event != null && FailoverEvent.FAILOVER_COMPLETED == event.getType())
-            {
-               break;
-            }
-            if (event == null)
-            {
-               fail("Did not get expected FAILOVER_COMPLETED event");
-            }
-         }
-         
-         log.info("Failover completed");
-         
-         assertEquals(newFailoverNodeId, getServerId(conn3));
-                  
-         //Now ack
-         
-         tm.acknowledge();
-         
-         
-         log.info("acked");
-         
-         sess3.close();
-         
-         log.info("closed");
-         
-	      sess3 = conn3.createSession(false, Session.AUTO_ACKNOWLEDGE);
-	      
-	      log.info("created new session");
-      	
-      	cons3 = sess3.createConsumer(queue[3]);
-      	
-      	log.info("Created consumer");
-      	
-         //Messages should be gone
-      	
-         tm = (TextMessage)cons3.receive(5000);
-      		
-      	assertNull(tm);      		
-      }
-      finally
-      {
-         if (conn3 != null)
-         {
-            conn3.close();
-         }
-         
-         try
-         {
-         	ServerManagement.stop(4);
-         }
-         catch (Exception e)
-         {}
-      }
-   }
-  
-   
+   }   
+     
    // Package protected ---------------------------------------------
    
    // Protected -----------------------------------------------------
@@ -266,7 +128,7 @@ public class ChangeFailoverNodeTest extends ClusteringTestBase
    }
    
    protected void tearDown() throws Exception
-   {
+   {   	   	
       super.tearDown();
    }
    
@@ -407,7 +269,7 @@ public class ChangeFailoverNodeTest extends ClusteringTestBase
          
          while(true)
          {
-            FailoverEvent event = failoverListener.getEvent(120000);
+            FailoverEvent event = failoverListener.getEvent(30000);
             if (event != null && FailoverEvent.FAILOVER_COMPLETED == event.getType())
             {
                break;
@@ -465,6 +327,13 @@ public class ChangeFailoverNodeTest extends ClusteringTestBase
          {
             conn0.close();
          }
+         
+         // Since we kill the rmi server in this test, we must kill the other servers too
+      	
+      	for (int i = nodeCount - 1; i >= 0; i--)
+      	{
+      		ServerManagement.kill(i);
+      	}
       }
    }
    
@@ -575,7 +444,7 @@ public class ChangeFailoverNodeTest extends ClusteringTestBase
          
          while(true)
          {
-            FailoverEvent event = failoverListener.getEvent(120000);
+            FailoverEvent event = failoverListener.getEvent(30000);
             if (event != null && FailoverEvent.FAILOVER_COMPLETED == event.getType())
             {
                break;
@@ -632,6 +501,13 @@ public class ChangeFailoverNodeTest extends ClusteringTestBase
          {
             conn0.close();
          }
+         
+         //  Since we kill the rmi server in this test, we must kill the other servers too
+      	
+      	for (int i = nodeCount - 1; i >= 0; i--)
+      	{
+      		ServerManagement.kill(i);
+      	}
       }
    }
    
@@ -743,7 +619,7 @@ public class ChangeFailoverNodeTest extends ClusteringTestBase
          
          while(true)
          {
-            FailoverEvent event = failoverListener.getEvent(120000);
+            FailoverEvent event = failoverListener.getEvent(30000);
             if (event != null && FailoverEvent.FAILOVER_COMPLETED == event.getType())
             {
                break;
@@ -901,7 +777,7 @@ public class ChangeFailoverNodeTest extends ClusteringTestBase
          
          while(true)
          {
-            FailoverEvent event = failoverListener.getEvent(120000);
+            FailoverEvent event = failoverListener.getEvent(30000);
             if (event != null && FailoverEvent.FAILOVER_COMPLETED == event.getType())
             {
                break;
@@ -1045,7 +921,7 @@ public class ChangeFailoverNodeTest extends ClusteringTestBase
          
          while(true)
          {
-            FailoverEvent event = failoverListener.getEvent(120000);
+            FailoverEvent event = failoverListener.getEvent(30000);
             if (event != null && FailoverEvent.FAILOVER_COMPLETED == event.getType())
             {
                break;

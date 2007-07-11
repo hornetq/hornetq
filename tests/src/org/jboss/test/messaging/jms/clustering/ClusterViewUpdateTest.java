@@ -71,7 +71,7 @@ public class ClusterViewUpdateTest extends ClusteringTestBase
       assertEquals(1, getServerId(conn1));
 
       log.info("*** killing server");
-      ServerManagement.killAndWait(1);
+      ServerManagement.kill(1);
       log.info("killed server");
 
       log.info("sleeping 5 secs ...");
@@ -125,7 +125,7 @@ public class ClusterViewUpdateTest extends ClusteringTestBase
       assertEquals(1, getServerId(conn1));
       assertEquals(1, getServerId(httpConn1));
 
-      ServerManagement.killAndWait(1);
+      ServerManagement.kill(1);
 
       log.info("sleeping 5 secs ...");
       Thread.sleep(5000);
@@ -179,7 +179,7 @@ public class ClusterViewUpdateTest extends ClusteringTestBase
       // Disable Leasing for Failover
       state.getRemotingConnection().removeConnectionListener();
 
-      ServerManagement.killAndWait(1);
+      ServerManagement.kill(1);
 
       Thread.sleep(10000);
 

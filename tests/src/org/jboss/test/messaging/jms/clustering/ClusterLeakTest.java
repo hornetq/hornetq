@@ -154,7 +154,7 @@ public class ClusterLeakTest extends ClusteringTestBase
 
          // kill node 1
 
-         ServerManagement.killAndWait(1);
+         ServerManagement.kill(1);
          log.info("########");
          log.info("######## KILLED NODE 1");
          log.info("########");

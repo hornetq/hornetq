@@ -2928,23 +2928,10 @@ public class MessagingPostOffice extends JDBCSupport
             }
             else
             {
-            	log.debug(this + " did not have a queue: " + queue.getName() + " queue so no need to merge");
+            	//Cannot failover if there is no queue deployed.
             	
-              	Queue newQueue = new MessagingQueue(thisNodeID, queue.getName(), queue.getChannelID(), queue.isRecoverable(),
-              			                              queue.getFilter(), true);
-
-               addBinding(new Binding(condition, newQueue, binding.allNodes), false);
-               
-               newQueue.load();
-               
-               //TODO - do we really want to activate ALL the queues - surely only the ones that correspond to deployed destinations??
-               newQueue.activate();
-
-               //FIXME there is a problem in the above code.
-               //If the server crashes between deleting the binding from the database
-               //and creating the new binding in the database, then the binding will be completely
-               //lost from the database when the server is resurrected.
-               //To remedy, both db operations need to be done in the same JBDC tx
+            	throw new IllegalStateException("Cannot failover " + queue.getName() + " since it does not exist on this node. " + 
+            			                          "You must deploy your clustered destinations on ALL nodes of the cluster");
             }            
          }
 

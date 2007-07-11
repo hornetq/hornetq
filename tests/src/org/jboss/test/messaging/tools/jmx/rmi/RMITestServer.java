@@ -179,8 +179,18 @@ public class RMITestServer extends UnicastRemoteObject implements Server
 
    public synchronized void kill() throws Exception
    {
-      // Kills the server without doing any graceful shutdown. For graceful shutdown use stop().
-      new Thread(new VMKiller(), "VM Killer").start();
+      //We deregister in another thread, them pause, then kill the VM
+   	//This ensures if the deregister hangs (which can happen if the RMI registry is dead) then it doesn't prevent
+   	//the kill
+   	//We always kill on this thread to ensure the kill completes in a timely manner which may not occur if it occurs
+   	//on its own thread due to thread scheduling differences
+      new Thread(new Deregisterer(), "Deregisterer").start();
+      
+      log.info("Killing VM!!!!");
+      
+      Thread.sleep(250);
+      
+      System.exit(1);
    }
 
    public void ping() throws Exception
@@ -510,11 +520,11 @@ public class RMITestServer extends UnicastRemoteObject implements Server
 
    // Inner classes -------------------------------------------------
 
-   public class VMKiller implements Runnable
+   public class Deregisterer implements Runnable
    {
       public void run()
       {
-         log.info("shutting down the VM");
+         log.info("Deregistering from RMI");
 
          try
          {
@@ -525,26 +535,26 @@ public class RMITestServer extends UnicastRemoteObject implements Server
             String name = RMI_SERVER_PREFIX + server.getServerID();
             registry.unbind(name);
             log.info("unregistered " + name + " from registry");
+         }
+         catch (Throwable t)
+         {
+         	log.error("Failed to unregister", t);
+         }
+         
+         try
+         {
+            // unregister myself from the RMI registry
 
-            name = NAMING_SERVER_PREFIX + server.getServerID();
+            Registry registry = LocateRegistry.getRegistry(DEFAULT_REGISTRY_PORT);
+
+            String name = NAMING_SERVER_PREFIX + server.getServerID();
             registry.unbind(name);
             log.info("unregistered " + name + " from registry");
          }
-         catch(Exception e)
+         catch (Throwable t)
          {
-            log.error("Failed to unregister", e);
-         }
-
-         try
-         {
-            Thread.sleep(250);
-         }
-         catch(Exception e)
-         {
-            log.warn("interrupted while sleeping", e);
-         }
-
-         System.exit(0);
+         	log.error("Failed to unregister", t);
+         }                 
       }
    }
 }

@@ -86,9 +86,13 @@ public class StopRMIServer
          return;
       }
 
-      // We should shut down cleanly - not kill the process like we are currently doing
-      
-      server.kill();
+      try
+      {
+      	server.kill();
+      }
+      catch (Throwable t)
+      {      	
+      }
 
       // The last RMI server will take with it the registry too
 

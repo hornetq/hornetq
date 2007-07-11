@@ -135,8 +135,10 @@ public class ServerManagement
     */
    public static synchronized Server create(int i) throws Exception
    {
+   	log.info("Attempting to create server " + i);
       if (servers[i] == null)
       {
+      	log.info("Server not already created, so creating...");
          if (isLocal())
          {
             servers[i] = new ServerHolder(new LocalTestServer(i), false);
@@ -155,6 +157,10 @@ public class ServerManagement
                servers[i] = new ServerHolder(ServerManagement.spawn(i), true);
             }
          }
+      }
+      else
+      {
+      	log.info("Server already created, so skipping");
       }
 
       return servers[i].getServer();
@@ -198,9 +204,9 @@ public class ServerManagement
                                          boolean clearDatabase,
                                          boolean startMessagingServer) throws Exception
    {
+      log.info("Attempting to start server " + i);
+   	
       Server s = create(i);
-
-      log.info("starting server " + i);
 
       s.start(config, attrOverrides, clearDatabase, startMessagingServer);
 
@@ -256,51 +262,58 @@ public class ServerManagement
    }
 
    /**
-    * Abruptly kills the VM running the specified server, simulating a crash. A local server
-    * cannot be killed, the method is a noop if this is the case.
-    */
-   public static synchronized void kill(int i) throws Exception
-   {
-      if (servers[i] == null)
-      {
-         log.warn("server " + i + " has not been created, so it cannot be killed");
-      }
-      else
-      {
-         log.trace("invoking kill() on server " + i);
-         servers[i].getServer().kill();
-         log.info("server " + i + " killed");
-         servers[i] = null;
-      }
-   }
-
-   /**
     * Kills the server and waits keep trying any dumb communication until the server is effectively
     * killed. We had to implement this method as kill will actually schedule a thread that will
     * perform System.exit after few milliseconds. We will use this method in places where we need
     * the server killed.
     */
-   public static synchronized void killAndWait(int i) throws Exception
+   public static synchronized void kill(int i) throws Exception
    {
-      Server server = servers[i].getServer();
-      kill(i);
-      try
+   	log.info("Attempting to kill server " + i);
+   	
+   	ServerHolder holder = servers[i];
+
+      if (holder == null)
       {
-         while(true)
+         log.info("server " + i + " has not been created or has already been killed, so it cannot be killed");
+      }
+      else
+      {
+         Server server = servers[i].getServer();
+         log.info("invoking kill() on server " + i);
+         try
          {
-            server.ping();
-            log.debug("server " + i + " still alive ...");
-            Thread.sleep(10);
+         	server.kill();
          }
-      }
-      catch (Throwable e)
-      {
-        // e.printStackTrace();
-      }
+         catch (Throwable t)
+         {
+         	// This is likely to throw an exception since the server dies before the response is received
+         }         
+         servers[i] = null;
+         
+         log.info("Waiting for server to die");
+         
+         try
+         {
+            while(true)
+            {
+               server.ping();
+               log.debug("server " + i + " still alive ...");
+               Thread.sleep(100);
+            }
+         }
+         catch (Throwable e)
+         {
+            //Ok
+         }
+         
+         Thread.sleep(300);
 
-      log.debug("server " + i + " killed and dead");
+         log.info("server " + i + " killed and dead");
+      }
+      
    }
-
+   
    /**
     * This method make sure that all servers that have been implicitely spawned when as a side
     * effect of create() and/or start() are killed. The method is important because a forked
@@ -323,8 +336,14 @@ public class ServerManagement
          {
             Server s = servers[i].getServer();
             destroyed.add(new Integer(s.getServerID()));
-            s.stop();
-            s.kill();
+
+            try
+            {
+            	s.kill();
+            }
+            catch (Throwable t)
+            {            	
+            }
             servers[i] = null;
          }
       }

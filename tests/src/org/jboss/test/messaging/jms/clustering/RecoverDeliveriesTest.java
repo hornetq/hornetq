@@ -373,7 +373,7 @@ public class RecoverDeliveriesTest extends ClusteringTestBase
          
          while(true)
          {
-            FailoverEvent event = failoverListener.getEvent(120000);
+            FailoverEvent event = failoverListener.getEvent(30000);
             if (event != null && FailoverEvent.FAILOVER_COMPLETED == event.getType())
             {
                break;
@@ -519,7 +519,7 @@ public class RecoverDeliveriesTest extends ClusteringTestBase
          
          while(true)
          {
-            FailoverEvent event = failoverListener.getEvent(120000);
+            FailoverEvent event = failoverListener.getEvent(30000);
             if (event != null && FailoverEvent.FAILOVER_COMPLETED == event.getType())
             {
                break;
@@ -735,7 +735,7 @@ public class RecoverDeliveriesTest extends ClusteringTestBase
          
          while(true)
          {
-            FailoverEvent event = failoverListener.getEvent(120000);
+            FailoverEvent event = failoverListener.getEvent(30000);
             if (event != null && FailoverEvent.FAILOVER_COMPLETED == event.getType())
             {
                break;
@@ -973,7 +973,7 @@ public class RecoverDeliveriesTest extends ClusteringTestBase
          
          while(true)
          {
-            FailoverEvent event = failoverListener.getEvent(120000);
+            FailoverEvent event = failoverListener.getEvent(30000);
             if (event != null && FailoverEvent.FAILOVER_COMPLETED == event.getType())
             {
                break;

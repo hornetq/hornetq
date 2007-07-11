@@ -174,7 +174,7 @@ public class FailoverStressTest extends ClusteringTestBase
 
       int serverId = getServerId(connections[0]);
 
-      ServerManagement.killAndWait(serverId);
+      ServerManagement.kill(serverId);
 
       log.info("killed node " + serverId + ", now waiting for all connections to fail over");
       

@@ -17,7 +17,6 @@ import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 
-import org.jboss.jms.client.JBossConnection;
 import org.jboss.test.messaging.tools.ServerManagement;
 
 /**
@@ -108,7 +107,7 @@ public class MergeQueueTest extends ClusteringTestBase
          //At this point there should be 5 messages on the node 0 queue (5-9)
          //and 10 messages on the node 1 queue (10-19)
          
-         ServerManagement.killAndWait(1);
+         ServerManagement.kill(1);
 
          consumer0 = session0.createConsumer(queue[0]);
 
@@ -221,7 +220,7 @@ public class MergeQueueTest extends ClusteringTestBase
          Thread.sleep(5000);
 
          log.info("Killing node1");
-         ServerManagement.killAndWait(1);
+         ServerManagement.kill(1);
          log.info("Killed node1");
 
          // close the consumer .. .and this should cause failover to kick in

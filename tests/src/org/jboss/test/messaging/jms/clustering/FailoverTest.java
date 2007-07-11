@@ -74,7 +74,7 @@ public class FailoverTest extends ClusteringTestBase
 
          while(true)
          {
-            FailoverEvent event = failoverListener.getEvent(120000);
+            FailoverEvent event = failoverListener.getEvent(30000);
             if (event != null && FailoverEvent.FAILOVER_COMPLETED == event.getType())
             {
                break;
@@ -127,7 +127,7 @@ public class FailoverTest extends ClusteringTestBase
 
          while(true)
          {
-            FailoverEvent event = failoverListener.getEvent(120000);
+            FailoverEvent event = failoverListener.getEvent(30000);
             if (event != null && FailoverEvent.FAILOVER_COMPLETED == event.getType())
             {
                break;
@@ -198,7 +198,7 @@ public class FailoverTest extends ClusteringTestBase
 
          while(true)
          {
-            FailoverEvent event = failoverListener.getEvent(120000);
+            FailoverEvent event = failoverListener.getEvent(30000);
             if (event != null && FailoverEvent.FAILOVER_COMPLETED == event.getType())
             {
                break;
@@ -268,7 +268,7 @@ public class FailoverTest extends ClusteringTestBase
 
          while(true)
          {
-            FailoverEvent event = failoverListener.getEvent(120000);
+            FailoverEvent event = failoverListener.getEvent(30000);
             if (event != null && FailoverEvent.FAILOVER_COMPLETED == event.getType())
             {
                break;
@@ -340,7 +340,7 @@ public class FailoverTest extends ClusteringTestBase
 
          while(true)
          {
-            FailoverEvent event = failoverListener.getEvent(120000);
+            FailoverEvent event = failoverListener.getEvent(30000);
             if (event != null && FailoverEvent.FAILOVER_COMPLETED == event.getType())
             {
                break;
@@ -409,7 +409,7 @@ public class FailoverTest extends ClusteringTestBase
 
          while(true)
          {
-            FailoverEvent event = failoverListener.getEvent(120000);
+            FailoverEvent event = failoverListener.getEvent(30000);
             if (event != null && FailoverEvent.FAILOVER_COMPLETED == event.getType())
             {
                break;
@@ -475,7 +475,7 @@ public class FailoverTest extends ClusteringTestBase
 
          while(true)
          {
-            FailoverEvent event = failoverListener.getEvent(120000);
+            FailoverEvent event = failoverListener.getEvent(30000);
             if (event != null && FailoverEvent.FAILOVER_COMPLETED == event.getType())
             {
                break;
@@ -575,7 +575,7 @@ public class FailoverTest extends ClusteringTestBase
 
          while(true)
          {
-            FailoverEvent event = failoverListener.getEvent(120000);
+            FailoverEvent event = failoverListener.getEvent(30000);
             if (event != null && FailoverEvent.FAILOVER_COMPLETED == event.getType())
             {
                break;
@@ -658,7 +658,7 @@ public class FailoverTest extends ClusteringTestBase
 
          while(true)
          {
-            FailoverEvent event = failoverListener.getEvent(120000);
+            FailoverEvent event = failoverListener.getEvent(30000);
             if (event != null && FailoverEvent.FAILOVER_COMPLETED == event.getType())
             {
                break;
@@ -743,7 +743,7 @@ public class FailoverTest extends ClusteringTestBase
 
          while(true)
          {
-            FailoverEvent event = failoverListener.getEvent(120000);
+            FailoverEvent event = failoverListener.getEvent(30000);
             if (event != null && FailoverEvent.FAILOVER_COMPLETED == event.getType())
             {
                break;
@@ -831,7 +831,7 @@ public class FailoverTest extends ClusteringTestBase
 
          while(true)
          {
-            FailoverEvent event = failoverListener.getEvent(120000);
+            FailoverEvent event = failoverListener.getEvent(30000);
             if (event != null && FailoverEvent.FAILOVER_COMPLETED == event.getType())
             {
                break;
@@ -922,7 +922,7 @@ public class FailoverTest extends ClusteringTestBase
 
          while(true)
          {
-            FailoverEvent event = failoverListener.getEvent(120000);
+            FailoverEvent event = failoverListener.getEvent(30000);
             if (event != null && FailoverEvent.FAILOVER_COMPLETED == event.getType())
             {
                break;
@@ -1009,7 +1009,7 @@ public class FailoverTest extends ClusteringTestBase
 
          while(true)
          {
-            FailoverEvent event = failoverListener.getEvent(120000);
+            FailoverEvent event = failoverListener.getEvent(30000);
             if (event != null && FailoverEvent.FAILOVER_COMPLETED == event.getType())
             {
                break;
@@ -1096,7 +1096,7 @@ public class FailoverTest extends ClusteringTestBase
 
          while(true)
          {
-            FailoverEvent event = failoverListener.getEvent(120000);
+            FailoverEvent event = failoverListener.getEvent(30000);
             if (event != null && FailoverEvent.FAILOVER_COMPLETED == event.getType())
             {
                break;
@@ -1179,7 +1179,7 @@ public class FailoverTest extends ClusteringTestBase
 
          while(true)
          {
-            FailoverEvent event = failoverListener.getEvent(120000);
+            FailoverEvent event = failoverListener.getEvent(30000);
             if (event != null && FailoverEvent.FAILOVER_COMPLETED == event.getType())
             {
                break;
@@ -1236,19 +1236,19 @@ public class FailoverTest extends ClusteringTestBase
          log.info("######## KILLED NODE 1");
          log.info("########");
 
-         FailoverEvent event = failoverListener.getEvent(120000);
+         FailoverEvent event = failoverListener.getEvent(30000);
 
          assertNotNull(event);
          assertEquals(FailoverEvent.FAILURE_DETECTED, event.getType());
          log.info("got " + event);
 
-         event = failoverListener.getEvent(120000);
+         event = failoverListener.getEvent(30000);
 
          assertNotNull(event);
          assertEquals(FailoverEvent.FAILOVER_STARTED, event.getType());
          log.info("got " + event);
 
-         event = failoverListener.getEvent(120000);
+         event = failoverListener.getEvent(30000);
 
          assertNotNull(event);
          assertEquals(FailoverEvent.FAILOVER_COMPLETED, event.getType());
@@ -1298,7 +1298,7 @@ public class FailoverTest extends ClusteringTestBase
 
          while(true)
          {
-            FailoverEvent event = listener.getEvent(120000);
+            FailoverEvent event = listener.getEvent(30000);
             if (event != null && FailoverEvent.FAILOVER_STARTED == event.getType())
             {
                break;
@@ -1422,7 +1422,7 @@ public class FailoverTest extends ClusteringTestBase
             getDelegate()).getRemotingConnection();
          rc.removeConnectionListener();
 
-         ServerManagement.killAndWait(1);
+         ServerManagement.kill(1);
 
          log.info("########");
          log.info("######## KILLED NODE 1");
@@ -1506,7 +1506,7 @@ public class FailoverTest extends ClusteringTestBase
 
          // kill node 1
 
-         ServerManagement.killAndWait(1);
+         ServerManagement.kill(1);
          log.info("########");
          log.info("######## KILLED NODE 1");
          log.info("########");
@@ -1635,7 +1635,7 @@ public class FailoverTest extends ClusteringTestBase
 
          MessageConsumer consumer = session1.createConsumer(queue[1]);
 
-         ServerManagement.killAndWait(1);
+         ServerManagement.kill(1);
 
          consumer.close();
       }
@@ -1675,7 +1675,7 @@ public class FailoverTest extends ClusteringTestBase
 
          QueueBrowser browser = session1.createBrowser(queue[1]);
 
-         ServerManagement.killAndWait(1);
+         ServerManagement.kill(1);
 
          browser.close();
       }
@@ -1713,7 +1713,7 @@ public class FailoverTest extends ClusteringTestBase
 
          Session session = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         ServerManagement.killAndWait(1);
+         ServerManagement.kill(1);
 
          session.close();
       }
@@ -1748,7 +1748,7 @@ public class FailoverTest extends ClusteringTestBase
             getDelegate()).getRemotingConnection();
          rc.removeConnectionListener();
 
-         ServerManagement.killAndWait(1);
+         ServerManagement.kill(1);
 
          conn1.close();
       }
@@ -1830,7 +1830,7 @@ public class FailoverTest extends ClusteringTestBase
 
          while(true)
          {
-            FailoverEvent event = failoverListener.getEvent(120000);
+            FailoverEvent event = failoverListener.getEvent(30000);
             if (event != null && FailoverEvent.FAILOVER_COMPLETED == event.getType())
             {
                break;
@@ -1948,7 +1948,7 @@ public class FailoverTest extends ClusteringTestBase
 
          // kill node 1
 
-         ServerManagement.killAndWait(1);
+         ServerManagement.kill(1);
          log.info("########");
          log.info("######## KILLED NODE 1");
          log.info("########");
