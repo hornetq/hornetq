@@ -420,13 +420,6 @@ public class LargeClusterTest extends ClusteringTestBase
    protected void tearDown() throws Exception
    {
       super.tearDown();
-
-      ServerManagement.kill(6);
-      ServerManagement.kill(5);
-      ServerManagement.kill(4);
-      ServerManagement.kill(3);
-      ServerManagement.kill(2);
-      ServerManagement.kill(1);
    }
 
 
