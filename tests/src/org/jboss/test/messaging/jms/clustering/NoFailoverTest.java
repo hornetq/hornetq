@@ -137,7 +137,6 @@ public class NoFailoverTest extends ClusteringTestBase
          lookups();
 
          conn = createConnectionOnServer(cf, 1);
-            cf.createConnection();
 
          sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
