@@ -939,7 +939,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
    {
    	//	First deliver any waiting deliveries
    	
-   	if (trace) { log.trace("Delivering any waiting deliveries"); }
+   	if (trace) { log.trace("Delivering any waiting deliveries: " + queueName); }
    	
    	List toAddBack = null;
    	
@@ -952,7 +952,9 @@ public class ServerSessionEndpoint implements SessionEndpoint
    			break;
    		}
    		
-   		if (dr.queueName == null || dr.queueName.equals(queueName))
+   		if (trace) { log.trace("Considering " + dr); } 
+   		
+   		if (queueName == null || dr.queueName.equals(queueName))
    		{   		
 	   		performDelivery(dr.del.getReference(), dr.deliveryID, dr.getConsumer()); 
 				
@@ -2071,7 +2073,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
     */
    private static class DeliveryRecord
    {
-   	// We need to cache the attributes here  since the consumer may get gc'd BEFORE the delivery is acked
+   	// We need to cache the attributes here  since the consumer may get gc'd BEFORE the delivery is acked   	
    	
       Delivery del;
         
@@ -2139,6 +2141,11 @@ public class ServerSessionEndpoint implements SessionEndpoint
          //the consumer being gc'd
          this.consumerRef = new WeakReference(consumer);
       }            
+      
+   	public String toString()
+   	{
+   		return "DeliveryRecord " + System.identityHashCode(this) + " del: " + del + " queueName: " + queueName;
+   	}
    }
    
    /**

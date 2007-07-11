@@ -207,7 +207,8 @@ public class MessagingQueue extends PagingChannelSupport implements Queue
     */
    public void mergeIn(long theChannelID, int nodeID) throws Exception
    {
-      if (trace) { log.trace("Merging queue " + channelID + " node id " + nodeID + " into " + this); }
+      if (trace) { log.trace("Merging queue " + channelID + " node id " + nodeID + " into " + this + 
+      		                 " initially refs:" + messageRefs.size()); }
            
       synchronized (lock)
       {
