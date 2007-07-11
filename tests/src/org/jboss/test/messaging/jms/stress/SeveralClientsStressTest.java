@@ -73,8 +73,8 @@ public class SeveralClientsStressTest extends MessagingTestCase
    protected static long PRODUCER_ALIVE_FOR=60000; // half minute
    protected static long CONSUMER_ALIVE_FOR=60000; // 1 minutes
    protected static long TEST_ALIVE_FOR=5 * 60 * 1000; // 5 minutes
-   protected static int NUMBER_OF_PRODUCERS=10;
-   protected static int NUMBER_OF_CONSUMERS=10;
+   protected static int NUMBER_OF_PRODUCERS=300;
+   protected static int NUMBER_OF_CONSUMERS=300;
 
    protected static SynchronizedInt producedMessages = new SynchronizedInt(0);
    protected static SynchronizedInt readMessages = new SynchronizedInt(0);
