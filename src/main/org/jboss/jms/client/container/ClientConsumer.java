@@ -30,18 +30,19 @@ import javax.jms.JMSException;
 import javax.jms.MessageListener;
 import javax.jms.Session;
 
-import org.jboss.jms.delegate.ConsumerDelegate;
-import org.jboss.jms.delegate.SessionDelegate;
-import org.jboss.jms.message.MessageProxy;
 import org.jboss.jms.delegate.Cancel;
+import org.jboss.jms.delegate.ConsumerDelegate;
 import org.jboss.jms.delegate.DefaultCancel;
 import org.jboss.jms.delegate.DeliveryInfo;
+import org.jboss.jms.delegate.SessionDelegate;
+import org.jboss.jms.message.MessageProxy;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.contract.Message;
 import org.jboss.messaging.util.Future;
 import org.jboss.messaging.util.prioritylinkedlist.BasicPriorityLinkedList;
 import org.jboss.messaging.util.prioritylinkedlist.PriorityLinkedList;
 
+import EDU.oswego.cs.dl.util.concurrent.LinkedQueue;
 import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
 
 /**
@@ -176,7 +177,11 @@ public class ClientConsumer
       // or add anything to the tx for this session
       if (!isConnectionConsumer)
       {
+      	if (trace) { log.trace("Calling postDeliver"); }
+      	
          sess.postDeliver();
+         
+         if (trace) { log.trace("Called postDeliver"); }
       }   
    }
    
@@ -245,7 +250,7 @@ public class ClientConsumer
    }
         
    // Public ---------------------------------------------------------------------------------------
-
+  
    /**
     * Handles a message sent from the server.
     *
@@ -737,6 +742,9 @@ public class ClientConsumer
    {
       boolean notified = false;
       
+      if (trace) { log.trace("Receiver thread:" + receiverThread + " listener:" + listener + " listenerRunning:" + listenerRunning + 
+      		" sessionExecutor:" + sessionExecutor); }
+      
       // If we have a thread waiting on receive() we notify it
       if (receiverThread != null)
       {
@@ -754,6 +762,7 @@ public class ClientConsumer
             listenerRunning = true;
 
             if (trace) { log.trace(this + " scheduled a new ListenerRunner"); }
+            
             this.queueRunner(new ListenerRunner());
          }     
          
@@ -763,6 +772,8 @@ public class ClientConsumer
       // Make sure we notify any thread waiting for last delivery
       if (waitingForLastDelivery && !notified)
       {
+      	if (trace) { log.trace("Notifying"); }
+      	
          mainLock.notifyAll();
       }
    }
@@ -895,7 +906,53 @@ public class ClientConsumer
 
             mp = (MessageProxy)buffer.removeFirst();
                           
-            if (!buffer.isEmpty())
+//            if (!buffer.isEmpty())
+//            {
+//            	//Queue up the next runner to run
+//            	
+//            	if (trace) { log.trace("More messages in buffer so queueing next onMessage to run"); }
+//            	
+//            	queueRunner(this);
+//            	
+//            	if (trace) { log.trace("Queued next onMessage to run"); }
+//            }
+//            else
+//            {
+//            	if (trace) { log.trace("no more messages in buffer, marking listener as not running"); }
+//            	
+//            	listenerRunning  = false;
+//            }               
+         }
+         
+         /*
+          * Bug here is as follows:
+          * The next runner gets scheduled BEFORE the on message is executed
+          * so if the onmessage fails on acking it will be put on hold
+          * and failover will kick in, this will clear the executor
+          * so the next queud one disappears at everything grinds to a halt
+          * 
+          * Solution - don't use a session executor - have a sesion thread instead much nicer
+          */
+         
+                        
+         if (mp != null)
+         {
+            try
+            {
+               callOnMessage(sessionDelegate, theListener, consumerID, queueName,
+                             false, mp, ackMode, maxDeliveries, null, shouldAck);
+               
+               if (trace) { log.trace("Called callonMessage"); }
+            }
+            catch (Throwable t)
+            {
+               log.error("Failed to deliver message", t);
+            } 
+         }
+         
+         synchronized (mainLock)
+         {
+         	if (!buffer.isEmpty())
             {
             	//Queue up the next runner to run
             	
@@ -910,26 +967,15 @@ public class ClientConsumer
             	if (trace) { log.trace("no more messages in buffer, marking listener as not running"); }
             	
             	listenerRunning  = false;
-            }               
-         }
-                        
-         if (mp != null)
-         {
-            try
-            {
-               callOnMessage(sessionDelegate, theListener, consumerID, queueName,
-                             false, mp, ackMode, maxDeliveries, null, shouldAck);
-            }
-            catch (JMSException e)
-            {
-               log.error("Failed to deliver message", e);
-            } 
+            }   
          }
                   
          if (handleFlowControl)
          {
          	checkStart();                                                   
          }
+         
+         if (trace) { log.trace("Exiting run()"); }
       }
    }   
 }

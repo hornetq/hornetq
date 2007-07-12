@@ -145,7 +145,7 @@ public class ServerManagement
          }
          else
          {
-            Server s = acquireRemote(2, i, true);
+            Server s = acquireRemote(10, i, true);
 
             if (s != null)
             {
@@ -543,7 +543,7 @@ public class ServerManagement
 
       log.info("spawned server " + i + ", waiting for it to come online");
 
-      while(System.currentTimeMillis() - startTime < maxWaitTime * 1000)
+      while (System.currentTimeMillis() - startTime < maxWaitTime * 1000)
       {
          s = acquireRemote(1, i, true);
          if (s != null)

@@ -34,6 +34,7 @@ import javax.jms.MessageProducer;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 
+import org.jboss.jms.client.JBossConnection;
 import org.jboss.test.messaging.tools.ServerManagement;
 
 /**
@@ -197,17 +198,17 @@ public class MultipleFailoverTest extends ClusteringTestBase
    
    public void testFailoverFloodTwoServers() throws Exception
    {
-      Connection conn = null;
+      JBossConnection conn = null;
 
       try
       {
-         conn = this.createConnectionOnServer(cf, 1);
+         conn = (JBossConnection)this.createConnectionOnServer(cf, 1);
 
          Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
          Session sessCons = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         MessageConsumer cons = sessCons.createConsumer(queue[0]);
+         MessageConsumer cons = sessCons.createConsumer(queue[1]);
 
          MyListener list = new MyListener();
 
@@ -215,7 +216,7 @@ public class MultipleFailoverTest extends ClusteringTestBase
 
          conn.start();
 
-         MessageProducer prod = sessSend.createProducer(queue[0]);
+         MessageProducer prod = sessSend.createProducer(queue[1]);
 
          prod.setDeliveryMode(DeliveryMode.PERSISTENT);
 
@@ -236,13 +237,19 @@ public class MultipleFailoverTest extends ClusteringTestBase
             
             if (count % 100 == 0)
             {
-               log.info("sent " + count);
+               log.info("sent " + count + " server id " + conn.getServerID());
             }
-
+            
             count++;
+            
+            Thread.sleep(5);
          }
-              
+         
+         log.info("done send");
+         
+         log.info("Waiting to join thread");
          t.join(5 * 60 * 60 * 1000);
+         log.info("joined");
          
          if (killer.failed)
          {
@@ -252,13 +259,14 @@ public class MultipleFailoverTest extends ClusteringTestBase
          //We check that we received all the message
          //we allow for duplicates, see http://jira.jboss.org/jira/browse/JBMESSAGING-604
          
-         conn.close();
-         conn = null;
-         
-         if (!list.waitFor(count))
+         if (!list.waitFor(count - 1))
          {
          	fail("Timed out waiting for message");
          }
+         
+         conn.close();
+         conn = null;
+         
                   
          count = 0;
          Iterator iter = list.msgs.iterator();
@@ -337,10 +345,11 @@ public class MultipleFailoverTest extends ClusteringTestBase
       {
          try
          {                                     
-            Thread.sleep(10000);
+            Thread.sleep(5000);
                
             log.info("Killing server 1");
             ServerManagement.kill(1);
+            log.info("Killed server 1");
             
             Thread.sleep(5000);
             
@@ -392,10 +401,13 @@ public class MultipleFailoverTest extends ClusteringTestBase
             ServerManagement.start(1, "all", false);
             ServerManagement.deployQueue("testDistributedQueue", 1);
             
+            Thread.sleep(10000);
+            
             log.info("killer DONE");
          }
          catch (Exception e)
          {               
+         	log.error("Killer failed", e);
             failed = true;
          }
          
@@ -406,8 +418,6 @@ public class MultipleFailoverTest extends ClusteringTestBase
    
    class MyListener implements MessageListener
    {
-      int count = 0;
-          
       volatile boolean failed;
       
       Set msgs = new TreeSet();
@@ -418,39 +428,40 @@ public class MultipleFailoverTest extends ClusteringTestBase
       
       boolean waitFor(int i)
       {
+      	log.info("Waiting for message " + i);
       	synchronized (obj)
       	{
+      		log.info("here");
       		long toWait = 30000;
       		while (maxcnt < i && toWait > 0)
       		{
       			long start = System.currentTimeMillis();
       			try
-      			{      				
-      				obj.wait(30000);
+      			{      		
+      				obj.wait(60000);
       			}
       			catch (InterruptedException e)
       			{}
-      			if (i <= maxcnt)
+      			if (maxcnt < i)
       			{
       				toWait -= System.currentTimeMillis() - start;
       			}            			      
       		}
-      		return maxcnt < i;
+      		return maxcnt == i;
       	}
+      	
       }
    
       public void onMessage(Message msg)
       {
          try
          {
-            TextMessage tm = (TextMessage)msg;
-            
-            if (count % 100 == 0)
+            int cnt = msg.getIntProperty("cnt");
+                        
+            if (cnt % 100 == 0)
             {
-               log.info("Received message " + tm.getText() + " (" + tm + ")");
+               log.info(this + " Received message " + cnt);
             }
-            
-            count++;
             
             /*
             
@@ -474,16 +485,15 @@ public class MultipleFailoverTest extends ClusteringTestBase
             
             Therefore we only count that the total messages were received
             */      
-            
-            int cnt = msg.getIntProperty("cnt");
-            
+              
             msgs.add(new Integer(cnt));
             
             maxcnt = Math.max(maxcnt, cnt);
+            
             synchronized (obj)
             {
             	obj.notify();
-            }                        
+            }         
          }
          catch (Exception e)
          {
