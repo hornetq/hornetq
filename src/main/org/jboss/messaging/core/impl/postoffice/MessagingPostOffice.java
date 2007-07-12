@@ -85,7 +85,6 @@ import EDU.oswego.cs.dl.util.concurrent.LinkedQueue;
 import EDU.oswego.cs.dl.util.concurrent.PooledExecutor;
 import EDU.oswego.cs.dl.util.concurrent.ReadWriteLock;
 import EDU.oswego.cs.dl.util.concurrent.ReentrantWriterPreferenceReadWriteLock;
-import EDU.oswego.cs.dl.util.concurrent.WriterPreferenceReadWriteLock;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -219,8 +218,6 @@ public class MessagingPostOffice extends JDBCSupport
    
    private volatile int failoverNodeID = -1;
    
-   private ReadWriteLock replicateDeliveryLock;
-   
    private volatile boolean firstNode;
    
    // Constructors ---------------------------------------------------------------------------------
@@ -266,9 +263,7 @@ public class MessagingPostOffice extends JDBCSupport
       this.clusterNotifier = clusterNotifier;
 
       lock = new ReentrantWriterPreferenceReadWriteLock();
-      
-      replicateDeliveryLock = new WriterPreferenceReadWriteLock();
-      
+       
       waitForBindUnbindLock = new Object();
    }
    
@@ -1286,30 +1281,18 @@ public class MessagingPostOffice extends JDBCSupport
    public void handleReplicateDeliveryAck(String sessionID, long deliveryID) throws Exception
    {
    	if (trace) { log.trace(this + " handleReplicateDeliveryAck " + sessionID + " " + deliveryID); }
+   	  	
+   	//TOD - this does not belong here
+   	ServerSessionEndpoint session = serverPeer.getSession(sessionID);
    	
-   	//We need to lock this while failover node change is occurring - otherwise we could end up with the same message
-   	//being delivered more than once
-   	
-   	replicateDeliveryLock.readLock().acquire();
-   	
-   	try
-   	{	   	
-	   	//TOD - this does not belong here
-	   	ServerSessionEndpoint session = serverPeer.getSession(sessionID);
-	   	
-	   	if (session == null)
-	   	{
-	   		log.warn("Cannot find session " + sessionID);
-	   		
-	   		return;
-	   	}
-	   	
-	   	session.replicateDeliveryResponseReceived(deliveryID);
-   	}
-   	finally
+   	if (session == null)
    	{
-   		replicateDeliveryLock.readLock().release();
+   		log.warn("Cannot find session " + sessionID);
+   		
+   		return;
    	}
+   	
+   	session.replicateDeliveryResponseReceived(deliveryID);
    }
    
    public void handleAckAllReplicatedDeliveries(int nodeID) throws Exception
@@ -2769,57 +2752,48 @@ public class MessagingPostOffice extends JDBCSupport
    	{
 	   	//We must lock any responses to delivery adds coming in in this period - otherwise we could end up with the same
 	   	//message being delivered more than once
-	   	
-	   	replicateDeliveryLock.writeLock().acquire();
-	   	
-	   	try
-	   	{	   	
-		   	if (localNameMap != null)
-		   	{
-		   		Map deliveries = new HashMap();
-		   		
-					//FIXME - this is ugly
-					//Find a better way of getting the sessions
-		   		//We shouldn't know abou the server peer
-		   		
-		   		if (serverPeer != null)
-		   		{
-						
-						Collection sessions = serverPeer.getSessions();
-						
-						Iterator iter2 = sessions.iterator();
-						
-						while (iter2.hasNext())
-						{
-							ServerSessionEndpoint session = (ServerSessionEndpoint)iter2.next();
-							
-							session.deliverAnyWaitingDeliveries(null);
-							
-							session.collectDeliveries(deliveries, firstNode, null);				
-						}   				  
-						
-						if (!firstNode)
-						{			
-				   		PostOfficeAddressInfo info = (PostOfficeAddressInfo)nodeIDAddressMap.get(new Integer(failoverNodeID));
-				   		
-				   		if (info == null)
-				   		{
-				   			throw new IllegalStateException("Cannot find address for failover node " + failoverNodeID);
-				   		}		   		
-							
-							ClusterRequest request = new AddAllReplicatedDeliveriesMessage(thisNodeID, deliveries);
-							
-							groupMember.unicastControl(request, info.getControlChannelAddress(), false);
-				   		
-				   		if (trace) { log.trace("Sent AddAllReplicatedDeliveriesMessage"); }
-						}
-		   		}
-		   	}
-	   	}
-	   	finally
+	   		
+	   	if (localNameMap != null)
 	   	{
-	   		replicateDeliveryLock.writeLock().release();
-	   	}   	
+	   		Map deliveries = new HashMap();
+	   		
+				//FIXME - this is ugly
+				//Find a better way of getting the sessions
+	   		//We shouldn't know abou the server peer
+	   		
+	   		if (serverPeer != null)
+	   		{
+					
+					Collection sessions = serverPeer.getSessions();
+					
+					Iterator iter2 = sessions.iterator();
+					
+					while (iter2.hasNext())
+					{
+						ServerSessionEndpoint session = (ServerSessionEndpoint)iter2.next();
+						
+						session.deliverAnyWaitingDeliveries(null);
+						
+						session.collectDeliveries(deliveries, firstNode, null);				
+					}   				  
+					
+					if (!firstNode)
+					{			
+			   		PostOfficeAddressInfo info = (PostOfficeAddressInfo)nodeIDAddressMap.get(new Integer(failoverNodeID));
+			   		
+			   		if (info == null)
+			   		{
+			   			throw new IllegalStateException("Cannot find address for failover node " + failoverNodeID);
+			   		}		   		
+						
+						ClusterRequest request = new AddAllReplicatedDeliveriesMessage(thisNodeID, deliveries);
+						
+						groupMember.unicastControl(request, info.getControlChannelAddress(), false);
+			   		
+			   		if (trace) { log.trace("Sent AddAllReplicatedDeliveriesMessage"); }
+					}
+	   		}
+	   	}  	
    	}
    }
    

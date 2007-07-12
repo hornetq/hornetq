@@ -125,7 +125,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
    
    static final String TEMP_QUEUE_MESSAGECOUNTER_PREFIX = "TempQueue.";
    
-   private static final long CLOSE_TIMEOUT = 5 * 1000;
+   private static final long DELIVERY_WAIT_TIMEOUT = 5 * 1000;
       
    // Static ---------------------------------------------------------------------------------------
 
@@ -781,6 +781,236 @@ public class ServerSessionEndpoint implements SessionEndpoint
    {
       return "SessionEndpoint[" + id + "]";
    }
+   
+   public void deliverAnyWaitingDeliveries(String queueName) throws Exception
+   {
+   	//	First deliver any waiting deliveries
+   	
+   	if (trace) { log.trace("Delivering any waiting deliveries: " + queueName); }
+   	
+   	List toAddBack = null;
+   	
+   	while (true)
+   	{
+   		DeliveryRecord dr = (DeliveryRecord)toDeliver.poll(0);
+   		
+   		if (dr == null)
+   		{
+   			break;
+   		}
+   		
+   		if (trace) { log.trace("Considering " + dr); } 
+   		
+   		if (queueName == null || dr.queueName.equals(queueName))
+   		{   		
+   			//Need to synchronized to prevent the delivery being performed twice
+   			synchronized (dr)
+   			{   				
+		   		performDelivery(dr.del.getReference(), dr.deliveryID, dr.getConsumer()); 
+					
+			   	dr.waitingForResponse = false;
+   			}
+   		}
+   		else
+   		{
+   			if (toAddBack == null)
+   			{
+   				toAddBack = new ArrayList();
+   			}
+   			
+   			toAddBack.add(dr);
+   		}
+   	}
+   	
+   	if (toAddBack != null)
+   	{
+   		Iterator iter = toAddBack.iterator();
+   		
+   		while (iter.hasNext())
+   		{
+   			toDeliver.put(iter.next());
+   		}
+   	}
+   	
+   	if (trace) { log.trace("Done delivering"); }
+   }
+   
+   public boolean collectDeliveries(Map map, boolean firstNode, String queueName) throws Exception
+   {
+   	if (trace) { log.trace("Collecting deliveries"); }
+   	
+   	boolean gotSome = false;
+   	   	
+   	if (!firstNode)
+   	{	   	
+	   	if (trace) { log.trace("Now collecting"); }
+	   	   	
+	   	Iterator iter = deliveries.entrySet().iterator();
+	   	
+	   	while (iter.hasNext())
+	   	{
+	   		Map.Entry entry = (Map.Entry)iter.next();
+	   		
+	   		Long l = (Long)entry.getKey();
+	   		
+	   		long deliveryID = l.longValue();
+	   		
+	   		DeliveryRecord rec = (DeliveryRecord)entry.getValue();
+	   		
+	   		if (rec.replicating && (queueName == null || rec.queueName.equals(queueName)))
+	   		{
+	   			Map ids = (Map)map.get(rec.queueName);
+	   			
+	   			if (ids == null)
+	   			{
+	   				ids = new HashMap();
+	   				
+	   				map.put(rec.queueName, ids);
+	   			}
+	   			
+	   			ids.put(new Long(rec.del.getReference().getMessage().getMessageID()), id);
+	   			
+	   			gotSome = true;
+	   			
+	   			boolean notify = false;
+	   			
+	   			//Need to synchronize to prevent delivery occurring more than once - e.g.
+	   			//if replicateDeliveryResponseReceived occurs curently with this
+	   			synchronized (rec)
+	   			{
+		   			if (rec.waitingForResponse)
+		   			{
+		   				//Do the delivery now
+		   				
+		   				performDelivery(rec.del.getReference(), deliveryID, rec.getConsumer());   	   	
+		   		   	
+		   		   	rec.waitingForResponse = false;
+		   		   	
+		   		   	notify = true;
+		   			}
+	   			}
+	   		   	
+	   			if (notify)
+	   			{
+	   		   	synchronized (deliveryLock)
+	   		   	{
+	   		   		deliveryLock.notifyAll();
+	   		   	}   					   			
+	   			}
+	   		}
+	   	}
+   	}
+   	
+   	if (trace) { log.trace("Collected " + map.size() + " deliveries"); }
+   	
+   	return gotSome;
+   }
+      
+   private Object myLock = new Object();
+   
+   public void replicateDeliveryResponseReceived(long deliveryID) throws Exception
+   {
+   	//We look up the delivery in the list and actually perform the delivery
+   	
+   	if (trace) { log.trace(this + " replicate delivery response received for delivery " + deliveryID); }
+   	
+   	DeliveryRecord rec = (DeliveryRecord)deliveries.get(new Long(deliveryID));
+   	
+   	if (rec == null)
+   	{
+   		throw new java.lang.IllegalStateException("Cannot find delivery with id " + deliveryID);
+   	}
+   	   	
+   	boolean delivered = false;
+   	
+   	//Note there will only be contention on this if two or more responses come back at the same time - which is unlikely
+   	//Is it even possible? If the responses come back on the same JGroups channel - surely this can't happen - maybe
+   	//we can remove the lock?
+   	//Anyway there is little overhead if the lock is not contended
+   	synchronized (myLock)
+   	{
+   		long toWait = DELIVERY_WAIT_TIMEOUT;
+   		
+   		while (toWait > 0)
+      	{
+      		DeliveryRecord dr = (DeliveryRecord)toDeliver.peek();
+      		
+      		if (dr == null)
+      		{
+      			//Response came back after deliveries collected? - Do nothing
+      			break;
+      		}
+      		
+      		boolean wait = false;
+      		
+      		//Needs to be synchronized to prevent delivery occurring twice e.g. if this occurs at same time as collectDeliveries
+      		synchronized (dr)
+      		{	   		
+   	   		boolean performDelivery = false;
+   	   		
+   	   		if (dr.waitingForResponse)
+   	   		{
+   	   			if (dr == rec)
+   	   			{
+   	   				performDelivery = true;
+   	   			}
+   	   			else
+   	   			{
+   	   				//We have to wait for another response to arrive first
+   	   				wait = true;
+   	   			}
+   	   		}
+   	   		else
+   	   		{
+   	   			//Non replicated delivery
+   	   			performDelivery = true;
+   	   		}
+   	   		
+   	   		if (performDelivery)
+   	   		{
+   	   			toDeliver.take();
+   	   			
+   	   			performDelivery(dr.del.getReference(), dr.deliveryID, dr.getConsumer()); 
+   	   			
+   	   			delivered = true;
+   	   	   	
+   	   	   	dr.waitingForResponse = false;
+   	   	   	
+   	   	   	myLock.notify();
+   	   	   	
+   	   	   	break;
+   	   		}
+      		}
+      		
+      		if (wait)
+      		{
+   				long start = System.currentTimeMillis();
+   				
+      			try
+      			{
+      				//We need to wait since responses have come back out of order
+      				myLock.wait(toWait);
+      			}
+      			catch (InterruptedException e)
+      			{      				
+      			}
+      			toWait -= (System.currentTimeMillis() - start);
+      		}      		
+      	}
+   		if (toWait <= 0)
+   		{
+   			throw new IllegalStateException("Timed out waiting for previous response to arrive");
+   		}
+   	}   	   	
+   	
+   	if (delivered)
+   	{
+	   	synchronized (deliveryLock)
+	   	{
+	   		deliveryLock.notifyAll();
+	   	}
+   	}
+   }
 
    // Package protected ----------------------------------------------------------------------------
    
@@ -933,184 +1163,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
       }
       
       rec.del.cancel();
-   }
-   
-   public void deliverAnyWaitingDeliveries(String queueName) throws Exception
-   {
-   	//	First deliver any waiting deliveries
-   	
-   	if (trace) { log.trace("Delivering any waiting deliveries: " + queueName); }
-   	
-   	List toAddBack = null;
-   	
-   	while (true)
-   	{
-   		DeliveryRecord dr = (DeliveryRecord)toDeliver.poll(0);
-   		
-   		if (dr == null)
-   		{
-   			break;
-   		}
-   		
-   		if (trace) { log.trace("Considering " + dr); } 
-   		
-   		if (queueName == null || dr.queueName.equals(queueName))
-   		{   		
-	   		performDelivery(dr.del.getReference(), dr.deliveryID, dr.getConsumer()); 
-				
-		   	dr.waitingForResponse = false;
-   		}
-   		else
-   		{
-   			if (toAddBack == null)
-   			{
-   				toAddBack = new ArrayList();
-   			}
-   			
-   			toAddBack.add(dr);
-   		}
-   	}
-   	
-   	if (toAddBack != null)
-   	{
-   		Iterator iter = toAddBack.iterator();
-   		
-   		while (iter.hasNext())
-   		{
-   			toDeliver.put(iter.next());
-   		}
-   	}
-   	
-   	if (trace) { log.trace("Done delivering"); }
-   }
-   
-   public boolean collectDeliveries(Map map, boolean firstNode, String queueName) throws Exception
-   {
-   	if (trace) { log.trace("Collecting deliveries"); }
-   	
-   	boolean gotSome = false;
-   	   	
-   	if (!firstNode)
-   	{	   	
-	   	if (trace) { log.trace("Now collecting"); }
-	   	   	
-	   	Iterator iter = deliveries.entrySet().iterator();
-	   	
-	   	while (iter.hasNext())
-	   	{
-	   		Map.Entry entry = (Map.Entry)iter.next();
-	   		
-	   		Long l = (Long)entry.getKey();
-	   		
-	   		long deliveryID = l.longValue();
-	   		
-	   		DeliveryRecord rec = (DeliveryRecord)entry.getValue();
-	   		
-	   		if (rec.replicating && (queueName == null || rec.queueName.equals(queueName)))
-	   		{
-	   			Map ids = (Map)map.get(rec.queueName);
-	   			
-	   			if (ids == null)
-	   			{
-	   				ids = new HashMap();
-	   				
-	   				map.put(rec.queueName, ids);
-	   			}
-	   			
-	   			ids.put(new Long(rec.del.getReference().getMessage().getMessageID()), id);
-	   			
-	   			gotSome = true;
-	   			
-	   			if (rec.waitingForResponse)
-	   			{
-	   				//Do the delivery now
-	   				
-	   				performDelivery(rec.del.getReference(), deliveryID, rec.getConsumer());   	   	
-	   		   	
-	   		   	rec.waitingForResponse = false;
-	   		   	
-	   		   	synchronized (deliveryLock)
-	   		   	{
-	   		   		deliveryLock.notifyAll();
-	   		   	}   				
-	   			}
-	   		}
-	   	}
-   	}
-   	
-   	if (trace) { log.trace("Collected " + map.size() + " deliveries"); }
-   	
-   	return gotSome;
-   }
-   
-   public synchronized void replicateDeliveryResponseReceived(long deliveryID) throws Exception
-   {
-   	//We look up the delivery in the list and actually perform the delivery
-   	
-   	if (trace) { log.trace(this + " replicate delivery response received for delivery " + deliveryID); }
-   	
-   	DeliveryRecord rec = (DeliveryRecord)deliveries.get(new Long(deliveryID));
-   	
-   	if (rec == null)
-   	{
-   		throw new java.lang.IllegalStateException("Cannot find delivery with id " + deliveryID);
-   	}
-   	   	
-   	boolean delivered = false;
-   	
-   	//FIXME there is a race condition here
-   	//Message is peeked - is NP, then by the time it is actually taken
-   	//Another thread has peeked and taken it, so the first thread takes the next one
-   	//which is a persistent message which should remain in the list
-   	
-   	while (true)
-   	{
-   		DeliveryRecord dr = (DeliveryRecord)toDeliver.peek();
-   		
-   		if (dr == null)
-   		{
-   			break;
-   		}
-   		
-   		boolean performDelivery = false;
-   		
-   		if (dr.waitingForResponse)
-   		{
-   			if (dr == rec)
-   			{
-   				performDelivery = true;
-   			}
-   			else
-   			{
-   				break;
-   			}
-   		}
-   		else
-   		{
-   			//NP message
-   			performDelivery = true;
-   		}
-   		
-   		if (performDelivery)
-   		{
-   			toDeliver.take();
-   			
-   			performDelivery(dr.del.getReference(), dr.deliveryID, dr.getConsumer()); 
-   			
-   			delivered = true;
-   	   	
-   	   	dr.waitingForResponse = false;
-   		}
-   	}
-   	
-   	if (delivered)
-   	{
-	   	synchronized (deliveryLock)
-	   	{
-	   		deliveryLock.notifyAll();
-	   	}
-   	}
-   }
+   }      
    
    /*
     * When a consumer closes there may be deliveries where the replication messages has gone out to the backup
@@ -1120,7 +1173,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
     */
    void waitForDeliveriesFromConsumer(String consumerID) throws Exception
    {   
-		long toWait = CLOSE_TIMEOUT;
+		long toWait = DELIVERY_WAIT_TIMEOUT;
 		
 		boolean wait;
 		
@@ -1173,7 +1226,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
    	}
    }
    
-   synchronized void handleDelivery(Delivery delivery, ServerConsumerEndpoint consumer) throws Exception
+   void handleDelivery(Delivery delivery, ServerConsumerEndpoint consumer) throws Exception
    {
    	 long deliveryId = -1;
    	 
