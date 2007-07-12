@@ -695,7 +695,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
    
    public void unsubscribe(String subscriptionName) throws JMSException
    {
-      log.debug(this + " unsubscribing " + subscriptionName);
+      log.trace(this + " unsubscribing " + subscriptionName);
       
       try
       {
@@ -1388,7 +1388,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
          // I trust remoting to have already done its own cleanup via a CallbackErrorHandler,
          // I need to do my own cleanup at ConnectionManager level.
 
-         log.debug(this + " failed to handle callback", t);
+         log.trace(this + " failed to handle callback", t);
          
          //We stop the consumer - some time later the lease will expire and the connection will be closed        
          //which will remove the consumer
@@ -1715,7 +1715,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
          consumers.put(consumerID, ep);
       }
          
-      log.debug(this + " created and registered " + ep);    
+      log.trace(this + " created and registered " + ep);    
       
       return stub;
    }
@@ -2031,7 +2031,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
          consumers.put(consumerID, ep);
       }
          
-      log.debug(this + " created and registered " + ep);
+      log.trace(this + " created and registered " + ep);
       
       return stub;
    }   
@@ -2059,7 +2059,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
          throw new InvalidDestinationException("No such destination: " + jmsDestination);
       }
 
-      log.debug(this + " creating browser for " + jmsDestination +
+      log.trace(this + " creating browser for " + jmsDestination +
          (selector == null ? "" : ", selector '" + selector + "'"));
 
       Binding binding = postOffice.getBindingForQueueName(jmsDestination.getName());
@@ -2092,7 +2092,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
 
       ClientBrowserDelegate stub = new ClientBrowserDelegate(browserID);
 
-      log.debug(this + " created and registered " + ep);
+      log.trace(this + " created and registered " + ep);
 
       return stub;
    }

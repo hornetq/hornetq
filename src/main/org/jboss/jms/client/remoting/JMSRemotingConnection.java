@@ -218,12 +218,12 @@ public class JMSRemotingConnection
 
       if (doPushCallbacks)
       {
-         log.debug(configurer + " is doing push callbacks");
+         log.trace(configurer + " is doing push callbacks");
          client.addListener(invokerCallbackHandler, metadata, null, true);
       }
       else
       {
-         log.debug(configurer + " is simulating push callbacks");
+         log.trace(configurer + " is simulating push callbacks");
          client.addListener(invokerCallbackHandler, metadata);
       }
    }
@@ -249,7 +249,7 @@ public class JMSRemotingConnection
       serverLocator = new InvokerLocator(serverLocatorURI);
       this.clientPing = clientPing;
 
-      log.debug(this + " created");
+      log.trace(this + " created");
    }
 
    // Public ---------------------------------------------------------------------------------------
@@ -285,12 +285,12 @@ public class JMSRemotingConnection
 
       addInvokerCallbackHandler(this, client, metadata, serverLocator, callbackManager);
       
-      log.debug(this + " started");
+      log.trace(this + " started");
    }
 
    public void stop()
    {
-      log.debug(this + " closing");
+      log.trace(this + " closing");
 
       // explicitly remove the callback listener, to avoid race conditions on server
       // (http://jira.jboss.org/jira/browse/JBMESSAGING-535)
@@ -322,7 +322,7 @@ public class JMSRemotingConnection
 
       client = null;
       
-      log.debug(this + " closed");
+      log.trace(this + " closed");
    }
 
    public Client getRemotingClient()
@@ -399,7 +399,7 @@ public class JMSRemotingConnection
 
       client.removeConnectionListener(remotingConnectionListener);
 
-      log.debug(this + " removed consolidated connection listener from " + client);
+      log.trace(this + " removed consolidated connection listener from " + client);
       ConsolidatedRemotingConnectionListener toReturn = remotingConnectionListener;
       remotingConnectionListener = null;
       return toReturn;

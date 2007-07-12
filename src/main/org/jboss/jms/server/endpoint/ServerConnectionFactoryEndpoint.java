@@ -149,7 +149,7 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
          }
          else
          {
-            log.debug(this + " received client-side failover request. Creating failover "+
+            log.trace(this + " received client-side failover request. Creating failover "+
                "connection to replace connection to failed node " + failedNodeID);
 
             // Wait for server side failover to complete
@@ -157,12 +157,12 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
             
             if (failoverNodeID == -1 || failoverNodeID != serverPeer.getServerPeerID())
             {
-               log.debug(this + " realized that we are on the wrong node or no failover has occured");
+               log.trace(this + " realized that we are on the wrong node or no failover has occured");
                return new CreateConnectionResult(failoverNodeID);
             }
             else
             {
-               log.debug(this + " received notification that server-side failover completed, " +
+               log.trace(this + " received notification that server-side failover completed, " +
                   "creating connection delegate ...");
                ClientConnectionDelegate cd =
                   createConnectionDelegateInternal(username, password, failedNodeID,
@@ -193,7 +193,7 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
                                        ServerInvokerCallbackHandler callbackHandler)
       throws Exception
    {
-      log.debug("creating a new connection for user " + username);
+      log.trace("creating a new connection for user " + username);
 
       // Authenticate. Successful autentication will place a new SubjectContext on thread local,
       // which will be used in the authorization process. However, we need to make sure we clean
@@ -241,7 +241,7 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
       
       Dispatcher.instance.registerTarget(connectionID, connAdvised);
 
-      log.debug("created and registered " + endpoint);
+      log.trace("created and registered " + endpoint);
 
       // Need to synchronized to prevent a deadlock
       // See http://jira.jboss.com/jira/browse/JBMESSAGING-797
@@ -304,7 +304,7 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
 
          if (connEndpoint.getConnectionFactoryEndpoint() == this)
          {
-            log.debug(this + " sending cluster view update to " + connEndpoint);
+            log.trace(this + " sending cluster view update to " + connEndpoint);
 
             try
             {

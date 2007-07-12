@@ -109,7 +109,7 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
 
    public void synchronizeWith(DelegateSupport nd) throws Exception
    {
-      log.debug(this + " synchronizing with " + nd);
+      log.trace(this + " synchronizing with " + nd);
 
       super.synchronizeWith(nd);
 

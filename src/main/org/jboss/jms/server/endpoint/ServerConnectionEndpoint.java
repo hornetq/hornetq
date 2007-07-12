@@ -212,7 +212,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
       }
       else
       {
-         log.debug("ServerInvokerCallbackHandler callback Client is not available: " +
+         log.trace("ServerInvokerCallbackHandler callback Client is not available: " +
                    "must be using pull callbacks");
       }
    }
@@ -226,7 +226,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
    {
       try
       {
-         log.debug(this + " creating " + (transacted ? "transacted" : "non transacted") +
+         log.trace(this + " creating " + (transacted ? "transacted" : "non transacted") +
             " session, " + Util.acknowledgmentMode(acknowledgmentMode) + ", " +
             (isXA ? "XA": "non XA"));
          
@@ -261,11 +261,11 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
 
          Dispatcher.instance.registerTarget(sessionID, sessionAdvised);
 
-         log.debug("created and registered " + ep);
+         log.trace("created and registered " + ep);
          
          ClientSessionDelegate d = new ClientSessionDelegate(sessionID, dupsOKBatchSize);
 
-         log.debug("created " + d);
+         log.trace("created " + d);
          
          return d;
       }
@@ -305,7 +305,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
             throw new IllegalStateException("Cannot set clientID, already set as " + this.clientID);
          }
 
-         log.debug(this + "setting client ID to " + clientID);
+         log.trace(this + "setting client ID to " + clientID);
 
          this.clientID = clientID;
       }
@@ -324,7 +324,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
             throw new IllegalStateException("Connection is closed");
          }
          setStarted(true);
-         log.debug(this + " started");
+         log.trace(this + " started");
       }
       catch (Throwable t)
       {
@@ -343,7 +343,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
          
          setStarted(false);
          
-         log.debug("Connection " + id + " stopped");
+         log.trace("Connection " + id + " stopped");
       }
       catch (Throwable t)
       {
@@ -774,52 +774,49 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
       // used on checkForDuplicates...
       // we only check the first iteration
       boolean firstIteration = true;
+        
+      for (Iterator i = txState.getSessionStates().iterator(); i.hasNext(); )
+      {
+         SessionTxState sessionState = (SessionTxState)i.next();
 
-      synchronized (sessions)
-      {         
-         for (Iterator i = txState.getSessionStates().iterator(); i.hasNext(); )
+         // send the messages
+
+         for (Iterator j = sessionState.getMsgs().iterator(); j.hasNext(); )
          {
-            SessionTxState sessionState = (SessionTxState)i.next();
-
-            // send the messages
-
-            for (Iterator j = sessionState.getMsgs().iterator(); j.hasNext(); )
+            JBossMessage message = (JBossMessage)j.next();
+            if (checkForDuplicates && firstIteration)
             {
-               JBossMessage message = (JBossMessage)j.next();
-               if (checkForDuplicates && firstIteration)
+               firstIteration = false;
+               if (serverPeer.getPersistenceManagerInstance().
+                  referenceExists(message.getMessageID()))
                {
-                  firstIteration = false;
-                  if (serverPeer.getPersistenceManagerInstance().
-                     referenceExists(message.getMessageID()))
-                  {
-                     // This means the transaction was previously completed...
-                     // we are done here then... no need to even check for ACKs or anything else
-                     log.debug("Transaction " + tx + " was previously completed, ignoring call");
-                     return;
-                  }
+                  // This means the transaction was previously completed...
+                  // we are done here then... no need to even check for ACKs or anything else
+                  log.trace("Transaction " + tx + " was previously completed, ignoring call");
+                  return;
                }
-               sendMessage(message, tx, false);
             }
-
-            // send the acks
-                     
-            // We need to lookup the session in a global map maintained on the server peer. We can't
-            // just assume it's one of the sessions in the connection. This is because in the case
-            // of a connection consumer, the message might be delivered through one connection and
-            // the transaction committed/rolledback through another. ConnectionConsumers suck.
-            
-            ServerSessionEndpoint session = serverPeer.getSession(sessionState.getSessionId());
-            
-            if (session == null)
-            {               
-               throw new IllegalStateException("Cannot find session with id " +
-                  sessionState.getSessionId());
-            }
-
-            session.acknowledgeTransactionally(sessionState.getAcks(), tx);
+            sendMessage(message, tx, false);
          }
+
+         // send the acks
+                  
+         // We need to lookup the session in a global map maintained on the server peer. We can't
+         // just assume it's one of the sessions in the connection. This is because in the case
+         // of a connection consumer, the message might be delivered through one connection and
+         // the transaction committed/rolledback through another. ConnectionConsumers suck.
+         
+         ServerSessionEndpoint session = serverPeer.getSession(sessionState.getSessionId());
+         
+         if (session == null)
+         {               
+            throw new IllegalStateException("Cannot find session with id " +
+               sessionState.getSessionId());
+         }
+
+         session.acknowledgeTransactionally(sessionState.getAcks(), tx);
       }
-      
+            
       if (trace) { log.trace(this + " processed transaction " + tx); }
    }   
 

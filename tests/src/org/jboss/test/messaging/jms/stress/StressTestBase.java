@@ -45,7 +45,7 @@ public class StressTestBase extends MessagingTestCase
    
    protected static final int NUM_NON_PERSISTENT_MESSAGES = 6000;
    
-   protected static final int NUM_PERSISTENT_PRESEND = 2000;
+   protected static final int NUM_PERSISTENT_PRESEND = 5000;
    
    protected static final int NUM_NON_PERSISTENT_PRESEND = 3000;
    

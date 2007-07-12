@@ -87,7 +87,7 @@ public class Transactional2PCReceiver extends Receiver
          MessagingXid xid = null;
          
          xid = new MessagingXid("bq1".getBytes(), 1, new GUID().toString().getBytes());
-            xaResource.start(xid, XAResource.TMNOFLAGS);
+         xaResource.start(xid, XAResource.TMNOFLAGS);
          
          for (int outerCount = 0; outerCount < iterations; outerCount++)
          {

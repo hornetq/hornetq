@@ -122,7 +122,7 @@ public class FailoverValveInterceptor implements Interceptor, FailureDetector
          if (invocation.getTargetObject() instanceof ClientSessionDelegate &&
             (methodName.equals("send") || methodName.equals("sendTransaction")))
          {
-            log.debug(this + " caught " + methodName + "() invocation, enabling check for duplicates");
+            log.trace(this + " caught " + methodName + "() invocation, enabling check for duplicates");
 
             Object[] arguments = ((MethodInvocation)invocation).getArguments();
             arguments[1] = Boolean.TRUE;
@@ -136,13 +136,13 @@ public class FailoverValveInterceptor implements Interceptor, FailureDetector
          if (methodName.equals("cancelDelivery") ||
             methodName.equals("cancelDeliveries"))
          {
-            log.debug(this + " NOT resuming " + methodName + "(), let it wither and die");
+            log.trace(this + " NOT resuming " + methodName + "(), let it wither and die");
             
             return null;
          }
          else
          {            
-            log.debug(this + " resuming " + methodName + "()");
+            log.trace(this + " resuming " + methodName + "()");
             
             return invocation.invokeNext();
          }

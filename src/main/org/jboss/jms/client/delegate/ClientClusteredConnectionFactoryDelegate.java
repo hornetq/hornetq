@@ -95,7 +95,7 @@ public class ClientClusteredConnectionFactoryDelegate
       
       // It doesn't really matter which one
       
-      log.debug("Getting AOP stack, there are " + delegates.length + " delegates to choose from");
+      log.trace("Getting AOP stack, there are " + delegates.length + " delegates to choose from");
             
       for (int server = 0; server < delegates.length; server++)
       {
@@ -103,7 +103,7 @@ public class ClientClusteredConnectionFactoryDelegate
          {
             ConnectionFactoryDelegate aopStackProvider = delegates[server];
 
-            log.debug("getting AOP stack from " + aopStackProvider);
+            log.trace("getting AOP stack from " + aopStackProvider);
 
             return aopStackProvider.getClientAOPStack();
          }

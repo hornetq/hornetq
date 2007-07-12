@@ -232,7 +232,7 @@ public class JBossSession implements
          throw new InvalidDestinationException("Not a JBossDestination:" + d);
       }
 
-      log.debug("attempting to create consumer for destination:" + d + (messageSelector == null ? "" : ", messageSelector: " + messageSelector) + (noLocal ? ", noLocal = true" : ""));
+      log.trace("attempting to create consumer for destination:" + d + (messageSelector == null ? "" : ", messageSelector: " + messageSelector) + (noLocal ? ", noLocal = true" : ""));
 
       ConsumerDelegate cd = delegate.
          createConsumerDelegate((JBossDestination)d, messageSelector, noLocal, null, false, true);

@@ -82,7 +82,7 @@ public class ClientConsumerDelegate extends DelegateSupport implements ConsumerD
 
    public void synchronizeWith(DelegateSupport nd) throws Exception
    {
-      log.debug(this + " synchronizing with " + nd);
+      log.trace(this + " synchronizing with " + nd);
 
       super.synchronizeWith(nd);
 

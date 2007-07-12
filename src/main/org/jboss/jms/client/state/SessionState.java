@@ -222,10 +222,10 @@ public class SessionState extends HierarchicalStateSupport
                                       consState.isNoLocal(),
                                       consState.getSubscriptionName(),
                                       consState.isConnectionConsumer(), true);
-            log.debug(this + " created new consumer " + newConsDelegate);
+            log.trace(this + " created new consumer " + newConsDelegate);
 
             consDelegate.synchronizeWith(newConsDelegate);
-            log.debug(this + " synchronized failover consumer " + consDelegate);
+            log.trace(this + " synchronized failover consumer " + consDelegate);
          }
          else if (child instanceof ProducerState)
          {
@@ -235,10 +235,10 @@ public class SessionState extends HierarchicalStateSupport
             // create a new producer over the new session for each producer on the old session
             ClientProducerDelegate newProdDelegate = (ClientProducerDelegate)newDelegate.
                createProducerDelegate((JBossDestination)prodState.getDestination());
-            log.debug(this + " created new producer " + newProdDelegate);
+            log.trace(this + " created new producer " + newProdDelegate);
 
             prodDelegate.synchronizeWith(newProdDelegate);
-            log.debug(this + " synchronized failover producer " + prodDelegate);
+            log.trace(this + " synchronized failover producer " + prodDelegate);
          }
          else if (child instanceof BrowserState)
          {
@@ -250,10 +250,10 @@ public class SessionState extends HierarchicalStateSupport
             ClientBrowserDelegate newBrowserDelegate = (ClientBrowserDelegate)newDelegate.
                createBrowserDelegate(browserState.getJmsDestination(),
                                      browserState.getMessageSelector());
-            log.debug(this + " created new browser " + newBrowserDelegate);
+            log.trace(this + " created new browser " + newBrowserDelegate);
 
             browserDelegate.synchronizeWith(newBrowserDelegate);
-            log.debug(this + " synchronized failover browser " + browserDelegate);
+            log.trace(this + " synchronized failover browser " + browserDelegate);
          }
       }
 
@@ -273,7 +273,7 @@ public class SessionState extends HierarchicalStateSupport
          // Non transacted session or an XA session with no transaction set (it falls back
          // to AUTO_ACKNOWLEDGE)
 
-         log.debug(this + " is not transacted (or XA with no transaction set), " +
+         log.trace(this + " is not transacted (or XA with no transaction set), " +
             "retrieving deliveries from session state");
 
          // We remove any unacked non-persistent messages - this is because we don't want to ack
@@ -287,7 +287,7 @@ public class SessionState extends HierarchicalStateSupport
                if (!info.getMessageProxy().getMessage().isReliable())
                {
                   i.remove();
-                  log.debug("removed non persistent delivery " + info);
+                  log.trace("removed non persistent delivery " + info);
                }
             }
 
@@ -312,7 +312,7 @@ public class SessionState extends HierarchicalStateSupport
             }
          }
 
-         log.debug(this + " retrieved " + ackInfos.size() + " deliveries");
+         log.trace(this + " retrieved " + ackInfos.size() + " deliveries");
       }
       else
       {
@@ -340,7 +340,7 @@ public class SessionState extends HierarchicalStateSupport
       //Note! We ALWAYS call recoverDeliveries even if there are no deliveries since it also does other stuff
       //like remove from recovery Area refs corresponding to messages in client consumer buffers
       
-      log.debug(this + " sending delivery recovery " + recoveryInfos + " on failover");
+      log.trace(this + " sending delivery recovery " + recoveryInfos + " on failover");
       newDelegate.recoverDeliveries(recoveryInfos, oldSessionID);
    }
    

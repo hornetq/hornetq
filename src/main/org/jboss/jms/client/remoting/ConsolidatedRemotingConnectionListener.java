@@ -73,7 +73,7 @@ public class ConsolidatedRemotingConnectionListener implements ConnectionListene
       {
          try
          {
-            log.debug(this + " forwarding remoting failure \"" + throwable + "\" to " + remotingListenerCopy);
+            log.trace(this + " forwarding remoting failure \"" + throwable + "\" to " + remotingListenerCopy);
             
             //We only forward to the JMS listener if failover did not successfully handle the exception
             //If failover handled the exception transparently then there is effectively no problem
@@ -118,7 +118,7 @@ public class ConsolidatedRemotingConnectionListener implements ConnectionListene
 
    public synchronized void setDelegateListener(ConnectionFailureListener l)
    {
-      log.debug(this + " setting delegate listener " + l);
+      log.trace(this + " setting delegate listener " + l);
       
       if (remotingListener != null)
       {
@@ -130,7 +130,7 @@ public class ConsolidatedRemotingConnectionListener implements ConnectionListene
 
    public synchronized void addJMSExceptionListener(ExceptionListener jmsExceptionListener)
    {
-      log.debug(this + " adding JMS exception listener " + jmsExceptionListener);
+      log.trace(this + " adding JMS exception listener " + jmsExceptionListener);
       this.jmsExceptionListener = jmsExceptionListener;
    }
 
@@ -146,7 +146,7 @@ public class ConsolidatedRemotingConnectionListener implements ConnectionListene
    {
       jmsExceptionListener = null;
       remotingListener = null;
-      log.debug(this + " cleared");
+      log.trace(this + " cleared");
    }
 
    public void setConnectionState(ConnectionState state)

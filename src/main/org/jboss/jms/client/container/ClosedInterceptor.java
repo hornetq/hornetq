@@ -254,7 +254,7 @@ public class ClosedInterceptor implements Interceptor
    protected synchronized void closed() throws Throwable
    {
       state = CLOSED;
-      log.debug(this + " closed");
+      log.trace(this + " closed");
    }
 
    /**

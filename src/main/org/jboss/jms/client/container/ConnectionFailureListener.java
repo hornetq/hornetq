@@ -57,7 +57,7 @@ public class ConnectionFailureListener implements FailureDetector
    {
       try
       {
-         log.debug(this + " is being notified of connection failure: " + throwable);
+         log.trace(this + " is being notified of connection failure: " + throwable);
 
          return fcc.failureDetected(throwable, this, remotingConnection);
       }

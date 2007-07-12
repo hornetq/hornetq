@@ -1247,7 +1247,7 @@ public class MessageTest extends MessagingTestCase
       
       assertSame(queue, message.getJMSDestination());
       
-      Message receivedMessage = queueConsumer.receive(100L);
+      Message receivedMessage = queueConsumer.receive(2000);
       
       ensureEquivalent(receivedMessage, ((MessageProxy) message).getMessage());
    }
@@ -1262,7 +1262,7 @@ public class MessageTest extends MessagingTestCase
       
       queueProducer.send(jbossMessage);
       
-      Message receivedMessage = queueConsumer.receive(100L);
+      Message receivedMessage = queueConsumer.receive(2000);
 
       ensureEquivalent(receivedMessage, jbossMessage);
    }

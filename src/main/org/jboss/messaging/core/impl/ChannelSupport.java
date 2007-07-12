@@ -87,7 +87,7 @@ public abstract class ChannelSupport implements Channel
 
    protected Object lock;
 
-   protected boolean active;
+   protected volatile boolean active;
    
    //TODO - I would like to get rid of this - the only reason we still keep a count of
    //refs being delivered is because many tests require this
@@ -346,26 +346,17 @@ public abstract class ChannelSupport implements Channel
 
    public void activate()
    {
-      synchronized (lock)
-      {
-         active = true;         
-      }
+      active = true;               
    }
 
    public void deactivate()
    {
-      synchronized (lock)
-      {
-         active = false;         
-      }
+      active = false;               
    }
 
    public boolean isActive()
    {
-      synchronized (lock)
-      {
-         return active;         
-      }
+      return active;               
    }   
    
    public int getMaxSize()

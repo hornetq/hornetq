@@ -184,7 +184,7 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
 
       // We don't need to prompt delivery - this will come from the client in a changeRate request
 
-      log.debug(this + " constructed");
+      log.trace(this + " constructed");
    }
 
    // Receiver implementation ----------------------------------------------------------------------

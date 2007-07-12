@@ -91,7 +91,7 @@ public class ServerBrowserEndpoint implements BrowserEndpoint
             throw new IllegalStateException("Browser is closed");
          }
 
-         log.debug(this + " is being resetted");
+         log.trace(this + " is being resetted");
 
          iterator = createIterator();
       }
@@ -199,7 +199,7 @@ public class ServerBrowserEndpoint implements BrowserEndpoint
       {
          localClose();
          session.removeBrowser(id);
-         log.debug(this + " closed");
+         log.trace(this + " closed");
       }   
       catch (Throwable t)
       {

@@ -85,7 +85,7 @@ public class MessageIdGeneratorFactory
          h.refCount++;
       }
 
-      log.debug("checked out MessageIdGenerator for " + serverId +
+      log.trace("checked out MessageIdGenerator for " + serverId +
                 ", reference count is " + h.refCount);
 
       return h.generator;
@@ -107,11 +107,11 @@ public class MessageIdGeneratorFactory
       if (h.refCount == 0)
       {
          holders.remove(in);
-         log.debug("checked in and removed MessageIdGenerator for " + serverId);
+         log.trace("checked in and removed MessageIdGenerator for " + serverId);
       }
       else
       {
-         log.debug("checked in MessageIdGenerator for " + serverId +
+         log.trace("checked in MessageIdGenerator for " + serverId +
                    ", reference count is " + h.refCount);
       }
    }
@@ -119,7 +119,7 @@ public class MessageIdGeneratorFactory
    public synchronized void clear()
    {
       holders.clear();
-      log.debug("cleared MessageIdGeneratorFactory");
+      log.trace("cleared MessageIdGeneratorFactory");
    }
 
    // Package protected ---------------------------------------------
