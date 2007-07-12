@@ -490,58 +490,72 @@ public class XAFailoverTest extends ClusteringTestBase
          SimpleFailoverListener failoverListener = new SimpleFailoverListener();
          ((JBossConnection)xaConn1).registerFailoverListener(failoverListener);
          
+         
+         
+         
+                     
+         tm.begin();
+         
+         Transaction tx = tm.getTransaction();
+         
+
+         
+         //receive and send a message on each
+         
+         // node 0
+         
          XASession sess0 = xaConn0.createXASession();
          
          XAResource res0 = sess0.getXAResource();
+         
+         tx.enlistResource(res0);         
          
          MessageProducer prod0 = sess0.createProducer(queue[0]);
          
          MessageConsumer cons0 = sess0.createConsumer(queue[0]);
          
-         
-         XASession sess1 = xaConn1.createXASession();
-         
-         XAResource res1 = sess1.getXAResource();
-         
-         MessageProducer prod1 = sess1.createProducer(queue[1]);
-         
-         MessageConsumer cons1 = sess1.createConsumer(queue[1]);
-         
-                           
-         tm.begin();
-         
-         Transaction tx = tm.getTransaction();
-         
-         tx.enlistResource(res0);
-         
-         tx.enlistResource(res1);
-         
-         //receive a message
-         
          TextMessage received = (TextMessage)cons0.receive(2000);
          
-         assertNotNull(received);
+         log.info("Got message " + received.getText());
          
-         assertEquals(sent0.getText(), received.getText());
+         assertNotNull(received);         
          
-         
-         received = (TextMessage)cons1.receive(2000);
-         
-         assertNotNull(received);
-         
-         assertEquals(sent1.getText(), received.getText());
-         
-                  
-                  
-         //Send a message
+         assertEquals(sent0.getText(), received.getText());                  
          
          TextMessage msg0 = sess0.createTextMessage("Cupid stunt0");
          
          prod0.send(msg0);
          
+         //Make sure the consumer is closed otherwise message might be sucked
+         cons0.close();
+         
+
+         
+         //node 1
+         
+         XASession sess1 = xaConn1.createXASession();
+         
+         XAResource res1 = sess1.getXAResource();
+         
+         tx.enlistResource(res1);
+                  
+         MessageProducer prod1 = sess1.createProducer(queue[1]);
+         
+         MessageConsumer cons1 = sess1.createConsumer(queue[1]);
+         
+         received = (TextMessage)cons1.receive(2000);
+              
+         log.info("Got message " + received.getText());
+         
+         assertNotNull(received);         
+         
+         assertEquals(sent1.getText(), received.getText());         
+                      
          TextMessage msg1 = sess1.createTextMessage("Cupid stunt1");
          
          prod1.send(msg1);
+         
+         cons1.close();
          
          
 
@@ -580,10 +594,6 @@ public class XAFailoverTest extends ClusteringTestBase
          //Now commit the transaction
          
          tm.commit();
-         
-         cons0.close();
-         
-         cons1.close();
          
          // Messages should now be receivable
 
@@ -886,7 +896,6 @@ public class XAFailoverTest extends ClusteringTestBase
          sess.close();
       }
 
-
       try
       {
          xaConn0 = xaCF.createXAConnection();
@@ -901,64 +910,72 @@ public class XAFailoverTest extends ClusteringTestBase
          
          xaConn1.start();
                   
-
          // register a failover listener
          SimpleFailoverListener failoverListener = new SimpleFailoverListener();
          ((JBossConnection)xaConn1).registerFailoverListener(failoverListener);
          
+                                         
+         tm.begin();
+         
+         Transaction tx = tm.getTransaction();
+         
+         //receive and send a message on each
+         
+         // node 0
          
          XASession sess0 = xaConn0.createXASession();
          
          XAResource res0 = sess0.getXAResource();
          
+         tx.enlistResource(res0);         
+         
          MessageProducer prod0 = sess0.createProducer(queue[0]);
          
          MessageConsumer cons0 = sess0.createConsumer(queue[0]);
          
-         
-         XASession sess1 = xaConn1.createXASession();
-         
-         XAResource res1 = sess1.getXAResource();
-         
-         MessageProducer prod1 = sess1.createProducer(queue[1]);
-         
-         MessageConsumer cons1 = sess1.createConsumer(queue[1]);
-         
-                           
-         tm.begin();
-         
-         Transaction tx = tm.getTransaction();
-         
-         tx.enlistResource(res0);
-         
-         tx.enlistResource(res1);
-         
-         //receive a message
-         
          TextMessage received = (TextMessage)cons0.receive(2000);
          
-         assertNotNull(received);
+         log.info("Got message " + received.getText());
          
-         assertEquals(sent0.getText(), received.getText());
+         assertNotNull(received);         
          
-         
-         received = (TextMessage)cons1.receive(2000);
-         
-         assertNotNull(received);
-         
-         assertEquals(sent1.getText(), received.getText());
-         
-                  
-                  
-         //Send a message
+         assertEquals(sent0.getText(), received.getText());                  
          
          TextMessage msg0 = sess0.createTextMessage("Cupid stunt0");
          
          prod0.send(msg0);
          
+         //Make sure the consumer is closed otherwise message might be sucked
+         cons0.close();
+         
+         
+         //node 1
+         
+         XASession sess1 = xaConn1.createXASession();
+         
+         XAResource res1 = sess1.getXAResource();
+         
+         tx.enlistResource(res1);
+                  
+         MessageProducer prod1 = sess1.createProducer(queue[1]);
+         
+         MessageConsumer cons1 = sess1.createConsumer(queue[1]);
+         
+         received = (TextMessage)cons1.receive(2000);
+              
+         log.info("Got message " + received.getText());
+         
+         assertNotNull(received);         
+         
+         assertEquals(sent1.getText(), received.getText());         
+                      
          TextMessage msg1 = sess1.createTextMessage("Cupid stunt1");
          
          prod1.send(msg1);
+         
+         cons1.close();
+         
+         
                   
          tx.delistResource(res0, XAResource.TMSUCCESS);
          
@@ -1002,11 +1019,6 @@ public class XAFailoverTest extends ClusteringTestBase
          // failover complete
          log.info("failover completed");
          
-         cons0.close();
-         
-         cons1.close();
-                           
-
          // Message should now be receivable
          Connection conn = null;
          try
