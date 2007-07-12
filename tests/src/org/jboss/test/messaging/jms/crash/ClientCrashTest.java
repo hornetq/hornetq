@@ -119,7 +119,14 @@ public class ClientCrashTest extends MessagingTestCase
       
       // Now we should have a client connection from the remote server to the local server
       
-      remoteServer.kill();
+      try
+      {
+      	remoteServer.kill();
+      }
+      catch (Throwable t)
+      {
+      	//OK
+      }
       log.trace("killed remote server");
         
       // Wait for connection resources to be cleared up

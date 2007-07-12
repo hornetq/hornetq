@@ -124,7 +124,14 @@ public class ClientCrashTwoConnectionsTest extends MessagingTestCase
       assertTrue(cm.containsRemotingSession(remotingSessionId[1]));
       
       // Now we should have a client connection from the remote server to the local server
-      remoteServer.kill();
+      try
+      {
+      	remoteServer.kill();
+      }
+      catch (Throwable t)
+      {
+      	//OK
+      }
       log.info("killed remote server");
         
       // Wait for connection resources to be cleared up
