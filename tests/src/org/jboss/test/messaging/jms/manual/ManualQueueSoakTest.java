@@ -87,9 +87,14 @@ public class ManualQueueSoakTest extends SeveralClientsStressTest
    protected void setUp() throws Exception
    {
       startServer = false;
-      TEST_ALIVE_FOR = 24 * 60 * 60 * 1000; // 24 hours
+      info=false;
+      TEST_ALIVE_FOR = 8 * 60 * 60 * 1000; // 8 hours
       PRODUCER_ALIVE_FOR=5 * 60 * 1000; // 5 minutes
       CONSUMER_ALIVE_FOR=5 * 60 * 1000; // 5 minutes
+
+      NUMBER_OF_PRODUCERS=20;
+      NUMBER_OF_CONSUMERS=20;
+      LONG_WAIT_ON_PRODUCERS = false;
 
       super.setUp();
 

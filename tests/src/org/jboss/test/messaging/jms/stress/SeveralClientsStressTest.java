@@ -38,8 +38,10 @@ import javax.jms.Queue;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.jms.Message;
+import javax.jms.DeliveryMode;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Random;
 
 /**
  * In order for this test to run, you will need to edit /etc/security/limits.conf and change your max sockets to something bigger than 1024
@@ -65,16 +67,19 @@ public class SeveralClientsStressTest extends MessagingTestCase
 
    // Attributes -----------------------------------------------------------------------------------
 
-   protected boolean info=true;
+   protected boolean info=false;
    protected boolean startServer=true;
 
    // Static ---------------------------------------------------------------------------------------
 
-   protected static long PRODUCER_ALIVE_FOR=60000; // half minute
-   protected static long CONSUMER_ALIVE_FOR=60000; // 1 minutes
+   protected static long PRODUCER_ALIVE_FOR=60000; // one minute
+   protected static long CONSUMER_ALIVE_FOR=60000; // one minutes
    protected static long TEST_ALIVE_FOR=5 * 60 * 1000; // 5 minutes
-   protected static int NUMBER_OF_PRODUCERS=300;
-   protected static int NUMBER_OF_CONSUMERS=300;
+   protected static int NUMBER_OF_PRODUCERS=100; // this should be set to 300 later
+   protected static int NUMBER_OF_CONSUMERS=100; // this should be set to 300 later
+
+   // a producer should have a long wait between each message sent?
+   protected static boolean LONG_WAIT_ON_PRODUCERS=false;
 
    protected static SynchronizedInt producedMessages = new SynchronizedInt(0);
    protected static SynchronizedInt readMessages = new SynchronizedInt(0);
@@ -129,7 +134,9 @@ public class SeveralClientsStressTest extends MessagingTestCase
 
       while (threads.size()>0)
       {
-         SeveralClientsStressTest.InternalMessage msg = (SeveralClientsStressTest.InternalMessage)testChannel.poll(5000);
+         SeveralClientsStressTest.InternalMessage msg = (SeveralClientsStressTest.InternalMessage)testChannel.poll(2000);
+
+         log.info("Produced:" + producedMessages.get() + " and Consumed:" + readMessages.get() + " messages");
 
          if (msg!=null)
          {
@@ -171,8 +178,11 @@ public class SeveralClientsStressTest extends MessagingTestCase
          }
       }
 
+      log.info("Produced:" + producedMessages.get() + " and Consumed:" + readMessages.get() + " messages");
 
       clearMessages();
+
+      log.info("Produced:" + producedMessages.get() + " and Consumed:" + readMessages.get() + " messages");
 
       assertEquals(producedMessages.get(), readMessages.get());
    }
@@ -217,6 +227,12 @@ public class SeveralClientsStressTest extends MessagingTestCase
          ServiceAttributeOverrides override = new ServiceAttributeOverrides();
          override.put(ServiceContainer.REMOTING_OBJECT_NAME,
             "clientMaxPoolSize", "600");
+
+         override.put(ServiceContainer.REMOTING_OBJECT_NAME,
+            "pingFrequency", "1000");
+
+         override.put(ServiceContainer.REMOTING_OBJECT_NAME,
+            "pingWindowFactor", "120");
 
          /* override.put(ServiceContainer.REMOTING_OBJECT_NAME,
             "leasePeriod", "60000"); */
@@ -310,6 +326,8 @@ public class SeveralClientsStressTest extends MessagingTestCase
          super("Producer:" + producerId, producerId, messageQueue);
       }
 
+      Random random = new Random();
+
       public void run()
       {
          try
@@ -324,7 +342,17 @@ public class SeveralClientsStressTest extends MessagingTestCase
             Connection conn = cf.createConnection();
             Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
             MessageProducer prod = sess.createProducer(queue);
-            if (info) log.info("Producer was created");
+
+            if (this.getWorkerId()%2==0)
+            {
+               if (info) log.info("Non Persistent Producer was created");
+               prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+            }
+            else
+            {
+               if (info) log.info("Persistent Producer was created");
+               prod.setDeliveryMode(DeliveryMode.PERSISTENT);
+            }
 
             long timeToFinish = System.currentTimeMillis() + PRODUCER_ALIVE_FOR;
 
@@ -340,7 +368,17 @@ public class SeveralClientsStressTest extends MessagingTestCase
                   {
                      if (info) log.info("Sent " + messageSent + " Messages");
                   }
-                  sleep(100);
+
+                  if (LONG_WAIT_ON_PRODUCERS)
+                  {
+                     int waitTime = random.nextInt()%2 + 1;
+                     if (waitTime<0) waitTime*=-1;
+                     Thread.sleep(waitTime*1000); // wait 1 or 2 seconds
+                  }
+                  else
+                  {
+                     sleep(100);
+                  }
                }
                sendInternalMessage(new SeveralClientsStressTest.WorkedFinishedMessages(this));
             }
@@ -416,11 +454,13 @@ public class SeveralClientsStressTest extends MessagingTestCase
                   }
                   else
                   {
-                     readMessages.add(msgs);
-                     sess.commit();
                      break;
                   }
                }
+
+               readMessages.add(msgs);
+               sess.commit();
+
                sendInternalMessage(new SeveralClientsStressTest.WorkedFinishedMessages(this));
             }
             finally
