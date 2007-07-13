@@ -261,12 +261,7 @@ public class ServerManagement
       }
    }
 
-   /**
-    * Kills the server and waits keep trying any dumb communication until the server is effectively
-    * killed. We had to implement this method as kill will actually schedule a thread that will
-    * perform System.exit after few milliseconds. We will use this method in places where we need
-    * the server killed.
-    */
+
    public static synchronized void kill(int i) throws Exception
    {
    	log.info("Attempting to kill server " + i);

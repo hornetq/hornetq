@@ -190,7 +190,7 @@ public class RMITestServer extends UnicastRemoteObject implements Server
       
       Thread.sleep(250);
       
-      System.exit(1);
+      System.exit(0);
    }
 
    public void ping() throws Exception
