@@ -205,8 +205,6 @@ public class ResourceManager
       
       try
       {
-      	request.state.removeUnnecessaryAcks();
-      	
          connection.sendTransaction(request, false);
          
          // If we get this far we can remove the transaction
@@ -617,6 +615,10 @@ public class ResourceManager
             
             del.redeliver(acks);
          }
+         else
+         {
+         	log.info("There are no messages to redeliver");
+         }
       }
    }
    
@@ -630,11 +632,6 @@ public class ResourceManager
    {
       try
       {
-      	if (request.state != null)
-      	{
-      		request.state.removeUnnecessaryAcks();
-      	}
-      	
          connection.sendTransaction(request, false);
       }
       catch (Throwable t)

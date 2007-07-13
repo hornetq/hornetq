@@ -250,45 +250,6 @@ public class ClientTransaction
 
    // Streamable implementation ---------------------------------
    
-   //For message consumed using a non durable subscriber - we don't need to ack to the server
-   //so we remove them here
-   //TODO this could be optimised to prevent this extra removal stage before sending
-   public void removeUnnecessaryAcks()
-   {
-   	if (removeAcks)
-   	{
-	   	Iterator iter = sessionStatesMap.values().iterator();
-	
-	      while (iter.hasNext())
-	      {
-	         SessionTxState state = (SessionTxState)iter.next();
-	
-	         List acks = state.getAcks();
-	
-	         Iterator iter2 = acks.iterator();
-	         
-	         List newAcks = new ArrayList();
-	
-	         while (iter2.hasNext())
-	         {
-	            DeliveryInfo ack = (DeliveryInfo)iter2.next();
-	
-	            if (ack.isShouldAck())
-	            {
-	            	if (newAcks == null)
-	            	{
-	            		newAcks = new ArrayList();
-	            	}
-	            	newAcks.add(ack);
-	            }
-	         }
-	         
-	         state.setAcks(newAcks);
-	      }
-   	}
-   }
-   
-
    public void write(DataOutputStream out) throws Exception
    {
       out.writeByte(state);
@@ -326,17 +287,22 @@ public class ClientTransaction
 
             List acks = state.getAcks();
 
-            out.writeInt(acks.size());
-
             iter2 = acks.iterator();
 
             while (iter2.hasNext())
             {
                DeliveryInfo ack = (DeliveryInfo)iter2.next();
-
-               //We only need the delivery id written
-               out.writeLong(ack.getMessageProxy().getDeliveryId());
+               
+               //We don't want to send acks for things like non durable subs which will have been already acked
+               if (ack.isShouldAck())
+               {
+               	//We only need the delivery id written
+               	out.writeLong(ack.getMessageProxy().getDeliveryId());
+               }
             }
+            
+            //Marker for end of acks
+            out.writeLong(Long.MIN_VALUE);
          }
       }
    }
@@ -375,13 +341,11 @@ public class ClientTransaction
             sessionState.addMessage(msg);
          }
 
-         int numAcks = in.readInt();
-
-         for (int j = 0; j < numAcks; j++)
+         long l;
+         
+         while ((l = in.readLong()) != Long.MIN_VALUE)
          {
-            long ack = in.readLong();
-
-            sessionState.addAck(new DefaultAck(ack));
+         	sessionState.addAck(new DefaultAck(l));
          }
       }
    }

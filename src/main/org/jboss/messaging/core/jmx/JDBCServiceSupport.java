@@ -67,15 +67,11 @@ public abstract class JDBCServiceSupport extends ServiceMBeanSupport
 
    protected void startService() throws Exception
    {
+   	InitialContext ic = null;
       try
       {
-         if (ds == null)
-         {
-            InitialContext ic = new InitialContext();
-            ds = (DataSource)ic.lookup(dataSourceJNDIName);
-            ic.close();
-         }
-
+         ic = new InitialContext();
+         ds = (DataSource)ic.lookup(dataSourceJNDIName);
          if (ds == null)
          {
             throw new IllegalStateException("No DataSource found. This service dependencies must " +
@@ -86,6 +82,13 @@ public abstract class JDBCServiceSupport extends ServiceMBeanSupport
       catch (Throwable t)
       {
          throw ExceptionUtil.handleJMXInvocation(t, this + " startService");
+      }
+      finally
+      {
+      	if (ic != null)
+      	{
+      		ic.close();
+      	}
       }
    }
 

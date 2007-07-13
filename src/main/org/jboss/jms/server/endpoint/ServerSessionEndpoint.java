@@ -44,6 +44,7 @@ import org.jboss.jms.delegate.Ack;
 import org.jboss.jms.delegate.BrowserDelegate;
 import org.jboss.jms.delegate.Cancel;
 import org.jboss.jms.delegate.ConsumerDelegate;
+import org.jboss.jms.delegate.DeliveryInfo;
 import org.jboss.jms.delegate.DeliveryRecovery;
 import org.jboss.jms.delegate.SessionEndpoint;
 import org.jboss.jms.destination.JBossDestination;
@@ -1528,7 +1529,20 @@ public class ServerSessionEndpoint implements SessionEndpoint
       for(Iterator i = acks.iterator(); i.hasNext(); )
       {
          Ack ack = (Ack)i.next();
+         
          Long id = new Long(ack.getDeliveryID());
+         
+         //TODO - do this more elegantly
+         if (ack instanceof DeliveryInfo)
+         {
+         	if (!((DeliveryInfo)ack).isShouldAck())
+         	{
+         		//If we are in VM then acks for non durable subs will still exist - this
+         		//won't happen remoptely since they are not written to the wire
+         		continue;
+         	}
+         }
+         
          DeliveryRecord rec = (DeliveryRecord)deliveries.get(id);
          
          if (rec == null)
