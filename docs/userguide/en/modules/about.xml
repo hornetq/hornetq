@@ -1,6 +1,6 @@
 <chapter id="about">
 
-   <title>Introducing JBoss Messaging Release 1.3.0.GA</title>
+   <title>Introducing JBoss Messaging Release 1.4.0.GA</title>
 
    <para>
        JBoss Messaging is a high performance JMS provider in the JBoss Enterprise Middleware Stack
@@ -38,7 +38,7 @@
        in JBoss Application Server 4.2, there will be no need to do any manual installation.
    </para>
    
-   <para>From release 1.3.0.GA onwards JBoss Messaging is designed for JBoss 4.2 only.</para>
+   <para>From release 1.4.0.GA onwards JBoss Messaging is designed for JBoss 4.2 only.</para>
    
    <para>
        The procedure of swapping JMS providers is presented in detail in this manual.
@@ -57,11 +57,10 @@
    </para>
 
    <para> Permanent Team:
-      Tim Fox - Project Lead, Clebert Suconic - Core Developer,
-      Sergey Koshcheyev - Core Developer
+      Tim Fox - Project Lead, Clebert Suconic - Core Developer
    </para>
    
-   <para>Contributors: Ovidiu Feodorov, Adrian Brock, Alex Fu, Luc Texier, Aaron Walker,
+   <para>Contributors: Sergey Koshcheyev, Adrian Brock, Alex Fu, Luc Texier, Aaron Walker,
          Rajdeep Dua, Madhusudhan Konda, Juha Lindfors and Ron Sigal.
    </para>
    

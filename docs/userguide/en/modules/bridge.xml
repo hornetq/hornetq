@@ -192,6 +192,10 @@ the configuration you want.</para>
       &lt;!-- The maximum number of connection retries to make in case of failure, before giving up
            -1 means try forever--&gt;
       &lt;attribute name="MaxRetries"&gt;-1&lt;/attribute&gt;
+
+      &lt;!-- If true then the message id of the message before bridging will be added as a header to the message so it is available
+           to the receiver. Can then be sent as correlation id to correlate in a distributed request-response --&gt;
+      &lt;attribute name="AddMessageIDInHeader"&gt;false&lt;/attribute&gt;
       
     &lt;/mbean&gt;
       </programlisting>
@@ -290,6 +294,12 @@ sending them in a batch to the target destination. It's value must &gt;= 1</para
       <section id="bridge.configuration.maxretries">
          <title>MaxRetries</title>
          <para>This represents the number of times to attempt to recreate connections to the source or target servers when the bridge has detected they have failed. The bridge will give up after trying this number of times. -1 represents 'try forever'</para>
+      </section>
+
+      <section id="bridge.configuration.addmessageidinheader">
+         <title>AddMessageIDInHeader</title>
+         <para>If true, then the original message's message id will appended in the message sent to the destination in the header JBossMessage.JBOSS_MESSAGING_BRIDGE_MESSAGE_ID_LIST. If the message is bridged more than once each message-id will be appended.
+This enables a distributed request-response pattern to be used</para>
       </section>
    
    </section>

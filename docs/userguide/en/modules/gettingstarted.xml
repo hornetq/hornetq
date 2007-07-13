@@ -15,8 +15,8 @@
       <title>The JBoss Messaging Release Bundle</title>
 
       <para>
-         The JBoss Messaging release bundle (<filename>jboss-messaging-1.3.x.zip</filename>)
-         will expand in a <filename>jboss-messaging-1.3.x</filename> directory that contains:
+         The JBoss Messaging release bundle (<filename>jboss-messaging-1.4.x.zip</filename>)
+         will expand in a <filename>jboss-messaging-1.4.x</filename> directory that contains:
       </para>
 
       <itemizedlist>

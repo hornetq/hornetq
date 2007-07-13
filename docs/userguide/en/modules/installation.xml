@@ -12,6 +12,8 @@
   Messaging, you need to perform the installation procedure described
   below.</para>
 
+  <para>JBoss Messaging requires Java 5 or later</para>
+
   <para>
      <note>
        A JBossMQ and a JBoss Messaging instance cannot coexist, at least not unless special precautions are taken.
@@ -43,22 +45,13 @@
     
     <itemizedlist>
     
-       <listitem>If you do not want clustering functionality and have a completely clean JBoss AS 4.2.0 installation
-       then you can do an <xref linkend="install.automated">automatic non-clustered install</xref>.
+       <listitem>If you have a completely clean JBoss AS 4.2.0 installation
+       then you can do an <xref linkend="install.automated">automatic install</xref>.
        </listitem>
        
-       <listitem>If you do not want clustering functionality and have a JBoss 4.2.0 that you have changed in some
+       <listitem>If you have a JBoss 4.2.0 that you have changed in some
        way from a clean JBoss AS 4.2.0 installation then you will need to do a
-       <xref linkend="install.manual">manual non-clustered install</xref>.
-       </listitem>
-       
-       <listitem>If you want clustering functionality and have a completely clean JBoss AS 4.2.0 installation
-       then you can do an <xref linkend="install.automatedclustered">automatic clustered install</xref>.
-       </listitem>
-       
-       <listitem>If you want clustering functionality and have a JBoss 4.2.0 that you have changed in some
-       way from a clean JBoss AS 4.2.0 installation then you will need to do a
-       <xref linkend="install.manualclustered">manual clustered install</xref>.
+       <xref linkend="install.manual">manual install</xref>.
        </listitem>  
        
        <listitem><warning>Not recommended!</warning>If you to install in JBoss 4.0.x and are willing to cope
@@ -68,226 +61,8 @@
        
     </itemizedlist>
      
-       
- 
     <section id="install.automated">
-      <title>Automated Non-clustered Installation from clean JBoss AS 4.2 installation</title>
-      
-      <para>
-      <note>
-      This procedure should only be performed from a clean JBoss AS 4.2 installation.
-      If you have modifed the JBoss AS 4.2 installation at all since installation then you will need to 
-      perform a manual JBoss Messaging installation
-      </note>
-      </para>
-
-      <para>Set up the <literal>JBOSS_HOME</literal> environment variable to
-      point to the JBoss 4.2 installation you want to use JBoss Messaging
-      with. Run the installation script, available in the
-      <filename>util</filename> directory of the release bundle.</para>
-
-      <programlisting>
- cd util
- ant -f release-admin.xml
-      </programlisting>
-
-      <para>The installation script will create a
-      <filename>$JBOSS_HOME/server/messaging</filename> configuration.</para>
-
-      <para>
-          <para><warning>For use in production it is highly recommended to use a
-          different database other than the HSQLDB. HSQLDB does not have any transaction isolation.
-          For simple non clustered development evaluation HSQLDB may suffice.
-          If you decide to use a different database please follow the follow steps:
-          </warning></para>
-
-          <itemizedlist>
-            <listitem>
-              <para>Replace 
-              <literal>JBOSS_CONFIG/deploy/jboss-messaging.sar/hsqldb-persistence-service.xml</literal>
-              by the persistence-service of from
-              <literal>&lt;downloadPackage&gt;/examples/config.</literal></para>
-            </listitem>
-
-            <listitem>
-              <para>Configure a JCA datasource using an example from
-              <literal>$JBOSS_HOME/docs/examples/jca</literal></para> and copying to 
-              <literal>$JBOSS_CONFIG/deploy</literal>
-              <para>JBoss Messaging uses <literal>DefaultDS</literal> by default so you should configure
-              your datasource to bind to that</para>              
-            </listitem>
-
-            <listitem>
-              <para>Remove hsqldb-ds.xml from <literal>$JBOSS_CONFIG/deploy</literal></para>
-            </listitem>
-            
-            <listitem>
-              <para>Copy your database driver to <literal>$JBOSS_CONFIG/lib</literal></para>
-              <para>Your database driver can probably be downloaded from your database providers
-              web site</para>
-            </listitem>
-            
-          </itemizedlist>
-      </para>
-        
-      <para>There are few extra steps at <xref
-      linkend="install.extra-steps" /></para>
-      
-      <para>That's it!</para>
-
-      <note>
-        <para>If you want to create a JBoss Messaging configuration with a
-        different name, you can specify the <literal>messaging.config.name</literal>
-        system property when you run the command:</para>
-        
-        <programlisting>
- cd util
- ant -f release-admin.xml -Dmessaging.config.name=mymessaging
-        </programlisting>
-      </note>
-    </section>
-
-    <section id="install.manual">
-      <title>Manual Non-clustered Installation</title>
-      
-      <para>
-         <note>This installation procedure should be performed if you are installing into a JBoss AS
-         configuration that you have changed in some way from the default JBoss AS distribution.
-         If you are just using the standard, untouched JBoss AS 4.2 distribution you can use the automated procedure
-         above
-         </note>
-      </para>
-
-      <para>For this procedure we assume you already have your custom configuration located at
-      <literal>JBOSS_CONFIG=$JBOSS_HOME/server/&lt;myconfiguration&gt;</literal>, and that it contains a JBoss MQ
-      installation.
-      </para>
-      
-      <para>You don't actually have to create an environment variable <literal>JBOSS_CONFIG</literal>, this is just
-      used in the installation instructions to describe the steps</para>
-      
-      <itemizedlist>
-        <listitem>
-          <para>Move <literal>$JBOSS_CONFIG/deploy/jms/jms-ds.xml</literal> and
-          <literal>$JBOSS_CONFIG/deploy/jms/jms-ra.rar</literal> to <literal>$JBOSS_CONFIG/deploy</literal></para>
-        </listitem>
-
-        <listitem>
-          <para>Remove the old JBoss MQ by removing the directory
-          <literal>$JBOSS_CONFIG/deploy/jms.</literal></para>.
-          
-          <para>Remove the old JBoss MQ jar file: <literal>$JBOSS_CONFIG/lib/jbossmq.jar</literal></para>
-
-        </listitem>
-
-        <listitem>
-          <para>Add a security policy called "messaging" on
-          $JBOSS_CONFIG/config/login-config.xml. You could use this as an
-          example, or create one according to JBoss Security
-          Documentation:</para>
-
-          <programlisting>
-&lt;application-policy name = "messaging"&gt;
-&lt;authentication&gt;
-&lt;login-module code = "org.jboss.security.auth.spi.UsersRolesLoginModule" flag = "required" &gt;
-   &lt;module-option name = "unauthenticatedIdentity"&gt;guest&lt;/module-option&gt;
-   &lt;module-option name = "usersProperties"&gt;props/messaging-users.properties&lt;/module-option&gt;
-   &lt;module-option name = "rolesProperties"&gt;props/messaging-roles.properties&lt;/module-option&gt;
-&lt;/login-module&gt;
-&lt;/authentication&gt;
-&lt;/application-policy&gt;
-          </programlisting>
-
-          <para>In case you are using the above policy you should also create files
-          <literal>messaging-users.properties</literal> and <literal>messaging-roles.properties</literal> in the
-          <literal>$JBOSS_CONFIG/config/props/</literal> directory</para>.
-          
-          <para><note>You can find an example <literal>messaging-users.properties</literal> and
-          <literal>messaging-roles.properties</literal> in the JBoss Messaging distribution in the
-          <literal>&lt;downloadPackage&gt;src/etc/server/default/config</literal> directory.</note></para>
-
-          <programlisting>
-# messaging-roles.properties
-# Add roles as you like
-# user=role1,role2,...
-#
-guest=guest
-          </programlisting>
-
-          <programlisting>
-# messaging-users.properties
-
-# Add users as you like
-# user=password
-#
-guest=guest
-          </programlisting>
-        </listitem>
-
-        <listitem>
-          <para>Unzip jboss-messaging.sar from your download package into the directory
-          <literal>JBOSS_CONFIG/deploy/jboss-messaging.sar</literal></para>
-          <para>JBoss Messaging sar should be deployed unzipped (exploded) so you have easy access to its config
-          files which are stored there.</para>
-        </listitem>
-
-        <listitem>
-          <para>Copy jboss-messaging.jar from your download package into the directory
-          <literal>JBOSS_CONFIG/lib</literal></para>
-          <para>jboss-messaging.jar needs to go in the lib directory so it is accessible to other services e.g.
-the JBoss Transactions Recovery Manager</para>
-        </listitem>
-
-        <listitem>
-          <para><warning>For use in production it is highly recommended to use a
-          different database other than the HSQLDB. HSQLDB does not have any transaction isolation.
-          For simple non clustered development evaluation HSQLDB may suffice.
-          If you decide to use a different database please follow the follow steps:
-          </warning></para>
-
-          <itemizedlist>
-            <listitem>
-              <para>Replace 
-              <literal>JBOSS_CONFIG/deploy/jboss-messaging.sar/hsqldb-persistence-service.xml</literal>
-              by the persistence-service of from
-              <literal>&lt;downloadPackage&gt;/examples/config.</literal></para>
-            </listitem>
-
-            <listitem>
-              <para>Configure a JCA datasource using an example from
-              <literal>$JBOSS_HOME/docs/examples/jca</literal></para> and copying to 
-              <literal>$JBOSS_CONFIG/deploy</literal>
-              <para>JBoss Messaging uses <literal>DefaultDS</literal> by default so you should configure
-              your datasource to bind to that</para>              
-            </listitem>
-
-            <listitem>
-              <para>Remove hsqldb-ds.xml from <literal>$JBOSS_CONFIG/deploy</literal></para>
-            </listitem>
-            
-            <listitem>
-              <para>Copy your database driver to <literal>$JBOSS_CONFIG/lib</literal></para>
-              <para>Your database driver can probably be downloaded from your database providers
-              web site</para>
-            </listitem>
-            
-          </itemizedlist>
-        </listitem>
-        
-        <listitem>
-              <para>There are few extra steps at <xref
-      linkend="install.extra-steps" /></para>
-        </listitem>
-        
-        <listitem>
-           That's it!
-        </listitem>
-      </itemizedlist>
-
-    </section>
-
-    <section id="install.automatedclustered">
-      <title>Clustered Automated Installation</title>
+      <title>Automated Installation</title>
       
       <para>
          <note>
@@ -339,9 +114,9 @@ the JBoss Transactions Recovery Manager</para>
             <listitem>
               <para>Replace 
               <literal>$JBOSS_CONFIG/deploy/jboss-messaging.sar/hsqldb-persistence-service.xml</literal>
-              by the <literal>clustered-&lt;databasename&gt;-persistence-service</literal> from
+              by the <literal>databasename&gt;-persistence-service</literal> from
               <literal>&lt;downloadPackage&gt;/examples/config.</literal>. For instance
-              <literal>clustered-mysql-persistence-service.xml</literal>
+              <literal>mysql-persistence-service.xml</literal>
               </para>
             </listitem>
 
@@ -450,8 +225,8 @@ the JBoss Transactions Recovery Manager</para>
     
     
     
-   <section id="install.manualclustered">
-      <title>Clustered Manual Installation</title>
+   <section id="install.manual">
+      <title>Manual Installation</title>
       
       <para>
          <note>This installation procedure should be performed if you are installing into a JBoss AS
@@ -556,9 +331,9 @@ the JBoss Transactions Recovery Manager</para>
             <listitem>
               <para>Replace 
               <literal>$JBOSS_CONFIG/deploy/jboss-messaging.sar/hsqldb-persistence-service.xml</literal>
-              by the <literal>clustered-&lt;databasename&gt;-persistence-service</literal> from
+              by the <literal>databasename&gt;-persistence-service</literal> from
               <literal>&lt;downloadPackage&gt;/examples/config.</literal>. For instance
-              <literal>clustered-mysql-persistence-service.xml</literal>
+              <literal>mysql-persistence-service.xml</literal>
               </para>
             </listitem>
 
@@ -749,78 +524,6 @@ the JBoss Transactions Recovery Manager</para>
     </section>
   </section>
 
-  <section id="install.jboss40x">
-    <title>JBoss Messaging on JBoss 4.0.x</title>
-
-    <warning>
-       You should avoid using JBossMessaging on any version prior to JBoss 4.2.0.GA,
-        such as 4.0.5.GA and 4.0.4.GA.
-        JBoss Messaging uses newer versions of JBoss AOP, JBoss Remoting and JGroups compared to JBoss 4.0.X.
-        If you really need to install JBoss Messaging on those versions you will have to update those jars
-         as described on this section but this might cause problems with other components such as JBoss Web
-          Services and EJB3, and may cause other parts of JBoss AS to stop functioning.
-        Also there may be support implications when running in this configuration since the installation
-        procedure requires overwriting some of the jars in JBoss AS. Do this at your own peril!
-    </warning>
-
-    <itemizedlist>
-      <listitem>
-        <para>Install JBoss Messaging using the most convenient way described
-        on the <link linkend="installation">previous section</link> using the
-        default configuration as your base (even for a clustered JBoss
-        Messaging)</para>
-      </listitem>
-
-      <listitem>
-        <para>Replace the jars on this following list. You can download
-        these jars the repository links provided
-        below:</para>
-
-        <itemizedlist>
-          <listitem>
-            <para>$JBOSS_HOME/server/&lt;SERVER_NAME&gt;/deploy/jboss-aop.deployer/jboss-aop.jar</para>
-
-            <para>JBoss AOP 1.5.5.GA+</para>
-
-            <para><ulink
-            url="http://repository.jboss.com/jboss/aop/1.5.5.GA/lib/">http://repository.jboss.com/jboss/aop/1.5.5.GA/lib/</ulink></para>
-
-            <para>(For AOP, sometimes you have to use a specific JAR according
-            to your JVM of choice. Use the most convenient for you)</para>
-          </listitem>
-
-          <listitem>
-            <para>$JBOSS_HOME/server/&lt;SERVER_NAME&gt;/lib/javassist.jar</para>
-
-            <para>Javassist 3.5.0.GA-brew+</para>
-
-            <para><ulink
-            url="http://repository.jboss.com/javassist/3.5.0.GA-brew/lib/">http://repository.jboss.com/javassist/3.5.0.GA-brew/lib/</ulink></para>
-          </listitem>
-
-          <listitem>
-            <para>$JBOSS_HOME/server/&lt;SERVER_NAME&gt;/lib/jboss-remoting.jar</para>
-
-            <para>JBoss Remoting 2.2.0.SP4+</para>
-
-            <para><ulink
-            url="http://repository.jboss.com/jboss/remoting/2.2.0.SP4/lib/">http://repository.jboss.com/jboss/remoting/2.2.0.SP4/lib/</ulink></para>
-          </listitem>
-
-          <listitem>
-            <para>$JBOSS_HOME/server/&lt;SERVER_NAME&gt;/lib/jgroups.jar (if
-            using a clustered configuration)</para>
-
-            <para>JGroups 2.4.1.SP3-brew+</para>
-
-            <para><ulink
-            url="http://repository.jboss.com/jgroups/2.4.1.SP3-brew/lib/">http://repository.jboss.com/jgroups/2.4.1.SP3-brew/lib/</ulink></para>
-          </listitem>
-        </itemizedlist>
-      </listitem>
-
-    </itemizedlist>
-  </section>
 
   <section id="startingtheservice">
     <title>Starting the Server</title>
@@ -850,7 +553,7 @@ JBoss Messaging Warning: DataSource connection transaction isolation should be R
                          Using an isolation level less strict than READ_COMMITTED may lead to data consistency problems.
                          Using an isolation level more strict than READ_COMMITTED may lead to deadlock.
 
-13:19:15,166 INFO  [ServerPeer] JBoss Messaging 1.3.0.GA server [0] started
+13:19:15,166 INFO  [ServerPeer] JBoss Messaging 1.4.0.CR1 server [0] started
 13:19:15,411 INFO  [ConnectionFactory] Connector bisocket://127.0.0.1:4457 has leasing enabled, lease period 10000 milliseconds
 13:19:15,412 INFO  [ConnectionFactory] [/ConnectionFactory, /XAConnectionFactory, java:/ConnectionFactory, java:/XAConnectionFactory] started
 13:19:15,412 WARN  [ConnectionFactoryJNDIMapper] supportsFailover attribute is true on connection factory: jboss.messaging.connectionfactory:service=ClusteredConnectionFactory but post office is non clustered. So connection factory will *not* support failover
@@ -965,7 +668,7 @@ run:
      [java] Queue /queue/testQueue exists
      [java] The message was successfully sent to the testQueue queue
      [java] Received message: Hello!
-     [java] The example connected to JBoss Messaging version 1.3.0.GA (1.3)
+     [java] The example connected to JBoss Messaging version 1.4.0.CR1 (1.4)
 
      [java] #####################
      [java] ###    SUCCESS!   ###

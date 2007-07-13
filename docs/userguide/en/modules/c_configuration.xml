@@ -3,128 +3,29 @@
    <title>JBoss Messaging Clustering Configuration</title>
 
    <para>
-      In this chapter we will discuss how to configure JBoss Messaging clustering for different types of applications
+      JBoss Messaging clustering should work out of the box in most cases with no configuration changes. It is however crucial that every node in the cluster is assigned a unique server id, as specified in the installation guide.
+   </para>
+
+   <para>JBoss Messaging clusters JMS queues and topics transparently across the cluster. Messages sent to a distributed queue or topic on one node are consumable on other nodes. To designate that a particular destination is clustered simply set the clustered attribute in the destination deployment descriptor to true.
    </para>
 
    <para>
-      Most of JBoss messaging clustering configuration revolves around the following variable:
+JBoss Messaging balances messages between nodes, catering for faster or slower consumers to efficiently balance processing load across the cluster.
    </para>
 
-   <itemizedlist>
-   
-      <listitem>Choosing the connection factory</listitem>
+   <para>With JBoss Messaging durable subscrtiptions can also be clustered. This means multiple subscribers can consume from the same durable subscription from different nodes of the cluster. A durable subscription will be clustered if it's topic is clustered
+   </para>
 
-      <listitem>Choosing the cluster router policy</listitem>
+   <para>JBoss Messaging also supports clustered temporary topics and queues. All temporary topics and queues will be clustered if the post office is clustered
+   </para>
 
-      <listitem>Choosing the message redistributon policy</listitem>
+   <para>If you do want your nodes to participate in a cluster, or only have one non clustered server you can set the clustered attribute on the postoffice to false
+   </para>
 
-   </itemizedlist>
-   
-   <section id="clientcluster">
-      <title>Choosing the connection factory</title>
-      
-      <para>JBoss Messaging connections factories can optionally support load balancing and automatic failover. This is determined
-      by the attributes on supportsLoadBalancing and supportsFailover on the connection factory.
-      </para>
-      
-      <para>See the section <xref linkend="conf.connectionfactory">Connection Factory configuration</xref> for more information.
-      </para>
-      
-   </section>
-      
+   <para>If you wish to apply strict JMS ordering to messages, such that a particular JMS consumer consumes messages in the same order as they were produced by a particular producer, you can set the DefaultPreserveOrdering attribute in the server peer to true. By default this is false. The side-effect of setting this to true is that messages cannot be distributed as freely around the cluster
+   </para>
 
-   <section id="clusterrouter">
-
-      <title>Choosing the cluster router policy</title>
-
-      <para>
-
-      When a message is sent to a queue on particular node of the cluster, the system must decide whether the current node will handle it or whether it should send
-      it to another node to handle.
-      </para>
-
-      <para> The same applies if there are shared durable subscriptions on a topic and the message is being sent to a topic
-      </para>
-
-      <para>The correct decision to make depends on your application topology.</para>
-
-      <para>If your application consists of a set of servers with the same MDBs deployed on each server, and you have many well distributed producers sending
-      messages on all the nodes of the cluster, then the best policy is to always favour the local queue, since extra network trips are more expensive and the other
-      nodes are also havng local messages sent to them</para>
-
-      <para>However if your application consists of a set of homogenous MDBs but you have few or badly distributed producers, then always favouring the local producer
-      will mean the other nodes are being starved of messages and not using their CPUs cycles efficiently for messaging processing.</para>
-
-      <para>In this case, a good policy is to use a round robin routing policy where messages are round robin distributed to different nodes as they arrive.</para>
-
-      <para>In general, use the DefaultRoutingPolicy (this always favours the local queue) if you have many well distributed producers, and use the
-      RoundRobinRoutingPolicy if you have few or badly distributed producers.</para>
-
-      <para>This are specified in the clustered post office config, by specifying the following attribute</para>
-
-      <para>To favour the local queue:</para>
-
-      <programlisting>
-       &lt;attribute name="ClusterRouterFactory"&gt;org.jboss.messaging.core.plugin.postoffice.cluster.DefaultRouterFactory&lt;/attribute&gt;
-      </programlisting>
-
-      <para>To round robin:</para>
-
-       <programlisting>
-         &lt;attribute name="ClusterRouterFactory"&gt;org.jboss.messaging.core.plugin.postoffice.cluster.RoundRobinRouterFactory&lt;/attribute&gt;
-      </programlisting>
-
-   </section>
-
-
-   <section id="messagepull">
-
-      <title>Choosing the message pull policy</title>
-
-      <para>Once messages have arrived on queues in a cluster, in an ideal world they will all be consumed at the same rate, and there will be consumers on each node.
-      </para>
-
-      <para>However, in some application topologies, consumes may close on queues on a node, leaving messages otherwise stranded, or perhaps consumers
-      on some nodes are fast than consumers on other nodes causing messages to build up on one node or another and adversely effecting latency.
-      </para>
-
-      <para>JBoss Messaging allows messages to pulled from one node to another as load dictates in order to cope with such situations</para>
-
-      <para>Whether or not you should activate message pulling (message redistribution) depends on your application topology</para>
-
-      <para>For an application that consists of a set of servers with a heterogenous bank of MDBs (or other consumers) deployed on each node, consuming at
-      approximately the same rate, then message redistribution is not necessary.
-      </para>
-
-      <para>However, if your application consists of different numbers or rates of consumers on different nodes then message redistribution may help</para>
-
-      <warning>By its nature, message redistribution can result in messages being delivered in an order different to the strict ordering imposed by JMS. I.e.
-      messages can, sometimes be delivered in an order different to that which they were produced by their producer. If this ordering is important to you
-      then don't use message redistribution</warning>
-
-      <para>In general, use message redistribution when your consumers are not well distributed across the cluster or if they have greatly varying rates.</para>
-
-      <para>Message redistribution is set by setting the following attribute in the clustered post office configuration:
-      </para>
-
-      <para>
-      For no message redistribution:
-      </para>
-
-      <programlisting>
-           &lt;attribute name="MessagePullPolicy"&gt;org.jboss.messaging.core.plugin.postoffice.cluster.NullMessagePullPolicy&lt;/attribute&gt;
-      </programlisting>
-
-      <para>For message redistribution:</para>
-
-       <programlisting>
-           &lt;attribute name="MessagePullPolicy"&gt;org.jboss.messaging.core.plugin.postoffice.cluster.DefaultMessagePullPolicy&lt;/attribute&gt;
-      </programlisting>
-
-      <para>When selecting message redistribution you should also choose a value of <literal>StatsSendPeriod</literal> appropriately.</para>
-
-   </section>
-
-
+   <para>When pulling reliable messages from one node to another, by default JBoss Messaging uses an XA transaction to ensure that message was removed from one node and added to another transactionally. Using XA transactions is a fairly heavyweight operation. If you are willing to to relax the reliability guarantee somewhat in order to gain some performance then you can set the attribute UseXAForMessagePull in server peer to false. By default it is true
+   </para> 
 
 </chapter>

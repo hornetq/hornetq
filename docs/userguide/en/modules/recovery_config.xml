@@ -46,6 +46,9 @@
   "com.arjuna.ats.jta.recovery.XAResourceRecovery.JBMESSAGING2, ..." etc.</para>
   <para>In actual fact, the recovery also should work with any JMS provider that implements recoverable XAResources (i.e. it properly implements XAResource.recover())
   , not just JBoss Messaging</para>
+
+  <para>Please note that to configure the recovery manager to recovery transactions from any node of the cluster it will be necessary to specify a line in the configuration for every node of the cluster
+  </para>
   
   
 

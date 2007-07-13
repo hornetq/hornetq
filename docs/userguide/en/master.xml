@@ -3,7 +3,6 @@
 "../../../lib/docbook-support/support/docbook-dtd/docbookx.dtd" [
 <!ENTITY about SYSTEM "modules/about.xml">
 <!ENTITY introduction SYSTEM "modules/introduction.xml">
-<!ENTITY c_overview SYSTEM "modules/c_overview.xml">
 <!ENTITY gettingstarted SYSTEM "modules/gettingstarted.xml">
 <!ENTITY nc_installation SYSTEM "modules/installation.xml">
 <!ENTITY runningexamples SYSTEM "modules/runningexamples.xml">
@@ -25,8 +24,6 @@
   &about;
 
   &introduction;
-
-  &c_overview;
 
   &gettingstarted;
 
