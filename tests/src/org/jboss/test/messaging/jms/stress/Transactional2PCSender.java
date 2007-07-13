@@ -117,7 +117,7 @@ public class Transactional2PCSender extends Sender
       catch (Exception e)
       {
          log.error("Failed to send message", e);
-         failed = true;
+         setFailed(true);
       }
    }
 }

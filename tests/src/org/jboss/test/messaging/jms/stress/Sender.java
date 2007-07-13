@@ -71,7 +71,7 @@ public class Sender extends Runner
       catch (Exception e)
       {
          log.error("Failed to send message", e);
-         failed = true;
+         setFailed(true);
       }
    }
 

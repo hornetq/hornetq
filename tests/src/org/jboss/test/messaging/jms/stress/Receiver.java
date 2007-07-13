@@ -129,7 +129,7 @@ public class Receiver extends Runner implements MessageListener
       catch (Exception e)
       {
          log.error("Failed to put in channel", e);
-         failed = true;
+         setFailed(true);
       }
    }
    
@@ -208,7 +208,7 @@ public class Receiver extends Runner implements MessageListener
             if (m == null)
             {
                log.error("Message is null");
-               failed = true;
+               setFailed(true);
                processingDone();
                return;
             }
@@ -222,7 +222,7 @@ public class Receiver extends Runner implements MessageListener
                if (msgCount.intValue() != 0)
                {
                   log.error("First message received not zero");
-                  failed = true;
+                  setFailed(true);
                   processingDone();
                   return;
                }               
@@ -232,7 +232,7 @@ public class Receiver extends Runner implements MessageListener
                if (prevCount.intValue() != msgCount.intValue() - 1)
                {
                   log.error("Message out of sequence for " + prodName + ", expected:" + (prevCount.intValue() + 1) + " got " + msgCount);
-                  failed = true;
+                  setFailed(true);
                   processingDone();
                   return;
                }
@@ -249,7 +249,7 @@ public class Receiver extends Runner implements MessageListener
       catch (Exception e)
       {
          log.error("Failed to receive message", e);
-         failed = true;
+         setFailed(true);
       }
       finally
       {

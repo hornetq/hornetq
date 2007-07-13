@@ -89,7 +89,7 @@ public class TransactionalSender extends Sender
       catch (Exception e)
       {
          log.error("Failed to send message", e);
-         failed = true;
+         setFailed(true);
       }
    }
 }

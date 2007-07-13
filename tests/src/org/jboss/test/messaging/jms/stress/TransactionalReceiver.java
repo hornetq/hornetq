@@ -87,7 +87,7 @@ public class TransactionalReceiver extends Receiver
                if (m == null)
                {
                   log.error("Message is null");
-                  failed = true;
+                  setFailed(true);
                   return;
                }
                String prodName = m.getStringProperty("PROD_NAME");
@@ -100,7 +100,7 @@ public class TransactionalReceiver extends Receiver
                   if (msgCount.intValue() != 0)
                   {
                      log.error("First message from " + prodName + " is not 0, it is " + msgCount);
-                     failed = true;
+                     setFailed(true);
                      return;
                   }
                   else
@@ -114,7 +114,7 @@ public class TransactionalReceiver extends Receiver
                   if (count.lastCommitted != msgCount.intValue() - 1)
                   {
                      log.error("Message out of sequence for " + m.getJMSMessageID() + " " + prodName + ", expected " + (count.lastCommitted + 1) + ", actual " + msgCount);
-                     failed = true;
+                     setFailed(true);
                      return;
                   }
                }
@@ -142,7 +142,7 @@ public class TransactionalReceiver extends Receiver
                if (m == null)
                {
                   log.error("Message is null");
-                  failed = true;
+                  setFailed(true);
                   return;
                }
                String prodName = m.getStringProperty("PROD_NAME");               
@@ -155,7 +155,7 @@ public class TransactionalReceiver extends Receiver
                   if (msgCount.intValue() != 0)
                   {
                      log.error("First message from " + prodName + " is not 0, it is " + msgCount);
-                     failed = true;
+                     setFailed(true);
                      return;
                   }
                   else
@@ -170,7 +170,7 @@ public class TransactionalReceiver extends Receiver
                   if (count.lastReceived != msgCount.intValue() - 1)
                   {
                      log.error("Message out of sequence");
-                     failed = true;
+                     setFailed(true);
                      return;
                   }
                }
@@ -189,7 +189,7 @@ public class TransactionalReceiver extends Receiver
       catch (Exception e)
       {
          log.error("Failed to receive message", e);
-         failed = true;
+         setFailed(true);
       }
    }
 }

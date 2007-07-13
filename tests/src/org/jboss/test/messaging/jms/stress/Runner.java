@@ -22,6 +22,7 @@
 package org.jboss.test.messaging.jms.stress;
 
 import javax.jms.Session;
+import org.jboss.logging.Logger;
 
 /**
  * 
@@ -36,11 +37,13 @@ import javax.jms.Session;
  */
 public abstract class Runner implements Runnable
 {
+   protected Logger log = Logger.getLogger(getClass());
+
    protected Session sess;
    
    protected int numMessages;
    
-   protected boolean failed;
+   private boolean failed;
 
    public Runner(Session sess, int numMessages)
    {
@@ -53,6 +56,15 @@ public abstract class Runner implements Runnable
    public boolean isFailed()
    {
       return failed;
+   }
+
+   public void setFailed(boolean failed)
+   {
+      this.failed = failed;
+      if (failed)
+      {
+         log.info("Marking Runner " + this + " as failed", new Exception ("trace"));
+      }
    }
 
 }
