@@ -108,6 +108,7 @@
    <property name="junit.includeantruntime" value="true"/>
    <property name="junit.timeout" value="900000"/>             <!-- 15 mins --> 
    <property name="clustering.junit.timeout" value="1200000"/> <!-- 20 mins -->
+   <property name="clustering.stress.junit.timeout" value="1800000"/> <!-- 30 mins -->
    <property name="stress.junit.timeout" value="900000"/>      <!-- 15 mins -->
    <property name="bridge.junit.timeout" value="5400000"/>     <!-- 90 mins -->
 
@@ -471,7 +472,7 @@
    <target name="stress-tests" depends="tests-jar, prepare-testdirs, clear-test-logs">
       <antcall target="invm-stress-tests"/>
       <antcall target="remote-stress-tests"/> <!-- default remoting configuration (bisocket) -->
-
+      <antcall target="clustering-stress-tests"/>
 
       <!-- We DO NOT run the test suite using the HTTP transport - it is not sufficiently stable
       <antcall target="remote-stress-tests">
@@ -558,13 +559,71 @@
                     haltonerror="${junit.batchtest.haltonerror}">
             <formatter type="plain" usefile="${junit.formatter.usefile}"/>
             <fileset dir="${build.tests.classes}">
-               <include name="**/jms/stress/**/*Test.class"/>
+               <include name="**/jms/stress/*Test.class"/>
             </fileset>
          </batchtest>
       </junit>
 
       <antcall target="stop-rmi-server"/>
 
+   </target>
+
+   <target name="clustering-stress-tests" depends="tests-jar, prepare-testdirs, clear-test-logs"
+           description="Runs the clustering tests">
+
+      <mkdir dir="${build.tests.reports}"/>
+
+      <echo message=""/>
+      <echo message="Running clustering stress tests, fork=${junit.fork}, junit.batchtest.fork=${junit.batchtest.fork}"/>
+      <echo message=""/>
+
+      <junit printsummary="${junit.printsummary}"
+             fork="${junit.fork}"
+             includeantruntime="yes"
+             haltonerror="${junit.haltonerror}"
+             haltonfailure="${junit.haltonfailure}"
+             showoutput="${junit.showoutput}"
+             timeout="${clustering.stress.junit.timeout}">
+
+         <sysproperty key="remote" value="true"/>
+         <sysproperty key="module.output" value="${tests.output}"/>
+         <sysproperty key="test.bind.address" value="${test.bind.address}"/>
+         <sysproperty key="jgroups.bind_addr" value="${test.bind.address}"/>
+         <sysproperty key="test.database" value="${clustering.tests.database}"/>
+         <sysproperty key="test.clustered" value="true"/>
+         <sysproperty key="test.logfile.suffix" value="clustering-client"/>
+         <sysproperty key="objectstore.dir" value="${objectstore.dir}"/>
+         <jvmarg value="-Xmx512M"/>
+         <jvmarg value="-Djava.net.preferIPv4Stack=true"/>
+         <!--
+         <jvmarg line="-Xmx512M -Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_shmem,server=n,suspend=n,address=antjunit"/>
+          -->
+
+         <classpath>
+            <path refid="test.execution.classpath"/>
+         </classpath>
+
+         <sysproperty key="jboss-junit-configuration" value="StressClustering"/>
+         <formatter classname="org.jboss.ant.taskdefs.XMLJUnitMultipleResultFormatter"
+                    usefile="${junit.formatter.usefile}" extension="-Clustering.xml"/>
+
+         <batchtest fork="${junit.batchtest.fork}"
+                    todir="${junit.batchtest.todir}"
+                    haltonfailure="${junit.batchtest.haltonfailure}"
+                    haltonerror="${junit.batchtest.haltonerror}">
+            <formatter type="plain" usefile="${junit.formatter.usefile}"/>
+            <!--
+                 I needed a way to intercept the end of a forked ant JUnit test run, in order to
+                 perform clean-up, and this is it: register a JUnitTestSuiteListener as a JUnit
+                 batchtest formatter, and it will get notified on a endTestSuite() event.
+            -->
+            <formatter classname="org.jboss.test.messaging.tools.ant.JUnitTestSuiteListener"/>
+
+            <fileset dir="${build.tests.classes}">
+               <include name="**/jms/stress/clustering/*Test.class"/>
+            </fileset>
+         </batchtest>
+      </junit>
    </target>
 
    <target name="clustering-tests" depends="tests-jar, prepare-testdirs, clear-test-logs"
