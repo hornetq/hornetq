@@ -2965,8 +2965,6 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
       {
          conn = ds.getConnection();
          
-         log.info("********** sql query:" + sqlQuery);
-         
          ps = conn.prepareStatement(sqlQuery);
          
          ps.setLong(1, transactionId);

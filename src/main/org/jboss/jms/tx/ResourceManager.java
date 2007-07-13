@@ -615,10 +615,6 @@ public class ResourceManager
             
             del.redeliver(acks);
          }
-         else
-         {
-         	log.info("There are no messages to redeliver");
-         }
       }
    }
    
