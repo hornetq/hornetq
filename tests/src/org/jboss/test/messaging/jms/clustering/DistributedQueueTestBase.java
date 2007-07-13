@@ -327,11 +327,13 @@ public abstract class DistributedQueueTestBase extends ClusteringTestBase
          
          do
          {
-            tm = (TextMessage)cons2.receive(1000);
+            tm = (TextMessage)cons2.receive(5000);
             
             if (tm != null)
             {                     
 	            msgs.add(tm.getText());
+	            
+	            log.info("Got message " + tm.getText());
             }
          }           
          while (tm != null);

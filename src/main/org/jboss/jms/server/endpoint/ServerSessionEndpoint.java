@@ -171,6 +171,8 @@ public class ServerSessionEndpoint implements SessionEndpoint
    
    private LinkedQueue toDeliver = new LinkedQueue();
    
+   private boolean waitingToClose = false;
+   
    // Constructors ---------------------------------------------------------------------------------
 
    ServerSessionEndpoint(String sessionID, ServerConnectionEndpoint connectionEndpoint) throws Exception
@@ -894,7 +896,10 @@ public class ServerSessionEndpoint implements SessionEndpoint
 	   			{
 	   		   	synchronized (deliveryLock)
 	   		   	{
-	   		   		deliveryLock.notifyAll();
+	   		   		if (waitingToClose)
+	   		   		{
+	   		   			deliveryLock.notifyAll();
+	   		   		}
 	   		   	}   					   			
 	   			}
 	   		}
@@ -923,93 +928,189 @@ public class ServerSessionEndpoint implements SessionEndpoint
    	   	
    	boolean delivered = false;
    	
-   	//Note there will only be contention on this if two or more responses come back at the same time - which is unlikely
-   	//Is it even possible? If the responses come back on the same JGroups channel - surely this can't happen - maybe
-   	//we can remove the lock?
-   	//Anyway there is little overhead if the lock is not contended
-   	synchronized (myLock)
+   	//I have commented this out since we should be able guarantee responses come back in order if we use
+   	//a QueuedExecutor on the other node to send the response
+   	
+//   	//Note there will only be contention on this if two or more responses come back at the same time - which is unlikely
+//   	//TODO - This can occur since replicates are sent to the other node, and the responses are sent back using a pool which
+//   	//means earlier responses can be received after later ones -hence we need to cope with this
+//   	//However - if we used a queued executor on the other node to send back responses we could remove all this locking!!
+//   	synchronized (myLock)
+//   	{
+//   		long toWait = DELIVERY_WAIT_TIMEOUT;
+//   		
+//   		while (toWait > 0)
+//      	{
+//      		DeliveryRecord dr = (DeliveryRecord)toDeliver.peek();
+//      		      	      		
+//      		if (dr == null)
+//      		{
+//      			if (trace) { log.trace("No more deliveries in list"); }
+//      			
+//      			break;
+//      		}
+//      		
+//      		if (trace) { log.trace("Peeked delivery record: " + dr.deliveryID); }
+//      		
+//      		boolean wait = false;
+//      		
+//      		//Needs to be synchronized to prevent delivery occurring twice e.g. if this occurs at same time as collectDeliveries
+//      		synchronized (dr)
+//      		{	   		
+//   	   		boolean performDelivery = false;
+//   	   		
+//   	   		if (dr.waitingForResponse)
+//   	   		{
+//   	   			if (dr == rec)
+//   	   			{
+//   	   				if (trace) { log.trace("Found our delivery"); }
+//   	   				
+//   	   				performDelivery = true;
+//   	   			}
+//   	   			else
+//   	   			{
+//   	   				if (!delivered)
+//   	   				{
+//	   	   				//We have to wait for another response to arrive first
+//	   	   				
+//	   	   				if (trace) { log.trace("Not ours - need to wait"); }
+//	   	   				
+//	   	   				wait = true;
+//   	   				}
+//   	   				else
+//   	   				{
+//   	   					//We have delivered ours and possibly any non replicated deliveries too   	   					   	   					
+//   	   	   	   	
+//   	   	   	   	myLock.notify();
+//   	   	   	   	
+//   	   					break;
+//   	   				}
+//   	   			}
+//   	   		}
+//   	   		else
+//   	   		{
+//   	   			//Non replicated delivery
+//   	   			
+//   	   			if (trace) { log.trace("Non replicated delivery"); }
+//   	   			
+//   	   			performDelivery = true;
+//   	   		}
+//   	   		
+//   	   		if (performDelivery)
+//   	   		{
+//   	   			toDeliver.take();
+//   	   			
+//   	   			performDelivery(dr.del.getReference(), dr.deliveryID, dr.getConsumer()); 
+//   	   			
+//   	   			delivered = true;
+//   	   	   	
+//   	   	   	dr.waitingForResponse = false;
+//   	   	   	
+//   	   	   	delivered = true;
+//   	   		}
+//      		}
+//      		
+//      		if (wait)
+//      		{
+//   				long start = System.currentTimeMillis();
+//   				
+//      			try
+//      			{
+//      				if (trace) { log.trace("Waiting"); }
+//      				
+//      				//We need to wait since responses have come back out of order
+//      				myLock.wait(toWait);
+//      				
+//      				if (trace) { log.trace("Woke up"); }
+//      			}
+//      			catch (InterruptedException e)
+//      			{      				
+//      			}
+//      			toWait -= (System.currentTimeMillis() - start);
+//      		}      		
+//      	}
+//   		if (toWait <= 0)
+//   		{
+//   			throw new IllegalStateException("Timed out waiting for previous response to arrive");
+//   		}
+//   	}   	   	
+   	
+		while (true)
    	{
-   		long toWait = DELIVERY_WAIT_TIMEOUT;
-   		
-   		while (toWait > 0)
-      	{
-      		DeliveryRecord dr = (DeliveryRecord)toDeliver.peek();
-      		
-      		if (dr == null)
-      		{
-      			//Response came back after deliveries collected? - Do nothing
-      			break;
-      		}
-      		
-      		boolean wait = false;
-      		
-      		//Needs to be synchronized to prevent delivery occurring twice e.g. if this occurs at same time as collectDeliveries
-      		synchronized (dr)
-      		{	   		
-   	   		boolean performDelivery = false;
-   	   		
-   	   		if (dr.waitingForResponse)
-   	   		{
-   	   			if (dr == rec)
-   	   			{
-   	   				performDelivery = true;
-   	   			}
-   	   			else
-   	   			{
-   	   				//We have to wait for another response to arrive first
-   	   				wait = true;
-   	   			}
-   	   		}
-   	   		else
-   	   		{
-   	   			//Non replicated delivery
-   	   			performDelivery = true;
-   	   		}
-   	   		
-   	   		if (performDelivery)
-   	   		{
-   	   			toDeliver.take();
-   	   			
-   	   			performDelivery(dr.del.getReference(), dr.deliveryID, dr.getConsumer()); 
-   	   			
-   	   			delivered = true;
-   	   	   	
-   	   	   	dr.waitingForResponse = false;
-   	   	   	
-   	   	   	myLock.notify();
-   	   	   	
-   	   	   	break;
-   	   		}
-      		}
-      		
-      		if (wait)
-      		{
-   				long start = System.currentTimeMillis();
-   				
-      			try
-      			{
-      				//We need to wait since responses have come back out of order
-      				myLock.wait(toWait);
-      			}
-      			catch (InterruptedException e)
-      			{      				
-      			}
-      			toWait -= (System.currentTimeMillis() - start);
-      		}      		
-      	}
-   		if (toWait <= 0)
+   		DeliveryRecord dr = (DeliveryRecord)toDeliver.peek();
+   		      	      		
+   		if (dr == null)
    		{
-   			throw new IllegalStateException("Timed out waiting for previous response to arrive");
+   			if (trace) { log.trace("No more deliveries in list"); }
+   			
+   			break;
    		}
-   	}   	   	
+   		
+   		if (trace) { log.trace("Peeked delivery record: " + dr.deliveryID); }
+   		
+   		//Needs to be synchronized to prevent delivery occurring twice e.g. if this occurs at same time as collectDeliveries
+   		synchronized (dr)
+   		{	   		
+	   		boolean performDelivery = false;
+	   		
+	   		if (dr.waitingForResponse)
+	   		{
+	   			if (dr == rec)
+	   			{
+	   				if (trace) { log.trace("Found our delivery"); }
+	   				
+	   				performDelivery = true;
+	   			}
+	   			else
+	   			{
+	   				if (!delivered)
+	   				{
+   	   				//We have to wait for another response to arrive first
+   	   				
+   	   				throw new IllegalStateException("Reponses have come back our of order");
+	   				}
+	   				else
+	   				{
+	   					//We have delivered ours and possibly any non replicated deliveries too   	   					   	   					
+	   	   	   	
+	   					break;
+	   				}
+	   			}
+	   		}
+	   		else
+	   		{
+	   			//Non replicated delivery
+	   			
+	   			if (trace) { log.trace("Non replicated delivery"); }
+	   			
+	   			performDelivery = true;
+	   		}
+	   		
+	   		if (performDelivery)
+	   		{
+	   			toDeliver.take();
+	   			
+	   			performDelivery(dr.del.getReference(), dr.deliveryID, dr.getConsumer()); 
+	   			
+	   			delivered = true;
+	   	   	
+	   	   	dr.waitingForResponse = false;
+	   	   	
+	   	   	delivered = true;
+	   		}
+   		}	
+   	}   	  	      	
    	
    	if (delivered)
    	{
 	   	synchronized (deliveryLock)
 	   	{
-	   		deliveryLock.notifyAll();
+	   		if (waitingToClose)
+	   		{
+	   			deliveryLock.notifyAll();
+	   		}
 	   	}
-   	}
+   	}   	   	   	   
    }
 
    // Package protected ----------------------------------------------------------------------------
@@ -1203,6 +1304,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
 	   		
 	   		if (wait)
 	   		{
+	   			waitingToClose = true;
 	   			try
 	   			{
 	   				deliveryLock.wait(toWait);
@@ -1222,7 +1324,8 @@ public class ServerSessionEndpoint implements SessionEndpoint
    			while (toDeliver.poll(0) != null) {}
    			
    			log.warn("Timed out waiting for response to arrive");
-   		}   		   		
+   		}   		
+   		waitingToClose = false;
    	}
    }
    
@@ -1235,6 +1338,8 @@ public class ServerSessionEndpoint implements SessionEndpoint
    	 DeliveryRecord rec = null;
    	 
    	 deliveryId = deliveryIdSequence.increment();   	 
+   	 
+   	 if (trace) { log.trace("Delivery id is now " + deliveryId); }
    	 
    	 //TODO can't we combine flags isRetainDeliveries and isReplicating - surely they're mutually exclusive?
        if (consumer.isRetainDeliveries())
@@ -1253,6 +1358,8 @@ public class ServerSessionEndpoint implements SessionEndpoint
        	try
        	{
        		//This basically just releases the memory reference
+       		
+       		if (trace) { log.trace("Acknowledging delivery now"); }
        		
        		delivery.acknowledge(null);
        	}
@@ -1275,6 +1382,8 @@ public class ServerSessionEndpoint implements SessionEndpoint
        {
       	 if (!toDeliver.isEmpty())
       	 {
+      		 if (trace) { log.trace("Message is unreliable and there are refs in the toDeliver so adding to list"); }
+      		 
       		 //We need to add to the list to prevent non persistent messages overtaking persistent messages from the same
       		 //producer in flight (since np don't need to be replicated)
       		 toDeliver.put(rec);
@@ -1290,6 +1399,8 @@ public class ServerSessionEndpoint implements SessionEndpoint
       	 }
       	 else
       	 {
+      		 if (trace) { log.trace("Message is unreliable, but no deliveries in list so performing delivery now"); }
+      		 
       		 // Actually do the delivery now
          	 performDelivery(delivery.getReference(), deliveryId, consumer); 
       	 }

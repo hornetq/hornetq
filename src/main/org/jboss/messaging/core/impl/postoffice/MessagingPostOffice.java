@@ -83,6 +83,7 @@ import org.jgroups.View;
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
 import EDU.oswego.cs.dl.util.concurrent.LinkedQueue;
 import EDU.oswego.cs.dl.util.concurrent.PooledExecutor;
+import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
 import EDU.oswego.cs.dl.util.concurrent.ReadWriteLock;
 import EDU.oswego.cs.dl.util.concurrent.ReentrantWriterPreferenceReadWriteLock;
 
@@ -214,7 +215,8 @@ public class MessagingPostOffice extends JDBCSupport
    //use it
    private ServerPeer serverPeer;
    
-   private PooledExecutor replyExecutor;
+   //Note this MUST be a queued executor to ensure replicate repsonses arrive back in order
+   private QueuedExecutor replyExecutor;
    
    private volatile int failoverNodeID = -1;
    
@@ -1579,7 +1581,8 @@ public class MessagingPostOffice extends JDBCSupport
          leftSet = new ConcurrentHashSet();
       }
       
-      replyExecutor = new PooledExecutor(new LinkedQueue(),  10);
+      //NOTE, MUST be a QueuedExecutor so we ensure that responses arrive back in order
+      replyExecutor = new QueuedExecutor(new LinkedQueue());
    }
    
    private void deInit()
@@ -3010,14 +3013,19 @@ public class MessagingPostOffice extends JDBCSupport
 
 		public void afterCommit(boolean onePhase) throws Exception
 		{
-			if (nodeID == null)
-			{
-				multicastRequest(request);
-			}
-			else
-			{
-				unicastRequest(request, nodeID.intValue());
-			}
+//			if (nodeID == null)
+//			{
+//				multicastRequest(request);
+//			}
+//			else
+//			{
+//				unicastRequest(request, nodeID.intValue());
+//			}
+			
+			//For now we always multicast otherwise there is the possibility that messages send unicast arrive in a different order
+			//to messages send multicast
+			//We might be able to fix this using anycast
+			multicastRequest(request);
 		}
 
 		public void afterPrepare() throws Exception
