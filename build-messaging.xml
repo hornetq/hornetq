@@ -436,7 +436,7 @@
       </copy>
    </target>
 
-   <target name="release-bundle" depends="artifacts, release-structure, examples, userdoc, bundle-source, bundle-test-results, javadoc">
+   <target name="release-bundle" depends="artifacts, release-structure, examples, userdoc, bundle-source, javadoc">
 
       <copy todir="${release.output}" file="${build.lib}/jboss-${module.name}.sar"/>
       <copy todir="${release.output}" file="${build.lib}/jboss-${module.name}.jar"/>
