@@ -513,10 +513,29 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
 
          while (iter.hasNext())
          {
-            //We should always persist the message first, if necesssary, because of FK constraint
-         	
+            //We may need to persist the message itself 
             MessageReference ref = (MessageReference) iter.next();
+                                            
+            //For non reliable refs we insert the ref (and maybe the message) itself
+                           
+            //Now store the reference
+            addReference(channelID, ref, psInsertReference, paged);
                         
+            if (usingBatchUpdates)
+            {
+               psInsertReference.addBatch();
+            }
+            else
+            {
+               int rows = updateWithRetry(psInsertReference);
+               
+               if (trace)
+               {
+                  log.trace("Inserted " + rows + " rows");
+               }
+            }
+            
+            //Maybe we need to persist the message itself
             Message m = ref.getMessage();
             
             //In a paging situation, we cannot use the persisted flag on the message to determine whether
@@ -598,41 +617,20 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
                   }
                }
             }      
-         	         	             
-            //For non reliable refs we insert the ref (and maybe the message) itself
-                           
-            //Now store the reference
-            addReference(channelID, ref, psInsertReference, paged);
-                        
-            if (usingBatchUpdates)
-            {
-               psInsertReference.addBatch();
-            }
-            else
-            {
-               int rows = updateWithRetry(psInsertReference);
-               
-               if (trace)
-               {
-                  log.trace("Inserted " + rows + " rows");
-               }
-            }                       
          }         
          
          if (usingBatchUpdates)
          {
-         	//Message inserts must be done first becaue of FK constraint
+            int[] rowsReference = updateWithRetryBatch(psInsertReference);
+            
+            if (trace) { logBatchUpdate(getSQLStatement("INSERT_MESSAGE_REF"), rowsReference, "inserted"); }
+            
             if (messageInsertsInBatch)
             {
                int[] rowsMessage = updateWithRetryBatch(psInsertMessage);
                
                if (trace) { logBatchUpdate(getSQLStatement("INSERT_MESSAGE"), rowsMessage, "inserted"); }
             }
-         	
-            int[] rowsReference = updateWithRetryBatch(psInsertReference);
-            
-            if (trace) { logBatchUpdate(getSQLStatement("INSERT_MESSAGE_REF"), rowsReference, "inserted"); }
-            
             if (messageUpdatesInBatch)
             {
                int[] rowsMessage = updateWithRetryBatch(psUpdateMessage);
@@ -1277,9 +1275,16 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
          {            
             // Get lock on message
             LockMap.instance.obtainLock(m);
+                                    
+            psReference = conn.prepareStatement(getSQLStatement("INSERT_MESSAGE_REF"));
             
-            //Need to add message first because of FK constraint
-                        
+            // Add the reference
+            addReference(channelID, ref, psReference, false);
+            
+            int rows = updateWithRetry(psReference);      
+            
+            if (trace) { log.trace("Inserted " + rows + " rows"); }
+              
             if (!m.isPersisted())
             {
                // First time so persist the message
@@ -1297,18 +1302,11 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
                incrementChannelCount(m, psMessage);
             }
                            
-            int rows = updateWithRetry(psMessage);
+            rows = updateWithRetry(psMessage);
             
-            if (trace) { log.trace("Message inserted/updated " + rows + " rows"); }     
-                        
-            psReference = conn.prepareStatement(getSQLStatement("INSERT_MESSAGE_REF"));
+            if (trace) { log.trace("Inserted/updated " + rows + " rows"); }     
             
-            // Add the reference
-            addReference(channelID, ref, psReference, false);
-            
-            rows = updateWithRetry(psReference);      
-            
-            if (trace) { log.trace("Ref inserted " + rows + " rows"); }            
+            log.trace("message Inserted/updated " + rows + " rows");            
          }
          catch (Exception e)
          {
@@ -1588,8 +1586,28 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
          {
             ChannelRefPair pair = (ChannelRefPair)i.next();
             MessageReference ref = pair.ref;
-            
-            //Message needs to be added first because of FK constraint
+                                                
+            if (!batch)
+            {
+               psReference = conn.prepareStatement(getSQLStatement("INSERT_MESSAGE_REF"));
+            }
+
+            // Now store the reference
+            addReference(pair.channelID, ref, psReference, false);
+              
+            if (batch)
+            {
+               psReference.addBatch();
+            }
+            else
+            {
+               int rows = updateWithRetry(psReference);
+               
+               if (trace) { log.trace("Inserted " + rows + " rows"); }                              
+
+               psReference.close();
+               psReference = null;
+            }
             
             Message m = ref.getMessage();        
             
@@ -1648,46 +1666,21 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
                psIncMessage.close();
                psIncMessage = null;
             }
-            
-            //Now the ref
-            
-            if (!batch)
-            {
-               psReference = conn.prepareStatement(getSQLStatement("INSERT_MESSAGE_REF"));
-            }
-
-            // Now store the reference
-            addReference(pair.channelID, ref, psReference, false);
-              
-            if (batch)
-            {
-               psReference.addBatch();
-            }
-            else
-            {
-               int rows = updateWithRetry(psReference);
-               
-               if (trace) { log.trace("Inserted " + rows + " rows"); }                              
-
-               psReference.close();
-               psReference = null;
-            }
          }         
          
          if (batch)
          {
             // Process the add batch
-         	
-         	//Messages need to be inserted first because of FK constraint
+
+            int[] rowsReference = updateWithRetryBatch(psReference);
+            
+            if (trace) { logBatchUpdate(getSQLStatement("INSERT_MESSAGE_REF"), rowsReference, "inserted"); }
+            
             if (messageInsertsInBatch)
             {
                int[] rowsMessage = updateWithRetryBatch(psInsertMessage);
                if (trace) { logBatchUpdate(getSQLStatement("INSERT_MESSAGE"), rowsMessage, "inserted"); }
             }
-
-            int[] rowsReference = updateWithRetryBatch(psReference);
-            
-            if (trace) { logBatchUpdate(getSQLStatement("INSERT_MESSAGE_REF"), rowsReference, "inserted"); }            
 
             if (messageUpdatesInBatch)
             {
@@ -1715,8 +1708,9 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
             psDeleteMessage = conn.prepareStatement(getSQLStatement("DELETE_MESSAGE"));
             psDecMessage = conn.prepareStatement(getSQLStatement("DEC_CHANNEL_COUNT"));
          }
+
          
-         for (Iterator i = refsToRemove.iterator(); i.hasNext(); )
+         for(Iterator i = refsToRemove.iterator(); i.hasNext(); )
          {
             ChannelRefPair pair = (ChannelRefPair)i.next();
             
@@ -2604,6 +2598,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
          ps.setNull(6, Types.LONGVARBINARY);
       }
       
+      
       byte[] payload = m.getPayloadAsByteArray();
       if (payload != null)
       {
@@ -2802,22 +2797,22 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
    protected Map getDefaultDDLStatements()
    {
       Map map = new LinkedHashMap();
-      //Message
-      map.put("CREATE_MESSAGE",
-              "CREATE TABLE JBM_MSG (MESSAGE_ID BIGINT, RELIABLE CHAR(1), " +
-              "EXPIRATION BIGINT, TIMESTAMP BIGINT, PRIORITY TINYINT, HEADERS LONGVARBINARY, " +
-              "PAYLOAD LONGVARBINARY, CHANNEL_COUNT INTEGER, TYPE TINYINT, " +
-              "PRIMARY KEY (MESSAGE_ID))"); 
       //Message reference
       map.put("CREATE_MESSAGE_REFERENCE",
               "CREATE TABLE JBM_MSG_REF (CHANNEL_ID BIGINT, " +
-              "MESSAGE_ID BIGINT REFERENCES JBM_MSG(MESSAGE_ID), TRANSACTION_ID BIGINT, STATE CHAR(1), ORD BIGINT, PAGE_ORD BIGINT, " +
+              "MESSAGE_ID BIGINT, TRANSACTION_ID BIGINT, STATE CHAR(1), ORD BIGINT, PAGE_ORD BIGINT, " +
               "DELIVERY_COUNT INTEGER, SCHED_DELIVERY BIGINT, PRIMARY KEY(CHANNEL_ID, MESSAGE_ID))");
       map.put("CREATE_IDX_MESSAGE_REF_TX", "CREATE INDEX JBM_MSG_REF_TX ON JBM_MSG_REF (TRANSACTION_ID)");
       map.put("CREATE_IDX_MESSAGE_REF_ORD", "CREATE INDEX JBM_MSG_REF_ORD ON JBM_MSG_REF (ORD)");
       map.put("CREATE_IDX_MESSAGE_REF_PAGE_ORD", "CREATE INDEX JBM_MSG_REF__PAGE_ORD ON JBM_MSG_REF (PAGE_ORD)");
       map.put("CREATE_IDX_MESSAGE_REF_MESSAGE_ID", "CREATE INDEX JBM_MSG_REF_MESSAGE_ID ON JBM_MSG_REF (MESSAGE_ID)");      
       map.put("CREATE_IDX_MESSAGE_REF_SCHED_DELIVERY", "CREATE INDEX JBM_MSG_REF_SCHED_DELIVERY ON JBM_MSG_REF (SCHED_DELIVERY)");
+      //Message
+      map.put("CREATE_MESSAGE",
+              "CREATE TABLE JBM_MSG (MESSAGE_ID BIGINT, RELIABLE CHAR(1), " +
+              "EXPIRATION BIGINT, TIMESTAMP BIGINT, PRIORITY TINYINT, HEADERS LONGVARBINARY, " +
+              "PAYLOAD LONGVARBINARY, CHANNEL_COUNT INTEGER, TYPE TINYINT, " +
+              "PRIMARY KEY (MESSAGE_ID))"); 
       //Transaction
       map.put("CREATE_TRANSACTION",
               "CREATE TABLE JBM_TX (" +
