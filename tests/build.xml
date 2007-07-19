@@ -368,7 +368,8 @@
                     haltonerror="${junit.batchtest.haltonerror}">
             <formatter type="plain" usefile="${junit.formatter.usefile}"/>
             <fileset dir="${build.tests.classes}">
-               <include name="**/*Test.class"/>
+               <include name="**/ClusteredPostOfficeTest.class"/>
+               <!-- <include name="**/*Test.class"/> -->
                <exclude name="**/messaging/graveyard/**/*Test.class"/>
                <exclude name="**/jms/stress/**"/>
                <exclude name="**/jms/crash/*Test.class"/>
@@ -514,7 +515,7 @@
                     haltonerror="${junit.batchtest.haltonerror}">
             <formatter type="plain" usefile="${junit.formatter.usefile}"/>
             <fileset dir="${build.tests.classes}">
-               <include name="**/jms/stress/*Test.class"/>
+               <include name="**/jms/stress/TopicStressTest.class"/>
             </fileset>
          </batchtest>
       </junit>
