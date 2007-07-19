@@ -100,7 +100,7 @@ public class PagingStateTestBase extends MessagingTestCase
                   true, true, true, false, 100);  
       ((JDBCPersistenceManager)pm).injectNodeID(1);
       pm.start();
-      
+ 
       idm = new IDManager("TRANSACTION_ID", 10, pm);
       idm.start();
       
@@ -108,7 +108,7 @@ public class PagingStateTestBase extends MessagingTestCase
       ms.start();
       
       tr = new TransactionRepository(pm, ms, idm);
-      tr.start();            
+      tr.start();          
    }
    
    
@@ -117,8 +117,7 @@ public class PagingStateTestBase extends MessagingTestCase
       pm.stop();
       tr.stop();
       ms.stop();
-      sc.stop();
-      
+      sc.stop();     
       super.tearDown();
    }
    
@@ -355,9 +354,6 @@ public class PagingStateTestBase extends MessagingTestCase
       queue.deliver();
       r.acknowledge();
       queue.getLocalDistributor().remove(r);
-      //Need to give enough time for the call to handle to complete and return
-      //thus removing the ref
-      Thread.sleep(500);
    }
    
    protected void consumeInTx(Queue queue, int consumeCount,
@@ -369,9 +365,6 @@ public class PagingStateTestBase extends MessagingTestCase
       queue.deliver();
       r.acknowledge();
       queue.getLocalDistributor().remove(r);
-      //Need to give enough time for the call to handle to complete and return
-      //thus removing the ref
-      Thread.sleep(500);
    }
    
    protected void consumeIn2PCTx(Queue queue, int consumeCount,
@@ -385,7 +378,7 @@ public class PagingStateTestBase extends MessagingTestCase
       queue.getLocalDistributor().remove(r);
       //Need to give enough time for the call to handle to complete and return
       //thus removing the ref
-      Thread.sleep(500);
+    //  Thread.sleep(500);
    }
    
    protected SimpleDelivery[] getDeliveries(Queue queue, int number) throws Exception
@@ -397,7 +390,7 @@ public class PagingStateTestBase extends MessagingTestCase
       queue.getLocalDistributor().remove(r1);
       //Need to give enough time for the call to handle to complete and return
       //thus removing the ref
-      Thread.sleep(500);      
+    //  Thread.sleep(500);      
       
       return dels;
    }
@@ -411,7 +404,7 @@ public class PagingStateTestBase extends MessagingTestCase
       queue.getLocalDistributor().remove(r1);
       //Need to give enough time for the call to handle to complete and return
       //thus removing the ref
-      Thread.sleep(500);      
+     // Thread.sleep(500);      
    }
    
    

@@ -389,11 +389,15 @@ public class ServerManagement
       sb.append("-Dtest.bind.address=localhost").append(' ');
 
       String jgroupsBindAddr = System.getProperty(org.jgroups.Global.BIND_ADDR);
-      if (jgroupsBindAddr != null)
+      
+      //If not found default to localhost
+      if (jgroupsBindAddr == null)
       {
-         sb.append("-D").append(org.jgroups.Global.BIND_ADDR).append("=")
-            .append(jgroupsBindAddr).append(' ');
+      	jgroupsBindAddr = "localhost";
       }
+      
+      sb.append("-D").append(org.jgroups.Global.BIND_ADDR).append("=")
+         .append(jgroupsBindAddr).append(' ');      
 
       String database = System.getProperty("test.database");
       if (database != null)

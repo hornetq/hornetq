@@ -342,9 +342,6 @@ public class ServiceContainer
 
    // Public ---------------------------------------------------------------------------------------
 
-   /**
-    * By default, starting the container DELETES ALL DATA previously existing in the database.
-    */
    public void start() throws Exception
    {
       start(true);
@@ -449,8 +446,8 @@ public class ServiceContainer
          if (database && (transaction || jbossjta) && jca && cleanDatabase)
          {
             // We make sure the database is clean (only if we have all dependencies the database,
-            // othewise we'll get an access error)
-            dropAllTables();
+            // otherwise we'll get an access error)
+            deleteAllData();
          }
 
          if (remoting)
@@ -486,6 +483,11 @@ public class ServiceContainer
          log.error("Failed to start ServiceContainer", e);
          throw new Exception("Failed to start ServiceContainer", e);
       }
+   }
+   
+   public void dropTables() throws Exception
+   {
+   	dropAllTables();
    }
 
    public void startConnectionFactories(ServiceAttributeOverrides attrOverrides) throws Exception
@@ -645,7 +647,7 @@ public class ServiceContainer
          Properties sqlProperties = new Properties();
 
          sqlProperties.load(is);
-
+         
          return sqlProperties;
       }
       else
@@ -1515,7 +1517,43 @@ public class ServiceContainer
          mgr.resume(txOld);
       }
 
-      log.debug("done with the database");
+      log.debug("done with dropping tables");
+   }
+   
+   protected void deleteAllData() throws Exception
+   {
+      log.info("DELETING ALL DATA FROM DATABASE!");
+
+      InitialContext ctx = new InitialContext();
+      
+      // We need to execute each drop in its own transaction otherwise postgresql will not execute
+      // further commands after one fails
+
+      TransactionManager mgr = (TransactionManager)ctx.lookup(TransactionManagerService.JNDI_NAME);
+      DataSource ds = (DataSource)ctx.lookup("java:/DefaultDS");
+
+      javax.transaction.Transaction txOld = mgr.suspend();
+                  
+      executeStatement(mgr, ds, "DELETE FROM JBM_POSTOFFICE");
+      
+      executeStatement(mgr, ds, "DELETE FROM JBM_MSG_REF");
+
+      executeStatement(mgr, ds, "DELETE FROM JBM_MSG");
+     
+      executeStatement(mgr, ds, "DELETE FROM JBM_TX");
+      
+      executeStatement(mgr, ds, "DELETE FROM JBM_COUNTER");
+      
+      executeStatement(mgr, ds, "DELETE FROM JBM_USER");
+      
+      executeStatement(mgr, ds, "DELETE FROM JBM_ROLE");
+      
+      if (txOld != null)
+      {
+         mgr.resume(txOld);
+      }
+
+      log.debug("done with the deleting data");
    }
 
    private void startMultiplexer() throws Exception

@@ -122,8 +122,7 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       ms.stop();
       super.tearDown();
    }
-   
-   
+      
    public void testAddRemoveGetReferences_Batch() throws Throwable
    {
       addRemoveGetReferences(true);
@@ -134,9 +133,6 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       addRemoveGetReferences(false);
    }
    
-   
-   
-         
    public void testAddRemoveReference() throws Throwable
    {
       doSetup(false, false, false, 100);
