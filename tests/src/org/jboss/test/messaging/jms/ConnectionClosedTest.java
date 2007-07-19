@@ -147,7 +147,7 @@ public class ConnectionClosedTest extends MessagingTestCase
       int count = 0;
       while (true)
       {
-         TextMessage tm = (TextMessage)sub1.receive(2000);
+         TextMessage tm = (TextMessage)sub1.receive(1000);
          if (tm == null)
          {
             break;

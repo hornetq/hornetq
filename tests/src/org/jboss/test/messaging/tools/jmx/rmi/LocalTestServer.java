@@ -859,9 +859,6 @@ public class LocalTestServer implements Server
 
       log.debug(url + " deployed");
 
-//      URL url = this.getClass().getClassLoader().getResource("poison.xml");
-//      AspectXmlLoader.undeployXML(url);
-      
       PoisonInterceptor.setType(type);
    }   
 

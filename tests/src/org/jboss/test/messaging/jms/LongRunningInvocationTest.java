@@ -120,11 +120,9 @@ public class LongRunningInvocationTest extends MessagingTestCase
          
          //Poison the server so the invocation takes 2 minutes - longer than the ping period
          
-         
-       //  log.info("server is " + ServerManagement.getServer(0));
          ServerManagement.poisonTheServer(0, PoisonInterceptor.LONG_SEND);
          
-         log.info("This will pause for 2 minutes on send");
+         log.info("This will pause for 1 minutes on send");
          prod.send(m);
          
          conn.start();
@@ -163,9 +161,9 @@ public class LongRunningInvocationTest extends MessagingTestCase
          
          //Poison the server so the invocation takes 2 minutes - longer than the ping period
          
-         //ServerManagement.poisonTheServer(0, PoisonInterceptor.LONG_SEND);
+         ServerManagement.poisonTheServer(0, PoisonInterceptor.LONG_SEND);
          
-         log.info("This will pause for 2 minutes on send");
+         log.info("This will pause for 1 minutes on send");
          prod.send(m);
          
          conn.start();

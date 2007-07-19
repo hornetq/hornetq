@@ -223,10 +223,6 @@ public class TransactedSessionTest extends MessagingTestCase
 
       conn.close();
       
-      //Need to pause a little while - cancelling back to the queue is async
-      
-      Thread.sleep(500);
-
       ObjectName on = new ObjectName("jboss.messaging.destination:service=Queue,name=Queue");
       Integer i = (Integer)ServerManagement.getAttribute(on, "MessageCount");
 

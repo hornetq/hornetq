@@ -147,8 +147,6 @@ public class ReferencingTest extends MessagingTestCase
       
       prod.send(m);
       
-      Thread.sleep(1000);
-      
       MessageConsumer cons = sess.createConsumer(queue);
       
       TextMessage m2 = (TextMessage)cons.receive(1000);
@@ -219,8 +217,6 @@ public class ReferencingTest extends MessagingTestCase
       
       prod.send(m);
       
-      Thread.sleep(1000);
-      
       MessageConsumer cons = sess.createConsumer(queue);
       
       TextMessage m2 = (TextMessage)cons.receive(1000);
@@ -258,8 +254,6 @@ public class ReferencingTest extends MessagingTestCase
       TextMessage m = sess.createTextMessage("wibble");
       
       prod.send(m);
-      
-      Thread.sleep(1000);
       
       MessageConsumer cons = sess.createConsumer(queue);
       

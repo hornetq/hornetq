@@ -52,7 +52,6 @@ import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
 
 import EDU.oswego.cs.dl.util.concurrent.Latch;
-import EDU.oswego.cs.dl.util.concurrent.SynchronizedInt;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
@@ -387,7 +386,7 @@ public class MessageConsumerTest extends MessagingTestCase
       // start consumer connection after the message is submitted
       consumerConnection.start();
 
-      TextMessage m = (TextMessage)queueConsumer.receive(3000);
+      TextMessage m = (TextMessage)queueConsumer.receive(2000);
       assertEquals(tm.getText(), m.getText());
    }
 
@@ -407,7 +406,7 @@ public class MessageConsumerTest extends MessagingTestCase
       //It will be available some indeterminate time later.
       //This is fine and as per spec.
       //To implement receiveNoWait otherwise would be very costly
-      //Also other messaging systems e.g. Sun implement it this way
+      //Also other messaging systems e.g. Sun, ActiveMQ implement it this way
 
       Thread.sleep(500);
 
@@ -467,41 +466,6 @@ public class MessageConsumerTest extends MessagingTestCase
    //
    // closed consumer tests
    //
-
-   //This test is not valid -
-   //The message will not be in the new consumer it will be in the original consumer
-
-//   public void testClose1() throws Exception
-//   {
-//      // there is a consumer already open by setup
-//
-//      consumerConnection.start();
-//
-//      Message m = producerSession.createMessage();
-//      queueProducer.send(m);
-//
-//      // the message is in the channel, however the queue maintains it as "not delivered"
-//
-//      QueueBrowser browser = producerSession.createBrowser(queue);
-//      Enumeration e = browser.getEnumeration();
-//      Message bm = (Message)e.nextElement();
-//      assertEquals(m.getJMSMessageID(), bm.getJMSMessageID());
-//      assertFalse(e.hasMoreElements());
-//
-//      // create a second consumer and try to receive from queue, it should return the message
-//      MessageConsumer queueConsumer2 = consumerSession.createConsumer(queue);
-//
-//      Message rm = queueConsumer2.receive(3000);
-//      assertEquals(m.getJMSMessageID(), rm.getJMSMessageID());
-//
-//      queueConsumer.close();
-//
-//
-//      // try to receive from queue again, it should get a message
-//      rm = queueConsumer2.receive(3000);
-//      assertNull(rm);
-//
-//   }
 
    /* Test that an ack can be sent after the consumer that received the message has been closed.
     * Acks are scoped per session.
@@ -616,7 +580,7 @@ public class MessageConsumerTest extends MessagingTestCase
 
       consumerConnection.start();
 
-      Message r = queueConsumer.receive(3000);
+      Message r = queueConsumer.receive(2000);
       assertEquals(m.getJMSMessageID(), r.getJMSMessageID());
    }
 
@@ -909,9 +873,6 @@ public class MessageConsumerTest extends MessagingTestCase
 
           cons1.close();
 
-          //Cancelling is asynch so can take some time
-          Thread.sleep(500);
-          
           //rollback should cause redelivery of messages
 
           //in this case redelivery occurs to a different receiver
@@ -1027,9 +988,6 @@ public class MessageConsumerTest extends MessagingTestCase
 
           cons1.close();
   
-          //Give time for asynch cancel to happen
-          Thread.sleep(500);
-
           log.debug("sess.recover()");
 
           //redeliver
@@ -1191,106 +1149,6 @@ public class MessageConsumerTest extends MessagingTestCase
    }
 
 
-   /**
-    * Test server-side consumer delegate activation (on receive())
-    */
-// This test is not valid since the message will be in the first consumer, not c2
-
-
-//   public void testReceive1() throws Exception
-//   {
-//      Connection conn = null;
-//
-//       try
-//       {
-//          conn = cf.createConnection();
-//
-//          Session s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-//
-//          s.createConsumer(queue);
-//
-//          conn.start();
-//
-//          MessageProducer p = s.createProducer(queue);
-//          Message m = s.createTextMessage("1");
-//          p.send(m);
-//
-//          MessageConsumer c2 = s.createConsumer(queue);
-//
-//          // TODO the test should be modified to deal with the multiple consumer receive undeterminism
-//
-//          Message r = c2.receive(2000);
-//
-//
-//          assertEquals(m.getJMSMessageID(), r.getJMSMessageID());
-//       }
-//       finally
-//       {
-//          if (conn != null)
-//          {
-//             conn.close();
-//          }
-//       }
-//   }
-
-   /**
-    * Test server-side consumer delegate activation (on receive())
-    */
-
-   //This test is not valid since the message will be in the first consumer, not c2
-
-//   public void testReceive2() throws Exception
-//   {
-//      Connection conn = null;
-//
-//       try
-//       {
-//          conn = cf.createConnection();
-//
-//          Session s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-//
-//          s.createConsumer(queue);
-//
-//          conn.start();
-//
-//          MessageProducer p = s.createProducer(queue);
-//          Message m = s.createTextMessage("1");
-//          p.send(m);
-//
-//          MessageConsumer c2 = s.createConsumer(queue);
-//          final Set received = new HashSet();
-//
-//          // TODO the test should be modified to deal with the multiple consumer receive undeterminism
-//
-//          class Listener implements MessageListener
-//          {
-//             Latch latch = new Latch();
-//
-//             public void onMessage(Message m)
-//             {
-//                received.add(m);
-//                latch.release();
-//             }
-//          }
-//
-//          Listener list = new Listener();
-//          c2.setMessageListener(list);
-//
-//          list.latch.acquire();
-//          assertEquals(1, received.size());
-//          Message r = (Message)received.iterator().next();
-//          assertEquals(m.getJMSMessageID(), r.getJMSMessageID());
-//
-//       }
-//       finally
-//       {
-//          if (conn != null)
-//          {
-//             conn.close();
-//          }
-//       }
-//   }
-
 
    public void testSendAndReceivePersistentDifferentConnections() throws Exception
    {
@@ -1360,40 +1218,6 @@ public class MessageConsumerTest extends MessagingTestCase
       }
    }
 
-
-   /**
-    * TODO Get rid of this (http://jira.jboss.org/jira/browse/JBMESSAGING-92)
-    */
-
-   //This test is no longer valid since we only use one listener per connection now
-
-//   public void testRemotingInternals() throws Exception
-//   {
-//      if (ServerManagement.isRemote())
-//      {
-//         return;
-//      }
-//
-//      Connector serverConnector = ServerManagement.getConnector();
-//      ServerInvoker serverInvoker = serverConnector.getServerInvoker();
-//
-//      JMSServerInvocationHandler invocationHandler =
-//            (JMSServerInvocationHandler)serverInvoker.getInvocationHandler("JMS");
-//
-//      Collection listeners = invocationHandler.getListeners();
-//
-//      assertEquals(3, listeners.size());  // topicConsumer's and queueConsumer's
-//
-//      MessageConsumer c = consumerSession.createConsumer(queue);
-//
-//      listeners = invocationHandler.getListeners();
-//      assertEquals(4, listeners.size());
-//
-//      c.close();
-//
-//      listeners = invocationHandler.getListeners();
-//      assertEquals(3, listeners.size());
-//   }
 
    public void testMultipleConcurrentConsumers() throws Exception
    {
@@ -1691,7 +1515,6 @@ public class MessageConsumerTest extends MessagingTestCase
                // this is needed to make sure the main thread has enough time to block
                Thread.sleep(1000);
 
-
                for (int i = 0; i < count; i++)
                {
                   Message m = producerSession.createMessage();
@@ -1713,12 +1536,10 @@ public class MessageConsumerTest extends MessagingTestCase
          {
             break;
          }
-         //Thread.sleep(1000);
          received++;
       }
 
       assertEquals(count, received);
-
    }
 
 
@@ -1745,7 +1566,6 @@ public class MessageConsumerTest extends MessagingTestCase
                // this is needed to make sure the main thread has enough time to block
                Thread.sleep(1000);
 
-
                for (int i = 0; i < count; i++)
                {
                   Message m = producerSession.createMessage();
@@ -1767,7 +1587,6 @@ public class MessageConsumerTest extends MessagingTestCase
          {
             break;
          }
-         //Thread.sleep(1000);
          received++;
       }
 
@@ -2160,9 +1979,7 @@ public class MessageConsumerTest extends MessagingTestCase
          queueProducer.send(producerSession.createTextMessage("Message #" + Integer.toString(i)));
       }
 
-      Thread.sleep(500);
       consumerConnection.stop();
-      Thread.sleep(500);
       consumerConnection.close();
    }
 
@@ -3391,7 +3208,6 @@ public class MessageConsumerTest extends MessagingTestCase
       public void waitForMessages() throws InterruptedException
       {
          latch.acquire();
-         //Thread.sleep(2000); //enough time for postdeliver to be called
       }
 
       public ExceptionRedelMessageListenerImpl(Session sess)
@@ -3521,7 +3337,6 @@ public class MessageConsumerTest extends MessagingTestCase
       public void waitForMessages() throws InterruptedException
       {
          latch.acquire();
-         //Thread.sleep(2000); //enough time for postdeliver to be called
       }
 
       public void onMessage(Message m)
@@ -3615,7 +3430,6 @@ public class MessageConsumerTest extends MessagingTestCase
       public void waitForMessages() throws InterruptedException
       {
          latch.acquire();
-         //Thread.sleep(2000); //enough time for postdeliver to be called
       }
 
       public void waitForMessages(long timeout) throws InterruptedException
@@ -3625,7 +3439,6 @@ public class MessageConsumerTest extends MessagingTestCase
          {
             log.trace("unsucessful latch aquire attemnpt");
          }
-         //Thread.sleep(2000); //enough time for postdeliver to be called
       }
 
 
@@ -3635,7 +3448,6 @@ public class MessageConsumerTest extends MessagingTestCase
          log.trace("Added message " + m + " to my list");
 
          latch.release();
-         //latch = new Latch();
       };
 
       public Message getNextMessage()

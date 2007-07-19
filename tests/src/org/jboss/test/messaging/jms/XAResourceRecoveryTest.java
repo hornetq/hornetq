@@ -321,7 +321,7 @@ public class XAResourceRecoveryTest extends MessagingTestCase
          
          log.info("Restarted server");
          
-         Thread.sleep(5000);
+         Thread.sleep(3000);
          
          ServerManagement.deployQueue("queue1", 1);   
          
@@ -425,9 +425,7 @@ public class XAResourceRecoveryTest extends MessagingTestCase
    		XAResource res1 = sess1.getXAResource();
    		
    		conn1.start();
-   		
-   		
-   		
+   		   		   		
    		//first send a few messages to server 1
    		
    		conn2 = ((ConnectionFactory)cf1).createConnection();
@@ -444,9 +442,7 @@ public class XAResourceRecoveryTest extends MessagingTestCase
    		
    		prod2.send(tm2);
    		
-   		conn2.close();
-   		
-   		
+   		conn2.close();   		
    		
    		tm.begin();
    		
@@ -468,9 +464,7 @@ public class XAResourceRecoveryTest extends MessagingTestCase
    		assertNotNull(rm1);
    		
    		assertEquals(tm1.getText(), rm1.getText());
-   		
-   		
-   		
+   		   		   		
    		//	Poison server 1 so it crashes on commit of dest but after prepare
          
          //This means the transaction branch on source will get commmitted
@@ -499,7 +493,7 @@ public class XAResourceRecoveryTest extends MessagingTestCase
          
          log.info("Restarted server");
          
-         Thread.sleep(5000);
+         Thread.sleep(3000);
          
          ServerManagement.deployQueue("queue1", 1);   
          
@@ -574,7 +568,4 @@ public class XAResourceRecoveryTest extends MessagingTestCase
    		}
    	}
    }
-
-
-
 }

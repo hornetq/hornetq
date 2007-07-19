@@ -375,8 +375,8 @@
                <exclude name="**/*LeakTest.class"/>
                <exclude name="**/jms/bridge/**/*Test.class"/>
                <exclude name="**/jms/manual/**/*Test.class"/>
-               <exclude name="**/jms/LongRunningInvocationTest.class"/>
                <exclude name="**/jms/clustering/*Test.class"/>
+               <exclude name="**/jms/LongRunningInvocationTest.class"/>
                <exclude name="**/jms/RemotingConnectionConfigurationTest.class"/>
                <exclude name="**/thirdparty/remoting/ManualConnectionValidatorTest.class"/>
                <exclude name="**/thirdparty/remoting/PureAsynchronousCallTest.class"/>

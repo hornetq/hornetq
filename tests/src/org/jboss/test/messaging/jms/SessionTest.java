@@ -524,9 +524,6 @@ public class SessionTest extends MessagingTestCase
 
       // JMS 1.1 4.4.1: "Closing a transacted session must roll back its transaction in progress"
       
-      //Cancelling is asynch so may take a little while
-      Thread.sleep(500);
-
       mc = (Integer)ServerManagement.getAttribute(on, "MessageCount");
       assertEquals(1, mc.intValue());
 

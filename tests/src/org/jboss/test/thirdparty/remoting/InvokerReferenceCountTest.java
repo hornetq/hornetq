@@ -76,11 +76,7 @@ public class InvokerReferenceCountTest extends MessagingTestCase
    
    public void testReferenceCount() throws Exception
    {
-//      if (!ServerManagement.isRemote())
-//      {
-//         fail("This test should be run in a remote configuration!");
-//      }
-      
+
       log.info("Creating conn1");
       Connection conn1 = cf.createConnection();              
       log.info("Created conn2");                     

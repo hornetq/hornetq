@@ -162,7 +162,7 @@ public class TopicTest extends MessagingTestCase
       conn.start();
             
       
-      for (int i = 0; i < 5000; i++)
+      for (int i = 0; i < 500; i++)
       {
          byte[] blah = new byte[10000];
          String str = new String(blah);
@@ -175,7 +175,7 @@ public class TopicTest extends MessagingTestCase
  
       }          
       
-      Thread.sleep(30000);
+      Thread.sleep(10000);
       
       assertFalse(l1.failed);
       assertFalse(l2.failed);

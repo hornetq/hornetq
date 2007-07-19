@@ -986,6 +986,8 @@ public class AcknowledgementTest extends MessagingTestCase
       log.trace("Set message listener");
 
       listener.waitForMessages();
+                  
+      Thread.sleep(500);
       
       assertRemainingMessages(0);
       
@@ -1109,6 +1111,8 @@ public class AcknowledgementTest extends MessagingTestCase
       
       conn.close();
       
+      Thread.sleep(500);
+      
       assertRemainingMessages(0);
       assertFalse(listener.failed);
    }
@@ -1136,6 +1140,8 @@ public class AcknowledgementTest extends MessagingTestCase
       cons.setMessageListener(listener);
       
       listener.waitForMessages();
+      
+      Thread.sleep(500);
       
       assertRemainingMessages(0);
       
@@ -1167,6 +1173,8 @@ public class AcknowledgementTest extends MessagingTestCase
       MessageListenerTransactionalAck listener = new MessageListenerTransactionalAck(sessReceive);
       cons.setMessageListener(listener);
       listener.waitForMessages();
+      
+      Thread.sleep(500);
       
       assertRemainingMessages(0);
       
@@ -1201,8 +1209,7 @@ public class AcknowledgementTest extends MessagingTestCase
 
       public void waitForMessages() throws InterruptedException
       {
-         latch.acquire();
-         Thread.sleep(500);
+         latch.acquire();         
       }
 
       public abstract void onMessage(Message m);
@@ -1566,7 +1573,7 @@ public class AcknowledgementTest extends MessagingTestCase
    private boolean assertRemainingMessages(int expected) throws Exception
    {
       //Need to pause since delivery may still be in progress
-      Thread.sleep(500);
+    //  Thread.sleep(500);
       ObjectName destObjectName = 
          new ObjectName("jboss.messaging.destination:service=Queue,name=Queue");
       Integer messageCount = (Integer)ServerManagement.getAttribute(destObjectName, "MessageCount"); 

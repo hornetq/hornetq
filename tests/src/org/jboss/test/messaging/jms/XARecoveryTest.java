@@ -522,8 +522,6 @@ public class XARecoveryTest extends MessagingTestCase
          
          log.trace("rolledb back the tx");
          
-         Thread.sleep(1000);
-         
          conn1.close();
          
          conn2.close();

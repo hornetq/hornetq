@@ -193,9 +193,9 @@ public class PoisonInterceptor implements Interceptor
       {
          if ("send".equals(methodName))
          {
-            //Pause for 2 mins before processing send
-            log.info("Sleeping for 2 minutes before sending....");
-            Thread.sleep(120000);
+            //Pause for 1 mins before processing send
+            log.info("Sleeping for 1 minutes before sending....");
+            Thread.sleep(60000);
             
             invocation.invokeNext();
          }

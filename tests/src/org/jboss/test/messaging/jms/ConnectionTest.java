@@ -508,55 +508,7 @@ public class ConnectionTest extends MessagingTestCase
       }
    }
    
-   // TODO - Decide if valid and uncomment or get rid of it!
-
-//   Commented out for now, since how can i make the server fail from a test?   
-//   public void testExceptionListenerFail() throws Exception
-//   {
-//      if (!ServerManagement.isRemote()) return;
-//      
-//      Connection conn = cf.createConnection();
-//
-//      MyExceptionListener listener1 = new MyExceptionListener();
-//
-//      conn.setExceptionListener(listener1);
-//      
-//      
-//      RMIAdaptor rmiAdaptor = (RMIAdaptor) initialContext.lookup("jmx/invoker/RMIAdaptor");
-//      
-//      ObjectName on = new ObjectName("jboss.messaging:service=ServerPeer");
-//      
-//      rmiAdaptor.invoke(on, "stop",
-//            new Object[] {}, new String[] {});
-//      
-//      try
-//      {
-//         Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-//      }
-//      catch (Exception ignore)
-//      {}
-//      
-//
-//      Thread.sleep(10000);
-//      
-//      if (listener1.exceptionReceived == null)
-//      {
-//         fail();
-//      }
-//      else
-//      {
-//         log.trace("Received exception:", listener1.exceptionReceived.getLinkedException());
-//      }
-//
-//      try
-//      {
-//         conn.close();
-//      }
-//      catch (Exception e)
-//      {}
-//   }
-
-   
+  
 
    // Package protected ---------------------------------------------
 

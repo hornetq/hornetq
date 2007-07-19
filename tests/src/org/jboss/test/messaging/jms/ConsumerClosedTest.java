@@ -69,18 +69,11 @@ public class ConsumerClosedTest extends MessagingTestCase
 
       log.debug("consumer closed");
       
-      //Need to sleep - cancelling back to queue is asynch and can take some time
-      Thread.sleep(500);
-
       // make sure that all messages are in queue
       ObjectName on =
          new ObjectName("jboss.messaging.destination:service=Queue,name=ConsumerClosedTestQueue");
       Integer count = (Integer)ServerManagement.getAttribute(on, "MessageCount");
       assertEquals(NUMBER_OF_MESSAGES, count.intValue());
-
-      //Thread.sleep(900000000);
-
-
    }
 
    // Package protected ---------------------------------------------

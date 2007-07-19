@@ -76,8 +76,6 @@ public class MessageTestBase extends MessagingTestCase
    {
       super.setUp();
       
-      log.info("** setting up");
-
       ServerManagement.start("all");
            
       InitialContext ic = new InitialContext(ServerManagement.getJNDIEnvironment());
@@ -100,20 +98,16 @@ public class MessageTestBase extends MessagingTestCase
       conn.start();
 
       ic.close();
-      
-      log.info("** done setup");
    }
 
    public void tearDown() throws Exception
    {
-   	log.info("** tearing down");
       conn.close();
       
       ServerManagement.undeployQueue("Queue");
       ServerManagement.undeployTopic("Topic");
       
       super.tearDown();
-      log.info("** done teardown");
    }
 
    public void testNonPersistentSend() throws Exception
