@@ -1286,7 +1286,7 @@ public class Bridge implements MessagingComponent
    	//We concatenate the old message id as a header in the message
    	//This allows the target to then use this as the JMSCorrelationID of any response message
    	//thus enabling a distributed request-response pattern.
-   	//Each bridge (if there are more than one) in the chain can contenate the message id
+   	//Each bridge (if there are more than one) in the chain can concatenate the message id
    	//So in the case of multiple bridges having routed the message this can be used in a multi-hop
    	//distributed request/response
    	if (trace) { log.trace("Adding old message id in Message header"); }
@@ -1320,11 +1320,22 @@ public class Bridge implements MessagingComponent
    		while (iter2.hasNext())
    		{
    			Map.Entry entry = (Map.Entry)iter2.next();
-   			
-   			msg.setObjectProperty((String)entry.getKey(), entry.getValue());
+
+   			String propName = (String)entry.getKey();
+
+   			//It's illegal (or pointless) to set properties beginning with JMSX
+   			//apart from JMSXGroupID, JMSXGroupSeq and JMSXDeliveryCount
+   			//Also there's no point in setting JMSXDeliveryCount since it will get reset
+   			//before the msg is received anyway
+   			if (!propName.startsWith("JMSX") ||
+   					propName.equals("JMSXGroupID") ||
+   					propName.equals("JMSXGroupSeq"));
+   			{
+   				msg.setObjectProperty(propName, entry.getValue());
+   			}
    		}
    	}
-   	
+
    	String val = null;
    	
    	val = msg.getStringProperty(JBossMessage.JBOSS_MESSAGING_BRIDGE_MESSAGE_ID_LIST);

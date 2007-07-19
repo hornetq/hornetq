@@ -1073,7 +1073,7 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message, S
                                             "' is reserved due to selector syntax.");
       }
 
-      if (name.regionMatches(false, 0, "JMSX", 0, 4) &&
+      if (name.startsWith("JMSX") &&
          !name.equals("JMSXGroupID") &&
          !name.equals("JMSXGroupSeq") &&
          !name.equals("JMSXDeliveryCount"))

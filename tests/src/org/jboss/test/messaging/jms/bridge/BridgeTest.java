@@ -720,8 +720,7 @@ public class BridgeTest extends BridgeTestBase
          
          checkAllMessageReceivedInOrder(cf1, destQueue, 0, NUM_MESSAGES);
          
-         this.checkNoneReceived(cf1, destQueue, 5000);
-                       
+         this.checkNoneReceived(cf1, destQueue, 5000);                       
       }
       finally
       {                        
@@ -863,6 +862,11 @@ public class BridgeTest extends BridgeTestBase
             tm.setBooleanProperty("cheese", true);
             tm.setIntProperty("Sausages", 23);
             
+            //We add some JMSX ones too
+            
+            tm.setStringProperty("JMSXGroupID", "mygroup543");
+            tm.setIntProperty("JMSXGroupSeq", 777);
+            
             prod.send(tm);
             
             ids1.add(tm.getJMSMessageID());
@@ -889,6 +893,9 @@ public class BridgeTest extends BridgeTestBase
             assertEquals("uhuh", tm.getStringProperty("wib"));
             assertTrue(tm.getBooleanProperty("cheese"));
             assertEquals(23, tm.getIntProperty("Sausages"));
+            
+            assertEquals("mygroup543", tm.getStringProperty("JMSXGroupID"));
+            assertEquals(777, tm.getIntProperty("JMSXGroupSeq"));
             
             String header = tm.getStringProperty(JBossMessage.JBOSS_MESSAGING_BRIDGE_MESSAGE_ID_LIST);
             
@@ -927,6 +934,9 @@ public class BridgeTest extends BridgeTestBase
             assertEquals("uhuh", tm.getStringProperty("wib"));
             assertTrue(tm.getBooleanProperty("cheese"));
             assertEquals(23, tm.getIntProperty("Sausages"));
+            
+            assertEquals("mygroup543", tm.getStringProperty("JMSXGroupID"));
+            assertEquals(777, tm.getIntProperty("JMSXGroupSeq"));            
             
             String header = tm.getStringProperty(JBossMessage.JBOSS_MESSAGING_BRIDGE_MESSAGE_ID_LIST);
             
