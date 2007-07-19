@@ -666,11 +666,6 @@ public class ServerManagement
       insureStarted(serverIndex);
       Server poisoned = servers[serverIndex].getServer();
 
-      // TODO (ovidiu): this is prone to race conditions, as somebody from the client may try to
-      //       use (and create) an new server that is being poisoned, while the poisoned server is
-      //       still alive.
-
-      servers[serverIndex] = null;
       poisoned.poisonTheServer(type);
 
       return poisoned;
