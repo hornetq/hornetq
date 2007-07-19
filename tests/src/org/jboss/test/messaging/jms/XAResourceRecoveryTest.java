@@ -376,6 +376,8 @@ public class XAResourceRecoveryTest extends MessagingTestCase
    	}
    	finally
    	{
+   		ServerManagement.poisonTheServer(1, PoisonInterceptor.NULL);
+   		
    		if (conn0 != null)
    		{
    			conn0.close();
@@ -550,6 +552,8 @@ public class XAResourceRecoveryTest extends MessagingTestCase
    	}
    	finally
    	{
+   		ServerManagement.poisonTheServer(1, PoisonInterceptor.NULL);
+   		
    		if (conn0 != null)
    		{
    			conn0.close();

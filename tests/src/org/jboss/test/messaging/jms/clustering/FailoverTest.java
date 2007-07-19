@@ -1479,6 +1479,8 @@ public class FailoverTest extends ClusteringTestBase
       }
       finally
       {
+      	ServerManagement.poisonTheServer(1, PoisonInterceptor.NULL);
+      	
          if (conn != null)
          {
             conn.close();
@@ -2023,6 +2025,8 @@ public class FailoverTest extends ClusteringTestBase
       }
       finally
       {
+      	ServerManagement.poisonTheServer(1, PoisonInterceptor.NULL);
+      	
          if (conn != null)
          {
             conn.close();

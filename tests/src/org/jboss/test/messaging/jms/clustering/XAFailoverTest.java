@@ -754,7 +754,6 @@ public class XAFailoverTest extends ClusteringTestBase
          
          ServerManagement.poisonTheServer(1, PoisonInterceptor.TYPE_2PC_COMMIT);
 
-
          log.info("################################################################## Sending a commit");
          tm.commit();
          
@@ -840,6 +839,8 @@ public class XAFailoverTest extends ClusteringTestBase
       }
       finally
       {
+      	ServerManagement.poisonTheServer(1, PoisonInterceptor.NULL);
+      	
          if (xaConn1 != null)
          {
             xaConn1.close();
@@ -1047,7 +1048,6 @@ public class XAFailoverTest extends ClusteringTestBase
                numberOfReceivedMessages++;
             }
 
-
             assertFalse("\"plop0\" message was duplicated",
                receivedMessages.contains("plop0"));
 
@@ -1071,14 +1071,13 @@ public class XAFailoverTest extends ClusteringTestBase
                conn.close();
             }
          }
-
-         
-         
+                  
          assertEquals(0, ((JBossConnection)xaConn1).getServerID());
-
       }
       finally
       {
+      	ServerManagement.poisonTheServer(1, PoisonInterceptor.NULL);
+      	
          if (xaConn1 != null)
          {
             xaConn1.close();

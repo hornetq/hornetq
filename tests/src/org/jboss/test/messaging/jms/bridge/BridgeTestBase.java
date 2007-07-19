@@ -164,35 +164,6 @@ public class BridgeTestBase extends MessagingTestCase
          log.error("Failed to undeploy", e);
       }
                   
-//      for (int i = 0; i < nodeCount; i++)
-//      {
-//         try
-//         {
-//            if (ServerManagement.isStarted(i))
-//            {
-//               ServerManagement.log(ServerManagement.INFO, "Undeploying Server " + i, i);
-//               
-//               ServerManagement.stop(i);
-//            }
-//         }
-//         catch (Exception e)
-//         {
-//            log.error("Failed to stop server", e);
-//         }
-//      }
-      
-//      for (int i = 1; i < nodeCount; i++)
-//      {
-//         try
-//         {
-//            ServerManagement.kill(i);
-//         }
-//         catch (Exception e)
-//         {
-//            log.error("Failed to kill server", e);
-//         }
-//      }
-      
       sc.stop();
       
       super.tearDown();      

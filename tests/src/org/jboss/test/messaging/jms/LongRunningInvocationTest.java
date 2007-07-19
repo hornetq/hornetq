@@ -133,6 +133,8 @@ public class LongRunningInvocationTest extends MessagingTestCase
       }
       finally
       {
+      	ServerManagement.poisonTheServer(0, PoisonInterceptor.NULL);
+      	
          conn.close();
       }
 
@@ -174,6 +176,8 @@ public class LongRunningInvocationTest extends MessagingTestCase
       }
       finally
       {
+      	ServerManagement.poisonTheServer(0, PoisonInterceptor.NULL);
+      	
          conn.close();
       }
 

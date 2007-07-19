@@ -154,7 +154,7 @@ public class ReconnectWithRecoveryTest extends BridgeTestBase
       }
       finally
       {      
-         log.info("In finally");         
+      	ServerManagement.poisonTheServer(1, PoisonInterceptor.NULL);        
          
          if (bridge != null)
          {
