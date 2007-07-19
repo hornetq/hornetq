@@ -95,10 +95,6 @@ public class ClientCrashNegativeLeaseTest extends MessagingTestCase
       localServer.stop();
    }
       
-   /**
-    * Test that when a remote jms client crashes, server side resources for connections are
-    * cleaned-up.
-    */
    public void testClientCrash() throws Exception
    {
       InitialContext ic = new InitialContext(InVMInitialContextFactory.getJNDIEnvironment());
@@ -128,7 +124,7 @@ public class ClientCrashNegativeLeaseTest extends MessagingTestCase
       log.trace("killed remote server");
         
       // Wait for connection resources to be cleared up
-      Thread.sleep(15000);
+      Thread.sleep(5000);
            
       // See if we still have a connection with this id
       assertTrue(cm.containsRemotingSession(remotingSessionId));

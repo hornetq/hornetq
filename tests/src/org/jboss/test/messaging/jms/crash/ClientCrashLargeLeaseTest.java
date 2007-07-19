@@ -125,8 +125,7 @@ public class ClientCrashLargeLeaseTest extends MessagingTestCase
       }
       log.trace("killed remote server");
         
-      // Wait for connection resources to be cleared up
-      Thread.sleep(15000);
+      Thread.sleep(5000);
            
       // See if we still have a connection with this id
       

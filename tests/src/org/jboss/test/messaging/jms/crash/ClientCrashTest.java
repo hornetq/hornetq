@@ -78,7 +78,7 @@ public class ClientCrashTest extends MessagingTestCase
       // This crash test is relying on a precise value of LeaseInterval, so we don't rely on
       // the default, whatever that is ...
 
-      localServer.setAttribute(ServiceContainer.REMOTING_OBJECT_NAME, "LeasePeriod", "3000");
+      localServer.setAttribute(ServiceContainer.REMOTING_OBJECT_NAME, "LeasePeriod", "2000");
        
       localServer.deployQueue("Queue", null, false);
       localServer.deployTopic("Topic", null, false);
@@ -130,7 +130,7 @@ public class ClientCrashTest extends MessagingTestCase
       log.trace("killed remote server");
         
       // Wait for connection resources to be cleared up
-      Thread.sleep(15000);
+      Thread.sleep(8000);
            
       // See if we still have a connection with this id
       assertFalse(cm.containsRemotingSession(remotingSessionId));
