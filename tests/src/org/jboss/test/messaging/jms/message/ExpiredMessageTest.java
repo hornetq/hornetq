@@ -62,7 +62,7 @@ public class ExpiredMessageTest extends MessagingTestCase
 
       // wait for the message to die
 
-      Thread.sleep(1000);
+      Thread.sleep(250);
 
       MessageConsumer cons = session.createConsumer(queue);
 
@@ -84,32 +84,19 @@ public class ExpiredMessageTest extends MessagingTestCase
       
       Message m = session.createTextMessage("This message will die");
       
-      final int MESSAGE_COUNT = 2000;
-
-      log.info("Going to send " + MESSAGE_COUNT + " messages");
-
+      final int MESSAGE_COUNT = 100;
+   
       for (int i = 0; i < MESSAGE_COUNT; i++)
       {
          prod.send(m);
-         if ((i + 1) % 1000 == 0)
-         {
-            log.info("Sent " + (i + 1) + " messages out of " + MESSAGE_COUNT);
-         }
       }
       
-      Thread.sleep(1000);
-      
-      log.info("Creating consumer");
-
       MessageConsumer cons = session.createConsumer(queue);
       conn.start();
       
-      final int TIMEOUT = 3000;
-      log.info("Trying to receive a message, timeout is " + TIMEOUT + " ms");
+      final int TIMEOUT = 2000;
 
       assertNull(cons.receive(TIMEOUT));
-      
-      log.info("Done");
       
       conn.close();
    }

@@ -172,8 +172,6 @@ public class JMSXDeliveryCountTest extends MessagingTestCase
          prod.send(tm);
       }
 
-      Thread.sleep(2000);
-
       Session sess2 = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
       
       MessageConsumer cons = sess2.createConsumer(queue);
@@ -192,9 +190,7 @@ public class JMSXDeliveryCountTest extends MessagingTestCase
          sess2.recover();
       }
       
-      conn.close();
-      
-      
+      conn.close();           
    }
    
 

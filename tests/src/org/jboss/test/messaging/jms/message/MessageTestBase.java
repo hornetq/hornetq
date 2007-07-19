@@ -21,11 +21,21 @@
   */
 package org.jboss.test.messaging.jms.message;
 
+import javax.jms.Connection;
+import javax.jms.ConnectionFactory;
 import javax.jms.DeliveryMode;
 import javax.jms.JMSException;
 import javax.jms.Message;
+import javax.jms.MessageConsumer;
+import javax.jms.MessageProducer;
+import javax.jms.Queue;
+import javax.jms.Session;
+import javax.jms.Topic;
+import javax.naming.InitialContext;
 
-import org.jboss.test.messaging.jms.JMSTestBase;
+import org.jboss.jms.client.JBossConnectionFactory;
+import org.jboss.test.messaging.MessagingTestCase;
+import org.jboss.test.messaging.tools.ServerManagement;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
@@ -33,7 +43,7 @@ import org.jboss.test.messaging.jms.JMSTestBase;
  *
  * $Id$
  */
-public class MessageTestBase extends JMSTestBase
+public class MessageTestBase extends MessagingTestCase
 {
    // Constants -----------------------------------------------------
 
@@ -42,6 +52,16 @@ public class MessageTestBase extends JMSTestBase
    // Attributes ----------------------------------------------------
 
    protected Message message;
+   
+   protected ConnectionFactory connFactory;
+   protected Connection conn;
+   protected Session session;
+   protected MessageProducer queueProd;
+   protected MessageConsumer queueCons;
+
+   protected Queue queue;
+   protected Topic topic;
+
 
    // Constructors --------------------------------------------------
 
@@ -55,11 +75,45 @@ public class MessageTestBase extends JMSTestBase
    public void setUp() throws Exception
    {
       super.setUp();
+      
+      log.info("** setting up");
+
+      ServerManagement.start("all");
+           
+      InitialContext ic = new InitialContext(ServerManagement.getJNDIEnvironment());
+      connFactory = (JBossConnectionFactory)ic.lookup("/ConnectionFactory");
+
+      conn = connFactory.createConnection();
+      session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+      ServerManagement.undeployQueue("Queue");
+      ServerManagement.deployQueue("Queue");
+      queue = (Queue)ic.lookup("/queue/Queue");
+      
+      ServerManagement.undeployTopic("Topic");
+      ServerManagement.deployTopic("Topic");
+      topic = (Topic)ic.lookup("/topic/Topic");
+
+      queueProd = session.createProducer(queue);
+      queueCons = session.createConsumer(queue);
+
+      conn.start();
+
+      ic.close();
+      
+      log.info("** done setup");
    }
 
    public void tearDown() throws Exception
    {
+   	log.info("** tearing down");
+      conn.close();
+      
+      ServerManagement.undeployQueue("Queue");
+      ServerManagement.undeployTopic("Topic");
+      
       super.tearDown();
+      log.info("** done teardown");
    }
 
    public void testNonPersistentSend() throws Exception

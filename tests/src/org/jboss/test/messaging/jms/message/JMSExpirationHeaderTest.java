@@ -167,7 +167,6 @@ public class JMSExpirationHeaderTest extends MessageTest
             {
                long t1 = System.currentTimeMillis();
                expectedMessage = queueConsumer.receive(timeToWaitForReceive);
-               //Thread.sleep(10);
                effectiveReceiveTime = System.currentTimeMillis() - t1;
             }
             catch(Exception e)
