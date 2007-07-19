@@ -156,8 +156,6 @@ public class ClusteredConnectionFactoryTest extends ClusteringTestBase
       }
       finally
       {
-      	ServerManagement.poisonTheServer(1, PoisonInterceptor.NULL);
-      	
          if (conn != null)
          {
             conn.close();

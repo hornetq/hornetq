@@ -839,8 +839,6 @@ public class XAFailoverTest extends ClusteringTestBase
       }
       finally
       {
-      	ServerManagement.poisonTheServer(1, PoisonInterceptor.NULL);
-      	
          if (xaConn1 != null)
          {
             xaConn1.close();
@@ -1076,8 +1074,6 @@ public class XAFailoverTest extends ClusteringTestBase
       }
       finally
       {
-      	ServerManagement.poisonTheServer(1, PoisonInterceptor.NULL);
-      	
          if (xaConn1 != null)
          {
             xaConn1.close();
