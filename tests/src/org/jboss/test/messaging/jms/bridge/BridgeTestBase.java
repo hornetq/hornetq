@@ -163,37 +163,35 @@ public class BridgeTestBase extends MessagingTestCase
       {
          log.error("Failed to undeploy", e);
       }
+                  
+//      for (int i = 0; i < nodeCount; i++)
+//      {
+//         try
+//         {
+//            if (ServerManagement.isStarted(i))
+//            {
+//               ServerManagement.log(ServerManagement.INFO, "Undeploying Server " + i, i);
+//               
+//               ServerManagement.stop(i);
+//            }
+//         }
+//         catch (Exception e)
+//         {
+//            log.error("Failed to stop server", e);
+//         }
+//      }
       
-      
-      
-      for (int i = 0; i < nodeCount; i++)
-      {
-         try
-         {
-            if (ServerManagement.isStarted(i))
-            {
-               ServerManagement.log(ServerManagement.INFO, "Undeploying Server " + i, i);
-               
-               ServerManagement.stop(i);
-            }
-         }
-         catch (Exception e)
-         {
-            log.error("Failed to stop server", e);
-         }
-      }
-      
-      for (int i = 1; i < nodeCount; i++)
-      {
-         try
-         {
-            ServerManagement.kill(i);
-         }
-         catch (Exception e)
-         {
-            log.error("Failed to kill server", e);
-         }
-      }
+//      for (int i = 1; i < nodeCount; i++)
+//      {
+//         try
+//         {
+//            ServerManagement.kill(i);
+//         }
+//         catch (Exception e)
+//         {
+//            log.error("Failed to kill server", e);
+//         }
+//      }
       
       sc.stop();
       
@@ -342,7 +340,7 @@ public class BridgeTestBase extends MessagingTestCase
          
          while (true)
          {
-            TextMessage tm = (TextMessage)cons.receive(5000);
+            TextMessage tm = (TextMessage)cons.receive(3000);
               
             if (tm == null)
             {
@@ -350,9 +348,7 @@ public class BridgeTestBase extends MessagingTestCase
             }
             
             msgs.add(tm.getText());
-            
-            log.info("*** RECEIVED MESSAGE *** " + tm.getText());
-            
+
             count++;
             
          }
@@ -411,7 +407,7 @@ public class BridgeTestBase extends MessagingTestCase
            
          for (int i = 0; i < numMessages; i++)
          {            
-            TextMessage tm = (TextMessage)cons.receive(5000);
+            TextMessage tm = (TextMessage)cons.receive(3000);
             
             assertNotNull(tm);
               

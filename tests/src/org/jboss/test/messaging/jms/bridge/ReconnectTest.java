@@ -179,7 +179,7 @@ public class ReconnectTest extends BridgeTestBase
          
          //Verify none are received
          
-         checkNoneReceived(cf1, destQueue, 5000);
+         checkNoneReceived(cf1, destQueue, 2000);
          
          //Now crash the dest server
          
@@ -189,7 +189,7 @@ public class ReconnectTest extends BridgeTestBase
          
          //Wait a while before starting up to simulate the dest being down for a while
          log.info("Waiting 15 secs before bringing server back up");
-         Thread.sleep(15000);
+         Thread.sleep(10000);
          log.info("Done wait");
          
          //Restart the server
@@ -210,13 +210,13 @@ public class ReconnectTest extends BridgeTestBase
          
          log.info("Sent messages");
          
-         Thread.sleep(3000);
+         Thread.sleep(2000);
                   
          checkMessagesReceived(cf1, destQueue, qosMode, NUM_MESSAGES);
                     
          //Make sure no messages are left in the source dest
          
-         this.checkNoneReceived(cf0, sourceQueue, 5000);                
+         this.checkNoneReceived(cf0, sourceQueue, 2000);                
       }
       finally
       {      
@@ -294,7 +294,7 @@ public class ReconnectTest extends BridgeTestBase
          
          //Make sure no messages are left in the source dest
          
-         checkNoneReceived(cf0, sourceQueue, 5000);
+         checkNoneReceived(cf0, sourceQueue, 2000);
          
          log.info("Got here");
          

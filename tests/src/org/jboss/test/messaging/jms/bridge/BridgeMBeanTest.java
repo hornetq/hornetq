@@ -78,45 +78,47 @@ public class BridgeMBeanTest extends BridgeTestBase
       
    public void testStopStartPauseResume() throws Exception
    {
-      ServerManagement.deployQueue("sourceQueue", 1);
-      ServerManagement.deployQueue("targetQueue", 2);
-      
-      Properties props1 = new Properties();
-      props1.putAll(ServerManagement.getJNDIEnvironment(1));
-      
-      Properties props2 = new Properties();
-      props2.putAll(ServerManagement.getJNDIEnvironment(2));
-      
-      installJMSProviderLoader(0, props1, "/XAConnectionFactory", "adaptor1");
-      
-      installJMSProviderLoader(0, props2, "/XAConnectionFactory", "adaptor2");
-      
-      log.info("Deploying bridge");
-      
-      ObjectName sourceProviderLoader = new ObjectName("jboss.messaging:service=JMSProviderLoader,name=adaptor1");
-      ObjectName targetProviderLoader = new ObjectName("jboss.messaging:service=JMSProviderLoader,name=adaptor2");
-      
-      
-      ObjectName on = deployBridge(0, "Bridge1", sourceProviderLoader, targetProviderLoader,
-                                   "/queue/sourceQueue", "/queue/targetQueue",
-                                   null, null, null, null,
-                                   Bridge.QOS_AT_MOST_ONCE, null, 1,
-                                   -1, null, null, 5000, -1, false);
-      log.info("Deployed bridge");
-      
-      ServerManagement.getServer(0).invoke(on, "create", new Object[0], new String[0]);
-      
-      log.info("Created bridge");
-      
       Connection connSource = null;
       
       Connection connTarget = null;
       
-      InitialContext icSource = new InitialContext(props1);
-      InitialContext icTarget = new InitialContext(props2);
+      ObjectName on = null;
       
-      try
-      {
+   	try
+   	{
+	      ServerManagement.deployQueue("sourceQueue", 1);
+	      ServerManagement.deployQueue("targetQueue", 2);
+	      
+	      Properties props1 = new Properties();
+	      props1.putAll(ServerManagement.getJNDIEnvironment(1));
+	      
+	      Properties props2 = new Properties();
+	      props2.putAll(ServerManagement.getJNDIEnvironment(2));
+	      
+	      installJMSProviderLoader(0, props1, "/XAConnectionFactory", "adaptor1");
+	      
+	      installJMSProviderLoader(0, props2, "/XAConnectionFactory", "adaptor2");
+	      
+	      log.info("Deploying bridge");
+	      
+	      ObjectName sourceProviderLoader = new ObjectName("jboss.messaging:service=JMSProviderLoader,name=adaptor1");
+	      ObjectName targetProviderLoader = new ObjectName("jboss.messaging:service=JMSProviderLoader,name=adaptor2");
+	      
+	      
+	      on = deployBridge(0, "Bridge1", sourceProviderLoader, targetProviderLoader,
+	                                   "/queue/sourceQueue", "/queue/targetQueue",
+	                                   null, null, null, null,
+	                                   Bridge.QOS_AT_MOST_ONCE, null, 1,
+	                                   -1, null, null, 5000, -1, false);
+	      log.info("Deployed bridge");
+	      
+	      ServerManagement.getServer(0).invoke(on, "create", new Object[0], new String[0]);
+	      
+	      log.info("Created bridge");
+	      
+	      InitialContext icSource = new InitialContext(props1);
+	      InitialContext icTarget = new InitialContext(props2);
+      
          ConnectionFactory cf0 = (ConnectionFactory)icSource.lookup("/XAConnectionFactory");
          
          ConnectionFactory cf1 = (ConnectionFactory)icTarget.lookup("/XAConnectionFactory");
@@ -277,11 +279,33 @@ public class BridgeMBeanTest extends BridgeTestBase
          
          try
          {
-            ServerManagement.getServer(0).invoke(on, "destroy", new Object[0], new String[0]);
+         	if (on != null)
+         	{
+         		ServerManagement.getServer(0).invoke(on, "stop", new Object[0], new String[0]);
+         		ServerManagement.getServer(0).invoke(on, "destroy", new Object[0], new String[0]);
+         	}
          }
          catch(Exception e)
          {
             //Ignore            
+         }
+         
+         try
+         {
+         	ServerManagement.undeployQueue("sourceQueue", 1);   	       
+         }
+         catch (Exception e)
+         {
+         	//Ignore
+         }
+         
+         try
+         {
+         	ServerManagement.undeployQueue("targetQueue", 2);
+         }
+         catch (Exception e)
+         {
+         	//Ignore
          }
          
          uninstallJMSProviderLoader(0, "adaptor1");
@@ -291,14 +315,14 @@ public class BridgeMBeanTest extends BridgeTestBase
    }
          
    public void testDeploy() throws Exception
-   {
-      ServerManagement.deployQueue("sourceQueue", 1);
-      ServerManagement.deployQueue("targetQueue", 2);
-      
+   {      
       ObjectName on = null;
       
       try
-      {         
+      {       
+      	ServerManagement.deployQueue("sourceQueue", 1);
+         ServerManagement.deployQueue("targetQueue", 2);
+                  
          Thread.sleep(5000);
          
          Properties props1 = new Properties();
@@ -314,7 +338,7 @@ public class BridgeMBeanTest extends BridgeTestBase
          ObjectName sourceProviderLoader = new ObjectName("jboss.messaging:service=JMSProviderLoader,name=adaptor1");
          ObjectName targetProviderLoader = new ObjectName("jboss.messaging:service=JMSProviderLoader,name=adaptor2");
          
-         on = deployBridge(0, "Bridge1", sourceProviderLoader, targetProviderLoader,
+         on = deployBridge(0, "Bridge2", sourceProviderLoader, targetProviderLoader,
                            "/queue/sourceQueue", "/queue/targetQueue",
                            null, null, null, null,
                            Bridge.QOS_ONCE_AND_ONLY_ONCE, null, 1,
@@ -630,8 +654,23 @@ public class BridgeMBeanTest extends BridgeTestBase
             //Ignore            
          }         
          
-         ServerManagement.undeployQueue("sourceQueue", 1);
-         ServerManagement.undeployQueue("targetQueue", 2);
+         try
+         {
+         	ServerManagement.undeployQueue("sourceQueue", 1);   	       
+         }
+         catch (Exception e)
+         {
+         	//Ignore
+         }
+         
+         try
+         {
+         	ServerManagement.undeployQueue("targetQueue", 2);
+         }
+         catch (Exception e)
+         {
+         	//Ignore
+         }
          
          uninstallJMSProviderLoader(0, "adaptor1");
          
