@@ -167,19 +167,16 @@ public class XAResourceRecoveryTest extends MessagingTestCase
       {
          ServerManagement.undeployQueue("queue0", 0);
       }
-      catch (Exception e)
+      catch (Exception ignore)
       {
-         log.error("Failed to undeploy", e);
       }
-            
-      
+                  
       try
       {
          ServerManagement.undeployQueue("queue1", 1);
       }
-      catch (Exception e)
+      catch (Exception ignore)
       {
-         log.error("Failed to undeploy", e);
       }
       
       if (TxUtils.isUncommitted(tm))
@@ -206,34 +203,34 @@ public class XAResourceRecoveryTest extends MessagingTestCase
          tm.resume(suspendedTx);
       }
             
-      for (int i = 0; i < nodeCount; i++)
-      {
-         try
-         {
-            if (ServerManagement.isStarted(i))
-            {
-               ServerManagement.log(ServerManagement.INFO, "Undeploying Server " + i, i);
-               
-               ServerManagement.stop(i);
-            }
-         }
-         catch (Exception e)
-         {
-            log.error("Failed to stop server", e);
-         }
-      }
-      
-      for (int i = 1; i < nodeCount; i++)
-      {
-         try
-         {
-            ServerManagement.kill(i);
-         }
-         catch (Exception e)
-         {
-            log.error("Failed to kill server", e);
-         }
-      }
+//      for (int i = 0; i < nodeCount; i++)
+//      {
+//         try
+//         {
+//            if (ServerManagement.isStarted(i))
+//            {
+//               ServerManagement.log(ServerManagement.INFO, "Undeploying Server " + i, i);
+//               
+//               ServerManagement.stop(i);
+//            }
+//         }
+//         catch (Exception e)
+//         {
+//            log.error("Failed to stop server", e);
+//         }
+//      }
+//      
+//      for (int i = 1; i < nodeCount; i++)
+//      {
+//         try
+//         {
+//            ServerManagement.kill(i);
+//         }
+//         catch (Exception e)
+//         {
+//            log.error("Failed to kill server", e);
+//         }
+//      }
       
       sc.uninstallJMSProviderAdaptor("adaptor1");
       

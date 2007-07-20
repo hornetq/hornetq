@@ -309,8 +309,8 @@ public class ServerPeer extends ServiceMBeanSupport
             return;
          }
 
-         log.debug(this + " stopping");
-
+         log.info(this + " is Stopping. NOTE! Stopping the server peer cleanly will NOT cause failover to occur");
+         
          started = false;
          
          //Tell the invocation handler we are closed - this is so we don't attempt to handle

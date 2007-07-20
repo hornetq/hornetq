@@ -42,6 +42,7 @@ import org.jboss.logging.Logger;
 import org.jboss.messaging.core.contract.MessageStore;
 import org.jboss.messaging.core.contract.PersistenceManager;
 import org.jboss.remoting.ServerInvocationHandler;
+import org.jboss.test.messaging.tools.aop.PoisonInterceptor;
 import org.jboss.test.messaging.tools.jmx.ServiceAttributeOverrides;
 import org.jboss.test.messaging.tools.jmx.rmi.LocalTestServer;
 import org.jboss.test.messaging.tools.jmx.rmi.NotificationListenerID;
@@ -331,6 +332,8 @@ public class ServerManagement
          {
             Server s = servers[i].getServer();
             destroyed.add(new Integer(s.getServerID()));
+            
+            log.info("Killing spawned server " + i);
 
             try
             {
@@ -666,6 +669,14 @@ public class ServerManagement
       insureStarted(serverIndex);
       Server poisoned = servers[serverIndex].getServer();
 
+      //We set the server to null so it can be recreated again, but ONLY for those poisons that cause the server to get killed
+      //We do not do this for other poisons that don't
+      
+      if (type != PoisonInterceptor.LONG_SEND && type != PoisonInterceptor.NULL)
+      {
+      	servers[serverIndex] = null;
+      }
+      
       poisoned.poisonTheServer(type);
 
       return poisoned;
