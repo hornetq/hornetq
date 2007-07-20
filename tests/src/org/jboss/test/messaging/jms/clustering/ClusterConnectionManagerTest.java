@@ -388,7 +388,7 @@ public class ClusterConnectionManagerTest extends ClusteringTestBase
       	
       	//Send some messages on node 0
       	
-      	final int NUM_MESSAGES = 100;
+      	final int NUM_MESSAGES = 20;
       	
       	Session sess0 = conn0.createSession(false, Session.AUTO_ACKNOWLEDGE);
       	

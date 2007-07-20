@@ -136,7 +136,7 @@ public abstract class DistributedQueueTestBase extends ClusteringTestBase
       	
       	for (int i = 0; i < numMessages / 6; i++)
       	{
-      		tm0_1 = (TextMessage)cons0_1.receive(5000000);
+      		tm0_1 = (TextMessage)cons0_1.receive(5000);
       		
       		assertNotNull(tm0_1);
       		
@@ -153,7 +153,7 @@ public abstract class DistributedQueueTestBase extends ClusteringTestBase
       	
       	for (int i = 0; i < numMessages / 6; i++)
       	{
-      		tm0_2 = (TextMessage)cons0_2.receive(5000000);
+      		tm0_2 = (TextMessage)cons0_2.receive(5000);
       		
       		assertNotNull(tm0_2);
       		
@@ -173,7 +173,7 @@ public abstract class DistributedQueueTestBase extends ClusteringTestBase
       	
       	for (int i = 0; i < numMessages / 6; i++)
       	{
-      		tm1_1 = (TextMessage)cons1_1.receive(5000000);
+      		tm1_1 = (TextMessage)cons1_1.receive(5000);
       		
       		assertNotNull(tm1_1);
       		
@@ -190,7 +190,7 @@ public abstract class DistributedQueueTestBase extends ClusteringTestBase
       	
       	for (int i = 0; i < numMessages / 6; i++)
       	{
-      		tm1_2 = (TextMessage)cons1_2.receive(5000000);
+      		tm1_2 = (TextMessage)cons1_2.receive(5000);
       		      		      		
       		assertNotNull(tm1_2);
       		
@@ -210,7 +210,7 @@ public abstract class DistributedQueueTestBase extends ClusteringTestBase
       	
       	for (int i = 0; i < numMessages / 6; i++)
       	{
-      		tm2_1 = (TextMessage)cons2_1.receive(5000000);
+      		tm2_1 = (TextMessage)cons2_1.receive(5000);
       		
       		assertNotNull(tm2_1);
       		
@@ -227,7 +227,7 @@ public abstract class DistributedQueueTestBase extends ClusteringTestBase
       	
       	for (int i = 0; i < numMessages / 6; i++)
       	{
-      		tm2_2 = (TextMessage)cons2_2.receive(5000000);
+      		tm2_2 = (TextMessage)cons2_2.receive(5000);
       		
       		assertNotNull(tm2_2);
       		

@@ -324,6 +324,15 @@ public class MultipleFailoverTest extends ClusteringTestBase
    protected void tearDown() throws Exception
    {
       super.tearDown();
+      
+      for (int i = 0; i < nodeCount; i++)
+      {
+         if (ServerManagement.isStarted(i))
+         {
+            ServerManagement.log(ServerManagement.INFO, "Undeploying Server " + i, i);
+            ServerManagement.stop(i);
+         }
+      }
    }
 
    // Private --------------------------------------------------------------------------------------

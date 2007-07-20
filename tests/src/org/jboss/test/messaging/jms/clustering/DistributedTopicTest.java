@@ -142,12 +142,43 @@ public class DistributedTopicTest extends ClusteringTestBase
 
       super.setUp();
 
+      ServerManagement.deployTopic("nonClusteredTopic", "nonClusteredTopic", 300000, 3000, 3000, 0, false);
+      
+      ServerManagement.deployTopic("nonClusteredTopic", "nonClusteredTopic", 300000, 3000, 3000, 1, false);
+      
+      ServerManagement.deployTopic("nonClusteredTopic", "nonClusteredTopic", 300000, 3000, 3000, 2, false);
+     
+      
       log.debug("setup done");
    }
 
    protected void tearDown() throws Exception
    {
       super.tearDown();
+      
+      try
+      {
+      	ServerManagement.undeployTopic("nonClusteredTopic",  0);
+      }
+      catch (Exception ignore)
+      {      	
+      }
+      
+      try
+      {
+      	ServerManagement.undeployTopic("nonClusteredTopic",  1);
+      }
+      catch (Exception ignore)
+      {      	
+      }
+      
+      try
+      {
+      	ServerManagement.undeployTopic("nonClusteredTopic",  2);
+	   }
+	   catch (Exception ignore)
+	   {      	
+	   }
    }
 
    // Private -------------------------------------------------------
@@ -202,20 +233,20 @@ public class DistributedTopicTest extends ClusteringTestBase
 
          for (int i = 0; i < NUM_MESSAGES; i++)
          {
-            TextMessage tm = (TextMessage)cons0.receive(1000);
+            TextMessage tm = (TextMessage)cons0.receive(3000);
 
             assertNotNull(tm);
             
             assertEquals("message" + i, tm.getText());
          }
          
-         Message msg = cons0.receive(1000);
+         Message msg = cons0.receive(3000);
          
          assertNull(msg);
 
          for (int i = 0; i < NUM_MESSAGES; i++)
          {
-            TextMessage tm = (TextMessage)cons1.receive(1000);
+            TextMessage tm = (TextMessage)cons1.receive(3000);
 
             assertNotNull(tm);
             
@@ -223,46 +254,46 @@ public class DistributedTopicTest extends ClusteringTestBase
             assertEquals("message" + i, tm.getText());
          }
          
-         msg = cons1.receive(1000);
+         msg = cons1.receive(3000);
          
          assertNull(msg);
 
          for (int i = 0; i < NUM_MESSAGES; i++)
          {
-            TextMessage tm = (TextMessage)cons2.receive(1000);
+            TextMessage tm = (TextMessage)cons2.receive(3000);
 
             assertNotNull(tm);
             
             assertEquals("message" + i, tm.getText());
          }
          
-         msg = cons2.receive(1000);
+         msg = cons2.receive(3000);
          
          assertNull(msg);
 
          for (int i = 0; i < NUM_MESSAGES; i++)
          {
-            TextMessage tm = (TextMessage)cons3.receive(1000);
+            TextMessage tm = (TextMessage)cons3.receive(3000);
 
             assertNotNull(tm);
             
             assertEquals("message" + i, tm.getText());
          }
          
-         msg = cons3.receive(1000);
+         msg = cons3.receive(3000);
          
          assertNull(msg);
 
          for (int i = 0; i < NUM_MESSAGES; i++)
          {
-            TextMessage tm = (TextMessage)cons4.receive(1000);
+            TextMessage tm = (TextMessage)cons4.receive(3000);
 
             assertNotNull(tm);
             
             assertEquals("message" + i, tm.getText());
          }
          
-         msg = cons4.receive(1000);
+         msg = cons4.receive(3000);
          
          assertNull(msg);
       }
@@ -347,40 +378,40 @@ public class DistributedTopicTest extends ClusteringTestBase
 
          for (int i = 0; i < NUM_MESSAGES; i++)
          {
-            TextMessage tm = (TextMessage)cons0.receive(1000);
+            TextMessage tm = (TextMessage)cons0.receive(3000);
 
             assertNotNull(tm);
 
             assertEquals("message" + i, tm.getText());
          }
          
-         Message msg = cons0.receive(1000);
+         Message msg = cons0.receive(3000);
          
          assertNull(msg);
 
          for (int i = 0; i < NUM_MESSAGES; i++)
          {
-            TextMessage tm = (TextMessage)cons1.receive(1000);
+            TextMessage tm = (TextMessage)cons1.receive(3000);
 
             assertNotNull(tm);
 
             assertEquals("message" + i, tm.getText());
          }
          
-         msg = cons1.receive(1000);
+         msg = cons1.receive(3000);
          
          assertNull(msg);
 
          for (int i = 0; i < NUM_MESSAGES; i++)
          {
-            TextMessage tm = (TextMessage)cons2.receive(1000);
+            TextMessage tm = (TextMessage)cons2.receive(3000);
 
             assertNotNull(tm);
 
             assertEquals("message" + i, tm.getText());
          }
          
-         msg = cons2.receive(1000);
+         msg = cons2.receive(3000);
          
          assertNull(msg);
 
@@ -390,7 +421,7 @@ public class DistributedTopicTest extends ClusteringTestBase
 
             if (c == 0)
             {
-               TextMessage tm = (TextMessage)cons3.receive(1000);
+               TextMessage tm = (TextMessage)cons3.receive(3000);
 
                assertNotNull(tm);
 
@@ -398,7 +429,7 @@ public class DistributedTopicTest extends ClusteringTestBase
             }
          }
          
-         msg = cons3.receive(1000);
+         msg = cons3.receive(3000);
          
          assertNull(msg);
 
@@ -408,7 +439,7 @@ public class DistributedTopicTest extends ClusteringTestBase
 
             if (c == 1)
             {
-               TextMessage tm = (TextMessage)cons4.receive(1000);
+               TextMessage tm = (TextMessage)cons4.receive(3000);
 
                assertNotNull(tm);
 
@@ -416,7 +447,7 @@ public class DistributedTopicTest extends ClusteringTestBase
             }
          }
          
-         msg = cons4.receive(1000);
+         msg = cons4.receive(3000);
          
          assertNull(msg);
       }
@@ -517,52 +548,52 @@ public class DistributedTopicTest extends ClusteringTestBase
          
          for (int i = 0; i < NUM_MESSAGES; i++)
          {
-            TextMessage tm = (TextMessage)alpha.receive(1000);
+            TextMessage tm = (TextMessage)alpha.receive(3000);
             assertNotNull(tm);
             assertEquals("message" + i, tm.getText());
          }
          
-         Message msg = alpha.receive(1000);
+         Message msg = alpha.receive(3000);
          assertNull(msg);         
 
          for (int i = 0; i < NUM_MESSAGES; i++)
          {
-            TextMessage tm = (TextMessage)beta.receive(1000);
+            TextMessage tm = (TextMessage)beta.receive(3000);
             assertNotNull(tm);
             assertEquals("message" + i, tm.getText());
          }
          
-         msg = beta.receive(1000);
+         msg = beta.receive(3000);
          assertNull(msg);
 
          for (int i = 0; i < NUM_MESSAGES; i++)
          {
-            TextMessage tm = (TextMessage)gamma.receive(1000);
+            TextMessage tm = (TextMessage)gamma.receive(3000);
             assertNotNull(tm);
             assertEquals("message" + i, tm.getText());
          }
          
-         msg = gamma.receive(1000);
+         msg = gamma.receive(3000);
          assertNull(msg);
 
          for (int i = 0; i < NUM_MESSAGES; i++)
          {
-            TextMessage tm = (TextMessage)delta.receive(1000);
+            TextMessage tm = (TextMessage)delta.receive(3000);
             assertNotNull(tm);
             assertEquals("message" + i, tm.getText());
          }
 
-         msg = delta.receive(1000);
+         msg = delta.receive(3000);
          assertNull(msg);
 
          for (int i = 0; i < NUM_MESSAGES; i++)
          {
-            TextMessage tm = (TextMessage)epsilon.receive(1000);
+            TextMessage tm = (TextMessage)epsilon.receive(3000);
             assertNotNull(tm);
             assertEquals("message" + i, tm.getText());
          }
  
-         msg = epsilon.receive(1000);
+         msg = epsilon.receive(3000);
          assertNull(msg);
                  
          //close beta
@@ -591,7 +622,7 @@ public class DistributedTopicTest extends ClusteringTestBase
          
          for (int i = 0; i < NUM_MESSAGES / 2; i++)
          {
-            TextMessage tm = (TextMessage)beta0.receive(1000);
+            TextMessage tm = (TextMessage)beta0.receive(3000);
             assertNotNull(tm);
 
             if (tm.getText().substring("message2-".length()).equals("1"))
@@ -602,7 +633,7 @@ public class DistributedTopicTest extends ClusteringTestBase
             assertEquals("message2-" + (i * 2 + offset), tm.getText());
          }
          
-         msg = beta0.receive(2000);
+         msg = beta0.receive(3000);
          assertNull(msg);
          
          if (offset == 1)
@@ -616,12 +647,12 @@ public class DistributedTopicTest extends ClusteringTestBase
          
          for (int i = 0; i < NUM_MESSAGES / 2; i++)
          {
-            TextMessage tm = (TextMessage)beta1.receive(1000);
+            TextMessage tm = (TextMessage)beta1.receive(3000);
             assertNotNull(tm);
             assertEquals("message2-" + (i * 2 + offset), tm.getText());
          }
          
-         msg = beta1.receive(2000);
+         msg = beta1.receive(3000);
          assertNull(msg);
          
          //Send some more at node 0
@@ -635,12 +666,12 @@ public class DistributedTopicTest extends ClusteringTestBase
          
          for (int i = 0; i < NUM_MESSAGES; i++)
          {
-            TextMessage tm = (TextMessage)beta0.receive(1000);
+            TextMessage tm = (TextMessage)beta0.receive(3000);
             assertNotNull(tm);
             assertEquals("message3-" + i, tm.getText());
          }
          
-         msg = beta0.receive(2000);
+         msg = beta0.receive(3000);
          assertNull(msg);
          
          //So now we have a beta on node 1 and a beta on node 0 and the messages are on node2
@@ -751,18 +782,18 @@ public class DistributedTopicTest extends ClusteringTestBase
 
          for (int i = 0; i < NUM_MESSAGES; i++)
          {
-            TextMessage tm = (TextMessage)cons1.receive(1000);
+            TextMessage tm = (TextMessage)cons1.receive(3000);
 
             assertNotNull(tm);
 
             assertEquals("message" + i, tm.getText());
          }
 
-         Message m = cons2.receive(2000);
+         Message m = cons2.receive(3000);
 
          assertNull(m);
 
-         m = cons3.receive(2000);
+         m = cons3.receive(3000);
 
          assertNull(m);
 
@@ -781,18 +812,18 @@ public class DistributedTopicTest extends ClusteringTestBase
 
          for (int i = 0; i < NUM_MESSAGES; i++)
          {
-            TextMessage tm = (TextMessage)cons2.receive(1000);
+            TextMessage tm = (TextMessage)cons2.receive(3000);
 
             assertNotNull(tm);
 
             assertEquals("message" + i, tm.getText());
          }
 
-         m = cons1.receive(2000);
+         m = cons1.receive(3000);
 
          assertNull(m);
 
-         m = cons3.receive(2000);
+         m = cons3.receive(3000);
 
          assertNull(m);
 
@@ -811,18 +842,18 @@ public class DistributedTopicTest extends ClusteringTestBase
 
          for (int i = 0; i < NUM_MESSAGES; i++)
          {
-            TextMessage tm = (TextMessage)cons3.receive(1000);
+            TextMessage tm = (TextMessage)cons3.receive(3000);
 
             assertNotNull(tm);
 
             assertEquals("message" + i, tm.getText());
          }
 
-         m = cons1.receive(2000);
+         m = cons1.receive(3000);
 
          assertNull(m);
 
-         m = cons2.receive(2000);
+         m = cons2.receive(3000);
 
          assertNull(m);
 
@@ -954,7 +985,7 @@ public class DistributedTopicTest extends ClusteringTestBase
          
          for (int i = 0; i < NUM_MESSAGES / 2; i++)
          {
-            TextMessage tm = (TextMessage)cons1.receive(1000);
+            TextMessage tm = (TextMessage)cons1.receive(3000);
             assertNotNull(tm);
  
             if (tm.getText().substring("message2-".length()).equals("1"))
@@ -965,7 +996,7 @@ public class DistributedTopicTest extends ClusteringTestBase
             assertEquals("message2-" + (i * 2 + offset), tm.getText());
          }
          
-         Message msg = cons1.receive(2000);
+         Message msg = cons1.receive(3000);
          assertNull(msg);
          
          if (offset == 1)
@@ -979,12 +1010,12 @@ public class DistributedTopicTest extends ClusteringTestBase
          
          for (int i = 0; i < NUM_MESSAGES / 2; i++)
          {
-            TextMessage tm = (TextMessage)cons2.receive(1000);
+            TextMessage tm = (TextMessage)cons2.receive(3000);
             assertNotNull(tm);
             assertEquals("message2-" + (i * 2 + offset), tm.getText());
          }
          
-         msg = cons2.receive(2000);
+         msg = cons2.receive(3000);
          assertNull(msg);
                  
          cons1.close();
@@ -1033,12 +1064,6 @@ public class DistributedTopicTest extends ClusteringTestBase
       
       try
       {
-         ServerManagement.deployTopic("nonClusteredTopic", "nonClusteredTopic", 200000, 2000, 2000, 0, false);
-         
-         ServerManagement.deployTopic("nonClusteredTopic", "nonClusteredTopic", 200000, 2000, 2000, 1, false);
-         
-         ServerManagement.deployTopic("nonClusteredTopic", "nonClusteredTopic", 200000, 2000, 2000, 2, false);
-         
          Topic topic0 = (Topic)ic[0].lookup("/nonClusteredTopic");
          Topic topic1 = (Topic)ic[1].lookup("/nonClusteredTopic");
          Topic topic2 = (Topic)ic[2].lookup("/nonClusteredTopic");
@@ -1081,13 +1106,13 @@ public class DistributedTopicTest extends ClusteringTestBase
          
          // Try and consume at node 1
             
-         Message m = cons1.receive(2000);
+         Message m = cons1.receive(3000);
 
          assertNull(m);
             
          //And at node 2
          
-         m = cons2.receive(2000);
+         m = cons2.receive(3000);
 
          assertNull(m);
            
@@ -1095,14 +1120,14 @@ public class DistributedTopicTest extends ClusteringTestBase
           
          for (int i = 0; i < NUM_MESSAGES; i++)
          {
-            TextMessage tm = (TextMessage)cons0.receive(1000);
+            TextMessage tm = (TextMessage)cons0.receive(3000);
 
             assertNotNull(tm);
             
             assertEquals("message" + i, tm.getText());
          }                 
 
-         m = cons0.receive(2000);
+         m = cons0.receive(3000);
 
          assertNull(m);
          
@@ -1122,13 +1147,13 @@ public class DistributedTopicTest extends ClusteringTestBase
          
          // Try and consume at node 0
          
-         m = cons0.receive(2000);
+         m = cons0.receive(3000);
 
          assertNull(m);
          
          //And at node 2
          
-         m = cons2.receive(2000);
+         m = cons2.receive(3000);
 
          assertNull(m);
          
@@ -1136,14 +1161,14 @@ public class DistributedTopicTest extends ClusteringTestBase
             
          for (int i = 0; i < NUM_MESSAGES; i++)
          {
-            TextMessage tm = (TextMessage)cons1.receive(1000);
+            TextMessage tm = (TextMessage)cons1.receive(3000);
 
             assertNotNull(tm);
             
             assertEquals("message" + i, tm.getText());
          }                 
 
-         m = cons1.receive(2000);
+         m = cons1.receive(3000);
 
          assertNull(m);
          
@@ -1163,13 +1188,13 @@ public class DistributedTopicTest extends ClusteringTestBase
          
          // Try and consume at node 0
          
-         m = cons0.receive(2000);
+         m = cons0.receive(3000);
 
          assertNull(m);
               
          //And at node 1
            
-         m = cons1.receive(2000);
+         m = cons1.receive(3000);
 
          assertNull(m);
          
@@ -1177,14 +1202,14 @@ public class DistributedTopicTest extends ClusteringTestBase
                
          for (int i = 0; i < NUM_MESSAGES; i++)
          {
-            TextMessage tm = (TextMessage)cons2.receive(1000);
+            TextMessage tm = (TextMessage)cons2.receive(3000);
 
             assertNotNull(tm);
             
             assertEquals("message" + i, tm.getText());
          }                 
 
-         m = cons2.receive(2000);
+         m = cons2.receive(3000);
 
          assertNull(m);
       }
@@ -1224,12 +1249,7 @@ public class DistributedTopicTest extends ClusteringTestBase
       
       try
       {
-         ServerManagement.deployTopic("nonClusteredTopic", "nonClusteredTopic", 200000, 2000, 2000, 0, false);
-         
-         ServerManagement.deployTopic("nonClusteredTopic", "nonClusteredTopic", 200000, 2000, 2000, 1, false);
-         
-         ServerManagement.deployTopic("nonClusteredTopic", "nonClusteredTopic", 200000, 2000, 2000, 2, false);
-         
+ 
          Topic topic0 = (Topic)ic[0].lookup("/nonClusteredTopic");
          Topic topic1 = (Topic)ic[1].lookup("/nonClusteredTopic");
          Topic topic2 = (Topic)ic[2].lookup("/nonClusteredTopic");
@@ -1281,7 +1301,7 @@ public class DistributedTopicTest extends ClusteringTestBase
             
          cons1 = sess1.createDurableSubscriber(topic1, "mysub1");
          
-         Message m = cons1.receive(2000);
+         Message m = cons1.receive(3000);
 
          assertNull(m);
          
@@ -1291,7 +1311,7 @@ public class DistributedTopicTest extends ClusteringTestBase
          
          cons2 = sess2.createDurableSubscriber(topic2, "mysub1");
          
-         m = cons2.receive(2000);
+         m = cons2.receive(3000);
 
          assertNull(m);
          
@@ -1303,14 +1323,14 @@ public class DistributedTopicTest extends ClusteringTestBase
           
          for (int i = 0; i < NUM_MESSAGES; i++)
          {
-            TextMessage tm = (TextMessage)cons0.receive(1000);
+            TextMessage tm = (TextMessage)cons0.receive(3000);
 
             assertNotNull(tm);
             
             assertEquals("message" + i, tm.getText());
          }                 
 
-         m = cons0.receive(2000);
+         m = cons0.receive(3000);
 
          assertNull(m);
          
@@ -1334,7 +1354,7 @@ public class DistributedTopicTest extends ClusteringTestBase
          
          // Try and consume at node 0
          
-         m = cons0.receive(2000);
+         m = cons0.receive(3000);
 
          assertNull(m);
          
@@ -1344,7 +1364,7 @@ public class DistributedTopicTest extends ClusteringTestBase
          
          cons2 = sess2.createDurableSubscriber(topic2, "mysub1");
          
-         m = cons2.receive(2000);
+         m = cons2.receive(3000);
 
          assertNull(m);
          
@@ -1356,14 +1376,14 @@ public class DistributedTopicTest extends ClusteringTestBase
          
          for (int i = 0; i < NUM_MESSAGES; i++)
          {
-            TextMessage tm = (TextMessage)cons1.receive(1000);
+            TextMessage tm = (TextMessage)cons1.receive(3000);
 
             assertNotNull(tm);
             
             assertEquals("message" + i, tm.getText());
          }                 
 
-         m = cons1.receive(2000);
+         m = cons1.receive(3000);
 
          assertNull(m);
          
@@ -1387,7 +1407,7 @@ public class DistributedTopicTest extends ClusteringTestBase
                   
          // Try and consume at node 0
          
-         m = cons0.receive(2000);
+         m = cons0.receive(3000);
 
          assertNull(m);
          
@@ -1399,7 +1419,7 @@ public class DistributedTopicTest extends ClusteringTestBase
            
          cons1 = sess1.createDurableSubscriber(topic1, "mysub1");
                   
-         m = cons1.receive(2000);
+         m = cons1.receive(3000);
 
          assertNull(m);
          
@@ -1413,14 +1433,14 @@ public class DistributedTopicTest extends ClusteringTestBase
                         
          for (int i = 0; i < NUM_MESSAGES; i++)
          {
-            TextMessage tm = (TextMessage)cons2.receive(1000);
+            TextMessage tm = (TextMessage)cons2.receive(3000);
 
             assertNotNull(tm);
             
             assertEquals("message" + i, tm.getText());
          }                 
 
-         m = cons2.receive(2000);
+         m = cons2.receive(3000);
 
          assertNull(m);
          

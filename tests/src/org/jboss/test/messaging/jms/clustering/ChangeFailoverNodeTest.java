@@ -130,6 +130,15 @@ public class ChangeFailoverNodeTest extends ClusteringTestBase
    protected void tearDown() throws Exception
    {   	   	
       super.tearDown();
+            
+      for (int i = 0; i < nodeCount; i++)
+      {
+         if (ServerManagement.isStarted(i))
+         {
+            ServerManagement.log(ServerManagement.INFO, "Undeploying Server " + i, i);
+            ServerManagement.stop(i);
+         }
+      }
    }
    
    // Private -------------------------------------------------------
@@ -567,9 +576,7 @@ public class ChangeFailoverNodeTest extends ClusteringTestBase
       	Map recoveryArea = ServerManagement.getServer(failoverNodeId).getRecoveryArea(queue[failoverNodeId].getQueueName());
       	Map ids = (Map)recoveryArea.get(new Integer(3));
       	assertNotNull(ids);
-      	assertEquals(numMessages, ids.size());
-      	
-      	
+      	assertEquals(numMessages, ids.size());      	      	
       	
       	//We now add a new node - this should cause the failover node to change
       	
@@ -577,17 +584,14 @@ public class ChangeFailoverNodeTest extends ClusteringTestBase
          
          ServerManagement.deployQueue("testDistributedQueue", 4);
          
-         Thread.sleep(5000);
-         
+         Thread.sleep(5000);         
          
          recoveryMapSize = ServerManagement.getServer(failoverNodeId).getRecoveryMapSize(queue[failoverNodeId].getQueueName());
       	assertEquals(0, recoveryMapSize);
       	recoveryArea = ServerManagement.getServer(failoverNodeId).getRecoveryArea(queue[failoverNodeId].getQueueName());
       	ids = (Map)recoveryArea.get(new Integer(3));
       	assertNull(ids);
-
-         
-         
+                  
          dumpFailoverMap(ServerManagement.getServer(3).getFailoverMap());
       	
          int newFailoverNodeId = this.getFailoverNodeForNode(factory, 3);
@@ -601,9 +605,7 @@ public class ChangeFailoverNodeTest extends ClusteringTestBase
       	recoveryArea = ServerManagement.getServer(newFailoverNodeId).getRecoveryArea(queue[3].getQueueName());
       	ids = (Map)recoveryArea.get(new Integer(3));
       	assertNotNull(ids);
-      	assertEquals(numMessages, ids.size());
-         
-         
+      	assertEquals(numMessages, ids.size());                  
          
          //Now kill the node
       	

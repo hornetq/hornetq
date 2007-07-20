@@ -341,7 +341,7 @@ public class DisableLoadBalancingAndFailoverTest extends ClusteringTestBase
          
          // wait for the client-side failover to complete
 
-         while(true)
+         while (true)
          {
             FailoverEvent event = failoverListener.getEvent(30000);
             if (event != null && FailoverEvent.FAILOVER_COMPLETED == event.getType())
@@ -421,12 +421,20 @@ public class DisableLoadBalancingAndFailoverTest extends ClusteringTestBase
    {
    	try
    	{
-   		ServerManagement.getServer(1).undeployConnectionFactory(new ObjectName("org.jboss.messaging:service=LBConnectionFactory"));
+   		ServerManagement.getServer(0).undeployConnectionFactory(new ObjectName("org.jboss.messaging:service=LBConnectionFactory"));
    	}
    	catch (Exception ignore)
    	{   		
    	}
       
+   	try
+   	{
+         ServerManagement.getServer(1).undeployConnectionFactory(new ObjectName("org.jboss.messaging:service=LBConnectionFactory"));
+   	}
+   	catch (Exception ignore)
+   	{   		
+   	}
+   	
    	try
    	{
          ServerManagement.getServer(2).undeployConnectionFactory(new ObjectName("org.jboss.messaging:service=LBConnectionFactory"));
@@ -437,7 +445,23 @@ public class DisableLoadBalancingAndFailoverTest extends ClusteringTestBase
    	
    	try
    	{
+   		ServerManagement.getServer(0).undeployConnectionFactory(new ObjectName("org.jboss.messaging:service=FOConnectionFactory"));
+   	}
+   	catch (Exception ignore)
+   	{   		
+   	}
+      
+   	try
+   	{
          ServerManagement.getServer(1).undeployConnectionFactory(new ObjectName("org.jboss.messaging:service=FOConnectionFactory"));
+   	}
+   	catch (Exception ignore)
+   	{   		
+   	}
+   	
+   	try
+   	{
+         ServerManagement.getServer(2).undeployConnectionFactory(new ObjectName("org.jboss.messaging:service=FOConnectionFactory"));
    	}
    	catch (Exception ignore)
    	{   		

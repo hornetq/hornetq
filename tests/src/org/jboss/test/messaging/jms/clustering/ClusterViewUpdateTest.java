@@ -81,8 +81,8 @@ public class ClusterViewUpdateTest extends ClusteringTestBase
       assertEquals(2, cfDelegate.getDelegates().length);
       conn.close();
 
-      log.info("sleeping 10 secs ...");
-      Thread.sleep(10000);
+      log.info("sleeping 5 secs ...");
+      Thread.sleep(5000);
 
       // Second part, verifies a possible race condition on failoverMap and handleFilover
 
@@ -93,7 +93,6 @@ public class ClusterViewUpdateTest extends ClusteringTestBase
       conn1.close();
       
       log.info("Done!!");
-
    }
 
    public void testUpdateMixedConnectionFactory() throws Exception
@@ -139,18 +138,16 @@ public class ClusterViewUpdateTest extends ClusteringTestBase
       conn.close();
       httpConn.close();
 
-      log.info("sleeping 10 secs ...");
-      Thread.sleep(10000);
+      log.info("sleeping 5 secs ...");
+      Thread.sleep(5000);
 
       // Second part, verifies a possible racing condition on failoverMap and handleFilover
 
       log.info("ServerId=" + getServerId(conn1));
       assertTrue(1 != getServerId(conn1));
 
-      //Session sess = conn1.createSession(true, Session.SESSION_TRANSACTED);
       conn1.close();
       httpConn.close();
-
    }
 
    /**
@@ -181,7 +178,7 @@ public class ClusterViewUpdateTest extends ClusteringTestBase
 
       ServerManagement.kill(1);
 
-      Thread.sleep(10000);
+      Thread.sleep(5000);
 
       // This will force Failover from Valve to kick in
       conn1.createSession(true, Session.SESSION_TRANSACTED);

@@ -317,6 +317,7 @@ public class FailoverTest extends ClusteringTestBase
 
          conn.start();
 
+         log.info("*** sending message");
          Message m = session.createTextMessage("nik");
          prod.send(m);
 
@@ -1902,6 +1903,15 @@ public class FailoverTest extends ClusteringTestBase
    protected void tearDown() throws Exception
    {
       super.tearDown();
+      
+      for (int i = 0; i < nodeCount; i++)
+      {
+         if (ServerManagement.isStarted(i))
+         {
+            ServerManagement.log(ServerManagement.INFO, "Undeploying Server " + i, i);
+            ServerManagement.stop(i);
+         }
+      }
    }
 
    // Private --------------------------------------------------------------------------------------
