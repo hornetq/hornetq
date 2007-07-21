@@ -321,7 +321,7 @@ public class HATest extends ClusteringTestBase
       log.info("************** STOPPING SERVER 0");
       ServerManagement.stop(0);
       
-      Thread.sleep(10000);
+      Thread.sleep(5000);
 
       log.info("server stopped");
 
@@ -373,7 +373,7 @@ public class HATest extends ClusteringTestBase
 
       ServerManagement.stop(1);
       
-      Thread.sleep(10000);
+      Thread.sleep(5000);
 
       assertEquals(1, ServerManagement.getServer(2).getNodeIDView().size());
 
@@ -566,7 +566,7 @@ public class HATest extends ClusteringTestBase
 
          ServerManagement.kill(1);
 
-         long sleepTime = 30;
+         long sleepTime = 10;
 
          log.info("killed server, now waiting for " + sleepTime + " seconds");
 
@@ -724,7 +724,7 @@ public class HATest extends ClusteringTestBase
 
          killed = true;
 
-         long sleepTime = 30;
+         long sleepTime = 10;
 
          log.info("killed server, now waiting for " + sleepTime + " seconds");
 
@@ -912,7 +912,7 @@ public class HATest extends ClusteringTestBase
 
          log.info("killed server, now waiting");
 
-         long sleepTime = 60;
+         long sleepTime = 10;
 
          log.info("killed server, now waiting for " + sleepTime + " seconds");
 
@@ -1043,7 +1043,7 @@ public class HATest extends ClusteringTestBase
 
          ServerManagement.kill(1);
 
-         Thread.sleep(30000);
+         Thread.sleep(10000);
          // if failover happened, this object was replaced
          assertNotSame(originalRemoting, delegate.getRemotingConnection());
 
