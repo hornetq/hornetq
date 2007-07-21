@@ -30,6 +30,7 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.management.ObjectName;
 
+import org.jboss.test.messaging.tools.ServerManagement;
 import org.jboss.test.messaging.tools.jmx.ServiceAttributeOverrides;
 
 /**
@@ -98,6 +99,15 @@ public class PreserveOrderingTest extends ClusteringTestBase
    protected void tearDown() throws Exception
    {
       super.tearDown();
+      
+      for (int i = 0; i < nodeCount; i++)
+      {
+         if (ServerManagement.isStarted(i))
+         {
+            ServerManagement.log(ServerManagement.INFO, "Undeploying Server " + i, i);
+            ServerManagement.stop(i);
+         }
+      }
    }
    
    protected void preserveOrderingQueue(boolean persistent) throws Exception
