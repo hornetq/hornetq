@@ -32,6 +32,12 @@ import javax.jms.MessageProducer;
 import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.Topic;
+import javax.jms.JMSException;
+import javax.jms.TopicConnection;
+import javax.jms.TopicSession;
+import javax.jms.TopicConnectionFactory;
+import javax.jms.TopicPublisher;
+import javax.jms.DeliveryMode;
 import javax.management.ObjectName;
 import javax.naming.InitialContext;
 
@@ -453,6 +459,55 @@ public class SecurityTest extends MessagingTestCase
          if (conn != null)
             conn.close();
       }
+   }
+
+   public void testTransactedPublish() throws JMSException
+   {
+
+      TopicConnection conn = null;
+
+      try
+      {
+
+         conn = ((TopicConnectionFactory)cf).createTopicConnection("nobody", "nobody");
+         TopicSession topicSess = conn.createTopicSession(true , Session.AUTO_ACKNOWLEDGE);
+         try
+         {
+            TopicPublisher publisher = topicSess.createPublisher(testTopic);
+            publisher.publish(topicSess.createTextMessage("test"), DeliveryMode.PERSISTENT, 4, 0l);
+            topicSess.commit();
+
+            fail("Test didn't throw expected exception");
+         }
+         catch (JMSSecurityException expected)
+         {
+         }
+
+         try
+         {
+            MessageProducer prod = topicSess.createPublisher(testTopic);
+            prod.send(topicSess.createTextMessage("hello"));
+            topicSess.commit();
+
+            fail("Test didn't throw expected exception");
+         }
+         catch (JMSSecurityException expected)
+         {
+         }
+
+
+      }
+      finally
+      {
+         try
+         {
+            if (conn!=null) conn.close();
+         }
+         catch (Throwable ignored)
+         {
+         }
+      }
+
    }
 
    /*
@@ -1036,8 +1091,13 @@ public class SecurityTest extends MessagingTestCase
       }
       catch (JMSSecurityException e)
       {
+         log.error(e,e);
          log.trace("Can't create durable sub", e);
          return false;
+      }
+      finally
+      {
+         sess.close();
       }
    }
 
