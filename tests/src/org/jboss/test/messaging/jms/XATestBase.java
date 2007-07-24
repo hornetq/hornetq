@@ -44,6 +44,7 @@ import javax.management.ObjectName;
 import javax.naming.InitialContext;
 import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
+import javax.transaction.RollbackException;
 import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
@@ -552,7 +553,7 @@ public abstract class XATestBase extends MessagingTestCase
          XASession xasession = xaconn.createXASession();
 
          XAResource resouce = xasession.getXAResource();
-         
+
          trans.enlistResource(resouce);
 
          MessageConsumer consumer = xasession.createConsumer(queue);
@@ -566,7 +567,7 @@ public abstract class XATestBase extends MessagingTestCase
          assertNull(consumer.receive(1000));
 
          count = (Integer)ServerManagement.getAttribute(queueMBean, "MessageCount");
-         
+
          assertEquals(1, count.intValue());
 
          trans.delistResource(resouce, XAResource.TMSUCCESS);
@@ -3407,6 +3408,72 @@ public abstract class XATestBase extends MessagingTestCase
       }
 
    }
+
+   /**
+    * This Validate sending messages on an Queue where the user don't have write authorization
+    * @throws Exception
+    */
+   public void testSecurityOnXA() throws Exception
+   {
+      XAConnection xaconn = null;
+
+      Transaction formerTrans = tm.suspend();
+      try
+      {
+         tm.begin();
+
+         Transaction trans = tm.getTransaction();
+
+         XAConnectionFactory xacf = (XAConnectionFactory)cf;
+
+         xaconn = xacf.createXAConnection("nobody", "nobody");
+
+         XASession xasession = xaconn.createXASession();
+
+         XAResource resouce = xasession.getXAResource();
+
+         MessageProducer producer = xasession.createProducer(queue);
+
+         trans.enlistResource(resouce);
+
+
+
+         for (int i=0;i<10;i++)
+         {
+            producer.send(xasession.createTextMessage("Test " + i));
+         }
+
+         trans.delistResource(resouce, XAResource.TMSUCCESS);
+
+         try
+         {
+            trans.commit();
+            fail("Didn't throw expected exception!");
+         }
+         catch (RollbackException expected)
+         {
+         }
+      }
+      finally
+      {
+         try
+         {
+            if (xaconn != null)
+            {
+               xaconn.close();
+            }
+            ServerManagement.undeployQueue("MyQueue2");
+         }
+         catch (Throwable ignored)
+         {
+         }
+
+         if (formerTrans!=null) tm.resume(formerTrans);
+
+      }
+   }
+
+
 
    // Package protected ---------------------------------------------
 

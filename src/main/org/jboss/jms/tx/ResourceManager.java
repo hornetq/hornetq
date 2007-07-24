@@ -29,6 +29,7 @@ import java.util.Map;
 
 import javax.jms.IllegalStateException;
 import javax.jms.JMSException;
+import javax.jms.JMSSecurityException;
 import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
@@ -213,6 +214,11 @@ public class ResourceManager
          {
             throw new IllegalStateException("Cannot find xid to remove " + xid);
          }
+      }
+      catch (JMSSecurityException e)
+      {
+         // If a security exception happens, just rethrow it
+         throw e;
       }
       catch (Throwable t)
       {
@@ -629,6 +635,12 @@ public class ResourceManager
       try
       {
          connection.sendTransaction(request, false);
+      }
+      catch (JMSSecurityException security)
+      {
+         MessagingXAException xaEx = new MessagingXAException(XAException.XA_RBROLLBACK, "A security exception happend!", security);
+         log.error(xaEx, xaEx);
+         throw xaEx; 
       }
       catch (Throwable t)
       {

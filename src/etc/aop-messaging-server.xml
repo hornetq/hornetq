@@ -13,6 +13,10 @@
       <interceptor-ref name="org.jboss.jms.server.container.ServerLogInterceptor"/>
    </bind>   
 
+   <bind pointcut="execution(* org.jboss.jms.server.endpoint.advised.ConnectionAdvised->sendTransaction(..))">
+      <advice name="handleSendTransaction" aspect="org.jboss.jms.server.container.SecurityAspect"/>
+   </bind>
+
    <!-- Session -->
    <bind pointcut="execution(* org.jboss.jms.server.endpoint.advised.SessionAdvised->$implementing{org.jboss.jms.delegate.SessionEndpoint}(..))">
       <interceptor-ref name="org.jboss.jms.server.container.ServerLogInterceptor"/>

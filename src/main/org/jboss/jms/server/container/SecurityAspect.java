@@ -23,6 +23,7 @@ package org.jboss.jms.server.container;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.Iterator;
 
 import javax.jms.Destination;
 import javax.jms.JMSSecurityException;
@@ -37,7 +38,11 @@ import org.jboss.jms.server.endpoint.ServerConsumerEndpoint;
 import org.jboss.jms.server.endpoint.ServerSessionEndpoint;
 import org.jboss.jms.server.endpoint.advised.ConsumerAdvised;
 import org.jboss.jms.server.endpoint.advised.SessionAdvised;
+import org.jboss.jms.server.endpoint.advised.ConnectionAdvised;
 import org.jboss.jms.server.security.SecurityMetadata;
+import org.jboss.jms.tx.TransactionRequest;
+import org.jboss.jms.tx.ClientTransaction;
+import org.jboss.jms.message.JBossMessage;
 import org.jboss.logging.Logger;
 import org.jboss.security.SecurityAssociation;
 
@@ -150,7 +155,47 @@ public class SecurityAspect
       check(dest, CheckType.WRITE, ce);
             
       return invocation.invokeNext();
-   }   
+   }
+
+
+   // An aspect over ConnectionAdvised
+   public Object handleSendTransaction(Invocation invocation) throws Throwable
+   {
+      ConnectionAdvised del = (ConnectionAdvised)invocation.getTargetObject();
+      ServerConnectionEndpoint ce = (ServerConnectionEndpoint)del.getEndpoint();
+
+      MethodInvocation mi = (MethodInvocation)invocation;
+
+      TransactionRequest t = (TransactionRequest)mi.getArguments()[0];
+
+      ClientTransaction txState = t.getState();
+
+      if (txState != null)
+      {
+         // distinct list of destinations...
+         HashSet destinations = new HashSet();
+
+         for (Iterator i = txState.getSessionStates().iterator(); i.hasNext(); )
+         {
+            ClientTransaction.SessionTxState sessionState = (ClientTransaction.SessionTxState)i.next();
+            for (Iterator j = sessionState.getMsgs().iterator(); j.hasNext(); )
+            {
+               JBossMessage message = (JBossMessage)j.next();
+               destinations.add(message.getJMSDestination());
+            }
+         }
+         for (Iterator iterDestinations = destinations.iterator();iterDestinations.hasNext();)
+         {
+            Destination destination = (Destination) iterDestinations.next();
+            check(destination, CheckType.WRITE, ce);
+         }
+
+      }
+
+      return invocation.invokeNext();
+   }
+
+
    
    protected void checkConsumerAccess(Invocation invocation) throws Throwable
    {
