@@ -73,8 +73,7 @@ public class BridgeTest extends BridgeTestBase
    {            
       super.tearDown();      
    }
-      
-   
+         
    // MaxBatchSize but no MaxBatchTime
    
    public void testNoMaxBatchTime_AtMostOnce_P() throws Exception

@@ -25,17 +25,12 @@ import java.io.Serializable;
 
 import javax.jms.ObjectMessage;
 import javax.jms.Session;
-import javax.jms.Topic;
 import javax.jms.TopicConnection;
-import javax.jms.TopicConnectionFactory;
 import javax.jms.TopicPublisher;
 import javax.jms.TopicSession;
 import javax.jms.TopicSubscriber;
-import javax.naming.InitialContext;
 
-import org.jboss.jms.client.JBossConnectionFactory;
-import org.jboss.test.messaging.MessagingTestCase;
-import org.jboss.test.messaging.tools.ServerManagement;
+import org.jboss.test.messaging.jms.JMSTestCase;
 
 
 /**
@@ -48,16 +43,13 @@ import org.jboss.test.messaging.tools.ServerManagement;
  * $Id$
  *
  */
-public class ObjectMessageDeliveryTest extends MessagingTestCase
+public class ObjectMessageDeliveryTest extends JMSTestCase
 {
    // Constants -----------------------------------------------------
    
    // Static --------------------------------------------------------
    
    // Attributes ----------------------------------------------------
-
-   protected InitialContext ic;
-   protected TopicConnectionFactory cf;
 
    // Constructors --------------------------------------------------
    
@@ -66,35 +58,7 @@ public class ObjectMessageDeliveryTest extends MessagingTestCase
       super(name);
    }
    
-   // TestCase overrides -------------------------------------------
-   
-   public void setUp() throws Exception
-   {
-      super.setUp();                  
-      
-      ServerManagement.start("all");
-      
-      
-      ic = new InitialContext(ServerManagement.getJNDIEnvironment());
-      cf = (JBossConnectionFactory)ic.lookup("/ConnectionFactory");
-      
-      ServerManagement.undeployTopic("TestTopic");
-      ServerManagement.deployTopic("TestTopic");
-
-      log.debug("setup done");
-   }
-   
-   public void tearDown() throws Exception
-   {
-      ServerManagement.undeployTopic("TestTopic");
-      
-      super.tearDown();
-
-      log.debug("tear down done");
-   }
-
    // Public --------------------------------------------------------
-
    
    static class TestObject implements Serializable
    {
@@ -107,15 +71,13 @@ public class ObjectMessageDeliveryTest extends MessagingTestCase
     */
    public void testTopic() throws Exception
    {
-      Topic topic = (Topic)ic.lookup("/topic/TestTopic");
-
       TopicConnection conn = cf.createTopicConnection();
 
       try
       {
          TopicSession s = conn.createTopicSession(false, Session.AUTO_ACKNOWLEDGE);
-         TopicPublisher publisher = s.createPublisher(topic);
-         TopicSubscriber sub = s.createSubscriber(topic);
+         TopicPublisher publisher = s.createPublisher(topic1);
+         TopicSubscriber sub = s.createSubscriber(topic1);
          conn.start();
                   
          //Create 3 object messages with different bodies

@@ -22,7 +22,6 @@
 package org.jboss.test.messaging.jms;
 
 import javax.jms.Connection;
-import javax.jms.ConnectionFactory;
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
@@ -31,11 +30,8 @@ import javax.jms.Session;
 import javax.jms.TemporaryQueue;
 import javax.jms.TemporaryTopic;
 import javax.jms.TextMessage;
-import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
-import org.jboss.test.messaging.MessagingTestCase;
-import org.jboss.test.messaging.tools.ServerManagement;
 import org.jboss.jms.message.MessageProxy;
 
 /**
@@ -45,21 +41,13 @@ import org.jboss.jms.message.MessageProxy;
  *
  * $Id$
  */
-public class TemporaryDestinationTest extends MessagingTestCase
+public class TemporaryDestinationTest extends JMSTestCase
 {
    // Constants -----------------------------------------------------
 
    // Static --------------------------------------------------------
 
    // Attributes ----------------------------------------------------
-
-   protected InitialContext initialContext;
-
-   protected ConnectionFactory cf;
-
-   protected Connection connection;
-
-   protected Session producerSession, consumerSession;
 
    // Constructors --------------------------------------------------
 
@@ -68,99 +56,103 @@ public class TemporaryDestinationTest extends MessagingTestCase
       super(name);
    }
 
-   // TestCase overrides -------------------------------------------
-
-   public void setUp() throws Exception
-   {
-      super.setUp();
-      ServerManagement.start("all");
-      
-      
-      initialContext = new InitialContext(ServerManagement.getJNDIEnvironment());
-      cf = (ConnectionFactory)initialContext.lookup("/ConnectionFactory");
-      ServerManagement.undeployTopic("Topic");
-      ServerManagement.deployTopic("Topic");
-      //topic = (Destination)initialContext.lookup("/topic/Topic");
-
-      connection = cf.createConnection();
-      producerSession = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      consumerSession = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-
-   }
-
-   public void tearDown() throws Exception
-   {
-      connection.close();
-
-      ServerManagement.undeployTopic("Topic");
-      
-      super.tearDown();
-   }
-
-
    // Public --------------------------------------------------------
 
    public void testTemp() throws Exception
    {
-      TemporaryTopic tempTopic = producerSession.createTemporaryTopic();
-
-      MessageProducer producer = producerSession.createProducer(tempTopic);
-
-      MessageConsumer consumer = consumerSession.createConsumer(tempTopic);
-
-      connection.start();
-
-      final String messageText = "This is a message";
-
-      Message m = producerSession.createTextMessage(messageText);
-
-      producer.send(m);
-
-      TextMessage m2 = (TextMessage)consumer.receive(2000);
-
-      assertNotNull(m2);
-
-      assertEquals(messageText, m2.getText());
-
-      try
-      {
-         tempTopic.delete();
-         fail();
-      }
-      catch (JMSException e)
-      {
-         //Can't delete temp dest if there are open consumers
-      }
-
-      consumer.close();
-      tempTopic.delete();
-
-
+   	Connection conn = null;
+   	
+   	try
+   	{
+   		conn = cf.createConnection();
+   		
+   		Session producerSession = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+   		
+   		Session consumerSession = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+   		
+	      TemporaryTopic tempTopic = producerSession.createTemporaryTopic();
+	
+	      MessageProducer producer = producerSession.createProducer(tempTopic);
+	
+	      MessageConsumer consumer = consumerSession.createConsumer(tempTopic);
+	
+	      conn.start();
+	
+	      final String messageText = "This is a message";
+	
+	      Message m = producerSession.createTextMessage(messageText);
+	
+	      producer.send(m);
+	
+	      TextMessage m2 = (TextMessage)consumer.receive(2000);
+	
+	      assertNotNull(m2);
+	
+	      assertEquals(messageText, m2.getText());
+	
+	      try
+	      {
+	         tempTopic.delete();
+	         fail();
+	      }
+	      catch (JMSException e)
+	      {
+	         //Can't delete temp dest if there are open consumers
+	      }
+	
+	      consumer.close();
+	      
+	      tempTopic.delete();      
+   	}
+   	finally
+   	{
+   		if (conn != null)
+   		{
+   			conn.close();
+   		}
+   	}
    }
 
 
    public void testTemporaryQueueBasic() throws Exception
    {
-
-      TemporaryQueue tempQueue = producerSession.createTemporaryQueue();
-
-      MessageProducer producer = producerSession.createProducer(tempQueue);
-
-      MessageConsumer consumer = consumerSession.createConsumer(tempQueue);
-      
-      connection.start();
-
-      final String messageText = "This is a message";
-
-      Message m = producerSession.createTextMessage(messageText);
-
-      producer.send(m);
-
-      TextMessage m2 = (TextMessage)consumer.receive(2000);
-
-      assertNotNull(m2);
-
-      assertEquals(messageText, m2.getText());
+   	Connection conn = null;
+   	
+   	try
+   	{
+   		conn = cf.createConnection();
+   		
+   		Session producerSession = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+   		
+   		Session consumerSession = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+   		
+	      TemporaryQueue tempQueue = producerSession.createTemporaryQueue();
+	
+	      MessageProducer producer = producerSession.createProducer(tempQueue);
+	
+	      MessageConsumer consumer = consumerSession.createConsumer(tempQueue);
+	      
+	      conn.start();
+	
+	      final String messageText = "This is a message";
+	
+	      Message m = producerSession.createTextMessage(messageText);
+	
+	      producer.send(m);
+	
+	      TextMessage m2 = (TextMessage)consumer.receive(2000);
+	
+	      assertNotNull(m2);
+	
+	      assertEquals(messageText, m2.getText());
+   	}
+   	finally
+   	{
+   		if (conn != null)
+   		{
+   			conn.close();
+   		}
+   	}
    }
 
    /**
@@ -168,137 +160,225 @@ public class TemporaryDestinationTest extends MessagingTestCase
     */
    public void testTemporaryQueueOnClosedSession() throws Exception
    {
-      producerSession.close();
-
-      try
-      {
-         producerSession.createTemporaryQueue();
-         fail("should throw exception");
-      }
-      catch(javax.jms.IllegalStateException e)
-      {
-         // OK
-      }
+   	Connection producerConnection = null;
+   	
+   	try
+   	{
+   		producerConnection = cf.createConnection();
+   		
+   		Session producerSession = producerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+   		   	   	
+	      producerSession.close();
+	
+	      try
+	      {
+	         producerSession.createTemporaryQueue();
+	         fail("should throw exception");
+	      }
+	      catch(javax.jms.IllegalStateException e)
+	      {
+	         // OK
+	      }
+   	}
+   	finally
+   	{
+   		if (producerConnection != null)
+   		{
+   			producerConnection.close();
+   		}
+   	}
    }
    
    public void testTemporaryQueueDeleteWithConsumer() throws Exception
    {
-   	TemporaryQueue tempQueue = producerSession.createTemporaryQueue();
-   	
-   	MessageConsumer consumer = consumerSession.createConsumer(tempQueue);
+   	Connection conn = null;
    	
    	try
    	{
-   		tempQueue.delete();
+   		conn = cf.createConnection();
    		
-   		fail("Should throw JMSException");
+   		Session producerSession = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+   		
+   		Session consumerSession = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+   		
+	   	TemporaryQueue tempQueue = producerSession.createTemporaryQueue();
+	   	
+	   	MessageConsumer consumer = consumerSession.createConsumer(tempQueue);
+	   	
+	   	try
+	   	{
+	   		tempQueue.delete();
+	   		
+	   		fail("Should throw JMSException");
+	   	}
+	   	catch (JMSException e)
+	   	{
+	   		//Should fail - you can't delete a temp queue if it has active consumers
+	   	}
+	   	
+	   	consumer.close();   	
    	}
-   	catch (JMSException e)
+   	finally
    	{
-   		//Should fail - you can't delete a temp queue if it has active consumers
+   		if (conn != null)
+   		{
+   			conn.close();
+   		}
    	}
-   	
-   	consumer.close();   	
    }
    
    public void testTemporaryTopicDeleteWithConsumer() throws Exception
    {
-   	TemporaryTopic tempTopic = producerSession.createTemporaryTopic();
-   	
-   	MessageConsumer consumer = consumerSession.createConsumer(tempTopic);
+   	Connection conn = null;
    	
    	try
    	{
-   		tempTopic.delete();
+   		conn = cf.createConnection();
    		
-   		fail("Should throw JMSException");
-   	}
-   	catch (JMSException e)
-   	{
-   		//Should fail - you can't delete a temp topic if it has active consumers
-   	}
-   	
-   	consumer.close();   	
+   		Session producerSession = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+   		
+   		Session consumerSession = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+   		
+	   	TemporaryTopic tempTopic = producerSession.createTemporaryTopic();
+	   	
+	   	MessageConsumer consumer = consumerSession.createConsumer(tempTopic);
+	   	
+	   	try
+	   	{
+	   		tempTopic.delete();
+	   		
+	   		fail("Should throw JMSException");
+	   	}
+	   	catch (JMSException e)
+	   	{
+	   		//Should fail - you can't delete a temp topic if it has active consumers
+	   	}
+	   	
+	   	consumer.close();   	
+	   }
+		finally
+		{
+			if (conn != null)
+			{
+				conn.close();
+			}
+		}
    }
 
    public void testTemporaryQueueDeleted() throws Exception
    {
-      //Make sure temporary queue cannot be used after it has been deleted
-
-      TemporaryQueue tempQueue = producerSession.createTemporaryQueue();
-
-      MessageProducer producer = producerSession.createProducer(tempQueue);
-
-      MessageConsumer consumer = consumerSession.createConsumer(tempQueue);
-
-      connection.start();
-
-      final String messageText = "This is a message";
-
-      Message m = producerSession.createTextMessage(messageText);
-
-      producer.send(m);
-
-      TextMessage m2 = (TextMessage)consumer.receive(2000);
-
-      assertNotNull(m2);
-
-      assertEquals(messageText, m2.getText());
-
-      consumer.close();
-
-      tempQueue.delete();
-
-      try
-      {
-         producer.send(m);
-         fail();
-      }
-      catch (JMSException e) {}
+   	Connection conn = null;
+   	
+   	try
+   	{
+   		conn = cf.createConnection();
+   		
+   		Session producerSession = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+   		
+   		Session consumerSession = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+   		
+	      //Make sure temporary queue cannot be used after it has been deleted
+	
+	      TemporaryQueue tempQueue = producerSession.createTemporaryQueue();
+	
+	      MessageProducer producer = producerSession.createProducer(tempQueue);
+	
+	      MessageConsumer consumer = consumerSession.createConsumer(tempQueue);
+	
+	      conn.start();
+	
+	      final String messageText = "This is a message";
+	
+	      Message m = producerSession.createTextMessage(messageText);
+	
+	      producer.send(m);
+	
+	      TextMessage m2 = (TextMessage)consumer.receive(2000);
+	
+	      assertNotNull(m2);
+	
+	      assertEquals(messageText, m2.getText());
+	
+	      consumer.close();
+	
+	      tempQueue.delete();
+	
+	      try
+	      {
+	         producer.send(m);
+	         fail();
+	      }
+	      catch (JMSException e) {}
+	   }
+		finally
+		{
+			if (conn != null)
+			{
+				conn.close();
+			}
+		}
    }
 
 
 
    public void testTemporaryTopicBasic() throws Exception
    {
-      TemporaryTopic tempTopic = producerSession.createTemporaryTopic();
-
-      final MessageProducer producer = producerSession.createProducer(tempTopic);
-
-      MessageConsumer consumer = consumerSession.createConsumer(tempTopic);
-
-      connection.start();
-
-      final String messageText = "This is a message";
-
-      final Message m = producerSession.createTextMessage(messageText);
-      log.trace("Message reliable:" + ((MessageProxy)m).getMessage().isReliable());
-
-      Thread t = new Thread(new Runnable()
-      {
-         public void run()
-         {
-            try
-            {
-               // this is needed to make sure the main thread has enough time to block
-               Thread.sleep(500);
-               producer.send(m);
-            }
-            catch(Exception e)
-            {
-               log.error(e);
-            }
-         }
-      }, "Producer");
-      t.start();
-
-      TextMessage m2 = (TextMessage)consumer.receive(3000);
-
-      assertNotNull(m2);
-
-      assertEquals(messageText, m2.getText());
-
-      t.join();
+   	Connection conn = null;
+   	
+   	try
+   	{
+   		conn = cf.createConnection();
+   		
+   		Session producerSession = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+   		
+   		Session consumerSession = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+   		   	
+	      TemporaryTopic tempTopic = producerSession.createTemporaryTopic();
+	
+	      final MessageProducer producer = producerSession.createProducer(tempTopic);
+	
+	      MessageConsumer consumer = consumerSession.createConsumer(tempTopic);
+	
+	      conn.start();
+	
+	      final String messageText = "This is a message";
+	
+	      final Message m = producerSession.createTextMessage(messageText);
+	      log.trace("Message reliable:" + ((MessageProxy)m).getMessage().isReliable());
+	
+	      Thread t = new Thread(new Runnable()
+	      {
+	         public void run()
+	         {
+	            try
+	            {
+	               // this is needed to make sure the main thread has enough time to block
+	               Thread.sleep(500);
+	               producer.send(m);
+	            }
+	            catch(Exception e)
+	            {
+	               log.error(e);
+	            }
+	         }
+	      }, "Producer");
+	      t.start();
+	
+	      TextMessage m2 = (TextMessage)consumer.receive(3000);
+	
+	      assertNotNull(m2);
+	
+	      assertEquals(messageText, m2.getText());
+	
+	      t.join();
+   	}
+   	finally
+   	{
+   		if (conn != null)
+   		{
+   			conn.close();
+   		}
+   	}
    }
 
 
@@ -307,51 +387,98 @@ public class TemporaryDestinationTest extends MessagingTestCase
     */
    public void testTemporaryTopicOnClosedSession() throws Exception
    {
-      producerSession.close();
-
-      try
-      {
-         producerSession.createTemporaryTopic();
-         fail("should throw exception");
-      }
-      catch(javax.jms.IllegalStateException e)
-      {
-         // OK
-      }
+   	Connection producerConnection = null;
+   	
+   	try
+   	{
+   		producerConnection = cf.createConnection();
+   		
+   		Session producerSession = producerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+   		
+	      producerSession.close();
+	
+	      try
+	      {
+	         producerSession.createTemporaryTopic();
+	         fail("should throw exception");
+	      }
+	      catch(javax.jms.IllegalStateException e)
+	      {
+	         // OK
+	      }
+   	}
+   	finally
+   	{
+   		if (producerConnection != null)
+   		{
+   			producerConnection.close();
+   		}
+   	}
    }
 
    public void testTemporaryTopicShouldNotBeInJNDI() throws Exception
    {
-      TemporaryTopic tempTopic = producerSession.createTemporaryTopic();
-      String topicName = tempTopic.getTopicName();
-      
-      try
-      {
-         initialContext.lookup("/topic/" + topicName);
-         fail("The temporary queue should not be bound to JNDI");
-      }
-      catch (NamingException e)
-      {
-         // Expected
-      }
+   	Connection producerConnection = null;
+   	
+   	try
+   	{
+   		producerConnection = cf.createConnection();
+   		
+   		Session producerSession = producerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+   	
+	      TemporaryTopic tempTopic = producerSession.createTemporaryTopic();
+	      String topicName = tempTopic.getTopicName();
+	      
+	      try
+	      {
+	         ic.lookup("/topic/" + topicName);
+	         fail("The temporary queue should not be bound to JNDI");
+	      }
+	      catch (NamingException e)
+	      {
+	         // Expected
+	      }
+   	}
+   	finally
+   	{
+   		if (producerConnection != null)
+   		{
+   			producerConnection.close();
+   		}
+   	}
    }
 
    public void testTemporaryQueueShouldNotBeInJNDI() throws Exception
    {
-      TemporaryQueue tempQueue = producerSession.createTemporaryQueue();
-      String queueName = tempQueue.getQueueName();
-      
-      try
-      {
-         initialContext.lookup("/queue/" + queueName);
-         fail("The temporary queue should not be bound to JNDI");
-      }
-      catch (NamingException e)
-      {
-         // Expected
-      }
+   	Connection producerConnection = null;
+   	
+   	try
+   	{
+   		producerConnection = cf.createConnection();
+   		
+   		Session producerSession = producerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+   	
+	      TemporaryQueue tempQueue = producerSession.createTemporaryQueue();
+	      String queueName = tempQueue.getQueueName();
+	      
+	      try
+	      {
+	         ic.lookup("/queue/" + queueName);
+	         fail("The temporary queue should not be bound to JNDI");
+	      }
+	      catch (NamingException e)
+	      {
+	         // Expected
+	      }
+   	}
+   	finally
+   	{
+   		if (producerConnection != null)
+   		{
+   			producerConnection.close();
+   		}
+   	}
    }
-
 
 
    // Package protected ---------------------------------------------
@@ -361,8 +488,5 @@ public class TemporaryDestinationTest extends MessagingTestCase
    // Private -------------------------------------------------------
 
    // Inner classes -------------------------------------------------
-
-
-
 }
 

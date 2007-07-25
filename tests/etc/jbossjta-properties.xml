@@ -175,13 +175,13 @@
         Default is 120 seconds.
       -->
         <property
-            name="com.arjuna.ats.arjuna.recovery.periodicRecoveryPeriod" value="20"/>
+            name="com.arjuna.ats.arjuna.recovery.periodicRecoveryPeriod" value="5"/>
         <!--
         Interval in seconds between first and second pass of periodic recovery.
         Default is 10 seconds.
       -->
         <property
-            name="com.arjuna.ats.arjuna.recovery.recoveryBackoffPeriod" value="10"/>
+            name="com.arjuna.ats.arjuna.recovery.recoveryBackoffPeriod" value="2"/>
         <!--
         Periodic recovery modules to use.  Invoked in sort-order of names.
       -->

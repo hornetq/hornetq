@@ -28,13 +28,7 @@ import javax.jms.DeliveryMode;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.jms.ObjectMessage;
-import javax.jms.Queue;
 import javax.jms.Session;
-import javax.naming.InitialContext;
-
-import org.jboss.jms.client.JBossConnectionFactory;
-import org.jboss.test.messaging.MessagingTestCase;
-import org.jboss.test.messaging.tools.ServerManagement;
 
 /**
  * A MessageWithReadResolveTest
@@ -47,7 +41,7 @@ import org.jboss.test.messaging.tools.ServerManagement;
  * $Id$
  *
  */
-public class MessageWithReadResolveTest extends MessagingTestCase
+public class MessageWithReadResolveTest extends JMSTestCase
 {
    
    //  Constants -----------------------------------------------------
@@ -56,13 +50,6 @@ public class MessageWithReadResolveTest extends MessagingTestCase
    
    // Attributes ----------------------------------------------------
    
-   protected InitialContext initialContext;
-   
-   
-   protected JBossConnectionFactory cf;
-   protected Queue queue;
-
-
    // Constructors --------------------------------------------------
    
    public MessageWithReadResolveTest(String name)
@@ -71,66 +58,53 @@ public class MessageWithReadResolveTest extends MessagingTestCase
    }
    
    // TestCase overrides -------------------------------------------
-   
-   public void setUp() throws Exception
-   {
-      super.setUp();
       
-      ServerManagement.start("all");
-                  
-      initialContext = new InitialContext(ServerManagement.getJNDIEnvironment());
-      
-      cf = (JBossConnectionFactory)initialContext.lookup("/ConnectionFactory");
-            
-      ServerManagement.undeployQueue("Queue");
-      
-      ServerManagement.deployQueue("Queue");
-      
-      queue = (Queue)initialContext.lookup("/queue/Queue");
-               
-   }
-   
-   public void tearDown() throws Exception
-   {
-      ServerManagement.undeployQueue("Queue");
-   
-      super.tearDown();     
-   }
-   
    // Public --------------------------------------------------------
    
    public void testSendReceiveMessage() throws Exception
    {
-      Connection conn = cf.createConnection();
+      Connection conn = null;
       
-      Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      
-      MessageProducer prod = sess.createProducer(queue);
-      
-      //Make persistent to make sure message gets serialized
-      prod.setDeliveryMode(DeliveryMode.PERSISTENT);
-      
-      MessageConsumer cons = sess.createConsumer(queue);
-      
-      TestMessage tm = new TestMessage(123, false);
-      
-      ObjectMessage om = sess.createObjectMessage();
-      
-      om.setObject(tm);
-      
-      conn.start();
-      
-      prod.send(om);
-      
-      ObjectMessage om2 = (ObjectMessage)cons.receive(1000);
-      
-      assertNotNull(om2);
-      
-      TestMessage tm2 = (TestMessage)om2.getObject();
-      
-      assertEquals(123, tm2.getId());
-      
-      conn.close();
+      try
+      {	      
+	      conn = cf.createConnection();
+	      
+	      Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+	      
+	      MessageProducer prod = sess.createProducer(queue1);
+	      
+	      //Make persistent to make sure message gets serialized
+	      prod.setDeliveryMode(DeliveryMode.PERSISTENT);
+	      
+	      MessageConsumer cons = sess.createConsumer(queue1);
+	      
+	      TestMessage tm = new TestMessage(123, false);
+	      
+	      ObjectMessage om = sess.createObjectMessage();
+	      
+	      om.setObject(tm);
+	      
+	      conn.start();
+	      
+	      prod.send(om);
+	      
+	      ObjectMessage om2 = (ObjectMessage)cons.receive(1000);
+	      
+	      assertNotNull(om2);
+	      
+	      TestMessage tm2 = (TestMessage)om2.getObject();
+	      
+	      assertEquals(123, tm2.getId());
+	      
+	      conn.close();
+      }
+      finally
+      {
+      	if (conn != null)
+      	{
+      		conn.close();
+      	}
+      }
             
    }
    

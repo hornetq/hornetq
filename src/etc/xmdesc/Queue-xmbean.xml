@@ -87,6 +87,12 @@
       <type>int</type>
    </attribute>
    
+   <attribute access="read-only" getMethod="getDeliveringCount">
+      <description>The number of messages currently being delivered</description>
+      <name>DeliveringCount</name>
+      <type>int</type>
+   </attribute>   
+   
    <attribute access="read-only" getMethod="getScheduledMessageCount">
       <description>The number of scheduled messages in the queue</description>
       <name>ScheduledMessageCount</name>

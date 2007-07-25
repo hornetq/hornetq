@@ -22,7 +22,6 @@
 package org.jboss.test.messaging.jms;
 
 import javax.jms.Connection;
-import javax.jms.Destination;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
@@ -31,14 +30,11 @@ import javax.jms.TextMessage;
 import javax.jms.Topic;
 import javax.jms.XAConnection;
 import javax.jms.XASession;
-import javax.naming.InitialContext;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
 
-import org.jboss.jms.client.JBossConnectionFactory;
 import org.jboss.jms.tx.MessagingXid;
 import org.jboss.jms.tx.ResourceManagerFactory;
-import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
 
 import com.arjuna.ats.arjuna.common.Uid;
@@ -55,7 +51,7 @@ import com.arjuna.ats.jta.xa.XidImple;
  * $Id$
  *
  */
-public class XARecoveryTest extends MessagingTestCase
+public class XARecoveryTest extends JMSTestCase
 {
    // Constants -----------------------------------------------------
 
@@ -63,12 +59,6 @@ public class XARecoveryTest extends MessagingTestCase
    
    // Attributes ----------------------------------------------------
 
-   protected InitialContext initialContext;
-   
-   protected JBossConnectionFactory cf;
-   
-   protected Destination queue, queueA, queueB, queueTX, topicTX;
-   
    // Constructors --------------------------------------------------
 
    public XARecoveryTest(String name)
@@ -78,54 +68,11 @@ public class XARecoveryTest extends MessagingTestCase
 
    // TestCase overrides -------------------------------------------
 
-   public void setUp() throws Exception
-   {
-      super.setUp();
-      ServerManagement.start("all");     
-      
-      initialContext = new InitialContext(ServerManagement.getJNDIEnvironment());
-      cf = (JBossConnectionFactory)initialContext.lookup("/ConnectionFactory");
-            
-      ServerManagement.undeployQueue("Queue");
-      ServerManagement.deployQueue("Queue");
-
-      ServerManagement.undeployQueue("QA");
-      ServerManagement.deployQueue("QA");
-
-      ServerManagement.undeployQueue("QB");
-      ServerManagement.deployQueue("QB");
-
-      ServerManagement.undeployQueue("TXQ");
-      ServerManagement.deployQueue("TXQ");
-      
-      ServerManagement.undeployTopic("TXTOPIC");
-      ServerManagement.deployTopic("TXTOPIC");
-
-      queue = (Destination)initialContext.lookup("/queue/Queue");
-      queueA = (Destination)initialContext.lookup("/queue/QA");
-      queueB = (Destination)initialContext.lookup("/queue/QB");
-      queueTX = (Destination)initialContext.lookup("/queue/TXQ");
-      
-      topicTX = (Destination)initialContext.lookup("/topic/TXTOPIC");
-
-      drainDestination(cf, queue);
-      drainDestination(cf, queueA);
-      drainDestination(cf, queueB);
-      drainDestination(cf, queueTX);
-   }
-
    public void tearDown() throws Exception
    {
-      ServerManagement.undeployQueue("Queue");
-      ServerManagement.undeployQueue("QA");
-      ServerManagement.undeployQueue("QB");
-      ServerManagement.undeployQueue("TXQ");
-      
-      ServerManagement.undeployTopic("TXTOPIC");
-      
-      ResourceManagerFactory.instance.clear();
-      
       super.tearDown();
+      
+      ResourceManagerFactory.instance.clear();      
    }
 
 
@@ -153,9 +100,9 @@ public class XARecoveryTest extends MessagingTestCase
          
          Session sess1 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
          
-         MessageProducer prod1 = sess1.createProducer(queueA);
+         MessageProducer prod1 = sess1.createProducer(queue2);
          
-         MessageProducer prod2 = sess1.createProducer(queueB);
+         MessageProducer prod2 = sess1.createProducer(queue3);
          
          TextMessage tm1 = sess1.createTextMessage("tm1");
          TextMessage tm2 = sess1.createTextMessage("tm2");
@@ -190,7 +137,7 @@ public class XARecoveryTest extends MessagingTestCase
          
          res.start(xid1, XAResource.TMNOFLAGS);
          
-         MessageProducer prod3 = sess2.createProducer(queueA);
+         MessageProducer prod3 = sess2.createProducer(queue2);
          
          TextMessage tm9 = sess2.createTextMessage("tm9");
          TextMessage tm10 = sess2.createTextMessage("tm10");
@@ -202,7 +149,7 @@ public class XARecoveryTest extends MessagingTestCase
          prod3.send(tm11);
          prod3.send(tm12);
          
-         MessageProducer prod4 = sess2.createProducer(queueB);
+         MessageProducer prod4 = sess2.createProducer(queue3);
          
          TextMessage tm13 = sess2.createTextMessage("tm13");
          TextMessage tm14 = sess2.createTextMessage("tm14");
@@ -214,7 +161,7 @@ public class XARecoveryTest extends MessagingTestCase
          prod4.send(tm15);
          prod4.send(tm16);
          
-         MessageConsumer cons1 = sess2.createConsumer(queueA);
+         MessageConsumer cons1 = sess2.createConsumer(queue2);
          
          TextMessage rm1 = (TextMessage)cons1.receive(1000);
          assertNotNull(rm1);
@@ -236,7 +183,7 @@ public class XARecoveryTest extends MessagingTestCase
          
          assertNull(m);
                   
-         MessageConsumer cons2 = sess2.createConsumer(queueB);
+         MessageConsumer cons2 = sess2.createConsumer(queue3);
          
          TextMessage rm5 = (TextMessage)cons2.receive(1000);
          assertNotNull(rm5);
@@ -299,7 +246,7 @@ public class XARecoveryTest extends MessagingTestCase
          
          log.trace("creating a consumer");
          
-         cons1 = sess1.createConsumer(queueA);
+         cons1 = sess1.createConsumer(queue2);
          
          log.trace("created a consumer");
          
@@ -323,7 +270,7 @@ public class XARecoveryTest extends MessagingTestCase
          
          assertNull(m);
                   
-         cons2 = sess1.createConsumer(queueB);
+         cons2 = sess1.createConsumer(queue3);
          
          TextMessage rm13 = (TextMessage)cons2.receive(1000);
          assertNotNull(rm13);
@@ -392,9 +339,9 @@ public class XARecoveryTest extends MessagingTestCase
          
          Session sess1 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
          
-         MessageProducer prod1 = sess1.createProducer(queueA);
+         MessageProducer prod1 = sess1.createProducer(queue2);
          
-         MessageProducer prod2 = sess1.createProducer(queueB);
+         MessageProducer prod2 = sess1.createProducer(queue3);
          
          TextMessage tm1 = sess1.createTextMessage("tm1");
          TextMessage tm2 = sess1.createTextMessage("tm2");
@@ -427,7 +374,7 @@ public class XARecoveryTest extends MessagingTestCase
          
          res.start(xid1, XAResource.TMNOFLAGS);
          
-         MessageProducer prod3 = sess2.createProducer(queueA);
+         MessageProducer prod3 = sess2.createProducer(queue2);
          
          TextMessage tm9 = sess2.createTextMessage("tm9");
          TextMessage tm10 = sess2.createTextMessage("tm10");
@@ -439,7 +386,7 @@ public class XARecoveryTest extends MessagingTestCase
          prod3.send(tm11);
          prod3.send(tm12);
          
-         MessageProducer prod4 = sess2.createProducer(queueB);
+         MessageProducer prod4 = sess2.createProducer(queue3);
          
          TextMessage tm13 = sess2.createTextMessage("tm13");
          TextMessage tm14 = sess2.createTextMessage("tm14");
@@ -451,7 +398,7 @@ public class XARecoveryTest extends MessagingTestCase
          prod4.send(tm15);
          prod4.send(tm16);
          
-         MessageConsumer cons1 = sess2.createConsumer(queueA);
+         MessageConsumer cons1 = sess2.createConsumer(queue2);
          
          TextMessage rm1 = (TextMessage)cons1.receive(1000);
          assertNotNull(rm1);
@@ -473,7 +420,7 @@ public class XARecoveryTest extends MessagingTestCase
          
          assertNull(m);
                   
-         MessageConsumer cons2 = sess2.createConsumer(queueB);
+         MessageConsumer cons2 = sess2.createConsumer(queue3);
          
          TextMessage rm5 = (TextMessage)cons2.receive(1000);
          assertNotNull(rm5);
@@ -535,7 +482,7 @@ public class XARecoveryTest extends MessagingTestCase
          
          log.trace("creating a consumer");
          
-         cons1 = sess1.createConsumer(queueA);
+         cons1 = sess1.createConsumer(queue2);
          
          log.trace("created a consumer");
          
@@ -559,7 +506,7 @@ public class XARecoveryTest extends MessagingTestCase
          
          assertNull(m);
                   
-         cons2 = sess1.createConsumer(queueB);
+         cons2 = sess1.createConsumer(queue3);
          
          TextMessage rm13 = (TextMessage)cons2.receive(1000);
          assertNotNull(rm13);
@@ -649,9 +596,9 @@ public class XARecoveryTest extends MessagingTestCase
          
          Session sess1 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
          
-         MessageProducer prod1 = sess1.createProducer(queueA);
+         MessageProducer prod1 = sess1.createProducer(queue2);
          
-         MessageProducer prod2 = sess1.createProducer(queueB);
+         MessageProducer prod2 = sess1.createProducer(queue3);
          
          TextMessage tm1 = sess1.createTextMessage("tm1");
          TextMessage tm2 = sess1.createTextMessage("tm2");
@@ -684,7 +631,7 @@ public class XARecoveryTest extends MessagingTestCase
          
          res.start(xid1, XAResource.TMNOFLAGS);
          
-         MessageProducer prod3 = sess2.createProducer(queueA);
+         MessageProducer prod3 = sess2.createProducer(queue2);
          
          TextMessage tm9 = sess2.createTextMessage("tm9");
          TextMessage tm10 = sess2.createTextMessage("tm10");
@@ -696,7 +643,7 @@ public class XARecoveryTest extends MessagingTestCase
          prod3.send(tm11);
          prod3.send(tm12);
          
-         MessageProducer prod4 = sess2.createProducer(queueB);
+         MessageProducer prod4 = sess2.createProducer(queue3);
          
          TextMessage tm13 = sess2.createTextMessage("tm13");
          TextMessage tm14 = sess2.createTextMessage("tm14");
@@ -708,7 +655,7 @@ public class XARecoveryTest extends MessagingTestCase
          prod4.send(tm15);
          prod4.send(tm16);
          
-         MessageConsumer cons1 = sess2.createConsumer(queueA);
+         MessageConsumer cons1 = sess2.createConsumer(queue2);
          
          TextMessage rm1 = (TextMessage)cons1.receive(1000);
          assertNotNull(rm1);
@@ -730,7 +677,7 @@ public class XARecoveryTest extends MessagingTestCase
          
          assertNull(m);
                   
-         MessageConsumer cons2 = sess2.createConsumer(queueB);
+         MessageConsumer cons2 = sess2.createConsumer(queue3);
          
          TextMessage rm5 = (TextMessage)cons2.receive(1000);
          assertNotNull(rm5);
@@ -768,11 +715,7 @@ public class XARecoveryTest extends MessagingTestCase
 
          ServerManagement.startServerPeer();
          
-         ServerManagement.deployQueue("QA");
-         
-         ServerManagement.deployQueue("QB");
-         
-         cf = (JBossConnectionFactory)initialContext.lookup("/ConnectionFactory");
+         deployAndLookupAdministeredObjects();
                   
          conn3 = cf.createXAConnection();
          
@@ -803,7 +746,7 @@ public class XARecoveryTest extends MessagingTestCase
          
          log.trace("creating a consumer");
          
-         cons1 = sess1.createConsumer(queueA);
+         cons1 = sess1.createConsumer(queue2);
          
          log.trace("created a consumer");
          
@@ -827,7 +770,7 @@ public class XARecoveryTest extends MessagingTestCase
          
          assertNull(m);
                   
-         cons2 = sess1.createConsumer(queueB);
+         cons2 = sess1.createConsumer(queue3);
          
          TextMessage rm13 = (TextMessage)cons2.receive(1000);
          assertNotNull(rm13);
@@ -891,7 +834,9 @@ public class XARecoveryTest extends MessagingTestCase
             {
                //Ignore
             }
-         }               
+         } 
+         removeAllMessages(queue2.getQueueName(), true, 0);
+         removeAllMessages(queue3.getQueueName(), true, 0);
       }
    }
    
@@ -919,9 +864,9 @@ public class XARecoveryTest extends MessagingTestCase
          
          Session sess1 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
          
-         MessageProducer prod1 = sess1.createProducer(queueA);
+         MessageProducer prod1 = sess1.createProducer(queue2);
          
-         MessageProducer prod2 = sess1.createProducer(queueB);
+         MessageProducer prod2 = sess1.createProducer(queue3);
          
          TextMessage tm1 = sess1.createTextMessage("tm1");
          TextMessage tm2 = sess1.createTextMessage("tm2");
@@ -954,7 +899,7 @@ public class XARecoveryTest extends MessagingTestCase
          
          res.start(xid1, XAResource.TMNOFLAGS);
          
-         MessageProducer prod3 = sess2.createProducer(queueA);
+         MessageProducer prod3 = sess2.createProducer(queue2);
          
          TextMessage tm9 = sess2.createTextMessage("tm9");
          TextMessage tm10 = sess2.createTextMessage("tm10");
@@ -966,7 +911,7 @@ public class XARecoveryTest extends MessagingTestCase
          prod3.send(tm11);
          prod3.send(tm12);
          
-         MessageProducer prod4 = sess2.createProducer(queueB);
+         MessageProducer prod4 = sess2.createProducer(queue3);
          
          TextMessage tm13 = sess2.createTextMessage("tm13");
          TextMessage tm14 = sess2.createTextMessage("tm14");
@@ -978,7 +923,7 @@ public class XARecoveryTest extends MessagingTestCase
          prod4.send(tm15);
          prod4.send(tm16);
          
-         MessageConsumer cons1 = sess2.createConsumer(queueA);
+         MessageConsumer cons1 = sess2.createConsumer(queue2);
          
          TextMessage rm1 = (TextMessage)cons1.receive(1000);
          assertNotNull(rm1);
@@ -1000,7 +945,7 @@ public class XARecoveryTest extends MessagingTestCase
          
          assertNull(m);
                   
-         MessageConsumer cons2 = sess2.createConsumer(queueB);
+         MessageConsumer cons2 = sess2.createConsumer(queue3);
          
          TextMessage rm5 = (TextMessage)cons2.receive(1000);
          assertNotNull(rm5);
@@ -1038,11 +983,7 @@ public class XARecoveryTest extends MessagingTestCase
 
          ServerManagement.startServerPeer();
          
-         ServerManagement.deployQueue("QA");
-         
-         ServerManagement.deployQueue("QB");
-                           
-         cf = (JBossConnectionFactory)initialContext.lookup("/ConnectionFactory");         
+         deployAndLookupAdministeredObjects();
          
          conn3 = cf.createXAConnection();
          
@@ -1075,7 +1016,7 @@ public class XARecoveryTest extends MessagingTestCase
          
          log.trace("creating a consumer");
          
-         cons1 = sess1.createConsumer(queueA);
+         cons1 = sess1.createConsumer(queue2);
          
          log.trace("created a consumer");
          
@@ -1099,7 +1040,7 @@ public class XARecoveryTest extends MessagingTestCase
          
          assertNull(m);
                   
-         cons2 = sess1.createConsumer(queueB);
+         cons2 = sess1.createConsumer(queue3);
          
          TextMessage rm13 = (TextMessage)cons2.receive(1000);
          assertNotNull(rm13);
@@ -1165,7 +1106,7 @@ public class XARecoveryTest extends MessagingTestCase
             {
                //Ignore
             }
-         }               
+         }         
       }
    }
    
@@ -1184,9 +1125,9 @@ public class XARecoveryTest extends MessagingTestCase
          
          Session sess1 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
          
-         MessageProducer prod1 = sess1.createProducer(queueA);
+         MessageProducer prod1 = sess1.createProducer(queue2);
          
-         MessageProducer prod2 = sess1.createProducer(queueB);
+         MessageProducer prod2 = sess1.createProducer(queue3);
          
          TextMessage tm1 = sess1.createTextMessage("tm1");
          TextMessage tm2 = sess1.createTextMessage("tm2");
@@ -1219,7 +1160,7 @@ public class XARecoveryTest extends MessagingTestCase
          
          res.start(xid1, XAResource.TMNOFLAGS);
          
-         MessageProducer prod3 = sess2.createProducer(queueA);
+         MessageProducer prod3 = sess2.createProducer(queue2);
          
          TextMessage tm9 = sess2.createTextMessage("tm9");
          TextMessage tm10 = sess2.createTextMessage("tm10");
@@ -1231,7 +1172,7 @@ public class XARecoveryTest extends MessagingTestCase
          prod3.send(tm11);
          prod3.send(tm12);
          
-         MessageProducer prod4 = sess2.createProducer(queueB);
+         MessageProducer prod4 = sess2.createProducer(queue3);
          
          TextMessage tm13 = sess2.createTextMessage("tm13");
          TextMessage tm14 = sess2.createTextMessage("tm14");
@@ -1243,7 +1184,7 @@ public class XARecoveryTest extends MessagingTestCase
          prod4.send(tm15);
          prod4.send(tm16);
          
-         MessageConsumer cons1 = sess2.createConsumer(queueA);
+         MessageConsumer cons1 = sess2.createConsumer(queue2);
          
          TextMessage rm1 = (TextMessage)cons1.receive(1000);
          assertNotNull(rm1);
@@ -1265,7 +1206,7 @@ public class XARecoveryTest extends MessagingTestCase
          
          assertNull(m);
                   
-         MessageConsumer cons2 = sess2.createConsumer(queueB);
+         MessageConsumer cons2 = sess2.createConsumer(queue3);
          
          TextMessage rm5 = (TextMessage)cons2.receive(1000);
          assertNotNull(rm5);
@@ -1298,16 +1239,14 @@ public class XARecoveryTest extends MessagingTestCase
          conn1.close();
          
          conn2.close();
-                  
-         
-         
+                                    
          conn1 = cf.createConnection();
          
          conn1.start();
          
          sess1 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
          
-         cons1 = sess1.createConsumer(queueA);
+         cons1 = sess1.createConsumer(queue2);
          
          TextMessage rm9 = (TextMessage)cons1.receive(1000);
          assertNotNull(rm9);
@@ -1329,7 +1268,7 @@ public class XARecoveryTest extends MessagingTestCase
          
          assertNull(m);
                   
-         cons2 = sess1.createConsumer(queueB);
+         cons2 = sess1.createConsumer(queue3);
          
          TextMessage rm13 = (TextMessage)cons2.receive(1000);
          assertNotNull(rm13);
@@ -1426,7 +1365,7 @@ public class XARecoveryTest extends MessagingTestCase
          
          res1.start(xid1, XAResource.TMNOFLAGS);
    
-         MessageProducer prod1 = sess1.createProducer(queueTX);
+         MessageProducer prod1 = sess1.createProducer(queue4);
    
          TextMessage tm1 = sess1.createTextMessage("tm1");
    
@@ -1446,7 +1385,7 @@ public class XARecoveryTest extends MessagingTestCase
          
          Session sess2 = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
          
-         MessageConsumer cons2 = sess2.createConsumer(queueTX);
+         MessageConsumer cons2 = sess2.createConsumer(queue4);
          
          conn2.start();
          
@@ -1564,7 +1503,7 @@ public class XARecoveryTest extends MessagingTestCase
          
          res1.start(xid1, XAResource.TMNOFLAGS);
    
-         MessageProducer prod1 = sess1.createProducer(queueTX);
+         MessageProducer prod1 = sess1.createProducer(queue4);
    
          TextMessage tm1 = sess1.createTextMessage("tm1");
    
@@ -1584,7 +1523,7 @@ public class XARecoveryTest extends MessagingTestCase
          
          Session sess2 = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
          
-         MessageConsumer cons2 = sess2.createConsumer(queueTX);
+         MessageConsumer cons2 = sess2.createConsumer(queue4);
          
          conn2.start();
          
@@ -1604,13 +1543,7 @@ public class XARecoveryTest extends MessagingTestCase
 
          ServerManagement.startServerPeer();
          
-         ServerManagement.deployQueue("TXQ");
-         
-         log.trace("Restarted");
-         
-         //Now recover
-         
-         cf = (JBossConnectionFactory)initialContext.lookup("/ConnectionFactory");         
+         deployAndLookupAdministeredObjects();
          
          conn3 = cf.createXAConnection();
          
@@ -1634,7 +1567,7 @@ public class XARecoveryTest extends MessagingTestCase
          
          sess2 = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
          
-         cons2 = sess2.createConsumer(queueTX);
+         cons2 = sess2.createConsumer(queue4);
          
          conn2.start();
                   
@@ -1726,7 +1659,7 @@ public class XARecoveryTest extends MessagingTestCase
          
          Session sess1 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
          
-         MessageProducer prod = sess1.createProducer(queueTX);
+         MessageProducer prod = sess1.createProducer(queue4);
          
          TextMessage tm1 = sess1.createTextMessage("tm1");
          
@@ -1744,7 +1677,7 @@ public class XARecoveryTest extends MessagingTestCase
          
          res1.start(xid1, XAResource.TMNOFLAGS);
          
-         MessageConsumer cons = sess2.createConsumer(queueTX);
+         MessageConsumer cons = sess2.createConsumer(queue4);
          
          conn2.start();
          
@@ -1795,7 +1728,7 @@ public class XARecoveryTest extends MessagingTestCase
          
          sess1 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
          
-         MessageConsumer cons1 = sess1.createConsumer(queueTX);
+         MessageConsumer cons1 = sess1.createConsumer(queue4);
          
          conn1.start();
          
@@ -1868,7 +1801,7 @@ public class XARecoveryTest extends MessagingTestCase
          
          Session sess1 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
          
-         MessageProducer prod = sess1.createProducer(queueTX);
+         MessageProducer prod = sess1.createProducer(queue4);
          
          TextMessage tm1 = sess1.createTextMessage("tm1");
          
@@ -1885,7 +1818,7 @@ public class XARecoveryTest extends MessagingTestCase
          
          res1.start(xid1, XAResource.TMNOFLAGS);
          
-         MessageConsumer cons = sess2.createConsumer(queueTX);
+         MessageConsumer cons = sess2.createConsumer(queue4);
          
          conn2.start();
          
@@ -1913,9 +1846,7 @@ public class XARecoveryTest extends MessagingTestCase
 
          ServerManagement.startServerPeer();
          
-         ServerManagement.deployQueue("TXQ");
-         
-         cf = (JBossConnectionFactory)initialContext.lookup("/ConnectionFactory");         
+         deployAndLookupAdministeredObjects();  
          
          //Now recover
          
@@ -1945,7 +1876,7 @@ public class XARecoveryTest extends MessagingTestCase
          
          sess1 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
          
-         MessageConsumer cons1 = sess1.createConsumer(queueTX);
+         MessageConsumer cons1 = sess1.createConsumer(queue4);
          
          conn1.start();
          
@@ -2025,11 +1956,11 @@ public class XARecoveryTest extends MessagingTestCase
          
          Session sess1 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
          
-         MessageProducer prod1 = sess1.createProducer(topicTX);
+         MessageProducer prod1 = sess1.createProducer(topic2);
          
-         MessageConsumer sub1 = sess1.createDurableSubscriber((Topic)topicTX, "sub1");
+         MessageConsumer sub1 = sess1.createDurableSubscriber((Topic)topic2, "sub1");
          
-         MessageConsumer sub2 = sess1.createDurableSubscriber((Topic)topicTX, "sub2");
+         MessageConsumer sub2 = sess1.createDurableSubscriber((Topic)topic2, "sub2");
          
          //send four messages
           
@@ -2063,7 +1994,7 @@ public class XARecoveryTest extends MessagingTestCase
          
          //Now send four more messages in a global tx
          
-         MessageProducer prod2 = sess2.createProducer(topicTX);
+         MessageProducer prod2 = sess2.createProducer(topic2);
          
          TextMessage tm5 = sess2.createTextMessage("tm5");
          TextMessage tm6 = sess2.createTextMessage("tm6");
@@ -2077,9 +2008,9 @@ public class XARecoveryTest extends MessagingTestCase
 
          //And consume the first four from each in the tx
          
-         sub1 = sess2.createDurableSubscriber((Topic)topicTX, "sub1");
+         sub1 = sess2.createDurableSubscriber((Topic)topic2, "sub1");
          
-         sub2 = sess2.createDurableSubscriber((Topic)topicTX, "sub2");
+         sub2 = sess2.createDurableSubscriber((Topic)topic2, "sub2");
          
          TextMessage rm1 = (TextMessage)sub1.receive(1000);
          assertNotNull(rm1);
@@ -2163,9 +2094,9 @@ public class XARecoveryTest extends MessagingTestCase
          
          //Should now see the last 4 messages
          
-         sub1 = sess1.createDurableSubscriber((Topic)topicTX, "sub1");
+         sub1 = sess1.createDurableSubscriber((Topic)topic2, "sub1");
          
-         sub2 = sess1.createDurableSubscriber((Topic)topicTX, "sub2");
+         sub2 = sess1.createDurableSubscriber((Topic)topic2, "sub2");
          
          TextMessage rm5 = (TextMessage)sub1.receive(1000);
          assertNotNull(rm5);
@@ -2206,6 +2137,14 @@ public class XARecoveryTest extends MessagingTestCase
          m = sub2.receive(1000);
          
          assertNull(m);
+         
+         sub1.close();
+         
+         sub2.close();
+         
+         sess1.unsubscribe("sub1");
+         
+         sess1.unsubscribe("sub2");
          
          if (checkNoMessageData())
          {
@@ -2280,11 +2219,11 @@ public class XARecoveryTest extends MessagingTestCase
          
          Session sess1 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
          
-         MessageProducer prod1 = sess1.createProducer(topicTX);
+         MessageProducer prod1 = sess1.createProducer(topic2);
          
-         MessageConsumer sub1 = sess1.createDurableSubscriber((Topic)topicTX, "sub1");
+         MessageConsumer sub1 = sess1.createDurableSubscriber((Topic)topic2, "sub1");
          
-         MessageConsumer sub2 = sess1.createDurableSubscriber((Topic)topicTX, "sub2");
+         MessageConsumer sub2 = sess1.createDurableSubscriber((Topic)topic2, "sub2");
          
          //send four messages
           
@@ -2318,7 +2257,7 @@ public class XARecoveryTest extends MessagingTestCase
          
          //Now send four more messages in a global tx
          
-         MessageProducer prod2 = sess2.createProducer(topicTX);
+         MessageProducer prod2 = sess2.createProducer(topic2);
          
          TextMessage tm5 = sess2.createTextMessage("tm5");
          TextMessage tm6 = sess2.createTextMessage("tm6");
@@ -2332,9 +2271,9 @@ public class XARecoveryTest extends MessagingTestCase
 
          //And consume the first four from each in the tx
          
-         sub1 = sess2.createDurableSubscriber((Topic)topicTX, "sub1");
+         sub1 = sess2.createDurableSubscriber((Topic)topic2, "sub1");
          
-         sub2 = sess2.createDurableSubscriber((Topic)topicTX, "sub2");
+         sub2 = sess2.createDurableSubscriber((Topic)topic2, "sub2");
          
          TextMessage rm1 = (TextMessage)sub1.receive(1000);
          assertNotNull(rm1);
@@ -2393,9 +2332,7 @@ public class XARecoveryTest extends MessagingTestCase
 
          ServerManagement.startServerPeer();
          
-         ServerManagement.deployTopic("TXTOPIC");
-         
-         cf = (JBossConnectionFactory)initialContext.lookup("/ConnectionFactory");         
+         deployAndLookupAdministeredObjects();
                            
          conn3 = cf.createXAConnection();
          
@@ -2430,9 +2367,9 @@ public class XARecoveryTest extends MessagingTestCase
          
          //Should now see the last 4 messages
          
-         sub1 = sess1.createDurableSubscriber((Topic)topicTX, "sub1");
+         sub1 = sess1.createDurableSubscriber((Topic)topic2, "sub1");
          
-         sub2 = sess1.createDurableSubscriber((Topic)topicTX, "sub2");
+         sub2 = sess1.createDurableSubscriber((Topic)topic2, "sub2");
          
          TextMessage rm5 = (TextMessage)sub1.receive(1000);
          assertNotNull(rm5);
@@ -2473,6 +2410,14 @@ public class XARecoveryTest extends MessagingTestCase
          m = sub2.receive(1000);
          
          assertNull(m);
+         
+         sub1.close();
+         
+         sub2.close();
+         
+         sess1.unsubscribe("sub1");
+         
+         sess1.unsubscribe("sub2");         
          
          if (checkNoMessageData())
          {
@@ -2564,7 +2509,7 @@ public class XARecoveryTest extends MessagingTestCase
          
          res1.start(xid1, XAResource.TMNOFLAGS);
    
-         MessageProducer prod1 = sess1.createProducer(queueTX);
+         MessageProducer prod1 = sess1.createProducer(queue4);
    
          TextMessage tm1 = sess1.createTextMessage("tm1");
    
@@ -2580,7 +2525,7 @@ public class XARecoveryTest extends MessagingTestCase
          
          res2.start(xid2, XAResource.TMNOFLAGS);
    
-         MessageProducer prod2 = sess2.createProducer(queueTX);
+         MessageProducer prod2 = sess2.createProducer(queue4);
    
          TextMessage tm3 = sess2.createTextMessage("tm3");
    
@@ -2611,11 +2556,7 @@ public class XARecoveryTest extends MessagingTestCase
    
          ServerManagement.startServerPeer();
    
-         ServerManagement.deployQueue("TXQ");
-   
-         //Try and recover
-         
-         cf = (JBossConnectionFactory)initialContext.lookup("/ConnectionFactory");         
+         deployAndLookupAdministeredObjects();       
    
          XAResource res = cf.createXAConnection().createXASession().getXAResource();
    
@@ -2638,7 +2579,7 @@ public class XARecoveryTest extends MessagingTestCase
          conn3 = cf.createConnection();
    
          Session sessRec = conn3.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageConsumer cons = sessRec.createConsumer(queueTX);
+         MessageConsumer cons = sessRec.createConsumer(queue4);
          conn3.start();
          
          log.trace("Created conn3");
@@ -2770,7 +2711,7 @@ public class XARecoveryTest extends MessagingTestCase
    
          res1.start(xid1, XAResource.TMNOFLAGS);
    
-         MessageProducer prod1 = sess1.createProducer(queueA);
+         MessageProducer prod1 = sess1.createProducer(queue2);
    
          TextMessage tm1 = sess1.createTextMessage("alpha");
    
@@ -2781,7 +2722,7 @@ public class XARecoveryTest extends MessagingTestCase
    
          res2.start(xid2, XAResource.TMNOFLAGS);
    
-         MessageProducer prod2 = sess2.createProducer(queueA);
+         MessageProducer prod2 = sess2.createProducer(queue2);
    
          TextMessage tm2 = sess2.createTextMessage("beta");
    
@@ -2801,9 +2742,7 @@ public class XARecoveryTest extends MessagingTestCase
    
          ServerManagement.startServerPeer();
    
-         ServerManagement.deployQueue("QA");
-   
-         cf = (JBossConnectionFactory)initialContext.lookup("/ConnectionFactory");         
+         deployAndLookupAdministeredObjects();         
    
          XAResource res = cf.createXAConnection().createXASession().getXAResource();
    
@@ -2824,7 +2763,7 @@ public class XARecoveryTest extends MessagingTestCase
          conn3 = cf.createConnection();
    
          Session sessRec = conn3.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageConsumer cons = sessRec.createConsumer(queueA);
+         MessageConsumer cons = sessRec.createConsumer(queue2);
          conn3.start();
    
          Message msg = cons.receive(MAX_TIMEOUT);
@@ -2930,7 +2869,7 @@ public class XARecoveryTest extends MessagingTestCase
    
          res1.start(xid1, XAResource.TMNOFLAGS);
    
-         MessageProducer prod1 = sess1.createProducer(queue);
+         MessageProducer prod1 = sess1.createProducer(queue1);
    
          TextMessage tm1 = sess1.createTextMessage("testing1");
    
@@ -2941,7 +2880,7 @@ public class XARecoveryTest extends MessagingTestCase
    
          res2.start(xid2, XAResource.TMNOFLAGS);
    
-         MessageProducer prod2 = sess2.createProducer(queue);
+         MessageProducer prod2 = sess2.createProducer(queue1);
    
          TextMessage tm2 = sess2.createTextMessage("testing2");
    
@@ -2961,9 +2900,7 @@ public class XARecoveryTest extends MessagingTestCase
    
          ServerManagement.startServerPeer();
    
-         ServerManagement.deployQueue("Queue");
-   
-         cf = (JBossConnectionFactory)initialContext.lookup("/ConnectionFactory");         
+         deployAndLookupAdministeredObjects();         
    
          XAResource res = cf.createXAConnection().createXASession().getXAResource();
    
@@ -2983,7 +2920,7 @@ public class XARecoveryTest extends MessagingTestCase
          conn3 = cf.createConnection();
    
          Session sessRec = conn3.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageConsumer cons = sessRec.createConsumer(queue);
+         MessageConsumer cons = sessRec.createConsumer(queue1);
          conn3.start();
    
          TextMessage m1 = (TextMessage)cons.receive(MAX_TIMEOUT);
@@ -3072,7 +3009,7 @@ public class XARecoveryTest extends MessagingTestCase
    
          res1.start(xid1, XAResource.TMNOFLAGS);
    
-         MessageProducer prod1 = sess1.createProducer(queue);
+         MessageProducer prod1 = sess1.createProducer(queue1);
    
          TextMessage tm1 = sess1.createTextMessage("testing1");
    
@@ -3083,7 +3020,7 @@ public class XARecoveryTest extends MessagingTestCase
    
          res2.start(xid2, XAResource.TMNOFLAGS);
    
-         MessageProducer prod2 = sess2.createProducer(queue);
+         MessageProducer prod2 = sess2.createProducer(queue1);
    
          TextMessage tm2 = sess2.createTextMessage("testing2");
    
@@ -3103,9 +3040,7 @@ public class XARecoveryTest extends MessagingTestCase
    
          ServerManagement.startServerPeer();
    
-         ServerManagement.deployQueue("Queue");
-   
-         cf = (JBossConnectionFactory)initialContext.lookup("/ConnectionFactory");         
+         deployAndLookupAdministeredObjects();         
    
          XAResource res = cf.createXAConnection().createXASession().getXAResource();
    
@@ -3125,7 +3060,7 @@ public class XARecoveryTest extends MessagingTestCase
          conn3 = cf.createConnection();
    
          Session sessRec = conn3.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageConsumer cons = sessRec.createConsumer(queue);
+         MessageConsumer cons = sessRec.createConsumer(queue1);
          conn3.start();
    
          TextMessage m1 = (TextMessage)cons.receive(MAX_TIMEOUT);
@@ -3214,8 +3149,8 @@ public class XARecoveryTest extends MessagingTestCase
    
          res1.start(xid1, XAResource.TMNOFLAGS);
    
-         MessageProducer prod1 = sess1.createProducer(queueA);
-         MessageProducer prod2 = sess1.createProducer(queueB);
+         MessageProducer prod1 = sess1.createProducer(queue2);
+         MessageProducer prod2 = sess1.createProducer(queue3);
    
          TextMessage tm1 = sess1.createTextMessage("testing1");
          TextMessage tm2 = sess1.createTextMessage("testing2");
@@ -3228,7 +3163,7 @@ public class XARecoveryTest extends MessagingTestCase
    
          res2.start(xid2, XAResource.TMNOFLAGS);
    
-         MessageProducer prod3 = sess2.createProducer(queue);
+         MessageProducer prod3 = sess2.createProducer(queue1);
    
          TextMessage tm3 = sess2.createTextMessage("testing3");
    
@@ -3248,12 +3183,7 @@ public class XARecoveryTest extends MessagingTestCase
    
          ServerManagement.startServerPeer();
    
-         ServerManagement.deployQueue("Queue");
-         ServerManagement.deployQueue("QA");
-         ServerManagement.deployQueue("QB");
-   
-   
-         cf = (JBossConnectionFactory)initialContext.lookup("/ConnectionFactory");
+         deployAndLookupAdministeredObjects();
          
          XAResource res = cf.createXAConnection().createXASession().getXAResource();
    
@@ -3274,9 +3204,9 @@ public class XARecoveryTest extends MessagingTestCase
    
          Session sessRec = conn3.createSession(false, Session.AUTO_ACKNOWLEDGE);
    
-         MessageConsumer cons1 = sessRec.createConsumer(queueA);
-         MessageConsumer cons2 = sessRec.createConsumer(queueB);
-         MessageConsumer cons3 = sessRec.createConsumer(queue);
+         MessageConsumer cons1 = sessRec.createConsumer(queue2);
+         MessageConsumer cons2 = sessRec.createConsumer(queue3);
+         MessageConsumer cons3 = sessRec.createConsumer(queue1);
    
          conn3.start();
    

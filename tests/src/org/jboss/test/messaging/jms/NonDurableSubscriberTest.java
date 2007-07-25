@@ -21,14 +21,10 @@
   */
 package org.jboss.test.messaging.jms;
 
-import org.jboss.test.messaging.MessagingTestCase;
-import org.jboss.test.messaging.tools.ServerManagement;
-
-import javax.naming.InitialContext;
 import javax.jms.Session;
 import javax.jms.TopicConnection;
-import javax.jms.TopicConnectionFactory;
 import javax.jms.TopicSession;
+import javax.naming.InitialContext;
 
 
 /**
@@ -38,7 +34,7 @@ import javax.jms.TopicSession;
  *
  * $Id$
  */
-public class NonDurableSubscriberTest extends MessagingTestCase
+public class NonDurableSubscriberTest extends JMSTestCase
 {
    // Constants -----------------------------------------------------
 
@@ -56,52 +52,36 @@ public class NonDurableSubscriberTest extends MessagingTestCase
    }
 
    // Public --------------------------------------------------------
-
-   public void setUp() throws Exception
-   {
-      super.setUp();
-
-      ServerManagement.start("all");
-      
-      
-
-      ServerManagement.undeployTopic("Topic");
-      ServerManagement.deployTopic("Topic");
-
-      ic = new InitialContext(ServerManagement.getJNDIEnvironment());
-
-      log.debug("setup done");
-   }
-
-   public void tearDown() throws Exception
-   {
-      log.debug("starting tear down");
-
-      ic.close();
-
-      ServerManagement.undeployTopic("Topic");
-      
-      super.tearDown();
-   }
-
+  
    /**
     * Test introduced as a result of a TCK failure.
     */
    public void testNonDurableSubscriberOnNullTopic() throws Exception
    {
-      TopicConnectionFactory cf = (TopicConnectionFactory)ic.lookup("ConnectionFactory");
-      TopicConnection conn = cf.createTopicConnection();
-
-      TopicSession ts = conn.createTopicSession(false, Session.AUTO_ACKNOWLEDGE);
-
+      TopicConnection conn = null;
+      
       try
-      {
-         ts.createSubscriber(null);
-         fail("this should fail");
+      {      
+	      conn = cf.createTopicConnection();
+	
+	      TopicSession ts = conn.createTopicSession(false, Session.AUTO_ACKNOWLEDGE);
+	
+	      try
+	      {
+	         ts.createSubscriber(null);
+	         fail("this should fail");
+	      }
+	      catch(javax.jms.InvalidDestinationException e)
+	      {
+	         // OK
+	      }
       }
-      catch(javax.jms.InvalidDestinationException e)
+      finally
       {
-         // OK
+      	if (conn != null)
+      	{
+      		conn.close();
+      	}
       }
    }
 
@@ -110,20 +90,31 @@ public class NonDurableSubscriberTest extends MessagingTestCase
     */
    public void testNonDurableSubscriberInvalidUnsubscribe() throws Exception
    {
-      TopicConnectionFactory cf = (TopicConnectionFactory)ic.lookup("ConnectionFactory");
-      TopicConnection conn = cf.createTopicConnection();
-      conn.setClientID("sofiavergara");
-
-      TopicSession ts = conn.createTopicSession(false, Session.AUTO_ACKNOWLEDGE);
-
+      TopicConnection conn = null;
+      
       try
-      {
-         ts.unsubscribe("invalid-subscription-name");
-         fail("this should fail");
+      {	      
+	      conn = cf.createTopicConnection();
+	      conn.setClientID("sofiavergara");
+	
+	      TopicSession ts = conn.createTopicSession(false, Session.AUTO_ACKNOWLEDGE);
+	
+	      try
+	      {
+	         ts.unsubscribe("invalid-subscription-name");
+	         fail("this should fail");
+	      }
+	      catch(javax.jms.InvalidDestinationException e)
+	      {
+	         // OK
+	      }
       }
-      catch(javax.jms.InvalidDestinationException e)
+      finally
       {
-         // OK
+      	if (conn != null)
+      	{
+      		conn.close();
+      	}
       }
    }
 

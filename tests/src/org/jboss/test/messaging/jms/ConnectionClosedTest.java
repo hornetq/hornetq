@@ -22,23 +22,16 @@
 package org.jboss.test.messaging.jms;
 
 import javax.jms.Connection;
-import javax.jms.ConnectionFactory;
 import javax.jms.DeliveryMode;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
-import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.TextMessage;
-import javax.jms.Topic;
 import javax.jms.TopicConnection;
 import javax.jms.TopicConnectionFactory;
 import javax.jms.TopicSession;
 import javax.jms.TopicSubscriber;
-import javax.naming.InitialContext;
-
-import org.jboss.test.messaging.MessagingTestCase;
-import org.jboss.test.messaging.tools.ServerManagement;
 
 
 /**
@@ -50,19 +43,13 @@ import org.jboss.test.messaging.tools.ServerManagement;
  *
  * $Id$
  */
-public class ConnectionClosedTest extends MessagingTestCase
+public class ConnectionClosedTest extends JMSTestCase
 {
    // Constants -----------------------------------------------------
 
    // Static --------------------------------------------------------
    
    // Attributes ----------------------------------------------------
-
-   protected InitialContext initialContext;
-   
-   protected ConnectionFactory cf;
-   protected Topic topic;
-   protected Queue queue;
 
    // Constructors --------------------------------------------------
 
@@ -72,32 +59,6 @@ public class ConnectionClosedTest extends MessagingTestCase
    }
 
    // TestCase overrides -------------------------------------------
-
-   public void setUp() throws Exception
-   {
-      super.setUp();
-      ServerManagement.start("all");
-      
-      
-      initialContext = new InitialContext(ServerManagement.getJNDIEnvironment());
-      cf = (ConnectionFactory)initialContext.lookup("/ConnectionFactory");
-      ServerManagement.undeployTopic("Topic");
-      ServerManagement.deployTopic("Topic");
-      topic = (Topic)initialContext.lookup("/topic/Topic");
-
-      ServerManagement.undeployQueue("Queue");
-      ServerManagement.deployQueue("Queue");
-      queue = (Queue)initialContext.lookup("/queue/Queue");
-   }
-
-   public void tearDown() throws Exception
-   {
-      ServerManagement.undeployQueue("Queue");
-      ServerManagement.undeployTopic("Topic");
-      
-      super.tearDown();
-   }
-
 
    // Public --------------------------------------------------------
 
@@ -123,15 +84,15 @@ public class ConnectionClosedTest extends MessagingTestCase
       TopicSession sess1 = conn1.createTopicSession(false, Session.AUTO_ACKNOWLEDGE);
       TopicSession sess2 = conn2.createTopicSession(false, Session.AUTO_ACKNOWLEDGE);
       
-      TopicSubscriber sub1 = sess1.createSubscriber(topic);
-      TopicSubscriber sub2 = sess2.createSubscriber(topic);
+      TopicSubscriber sub1 = sess1.createSubscriber(topic1);
+      TopicSubscriber sub2 = sess2.createSubscriber(topic1);
       
       conn1.start();
       
       Connection conn3 = cf.createConnection();
       
       Session sess3 = conn3.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      MessageProducer prod = sess3.createProducer(topic);
+      MessageProducer prod = sess3.createProducer(topic1);
       prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
       
       final int NUM_MESSAGES = 10;
@@ -141,8 +102,6 @@ public class ConnectionClosedTest extends MessagingTestCase
          TextMessage tm = sess3.createTextMessage("hello");
          prod.send(tm);
       }
-
-      log.debug("all messages sent");
 
       int count = 0;
       while (true)
@@ -156,8 +115,6 @@ public class ConnectionClosedTest extends MessagingTestCase
          count++;
       }
       assertEquals(NUM_MESSAGES, count);
-
-      log.debug("all messages received by sub1");
 
       Message m = sub2.receive(200);
       
@@ -202,7 +159,7 @@ public class ConnectionClosedTest extends MessagingTestCase
 
       conn.start();
 
-      final MessageConsumer consumer = session.createConsumer(topic);
+      final MessageConsumer consumer = session.createConsumer(topic1);
 
       class TestRunnable implements Runnable
       {
@@ -256,12 +213,8 @@ public class ConnectionClosedTest extends MessagingTestCase
    {
       Connection connection = cf.createConnection();
       
-      log.info("Closing connection");
-      
       connection.close();
       
-      log.info("Closed connection");
-
       try
       {
          connection.getMetaData();
@@ -296,9 +249,9 @@ public class ConnectionClosedTest extends MessagingTestCase
    {
       Connection conn = cf.createConnection();
       Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      MessageConsumer consumer = sess.createConsumer(topic);
-      MessageProducer producer = sess.createProducer(topic);
-      sess.createBrowser(queue);
+      MessageConsumer consumer = sess.createConsumer(topic1);
+      MessageProducer producer = sess.createProducer(topic1);
+      sess.createBrowser(queue1);
       Message m = sess.createMessage();
 
       conn.close();
@@ -349,7 +302,7 @@ public class ConnectionClosedTest extends MessagingTestCase
 
       try
       {
-         sess.createProducer(queue);
+         sess.createProducer(queue1);
          fail("should throw IllegalStateException");
       }
       catch(javax.jms.IllegalStateException e)
@@ -359,7 +312,7 @@ public class ConnectionClosedTest extends MessagingTestCase
 
       try
       {
-         sess.createConsumer(queue);
+         sess.createConsumer(queue1);
          fail("should throw IllegalStateException");
       }
       catch(javax.jms.IllegalStateException e)

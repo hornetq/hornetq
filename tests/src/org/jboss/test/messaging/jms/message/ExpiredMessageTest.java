@@ -7,24 +7,20 @@
 package org.jboss.test.messaging.jms.message;
 
 import javax.jms.Connection;
-import javax.jms.ConnectionFactory;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
-import javax.jms.Queue;
 import javax.jms.Session;
-import javax.naming.InitialContext;
 
 import org.jboss.logging.Logger;
-import org.jboss.test.messaging.MessagingTestCase;
-import org.jboss.test.messaging.tools.ServerManagement;
+import org.jboss.test.messaging.jms.JMSTestCase;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  * $Id$
  */
-public class ExpiredMessageTest extends MessagingTestCase
+public class ExpiredMessageTest extends JMSTestCase
 {
    // Constants ------------------------------------------------------------------------------------
 
@@ -33,10 +29,6 @@ public class ExpiredMessageTest extends MessagingTestCase
    // Static ---------------------------------------------------------------------------------------
 
    // Attributes -----------------------------------------------------------------------------------
-
-   private InitialContext ic;
-   private ConnectionFactory cf;
-   private Queue queue;
 
    // Constructors ---------------------------------------------------------------------------------
 
@@ -53,7 +45,7 @@ public class ExpiredMessageTest extends MessagingTestCase
 
       Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-      MessageProducer prod = session.createProducer(queue);
+      MessageProducer prod = session.createProducer(queue1);
       prod.setTimeToLive(1);
 
       Message m = session.createTextMessage("This message will die");
@@ -64,11 +56,11 @@ public class ExpiredMessageTest extends MessagingTestCase
 
       Thread.sleep(250);
 
-      MessageConsumer cons = session.createConsumer(queue);
+      MessageConsumer cons = session.createConsumer(queue1);
 
       conn.start();
 
-      assertNull(cons.receive(3000));
+      assertNull(cons.receive(2000));
       
       conn.close();
    }
@@ -79,7 +71,7 @@ public class ExpiredMessageTest extends MessagingTestCase
       
       Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
       
-      MessageProducer prod = session.createProducer(queue);
+      MessageProducer prod = session.createProducer(queue1);
       prod.setTimeToLive(1);
       
       Message m = session.createTextMessage("This message will die");
@@ -91,12 +83,10 @@ public class ExpiredMessageTest extends MessagingTestCase
          prod.send(m);
       }
       
-      MessageConsumer cons = session.createConsumer(queue);
+      MessageConsumer cons = session.createConsumer(queue1);
       conn.start();
       
-      final int TIMEOUT = 2000;
-
-      assertNull(cons.receive(TIMEOUT));
+      assertNull(cons.receive(2000));
       
       conn.close();
    }
@@ -106,37 +96,7 @@ public class ExpiredMessageTest extends MessagingTestCase
    // Package protected ----------------------------------------------------------------------------
 
    // Protected ------------------------------------------------------------------------------------
-
-   protected void setUp() throws Exception
-   {
-      super.setUp();
-
-      ServerManagement.start("all");
-
-      ic = new InitialContext(ServerManagement.getJNDIEnvironment());
-
-      ServerManagement.deployQueue("expiredMessageTestQueue");
-      ServerManagement.deployQueue("ExpiryQueue");
-
-      cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
-
-      queue = (Queue)ic.lookup("/queue/expiredMessageTestQueue");
-
-      log.debug("setup done");
-   }
-
-   protected void tearDown() throws Exception
-   {
-      ServerManagement.undeployQueue("expiredMessageTestQueue");
-      ServerManagement.undeployQueue("ExpiryQueue");
-      
-      ic.close();
-
-      ServerManagement.stop();
-
-      super.tearDown();
-   }
-
+ 
    // Private --------------------------------------------------------------------------------------
 
    // Inner classes --------------------------------------------------------------------------------

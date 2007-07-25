@@ -21,16 +21,11 @@
   */
 package org.jboss.test.messaging.jms.message;
 
-
-import java.util.List;
-
-import javax.jms.Message;
 import javax.jms.DeliveryMode;
-import javax.management.ObjectName;
+import javax.jms.Message;
 
 import org.jboss.jms.message.JBossMessage;
 import org.jboss.jms.message.MessageProxy;
-import org.jboss.test.messaging.tools.ServerManagement;
 
 import EDU.oswego.cs.dl.util.concurrent.Latch;
 
@@ -41,7 +36,7 @@ import EDU.oswego.cs.dl.util.concurrent.Latch;
  *
  * $Id$
  */
-public class JMSExpirationHeaderTest extends MessageTest
+public class JMSExpirationHeaderTest extends MessageHeaderTestBase
 {
    // Constants -----------------------------------------------------
 
@@ -325,17 +320,7 @@ public class JMSExpirationHeaderTest extends MessageTest
       
       //Need to check message isn't still in queue
       
-      ObjectName destObjectName = 
-         new ObjectName("jboss.messaging.destination:service=Queue,name=Queue");
-      
-      List list = (List)ServerManagement.invoke(
-            destObjectName, 
-            "listAllMessages", 
-            new Object[] {null}, 
-            new String[] {"java.lang.String"});
-      assertNotNull(list);
-            
-      assertEquals(0, list.size());            
+      checkEmpty(queue1);           
    }
 
 

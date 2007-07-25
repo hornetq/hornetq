@@ -24,15 +24,12 @@ package org.jboss.test.messaging.jms;
 import java.util.ArrayList;
 
 import javax.jms.Connection;
-import javax.jms.ConnectionFactory;
 import javax.jms.DeliveryMode;
-import javax.jms.Destination;
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageListener;
 import javax.jms.MessageProducer;
-import javax.jms.Queue;
 import javax.jms.ServerSession;
 import javax.jms.ServerSessionPool;
 import javax.jms.Session;
@@ -42,15 +39,14 @@ import javax.jms.XAConnectionFactory;
 import javax.jms.XASession;
 import javax.management.ObjectName;
 import javax.naming.InitialContext;
+import javax.transaction.RollbackException;
 import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
-import javax.transaction.RollbackException;
 import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
 
 import org.jboss.jms.client.JBossConnection;
-import org.jboss.jms.client.JBossConnectionFactory;
 import org.jboss.jms.client.JBossSession;
 import org.jboss.jms.client.delegate.ClientConnectionDelegate;
 import org.jboss.jms.client.delegate.DelegateSupport;
@@ -60,8 +56,8 @@ import org.jboss.jms.tx.LocalTx;
 import org.jboss.jms.tx.MessagingXAResource;
 import org.jboss.jms.tx.MessagingXid;
 import org.jboss.jms.tx.ResourceManager;
+import org.jboss.jms.tx.ResourceManagerFactory;
 import org.jboss.logging.Logger;
-import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
 import org.jboss.test.messaging.tools.jmx.ServiceContainer;
 import org.jboss.test.messaging.tools.jndi.InVMInitialContextFactory;
@@ -81,20 +77,14 @@ import com.arjuna.ats.internal.jta.transaction.arjunacore.TransactionManagerImpl
  * $Id$
  *
  */
-public abstract class XATestBase extends MessagingTestCase
+public abstract class XATestBase extends JMSTestCase
 {
    // Constants -----------------------------------------------------
 
    // Static --------------------------------------------------------
 
    // Attributes ----------------------------------------------------
-
-   protected InitialContext initialContext;
-
-   protected JBossConnectionFactory cf;
-
-   protected Destination queue;
-
+  
    protected TransactionManager tm;
 
    protected Transaction suspendedTx;
@@ -102,7 +92,6 @@ public abstract class XATestBase extends MessagingTestCase
    protected ServiceContainer sc;
 
    protected boolean useArjuna;
-
 
    // Constructors --------------------------------------------------
 
@@ -116,16 +105,14 @@ public abstract class XATestBase extends MessagingTestCase
 
    public void setUp() throws Exception
    {
-      super.setUp();
-
       if (useArjuna)
       {
-         ServerManagement.start("all,-transaction,jbossjta");
+         overrideConf = "all,-transaction,jbossjta";
       }
-      else
-      {
-         ServerManagement.start("all");
-      }
+            
+      super.setUp();
+      
+      ResourceManagerFactory.instance.clear();      
 
       //Also need a local tx mgr if test is running remote
       if (ServerManagement.isRemote())
@@ -143,32 +130,19 @@ public abstract class XATestBase extends MessagingTestCase
          sc.start(false);
       }
 
-      initialContext = new InitialContext(ServerManagement.getJNDIEnvironment());
-
       InitialContext localIc = new InitialContext(InVMInitialContextFactory.getJNDIEnvironment());
-
-      cf = (JBossConnectionFactory)initialContext.lookup("/ConnectionFactory");
 
       tm = (TransactionManager)localIc.lookup(ServiceContainer.TRANSACTION_MANAGER_JNDI_NAME);
 
       if (useArjuna)
       {
-         log.info("tm is " + tm.getClass().getName());
          assertTrue(tm instanceof TransactionManagerImple);
       }
       else
       {
          assertTrue(tm instanceof org.jboss.tm.TxManager);
       }
-
-      ServerManagement.undeployQueue("Queue");
-
-      ServerManagement.deployQueue("Queue");
-
-      queue = (Destination)initialContext.lookup("/queue/Queue");
-
-      drainDestination(cf, queue);
-
+     
       if (!ServerManagement.isRemote())
       {
          suspendedTx = tm.suspend();
@@ -176,9 +150,7 @@ public abstract class XATestBase extends MessagingTestCase
    }
 
    public void tearDown() throws Exception
-   {
-      ServerManagement.undeployQueue("Queue");
-
+   {      
       if (TxUtils.isUncommitted(tm))
       {
          //roll it back
@@ -207,14 +179,9 @@ public abstract class XATestBase extends MessagingTestCase
       {
          sc.stop();
       }
-
-      ServerManagement.stop();
-
+      
       super.tearDown();
    }
-
-
-
 
    // Public --------------------------------------------------------
 
@@ -230,38 +197,30 @@ public abstract class XATestBase extends MessagingTestCase
 
       try
       {
-         ServerManagement.deployQueue("MyQueue");
-
          // make sure there's no active JTA transaction
 
          suspended = TransactionManagerLocator.getInstance().locate().suspend();
 
          // send a message to the queue using an XASession that's not enlisted in a global tx
 
-         Queue queue = (Queue)initialContext.lookup("queue/MyQueue");
-
-         XAConnectionFactory xcf =
-            (XAConnectionFactory)initialContext.lookup("java:/XAConnectionFactory");
+         XAConnectionFactory xcf = (XAConnectionFactory)cf;
 
          XAConnection xconn = xcf.createXAConnection();
 
          XASession xs = xconn.createXASession();
          
-         MessageProducer p = xs.createProducer(queue);
+         MessageProducer p = xs.createProducer(queue1);
          Message m = xs.createTextMessage("one");
 
          p.send(m);
 
-         log.debug("message sent");
-
          xconn.close();
 
          // receive the message
-         ConnectionFactory cf = (ConnectionFactory)initialContext.lookup("/ConnectionFactory");
          Connection conn = cf.createConnection();
          conn.start();
          Session s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageConsumer c = s.createConsumer(queue);
+         MessageConsumer c = s.createConsumer(queue1);
          TextMessage rm = (TextMessage)c.receive(1000);
 
          assertEquals("one", rm.getText());
@@ -270,8 +229,6 @@ public abstract class XATestBase extends MessagingTestCase
       }
       finally
       {
-         ServerManagement.undeployQueue("MyQueue");
-
          if (suspended != null)
          {
             TransactionManagerLocator.getInstance().locate().resume(suspended);
@@ -305,101 +262,86 @@ public abstract class XATestBase extends MessagingTestCase
     */
    public void testConsumeWithConnectionConsumerNoGlobalTransaction() throws Exception
    {
-      ServerManagement.deployQueue("MyQueue2");
+      // send a message to the queue
 
+      Connection conn = cf.createConnection();
+      Session s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      MessageProducer p = s.createProducer(queue1);
+      p.setDeliveryMode(DeliveryMode.PERSISTENT);
+      Message m = s.createTextMessage("one");
+      p.send(m);
+      conn.close();
+
+      // make sure there's no active JTA transaction
+
+      Transaction suspended = tm.suspend();
+
+      XAConnection xaconn = null;
       try
       {
-         // send a message to the queue
+         ObjectName queueMBean = new ObjectName("jboss.messaging.destination:service=Queue,name=Queue1");
+         Integer count = (Integer) ServerManagement.getAttribute(queueMBean, "MessageCount");
+         assertEquals(1, count.intValue());
 
-         ConnectionFactory cf = (ConnectionFactory) initialContext.lookup("/ConnectionFactory");
-         Queue queue = (Queue) initialContext.lookup("queue/MyQueue2");
-         Connection conn = cf.createConnection();
-         Session s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer p = s.createProducer(queue);
-         p.setDeliveryMode(DeliveryMode.PERSISTENT);
-         Message m = s.createTextMessage("one");
-         p.send(m);
-         conn.close();
+         // using XA with a ConnectionConsumer (testing the transaction behavior under MDBs)
 
-         // make sure there's no active JTA transaction
+         XAConnectionFactory xacf = (XAConnectionFactory)cf;
+         xaconn = xacf.createXAConnection();
+         xaconn.start();
+         XASession xasession = xaconn.createXASession();
+         DummyListener listener = new DummyListener();
+         xasession.setMessageListener(listener);
 
-         Transaction suspended = tm.suspend();
+         ServerSessionPool pool = new MockServerSessionPool(xasession);
 
-         XAConnection xaconn = null;
-         try
-         {
+         xaconn.createConnectionConsumer(queue1, null, pool, 1);
 
-            ObjectName queueMBean = new ObjectName("jboss.messaging.destination:service=Queue,name=MyQueue2");
-            Integer count = (Integer) ServerManagement.getAttribute(queueMBean, "MessageCount");
-            assertEquals(1, count.intValue());
+         Thread.sleep(1000);
+         assertEquals(1, listener.messages.size());
 
-            // using XA with a ConnectionConsumer (testing the transaction behavior under MDBs)
+         // Message should still be on server
+         count = (Integer) ServerManagement.getAttribute(queueMBean, "MessageCount");
+         assertEquals(1, count.intValue());
 
-            XAConnectionFactory xacf = (XAConnectionFactory) initialContext.lookup("/XAConnectionFactory");
-            xaconn = xacf.createXAConnection();
-            xaconn.start();
-            XASession xasession = xaconn.createXASession();
-            DummyListener listener = new DummyListener();
-            xasession.setMessageListener(listener);
+         XAResource resource = xasession.getXAResource();
 
-            ServerSessionPool pool = new MockServerSessionPool(xasession);
+         // Starts a new transaction
+         tm.begin();
 
-            xaconn.createConnectionConsumer(queue, null, pool, 1);
+         Transaction trans = tm.getTransaction();
 
-            Thread.sleep(1000);
-            assertEquals(1, listener.messages.size());
+         JBossSession session = (JBossSession)xasession;
+         SessionState state = (SessionState)((DelegateSupport)session.getDelegate()).getState();
 
-            // Message should still be on server
-            count = (Integer) ServerManagement.getAttribute(queueMBean, "MessageCount");
-            assertEquals(1, count.intValue());
+         // Validates TX convertion
+         assertTrue(state.getCurrentTxId() instanceof LocalTx);
 
-            XAResource resource = xasession.getXAResource();
+         // Enlist the transaction... as supposed to be happening on JBossAS with the
+         // default listener (enlist happening after message is received)
+         trans.enlistResource(resource);
 
-            // Starts a new transaction
-            tm.begin();
+         // Validates TX convertion
+         assertFalse(state.getCurrentTxId() instanceof LocalTx);
 
-            Transaction trans = tm.getTransaction();
+         trans.delistResource(resource, XAResource.TMSUCCESS);
 
-            JBossSession session = (JBossSession)xasession;
-            SessionState state = (SessionState)((DelegateSupport)session.getDelegate()).getState();
+         trans.commit();
 
-            // Validates TX convertion
-            assertTrue(state.getCurrentTxId() instanceof LocalTx);
-
-            // Enlist the transaction... as supposed to be happening on JBossAS with the
-            // default listener (enlist happening after message is received)
-            trans.enlistResource(resource);
-
-            // Validates TX convertion
-            assertFalse(state.getCurrentTxId() instanceof LocalTx);
-
-            trans.delistResource(resource, XAResource.TMSUCCESS);
-
-            trans.commit();
-
-
-            // After commit the message should be consumed
-            count = (Integer) ServerManagement.getAttribute(queueMBean, "MessageCount");
-            assertEquals(0, count.intValue());
-         }
-         finally
-         {
-            if (xaconn != null)
-            {
-               xaconn.close();
-            }
-            if (suspended != null)
-            {
-               TransactionManagerLocator.getInstance().locate().resume(suspended);
-            }
-         }
+         // After commit the message should be consumed
+         count = (Integer) ServerManagement.getAttribute(queueMBean, "MessageCount");
+         assertEquals(0, count.intValue());
       }
       finally
       {
-         ServerManagement.undeployQueue("MyQueue2");
+         if (xaconn != null)
+         {
+            xaconn.close();
+         }
+         if (suspended != null)
+         {
+            TransactionManagerLocator.getInstance().locate().resume(suspended);
+         }
       }
-
-
    }
    
    
@@ -428,67 +370,54 @@ public abstract class XATestBase extends MessagingTestCase
     */
    public void testConsumeWithoutConnectionConsumerNoGlobalTransaction() throws Exception
    {
+      // send a message to the queue
+
+      Connection conn = cf.createConnection();
+      Session s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      MessageProducer p = s.createProducer(queue1);
+      p.setDeliveryMode(DeliveryMode.PERSISTENT);
+      Message m = s.createTextMessage("one");
+      p.send(m);
+      conn.close();
+
+      // make sure there's no active JTA transaction
+
+      Transaction suspended = TransactionManagerLocator.getInstance().locate().suspend();
+
       try
       {
-         ServerManagement.deployQueue("MyQueue2");
+         ObjectName queueMBean = new ObjectName("jboss.messaging.destination:service=Queue,name=Queue1");
+         Integer count = (Integer)ServerManagement.getAttribute(queueMBean, "MessageCount");
+         assertEquals(1, count.intValue());
 
-         // send a message to the queue
+         XAConnectionFactory xcf = (XAConnectionFactory)cf;
+         XAConnection xconn = xcf.createXAConnection();
+         xconn.start();
 
-         ConnectionFactory cf = (ConnectionFactory)initialContext.lookup("/ConnectionFactory");
-         Queue queue = (Queue)initialContext.lookup("queue/MyQueue2");
-         Connection conn = cf.createConnection();
-         Session s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer p = s.createProducer(queue);
-         p.setDeliveryMode(DeliveryMode.PERSISTENT);
-         Message m = s.createTextMessage("one");
-         p.send(m);
-         conn.close();
+         // no active JTA transaction here
 
-         // make sure there's no active JTA transaction
+         XASession xs = xconn.createXASession();
 
-         Transaction suspended = TransactionManagerLocator.getInstance().locate().suspend();
+         MessageConsumer c = xs.createConsumer(queue1);
 
-         try
-         {
+         // the message should be store unacked in the local session
+         TextMessage rm = (TextMessage)c.receive(1000);
 
-            ObjectName queueMBean = new ObjectName("jboss.messaging.destination:service=Queue,name=MyQueue2");
-            Integer count = (Integer)ServerManagement.getAttribute(queueMBean, "MessageCount");
-            assertEquals(1, count.intValue());
-
-            XAConnectionFactory xcf =
-                  (XAConnectionFactory)initialContext.lookup("java:/XAConnectionFactory");
-            XAConnection xconn = xcf.createXAConnection();
-            xconn.start();
-
-            // no active JTA transaction here
-
-            XASession xs = xconn.createXASession();
-
-            MessageConsumer c = xs.createConsumer(queue);
-
-            // the message should be store unacked in the local session
-            TextMessage rm = (TextMessage)c.receive(1000);
-
-            assertEquals("one", rm.getText());
-            
-            // messages should be acked
-            count = (Integer)ServerManagement.getAttribute(queueMBean, "MessageCount");
-            assertEquals(0, count.intValue());
-            
-            xconn.close();
-         }
-         finally
-         {
-
-            if (suspended != null)
-            {
-               TransactionManagerLocator.getInstance().locate().resume(suspended);
-            }
-         }
+         assertEquals("one", rm.getText());
+         
+         // messages should be acked
+         count = (Integer)ServerManagement.getAttribute(queueMBean, "MessageCount");
+         assertEquals(0, count.intValue());
+         
+         xconn.close();
       }
       finally
       {
-         ServerManagement.undeployQueue("MyQueue2");
+
+         if (suspended != null)
+         {
+            TransactionManagerLocator.getInstance().locate().resume(suspended);
+         }
       }
    }
    
@@ -522,21 +451,17 @@ public abstract class XATestBase extends MessagingTestCase
 
       try
       {
-         ServerManagement.deployQueue("MyQueue2");
-
          // send a message to the queue
 
-         ConnectionFactory cf = (ConnectionFactory)initialContext.lookup("/ConnectionFactory");
-         Queue queue = (Queue)initialContext.lookup("queue/MyQueue2");
          Connection conn = cf.createConnection();
          Session s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer p = s.createProducer(queue);
+         MessageProducer p = s.createProducer(queue1);
          p.setDeliveryMode(DeliveryMode.PERSISTENT);
          Message m = s.createTextMessage("one");
          p.send(m);
          conn.close();
 
-         ObjectName queueMBean = new ObjectName("jboss.messaging.destination:service=Queue,name=MyQueue2");
+         ObjectName queueMBean = new ObjectName("jboss.messaging.destination:service=Queue,name=Queue1");
          Integer count = (Integer)ServerManagement.getAttribute(queueMBean, "MessageCount");
          assertEquals(1, count.intValue());
 
@@ -556,7 +481,7 @@ public abstract class XATestBase extends MessagingTestCase
 
          trans.enlistResource(resouce);
 
-         MessageConsumer consumer = xasession.createConsumer(queue);
+         MessageConsumer consumer = xasession.createConsumer(queue1);
 
          TextMessage messageReceived = (TextMessage)consumer.receive(1000);
 
@@ -599,7 +524,6 @@ public abstract class XATestBase extends MessagingTestCase
          {
             xaconn.close();
          }
-         ServerManagement.undeployQueue("MyQueue2");
       }
    }
 
@@ -623,15 +547,11 @@ public abstract class XATestBase extends MessagingTestCase
 
       try
       {
-         ServerManagement.deployQueue("MyQueue2");
-
          // send a message to the queue
 
-         ConnectionFactory cf = (ConnectionFactory)initialContext.lookup("/ConnectionFactory");
-         Queue queue = (Queue)initialContext.lookup("queue/MyQueue2");
          Connection conn = cf.createConnection();
          Session s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer p = s.createProducer(queue);
+         MessageProducer p = s.createProducer(queue1);
          p.setDeliveryMode(DeliveryMode.PERSISTENT);
          Message m = s.createTextMessage("one");
          p.send(m);
@@ -639,7 +559,7 @@ public abstract class XATestBase extends MessagingTestCase
          p.send(m);
          conn.close();
 
-         ObjectName queueMBean = new ObjectName("jboss.messaging.destination:service=Queue,name=MyQueue2");
+         ObjectName queueMBean = new ObjectName("jboss.messaging.destination:service=Queue,name=Queue1");
          Integer count = (Integer)ServerManagement.getAttribute(queueMBean, "MessageCount");
          assertEquals(2, count.intValue());
 
@@ -651,7 +571,7 @@ public abstract class XATestBase extends MessagingTestCase
 
          XASession xasession = xaconn.createXASession();
 
-         MessageConsumer consumer = xasession.createConsumer(queue);
+         MessageConsumer consumer = xasession.createConsumer(queue1);
 
          TextMessage messageReceived = (TextMessage)consumer.receive(1000);
 
@@ -673,8 +593,6 @@ public abstract class XATestBase extends MessagingTestCase
 
          count = (Integer)ServerManagement.getAttribute(queueMBean, "MessageCount");
          assertEquals(0, count.intValue());
-
-
       }
       finally
       {
@@ -682,14 +600,12 @@ public abstract class XATestBase extends MessagingTestCase
          {
             xaconn.close();
          }
-         ServerManagement.undeployQueue("MyQueue2");
       }
    }
 
    //See http://jira.jboss.com/jira/browse/JBMESSAGING-638
    public void testResourceManagerMemoryLeakOnCommit() throws Exception
    {
-
       XAConnection xaConn = null;
 
       try
@@ -714,7 +630,6 @@ public abstract class XATestBase extends MessagingTestCase
 
          for (int i = 0; i < 100; i++)
          {
-
             tm.begin();
 
             Transaction tx = tm.getTransaction();
@@ -819,13 +734,12 @@ public abstract class XATestBase extends MessagingTestCase
 
       XAConnection xaConn = null;
 
-
       try
       {
 
          //First send some messages to a queue
 
-         ObjectName queueMBean = new ObjectName("jboss.messaging.destination:service=Queue,name=Queue");
+         ObjectName queueMBean = new ObjectName("jboss.messaging.destination:service=Queue,name=Queue1");
          Integer count = (Integer) ServerManagement.getAttribute(queueMBean, "MessageCount");
          assertEquals(0, count.intValue());
 
@@ -833,7 +747,7 @@ public abstract class XATestBase extends MessagingTestCase
 
          Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         MessageProducer prod = sessSend.createProducer(queue);
+         MessageProducer prod = sessSend.createProducer(queue1);
 
          TextMessage tm1 = sessSend.createTextMessage("message1");
 
@@ -858,7 +772,7 @@ public abstract class XATestBase extends MessagingTestCase
 
          ServerSessionPool pool = new MockServerSessionPool(xaSession);
 
-         xaConn.createConnectionConsumer(queue, null, pool, 1);
+         xaConn.createConnectionConsumer(queue1, null, pool, 1);
 
          Thread.sleep(1000);
 
@@ -923,8 +837,6 @@ public abstract class XATestBase extends MessagingTestCase
          assertEquals(0, count.intValue());
 
          assertNull(tm.getTransaction());
-
-
       }
       finally
       {
@@ -956,14 +868,13 @@ public abstract class XATestBase extends MessagingTestCase
 
       try
       {
-
          //First send some messages to a queue
 
          conn = cf.createConnection();
 
          Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         MessageProducer prod = sessSend.createProducer(queue);
+         MessageProducer prod = sessSend.createProducer(queue1);
 
          TextMessage tm1 = sessSend.createTextMessage("message1");
 
@@ -980,7 +891,7 @@ public abstract class XATestBase extends MessagingTestCase
 
          xaConn.start();
 
-         MessageConsumer cons = xaSession.createConsumer(queue);
+         MessageConsumer cons = xaSession.createConsumer(queue1);
 
          //Now we enlist the session in an xa transaction
 
@@ -1073,14 +984,13 @@ public abstract class XATestBase extends MessagingTestCase
 
       try
       {
-
          //First send some messages to a queue
 
          conn = cf.createConnection();
 
          Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         MessageProducer prod = sessSend.createProducer(queue);
+         MessageProducer prod = sessSend.createProducer(queue1);
 
          TextMessage tm1 = sessSend.createTextMessage("message1");
 
@@ -1090,14 +1000,13 @@ public abstract class XATestBase extends MessagingTestCase
 
          prod.send(tm2);
 
-
          xaConn = cf.createXAConnection();
 
          XASession xaSession = xaConn.createXASession();
 
          xaConn.start();
 
-         MessageConsumer cons = xaSession.createConsumer(queue);
+         MessageConsumer cons = xaSession.createConsumer(queue1);
 
          //Now we enlist the session in an xa transaction
 
@@ -1112,11 +1021,9 @@ public abstract class XATestBase extends MessagingTestCase
          //Then we do a rollback
          tm.rollback();
 
-
          tm.begin();
 
          //And enlist again - the work should then be converted into the global tx branch
-
 
          // I have changed where this begin was originally set
          // as when you don't have a resource enlisted, XASessions will act as
@@ -1176,7 +1083,6 @@ public abstract class XATestBase extends MessagingTestCase
             xaConn.close();
          }
       }
-
    }
 
    // See http://jira.jboss.org/jira/browse/JBMESSAGING-825
@@ -1207,7 +1113,7 @@ public abstract class XATestBase extends MessagingTestCase
 
          res1.start(trailing, XAResource.TMNOFLAGS);
 
-         MessageProducer prod1 = sess1.createProducer(queue);
+         MessageProducer prod1 = sess1.createProducer(queue1);
 
          TextMessage tm1 = sess1.createTextMessage("testing1");
 
@@ -1215,9 +1121,7 @@ public abstract class XATestBase extends MessagingTestCase
 
          res1.end(trailing, XAResource.TMSUCCESS);
 
-
          res1.prepare(trailing);
-
 
          //Now "crash" the server
 
@@ -1225,9 +1129,7 @@ public abstract class XATestBase extends MessagingTestCase
 
          ServerManagement.startServerPeer();
 
-         ServerManagement.deployQueue("Queue");
-         
-         cf = (JBossConnectionFactory)initialContext.lookup("/ConnectionFactory");
+         deployAndLookupAdministeredObjects();
          
          conn1.close();
          
@@ -1258,6 +1160,8 @@ public abstract class XATestBase extends MessagingTestCase
       }
       finally
       {
+         removeAllMessages(queue1.getQueueName(), true, 0);
+      	
          if (conn1 != null)
          {
             try
@@ -1294,12 +1198,12 @@ public abstract class XATestBase extends MessagingTestCase
          tx.enlistResource(res);
          tx.enlistResource(res2);
 
-         MessageProducer prod = sess.createProducer(queue);
+         MessageProducer prod = sess.createProducer(queue1);
          prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
          Message m = sess.createTextMessage("XATest1");
-         prod.send(queue, m);
+         prod.send(queue1, m);
          m = sess.createTextMessage("XATest2");
-         prod.send(queue, m);
+         prod.send(queue1, m);
 
          tx.delistResource(res, XAResource.TMSUCCESS);
          tx.delistResource(res2, XAResource.TMSUCCESS);
@@ -1309,7 +1213,7 @@ public abstract class XATestBase extends MessagingTestCase
          conn2 = cf.createConnection();
          conn2.start();
          Session sessReceiver = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageConsumer cons = sessReceiver.createConsumer(queue);
+         MessageConsumer cons = sessReceiver.createConsumer(queue1);
          TextMessage m2 = (TextMessage)cons.receive(1000);
          assertNotNull(m2);
          assertEquals("XATest1", m2.getText());
@@ -1328,7 +1232,6 @@ public abstract class XATestBase extends MessagingTestCase
             conn2.close();
          }
       }
-
    }
 
 
@@ -1340,7 +1243,6 @@ public abstract class XATestBase extends MessagingTestCase
 
       try
       {
-
          conn = cf.createXAConnection();
 
          tm.begin();
@@ -1357,12 +1259,12 @@ public abstract class XATestBase extends MessagingTestCase
          tx.enlistResource(res);
          tx.enlistResource(res2);
 
-         MessageProducer prod = sess.createProducer(queue);
+         MessageProducer prod = sess.createProducer(queue1);
          prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
          Message m = sess.createTextMessage("XATest1");
-         prod.send(queue, m);
+         prod.send(queue1, m);
          m = sess.createTextMessage("XATest2");
-         prod.send(queue, m);
+         prod.send(queue1, m);
 
          tx.delistResource(res, XAResource.TMSUCCESS);
          tx.delistResource(res2, XAResource.TMSUCCESS);
@@ -1372,7 +1274,7 @@ public abstract class XATestBase extends MessagingTestCase
          conn2 = cf.createConnection();
          conn2.start();
          Session sessReceiver = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageConsumer cons = sessReceiver.createConsumer(queue);
+         MessageConsumer cons = sessReceiver.createConsumer(queue1);
          TextMessage m2 = (TextMessage)cons.receive(MAX_TIMEOUT);
          assertNotNull(m2);
          assertEquals("XATest1", m2.getText());
@@ -1391,7 +1293,6 @@ public abstract class XATestBase extends MessagingTestCase
             conn2.close();
          }
       }
-
    }
 
 
@@ -1416,12 +1317,12 @@ public abstract class XATestBase extends MessagingTestCase
          tx.enlistResource(res);
          tx.enlistResource(res2);
 
-         MessageProducer prod = sess.createProducer(queue);
+         MessageProducer prod = sess.createProducer(queue1);
          prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
          Message m = sess.createTextMessage("XATest1");
-         prod.send(queue, m);
+         prod.send(queue1, m);
          m = sess.createTextMessage("XATest2");
-         prod.send(queue, m);
+         prod.send(queue1, m);
 
          tx.delistResource(res, XAResource.TMSUCCESS);
          tx.delistResource(res2, XAResource.TMSUCCESS);
@@ -1431,7 +1332,7 @@ public abstract class XATestBase extends MessagingTestCase
          conn2 = cf.createConnection();
          conn2.start();
          Session sessReceiver = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageConsumer cons = sessReceiver.createConsumer(queue);
+         MessageConsumer cons = sessReceiver.createConsumer(queue1);
          Message m2 = cons.receive(MIN_TIMEOUT);
          assertNull(m2);
 
@@ -1476,12 +1377,12 @@ public abstract class XATestBase extends MessagingTestCase
          tx.enlistResource(res3);
          tx.enlistResource(res4);
 
-         MessageProducer prod = sess.createProducer(queue);
+         MessageProducer prod = sess.createProducer(queue1);
          prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
          Message m = sess.createTextMessage("XATest1");
-         prod.send(queue, m);
+         prod.send(queue1, m);
          m = sess.createTextMessage("XATest2");
-         prod.send(queue, m);
+         prod.send(queue1, m);
 
          tx.delistResource(res, XAResource.TMSUCCESS);
          tx.delistResource(res2, XAResource.TMSUCCESS);
@@ -1502,10 +1403,9 @@ public abstract class XATestBase extends MessagingTestCase
          conn2 = cf.createConnection();
          conn2.start();
          Session sessReceiver = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageConsumer cons = sessReceiver.createConsumer(queue);
+         MessageConsumer cons = sessReceiver.createConsumer(queue1);
          Message m2 = cons.receive(MIN_TIMEOUT);
          assertNull(m2);
-
       }
       finally
       {
@@ -1542,12 +1442,12 @@ public abstract class XATestBase extends MessagingTestCase
          tx.enlistResource(res);
          tx.enlistResource(res2);
 
-         MessageProducer prod = sess.createProducer(queue);
+         MessageProducer prod = sess.createProducer(queue1);
          prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
          Message m = sess.createTextMessage("XATest1");
-         prod.send(queue, m);
+         prod.send(queue1, m);
          m = sess.createTextMessage("XATest2");
-         prod.send(queue, m);
+         prod.send(queue1, m);
 
          tx.delistResource(res, XAResource.TMSUCCESS);
          tx.delistResource(res2, XAResource.TMSUCCESS);
@@ -1557,7 +1457,7 @@ public abstract class XATestBase extends MessagingTestCase
          conn2 = cf.createConnection();
          conn2.start();
          Session sessReceiver = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageConsumer cons = sessReceiver.createConsumer(queue);
+         MessageConsumer cons = sessReceiver.createConsumer(queue1);
          Message m2 = cons.receive(MIN_TIMEOUT);
          assertNull(m2);
 
@@ -1587,7 +1487,7 @@ public abstract class XATestBase extends MessagingTestCase
          conn2 = cf.createConnection();
          conn2.start();
          Session sessProducer = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer prod  = sessProducer.createProducer(queue);
+         MessageProducer prod  = sessProducer.createProducer(queue1);
          Message m = sessProducer.createTextMessage("XATest1");
          prod.send(m);
          m = sessProducer.createTextMessage("XATest2");
@@ -1607,7 +1507,7 @@ public abstract class XATestBase extends MessagingTestCase
          tx.enlistResource(res);
          tx.enlistResource(res2);
 
-         MessageConsumer cons = sess.createConsumer(queue);
+         MessageConsumer cons = sess.createConsumer(queue1);
 
 
          TextMessage m2 = (TextMessage)cons.receive(MAX_TIMEOUT);
@@ -1639,8 +1539,6 @@ public abstract class XATestBase extends MessagingTestCase
          tx.delistResource(res2, XAResource.TMSUCCESS);
 
          tm.commit();
-
-
       }
       finally
       {
@@ -1666,7 +1564,7 @@ public abstract class XATestBase extends MessagingTestCase
          conn2 = cf.createConnection();
          conn2.start();
          Session sessProducer = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer prod  = sessProducer.createProducer(queue);
+         MessageProducer prod  = sessProducer.createProducer(queue1);
          Message m = sessProducer.createTextMessage("XATest1");
          prod.send(m);
          m = sessProducer.createTextMessage("XATest2");
@@ -1687,7 +1585,7 @@ public abstract class XATestBase extends MessagingTestCase
          tx.enlistResource(res);
          tx.enlistResource(res2);
 
-         MessageConsumer cons = sess.createConsumer(queue);
+         MessageConsumer cons = sess.createConsumer(queue1);
 
 
          TextMessage m2 = (TextMessage)cons.receive(MAX_TIMEOUT);
@@ -1719,8 +1617,6 @@ public abstract class XATestBase extends MessagingTestCase
          tx.delistResource(res2, XAResource.TMSUCCESS);
 
          tm.commit();
-
-
       }
       finally
       {
@@ -1747,13 +1643,12 @@ public abstract class XATestBase extends MessagingTestCase
       {
          conn2 = cf.createConnection();
          Session sessProducer = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer prod  = sessProducer.createProducer(queue);
+         MessageProducer prod  = sessProducer.createProducer(queue1);
          Message m = sessProducer.createTextMessage("XATest1");
          prod.send(m);
 
          m = sessProducer.createTextMessage("XATest2");
          prod.send(m);
-
 
          conn = cf.createXAConnection();
          conn.start();
@@ -1769,7 +1664,7 @@ public abstract class XATestBase extends MessagingTestCase
          tx.enlistResource(res);
          tx.enlistResource(res2);
 
-         MessageConsumer cons = sess.createConsumer(queue);
+         MessageConsumer cons = sess.createConsumer(queue1);
 
 
          TextMessage m2 = (TextMessage)cons.receive(MAX_TIMEOUT);
@@ -1805,7 +1700,6 @@ public abstract class XATestBase extends MessagingTestCase
          tx.delistResource(res2, XAResource.TMSUCCESS);
 
          tm.commit();
-
       }
       finally
       {
@@ -1818,7 +1712,6 @@ public abstract class XATestBase extends MessagingTestCase
             conn2.close();
          }
       }
-
    }
 
    public void test2PCReceiveRollback() throws Exception
@@ -1830,7 +1723,7 @@ public abstract class XATestBase extends MessagingTestCase
       {
          conn2 = cf.createConnection();
          Session sessProducer = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer prod  = sessProducer.createProducer(queue);
+         MessageProducer prod  = sessProducer.createProducer(queue1);
          Message m = sessProducer.createTextMessage("XATest1");
          prod.send(m);
 
@@ -1853,7 +1746,7 @@ public abstract class XATestBase extends MessagingTestCase
          tx.enlistResource(res);
          tx.enlistResource(res2);
 
-         MessageConsumer cons = sess.createConsumer(queue);
+         MessageConsumer cons = sess.createConsumer(queue1);
 
 
          TextMessage m2 = (TextMessage)cons.receive(MAX_TIMEOUT);
@@ -1913,7 +1806,6 @@ public abstract class XATestBase extends MessagingTestCase
 
       try
       {
-
          conn = cf.createXAConnection();
 
          tm.begin();
@@ -1926,12 +1818,12 @@ public abstract class XATestBase extends MessagingTestCase
          tx.enlistResource(res);
 
 
-         MessageProducer prod = sess.createProducer(queue);
+         MessageProducer prod = sess.createProducer(queue1);
          prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
          Message m = sess.createTextMessage("XATest1");
-         prod.send(queue, m);
+         prod.send(queue1, m);
          m = sess.createTextMessage("XATest2");
-         prod.send(queue, m);
+         prod.send(queue1, m);
 
          tx.delistResource(res, XAResource.TMSUCCESS);
 
@@ -1940,7 +1832,7 @@ public abstract class XATestBase extends MessagingTestCase
          conn2 = cf.createConnection();
          conn2.start();
          Session sessReceiver = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageConsumer cons = sessReceiver.createConsumer(queue);
+         MessageConsumer cons = sessReceiver.createConsumer(queue1);
          TextMessage m2 = (TextMessage)cons.receive(MAX_TIMEOUT);
          assertNotNull(m2);
          assertEquals("XATest1", m2.getText());
@@ -1979,12 +1871,12 @@ public abstract class XATestBase extends MessagingTestCase
          Transaction tx = tm.getTransaction();
          tx.enlistResource(res);
 
-         MessageProducer prod = sess.createProducer(queue);
+         MessageProducer prod = sess.createProducer(queue1);
          prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
          Message m = sess.createTextMessage("XATest1");
-         prod.send(queue, m);
+         prod.send(queue1, m);
          m = sess.createTextMessage("XATest2");
-         prod.send(queue, m);
+         prod.send(queue1, m);
 
          tx.delistResource(res, XAResource.TMSUCCESS);
 
@@ -1993,7 +1885,7 @@ public abstract class XATestBase extends MessagingTestCase
          conn2 = cf.createConnection();
          conn2.start();
          Session sessReceiver = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageConsumer cons = sessReceiver.createConsumer(queue);
+         MessageConsumer cons = sessReceiver.createConsumer(queue1);
          Message m2 = cons.receive(MIN_TIMEOUT);
          assertNull(m2);
 
@@ -2021,7 +1913,7 @@ public abstract class XATestBase extends MessagingTestCase
          conn2 = cf.createConnection();
          conn2.start();
          Session sessProducer = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer prod  = sessProducer.createProducer(queue);
+         MessageProducer prod  = sessProducer.createProducer(queue1);
          Message m = sessProducer.createTextMessage("XATest1");
          prod.send(m);
          m = sessProducer.createTextMessage("XATest2");
@@ -2038,7 +1930,7 @@ public abstract class XATestBase extends MessagingTestCase
          Transaction tx = tm.getTransaction();
          tx.enlistResource(res);
 
-         MessageConsumer cons = sess.createConsumer(queue);
+         MessageConsumer cons = sess.createConsumer(queue1);
 
 
          TextMessage m2 = (TextMessage)cons.receive(MAX_TIMEOUT);
@@ -2066,8 +1958,6 @@ public abstract class XATestBase extends MessagingTestCase
          tx.delistResource(res, XAResource.TMSUCCESS);
 
          tm.commit();
-
-
       }
       finally
       {
@@ -2092,7 +1982,7 @@ public abstract class XATestBase extends MessagingTestCase
       {
          conn2 = cf.createConnection();
          Session sessProducer = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer prod  = sessProducer.createProducer(queue);
+         MessageProducer prod  = sessProducer.createProducer(queue1);
          Message m = sessProducer.createTextMessage("XATest1");
          prod.send(m);
          m = sessProducer.createTextMessage("XATest2");
@@ -2110,7 +2000,7 @@ public abstract class XATestBase extends MessagingTestCase
          Transaction tx = tm.getTransaction();
          tx.enlistResource(res);
 
-         MessageConsumer cons = sess.createConsumer(queue);
+         MessageConsumer cons = sess.createConsumer(queue1);
 
 
          TextMessage m2 = (TextMessage)cons.receive(MAX_TIMEOUT);
@@ -2177,7 +2067,7 @@ public abstract class XATestBase extends MessagingTestCase
          //First send 2 messages
          conn2 = cf.createConnection();
          Session sessProducer = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer prod  = sessProducer.createProducer(queue);
+         MessageProducer prod  = sessProducer.createProducer(queue1);
          Message m = sessProducer.createTextMessage("jellyfish1");
          prod.send(m);
          m = sessProducer.createTextMessage("jellyfish2");
@@ -2200,7 +2090,7 @@ public abstract class XATestBase extends MessagingTestCase
          tx.enlistResource(res2);
 
          //Receive the messages, one on each consumer
-         MessageConsumer cons1 = sess1.createConsumer(queue);
+         MessageConsumer cons1 = sess1.createConsumer(queue1);
          TextMessage r1 = (TextMessage)cons1.receive(MAX_TIMEOUT);
 
          assertNotNull(r1);
@@ -2208,7 +2098,7 @@ public abstract class XATestBase extends MessagingTestCase
 
          cons1.close();
 
-         MessageConsumer cons2 = sess2.createConsumer(queue);
+         MessageConsumer cons2 = sess2.createConsumer(queue1);
          TextMessage r2 = (TextMessage)cons2.receive(MAX_TIMEOUT);
 
          assertNotNull(r2);
@@ -2221,7 +2111,7 @@ public abstract class XATestBase extends MessagingTestCase
          tm.commit();
 
          Session sess = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageConsumer cons = sess.createConsumer(queue);
+         MessageConsumer cons = sess.createConsumer(queue1);
          conn2.start();
 
          TextMessage r3 = (TextMessage)cons.receive(MIN_TIMEOUT);
@@ -2252,7 +2142,7 @@ public abstract class XATestBase extends MessagingTestCase
          //First send 2 messages
          conn2 = cf.createConnection();
          Session sessProducer = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer prod  = sessProducer.createProducer(queue);
+         MessageProducer prod  = sessProducer.createProducer(queue1);
          Message m = sessProducer.createTextMessage("jellyfish1");
          prod.send(m);
          m = sessProducer.createTextMessage("jellyfish2");
@@ -2277,7 +2167,7 @@ public abstract class XATestBase extends MessagingTestCase
          tx.enlistResource(res2);
 
          //Receive the messages, one on each consumer
-         MessageConsumer cons1 = sess1.createConsumer(queue);
+         MessageConsumer cons1 = sess1.createConsumer(queue1);
          TextMessage r1 = (TextMessage)cons1.receive(MAX_TIMEOUT);
 
          assertNotNull(r1);
@@ -2285,7 +2175,7 @@ public abstract class XATestBase extends MessagingTestCase
 
          cons1.close();
 
-         MessageConsumer cons2 = sess2.createConsumer(queue);
+         MessageConsumer cons2 = sess2.createConsumer(queue1);
          TextMessage r2 = (TextMessage)cons2.receive(MAX_TIMEOUT);
 
          assertNotNull(r2);
@@ -2298,7 +2188,7 @@ public abstract class XATestBase extends MessagingTestCase
          tm.commit();
 
          Session sess = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageConsumer cons = sess.createConsumer(queue);
+         MessageConsumer cons = sess.createConsumer(queue1);
          conn2.start();
 
          TextMessage r3 = (TextMessage)cons.receive(MIN_TIMEOUT);
@@ -2332,7 +2222,7 @@ public abstract class XATestBase extends MessagingTestCase
          //First send 2 messages
          conn2 = cf.createConnection();
          Session sessProducer = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer prod  = sessProducer.createProducer(queue);
+         MessageProducer prod  = sessProducer.createProducer(queue1);
          Message m = sessProducer.createTextMessage("jellyfish1");
          prod.send(m);
          m = sessProducer.createTextMessage("jellyfish2");
@@ -2359,7 +2249,7 @@ public abstract class XATestBase extends MessagingTestCase
          tx.enlistResource(res2);
 
          //Receive the messages, two on each consumer
-         MessageConsumer cons1 = sess1.createConsumer(queue);
+         MessageConsumer cons1 = sess1.createConsumer(queue1);
          TextMessage r1 = (TextMessage)cons1.receive(MAX_TIMEOUT);
 
          assertNotNull(r1);
@@ -2372,7 +2262,7 @@ public abstract class XATestBase extends MessagingTestCase
 
          cons1.close();
 
-         MessageConsumer cons2 = sess2.createConsumer(queue);
+         MessageConsumer cons2 = sess2.createConsumer(queue1);
          TextMessage r2 = (TextMessage)cons2.receive(MAX_TIMEOUT);
 
          assertNotNull(r2);
@@ -2399,7 +2289,7 @@ public abstract class XATestBase extends MessagingTestCase
          //the sessions - this is implementation dependent
 
          Session sess = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageConsumer cons = sess.createConsumer(queue);
+         MessageConsumer cons = sess.createConsumer(queue1);
          conn2.start();
 
          TextMessage r = (TextMessage)cons.receive(MAX_TIMEOUT);
@@ -2492,7 +2382,7 @@ public abstract class XATestBase extends MessagingTestCase
          //First send 2 messages
          conn2 = cf.createConnection();
          Session sessProducer = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer prod  = sessProducer.createProducer(queue);
+         MessageProducer prod  = sessProducer.createProducer(queue1);
          Message m = sessProducer.createTextMessage("jellyfish1");
          prod.send(m);
          m = sessProducer.createTextMessage("jellyfish2");
@@ -2521,7 +2411,7 @@ public abstract class XATestBase extends MessagingTestCase
          tx.enlistResource(res2);
 
          //Receive the messages, two on each consumer
-         MessageConsumer cons1 = sess1.createConsumer(queue);
+         MessageConsumer cons1 = sess1.createConsumer(queue1);
          TextMessage r1 = (TextMessage)cons1.receive(MAX_TIMEOUT);
 
          assertNotNull(r1);
@@ -2537,7 +2427,7 @@ public abstract class XATestBase extends MessagingTestCase
          //Cancel is asynch
          Thread.sleep(500);
 
-         MessageConsumer cons2 = sess2.createConsumer(queue);
+         MessageConsumer cons2 = sess2.createConsumer(queue1);
          TextMessage r2 = (TextMessage)cons2.receive(MAX_TIMEOUT);
 
          assertNotNull(r2);
@@ -2565,7 +2455,7 @@ public abstract class XATestBase extends MessagingTestCase
 
 
          Session sess = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageConsumer cons = sess.createConsumer(queue);
+         MessageConsumer cons = sess.createConsumer(queue1);
          conn2.start();
 
          TextMessage r = (TextMessage)cons.receive(MAX_TIMEOUT);
@@ -2632,8 +2522,6 @@ public abstract class XATestBase extends MessagingTestCase
          r = (TextMessage)cons.receive(MIN_TIMEOUT);
 
          assertNull(r);
-
-
       }
       finally
       {
@@ -2646,7 +2534,6 @@ public abstract class XATestBase extends MessagingTestCase
             conn2.close();
          }
       }
-
    }
 
    public void testMultipleSessionsOneTxRollbackAcknowledgeForceFailureInCommit() throws Exception
@@ -2659,7 +2546,7 @@ public abstract class XATestBase extends MessagingTestCase
          //First send 4 messages
          conn2 = cf.createConnection();
          Session sessProducer = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer prod  = sessProducer.createProducer(queue);
+         MessageProducer prod  = sessProducer.createProducer(queue1);
 
          Message m = sessProducer.createTextMessage("jellyfish1");
          prod.send(m);
@@ -2684,7 +2571,7 @@ public abstract class XATestBase extends MessagingTestCase
          tx.enlistResource(res1);
          tx.enlistResource(res2);
 
-         MessageConsumer cons1 = sess1.createConsumer(queue);
+         MessageConsumer cons1 = sess1.createConsumer(queue1);
          TextMessage r1 = (TextMessage)cons1.receive(MAX_TIMEOUT);
 
          assertNotNull(r1);
@@ -2736,7 +2623,7 @@ public abstract class XATestBase extends MessagingTestCase
 
 
          Session sess = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageConsumer cons = sess.createConsumer(queue);
+         MessageConsumer cons = sess.createConsumer(queue1);
          conn2.start();
 
          TextMessage r = (TextMessage)cons.receive(MAX_TIMEOUT);
@@ -2808,8 +2695,8 @@ public abstract class XATestBase extends MessagingTestCase
 
          // Send 2 messages - one from each session
 
-         MessageProducer prod1 = sess1.createProducer(queue);
-         MessageProducer prod2 = sess2.createProducer(queue);
+         MessageProducer prod1 = sess1.createProducer(queue1);
+         MessageProducer prod2 = sess2.createProducer(queue1);
 
          prod1.send(sess1.createTextMessage("echidna1"));
          prod2.send(sess2.createTextMessage("echidna2"));
@@ -2824,7 +2711,7 @@ public abstract class XATestBase extends MessagingTestCase
 
          conn2 = cf.createConnection();
          Session sess = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageConsumer cons = sess.createConsumer(queue);
+         MessageConsumer cons = sess.createConsumer(queue1);
          conn2.start();
 
          TextMessage r1 = (TextMessage)cons.receive(MAX_TIMEOUT);
@@ -2846,9 +2733,7 @@ public abstract class XATestBase extends MessagingTestCase
          {
             conn2.close();
          }
-
       }
-
    }
 
    public void testMultipleSessionsOneTxCommitSend() throws Exception
@@ -2881,8 +2766,8 @@ public abstract class XATestBase extends MessagingTestCase
 
          // Send 2 messages - one from each session
 
-         MessageProducer prod1 = sess1.createProducer(queue);
-         MessageProducer prod2 = sess2.createProducer(queue);
+         MessageProducer prod1 = sess1.createProducer(queue1);
+         MessageProducer prod2 = sess2.createProducer(queue1);
 
          prod1.send(sess1.createTextMessage("echidna1"));
          prod2.send(sess2.createTextMessage("echidna2"));
@@ -2897,7 +2782,7 @@ public abstract class XATestBase extends MessagingTestCase
 
          conn2 = cf.createConnection();
          Session sess = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageConsumer cons = sess.createConsumer(queue);
+         MessageConsumer cons = sess.createConsumer(queue1);
          conn2.start();
 
          TextMessage r1 = (TextMessage)cons.receive(MAX_TIMEOUT);
@@ -2935,7 +2820,6 @@ public abstract class XATestBase extends MessagingTestCase
 
       try
       {
-
          conn = cf.createXAConnection();
          conn.start();
 
@@ -2953,8 +2837,8 @@ public abstract class XATestBase extends MessagingTestCase
 
          // Send 2 messages - one from each session
 
-         MessageProducer prod1 = sess1.createProducer(queue);
-         MessageProducer prod2 = sess2.createProducer(queue);
+         MessageProducer prod1 = sess1.createProducer(queue1);
+         MessageProducer prod2 = sess2.createProducer(queue1);
 
          prod1.send(sess1.createTextMessage("echidna1"));
          prod2.send(sess2.createTextMessage("echidna2"));
@@ -2969,12 +2853,11 @@ public abstract class XATestBase extends MessagingTestCase
 
          conn2 = cf.createConnection();
          Session sess = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageConsumer cons = sess.createConsumer(queue);
+         MessageConsumer cons = sess.createConsumer(queue1);
          conn2.start();
 
          TextMessage r1 = (TextMessage)cons.receive(MIN_TIMEOUT);
          assertNull(r1);
-
 
       }
       finally
@@ -2987,9 +2870,7 @@ public abstract class XATestBase extends MessagingTestCase
          {
             conn2.close();
          }
-
       }
-
    }
 
    public void testMultipleSessionsOneTxRollbackSend() throws Exception
@@ -3020,8 +2901,8 @@ public abstract class XATestBase extends MessagingTestCase
 
          // Send 2 messages - one from each session
 
-         MessageProducer prod1 = sess1.createProducer(queue);
-         MessageProducer prod2 = sess2.createProducer(queue);
+         MessageProducer prod1 = sess1.createProducer(queue1);
+         MessageProducer prod2 = sess2.createProducer(queue1);
 
          prod1.send(sess1.createTextMessage("echidna1"));
          prod2.send(sess2.createTextMessage("echidna2"));
@@ -3036,13 +2917,11 @@ public abstract class XATestBase extends MessagingTestCase
 
          conn2 = cf.createConnection();
          Session sess = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageConsumer cons = sess.createConsumer(queue);
+         MessageConsumer cons = sess.createConsumer(queue1);
          conn2.start();
 
          TextMessage r1 = (TextMessage)cons.receive(MIN_TIMEOUT);
          assertNull(r1);
-
-
       }
       finally
       {
@@ -3054,9 +2933,7 @@ public abstract class XATestBase extends MessagingTestCase
          {
             conn2.close();
          }
-
       }
-
    }
 
 
@@ -3071,7 +2948,7 @@ public abstract class XATestBase extends MessagingTestCase
          //First send 2 messages
          conn2 = cf.createConnection();
          Session sessProducer = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer prod  = sessProducer.createProducer(queue);
+         MessageProducer prod  = sessProducer.createProducer(queue1);
          Message m = sessProducer.createTextMessage("jellyfish1");
          prod.send(m);
          m = sessProducer.createTextMessage("jellyfish2");
@@ -3084,7 +2961,7 @@ public abstract class XATestBase extends MessagingTestCase
          XAResource res1 = sess1.getXAResource();
 
          conn.start();
-         MessageConsumer cons1 = sess1.createConsumer(queue);
+         MessageConsumer cons1 = sess1.createConsumer(queue1);
 
          tm.begin();
 
@@ -3119,7 +2996,7 @@ public abstract class XATestBase extends MessagingTestCase
          conn2 = cf.createConnection();
          Session sess = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
          conn2.start();
-         MessageConsumer cons = sess.createConsumer(queue);
+         MessageConsumer cons = sess.createConsumer(queue1);
          TextMessage r3 = (TextMessage)cons.receive(MIN_TIMEOUT);
          assertNull(r3);
 
@@ -3129,8 +3006,6 @@ public abstract class XATestBase extends MessagingTestCase
          tx1.delistResource(res1, XAResource.TMSUCCESS);
 
          tm.commit();
-
-
       }
       finally
       {
@@ -3142,9 +3017,7 @@ public abstract class XATestBase extends MessagingTestCase
          {
             conn2.close();
          }
-
       }
-
    }
 
 
@@ -3159,7 +3032,7 @@ public abstract class XATestBase extends MessagingTestCase
          //First send 2 messages
          conn2 = cf.createConnection();
          Session sessProducer = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer prod  = sessProducer.createProducer(queue);
+         MessageProducer prod  = sessProducer.createProducer(queue1);
          Message m = sessProducer.createTextMessage("jellyfish1");
          prod.send(m);
          m = sessProducer.createTextMessage("jellyfish2");
@@ -3172,7 +3045,7 @@ public abstract class XATestBase extends MessagingTestCase
          XAResource res1 = sess1.getXAResource();
 
          conn.start();
-         MessageConsumer cons1 = sess1.createConsumer(queue);
+         MessageConsumer cons1 = sess1.createConsumer(queue1);
 
          tm.begin();
 
@@ -3209,7 +3082,7 @@ public abstract class XATestBase extends MessagingTestCase
          conn2 = cf.createConnection();
          Session sess = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
          conn2.start();
-         MessageConsumer cons = sess.createConsumer(queue);
+         MessageConsumer cons = sess.createConsumer(queue1);
 
          TextMessage r3 = (TextMessage)cons.receive(MAX_TIMEOUT);
 
@@ -3255,14 +3128,13 @@ public abstract class XATestBase extends MessagingTestCase
 
       try
       {
-
          conn = cf.createXAConnection();
 
          //Create a session
          XASession sess1 = conn.createXASession();
          XAResource res1 = sess1.getXAResource();
 
-         MessageProducer prod1 = sess1.createProducer(queue);
+         MessageProducer prod1 = sess1.createProducer(queue1);
 
          tm.begin();
 
@@ -3293,7 +3165,7 @@ public abstract class XATestBase extends MessagingTestCase
          conn2 = cf.createConnection();
          Session sess = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
          conn2.start();
-         MessageConsumer cons = sess.createConsumer(queue);
+         MessageConsumer cons = sess.createConsumer(queue1);
          TextMessage r1 = (TextMessage)cons.receive(MAX_TIMEOUT);
          assertNotNull(r1);
          assertEquals("kangaroo2", r1.getText());
@@ -3344,7 +3216,7 @@ public abstract class XATestBase extends MessagingTestCase
          XASession sess1 = conn.createXASession();
          XAResource res1 = sess1.getXAResource();
 
-         MessageProducer prod1 = sess1.createProducer(queue);
+         MessageProducer prod1 = sess1.createProducer(queue1);
 
          tm.begin();
 
@@ -3375,7 +3247,7 @@ public abstract class XATestBase extends MessagingTestCase
          conn2 = cf.createConnection();
          Session sess = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
          conn2.start();
-         MessageConsumer cons = sess.createConsumer(queue);
+         MessageConsumer cons = sess.createConsumer(queue1);
          TextMessage r1 = (TextMessage)cons.receive(MIN_TIMEOUT);
 
          assertNull(r1);
@@ -3409,6 +3281,8 @@ public abstract class XATestBase extends MessagingTestCase
 
    }
 
+   
+   //FIXME - this test doesn't belong here - should be in SecurityTest
    /**
     * This Validate sending messages on an Queue where the user don't have write authorization
     * @throws Exception
@@ -3432,11 +3306,9 @@ public abstract class XATestBase extends MessagingTestCase
 
          XAResource resouce = xasession.getXAResource();
 
-         MessageProducer producer = xasession.createProducer(queue);
+         MessageProducer producer = xasession.createProducer(queue1);
 
          trans.enlistResource(resouce);
-
-
 
          for (int i=0;i<10;i++)
          {

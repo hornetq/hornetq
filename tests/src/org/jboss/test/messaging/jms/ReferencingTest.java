@@ -22,19 +22,15 @@
 package org.jboss.test.messaging.jms;
 
 import javax.jms.Connection;
-import javax.jms.Destination;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.jms.Session;
 import javax.jms.TextMessage;
-import javax.naming.InitialContext;
 
-import org.jboss.jms.client.JBossConnectionFactory;
 import org.jboss.jms.message.MessageProxy;
 import org.jboss.messaging.core.contract.MessageReference;
 import org.jboss.messaging.core.contract.MessageStore;
 import org.jboss.messaging.core.impl.message.SimpleMessageReference;
-import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
 
 /**
@@ -46,7 +42,7 @@ import org.jboss.test.messaging.tools.ServerManagement;
  *
  * $Id$
  */
-public class ReferencingTest extends MessagingTestCase
+public class ReferencingTest extends JMSTestCase
 {
    // Constants -----------------------------------------------------
 
@@ -54,50 +50,12 @@ public class ReferencingTest extends MessagingTestCase
    
    // Attributes ----------------------------------------------------
 
-   protected InitialContext initialContext;
-   
-   protected JBossConnectionFactory cf;
-   
-   protected Destination queue;
-
    // Constructors --------------------------------------------------
 
    public ReferencingTest(String name)
    {
       super(name);
    }
-
-   // TestCase overrides -------------------------------------------
-
-   public void setUp() throws Exception
-   {
-      if (ServerManagement.isRemote())
-      {
-         fail("this test is not supposed to run in a remote configuration!");
-      }
-
-      super.setUp();
-      ServerManagement.start("all");
-            
-      initialContext = new InitialContext(ServerManagement.getJNDIEnvironment());
-      cf = (JBossConnectionFactory)initialContext.lookup("/ConnectionFactory");
-      
-      ServerManagement.undeployQueue("Queue");
-      ServerManagement.deployQueue("Queue");
-
-      queue = (Destination)initialContext.lookup("/queue/Queue"); 
-      
-      this.drainDestination(cf, queue);
-      
-   }
-
-   public void tearDown() throws Exception
-   {
-      ServerManagement.undeployQueue("Queue");
-        
-      super.tearDown();
-   }
-
 
    // Public --------------------------------------------------------
    
@@ -109,9 +67,9 @@ public class ReferencingTest extends MessagingTestCase
       
       Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
       
-      MessageProducer prod = sess.createProducer(queue);
+      MessageProducer prod = sess.createProducer(queue1);
       
-      MessageConsumer cons = sess.createConsumer(queue);
+      MessageConsumer cons = sess.createConsumer(queue1);
       
       conn.start();
       
@@ -139,7 +97,7 @@ public class ReferencingTest extends MessagingTestCase
       
       Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
       
-      MessageProducer prod = sess.createProducer(queue);
+      MessageProducer prod = sess.createProducer(queue1);
                   
       conn.start();
       
@@ -147,7 +105,7 @@ public class ReferencingTest extends MessagingTestCase
       
       prod.send(m);
       
-      MessageConsumer cons = sess.createConsumer(queue);
+      MessageConsumer cons = sess.createConsumer(queue1);
       
       TextMessage m2 = (TextMessage)cons.receive(1000);
       
@@ -171,9 +129,9 @@ public class ReferencingTest extends MessagingTestCase
       
       Session sess = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
       
-      MessageProducer prod = sess.createProducer(queue);
+      MessageProducer prod = sess.createProducer(queue1);
       
-      MessageConsumer cons = sess.createConsumer(queue);
+      MessageConsumer cons = sess.createConsumer(queue1);
       
       conn.start();
       
@@ -209,7 +167,7 @@ public class ReferencingTest extends MessagingTestCase
       
       Session sess = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
       
-      MessageProducer prod = sess.createProducer(queue);
+      MessageProducer prod = sess.createProducer(queue1);
                   
       conn.start();
       
@@ -217,7 +175,7 @@ public class ReferencingTest extends MessagingTestCase
       
       prod.send(m);
       
-      MessageConsumer cons = sess.createConsumer(queue);
+      MessageConsumer cons = sess.createConsumer(queue1);
       
       TextMessage m2 = (TextMessage)cons.receive(1000);
       
@@ -247,7 +205,7 @@ public class ReferencingTest extends MessagingTestCase
       
       Session sess = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
       
-      MessageProducer prod = sess.createProducer(queue);
+      MessageProducer prod = sess.createProducer(queue1);
                   
       conn.start();
       
@@ -255,7 +213,7 @@ public class ReferencingTest extends MessagingTestCase
       
       prod.send(m);
       
-      MessageConsumer cons = sess.createConsumer(queue);
+      MessageConsumer cons = sess.createConsumer(queue1);
       
       TextMessage m2 = (TextMessage)cons.receive(1000);
       
@@ -298,9 +256,9 @@ public class ReferencingTest extends MessagingTestCase
       
       Session sess = conn.createSession(true, Session.SESSION_TRANSACTED);
       
-      MessageProducer prod = sess.createProducer(queue);
+      MessageProducer prod = sess.createProducer(queue1);
       
-      MessageConsumer cons = sess.createConsumer(queue);
+      MessageConsumer cons = sess.createConsumer(queue1);
                         
       conn.start();
       
@@ -338,9 +296,9 @@ public class ReferencingTest extends MessagingTestCase
       
       Session sess = conn.createSession(true, Session.SESSION_TRANSACTED);
       
-      MessageProducer prod = sess.createProducer(queue);
+      MessageProducer prod = sess.createProducer(queue1);
       
-      MessageConsumer cons = sess.createConsumer(queue);
+      MessageConsumer cons = sess.createConsumer(queue1);
                         
       conn.start();
       
@@ -387,9 +345,9 @@ public class ReferencingTest extends MessagingTestCase
       
       Session sess = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
       
-      MessageProducer prod = sess.createProducer(queue);
+      MessageProducer prod = sess.createProducer(queue1);
       
-      MessageConsumer cons = sess.createConsumer(queue);
+      MessageConsumer cons = sess.createConsumer(queue1);
       
       conn.start();
       

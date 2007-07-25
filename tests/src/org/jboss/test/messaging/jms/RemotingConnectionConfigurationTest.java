@@ -23,11 +23,8 @@ package org.jboss.test.messaging.jms;
 
 import java.lang.reflect.Field;
 import java.net.InetAddress;
-import java.util.Map;
 import java.util.HashSet;
-
-import javax.jms.ConnectionFactory;
-import javax.naming.InitialContext;
+import java.util.Map;
 
 import org.jboss.jms.client.JBossConnection;
 import org.jboss.jms.client.delegate.ClientConnectionDelegate;
@@ -38,7 +35,6 @@ import org.jboss.remoting.callback.CallbackPoller;
 import org.jboss.remoting.callback.InvokerCallbackHandler;
 import org.jboss.remoting.transport.Connector;
 import org.jboss.remoting.transport.PortUtil;
-import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
 import org.jboss.test.messaging.tools.jmx.ServiceContainer;
 
@@ -49,7 +45,7 @@ import org.jboss.test.messaging.tools.jmx.ServiceContainer;
  *
  * $Id$
  */
-public class RemotingConnectionConfigurationTest extends MessagingTestCase
+public class RemotingConnectionConfigurationTest extends JMSTestCase
 {
    // Constants -----------------------------------------------------
 
@@ -57,32 +53,12 @@ public class RemotingConnectionConfigurationTest extends MessagingTestCase
 
    // Attributes ----------------------------------------------------
 
-   protected ConnectionFactory cf;
-
    // Constructors --------------------------------------------------
 
    public RemotingConnectionConfigurationTest(String name)
    {
       super(name);
    }
-
-   // TestCase overrides -------------------------------------------
-
-   public void setUp() throws Exception
-   {
-      super.setUp();
-      ServerManagement.start("all");
-      InitialContext ic = new InitialContext(ServerManagement.getJNDIEnvironment());
-      cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
-      log.debug("setup done");
-   }
-
-   public void tearDown() throws Exception
-   {
-      super.tearDown();
-   }
-
-
    // Public --------------------------------------------------------
 
    /**
@@ -222,6 +198,15 @@ public class RemotingConnectionConfigurationTest extends MessagingTestCase
          {
             connection.close();
          }
+         
+         System.clearProperty("jboss.messaging.callback.bind.address");
+         
+         System.clearProperty("jboss.messaging.callback.bind.port");
+
+         System.clearProperty("jboss.messaging.callback.pollPeriod");
+
+         System.clearProperty("jboss.messaging.callback.reportPollingStatistics");
+         
       }
    }
 }

@@ -27,7 +27,7 @@ import javax.jms.Message;
  * @author <a href="mailto:dua_rajdeep@yahoo.com">Rajdeep Dua</a>
  * @version <tt>$Revision$</tt>
  */
-public class JMSTypeHeaderTest extends MessageTest
+public class JMSTypeHeaderTest extends MessageHeaderTestBase
 {
    // Constants -----------------------------------------------------
 
@@ -43,16 +43,6 @@ public class JMSTypeHeaderTest extends MessageTest
    }
 
    // Public --------------------------------------------------------
-
-   public void setUp() throws Exception
-   {
-      super.setUp();
-   }
-
-   public void tearDown() throws Exception
-   {
-      super.tearDown();
-   }
 
    public void testJMSType() throws Exception
    {

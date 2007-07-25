@@ -29,12 +29,7 @@ import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 
 import javax.jms.Connection;
-import javax.jms.ConnectionFactory;
 import javax.jms.ConnectionMetaData;
-import javax.naming.InitialContext;
-
-import org.jboss.test.messaging.MessagingTestCase;
-import org.jboss.test.messaging.tools.ServerManagement;
 
 /**
  * Tests MANIFEST.MF content of the output jar.
@@ -44,7 +39,7 @@ import org.jboss.test.messaging.tools.ServerManagement;
  *
  * $Id$
  */
-public class ManifestTest extends MessagingTestCase
+public class ManifestTest extends JMSTestCase
 {
    // Constants -----------------------------------------------------
 
@@ -60,11 +55,6 @@ public class ManifestTest extends MessagingTestCase
    }
 
    // Public --------------------------------------------------------
-   public void setUp() throws Exception
-   {
-      super.setUp();
-      ServerManagement.start("all");
-   }
 
    public void testManifestEntries() throws Exception
    {
@@ -82,32 +72,42 @@ public class ManifestTest extends MessagingTestCase
       Manifest manifest = jar.getManifest();
       
       // Open a connection and get ConnectionMetaData
-      InitialContext ic = new InitialContext(ServerManagement.getJNDIEnvironment());
-      ConnectionFactory cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
-      Connection conn = cf.createConnection();
-      assertNotNull(conn);
-      ConnectionMetaData meta = conn.getMetaData();
+      Connection conn = null;
       
-      // Compare the value from ConnectionMetaData and MANIFEST.MF
-      Attributes attrs = manifest.getMainAttributes();
-      
-      log.info("META--> " + meta.getJMSMajorVersion());
-      log.info("META--> " + meta.getJMSMinorVersion());
-      log.info("META--> " + meta.getJMSProviderName());
-      log.info("META--> " + meta.getJMSVersion());
-      log.info("META--> " + meta.getProviderMajorVersion());
-      log.info("META--> " + meta.getProviderMinorVersion());
-      log.info("META--> " + meta.getProviderVersion());
-      
-      Iterator itr = attrs.entrySet().iterator();
-      while (itr.hasNext()) {
-         Object item = itr.next();
-         log.trace("MANIFEST--> " + item + " : " + attrs.get(item));
+      try
+      {	      
+	      conn = cf.createConnection();
+	      assertNotNull(conn);
+	      ConnectionMetaData meta = conn.getMetaData();
+	      
+	      // Compare the value from ConnectionMetaData and MANIFEST.MF
+	      Attributes attrs = manifest.getMainAttributes();
+	      
+	      log.info("META--> " + meta.getJMSMajorVersion());
+	      log.info("META--> " + meta.getJMSMinorVersion());
+	      log.info("META--> " + meta.getJMSProviderName());
+	      log.info("META--> " + meta.getJMSVersion());
+	      log.info("META--> " + meta.getProviderMajorVersion());
+	      log.info("META--> " + meta.getProviderMinorVersion());
+	      log.info("META--> " + meta.getProviderVersion());
+	      
+	      Iterator itr = attrs.entrySet().iterator();
+	      while (itr.hasNext()) {
+	         Object item = itr.next();
+	         log.trace("MANIFEST--> " + item + " : " + attrs.get(item));
+	      }
+	      
+	      assertEquals(attrs.getValue("Implementation-Title"), meta.getJMSProviderName());
+	      String ver = attrs.getValue("Implementation-Version");
+	      assertTrue(-1 != ver.indexOf(meta.getProviderVersion()));
       }
-      
-      assertEquals(attrs.getValue("Implementation-Title"), meta.getJMSProviderName());
-      String ver = attrs.getValue("Implementation-Version");
-      assertTrue(-1 != ver.indexOf(meta.getProviderVersion()));
+      finally
+      {
+      	if (conn != null)
+      	{
+      		conn.close();
+      	}
+      }
    }
    
    // Package protected ---------------------------------------------

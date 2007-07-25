@@ -22,18 +22,12 @@
 package org.jboss.test.messaging.core;
 
 import java.io.Serializable;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import javax.naming.InitialContext;
-import javax.sql.DataSource;
-import javax.transaction.TransactionManager;
 import javax.transaction.xa.Xid;
 
 import org.jboss.messaging.core.contract.Channel;
@@ -50,7 +44,6 @@ import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
 import org.jboss.test.messaging.tools.jmx.ServiceContainer;
 import org.jboss.test.messaging.util.CoreMessageFactory;
-import org.jboss.tm.TransactionManagerService;
 import org.jboss.util.id.GUID;
 
 
@@ -1507,81 +1500,7 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
    }
    
    
-   protected List getReferenceIds(long channelId) throws Throwable
-   {
-      InitialContext ctx = new InitialContext();
-
-      TransactionManager mgr = (TransactionManager)ctx.lookup(TransactionManagerService.JNDI_NAME);
-      DataSource ds = (DataSource)ctx.lookup("java:/DefaultDS");
-      
-      javax.transaction.Transaction txOld = mgr.suspend();
-      mgr.begin();
-
-      Connection conn = ds.getConnection();
-      String sql = "SELECT MESSAGE_ID FROM JBM_MSG_REF WHERE CHANNEL_ID=? ORDER BY ORD";
-      PreparedStatement ps = conn.prepareStatement(sql);
-      ps.setLong(1, channelId);
-   
-      ResultSet rs = ps.executeQuery();
-      
-      List msgIds = new ArrayList();
-      
-      while (rs.next())
-      {
-         long msgId = rs.getLong(1);
-         msgIds.add(new Long(msgId));
-      }
-      rs.close();
-      ps.close();
-      conn.close();
-
-      mgr.commit();
-
-      if (txOld != null)
-      {
-         mgr.resume(txOld);
-      }
-      
-      return msgIds;
-   }
-   
-   protected List getMessageIds() throws Throwable
-   {
-      InitialContext ctx = new InitialContext();
-
-      TransactionManager mgr = (TransactionManager)ctx.lookup(TransactionManagerService.JNDI_NAME);
-      DataSource ds = (DataSource)ctx.lookup("java:/DefaultDS");
-      
-      javax.transaction.Transaction txOld = mgr.suspend();
-      mgr.begin();
-
-      Connection conn = ds.getConnection();
-      String sql = "SELECT MESSAGE_ID FROM JBM_MSG ORDER BY MESSAGE_ID";
-      PreparedStatement ps = conn.prepareStatement(sql);
-      
-      ResultSet rs = ps.executeQuery();
-      
-      List msgIds = new ArrayList();
-      
-      while (rs.next())
-      {
-         long msgId = rs.getLong(1);
-         msgIds.add(new Long(msgId));
-      }
-      rs.close();
-      ps.close();
-      conn.close();
-
-      mgr.commit();
-
-      if (txOld != null)
-      {
-         mgr.resume(txOld);
-      }
-      
-      return msgIds;
-   }
-   
+  
 }
 
 

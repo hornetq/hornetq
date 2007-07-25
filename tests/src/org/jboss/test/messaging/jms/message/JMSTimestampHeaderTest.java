@@ -27,7 +27,7 @@ import javax.jms.Message;
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  */
-public class JMSTimestampHeaderTest extends MessageTest
+public class JMSTimestampHeaderTest extends MessageHeaderTestBase
 {
    // Constants -----------------------------------------------------
 
@@ -43,16 +43,6 @@ public class JMSTimestampHeaderTest extends MessageTest
    }
 
    // Public --------------------------------------------------------
-
-   public void setUp() throws Exception
-   {
-      super.setUp();
-   }
-
-   public void tearDown() throws Exception
-   {
-      super.tearDown();
-   }
 
    public void testJMSTimestamp() throws Exception
    {

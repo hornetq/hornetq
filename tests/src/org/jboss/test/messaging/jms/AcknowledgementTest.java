@@ -24,25 +24,20 @@ package org.jboss.test.messaging.jms;
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.DeliveryMode;
-import javax.jms.Destination;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageListener;
 import javax.jms.MessageProducer;
 import javax.jms.Session;
 import javax.jms.TextMessage;
-import javax.jms.Topic;
 import javax.jms.TopicConnection;
 import javax.jms.TopicPublisher;
 import javax.jms.TopicSession;
 import javax.jms.TopicSubscriber;
 import javax.management.ObjectName;
-import javax.naming.InitialContext;
 
-import org.jboss.jms.client.JBossConnectionFactory;
 import org.jboss.jms.client.JBossSession;
 import org.jboss.jms.client.delegate.ClientSessionDelegate;
-import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
 
 import EDU.oswego.cs.dl.util.concurrent.Latch;
@@ -52,19 +47,13 @@ import EDU.oswego.cs.dl.util.concurrent.Latch;
  *
  * $Id$
  */
-public class AcknowledgementTest extends MessagingTestCase
+public class AcknowledgementTest extends JMSTestCase
 {
    // Constants -----------------------------------------------------
 
    // Static --------------------------------------------------------
    
    // Attributes ----------------------------------------------------
-
-   protected InitialContext initialContext;
-   
-   protected JBossConnectionFactory cf;
-   protected Destination queue;
-   protected Topic topic;
 
    // Constructors --------------------------------------------------
 
@@ -75,38 +64,8 @@ public class AcknowledgementTest extends MessagingTestCase
 
    // TestCase overrides -------------------------------------------
 
-   public void setUp() throws Exception
-   {
-      super.setUp();
-      ServerManagement.start("all");
-                  
-      initialContext = new InitialContext(ServerManagement.getJNDIEnvironment());
-      cf = (JBossConnectionFactory)initialContext.lookup("/ConnectionFactory");
-                 
-      ServerManagement.undeployQueue("Queue");
-      ServerManagement.deployQueue("Queue");
-      ServerManagement.undeployTopic("Topic");
-      ServerManagement.deployTopic("Topic");
-      queue = (Destination)initialContext.lookup("/queue/Queue"); 
-      topic = (Topic)initialContext.lookup("/topic/Topic");     
-      
-      drainDestination(cf, queue);
-
-      log.debug("setup done");
-   }
-
-   public void tearDown() throws Exception
-   {
-      ServerManagement.undeployQueue("Queue");
-      ServerManagement.undeployTopic("Topic");
-      
-      super.tearDown();      
-   }
-
-
    // Public --------------------------------------------------------
-   
-   
+      
    /* Topics shouldn't hold on to messages if there are no subscribers */
    public void testPersistentMessagesForTopicDropped() throws Exception
    {
@@ -116,7 +75,7 @@ public class AcknowledgementTest extends MessagingTestCase
       {
          conn = cf.createTopicConnection();
          TopicSession sess = conn.createTopicSession(true, 0);
-         TopicPublisher pub = sess.createPublisher(topic);
+         TopicPublisher pub = sess.createPublisher(topic1);
          pub.setDeliveryMode(DeliveryMode.PERSISTENT);
          
          Message m = sess.createTextMessage("testing123");
@@ -124,14 +83,8 @@ public class AcknowledgementTest extends MessagingTestCase
          sess.commit();
          
          conn.close();
-         conn = cf.createTopicConnection();
-         conn.start();
          
-         TopicSession newsess = conn.createTopicSession(true, 0);
-         TopicSubscriber newcons = newsess.createSubscriber(topic);
-         
-         Message m2 = (Message)newcons.receive(200);
-         assertNull(m2);
+         checkEmpty(topic1);
       }
       finally
       {
@@ -152,8 +105,8 @@ public class AcknowledgementTest extends MessagingTestCase
          conn = cf.createTopicConnection();
          conn.start();
          TopicSession sess = conn.createTopicSession(true, 0);
-         TopicPublisher pub = sess.createPublisher(topic);
-         TopicSubscriber sub = sess.createSubscriber(topic);
+         TopicPublisher pub = sess.createPublisher(topic1);
+         TopicSubscriber sub = sess.createSubscriber(topic1);
          pub.setDeliveryMode(DeliveryMode.PERSISTENT);
          
          Message m = sess.createTextMessage("testing123");
@@ -169,14 +122,8 @@ public class AcknowledgementTest extends MessagingTestCase
          sess.rollback();
          
          conn.close();
-         conn = cf.createTopicConnection();
-         conn.start();
          
-         TopicSession newsess = conn.createTopicSession(true, 0);
-         TopicSubscriber newcons = newsess.createSubscriber(topic);
-         
-         Message m3 = (Message)newcons.receive(200);
-         assertNull(m3);
+         checkEmpty(topic1);
       }
       finally
       {
@@ -195,8 +142,8 @@ public class AcknowledgementTest extends MessagingTestCase
       {
          conn = cf.createTopicConnection();
          TopicSession sess = conn.createTopicSession(true, 0);
-         TopicPublisher pub = sess.createPublisher(topic);
-         TopicSubscriber cons = sess.createSubscriber(topic);
+         TopicPublisher pub = sess.createPublisher(topic1);
+         TopicSubscriber cons = sess.createSubscriber(topic1);
          conn.start();
          
          Message m = sess.createTextMessage("testing123");
@@ -221,8 +168,8 @@ public class AcknowledgementTest extends MessagingTestCase
          //test 2
          
          TopicSession newsess = conn.createTopicSession(true, 0);
-         TopicPublisher newpub = newsess.createPublisher(topic);
-         TopicSubscriber newcons = newsess.createSubscriber(topic);
+         TopicPublisher newpub = newsess.createPublisher(topic1);
+         TopicSubscriber newcons = newsess.createSubscriber(topic1);
          
          Message m3 = newsess.createTextMessage("testing456");
          newpub.publish(m3);
@@ -247,8 +194,7 @@ public class AcknowledgementTest extends MessagingTestCase
          assertNotNull(m6);
          assertEquals("testing456", m6.getText());
          
-         newsess.commit();
-         
+         newsess.commit();         
       }
       finally
       {
@@ -261,90 +207,93 @@ public class AcknowledgementTest extends MessagingTestCase
    
    public void testTransactionalAcknowledgement() throws Exception
    {
-
-      Connection conn = cf.createConnection();
-
-      Session producerSess = conn.createSession(true, Session.SESSION_TRANSACTED);
-      MessageProducer producer = producerSess.createProducer(queue);
-
-      Session consumerSess = conn.createSession(true, Session.SESSION_TRANSACTED);
-      MessageConsumer consumer = consumerSess.createConsumer(queue);
-      conn.start();
-
-      final int NUM_MESSAGES = 20;
-
-      //Send some messages
-      for (int i = 0; i < NUM_MESSAGES; i++)
+      Connection conn = null;
+      
+      try
       {
-         Message m = producerSess.createMessage();
-         producer.send(m);
+	      
+	      conn = cf.createConnection();
+	
+	      Session producerSess = conn.createSession(true, Session.SESSION_TRANSACTED);
+	      MessageProducer producer = producerSess.createProducer(queue1);
+	
+	      Session consumerSess = conn.createSession(true, Session.SESSION_TRANSACTED);
+	      MessageConsumer consumer = consumerSess.createConsumer(queue1);
+	      conn.start();
+	
+	      final int NUM_MESSAGES = 20;
+	
+	      //Send some messages
+	      for (int i = 0; i < NUM_MESSAGES; i++)
+	      {
+	         Message m = producerSess.createMessage();
+	         producer.send(m);
+	      }
+	
+	      assertRemainingMessages(0);
+	      
+	      producerSess.rollback();
+	      
+	      //Send some messages
+	      for (int i = 0; i < NUM_MESSAGES; i++)
+	      {
+	         Message m = producerSess.createMessage();
+	         producer.send(m);
+	      }
+	      assertRemainingMessages(0);
+	      
+	      producerSess.commit();
+	
+	      assertRemainingMessages(NUM_MESSAGES);
+	
+	      log.trace("Sent messages");
+	
+	      int count = 0;
+	      while (true)
+	      {
+	         Message m = consumer.receive(200);
+	         if (m == null) break;
+	         count++;
+	      }
+	      
+	      assertRemainingMessages(NUM_MESSAGES);
+	
+	      log.trace("Received " + count +  " messages");
+	
+	      assertEquals(count, NUM_MESSAGES);
+	
+	      consumerSess.rollback();
+	      
+	      assertRemainingMessages(NUM_MESSAGES);
+	
+	      log.trace("Session rollback called");
+	
+	      int i = 0;
+	      for(; i < NUM_MESSAGES; i++)
+	      {
+	         consumer.receive();
+	         log.trace("Received message " + i);	  
+	      }
+	      
+	      assertRemainingMessages(NUM_MESSAGES);
+	
+	      // if I don't receive enough messages, the test will timeout
+	
+	      log.trace("Received " + i +  " messages after recover");
+	      
+	      consumerSess.commit();
+	      
+	      assertRemainingMessages(0);
+	
+	      checkEmpty(queue1);
       }
-
-      assertRemainingMessages(0);
-      
-      producerSess.rollback();
-      
-      //Send some messages
-      for (int i = 0; i < NUM_MESSAGES; i++)
+      finally
       {
-         Message m = producerSess.createMessage();
-         producer.send(m);
+      	if (conn != null)
+      	{
+      		conn.close();
+      	}
       }
-      assertRemainingMessages(0);
-      
-      producerSess.commit();
-
-      assertRemainingMessages(NUM_MESSAGES);
-
-      log.trace("Sent messages");
-
-      int count = 0;
-      while (true)
-      {
-         Message m = consumer.receive(200);
-         if (m == null) break;
-         count++;
-      }
-      
-      assertRemainingMessages(NUM_MESSAGES);
-
-      log.trace("Received " + count +  " messages");
-
-      assertEquals(count, NUM_MESSAGES);
-
-      consumerSess.rollback();
-      
-      assertRemainingMessages(NUM_MESSAGES);
-
-      log.trace("Session rollback called");
-
-      Message m = null;
-
-      int i = 0;
-      for(; i < NUM_MESSAGES; i++)
-      {
-         m = consumer.receive();
-         log.trace("Received message " + i);
-  
-      }
-      
-      assertRemainingMessages(NUM_MESSAGES);
-
-      // if I don't receive enough messages, the test will timeout
-
-      log.trace("Received " + i +  " messages after recover");
-      
-      consumerSess.commit();
-      
-      assertRemainingMessages(0);
-
-      // make sure I don't receive anything else
-
-      m = consumer.receive(200);
-      assertNull(m);
-
-      conn.close();
-
    }
 
 	/**
@@ -352,75 +301,85 @@ public class AcknowledgementTest extends MessagingTestCase
 	 */
 	public void testClientAcknowledgeNoAcknowledgement() throws Exception
    {
-		Connection conn = cf.createConnection();
-
-		Session producerSess = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
-		MessageProducer producer = producerSess.createProducer(queue);
-
-		Session consumerSess = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
-		MessageConsumer consumer = consumerSess.createConsumer(queue);
-		conn.start();
-
-		final int NUM_MESSAGES = 20;
-
-		//Send some messages
-		for (int i = 0; i < NUM_MESSAGES; i++)
-		{
-			Message m = producerSess.createMessage();
-			producer.send(m);
+		Connection conn = null;
+		
+		try
+		{		
+			conn = cf.createConnection();
+	
+			Session producerSess = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
+			MessageProducer producer = producerSess.createProducer(queue1);
+	
+			Session consumerSess = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
+			MessageConsumer consumer = consumerSess.createConsumer(queue1);
+			conn.start();
+	
+			final int NUM_MESSAGES = 20;
+	
+			//Send some messages
+			for (int i = 0; i < NUM_MESSAGES; i++)
+			{
+				Message m = producerSess.createMessage();
+				producer.send(m);
+			}
+	      
+	      assertRemainingMessages(NUM_MESSAGES);
+	
+			log.trace("Sent messages");
+	
+			int count = 0;
+			while (true)
+			{
+				Message m = consumer.receive(200);
+				if (m == null) break;
+				count++;
+			}
+	      
+	      assertRemainingMessages(NUM_MESSAGES);
+	
+			log.trace("Received " + count +  " messages");
+	
+			assertEquals(count, NUM_MESSAGES);
+	
+			consumerSess.recover();
+	      
+	      assertRemainingMessages(NUM_MESSAGES);
+	
+			log.trace("Session recover called");
+	
+	      Message m = null;
+	
+	      int i = 0;
+	      for(; i < NUM_MESSAGES; i++)
+	      {
+	         m = consumer.receive();
+	         log.trace("Received message " + i);
+	
+	      }
+	      
+	      assertRemainingMessages(NUM_MESSAGES);
+	
+	      // if I don't receive enough messages, the test will timeout
+	
+			log.trace("Received " + i +  " messages after recover");
+	      
+	      m.acknowledge();
+	      
+	      assertRemainingMessages(0);
+	
+	      // make sure I don't receive anything else
+	
+	      checkEmpty(queue1);
+	
+			conn.close();
 		}
-      
-      assertRemainingMessages(NUM_MESSAGES);
-
-		log.trace("Sent messages");
-
-		int count = 0;
-		while (true)
+		finally
 		{
-			Message m = consumer.receive(200);
-			if (m == null) break;
-			count++;
+			if (conn != null)
+			{
+				conn.close();
+			}
 		}
-      
-      assertRemainingMessages(NUM_MESSAGES);
-
-		log.trace("Received " + count +  " messages");
-
-		assertEquals(count, NUM_MESSAGES);
-
-		consumerSess.recover();
-      
-      assertRemainingMessages(NUM_MESSAGES);
-
-		log.trace("Session recover called");
-
-      Message m = null;
-
-      int i = 0;
-      for(; i < NUM_MESSAGES; i++)
-      {
-         m = consumer.receive();
-         log.trace("Received message " + i);
-
-      }
-      
-      assertRemainingMessages(NUM_MESSAGES);
-
-      // if I don't receive enough messages, the test will timeout
-
-		log.trace("Received " + i +  " messages after recover");
-      
-      m.acknowledge();
-      
-      assertRemainingMessages(0);
-
-      // make sure I don't receive anything else
-
-      m = consumer.receive(200);
-      assertNull(m);
-
-		conn.close();
-
    }
 
 	
@@ -431,64 +390,56 @@ public class AcknowledgementTest extends MessagingTestCase
 	 */
 	public void testIndividualClientAcknowledge() throws Exception
    {		
-		Connection conn = cf.createConnection();
-
-      Session producerSess = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
-		MessageProducer producer = producerSess.createProducer(queue);
+		Connection conn = null;
 		
-		Session consumerSess = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
-		MessageConsumer consumer = consumerSess.createConsumer(queue);
-		conn.start();
-		
-		final int NUM_MESSAGES = 20;
-		
-		for (int i = 0; i < NUM_MESSAGES; i++)
-		{
-			Message m = producerSess.createMessage();
-			producer.send(m);
-		}
+		try
+		{			
+			conn = cf.createConnection();
+	
+	      Session producerSess = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
+			MessageProducer producer = producerSess.createProducer(queue1);
+			
+			Session consumerSess = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
+			MessageConsumer consumer = consumerSess.createConsumer(queue1);
+			conn.start();
+			
+			final int NUM_MESSAGES = 20;
+			
+			for (int i = 0; i < NUM_MESSAGES; i++)
+			{
+				Message m = producerSess.createMessage();
+				producer.send(m);
+			}
+	      
+	      assertRemainingMessages(NUM_MESSAGES);
+			
+			for (int i = 0; i < NUM_MESSAGES; i++)
+			{
+				Message m = consumer.receive(200);
+				
+				assertNotNull(m);
       
-      assertRemainingMessages(NUM_MESSAGES);
-		
-		log.trace("Sent " + NUM_MESSAGES + " messages");
-		
-		int count = 0;
-		while (true)		
-		{
+	         assertRemainingMessages(NUM_MESSAGES - i);
+	         
+				m.acknowledge();
+	         
+	         assertRemainingMessages(NUM_MESSAGES - (i + 1));
+			}
+	
+	      assertRemainingMessages(0);
+	       
+			consumerSess.recover();
+			
 			Message m = consumer.receive(200);
-         log.trace("Received message " + m);
-			if (m == null)
-         {
-            break;
-         }
-         log.trace("Acking session");
-         
-         assertRemainingMessages(NUM_MESSAGES - count);
-         
-			m.acknowledge();
-         
-         assertRemainingMessages(NUM_MESSAGES - (count + 1));
-			count++;
+			assertNull(m);
 		}
-
-      assertRemainingMessages(0);
-      
-      assertEquals(NUM_MESSAGES, count);
-      log.trace("received and acknowledged " + count +  " messages");
-
-      Message m = consumer.receive(200);
-		assertNull(m);
-      
-      log.trace("mesage is " + m);
-
-      log.trace("calling session recover()");
-		consumerSess.recover();
-		log.trace("recover called");
-		
-		m = consumer.receive(200);
-		assertNull(m);
-		
-		conn.close();
+		finally
+		{
+			if (conn != null)
+			{
+				conn.close();
+			}
+		}
 		
    }
 
@@ -499,62 +450,70 @@ public class AcknowledgementTest extends MessagingTestCase
 	 */
 	public void testBulkClientAcknowledge() throws Exception
    {
-
-		Connection conn = cf.createConnection();
-
-		Session producerSess = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
-		MessageProducer producer = producerSess.createProducer(queue);
-
-		Session consumerSess = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
-		MessageConsumer consumer = consumerSess.createConsumer(queue);
-		conn.start();
-
-		final int NUM_MESSAGES = 20;
-
-		//Send some messages
-		for (int i = 0; i < NUM_MESSAGES; i++)
+		Connection conn = null;
+		
+		try
 		{
-			Message m = producerSess.createMessage();
-			producer.send(m);
-		}
-      
-      assertRemainingMessages(NUM_MESSAGES);
-
-		log.trace("Sent messages");
-
-		Message m = null;
-		int count = 0;
-		for (int i = 0; i < NUM_MESSAGES; i++)
-		{
+			conn = cf.createConnection();
+	
+			Session producerSess = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
+			MessageProducer producer = producerSess.createProducer(queue1);
+	
+			Session consumerSess = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
+			MessageConsumer consumer = consumerSess.createConsumer(queue1);
+			conn.start();
+	
+			final int NUM_MESSAGES = 20;
+	
+			//Send some messages
+			for (int i = 0; i < NUM_MESSAGES; i++)
+			{
+				Message m = producerSess.createMessage();
+				producer.send(m);
+			}
+	      
+	      assertRemainingMessages(NUM_MESSAGES);
+	
+			log.trace("Sent messages");
+	
+			Message m = null;
+			int count = 0;
+			for (int i = 0; i < NUM_MESSAGES; i++)
+			{
+				m = consumer.receive(200);
+				if (m == null) break;
+				count++;
+			}
+	      
+	      assertRemainingMessages(NUM_MESSAGES);
+	
+			assertNotNull(m);
+	
+			m.acknowledge();
+	      
+	      assertRemainingMessages(0);
+	
+			log.trace("Received " + count +  " messages");
+	
+			assertEquals(count, NUM_MESSAGES);
+	
+			consumerSess.recover();
+	
+			log.trace("Session recover called");
+	
 			m = consumer.receive(200);
-			if (m == null) break;
-			count++;
+	
+			log.trace("Message is:" + m);
+	
+			assertNull(m);
 		}
-      
-      assertRemainingMessages(NUM_MESSAGES);
-
-		assertNotNull(m);
-
-		m.acknowledge();
-      
-      assertRemainingMessages(0);
-
-		log.trace("Received " + count +  " messages");
-
-		assertEquals(count, NUM_MESSAGES);
-
-		consumerSess.recover();
-
-		log.trace("Session recover called");
-
-		m = consumer.receive(200);
-
-		log.trace("Message is:" + m);
-
-		assertNull(m);
-
-		conn.close();
-
+		finally
+		{
+			if (conn != null)
+			{
+				conn.close();
+			}
+		}
    }
 
 
@@ -564,71 +523,82 @@ public class AcknowledgementTest extends MessagingTestCase
 	 */
 	public void testPartialClientAcknowledge() throws Exception
    {
-
-		Connection conn = cf.createConnection();
-
-		Session producerSess = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
-		MessageProducer producer = producerSess.createProducer(queue);
-
-		Session consumerSess = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
-		MessageConsumer consumer = consumerSess.createConsumer(queue);
-		conn.start();
-
-		final int NUM_MESSAGES = 20;
-		final int ACKED_MESSAGES = 11;
-
-		//Send some messages
-		for (int i = 0; i < NUM_MESSAGES; i++)
+		Connection conn = null;
+		
+		try
 		{
-			Message m = producerSess.createMessage();
-			producer.send(m);
+			
+			conn = cf.createConnection();
+	
+			Session producerSess = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
+			MessageProducer producer = producerSess.createProducer(queue1);
+	
+			Session consumerSess = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
+			MessageConsumer consumer = consumerSess.createConsumer(queue1);
+			conn.start();
+	
+			final int NUM_MESSAGES = 20;
+			final int ACKED_MESSAGES = 11;
+	
+			//Send some messages
+			for (int i = 0; i < NUM_MESSAGES; i++)
+			{
+				Message m = producerSess.createMessage();
+				producer.send(m);
+			}
+	      
+	      assertRemainingMessages(NUM_MESSAGES);
+	
+			log.trace("Sent messages");
+	
+			int count = 0;
+	
+			Message m = null;
+			for (int i = 0; i < NUM_MESSAGES; i++)
+			{
+				m = consumer.receive(200);
+				if (m == null)
+	         {
+	            break;
+	         }
+				if (count == ACKED_MESSAGES -1)
+	         {
+	            m.acknowledge();
+	         }
+				count++;
+			}
+	      
+	      assertRemainingMessages(NUM_MESSAGES - ACKED_MESSAGES);
+	      
+			assertNotNull(m);
+	
+			log.trace("Received " + count +  " messages");
+	
+			assertEquals(count, NUM_MESSAGES);
+	
+			consumerSess.recover();
+	
+			log.trace("Session recover called");
+	
+			count = 0;
+			while (true)
+			{
+				m = consumer.receive(200);
+				if (m == null) break;
+				count++;
+			}
+	
+			assertEquals(NUM_MESSAGES - ACKED_MESSAGES, count);            
 		}
-      
-      assertRemainingMessages(NUM_MESSAGES);
-
-		log.trace("Sent messages");
-
-		int count = 0;
-
-		Message m = null;
-		for (int i = 0; i < NUM_MESSAGES; i++)
+		finally
 		{
-			m = consumer.receive(200);
-			if (m == null)
-         {
-            break;
-         }
-			if (count == ACKED_MESSAGES -1)
-         {
-            m.acknowledge();
-         }
-			count++;
+			if (conn != null)
+			{
+				conn.close();
+			}
+			
+			removeAllMessages(queue1.getQueueName(), true, 0);
 		}
-      
-      assertRemainingMessages(NUM_MESSAGES - ACKED_MESSAGES);
-      
-		assertNotNull(m);
-
-		log.trace("Received " + count +  " messages");
-
-		assertEquals(count, NUM_MESSAGES);
-
-		consumerSess.recover();
-
-		log.trace("Session recover called");
-
-		count = 0;
-		while (true)
-		{
-			m = consumer.receive(200);
-			if (m == null) break;
-			count++;
-		}
-
-		assertEquals(NUM_MESSAGES - ACKED_MESSAGES, count);            
-
-		conn.close();
-
    }
 
 
@@ -639,78 +609,98 @@ public class AcknowledgementTest extends MessagingTestCase
 	 */
 	public void testAutoAcknowledge() throws Exception
    {
-
-		Connection conn = cf.createConnection();
-
-		Session producerSess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-		MessageProducer producer = producerSess.createProducer(queue);
-
-		Session consumerSess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-		MessageConsumer consumer = consumerSess.createConsumer(queue);
-		conn.start();
-
-		final int NUM_MESSAGES = 20;
-
-		//Send some messages
-		for (int i = 0; i < NUM_MESSAGES; i++)
+		Connection conn = null;
+		
+		try
 		{
-			Message m = producerSess.createMessage();
-			producer.send(m);
-		}
-      
-      assertRemainingMessages(NUM_MESSAGES);
-
-		log.trace("Sent messages");
-
-		int count = 0;
-
-		Message m = null;
-		for (int i = 0; i < NUM_MESSAGES; i++)
-		{
-         assertRemainingMessages(NUM_MESSAGES - i);
-         
+			
+			conn = cf.createConnection();
+	
+			Session producerSess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+			MessageProducer producer = producerSess.createProducer(queue1);
+	
+			Session consumerSess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+			MessageConsumer consumer = consumerSess.createConsumer(queue1);
+			conn.start();
+	
+			final int NUM_MESSAGES = 20;
+	
+			//Send some messages
+			for (int i = 0; i < NUM_MESSAGES; i++)
+			{
+				Message m = producerSess.createMessage();
+				producer.send(m);
+			}
+	      
+	      assertRemainingMessages(NUM_MESSAGES);
+	
+			log.trace("Sent messages");
+	
+			int count = 0;
+	
+			Message m = null;
+			for (int i = 0; i < NUM_MESSAGES; i++)
+			{
+	         assertRemainingMessages(NUM_MESSAGES - i);
+	         
+				m = consumer.receive(200);
+	         
+	         assertRemainingMessages(NUM_MESSAGES - (i + 1));
+	         
+				if (m == null) break;
+				count++;
+			}
+	      
+	      assertRemainingMessages(0);      		
+	
+			assertNotNull(m);
+	
+			log.trace("Received " + count +  " messages");
+	
+			assertEquals(count, NUM_MESSAGES);
+	
+			consumerSess.recover();
+	
+			log.trace("Session recover called");
+	
 			m = consumer.receive(200);
-         
-         assertRemainingMessages(NUM_MESSAGES - (i + 1));
-         
-			if (m == null) break;
-			count++;
+	
+			log.trace("Message is:" + m);
+	
+			assertNull(m);
 		}
-      
-      assertRemainingMessages(0);      		
-
-		assertNotNull(m);
-
-		log.trace("Received " + count +  " messages");
-
-		assertEquals(count, NUM_MESSAGES);
-
-		consumerSess.recover();
-
-		log.trace("Session recover called");
-
-		m = consumer.receive(200);
-
-		log.trace("Message is:" + m);
-
-		assertNull(m);
-
-		conn.close();
+		finally
+		{
+			if (conn != null)
+			{
+				conn.close();
+			}
+		}
 
    }
    
    public void testDupsOKBatchDefault() throws Exception
    {
       //test default
-      Connection conn = cf.createConnection();
+      Connection conn = null;
       
-      JBossSession sess = (JBossSession)conn.createSession(false, Session.DUPS_OK_ACKNOWLEDGE);
-      
-      ClientSessionDelegate del = (ClientSessionDelegate)sess.getDelegate();
-      
-      assertEquals(1000, del.getDupsOKBatchSize());
-      
-      conn.close();
+      try
+      {	      
+	      conn = cf.createConnection();
+	      
+	      JBossSession sess = (JBossSession)conn.createSession(false, Session.DUPS_OK_ACKNOWLEDGE);
+	      
+	      ClientSessionDelegate del = (ClientSessionDelegate)sess.getDelegate();
+	      
+	      assertEquals(1000, del.getDupsOKBatchSize());
+      }
+      finally
+      {
+      	if (conn != null)
+      	{
+      		conn.close();
+      	}
+      }
    }
       
    public void testDupsOKAcknowledgeQueue() throws Exception
@@ -740,15 +730,15 @@ public class AcknowledgementTest extends MessagingTestCase
       try
       {
 	      
-	      ConnectionFactory myCF = (ConnectionFactory)initialContext.lookup("/mycf");
+	      ConnectionFactory myCF = (ConnectionFactory)ic.lookup("/mycf");
 	      
 	      conn = myCF.createConnection();
 	
 	      Session producerSess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-	      MessageProducer producer = producerSess.createProducer(queue);
+	      MessageProducer producer = producerSess.createProducer(queue1);
 	
 	      Session consumerSess = conn.createSession(false, Session.DUPS_OK_ACKNOWLEDGE);
-	      MessageConsumer consumer = consumerSess.createConsumer(queue);
+	      MessageConsumer consumer = consumerSess.createConsumer(queue1);
 	      conn.start();
 	
 	      //Send some messages
@@ -837,15 +827,15 @@ public class AcknowledgementTest extends MessagingTestCase
       try
       {
 	      
-	      ConnectionFactory myCF = (ConnectionFactory)initialContext.lookup("/mycf");
+	      ConnectionFactory myCF = (ConnectionFactory)ic.lookup("/mycf");
 	      
 	      conn = myCF.createConnection();
 	
 	      Session producerSess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-	      MessageProducer producer = producerSess.createProducer(topic);
+	      MessageProducer producer = producerSess.createProducer(topic1);
 	
 	      Session consumerSess = conn.createSession(false, Session.DUPS_OK_ACKNOWLEDGE);
-	      MessageConsumer consumer = consumerSess.createConsumer(topic);
+	      MessageConsumer consumer = consumerSess.createConsumer(topic1);
 	      conn.start();
 	
 	      //Send some messages
@@ -890,109 +880,130 @@ public class AcknowledgementTest extends MessagingTestCase
 	 */
 	public void testLazyAcknowledge() throws Exception
    {
-
-		Connection conn = cf.createConnection();
-
-		Session producerSess = conn.createSession(false, Session.DUPS_OK_ACKNOWLEDGE);
-		MessageProducer producer = producerSess.createProducer(queue);
-
-		Session consumerSess = conn.createSession(false, Session.DUPS_OK_ACKNOWLEDGE);
-		MessageConsumer consumer = consumerSess.createConsumer(queue);
-		conn.start();
-
-		final int NUM_MESSAGES = 20;
-
-		//Send some messages
-		for (int i = 0; i < NUM_MESSAGES; i++)
+		Connection conn = null;
+		
+		try
 		{
-			Message m = producerSess.createMessage();
-			producer.send(m);
-		}
-
-      assertRemainingMessages(NUM_MESSAGES);
-      
-		log.trace("Sent messages");
-
-		int count = 0;
-
-		Message m = null;
-		for (int i = 0; i < NUM_MESSAGES; i++)
-		{
+			
+			conn = cf.createConnection();
+	
+			Session producerSess = conn.createSession(false, Session.DUPS_OK_ACKNOWLEDGE);
+			MessageProducer producer = producerSess.createProducer(queue1);
+	
+			Session consumerSess = conn.createSession(false, Session.DUPS_OK_ACKNOWLEDGE);
+			MessageConsumer consumer = consumerSess.createConsumer(queue1);
+			conn.start();
+	
+			final int NUM_MESSAGES = 20;
+	
+			//Send some messages
+			for (int i = 0; i < NUM_MESSAGES; i++)
+			{
+				Message m = producerSess.createMessage();
+				producer.send(m);
+			}
+	
+	      assertRemainingMessages(NUM_MESSAGES);
+	      
+			log.trace("Sent messages");
+	
+			int count = 0;
+	
+			Message m = null;
+			for (int i = 0; i < NUM_MESSAGES; i++)
+			{
+				m = consumer.receive(200);
+				if (m == null) break;
+				count++;
+			}
+	      
+			assertNotNull(m);
+	      
+	      assertRemainingMessages(NUM_MESSAGES);
+	
+			log.trace("Received " + count +  " messages");
+	
+			assertEquals(count, NUM_MESSAGES);
+	
+			consumerSess.recover();
+	
+			log.trace("Session recover called");
+	
 			m = consumer.receive(200);
-			if (m == null) break;
-			count++;
+	
+			log.trace("Message is:" + m);
+	
+			assertNull(m);
 		}
-      
-		assertNotNull(m);
-      
-      assertRemainingMessages(NUM_MESSAGES);
-
-		log.trace("Received " + count +  " messages");
-
-		assertEquals(count, NUM_MESSAGES);
-
-		consumerSess.recover();
-
-		log.trace("Session recover called");
-
-		m = consumer.receive(200);
-
-		log.trace("Message is:" + m);
-
-		assertNull(m);
-
-		conn.close();
+		finally
+		{
+			if (conn != null)
+			{
+				conn.close();
+			}
+		}
 
    }
    
    public void testMessageListenerAutoAck() throws Exception
    {
-      Connection conn = cf.createConnection();
-      Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      MessageProducer prod = sessSend.createProducer(queue);
-      prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+      Connection conn = null;
       
-      log.trace("Sending messages");
-      
-      TextMessage tm1 = sessSend.createTextMessage("a");
-      TextMessage tm2 = sessSend.createTextMessage("b");
-      TextMessage tm3 = sessSend.createTextMessage("c");
-      prod.send(tm1);
-      prod.send(tm2);
-      prod.send(tm3);
-      
-      log.trace("Sent messages");
-      
-      sessSend.close();
-      
-      assertRemainingMessages(3);
-   
-      conn.start();
-
-      Session sessReceive = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      
-      log.trace("Creating consumer");
-      
-      MessageConsumer cons = sessReceive.createConsumer(queue);
-      
-      log.trace("Created consumer");
-      
-      MessageListenerAutoAck listener = new MessageListenerAutoAck(sessReceive);
-      
-      log.trace("Setting message listener");
-      
-      cons.setMessageListener(listener);
-      
-      log.trace("Set message listener");
-
-      listener.waitForMessages();
-                  
-      Thread.sleep(500);
-      
-      assertRemainingMessages(0);
-      
-      conn.close();
-      assertFalse(listener.failed);
+      try
+      {	      
+	      conn = cf.createConnection();
+	      Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+	      MessageProducer prod = sessSend.createProducer(queue1);
+	      prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+	      
+	      log.trace("Sending messages");
+	      
+	      TextMessage tm1 = sessSend.createTextMessage("a");
+	      TextMessage tm2 = sessSend.createTextMessage("b");
+	      TextMessage tm3 = sessSend.createTextMessage("c");
+	      prod.send(tm1);
+	      prod.send(tm2);
+	      prod.send(tm3);
+	      
+	      log.trace("Sent messages");
+	      
+	      sessSend.close();
+	      
+	      assertRemainingMessages(3);
+	   
+	      conn.start();
+	
+	      Session sessReceive = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+	      
+	      log.trace("Creating consumer");
+	      
+	      MessageConsumer cons = sessReceive.createConsumer(queue1);
+	      
+	      log.trace("Created consumer");
+	      
+	      MessageListenerAutoAck listener = new MessageListenerAutoAck(sessReceive);
+	      
+	      log.trace("Setting message listener");
+	      
+	      cons.setMessageListener(listener);
+	      
+	      log.trace("Set message listener");
+	
+	      listener.waitForMessages();
+	                  
+	      Thread.sleep(500);
+	      
+	      assertRemainingMessages(0);
+	      
+	      assertFalse(listener.failed);
+      }
+      finally
+      {
+      	if (conn != null)
+      	{
+      		conn.close();
+      	}
+      }
    }
 
    /*
@@ -1012,7 +1023,7 @@ public class AcknowledgementTest extends MessagingTestCase
       {
          conn = cf.createConnection();
          Session s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer p = s.createProducer(queue);
+         MessageProducer p = s.createProducer(queue1);
          p.setDeliveryMode(DeliveryMode.PERSISTENT);
          Message m = s.createTextMessage("one");
          p.send(m);
@@ -1030,7 +1041,7 @@ public class AcknowledgementTest extends MessagingTestCase
 
          Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         MessageConsumer consumer = session.createConsumer(queue);
+         MessageConsumer consumer = session.createConsumer(queue1);
 
          TextMessage messageReceived = (TextMessage)consumer.receive(1000);
 
@@ -1067,120 +1078,157 @@ public class AcknowledgementTest extends MessagingTestCase
    
    public void testMessageListenerDupsOK() throws Exception
    {
-      Connection conn = cf.createConnection();
-      Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      MessageProducer prod = sessSend.createProducer(queue);
-      prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+      Connection conn = null;
       
-      log.trace("Sending messages");
-      
-      TextMessage tm1 = sessSend.createTextMessage("a");
-      TextMessage tm2 = sessSend.createTextMessage("b");
-      TextMessage tm3 = sessSend.createTextMessage("c");
-      prod.send(tm1);
-      prod.send(tm2);
-      prod.send(tm3);
-      
-      log.trace("Sent messages");
-      
-      sessSend.close();
-      
-      assertRemainingMessages(3);
-   
-      conn.start();
-
-      Session sessReceive = conn.createSession(false, Session.DUPS_OK_ACKNOWLEDGE);
-      
-      log.trace("Creating consumer");
-      
-      MessageConsumer cons = sessReceive.createConsumer(queue);
-      
-      log.trace("Created consumer");
-      
-      MessageListenerDupsOK listener = new MessageListenerDupsOK(sessReceive);
-      
-      log.trace("Setting message listener");
-      
-      cons.setMessageListener(listener);
-      
-      log.trace("Set message listener");
-
-      listener.waitForMessages();
-      
-      assertRemainingMessages(3);
-      
-      conn.close();
-      
-      Thread.sleep(500);
-      
-      assertRemainingMessages(0);
-      assertFalse(listener.failed);
+      try
+      {
+	      
+	      conn = cf.createConnection();
+	      Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+	      MessageProducer prod = sessSend.createProducer(queue1);
+	      prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+	      
+	      log.trace("Sending messages");
+	      
+	      TextMessage tm1 = sessSend.createTextMessage("a");
+	      TextMessage tm2 = sessSend.createTextMessage("b");
+	      TextMessage tm3 = sessSend.createTextMessage("c");
+	      prod.send(tm1);
+	      prod.send(tm2);
+	      prod.send(tm3);
+	      
+	      log.trace("Sent messages");
+	      
+	      sessSend.close();
+	      
+	      assertRemainingMessages(3);
+	   
+	      conn.start();
+	
+	      Session sessReceive = conn.createSession(false, Session.DUPS_OK_ACKNOWLEDGE);
+	      
+	      log.trace("Creating consumer");
+	      
+	      MessageConsumer cons = sessReceive.createConsumer(queue1);
+	      
+	      log.trace("Created consumer");
+	      
+	      MessageListenerDupsOK listener = new MessageListenerDupsOK(sessReceive);
+	      
+	      log.trace("Setting message listener");
+	      
+	      cons.setMessageListener(listener);
+	      
+	      log.trace("Set message listener");
+	
+	      listener.waitForMessages();
+	      
+	      assertRemainingMessages(3);
+	      
+	      conn.close();
+	      
+	      Thread.sleep(500);
+	      
+	      assertRemainingMessages(0);
+	      assertFalse(listener.failed);
+      }
+      finally
+      {
+      	if (conn != null)
+      	{
+      		conn.close();
+      	}
+      }
    }
    
    public void testMessageListenerClientAck() throws Exception
    {
-      Connection conn = cf.createConnection();
-      Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      MessageProducer prod = sessSend.createProducer(queue);
-      prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
-      TextMessage tm1 = sessSend.createTextMessage("a");
-      TextMessage tm2 = sessSend.createTextMessage("b");
-      TextMessage tm3 = sessSend.createTextMessage("c");
-      prod.send(tm1);
-      prod.send(tm2);
-      prod.send(tm3);
-      sessSend.close();
+      Connection conn = null;
       
-      assertRemainingMessages(3);
-      
-      conn.start();
-      Session sessReceive = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
-      MessageConsumer cons = sessReceive.createConsumer(queue);
-      MessageListenerClientAck listener = new MessageListenerClientAck(sessReceive);
-      cons.setMessageListener(listener);
-      
-      listener.waitForMessages();
-      
-      Thread.sleep(500);
-      
-      assertRemainingMessages(0);
-      
-      conn.close();
-      
-      assertFalse(listener.failed);
+      try
+      {      
+	      conn = cf.createConnection();
+	      Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+	      MessageProducer prod = sessSend.createProducer(queue1);
+	      prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+	      TextMessage tm1 = sessSend.createTextMessage("a");
+	      TextMessage tm2 = sessSend.createTextMessage("b");
+	      TextMessage tm3 = sessSend.createTextMessage("c");
+	      prod.send(tm1);
+	      prod.send(tm2);
+	      prod.send(tm3);
+	      sessSend.close();
+	      
+	      assertRemainingMessages(3);
+	      
+	      conn.start();
+	      Session sessReceive = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
+	      MessageConsumer cons = sessReceive.createConsumer(queue1);
+	      MessageListenerClientAck listener = new MessageListenerClientAck(sessReceive);
+	      cons.setMessageListener(listener);
+	      
+	      listener.waitForMessages();
+	      
+	      Thread.sleep(500);
+	      
+	      assertRemainingMessages(0);
+	      
+	      conn.close();
+	      
+	      assertFalse(listener.failed);
+      }
+      finally
+      {
+      	if (conn != null)
+      	{
+      		conn.close();
+      	}
+      }
    }
    
    
    public void testMessageListenerTransactionalAck() throws Exception
    {
-      Connection conn = cf.createConnection();
-      Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      MessageProducer prod = sessSend.createProducer(queue);
-      prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
-      TextMessage tm1 = sessSend.createTextMessage("a");
-      TextMessage tm2 = sessSend.createTextMessage("b");
-      TextMessage tm3 = sessSend.createTextMessage("c");
-      prod.send(tm1);
-      prod.send(tm2);
-      prod.send(tm3);
-      sessSend.close();
+      Connection conn = null;
       
-      assertRemainingMessages(3);
-      
-      conn.start();
-      Session sessReceive = conn.createSession(true, Session.SESSION_TRANSACTED);
-      MessageConsumer cons = sessReceive.createConsumer(queue);
-      MessageListenerTransactionalAck listener = new MessageListenerTransactionalAck(sessReceive);
-      cons.setMessageListener(listener);
-      listener.waitForMessages();
-      
-      Thread.sleep(500);
-      
-      assertRemainingMessages(0);
-      
-      conn.close();
-      
-      assertFalse(listener.failed);
+      try
+      {	      
+	      conn = cf.createConnection();
+	      Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+	      MessageProducer prod = sessSend.createProducer(queue1);
+	      prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+	      TextMessage tm1 = sessSend.createTextMessage("a");
+	      TextMessage tm2 = sessSend.createTextMessage("b");
+	      TextMessage tm3 = sessSend.createTextMessage("c");
+	      prod.send(tm1);
+	      prod.send(tm2);
+	      prod.send(tm3);
+	      sessSend.close();
+	      
+	      assertRemainingMessages(3);
+	      
+	      conn.start();
+	      Session sessReceive = conn.createSession(true, Session.SESSION_TRANSACTED);
+	      MessageConsumer cons = sessReceive.createConsumer(queue1);
+	      MessageListenerTransactionalAck listener = new MessageListenerTransactionalAck(sessReceive);
+	      cons.setMessageListener(listener);
+	      listener.waitForMessages();
+	      
+	      Thread.sleep(500);
+	      
+	      assertRemainingMessages(0);
+	      
+	      conn.close();
+	      
+	      assertFalse(listener.failed);
+      }
+      finally
+      {
+      	if (conn != null)
+      	{
+      		conn.close();
+      	}
+      }
    }
    
    // Package protected ---------------------------------------------
@@ -1569,22 +1617,6 @@ public class AcknowledgementTest extends MessagingTestCase
       }
             
    }
-   
-   private boolean assertRemainingMessages(int expected) throws Exception
-   {
-      //Need to pause since delivery may still be in progress
-    //  Thread.sleep(500);
-      ObjectName destObjectName = 
-         new ObjectName("jboss.messaging.destination:service=Queue,name=Queue");
-      Integer messageCount = (Integer)ServerManagement.getAttribute(destObjectName, "MessageCount"); 
-      
-      log.trace("There are " + messageCount + " messages");
-      
-      assertEquals(expected, messageCount.intValue());      
-      return expected == messageCount.intValue();
-   }
-   
-
 }
 
 

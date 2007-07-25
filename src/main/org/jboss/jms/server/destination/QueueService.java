@@ -198,6 +198,24 @@ public class QueueService extends DestinationServiceSupport implements QueueMBea
       }
    }
    
+   public int getDeliveringCount() throws Exception
+   {
+      try
+      {
+         if (!started)
+         {
+            log.warn("Queue is stopped");
+            return 0;
+         }
+         
+         return ((ManagedQueue)destination).getDeliveringCount();
+      }
+      catch (Throwable t)
+      {
+         throw ExceptionUtil.handleJMXInvocation(t, this + " getDeliveringCount");
+      }
+   }
+   
    public int getScheduledMessageCount() throws Exception
    {
       try

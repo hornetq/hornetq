@@ -45,16 +45,6 @@ public class ForeignTextMessageTest extends ForeignMessageTest
         super(name);
     }
 
-    public void setUp() throws Exception
-    {
-       super.setUp();
-    }
-
-    public void tearDown() throws Exception
-    {
-       super.tearDown();
-    }
-
     protected Message createForeignMessage() throws Exception
     {
         SimpleJMSTextMessage m = new SimpleJMSTextMessage();

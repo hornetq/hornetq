@@ -21,24 +21,17 @@
   */
 package org.jboss.test.messaging.jms;
 
+import java.util.Enumeration;
+
 import javax.jms.Connection;
-import javax.jms.ConnectionFactory;
 import javax.jms.DeliveryMode;
-import javax.jms.MessageProducer;
-import javax.jms.Queue;
-import javax.jms.Session;
-import javax.jms.TextMessage;
-import javax.jms.QueueBrowser;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageListener;
-import javax.naming.InitialContext;
-import javax.management.ObjectName;
-
-import org.jboss.test.messaging.MessagingTestCase;
-import org.jboss.test.messaging.tools.ServerManagement;
-
-import java.util.Enumeration;
+import javax.jms.MessageProducer;
+import javax.jms.QueueBrowser;
+import javax.jms.Session;
+import javax.jms.TextMessage;
 
 /**
  * Various use cases, added here while trying things or fixing forum issues.
@@ -48,15 +41,13 @@ import java.util.Enumeration;
  *
  * $Id$
  */
-public class MiscellaneousTest extends MessagingTestCase
+public class MiscellaneousTest extends JMSTestCase
 {
    // Constants -----------------------------------------------------
 
    // Static --------------------------------------------------------
 
    // Attributes ----------------------------------------------------
-
-   InitialContext ic;
 
    // Constructors --------------------------------------------------
 
@@ -69,29 +60,37 @@ public class MiscellaneousTest extends MessagingTestCase
 
    public void testBrowser() throws Exception
    {
-      ConnectionFactory cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
-      Queue queue = (Queue)ic.lookup("/queue/MiscellaneousQueue");
-
-      Connection conn = cf.createConnection();
-      Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      MessageProducer prod = session.createProducer(queue);
-
-      prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
-
-      TextMessage m = session.createTextMessage("message one");
-
-      prod.send(m);
-
-      QueueBrowser browser = session.createBrowser(queue);
-
-
-      Enumeration e = browser.getEnumeration();
-
-      TextMessage bm = (TextMessage)e.nextElement();
-
-      assertEquals("message one", bm.getText());
-
-      conn.close();
+      Connection conn = null;
+      
+      try
+      {	      
+	      conn = cf.createConnection();
+	      Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+	      MessageProducer prod = session.createProducer(queue1);
+	
+	      prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+	
+	      TextMessage m = session.createTextMessage("message one");
+	
+	      prod.send(m);
+	
+	      QueueBrowser browser = session.createBrowser(queue1);
+	
+	      Enumeration e = browser.getEnumeration();
+	
+	      TextMessage bm = (TextMessage)e.nextElement();
+	
+	      assertEquals("message one", bm.getText());
+      }
+      finally
+      {
+      	if (conn != null)
+      	{
+      		conn.close();
+      	}
+      	
+      	removeAllMessages(queue1.getQueueName(), true, 0);
+      }
    }
 
    /**
@@ -99,55 +98,57 @@ public class MiscellaneousTest extends MessagingTestCase
     */
    public void testClosingConsumerFromMessageListener() throws Exception
    {
-      ConnectionFactory cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
-      Queue queue = (Queue)ic.lookup("/queue/MiscellaneousQueue");
-
-      // load the queue
-
-      Connection c = cf.createConnection();
-      Session s = c.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      MessageProducer prod = s.createProducer(queue);
-      Message m = s.createMessage();
-      prod.send(m);
-      c.close();
-
-      final Result result = new Result();
-      Connection conn = cf.createConnection();
-      s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      final MessageConsumer cons = s.createConsumer(queue);
-      cons.setMessageListener(new MessageListener()
+      Connection c = null;
+      
+      try
+      {	      
+	      c = cf.createConnection();
+	      Session s = c.createSession(false, Session.AUTO_ACKNOWLEDGE);
+	      MessageProducer prod = s.createProducer(queue1);
+	      Message m = s.createMessage();
+	      prod.send(m);
+	      c.close();
+	
+	      final Result result = new Result();
+	      Connection conn = cf.createConnection();
+	      s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+	      final MessageConsumer cons = s.createConsumer(queue1);
+	      cons.setMessageListener(new MessageListener()
+	      {
+	         public void onMessage(Message m)
+	         {
+	            // close the connection on the same thread that processed the message
+	            try
+	            {
+	               cons.close();
+	               result.setSuccess();
+	            }
+	            catch(Exception e)
+	            {
+	               result.setFailure(e);
+	            }
+	         }
+	      });
+	
+	      conn.start();
+	
+	      result.waitForResult();
+	
+	      assertTrue(result.isSuccess());
+	      assertNull(result.getFailure());
+	
+	      // make sure the acknowledgment made it back to the queue
+	
+	      Thread.sleep(1000);
+	      assertRemainingMessages(0);
+      }
+      finally
       {
-         public void onMessage(Message m)
-         {
-            // close the connection on the same thread that processed the message
-            try
-            {
-               log.debug("attempting close");
-               cons.close();
-               log.debug("consumer closed");
-               result.setSuccess();
-            }
-            catch(Exception e)
-            {
-               result.setFailure(e);
-            }
-         }
-      });
-
-      conn.start();
-
-      // wait for the message to propagate
-      Thread.sleep(3000);
-
-      assertTrue(result.isSuccess());
-      assertNull(result.getFailure());
-
-      // make sure the acknowledgment made it back to the queue
-
-      Integer count = (Integer)ServerManagement.
-         getAttribute(new ObjectName("jboss.messaging.destination:service=Queue,name=MiscellaneousQueue"),
-                      "MessageCount");
-      assertEquals(0, count.intValue());
+      	if (c != null)
+      	{
+      		c.close();
+      	}
+      }
    }
 
    /**
@@ -155,56 +156,57 @@ public class MiscellaneousTest extends MessagingTestCase
     */
    public void testClosingSessionFromMessageListener() throws Exception
    {
-      ConnectionFactory cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
-      Queue queue = (Queue)ic.lookup("/queue/MiscellaneousQueue");
-
-      // load the queue
-
-      Connection c = cf.createConnection();
-      Session s = c.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      MessageProducer prod = s.createProducer(queue);
-      Message m = s.createMessage();
-      prod.send(m);
-      c.close();
-
-      final Result result = new Result();
-      Connection conn = cf.createConnection();
-      final Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      MessageConsumer cons = session.createConsumer(queue);
-      cons.setMessageListener(new MessageListener()
+      Connection c = null;
+      
+      try
+      {	      
+	      c = cf.createConnection();
+	      Session s = c.createSession(false, Session.AUTO_ACKNOWLEDGE);
+	      MessageProducer prod = s.createProducer(queue1);
+	      Message m = s.createMessage();
+	      prod.send(m);
+	      c.close();
+	
+	      final Result result = new Result();
+	      Connection conn = cf.createConnection();
+	      final Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+	      MessageConsumer cons = session.createConsumer(queue1);
+	      cons.setMessageListener(new MessageListener()
+	      {
+	         public void onMessage(Message m)
+	         {
+	            // close the connection on the same thread that processed the message
+	            try
+	            {
+	               session.close();
+	               result.setSuccess();
+	            }
+	            catch(Exception e)
+	            {
+	               result.setFailure(e);
+	            }
+	         }
+	      });
+	
+	      conn.start();
+	
+	      result.waitForResult();
+	
+	      assertTrue(result.isSuccess());
+	      assertNull(result.getFailure());
+	
+	      // make sure the acknowledgment made it back to the queue
+	
+	      Thread.sleep(1000);
+	      assertRemainingMessages(0);
+      }
+      finally
       {
-         public void onMessage(Message m)
-         {
-            // close the connection on the same thread that processed the message
-            try
-            {
-               log.debug("attempting close");
-               session.close();
-               log.debug("session closed");
-               result.setSuccess();
-            }
-            catch(Exception e)
-            {
-               result.setFailure(e);
-            }
-         }
-      });
-
-      conn.start();
-
-      // wait for the message to propagate
-      Thread.sleep(3000);
-
-      assertTrue(result.isSuccess());
-      assertNull(result.getFailure());
-
-      // make sure the acknowledgment made it back to the queue
-
-      Integer count = (Integer)ServerManagement.
-         getAttribute(new ObjectName("jboss.messaging.destination:service=Queue,name=MiscellaneousQueue"),
-                      "MessageCount");
-      assertEquals(0, count.intValue());
-
+      	if (c != null)
+      	{
+      		c.close();
+      	}
+      }
    }
 
    /**
@@ -212,64 +214,65 @@ public class MiscellaneousTest extends MessagingTestCase
     */
    public void testClosingConnectionFromMessageListener() throws Exception
    {
-      ConnectionFactory cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
-      Queue queue = (Queue)ic.lookup("/queue/MiscellaneousQueue");
-
-      // load the queue
-
-      Connection c = cf.createConnection();
-      Session s = c.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      MessageProducer prod = s.createProducer(queue);
-      Message m = s.createMessage();
-      prod.send(m);
-      c.close();
-
-      final Result result = new Result();
-      final Connection conn = cf.createConnection();
-      s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      MessageConsumer cons = s.createConsumer(queue);
-      cons.setMessageListener(new MessageListener()
+      Connection c = null;
+      
+      try
+      {      
+	      c = cf.createConnection();
+	      Session s = c.createSession(false, Session.AUTO_ACKNOWLEDGE);
+	      MessageProducer prod = s.createProducer(queue1);
+	      Message m = s.createMessage();
+	      prod.send(m);
+	      c.close();
+	
+	      final Result result = new Result();
+	      final Connection conn = cf.createConnection();
+	      s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+	      MessageConsumer cons = s.createConsumer(queue1);
+	      cons.setMessageListener(new MessageListener()
+	      {
+	         public void onMessage(Message m)
+	         {
+	            // close the connection on the same thread that processed the message
+	            try
+	            {
+	               log.debug("attempting close");
+	               conn.close();
+	               log.debug("conn closed");
+	               result.setSuccess();
+	            }
+	            catch(Exception e)
+	            {
+	               e.printStackTrace();
+	               result.setFailure(e);
+	            }
+	         }
+	      });
+	
+	      conn.start();
+	
+	      result.waitForResult();
+	
+	      assertTrue(result.isSuccess());
+	      assertNull(result.getFailure());
+	
+	      // make sure the acknowledgment made it back to the queue
+	
+	      Thread.sleep(1000);
+	      assertRemainingMessages(0);
+      }
+      finally
       {
-         public void onMessage(Message m)
-         {
-            // close the connection on the same thread that processed the message
-            try
-            {
-               log.debug("attempting close");
-               conn.close();
-               log.debug("conn closed");
-               result.setSuccess();
-            }
-            catch(Exception e)
-            {
-               e.printStackTrace();
-               result.setFailure(e);
-            }
-         }
-      });
-
-      conn.start();
-
-      // wait for the message to propagate
-      Thread.sleep(3000);
-
-      assertTrue(result.isSuccess());
-      assertNull(result.getFailure());
-
-      // make sure the acknowledgment made it back to the queue
-
-      Integer count = (Integer)ServerManagement.
-         getAttribute(new ObjectName("jboss.messaging.destination:service=Queue,name=MiscellaneousQueue"),
-                      "MessageCount");
-      assertEquals(0, count.intValue());
+      	if (c != null)
+      	{
+      		c.close();
+      	}
+      }
    }
    
    // Test case for http://jira.jboss.com/jira/browse/JBMESSAGING-788
    public void testGetDeliveriesForSession() throws Exception
    {
-      ConnectionFactory cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
-      Queue queue = (Queue)ic.lookup("/queue/MiscellaneousQueue");
-
       Connection conn = null;
       
       try
@@ -280,7 +283,7 @@ public class MiscellaneousTest extends MessagingTestCase
          
          Session session2 = conn.createSession(true, Session.SESSION_TRANSACTED);
          
-         MessageProducer prod = session2.createProducer(queue);
+         MessageProducer prod = session2.createProducer(queue1);
          
          Message msg = session2.createMessage();
          
@@ -296,36 +299,14 @@ public class MiscellaneousTest extends MessagingTestCase
          {
             conn.close();
          }
+         
+         removeAllMessages(queue1.getQueueName(), true, 0);
       }
    }
 
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
-
-   protected void setUp() throws Exception
-   {
-      super.setUp();
-
-      ServerManagement.start("all");
-
-      ic = new InitialContext(ServerManagement.getJNDIEnvironment());
-
-      ServerManagement.deployQueue("MiscellaneousQueue");
-
-      log.debug("setup done");
-   }
-
-   protected void tearDown() throws Exception
-   {
-      ServerManagement.undeployQueue("MiscellaneousQueue");
-
-      ic.close();
-
-      super.tearDown();
-   }
-
-
 
    // Private -------------------------------------------------------
 
@@ -335,6 +316,8 @@ public class MiscellaneousTest extends MessagingTestCase
    {
       private boolean success;
       private Exception e;
+      
+      private boolean resultSet;
 
       public Result()
       {
@@ -345,6 +328,10 @@ public class MiscellaneousTest extends MessagingTestCase
       public synchronized void setSuccess()
       {
          success = true;
+         
+         this.resultSet = true;
+         
+         this.notify();
       }
 
       public synchronized boolean isSuccess()
@@ -355,11 +342,23 @@ public class MiscellaneousTest extends MessagingTestCase
       public synchronized void setFailure(Exception e)
       {
          this.e = e;
+         
+         this.resultSet = true;
+         
+         this.notify();
       }
 
       public synchronized Exception getFailure()
       {
          return e;
+      }
+      
+      public synchronized void waitForResult() throws Exception
+      {
+      	while (!resultSet)
+      	{
+      		this.wait();
+      	}
       }
    }
 

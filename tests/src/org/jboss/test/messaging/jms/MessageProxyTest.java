@@ -23,19 +23,15 @@ package org.jboss.test.messaging.jms;
 
 import javax.jms.Connection;
 import javax.jms.DeliveryMode;
-import javax.jms.Destination;
 import javax.jms.MapMessage;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.jms.Session;
-import javax.naming.InitialContext;
 
-import org.jboss.jms.client.JBossConnectionFactory;
 import org.jboss.jms.destination.JBossQueue;
 import org.jboss.jms.message.JBossMessage;
 import org.jboss.jms.message.MessageProxy;
-import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
 
 /**
@@ -48,18 +44,13 @@ import org.jboss.test.messaging.tools.ServerManagement;
  * $Id$
  *
  */
-public class MessageProxyTest extends MessagingTestCase
+public class MessageProxyTest extends JMSTestCase
 {
    // Constants -----------------------------------------------------
    
    // Static --------------------------------------------------------
    
    // Attributes ----------------------------------------------------
-   
-   protected InitialContext initialContext;
-   
-   protected JBossConnectionFactory cf;
-   protected Destination queue;
    
    // Constructors --------------------------------------------------
    
@@ -70,34 +61,8 @@ public class MessageProxyTest extends MessagingTestCase
    
    // TestCase overrides -------------------------------------------
    
-   public void setUp() throws Exception
-   {
-      super.setUp();
-      ServerManagement.start("all");
-      
-      
-      initialContext = new InitialContext(ServerManagement.getJNDIEnvironment());
-      cf = (JBossConnectionFactory)initialContext.lookup("/ConnectionFactory");
-      
-      ServerManagement.undeployQueue("Queue");
-      ServerManagement.deployQueue("Queue");
-      queue = (Destination)initialContext.lookup("/queue/Queue");
-      
-      this.drainDestination(cf, queue);
-      
-      log.debug("setup done");
-   }
-   
-   public void tearDown() throws Exception
-   {
-      ServerManagement.undeployQueue("Queue");
-      super.tearDown();
-   }
-   
-   
    // Public --------------------------------------------------------
          
-   
    public void testMessageIDs1() throws Exception
    {
       if (ServerManagement.isRemote())
@@ -115,10 +80,10 @@ public class MessageProxyTest extends MessagingTestCase
          
          Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
          
-         MessageProducer prod = sess.createProducer(queue);
+         MessageProducer prod = sess.createProducer(queue1);
          prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
          
-         MessageConsumer cons = sess.createConsumer(queue);
+         MessageConsumer cons = sess.createConsumer(queue1);
          
          Message msent = sess.createMessage();
 
@@ -143,8 +108,7 @@ public class MessageProxyTest extends MessagingTestCase
          assertFalse(id1 == id3);
          
          //But this shouldn't affect the received id
-         assertEquals(id2, id4);
-            
+         assertEquals(id2, id4);            
       }
       finally
       {      
@@ -152,11 +116,11 @@ public class MessageProxyTest extends MessagingTestCase
          {
             conn.close();
          }
-      }
-                
+         
+         removeAllMessages(queue1.getQueueName(), true, 0);
+      }                
    }
-   
-  
+     
    public void testMessageIDs2() throws Exception
    {
       if (ServerManagement.isRemote())
@@ -174,10 +138,10 @@ public class MessageProxyTest extends MessagingTestCase
          
          Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
          
-         MessageProducer prod = sess.createProducer(queue);
+         MessageProducer prod = sess.createProducer(queue1);
          prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
          
-         MessageConsumer cons = sess.createConsumer(queue);
+         MessageConsumer cons = sess.createConsumer(queue1);
          
          Message msent = sess.createMessage();
 
@@ -199,8 +163,7 @@ public class MessageProxyTest extends MessagingTestCase
          long id3 = ((MessageProxy)msent).getMessage().getMessageID();
          
          //But this shouldn't affect the sent id
-         assertEquals(id1, id3);
-            
+         assertEquals(id1, id3);            
       }
       finally
       {      
@@ -208,28 +171,12 @@ public class MessageProxyTest extends MessagingTestCase
          {
             conn.close();
          }
-      }
-                
+         
+         removeAllMessages(queue1.getQueueName(), true, 0);
+      }                
    }
    
-   
-   private void checkSameUnderlyingMessage(JBossMessage m1, JBossMessage m2, boolean same)
-   {
-      if ((m1 == m2) && (m1.getHeaders() == m2.getHeaders()) && !same)
-      {         
-         fail("Underlying message not same");
-      }
-   }
-   
-   private void checkSameBody(JBossMessage m1, JBossMessage m2, boolean same)
-   {
-      if ((m1.getPayload() == m2.getPayload()) && !same)
-      {         
-         fail("Body not same");
-      }
-   }
-      
-   
+  
    public void testNewMessage() throws Exception
    {
       if (ServerManagement.isRemote())
@@ -245,7 +192,7 @@ public class MessageProxyTest extends MessagingTestCase
          
          Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
          
-         MessageProducer prod = sess.createProducer(queue);
+         MessageProducer prod = sess.createProducer(queue1);
          
          prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
           
@@ -341,8 +288,7 @@ public class MessageProxyTest extends MessagingTestCase
          
          //The message should be the same
          
-         checkSameUnderlyingMessage(check8, check9, true);
-         
+         checkSameUnderlyingMessage(check8, check9, true);         
       }
       finally
       {      
@@ -350,6 +296,8 @@ public class MessageProxyTest extends MessagingTestCase
          {
             conn.close();
          }
+         
+         removeAllMessages(queue1.getQueueName(), true, 0);
       }
    }
    
@@ -371,13 +319,13 @@ public class MessageProxyTest extends MessagingTestCase
          
          Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
          
-         MessageProducer prod = sess.createProducer(queue);
+         MessageProducer prod = sess.createProducer(queue1);
          
          prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
           
          MapMessage m = sess.createMapMessage();
          
-         MessageConsumer cons = sess.createConsumer(queue);
+         MessageConsumer cons = sess.createConsumer(queue1);
          
          prod.send(m);
          
@@ -465,8 +413,7 @@ public class MessageProxyTest extends MessagingTestCase
          
          //The message should be the same
          
-         checkSameUnderlyingMessage(check8, check9, true);
-         
+         checkSameUnderlyingMessage(check8, check9, true);        
       }
       finally
       {      
@@ -474,16 +421,34 @@ public class MessageProxyTest extends MessagingTestCase
          {
             conn.close();
          }
+         
+         removeAllMessages(queue1.getQueueName(), true, 0);
       }
    }
-   
-   
-   
+         
    // Package protected ---------------------------------------------
    
    // Protected -----------------------------------------------------
    
    // Private -------------------------------------------------------
+   
+   private void checkSameUnderlyingMessage(JBossMessage m1, JBossMessage m2, boolean same)
+   {
+      if ((m1 == m2) && (m1.getHeaders() == m2.getHeaders()) && !same)
+      {         
+         fail("Underlying message not same");
+      }
+   }
+   
+   private void checkSameBody(JBossMessage m1, JBossMessage m2, boolean same)
+   {
+      if ((m1.getPayload() == m2.getPayload()) && !same)
+      {         
+         fail("Body not same");
+      }
+   }
+      
+   
    
    // Inner classes -------------------------------------------------
    

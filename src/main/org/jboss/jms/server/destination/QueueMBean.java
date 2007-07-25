@@ -41,6 +41,8 @@ public interface QueueMBean
    
    int getMessageCount() throws Exception;
    
+   int getDeliveringCount() throws Exception;
+   
    int getScheduledMessageCount() throws Exception;
                
    MessageCounter getMessageCounter();

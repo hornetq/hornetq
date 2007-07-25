@@ -23,40 +23,33 @@ package org.jboss.test.messaging.jms;
 
 import javax.jms.BytesMessage;
 import javax.jms.Connection;
-import javax.jms.ConnectionFactory;
 import javax.jms.InvalidSelectorException;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
-import javax.jms.Queue;
 import javax.jms.QueueConnection;
-import javax.jms.QueueConnectionFactory;
 import javax.jms.QueueReceiver;
 import javax.jms.QueueSender;
 import javax.jms.QueueSession;
 import javax.jms.Session;
 import javax.jms.TextMessage;
-import javax.jms.Topic;
 import javax.jms.TopicConnection;
-import javax.jms.TopicConnectionFactory;
 import javax.jms.TopicSession;
 import javax.naming.InitialContext;
 
-import org.jboss.jms.client.JBossConnectionFactory;
-import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.jms.message.SimpleJMSBytesMessage;
 import org.jboss.test.messaging.jms.message.SimpleJMSMessage;
-import org.jboss.test.messaging.tools.ServerManagement;
 
 /**
  * Safeguards for previously detected TCK failures.
  *
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
+ * @author <a href="mailto:tim.fox@jboss.org">Tim Fox</a>
  * @version <tt>$Revision$</tt>
  *
  * $Id$
  */
-public class CTSMiscellaneousTest extends MessagingTestCase
+public class CTSMiscellaneousTest extends JMSTestCase
 {
    // Constants -----------------------------------------------------
 
@@ -77,47 +70,66 @@ public class CTSMiscellaneousTest extends MessagingTestCase
 
    public void testForeignByteMessage() throws Exception
    {
-      ConnectionFactory cf = (JBossConnectionFactory)ic.lookup("/ConnectionFactory");
-
-      Connection c =  cf.createConnection();
-      Session s = c.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      Queue queue = (Queue)ic.lookup("/queue/Queue");
+      Connection c = null;
       
-      drainDestination(cf, queue);
-      
-      MessageProducer p = s.createProducer(queue);
-
-      // create a Bytes foreign message
-      SimpleJMSBytesMessage bfm = new SimpleJMSBytesMessage();
-
-      p.send(bfm);
-
-      MessageConsumer cons = s.createConsumer(queue);
-      c.start();
-
-      BytesMessage bm = (BytesMessage)cons.receive();
-      assertNotNull(bm);
-
-      c.close();
+      try
+      {	      
+	      c = cf.createConnection();
+	      Session s = c.createSession(false, Session.AUTO_ACKNOWLEDGE);
+	
+	      MessageProducer p = s.createProducer(queue1);
+	
+	      // create a Bytes foreign message
+	      SimpleJMSBytesMessage bfm = new SimpleJMSBytesMessage();
+	
+	      p.send(bfm);
+	
+	      MessageConsumer cons = s.createConsumer(queue1);
+	      c.start();
+	
+	      BytesMessage bm = (BytesMessage)cons.receive();
+	      assertNotNull(bm);
+      }
+      finally
+      {
+      	if (c != null)
+      	{
+      		c.close();
+      	}
+      }
+	     
    }
 
    public void testJMSMessageIDChanged() throws Exception
    {
-      ConnectionFactory cf = (JBossConnectionFactory)ic.lookup("/ConnectionFactory");
-
-      Connection c =  cf.createConnection();
-      Session s = c.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      Queue queue = (Queue)ic.lookup("/queue/Queue");
-      MessageProducer p = s.createProducer(queue);
-
-      Message m = new SimpleJMSMessage();
-      m.setJMSMessageID("something");
-
-      p.send(m);
-
-      assertFalse("something".equals(m.getJMSMessageID()));
-
-      c.close();
+      Connection c = null;
+      
+      try
+      {
+	      
+	      c= cf.createConnection();
+	      Session s = c.createSession(false, Session.AUTO_ACKNOWLEDGE);
+	
+	      MessageProducer p = s.createProducer(queue1);
+	
+	      Message m = new SimpleJMSMessage();
+	      m.setJMSMessageID("something");
+	
+	      p.send(m);
+	
+	      assertFalse("something".equals(m.getJMSMessageID()));
+	
+	      c.close();
+      }
+      finally
+      {
+      	if (c != null)
+      	{
+      		c.close();
+      	}
+      	
+      	removeAllMessages(queue1.getQueueName(), true, 0);
+      }
    }
 
    /**
@@ -125,49 +137,61 @@ public class CTSMiscellaneousTest extends MessagingTestCase
     */
    public void test_1() throws Exception
    {
-      QueueConnectionFactory qcf = (QueueConnectionFactory)ic.lookup("/ConnectionFactory");
-      Queue queue = (Queue)ic.lookup("/queue/Queue");
-
-      QueueConnection qc =  qcf.createQueueConnection();
-      QueueSession qs = qc.createQueueSession(false, Session.AUTO_ACKNOWLEDGE);
-
-      QueueReceiver qreceiver = qs.createReceiver(queue, "targetMessage = TRUE");
-
-      qc.start();
-
-      TextMessage m = qs.createTextMessage();
-      m.setText("one");
-      m.setBooleanProperty("targetMessage", false);
-
-      QueueSender qsender = qs.createSender(queue);
-
-      qsender.send(m);
-
-      m.setText("two");
-      m.setBooleanProperty("targetMessage", true);
-
-      qsender.send(m);
-
-      TextMessage rm = (TextMessage)qreceiver.receive(1000);
-
-      assertEquals("two", rm.getText());
-
-      qc.close();
+      QueueConnection qc = null;
+      
+      try
+      {	      
+	      qc = cf.createQueueConnection();
+	      QueueSession qs = qc.createQueueSession(false, Session.AUTO_ACKNOWLEDGE);
+	
+	      QueueReceiver qreceiver = qs.createReceiver(queue1, "targetMessage = TRUE");
+	
+	      qc.start();
+	
+	      TextMessage m = qs.createTextMessage();
+	      m.setText("one");
+	      m.setBooleanProperty("targetMessage", false);
+	
+	      QueueSender qsender = qs.createSender(queue1);
+	
+	      qsender.send(m);
+	
+	      m.setText("two");
+	      m.setBooleanProperty("targetMessage", true);
+	
+	      qsender.send(m);
+	
+	      TextMessage rm = (TextMessage)qreceiver.receive(1000);
+	
+	      assertEquals("two", rm.getText());
+      }
+      finally
+      {
+      	if (qc != null)
+      	{
+      		qc.close();      		
+      	}
+      	Thread.sleep(2000);
+      	log.info("****** removing merssages");
+      	removeAllMessages(queue1.getQueueName(), true, 0);
+      	checkEmpty(queue1);
+      }
    }
 
    public void testInvalidSelectorOnDurableSubscription() throws Exception
    {
-      ConnectionFactory cf = (JBossConnectionFactory)ic.lookup("/ConnectionFactory");
-      Connection c =  cf.createConnection();
-      c.setClientID("something");
+      Connection c = null;
+      
       try
-      {
+      {      
+         c = cf.createConnection();
+         c.setClientID("something");
+
          Session s = c.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         Topic topic = (Topic)ic.lookup("/topic/Topic");
 
          try
          {
-            s.createDurableSubscriber(topic, "somename", "=TEST 'test'", false);
+            s.createDurableSubscriber(topic1, "somename", "=TEST 'test'", false);
             fail("this should fail");
          }
          catch(InvalidSelectorException e)
@@ -183,17 +207,17 @@ public class CTSMiscellaneousTest extends MessagingTestCase
 
    public void testInvalidSelectorOnSubscription() throws Exception
    {
-      TopicConnectionFactory cf = (TopicConnectionFactory)ic.lookup("/ConnectionFactory");
-      TopicConnection c =  cf.createTopicConnection();
-      c.setClientID("something");
+      TopicConnection c = null;      
       try
       {
+         c = cf.createTopicConnection();
+         c.setClientID("something");
+      	
          TopicSession s = c.createTopicSession(false, Session.AUTO_ACKNOWLEDGE);
-         Topic topic = (Topic)ic.lookup("/topic/Topic");
 
          try
          {
-            s.createSubscriber(topic, "=TEST 'test'", false);
+            s.createSubscriber(topic1, "=TEST 'test'", false);
             fail("this should fail");
          }
          catch(InvalidSelectorException e)
@@ -211,38 +235,7 @@ public class CTSMiscellaneousTest extends MessagingTestCase
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
-
-   protected void setUp() throws Exception
-   {
-      super.setUp();
-
-      ServerManagement.start("all");
-
-      ic = new InitialContext(ServerManagement.getJNDIEnvironment());
-
-      ServerManagement.undeployQueue("Queue");
-      ServerManagement.undeployTopic("Topic");
-      ServerManagement.deployQueue("Queue");
-      ServerManagement.deployTopic("Topic");
-      
-      ConnectionFactory cf = (JBossConnectionFactory)ic.lookup("/ConnectionFactory");
-      Queue queue = (Queue)ic.lookup("/queue/Queue");
-
-      drainDestination(cf, queue);
-
-      log.debug("setup done");
-   }
-
-   public void tearDown() throws Exception
-   {
-      ServerManagement.undeployQueue("Queue");
-      ServerManagement.undeployTopic("Topic");
-
-      ic.close();
-
-      super.tearDown();
-   }
-
+   
    // Private -------------------------------------------------------
 
    // Inner classes -------------------------------------------------   

@@ -25,14 +25,11 @@ import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.Message;
 import javax.jms.MessageProducer;
-import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.TextMessage;
-import javax.naming.InitialContext;
 import javax.transaction.Transaction;
 import javax.transaction.UserTransaction;
 
-import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
 import org.jboss.tm.TransactionManagerLocator;
 
@@ -41,16 +38,13 @@ import org.jboss.tm.TransactionManagerLocator;
  *
  * $Id: JCAWrapperTest.java 1019 2006-07-17 17:15:04Z timfox $
  */
-public class JCAWrapperTest extends MessagingTestCase
+public class JCAWrapperTest extends JMSTestCase
 {
    // Constants -----------------------------------------------------
    
    // Static --------------------------------------------------------
    
    // Attributes ----------------------------------------------------
-
-   protected InitialContext ic;
-   protected Queue queue;
 
    // Constructors --------------------------------------------------
    
@@ -65,11 +59,13 @@ public class JCAWrapperTest extends MessagingTestCase
    {
       Transaction suspended = TransactionManagerLocator.getInstance().locate().suspend();
       
+      Connection conn = null;
+      
       try
       {
          
          ConnectionFactory mcf = (ConnectionFactory)ic.lookup("java:/JCAConnectionFactory");
-         Connection conn = mcf.createConnection();
+         conn = mcf.createConnection();
          conn.start();
    
          UserTransaction ut = ServerManagement.getUserTransaction();
@@ -77,7 +73,7 @@ public class JCAWrapperTest extends MessagingTestCase
          ut.begin();
    
          Session s = conn.createSession(true, Session.SESSION_TRANSACTED);
-         MessageProducer p = s.createProducer(queue);
+         MessageProducer p = s.createProducer(queue1);
          Message m = s.createTextMessage("one");
    
          p.send(m);
@@ -91,14 +87,18 @@ public class JCAWrapperTest extends MessagingTestCase
          s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
          conn.start();
    
-         TextMessage rm = (TextMessage)s.createConsumer(queue).receive(500);
+         TextMessage rm = (TextMessage)s.createConsumer(queue1).receive(500);
    
          assertEquals("one", rm.getText());
 
          conn.close();
       }
       finally
-      {
+      {      
+         if (conn != null)
+         {
+         	conn.close();
+         }
          
          if (suspended != null)
          {
@@ -114,12 +114,13 @@ public class JCAWrapperTest extends MessagingTestCase
    public void testSimpleTransactedSend2() throws Exception
    {
       Transaction suspended = TransactionManagerLocator.getInstance().locate().suspend();
+      
+      Connection conn = null;
 
       try
       {
-
          ConnectionFactory mcf = (ConnectionFactory)ic.lookup("java:/JCAConnectionFactory");
-         Connection conn = mcf.createConnection();
+         conn = mcf.createConnection();
          conn.start();
 
          UserTransaction ut = ServerManagement.getUserTransaction();
@@ -127,7 +128,7 @@ public class JCAWrapperTest extends MessagingTestCase
          ut.begin();
 
          Session s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer p = s.createProducer(queue);
+         MessageProducer p = s.createProducer(queue1);
          Message m = s.createTextMessage("one");
 
          p.send(m);
@@ -141,14 +142,16 @@ public class JCAWrapperTest extends MessagingTestCase
          s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
          conn.start();
 
-         TextMessage rm = (TextMessage)s.createConsumer(queue).receive(500);
+         TextMessage rm = (TextMessage)s.createConsumer(queue1).receive(500);
 
          assertEquals("one", rm.getText());
-
-         conn.close();
       }
       finally
-      {
+      {         
+         if (conn != null)
+         {
+         	conn.close();
+         }
 
          if (suspended != null)
          {
@@ -160,27 +163,6 @@ public class JCAWrapperTest extends MessagingTestCase
    // Package protected ---------------------------------------------
    
    // Protected -----------------------------------------------------
-
-   protected void setUp() throws Exception
-   {
-      super.setUp();
-      ServerManagement.start("all");
-
-      ic = new InitialContext(ServerManagement.getJNDIEnvironment());
-
-      ServerManagement.deployQueue("UserTransactionTestQueue");
-      queue = (Queue)ic.lookup("/queue/UserTransactionTestQueue");
-      drainDestination((ConnectionFactory)ic.lookup("/ConnectionFactory"), queue);
-
-      log.debug("setup done");
-   }
-
-   protected void tearDown() throws Exception
-   {
-      ServerManagement.undeployQueue("UserTransactionTestQueue");
-      ic.close();
-      super.tearDown();
-   }
 
    // Private -------------------------------------------------------
    

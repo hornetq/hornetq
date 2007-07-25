@@ -37,16 +37,12 @@ import javax.jms.TopicConnection;
 import javax.jms.TopicSession;
 import javax.jms.XAConnection;
 import javax.jms.XASession;
-import javax.management.ObjectName;
-import javax.naming.InitialContext;
 
-import org.jboss.jms.client.JBossConnectionFactory;
 import org.jboss.jms.client.JBossSession;
 import org.jboss.jms.client.delegate.ClientSessionDelegate;
 import org.jboss.jms.client.state.ConnectionState;
 import org.jboss.jms.client.state.SessionState;
-import org.jboss.test.messaging.MessagingTestCase;
-import org.jboss.test.messaging.tools.ServerManagement;
+import org.jboss.jms.tx.ResourceManagerFactory;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -55,19 +51,13 @@ import org.jboss.test.messaging.tools.ServerManagement;
  *
  * $Id$
  */
-public class SessionTest extends MessagingTestCase
+public class SessionTest extends JMSTestCase
 {
    // Constants -----------------------------------------------------
    
    // Static --------------------------------------------------------
    
    // Attributes ----------------------------------------------------
-   
-   protected InitialContext initialContext;
-   
-   protected JBossConnectionFactory cf;
-   protected Topic topic;
-   protected Queue queue;
    
    // Constructors --------------------------------------------------
    
@@ -76,40 +66,6 @@ public class SessionTest extends MessagingTestCase
       super(name);
    }
    
-
-   // TestCase overrides -------------------------------------------
-   
-   public void setUp() throws Exception
-   {
-      super.setUp();                  
-      
-      ServerManagement.start("all");
-      
-      
-      initialContext = new InitialContext(ServerManagement.getJNDIEnvironment());
-      cf = (JBossConnectionFactory)initialContext.lookup("/ConnectionFactory");
-      
-      ServerManagement.undeployTopic("TestTopic");
-      ServerManagement.deployTopic("TestTopic");
-      topic = (Topic)initialContext.lookup("/topic/TestTopic");
-      
-      ServerManagement.undeployQueue("TestQueue");
-      ServerManagement.deployQueue("TestQueue");
-      queue = (Queue)initialContext.lookup("/queue/TestQueue");
-      
-      log.debug("Done setup()");
-          
-   }
-   
-   public void tearDown() throws Exception
-   {
-      ServerManagement.undeployTopic("TestTopic"); 
-      ServerManagement.undeployQueue("TestQueue");
-      super.tearDown();
-   }
-   
-   
-
    // Public --------------------------------------------------------
    
    public void testNoTransactionAfterClose() throws Exception
@@ -117,10 +73,10 @@ public class SessionTest extends MessagingTestCase
       Connection conn = cf.createConnection();      
       conn.start();
       Session sess = conn.createSession(true, Session.SESSION_TRANSACTED);
-      MessageProducer prod = sess.createProducer(queue);
+      MessageProducer prod = sess.createProducer(queue1);
       prod.send(sess.createMessage());
       sess.commit();
-      MessageConsumer cons = sess.createConsumer(queue);
+      MessageConsumer cons = sess.createConsumer(queue1);
       cons.receive();
       sess.commit();
       
@@ -150,7 +106,7 @@ public class SessionTest extends MessagingTestCase
    {
       Connection conn = cf.createConnection();      
       Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);          
-      sess.createProducer(topic);
+      sess.createProducer(topic1);
       conn.close();
    }
 
@@ -162,9 +118,9 @@ public class SessionTest extends MessagingTestCase
 
       MessageProducer p = sess.createProducer(null);
 
-      p.send(queue, m);
+      p.send(queue1, m);
 
-      MessageConsumer c = sess.createConsumer(queue);
+      MessageConsumer c = sess.createConsumer(queue1);
       conn.start();
       
       //receiveNoWait is not guaranteed to return message immediately
@@ -180,7 +136,7 @@ public class SessionTest extends MessagingTestCase
       Connection conn = cf.createConnection();      
       Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
       
-      sess.createConsumer(topic);
+      sess.createConsumer(topic1);
       conn.close();
    }
 
@@ -264,7 +220,7 @@ public class SessionTest extends MessagingTestCase
    {
       Connection conn = cf.createConnection();
       Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      Queue queue = sess.createQueue("TestQueue");
+      Queue queue = sess.createQueue("Queue1");
       
       MessageProducer producer = sess.createProducer(queue);
       MessageConsumer consumer = sess.createConsumer(queue);
@@ -333,7 +289,7 @@ public class SessionTest extends MessagingTestCase
       Connection conn = cf.createConnection();      
       Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
       
-      Topic topic = sess.createTopic("TestTopic");
+      Topic topic = sess.createTopic("Topic1");
       
       MessageProducer producer = sess.createProducer(topic);
       producer.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
@@ -407,7 +363,7 @@ public class SessionTest extends MessagingTestCase
       Connection conn = cf.createConnection();      
       Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
       
-      MessageProducer prod = sess.createProducer(queue);
+      MessageProducer prod = sess.createProducer(queue1);
       prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
       Message m = sess.createTextMessage("hello");
       prod.send(m);
@@ -429,6 +385,8 @@ public class SessionTest extends MessagingTestCase
       {}
       
       conn.close();
+      
+      removeAllMessages(queue1.getQueueName(), true, 0);
    }
 
 
@@ -472,14 +430,14 @@ public class SessionTest extends MessagingTestCase
 
       Connection conn = cf.createConnection();
       Session s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      s.createProducer(queue).send(s.createTextMessage("wont_ack"));
+      s.createProducer(queue1).send(s.createTextMessage("wont_ack"));
       conn.close();
 
       conn = cf.createConnection();
       s = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
       conn.start();
 
-      TextMessage m = (TextMessage)s.createConsumer(queue).receive(1000);
+      TextMessage m = (TextMessage)s.createConsumer(queue1).receive(1000);
 
       assertEquals("wont_ack", m.getText());
 
@@ -489,7 +447,7 @@ public class SessionTest extends MessagingTestCase
 
       // get the message again
       s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      m = (TextMessage)s.createConsumer(queue).receive(1000);
+      m = (TextMessage)s.createConsumer(queue1).receive(1000);
 
       assertEquals("wont_ack", m.getText());
 
@@ -502,30 +460,26 @@ public class SessionTest extends MessagingTestCase
 
       Connection conn = cf.createConnection();
       Session s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      s.createProducer(queue).send(s.createTextMessage("bex"));
+      s.createProducer(queue1).send(s.createTextMessage("bex"));
       conn.close();
 
       conn = cf.createConnection();
       Session session = conn.createSession(true, -1);
       conn.start();
 
-      TextMessage m = (TextMessage)session.createConsumer(queue).receive(1000);
+      TextMessage m = (TextMessage)session.createConsumer(queue1).receive(1000);
 
       assertEquals("bex", m.getText());
 
       // make sure the acknowledment hasn't been sent to the channel
-      ObjectName on = new ObjectName("jboss.messaging.destination:service=Queue,name=TestQueue");
-      Integer mc = (Integer)ServerManagement.getAttribute(on, "MessageCount");
-
-      assertEquals(1, mc.intValue());
-
+      assertRemainingMessages(1);
+      
       // close the session
       session.close();
 
       // JMS 1.1 4.4.1: "Closing a transacted session must roll back its transaction in progress"
       
-      mc = (Integer)ServerManagement.getAttribute(on, "MessageCount");
-      assertEquals(1, mc.intValue());
+      assertRemainingMessages(1);
 
       conn.close();
 
@@ -534,7 +488,7 @@ public class SessionTest extends MessagingTestCase
       conn = cf.createConnection();
       s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
       conn.start();
-      TextMessage rm = (TextMessage)s.createConsumer(queue).receive(1000);
+      TextMessage rm = (TextMessage)s.createConsumer(queue1).receive(1000);
 
       assertEquals("bex", rm.getText());
 
@@ -544,9 +498,13 @@ public class SessionTest extends MessagingTestCase
    // Package protected ---------------------------------------------
    
    // Protected -----------------------------------------------------
-
-  
-
+   
+   protected void setUp() throws Exception
+	{
+		super.setUp();
+		
+		ResourceManagerFactory.instance.clear();
+	}
    // Private -------------------------------------------------------
    
    // Inner classes -------------------------------------------------

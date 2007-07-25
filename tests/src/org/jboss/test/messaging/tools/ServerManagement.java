@@ -64,6 +64,8 @@ import org.jboss.test.messaging.tools.jndi.RemoteInitialContextFactory;
 public class ServerManagement
 {
    // Constants -----------------------------------------------------
+	
+	public static int wibble = 0;
 
    public static final int MAX_SERVER_COUNT = 10;
 
@@ -173,6 +175,9 @@ public class ServerManagement
     */
    public static void start(String config) throws Exception
    {
+   	wibble++;
+   	
+   	log.info("*** wiblle is now " + wibble);
       start(0, config, true);
    }
 
@@ -324,6 +329,7 @@ public class ServerManagement
     */
    public static synchronized List destroySpawnedServers() throws Exception
    {
+   	log.info("################# Destroying spawned servers****");
       List destroyed = new ArrayList();
 
       for(int i = 0; i < servers.length; i++)

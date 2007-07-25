@@ -54,18 +54,13 @@ import org.jboss.test.messaging.tools.ServerManagement;
  * $Id$
  *
  */
-public class ExpiryQueueTest extends MessagingTestCase
+public class ExpiryQueueTest extends JMSTestCase
 {
    // Constants -----------------------------------------------------
 
    // Static --------------------------------------------------------
 
    // Attributes ----------------------------------------------------
-
-   protected InitialContext ic;
-   protected ConnectionFactory cf;
-   protected Queue queue;
-   protected Topic topic;
 
    // Constructors --------------------------------------------------
 
@@ -84,8 +79,7 @@ public class ExpiryQueueTest extends MessagingTestCase
       }
       
       try
-      {
-      
+      {      
          ServerManagement.deployQueue("ExpiryQueue");
          
          ObjectName serverPeerObjectName = ServerManagement.getServerPeerObjectName();
@@ -348,17 +342,17 @@ public class ExpiryQueueTest extends MessagingTestCase
                         
          Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
    
-         MessageProducer prod = sess.createProducer(topic);
+         MessageProducer prod = sess.createProducer(topic1);
             
          conn.start();
          
          //Create 3 durable subscriptions
          
-         MessageConsumer sub1 = sess.createDurableSubscriber(topic, "sub1");
+         MessageConsumer sub1 = sess.createDurableSubscriber(topic1, "sub1");
          
-         MessageConsumer sub2 = sess.createDurableSubscriber(topic, "sub2");
+         MessageConsumer sub2 = sess.createDurableSubscriber(topic1, "sub2");
          
-         MessageConsumer sub3 = sess.createDurableSubscriber(topic, "sub3");
+         MessageConsumer sub3 = sess.createDurableSubscriber(topic1, "sub3");
          
          Map origIds = new HashMap();
                            
@@ -416,7 +410,7 @@ public class ExpiryQueueTest extends MessagingTestCase
             long actualExpiryTime =
                tm.getLongProperty(JBossMessage.JBOSS_MESSAGING_ACTUAL_EXPIRY_TIME);
             
-            assertEquals(topic.toString(), origDest);
+            assertEquals(topic1.toString(), origDest);
             
             String origId = (String)origIds.get(tm.getText());
             
@@ -491,7 +485,7 @@ public class ExpiryQueueTest extends MessagingTestCase
 
          Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         MessageProducer prod = sess.createProducer(queue);
+         MessageProducer prod = sess.createProducer(queue1);
 
          int deliveryMode = persistent ? DeliveryMode.PERSISTENT : DeliveryMode.NON_PERSISTENT;
          
@@ -504,7 +498,7 @@ public class ExpiryQueueTest extends MessagingTestCase
             prod.send(tm, deliveryMode, 4, 2000);
          }
 
-         MessageConsumer cons = sess.createConsumer(queue);
+         MessageConsumer cons = sess.createConsumer(queue1);
          
          //The messages should now be sitting in the consumer buffer
          
@@ -574,7 +568,7 @@ public class ExpiryQueueTest extends MessagingTestCase
 
          Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         MessageProducer prod = sess.createProducer(queue);
+         MessageProducer prod = sess.createProducer(queue1);
 
          int deliveryMode = persistent ? DeliveryMode.PERSISTENT : DeliveryMode.NON_PERSISTENT;
          
@@ -587,7 +581,7 @@ public class ExpiryQueueTest extends MessagingTestCase
             prod.send(tm, deliveryMode, 4, 2000);
          }
 
-         MessageConsumer cons = sess.createConsumer(queue);
+         MessageConsumer cons = sess.createConsumer(queue1);
          
          //The messages should now be sitting in the consumer buffer
          
@@ -635,7 +629,6 @@ public class ExpiryQueueTest extends MessagingTestCase
 
       try
       {
-
          ConnectionFactory cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
          
          conn = cf.createConnection();
@@ -644,7 +637,7 @@ public class ExpiryQueueTest extends MessagingTestCase
 
          conn.start();
 
-         MessageProducer prod = session.createProducer(queue);
+         MessageProducer prod = session.createProducer(queue1);
          prod.setTimeToLive(100);
 
          Message m = session.createTextMessage("This message will die");
@@ -654,7 +647,7 @@ public class ExpiryQueueTest extends MessagingTestCase
          // wait for the message to die
          Thread.sleep(2000);
 
-         MessageConsumer cons = session.createConsumer(queue);
+         MessageConsumer cons = session.createConsumer(queue1);
 
          assertNull(cons.receive(3000));
          
@@ -685,41 +678,6 @@ public class ExpiryQueueTest extends MessagingTestCase
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
-
-   protected void setUp() throws Exception
-   {
-      super.setUp();
-
-      ServerManagement.start("all");
-
-      ic = new InitialContext(ServerManagement.getJNDIEnvironment());
-
-      cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
-
-      ServerManagement.undeployQueue("Queue");
-      
-      ServerManagement.undeployTopic("Topic");
-      
-      ServerManagement.deployQueue("Queue");
-      
-      ServerManagement.deployTopic("Topic");
-
-      queue = (Queue)ic.lookup("/queue/Queue");
-      
-      topic = (Topic)ic.lookup("/topic/Topic");
-
-   }
-
-   protected void tearDown() throws Exception
-   {
-      super.tearDown();
-
-      ServerManagement.undeployQueue("Queue");
-      
-      ServerManagement.undeployTopic("Topic");
-
-      if (ic != null) ic.close();
-   }
 
    // Private -------------------------------------------------------
 

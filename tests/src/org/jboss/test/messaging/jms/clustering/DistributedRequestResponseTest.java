@@ -33,10 +33,8 @@ import javax.jms.MessageProducer;
 import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.TextMessage;
-import javax.management.ObjectName;
 import javax.naming.InitialContext;
 
-import org.jboss.jms.client.JBossConnection;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
 
@@ -244,13 +242,6 @@ public class DistributedRequestResponseTest extends MessagingTestCase
             conn1.close();
          }
       }
-   }
-   
-   private void removeAllMessages(String destName, boolean isQueue, int server) throws Exception
-   {
-   	String on = "jboss.messaging.destination:service=" + (isQueue ? "Queue" : "Topic") + ",name=" + destName;
-   	
-   	ServerManagement.getServer(server).invoke(new ObjectName(on), "removeAllMessages", null, null);
    }
    
    // Inner classes --------------------------------------------------------------------------------

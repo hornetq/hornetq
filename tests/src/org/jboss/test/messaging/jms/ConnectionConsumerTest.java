@@ -22,8 +22,6 @@
 package org.jboss.test.messaging.jms;
 
 import javax.jms.Connection;
-import javax.jms.ConnectionFactory;
-import javax.jms.Destination;
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageListener;
@@ -32,10 +30,8 @@ import javax.jms.ServerSession;
 import javax.jms.ServerSessionPool;
 import javax.jms.Session;
 import javax.jms.TextMessage;
-import javax.naming.InitialContext;
 
 import org.jboss.jms.client.JBossConnectionConsumer;
-import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
 
 import EDU.oswego.cs.dl.util.concurrent.Latch;
@@ -49,16 +45,13 @@ import EDU.oswego.cs.dl.util.concurrent.Latch;
  *
  * $Id$
  */
-public class ConnectionConsumerTest extends MessagingTestCase
+public class ConnectionConsumerTest extends JMSTestCase
 {
    // Constants -----------------------------------------------------
 
    // Static --------------------------------------------------------
    
    // Attributes ----------------------------------------------------
-
-   protected ConnectionFactory cf;
-   protected Destination queue;
 
    // Constructors --------------------------------------------------
 
@@ -68,32 +61,6 @@ public class ConnectionConsumerTest extends MessagingTestCase
    }
 
    // TestCase overrides -------------------------------------------
-
-   public void setUp() throws Exception
-   {
-      super.setUp();
-      ServerManagement.start("all");
-            
-
-      ServerManagement.undeployQueue("Queue");
-      ServerManagement.deployQueue("Queue");
-
-      InitialContext ic = new InitialContext(ServerManagement.getJNDIEnvironment());
-      cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
-      queue = (Destination)ic.lookup("/queue/Queue");
-      
-      this.drainDestination(cf, queue);
-
-      log.debug("setup done");
-   }
-
-   public void tearDown() throws Exception
-   {
-      ServerManagement.undeployQueue("Queue");
-       
-      super.tearDown();
-   }
-
 
    // Public --------------------------------------------------------
 
@@ -121,12 +88,12 @@ public class ConnectionConsumerTest extends MessagingTestCase
 
          ServerSessionPool pool = new MockServerSessionPool(sessCons);
 
-         JBossConnectionConsumer cc = (JBossConnectionConsumer)connConsumer.createConnectionConsumer(queue, null, pool, 1);
+         JBossConnectionConsumer cc = (JBossConnectionConsumer)connConsumer.createConnectionConsumer(queue1, null, pool, 1);
 
          connProducer = cf.createConnection();
 
          Session sessProd = connProducer.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer prod = sessProd.createProducer(queue);
+         MessageProducer prod = sessProd.createProducer(queue1);
 
          for (int i = 0; i < NUM_MESSAGES; i++)
          {
@@ -148,20 +115,12 @@ public class ConnectionConsumerTest extends MessagingTestCase
             fail ("Didn't receive correct messages");
          }
 
-         log.trace("Received all messages");
-
-         log.trace("closing connection consumer ...");
-
          cc.close();
-
-         log.trace("closing connections ...");
 
          connProducer.close();
          connProducer = null;
          connConsumer.close();
          connConsumer = null;
-
-
       }
       finally
       {
@@ -194,14 +153,12 @@ public class ConnectionConsumerTest extends MessagingTestCase
          
          ServerSessionPool pool = new MockServerSessionPool(sessCons);
          
-         JBossConnectionConsumer cc = (JBossConnectionConsumer)connConsumer.createConnectionConsumer(queue, null, pool, 1);         
-         
-         log.trace("Started connection consumer");
+         JBossConnectionConsumer cc = (JBossConnectionConsumer)connConsumer.createConnectionConsumer(queue1, null, pool, 1);         
          
          connProducer = cf.createConnection();
             
          Session sessProd = connProducer.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer prod = sessProd.createProducer(queue);
+         MessageProducer prod = sessProd.createProducer(queue1);
             
          TextMessage m1 = sessProd.createTextMessage("a");
          TextMessage m2 = sessProd.createTextMessage("b");
@@ -209,10 +166,7 @@ public class ConnectionConsumerTest extends MessagingTestCase
          prod.send(m1);
          prod.send(m2);
          prod.send(m3);
-         
-         
-         log.trace("Sent messages");
-         
+            
          //Wait for messages
          
          listener.waitForLatch(10000);                  
@@ -224,14 +178,10 @@ public class ConnectionConsumerTest extends MessagingTestCase
          
          cc.close();
          
-         log.trace("Closed connection consumer");
-         
          connProducer.close();
          connProducer = null;
          connConsumer.close();
-         connConsumer = null;
-         
-    
+         connConsumer = null;            
       }
       finally 
       {
@@ -239,8 +189,7 @@ public class ConnectionConsumerTest extends MessagingTestCase
          if (connConsumer != null) connProducer.close();
       }
    }
-   
-   
+      
    
    public void testRedeliveryTransactedDifferentConnection() throws Exception
    {
@@ -270,14 +219,12 @@ public class ConnectionConsumerTest extends MessagingTestCase
          
          connConnectionConsumer.start();
          
-         JBossConnectionConsumer cc = (JBossConnectionConsumer)connConnectionConsumer.createConnectionConsumer(queue, null, pool, 1);         
-         
-         log.trace("Started connection consumer");
+         JBossConnectionConsumer cc = (JBossConnectionConsumer)connConnectionConsumer.createConnectionConsumer(queue1, null, pool, 1);         
          
          connProducer = cf.createConnection();
             
          Session sessProd = connProducer.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer prod = sessProd.createProducer(queue);
+         MessageProducer prod = sessProd.createProducer(queue1);
             
          TextMessage m1 = sessProd.createTextMessage("a");
          TextMessage m2 = sessProd.createTextMessage("b");
@@ -285,10 +232,7 @@ public class ConnectionConsumerTest extends MessagingTestCase
          prod.send(m1);
          prod.send(m2);
          prod.send(m3);
-         
-         
-         log.trace("Sent messages");
-         
+          
          //Wait for messages
          
          listener.waitForLatch(10000);                  
@@ -299,16 +243,13 @@ public class ConnectionConsumerTest extends MessagingTestCase
          }
          
          cc.close();
-         
-         log.trace("Closed connection consumer");
-         
+           
          connProducer.close();
          connProducer = null;
          connConsumer.close();
          connConsumer = null;
          connConnectionConsumer.close();
-         connConnectionConsumer = null;
-    
+         connConnectionConsumer = null;    
       }
       finally 
       {
@@ -342,23 +283,18 @@ public class ConnectionConsumerTest extends MessagingTestCase
 
          ServerSessionPool pool = new MockServerSessionPool(sessCons);
 
-         JBossConnectionConsumer cc = (JBossConnectionConsumer)connConsumer.createConnectionConsumer(queue, null, pool, 1);
-
-         log.trace("Started connection consumer");
+         JBossConnectionConsumer cc = (JBossConnectionConsumer)connConsumer.createConnectionConsumer(queue1, null, pool, 1);
 
          connProducer = cf.createConnection();
 
          Session sessProd = connProducer.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer prod = sessProd.createProducer(queue);
+         MessageProducer prod = sessProd.createProducer(queue1);
 
          for (int i = 0; i < NUM_MESSAGES; i++)
          {
             TextMessage m = sessProd.createTextMessage("testing testing");
             prod.send(m);
          }
-
-         log.trace("Sent messages");
-
 
          cc.close();
 
@@ -572,10 +508,8 @@ public class ConnectionConsumerTest extends MessagingTestCase
          {
             log.error(e);
             failed = true;
-         }
-  
-      }
-      
+         }  
+      }      
    }
    
    

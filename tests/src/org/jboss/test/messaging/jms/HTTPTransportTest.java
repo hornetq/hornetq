@@ -6,40 +6,31 @@
  */
 package org.jboss.test.messaging.jms;
 
-import org.jboss.test.messaging.MessagingTestCase;
-import org.jboss.test.messaging.tools.ServerManagement;
-
-import javax.naming.InitialContext;
-import javax.jms.ConnectionFactory;
-import javax.jms.Queue;
 import javax.jms.Connection;
-import javax.jms.Session;
-import javax.jms.MessageProducer;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
+import javax.jms.MessageProducer;
+import javax.jms.Session;
 import javax.jms.TextMessage;
-import javax.management.ObjectName;
+
+import org.jboss.test.messaging.tools.ServerManagement;
 
 /**
  * This class contain tests that only make sense for a HTTP transport. They will be ignored for
  * any other kind of transport.
  *
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
  * $Id$
  */
-public class HTTPTransportTest extends MessagingTestCase
+public class HTTPTransportTest extends JMSTestCase
 {
    // Constants ------------------------------------------------------------------------------------
 
    // Static ---------------------------------------------------------------------------------------
 
    // Attributes -----------------------------------------------------------------------------------
-
-   private InitialContext ic;
-   private ConnectionFactory cf;
-   private Queue queue;
-   private ObjectName queueObjectName;
 
    // Constructors ---------------------------------------------------------------------------------
 
@@ -62,7 +53,7 @@ public class HTTPTransportTest extends MessagingTestCase
       // send a bunch of messages and let them accumulate in the queue
       Connection conn = cf.createConnection();
       Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      MessageProducer prod = session.createProducer(queue);
+      MessageProducer prod = session.createProducer(queue1);
 
       int messageCount = 20;
 
@@ -75,17 +66,15 @@ public class HTTPTransportTest extends MessagingTestCase
       conn.close();
 
       // make sure messages made it to the queue
-      Integer count = (Integer)ServerManagement.getAttribute(queueObjectName, "MessageCount");
-      assertEquals(messageCount, count.intValue());
-
+      assertRemainingMessages(messageCount);
 
       conn = cf.createConnection();
       session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      MessageConsumer cons = session.createConsumer(queue);
+      MessageConsumer cons = session.createConsumer(queue1);
 
       conn.start();
 
-      // messages will be sent in bulk from server side, on the next HTTP client listner poll
+      // messages will be sent in bulk from server side, on the next HTTP client listener poll
 
       for(int i = 0; i < messageCount; i++)
       {
@@ -101,37 +90,6 @@ public class HTTPTransportTest extends MessagingTestCase
    // Package protected ----------------------------------------------------------------------------
 
    // Protected ------------------------------------------------------------------------------------
-
-   protected void setUp() throws Exception
-   {
-      super.setUp();
-
-      ServerManagement.start("all");
-
-      ic = new InitialContext(ServerManagement.getJNDIEnvironment());
-
-      ServerManagement.deployQueue("HTTPTestQueue");
-
-      cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
-
-      queue = (Queue)ic.lookup("/queue/HTTPTestQueue");
-
-      queueObjectName =
-         new ObjectName("jboss.messaging.destination:service=Queue,name=HTTPTestQueue");
-
-      ServerManagement.invoke(queueObjectName, "removeAllMessages", new Object[0], new String[0]);
-
-      log.debug("setup done");
-   }
-
-   public void tearDown() throws Exception
-   {
-      ServerManagement.undeployQueue("HTTPTestQueue");
-
-      ic.close();
-
-      super.tearDown();
-   }
 
    // Private --------------------------------------------------------------------------------------
 

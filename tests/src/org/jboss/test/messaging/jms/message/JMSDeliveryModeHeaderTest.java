@@ -28,7 +28,7 @@ import javax.jms.DeliveryMode;
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  */
-public class JMSDeliveryModeHeaderTest extends MessageTest
+public class JMSDeliveryModeHeaderTest extends MessageHeaderTestBase
 {
    // Constants -----------------------------------------------------
 
@@ -44,16 +44,6 @@ public class JMSDeliveryModeHeaderTest extends MessageTest
    }
 
    // Public --------------------------------------------------------
-
-   public void setUp() throws Exception
-   {
-      super.setUp();
-   }
-
-   public void tearDown() throws Exception
-   {
-      super.tearDown();
-   }
 
    public void testDefaultDeliveryMode() throws Exception
    {

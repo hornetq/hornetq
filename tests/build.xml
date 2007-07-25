@@ -57,7 +57,7 @@
         Functional tests.
    -->
 
-   <property name="functional.tests.database" value="mysql"/>
+   <property name="functional.tests.database" value="oracle"/>
 
    <!--
         Stress tests.
@@ -66,7 +66,7 @@
    <property name="stress.tests.database" value="mysql"/>
 
    <!-- Clustering tests -->
-   <property name="clustering.tests.database" value="mysql"/>
+   <property name="clustering.tests.database" value="oracle"/>
    <property name ="test-mask" value="*Test"/>
 
    <!--
@@ -325,6 +325,10 @@
 
       <antcall target="bridge-tests"/>
 
+      <antcall target="invm-thirdparty-tests"/>
+
+      <antcall target="remote-thirdparty-tests"/>
+
    </target>
 
    <target name="http-tests" depends="tests-jar, prepare-testdirs, clear-test-logs">
@@ -368,23 +372,64 @@
                     haltonerror="${junit.batchtest.haltonerror}">
             <formatter type="plain" usefile="${junit.formatter.usefile}"/>
             <fileset dir="${build.tests.classes}">
-               <include name="**/*Test.class"/>
-               <exclude name="**/messaging/graveyard/**/*Test.class"/>
-               <exclude name="**/jms/stress/**"/>
-               <exclude name="**/jms/crash/*Test.class"/>
-               <exclude name="**/*LeakTest.class"/>
-               <exclude name="**/jms/bridge/**/*Test.class"/>
-               <exclude name="**/jms/manual/**/*Test.class"/>
-               <exclude name="**/jms/clustering/*Test.class"/>
+               <include name="**/${test-mask}.class"/>             
+               <exclude name="**/jms/MemLeakTest.class"/>
                <exclude name="**/jms/LongRunningInvocationTest.class"/>
                <exclude name="**/jms/RemotingConnectionConfigurationTest.class"/>
+               <exclude name="**/jms/XAResourceRecoveryTest.class"/>
+               <exclude name="**/jms/stress/**"/>
+               <exclude name="**/jms/crash/**"/>
+               <exclude name="**/jms/bridge/**"/>
+               <exclude name="**/jms/manual/**"/>
+               <exclude name="**/jms/clustering/**"/>
+               <exclude name="**/thirdparty/**"/>
+            </fileset>
+         </batchtest>
+      </junit>
+   </target>
+
+   <target name="invm-thirdparty-tests" depends="tests-jar, prepare-testdirs, clear-test-logs"
+           description="Runs all available thirdparty tests an in-VM configuration">
+
+      <echo message=""/>
+      <echo message="Running invm tests, fork=${junit.fork}, junit.batchtest.fork=${junit.batchtest.fork}"/>
+      <echo message=""/>
+
+      <junit printsummary="${junit.printsummary}"
+             fork="${junit.fork}"
+             includeantruntime="${junit.includeantruntime}"
+             haltonerror="${junit.haltonerror}"
+             haltonfailure="${junit.haltonfailure}"
+             showoutput="${junit.showoutput}"
+             timeout="${junit.timeout}">
+
+         <sysproperty key="remote" value="false"/>
+         <sysproperty key="module.output" value="${tests.output}"/>
+         <sysproperty key="test.bind.address" value="${test.bind.address}"/>
+         <sysproperty key="jgroups.bind_addr" value="${test.bind.address}"/>
+         <sysproperty key="test.database" value="${functional.tests.database}"/>
+         <sysproperty key="test.logfile.suffix" value="invm"/>
+         <sysproperty key="build.lib" value="${build.lib}"/>
+         <sysproperty key="objectstore.dir" value="${objectstore.dir}"/>
+         <jvmarg value="-Xmx512M"/>
+         <!--
+         <jvmarg line="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_shmem,server=y,suspend=y,address=antjunit"/>
+         -->
+         <classpath refid="test.execution.classpath"/>
+         <formatter type="xml" usefile="${junit.formatter.usefile}"/>
+         <batchtest fork="${junit.batchtest.fork}"
+                    todir="${junit.batchtest.todir}"
+                    haltonfailure="${junit.batchtest.haltonfailure}"
+                    haltonerror="${junit.batchtest.haltonerror}">
+            <formatter type="plain" usefile="${junit.formatter.usefile}"/>
+            <fileset dir="${build.tests.classes}">
+               <include name="**/thirdparty/**/*Test.class"/>
                <exclude name="**/thirdparty/remoting/ManualConnectionValidatorTest.class"/>
                <exclude name="**/thirdparty/remoting/PureAsynchronousCallTest.class"/>
                <exclude name="**/thirdparty/remoting/RemotingConnectionFailureTest.class"/>
                <exclude name="**/thirdparty/remoting/CallbackServerTimeoutTest.class"/>
                <exclude name="**/thirdparty/remoting/ClientInvokerTimeoutTest.class"/>
                <exclude name="**/thirdparty/remoting/SocketTransportCausalityTest.class"/>
-               <exclude name="**/jms/XAResourceRecoveryTest.class"/>
             </fileset>
          </batchtest>
       </junit>
@@ -403,7 +448,8 @@
       <echo message=""/>
 
       <junit printsummary="${junit.printsummary}"
-             fork="${junit.fork}"
+             fork="on"
+             forkMode="once"
              includeantruntime="yes"
              haltonerror="${junit.haltonerror}"
              haltonfailure="${junit.haltonfailure}"
@@ -430,8 +476,7 @@
          <formatter classname="org.jboss.ant.taskdefs.XMLJUnitMultipleResultFormatter"
                     usefile="${junit.formatter.usefile}" extension="-Remote-${test.remoting}.xml"/>
 
-         <batchtest fork="${junit.batchtest.fork}"
-                    todir="${junit.batchtest.todir}"
+         <batchtest todir="${junit.batchtest.todir}"
                     haltonfailure="${junit.batchtest.haltonfailure}"
                     haltonerror="${junit.batchtest.haltonerror}">
             <formatter type="plain" usefile="${junit.formatter.usefile}"/>
@@ -443,22 +488,81 @@
            <formatter classname="org.jboss.test.messaging.tools.ant.JUnitTestSuiteListener"/>
 
             <fileset dir="${build.tests.classes}">
-               <include name="**/jms/**/${test-mask}.class"/>
-               <include name="**/thirdparty/**/${test-mask}.class"/>
-               <exclude name="**/jms/bridge/**/*Test.class"/>
-               <exclude name="**/messaging/graveyard/**/*Test.class"/>
-               <exclude name="**/jms/WireFormatTest.class"/>
-               <exclude name="**/jms/stress/**"/>
-               <exclude name="**/jms/server/**"/>
-               <exclude name="**/jms/persistence/**"/>
-               <exclude name="**/jms/ReferencingTest.class"/>
-               <exclude name="**/jms/PersistenceTest.class"/>
-               <exclude name="**/jms/crash/*Test.class"/>
-               <exclude name="**/*LeakTest.class"/>
+
+	       <include name="**/jms/${test-mask}.class"/> 
+               <include name="**/jms/message/**/*Test.class"/>
+               <include name="**/jms/selector/*Test.class"/>
+
+	       <exclude name="**/jms/WireFormatTest.class"/>
+	       <exclude name="**/jms/ReferencingTest.class"/>
+	       <exclude name="**/jms/PersistenceTest.class"/>
+	       <exclude name="**/jms/MemLeakTest.class"/>
                <exclude name="**/jms/ManifestTest.class"/>
-               <exclude name="**/jms/JCAWrapperTest.class"/>
-               <exclude name="**/jms/manual/**/*Test.class"/>
-               <exclude name="**/jms/clustering/*Test.class"/>
+               <exclude name="**/jms/JCAWrapperTest.class"/> 
+           
+            </fileset>
+         </batchtest>
+      </junit>
+
+      <antcall target="stop-rmi-server"/>
+
+   </target>
+
+
+   <target name="remote-thirdparty-tests" depends="tests-jar, prepare-testdirs, clear-test-logs"
+           description="Runs remotely all thirdparty tests for which it makes sense to run remotely">
+
+      <antcall target="stop-rmi-server"/>
+      <antcall target="start-rmi-server"/>
+
+      <mkdir dir="${build.tests.reports}"/>
+
+      <echo message=""/>
+      <echo message="Running remote tests, fork=${junit.fork}, junit.batchtest.fork=${junit.batchtest.fork}, remoting=${test.remoting}"/>
+      <echo message=""/>
+
+      <junit printsummary="${junit.printsummary}"
+             fork="on"
+             forkMode="once"
+             includeantruntime="yes"
+             haltonerror="${junit.haltonerror}"
+             haltonfailure="${junit.haltonfailure}"
+             showoutput="${junit.showoutput}"
+             timeout="${junit.timeout}">
+
+         <sysproperty key="remote" value="true"/>
+         <sysproperty key="module.output" value="${tests.output}"/>
+         <sysproperty key="test.bind.address" value="${test.bind.address}"/>
+         <sysproperty key="jgroups.bind_addr" value="${test.bind.address}"/>
+         <sysproperty key="test.database" value="${functional.tests.database}"/>
+         <sysproperty key="test.remoting" value="${test.remoting}"/>
+         <sysproperty key="test.logfile.suffix" value="remote-client"/>
+         <sysproperty key="objectstore.dir" value="${objectstore.dir}"/>
+         <jvmarg value="-Xmx512M"/>
+         <!--
+         <jvmarg line="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_shmem,server=n,suspend=n,address=antjunit"/>
+         -->
+         <classpath>
+            <path refid="test.execution.classpath"/>
+         </classpath>
+
+         <sysproperty key="jboss-junit-configuration" value="Remote-${test.remoting}"/>
+         <formatter classname="org.jboss.ant.taskdefs.XMLJUnitMultipleResultFormatter"
+                    usefile="${junit.formatter.usefile}" extension="-Remote-${test.remoting}.xml"/>
+
+         <batchtest todir="${junit.batchtest.todir}"
+                    haltonfailure="${junit.batchtest.haltonfailure}"
+                    haltonerror="${junit.batchtest.haltonerror}">
+            <formatter type="plain" usefile="${junit.formatter.usefile}"/>
+            <!--
+                 I needed a way to intercept the end of a forked ant JUnit test run, in order to
+                 perform clean-up, and this is it: register a JUnitTestSuiteListener as a JUnit
+                 batchtest formatter, and it will get notified on a endTestSuite() event.
+            -->
+           <formatter classname="org.jboss.test.messaging.tools.ant.JUnitTestSuiteListener"/>
+
+            <fileset dir="${build.tests.classes}">              
+               <include name="**/thirdparty/**/${test-mask}.class"/>             
                <exclude name="**/thirdparty/remoting/ServerAddressTest.class"/>
                <exclude name="**/thirdparty/jbosssx/SecurityAssociationTest.class"/>
             </fileset>

@@ -31,7 +31,7 @@ import javax.jms.MessageProducer;
 import javax.jms.Session;
 import javax.naming.InitialContext;
 
-import org.jboss.test.messaging.MessagingTestCase;
+import org.jboss.test.messaging.jms.JMSTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
 
 /**
@@ -44,11 +44,10 @@ import org.jboss.test.messaging.tools.ServerManagement;
  *
  * $Id$
  */
-public class MessagePropertyConversionTest extends MessagingTestCase
+public class MessagePropertyConversionTest extends JMSTestCase
 {
    // Attributes ----------------------------------------------------
 
-   private Destination queue;
    private Connection producerConnection, consumerConnection;
    private Session queueProducerSession, queueConsumerSession;
    private MessageProducer queueProducer;
@@ -67,36 +66,24 @@ public class MessagePropertyConversionTest extends MessagingTestCase
    {
       super.setUp();
 
-      ServerManagement.start("all");
-      
-      ServerManagement.undeployQueue("Queue");
-      ServerManagement.deployQueue("Queue");
-      
-      InitialContext ic = new InitialContext(ServerManagement.getJNDIEnvironment());
-      ConnectionFactory cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
-      queue = (Destination)ic.lookup("/queue/Queue");
-      
       producerConnection = cf.createConnection();
       consumerConnection = cf.createConnection();
 
       queueProducerSession = producerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
       queueConsumerSession = consumerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-      queueProducer = queueProducerSession.createProducer(queue);
-      queueConsumer = queueConsumerSession.createConsumer(queue);
+      queueProducer = queueProducerSession.createProducer(queue1);
+      queueConsumer = queueConsumerSession.createConsumer(queue1);
 
       consumerConnection.start();
    }
 
    public void tearDown() throws Exception
    {
+      super.tearDown();
+      
       producerConnection.close();
       consumerConnection.close();
-
-      ServerManagement.undeployQueue("Queue");
-      
-
-      super.tearDown();
    }
    
    public void testBooleanConversion() throws Exception
@@ -106,7 +93,7 @@ public class MessagePropertyConversionTest extends MessagingTestCase
       boolean myBool = true;
       m1.setBooleanProperty("myBool", myBool);
 
-      queueProducer.send(queue, m1);
+      queueProducer.send(queue1, m1);
       Message m2 = queueConsumer.receive(2000);
       
       // Boolean property can be read as boolean and String but not anything else
@@ -158,7 +145,7 @@ public class MessagePropertyConversionTest extends MessagingTestCase
       byte myByte = 13;
       m1.setByteProperty("myByte", myByte);
 
-      queueProducer.send(queue, m1);
+      queueProducer.send(queue1, m1);
       Message m2 = queueConsumer.receive(2000);
       
       // Byte property can be read as byte, short, int, long or String
@@ -195,7 +182,7 @@ public class MessagePropertyConversionTest extends MessagingTestCase
       short myShort = 15321;
       m1.setShortProperty("myShort", myShort);
 
-      queueProducer.send(queue, m1);
+      queueProducer.send(queue1, m1);
       Message m2 = queueConsumer.receive(2000);
  
       // Short property can be read as short, int, long or String
@@ -237,7 +224,7 @@ public class MessagePropertyConversionTest extends MessagingTestCase
       int myInt = 0x71ab6c80;
       m1.setIntProperty("myInt", myInt);
 
-      queueProducer.send(queue, m1);
+      queueProducer.send(queue1, m1);
       Message m2 = queueConsumer.receive(2000);
 
       // Int property can be read as int, long or String
@@ -284,7 +271,7 @@ public class MessagePropertyConversionTest extends MessagingTestCase
       long myLong = 0x20bf1e3fb6fa31dfL;
       m1.setLongProperty("myLong", myLong);
 
-      queueProducer.send(queue, m1);
+      queueProducer.send(queue1, m1);
       Message m2 = queueConsumer.receive(2000);
 
       // Long property can be read as long and String
@@ -336,7 +323,7 @@ public class MessagePropertyConversionTest extends MessagingTestCase
       float myFloat = Float.MAX_VALUE - 23465;
       m1.setFloatProperty("myFloat", myFloat);
 
-      queueProducer.send(queue, m1);
+      queueProducer.send(queue1, m1);
       Message m2 = queueConsumer.receive(2000);
    
       // Float property can be read as float, double or String
@@ -383,7 +370,7 @@ public class MessagePropertyConversionTest extends MessagingTestCase
       double myDouble = Double.MAX_VALUE - 72387633;
       m1.setDoubleProperty("myDouble", myDouble);
 
-      queueProducer.send(queue, m1);
+      queueProducer.send(queue1, m1);
       Message m2 = queueConsumer.receive(2000);
 
       // Double property can be read as double and String
@@ -443,7 +430,7 @@ public class MessagePropertyConversionTest extends MessagingTestCase
       
       m1.setStringProperty("myString", myString);
 
-      queueProducer.send(queue, m1);
+      queueProducer.send(queue1, m1);
       Message m2 = queueConsumer.receive(2000);
 
       assertEquals(myString, m2.getStringProperty("myString"));
@@ -466,7 +453,7 @@ public class MessagePropertyConversionTest extends MessagingTestCase
       m3.setStringProperty("myDouble", String.valueOf(myDouble));
       m3.setStringProperty("myIllegal", "xyz123");
 
-      queueProducer.send(queue, m3);
+      queueProducer.send(queue1, m3);
 
       Message m4 = queueConsumer.receive(2000);
 
@@ -521,7 +508,7 @@ public class MessagePropertyConversionTest extends MessagingTestCase
    public void testJMSXDeliveryCountConversion() throws Exception
    {
       Message m1 = queueProducerSession.createMessage();
-      queueProducer.send(queue, m1);
+      queueProducer.send(queue1, m1);
 
       Message m2 = queueConsumer.receive(2000);
 

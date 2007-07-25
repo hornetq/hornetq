@@ -22,19 +22,15 @@
 package org.jboss.test.messaging.jms;
 
 import javax.jms.Connection;
-import javax.jms.ConnectionFactory;
+import javax.jms.DeliveryMode;
 import javax.jms.Destination;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.jms.Session;
-import javax.jms.DeliveryMode;
 import javax.jms.TextMessage;
-import javax.naming.InitialContext;
 
-import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.jms.message.SimpleJMSTextMessage;
-import org.jboss.test.messaging.tools.ServerManagement;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
@@ -43,19 +39,13 @@ import org.jboss.test.messaging.tools.ServerManagement;
  *
  * $Id$
  */
-public class MessageProducerTest extends MessagingTestCase
+public class MessageProducerTest extends JMSTestCase
 {
    // Constants -----------------------------------------------------
 
    // Static --------------------------------------------------------
    
    // Attributes ----------------------------------------------------
-
-   protected ConnectionFactory cf;
-
-   protected Destination topic;
-   protected Destination topic2;
-   protected Destination queue;
 
    // Constructors --------------------------------------------------
 
@@ -66,55 +56,23 @@ public class MessageProducerTest extends MessagingTestCase
 
    // Public --------------------------------------------------------
 
-   public void setUp() throws Exception
-   {
-      super.setUp();
-
-      ServerManagement.start("all");
-      
-      
-      
-      ServerManagement.undeployTopic("Topic");
-      ServerManagement.undeployTopic("Topic2");
-      ServerManagement.undeployQueue("Queue");
-      ServerManagement.deployTopic("Topic");
-      ServerManagement.deployTopic("Topic2");
-      ServerManagement.deployQueue("Queue");
-
-      InitialContext ic = new InitialContext(ServerManagement.getJNDIEnvironment());
-      cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
-      topic = (Destination)ic.lookup("/topic/Topic");
-      topic2 = (Destination)ic.lookup("/topic/Topic2");
-      queue = (Destination)ic.lookup("/queue/Queue");
-      
-      this.drainDestination(cf, queue);
-      
-      log.debug("setup done");
-   }
-
-   public void tearDown() throws Exception
-   {
-      ServerManagement.undeployTopic("Topic");
-      ServerManagement.undeployTopic("Topic2");
-      ServerManagement.undeployQueue("Queue");
-      
-      super.tearDown();
-   }
-
    /**
     * The simplest possible non-transacted test.
     */
    public void testSimpleSend() throws Exception
    {
-      Connection pconn = cf.createConnection();
-      Connection cconn = cf.createConnection();
-
+      Connection pconn = null;      
+      Connection cconn = null;
+      
       try
       {
+      	pconn = cf.createConnection();
+      	cconn = cf.createConnection();
+      	
          Session ps = pconn.createSession(false, Session.AUTO_ACKNOWLEDGE);
          Session cs = cconn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer p = ps.createProducer(queue);
-         MessageConsumer c = cs.createConsumer(queue);
+         MessageProducer p = ps.createProducer(queue1);
+         MessageConsumer c = cs.createConsumer(queue1);
 
          cconn.start();
 
@@ -138,17 +96,20 @@ public class MessageProducerTest extends MessagingTestCase
     */
    public void testTransactedSend() throws Exception
    {
-      Connection pconn = cf.createConnection();
-      Connection cconn = cf.createConnection();
+      Connection pconn = null;
+      Connection cconn = null;
 
       try
       {
+      	pconn = cf.createConnection();
+      	cconn = cf.createConnection();
+      	
          cconn.start();
 
          Session ts = pconn.createSession(true, -1);
          Session cs = cconn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer p = ts.createProducer(queue);
-         MessageConsumer c = cs.createConsumer(queue);
+         MessageProducer p = ts.createProducer(queue1);
+         MessageConsumer c = cs.createConsumer(queue1);
 
          TextMessage m = ts.createTextMessage("test");
          p.send(m);
@@ -186,12 +147,10 @@ public class MessageProducerTest extends MessagingTestCase
          this.m = m;
       }
       
-      public void run()
+      public synchronized void run()
       {
          try
          {
-            // this is needed to make sure the main thread has enough time to block
-            Thread.sleep(3000);
             prod.send(m);
          }
          catch(Exception e)
@@ -213,8 +172,8 @@ public class MessageProducerTest extends MessagingTestCase
       {
          Session ps = pconn.createSession(false, Session.AUTO_ACKNOWLEDGE);
          Session cs = cconn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         final MessageProducer p = ps.createProducer(topic);
-         MessageConsumer c = cs.createConsumer(topic);
+         final MessageProducer p = ps.createProducer(topic1);
+         MessageConsumer c = cs.createConsumer(topic1);
 
          cconn.start();
 
@@ -226,7 +185,7 @@ public class MessageProducerTest extends MessagingTestCase
 
          t.start();
 
-         TextMessage m2 = (TextMessage)c.receive(8000);
+         TextMessage m2 = (TextMessage)c.receive(5000);
          
          if (sender.ex != null)
          {
@@ -271,8 +230,6 @@ public class MessageProducerTest extends MessagingTestCase
             {
                try
                {
-                  // this is needed to make sure the main thread has enough time to block
-                  Thread.sleep(1000);
                   anonProducer.send(topic2, m1);
                }
                catch(Exception e)
@@ -303,8 +260,8 @@ public class MessageProducerTest extends MessagingTestCase
       {
          Session ps = pconn.createSession(false, Session.AUTO_ACKNOWLEDGE);
          Session cs = cconn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer p = ps.createProducer(queue);
-         MessageConsumer c = cs.createConsumer(queue);
+         MessageProducer p = ps.createProducer(queue1);
+         MessageConsumer c = cs.createConsumer(queue1);
 
          // send a message that is not created by the session
 
@@ -332,9 +289,9 @@ public class MessageProducerTest extends MessagingTestCase
       try
       {
          Session ps = pconn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer p = ps.createProducer(topic);
+         MessageProducer p = ps.createProducer(topic1);
          Destination dest = p.getDestination();
-         assertEquals(dest, topic);
+         assertEquals(dest, topic1);
       }
       finally
       {
@@ -349,7 +306,7 @@ public class MessageProducerTest extends MessagingTestCase
       try
       {
          Session ps = pconn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer p = ps.createProducer(topic);
+         MessageProducer p = ps.createProducer(topic1);
          p.close();
 
          try
@@ -408,7 +365,7 @@ public class MessageProducerTest extends MessagingTestCase
       try
       {
          Session ps = pconn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer p = ps.createProducer(topic);
+         MessageProducer p = ps.createProducer(topic1);
 
          assertFalse(p.getDisableMessageID());
       }
@@ -425,7 +382,7 @@ public class MessageProducerTest extends MessagingTestCase
       try
       {
          Session ps = pconn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer p = ps.createProducer(topic);
+         MessageProducer p = ps.createProducer(topic1);
 
          p.close();
 
@@ -456,8 +413,8 @@ public class MessageProducerTest extends MessagingTestCase
       try
       {
          Session ps = pconn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer tp = ps.createProducer(topic);
-         MessageProducer qp = ps.createProducer(queue);
+         MessageProducer tp = ps.createProducer(topic1);
+         MessageProducer qp = ps.createProducer(queue1);
          assertFalse(tp.getDisableMessageTimestamp());
          assertFalse(qp.getDisableMessageTimestamp());
       }
@@ -476,8 +433,8 @@ public class MessageProducerTest extends MessagingTestCase
       {
          Session ps = pconn.createSession(false, Session.AUTO_ACKNOWLEDGE);
          Session cs = cconn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer p = ps.createProducer(queue);
-         MessageConsumer c = cs.createConsumer(queue);
+         MessageProducer p = ps.createProducer(queue1);
+         MessageConsumer c = cs.createConsumer(queue1);
 
          cconn.start();
 
@@ -519,7 +476,7 @@ public class MessageProducerTest extends MessagingTestCase
       try
       {
          Session ps = pconn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer p = ps.createProducer(topic);
+         MessageProducer p = ps.createProducer(topic1);
 
          p.close();
 
@@ -550,8 +507,8 @@ public class MessageProducerTest extends MessagingTestCase
       try
       {
          Session ps = pconn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer tp = ps.createProducer(topic);
-         MessageProducer qp = ps.createProducer(queue);
+         MessageProducer tp = ps.createProducer(topic1);
+         MessageProducer qp = ps.createProducer(queue1);
 
          assertEquals(DeliveryMode.PERSISTENT, tp.getDeliveryMode());
          assertEquals(DeliveryMode.PERSISTENT, qp.getDeliveryMode());
@@ -569,7 +526,7 @@ public class MessageProducerTest extends MessagingTestCase
       try
       {
          Session ps = pconn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer p = ps.createProducer(topic);
+         MessageProducer p = ps.createProducer(topic1);
 
          p.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
          assertEquals(DeliveryMode.NON_PERSISTENT, p.getDeliveryMode());
@@ -590,7 +547,7 @@ public class MessageProducerTest extends MessagingTestCase
       try
       {
          Session ps = pconn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer p = ps.createProducer(topic);
+         MessageProducer p = ps.createProducer(topic1);
 
          p.close();
 
@@ -621,8 +578,8 @@ public class MessageProducerTest extends MessagingTestCase
       try
       {
          Session ps = pconn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer tp = ps.createProducer(topic);
-         MessageProducer qp = ps.createProducer(queue);
+         MessageProducer tp = ps.createProducer(topic1);
+         MessageProducer qp = ps.createProducer(queue1);
 
          assertEquals(4, tp.getPriority());
          assertEquals(4, qp.getPriority());
@@ -640,7 +597,7 @@ public class MessageProducerTest extends MessagingTestCase
       try
       {
          Session ps = pconn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer p = ps.createProducer(topic);
+         MessageProducer p = ps.createProducer(topic1);
 
          p.setPriority(9);
          assertEquals(9, p.getPriority());
@@ -661,7 +618,7 @@ public class MessageProducerTest extends MessagingTestCase
       try
       {
          Session ps = pconn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer p = ps.createProducer(topic);
+         MessageProducer p = ps.createProducer(topic1);
 
          p.close();
 
@@ -692,8 +649,8 @@ public class MessageProducerTest extends MessagingTestCase
       try
       {
          Session ps = pconn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer tp = ps.createProducer(topic);
-         MessageProducer qp = ps.createProducer(queue);
+         MessageProducer tp = ps.createProducer(topic1);
+         MessageProducer qp = ps.createProducer(queue1);
 
          assertEquals(0l, tp.getTimeToLive());
          assertEquals(0l, qp.getTimeToLive());
@@ -711,7 +668,7 @@ public class MessageProducerTest extends MessagingTestCase
       try
       {
          Session ps = pconn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer p = ps.createProducer(topic);
+         MessageProducer p = ps.createProducer(topic1);
 
          p.setTimeToLive(100l);
          assertEquals(100l, p.getTimeToLive());
@@ -732,7 +689,7 @@ public class MessageProducerTest extends MessagingTestCase
       try
       {
          Session ps = pconn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer p = ps.createProducer(topic);
+         MessageProducer p = ps.createProducer(topic1);
 
          p.close();
 

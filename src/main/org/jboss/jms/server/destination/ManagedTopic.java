@@ -29,6 +29,7 @@ import java.util.List;
 import org.jboss.jms.server.JMSCondition;
 import org.jboss.jms.server.messagecounter.MessageCounter;
 import org.jboss.jms.server.selector.Selector;
+import org.jboss.logging.Logger;
 import org.jboss.messaging.core.contract.Binding;
 import org.jboss.messaging.core.contract.Message;
 import org.jboss.messaging.core.contract.Queue;
@@ -47,6 +48,8 @@ import org.jboss.messaging.util.MessageQueueNameHelper;
  */
 public class ManagedTopic extends ManagedDestination
 {  
+   private static final Logger log = Logger.getLogger(ManagedTopic.class);   
+	
    public ManagedTopic()
    {      
    }
@@ -286,6 +289,8 @@ public class ManagedTopic extends ManagedDestination
       
       int count = 0;
       
+      log.info("Getting message count for " + this.name);
+      
       while (iter.hasNext())
       {
          Queue queue = (Queue)iter.next();
@@ -294,6 +299,8 @@ public class ManagedTopic extends ManagedDestination
              || (type == NON_DURABLE && !queue.isRecoverable()))
          {            
             count += queue.getMessageCount();
+            
+            log.info("Count for " + queue.getName() + " is " + queue.getMessageCount());
          }
       }
 

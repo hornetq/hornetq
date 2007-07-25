@@ -1131,6 +1131,8 @@ public class ServerSessionEndpoint implements SessionEndpoint
       else
       {
          log.warn("No expiry queue has been configured so removing expired " +  del.getReference());
+         
+         del.acknowledge(null);
       }
    }
       
@@ -1714,7 +1716,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
    {
       Transaction tx = tr.createTransaction();
       
-      MessageReference ref = ms.reference(msg);
+      MessageReference ref = ms.reference(msg);      
                     
       try
       {               

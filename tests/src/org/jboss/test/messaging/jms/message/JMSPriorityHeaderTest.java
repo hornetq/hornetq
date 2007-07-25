@@ -25,14 +25,10 @@ import javax.jms.Connection;
 import javax.jms.DeliveryMode;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
-import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.TextMessage;
-import javax.naming.InitialContext;
 
-import org.jboss.jms.client.JBossConnectionFactory;
-import org.jboss.test.messaging.MessagingTestCase;
-import org.jboss.test.messaging.tools.ServerManagement;
+import org.jboss.test.messaging.jms.JMSTestCase;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -40,7 +36,7 @@ import org.jboss.test.messaging.tools.ServerManagement;
  *
  * $Id$
  */
-public class JMSPriorityHeaderTest extends MessagingTestCase
+public class JMSPriorityHeaderTest extends JMSTestCase
 {
    // Constants -----------------------------------------------------
 
@@ -48,9 +44,6 @@ public class JMSPriorityHeaderTest extends MessagingTestCase
    
    // Attributes ----------------------------------------------------
    
-   protected JBossConnectionFactory cf;
-   protected Queue queue;
-
    // Constructors --------------------------------------------------
 
    public JMSPriorityHeaderTest(String name)
@@ -59,27 +52,6 @@ public class JMSPriorityHeaderTest extends MessagingTestCase
    }
 
    // Public --------------------------------------------------------
-
-   public void setUp() throws Exception
-   {
-      super.setUp();
-      ServerManagement.start("all");
-      
-      
-      InitialContext initialContext = new InitialContext(ServerManagement.getJNDIEnvironment());
-      cf = (JBossConnectionFactory)initialContext.lookup("/ConnectionFactory");
-      
-      ServerManagement.undeployQueue("Queue");
-      
-      ServerManagement.deployQueue("Queue");
-      queue = (Queue)initialContext.lookup("/queue/Queue");
-      
-   }
-
-   public void tearDown() throws Exception
-   {
-      super.tearDown();
-   }
 
 
    /*
@@ -95,7 +67,7 @@ public class JMSPriorityHeaderTest extends MessagingTestCase
       
       Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
             
-      MessageProducer prod = sessSend.createProducer(queue);
+      MessageProducer prod = sessSend.createProducer(queue1);
       
       TextMessage m0 = sessSend.createTextMessage("a");
       TextMessage m1 = sessSend.createTextMessage("b");
@@ -122,7 +94,7 @@ public class JMSPriorityHeaderTest extends MessagingTestCase
 
       Session sessReceive = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
       
-      MessageConsumer cons = sessReceive.createConsumer(queue);
+      MessageConsumer cons = sessReceive.createConsumer(queue1);
       
       {
          TextMessage t = (TextMessage)cons.receive(1000);
@@ -192,7 +164,7 @@ public class JMSPriorityHeaderTest extends MessagingTestCase
       prod.send(m8, DeliveryMode.NON_PERSISTENT, 5, 0);
       prod.send(m9, DeliveryMode.NON_PERSISTENT, 6, 0);
       
-      cons = sessReceive.createConsumer(queue);         
+      cons = sessReceive.createConsumer(queue1);         
       
       {
          TextMessage t = (TextMessage)cons.receive(1000);
@@ -268,7 +240,7 @@ public class JMSPriorityHeaderTest extends MessagingTestCase
       
       Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
             
-      MessageProducer prod = sessSend.createProducer(queue);
+      MessageProducer prod = sessSend.createProducer(queue1);
       
       TextMessage m0 = sessSend.createTextMessage("a");
       TextMessage m1 = sessSend.createTextMessage("b");
@@ -283,7 +255,7 @@ public class JMSPriorityHeaderTest extends MessagingTestCase
       
       Session sessReceive = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
       
-      MessageConsumer cons = sessReceive.createConsumer(queue);
+      MessageConsumer cons = sessReceive.createConsumer(queue1);
             
       
       prod.send(m0, DeliveryMode.NON_PERSISTENT, 0, 0);
@@ -359,7 +331,7 @@ public class JMSPriorityHeaderTest extends MessagingTestCase
       
       cons.close();
       
-      cons = sessReceive.createConsumer(queue);         
+      cons = sessReceive.createConsumer(queue1);         
             
       prod.send(m0, DeliveryMode.NON_PERSISTENT, 0, 0);
       prod.send(m1, DeliveryMode.NON_PERSISTENT, 0, 0);
@@ -441,7 +413,7 @@ public class JMSPriorityHeaderTest extends MessagingTestCase
       
       Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
             
-      MessageProducer prod = sessSend.createProducer(queue);
+      MessageProducer prod = sessSend.createProducer(queue1);
       
       TextMessage m0 = sessSend.createTextMessage("a");
          
@@ -449,7 +421,7 @@ public class JMSPriorityHeaderTest extends MessagingTestCase
 
       Session sessReceive = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
       
-      MessageConsumer cons = sessReceive.createConsumer(queue);
+      MessageConsumer cons = sessReceive.createConsumer(queue1);
      
       {
          TextMessage t = (TextMessage)cons.receive(1000);

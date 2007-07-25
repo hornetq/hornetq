@@ -120,16 +120,23 @@ public class SecurityMetadataStore implements SecurityManager
    public void setSecurityConfig(boolean isQueue, String destName, Element conf) throws Exception
    {
       if (trace) { log.trace("adding security configuration for " + (isQueue ? "queue " : "topic ") + destName); }
-
-      SecurityMetadata m = new SecurityMetadata(conf);
-
-      if (isQueue)
+      
+      if (conf == null)
       {
-         queueSecurityConf.put(destName, m);
+      	clearSecurityConfig(isQueue, destName);
       }
       else
-      {
-         topicSecurityConf.put(destName, m);
+      {	
+	      SecurityMetadata m = new SecurityMetadata(conf);
+	
+	      if (isQueue)
+	      {
+	         queueSecurityConf.put(destName, m);
+	      }
+	      else
+	      {
+	         topicSecurityConf.put(destName, m);
+	      }
       }
    }
 

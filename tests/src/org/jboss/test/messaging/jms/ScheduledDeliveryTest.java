@@ -22,19 +22,14 @@
 package org.jboss.test.messaging.jms;
 
 import javax.jms.Connection;
-import javax.jms.ConnectionFactory;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
-import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.TextMessage;
-import javax.jms.Topic;
 import javax.management.ObjectName;
-import javax.naming.InitialContext;
 
 import org.jboss.jms.message.JBossMessage;
-import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
 
 /**
@@ -47,18 +42,13 @@ import org.jboss.test.messaging.tools.ServerManagement;
  * $Id$
  *
  */
-public class ScheduledDeliveryTest extends MessagingTestCase
+public class ScheduledDeliveryTest extends JMSTestCase
 {
    // Constants -----------------------------------------------------
 
    // Static --------------------------------------------------------
 
    // Attributes ----------------------------------------------------
-
-   protected InitialContext ic;
-   protected ConnectionFactory cf;
-   protected Queue queue;
-   protected Topic topic;
 
    // Constructors --------------------------------------------------
 
@@ -89,7 +79,7 @@ public class ScheduledDeliveryTest extends MessagingTestCase
          
          Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
          
-         MessageProducer prod = sess.createProducer(queue);
+         MessageProducer prod = sess.createProducer(queue1);
          
          //Send one scheduled
          
@@ -144,9 +134,7 @@ public class ScheduledDeliveryTest extends MessagingTestCase
          ServerManagement.startServerPeer();
          
          // Messaging server restart implies new ConnectionFactory lookup
-         cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
-
-         ServerManagement.deployQueue("Queue");
+         deployAndLookupAdministeredObjects();
          
          conn = cf.createConnection();
          
@@ -154,7 +142,7 @@ public class ScheduledDeliveryTest extends MessagingTestCase
          
          sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
          
-         MessageConsumer cons = sess.createConsumer(queue);
+         MessageConsumer cons = sess.createConsumer(queue1);
  
          //First the non scheduled messages should be received
          
@@ -239,7 +227,7 @@ public class ScheduledDeliveryTest extends MessagingTestCase
   	 
    	try
    	{     
-	      ObjectName queueObjectName = new ObjectName("jboss.messaging.destination:service=Queue,name=Queue");            
+	      ObjectName queueObjectName = new ObjectName("jboss.messaging.destination:service=Queue,name=Queue1");            
 	      
 	      ServerManagement.setAttribute(queueObjectName, "RedeliveryDelay", "-1");
 	            
@@ -253,7 +241,9 @@ public class ScheduledDeliveryTest extends MessagingTestCase
    	}
    	finally
    	{
-   		ServerManagement.setAttribute(serverPeerObjectName, "DefaultRedeliveryDelay", "0");	      
+   		ServerManagement.setAttribute(serverPeerObjectName, "DefaultRedeliveryDelay", "0");	
+   		
+   		removeAllMessages(queue1.getQueueName(), true, 0);
    	}
    }
    
@@ -261,7 +251,7 @@ public class ScheduledDeliveryTest extends MessagingTestCase
    {   
    	ObjectName serverPeerObjectName = ServerManagement.getServerPeerObjectName();
    	
-	   ObjectName queueObjectName = new ObjectName("jboss.messaging.destination:service=Queue,name=Queue");            	   
+	   ObjectName queueObjectName = new ObjectName("jboss.messaging.destination:service=Queue,name=Queue1");            	   
     	 
    	try
    	{     
@@ -280,6 +270,8 @@ public class ScheduledDeliveryTest extends MessagingTestCase
    		ServerManagement.setAttribute(serverPeerObjectName, "DefaultRedeliveryDelay", "0");	      
    		
    		ServerManagement.setAttribute(queueObjectName, "RedeliveryDelay", "-1");
+   		
+   		removeAllMessages(queue1.getQueueName(), true, 0);
    	}
    }
       
@@ -288,46 +280,14 @@ public class ScheduledDeliveryTest extends MessagingTestCase
 
    // Protected -----------------------------------------------------
 
-   protected void setUp() throws Exception
-   {
-      super.setUp();
-
-      ServerManagement.start("all");
-
-      ic = new InitialContext(ServerManagement.getJNDIEnvironment());
-
-      cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
-
-      ServerManagement.undeployQueue("Queue");
-      
-      ServerManagement.undeployTopic("Topic");
-      
-      ServerManagement.deployQueue("Queue");
-      
-      ServerManagement.deployTopic("Topic");
-
-      queue = (Queue)ic.lookup("/queue/Queue");
-      
-      topic = (Topic)ic.lookup("/topic/Topic");
-      
-      this.drainDestination(cf, queue);
-
-   }
-
    protected void tearDown() throws Exception
    {
       super.tearDown();
-
-      ServerManagement.undeployQueue("Queue");
-      
-      ServerManagement.undeployTopic("Topic");
 
       // Some tests here are changing this attribute.. what would affect tests later
       // Instead of restart the ServerPeer I'm just restoring the default
       ServerManagement.setAttribute(ServerManagement.getServerPeerObjectName(),
          "DefaultRedeliveryDelay", "0");
-
-      if (ic != null) ic.close();
    }
 
    // Private -------------------------------------------------------
@@ -342,7 +302,7 @@ public class ScheduledDeliveryTest extends MessagingTestCase
          
          Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
          
-         MessageProducer prod = sess.createProducer(queue);
+         MessageProducer prod = sess.createProducer(queue1);
          
          final int NUM_MESSAGES = 5;
          
@@ -353,24 +313,18 @@ public class ScheduledDeliveryTest extends MessagingTestCase
             prod.send(tm);
          }
 
-         log.info("Sent messages");
-         
          Session sess2 = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
          
-         MessageConsumer cons = sess2.createConsumer(queue);
+         MessageConsumer cons = sess2.createConsumer(queue1);
          
          conn.start();
-
-         log.info("Started connection");
-         
+ 
          for (int i = 0; i < NUM_MESSAGES; i++)
          {
             TextMessage tm = (TextMessage)cons.receive(500);
             
             assertNotNull(tm);
             
-	         log.info("Got message:" + tm.getText());
-
             assertEquals("message" + i, tm.getText());
          }
          
@@ -380,20 +334,16 @@ public class ScheduledDeliveryTest extends MessagingTestCase
          long now = System.currentTimeMillis();
          
          sess2.close();
-
-         log.info("Closed session");
-         
+ 
          Session sess3 = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
          
-         MessageConsumer cons2 = sess3.createConsumer(queue);
+         MessageConsumer cons2 = sess3.createConsumer(queue1);
          
          for (int i = 0; i < NUM_MESSAGES; i++)
          {
             TextMessage tm = (TextMessage)cons2.receive(delay + 1000);
             
             assertNotNull(tm);
-
-            log.info("Got message 2nd time: " + tm.getText());
 
             long time = System.currentTimeMillis();
             
@@ -424,7 +374,7 @@ public class ScheduledDeliveryTest extends MessagingTestCase
 
    		Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-   		MessageProducer prod = sess.createProducer(queue);
+   		MessageProducer prod = sess.createProducer(queue1);
 
    		final int NUM_MESSAGES = 5;
 
@@ -435,23 +385,17 @@ public class ScheduledDeliveryTest extends MessagingTestCase
    			prod.send(tm);
    		}
 
-   		log.info("Sent messages");
-
    		Session sess2 = conn.createSession(true, Session.SESSION_TRANSACTED);
 
-   		MessageConsumer cons = sess2.createConsumer(queue);
+   		MessageConsumer cons = sess2.createConsumer(queue1);
 
    		conn.start();
-
-   		log.info("Started connection");
 
    		for (int i = 0; i < NUM_MESSAGES; i++)
    		{
    			TextMessage tm = (TextMessage)cons.receive(500);
 
    			assertNotNull(tm);
-
-   			log.info("Got message:" + tm.getText());
 
    			assertEquals("message" + i, tm.getText());
    		}
@@ -470,13 +414,8 @@ public class ScheduledDeliveryTest extends MessagingTestCase
 
    			assertNotNull(tm);
 
-   			log.info("Got message 2nd time: " + tm.getText());
-
    			long time = System.currentTimeMillis();
 
-   			log.info("time-now:" + (time-now));
-   			log.info("delay:" + delay);
-   			
    			assertTrue(time - now >= delay);
    			assertTrue(time - now < delay + 250);
    		}
@@ -504,9 +443,9 @@ public class ScheduledDeliveryTest extends MessagingTestCase
          
          Session sess = conn.createSession(tx, tx ? Session.SESSION_TRANSACTED : Session.AUTO_ACKNOWLEDGE);
          
-         MessageProducer prod = sess.createProducer(queue);
+         MessageProducer prod = sess.createProducer(queue1);
          
-         MessageConsumer cons = sess.createConsumer(queue);
+         MessageConsumer cons = sess.createConsumer(queue1);
          
          conn.start();
          

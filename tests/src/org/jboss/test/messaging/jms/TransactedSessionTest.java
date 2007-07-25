@@ -22,21 +22,18 @@
 package org.jboss.test.messaging.jms;
 
 import javax.jms.Connection;
-import javax.jms.Destination;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.management.ObjectName;
-import javax.naming.InitialContext;
 
 import org.jboss.jms.client.JBossConnection;
-import org.jboss.jms.client.JBossConnectionFactory;
 import org.jboss.jms.client.delegate.ClientConnectionDelegate;
 import org.jboss.jms.client.state.ConnectionState;
 import org.jboss.jms.tx.ResourceManager;
-import org.jboss.test.messaging.MessagingTestCase;
+import org.jboss.jms.tx.ResourceManagerFactory;
 import org.jboss.test.messaging.tools.ServerManagement;
 
 /**
@@ -44,7 +41,7 @@ import org.jboss.test.messaging.tools.ServerManagement;
  *
  * $Id$
  */
-public class TransactedSessionTest extends MessagingTestCase
+public class TransactedSessionTest extends JMSTestCase
 {
    // Constants -----------------------------------------------------
    
@@ -52,56 +49,17 @@ public class TransactedSessionTest extends MessagingTestCase
    
    // Attributes ----------------------------------------------------
    
-   protected InitialContext initialContext;
-   
-   protected JBossConnectionFactory cf;
-   protected Destination queue;
-   protected Destination topic;
-   
    // Constructors --------------------------------------------------
    
-   public TransactedSessionTest(String name)
+	public TransactedSessionTest(String name)
    {
       super(name);
    }
-   
-   // TestCase overrides -------------------------------------------
-   
-   public void setUp() throws Exception
-   {
-      super.setUp();
-      ServerManagement.start("all");
-      
-      
-      initialContext = new InitialContext(ServerManagement.getJNDIEnvironment());
-      cf = (JBossConnectionFactory)initialContext.lookup("/ConnectionFactory");
-      
-      ServerManagement.undeployQueue("Queue");
-      ServerManagement.undeployTopic("Topic");
-      ServerManagement.deployQueue("Queue");
-      ServerManagement.deployTopic("Topic");
-      queue = (Destination)initialContext.lookup("/queue/Queue");
-      topic = (Destination)initialContext.lookup("/topic/Topic");
-      
-      this.drainDestination(cf, queue);
-      
-      log.debug("setup done");
-   }
-   
-   public void tearDown() throws Exception
-   {
-      ServerManagement.undeployQueue("Queue");
-      ServerManagement.undeployTopic("Topic");
-    //  TransactionManagerImpl.getInstance().setState(TransactionManagerImpl.OPERATIONAL);
-      super.tearDown();
-   }
-   
    
    // Public --------------------------------------------------------
 
    public void testResourceManagerMemoryLeakOnCommit() throws Exception
    {
-
       Connection conn = null;
       
       try
@@ -117,8 +75,7 @@ public class TransactedSessionTest extends MessagingTestCase
          ResourceManager rm = state.getResourceManager();
          
          Session session = conn.createSession(true, Session.SESSION_TRANSACTED);
-         
-         
+                  
          for (int i = 0; i < 100; i++)
          {
             assertEquals(1, rm.size());
@@ -135,7 +92,6 @@ public class TransactedSessionTest extends MessagingTestCase
          conn = null;
          
          assertEquals(0, rm.size());
-
       }
       finally
       {
@@ -148,7 +104,6 @@ public class TransactedSessionTest extends MessagingTestCase
    
    public void testResourceManagerMemoryLeakOnRollback() throws Exception
    {
-
       Connection conn = null;
       
       try
@@ -164,8 +119,7 @@ public class TransactedSessionTest extends MessagingTestCase
          ResourceManager rm = state.getResourceManager();
          
          Session session = conn.createSession(true, Session.SESSION_TRANSACTED);
-         
-         
+                  
          for (int i = 0; i < 100; i++)
          {
             assertEquals(1, rm.size());
@@ -182,7 +136,6 @@ public class TransactedSessionTest extends MessagingTestCase
          conn = null;
          
          assertEquals(0, rm.size());
-
       }
       finally
       {
@@ -197,36 +150,47 @@ public class TransactedSessionTest extends MessagingTestCase
    public void testSimpleRollback() throws Exception
    {
       // send a message
-      Connection conn = cf.createConnection();
-      Session s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      s.createProducer(queue).send(s.createTextMessage("one"));
-
-      log.debug("message sent");
-
-      s.close();
-
-      s = conn.createSession(true, Session.SESSION_TRANSACTED);
-      MessageConsumer c = s.createConsumer(queue);
-      conn.start();
-      Message m = c.receive();
-
-      assertEquals("one", ((TextMessage)m).getText());
-      assertFalse(m.getJMSRedelivered());
-      assertEquals(1, m.getIntProperty("JMSXDeliveryCount"));
-
-      s.rollback();
-
-      // get the message again
-      m = c.receive();
-      assertTrue(m.getJMSRedelivered());
-      assertEquals(2, m.getIntProperty("JMSXDeliveryCount"));
-
-      conn.close();
+      Connection conn = null;
       
-      ObjectName on = new ObjectName("jboss.messaging.destination:service=Queue,name=Queue");
-      Integer i = (Integer)ServerManagement.getAttribute(on, "MessageCount");
-
-      assertEquals(1, i.intValue());
+      try
+      {      
+	      conn = cf.createConnection();
+	      Session s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+	      s.createProducer(queue1).send(s.createTextMessage("one"));
+	
+	      s.close();
+	
+	      s = conn.createSession(true, Session.SESSION_TRANSACTED);
+	      MessageConsumer c = s.createConsumer(queue1);
+	      conn.start();
+	      Message m = c.receive();
+	
+	      assertEquals("one", ((TextMessage)m).getText());
+	      assertFalse(m.getJMSRedelivered());
+	      assertEquals(1, m.getIntProperty("JMSXDeliveryCount"));
+	
+	      s.rollback();
+	
+	      // get the message again
+	      m = c.receive();
+	      assertTrue(m.getJMSRedelivered());
+	      assertEquals(2, m.getIntProperty("JMSXDeliveryCount"));
+	
+	      conn.close();
+	      
+	      ObjectName on = new ObjectName("jboss.messaging.destination:service=Queue,name=Queue1");
+	      Integer i = (Integer)ServerManagement.getAttribute(on, "MessageCount");
+	
+	      assertEquals(1, i.intValue());
+      }
+      finally
+      {
+      	if (conn != null)
+      	{
+      		conn.close();
+      	}
+      	removeAllMessages(queue1.getQueueName(), true, 0);
+      }
    }
    
    public void testRedeliveredFlagTopic() throws Exception
@@ -239,9 +203,9 @@ public class TransactedSessionTest extends MessagingTestCase
          
          Session sessSend = conn.createSession(true, Session.SESSION_TRANSACTED);
          Session sess1 = conn.createSession(true, Session.SESSION_TRANSACTED);         
-         MessageConsumer consumer1 = sess1.createConsumer(topic);
+         MessageConsumer consumer1 = sess1.createConsumer(topic1);
          
-         MessageProducer producer = sessSend.createProducer(topic);
+         MessageProducer producer = sessSend.createProducer(topic1);
          Message mSent = sessSend.createTextMessage("igloo");
          producer.send(mSent);      
          sessSend.commit();
@@ -266,8 +230,7 @@ public class TransactedSessionTest extends MessagingTestCase
          {
             conn.close();
          }
-      }
-      
+      }      
    }
    
    
@@ -281,12 +244,11 @@ public class TransactedSessionTest extends MessagingTestCase
          conn = cf.createConnection();
    
          Session sess = conn.createSession(true, Session.SESSION_TRANSACTED);
-         MessageProducer producer = sess.createProducer(topic);
+         MessageProducer producer = sess.createProducer(topic1);
          
-         MessageConsumer consumer = sess.createConsumer(topic);
+         MessageConsumer consumer = sess.createConsumer(topic1);
          conn.start();
-   
-         
+            
          Message mSent = sess.createTextMessage("igloo");
          producer.send(mSent);
          
@@ -321,17 +283,15 @@ public class TransactedSessionTest extends MessagingTestCase
       Connection conn = null;
       
       try
-      {
-      
+      {      
          conn = cf.createConnection();
    
          Session sess = conn.createSession(true, Session.SESSION_TRANSACTED);
-         MessageProducer producer = sess.createProducer(topic);
+         MessageProducer producer = sess.createProducer(topic1);
          
-         MessageConsumer consumer = sess.createConsumer(topic);
+         MessageConsumer consumer = sess.createConsumer(topic1);
          conn.start();
-   
-         
+            
          TextMessage mSent = sess.createTextMessage("igloo");
          producer.send(mSent);
          
@@ -380,10 +340,10 @@ public class TransactedSessionTest extends MessagingTestCase
          conn = cf.createConnection();
    
          Session producerSess = conn.createSession(true, Session.SESSION_TRANSACTED);
-         MessageProducer producer = producerSess.createProducer(topic);
+         MessageProducer producer = producerSess.createProducer(topic1);
    
          Session consumerSess = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
-         MessageConsumer consumer = consumerSess.createConsumer(topic);
+         MessageConsumer consumer = consumerSess.createConsumer(topic1);
          conn.start();
    
          final int NUM_MESSAGES = 10;
@@ -395,9 +355,7 @@ public class TransactedSessionTest extends MessagingTestCase
             producer.send(m);
          }
    
-         log.trace("Sent messages");
-   
-         Message m = consumer.receive(2000);
+         Message m = consumer.receive(500);
          assertNull(m);
       }
       finally
@@ -406,12 +364,8 @@ public class TransactedSessionTest extends MessagingTestCase
          {
             conn.close();
          }
-      }
-   
+      }   
    }
-   
-   
-
    
    /**
     * Send some messages in transacted session. Commit.
@@ -422,15 +376,14 @@ public class TransactedSessionTest extends MessagingTestCase
       Connection conn = null;
       
       try
-      {
-      
+      {      
          conn = cf.createConnection();
          
          Session producerSess = conn.createSession(true, Session.SESSION_TRANSACTED);
-         MessageProducer producer = producerSess.createProducer(topic);
+         MessageProducer producer = producerSess.createProducer(topic1);
          
          Session consumerSess = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
-         MessageConsumer consumer = consumerSess.createConsumer(topic);
+         MessageConsumer consumer = consumerSess.createConsumer(topic1);
          conn.start();
          
          final int NUM_MESSAGES = 10;
@@ -443,9 +396,7 @@ public class TransactedSessionTest extends MessagingTestCase
          }
          
          producerSess.commit();
-         
-         log.trace("Sent messages");
-         
+           
          int count = 0;
          while (true)
          {
@@ -465,9 +416,6 @@ public class TransactedSessionTest extends MessagingTestCase
       }
    }
    
-
-
-  
    /**
     * Send some messages.
     * Receive them in a transacted session.
@@ -480,15 +428,14 @@ public class TransactedSessionTest extends MessagingTestCase
       Connection conn = null;
       
       try
-      {
-      
+      {      
          conn = cf.createConnection();
    
          Session producerSess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer producer = producerSess.createProducer(topic);
+         MessageProducer producer = producerSess.createProducer(topic1);
    
          Session consumerSess = conn.createSession(true, Session.SESSION_TRANSACTED);
-         MessageConsumer consumer = consumerSess.createConsumer(topic);
+         MessageConsumer consumer = consumerSess.createConsumer(topic1);
          conn.start();
    
          final int NUM_MESSAGES = 10;
@@ -499,9 +446,6 @@ public class TransactedSessionTest extends MessagingTestCase
             Message m = producerSess.createMessage();
             producer.send(m);
          }
-   
-         log.trace("Sent messages");
-   
          int count = 0;
          while (true)
          {
@@ -509,15 +453,11 @@ public class TransactedSessionTest extends MessagingTestCase
             if (m == null) break;
             count++;
          }
-         
-         log.trace("Received " + count + " messages");
-   
+
          assertEquals(NUM_MESSAGES, count);
    
          consumerSess.commit();
          
-         log.trace("Committed session");
-   
          conn.stop();
          consumer.close();
    
@@ -526,13 +466,11 @@ public class TransactedSessionTest extends MessagingTestCase
          conn = cf.createConnection();
    
          consumerSess = conn.createSession(true, Session.CLIENT_ACKNOWLEDGE);
-         consumer = consumerSess.createConsumer(queue);
+         consumer = consumerSess.createConsumer(queue1);
          conn.start();
    
-         Message m = consumer.receive(2000);
+         Message m = consumer.receive(500);
          
-         log.trace("Message is " + m);
-   
          assertNull(m);
       }
       finally
@@ -557,15 +495,14 @@ public class TransactedSessionTest extends MessagingTestCase
       Connection conn = null;
       
       try
-      {
-      
+      {      
          conn = cf.createConnection();
    
          Session producerSess = conn.createSession(true, Session.SESSION_TRANSACTED);
-         MessageProducer producer = producerSess.createProducer(topic);
+         MessageProducer producer = producerSess.createProducer(topic1);
    
          Session consumerSess = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
-         MessageConsumer consumer = consumerSess.createConsumer(topic);
+         MessageConsumer consumer = consumerSess.createConsumer(topic1);
          conn.start();
    
          final int NUM_MESSAGES = 10;
@@ -577,11 +514,9 @@ public class TransactedSessionTest extends MessagingTestCase
             producer.send(m);
          }
    
-         log.trace("Sent messages");
-   
          producerSess.rollback();
    
-         Message m = consumer.receive(2000);
+         Message m = consumer.receive(500);
    
          assertNull(m);
       }
@@ -604,14 +539,12 @@ public class TransactedSessionTest extends MessagingTestCase
       try
       {
          conn = cf.createConnection();
-      
-   
-         Session sess = conn.createSession(true, Session.SESSION_TRANSACTED);
-         MessageProducer producer = sess.createProducer(queue);
          
-         MessageConsumer consumer = sess.createConsumer(queue);
-         conn.start();
-   
+         Session sess = conn.createSession(true, Session.SESSION_TRANSACTED);
+         MessageProducer producer = sess.createProducer(queue1);
+         
+         MessageConsumer consumer = sess.createConsumer(queue1);
+         conn.start();   
          
          Message mSent = sess.createTextMessage("igloo");
          producer.send(mSent);
@@ -654,17 +587,15 @@ public class TransactedSessionTest extends MessagingTestCase
 
          Session sendSession = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         MessageProducer prod = sendSession.createProducer(queue);
+         MessageProducer prod = sendSession.createProducer(queue1);
          prod.send(sendSession.createTextMessage("a message"));
-
-         log.debug("Message was sent to the queue");
 
          conn.close();
 
          conn = cf.createConnection();
          Session sess = conn.createSession(true, Session.SESSION_TRANSACTED);
 
-         MessageConsumer cons = sess.createConsumer(queue);
+         MessageConsumer cons = sess.createConsumer(queue1);
 
          conn.start();
 
@@ -680,7 +611,7 @@ public class TransactedSessionTest extends MessagingTestCase
 
          Session sess2 = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         cons = sess2.createConsumer(queue);
+         cons = sess2.createConsumer(queue1);
 
          tm = (TextMessage)cons.receive();
 
@@ -704,9 +635,9 @@ public class TransactedSessionTest extends MessagingTestCase
       Connection conn = cf.createConnection();
 
       Session sess = conn.createSession(true, Session.SESSION_TRANSACTED);
-      MessageProducer producer = sess.createProducer(queue);
+      MessageProducer producer = sess.createProducer(queue1);
       
-      MessageConsumer consumer = sess.createConsumer(queue);
+      MessageConsumer consumer = sess.createConsumer(queue1);
       conn.start();
 
       
@@ -760,10 +691,10 @@ public class TransactedSessionTest extends MessagingTestCase
          conn = cf.createConnection();
    
          Session producerSess = conn.createSession(true, Session.CLIENT_ACKNOWLEDGE);
-         MessageProducer producer = producerSess.createProducer(queue);
+         MessageProducer producer = producerSess.createProducer(queue1);
    
          Session consumerSess = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
-         MessageConsumer consumer = consumerSess.createConsumer(queue);
+         MessageConsumer consumer = consumerSess.createConsumer(queue1);
          conn.start();
    
          final int NUM_MESSAGES = 10;
@@ -777,8 +708,7 @@ public class TransactedSessionTest extends MessagingTestCase
    
          log.trace("Sent messages");
    
-         Message m = consumer.receive(2000);
-         assertNull(m);
+         checkEmpty(queue1);
       }
       finally
       {      
@@ -802,15 +732,14 @@ public class TransactedSessionTest extends MessagingTestCase
       Connection conn = null;
       
       try
-      {
-         
+      {         
          conn = cf.createConnection();
          
          Session producerSess = conn.createSession(true, Session.CLIENT_ACKNOWLEDGE);
-         MessageProducer producer = producerSess.createProducer(queue);
+         MessageProducer producer = producerSess.createProducer(queue1);
          
          Session consumerSess = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
-         MessageConsumer consumer = consumerSess.createConsumer(queue);
+         MessageConsumer consumer = consumerSess.createConsumer(queue1);
          conn.start();
          
          final int NUM_MESSAGES = 10;
@@ -823,8 +752,6 @@ public class TransactedSessionTest extends MessagingTestCase
          }
          
          producerSess.commit();
-         
-         log.trace("Sent messages");
          
          int count = 0;
          while (true)
@@ -842,6 +769,7 @@ public class TransactedSessionTest extends MessagingTestCase
          {
             conn.close();
          }
+         removeAllMessages(queue1.getQueueName(), true, 0);
       }
       
    }
@@ -855,8 +783,7 @@ public class TransactedSessionTest extends MessagingTestCase
       Connection conn = null;
       
       try
-      {
-      
+      {      
          conn = cf.createConnection();
    
          Session producerSess = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
@@ -880,7 +807,6 @@ public class TransactedSessionTest extends MessagingTestCase
             conn.close();
          }
       }
-
    }
 
 
@@ -902,10 +828,10 @@ public class TransactedSessionTest extends MessagingTestCase
          conn = cf.createConnection();
    
          Session producerSess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer producer = producerSess.createProducer(queue);
+         MessageProducer producer = producerSess.createProducer(queue1);
    
          Session consumerSess = conn.createSession(true, Session.CLIENT_ACKNOWLEDGE);
-         MessageConsumer consumer = consumerSess.createConsumer(queue);
+         MessageConsumer consumer = consumerSess.createConsumer(queue1);
          conn.start();
    
          final int NUM_MESSAGES = 10;
@@ -916,8 +842,6 @@ public class TransactedSessionTest extends MessagingTestCase
             Message m = producerSess.createMessage();
             producer.send(m);
          }
-   
-         log.trace("Sent messages");
    
          int count = 0;
          while (true)
@@ -937,7 +861,7 @@ public class TransactedSessionTest extends MessagingTestCase
          conn = cf.createConnection();
    
          consumerSess = conn.createSession(true, Session.CLIENT_ACKNOWLEDGE);
-         consumer = consumerSess.createConsumer(queue);
+         consumer = consumerSess.createConsumer(queue1);
          conn.start();
    
          count = 0;
@@ -956,6 +880,7 @@ public class TransactedSessionTest extends MessagingTestCase
          {
             conn.close();
          }
+         removeAllMessages(queue1.getQueueName(), true, 0);
       }
    }
 
@@ -973,18 +898,15 @@ public class TransactedSessionTest extends MessagingTestCase
    {
       Connection conn = null;
       
-      try
-      
-      {
-         
+      try     
+      {         
          conn = cf.createConnection();
-      
-   
+         
          Session producerSess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer producer = producerSess.createProducer(queue);
+         MessageProducer producer = producerSess.createProducer(queue1);
    
          Session consumerSess = conn.createSession(true, Session.CLIENT_ACKNOWLEDGE);
-         MessageConsumer consumer = consumerSess.createConsumer(queue);
+         MessageConsumer consumer = consumerSess.createConsumer(queue1);
          conn.start();
    
          final int NUM_MESSAGES = 10;
@@ -996,8 +918,6 @@ public class TransactedSessionTest extends MessagingTestCase
             producer.send(m);
          }
    
-         log.trace("Sent messages");
-   
          int count = 0;
          while (true)
          {
@@ -1006,14 +926,10 @@ public class TransactedSessionTest extends MessagingTestCase
             count++;
          }
          
-         log.trace("Received " + count + " messages");
-   
          assertEquals(NUM_MESSAGES, count);
    
          consumerSess.commit();
          
-         log.trace("Committed session");
-   
          conn.stop();
          consumer.close();
    
@@ -1022,13 +938,11 @@ public class TransactedSessionTest extends MessagingTestCase
          conn = cf.createConnection();
    
          consumerSess = conn.createSession(true, Session.CLIENT_ACKNOWLEDGE);
-         consumer = consumerSess.createConsumer(queue);
+         consumer = consumerSess.createConsumer(queue1);
          conn.start();
    
-         Message m = consumer.receive(2000);
+         Message m = consumer.receive(500);
          
-         log.trace("Message is " + m);
-   
          assertNull(m);
       }
       finally
@@ -1053,15 +967,14 @@ public class TransactedSessionTest extends MessagingTestCase
       Connection conn = null;
       
       try
-      {
-      
+      {      
          conn = cf.createConnection();
    
          Session producerSess = conn.createSession(true, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer producer = producerSess.createProducer(queue);
+         MessageProducer producer = producerSess.createProducer(queue1);
    
          Session consumerSess = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
-         MessageConsumer consumer = consumerSess.createConsumer(queue);
+         MessageConsumer consumer = consumerSess.createConsumer(queue1);
          conn.start();
    
          final int NUM_MESSAGES = 10;
@@ -1073,11 +986,9 @@ public class TransactedSessionTest extends MessagingTestCase
             producer.send(m);
          }
    
-         log.trace("Sent messages");
-   
          producerSess.rollback();
    
-         Message m = consumer.receive(2000);
+         Message m = consumer.receive(500);
    
          assertNull(m);
       }
@@ -1088,8 +999,6 @@ public class TransactedSessionTest extends MessagingTestCase
             conn.close();
          }
       }
-
-
    }
 
 
@@ -1104,8 +1013,7 @@ public class TransactedSessionTest extends MessagingTestCase
       Connection conn = null;
       
       try
-      {
-         
+      {         
          conn = cf.createConnection();
    
          Session producerSess = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
@@ -1129,7 +1037,6 @@ public class TransactedSessionTest extends MessagingTestCase
             conn.close();
          }
       }
-
    }
 
 
@@ -1147,15 +1054,14 @@ public class TransactedSessionTest extends MessagingTestCase
       Connection conn = null;
       
       try
-      {
-         
+      {         
          conn = cf.createConnection();
    
          Session producerSess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer producer = producerSess.createProducer(queue);
+         MessageProducer producer = producerSess.createProducer(queue1);
    
          Session consumerSess = conn.createSession(true, Session.CLIENT_ACKNOWLEDGE);
-         MessageConsumer consumer = consumerSess.createConsumer(queue);
+         MessageConsumer consumer = consumerSess.createConsumer(queue1);
          conn.start();
    
          final int NUM_MESSAGES = 10;
@@ -1166,9 +1072,7 @@ public class TransactedSessionTest extends MessagingTestCase
             Message m = producerSess.createMessage();
             producer.send(m);
          }
-   
-         log.trace("Sent messages");
-   
+
          int count = 0;
          while (true)
          {
@@ -1189,7 +1093,7 @@ public class TransactedSessionTest extends MessagingTestCase
          conn = cf.createConnection();
    
          consumerSess = conn.createSession(true, Session.CLIENT_ACKNOWLEDGE);
-         consumer = consumerSess.createConsumer(queue);
+         consumer = consumerSess.createConsumer(queue1);
          conn.start();
    
          count = 0;
@@ -1209,6 +1113,7 @@ public class TransactedSessionTest extends MessagingTestCase
          {
             conn.close();
          }
+         removeAllMessages(queue1.getQueueName(), true, 0);
       }
 
    }
@@ -1222,15 +1127,14 @@ public class TransactedSessionTest extends MessagingTestCase
       Connection conn = null;
       
       try
-      {
-         
+      {         
          conn = cf.createConnection();
    
          Session producerSess = conn.createSession(true, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer producer = producerSess.createProducer(queue);
+         MessageProducer producer = producerSess.createProducer(queue1);
    
          Session consumerSess = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
-         MessageConsumer consumer = consumerSess.createConsumer(queue);
+         MessageConsumer consumer = consumerSess.createConsumer(queue1);
          conn.start();
    
          final int NUM_MESSAGES = 10;
@@ -1239,8 +1143,7 @@ public class TransactedSessionTest extends MessagingTestCase
          //Send some messages
    
          for (int j = 0; j < NUM_TX; j++)
-         {
-   
+         {   
             for (int i = 0; i < NUM_MESSAGES; i++)
             {
                Message m = producerSess.createMessage();
@@ -1250,8 +1153,6 @@ public class TransactedSessionTest extends MessagingTestCase
             producerSess.commit();
          }
    
-         log.trace("Sent messages");
-   
          int count = 0;
          while (true)
          {
@@ -1260,8 +1161,7 @@ public class TransactedSessionTest extends MessagingTestCase
             count++;
          }
    
-         assertEquals(NUM_MESSAGES * NUM_TX, count);
-         
+         assertEquals(NUM_MESSAGES * NUM_TX, count);         
       }
       finally
       {      
@@ -1270,17 +1170,23 @@ public class TransactedSessionTest extends MessagingTestCase
             conn.close();
          }
       }
-
    }
    
    // Package protected ---------------------------------------------
    
    // Protected -----------------------------------------------------
    
+   protected void setUp() throws Exception
+	{
+		super.setUp();
+		
+		ResourceManagerFactory.instance.clear();
+	}
+
+   
    // Private -------------------------------------------------------
    
-   // Inner classes -------------------------------------------------
-   
+   // Inner classes -------------------------------------------------   
 }
 
 

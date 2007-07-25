@@ -29,7 +29,7 @@ import javax.jms.Message;
  *
  * $Id$
  */
-public class JMSCorrelationIDHeaderTest extends MessageTest
+public class JMSCorrelationIDHeaderTest extends MessageHeaderTestBase
 {
    // Constants -----------------------------------------------------
 
@@ -45,17 +45,6 @@ public class JMSCorrelationIDHeaderTest extends MessageTest
    }
 
    // Public --------------------------------------------------------
-
-   public void setUp() throws Exception
-   {
-      super.setUp();
-   }
-
-   public void tearDown() throws Exception
-   {
-      super.tearDown();
-   }
-
 
    public void testJMSDestination() throws Exception
    {

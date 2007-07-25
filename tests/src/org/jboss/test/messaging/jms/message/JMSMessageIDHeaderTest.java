@@ -27,7 +27,7 @@ import javax.jms.Message;
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  */
-public class JMSMessageIDHeaderTest extends MessageTest
+public class JMSMessageIDHeaderTest extends MessageHeaderTestBase
 {
    // Constants -----------------------------------------------------
 
@@ -43,16 +43,6 @@ public class JMSMessageIDHeaderTest extends MessageTest
    }
 
    // Public --------------------------------------------------------
-
-   public void setUp() throws Exception
-   {
-      super.setUp();
-   }
-
-   public void tearDown() throws Exception
-   {
-      super.tearDown();
-   }
 
    public void testJMSMessageIDPrefix() throws Exception
    {
@@ -70,5 +60,4 @@ public class JMSMessageIDHeaderTest extends MessageTest
    // Private -------------------------------------------------------
    
    // Inner classes -------------------------------------------------
-
 }

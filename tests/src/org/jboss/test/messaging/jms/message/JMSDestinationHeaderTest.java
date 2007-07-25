@@ -27,7 +27,7 @@ import javax.jms.Message;
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  */
-public class JMSDestinationHeaderTest extends MessageTest
+public class JMSDestinationHeaderTest extends MessageHeaderTestBase
 {
    // Constants -----------------------------------------------------
 
@@ -44,25 +44,12 @@ public class JMSDestinationHeaderTest extends MessageTest
 
    // Public --------------------------------------------------------
 
-   public void setUp() throws Exception
-   {
-      super.setUp();
-   }
-
-   public void tearDown() throws Exception
-   {
-      super.tearDown();
-   }
-
-
    public void testJMSDestination() throws Exception
    {
       queueProducer.send(queueProducerSession.createMessage());
       Message m = queueConsumer.receive();
-      assertEquals(queue, m.getJMSDestination());
+      assertEquals(queue1, m.getJMSDestination());
    }
-
-
 
    // Package protected ---------------------------------------------
    
@@ -71,5 +58,4 @@ public class JMSDestinationHeaderTest extends MessageTest
    // Private -------------------------------------------------------
    
    // Inner classes -------------------------------------------------
-
 }

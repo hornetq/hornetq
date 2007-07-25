@@ -25,17 +25,11 @@ import java.util.HashSet;
 import java.util.Set;
 
 import javax.jms.Connection;
-import javax.jms.ConnectionFactory;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
-import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.TextMessage;
-import javax.naming.InitialContext;
 
-import org.jboss.jms.client.JBossConnection;
-import org.jboss.jms.client.JBossConnectionFactory;
-import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
 
 /**
@@ -44,7 +38,7 @@ import org.jboss.test.messaging.tools.ServerManagement;
  *
  * $Id$
  */
-public class QueueTest extends MessagingTestCase
+public class QueueTest extends JMSTestCase
 {
    // Constants ------------------------------------------------------------------------------------
    
@@ -52,43 +46,13 @@ public class QueueTest extends MessagingTestCase
    
    // Attributes -----------------------------------------------------------------------------------
 
-   protected InitialContext ic;
-   protected ConnectionFactory cf;
-
    // Constructors ---------------------------------------------------------------------------------
    
    public QueueTest(String name)
    {
       super(name);
    }
-   
-   // TestCase overrides --------------------------------------------------------------------------
-   
-   public void setUp() throws Exception
-   {
-      super.setUp();                  
-      
-      ServerManagement.start("all");
-      
-      
-      ic = new InitialContext(ServerManagement.getJNDIEnvironment());
-      cf = (JBossConnectionFactory)ic.lookup("/ConnectionFactory");
-      
-      ServerManagement.undeployQueue("TestQueue");
-      ServerManagement.deployQueue("TestQueue");
 
-      log.debug("setup done");
-   }
-   
-   public void tearDown() throws Exception
-   {
-      ServerManagement.undeployQueue("TestQueue");
-      super.tearDown();
-
-      log.debug("tear down done");
-   }
-   
-   
    // Public ---------------------------------------------------------------------------------------
 
    /**
@@ -96,15 +60,15 @@ public class QueueTest extends MessagingTestCase
     */
    public void testQueue() throws Exception
    {
-      Queue queue = (Queue)ic.lookup("/queue/TestQueue");
-
-      Connection conn = cf.createConnection();
-
+      Connection conn = null;
+      
       try
       {
+         conn = cf.createConnection();
+
          Session s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer p = s.createProducer(queue);
-         MessageConsumer c = s.createConsumer(queue);
+         MessageProducer p = s.createProducer(queue1);
+         MessageConsumer c = s.createConsumer(queue1);
          conn.start();
 
          p.send(s.createTextMessage("payload"));
@@ -124,30 +88,32 @@ public class QueueTest extends MessagingTestCase
    // added for http://jira.jboss.org/jira/browse/JBMESSAGING-899
    public void testClosedConsumerAfterStart() throws Exception
    {
-      Queue queue = (Queue) ic.lookup("/queue/TestQueue");
-
       // This loop is to increase chances of a failure.
       for (int counter = 0; counter < 20; counter++)
       {
          log.info("Iteration = " + counter);
 
-         Connection conn1 = cf.createConnection();
-
-         assertEquals(0, getServerId(conn1));
-
-         Connection conn2 = cf.createConnection();
-
-         assertEquals(0, getServerId(conn2));
-
+         Connection conn1 = null;
+         
+         Connection conn2 = null;
+         
          try
          {
-            Session s = conn1.createSession(true, Session.AUTO_ACKNOWLEDGE);
+         	conn1 = cf.createConnection();
 
-            MessageProducer p = s.createProducer(queue);
+         	assertEquals(0, getServerId(conn1));
 
-            for (int i = 0; i < 20; i++)
-            {
-               p.send(s.createTextMessage("message " + i));
+         	conn2 = cf.createConnection();
+
+         	assertEquals(0, getServerId(conn2));
+
+         	Session s = conn1.createSession(true, Session.AUTO_ACKNOWLEDGE);
+
+         	MessageProducer p = s.createProducer(queue1);
+
+         	for (int i = 0; i < 20; i++)
+         	{
+         		p.send(s.createTextMessage("message " + i));
             }
 
             s.commit();
@@ -156,11 +122,11 @@ public class QueueTest extends MessagingTestCase
 
             // Create a consumer, start the session, close the consumer..
             // This shouldn't cause any message to be lost
-            MessageConsumer c2 = s2.createConsumer(queue);
+            MessageConsumer c2 = s2.createConsumer(queue1);
             conn2.start();
             c2.close();
 
-            c2 = s2.createConsumer(queue);
+            c2 = s2.createConsumer(queue1);
 
             //There is a possibility the messages arrive out of order if they hit the closed
             //consumer and are cancelled back before delivery to the other consumer has finished.
@@ -181,7 +147,7 @@ public class QueueTest extends MessagingTestCase
 
             s2.commit();
 
-            assertNull(c2.receive(1000));
+            checkEmpty(queue1);      
          }
          finally
          {
@@ -197,20 +163,17 @@ public class QueueTest extends MessagingTestCase
       }
    }
 
-   /**
-    * The simplest possible queue test.
-    */
    public void testRedeployQueue() throws Exception
    {
-      Queue queue = (Queue)ic.lookup("/queue/TestQueue");
-
-      Connection conn = cf.createConnection();
-
+      Connection conn = null;
+            
       try
       {
+         conn = cf.createConnection();
+
          Session s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer p = s.createProducer(queue);
-         MessageConsumer c = s.createConsumer(queue);
+         MessageProducer p = s.createProducer(queue1);
+         MessageConsumer c = s.createConsumer(queue1);
          conn.start();
 
          for (int i = 0; i < 500; i++)
@@ -220,23 +183,16 @@ public class QueueTest extends MessagingTestCase
 
          conn.close();
 
-         //ServerManagement.undeployQueue("TestQueue");
-
-         log.info("Stopping server");
          ServerManagement.stop(0);
 
-         log.info("Starting server");
          ServerManagement.start(0, "all", false);
 
-         ServerManagement.deployQueue("TestQueue");
-
-         ic = new InitialContext(ServerManagement.getJNDIEnvironment());
-         cf = (JBossConnectionFactory)ic.lookup("/ConnectionFactory");
+         deployAndLookupAdministeredObjects();
 
          conn = cf.createConnection();
          s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         p = s.createProducer(queue);
-         c = s.createConsumer(queue);
+         p = s.createProducer(queue1);
+         c = s.createConsumer(queue1);
          conn.start();
 
          for (int i = 0; i < 500; i++)
@@ -245,7 +201,6 @@ public class QueueTest extends MessagingTestCase
             assertNotNull(message);
             assertNotNull(message.getJMSDestination());
          }
-
       }
       finally
       {
@@ -259,8 +214,7 @@ public class QueueTest extends MessagingTestCase
 
    public void testQueueName() throws Exception
    {
-      Queue queue = (Queue)ic.lookup("/queue/TestQueue");
-      assertEquals("TestQueue", queue.getQueueName());
+      assertEquals("Queue1", queue1.getQueueName());
    }
 
    // Package protected ----------------------------------------------------------------------------

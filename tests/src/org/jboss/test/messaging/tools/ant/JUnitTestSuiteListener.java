@@ -6,17 +6,14 @@
  */
 package org.jboss.test.messaging.tools.ant;
 
+import java.io.OutputStream;
+
+import junit.framework.AssertionFailedError;
+import junit.framework.Test;
+
+import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.taskdefs.optional.junit.JUnitResultFormatter;
 import org.apache.tools.ant.taskdefs.optional.junit.JUnitTest;
-import org.apache.tools.ant.BuildException;
-import org.jboss.test.messaging.tools.ServerManagement;
-
-import java.io.OutputStream;
-import java.util.List;
-import java.util.Iterator;
-
-import junit.framework.Test;
-import junit.framework.AssertionFailedError;
 
 /**
  * This class is a hack.
@@ -44,27 +41,27 @@ public class JUnitTestSuiteListener implements JUnitResultFormatter
 
    public void endTestSuite(JUnitTest suite) throws BuildException
    {
-      try
-      {
-         List destroyed = ServerManagement.destroySpawnedServers();
-         if (destroyed.size() > 0)
-         {
-            StringBuffer sb = new StringBuffer("Destroyed spawned test servers ");
-            for(Iterator i = destroyed.iterator(); i.hasNext();)
-            {
-               sb.append(i.next());
-               if (i.hasNext())
-               {
-                  sb.append(',');
-               }
-            }
-            System.out.println(sb);
-         }
-      }
-      catch(Throwable t)
-      {
-         t.printStackTrace();
-      }
+//      try
+//      {
+//         List destroyed = ServerManagement.destroySpawnedServers();
+//         if (destroyed.size() > 0)
+//         {
+//            StringBuffer sb = new StringBuffer("Destroyed spawned test servers ");
+//            for(Iterator i = destroyed.iterator(); i.hasNext();)
+//            {
+//               sb.append(i.next());
+//               if (i.hasNext())
+//               {
+//                  sb.append(',');
+//               }
+//            }
+//            System.out.println(sb);
+//         }
+//      }
+//      catch(Throwable t)
+//      {
+//         t.printStackTrace();
+//      }
    }
 
    public void startTestSuite(JUnitTest suite) throws BuildException

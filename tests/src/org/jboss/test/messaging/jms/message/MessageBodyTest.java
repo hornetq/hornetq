@@ -27,10 +27,7 @@ import java.util.HashSet;
 
 import javax.jms.BytesMessage;
 import javax.jms.Connection;
-import javax.jms.ConnectionFactory;
-import javax.jms.Destination;
 import javax.jms.MapMessage;
-import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageEOFException;
 import javax.jms.MessageFormatException;
@@ -41,10 +38,8 @@ import javax.jms.ObjectMessage;
 import javax.jms.Session;
 import javax.jms.StreamMessage;
 import javax.jms.TextMessage;
-import javax.naming.InitialContext;
 
-import org.jboss.test.messaging.MessagingTestCase;
-import org.jboss.test.messaging.tools.ServerManagement;
+import org.jboss.test.messaging.jms.JMSTestCase;
 
 /**
  * 
@@ -56,15 +51,13 @@ import org.jboss.test.messaging.tools.ServerManagement;
  * $Id$
  *
  */
-public class MessageBodyTest extends MessagingTestCase
+public class MessageBodyTest extends JMSTestCase
 {
    // Constants -----------------------------------------------------
 
    // Static --------------------------------------------------------
 
    // Attributes ----------------------------------------------------
-
-   protected Destination queue;
 
    protected Connection producerConnection, consumerConnection;
 
@@ -86,47 +79,25 @@ public class MessageBodyTest extends MessagingTestCase
    public void setUp() throws Exception
    {
       super.setUp();
-
-      ServerManagement.start("all");
-      
-      
-      ServerManagement.undeployQueue("Queue");
-      ServerManagement.deployQueue("Queue");
-
-      InitialContext ic = new InitialContext(ServerManagement.getJNDIEnvironment());
-      ConnectionFactory cf = (ConnectionFactory) ic.lookup("/ConnectionFactory");
-      queue = (Destination) ic.lookup("/queue/Queue");
-      
+ 
       producerConnection = cf.createConnection();
       consumerConnection = cf.createConnection();
 
       queueProducerSession = producerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
       queueConsumerSession = consumerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-      queueProducer = queueProducerSession.createProducer(queue);
-      queueConsumer = queueConsumerSession.createConsumer(queue);
+      queueProducer = queueProducerSession.createProducer(queue1);
+      queueConsumer = queueConsumerSession.createConsumer(queue1);
 
       consumerConnection.start();
    }
 
    public void tearDown() throws Exception
    {
-      // TODO uncomment these
-      
-      
-      //Drain the queue
-      while (true)
-      {
-         Message m = queueConsumer.receive(2000);
-         if (m == null) break;
-      }
+      super.tearDown();
       
       producerConnection.close();
       consumerConnection.close();
-
-      ServerManagement.undeployQueue("Queue");
-       
-      super.tearDown();
    }
    
    public void testSMBodyReadable() throws Exception
@@ -313,7 +284,7 @@ public class MessageBodyTest extends MessagingTestCase
          // OK
       }
 
-      queueProducer.send(queue, m);
+      queueProducer.send(queue1, m);
 
       BytesMessage m2 = (BytesMessage)queueConsumer.receive(2000);
 
@@ -659,7 +630,7 @@ public class MessageBodyTest extends MessagingTestCase
       {
       }
 
-      queueProducer.send(queue, m1);
+      queueProducer.send(queue1, m1);
 
       MapMessage m2 = (MapMessage) queueConsumer.receive(2000);
 
@@ -1220,7 +1191,7 @@ public class MessageBodyTest extends MessagingTestCase
 
       ObjectMessage m1 = queueProducerSession.createObjectMessage(obj);
 
-      queueProducer.send(queue, m1);
+      queueProducer.send(queue1, m1);
 
       ObjectMessage m2 = (ObjectMessage) queueConsumer.receive(2000);
 
@@ -1235,7 +1206,7 @@ public class MessageBodyTest extends MessagingTestCase
 
       obj.str = "xyz123";
 
-      queueProducer.send(queue, m3);
+      queueProducer.send(queue1, m3);
 
       ObjectMessage m4 = (ObjectMessage) queueConsumer.receive(2000);
 
@@ -1381,7 +1352,7 @@ public class MessageBodyTest extends MessagingTestCase
       {
       }
 
-      queueProducer.send(queue, m);
+      queueProducer.send(queue1, m);
 
       StreamMessage m2 = (StreamMessage) queueConsumer.receive(2000);
 
@@ -1656,14 +1627,14 @@ public class MessageBodyTest extends MessagingTestCase
 
       m.setText(myString);
 
-      queueProducer.send(queue, m);
+      queueProducer.send(queue1, m);
 
       TextMessage m2 = (TextMessage)queueConsumer.receive(2000);
 
       assertEquals(myString, m2.getText());
 
       m = queueProducerSession.createTextMessage(myString);
-      queueProducer.send(queue, m);
+      queueProducer.send(queue1, m);
 
       m2 = (TextMessage)queueConsumer.receive(2000);
 

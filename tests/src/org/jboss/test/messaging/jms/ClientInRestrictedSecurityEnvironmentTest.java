@@ -24,16 +24,11 @@ package org.jboss.test.messaging.jms;
 import java.net.SocketPermission;
 
 import javax.jms.Connection;
-import javax.jms.ConnectionFactory;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
-import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.TextMessage;
-import javax.naming.InitialContext;
 
-import org.jboss.jms.client.JBossConnectionFactory;
-import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
 import org.jboss.test.messaging.tools.misc.ConfigurableSecurityManager;
 
@@ -46,7 +41,7 @@ import org.jboss.test.messaging.tools.misc.ConfigurableSecurityManager;
  *
  * $Id$
  */
-public class ClientInRestrictedSecurityEnvironmentTest extends MessagingTestCase
+public class ClientInRestrictedSecurityEnvironmentTest extends JMSTestCase
 {
    // Constants ------------------------------------------------------------------------------------
 
@@ -54,7 +49,6 @@ public class ClientInRestrictedSecurityEnvironmentTest extends MessagingTestCase
 
    // Attributes -----------------------------------------------------------------------------------
 
-   private InitialContext ic;
    private SecurityManager oldSM;
    private ConfigurableSecurityManager configurableSecurityManager;
 
@@ -129,11 +123,8 @@ public class ClientInRestrictedSecurityEnvironmentTest extends MessagingTestCase
       }
 
       // make sure our security manager disallows "listen" and "accept" on a socket
-      configurableSecurityManager.dissalow(SocketPermission.class, "listen");
-      configurableSecurityManager.dissalow(SocketPermission.class, "accept");
-
-      ConnectionFactory cf = (JBossConnectionFactory)ic.lookup("/ConnectionFactory");
-      Queue queue = (Queue)ic.lookup("/queue/TestQueue");
+      configurableSecurityManager.disallow(SocketPermission.class, "listen");
+      configurableSecurityManager.disallow(SocketPermission.class, "accept");
 
       Connection conn = null;
 
@@ -143,8 +134,8 @@ public class ClientInRestrictedSecurityEnvironmentTest extends MessagingTestCase
 
          Session s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         MessageProducer p = s.createProducer(queue);
-         MessageConsumer c = s.createConsumer(queue);
+         MessageProducer p = s.createProducer(queue1);
+         MessageConsumer c = s.createConsumer(queue1);
 
          conn.start();
 
@@ -153,7 +144,6 @@ public class ClientInRestrictedSecurityEnvironmentTest extends MessagingTestCase
          TextMessage m = (TextMessage)c.receive();
 
          assertEquals("payload", m.getText());
-
       }
       finally
       {
@@ -171,13 +161,7 @@ public class ClientInRestrictedSecurityEnvironmentTest extends MessagingTestCase
    protected void setUp() throws Exception
    {
       super.setUp();
-      ServerManagement.start("all");
-
-      ServerManagement.undeployQueue("TestQueue");
-      ServerManagement.deployQueue("TestQueue");
-
-      ic = new InitialContext(ServerManagement.getJNDIEnvironment());
-
+      
       // install our own security manager
 
       configurableSecurityManager = new ConfigurableSecurityManager();
@@ -191,19 +175,13 @@ public class ClientInRestrictedSecurityEnvironmentTest extends MessagingTestCase
 
    protected void tearDown() throws Exception
    {
+   	super.tearDown();
+   	
       configurableSecurityManager.clear();
       configurableSecurityManager = null;
 
       System.setSecurityManager(oldSM);
 
-      if (ic != null)
-      {
-         ic.close();
-      }
-
-      ServerManagement.undeployQueue("TestQueue");
-
-      ServerManagement.stop();
       super.tearDown();
    }
 

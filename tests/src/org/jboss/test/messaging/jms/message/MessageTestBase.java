@@ -22,20 +22,14 @@
 package org.jboss.test.messaging.jms.message;
 
 import javax.jms.Connection;
-import javax.jms.ConnectionFactory;
 import javax.jms.DeliveryMode;
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
-import javax.jms.Queue;
 import javax.jms.Session;
-import javax.jms.Topic;
-import javax.naming.InitialContext;
 
-import org.jboss.jms.client.JBossConnectionFactory;
-import org.jboss.test.messaging.MessagingTestCase;
-import org.jboss.test.messaging.tools.ServerManagement;
+import org.jboss.test.messaging.jms.JMSTestCase;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
@@ -43,7 +37,7 @@ import org.jboss.test.messaging.tools.ServerManagement;
  *
  * $Id$
  */
-public class MessageTestBase extends MessagingTestCase
+public class MessageTestBase extends JMSTestCase
 {
    // Constants -----------------------------------------------------
 
@@ -53,16 +47,14 @@ public class MessageTestBase extends MessagingTestCase
 
    protected Message message;
    
-   protected ConnectionFactory connFactory;
    protected Connection conn;
+   
    protected Session session;
+   
    protected MessageProducer queueProd;
+   
    protected MessageConsumer queueCons;
-
-   protected Queue queue;
-   protected Topic topic;
-
-
+   
    // Constructors --------------------------------------------------
 
    public MessageTestBase(String name)
@@ -76,38 +68,20 @@ public class MessageTestBase extends MessagingTestCase
    {
       super.setUp();
       
-      ServerManagement.start("all");
-           
-      InitialContext ic = new InitialContext(ServerManagement.getJNDIEnvironment());
-      connFactory = (JBossConnectionFactory)ic.lookup("/ConnectionFactory");
-
-      conn = connFactory.createConnection();
+      conn = cf.createConnection();
       session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-
-      ServerManagement.undeployQueue("Queue");
-      ServerManagement.deployQueue("Queue");
-      queue = (Queue)ic.lookup("/queue/Queue");
-      
-      ServerManagement.undeployTopic("Topic");
-      ServerManagement.deployTopic("Topic");
-      topic = (Topic)ic.lookup("/topic/Topic");
-
-      queueProd = session.createProducer(queue);
-      queueCons = session.createConsumer(queue);
+     
+      queueProd = session.createProducer(queue1);
+      queueCons = session.createConsumer(queue1);
 
       conn.start();
-
-      ic.close();
    }
 
    public void tearDown() throws Exception
    {
-      conn.close();
-      
-      ServerManagement.undeployQueue("Queue");
-      ServerManagement.undeployTopic("Topic");
-      
       super.tearDown();
+      
+      conn.close();            
    }
 
    public void testNonPersistentSend() throws Exception
@@ -162,7 +136,7 @@ public class MessageTestBase extends MessagingTestCase
       m.setStringProperty("stringProperty", "this is a String property");
 
       m.setJMSCorrelationID("this is the correlation ID");
-      m.setJMSReplyTo(topic);
+      m.setJMSReplyTo(topic1);
       m.setJMSType("someArbitraryType");
    }
 
@@ -178,9 +152,9 @@ public class MessageTestBase extends MessagingTestCase
       assertEquals("this is a String property", m.getStringProperty("stringProperty"));
 
       assertEquals("this is the correlation ID", m.getJMSCorrelationID());
-      assertEquals(topic, m.getJMSReplyTo());
+      assertEquals(topic1, m.getJMSReplyTo());
       assertEquals("someArbitraryType", m.getJMSType());
-      assertEquals(queue, m.getJMSDestination());
+      assertEquals(queue1, m.getJMSDestination());
       assertFalse(m.getJMSRedelivered());
       assertEquals(mode, m.getJMSDeliveryMode());
    }

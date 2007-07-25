@@ -27,18 +27,13 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 
 import javax.jms.Connection;
-import javax.jms.Destination;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.jms.ObjectMessage;
 import javax.jms.Session;
 import javax.jms.TextMessage;
-import javax.naming.InitialContext;
 
-import org.jboss.jms.client.JBossConnectionFactory;
 import org.jboss.messaging.util.SafeUTF;
-import org.jboss.test.messaging.MessagingTestCase;
-import org.jboss.test.messaging.tools.ServerManagement;
 
 /**
  * 
@@ -53,18 +48,13 @@ import org.jboss.test.messaging.tools.ServerManagement;
  *
  * $Id$
  */
-public class String64KLimitTest extends MessagingTestCase
+public class String64KLimitTest extends JMSTestCase
 {
    // Constants -----------------------------------------------------
 
    // Static --------------------------------------------------------
    
    // Attributes ----------------------------------------------------
-
-   protected InitialContext initialContext;
-   
-   protected JBossConnectionFactory cf;
-   protected Destination queue;
 
    // Constructors --------------------------------------------------
 
@@ -74,33 +64,6 @@ public class String64KLimitTest extends MessagingTestCase
    }
 
    // TestCase overrides -------------------------------------------
-
-   public void setUp() throws Exception
-   {
-      super.setUp();
-      ServerManagement.start("all");
-                  
-      initialContext = new InitialContext(ServerManagement.getJNDIEnvironment());
-      cf = (JBossConnectionFactory)initialContext.lookup("/ConnectionFactory");
-                 
-      ServerManagement.undeployQueue("Queue");
-      ServerManagement.deployQueue("Queue");
-      ServerManagement.undeployTopic("Topic");
-      ServerManagement.deployTopic("Topic");
-      queue = (Destination)initialContext.lookup("/queue/Queue"); 
-
-      log.debug("setup done");
-   }
-
-   public void tearDown() throws Exception
-   {
-      ServerManagement.undeployQueue("Queue");
-      ServerManagement.undeployTopic("Topic");
-      
-      super.tearDown();
-      
-   }
-
 
    // Public --------------------------------------------------------
    
@@ -188,12 +151,9 @@ public class String64KLimitTest extends MessagingTestCase
       
       int lastReadBufferSize = su.getLastReadBufferSize();
       
-      assertEquals(28, lastReadBufferSize);
-      
+      assertEquals(28, lastReadBufferSize);      
    }
-   
-   
-   
+         
    protected String genString(int len)
    {
       char[] chars = new char[len];
@@ -214,9 +174,9 @@ public class String64KLimitTest extends MessagingTestCase
    
          Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
          
-         MessageProducer prod = sess.createProducer(queue);
+         MessageProducer prod = sess.createProducer(queue1);
          
-         MessageConsumer cons = sess.createConsumer(queue);
+         MessageConsumer cons = sess.createConsumer(queue1);
          
          conn.start();                  
                
@@ -284,9 +244,7 @@ public class String64KLimitTest extends MessagingTestCase
          }
       }
    }
-   
-   
-   
+         
    public void test64KLimitWithObjectMessage() throws Exception
    {            
       Connection conn = null;
@@ -297,9 +255,9 @@ public class String64KLimitTest extends MessagingTestCase
    
          Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
          
-         MessageProducer prod = sess.createProducer(queue);
+         MessageProducer prod = sess.createProducer(queue1);
          
-         MessageConsumer cons = sess.createConsumer(queue);
+         MessageConsumer cons = sess.createConsumer(queue1);
          
          conn.start();
                

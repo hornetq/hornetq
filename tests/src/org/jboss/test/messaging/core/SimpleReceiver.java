@@ -134,7 +134,7 @@ public class SimpleReceiver implements Receiver
          if (SELECTOR_REJECTING.equals(state))
          {
             log.trace(this + " is rejecting message since doesn't match selector");
-            return new SimpleDelivery(null, null, false);
+            return new SimpleDelivery(null, null, false, false);
          }
 
          if (REJECTING.equals(state))
@@ -168,7 +168,7 @@ public class SimpleReceiver implements Receiver
          
          Message m = ref.getMessage();
          
-         SimpleDelivery delivery = new SimpleDelivery(observer, ref, true);
+         SimpleDelivery delivery = new SimpleDelivery(observer, ref, true, false);
          messages.add(new Object[] {m, done ? null : delivery});
          
          if (immediateAsynchronousAcknowledgment)

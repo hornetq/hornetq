@@ -61,6 +61,7 @@ public class MapMessageTest extends MessageTestBase
    public void tearDown() throws Exception
    {
       message = null;
+      
       super.tearDown();
    }
 
@@ -72,9 +73,13 @@ public class MapMessageTest extends MessageTestBase
 
       queueProd.send(m);
 
-      conn.start();
-
-      MapMessage rm = (MapMessage)queueCons.receive();
+      MapMessage rm = (MapMessage)queueCons.receive(2000);
+      
+      log.info("Got rm:" + rm);
+      
+      assertNotNull(rm);
+      
+      log.info("String is " + rm.getString("nullValue"));
 
       assertNull(rm.getString("nullValue"));
    }

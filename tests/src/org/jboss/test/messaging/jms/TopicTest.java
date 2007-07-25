@@ -24,7 +24,6 @@ package org.jboss.test.messaging.jms;
 import java.io.Serializable;
 
 import javax.jms.Connection;
-import javax.jms.ConnectionFactory;
 import javax.jms.DeliveryMode;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
@@ -34,11 +33,6 @@ import javax.jms.ObjectMessage;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.jms.Topic;
-import javax.naming.InitialContext;
-
-import org.jboss.jms.client.JBossConnectionFactory;
-import org.jboss.test.messaging.MessagingTestCase;
-import org.jboss.test.messaging.tools.ServerManagement;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
@@ -46,16 +40,13 @@ import org.jboss.test.messaging.tools.ServerManagement;
  *
  * $Id$
  */
-public class TopicTest extends MessagingTestCase
+public class TopicTest extends JMSTestCase
 {
    // Constants -----------------------------------------------------
    
    // Static --------------------------------------------------------
-   
+	
    // Attributes ----------------------------------------------------
-
-   protected InitialContext ic;
-   protected ConnectionFactory cf;
 
    // Constructors --------------------------------------------------
    
@@ -64,33 +55,6 @@ public class TopicTest extends MessagingTestCase
       super(name);
    }
    
-   // TestCase overrides -------------------------------------------
-   
-   public void setUp() throws Exception
-   {
-      super.setUp();                  
-      
-      ServerManagement.start("all");
-      
-      
-      ic = new InitialContext(ServerManagement.getJNDIEnvironment());
-      cf = (JBossConnectionFactory)ic.lookup("/ConnectionFactory");
-      
-      ServerManagement.undeployTopic("TestTopic");
-      ServerManagement.deployTopic("TestTopic");
-
-      log.debug("setup done");
-   }
-   
-   public void tearDown() throws Exception
-   {
-      ServerManagement.undeployTopic("TestTopic");
-      
-      super.tearDown();
-
-      log.debug("tear down done");
-   }
-
    // Public --------------------------------------------------------
 
    /**
@@ -98,15 +62,15 @@ public class TopicTest extends MessagingTestCase
     */
    public void testTopic() throws Exception
    {
-      Topic topic = (Topic)ic.lookup("/topic/TestTopic");
-
-      Connection conn = cf.createConnection();
-
+      Connection conn = null;
+      
       try
       {
+         conn = cf.createConnection();
+
          Session s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer p = s.createProducer(topic);
-         MessageConsumer c = s.createConsumer(topic);
+         MessageProducer p = s.createProducer(topic1);
+         MessageConsumer c = s.createConsumer(topic1);
          conn.start();
 
          p.send(s.createTextMessage("payload"));
@@ -125,8 +89,8 @@ public class TopicTest extends MessagingTestCase
 
    public void testTopicName() throws Exception
    {
-      Topic topic = (Topic)ic.lookup("/topic/TestTopic");
-      assertEquals("TestTopic", topic.getTopicName());
+      Topic topic = (Topic)ic.lookup("/topic/Topic1");
+      assertEquals("Topic1", topic.getTopicName());
    }
    
    /*
@@ -134,55 +98,64 @@ public class TopicTest extends MessagingTestCase
     */
    public void testRace() throws Exception
    {
-      Topic topic = (Topic)ic.lookup("/topic/TestTopic");
-
-      Connection conn = cf.createConnection();
+      Connection conn = null;
       
-      Session sSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      
-      MessageProducer prod = sSend.createProducer(topic);
-      prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
-      
-      Session s1 = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      Session s2 = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      Session s3 = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      
-      MessageConsumer c1 = s1.createConsumer(topic);
-      MessageConsumer c2 = s2.createConsumer(topic);
-      MessageConsumer c3 = s3.createConsumer(topic);            
-      
-      TestListener l1 = new TestListener();
-      TestListener l2 = new TestListener();
-      TestListener l3 = new TestListener();
-      
-      c1.setMessageListener(new TestListener());
-      c2.setMessageListener(new TestListener());
-      c3.setMessageListener(new TestListener());
-            
-      conn.start();
-            
-      
-      for (int i = 0; i < 500; i++)
+      try
+      {	      
+	      conn = cf.createConnection();
+	      
+	      Session sSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+	      
+	      MessageProducer prod = sSend.createProducer(topic1);
+	      prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+	      
+	      Session s1 = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+	      Session s2 = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+	      Session s3 = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+	      
+	      MessageConsumer c1 = s1.createConsumer(topic1);
+	      MessageConsumer c2 = s2.createConsumer(topic1);
+	      MessageConsumer c3 = s3.createConsumer(topic1);            
+	      
+	      final int numMessages = 500;
+         	    
+	      TestListener l1 = new TestListener(numMessages);
+	      TestListener l2 = new TestListener(numMessages);
+	      TestListener l3 = new TestListener(numMessages);
+	      
+	      c1.setMessageListener(l1);
+	      c2.setMessageListener(l2);
+	      c3.setMessageListener(l3);
+	            
+	      conn.start();
+	       	      
+	      for (int i = 0; i < numMessages; i++)
+	      {
+	         byte[] blah = new byte[10000];
+	         String str = new String(blah);
+	           
+	         Wibble2 w = new Wibble2();
+	         w.s = str;
+	         ObjectMessage om = sSend.createObjectMessage(w);
+	         
+	         prod.send(om);
+	      }          
+	      
+	      l1.waitForMessages();
+	      l2.waitForMessages();
+	      l3.waitForMessages();
+	      
+	      assertFalse(l1.failed);
+	      assertFalse(l2.failed);
+	      assertFalse(l3.failed);
+      }
+      finally
       {
-         byte[] blah = new byte[10000];
-         String str = new String(blah);
-           
-         Wibble2 w = new Wibble2();
-         w.s = str;
-         ObjectMessage om = sSend.createObjectMessage(w);
-         
-         prod.send(om);
- 
-      }          
-      
-      Thread.sleep(10000);
-      
-      assertFalse(l1.failed);
-      assertFalse(l2.failed);
-      assertFalse(l3.failed);
-      
-      conn.close();
-            
+      	if (conn != null)
+      	{
+      		conn.close();
+      	}
+      }
    }
 
    // Package protected ---------------------------------------------
@@ -203,7 +176,16 @@ public class TopicTest extends MessagingTestCase
    {
       boolean failed;
       
-      public void onMessage(Message m)
+      int count;
+      
+      int num;
+      
+      TestListener(int num)
+      {
+      	this.num = num;
+      }
+      
+      public synchronized void onMessage(Message m)
       {
          ObjectMessage om = (ObjectMessage)m;
          
@@ -215,6 +197,21 @@ public class TopicTest extends MessagingTestCase
          {
             failed = true;
          }
+         
+         count++;
+         
+         if (count == num)
+         {         
+         	this.notify();
+         }
+      }
+      
+      synchronized void waitForMessages() throws Exception
+      {
+      	while (count < num)
+      	{
+      		this.wait();
+      	}
       }
    }
    

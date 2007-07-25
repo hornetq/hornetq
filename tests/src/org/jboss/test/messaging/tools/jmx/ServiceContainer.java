@@ -283,7 +283,14 @@ public class ServiceContainer
       }
       else if ("org.w3c.dom.Element".equals(type))
       {
-         return XMLUtil.stringToElement(valueAsString);
+      	if (valueAsString == null)
+      	{
+      		return null;
+      	}
+      	else
+      	{
+      		return XMLUtil.stringToElement(valueAsString);
+      	}
       }
       else if (type.startsWith("org.jboss."))
       {
@@ -534,7 +541,8 @@ public class ServiceContainer
 
    public void stop() throws Exception
    {
-
+   	log.info("Stopping serviceconatiner");
+   	
       unloadJNDIContexts();
 
       stopService(REMOTING_OBJECT_NAME);
@@ -568,10 +576,10 @@ public class ServiceContainer
       {
          initialContext.unbind(MockJBossSecurityManager.TEST_SECURITY_DOMAIN);
       }
+      
+      cleanJNDI();
 
       initialContext.close();
-
-      cleanJNDI();
 
       if (jndiNamingFactory != null)
       {
@@ -1424,14 +1432,12 @@ public class ServiceContainer
 
    private void cleanJNDI() throws Exception
    {
-      InitialContext ic = new InitialContext();
-
-      for(Iterator i = toUnbindAtExit.iterator(); i.hasNext(); )
+      for (Iterator i = toUnbindAtExit.iterator(); i.hasNext(); )
       {
          String name = (String)i.next();
-         ic.unbind(name);
+         
+         initialContext.unbind(name);
       }
-      ic.close();
    }
    
    private void executeStatement(TransactionManager mgr, DataSource ds, String statement) throws Exception

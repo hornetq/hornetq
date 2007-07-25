@@ -518,7 +518,7 @@ public class RoundRobinDistributorTest extends MessagingTestCase
 
          synchronized(lock)
          {
-            return new SimpleDelivery(null, null, true);
+            return new SimpleDelivery(null, null, true, false);
          }
       }
 
@@ -543,7 +543,7 @@ public class RoundRobinDistributorTest extends MessagingTestCase
             return null;
          }
          
-         Delivery del = new SimpleDelivery(null, null, selectorMatches);
+         Delivery del = new SimpleDelivery(null, null, selectorMatches, false);
          
          if (selectorMatches)
          {

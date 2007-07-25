@@ -34,7 +34,7 @@ import javax.jms.TemporaryQueue;
  * $Id$
  *
  */
-public class JMSReplyToHeaderTest extends MessageTest
+public class JMSReplyToHeaderTest extends MessageHeaderTestBase
 {
    // Constants -----------------------------------------------------
 
@@ -50,16 +50,6 @@ public class JMSReplyToHeaderTest extends MessageTest
    }
 
    // Public --------------------------------------------------------
-
-   public void setUp() throws Exception
-   {
-      super.setUp();
-   }
-
-   public void tearDown() throws Exception
-   {
-      super.tearDown();
-   }
 
 
    public void testJMSDestinationSimple() throws Exception
@@ -83,11 +73,6 @@ public class JMSReplyToHeaderTest extends MessageTest
       assertNull(m.getJMSReplyTo());
    }
    
-   
-   
-   
-
-
    // Package protected ---------------------------------------------
    
    // Protected -----------------------------------------------------

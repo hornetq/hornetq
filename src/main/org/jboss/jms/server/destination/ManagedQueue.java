@@ -97,6 +97,15 @@ public class ManagedQueue extends ManagedDestination
       return count;
    }
    
+   public int getDeliveringCount() throws Exception
+   {
+      int count = queue.getDeliveringCount();
+
+      if (trace) { log.trace(this + " returning DeliveringCount = " + count); }
+
+      return count;
+   }
+   
    public int getScheduledMessageCount() throws Exception
    {     
       int count = queue.getScheduledCount();

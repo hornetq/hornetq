@@ -391,7 +391,7 @@ public class TransactionRepository implements MessagingComponent
             if (trace) log.trace("Destination for message[ID=" + ref.getMessage().getMessageID() + "] is: " + queue);            
             
             //Create a new delivery - note that it must have a delivery observer otherwise acknowledge will fail
-            Delivery del = new SimpleDelivery(queue, ref);
+            Delivery del = new SimpleDelivery(queue, ref, true, true);
 
             if (trace) log.trace("Acknowledging..");
 

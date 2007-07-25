@@ -168,8 +168,11 @@ public abstract class ChannelSupport implements Channel
          pm.updateDeliveryCount(this.channelID, ref);
       }
             
-      deliveringCount.decrement();
-
+      if (!del.isRecovered())
+      {
+      	deliveringCount.decrement();
+      }
+      
       if (!checkAndSchedule(ref))
       {
          cancelInternal(ref);
@@ -253,9 +256,7 @@ public abstract class ChannelSupport implements Channel
     *
     */
    public void removeAllReferences() throws Throwable
-   {
-      log.debug(this + " removing all references");
-      
+   { 
       synchronized (lock)
       {
          if (deliveringCount.get() > 0)
@@ -263,6 +264,8 @@ public abstract class ChannelSupport implements Channel
             throw new IllegalStateException("Cannot remove references while deliveries are in progress, there are " +
             		                           deliveringCount.get());
          }
+         
+         log.trace(this + " removing all references, there are " + this.messageRefs.size());       
          
          //Now we consume the rest of the messages
          //This may take a while if we have a lot of messages including perhaps millions
@@ -277,17 +280,19 @@ public abstract class ChannelSupport implements Channel
          MessageReference ref;
          while ((ref = removeFirstInMemory()) != null)
          {
+         	log.trace("Removing ref " + ref);
+         	
             SimpleDelivery del = new SimpleDelivery(this, ref);
 
             del.acknowledge(null);
-
-            // Delivery#acknowledge decrements the deliveringCount without incrementing it first (because
-            // deliver has actually never been called), so increment it here to be accurate.  
-            deliveringCount.increment();
          }
+         
+         deliveringCount.set(0);
+         
+         log.trace(this + " done removing all references, there are " + this.messageRefs.size());
       }
       
-      clearAllScheduledDeliveries();
+      clearAllScheduledDeliveries();            
    }
 
    public List undelivered(Filter filter)
@@ -326,7 +331,7 @@ public abstract class ChannelSupport implements Channel
    public int getMessageCount()
    {
       synchronized (lock)
-      {
+      {      
          return messageRefs.size() + getDeliveringCount() + getScheduledCount();
       }
    }
@@ -655,7 +660,7 @@ public abstract class ChannelSupport implements Channel
          return null;
       }
 
-      return new SimpleDelivery(this, ref, true);
+      return new SimpleDelivery(this, ref, true, false);
    }
 
    
@@ -694,8 +699,11 @@ public abstract class ChannelSupport implements Channel
          }
               
          d.getReference().releaseMemoryReference(); 
-                  
-         deliveringCount.decrement();
+         
+         if (!d.isRecovered())
+         {
+         	deliveringCount.decrement();
+         }
       }
       else
       {
@@ -870,7 +878,10 @@ public abstract class ChannelSupport implements Channel
 
                del.getReference().releaseMemoryReference();
                
-               deliveringCount.decrement();
+               if (!del.isRecovered())
+               {
+               	deliveringCount.decrement();
+               }
             }
             
             // prompt delivery

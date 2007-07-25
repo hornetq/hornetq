@@ -31,11 +31,9 @@ import javax.jms.Topic;
 import javax.jms.TopicConnection;
 import javax.jms.TopicConnectionFactory;
 import javax.management.ObjectName;
-import javax.naming.InitialContext;
 
 import org.jboss.jms.client.JBossConnectionFactory;
 import org.jboss.jms.client.delegate.ClientConnectionFactoryDelegate;
-import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
 import org.jboss.test.messaging.tools.jmx.ServiceContainer;
 
@@ -46,15 +44,13 @@ import org.jboss.test.messaging.tools.jmx.ServiceContainer;
  *
  * $Id$
  */
-public class ConnectionFactoryTest extends MessagingTestCase
+public class ConnectionFactoryTest extends JMSTestCase
 {
    // Constants -----------------------------------------------------
 
    // Static --------------------------------------------------------
    
    // Attributes ----------------------------------------------------
-
-   protected InitialContext initialContext;
 
    // Constructors --------------------------------------------------
 
@@ -72,7 +68,7 @@ public class ConnectionFactoryTest extends MessagingTestCase
    public void testQueueConnectionFactory() throws Exception
    {
       QueueConnectionFactory qcf =
-         (QueueConnectionFactory)initialContext.lookup("/ConnectionFactory");
+         (QueueConnectionFactory)ic.lookup("/ConnectionFactory");
       QueueConnection qc = qcf.createQueueConnection();
       qc.close();
    }
@@ -84,7 +80,7 @@ public class ConnectionFactoryTest extends MessagingTestCase
    public void testTopicConnectionFactory() throws Exception
    {
       TopicConnectionFactory qcf =
-         (TopicConnectionFactory)initialContext.lookup("/ConnectionFactory");
+         (TopicConnectionFactory)ic.lookup("/ConnectionFactory");
       TopicConnection tc = qcf.createTopicConnection();
       tc.close();
    }
@@ -113,7 +109,7 @@ public class ConnectionFactoryTest extends MessagingTestCase
       ServerManagement.invoke(on, "create", new Object[0], new String[0]);
       ServerManagement.invoke(on, "start", new Object[0], new String[0]);
 
-      ConnectionFactory cf = (ConnectionFactory)initialContext.lookup("/TestConnectionFactory");
+      ConnectionFactory cf = (ConnectionFactory)ic.lookup("/TestConnectionFactory");
       Connection c = cf.createConnection();
 
       assertEquals("sofiavergara", c.getClientID());
@@ -156,7 +152,7 @@ public class ConnectionFactoryTest extends MessagingTestCase
       ServerManagement.invoke(on2, "destroy", new Object[0], new String[0]);
       ServerManagement.undeploy(on2);
       
-      cf = (ConnectionFactory)initialContext.lookup("/TestConnectionFactory");
+      cf = (ConnectionFactory)ic.lookup("/TestConnectionFactory");
       Connection c2 = null;
       try
       {
@@ -174,7 +170,6 @@ public class ConnectionFactoryTest extends MessagingTestCase
       ServerManagement.invoke(on, "stop", new Object[0], new String[0]);
       ServerManagement.invoke(on, "destroy", new Object[0], new String[0]);
       ServerManagement.undeploy(on);
-
    }
          
    public void testAdministrativelyConfiguredConnectors() throws Exception
@@ -197,20 +192,20 @@ public class ConnectionFactoryTest extends MessagingTestCase
       ObjectName cf4 = deployConnectionFactory("jboss.messaging.destination:service=TestConnectionFactory4", name3, "/TestConnectionFactory4", "clientid4");
       
       
-      JBossConnectionFactory f1 = (JBossConnectionFactory)initialContext.lookup("/TestConnectionFactory1");            
+      JBossConnectionFactory f1 = (JBossConnectionFactory)ic.lookup("/TestConnectionFactory1");            
       ClientConnectionFactoryDelegate del1 = (ClientConnectionFactoryDelegate)f1.getDelegate();      
       
       assertTrue(del1.getServerLocatorURI().startsWith("bisocket://localhost:1234"));
       
-      JBossConnectionFactory f2 = (JBossConnectionFactory)initialContext.lookup("/TestConnectionFactory2");            
+      JBossConnectionFactory f2 = (JBossConnectionFactory)ic.lookup("/TestConnectionFactory2");            
       ClientConnectionFactoryDelegate del2 = (ClientConnectionFactoryDelegate)f2.getDelegate();      
       assertTrue(del2.getServerLocatorURI().startsWith("bisocket://localhost:1235"));
       
-      JBossConnectionFactory f3 = (JBossConnectionFactory)initialContext.lookup("/TestConnectionFactory3");            
+      JBossConnectionFactory f3 = (JBossConnectionFactory)ic.lookup("/TestConnectionFactory3");            
       ClientConnectionFactoryDelegate del3 = (ClientConnectionFactoryDelegate)f3.getDelegate();      
       assertTrue(del3.getServerLocatorURI().startsWith("bisocket://localhost:1236"));
       
-      JBossConnectionFactory f4 = (JBossConnectionFactory)initialContext.lookup("/TestConnectionFactory4");            
+      JBossConnectionFactory f4 = (JBossConnectionFactory)ic.lookup("/TestConnectionFactory4");            
       ClientConnectionFactoryDelegate del4 = (ClientConnectionFactoryDelegate)f4.getDelegate();      
       assertTrue(del4.getServerLocatorURI().startsWith("bisocket://localhost:1236"));
       
@@ -243,7 +238,7 @@ public class ConnectionFactoryTest extends MessagingTestCase
       // the ConnectionFactories that ship with Messaging do not have their clientID
       // administratively configured.
 
-      ConnectionFactory cf = (ConnectionFactory)initialContext.lookup("/ConnectionFactory");
+      ConnectionFactory cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
       Connection c = cf.createConnection();
 
       assertNull(c.getClientID());
@@ -256,7 +251,7 @@ public class ConnectionFactoryTest extends MessagingTestCase
       // the ConnectionFactories that ship with Messaging do not have their clientID
       // administratively configured.
 
-      ConnectionFactory cf = (ConnectionFactory)initialContext.lookup("/ConnectionFactory");
+      ConnectionFactory cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
       Connection c = cf.createConnection();
 
       // set the client id immediately after the connection is created
@@ -278,8 +273,8 @@ public class ConnectionFactoryTest extends MessagingTestCase
 
       try
       {
-         Topic topic = (Topic) initialContext.lookup("/topic/TestSubscriber");
-         ConnectionFactory cf = (ConnectionFactory) initialContext.lookup("/TestDurableCF");
+         Topic topic = (Topic) ic.lookup("/topic/TestSubscriber");
+         ConnectionFactory cf = (ConnectionFactory) ic.lookup("/TestDurableCF");
          conn = cf.createConnection();
 
          // I have to remove this asertion, as the test would work if doing this assertion
@@ -332,20 +327,6 @@ public class ConnectionFactoryTest extends MessagingTestCase
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
-
-   protected void setUp() throws Exception
-   {
-      super.setUp();
-      ServerManagement.start("all");
-      
-      
-      initialContext = new InitialContext(ServerManagement.getJNDIEnvironment());
-   }
-
-   protected void tearDown() throws Exception
-   {
-      super.tearDown();
-   }
 
    // Private -------------------------------------------------------
    

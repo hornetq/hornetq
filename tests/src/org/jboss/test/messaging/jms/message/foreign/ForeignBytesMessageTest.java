@@ -41,19 +41,9 @@ public class ForeignBytesMessageTest extends ForeignMessageTest
 {
     public ForeignBytesMessageTest(String name)
     {
-        super(name);
+       super(name);
     }
     
-    public void setUp() throws Exception
-    {
-       super.setUp();
-    }
-
-    public void tearDown() throws Exception
-    {
-       super.tearDown();
-    }
-
     protected Message createForeignMessage() throws Exception
     {
         SimpleJMSBytesMessage m = new SimpleJMSBytesMessage();

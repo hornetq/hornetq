@@ -23,16 +23,20 @@ package org.jboss.test.messaging;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
+import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.Topic;
 import javax.jms.XAConnection;
 import javax.jms.XAConnectionFactory;
+import javax.management.ObjectName;
 import javax.naming.InitialContext;
 import javax.sql.DataSource;
 import javax.transaction.TransactionManager;
@@ -113,6 +117,72 @@ public class MessagingTestCase extends ProxyAssertSupport
          // log the test stop in the remote log, this will make hunting through logs so much easier
          ServerManagement.log(ServerManagement.INFO, banner);
       }
+   }
+      
+   protected void removeAllMessages(String destName, boolean isQueue, int server) throws Exception
+   {
+   	String on = "jboss.messaging.destination:service=" + (isQueue ? "Queue" : "Topic") + ",name=" + destName;
+   	
+   	ServerManagement.getServer(server).invoke(new ObjectName(on), "removeAllMessages", null, null);
+   }
+   
+   protected void checkEmpty2(Queue queue) throws Exception
+   {
+   	ObjectName destObjectName =  new ObjectName("jboss.messaging.destination:service=Queue,name=" + queue.getQueueName());
+   	
+      Integer messageCount = (Integer)ServerManagement.getAttribute(destObjectName, "MessageCount");
+      
+      Integer deliveringCount = (Integer)ServerManagement.getAttribute(destObjectName, "DeliveringCount"); 
+      
+      assertEquals(0, messageCount.intValue() - deliveringCount.intValue());      
+   }
+   
+   protected void checkEmpty(Queue queue) throws Exception
+   {
+   	ObjectName destObjectName =  new ObjectName("jboss.messaging.destination:service=Queue,name=" + queue.getQueueName());
+   	
+      Integer messageCount = (Integer)ServerManagement.getAttribute(destObjectName, "MessageCount");
+       
+      assertEquals(0, messageCount.intValue());      
+   }
+   
+   protected void checkEmpty(Topic topic) throws Exception
+   {
+   	ObjectName destObjectName =  new ObjectName("jboss.messaging.destination:service=Topic,name=" + topic.getTopicName());
+   	
+      Integer messageCount = (Integer)ServerManagement.getAttribute(destObjectName, "AllMessageCount"); 
+      
+      assertEquals(0, messageCount.intValue());      
+   }
+   
+   protected void checkEmpty(Topic topic, String subName) throws Exception
+   {
+   	ObjectName destObjectName =  new ObjectName("jboss.messaging.destination:service=Topic,name=" + topic.getTopicName());
+   	
+   	List msgs = (List)ServerManagement.invoke(destObjectName, "listAllMessages", new Object[] { subName }, new String[] { "java.lang.String" });
+            
+      assertEquals(0, msgs.size());      
+   }
+   
+   protected void checkNoSubscriptions(Topic topic) throws Exception
+   {
+   	ObjectName destObjectName =  new ObjectName("jboss.messaging.destination:service=Topic,name=" + topic.getTopicName());
+   	
+      Integer messageCount = (Integer)ServerManagement.getAttribute(destObjectName, "AllSubscriptionsCount"); 
+      
+      assertEquals(0, messageCount.intValue());      
+   }
+      
+   protected boolean assertRemainingMessages(int expected) throws Exception
+   {
+      ObjectName destObjectName = 
+         new ObjectName("jboss.messaging.destination:service=Queue,name=Queue1");
+      Integer messageCount = (Integer)ServerManagement.getAttribute(destObjectName, "MessageCount"); 
+      
+      log.trace("There are " + messageCount + " messages");
+      
+      assertEquals(expected, messageCount.intValue());      
+      return expected == messageCount.intValue();
    }
    
    protected void drainDestination(ConnectionFactory cf, Destination dest) throws Exception
@@ -273,6 +343,124 @@ public class MessagingTestCase extends ProxyAssertSupport
                   
       } 
    }
+   
+   protected List getReferenceIds() throws Exception
+   {
+      InitialContext ctx = new InitialContext();
+
+      TransactionManager mgr = (TransactionManager)ctx.lookup(TransactionManagerService.JNDI_NAME);
+      DataSource ds = (DataSource)ctx.lookup("java:/DefaultDS");
+      
+      javax.transaction.Transaction txOld = mgr.suspend();
+      mgr.begin();
+
+      java.sql.Connection conn = ds.getConnection();
+      String sql = "SELECT MESSAGE_ID, ORD FROM JBM_MSG_REF";
+      PreparedStatement ps = conn.prepareStatement(sql);
+   
+      ResultSet rs = ps.executeQuery();
+      
+      List msgIds = new ArrayList();
+      
+      while (rs.next())
+      {
+         long msgId = rs.getLong(1);
+         msgIds.add(new Long(msgId));
+      }
+      rs.close();
+      ps.close();
+      conn.close();
+
+      mgr.commit();
+
+      if (txOld != null)
+      {
+         mgr.resume(txOld);
+      }
+      
+      return msgIds;
+   }
+   
+   protected List getReferenceIds(long channelId) throws Throwable
+   {
+      InitialContext ctx = new InitialContext();
+
+      TransactionManager mgr = (TransactionManager)ctx.lookup(TransactionManagerService.JNDI_NAME);
+      DataSource ds = (DataSource)ctx.lookup("java:/DefaultDS");
+      
+      javax.transaction.Transaction txOld = mgr.suspend();
+      mgr.begin();
+
+      java.sql.Connection conn = ds.getConnection();
+      String sql = "SELECT MESSAGE_ID FROM JBM_MSG_REF WHERE CHANNEL_ID=? ORDER BY ORD";
+      PreparedStatement ps = conn.prepareStatement(sql);
+      ps.setLong(1, channelId);
+   
+      ResultSet rs = ps.executeQuery();
+      
+      List msgIds = new ArrayList();
+      
+      while (rs.next())
+      {
+         long msgId = rs.getLong(1);
+         msgIds.add(new Long(msgId));
+      }
+      rs.close();
+      ps.close();
+      conn.close();
+
+      mgr.commit();
+
+      if (txOld != null)
+      {
+         mgr.resume(txOld);
+      }
+      
+      return msgIds;
+   }
+   
+   protected List getMessageIds() throws Exception
+   {
+      InitialContext ctx = new InitialContext();
+
+      TransactionManager mgr = (TransactionManager)ctx.lookup(TransactionManagerService.JNDI_NAME);
+      DataSource ds = (DataSource)ctx.lookup("java:/DefaultDS");
+      
+      javax.transaction.Transaction txOld = mgr.suspend();
+      mgr.begin();
+
+      java.sql.Connection conn = ds.getConnection();
+      String sql = "SELECT MESSAGE_ID FROM JBM_MSG ORDER BY MESSAGE_ID";
+      PreparedStatement ps = conn.prepareStatement(sql);
+      
+      ResultSet rs = ps.executeQuery();
+      
+      List msgIds = new ArrayList();
+      
+      while (rs.next())
+      {
+         long msgId = rs.getLong(1);
+         msgIds.add(new Long(msgId));
+      }
+      rs.close();
+      ps.close();
+      conn.close();
+
+      mgr.commit();
+
+      if (txOld != null)
+      {
+         mgr.resume(txOld);
+      }
+      
+      return msgIds;
+   }
+   
+         
+
+   
+   
+   
 
 
    /**

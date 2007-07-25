@@ -21,11 +21,6 @@
   */
 package org.jboss.test.messaging.jms;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.util.ArrayList;
-import java.util.List;
-
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.DeliveryMode;
@@ -34,16 +29,9 @@ import javax.jms.MessageProducer;
 import javax.jms.Session;
 import javax.jms.TemporaryQueue;
 import javax.jms.TemporaryTopic;
-import javax.jms.Topic;
-import javax.naming.InitialContext;
-import javax.sql.DataSource;
-import javax.transaction.TransactionManager;
 
-import org.jboss.jms.client.JBossConnectionFactory;
 import org.jboss.messaging.core.impl.message.SimpleMessageStore;
-import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
-import org.jboss.tm.TransactionManagerService;
 
 /**
  * 
@@ -55,18 +43,13 @@ import org.jboss.tm.TransactionManagerService;
  * $Id$
  *
  */
-public class MessageCleanupTest extends MessagingTestCase
+public class MessageCleanupTest extends JMSTestCase
 {
    // Constants -----------------------------------------------------
    
    // Static --------------------------------------------------------
    
    // Attributes ----------------------------------------------------
-
-   protected InitialContext ic;
-   protected ConnectionFactory cf;
-   
-   protected Topic topic;
 
    // Constructors --------------------------------------------------
    
@@ -77,33 +60,6 @@ public class MessageCleanupTest extends MessagingTestCase
    
    // TestCase overrides -------------------------------------------
    
-   public void setUp() throws Exception
-   {
-      super.setUp();                  
-      
-      ServerManagement.start("all");
-      
-      
-      ic = new InitialContext(ServerManagement.getJNDIEnvironment());
-      cf = (JBossConnectionFactory)ic.lookup("/ConnectionFactory");
-      
-      ServerManagement.undeployTopic("TestTopic");
-      ServerManagement.deployTopic("TestTopic", 100, 10, 10);
-      
-      topic = (Topic)ic.lookup("/topic/TestTopic");
-
-      log.debug("setup done");
-   }
-   
-   public void tearDown() throws Exception
-   {
-      ServerManagement.undeployTopic("TestTopic");
-      
-      super.tearDown();
-
-      log.debug("tear down done");
-   }
-   
    /*
     * Test that all messages on a non durable sub are removed on close
     */
@@ -111,99 +67,118 @@ public class MessageCleanupTest extends MessagingTestCase
    {
       if (ServerManagement.isRemote()) return;
       
-      Connection conn = cf.createConnection();
+      Connection conn = null;
       
-      Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      
-      MessageProducer prod = sess.createProducer(topic);
-      
-      prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
-      
-      MessageConsumer cons = sess.createConsumer(topic);
-                  
-      for (int i = 0; i < 150; i++)
+      try
       {
-         prod.send(sess.createMessage());
+	      
+	      conn = cf.createConnection();
+	      
+	      Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+	      
+	      MessageProducer prod = sess.createProducer(topic1);
+	      
+	      prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+	      
+	      MessageConsumer cons = sess.createConsumer(topic1);
+	                  
+	      for (int i = 0; i < 150; i++)
+	      {
+	         prod.send(sess.createMessage());
+	      }
+	      
+	      SimpleMessageStore ms = (SimpleMessageStore)ServerManagement.getMessageStore();
+	      
+	      assertEquals(100, ms.messageIds().size());
+	      
+	      //50 Should be paged onto disk
+	      
+	      assertEquals(50, getReferenceIds().size());
+	      
+	      assertEquals(50, getMessageIds().size());
+	      
+	      //Now we close the consumer
+	      
+	      cons.close();
+	      
+	      assertEquals(0, ms.messageIds().size());
+	      
+	      assertEquals(0, getReferenceIds().size());
+	      
+	      assertEquals(0, getMessageIds().size());
       }
-      
-      SimpleMessageStore ms = (SimpleMessageStore)ServerManagement.getMessageStore();
-      
-      assertEquals(100, ms.messageIds().size());
-      
-      //50 Should be paged onto disk
-      
-      assertEquals(50, getReferenceIds().size());
-      
-      assertEquals(50, getMessageIds().size());
-      
-      //Now we close the consumer
-      
-      cons.close();
-      
-      assertEquals(0, ms.messageIds().size());
-      
-      assertEquals(0, getReferenceIds().size());
-      
-      assertEquals(0, getMessageIds().size());
-      
-      conn.close();
+      finally
+      {
+      	if (conn != null)
+      	{
+      		conn.close();
+      	}
+      }
    }
    
    public void testNonDurableClose2() throws Exception
    {
       if (ServerManagement.isRemote()) return;
       
-      Connection conn = cf.createConnection();
+      Connection conn = null;
       
-      conn.setClientID("wibble12345");
-      
-      Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      
-      MessageProducer prod = sess.createProducer(topic);
-      
-      prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
-      
-      MessageConsumer cons1 = sess.createConsumer(topic);
-      
-      MessageConsumer cons2 = sess.createDurableSubscriber(topic, "sub1");
-                  
-      for (int i = 0; i < 150; i++)
-      {
-         prod.send(sess.createMessage());
+      try
+      {      
+	      conn = cf.createConnection();
+	      
+	      conn.setClientID("wibble12345");
+	      
+	      Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+	      
+	      MessageProducer prod = sess.createProducer(topic1);
+	      
+	      prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+	      
+	      MessageConsumer cons1 = sess.createConsumer(topic1);
+	      
+	      MessageConsumer cons2 = sess.createDurableSubscriber(topic1, "sub1");
+	                  
+	      for (int i = 0; i < 150; i++)
+	      {
+	         prod.send(sess.createMessage());
+	      }
+	      
+	      SimpleMessageStore ms = (SimpleMessageStore)ServerManagement.getMessageStore();
+	      
+	      assertEquals(100, ms.messageIds().size());
+	      
+	      assertEquals(100, getReferenceIds().size());
+	      
+	      assertEquals(50, getMessageIds().size());
+	      
+	      //Now we close the consumers
+	      
+	      cons1.close();
+	      cons2.close();
+	      
+	      assertEquals(100, ms.messageIds().size());
+	      
+	      assertEquals(50, getReferenceIds().size());
+	      
+	      assertEquals(50, getMessageIds().size());
+	      
+	      sess.unsubscribe("sub1");
+	      
+	      assertEquals(0, ms.messageIds().size());
+	      
+	      assertEquals(0, getReferenceIds().size());
+	      
+	      assertEquals(0, getMessageIds().size());      
       }
-      
-      SimpleMessageStore ms = (SimpleMessageStore)ServerManagement.getMessageStore();
-      
-      assertEquals(100, ms.messageIds().size());
-      
-      assertEquals(100, getReferenceIds().size());
-      
-      assertEquals(50, getMessageIds().size());
-      
-      //Now we close the consumers
-      
-      cons1.close();
-      cons2.close();
-      
-      assertEquals(100, ms.messageIds().size());
-      
-      assertEquals(50, getReferenceIds().size());
-      
-      assertEquals(50, getMessageIds().size());
-      
-      sess.unsubscribe("sub1");
-      
-      assertEquals(0, ms.messageIds().size());
-      
-      assertEquals(0, getReferenceIds().size());
-      
-      assertEquals(0, getMessageIds().size());
-      
-      
-      conn.close();
+      finally
+      {
+      	if (conn != null)
+      	{
+      		conn.close();
+      	}
+      }
    }
    
-
 
    /*
     * Test that all messages on a temporary queue are removed on close
@@ -219,41 +194,52 @@ public class MessageCleanupTest extends MessagingTestCase
 
       ConnectionFactory cf2 = (ConnectionFactory)ic.lookup("/TempQueueConnectionFactory");
       
-      Connection conn = cf2.createConnection();
+      Connection conn = null;
       
-      Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      
-      TemporaryQueue queue = sess.createTemporaryQueue();
-      
-      MessageProducer prod = sess.createProducer(queue);
-      
-      prod.setDeliveryMode(DeliveryMode.PERSISTENT);
-           
-      conn.start();
-      
-      for (int i = 0; i < 150; i++)
-      {
-         prod.send(sess.createMessage());
+      try
+      {      
+	      conn = cf2.createConnection();
+	      
+	      Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+	      
+	      TemporaryQueue queue = sess.createTemporaryQueue();
+	      
+	      MessageProducer prod = sess.createProducer(queue);
+	      
+	      prod.setDeliveryMode(DeliveryMode.PERSISTENT);
+	           
+	      conn.start();
+	      
+	      for (int i = 0; i < 150; i++)
+	      {
+	         prod.send(sess.createMessage());
+	      }
+	      
+	      SimpleMessageStore ms = (SimpleMessageStore)ServerManagement.getMessageStore();
+	      
+	      assertEquals(100, ms.messageIds().size());
+	      
+	      assertEquals(50, getReferenceIds().size());
+	      
+	      assertEquals(50, getMessageIds().size());
+	      
+	      //Now we close the connection
+	      
+	      conn.close();
+	      
+	      assertEquals(0, ms.messageIds().size());
+	      
+	      assertEquals(0, getReferenceIds().size());
+	      
+	      assertEquals(0, getMessageIds().size());
       }
-      
-      SimpleMessageStore ms = (SimpleMessageStore)ServerManagement.getMessageStore();
-      
-      assertEquals(100, ms.messageIds().size());
-      
-      assertEquals(50, getReferenceIds().size());
-      
-      assertEquals(50, getMessageIds().size());
-      
-      //Now we close the connection
-      
-      conn.close();
-      
-      assertEquals(0, ms.messageIds().size());
-      
-      assertEquals(0, getReferenceIds().size());
-      
-      assertEquals(0, getMessageIds().size());
-      
+      finally
+      {
+      	if (conn != null)
+      	{
+      		conn.close();
+      	}
+      }      
    }
    
    /*
@@ -270,45 +256,56 @@ public class MessageCleanupTest extends MessagingTestCase
 
       ConnectionFactory cf2 = (ConnectionFactory)ic.lookup("/TempTopicConnectionFactory");
       
-      Connection conn = cf2.createConnection();
+      Connection conn = null;
       
-      Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      
-      TemporaryTopic topic = sess.createTemporaryTopic();
-      
-      MessageProducer prod = sess.createProducer(topic);
-      
-      prod.setDeliveryMode(DeliveryMode.PERSISTENT);
-           
-      sess.createConsumer(topic);
-      
-      sess.createConsumer(topic);
-      
-      //Don't start the connection
-      
-      for (int i = 0; i < 150; i++)
-      {
-         prod.send(sess.createMessage());
+      try
+      {      
+	      conn = cf2.createConnection();
+	      
+	      Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+	      
+	      TemporaryTopic topic = sess.createTemporaryTopic();
+	      
+	      MessageProducer prod = sess.createProducer(topic);
+	      
+	      prod.setDeliveryMode(DeliveryMode.PERSISTENT);
+	           
+	      sess.createConsumer(topic);
+	      
+	      sess.createConsumer(topic);
+	      
+	      //Don't start the connection
+	      
+	      for (int i = 0; i < 150; i++)
+	      {
+	         prod.send(sess.createMessage());
+	      }
+	      
+	      SimpleMessageStore ms = (SimpleMessageStore)ServerManagement.getMessageStore();
+	      
+	      assertEquals(100, ms.messageIds().size());
+	      
+	      assertEquals(100, getReferenceIds().size());
+	      
+	      assertEquals(50, getMessageIds().size());
+	      
+	      //Now we close the connection
+	      
+	      conn.close();
+	      
+	      assertEquals(0, ms.messageIds().size());
+	      
+	      assertEquals(0, getReferenceIds().size());
+	      
+	      assertEquals(0, getMessageIds().size());
       }
-      
-      SimpleMessageStore ms = (SimpleMessageStore)ServerManagement.getMessageStore();
-      
-      assertEquals(100, ms.messageIds().size());
-      
-      assertEquals(100, getReferenceIds().size());
-      
-      assertEquals(50, getMessageIds().size());
-      
-      //Now we close the connection
-      
-      conn.close();
-      
-      assertEquals(0, ms.messageIds().size());
-      
-      assertEquals(0, getReferenceIds().size());
-      
-      assertEquals(0, getMessageIds().size());
-      
+      finally
+      {
+      	if (conn != null)
+      	{
+      		conn.close();
+      	}
+      }     
    }
 
    // Public --------------------------------------------------------
@@ -317,86 +314,10 @@ public class MessageCleanupTest extends MessagingTestCase
    
    // Protected -----------------------------------------------------
    
-   // Private -------------------------------------------------------
-   
-   protected List getReferenceIds() throws Exception
-   {
-      InitialContext ctx = new InitialContext();
+   // Private -------------------------------------------------------   
 
-      TransactionManager mgr = (TransactionManager)ctx.lookup(TransactionManagerService.JNDI_NAME);
-      DataSource ds = (DataSource)ctx.lookup("java:/DefaultDS");
-      
-      javax.transaction.Transaction txOld = mgr.suspend();
-      mgr.begin();
-
-      java.sql.Connection conn = ds.getConnection();
-      String sql = "SELECT MESSAGE_ID, ORD FROM JBM_MSG_REF";
-      PreparedStatement ps = conn.prepareStatement(sql);
-   
-      ResultSet rs = ps.executeQuery();
-      
-      List msgIds = new ArrayList();
-      
-      while (rs.next())
-      {
-         long msgId = rs.getLong(1);
-         msgIds.add(new Long(msgId));
-      }
-      rs.close();
-      ps.close();
-      conn.close();
-
-      mgr.commit();
-
-      if (txOld != null)
-      {
-         mgr.resume(txOld);
-      }
-      
-      return msgIds;
-   }
-   
-   
-   protected List getMessageIds() throws Exception
-   {
-      InitialContext ctx = new InitialContext();
-
-      TransactionManager mgr = (TransactionManager)ctx.lookup(TransactionManagerService.JNDI_NAME);
-      DataSource ds = (DataSource)ctx.lookup("java:/DefaultDS");
-      
-      javax.transaction.Transaction txOld = mgr.suspend();
-      mgr.begin();
-
-      java.sql.Connection conn = ds.getConnection();
-      String sql = "SELECT MESSAGE_ID FROM JBM_MSG ORDER BY MESSAGE_ID";
-      PreparedStatement ps = conn.prepareStatement(sql);
-      
-      ResultSet rs = ps.executeQuery();
-      
-      List msgIds = new ArrayList();
-      
-      while (rs.next())
-      {
-         long msgId = rs.getLong(1);
-         msgIds.add(new Long(msgId));
-      }
-      rs.close();
-      ps.close();
-      conn.close();
-
-      mgr.commit();
-
-      if (txOld != null)
-      {
-         mgr.resume(txOld);
-      }
-      
-      return msgIds;
-   }
-   
-   // Inner classes -------------------------------------------------
-   
-   
+   // Inner classes -------------------------------------------------   
+ 
 }
 
 

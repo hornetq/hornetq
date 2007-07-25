@@ -48,7 +48,8 @@ public class SimpleDelivery implements Delivery
 
    private boolean selectorAccepted;
    private DeliveryObserver observer;
-   private MessageReference reference;
+   private MessageReference reference;   
+   private boolean recovered;
 
    private boolean trace = log.isTraceEnabled();
 
@@ -61,16 +62,17 @@ public class SimpleDelivery implements Delivery
 
    public SimpleDelivery(DeliveryObserver observer, MessageReference reference)
    {
-      this(observer, reference, true);
+      this(observer, reference, true, false);
    }
-
+   
    public SimpleDelivery(DeliveryObserver observer, MessageReference reference,
-                         boolean selectorAccepted)
+                         boolean selectorAccepted, boolean recovered)
    {
 
       this.reference = reference;
       this.observer = observer;
       this.selectorAccepted = selectorAccepted;
+      this.recovered = recovered;
    }
 
    // Delivery implementation ----------------------------------------------------------------------
@@ -102,6 +104,11 @@ public class SimpleDelivery implements Delivery
       if (trace) { log.trace(this + " cancelling delivery"); }
          
       observer.cancel(this);
+   }
+   
+   public boolean isRecovered()
+   {
+   	return recovered;
    }
    
    // Public ---------------------------------------------------------------------------------------

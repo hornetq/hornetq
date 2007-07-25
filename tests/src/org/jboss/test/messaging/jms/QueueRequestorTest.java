@@ -25,19 +25,13 @@ import javax.jms.Destination;
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageListener;
-import javax.jms.Queue;
 import javax.jms.QueueConnection;
-import javax.jms.QueueConnectionFactory;
 import javax.jms.QueueReceiver;
 import javax.jms.QueueRequestor;
 import javax.jms.QueueSender;
 import javax.jms.QueueSession;
 import javax.jms.Session;
 import javax.jms.TextMessage;
-import javax.naming.InitialContext;
-
-import org.jboss.test.messaging.MessagingTestCase;
-import org.jboss.test.messaging.tools.ServerManagement;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -45,18 +39,13 @@ import org.jboss.test.messaging.tools.ServerManagement;
  *
  * $Id$
  */
-public class QueueRequestorTest extends MessagingTestCase
+public class QueueRequestorTest extends JMSTestCase
 {
    // Constants -----------------------------------------------------
 
    // Static --------------------------------------------------------
    
    // Attributes ----------------------------------------------------
-
-   protected InitialContext initialContext;
-   
-   protected QueueConnectionFactory cf;
-   protected Queue queue;
 
    // Constructors --------------------------------------------------
 
@@ -67,58 +56,54 @@ public class QueueRequestorTest extends MessagingTestCase
 
    // TestCase overrides -------------------------------------------
 
-   public void setUp() throws Exception
-   {
-      super.setUp();
-      ServerManagement.start("all");
-            
-      initialContext = new InitialContext(ServerManagement.getJNDIEnvironment());
-      cf = (QueueConnectionFactory)initialContext.lookup("/ConnectionFactory");
-      ServerManagement.undeployQueue("Queue");
-      ServerManagement.deployQueue("Queue");
-      queue = (Queue)initialContext.lookup("/queue/Queue");          
-   }
-
-   public void tearDown() throws Exception
-   {
-      ServerManagement.undeployQueue("Queue");
-      super.tearDown();
-   }
-
-
    // Public --------------------------------------------------------
 
    public void testQueueRequestor() throws Exception
    {
       // Set up the requestor
-      QueueConnection conn1 = cf.createQueueConnection();
-      QueueSession sess1 = conn1.createQueueSession(false, Session.AUTO_ACKNOWLEDGE);
-      QueueRequestor requestor = new QueueRequestor(sess1, queue);
-      conn1.start();
+      QueueConnection conn1 = null;      
+      QueueConnection conn2 = null;
       
-
-      // And the responder
-      QueueConnection conn2 = cf.createQueueConnection();
-      QueueSession sess2 = conn2.createQueueSession(false, Session.AUTO_ACKNOWLEDGE);
-      TestMessageListener listener = new TestMessageListener(sess2);
-      QueueReceiver receiver = sess2.createReceiver(queue);
-      receiver.setMessageListener(listener);
-      conn2.start();
-      
-      Message m1 = sess1.createMessage();
-      log.trace("Sending request message");
-      TextMessage m2 = (TextMessage)requestor.request(m1);
-      
-      
-      assertNotNull(m2);
-      
-      assertEquals("This is the response", m2.getText());
-      
-      conn1.close();
-      conn2.close();
-      
-   }
+      try
+      {
+	      
+	      conn1 = cf.createQueueConnection();
+	      QueueSession sess1 = conn1.createQueueSession(false, Session.AUTO_ACKNOWLEDGE);
+	      QueueRequestor requestor = new QueueRequestor(sess1, queue1);
+	      conn1.start();
+	      
+	      // And the responder
+	      conn2 = cf.createQueueConnection();
+	      QueueSession sess2 = conn2.createQueueSession(false, Session.AUTO_ACKNOWLEDGE);
+	      TestMessageListener listener = new TestMessageListener(sess2);
+	      QueueReceiver receiver = sess2.createReceiver(queue1);
+	      receiver.setMessageListener(listener);
+	      conn2.start();
+	      
+	      Message m1 = sess1.createMessage();
+	      log.trace("Sending request message");
+	      TextMessage m2 = (TextMessage)requestor.request(m1);
+	      
+	      
+	      assertNotNull(m2);
+	      
+	      assertEquals("This is the response", m2.getText());
+      }
+      finally
+      {      
+	      if (conn1 != null) conn1.close();
+	      if (conn2 != null) conn2.close();
+      }      
+   }   
    
+   // Package protected ---------------------------------------------
+   
+   // Protected -----------------------------------------------------
+   
+   // Private -------------------------------------------------------
+   
+   // Inner classes -------------------------------------------------
+
    class TestMessageListener implements MessageListener
    {
       private QueueSession sess;
@@ -147,14 +132,4 @@ public class QueueRequestorTest extends MessagingTestCase
          }
       }
    }
-   
-   // Package protected ---------------------------------------------
-   
-   // Protected -----------------------------------------------------
-   
-   // Private -------------------------------------------------------
-   
-   // Inner classes -------------------------------------------------
-
-   
 }

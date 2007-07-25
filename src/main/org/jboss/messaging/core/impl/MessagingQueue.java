@@ -531,7 +531,7 @@ public class MessagingQueue extends PagingChannelSupport implements Queue
    
    public String toString()
    {
-      return "Queue[" + nodeID + "/" + channelID + "-" + name +  "]";
+      return "Queue[" + System.identityHashCode(this) + "/" + nodeID + "/" + channelID + "-" + name +  "]";
    }
    
    public boolean equals(Object other)

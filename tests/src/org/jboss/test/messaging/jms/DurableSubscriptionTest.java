@@ -24,7 +24,6 @@ package org.jboss.test.messaging.jms;
 import java.util.List;
 
 import javax.jms.Connection;
-import javax.jms.ConnectionFactory;
 import javax.jms.DeliveryMode;
 import javax.jms.IllegalStateException;
 import javax.jms.InvalidDestinationException;
@@ -38,11 +37,9 @@ import javax.jms.TextMessage;
 import javax.jms.Topic;
 import javax.jms.TopicSubscriber;
 import javax.management.ObjectName;
-import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import org.jboss.jms.server.destination.SubscriptionInfo;
-import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
 
 
@@ -55,15 +52,13 @@ import org.jboss.test.messaging.tools.ServerManagement;
  *
  * $Id: DurableSubscriberTest.java 1319 2006-09-19 17:17:53Z ovidiu.feodorov@jboss.com $
  */
-public class DurableSubscriptionTest extends MessagingTestCase
+public class DurableSubscriptionTest extends JMSTestCase
 {
    // Constants -----------------------------------------------------
 
    // Static --------------------------------------------------------
 
    // Attributes ----------------------------------------------------
-
-   protected InitialContext ic;
 
    // Constructors --------------------------------------------------
 
@@ -74,85 +69,72 @@ public class DurableSubscriptionTest extends MessagingTestCase
 
    // Public --------------------------------------------------------
 
-   public void setUp() throws Exception
-   {
-      super.setUp();
-
-      ServerManagement.start("all");
-            
-      ServerManagement.undeployTopic("Topic");
-      ServerManagement.deployTopic("Topic");
-
-      ic = new InitialContext(ServerManagement.getJNDIEnvironment());
-
-      log.debug("setup done");
-   }
-
-   public void tearDown() throws Exception
-   {
-      log.debug("starting tear down");
-
-      ic.close();
-
-      ServerManagement.undeployTopic("Topic");
-        
-      super.tearDown();
-   }
-
    public void testSimplestDurableSubscription() throws Exception
    {
-      ConnectionFactory cf = (ConnectionFactory)ic.lookup("ConnectionFactory");
-      Topic topic = (Topic)ic.lookup("/topic/Topic");
-      Connection conn = cf.createConnection();
-
-      conn.setClientID("brookeburke");
-
-      Session s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      MessageProducer prod = s.createProducer(topic);
-      prod.setDeliveryMode(DeliveryMode.PERSISTENT);
-
-      s.createDurableSubscriber(topic, "monicabelucci");
-
-      ObjectName destObjectName =
-         new ObjectName("jboss.messaging.destination:service=Topic,name=Topic");
-      List subs = (List)ServerManagement.invoke(destObjectName, "listAllSubscriptions", null, null);
+      Connection conn = null;
       
-      assertNotNull(subs);
-      
-      assertEquals(1, subs.size());
-      
-      SubscriptionInfo info = (SubscriptionInfo)subs.get(0);
-
-      assertEquals("monicabelucci", info.getName());
-
-      prod.send(s.createTextMessage("k"));
-
-      conn.close();
-
-      subs = (List)ServerManagement.invoke(destObjectName, "listAllSubscriptions", null, null);
-
-      assertEquals(1, subs.size());
-      
-      info = (SubscriptionInfo)subs.get(0);
-
-      assertEquals("monicabelucci", info.getName());
-
-      conn = cf.createConnection();
-      conn.setClientID("brookeburke");
-
-      s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-
-      MessageConsumer durable = s.createDurableSubscriber(topic, "monicabelucci");
-
-      conn.start();
-
-      TextMessage tm = (TextMessage)durable.receive(1000);
-      assertEquals("k", tm.getText());
-
-      Message m = durable.receive(1000);
-      assertNull(m);
-      
-      conn.close();
+      try
+      {      
+	      conn = cf.createConnection();
+	
+	      conn.setClientID("brookeburke");
+	
+	      Session s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+	      MessageProducer prod = s.createProducer(topic1);
+	      prod.setDeliveryMode(DeliveryMode.PERSISTENT);
+	
+	      s.createDurableSubscriber(topic1, "monicabelucci");
+	
+	      ObjectName destObjectName =
+	         new ObjectName("jboss.messaging.destination:service=Topic,name=Topic1");
+	      List subs = (List)ServerManagement.invoke(destObjectName, "listAllSubscriptions", null, null);
+	      
+	      assertNotNull(subs);
+	      
+	      assertEquals(1, subs.size());
+	      
+	      SubscriptionInfo info = (SubscriptionInfo)subs.get(0);
+	
+	      assertEquals("monicabelucci", info.getName());
+	
+	      prod.send(s.createTextMessage("k"));
+	
+	      conn.close();
+	
+	      subs = (List)ServerManagement.invoke(destObjectName, "listAllSubscriptions", null, null);
+	
+	      assertEquals(1, subs.size());
+	      
+	      info = (SubscriptionInfo)subs.get(0);
+	
+	      assertEquals("monicabelucci", info.getName());
+	
+	      conn = cf.createConnection();
+	      conn.setClientID("brookeburke");
+	
+	      s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+	
+	      MessageConsumer durable = s.createDurableSubscriber(topic1, "monicabelucci");
+	
+	      conn.start();
+	
+	      TextMessage tm = (TextMessage)durable.receive(1000);
+	      assertEquals("k", tm.getText());
+	
+	      Message m = durable.receive(1000);
+	      assertNull(m);
+	      
+	      durable.close();
+	      
+	      s.unsubscribe("monicabelucci");
+      }
+      finally
+      {
+      	if (conn != null)
+      	{
+      		conn.close();
+      	}
+      }
    }
       
 
@@ -164,44 +146,48 @@ public class DurableSubscriptionTest extends MessagingTestCase
     * Test with a different topic (a redeployed topic is a different topic).
     */
    public void testDurableSubscriptionOnNewTopic() throws Exception
-   {
-      ServerManagement.deployTopic("CompletelyNewTopic");
-
-      ConnectionFactory cf = (ConnectionFactory)ic.lookup("ConnectionFactory");
-      Topic topic = (Topic)ic.lookup("/topic/CompletelyNewTopic");
-      Connection conn = cf.createConnection();
-
-      conn.setClientID("brookeburke");
-
-      Session s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      MessageProducer prod = s.createProducer(topic);
-      prod.setDeliveryMode(DeliveryMode.PERSISTENT);
-
-      s.createDurableSubscriber(topic, "monicabelucci");
-
-      prod.send(s.createTextMessage("one"));
-
-      conn.close();
-
-      ServerManagement.deployTopic("CompletelyNewTopic2");
-
-      Topic topic2 = (Topic)ic.lookup("/topic/CompletelyNewTopic2");
-      conn = cf.createConnection();
-
-      conn.setClientID("brookeburke");
-
-      s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      MessageConsumer durable = s.createDurableSubscriber(topic2, "monicabelucci");
-
-      conn.start();
-
-      Message m = durable.receive(1000);
-      assertNull(m);
-
-      ServerManagement.undeployTopic("CompletelyNewTopic");
-      ServerManagement.undeployTopic("CompletelyNewTopic2");
+   {      
+      Connection conn = null;
       
-      conn.close();
+      try
+      {	      
+	      conn = cf.createConnection();
+	
+	      conn.setClientID("brookeburke");
+	
+	      Session s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+	      MessageProducer prod = s.createProducer(topic1);
+	      prod.setDeliveryMode(DeliveryMode.PERSISTENT);
+	
+	      s.createDurableSubscriber(topic1, "monicabelucci");
+	
+	      prod.send(s.createTextMessage("one"));
+	
+	      conn.close();
+	
+	      conn = cf.createConnection();
+	
+	      conn.setClientID("brookeburke");
+	
+	      s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+	      MessageConsumer durable = s.createDurableSubscriber(topic2, "monicabelucci");
+	
+	      conn.start();
+	
+	      Message m = durable.receive(1000);
+	      assertNull(m);
+	      
+	      durable.close();
+	      
+	      s.unsubscribe("monicabelucci");
+      }
+      finally
+      {
+      	if (conn != null)
+      	{
+      		conn.close();
+      	}
+      }
    }
 
    /**
@@ -213,95 +199,109 @@ public class DurableSubscriptionTest extends MessagingTestCase
     */
    public void testDurableSubscriptionDifferentSelector() throws Exception
    {
-      ServerManagement.deployTopic("CompletelyNewTopic2");
+      Connection conn = null;
       
-      ConnectionFactory cf = (ConnectionFactory)ic.lookup("ConnectionFactory");
-      Topic topic = (Topic)ic.lookup("/topic/Topic");
-      Connection conn = cf.createConnection();
-
-      conn.setClientID("brookeburke");
-
-      Session s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      MessageProducer prod = s.createProducer(topic);
-      prod.setDeliveryMode(DeliveryMode.PERSISTENT);
-
-      
-      //fails here
-      MessageConsumer durable =
-         s.createDurableSubscriber(topic,
-                                   "monicabelucci",
-                                   "color = 'red' AND shape = 'square'",
-                                   false);
-
-      TextMessage tm = s.createTextMessage("A red square message");
-      tm.setStringProperty("color", "red");
-      tm.setStringProperty("shape", "square");
-      
-      log.info("**Sending the message");
-      
-      prod.send(tm);
-
-      conn.start();
-
-      TextMessage rm = (TextMessage)durable.receive(5000);
-      assertEquals("A red square message", rm.getText());
-
-      tm = s.createTextMessage("Another red square message");
-      tm.setStringProperty("color", "red");
-      tm.setStringProperty("shape", "square");
-      prod.send(tm);
-
-      // TODO: when subscriptions/durable subscription will be registered as MBean, use the JMX
-      //       interface to make sure the 'another red square message' is maintained by the
-      //       durable subascription
-      //       http://jira.jboss.org/jira/browse/JBMESSAGING-217
-
-      conn.close();
-
-      conn = cf.createConnection();
-
-      conn.setClientID("brookeburke");
-
-      s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-
-      // modify the selector
-      durable = s.createDurableSubscriber(topic,
-                                          "monicabelucci",
-                                          "color = 'red'",
-                                          false);
-
-      conn.start();
-
-      Message m = durable.receive(1000);
-
-      // the durable subscription is destroyed and re-created. The red square message stored by
-      // the previous durable subscription is lost and (hopefully) garbage collected.
-      assertNull(m);
-      
-      ServerManagement.undeployTopic("CompletelyNewTopic2");
-      
-      conn.close();
+      try
+      {      
+	      conn = cf.createConnection();
+	
+	      conn.setClientID("brookeburke");
+	
+	      Session s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+	      MessageProducer prod = s.createProducer(topic1);
+	      prod.setDeliveryMode(DeliveryMode.PERSISTENT);
+	      
+	      MessageConsumer durable =
+	         s.createDurableSubscriber(topic1,
+	                                   "monicabelucci",
+	                                   "color = 'red' AND shape = 'square'",
+	                                   false);
+	
+	      TextMessage tm = s.createTextMessage("A red square message");
+	      tm.setStringProperty("color", "red");
+	      tm.setStringProperty("shape", "square");
+	      
+	      prod.send(tm);
+	
+	      conn.start();
+	
+	      TextMessage rm = (TextMessage)durable.receive(5000);
+	      assertEquals("A red square message", rm.getText());
+	
+	      tm = s.createTextMessage("Another red square message");
+	      tm.setStringProperty("color", "red");
+	      tm.setStringProperty("shape", "square");
+	      prod.send(tm);
+	
+	      // TODO: when subscriptions/durable subscription will be registered as MBean, use the JMX
+	      //       interface to make sure the 'another red square message' is maintained by the
+	      //       durable subascription
+	      //       http://jira.jboss.org/jira/browse/JBMESSAGING-217
+	
+	      conn.close();
+	
+	      conn = cf.createConnection();
+	
+	      conn.setClientID("brookeburke");
+	
+	      s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+	
+	      // modify the selector
+	      durable = s.createDurableSubscriber(topic1,
+	                                          "monicabelucci",
+	                                          "color = 'red'",
+	                                          false);
+	
+	      conn.start();
+	
+	      Message m = durable.receive(1000);
+	
+	      // the durable subscription is destroyed and re-created. The red square message stored by
+	      // the previous durable subscription is lost and (hopefully) garbage collected.
+	      assertNull(m);
+	      
+	      durable.close();
+	      
+	      s.unsubscribe("monicabelucci");
+      }
+      finally
+      {
+      	if (conn != null)
+      	{
+      		conn.close();
+      	}
+      }
    }
 
    public void testDurableSubscriptionOnTemporaryTopic() throws Exception
-   {
-      ConnectionFactory cf = (ConnectionFactory)ic.lookup("ConnectionFactory");
-      Connection conn = cf.createConnection();
-      conn.setClientID("doesn't actually matter");
-      Session s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      Topic temporaryTopic = s.createTemporaryTopic();
-
+   {      
+      Connection conn = null;
+      
+      conn = cf.createConnection();
+      
       try
       {
-         s.createDurableSubscriber(temporaryTopic, "mySubscription");
-         fail("this should throw exception");
+	      conn.setClientID("doesn't actually matter");
+	      Session s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+	      Topic temporaryTopic = s.createTemporaryTopic();
+	
+	      try
+	      {
+	         s.createDurableSubscriber(temporaryTopic, "mySubscription");
+	         fail("this should throw exception");
+	      }
+	      catch(InvalidDestinationException e)
+	      {
+	         // OK
+	      }
       }
-      catch(InvalidDestinationException e)
+      finally
       {
-         // OK
+      	if (conn != null)
+      	{
+      		conn.close();
+      	}
       }
-      
-      conn.close();
    }
 
    /**
@@ -324,214 +324,263 @@ public class DurableSubscriptionTest extends MessagingTestCase
 
       ServerManagement.deployTopic("TopicToBeRedeployed");
 
-      ConnectionFactory cf = (ConnectionFactory)ic.lookup("ConnectionFactory");
       Topic topic = (Topic)ic.lookup("/topic/TopicToBeRedeployed");
 
-      Connection conn = cf.createConnection();
-      conn.setClientID("brookeburke");
-
-      Session s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      MessageProducer prod = s.createProducer(topic);
-      prod.setDeliveryMode(DeliveryMode.PERSISTENT);
-      MessageConsumer ds = s.createDurableSubscriber(topic, "monicabelucci");
-      conn.start();
-
-      prod.send(s.createTextMessage("one"));
-      prod.send(s.createTextMessage("two"));
+      Connection conn = null;
       
-      TextMessage tm = (TextMessage)ds.receive();
-      assertEquals("one", tm.getText());
-      conn.close();
-
-      ServerManagement.undeployTopic("TopicToBeRedeployed");
-      log.debug("topic undeployed");
-
       try
       {
-         topic = (Topic)ic.lookup("/topic/TopicToBeRedeployed");
-         fail("should throw exception");
+	      
+	      conn = cf.createConnection();
+	      conn.setClientID("brookeburke");
+	
+	      Session s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+	      MessageProducer prod = s.createProducer(topic);
+	      prod.setDeliveryMode(DeliveryMode.PERSISTENT);
+	      MessageConsumer ds = s.createDurableSubscriber(topic, "monicabelucci");
+	      conn.start();
+	
+	      prod.send(s.createTextMessage("one"));
+	      prod.send(s.createTextMessage("two"));
+	      
+	      TextMessage tm = (TextMessage)ds.receive();
+	      assertEquals("one", tm.getText());
+	      conn.close();
+	
+	      ServerManagement.undeployTopic("TopicToBeRedeployed");
+	      log.debug("topic undeployed");
+	
+	      try
+	      {
+	         topic = (Topic)ic.lookup("/topic/TopicToBeRedeployed");
+	         fail("should throw exception");
+	      }
+	      catch(NamingException e)
+	      {
+	         // OK
+	      }
+	
+	      conn = cf.createConnection();
+	      conn.setClientID("brookeburke");
+	
+	      s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+	
+	      try
+	      {
+	         s.createDurableSubscriber(topic, "monicabelucci");
+	         fail("should throw exception");
+	      }
+	      catch(JMSException e)
+	      {
+	         // OK
+	      }
+	
+	      ServerManagement.deployTopic("TopicToBeRedeployed");
+	      log.debug("topic redeployed");
+	
+	      // since redeployment has an activation semantic, I expect to find the messages there
+	
+	      topic = (Topic)ic.lookup("/topic/TopicToBeRedeployed");
+	      ds =  s.createDurableSubscriber(topic, "monicabelucci");
+	      conn.start();
+	
+	      tm = (TextMessage)ds.receive(1000);
+	      assertEquals("two", tm.getText());
+	      
+	      ds.close();
+	      
+	      s.unsubscribe("monicabelucci");
       }
-      catch(NamingException e)
+      finally
       {
-         // OK
+      	if (conn != null)
+      	{
+      		conn.close();
+      	}
+      	ServerManagement.undeployTopic("TopicToBeRedeployed");
       }
-
-      conn = cf.createConnection();
-      conn.setClientID("brookeburke");
-
-      s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-
-      try
-      {
-         s.createDurableSubscriber(topic, "monicabelucci");
-         fail("should throw exception");
-      }
-      catch(JMSException e)
-      {
-         // OK
-      }
-
-      ServerManagement.deployTopic("TopicToBeRedeployed");
-      log.debug("topic redeployed");
-
-      // since redeployment has an activation semantic, I expect to find the messages there
-
-      topic = (Topic)ic.lookup("/topic/TopicToBeRedeployed");
-      ds =  s.createDurableSubscriber(topic, "monicabelucci");
-      conn.start();
-
-      tm = (TextMessage)ds.receive(1000);
-      assertEquals("two", tm.getText());
-
-      conn.close();
-      ServerManagement.undeployTopic("TopicToBeRedeployed");
    }
 
    public void testUnsubscribeDurableSubscription() throws Exception
    {
-      ConnectionFactory cf = (ConnectionFactory)ic.lookup("ConnectionFactory");
-      Topic topic = (Topic)ic.lookup("/topic/Topic");
-
-      Connection conn = cf.createConnection();
-      conn.setClientID("ak47");
-
-      Session s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      MessageConsumer cons = s.createDurableSubscriber(topic, "uzzi");
-      MessageProducer prod = s.createProducer(topic);
-      prod.setDeliveryMode(DeliveryMode.PERSISTENT);
-
-      prod.send(s.createTextMessage("one"));
-
-      log.debug("unsubscribing ...");
-
-      cons.close();
-      s.unsubscribe("uzzi");
-
-      log.debug("resubscribing ...");
-
-      MessageConsumer ds = s.createDurableSubscriber(topic, "uzzi");
-      conn.start();
-
-      assertNull(ds.receive(1000));
+      Connection conn = null;
       
-      ds.close();
-      
-      s.unsubscribe("uzzi");
+      try
+      {	      
+	      conn = cf.createConnection();
+	      conn.setClientID("ak47");
+	
+	      Session s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+	      MessageConsumer cons = s.createDurableSubscriber(topic1, "uzzi");
+	      MessageProducer prod = s.createProducer(topic1);
+	      prod.setDeliveryMode(DeliveryMode.PERSISTENT);
+	
+	      prod.send(s.createTextMessage("one"));
+	
+	      cons.close();
+	      s.unsubscribe("uzzi");	
 
-      conn.close();
+	      MessageConsumer ds = s.createDurableSubscriber(topic1, "uzzi");
+	      conn.start();
+	
+	      assertNull(ds.receive(1000));
+	      
+	      ds.close();
+	      
+	      s.unsubscribe("uzzi");
+      }
+      finally
+      {
+      	if (conn != null)
+      	{
+      		conn.close();
+      	}
+      }
    }
 
    public void testInvalidSelectorException() throws Exception
    {
-      ConnectionFactory cf = (ConnectionFactory)ic.lookup("ConnectionFactory");
-      Topic topic = (Topic)ic.lookup("/topic/Topic");
-      Connection c = cf.createConnection();
-      c.setClientID("sofiavergara");
-      Session s = c.createSession(false, Session.AUTO_ACKNOWLEDGE);
-
+      Connection c = null;
+      
       try
       {
-         s.createDurableSubscriber(topic, "mysubscribption", "=TEST 'test'", true);
-         fail("this should fail");
+	      
+	      c = cf.createConnection();
+	      c.setClientID("sofiavergara");
+	      Session s = c.createSession(false, Session.AUTO_ACKNOWLEDGE);
+	
+	      try
+	      {
+	         s.createDurableSubscriber(topic1, "mysubscribption", "=TEST 'test'", true);
+	         fail("this should fail");
+	      }
+	      catch(InvalidSelectorException e)
+	      {
+	         // OK
+	      }
       }
-      catch(InvalidSelectorException e)
+      finally
       {
-         // OK
+      	if (c != null)
+      	{
+      		c.close();
+      	}
       }
-      
-      c.close();
    }
 
 
    //See JMS 1.1. spec sec 6.11
    public void testUnsubscribeWithActiveConsumer() throws Exception
    {
-      ConnectionFactory cf = (ConnectionFactory)ic.lookup("ConnectionFactory");
-      Topic topic = (Topic)ic.lookup("/topic/Topic");
-
-      Connection conn = cf.createConnection();
-      conn.setClientID("zeke");
-
-      Session s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-
-      TopicSubscriber dursub = s.createDurableSubscriber(topic, "dursub0");
-
+      Connection conn = null;
+      
       try
       {
-         s.unsubscribe("dursub0");
-         fail();
+	      
+	      conn = cf.createConnection();
+	      conn.setClientID("zeke");
+	
+	      Session s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+	
+	      TopicSubscriber dursub = s.createDurableSubscriber(topic1, "dursub0");
+	
+	      try
+	      {
+	         s.unsubscribe("dursub0");
+	         fail();
+	      }
+	      catch (IllegalStateException e)
+	      {
+	         //Ok - it is illegal to ubscribe a subscription if it has active consumers
+	      }
+	         
+	      dursub.close();
+	      
+	      s.unsubscribe("dursub0");
       }
-      catch (IllegalStateException e)
+      finally
       {
-         //Ok - it is illegal to ubscribe a subscription if it has active consumers
+      	if (conn != null)
+      	{
+      		conn.close();
+      	}
       }
-         
-      dursub.close();
-      
-      s.unsubscribe("dursub0");
-
-      conn.close();
    }
    
    public void testSubscribeWithActiveSubscription() throws Exception
    {
-   	ConnectionFactory cf = (ConnectionFactory)ic.lookup("ConnectionFactory");
-      Topic topic = (Topic)ic.lookup("/topic/Topic");
-
-      Connection conn = cf.createConnection();
-      conn.setClientID("zeke");
-
-      Session s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-
-      TopicSubscriber dursub1 = s.createDurableSubscriber(topic, "dursub1");
-
-      try
-      {      
-      	s.createDurableSubscriber(topic, "dursub1");
-         fail();
-      }
-      catch (IllegalStateException e)
-      {
-         //Ok - it is illegal to have more than one active subscriber on a subscrtiption at any one time
-      }
-         
-      dursub1.close();
+      Connection conn = null;
       
-      s.unsubscribe("dursub1");
-
-      conn.close();
+      try
+      {
+	      
+	      conn = cf.createConnection();
+	      conn.setClientID("zeke");
+	
+	      Session s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+	
+	      TopicSubscriber dursub1 = s.createDurableSubscriber(topic1, "dursub1");
+	
+	      try
+	      {      
+	      	s.createDurableSubscriber(topic1, "dursub1");
+	         fail();
+	      }
+	      catch (IllegalStateException e)
+	      {
+	         //Ok - it is illegal to have more than one active subscriber on a subscrtiption at any one time
+	      }
+	         
+	      dursub1.close();
+	      
+	      s.unsubscribe("dursub1");
+      }
+      finally
+      {
+      	if (conn != null)
+      	{
+      		conn.close();
+      	}
+      }
    }
 
    public void testDurableSubscriptionWithPeriodsInName() throws Exception
    {
-      ConnectionFactory cf = (ConnectionFactory)ic.lookup("ConnectionFactory");
-      Topic topic = (Topic)ic.lookup("/topic/Topic");
-
-      Connection conn = cf.createConnection();
-      conn.setClientID(".client.id.with.periods.");
-
-      Session s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-
-      TopicSubscriber subscriber = s.createDurableSubscriber(topic, ".subscription.name.with.periods.");
+      Connection conn = null;
       
-      ServerManagement.undeployTopic("Topic");
-      ServerManagement.deployTopic("Topic");
-      
-      topic = (Topic)ic.lookup("/topic/Topic");
-      s.createProducer(topic).send(s.createTextMessage("Subscription test"));
-      
-      conn.start();
-
-      Message m = subscriber.receive(1000L);
-      
-      assertNotNull(m);
-      assertTrue(m instanceof TextMessage);
-
-      subscriber.close();
-      
-      s.unsubscribe(".subscription.name.with.periods.");
-
-      conn.close();
+      try
+      {	      
+	      conn = cf.createConnection();
+	      conn.setClientID(".client.id.with.periods.");
+	
+	      Session s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+	
+	      TopicSubscriber subscriber = s.createDurableSubscriber(topic1, ".subscription.name.with.periods.");
+	      
+	      ServerManagement.undeployTopic("Topic1");
+	      ServerManagement.deployTopic("Topic1");
+	      
+	      topic1 = (Topic)ic.lookup("/topic/Topic1");
+	      s.createProducer(topic1).send(s.createTextMessage("Subscription test"));
+	      
+	      conn.start();
+	
+	      Message m = subscriber.receive(1000L);
+	      
+	      assertNotNull(m);
+	      assertTrue(m instanceof TextMessage);
+	
+	      subscriber.close();
+	      
+	      s.unsubscribe(".subscription.name.with.periods.");
+      }
+      finally
+      {
+      	if (conn != null)
+      	{
+      		conn.close();
+      	}
+      }
    }
 
    // Package protected ---------------------------------------------

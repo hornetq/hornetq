@@ -210,7 +210,7 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
 
       if (ref.getMessage().isExpired())
       {
-         SimpleDelivery delivery = new SimpleDelivery(observer, ref, true);
+         SimpleDelivery delivery = new SimpleDelivery(observer, ref, true, false);
 
          try
          {
@@ -253,7 +253,7 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
          
          boolean selectorRejected = !this.accept(message);
          
-         SimpleDelivery delivery = new SimpleDelivery(observer, ref, !selectorRejected);
+         SimpleDelivery delivery = new SimpleDelivery(observer, ref, !selectorRejected, false);
 
          if (selectorRejected)
          {

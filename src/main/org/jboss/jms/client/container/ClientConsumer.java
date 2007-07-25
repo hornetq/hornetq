@@ -639,7 +639,7 @@ public class ClientConsumer
 
          lastDeliveryId = proxy.getDeliveryId();
          
-         if (trace) { log.trace(this + " added message(s) to the buffer"); }
+         if (trace) { log.trace(this + " added message(s) to the buffer are now " + buffer.size() + " messages"); }
 
          messageAdded();
 

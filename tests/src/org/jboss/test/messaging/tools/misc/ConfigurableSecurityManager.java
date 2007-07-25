@@ -89,7 +89,7 @@ public class ConfigurableSecurityManager extends SecurityManager
 
    // Public ---------------------------------------------------------------------------------------
 
-   public void dissalow(Class permissionClass, String action)
+   public void disallow(Class permissionClass, String action)
    {
       if (!Permission.class.isAssignableFrom(permissionClass))
       {

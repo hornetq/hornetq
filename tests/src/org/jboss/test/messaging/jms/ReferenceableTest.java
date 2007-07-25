@@ -28,15 +28,8 @@ import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
-import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.TextMessage;
-import javax.jms.Topic;
-import javax.naming.InitialContext;
-
-import org.jboss.jms.client.JBossConnectionFactory;
-import org.jboss.test.messaging.MessagingTestCase;
-import org.jboss.test.messaging.tools.ServerManagement;
 
 /**
  * 
@@ -49,7 +42,7 @@ import org.jboss.test.messaging.tools.ServerManagement;
  *
  * $Id$
  */
-public class ReferenceableTest extends MessagingTestCase
+public class ReferenceableTest extends JMSTestCase
 {
    // Constants -----------------------------------------------------
 
@@ -57,14 +50,6 @@ public class ReferenceableTest extends MessagingTestCase
    
    // Attributes ----------------------------------------------------
    
-   protected Queue queue;
-   
-   protected Topic topic;
-   
-   protected InitialContext ic;
-   
-   protected JBossConnectionFactory cf;
-
    // Constructors --------------------------------------------------
 
    public ReferenceableTest(String name)
@@ -72,41 +57,15 @@ public class ReferenceableTest extends MessagingTestCase
       super(name);
    }
 
-   // TestCase overrides -------------------------------------------
-
-   public void setUp() throws Exception
-   {
-      super.setUp();
-      ServerManagement.start("all");     
-      
-      ic = new InitialContext(ServerManagement.getJNDIEnvironment());
-      
-      cf = (JBossConnectionFactory)ic.lookup("/ConnectionFactory");
-            
-      ServerManagement.undeployQueue("Queue");
-      ServerManagement.deployQueue("Queue");
-      ServerManagement.undeployTopic("Topic");
-      ServerManagement.deployTopic("Topic");
-      queue = (Queue)ic.lookup("/queue/Queue");
-      topic = (Topic)ic.lookup("/topic/Topic");      
-      
-   }
-
-   public void tearDown() throws Exception
-   {
-      super.tearDown();      
-   }
-
-
    // Public --------------------------------------------------------
    
    public void testSerializable() throws Exception
    {
       assertTrue(cf instanceof Serializable);
       
-      assertTrue(queue instanceof Serializable);
+      assertTrue(queue1 instanceof Serializable);
       
-      assertTrue(topic instanceof Serializable);            
+      assertTrue(topic1 instanceof Serializable);            
    }
 
    /* http://jira.jboss.org/jira/browse/JBMESSAGING-395
@@ -187,30 +146,38 @@ public class ReferenceableTest extends MessagingTestCase
    
    protected void simpleSendReceive(ConnectionFactory cf, Destination dest) throws Exception
    {
-      Connection conn = cf.createConnection();
+      Connection conn = null;
       
-      Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      
-      MessageProducer prod = sess.createProducer(dest);
-      
-      MessageConsumer cons = sess.createConsumer(dest);
-      
-      conn.start();
-      
-      TextMessage tm = sess.createTextMessage("ref test");
-      
-      prod.send(tm);
-      
-      tm = (TextMessage)cons.receive(1000);
-      
-      assertNotNull(tm);
-      
-      assertEquals("ref test", tm.getText());
-      
-      conn.close();
-         
+      try
+      {      
+	      conn = cf.createConnection();
+	      
+	      Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+	      
+	      MessageProducer prod = sess.createProducer(dest);
+	      
+	      MessageConsumer cons = sess.createConsumer(dest);
+	      
+	      conn.start();
+	      
+	      TextMessage tm = sess.createTextMessage("ref test");
+	      
+	      prod.send(tm);
+	      
+	      tm = (TextMessage)cons.receive(1000);
+	      
+	      assertNotNull(tm);
+	      
+	      assertEquals("ref test", tm.getText());
+      }
+      finally
+      {
+      	if (conn != null)
+      	{
+      		conn.close();
+      	}
+      }
    }
-   
 }
 
 

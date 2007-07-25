@@ -26,22 +26,18 @@ import javax.jms.DeliveryMode;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
-import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.TextMessage;
-import javax.jms.Topic;
 import javax.jms.XAConnection;
 import javax.jms.XAConnectionFactory;
 import javax.jms.XASession;
-import javax.naming.InitialContext;
 import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
 import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
 
-import org.jboss.jms.client.JBossConnectionFactory;
-import org.jboss.test.messaging.MessagingTestCase;
+import org.jboss.test.messaging.jms.JMSTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
 import org.jboss.test.messaging.tools.jmx.ServiceContainer;
 import org.jboss.tm.TransactionManagerLocator;
@@ -56,17 +52,13 @@ import org.jboss.tm.TransactionManagerLocator;
  * $Id$
  *
  */
-public class JMSXDeliveryCountTest extends MessagingTestCase
+public class JMSXDeliveryCountTest extends JMSTestCase
 {
    // Constants ------------------------------------------------------------------------------------
 
    // Static ---------------------------------------------------------------------------------------
    
    // Attributes -----------------------------------------------------------------------------------
-   
-   protected JBossConnectionFactory cf;
-   protected Queue queue;
-   protected Topic topic;
    
    protected ServiceContainer sc;
 
@@ -82,24 +74,7 @@ public class JMSXDeliveryCountTest extends MessagingTestCase
    public void setUp() throws Exception
    {
       super.setUp();
-      ServerManagement.start("all");
-      
-      
-      InitialContext initialContext = new InitialContext(ServerManagement.getJNDIEnvironment());
-      cf = (JBossConnectionFactory)initialContext.lookup("/ConnectionFactory");
-      
-      ServerManagement.undeployQueue("Queue");
-      ServerManagement.deployQueue("Queue");
-      
-      ServerManagement.undeployTopic("Topic");
-      ServerManagement.deployTopic("Topic");
-      
-      queue = (Queue)initialContext.lookup("/queue/Queue");
-      
-      this.drainDestination(cf, queue);
-      
-      topic = (Topic)initialContext.lookup("/topic/Topic");
-      
+            
       if (ServerManagement.isRemote())
       {
          // We need to start a service container otherwise transaction manager jndi lookup
@@ -122,129 +97,174 @@ public class JMSXDeliveryCountTest extends MessagingTestCase
 
    public void testSimpleJMSXDeliveryCount() throws Exception
    {
-      Connection conn = cf.createConnection();
-      Session s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      MessageProducer p = s.createProducer(queue);
-      p.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
-
-      p.send(s.createTextMessage("xoxo"));
-
-      s.close();
-
-      s = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
-      MessageConsumer c = s.createConsumer(queue);
-
-      conn.start();
-
-      TextMessage tm = (TextMessage)c.receive(1000);
-
-      assertEquals("xoxo", tm.getText());
-      assertEquals(1, tm.getIntProperty("JMSXDeliveryCount"));
-
-      s.recover();
-
-      tm = (TextMessage)c.receive(1000);
-
-      assertEquals("xoxo", tm.getText());
-      assertEquals(2, tm.getIntProperty("JMSXDeliveryCount"));
-
-      conn.close();
+      Connection conn = null;
+      
+      try
+      {	      
+	      conn = cf.createConnection();
+	      Session s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+	      MessageProducer p = s.createProducer(queue1);
+	      p.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+	
+	      p.send(s.createTextMessage("xoxo"));
+	
+	      s.close();
+	
+	      s = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
+	      MessageConsumer c = s.createConsumer(queue1);
+	
+	      conn.start();
+	
+	      TextMessage tm = (TextMessage)c.receive(1000);
+	
+	      assertEquals("xoxo", tm.getText());
+	      assertEquals(1, tm.getIntProperty("JMSXDeliveryCount"));
+	
+	      s.recover();
+	
+	      tm = (TextMessage)c.receive(1000);
+	
+	      assertEquals("xoxo", tm.getText());
+	      assertEquals(2, tm.getIntProperty("JMSXDeliveryCount"));
+	      
+	      tm.acknowledge();
+	
+	      conn.close();
+      }
+      finally
+      {
+      	if (conn != null)
+      	{
+      		conn.close();
+      	}
+      }
    }
 
    public void testRedeliveryOnQueue() throws Exception
    {
-      Connection conn = cf.createConnection();
+      Connection conn = null;
       
-      Session sess1 = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      
-      MessageProducer prod = sess1.createProducer(queue);
-      
-      prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
-      
-      final int NUM_MESSAGES = 1000;
-      
-      final int NUM_RECOVERIES = 8;
-      
-      for (int i = 0; i < NUM_MESSAGES; i++)
-      {
-         TextMessage tm = sess1.createTextMessage();
-         tm.setText("testing" + i);
-         prod.send(tm);
-      }
-
-      Session sess2 = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
-      
-      MessageConsumer cons = sess2.createConsumer(queue);
-      
-      conn.start();
-     
-      for (int j = 0; j < NUM_RECOVERIES; j++)
+      try
       {      
-         for (int i = 0; i < NUM_MESSAGES; i++)
-         {
-            TextMessage tm = (TextMessage)cons.receive(3000);
-            assertNotNull(tm);
-            assertEquals("testing" + i, tm.getText());
-            assertEquals(j + 1, tm.getIntProperty("JMSXDeliveryCount"));
-         }
-         sess2.recover();
+	      conn = cf.createConnection();
+	      
+	      Session sess1 = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+	      
+	      MessageProducer prod = sess1.createProducer(queue1);
+	      
+	      prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+	      
+	      final int NUM_MESSAGES = 100;
+	      
+	      final int NUM_RECOVERIES = 8;
+	      
+	      for (int i = 0; i < NUM_MESSAGES; i++)
+	      {
+	         TextMessage tm = sess1.createTextMessage();
+	         tm.setText("testing" + i);
+	         prod.send(tm);
+	      }
+	
+	      Session sess2 = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
+	      
+	      MessageConsumer cons = sess2.createConsumer(queue1);
+	      
+	      conn.start();
+	      
+	      TextMessage tm = null;
+	     
+	      for (int j = 0; j < NUM_RECOVERIES; j++)
+	      {      
+	         for (int i = 0; i < NUM_MESSAGES; i++)
+	         {
+	            tm = (TextMessage)cons.receive(3000);
+	            assertNotNull(tm);
+	            assertEquals("testing" + i, tm.getText());
+	            assertEquals(j + 1, tm.getIntProperty("JMSXDeliveryCount"));
+	         }
+	         if (j != NUM_RECOVERIES -1)
+	         {
+	         	sess2.recover();         	
+	         }
+	      }
+	      
+	      tm.acknowledge();
       }
-      
-      conn.close();           
+      finally
+      {
+      	if (conn != null)
+      	{
+      		conn.close();
+      	}
+      }         
    }
    
 
    public void testRedeliveryOnTopic() throws Exception
    {
-      Connection conn = cf.createConnection();
+      Connection conn = null;
       
-      conn.setClientID("myclientid");
-      
-      Session sess1 = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
-      Session sess2 = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
-      Session sess3 = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
-
-      MessageConsumer cons1 = sess1.createConsumer(topic);
-      MessageConsumer cons2 = sess2.createConsumer(topic);
-      MessageConsumer cons3 = sess3.createDurableSubscriber(topic, "subxyz");
-
-      conn.start();
-      
-      final int NUM_MESSAGES = 300;
-      final int NUM_RECOVERIES = 9;
-      
-      Receiver r1 = new Receiver("R1", sess1, cons1, NUM_MESSAGES, NUM_RECOVERIES);
-      Receiver r2 = new Receiver("R2", sess2, cons2, NUM_MESSAGES, NUM_RECOVERIES);
-      Receiver r3 = new Receiver("R3", sess3, cons3, NUM_MESSAGES, NUM_RECOVERIES);
-      
-      Thread t1 = new Thread(r1);
-      Thread t2 = new Thread(r2);
-      Thread t3 = new Thread(r3);
-      
-      t1.start();
-      t2.start();
-      t3.start();
-      
-      Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      MessageProducer prod = sessSend.createProducer(topic);
-      prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
-      
-      
-      for (int i = 0; i < NUM_MESSAGES; i++)
-      {
-         TextMessage tm1 = sessSend.createTextMessage("testing" + i);
-         prod.send(tm1);
+      try
+      {      
+	      conn = cf.createConnection();
+	      
+	      conn.setClientID("myclientid");
+	      
+	      Session sess1 = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
+	      Session sess2 = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
+	      Session sess3 = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
+	
+	      MessageConsumer cons1 = sess1.createConsumer(topic1);
+	      MessageConsumer cons2 = sess2.createConsumer(topic1);
+	      MessageConsumer cons3 = sess3.createDurableSubscriber(topic1, "subxyz");
+	
+	      conn.start();
+	      
+	      final int NUM_MESSAGES = 100;
+	      final int NUM_RECOVERIES = 9;
+	      
+	      Receiver r1 = new Receiver("R1", sess1, cons1, NUM_MESSAGES, NUM_RECOVERIES);
+	      Receiver r2 = new Receiver("R2", sess2, cons2, NUM_MESSAGES, NUM_RECOVERIES);
+	      Receiver r3 = new Receiver("R3", sess3, cons3, NUM_MESSAGES, NUM_RECOVERIES);
+	      
+	      Thread t1 = new Thread(r1);
+	      Thread t2 = new Thread(r2);
+	      Thread t3 = new Thread(r3);
+	      
+	      t1.start();
+	      t2.start();
+	      t3.start();
+	      
+	      Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+	      MessageProducer prod = sessSend.createProducer(topic1);
+	      prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+	      
+	      
+	      for (int i = 0; i < NUM_MESSAGES; i++)
+	      {
+	         TextMessage tm1 = sessSend.createTextMessage("testing" + i);
+	         prod.send(tm1);
+	      }
+	      
+	      t1.join();
+	      t2.join();
+	      t3.join();
+	      
+	      assertFalse(r1.failed);
+	      assertFalse(r2.failed);
+	      assertFalse(r3.failed);
+	      
+	      cons3.close();
+	      
+	      sess3.unsubscribe("subxyz");
       }
-      
-      t1.join();
-      t2.join();
-      t3.join();
-      
-      assertFalse(r1.failed);
-      assertFalse(r2.failed);
-      assertFalse(r3.failed);
-      
-      conn.close();
+      finally
+      {      
+      	if (conn != null)
+      	{
+      		conn.close();
+      	}
+      }
    }
    
    public void testDeliveryCountUpdatedOnCloseTransacted() throws Exception
@@ -256,10 +276,10 @@ public class JMSXDeliveryCountTest extends MessagingTestCase
          conn = cf.createConnection();
    
          Session producerSess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer producer = producerSess.createProducer(queue);
+         MessageProducer producer = producerSess.createProducer(queue1);
    
          Session consumerSess = conn.createSession(true, Session.SESSION_TRANSACTED);
-         MessageConsumer consumer = consumerSess.createConsumer(queue);
+         MessageConsumer consumer = consumerSess.createConsumer(queue1);
          conn.start();
    
          TextMessage tm = producerSess.createTextMessage("message1");
@@ -308,7 +328,7 @@ public class JMSXDeliveryCountTest extends MessagingTestCase
          
          consumerSess = conn.createSession(true, Session.SESSION_TRANSACTED);
          
-         consumer = consumerSess.createConsumer(queue);
+         consumer = consumerSess.createConsumer(queue1);
          
          rm = (TextMessage)consumer.receive(1000);
          
@@ -320,6 +340,7 @@ public class JMSXDeliveryCountTest extends MessagingTestCase
          
          assertTrue(rm.getJMSRedelivered());
          
+         consumerSess.commit();         
       }
       finally
       {      
@@ -339,10 +360,10 @@ public class JMSXDeliveryCountTest extends MessagingTestCase
          conn = cf.createConnection();
    
          Session producerSess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer producer = producerSess.createProducer(queue);
+         MessageProducer producer = producerSess.createProducer(queue1);
    
          Session consumerSess = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
-         MessageConsumer consumer = consumerSess.createConsumer(queue);
+         MessageConsumer consumer = consumerSess.createConsumer(queue1);
          conn.start();
    
          TextMessage tm = producerSess.createTextMessage("message1");
@@ -389,7 +410,7 @@ public class JMSXDeliveryCountTest extends MessagingTestCase
          
          consumerSess = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
          
-         consumer = consumerSess.createConsumer(queue);
+         consumer = consumerSess.createConsumer(queue1);
          
          rm = (TextMessage)consumer.receive(1000);
          
@@ -401,6 +422,7 @@ public class JMSXDeliveryCountTest extends MessagingTestCase
          
          assertTrue(rm.getJMSRedelivered());
          
+         rm.acknowledge();         
       }
       finally
       {      
@@ -418,7 +440,7 @@ public class JMSXDeliveryCountTest extends MessagingTestCase
       Connection conn = null;
       
       TransactionManager mgr = TransactionManagerLocator.getInstance().locate();
-      
+                  
       Transaction toResume = null;
       
       Transaction tx = null;
@@ -432,18 +454,16 @@ public class JMSXDeliveryCountTest extends MessagingTestCase
          //Send a message
          
          Session producerSess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer producer = producerSess.createProducer(queue);
+         MessageProducer producer = producerSess.createProducer(queue1);
          
          TextMessage tm = producerSess.createTextMessage("message1");
          
          producer.send(tm);
-         
-         
-         
+                           
          xaConn = ((XAConnectionFactory)cf).createXAConnection();
          
          XASession consumerSess = xaConn.createXASession();
-         MessageConsumer consumer = consumerSess.createConsumer(queue);
+         MessageConsumer consumer = consumerSess.createConsumer(queue1);
          xaConn.start();
          
          DummyXAResource res = new DummyXAResource();
@@ -519,9 +539,7 @@ public class JMSXDeliveryCountTest extends MessagingTestCase
          tx.delistResource(consumerSess.getXAResource(), XAResource.TMSUCCESS);
          
          tx.rollback();
-         
-         log.info("Closing the consumer");
-         
+              
          //Must close consumer first
          
          consumer.close();
@@ -530,7 +548,7 @@ public class JMSXDeliveryCountTest extends MessagingTestCase
          
          consumerSess = xaConn.createXASession();
          
-         consumer = consumerSess.createConsumer(queue);
+         consumer = consumerSess.createConsumer(queue1);
          
          mgr.begin();
          
@@ -552,32 +570,30 @@ public class JMSXDeliveryCountTest extends MessagingTestCase
          
          tx.delistResource(res, XAResource.TMSUCCESS);
          
-         tx.delistResource(consumerSess.getXAResource(), XAResource.TMSUCCESS);
-         
+         tx.delistResource(consumerSess.getXAResource(), XAResource.TMSUCCESS);         
       }
       finally
       {      
          if (conn != null)
          {
-            try
-            {
-               conn.close();
-            }
-            catch (Exception ignore)
-            {              
-            }             
+            conn.close();            
          }
          
          if (tx != null)
          {
-            try
-            {
-               tx.commit();
-            }
-            catch (Exception ignore)
-            {              
-            }
+         	try
+         	{
+         		tx.commit();
+         	}
+         	catch (Exception ignore)
+         	{         		
+         	}
          }
+         
+         if (xaConn != null)
+         {
+            xaConn.close();               
+         }         
          
          if (toResume != null)
          {
@@ -589,12 +605,12 @@ public class JMSXDeliveryCountTest extends MessagingTestCase
             {              
             }
          }
+         
+         // ***********************
+         // * REMOVE THIS WHEN ABOVE TEST PASSES
+         removeAllMessages(queue1.getQueueName(), true, 0);
       }
    }
-   
-   
-   
-   
    
    class Receiver implements Runnable
    {

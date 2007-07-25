@@ -22,19 +22,16 @@
 package org.jboss.test.messaging.jms;
 
 import javax.jms.Connection;
-import javax.jms.ConnectionFactory;
 import javax.jms.ConnectionMetaData;
-import javax.jms.Destination;
 import javax.jms.ExceptionListener;
 import javax.jms.JMSException;
 import javax.jms.QueueConnection;
 import javax.jms.QueueConnectionFactory;
+import javax.jms.ServerSessionPool;
 import javax.jms.Session;
+import javax.jms.Topic;
 import javax.jms.TopicConnection;
 import javax.jms.TopicConnectionFactory;
-import javax.jms.ServerSessionPool;
-import javax.jms.Topic;
-import javax.naming.InitialContext;
 
 import org.jboss.jms.client.JBossConnection;
 import org.jboss.jms.client.delegate.ClientConnectionDelegate;
@@ -44,8 +41,6 @@ import org.jboss.jms.message.MessageIdGeneratorFactory;
 import org.jboss.jms.tx.ResourceManager;
 import org.jboss.jms.tx.ResourceManagerFactory;
 import org.jboss.logging.Logger;
-import org.jboss.test.messaging.MessagingTestCase;
-import org.jboss.test.messaging.tools.ServerManagement;
 
 
 /**
@@ -58,22 +53,15 @@ import org.jboss.test.messaging.tools.ServerManagement;
  *
  * $Id$
  */
-public class ConnectionTest extends MessagingTestCase
+public class ConnectionTest extends JMSTestCase
 {
    // Constants -----------------------------------------------------
 
    private static final Logger log = Logger.getLogger(ConnectionTest.class);
 
-
    // Static --------------------------------------------------------
 
    // Attributes ----------------------------------------------------
-
-   protected InitialContext initialContext;
-
-   protected ConnectionFactory cf;
-   
-   protected Destination topic;
 
    // Constructors --------------------------------------------------
 
@@ -83,31 +71,6 @@ public class ConnectionTest extends MessagingTestCase
    }
 
    // TestCase overrides -------------------------------------------
-
-   public void setUp() throws Exception
-   {
-      super.setUp();
-      
-      ServerManagement.start("all");
-            
-      initialContext = new InitialContext(ServerManagement.getJNDIEnvironment());
-      
-      cf = (ConnectionFactory)initialContext.lookup("/ConnectionFactory");
-      
-      ServerManagement.undeployTopic("Topic");
-      
-      ServerManagement.deployTopic("Topic");
-      
-      topic = (Destination)initialContext.lookup("/topic/Topic");
-   }
-
-   public void tearDown() throws Exception
-   {
-      ServerManagement.undeployTopic("Topic");
-      
-      super.tearDown();
-   }
-
 
    // Public --------------------------------------------------------
 
@@ -195,7 +158,7 @@ public class ConnectionTest extends MessagingTestCase
    
    public void testManyConnections() throws Exception
    {
-      for (int i = 0; i < 1000; i++)
+      for (int i = 0; i < 100; i++)
       {
          Connection conn = cf.createConnection();
          conn.close();        
@@ -371,35 +334,6 @@ public class ConnectionTest extends MessagingTestCase
 
    }
 
-   // TODO why is this test commented out?
-
-//   public void testStartStop() throws Exception
-//   {
-//      
-//      if (ServerManagement.isRemote())
-//      {
-//         //This test doesn't make sense remotely
-//         return;
-//      }
-//
-//      Connection connection = cf.createConnection();
-//      Serializable connectionID = ((JBossConnection)connection).getConnectionID();
-//
-//      ServerConnectionDelegate d = ServerManagement.getServerPeer().
-//            getClientManager().getConnectionDelegate(connectionID);
-//
-//      assertFalse(d.isStarted());
-//
-//      connection.start();
-//
-//      assertTrue(d.isStarted());
-//
-//      connection.stop();
-//
-//      assertFalse(d.isStarted());
-//
-//      connection.close();
-//   }
 
    /**
     * Test creation of QueueSession
@@ -413,7 +347,6 @@ public class ConnectionTest extends MessagingTestCase
       qc.createQueueSession(false, Session.AUTO_ACKNOWLEDGE);
 
       qc.close();
-
    }
 
    /**
@@ -459,7 +392,7 @@ public class ConnectionTest extends MessagingTestCase
     */
    public void testConnectionListenerBug() throws Exception
    {
-      for (int i = 0; i < 500; i++)
+      for (int i = 0; i < 100; i++)
       {
          Connection conn = cf.createConnection();
          
@@ -470,8 +403,7 @@ public class ConnectionTest extends MessagingTestCase
          conn.close();        
          
          //The problem with this test is I would need to capture the output and search
-         //for NullPointerException!!!
-                  
+         //for NullPointerException!!!                  
       } 
    }
 
@@ -487,7 +419,7 @@ public class ConnectionTest extends MessagingTestCase
 
       try
       {
-         queueConnection.createDurableConnectionConsumer((Topic)topic, "subscriptionName", "",
+         queueConnection.createDurableConnectionConsumer((Topic)topic1, "subscriptionName", "",
             (ServerSessionPool) null, 1);
          fail("Should throw a javax.jms.IllegalStateException");
       }
@@ -506,9 +438,7 @@ public class ConnectionTest extends MessagingTestCase
       {
          queueConnection.close();
       }
-   }
-   
-  
+   }     
 
    // Package protected ---------------------------------------------
 
@@ -528,7 +458,4 @@ public class ConnectionTest extends MessagingTestCase
          log.trace("Received exception");
       }
    }
-
-   
-
 }

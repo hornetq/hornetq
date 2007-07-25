@@ -21,25 +21,23 @@
 */
 package org.jboss.test.thirdparty.jbosssx;
 
-import org.jboss.test.messaging.MessagingTestCase;
-import org.jboss.test.messaging.tools.ServerManagement;
-import org.jboss.test.messaging.tools.jmx.MockJBossSecurityManager;
-import org.jboss.security.SecurityAssociation;
-import org.jboss.security.SimplePrincipal;
+import java.security.Principal;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
-import javax.naming.InitialContext;
-import javax.jms.ConnectionFactory;
-import javax.jms.Queue;
 import javax.jms.Connection;
-import javax.jms.Session;
-import javax.jms.MessageProducer;
 import javax.jms.MessageConsumer;
+import javax.jms.MessageProducer;
+import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.security.auth.Subject;
-import java.security.Principal;
-import java.util.Set;
-import java.util.HashSet;
-import java.util.Collections;
+
+import org.jboss.security.SecurityAssociation;
+import org.jboss.security.SimplePrincipal;
+import org.jboss.test.messaging.jms.JMSTestCase;
+import org.jboss.test.messaging.tools.ServerManagement;
+import org.jboss.test.messaging.tools.jmx.MockJBossSecurityManager;
 
 /**
  * Set of tests to insure consistent behavior relative to the JBoss AS security infrastructure.
@@ -52,15 +50,13 @@ import java.util.Collections;
  * @version <tt>$Revision$</tt>
  * $Id$
  */
-public class SecurityAssociationTest extends MessagingTestCase
+public class SecurityAssociationTest extends JMSTestCase
 {
    // Constants ------------------------------------------------------------------------------------
 
    // Static ---------------------------------------------------------------------------------------
 
    // Attributes -----------------------------------------------------------------------------------
-
-   private InitialContext ic;
 
    // Constructors ---------------------------------------------------------------------------------
 
@@ -81,9 +77,6 @@ public class SecurityAssociationTest extends MessagingTestCase
          fail("This test is supposed to be run in a local configuration");
       }
 
-      ConnectionFactory cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
-      Queue queue = (Queue)ic.lookup("/queue/TestQueue");
-
       Principal nabopolassar = new SimplePrincipal("nabopolassar");
       Set principals = new HashSet();
       principals.add(nabopolassar);
@@ -102,8 +95,8 @@ public class SecurityAssociationTest extends MessagingTestCase
 
          Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         MessageProducer prod = session.createProducer(queue);
-         MessageConsumer cons = session.createConsumer(queue);
+         MessageProducer prod = session.createProducer(queue1);
+         MessageConsumer cons = session.createConsumer(queue1);
 
          TextMessage m = session.createTextMessage("floccinaucinihilipilification");
 
@@ -161,9 +154,6 @@ public class SecurityAssociationTest extends MessagingTestCase
          (MockJBossSecurityManager)ic.lookup(MockJBossSecurityManager.TEST_SECURITY_DOMAIN);
       assertTrue(sm.isSimulateJBossJaasSecurityManager());
 
-      ConnectionFactory cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
-      Queue queue = (Queue)ic.lookup("/queue/SecureTestQueue");
-
       Principal nabopolassar = new SimplePrincipal("nabopolassar");
       Set principals = new HashSet();
       principals.add(nabopolassar);
@@ -182,8 +172,8 @@ public class SecurityAssociationTest extends MessagingTestCase
 
          Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         MessageProducer prod = session.createProducer(queue);
-         MessageConsumer cons = session.createConsumer(queue);
+         MessageProducer prod = session.createProducer(queue2);
+         MessageConsumer cons = session.createConsumer(queue2);
 
          TextMessage m = session.createTextMessage("floccinaucinihilipilification");
 
@@ -240,9 +230,6 @@ public class SecurityAssociationTest extends MessagingTestCase
          (MockJBossSecurityManager)ic.lookup(MockJBossSecurityManager.TEST_SECURITY_DOMAIN);
       assertTrue(sm.isSimulateJBossJaasSecurityManager());
 
-      ConnectionFactory cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
-      Queue queue = (Queue)ic.lookup("/queue/SecureTestQueue");
-
       Principal nabopolassar = new SimplePrincipal("nabopolassar");
       Set principals = new HashSet();
       principals.add(nabopolassar);
@@ -261,8 +248,8 @@ public class SecurityAssociationTest extends MessagingTestCase
 
          Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         MessageProducer prod = session.createProducer(queue);
-         MessageConsumer cons = session.createConsumer(queue);
+         MessageProducer prod = session.createProducer(queue2);
+         MessageConsumer cons = session.createConsumer(queue2);
 
          TextMessage m = session.createTextMessage("floccinaucinihilipilification");
 
@@ -307,27 +294,19 @@ public class SecurityAssociationTest extends MessagingTestCase
 
    protected void setUp() throws Exception
    {
-      if(ServerManagement.isRemote())
+      if (ServerManagement.isRemote())
       {
          fail("This test is supposed to be run in a local configuration");
       }
 
       super.setUp();
-
-      ServerManagement.start("all");
-
-      ic = new InitialContext(ServerManagement.getJNDIEnvironment());
-
-      ServerManagement.deployQueue("TestQueue");
-
-      ServerManagement.deployQueue("SecureTestQueue");
-
+   
       final String secureQueueConfig =
          "<security>" +
             "<role name=\"publisher\" read=\"true\" write=\"true\" create=\"false\"/>" +
             "<role name=\"guest\" read=\"true\" write=\"true\" create=\"false\"/>" +
          "</security>";
-      ServerManagement.configureSecurityForDestination("SecureTestQueue", secureQueueConfig);
+      ServerManagement.configureSecurityForDestination("Queue2", secureQueueConfig);
 
       // make MockSecurityManager simulate JaasSecurityManager behavior. This is the whole point
       // of this test, to catch JBoss AS integreation failure before the integration test suite
@@ -343,19 +322,15 @@ public class SecurityAssociationTest extends MessagingTestCase
    }
 
    protected void tearDown() throws Exception
-   {
-      ServerManagement.undeployQueue("TestQueue");
-
-      ServerManagement.undeployQueue("SecureTestQueue");
-
+   {   
+   	super.tearDown();
+   	
       MockJBossSecurityManager sm =
          (MockJBossSecurityManager)ic.lookup(MockJBossSecurityManager.TEST_SECURITY_DOMAIN);
 
       sm.setSimulateJBossJaasSecurityManager(false);
 
-      ic.close();
-
-      super.tearDown();
+      ServerManagement.configureSecurityForDestination("Queue2", null);
    }
 
    // Private --------------------------------------------------------------------------------------

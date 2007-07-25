@@ -96,8 +96,6 @@ import org.jboss.jms.wireformat.SessionRecoverDeliveriesRequest;
 import org.jboss.jms.wireformat.SessionSendRequest;
 import org.jboss.jms.wireformat.SessionUnsubscribeRequest;
 import org.jboss.remoting.InvocationRequest;
-import org.jboss.test.messaging.MessagingTestCase;
-import org.jboss.test.messaging.tools.ServerManagement;
 
 /**
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
@@ -105,7 +103,7 @@ import org.jboss.test.messaging.tools.ServerManagement;
  *
  * $Id$
  */
-public class WireFormatTest extends MessagingTestCase
+public class WireFormatTest extends JMSTestCase
 {
    // Constants -----------------------------------------------------
       
@@ -126,22 +124,11 @@ public class WireFormatTest extends MessagingTestCase
 
    public void setUp() throws Exception
    {
-      if (ServerManagement.isRemote())
-      {
-         fail("This test should not be run in a remote config");
-      }
-      
       super.setUp();
       
       wf = new TestWireFormat();            
    }
 
-   public void tearDown() throws Exception
-   {      
-      super.tearDown();
-   }
-   
-   
    public void testSerialized() throws Exception
    {
       wf.testSerialized();

@@ -154,7 +154,7 @@ public class RoundRobinDistributor implements Distributor
 
       if (del == null && selectorRejected)
       {
-         del = new SimpleDelivery(null, null, false);
+         del = new SimpleDelivery(null, null, false, false);
       }
 
       return del;      

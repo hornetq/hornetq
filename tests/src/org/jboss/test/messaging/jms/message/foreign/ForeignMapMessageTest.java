@@ -39,23 +39,13 @@ import org.jboss.test.messaging.jms.message.SimpleJMSMapMessage;
  */
 public class ForeignMapMessageTest extends ForeignMessageTest
 {
-    private String  obj = new String("stringobject");
+    private String obj = new String("stringobject");
 
     public ForeignMapMessageTest(String name)
     {
         super(name);
     }
     
-    public void setUp() throws Exception
-    {
-       super.setUp();
-    }
-
-    public void tearDown() throws Exception
-    {
-       super.tearDown();
-    }
-
     protected Message createForeignMessage() throws Exception
     {
         SimpleJMSMapMessage m = new SimpleJMSMapMessage();

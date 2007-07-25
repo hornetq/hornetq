@@ -415,6 +415,7 @@ public class PriorityLinkedListTest extends MessagingTestCase
          c++;
       }      
       assertEquals(c, 26);
+      assertEquals(26, list.size());
       
       iter = list.iterator();
       assertTrue(iter.hasNext());
@@ -479,6 +480,8 @@ public class PriorityLinkedListTest extends MessagingTestCase
       
       iter.remove();
       
+      assertEquals(25, list.size());
+      
       w = (Wibble)iter.next();
       assertEquals("b", w.s);
       w = (Wibble)iter.next();
@@ -487,6 +490,8 @@ public class PriorityLinkedListTest extends MessagingTestCase
       assertEquals("d", w.s);
       
       iter.remove();
+      
+      assertEquals(24, list.size());
       
       w = (Wibble)iter.next();
       assertEquals("e", w.s);
@@ -502,6 +507,8 @@ public class PriorityLinkedListTest extends MessagingTestCase
       assertEquals("j", w.s);
       
       iter.remove();
+      
+      assertEquals(23, list.size());
       
       w = (Wibble)iter.next();
       assertEquals("k", w.s);

@@ -75,7 +75,7 @@ public class BrokenReceiver implements Receiver
       }
 
       refs.add(ref);
-      return new SimpleDelivery(observer, ref, true);
+      return new SimpleDelivery(observer, ref, true, false);
    }
 
    // Public --------------------------------------------------------

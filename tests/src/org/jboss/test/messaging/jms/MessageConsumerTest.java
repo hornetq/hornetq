@@ -28,7 +28,6 @@ import java.util.List;
 
 import javax.jms.BytesMessage;
 import javax.jms.Connection;
-import javax.jms.ConnectionFactory;
 import javax.jms.DeliveryMode;
 import javax.jms.InvalidDestinationException;
 import javax.jms.JMSException;
@@ -45,11 +44,8 @@ import javax.jms.StreamMessage;
 import javax.jms.TextMessage;
 import javax.jms.Topic;
 import javax.jms.TopicSubscriber;
-import javax.naming.InitialContext;
 
 import org.jboss.jms.destination.JBossTopic;
-import org.jboss.test.messaging.MessagingTestCase;
-import org.jboss.test.messaging.tools.ServerManagement;
 
 import EDU.oswego.cs.dl.util.concurrent.Latch;
 
@@ -61,24 +57,13 @@ import EDU.oswego.cs.dl.util.concurrent.Latch;
  *
  * $Id$
  */
-public class MessageConsumerTest extends MessagingTestCase
+public class MessageConsumerTest extends JMSTestCase
 {
    // Constants -----------------------------------------------------
 
    // Static --------------------------------------------------------
-
+	
    // Attributes ----------------------------------------------------
-
-   protected Connection producerConnection, consumerConnection;
-   protected Session producerSession, consumerSession;
-   protected MessageProducer topicProducer, queueProducer;
-   protected MessageConsumer topicConsumer, queueConsumer;
-   protected Topic topic;
-   protected Queue queue;
-   protected Queue queue2;
-   protected ConnectionFactory cf;
-
-   protected Thread worker1;
 
    // Constructors --------------------------------------------------
 
@@ -86,67 +71,9 @@ public class MessageConsumerTest extends MessagingTestCase
    {
       super(name);
    }
-
+   
    // Public --------------------------------------------------------
 
-   public void setUp() throws Exception
-   {
-      super.setUp();
-
-      ServerManagement.start("all");
-
-      ServerManagement.undeployTopic("Topic");
-      ServerManagement.undeployQueue("Queue");
-      ServerManagement.undeployQueue("Queue2");
-
-      ServerManagement.deployTopic("Topic");
-      ServerManagement.deployQueue("Queue");
-      ServerManagement.deployQueue("Queue2");
-
-      InitialContext ic = new InitialContext(ServerManagement.getJNDIEnvironment());
-      cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
-      topic = (Topic)ic.lookup("/topic/Topic");
-      queue = (Queue)ic.lookup("/queue/Queue");
-      queue2 = (Queue)ic.lookup("/queue/Queue2");
-
-      producerConnection = cf.createConnection();
-      consumerConnection = cf.createConnection();
-
-      producerSession = producerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      consumerSession = consumerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-
-      topicProducer = producerSession.createProducer(topic);
-      topicProducer.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
-      topicConsumer = consumerSession.createConsumer(topic);
-
-      queueProducer = producerSession.createProducer(queue);
-      queueProducer.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
-      queueConsumer = consumerSession.createConsumer(queue);
-
-      this.drainDestination(cf, queue);
-      this.drainDestination(cf, queue2);
-
-      log.debug("setup done");
-   }
-
-   public void tearDown() throws Exception
-   {
-      producerConnection.close();
-      consumerConnection.close();
-
-      if (worker1 != null)
-      {
-         worker1.interrupt();
-      }
-
-      ServerManagement.undeployTopic("Topic");
-      ServerManagement.undeployQueue("Queue");
-      ServerManagement.undeployQueue("Queue2");
-
-      super.tearDown();
-   }
-
-   
    public void testReceiveWithClientAckThenCloseSession() throws Exception
    {
       Connection conn = null;
@@ -157,7 +84,7 @@ public class MessageConsumerTest extends MessagingTestCase
          
          Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
          
-         MessageProducer prod = sess.createProducer(queue);
+         MessageProducer prod = sess.createProducer(queue1);
          
          final int NUM_MESSAGES = 5;
          
@@ -170,7 +97,7 @@ public class MessageConsumerTest extends MessagingTestCase
          
          Session sess2 = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
          
-         MessageConsumer cons = sess2.createConsumer(queue);
+         MessageConsumer cons = sess2.createConsumer(queue1);
          
          conn.start();
          
@@ -185,8 +112,7 @@ public class MessageConsumerTest extends MessagingTestCase
          
          // Now close the session
 
-         sess2.close();
-         
+         sess2.close();         
       }
       finally
       {
@@ -194,77 +120,90 @@ public class MessageConsumerTest extends MessagingTestCase
          {
             conn.close();
          }
-      }
-       
+         
+         removeAllMessages(queue1.getQueueName(), true, 0);
+      }       
    }
    
    
    public void testRelayMessage() throws Exception
    {
-      Connection conn = cf.createConnection();
-
-      conn.start();
-
-      final Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-
-      MessageConsumer cons = sess.createConsumer(queue);
-
-      final Object lock = new Object();
-
-      final int numMessages = 100;
-
-
-      class MyListener implements MessageListener
-      {
-         boolean failed;
-
-         int count;
-
-         public void onMessage(Message m)
-         {
-            try
-            {
-               MessageProducer prod = sess.createProducer(queue2);
-
-               prod.send(m);
-
-               count++;
-
-               if (count == numMessages)
-               {
-                  synchronized (lock)
-                  {
-                     lock.notify();
-                  }
-
-               }
-            }
-            catch (JMSException e)
-            {
-               failed = true;
-            }
-         }
+      Connection conn = null;
+      
+      try
+      {	     
+	      conn = cf.createConnection();
+	
+	      conn.start();
+	
+	      final Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+	
+	      MessageConsumer cons = sess.createConsumer(queue1);
+	
+	      final int numMessages = 100;
+	
+	      class MyListener implements MessageListener
+	      {
+	         boolean failed;
+	
+	         int count;
+	
+	         public synchronized void onMessage(Message m)
+	         {
+	            try
+	            {
+	               MessageProducer prod = sess.createProducer(queue2);
+	
+	               prod.send(m);
+	
+	               count++;
+	
+	               if (count == numMessages)
+	               {
+	               	this.notify();	                  	
+	               }
+	            }
+	            catch (JMSException e)
+	            {
+	               failed = true;
+	            }
+	         }
+	         
+	         synchronized void waitForMessages() throws Exception
+	         {
+	         	while (count < numMessages)
+	         	{
+	         		this.wait();
+	         	}
+	         }
+	      }
+	
+	      MyListener listener = new MyListener();
+	
+	      cons.setMessageListener(listener);
+	
+	      MessageProducer prod = sess.createProducer(queue1);
+	
+	      for (int i = 0; i < numMessages; i++)
+	      {
+	         prod.send(sess.createMessage());
+	      }
+	
+	      listener.waitForMessages();
+	
+	      conn.close();
+	
+	      assertFalse(listener.failed);
       }
-
-      MyListener listener = new MyListener();
-
-      cons.setMessageListener(listener);
-
-      MessageProducer prod = sess.createProducer(queue);
-
-      for (int i = 0; i < numMessages; i++)
+      finally
       {
-         prod.send(sess.createMessage());
+      	if (conn != null)
+      	{
+      		conn.close();
+      	}
+      	
+      	removeAllMessages(queue2.getQueueName(), true, 0);
       }
-
-      synchronized (lock)
-      {
-         lock.wait();
-      }
-
-      conn.close();
-
-      assertFalse(listener.failed);
    }
 
 
@@ -289,13 +228,13 @@ public class MessageConsumerTest extends MessagingTestCase
       
          Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
    
-         MessageProducer prod = sessSend.createProducer(queue);
+         MessageProducer prod = sessSend.createProducer(queue1);
    
          conn.start();
    
          Session sessConsume1 = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
    
-         MessageConsumer cons1 = sessConsume1.createConsumer(queue);
+         MessageConsumer cons1 = sessConsume1.createConsumer(queue1);
    
          TextMessage tm = sessSend.createTextMessage();
    
@@ -315,11 +254,10 @@ public class MessageConsumerTest extends MessagingTestCase
    
          Session sessConsume2 = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
    
-         MessageConsumer cons2 = sessConsume2.createConsumer(queue);
+         MessageConsumer cons2 = sessConsume2.createConsumer(queue1);
    
          // this should cancel message and cause delivery to other consumer
    
-         log.trace("Closed session 1");
          sessConsume1.close();
    
          TextMessage tm3 = (TextMessage)cons2.receive(1000);
@@ -332,13 +270,11 @@ public class MessageConsumerTest extends MessagingTestCase
       }
       finally
       {
-
          if (conn != null)
          {
             conn.close();
          }
       }
-
    }
 
 
@@ -347,31 +283,95 @@ public class MessageConsumerTest extends MessagingTestCase
     */
    public void testReceive() throws Exception
    {
-      // start consumer connection before the message is submitted
-      consumerConnection.start();
-
-      TextMessage tm = producerSession.createTextMessage("someText");
-      queueProducer.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
-
-      queueProducer.send(tm);
-
-      TextMessage m = (TextMessage)queueConsumer.receive();
-      assertEquals(tm.getText(), m.getText());
+   	Connection producerConnection = null;
+   	
+   	Connection consumerConnection = null;
+   	
+   	try
+   	{
+   		producerConnection = cf.createConnection();
+   		
+   		consumerConnection = cf.createConnection();
+   		
+   		Session producerSession = producerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+   		
+   		Session consumerSession = consumerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+   		
+   		MessageProducer queueProducer = producerSession.createProducer(queue1);
+   		
+   		MessageConsumer queueConsumer = consumerSession.createConsumer(queue1);
+   		
+	      // start consumer connection before the message is submitted
+	      consumerConnection.start();
+	
+	      TextMessage tm = producerSession.createTextMessage("someText");
+	      
+	      queueProducer.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+	
+	      queueProducer.send(tm);
+	
+	      TextMessage m = (TextMessage)queueConsumer.receive();
+	      
+	      assertEquals(tm.getText(), m.getText());
+   	}
+   	finally
+   	{
+   		if (producerConnection != null)
+   		{
+   			producerConnection.close();
+   		}
+   		if (consumerConnection != null)
+   		{
+   			consumerConnection.close();
+   		}
+   	}
 
    }
 
    public void testReceivePersistent() throws Exception
    {
-      // start consumer connection before the message is submitted
-      consumerConnection.start();
-
-      TextMessage tm = producerSession.createTextMessage("someText");
-      assertEquals(DeliveryMode.PERSISTENT, tm.getJMSDeliveryMode());
-
-      queueProducer.send(tm);
-
-      TextMessage m = (TextMessage)queueConsumer.receive();
-      assertEquals(tm.getText(), m.getText());
+   	Connection producerConnection = null;
+   	
+   	Connection consumerConnection = null;
+   	
+   	try
+   	{
+   		producerConnection = cf.createConnection();
+   		
+   		consumerConnection = cf.createConnection();
+   		
+   		Session producerSession = producerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+   		
+   		Session consumerSession = consumerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+   		
+   		MessageProducer queueProducer = producerSession.createProducer(queue1);
+   		
+   		MessageConsumer queueConsumer = consumerSession.createConsumer(queue1);
+   	
+	      // start consumer connection before the message is submitted
+	      consumerConnection.start();
+	
+	      TextMessage tm = producerSession.createTextMessage("someText");
+	      
+	      assertEquals(DeliveryMode.PERSISTENT, tm.getJMSDeliveryMode());
+	
+	      queueProducer.send(tm);
+	
+	      TextMessage m = (TextMessage)queueConsumer.receive();
+	      
+	      assertEquals(tm.getText(), m.getText());
+   	}
+   	finally
+   	{
+   		if (producerConnection != null)
+   		{
+   			producerConnection.close();
+   		}
+   		if (consumerConnection != null)
+   		{
+   			consumerConnection.close();
+   		}
+   	}
    }
 
 
@@ -380,14 +380,46 @@ public class MessageConsumerTest extends MessagingTestCase
     */
    public void testReceiveTimeout() throws Exception
    {
-      TextMessage tm = producerSession.createTextMessage("someText");
-      queueProducer.send(tm);
-
-      // start consumer connection after the message is submitted
-      consumerConnection.start();
-
-      TextMessage m = (TextMessage)queueConsumer.receive(2000);
-      assertEquals(tm.getText(), m.getText());
+   	Connection producerConnection = null;
+   	
+   	Connection consumerConnection = null;
+   	
+   	try
+   	{
+   		producerConnection = cf.createConnection();
+   		
+   		consumerConnection = cf.createConnection();
+   		
+   		Session producerSession = producerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+   		
+   		Session consumerSession = consumerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+   		
+   		MessageProducer queueProducer = producerSession.createProducer(queue1);
+   		
+   		MessageConsumer queueConsumer = consumerSession.createConsumer(queue1);
+   	
+	      TextMessage tm = producerSession.createTextMessage("someText");
+	      
+	      queueProducer.send(tm);
+	
+	      // start consumer connection after the message is submitted
+	      consumerConnection.start();
+	
+	      TextMessage m = (TextMessage)queueConsumer.receive(2000);
+	      
+	      assertEquals(tm.getText(), m.getText());
+   	}
+   	finally
+   	{
+   		if (producerConnection != null)
+   		{
+   			producerConnection.close();
+   		}
+   		if (consumerConnection != null)
+   		{
+   			consumerConnection.close();
+   		}
+   	}
    }
 
    /**
@@ -395,23 +427,55 @@ public class MessageConsumerTest extends MessagingTestCase
     */
    public void testReceiveNoWait() throws Exception
    {
-      TextMessage tm = producerSession.createTextMessage("someText");
-      queueProducer.send(tm);
-
-      // start consumer connection after the message is submitted
-      consumerConnection.start();
-
-      //NOTE! There semantics of receiveNoWait do not guarantee the message is available
-      //immediately after the message is sent
-      //It will be available some indeterminate time later.
-      //This is fine and as per spec.
-      //To implement receiveNoWait otherwise would be very costly
-      //Also other messaging systems e.g. Sun, ActiveMQ implement it this way
-
-      Thread.sleep(500);
-
-      TextMessage m = (TextMessage)queueConsumer.receiveNoWait();
-      assertEquals(tm.getText(), m.getText());
+   	Connection producerConnection = null;
+   	
+   	Connection consumerConnection = null;
+   	
+   	try
+   	{
+   		producerConnection = cf.createConnection();
+   		
+   		consumerConnection = cf.createConnection();
+   		
+   		Session producerSession = producerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+   		
+   		Session consumerSession = consumerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+   		
+   		MessageProducer queueProducer = producerSession.createProducer(queue1);
+   		
+   		MessageConsumer queueConsumer = consumerSession.createConsumer(queue1);
+   	
+	      TextMessage tm = producerSession.createTextMessage("someText");
+	      
+	      queueProducer.send(tm);
+	
+	      // start consumer connection after the message is submitted
+	      consumerConnection.start();
+	
+	      //NOTE! There semantics of receiveNoWait do not guarantee the message is available
+	      //immediately after the message is sent
+	      //It will be available some indeterminate time later.
+	      //This is fine and as per spec.
+	      //To implement receiveNoWait otherwise would be very costly
+	      //Also other messaging systems e.g. Sun, ActiveMQ implement it this way
+	
+	      Thread.sleep(500);
+	
+	      TextMessage m = (TextMessage)queueConsumer.receiveNoWait();
+	      
+	      assertEquals(tm.getText(), m.getText());
+   	}
+   	finally
+   	{
+   		if (producerConnection != null)
+   		{
+   			producerConnection.close();
+   		}
+   		if (consumerConnection != null)
+   		{
+   			consumerConnection.close();
+   		}
+   	}
    }
 
    /**
@@ -419,20 +483,53 @@ public class MessageConsumerTest extends MessagingTestCase
     */
    public void testReceiveOnListener() throws Exception
    {
-      TextMessage tm = producerSession.createTextMessage("someText");
-      queueProducer.send(tm);
-
-      MessageListenerImpl l = new MessageListenerImpl();
-      queueConsumer.setMessageListener(l);
-
-      // start consumer connection after the message is submitted
-      consumerConnection.start();
-
-      // wait for the listener to receive the message
-      l.waitForMessages();
-
-      TextMessage m = (TextMessage)l.getNextMessage();
-      assertEquals(tm.getText(), m.getText());
+   	Connection producerConnection = null;
+   	
+   	Connection consumerConnection = null;
+   	
+   	try
+   	{
+   		producerConnection = cf.createConnection();
+   		
+   		consumerConnection = cf.createConnection();
+   		
+   		Session producerSession = producerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+   		
+   		Session consumerSession = consumerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+   		
+   		MessageProducer queueProducer = producerSession.createProducer(queue1);
+   		
+   		MessageConsumer queueConsumer = consumerSession.createConsumer(queue1);
+   		
+	      TextMessage tm = producerSession.createTextMessage("someText");
+	      
+	      queueProducer.send(tm);
+	
+	      MessageListenerImpl l = new MessageListenerImpl();
+	      
+	      queueConsumer.setMessageListener(l);
+	
+	      // start consumer connection after the message is submitted
+	      consumerConnection.start();
+	
+	      // wait for the listener to receive the message
+	      l.waitForMessages();
+	
+	      TextMessage m = (TextMessage)l.getNextMessage();
+	      
+	      assertEquals(tm.getText(), m.getText());
+   	}
+   	finally
+   	{
+   		if (producerConnection != null)
+   		{
+   			producerConnection.close();
+   		}
+   		if (consumerConnection != null)
+   		{
+   			consumerConnection.close();
+   		}
+   	}
    }
 
    //
@@ -441,10 +538,12 @@ public class MessageConsumerTest extends MessagingTestCase
 
    public void testCreateConsumerOnInexistentDestination() throws Exception
    {
-      Connection pconn = cf.createConnection();
-
+      Connection pconn = null;
+      
       try
       {
+      	pconn = cf.createConnection();
+
          Session ps = pconn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
          try
@@ -459,7 +558,10 @@ public class MessageConsumerTest extends MessagingTestCase
       }
       finally
       {
-         pconn.close();
+         if (pconn != null)
+         {
+         	pconn.close();
+         }
       }
    }
 
@@ -477,14 +579,13 @@ public class MessageConsumerTest extends MessagingTestCase
 
       try
       {
-
          connSend = cf.createConnection();
 
          connSend.start();
 
          Session sessSend = connSend.createSession(true, Session.SESSION_TRANSACTED);
 
-         MessageProducer prod = sessSend.createProducer(queue2);
+         MessageProducer prod = sessSend.createProducer(queue1);
 
          prod.setDeliveryMode(DeliveryMode.PERSISTENT);
 
@@ -500,7 +601,7 @@ public class MessageConsumerTest extends MessagingTestCase
 
          Session sessReceive = connReceive.createSession(true, Session.SESSION_TRANSACTED);
 
-         MessageConsumer cons = sessReceive.createConsumer(queue2);
+         MessageConsumer cons = sessReceive.createConsumer(queue1);
 
          TextMessage m2 = (TextMessage)cons.receive(1500);
 
@@ -527,61 +628,115 @@ public class MessageConsumerTest extends MessagingTestCase
    }
 
 
-    public void testClientAcknowledgmentOnClosedConsumer() throws Exception
-    {
-       // create my consumer from scratch
-       consumerConnection.close();
+   public void testClientAcknowledgmentOnClosedConsumer() throws Exception
+   {
+   	Connection producerConnection = null;
 
-       TextMessage tm = producerSession.createTextMessage();
+   	Connection consumerConnection = null;
 
-       tm.setText("One");
-       queueProducer.send(tm);
+   	try
+   	{
+   		producerConnection = cf.createConnection();
 
+   		consumerConnection = cf.createConnection();
 
-       consumerConnection = cf.createConnection();
-       consumerSession = consumerConnection.createSession(false, Session.CLIENT_ACKNOWLEDGE);
-       queueConsumer = consumerSession.createConsumer(queue);
+   		Session producerSession = producerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-       consumerConnection.start();
+   		Session consumerSession = consumerConnection.createSession(false, Session.CLIENT_ACKNOWLEDGE);
 
-       TextMessage m =  (TextMessage)queueConsumer.receive(1500);
-       assertEquals(m.getText(), "One");
+   		MessageProducer queueProducer = producerSession.createProducer(queue1);
 
-       queueConsumer.close();
+   		MessageConsumer queueConsumer = consumerSession.createConsumer(queue1);
 
-       m.acknowledge();
+   		TextMessage tm = producerSession.createTextMessage();
 
-       try
-       {
-          queueConsumer.receive(2000);
-          fail("should throw exception");
-       }
-       catch(javax.jms.IllegalStateException e)
-       {
-          // OK
-       }
-    }
+   		tm.setText("One");
 
+   		queueProducer.send(tm);
 
+   		consumerConnection.start();
+
+   		TextMessage m =  (TextMessage)queueConsumer.receive(1500);
+
+   		assertEquals(m.getText(), "One");
+
+   		queueConsumer.close();
+
+   		m.acknowledge();
+
+   		try
+   		{
+   			queueConsumer.receive(2000);
+   			fail("should throw exception");
+   		}
+   		catch(javax.jms.IllegalStateException e)
+   		{
+   			// OK
+   		}
+   	}
+   	finally
+   	{
+   		if (producerConnection != null)
+   		{
+   			producerConnection.close();
+   		}
+   		if (consumerConnection != null)
+   		{
+   			consumerConnection.close();
+   		}
+   	}
+   }
 
 
    public void testSendMessageAndCloseConsumer1() throws Exception
    {
-      // setUp() created a consumer already
+   	Connection producerConnection = null;
 
-      Message m = producerSession.createMessage();
-      queueProducer.send(m);
+   	Connection consumerConnection = null;
 
-      queueConsumer.close();
+   	try
+   	{
+   		producerConnection = cf.createConnection();
 
-      // since no message was received, we expect the message back in the queue
+   		consumerConnection = cf.createConnection();
 
-      queueConsumer = consumerSession.createConsumer(queue);
+   		Session producerSession = producerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-      consumerConnection.start();
+   		Session consumerSession = consumerConnection.createSession(false, Session.CLIENT_ACKNOWLEDGE);
 
-      Message r = queueConsumer.receive(2000);
-      assertEquals(m.getJMSMessageID(), r.getJMSMessageID());
+   		MessageProducer queueProducer = producerSession.createProducer(queue1);
+
+   		MessageConsumer queueConsumer = consumerSession.createConsumer(queue1);
+
+	      Message m = producerSession.createMessage();
+	      
+	      queueProducer.send(m);
+	
+	      queueConsumer.close();
+	
+	      // since no message was received, we expect the message back in the queue
+	
+	      queueConsumer = consumerSession.createConsumer(queue1);
+	
+	      consumerConnection.start();
+	
+	      Message r = queueConsumer.receive(2000);
+	      
+	      assertEquals(m.getJMSMessageID(), r.getJMSMessageID());
+   	}
+    	finally
+   	{
+   		if (producerConnection != null)
+   		{
+   			producerConnection.close();
+   		}
+   		if (consumerConnection != null)
+   		{
+   			consumerConnection.close();
+   		}
+   	}
+    	
+    	removeAllMessages(queue1.getQueueName(), true, 0);
    }
 
 
@@ -591,39 +746,67 @@ public class MessageConsumerTest extends MessagingTestCase
     */
    public void testSendMessageAndCloseConsumer2() throws Exception
    {
-      // create my consumer from scratch
-      consumerConnection.close();
+   	Connection producerConnection = null;
 
-      TextMessage tm = producerSession.createTextMessage();
+   	Connection consumerConnection = null;
 
-      tm.setText("One");
-      queueProducer.send(tm);
+   	try
+   	{
+   		producerConnection = cf.createConnection();
 
-      tm.setText("Two");
-      queueProducer.send(tm);
+   		consumerConnection = cf.createConnection();
 
-      consumerConnection = cf.createConnection();
-      consumerSession = consumerConnection.createSession(true, 0);
-      queueConsumer = consumerSession.createConsumer(queue);
+   		Session producerSession = producerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-      consumerConnection.start();
+   		Session consumerSession = consumerConnection.createSession(true, 0);
 
-      TextMessage m =  (TextMessage)queueConsumer.receive(1500);
-      assertEquals("One", m.getText());
+   		MessageProducer queueProducer = producerSession.createProducer(queue1);
 
-      queueConsumer.close();
-      consumerSession.commit();
-
-      // I expect that "Two" is still in the queue
-
-      MessageConsumer queueConsumer2 = consumerSession.createConsumer(queue);
-      m =  (TextMessage)queueConsumer2.receive(1500);
-      assertNotNull(m);
-      assertEquals(m.getText(), "Two");
-
-      consumerSession.commit();
-
-      consumerConnection.close();
+   		MessageConsumer queueConsumer = consumerSession.createConsumer(queue1);
+	   	
+	      TextMessage tm = producerSession.createTextMessage();
+	
+	      tm.setText("One");
+	      
+	      queueProducer.send(tm);
+	
+	      tm.setText("Two");
+	      
+	      queueProducer.send(tm);
+	     
+	      consumerConnection.start();
+	
+	      TextMessage m =  (TextMessage)queueConsumer.receive(1500);
+	      
+	      assertEquals("One", m.getText());
+	
+	      queueConsumer.close();
+	      
+	      consumerSession.commit();
+	
+	      // I expect that "Two" is still in the queue
+	
+	      MessageConsumer queueConsumer2 = consumerSession.createConsumer(queue1);
+	      
+	      m =  (TextMessage)queueConsumer2.receive(1500);
+	      
+	      assertNotNull(m);
+	      
+	      assertEquals(m.getText(), "Two");
+	
+	      consumerSession.commit();	
+	   }
+    	finally
+   	{
+   		if (producerConnection != null)
+   		{
+   			producerConnection.close();
+   		}
+   		if (consumerConnection != null)
+   		{
+   			consumerConnection.close();
+   		}
+   	}
    }
 
     public void testRedel0() throws Exception
@@ -636,7 +819,7 @@ public class MessageConsumerTest extends MessagingTestCase
           conn.start();
 
           Session sess = conn.createSession(true, Session.SESSION_TRANSACTED);
-          MessageProducer prod = sess.createProducer(queue);
+          MessageProducer prod = sess.createProducer(queue1);
           TextMessage tm1 = sess.createTextMessage("a");
           TextMessage tm2 = sess.createTextMessage("b");
           TextMessage tm3 = sess.createTextMessage("c");
@@ -645,7 +828,7 @@ public class MessageConsumerTest extends MessagingTestCase
           prod.send(tm3);
           sess.commit();
 
-          MessageConsumer cons1 = sess.createConsumer(queue);
+          MessageConsumer cons1 = sess.createConsumer(queue1);
 
           TextMessage rm1 = (TextMessage)cons1.receive();
           assertNotNull(rm1);
@@ -653,7 +836,7 @@ public class MessageConsumerTest extends MessagingTestCase
 
           cons1.close();
 
-          MessageConsumer cons2 = sess.createConsumer(queue);
+          MessageConsumer cons2 = sess.createConsumer(queue1);
 
           sess.commit();
 
@@ -664,11 +847,8 @@ public class MessageConsumerTest extends MessagingTestCase
           TextMessage rm3 = (TextMessage)cons2.receive(1500);
           assertNotNull(rm3);
           assertEquals("c", rm3.getText());
-
-          TextMessage rm4 = (TextMessage)cons2.receive(1500);
-          assertNull(rm4);
-
-
+          
+          sess.commit();
        }
        finally
        {
@@ -676,8 +856,11 @@ public class MessageConsumerTest extends MessagingTestCase
           {
              conn.close();
           }
+          
+          checkEmpty(queue1);
+          
+          removeAllMessages(queue1.getQueueName(), true, 0);
        }
-
     }
 
 
@@ -691,7 +874,7 @@ public class MessageConsumerTest extends MessagingTestCase
           conn.start();
 
           Session sess = conn.createSession(true, Session.SESSION_TRANSACTED);
-          MessageProducer prod = sess.createProducer(queue);
+          MessageProducer prod = sess.createProducer(queue1);
           TextMessage tm1 = sess.createTextMessage("hello1");
           TextMessage tm2 = sess.createTextMessage("hello2");
           TextMessage tm3 = sess.createTextMessage("hello3");
@@ -700,7 +883,7 @@ public class MessageConsumerTest extends MessagingTestCase
           prod.send(tm3);
           sess.commit();
 
-          MessageConsumer cons1 = sess.createConsumer(queue);
+          MessageConsumer cons1 = sess.createConsumer(queue1);
 
           TextMessage rm1 = (TextMessage)cons1.receive(1500);
           assertNotNull(rm1);
@@ -708,7 +891,7 @@ public class MessageConsumerTest extends MessagingTestCase
 
           cons1.close();
 
-          MessageConsumer cons2 = sess.createConsumer(queue);
+          MessageConsumer cons2 = sess.createConsumer(queue1);
 
           sess.commit();
 
@@ -719,11 +902,8 @@ public class MessageConsumerTest extends MessagingTestCase
           TextMessage rm3 = (TextMessage)cons2.receive(1500);
           assertNotNull(rm3);
           assertEquals("hello3", rm3.getText());
-
-          TextMessage rm4 = (TextMessage)cons2.receive(1500);
-          assertNull(rm4);
-
-
+          
+          sess.commit();
        }
        finally
        {
@@ -731,8 +911,11 @@ public class MessageConsumerTest extends MessagingTestCase
           {
              conn.close();
           }
-       }
 
+          checkEmpty(queue1);
+          
+          removeAllMessages(queue1.getQueueName(), true, 0);
+       }
     }
 
     public void testRedel2() throws Exception
@@ -745,7 +928,7 @@ public class MessageConsumerTest extends MessagingTestCase
           conn.start();
 
           Session sess = conn.createSession(true, Session.SESSION_TRANSACTED);
-          MessageProducer prod = sess.createProducer(queue);
+          MessageProducer prod = sess.createProducer(queue1);
           TextMessage tm1 = sess.createTextMessage("hello1");
           TextMessage tm2 = sess.createTextMessage("hello2");
           TextMessage tm3 = sess.createTextMessage("hello3");
@@ -754,7 +937,7 @@ public class MessageConsumerTest extends MessagingTestCase
           prod.send(tm3);
           sess.commit();
 
-          MessageConsumer cons1 = sess.createConsumer(queue);
+          MessageConsumer cons1 = sess.createConsumer(queue1);
 
           TextMessage rm1 = (TextMessage)cons1.receive(1500);
           assertNotNull(rm1);
@@ -764,7 +947,7 @@ public class MessageConsumerTest extends MessagingTestCase
 
           sess.commit();
 
-          MessageConsumer cons2 = sess.createConsumer(queue);
+          MessageConsumer cons2 = sess.createConsumer(queue1);
 
           TextMessage rm2 = (TextMessage)cons2.receive(1500);
           assertNotNull(rm2);
@@ -773,11 +956,8 @@ public class MessageConsumerTest extends MessagingTestCase
           TextMessage rm3 = (TextMessage)cons2.receive(1500);
           assertNotNull(rm3);
           assertEquals("hello3", rm3.getText());
-
-          TextMessage rm4 = (TextMessage)cons2.receive(1500);
-          assertNull(rm4);
-
-
+          
+          sess.commit();
        }
        finally
        {
@@ -785,8 +965,11 @@ public class MessageConsumerTest extends MessagingTestCase
           {
              conn.close();
           }
-       }
 
+          checkEmpty(queue1);
+          
+          removeAllMessages(queue1.getQueueName(), true, 0);
+       }
     }
 
     public void testRedel3() throws Exception
@@ -799,7 +982,7 @@ public class MessageConsumerTest extends MessagingTestCase
           conn.start();
 
           Session sess = conn.createSession(true, Session.SESSION_TRANSACTED);
-          MessageProducer prod = sess.createProducer(queue);
+          MessageProducer prod = sess.createProducer(queue1);
           TextMessage tm1 = sess.createTextMessage("hello1");
           log.trace(tm1.getJMSMessageID());
           TextMessage tm2 = sess.createTextMessage("hello2");
@@ -809,7 +992,7 @@ public class MessageConsumerTest extends MessagingTestCase
           prod.send(tm3);
           sess.commit();
 
-          MessageConsumer cons1 = sess.createConsumer(queue);
+          MessageConsumer cons1 = sess.createConsumer(queue1);
 
           TextMessage rm1 = (TextMessage)cons1.receive(1500);
           assertNotNull(rm1);
@@ -830,11 +1013,8 @@ public class MessageConsumerTest extends MessagingTestCase
 
           TextMessage rm4 = (TextMessage)cons1.receive(1500);
           assertEquals("hello3", rm4.getText());
-
-          //This last step is important - there shouldn't be any more messages to receive
-          TextMessage rm5 = (TextMessage)cons1.receive(1500);
-          assertNull(rm5);
-
+          
+          sess.commit();
        }
        finally
        {
@@ -842,8 +1022,12 @@ public class MessageConsumerTest extends MessagingTestCase
           {
              conn.close();
           }
+          
+          //This last step is important - there shouldn't be any more messages to receive
+          checkEmpty(queue1);
+          
+          removeAllMessages(queue1.getQueueName(), true, 0);
        }
-
     }
 
     public void testRedel4() throws Exception
@@ -856,7 +1040,7 @@ public class MessageConsumerTest extends MessagingTestCase
           conn.start();
 
           Session sess = conn.createSession(true, Session.SESSION_TRANSACTED);
-          MessageProducer prod = sess.createProducer(queue);
+          MessageProducer prod = sess.createProducer(queue1);
           TextMessage tm1 = sess.createTextMessage("hello1");
           TextMessage tm2 = sess.createTextMessage("hello2");
           TextMessage tm3 = sess.createTextMessage("hello3");
@@ -865,7 +1049,7 @@ public class MessageConsumerTest extends MessagingTestCase
           prod.send(tm3);
           sess.commit();
 
-          MessageConsumer cons1 = sess.createConsumer(queue);
+          MessageConsumer cons1 = sess.createConsumer(queue1);
 
           TextMessage rm1 = (TextMessage)cons1.receive(1500);
           assertNotNull(rm1);
@@ -879,7 +1063,7 @@ public class MessageConsumerTest extends MessagingTestCase
 
           sess.rollback();
 
-          MessageConsumer cons2 = sess.createConsumer(queue);
+          MessageConsumer cons2 = sess.createConsumer(queue1);
 
           TextMessage rm2 = (TextMessage)cons2.receive(1500);
           assertNotNull(rm2);
@@ -892,12 +1076,8 @@ public class MessageConsumerTest extends MessagingTestCase
           TextMessage rm4 = (TextMessage)cons2.receive(1500);
           assertNotNull(rm4);
           assertEquals("hello3", rm4.getText());
-
-          //This last step is important - there shouldn't be any more messages to receive
-          TextMessage rm5 = (TextMessage)cons2.receive(1500);
-          assertNull(rm5);
-
-
+          
+          sess.commit();
        }
        finally
        {
@@ -905,6 +1085,11 @@ public class MessageConsumerTest extends MessagingTestCase
           {
              conn.close();
           }
+          
+          //This last step is important - there shouldn't be any more messages to receive
+          checkEmpty(queue1);
+          
+          removeAllMessages(queue1.getQueueName(), true, 0);
        }
     }
 
@@ -919,7 +1104,7 @@ public class MessageConsumerTest extends MessagingTestCase
           conn.start();
 
           Session sess = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
-          MessageProducer prod = sess.createProducer(queue);
+          MessageProducer prod = sess.createProducer(queue1);
           TextMessage tm1 = sess.createTextMessage("hello1");
           TextMessage tm2 = sess.createTextMessage("hello2");
           TextMessage tm3 = sess.createTextMessage("hello3");
@@ -927,7 +1112,7 @@ public class MessageConsumerTest extends MessagingTestCase
           prod.send(tm2);
           prod.send(tm3);
 
-          MessageConsumer cons1 = sess.createConsumer(queue);
+          MessageConsumer cons1 = sess.createConsumer(queue1);
 
           TextMessage rm1 = (TextMessage)cons1.receive(1500);
           assertNotNull(rm1);
@@ -947,11 +1132,8 @@ public class MessageConsumerTest extends MessagingTestCase
           TextMessage rm4 = (TextMessage)cons1.receive(1500);
           assertNotNull(rm4);
           assertEquals("hello3", rm4.getText());
-
-
-          //This last step is important - there shouldn't be any more messages to receive
-          TextMessage rm5 = (TextMessage)cons1.receive(1500);
-          assertNull(rm5);
+          
+          rm4.acknowledge();
        }
        finally
        {
@@ -959,6 +1141,11 @@ public class MessageConsumerTest extends MessagingTestCase
           {
              conn.close();
           }
+          
+          //This last step is important - there shouldn't be any more messages to receive
+          checkEmpty(queue1);
+          
+          removeAllMessages(queue1.getQueueName(), true, 0);
        }
     }
 
@@ -972,7 +1159,7 @@ public class MessageConsumerTest extends MessagingTestCase
           conn.start();
 
           Session sess = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
-          MessageProducer prod = sess.createProducer(queue);
+          MessageProducer prod = sess.createProducer(queue1);
           TextMessage tm1 = sess.createTextMessage("hello1");
           TextMessage tm2 = sess.createTextMessage("hello2");
           TextMessage tm3 = sess.createTextMessage("hello3");
@@ -980,7 +1167,7 @@ public class MessageConsumerTest extends MessagingTestCase
           prod.send(tm2);
           prod.send(tm3);
 
-          MessageConsumer cons1 = sess.createConsumer(queue);
+          MessageConsumer cons1 = sess.createConsumer(queue1);
 
           TextMessage rm1 = (TextMessage)cons1.receive(1500);
           assertNotNull(rm1);
@@ -993,7 +1180,7 @@ public class MessageConsumerTest extends MessagingTestCase
           //redeliver
           sess.recover();
 
-          MessageConsumer cons2 = sess.createConsumer(queue);
+          MessageConsumer cons2 = sess.createConsumer(queue1);
 
           log.debug("receiving ...");
 
@@ -1008,13 +1195,8 @@ public class MessageConsumerTest extends MessagingTestCase
           TextMessage rm4 = (TextMessage)cons2.receive(1500);
           assertNotNull(rm4);
           assertEquals("hello3", rm4.getText());
-
-
-          //This last step is important - there shouldn't be any more messages to receive
-          TextMessage rm5 = (TextMessage)cons2.receive(1500);
-          assertNull(rm5);
-
-
+          
+          rm4.acknowledge();
        }
        finally
        {
@@ -1022,76 +1204,72 @@ public class MessageConsumerTest extends MessagingTestCase
           {
              conn.close();
           }
+          
+          //This last step is important - there shouldn't be any more messages to receive
+          checkEmpty(queue1);
+          
+          removeAllMessages(queue1.getQueueName(), true, 0);
        }
-
     }
 
    /**
     * http://www.jboss.org/index.html?module=bb&op=viewtopic&t=71350
     */
-   public void testRedel7() throws Exception
-   {
-      Connection conn = null;
+    public void testRedel7() throws Exception
+    {
+   	 Connection conn = null;
 
-       try
-       {
-          conn = cf.createConnection();
-          conn.start();
+   	 try
+   	 {
+   		 conn = cf.createConnection();
+   		 conn.start();
 
-          Session sess = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
+   		 Session sess = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
 
-          MessageProducer prod = sess.createProducer(queue);
-          
-          TextMessage tm1 = sess.createTextMessage("1");
-          
-          TextMessage tm2 = sess.createTextMessage("2");
-          
-          TextMessage tm3 = sess.createTextMessage("3");
-          
-          prod.send(tm1);
-          prod.send(tm2);
-          prod.send(tm3);
+   		 MessageProducer prod = sess.createProducer(queue1);
 
-          log.trace("Creating consumer");
-          MessageConsumer cons1 = sess.createConsumer(queue);
+   		 TextMessage tm1 = sess.createTextMessage("1");
 
-          log.trace("Waiting for message");
-          
-          TextMessage r1 = (TextMessage)cons1.receive();
-          
-          assertEquals(tm1.getText(), r1.getText());
+   		 TextMessage tm2 = sess.createTextMessage("2");
 
-          log.trace("Got first message");
+   		 TextMessage tm3 = sess.createTextMessage("3");
 
-          cons1.close();
+   		 prod.send(tm1);
+   		 prod.send(tm2);
+   		 prod.send(tm3);
 
-          log.trace("Closed consumer");
+   		 MessageConsumer cons1 = sess.createConsumer(queue1);
 
-          MessageConsumer cons2 = sess.createConsumer(queue);
+   		 TextMessage r1 = (TextMessage)cons1.receive();
 
-          log.trace("Waiting for second message");
-          TextMessage r2 = (TextMessage)cons2.receive();
-          
-          assertEquals(tm2.getText(), r2.getText());
+   		 assertEquals(tm1.getText(), r1.getText());
 
-          log.trace("got second message");
+   		 cons1.close();
 
-          TextMessage r3 = (TextMessage)cons2.receive();
-          
-          assertEquals(tm3.getText(), r3.getText());
 
-          r1.acknowledge();
-          r2.acknowledge();
-          r3.acknowledge();
-       }
-       finally
-       {
-          if (conn != null)
-          {
-             conn.close();
-          }
-       }
-   }
+   		 MessageConsumer cons2 = sess.createConsumer(queue1);
+
+   		 TextMessage r2 = (TextMessage)cons2.receive();
+
+   		 assertEquals(tm2.getText(), r2.getText());
+
+   		 TextMessage r3 = (TextMessage)cons2.receive();
+
+   		 assertEquals(tm3.getText(), r3.getText());
+
+   		 r1.acknowledge();
+   		 r2.acknowledge();
+   		 r3.acknowledge();
+   	 }
+   	 finally
+   	 {
+   		 if (conn != null)
+   		 {
+   			 conn.close();
+   		 }
+   		 removeAllMessages(queue1.getQueueName(), true, 0);
+   	 }
+    }
 
    /**
     * http://www.jboss.org/index.html?module=bb&op=viewtopic&t=71350
@@ -1106,7 +1284,7 @@ public class MessageConsumerTest extends MessagingTestCase
 
           Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-          MessageProducer prod = sess.createProducer(queue);
+          MessageProducer prod = sess.createProducer(queue1);
 
           //Send 3 messages
 
@@ -1114,21 +1292,13 @@ public class MessageConsumerTest extends MessagingTestCase
           prod.send(sess.createTextMessage("2"));
           prod.send(sess.createTextMessage("3"));
           
-          log.trace("Sent messages");
-
           conn.start();
 
-          MessageConsumer cons1 = sess.createConsumer(queue);
-
-          log.trace("closing cons1");
+          MessageConsumer cons1 = sess.createConsumer(queue1);
 
           cons1.close();
 
-          log.trace("cons1 closed");
-
-          MessageConsumer cons2 = sess.createConsumer(queue);
-
-          log.trace("cons2 created");
+          MessageConsumer cons2 = sess.createConsumer(queue1);
 
           Message r1 = cons2.receive();
           Message r2 = cons2.receive();
@@ -1148,8 +1318,6 @@ public class MessageConsumerTest extends MessagingTestCase
        }
    }
 
-
-
    public void testSendAndReceivePersistentDifferentConnections() throws Exception
    {
       Connection connSend = null;
@@ -1157,9 +1325,6 @@ public class MessageConsumerTest extends MessagingTestCase
 
       try
       {
-
-         log.trace("Running testSendAndReceivePersistentDifferentConnections");
-
          connSend = cf.createConnection();
 
          connSend.start();
@@ -1172,7 +1337,7 @@ public class MessageConsumerTest extends MessagingTestCase
 
          Message m = sessSend.createTextMessage("hello");
 
-         prod.send(queue2, m);
+         prod.send(queue1, m);
 
          sessSend.commit();
 
@@ -1182,7 +1347,7 @@ public class MessageConsumerTest extends MessagingTestCase
 
          Session sessReceive = connReceive.createSession(true, Session.SESSION_TRANSACTED);
 
-         MessageConsumer cons = sessReceive.createConsumer(queue2);
+         MessageConsumer cons = sessReceive.createConsumer(queue1);
 
          TextMessage m2 = (TextMessage)cons.receive(1500);
 
@@ -1201,432 +1366,737 @@ public class MessageConsumerTest extends MessagingTestCase
 
          sessReceive = connReceive.createSession(true, Session.SESSION_TRANSACTED);
 
-         cons = sessReceive.createConsumer(queue2);
-
-         TextMessage m3 = (TextMessage)cons.receive(1500);
-
-         assertNull(m3);
-
-
-         log.trace("Done test");
-
+         cons = sessReceive.createConsumer(queue1);
       }
       finally
       {
          if (connSend != null) connSend.close();
          if (connReceive != null) connReceive.close();
+         
+         checkEmpty(queue1);
       }
    }
 
 
    public void testMultipleConcurrentConsumers() throws Exception
-   {
-      consumerConnection.start();
-      Session sess1 = consumerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      Session sess2 = consumerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      Session sess3 = consumerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-
-      MessageConsumer cons1 = sess1.createConsumer(topic);
-      MessageConsumer cons2 = sess2.createConsumer(topic);
-      MessageConsumer cons3 = sess3.createConsumer(topic);
-
-      final int NUM_MESSAGES = 100;
-
-      class Receiver implements Runnable
-      {
-         Receiver(MessageConsumer c1)
-         {
-            cons = c1;
-         }
-         MessageConsumer cons;
-         boolean failed;
-         public void run()
-         {
-            try
-            {
-               for (int i = 0; i < NUM_MESSAGES; i++)
-               {
-                  TextMessage m = (TextMessage)cons.receive(5000);
-                  if (m == null)
-                  {
-                     log.error("Didn't receive all the messages");
-                     failed = true;
-                     break;
-                  }
-                  log.trace("received message");
-                  if (!m.getText().equals("testing"))
-                  {
-                     failed = true;
-                  }
-               }
-
-            }
-            catch (Exception e)
-            {
-               log.error("Failed in receiving messages", e);
-               failed = true;
-            }
-         }
-      }
-
-
-      Receiver rec1 = new Receiver(cons1);
-      Receiver rec2 = new Receiver(cons2);
-      Receiver rec3 = new Receiver(cons3);
-
-      Thread t1 = new Thread(rec1);
-      Thread t2 = new Thread(rec2);
-      Thread t3 = new Thread(rec3);
-
-      log.trace("Starting threads");
-
-      t1.start();
-      t2.start();
-      t3.start();
-
-      log.trace("Sending messages to topic");
-
-      producerConnection.start();
-      Session prodSession = producerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      MessageProducer prod = prodSession.createProducer(topic);
-      prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
-
-      for (int i = 0; i < NUM_MESSAGES; i++)
-      {
-         Message m = prodSession.createTextMessage("testing");
-         prod.send(m);
-         log.trace("Sent message to topic");
-      }
-
-      t1.join();
-      t2.join();
-      t3.join();
-
-      sess1.close();
-      sess2.close();
-      sess3.close();
-      prodSession.close();
-
-      assertTrue(!rec1.failed);
-      assertTrue(!rec2.failed);
-      assertTrue(!rec3.failed);
+   {   	
+   	Connection producerConnection = null;
+   	
+   	Connection consumerConnection = null;
+   	
+   	try
+   	{
+   		producerConnection = cf.createConnection();
+   		
+   		consumerConnection = cf.createConnection();
+   		
+	      consumerConnection.start();
+	      Session sess1 = consumerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+	      Session sess2 = consumerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+	      Session sess3 = consumerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+	
+	      MessageConsumer cons1 = sess1.createConsumer(topic1);
+	      MessageConsumer cons2 = sess2.createConsumer(topic1);
+	      MessageConsumer cons3 = sess3.createConsumer(topic1);
+	
+	      final int NUM_MESSAGES = 100;
+	
+	      class Receiver implements Runnable
+	      {
+	         Receiver(MessageConsumer c1)
+	         {
+	            cons = c1;
+	         }
+	         MessageConsumer cons;
+	         boolean failed;
+	         public void run()
+	         {
+	            try
+	            {
+	               for (int i = 0; i < NUM_MESSAGES; i++)
+	               {
+	                  TextMessage m = (TextMessage)cons.receive(5000);
+	                  if (m == null)
+	                  {
+	                     log.error("Didn't receive all the messages");
+	                     failed = true;
+	                     break;
+	                  }
+	                  log.trace("received message");
+	                  if (!m.getText().equals("testing"))
+	                  {
+	                     failed = true;
+	                  }
+	               }
+	
+	            }
+	            catch (Exception e)
+	            {
+	               log.error("Failed in receiving messages", e);
+	               failed = true;
+	            }
+	         }
+	      }
+	
+	
+	      Receiver rec1 = new Receiver(cons1);
+	      Receiver rec2 = new Receiver(cons2);
+	      Receiver rec3 = new Receiver(cons3);
+	
+	      Thread t1 = new Thread(rec1);
+	      Thread t2 = new Thread(rec2);
+	      Thread t3 = new Thread(rec3);
+	
+	      log.trace("Starting threads");
+	
+	      t1.start();
+	      t2.start();
+	      t3.start();
+	
+	      log.trace("Sending messages to topic");
+	
+	      producerConnection.start();
+	      Session prodSession = producerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+	      MessageProducer prod = prodSession.createProducer(topic1);
+	      prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+	
+	      for (int i = 0; i < NUM_MESSAGES; i++)
+	      {
+	         Message m = prodSession.createTextMessage("testing");
+	         prod.send(m);
+	         log.trace("Sent message to topic");
+	      }
+	
+	      t1.join();
+	      t2.join();
+	      t3.join();
+	
+	      sess1.close();
+	      sess2.close();
+	      sess3.close();
+	      prodSession.close();
+	
+	      assertTrue(!rec1.failed);
+	      assertTrue(!rec2.failed);
+	      assertTrue(!rec3.failed);
+   	}
+    	finally
+   	{
+   		if (producerConnection != null)
+   		{
+   			producerConnection.close();
+   		}
+   		if (consumerConnection != null)
+   		{
+   			consumerConnection.close();
+   		}
+   	}
    }
 
 
 
    public void testGetSelector() throws Exception
    {
-      String selector = "JMSType = 'something'";
-      topicConsumer = consumerSession.createConsumer(topic, selector);
-      assertEquals(selector, topicConsumer.getMessageSelector());
+   	Connection consumerConnection = null;
+   	
+   	try
+   	{
+   		consumerConnection = cf.createConnection();
+   		
+   		Session consumerSession = consumerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+   	   
+	      String selector = "JMSType = 'something'";
+	      
+	      MessageConsumer topicConsumer = consumerSession.createConsumer(topic1, selector);
+	      
+	      assertEquals(selector, topicConsumer.getMessageSelector());
+   	}
+   	finally
+   	{
+   		if (consumerConnection != null)
+   		{
+   			consumerConnection.close();
+   		}
+   	}
    }
 
    public void testGetSelectorOnClosedConsumer() throws Exception
    {
-      topicConsumer.close();
-
-      try
-      {
-         topicConsumer.getMessageSelector();
-      }
-      catch(javax.jms.IllegalStateException e)
-      {
-         // OK
-      }
+   	Connection consumerConnection = null;
+   	
+   	try
+   	{
+   		consumerConnection = cf.createConnection();
+   		
+   		Session consumerSession = consumerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+   		
+   		MessageConsumer topicConsumer = consumerSession.createConsumer(topic1);
+   	
+	      topicConsumer.close();
+	
+	      try
+	      {
+	         topicConsumer.getMessageSelector();
+	      }
+	      catch(javax.jms.IllegalStateException e)
+	      {
+	         // OK
+	      }
+   	}
+   	finally
+   	{
+   		if (consumerConnection != null)
+   		{
+   			consumerConnection.close();
+   		}
+   	}
    }
 
 
    public void testGetTopic() throws Exception
    {
-      Topic t = ((TopicSubscriber)topicConsumer).getTopic();
-      assertEquals(topic, t);
+   	Connection consumerConnection = null;
+   	
+   	try
+   	{
+   		consumerConnection = cf.createConnection();
+   		
+   		Session consumerSession = consumerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+   		
+   		MessageConsumer topicConsumer = consumerSession.createConsumer(topic1);
+   	
+	      Topic t = ((TopicSubscriber)topicConsumer).getTopic();
+	      
+	      assertEquals(topic1, t);
+   	}
+   	finally
+   	{
+   		if (consumerConnection != null)
+   		{
+   			consumerConnection.close();
+   		}
+   	}
    }
 
    public void testGetTopicOnClosedConsumer() throws Exception
    {
-      topicConsumer.close();
-
-      try
-      {
-         ((TopicSubscriber)topicConsumer).getTopic();
-      }
-      catch(javax.jms.IllegalStateException e)
-      {
-         // OK
-      }
+   	Connection consumerConnection = null;
+   	
+   	try
+   	{
+   		consumerConnection = cf.createConnection();
+   		
+   		Session consumerSession = consumerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+   		
+   		MessageConsumer topicConsumer = consumerSession.createConsumer(topic1);
+   	
+	      topicConsumer.close();
+	
+	      try
+	      {
+	         ((TopicSubscriber)topicConsumer).getTopic();
+	      }
+	      catch(javax.jms.IllegalStateException e)
+	      {
+	         // OK
+	      }
+   	}
+   	finally
+   	{
+   		if (consumerConnection != null)
+   		{
+   			consumerConnection.close();
+   		}
+   	}
    }
 
 
    public void testGetQueue() throws Exception
    {
-      Queue q = ((QueueReceiver)queueConsumer).getQueue();
-      assertEquals(queue, q);
+   	Connection consumerConnection = null;
+   	
+   	try
+   	{
+   		consumerConnection = cf.createConnection();
+   		
+   		Session consumerSession = consumerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+   		
+   		MessageConsumer queueConsumer = consumerSession.createConsumer(queue1);
+   		
+	      Queue q = ((QueueReceiver)queueConsumer).getQueue();
+	      
+	      assertEquals(queue1, q);
+   	}
+   	finally
+   	{
+   		if (consumerConnection != null)
+   		{
+   			consumerConnection.close();
+   		}
+   	}
    }
 
    public void testGetQueueOnClosedConsumer() throws Exception
    {
-      queueConsumer.close();
-
-      try
-      {
-         ((QueueReceiver)queueConsumer).getQueue();
-      }
-      catch(javax.jms.IllegalStateException e)
-      {
-         // OK
-      }
+   	Connection consumerConnection = null;
+   	
+   	try
+   	{
+   		consumerConnection = cf.createConnection();
+   		
+   		Session consumerSession = consumerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+   		
+   		MessageConsumer queueConsumer = consumerSession.createConsumer(queue1);
+   		
+	      queueConsumer.close();
+	
+	      try
+	      {
+	         ((QueueReceiver)queueConsumer).getQueue();
+	      }
+	      catch(javax.jms.IllegalStateException e)
+	      {
+	         // OK
+	      }
+   	}
+   	finally
+   	{
+   		if (consumerConnection != null)
+   		{
+   			consumerConnection.close();
+   		}
+   	}
    }
 
 
    public void testReceiveOnTopicTimeoutNoMessage() throws Exception
    {
-      if (log.isTraceEnabled()) log.trace("testReceiveOnTopicTimeoutNoMessage");
-      Message m = topicConsumer.receive(1000);
-      assertNull(m);
+   	Connection consumerConnection = null;
+   	
+   	try
+   	{
+   		consumerConnection = cf.createConnection();
+   		
+   		Session consumerSession = consumerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+   		
+   		MessageConsumer topicConsumer = consumerSession.createConsumer(topic1);
+   		     
+	      Message m = topicConsumer.receive(1000);
+	      
+	      assertNull(m);
+   	}
+   	finally
+   	{
+   		if (consumerConnection != null)
+   		{
+   			consumerConnection.close();
+   		}
+   	}
    }
 
    public void testReceiveOnTopicConnectionStopped() throws Exception
    {
-      if (log.isTraceEnabled()) log.trace("testReceiveOnTopicConnectionStopped");
-      consumerConnection.stop();
-
-      final Message m = producerSession.createMessage();
-      new Thread(new Runnable()
-      {
-         public void run()
-         {
-            try
-            {
-               // this is needed to make sure the main thread has enough time to block
-               Thread.sleep(1000);
-               topicProducer.send(m);
-            }
-            catch(Exception e)
-            {
-               log.error(e);
-            }
-         }
-      }, "Producer").start();
-
-      assertNull(topicConsumer.receive(1500));
+   	Connection producerConnection = null;
+   	
+   	Connection consumerConnection = null;
+   	
+   	try
+   	{
+   		producerConnection = cf.createConnection();
+   		
+   		consumerConnection = cf.createConnection();
+   		
+   		Session producerSession = producerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+   		
+   		Session consumerSession = consumerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+   		
+   		final MessageProducer topicProducer = producerSession.createProducer(topic1);
+   		
+   		MessageConsumer topicConsumer = consumerSession.createConsumer(topic1);
+   	   	
+	      final Message m = producerSession.createMessage();
+	      new Thread(new Runnable()
+	      {
+	         public void run()
+	         {
+	            try
+	            {
+	               // this is needed to make sure the main thread has enough time to block
+	               Thread.sleep(1000);
+	               topicProducer.send(m);
+	            }
+	            catch(Exception e)
+	            {
+	               log.error(e);
+	            }
+	         }
+	      }, "Producer").start();
+	
+	      assertNull(topicConsumer.receive(1500));
+   	}
+   	finally
+   	{
+   		if (producerConnection != null)
+   		{
+   			producerConnection.close();
+   		}
+   		if (consumerConnection != null)
+   		{
+   			consumerConnection.close();
+   		}
+   	}
    }
 
 
    public void testReceiveOnTopicTimeout() throws Exception
    {
-      if (log.isTraceEnabled()) log.trace("testReceiveOnTopicTimeout");
-      consumerConnection.start();
-
-      final Message m1 = producerSession.createMessage();
-      new Thread(new Runnable()
-      {
-         public void run()
-         {
-            try
-            {
-               // this is needed to make sure the main thread has enough time to block
-               Thread.sleep(1000);
-               topicProducer.send(m1);
-            }
-            catch(Exception e)
-            {
-               log.error(e);
-            }
-         }
-      }, "Producer").start();
-
-      Message m2 = topicConsumer.receive(1500);
-      assertEquals(m1.getJMSMessageID(), m2.getJMSMessageID());
+   	Connection producerConnection = null;
+   	
+   	Connection consumerConnection = null;
+   	
+   	try
+   	{
+   		producerConnection = cf.createConnection();
+   		
+   		consumerConnection = cf.createConnection();
+   		
+   		Session producerSession = producerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+   		
+   		Session consumerSession = consumerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+   		
+   		final MessageProducer topicProducer = producerSession.createProducer(topic1);
+   		
+   		MessageConsumer topicConsumer = consumerSession.createConsumer(topic1);
+   	   
+	      consumerConnection.start();
+	
+	      final Message m1 = producerSession.createMessage();
+	      new Thread(new Runnable()
+	      {
+	         public void run()
+	         {
+	            try
+	            {
+	               // this is needed to make sure the main thread has enough time to block
+	               Thread.sleep(1000);
+	               topicProducer.send(m1);
+	            }
+	            catch(Exception e)
+	            {
+	               log.error(e);
+	            }
+	         }
+	      }, "Producer").start();
+	
+	      Message m2 = topicConsumer.receive(1500);
+	      assertEquals(m1.getJMSMessageID(), m2.getJMSMessageID());
+   	}
+   	finally
+   	{
+   		if (producerConnection != null)
+   		{
+   			producerConnection.close();
+   		}
+   		if (consumerConnection != null)
+   		{
+   			consumerConnection.close();
+   		}
+   	}
    }
 
 
    public void testReceiveOnTopic() throws Exception
    {
-      if (log.isTraceEnabled()) log.trace("testReceiveOnTopic");
-      consumerConnection.start();
+   	Connection producerConnection = null;
+   	
+   	Connection consumerConnection = null;
+   	
+   	try
+   	{
+   		producerConnection = cf.createConnection();
+   		
+   		consumerConnection = cf.createConnection();
+   		
+   		Session producerSession = producerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+   		
+   		Session consumerSession = consumerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+   		
+   		final MessageProducer topicProducer = producerSession.createProducer(topic1);
+   		
+   		MessageConsumer topicConsumer = consumerSession.createConsumer(topic1);
+   	
+	      consumerConnection.start();
+	
+	      final Message m1 = producerSession.createMessage();
+	      new Thread(new Runnable()
+	      {
+	         public void run()
+	         {
+	            try
+	            {
+	               // this is needed to make sure the main thread has enough time to block
+	               Thread.sleep(1000);
+	               topicProducer.send(m1);
+	            }
+	            catch(Exception e)
+	            {
+	               log.error(e);
+	            }
+	         }
+	      }, "Producer").start();
+	
+	      Message m2 = topicConsumer.receive(3000);
 
-      final Message m1 = producerSession.createMessage();
-      new Thread(new Runnable()
-      {
-         public void run()
-         {
-            try
-            {
-               // this is needed to make sure the main thread has enough time to block
-               Thread.sleep(1000);
-               topicProducer.send(m1);
-            }
-            catch(Exception e)
-            {
-               log.error(e);
-            }
-         }
-      }, "Producer").start();
-
-      Message m2 = topicConsumer.receive(3000);
-
-      if (log.isTraceEnabled()) log.trace("m1:" + m1 + ", m2:" + m2) ;
-
-      assertEquals(m1.getJMSMessageID(), m2.getJMSMessageID());
+	      assertEquals(m1.getJMSMessageID(), m2.getJMSMessageID());
+   	}
+   	finally
+   	{
+   		if (producerConnection != null)
+   		{
+   			producerConnection.close();
+   		}
+   		if (consumerConnection != null)
+   		{
+   			consumerConnection.close();
+   		}
+   	}
    }
-
-
 
    public void testReceiveNoWaitOnTopic() throws Exception
    {
-      consumerConnection.start();
-
-      Message m = topicConsumer.receiveNoWait();
-
-      assertNull(m);
-
-      Message m1 = producerSession.createMessage();
-      topicProducer.send(m1);
-
-      // block this thread for a while to allow ServerConsumerDelegate's delivery thread to kick in
-      Thread.sleep(500);
-
-      m = topicConsumer.receiveNoWait();
-
-      assertEquals(m1.getJMSMessageID(), m.getJMSMessageID());
+   	Connection producerConnection = null;
+   	
+   	Connection consumerConnection = null;
+   	
+   	try
+   	{
+   		producerConnection = cf.createConnection();
+   		
+   		consumerConnection = cf.createConnection();
+   		
+   		Session producerSession = producerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+   		
+   		Session consumerSession = consumerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+   		
+   		final MessageProducer topicProducer = producerSession.createProducer(topic1);
+   		
+   		MessageConsumer topicConsumer = consumerSession.createConsumer(topic1);
+   	
+	      consumerConnection.start();
+	
+	      Message m = topicConsumer.receiveNoWait();
+	
+	      assertNull(m);
+	
+	      Message m1 = producerSession.createMessage();
+	      topicProducer.send(m1);
+	
+	      // block this thread for a while to allow ServerConsumerDelegate's delivery thread to kick in
+	      Thread.sleep(500);
+	
+	      m = topicConsumer.receiveNoWait();
+	
+	      assertEquals(m1.getJMSMessageID(), m.getJMSMessageID());
+   	}
+   	finally
+   	{
+   		if (producerConnection != null)
+   		{
+   			producerConnection.close();
+   		}
+   		if (consumerConnection != null)
+   		{
+   			consumerConnection.close();
+   		}
+   	}
    }
-
-
-
 
    /**
     * The test sends a burst of messages and verifies if the consumer receives all of them.
     */
-
-
    public void testStressReceiveOnQueue() throws Exception
    {
-      if (log.isTraceEnabled()) log.trace("testStressReceiveOnQueue");
-      final int count = 100;
-
-      consumerConnection.start();
-
-      new Thread(new Runnable()
-      {
-         public void run()
-         {
-            try
-            {
-               // this is needed to make sure the main thread has enough time to block
-               Thread.sleep(1000);
-
-               for (int i = 0; i < count; i++)
-               {
-                  Message m = producerSession.createMessage();
-                  queueProducer.send(m);
-               }
-            }
-            catch(Exception e)
-            {
-               log.error(e);
-            }
-         }
-      }, "ProducerTestThread").start();
-
-      int received = 0;
-      while(true)
-      {
-         Message m = queueConsumer.receive(1500);
-         if (m == null)
-         {
-            break;
-         }
-         received++;
-      }
-
-      assertEquals(count, received);
+   	Connection producerConnection = null;
+   	
+   	Connection consumerConnection = null;
+   	
+   	try
+   	{
+   		producerConnection = cf.createConnection();
+   		
+   		consumerConnection = cf.createConnection();
+   		
+   		final Session producerSession = producerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+   		
+   		Session consumerSession = consumerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+   		
+   		final MessageProducer queueProducer = producerSession.createProducer(queue1);
+   		
+   		MessageConsumer queueConsumer = consumerSession.createConsumer(queue1);
+   	   	
+	      final int count = 100;
+	
+	      consumerConnection.start();
+	
+	      new Thread(new Runnable()
+	      {
+	         public void run()
+	         {
+	            try
+	            {
+	               for (int i = 0; i < count; i++)
+	               {
+	                  Message m = producerSession.createMessage();
+	                  queueProducer.send(m);
+	               }
+	            }
+	            catch(Exception e)
+	            {
+	               log.error(e);
+	            }
+	         }
+	      }, "ProducerTestThread").start();
+	
+	      for (int i = 0; i < count; i++)
+	      {
+	         Message m = queueConsumer.receive(1500);
+	         assertNotNull(m);
+	      }
+   	}
+   	finally
+   	{
+   		if (producerConnection != null)
+   		{
+   			producerConnection.close();
+   		}
+   		if (consumerConnection != null)
+   		{
+   			consumerConnection.close();
+   		}
+   		   		
+	      checkEmpty(queue1);
+   	}
    }
 
 
    /**
     * The test sends a burst of messages and verifies if the consumer receives all of them.
     */
-
-
-
-
    public void testStressReceiveOnTopic() throws Exception
    {
-      if (log.isTraceEnabled()) log.trace("testStressReceiveOnTopic");
-      final int count = 1000;
-
-      consumerConnection.start();
-
-      new Thread(new Runnable()
-      {
-         public void run()
-         {
-            try
-            {
-               // this is needed to make sure the main thread has enough time to block
-               Thread.sleep(1000);
-
-               for (int i = 0; i < count; i++)
-               {
-                  Message m = producerSession.createMessage();
-                  topicProducer.send(m);
-               }
-            }
-            catch(Exception e)
-            {
-               log.error(e);
-            }
-         }
-      }, "ProducerTestThread").start();
-
-      int received = 0;
-      while(true)
-      {
-         Message m = topicConsumer.receive(1500);
-         if (m == null)
-         {
-            break;
-         }
-         received++;
-      }
-
-      assertEquals(count, received);
-
+   	Connection producerConnection = null;
+   	
+   	Connection consumerConnection = null;
+   	
+   	try
+   	{
+   		producerConnection = cf.createConnection();
+   		
+   		consumerConnection = cf.createConnection();
+   		
+   		final Session producerSession = producerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+   		
+   		Session consumerSession = consumerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+   		
+   		final MessageProducer topicProducer = producerSession.createProducer(topic1);
+   		
+   		MessageConsumer topicConsumer = consumerSession.createConsumer(topic1);
+   		
+	      final int count = 1000;
+	
+	      consumerConnection.start();
+	
+	      new Thread(new Runnable()
+	      {
+	         public void run()
+	         {
+	            try
+	            {
+	               // this is needed to make sure the main thread has enough time to block
+	               Thread.sleep(1000);
+	
+	               for (int i = 0; i < count; i++)
+	               {
+	                  Message m = producerSession.createMessage();
+	                  topicProducer.send(m);
+	               }
+	            }
+	            catch(Exception e)
+	            {
+	               log.error(e);
+	            }
+	         }
+	      }, "ProducerTestThread").start();
+	
+	      for (int i = 0; i < count; i++)
+	      {
+	         Message m = topicConsumer.receive(1500);
+	         assertNotNull(m);
+	      }
+	      
+	      checkEmpty(topic1);
+   	}
+   	finally
+   	{
+   		if (producerConnection != null)
+   		{
+   			producerConnection.close();
+   		}
+   		if (consumerConnection != null)
+   		{
+   			consumerConnection.close();
+   		}
+   	}
    }
-
-
 
    public void testReceiveOnClose() throws Exception
    {
-      if (log.isTraceEnabled()) log.trace("testReceiveOnClose");
-      consumerConnection.start();
-      final Latch latch = new Latch();
-      Thread closerThread = new Thread(new Runnable()
-      {
-         public void run()
-         {
-            try
-            {
-               // this is needed to make sure the main thread has enough time to block
-               Thread.sleep(1000);
-               topicConsumer.close();
-            }
-            catch(Exception e)
-            {
-               log.error(e);
-            }
-            finally
-            {
-               latch.release();
-            }
-         }
-      }, "closing thread");
-      closerThread.start();
-
-      assertNull(topicConsumer.receive(3000));
-
-      // wait for the closing thread to finish
-      latch.acquire();
+   	Connection consumerConnection = null;
+   	
+   	try
+   	{
+   		consumerConnection = cf.createConnection();
+   		
+   		Session consumerSession = consumerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+   		
+   		final MessageConsumer topicConsumer = consumerSession.createConsumer(topic1);
+   	   	
+	      consumerConnection.start();
+	      final Latch latch = new Latch();
+	      Thread closerThread = new Thread(new Runnable()
+	      {
+	         public void run()
+	         {
+	            try
+	            {
+	               // this is needed to make sure the main thread has enough time to block
+	               Thread.sleep(1000);
+	               topicConsumer.close();
+	            }
+	            catch(Exception e)
+	            {
+	               log.error(e);
+	            }
+	            finally
+	            {
+	               latch.release();
+	            }
+	         }
+	      }, "closing thread");
+	      closerThread.start();
+	
+	      assertNull(topicConsumer.receive(1500));
+	
+	      // wait for the closing thread to finish
+	      latch.acquire();
+   	}
+   	finally
+   	{
+   		if (consumerConnection != null)
+   		{
+   			consumerConnection.close();
+   		}
+   	}
    }
 
     /** to be used by testTimeoutReceiveOnClose */
@@ -1635,11 +2105,13 @@ public class MessageConsumerTest extends MessagingTestCase
 
 	       Object waitMonitor;
 	       long timeToSleep;
+	       MessageConsumer topicConsumer;
 
-	       public ThreadCloser( Object waitMonitor, long timeToSleep)
+	       public ThreadCloser( Object waitMonitor, long timeToSleep, MessageConsumer topicConsumer)
 	       {
 	           this.waitMonitor=waitMonitor;
 	           this.timeToSleep=timeToSleep;
+	           this.topicConsumer = topicConsumer;
 	       }
 
 
@@ -1674,11 +2146,13 @@ public class MessageConsumerTest extends MessagingTestCase
 	       long t1;
 	       long t2;
 	       Object receivedObject;
+	       MessageConsumer topicConsumer;
 
-	       public ThreadReceiver(Object waitMonitor, long timeToWait)
+	       public ThreadReceiver(Object waitMonitor, long timeToWait, MessageConsumer topicConsumer)
 	       {
 	           this.waitMonitor=waitMonitor;
 	           this.timeToWait=timeToWait;
+	           this.topicConsumer = topicConsumer;
 	       }
 
 	       public void run()
@@ -1706,33 +2180,52 @@ public class MessageConsumerTest extends MessagingTestCase
 
 	  public void testTimeoutReceiveOnClose() throws Exception
 	  {
-	     System.gc();       /// If A GC need to be executed, it' s better to be executed now
-	     Thread.sleep(1000);
-	     if (log.isTraceEnabled()) log.trace("testTimeoutReceiveOnClose");
+		  Connection consumerConnection = null;
 
-	     Object monitor = new Object();
-	     ThreadCloser closer = null;
-	     ThreadReceiver receiver = new ThreadReceiver(monitor,2000);
+		  try
+		  {
+			  consumerConnection = cf.createConnection();
 
-	     closer = new ThreadCloser(monitor,1000);
-	     receiver= new ThreadReceiver(monitor,2000);
-	     closer.start();
-	     receiver.start();
-	     Thread.sleep(2000);
-	     synchronized (monitor)
-	     {
-	        monitor.notifyAll();
-	     }
-	     closer.join();
-	     receiver.join();
+			  Session consumerSession = consumerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
+			  MessageConsumer topicConsumer = consumerSession.createConsumer(topic1);
+			  
+			  //This is a really weird test - the received object is always going to be null since no message is sent!!
 
-	     assertNull(receiver.receivedObject);
+			  System.gc();       /// If A GC need to be executed, it' s better to be executed now
+			  Thread.sleep(1000);
+			  if (log.isTraceEnabled()) log.trace("testTimeoutReceiveOnClose");
 
-	     log.info("Elapsed time was " + (receiver.t2-receiver.t1));
+			  Object monitor = new Object();
+			  ThreadCloser closer = null;
+			  ThreadReceiver receiver = null;
 
-	     // We need to make sure the
-	     assertTrue("Receive was supposed to receive a notification before 2 seconds",receiver.t2-receiver.t1<=1500);
+			  closer = new ThreadCloser(monitor,1000, topicConsumer);
+			  receiver= new ThreadReceiver(monitor,2000, topicConsumer);
+			  closer.start();
+			  receiver.start();
+			  Thread.sleep(2000);
+			  synchronized (monitor)
+			  {
+				  monitor.notifyAll();
+			  }
+			  closer.join();
+			  receiver.join();
+
+			  assertNull(receiver.receivedObject);
+
+			  log.info("Elapsed time was " + (receiver.t2-receiver.t1));
+
+			  // We need to make sure the
+			  assertTrue("Receive was supposed to receive a notification before 2 seconds",receiver.t2-receiver.t1<=1500);
+		  }
+		  finally
+		  {
+			  if (consumerConnection != null)
+			  {
+				  consumerConnection.close();
+			  }
+		  }
 	  }
 
    //
@@ -1741,21 +2234,49 @@ public class MessageConsumerTest extends MessagingTestCase
 
    public void testMessageListenerOnTopic() throws Exception
    {
-      if (log.isTraceEnabled()) log.trace("testMessageListenerOnTopic");
+   	Connection producerConnection = null;
+   	
+   	Connection consumerConnection = null;
+   	
+   	try
+   	{
+   		producerConnection = cf.createConnection();
+   		
+   		consumerConnection = cf.createConnection();
+   		
+   		Session producerSession = producerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+   		
+   		Session consumerSession = consumerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+   		
+   		MessageProducer topicProducer = producerSession.createProducer(topic1);
+   		
+   		MessageConsumer topicConsumer = consumerSession.createConsumer(topic1);
 
-      MessageListenerImpl l = new MessageListenerImpl();
-      topicConsumer.setMessageListener(l);
-
-      consumerConnection.start();
-
-      Message m1 = producerSession.createMessage();
-      topicProducer.send(m1);
-
-      // block the current thread until the listener gets something; this is to avoid closing
-      // the connection too early
-      l.waitForMessages();
-
-      assertEquals(m1.getJMSMessageID(), l.getNextMessage().getJMSMessageID());
+	      MessageListenerImpl l = new MessageListenerImpl();
+	      topicConsumer.setMessageListener(l);
+	
+	      consumerConnection.start();
+	
+	      Message m1 = producerSession.createMessage();
+	      topicProducer.send(m1);
+	
+	      // block the current thread until the listener gets something; this is to avoid closing
+	      // the connection too early
+	      l.waitForMessages();
+	
+	      assertEquals(m1.getJMSMessageID(), l.getNextMessage().getJMSMessageID());
+   	}
+   	finally
+   	{
+   		if (producerConnection != null)
+   		{
+   			producerConnection.close();
+   		}
+   		if (consumerConnection != null)
+   		{
+   			consumerConnection.close();
+   		}
+   	}
    }
 
 
@@ -1830,64 +2351,107 @@ public class MessageConsumerTest extends MessagingTestCase
 
    public void testSetMessageListenerTwice() throws Exception
    {
-      if (log.isTraceEnabled()) log.trace("testSetMessageListenerTwice");
-      MessageListenerImpl listener1 = new MessageListenerImpl();
+   	Connection producerConnection = null;
+   	
+   	Connection consumerConnection = null;
+   	
+   	try
+   	{
+   		producerConnection = cf.createConnection();
+   		
+   		consumerConnection = cf.createConnection();
+   		
+   		Session producerSession = producerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+   		
+   		Session consumerSession = consumerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+   		
+   		MessageProducer topicProducer = producerSession.createProducer(topic1);
+   		
+   		MessageConsumer topicConsumer = consumerSession.createConsumer(topic1);
+   	   	
+	      MessageListenerImpl listener1 = new MessageListenerImpl();
+	
+	      topicConsumer.setMessageListener(listener1);
 
-      topicConsumer.setMessageListener(listener1);
-      log.trace("Set message listener1");
+	      MessageListenerImpl listener2 = new MessageListenerImpl();
+	
+	      topicConsumer.setMessageListener(listener2);
 
-      MessageListenerImpl listener2 = new MessageListenerImpl();
+	      consumerConnection.start();
+	
+	      Message m1 = producerSession.createMessage();
+	      topicProducer.send(m1);
+	
+	      // block the current thread until the listener gets something; this is to avoid closing
+	      // connection too early
 
-      topicConsumer.setMessageListener(listener2);
-      log.trace("Set message listener2");
-
-      consumerConnection.start();
-
-      Message m1 = producerSession.createMessage();
-      topicProducer.send(m1);
-
-      // block the current thread until the listener gets something; this is to avoid closing
-      // connection too early
-      //log.trace("Waiting for messages....");
-
-      listener2.waitForMessages();
-
-      assertEquals(m1.getJMSMessageID(), listener2.getNextMessage().getJMSMessageID());
-      assertEquals(0, listener1.size());
+	      listener2.waitForMessages();
+	
+	      assertEquals(m1.getJMSMessageID(), listener2.getNextMessage().getJMSMessageID());
+	      assertEquals(0, listener1.size());
+   	}
+   	finally
+   	{
+   		if (producerConnection != null)
+   		{
+   			producerConnection.close();
+   		}
+   		if (consumerConnection != null)
+   		{
+   			consumerConnection.close();
+   		}
+   	}
    }
 
    public void testSetMessageListenerWhileReceiving() throws Exception
    {
-      if (log.isTraceEnabled()) log.trace("testSetMessageListenerWhileReceiving");
-      consumerConnection.start();
-      worker1= new Thread(new Runnable()
-      {
-         public void run()
-         {
-            try
-            {
-               topicConsumer.receive(3000);
-            }
-            catch(Exception e)
-            {
-               e.printStackTrace();
-            }
-         }}, "Receiver");
-
-      worker1.start();
-
-      Thread.sleep(1000);
-
-      try
-      {
-         topicConsumer.setMessageListener(new MessageListenerImpl());
-         fail("should have thrown JMSException");
-      }
-      catch(JMSException e)
-      {
-          // ok
-         log.trace(e.getMessage());
-      }
+   	Connection consumerConnection = null;
+   	
+   	try
+   	{
+   		consumerConnection = cf.createConnection();
+   		
+   		Session consumerSession = consumerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+   			
+   		final MessageConsumer topicConsumer = consumerSession.createConsumer(topic1);
+   	   	
+	      consumerConnection.start();
+	      Thread worker1= new Thread(new Runnable()
+	      {
+	         public void run()
+	         {
+	            try
+	            {
+	               topicConsumer.receive(3000);
+	            }
+	            catch(Exception e)
+	            {
+	               e.printStackTrace();
+	            }
+	         }}, "Receiver");
+	
+	      worker1.start();
+	
+	      Thread.sleep(1000);
+	
+	      try
+	      {
+	         topicConsumer.setMessageListener(new MessageListenerImpl());
+	         fail("should have thrown JMSException");
+	      }
+	      catch(JMSException e)
+	      {
+	          // ok
+	         log.trace(e.getMessage());
+	      }
+   	}
+   	finally
+   	{
+   		if (consumerConnection != null)
+   		{
+   			consumerConnection.close();
+   		}
+   	}
    }
 
 // This is commented out until http://jira.jboss.com/jira/browse/JBMESSAGING-983 is complete   
@@ -1956,31 +2520,65 @@ public class MessageConsumerTest extends MessagingTestCase
    // Test that stop doesn't in any way break subsequent close 
    public void testCloseAfterStop() throws Exception
    {
-      MessageListener myListener = new MessageListener() {
-         public void onMessage(Message message)
-         {
-            try
-            {
-               Thread.sleep(100);
-            }
-            catch (InterruptedException e)
-            {
-               // Ignore
-            }
-         }
-      };
-      
-      queueConsumer.setMessageListener(myListener);
-
-      consumerConnection.start();
-
-      for (int i = 0; i < 100; i++)
-      {
-         queueProducer.send(producerSession.createTextMessage("Message #" + Integer.toString(i)));
-      }
-
-      consumerConnection.stop();
-      consumerConnection.close();
+   	Connection producerConnection = null;
+   	
+   	Connection consumerConnection = null;
+   	
+   	try
+   	{
+   		producerConnection = cf.createConnection();
+   		
+   		consumerConnection = cf.createConnection();
+   		
+   		Session producerSession = producerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+   		
+   		Session consumerSession = consumerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+   		
+   		MessageProducer queueProducer = producerSession.createProducer(queue1);
+   		
+   		MessageConsumer queueConsumer = consumerSession.createConsumer(queue1);
+   	   	
+	      MessageListener myListener = new MessageListener() {
+	         public void onMessage(Message message)
+	         {
+	            try
+	            {
+	               Thread.sleep(100);
+	            }
+	            catch (InterruptedException e)
+	            {
+	               // Ignore
+	            }
+	         }
+	      };
+	      
+	      queueConsumer.setMessageListener(myListener);
+	
+	      consumerConnection.start();
+	
+	      for (int i = 0; i < 100; i++)
+	      {
+	         queueProducer.send(producerSession.createTextMessage("Message #" + Integer.toString(i)));
+	      }
+	
+	      consumerConnection.stop();
+	      
+	      consumerConnection.close();
+	      
+	      consumerConnection = null;
+   	}
+   	finally
+   	{
+   		if (producerConnection != null)
+   		{
+   			producerConnection.close();
+   		}
+   		if (consumerConnection != null)
+   		{
+   			consumerConnection.close();
+   		}
+   		removeAllMessages(queue1.getQueueName(), true, 0);
+   	}
    }
 
    //
@@ -1989,71 +2587,112 @@ public class MessageConsumerTest extends MessagingTestCase
 
    public void testTwoConsumersNonTransacted() throws Exception
    {
+   	Connection producerConnection = null;
+   	
+   	Connection consumerConnection = null;
+   	
+   	try
+   	{
+   		producerConnection = cf.createConnection();
+   		
+   		Session producerSession = producerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+   		
+   		MessageProducer queueProducer = producerSession.createProducer(queue1);
+   		
+	      TextMessage tm = producerSession.createTextMessage();
+	      tm.setText("One");
+	      queueProducer.send(tm);
+	      tm.setText("Two");
+	      queueProducer.send(tm);
 
-      consumerSession.close();
-
-      TextMessage tm = producerSession.createTextMessage();
-      tm.setText("One");
-      queueProducer.send(tm);
-      tm.setText("Two");
-      queueProducer.send(tm);
-
-      // recreate the connection and receive the first message
-      consumerConnection = cf.createConnection();
-      consumerSession = consumerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      queueConsumer = consumerSession.createConsumer(queue);
-      consumerConnection.start();
-
-      TextMessage m = (TextMessage)queueConsumer.receive(1500);
-      assertEquals("One", m.getText());
-
-      consumerConnection.close();
-
-      // recreate the connection and receive the second message
-      consumerConnection = cf.createConnection();
-      consumerSession = consumerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      queueConsumer = consumerSession.createConsumer(queue);
-      consumerConnection.start();
-
-      m = (TextMessage)queueConsumer.receive(1500);
-      assertEquals("Two", m.getText());
-
-      consumerConnection.close();
+	      // recreate the connection and receive the first message
+	      consumerConnection = cf.createConnection();
+	      Session consumerSession = consumerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+	      MessageConsumer queueConsumer = consumerSession.createConsumer(queue1);
+	      consumerConnection.start();
+	
+	      TextMessage m = (TextMessage)queueConsumer.receive(1500);
+	      assertEquals("One", m.getText());
+	
+	      consumerConnection.close();
+	      consumerConnection = null;
+	
+	      // recreate the connection and receive the second message
+	      consumerConnection = cf.createConnection();
+	      consumerSession = consumerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+	      queueConsumer = consumerSession.createConsumer(queue1);
+	      consumerConnection.start();
+	
+	      m = (TextMessage)queueConsumer.receive(1500);
+	      assertEquals("Two", m.getText());
+   	}
+   	finally
+   	{
+   		if (producerConnection != null)
+   		{
+   			producerConnection.close();
+   		}
+   		if (consumerConnection != null)
+   		{
+   			consumerConnection.close();
+   		}
+   	}
    }
 
    public void testTwoConsumersTransacted() throws Exception
    {
+   	Connection producerConnection = null;
+   	
+   	Connection consumerConnection = null;
+   	
+   	try
+   	{
+   		producerConnection = cf.createConnection();
+   		
+   		Session producerSession = producerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+   		
+   		MessageProducer queueProducer = producerSession.createProducer(queue1);
 
-      consumerSession.close();
-
-      TextMessage tm = producerSession.createTextMessage();
-      tm.setText("One");
-      queueProducer.send(tm);
-      tm.setText("Two");
-      queueProducer.send(tm);
-
-      // recreate the connection and receive the first message
-      consumerConnection = cf.createConnection();
-      consumerSession = consumerConnection.createSession(true, -1);
-      queueConsumer = consumerSession.createConsumer(queue);
-      consumerConnection.start();
-
-      TextMessage m = (TextMessage)queueConsumer.receive(1500);
-      assertEquals("One", m.getText());
-
-      consumerSession.commit();
-      consumerConnection.close();
-
-      // recreate the connection and receive the second message
-      consumerConnection = cf.createConnection();
-      consumerSession = consumerConnection.createSession(true, -1);
-      queueConsumer = consumerSession.createConsumer(queue);
-      consumerConnection.start();
-
-      m = (TextMessage)queueConsumer.receive(1500);
-      assertEquals("Two", m.getText());
-
-      consumerConnection.close();
+	      TextMessage tm = producerSession.createTextMessage();
+	      tm.setText("One");
+	      queueProducer.send(tm);
+	      tm.setText("Two");
+	      queueProducer.send(tm);
+	
+	      // recreate the connection and receive the first message
+	      consumerConnection = cf.createConnection();
+	      Session consumerSession = consumerConnection.createSession(true, -1);
+	      MessageConsumer queueConsumer = consumerSession.createConsumer(queue1);
+	      consumerConnection.start();
+	
+	      TextMessage m = (TextMessage)queueConsumer.receive(1500);
+	      assertEquals("One", m.getText());
+	
+	      consumerSession.commit();
+	      consumerConnection.close();
+	      consumerConnection = null;
+	
+	      // recreate the connection and receive the second message
+	      consumerConnection = cf.createConnection();
+	      consumerSession = consumerConnection.createSession(true, -1);
+	      queueConsumer = consumerSession.createConsumer(queue1);
+	      consumerConnection.start();
+	
+	      m = (TextMessage)queueConsumer.receive(1500);
+	      assertEquals("Two", m.getText());
+   	}
+   	finally
+   	{
+   		if (producerConnection != null)
+   		{
+   			producerConnection.close();
+   		}
+   		if (consumerConnection != null)
+   		{
+   			consumerConnection.close();
+   		}
+   		removeAllMessages(queue1.getQueueName(), true, 0);
+   	}
    }
 
    //
@@ -2069,25 +2708,24 @@ public class MessageConsumerTest extends MessagingTestCase
 
       try
       {
-
          conn1 = cf.createConnection();
          Session sess1 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         MessageProducer producer1 = sess1.createProducer(topic);
+         MessageProducer producer1 = sess1.createProducer(topic1);
          producer1.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
-         MessageConsumer consumer1 = sess1.createConsumer(topic, null, true);
+         MessageConsumer consumer1 = sess1.createConsumer(topic1, null, true);
 
          conn2 = cf.createConnection();
 
          Session sess2 = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
          assertEquals(Session.AUTO_ACKNOWLEDGE, sess2.getAcknowledgeMode());
-         MessageConsumer consumer2 = sess2.createConsumer(topic, null, true);
+         MessageConsumer consumer2 = sess2.createConsumer(topic1, null, true);
 
          // we need different session because we cannot access the same session from different
          // threads
          Session sess3 = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
          assertEquals(Session.AUTO_ACKNOWLEDGE, sess3.getAcknowledgeMode());
-         MessageConsumer consumer3 = sess3.createConsumer(topic, null, true);
+         MessageConsumer consumer3 = sess3.createConsumer(topic1, null, true);
 
          //Consumer 1 should not get the message but consumers 2 and 3 should
 
@@ -2141,10 +2779,8 @@ public class MessageConsumerTest extends MessagingTestCase
          assertTrue(!tr3.exceptionThrown);
 
          assertNull(tr1.m);
-
          assertNotNull(tr2.m);
          assertNotNull(tr3.m);
-
       }
       finally
       {
@@ -2157,13 +2793,7 @@ public class MessageConsumerTest extends MessagingTestCase
             conn2.close();
          }
       }
-
    }
-
-
-
-
-
 
    /*
     *
@@ -2175,7 +2805,6 @@ public class MessageConsumerTest extends MessagingTestCase
 
       try
       {
-
          conn1 = cf.createConnection();
          conn1.start();
 
@@ -2184,21 +2813,14 @@ public class MessageConsumerTest extends MessagingTestCase
          Session sess1 = conn1.createSession(false, Session.CLIENT_ACKNOWLEDGE);
          Session sess2 = conn1.createSession(false, Session.CLIENT_ACKNOWLEDGE);
 
+         MessageConsumer cons1 = sess1.createConsumer(topic1);
 
-         log.trace("careting consumer1");
-         MessageConsumer cons1 = sess1.createConsumer(topic);
-
-         log.trace("creating consumer2");
-         MessageConsumer cons2 = sess2.createConsumer(topic);
-
-         log.trace("starting connection");
+         MessageConsumer cons2 = sess2.createConsumer(topic1);
 
          conn1.start();
 
-         log.trace("started connection");
-
          Session sess3 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer prod = sess3.createProducer(topic);
+         MessageProducer prod = sess3.createProducer(topic1);
          prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
 
          TextMessage tm = sess3.createTextMessage("nurse!");
@@ -2224,7 +2846,6 @@ public class MessageConsumerTest extends MessagingTestCase
          assertNotNull(tm2);
          assertEquals("nurse!", tm2.getText());
 
-
          //but tm1 should not be redelivered
          tm1 = (TextMessage)cons1.receive(1500);
          assertNull(tm1);
@@ -2237,7 +2858,6 @@ public class MessageConsumerTest extends MessagingTestCase
             conn1.close();
          }
       }
-
    }
 
 
@@ -2259,17 +2879,17 @@ public class MessageConsumerTest extends MessagingTestCase
          conn1.start();
 
          Session sess1 = conn1.createSession(false, Session.CLIENT_ACKNOWLEDGE);
-         MessageProducer prod = sess1.createProducer(topic);
+         MessageProducer prod = sess1.createProducer(topic1);
          prod.setDeliveryMode(DeliveryMode.PERSISTENT);
 
          final int NUM_MESSAGES = 1;
 
-         MessageConsumer cons = sess1.createConsumer(topic);
+         MessageConsumer cons = sess1.createConsumer(topic1);
 
          for (int i = 0; i < NUM_MESSAGES; i++)
          {
             TextMessage tm = sess1.createTextMessage("helloxyz");
-            prod.send(topic, tm);
+            prod.send(topic1, tm);
          }
 
          //receive but don't ack
@@ -2285,17 +2905,10 @@ public class MessageConsumerTest extends MessagingTestCase
          assertEquals(NUM_MESSAGES, count);
 
          conn1.close();
-
-         conn2 = cf.createConnection();
-         conn2.start();
-
-         Session sess2 = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
-
-         MessageConsumer cons2 = sess2.createConsumer(topic);
-         Message m = cons2.receive(1500);
-         assertNull(m);
-
-         conn2.close();
+         
+         conn1 = null;
+         
+         checkEmpty(topic1);         
       }
       finally
       {
@@ -2308,8 +2921,6 @@ public class MessageConsumerTest extends MessagingTestCase
             conn2.close();
          }
       }
-
-
    }
 
    //Check messages have correct type after being resurrected from persistent storage
@@ -2326,7 +2937,7 @@ public class MessageConsumerTest extends MessagingTestCase
          //Send some persistent messages to a queue with no receivers
          Session sessSend = theConn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         MessageProducer theProducer = sessSend.createProducer(queue2);
+         MessageProducer theProducer = sessSend.createProducer(queue1);
          theProducer.setDeliveryMode(DeliveryMode.PERSISTENT);
 
          Message m = sessSend.createMessage();
@@ -2360,7 +2971,7 @@ public class MessageConsumerTest extends MessagingTestCase
 
          Session sessReceive = theOtherConn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         MessageConsumer theConsumer = sessReceive.createConsumer(queue2);
+         MessageConsumer theConsumer = sessReceive.createConsumer(queue1);
 
          Message m2 = theConsumer.receive(1500);
 
@@ -2381,6 +2992,9 @@ public class MessageConsumerTest extends MessagingTestCase
 
          StreamMessage sm2 = (StreamMessage)theConsumer.receive(1500);
          assertEquals("aardvark", sm2.readString());
+         
+         TextMessage tm2 = (TextMessage)theConsumer.receive(1500);
+         assertEquals("aardvark", tm2.getText());
       }
       finally
       {
@@ -2393,12 +3007,7 @@ public class MessageConsumerTest extends MessagingTestCase
             theOtherConn.close();
          }
       }
-
-
    }
-
-
-
 
    public void testDurableSubscriptionSimple() throws Exception
    {
@@ -2413,10 +3022,10 @@ public class MessageConsumerTest extends MessagingTestCase
          conn1.setClientID(CLIENT_ID1);
 
          Session sess1 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer prod = sess1.createProducer(topic);
+         MessageProducer prod = sess1.createProducer(topic1);
          prod.setDeliveryMode(DeliveryMode.PERSISTENT);
 
-         MessageConsumer durable = sess1.createDurableSubscriber(topic, "mySubscription");
+         MessageConsumer durable = sess1.createDurableSubscriber(topic1, "mySubscription");
 
          conn1.start();
 
@@ -2425,7 +3034,7 @@ public class MessageConsumerTest extends MessagingTestCase
          for (int i = 0; i < NUM_MESSAGES; i++)
          {
             TextMessage tm = sess1.createTextMessage("hello");
-            prod.send(topic, tm);
+            prod.send(topic1, tm);
          }
 
          int count = 0;
@@ -2452,7 +3061,6 @@ public class MessageConsumerTest extends MessagingTestCase
             conn1.close();
          }
       }
-
    }
 
 
@@ -2462,35 +3070,30 @@ public class MessageConsumerTest extends MessagingTestCase
 
       Connection conn1 = null;
       Connection conn2 = null;
+      Connection conn3 = null;
 
       try
       {
-
          conn1 = cf.createConnection();
 
          conn1.setClientID(CLIENT_ID1);
 
          Session sess1 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         log.debug("creating first durable subscription");
-         sess1.createDurableSubscriber(topic, "mySubscription1");
+         sess1.createDurableSubscriber(topic1, "mySubscription1");
 
-         log.debug("creating the second durable subscription");
-         sess1.createDurableSubscriber(topic, "mySubscription2");
+         sess1.createDurableSubscriber(topic1, "mySubscription2");
 
-         log.debug("closing conn1");
          conn1.close();
 
          conn2 = cf.createConnection();
          conn2.setClientID(CLIENT_ID1);
 
          Session sess2 = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer producer = sess2.createProducer(topic);
+         MessageProducer producer = sess2.createProducer(topic1);
          producer.setDeliveryMode(DeliveryMode.PERSISTENT);
 
          final int NUM_MESSAGES = 50;
-
-         log.debug("sending messages");
 
          for (int i = 0; i < NUM_MESSAGES; i++)
          {
@@ -2498,19 +3101,15 @@ public class MessageConsumerTest extends MessagingTestCase
             producer.send(tm);
          }
 
-         log.debug("all " + NUM_MESSAGES + " messages sent");
-
          sess2.unsubscribe("mySubscription1");
-
-         log.debug("unsubscribed 'mySubscription1'");
 
          conn2.close();
 
-         Connection conn3 = cf.createConnection();
+         conn3 = cf.createConnection();
          conn3.setClientID(CLIENT_ID1);
          conn3.start();
          Session sess3 = conn3.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageConsumer durable3 = sess3.createDurableSubscriber(topic, "mySubscription2");
+         MessageConsumer durable3 = sess3.createDurableSubscriber(topic1, "mySubscription2");
 
          int count = 0;
          while (true)
@@ -2528,13 +3127,18 @@ public class MessageConsumerTest extends MessagingTestCase
 
          log.debug("received " + NUM_MESSAGES + " messages");
 
-         MessageConsumer durable4 = sess3.createDurableSubscriber(topic, "mySubscription1");
+         MessageConsumer durable4 = sess3.createDurableSubscriber(topic1, "mySubscription1");
 
          Message m = durable4.receive(1000);
          assertNull(m);
          
-         conn3.close();
-
+         durable3.close();
+         
+         sess3.unsubscribe("mySubscription2");
+         
+         durable4.close();
+         
+         sess3.unsubscribe("mySubscription1");
       }
       finally
       {
@@ -2546,11 +3150,12 @@ public class MessageConsumerTest extends MessagingTestCase
          {
             conn2.close();
          }
+         if (conn3 != null)
+         {
+            conn3.close();
+         }
       }
-
    }
-
-
 
    public void testDurableSubscriptionDataRemaining() throws Exception
    {
@@ -2570,26 +3175,24 @@ public class MessageConsumerTest extends MessagingTestCase
 
       try
       {
-
          // Create a durable subscriber on one connection and close it
          conn1 = cf.createConnection();
          conn1.setClientID(CLIENT_ID1);
          sess1 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageConsumer durable = sess1.createDurableSubscriber(topic, "mySubscription");
+         MessageConsumer durable = sess1.createDurableSubscriber(topic1, "mySubscription");
          conn1.close();
-
 
          // Send some messages on another connection and close it
          conn2 = cf.createConnection();
          conn2.setClientID(CLIENT_ID1);
          Session sess2 = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer prod2 = sess2.createProducer(topic);
+         MessageProducer prod2 = sess2.createProducer(topic1);
          prod2.setDeliveryMode(DeliveryMode.PERSISTENT);
          final int NUM_MESSAGES = 10;
          for (int i = 0; i < NUM_MESSAGES; i++)
          {
             TextMessage tm = sess2.createTextMessage("hello");
-            prod2.send(topic, tm);
+            prod2.send(topic1, tm);
          }
          conn2.close();
 
@@ -2598,7 +3201,7 @@ public class MessageConsumerTest extends MessagingTestCase
          conn3.setClientID(CLIENT_ID1);
          conn3.start();
          sess3 = conn3.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         durable = sess3.createDurableSubscriber(topic, "mySubscription");
+         durable = sess3.createDurableSubscriber(topic1, "mySubscription");
          int count = 0;
          while (true)
          {
@@ -2618,7 +3221,7 @@ public class MessageConsumerTest extends MessagingTestCase
          conn4.setClientID(CLIENT_ID1);
          conn4.start();
          sess4 = conn4.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         durable = sess4.createDurableSubscriber(topic, "mySubscription");
+         durable = sess4.createDurableSubscriber(topic1, "mySubscription");
 
          TextMessage tm = (TextMessage)durable.receive(1000);
          assertNull(tm);
@@ -2629,14 +3232,14 @@ public class MessageConsumerTest extends MessagingTestCase
          conn5.setClientID(CLIENT_ID1);
          conn5.start();
          Session sess5 = conn5.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer prod5 = sess5.createProducer(topic);
+         MessageProducer prod5 = sess5.createProducer(topic1);
          prod5.setDeliveryMode(DeliveryMode.PERSISTENT);
 
          log.debug("sending.1 " + NUM_MESSAGES + " messages");
          for (int i = 0; i < NUM_MESSAGES; i++)
          {
             TextMessage tm2 = sess5.createTextMessage("hello");
-            prod5.send(topic, tm2);
+            prod5.send(topic1, tm2);
          }
 
          log.debug("unsubscribing mySubscription");
@@ -2651,7 +3254,7 @@ public class MessageConsumerTest extends MessagingTestCase
          conn6.setClientID(CLIENT_ID1);
          conn6.start();
          sess6 = conn6.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         durable = sess6.createDurableSubscriber(topic, "mySubscription");
+         durable = sess6.createDurableSubscriber(topic1, "mySubscription");
 
          TextMessage tm3 = (TextMessage)durable.receive(1000);
          assertNull(tm3);
@@ -2689,9 +3292,7 @@ public class MessageConsumerTest extends MessagingTestCase
             conn6.close();
          }
       }
-
    }
-
 
    public void testDurableSubscriptionReconnect() throws Exception
    {
@@ -2706,29 +3307,22 @@ public class MessageConsumerTest extends MessagingTestCase
          conn1.setClientID(CLIENT_ID1);
 
          Session sess1 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer prod = sess1.createProducer(topic);
+         MessageProducer prod = sess1.createProducer(topic1);
          prod.setDeliveryMode(DeliveryMode.PERSISTENT);
 
-         log.debug("creating durable subscription");
-         MessageConsumer durable = sess1.createDurableSubscriber(topic, "mySubscription");
-         log.debug("durable subscription created");
+         MessageConsumer durable = sess1.createDurableSubscriber(topic1, "mySubscription");
 
          conn1.start();
 
          final int NUM_MESSAGES = 2;
 
-
-         log.debug("sending messages ...");
-
          for (int i = 0; i < NUM_MESSAGES; i++)
          {
             TextMessage tm = sess1.createTextMessage("hello");
-            prod.send(topic, tm);
+            prod.send(topic1, tm);
          }
 
          final int NUM_TO_RECEIVE = NUM_MESSAGES - 1;
-
-         log.debug("receiving messages ...");
 
          for (int i = 0; i < NUM_TO_RECEIVE; i++)
          {
@@ -2748,9 +3342,7 @@ public class MessageConsumerTest extends MessagingTestCase
 
          // Re-subscribe to the subscription
 
-         log.trace("resubscribing");
-
-         MessageConsumer durable2 = sess2.createDurableSubscriber(topic, "mySubscription");
+         MessageConsumer durable2 = sess2.createDurableSubscriber(topic1, "mySubscription");
 
          conn2.start();
 
@@ -2764,8 +3356,6 @@ public class MessageConsumerTest extends MessagingTestCase
             }
             count++;
          }
-
-         log.trace("Received " + count  + " messages");
 
          assertEquals(NUM_MESSAGES - NUM_TO_RECEIVE, count);
 
@@ -2784,8 +3374,6 @@ public class MessageConsumerTest extends MessagingTestCase
             conn2.close();
          }
       }
-
-
    }
 
    public void testDurableSubscriptionReconnectDifferentClientID() throws Exception
@@ -2803,10 +3391,10 @@ public class MessageConsumerTest extends MessagingTestCase
          conn1.setClientID(CLIENT_ID1);
 
          Session sess1 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer prod = sess1.createProducer(topic);
+         MessageProducer prod = sess1.createProducer(topic1);
          prod.setDeliveryMode(DeliveryMode.PERSISTENT);
 
-         MessageConsumer durable = sess1.createDurableSubscriber(topic, "mySubscription");
+         MessageConsumer durable = sess1.createDurableSubscriber(topic1, "mySubscription");
 
          conn1.start();
 
@@ -2816,7 +3404,7 @@ public class MessageConsumerTest extends MessagingTestCase
          for (int i = 0; i < NUM_MESSAGES; i++)
          {
             TextMessage tm = sess1.createTextMessage("hello");
-            prod.send(topic, tm);
+            prod.send(topic1, tm);
          }
 
          final int NUM_TO_RECEIVE1 = 22;
@@ -2841,26 +3429,26 @@ public class MessageConsumerTest extends MessagingTestCase
          Session sess2 = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
          //Re-subscribe to the subscription
-         MessageConsumer durable2 = sess2.createDurableSubscriber(topic, "mySubscription");
+         MessageConsumer durable2 = sess2.createDurableSubscriber(topic1, "mySubscription");
 
          conn2.start();
 
-         int count = 0;
-         while (true)
-         {
-            TextMessage tm = (TextMessage)durable2.receive(1500);
-            if (tm == null)
-            {
-               break;
-            }
-            count++;
-         }
-
-         assertEquals(0, count);
-
+         TextMessage tm = (TextMessage)durable2.receive(1500);
+         assertNull(tm);
+         
          durable2.close();
 
          sess2.unsubscribe("mySubscription");
+         
+         //Now need to remove the original subscription
+         
+         conn1 = cf.createConnection();
+
+         conn1.setClientID(CLIENT_ID1);
+
+         sess1 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         
+         sess1.unsubscribe("mySubscription");
       }
       finally
       {
@@ -2873,10 +3461,7 @@ public class MessageConsumerTest extends MessagingTestCase
             conn2.close();
          }
       }
-
    }
-
-
 
    public void testDurableSubscriptionInvalidUnsubscribe() throws Exception
    {
@@ -2887,7 +3472,6 @@ public class MessageConsumerTest extends MessagingTestCase
       try
       {
          conn1 = cf.createConnection();
-
 
          conn1.setClientID(CLIENT_ID1);
 
@@ -2911,9 +3495,6 @@ public class MessageConsumerTest extends MessagingTestCase
       }
    }
 
-
-
-
    public void testDurableSubscriptionClientIDNotSet() throws Exception
    {
       //Client id must be set before creating a durable subscription
@@ -2933,7 +3514,7 @@ public class MessageConsumerTest extends MessagingTestCase
 
          try
          {
-            sess1.createDurableSubscriber(topic, "mySubscription");
+            sess1.createDurableSubscriber(topic1, "mySubscription");
             fail();
          }
          catch (JMSException e)
@@ -2951,239 +3532,337 @@ public class MessageConsumerTest extends MessagingTestCase
 
    public void testRedeliveredDifferentSessions() throws Exception
    {
-      producerSession.close();
-      consumerSession.close();
-
-      Session sessProducer = producerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      MessageProducer prod = sessProducer.createProducer(queue);
-      TextMessage tm = sessProducer.createTextMessage("testRedeliveredDifferentSessions");
-      prod.send(tm);
-
-      consumerConnection.start();
-
-      Session sess1 = consumerConnection.createSession(false, Session.CLIENT_ACKNOWLEDGE);
-      MessageConsumer cons1 = sess1.createConsumer(queue);
-      TextMessage tm2 = (TextMessage)cons1.receive(3000);
+      Connection producerConnection = null;
       
-      assertNotNull(tm2);
-      assertEquals("testRedeliveredDifferentSessions", tm2.getText());
-
-      //don't acknowledge it
-      sess1.close();
-
-      Session sess2 = consumerConnection.createSession(false, Session.CLIENT_ACKNOWLEDGE);
-      MessageConsumer cons2 = sess2.createConsumer(queue);
-      TextMessage tm3 = (TextMessage)cons2.receive(3000);
+      Connection consumerConnection = null;
       
-      assertNotNull(tm3);
-      assertEquals("testRedeliveredDifferentSessions", tm3.getText());
-      
-      assertTrue(tm3.getJMSRedelivered());
+      try
+      {
+      	producerConnection = cf.createConnection();
+      	
+      	consumerConnection = cf.createConnection();
+      	
+	      Session sessProducer = producerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+	      MessageProducer prod = sessProducer.createProducer(queue1);
+	      TextMessage tm = sessProducer.createTextMessage("testRedeliveredDifferentSessions");
+	      prod.send(tm);
+	
+	      consumerConnection.start();
+	
+	      Session sess1 = consumerConnection.createSession(false, Session.CLIENT_ACKNOWLEDGE);
+	      MessageConsumer cons1 = sess1.createConsumer(queue1);
+	      TextMessage tm2 = (TextMessage)cons1.receive(3000);
+	      
+	      assertNotNull(tm2);
+	      assertEquals("testRedeliveredDifferentSessions", tm2.getText());
+	
+	      //don't acknowledge it
+	      sess1.close();
+	
+	      Session sess2 = consumerConnection.createSession(false, Session.CLIENT_ACKNOWLEDGE);
+	      MessageConsumer cons2 = sess2.createConsumer(queue1);
+	      TextMessage tm3 = (TextMessage)cons2.receive(3000);
+	      
+	      assertNotNull(tm3);
+	      assertEquals("testRedeliveredDifferentSessions", tm3.getText());
+	      
+	      assertTrue(tm3.getJMSRedelivered());
+      }
+      finally
+      {
+      	if (producerConnection != null)
+      	{
+      		producerConnection.close();
+      	}
+      	if (consumerConnection != null)
+      	{
+      		consumerConnection.close();
+      	}
+      	removeAllMessages(queue1.getQueueName(), true, 0);
+      }
    }
-
-
 
    public void testRedelMessageListener1() throws Exception
    {
-      Connection conn = cf.createConnection();
-
-      conn.start();
-
-      Session sess = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
-
-      MessageConsumer cons = sess.createConsumer(queue2);
-
-      RedelMessageListenerImpl listener = new RedelMessageListenerImpl(false);
-      listener.sess = sess;
-
-      cons.setMessageListener(listener);
-
-      MessageProducer prod = sess.createProducer(queue2);
-      prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
-      TextMessage m1 = sess.createTextMessage("a");
-      TextMessage m2 = sess.createTextMessage("b");
-      TextMessage m3 = sess.createTextMessage("c");
-
-      prod.send(m1);
-      prod.send(m2);
-      prod.send(m3);
-
-
-      listener.waitForMessages();
-
-      conn.close();
-
-      assertFalse(listener.failed);
-
-
+      Connection conn = null;
+      
+      try
+      {	      
+	      conn = cf.createConnection();
+	
+	      conn.start();
+	
+	      Session sess = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
+	
+	      MessageConsumer cons = sess.createConsumer(queue1);
+	
+	      RedelMessageListenerImpl listener = new RedelMessageListenerImpl(false);
+	      listener.sess = sess;
+	
+	      cons.setMessageListener(listener);
+	
+	      MessageProducer prod = sess.createProducer(queue1);
+	      prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+	      TextMessage m1 = sess.createTextMessage("a");
+	      TextMessage m2 = sess.createTextMessage("b");
+	      TextMessage m3 = sess.createTextMessage("c");
+	
+	      prod.send(m1);
+	      prod.send(m2);
+	      prod.send(m3);
+		
+	      listener.waitForMessages();
+	
+	      conn.close();
+	      conn = null;
+	
+	      assertFalse(listener.failed);
+      }
+      finally
+      {
+      	if (conn != null)
+      	{
+      		conn.close();
+      	}
+      }
    }
 
 
    public void testRedelMessageListener2() throws Exception
    {
-      Connection conn = cf.createConnection();
+   	Connection conn = null;
+      
+      try
+      {	      
+	      conn = cf.createConnection();
 
-      conn.start();
-
-      Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-
-      Session sess = conn.createSession(true, Session.SESSION_TRANSACTED);
-
-      MessageConsumer cons = sess.createConsumer(queue2);
-
-      RedelMessageListenerImpl listener = new RedelMessageListenerImpl(true);
-      listener.sess = sess;
-
-      cons.setMessageListener(listener);
-
-      MessageProducer prod = sessSend.createProducer(queue2);
-      TextMessage m1 = sess.createTextMessage("a");
-      TextMessage m2 = sess.createTextMessage("b");
-      TextMessage m3 = sess.createTextMessage("c");
-
-      prod.send(m1);
-      prod.send(m2);
-      prod.send(m3);
-
-      listener.waitForMessages();
-
-      assertFalse(listener.failed);
-
-      conn.close();
-
+	      conn.start();
+	
+	      Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+	
+	      Session sess = conn.createSession(true, Session.SESSION_TRANSACTED);
+	
+	      MessageConsumer cons = sess.createConsumer(queue1);
+	
+	      RedelMessageListenerImpl listener = new RedelMessageListenerImpl(true);
+	      listener.sess = sess;
+	
+	      cons.setMessageListener(listener);
+	
+	      MessageProducer prod = sessSend.createProducer(queue1);
+	      TextMessage m1 = sess.createTextMessage("a");
+	      TextMessage m2 = sess.createTextMessage("b");
+	      TextMessage m3 = sess.createTextMessage("c");
+	
+	      prod.send(m1);
+	      prod.send(m2);
+	      prod.send(m3);
+	
+	      listener.waitForMessages();
+	
+	      assertFalse(listener.failed);
+	
+	      conn.close();
+	      
+	      conn = null;
+      }
+      finally
+      {
+      	if (conn != null)
+      	{
+      		conn.close();
+      	}
+      }
    }
 
 
    public void testExceptionMessageListener1() throws Exception
    {
-      Connection conn = cf.createConnection();
+   	Connection conn = null;
+      
+      try
+      {	      
+	      conn = cf.createConnection();
 
-      conn.start();
-
-      Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-
-      Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-
-      MessageConsumer cons = sess.createConsumer(queue2);
-
-      ExceptionRedelMessageListenerImpl listener = new ExceptionRedelMessageListenerImpl(sess);
-
-      cons.setMessageListener(listener);
-
-      MessageProducer prod = sessSend.createProducer(queue2);
-      TextMessage m1 = sess.createTextMessage("a");
-      TextMessage m2 = sess.createTextMessage("b");
-      TextMessage m3 = sess.createTextMessage("c");
-
-      prod.send(m1);
-      prod.send(m2);
-      prod.send(m3);
-
-      listener.waitForMessages();
-
-      assertFalse(listener.failed);
-
-      conn.close();
-
+	      conn.start();
+	
+	      Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+	
+	      Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+	
+	      MessageConsumer cons = sess.createConsumer(queue1);
+	
+	      ExceptionRedelMessageListenerImpl listener = new ExceptionRedelMessageListenerImpl(sess);
+	
+	      cons.setMessageListener(listener);
+	
+	      MessageProducer prod = sessSend.createProducer(queue1);
+	      TextMessage m1 = sess.createTextMessage("a");
+	      TextMessage m2 = sess.createTextMessage("b");
+	      TextMessage m3 = sess.createTextMessage("c");
+	
+	      prod.send(m1);
+	      prod.send(m2);
+	      prod.send(m3);
+	
+	      listener.waitForMessages();
+	
+	      assertFalse(listener.failed);
+	
+	      conn.close();
+	      
+	      conn = null;
+	   }
+	   finally
+	   {
+	   	if (conn != null)
+	   	{
+	   		conn.close();
+	   	}
+	   }
    }
 
    public void testExceptionMessageListener2() throws Exception
    {
-      Connection conn = cf.createConnection();
+   	Connection conn = null;
+      
+      try
+      {	      
+	      conn = cf.createConnection();
 
-      conn.start();
-
-      Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-
-      Session sess = conn.createSession(false, Session.DUPS_OK_ACKNOWLEDGE);
-
-      MessageConsumer cons = sess.createConsumer(queue2);
-
-      ExceptionRedelMessageListenerImpl listener = new ExceptionRedelMessageListenerImpl(sess);
-
-      cons.setMessageListener(listener);
-
-      MessageProducer prod = sessSend.createProducer(queue2);
-      TextMessage m1 = sess.createTextMessage("a");
-      TextMessage m2 = sess.createTextMessage("b");
-      TextMessage m3 = sess.createTextMessage("c");
-
-      prod.send(m1);
-      prod.send(m2);
-      prod.send(m3);
-
-      listener.waitForMessages();
-
-      assertFalse(listener.failed);
-
-      conn.close();
-
+	      conn.start();
+	
+	      Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+	
+	      Session sess = conn.createSession(false, Session.DUPS_OK_ACKNOWLEDGE);
+	
+	      MessageConsumer cons = sess.createConsumer(queue1);
+	
+	      ExceptionRedelMessageListenerImpl listener = new ExceptionRedelMessageListenerImpl(sess);
+	
+	      cons.setMessageListener(listener);
+	
+	      MessageProducer prod = sessSend.createProducer(queue1);
+	      TextMessage m1 = sess.createTextMessage("a");
+	      TextMessage m2 = sess.createTextMessage("b");
+	      TextMessage m3 = sess.createTextMessage("c");
+	
+	      prod.send(m1);
+	      prod.send(m2);
+	      prod.send(m3);
+	
+	      listener.waitForMessages();
+	
+	      assertFalse(listener.failed);
+	
+	      conn.close();
+	      
+	      conn = null;
+	   }
+	   finally
+	   {
+	   	if (conn != null)
+	   	{
+	   		conn.close();
+	   	}
+	   }
    }
 
    public void testExceptionMessageListener3() throws Exception
    {
-      Connection conn = cf.createConnection();
+   	Connection conn = null;
+      
+      try
+      {	      
+	      conn = cf.createConnection();
 
-      conn.start();
-
-      Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-
-      Session sess = conn.createSession(true, Session.SESSION_TRANSACTED);
-
-      MessageConsumer cons = sess.createConsumer(queue2);
-
-      ExceptionRedelMessageListenerImpl listener = new ExceptionRedelMessageListenerImpl(sess);
-
-      cons.setMessageListener(listener);
-
-      MessageProducer prod = sessSend.createProducer(queue2);
-      TextMessage m1 = sess.createTextMessage("a");
-      TextMessage m2 = sess.createTextMessage("b");
-      TextMessage m3 = sess.createTextMessage("c");
-
-      prod.send(m1);
-      prod.send(m2);
-      prod.send(m3);
-
-      listener.waitForMessages();
-
-      assertFalse(listener.failed);
-
-      conn.close();
-
+	      conn.start();
+	
+	      Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+	
+	      Session sess = conn.createSession(true, Session.SESSION_TRANSACTED);
+	
+	      MessageConsumer cons = sess.createConsumer(queue1);
+	
+	      ExceptionRedelMessageListenerImpl listener = new ExceptionRedelMessageListenerImpl(sess);
+	
+	      cons.setMessageListener(listener);
+	
+	      MessageProducer prod = sessSend.createProducer(queue1);
+	      TextMessage m1 = sess.createTextMessage("a");
+	      TextMessage m2 = sess.createTextMessage("b");
+	      TextMessage m3 = sess.createTextMessage("c");
+	
+	      prod.send(m1);
+	      prod.send(m2);
+	      prod.send(m3);
+	
+	      listener.waitForMessages();
+	
+	      assertFalse(listener.failed);
+	
+	      conn.close();
+	      
+	      conn = null;
+	      
+      }
+	   finally
+	   {
+	   	if (conn != null)
+	   	{
+	   		conn.close();
+	   	}
+	   	removeAllMessages(queue1.getQueueName(), true, 0);
+	   }
    }
 
    public void testExceptionMessageListener4() throws Exception
    {
-      Connection conn = cf.createConnection();
+   	Connection conn = null;
+      
+      try
+      {	      
+	      conn = cf.createConnection();
 
-      conn.start();
-
-      Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-
-      Session sess = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
-
-      MessageConsumer cons = sess.createConsumer(queue2);
-
-      ExceptionRedelMessageListenerImpl listener = new ExceptionRedelMessageListenerImpl(sess);
-
-      cons.setMessageListener(listener);
-
-      MessageProducer prod = sessSend.createProducer(queue2);
-      TextMessage m1 = sess.createTextMessage("a");
-      TextMessage m2 = sess.createTextMessage("b");
-      TextMessage m3 = sess.createTextMessage("c");
-
-      prod.send(m1);
-      prod.send(m2);
-      prod.send(m3);
-
-      listener.waitForMessages();
-
-      assertFalse(listener.failed);
-
-      conn.close();
-
+	      conn.start();
+	
+	      Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+	
+	      Session sess = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
+	
+	      MessageConsumer cons = sess.createConsumer(queue1);
+	
+	      ExceptionRedelMessageListenerImpl listener = new ExceptionRedelMessageListenerImpl(sess);
+	
+	      cons.setMessageListener(listener);
+	
+	      MessageProducer prod = sessSend.createProducer(queue1);
+	      TextMessage m1 = sess.createTextMessage("a");
+	      TextMessage m2 = sess.createTextMessage("b");
+	      TextMessage m3 = sess.createTextMessage("c");
+	
+	      prod.send(m1);
+	      prod.send(m2);
+	      prod.send(m3);
+	
+	      listener.waitForMessages();
+	
+	      assertFalse(listener.failed);
+	
+	      conn.close();
+	      
+	      conn = null;	  
+	      
+      }
+	   finally
+	   {
+	   	if (conn != null)
+	   	{
+	   		conn.close();
+	   	}
+	   	
+	   	removeAllMessages(queue1.getQueueName(), true, 0);
+	   }
    }
 
 

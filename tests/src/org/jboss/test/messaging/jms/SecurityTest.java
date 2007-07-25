@@ -22,7 +22,6 @@
 package org.jboss.test.messaging.jms;
 
 import javax.jms.Connection;
-import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
 import javax.jms.IllegalStateException;
 import javax.jms.JMSSecurityException;
@@ -39,11 +38,9 @@ import javax.jms.TopicConnectionFactory;
 import javax.jms.TopicPublisher;
 import javax.jms.DeliveryMode;
 import javax.management.ObjectName;
-import javax.naming.InitialContext;
 
 import org.jboss.logging.Logger;
 import org.jboss.messaging.util.XMLUtil;
-import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
 
 /**
@@ -61,41 +58,27 @@ import org.jboss.test.messaging.tools.ServerManagement;
  * @version <tt>$Revision$</tt>
  *
  */
-public class SecurityTest extends MessagingTestCase
+public class SecurityTest extends JMSTestCase
 {
    // Constants -----------------------------------------------------
 
    private static final Logger log = Logger.getLogger(SecurityTest.class);
-
-   protected static final String TEST_QUEUE = "queue/testQueue";
-   protected static final String TEST_TOPIC = "topic/testTopic";
-   protected static final String SECURED_TOPIC = "topic/securedTopic";
-   protected static final String UNSECURED_TOPIC = "topic/unsecuredTopic";
+   
+   private static final String defConfig = "<security><role name=\"def\" read=\"true\" write=\"true\" create=\"true\"/></security>";
 
    // Static --------------------------------------------------------
 
    // Attributes ----------------------------------------------------
 
-   protected InitialContext ic;
-
-   protected ConnectionFactory cf;
-   protected Queue testQueue;
-   protected Topic testTopic;
-   protected Topic securedTopic;
-   protected Topic unsecuredTopic;
-
-   protected String oldDefaultConfig;
-
+   private String oldDefaultConfig;
+   
    // Constructors --------------------------------------------------
 
    public SecurityTest(String name)
    {
       super(name);
    }
-   
-   // TestCase overrides -------------------------------------------
-   
-   
+
    // Public --------------------------------------------------------
 
    /**
@@ -276,7 +259,7 @@ public class SecurityTest extends MessagingTestCase
       try
       {
          conn = cf.createConnection();
-         assertTrue(canWriteDestination(conn, testQueue));
+         assertTrue(canWriteDestination(conn, queue1));
       }
       finally
       {
@@ -293,7 +276,7 @@ public class SecurityTest extends MessagingTestCase
       try
       {
          conn = cf.createConnection("john", "needle");
-         assertTrue(canWriteDestination(conn, testTopic));
+         assertTrue(canWriteDestination(conn, topic1));
       }
       finally
       {
@@ -310,7 +293,7 @@ public class SecurityTest extends MessagingTestCase
       try
       {
          conn = cf.createConnection("nobody", "nobody");
-         assertFalse(canWriteDestination(conn, testTopic));
+         assertFalse(canWriteDestination(conn, topic1));
       }
       finally
       {
@@ -327,7 +310,7 @@ public class SecurityTest extends MessagingTestCase
       try
       {
          conn = cf.createConnection("john", "needle");
-         assertTrue(canReadDestination(conn, testTopic));
+         assertTrue(canReadDestination(conn, topic1));
       }
       finally
       {
@@ -344,7 +327,7 @@ public class SecurityTest extends MessagingTestCase
       try
       {
          conn = cf.createConnection("nobody", "nobody");
-         assertFalse(canReadDestination(conn, testTopic));
+         assertFalse(canReadDestination(conn, topic1));
       }
       finally
       {
@@ -359,7 +342,7 @@ public class SecurityTest extends MessagingTestCase
       {
          conn = cf.createConnection("john", "needle");
          Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         sess.createBrowser(testQueue);
+         sess.createBrowser(queue1);
       }
       finally
       {
@@ -374,7 +357,7 @@ public class SecurityTest extends MessagingTestCase
       {
          conn = cf.createConnection("nobody", "nobody");
          Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         sess.createBrowser(testQueue);
+         sess.createBrowser(queue1);
          fail("should throw JMSSecurityException");
       }
       catch (JMSSecurityException e)
@@ -393,7 +376,7 @@ public class SecurityTest extends MessagingTestCase
       try
       {
          conn = cf.createConnection("john", "needle");
-         assertTrue(this.canWriteDestination(conn, testQueue));
+         assertTrue(this.canWriteDestination(conn, queue1));
       }
       finally
       {
@@ -407,7 +390,7 @@ public class SecurityTest extends MessagingTestCase
       try
       {
          conn = cf.createConnection("nobody", "nobody");
-         assertFalse(this.canWriteDestination(conn, testQueue));
+         assertFalse(this.canWriteDestination(conn, queue1));
       }
       finally
       {
@@ -421,7 +404,7 @@ public class SecurityTest extends MessagingTestCase
       try
       {
          conn = cf.createConnection("john", "needle");
-         assertTrue(this.canReadDestination(conn, testQueue));
+         assertTrue(this.canReadDestination(conn, queue1));
       }
       finally
       {
@@ -435,7 +418,7 @@ public class SecurityTest extends MessagingTestCase
       try
       {
          conn = cf.createConnection("nobody", "nobody");
-         assertFalse(this.canReadDestination(conn, testQueue));
+         assertFalse(this.canReadDestination(conn, queue1));
       }
       finally
       {
@@ -452,7 +435,7 @@ public class SecurityTest extends MessagingTestCase
       try
       {
          conn = cf.createConnection("dilbert", "dogbert");
-         assertTrue(this.canCreateDurableSub(conn, testTopic, "sub2"));
+         assertTrue(this.canCreateDurableSub(conn, topic1, "sub2"));
       }
       finally
       {
@@ -461,6 +444,7 @@ public class SecurityTest extends MessagingTestCase
       }
    }
 
+   //TODO - this test doesn't belong here - this should be added to writeDestination()
    public void testTransactedPublish() throws JMSException
    {
 
@@ -468,12 +452,11 @@ public class SecurityTest extends MessagingTestCase
 
       try
       {
-
          conn = ((TopicConnectionFactory)cf).createTopicConnection("nobody", "nobody");
          TopicSession topicSess = conn.createTopicSession(true , Session.AUTO_ACKNOWLEDGE);
          try
          {
-            TopicPublisher publisher = topicSess.createPublisher(testTopic);
+            TopicPublisher publisher = topicSess.createPublisher(topic1);
             publisher.publish(topicSess.createTextMessage("test"), DeliveryMode.PERSISTENT, 4, 0l);
             topicSess.commit();
 
@@ -485,7 +468,7 @@ public class SecurityTest extends MessagingTestCase
 
          try
          {
-            MessageProducer prod = topicSess.createPublisher(testTopic);
+            MessageProducer prod = topicSess.createPublisher(topic1);
             prod.send(topicSess.createTextMessage("hello"));
             topicSess.commit();
 
@@ -494,8 +477,6 @@ public class SecurityTest extends MessagingTestCase
          catch (JMSSecurityException expected)
          {
          }
-
-
       }
       finally
       {
@@ -520,7 +501,7 @@ public class SecurityTest extends MessagingTestCase
       try
       {
          conn = cf.createConnection("dilbert", "dogbert");
-         assertFalse(this.canCreateDurableSub(conn, securedTopic, "sub3"));
+         assertFalse(this.canCreateDurableSub(conn, topic2, "sub3"));
       }
       finally
       {
@@ -539,7 +520,7 @@ public class SecurityTest extends MessagingTestCase
       {
          conn = cf.createConnection("dynsub", "dynsub");
          conn.setClientID("myID");
-         assertTrue(this.canCreateDurableSub(conn, testTopic, "sub4"));
+         assertTrue(this.canCreateDurableSub(conn, topic1, "sub4"));
       }
       finally
       {
@@ -557,7 +538,7 @@ public class SecurityTest extends MessagingTestCase
       {
          conn = cf.createConnection("dynsub", "dynsub");
          conn.setClientID("myID2");
-         assertFalse(this.canCreateDurableSub(conn, securedTopic, "sub5"));
+         assertFalse(this.canCreateDurableSub(conn, topic2, "sub5"));
       }
       finally
       {
@@ -572,9 +553,9 @@ public class SecurityTest extends MessagingTestCase
       {
          conn = cf.createConnection("john", "needle");
          conn.setClientID("myID5");
-         assertTrue(this.canReadDestination(conn, unsecuredTopic));
-         assertTrue(this.canWriteDestination(conn, unsecuredTopic));
-         assertTrue(this.canCreateDurableSub(conn, unsecuredTopic, "subxyz"));
+         assertTrue(this.canReadDestination(conn, topic3));
+         assertTrue(this.canWriteDestination(conn, topic3));
+         assertTrue(this.canCreateDurableSub(conn, topic3, "subxyz"));
       }
       finally
       {
@@ -589,9 +570,9 @@ public class SecurityTest extends MessagingTestCase
       {
          conn = cf.createConnection("nobody", "nobody");
          conn.setClientID("myID6");
-         assertFalse(this.canReadDestination(conn, unsecuredTopic));
-         assertFalse(this.canWriteDestination(conn, unsecuredTopic));
-         assertFalse(this.canCreateDurableSub(conn, unsecuredTopic, "subabc"));
+         assertFalse(this.canReadDestination(conn, topic3));
+         assertFalse(this.canWriteDestination(conn, topic3));
+         assertFalse(this.canCreateDurableSub(conn, topic3, "subabc"));
       }
       finally
       {
@@ -608,51 +589,37 @@ public class SecurityTest extends MessagingTestCase
       String defSecConf = ServerManagement.getDefaultSecurityConfig();
 
       // Make sure it is the default security configuration I rely on
-      String def = "<security><role name=\"def\" read=\"true\" write=\"true\" create=\"true\"/></security>";
-      XMLUtil.assertEquivalent(XMLUtil.stringToElement(def),
+     
+      XMLUtil.assertEquivalent(XMLUtil.stringToElement(defConfig),
                                XMLUtil.stringToElement(defSecConf));
 
       // "john" has the role def, so he should be able to create a producer and a consumer on a queue
-      ServerManagement.deployQueue("SomeQueue");
       Connection conn = null;
 
       try
       {
-         Queue someQueue = (Queue)ic.lookup("/queue/SomeQueue");
-
          conn = cf.createConnection("john", "needle");
-         assertTrue(canReadDestination(conn, someQueue));
-         assertTrue(canWriteDestination(conn, someQueue));
-
+         assertTrue(canReadDestination(conn, queue2));
+         assertTrue(canWriteDestination(conn, queue2));
 
          String newSecurityConfig =
             "<security><role name=\"someotherrole\" read=\"true\" write=\"true\" create=\"false\"/></security>";
 
          ServerManagement.setDefaultSecurityConfig(newSecurityConfig);
 
-         assertFalse(canReadDestination(conn, someQueue));
-         assertFalse(canWriteDestination(conn, someQueue));
-
+         assertFalse(canReadDestination(conn, queue2));
+         assertFalse(canWriteDestination(conn, queue2));
 
          newSecurityConfig =
             "<security><role name=\"def\" read=\"true\" write=\"false\" create=\"false\"/></security>";
 
          ServerManagement.setDefaultSecurityConfig(newSecurityConfig);
 
-         assertTrue(canReadDestination(conn, someQueue));
-         assertFalse(canWriteDestination(conn, someQueue));
-
-         newSecurityConfig =
-            "<security><role name=\"def\" read=\"true\" write=\"true\" create=\"false\"/></security>";
-
-         ServerManagement.setDefaultSecurityConfig(newSecurityConfig);
-
-         assertTrue(canReadDestination(conn, someQueue));
-         assertTrue(canWriteDestination(conn, someQueue));
+         assertTrue(canReadDestination(conn, queue2));
+         assertFalse(canWriteDestination(conn, queue2));         
       }
       finally
       {
-         ServerManagement.undeployQueue("SomeQueue");
          if (conn != null)
          {
             conn.close();
@@ -669,55 +636,50 @@ public class SecurityTest extends MessagingTestCase
    public void testQueueSecurityUpdateStopped() throws Exception
    {
       // "john" has the role def, so he should be able to create a producer and a consumer on a queue
-      ServerManagement.deployQueue("SomeQueue");
-      
-      ObjectName on = new ObjectName("jboss.messaging.destination:service=Queue,name=SomeQueue");
+
+      ObjectName on = new ObjectName("jboss.messaging.destination:service=Queue,name=Queue2");
       
       Connection conn = null;
 
       try
       {
-         Queue someQueue = (Queue)ic.lookup("/queue/SomeQueue");
-
          conn = cf.createConnection("john", "needle");
-         assertTrue(canReadDestination(conn, someQueue));
-         assertTrue(canWriteDestination(conn, someQueue));
-
+         assertTrue(canReadDestination(conn, queue2));
+         assertTrue(canWriteDestination(conn, queue2));
 
          String newSecurityConfig =
             "<security><role name=\"someotherrole\" read=\"true\" write=\"true\" create=\"false\"/></security>";
 
          ServerManagement.invoke(on, "stop", null, null);         
-         ServerManagement.configureSecurityForDestination("SomeQueue", newSecurityConfig);         
+         ServerManagement.configureSecurityForDestination("Queue2", newSecurityConfig);         
          ServerManagement.invoke(on, "start", null, null);
          
-         assertFalse(canReadDestination(conn, someQueue));
-         assertFalse(canWriteDestination(conn, someQueue));
+         assertFalse(canReadDestination(conn, queue2));
+         assertFalse(canWriteDestination(conn, queue2));
 
 
          newSecurityConfig =
             "<security><role name=\"def\" read=\"true\" write=\"false\" create=\"false\"/></security>";
 
          ServerManagement.invoke(on, "stop", null, null);         
-         ServerManagement.configureSecurityForDestination("SomeQueue", newSecurityConfig);         
+         ServerManagement.configureSecurityForDestination("Queue2", newSecurityConfig);         
          ServerManagement.invoke(on, "start", null, null);
 
-         assertTrue(canReadDestination(conn, someQueue));
-         assertFalse(canWriteDestination(conn, someQueue));
+         assertTrue(canReadDestination(conn, queue2));
+         assertFalse(canWriteDestination(conn, queue2));
 
          newSecurityConfig =
             "<security><role name=\"def\" read=\"true\" write=\"true\" create=\"false\"/></security>";
 
          ServerManagement.invoke(on, "stop", null, null);         
-         ServerManagement.configureSecurityForDestination("SomeQueue", newSecurityConfig);         
+         ServerManagement.configureSecurityForDestination("Queue2", newSecurityConfig);         
          ServerManagement.invoke(on, "start", null, null);
 
-         assertTrue(canReadDestination(conn, someQueue));
-         assertTrue(canWriteDestination(conn, someQueue));
+         assertTrue(canReadDestination(conn, queue2));
+         assertTrue(canWriteDestination(conn, queue2));
       }
       finally
-      {
-         ServerManagement.undeployQueue("SomeQueue");
+      {      	         
          if (conn != null)
          {
             conn.close();
@@ -734,55 +696,51 @@ public class SecurityTest extends MessagingTestCase
    public void testTopicSecurityUpdateStopped() throws Exception
    {
       // "john" has the role def, so he should be able to create a producer and a consumer on a queue
-      ServerManagement.deployTopic("SomeTopic");
-      
-      ObjectName on = new ObjectName("jboss.messaging.destination:service=Topic,name=SomeTopic");
+
+      ObjectName on = new ObjectName("jboss.messaging.destination:service=Topic,name=Topic2");
       
       Connection conn = null;
 
       try
       {
-         Topic someTopic = (Topic)ic.lookup("/topic/SomeTopic");
-
          conn = cf.createConnection("john", "needle");
-         assertTrue(canReadDestination(conn, someTopic));
-         assertTrue(canWriteDestination(conn, someTopic));
+         assertTrue(canReadDestination(conn, topic2));
+         assertTrue(canWriteDestination(conn, topic2));
 
 
          String newSecurityConfig =
             "<security><role name=\"someotherrole\" read=\"true\" write=\"true\" create=\"false\"/></security>";
 
          ServerManagement.invoke(on, "stop", null, null);         
-         ServerManagement.configureSecurityForDestination("SomeTopic", newSecurityConfig);         
+         ServerManagement.configureSecurityForDestination("Topic2", newSecurityConfig);         
          ServerManagement.invoke(on, "start", null, null);
          
-         assertFalse(canReadDestination(conn, someTopic));
-         assertFalse(canWriteDestination(conn, someTopic));
+         assertFalse(canReadDestination(conn, topic2));
+         assertFalse(canWriteDestination(conn, topic2));
 
 
          newSecurityConfig =
             "<security><role name=\"def\" read=\"true\" write=\"false\" create=\"false\"/></security>";
 
          ServerManagement.invoke(on, "stop", null, null);         
-         ServerManagement.configureSecurityForDestination("SomeTopic", newSecurityConfig);         
+         ServerManagement.configureSecurityForDestination("Topic2", newSecurityConfig);         
          ServerManagement.invoke(on, "start", null, null);
 
-         assertTrue(canReadDestination(conn, someTopic));
-         assertFalse(canWriteDestination(conn, someTopic));
+         assertTrue(canReadDestination(conn, topic2));
+         assertFalse(canWriteDestination(conn, topic2));
 
          newSecurityConfig =
             "<security><role name=\"def\" read=\"true\" write=\"true\" create=\"false\"/></security>";
 
          ServerManagement.invoke(on, "stop", null, null);         
-         ServerManagement.configureSecurityForDestination("SomeTopic", newSecurityConfig);         
+         ServerManagement.configureSecurityForDestination("Topic2", newSecurityConfig);         
          ServerManagement.invoke(on, "start", null, null);
 
-         assertTrue(canReadDestination(conn, someTopic));
-         assertTrue(canWriteDestination(conn, someTopic));
+         assertTrue(canReadDestination(conn, topic2));
+         assertTrue(canWriteDestination(conn, topic2));
       }
       finally
-      {
-         ServerManagement.undeployTopic("SomeTopic");
+      {      	
          if (conn != null)
          {
             conn.close();
@@ -797,46 +755,58 @@ public class SecurityTest extends MessagingTestCase
    public void testQueueSecurityUpdate() throws Exception
    {
       // "john" has the role def, so he should be able to create a producer and a consumer on a queue
-      ServerManagement.deployQueue("SomeQueue");
       Connection conn = null;
 
       try
       {
-         Queue someQueue = (Queue)ic.lookup("/queue/SomeQueue");
-
          conn = cf.createConnection("john", "needle");
-         assertTrue(canReadDestination(conn, someQueue));
-         assertTrue(canWriteDestination(conn, someQueue));
-
+         assertTrue(canReadDestination(conn, queue2));
+         assertTrue(canWriteDestination(conn, queue2));
 
          String newSecurityConfig =
             "<security><role name=\"someotherrole\" read=\"true\" write=\"true\" create=\"false\"/></security>";
 
-         ServerManagement.configureSecurityForDestination("SomeQueue", newSecurityConfig);
+         ServerManagement.configureSecurityForDestination("Queue2", newSecurityConfig);
          
-         assertFalse(canReadDestination(conn, someQueue));
-         assertFalse(canWriteDestination(conn, someQueue));
+         assertFalse(canReadDestination(conn, queue2));
+         assertFalse(canWriteDestination(conn, queue2));
 
 
          newSecurityConfig =
             "<security><role name=\"def\" read=\"true\" write=\"false\" create=\"false\"/></security>";
 
-         ServerManagement.configureSecurityForDestination("SomeQueue", newSecurityConfig);
+         ServerManagement.configureSecurityForDestination("Queue2", newSecurityConfig);
 
-         assertTrue(canReadDestination(conn, someQueue));
-         assertFalse(canWriteDestination(conn, someQueue));
+         assertTrue(canReadDestination(conn, queue2));
+         assertFalse(canWriteDestination(conn, queue2));
 
          newSecurityConfig =
             "<security><role name=\"def\" read=\"true\" write=\"true\" create=\"false\"/></security>";
 
-         ServerManagement.configureSecurityForDestination("SomeQueue", newSecurityConfig);
+         ServerManagement.configureSecurityForDestination("Queue2", newSecurityConfig);
 
-         assertTrue(canReadDestination(conn, someQueue));
-         assertTrue(canWriteDestination(conn, someQueue));
+         assertTrue(canReadDestination(conn, queue2));
+         assertTrue(canWriteDestination(conn, queue2));
+         
+         //Now set to null
+         
+         ServerManagement.configureSecurityForDestination("Queue2", null);
+         
+         //Should fall back to the default config
+         String lockedConf = "<security><role name=\"alien\" read=\"true\" write=\"true\" create=\"true\"/></security>";
+         
+         ServerManagement.setDefaultSecurityConfig(lockedConf);
+         
+         assertFalse(canReadDestination(conn, queue2));
+         assertFalse(canWriteDestination(conn, queue2));
+         
+         ServerManagement.setDefaultSecurityConfig(defConfig);
+         
+         assertTrue(canReadDestination(conn, queue2));
+         assertTrue(canWriteDestination(conn, queue2));
       }
       finally
-      {
-         ServerManagement.undeployQueue("SomeQueue");
+      {         
          if (conn != null)
          {
             conn.close();
@@ -851,46 +821,59 @@ public class SecurityTest extends MessagingTestCase
    public void testTopicSecurityUpdate() throws Exception
    {
       // "john" has the role def, so he should be able to create a producer and a consumer on a queue
-      ServerManagement.deployTopic("SomeTopic");
       Connection conn = null;
 
       try
       {
-         Topic someTopic = (Topic)ic.lookup("/topic/SomeTopic");
-
          conn = cf.createConnection("john", "needle");
-         assertTrue(canReadDestination(conn, someTopic));
-         assertTrue(canWriteDestination(conn, someTopic));
+         assertTrue(canReadDestination(conn, topic2));
+         assertTrue(canWriteDestination(conn, topic2));
 
 
          String newSecurityConfig =
             "<security><role name=\"someotherrole\" read=\"true\" write=\"true\" create=\"false\"/></security>";
 
-         ServerManagement.configureSecurityForDestination("SomeTopic", newSecurityConfig);
+         ServerManagement.configureSecurityForDestination("Topic2", newSecurityConfig);
          
-         assertFalse(canReadDestination(conn, someTopic));
-         assertFalse(canWriteDestination(conn, someTopic));
+         assertFalse(canReadDestination(conn, topic2));
+         assertFalse(canWriteDestination(conn, topic2));
 
 
          newSecurityConfig =
             "<security><role name=\"def\" read=\"true\" write=\"false\" create=\"false\"/></security>";
 
-         ServerManagement.configureSecurityForDestination("SomeTopic", newSecurityConfig);
+         ServerManagement.configureSecurityForDestination("Topic2", newSecurityConfig);
 
-         assertTrue(canReadDestination(conn, someTopic));
-         assertFalse(canWriteDestination(conn, someTopic));
+         assertTrue(canReadDestination(conn, topic2));
+         assertFalse(canWriteDestination(conn, topic2));
 
          newSecurityConfig =
             "<security><role name=\"def\" read=\"true\" write=\"true\" create=\"false\"/></security>";
 
-         ServerManagement.configureSecurityForDestination("SomeTopic", newSecurityConfig);
+         ServerManagement.configureSecurityForDestination("Topic2", newSecurityConfig);
 
-         assertTrue(canReadDestination(conn, someTopic));
-         assertTrue(canWriteDestination(conn, someTopic));
+         assertTrue(canReadDestination(conn, topic2));
+         assertTrue(canWriteDestination(conn, topic2));
+         
+         //Now set to null
+         
+         ServerManagement.configureSecurityForDestination("Topic2", null);
+         
+         //Should fall back to the default config
+         String lockedConf = "<security><role name=\"alien\" read=\"true\" write=\"true\" create=\"true\"/></security>";
+         
+         ServerManagement.setDefaultSecurityConfig(lockedConf);
+         
+         assertFalse(canReadDestination(conn, topic2));
+         assertFalse(canWriteDestination(conn, topic2));
+         
+         ServerManagement.setDefaultSecurityConfig(defConfig);
+         
+         assertTrue(canReadDestination(conn, topic2));
+         assertTrue(canWriteDestination(conn, topic2));
       }
       finally
       {
-         ServerManagement.undeployTopic("SomeTopic");
          if (conn != null)
          {
             conn.close();
@@ -953,73 +936,47 @@ public class SecurityTest extends MessagingTestCase
    protected void setUp() throws Exception
    {
       super.setUp();
-      ServerManagement.start("all");
-
-      ServerManagement.undeployQueue("testQueue");
-      ServerManagement.deployQueue("testQueue");
-
-      final String testQueueConf =
+      
+      oldDefaultConfig = ServerManagement.getDefaultSecurityConfig();
+      
+      final String queueConf =
          "<security>" +
             "<role name=\"guest\" read=\"true\" write=\"true\"/>" +
             "<role name=\"publisher\" read=\"true\" write=\"true\" create=\"false\"/>" +
             "<role name=\"noacc\" read=\"false\" write=\"false\" create=\"false\"/>" +
          "</security>";
 
-      ServerManagement.configureSecurityForDestination("testQueue", testQueueConf);
+      ServerManagement.configureSecurityForDestination("Queue1", queueConf);
 
-      ServerManagement.undeployTopic("testTopic");
-      ServerManagement.deployTopic("testTopic");
-
-      final String testTopicConf =
+      final String topicConf =
          "<security>" +
             "<role name=\"guest\" read=\"true\" write=\"true\"/>" +
             "<role name=\"publisher\" read=\"true\" write=\"true\" create=\"false\"/>" +
             "<role name=\"durpublisher\" read=\"true\" write=\"true\" create=\"true\"/>" +
          "</security>";
 
-      ServerManagement.configureSecurityForDestination("testTopic", testTopicConf);
+      ServerManagement.configureSecurityForDestination("Topic1", topicConf);
 
-      ServerManagement.undeployTopic("securedTopic");
-      ServerManagement.deployTopic("securedTopic");
 
       final String testSecuredTopicConf =
          "<security>" +
             "<role name=\"publisher\" read=\"true\" write=\"true\" create=\"false\"/>" +
          "</security>";
 
-      ServerManagement.configureSecurityForDestination("testSecuredTopic", testSecuredTopicConf);
+      ServerManagement.configureSecurityForDestination("Topic2", testSecuredTopicConf);
 
-      ServerManagement.undeployTopic("unsecuredTopic");
-      ServerManagement.deployTopic("unsecuredTopic");
-      
-      final String defaultSecurityConfig =
-         "<security><role name=\"def\" read=\"true\" write=\"true\" create=\"true\"/></security>";
-      oldDefaultConfig = ServerManagement.getDefaultSecurityConfig();
-      ServerManagement.setDefaultSecurityConfig(defaultSecurityConfig);
-
-      ic = new InitialContext(ServerManagement.getJNDIEnvironment());
-
-      cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
-
-      testQueue = (Queue)ic.lookup("/queue/testQueue");
-      testTopic = (Topic)ic.lookup("/topic/testTopic");
-      securedTopic = (Topic)ic.lookup("/topic/securedTopic");
-      unsecuredTopic = (Topic)ic.lookup("/topic/unsecuredTopic");
-
-      drainDestination(cf, testQueue);
-
-      log.debug("setup done");
+      ServerManagement.setDefaultSecurityConfig(defConfig);
    }
 
    protected void tearDown() throws Exception
    {
+   	super.tearDown();
+   	
       ServerManagement.setDefaultSecurityConfig(oldDefaultConfig);
-      ServerManagement.undeployQueue("testQueue");
-      ServerManagement.undeployTopic("testTopic");
-      ServerManagement.undeployTopic("securedTopic");
-      ServerManagement.undeployTopic("unsecuredTopic");
-
-      ic.close();
+      ServerManagement.configureSecurityForDestination("Queue1", null);
+      ServerManagement.configureSecurityForDestination("Queue2", null);
+      ServerManagement.configureSecurityForDestination("Topic1", null);
+      ServerManagement.configureSecurityForDestination("Topic2", null);
    }
 
    // Private -------------------------------------------------------
@@ -1070,6 +1027,15 @@ public class SecurityTest extends MessagingTestCase
          log.trace("Can't write to destination using named producer");
          anonSucceeded = false;
       }
+      
+      if (namedSucceeded || anonSucceeded)
+      {
+      	if (dest instanceof Queue)
+      	{
+      		String destName = ((Queue)dest).getQueueName();
+      		removeAllMessages(destName, true, 0);
+      	}      	
+      }
 
       log.trace("namedSucceeded:" + namedSucceeded + ", anonSucceeded:" + anonSucceeded);
       return namedSucceeded || anonSucceeded;
@@ -1103,7 +1069,7 @@ public class SecurityTest extends MessagingTestCase
 
    private void testSecurityForTemporaryDestination(boolean isQueue) throws Exception
    {
-      Destination dest = isQueue ? (Destination) testQueue : testTopic;
+      Destination dest = isQueue ? (Destination) queue1 : topic1;
 
       Connection conn = cf.createConnection("guest", "guest");
       try
