@@ -444,7 +444,7 @@
       <mkdir dir="${build.tests.reports}"/>
 
       <echo message=""/>
-      <echo message="Running remote tests, fork=${junit.fork}, junit.batchtest.fork=${junit.batchtest.fork}, remoting=${test.remoting}"/>
+      <echo message="Running remote tests, junit.batchtest.fork=${junit.batchtest.fork}, remoting=${test.remoting}"/>
       <echo message=""/>
 
       <junit printsummary="${junit.printsummary}"
@@ -802,7 +802,8 @@
       <echo message=""/>
 
       <junit printsummary="${junit.printsummary}"
-             fork="${junit.fork}"
+             fork="on"
+             forkMode="once"
              includeantruntime="yes"
              haltonerror="${junit.haltonerror}"
              haltonfailure="${junit.haltonfailure}"
@@ -829,8 +830,7 @@
          <formatter classname="org.jboss.ant.taskdefs.XMLJUnitMultipleResultFormatter"
                     usefile="${junit.formatter.usefile}" extension="-Remote-${test.remoting}.xml"/>
 
-         <batchtest fork="${junit.batchtest.fork}"
-                    todir="${junit.batchtest.todir}"
+         <batchtest todir="${junit.batchtest.todir}"
                     haltonfailure="${junit.batchtest.haltonfailure}"
                     haltonerror="${junit.batchtest.haltonerror}">
             <formatter type="plain" usefile="${junit.formatter.usefile}"/>
@@ -842,7 +842,7 @@
            <formatter classname="org.jboss.test.messaging.tools.ant.JUnitTestSuiteListener"/>
 
            <fileset dir="${build.tests.classes}">
-               <include name="**/jms/bridge/**/*Test.class"/>              
+	      <include name="**/jms/bridge/**/*Test.class"/>
            </fileset>
          </batchtest>
       </junit>

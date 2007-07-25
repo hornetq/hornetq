@@ -38,7 +38,6 @@ import javax.transaction.TransactionManager;
 import org.jboss.jms.message.JBossMessage;
 import org.jboss.jms.server.bridge.Bridge;
 import org.jboss.logging.Logger;
-import org.jboss.test.messaging.tools.ServerManagement;
 import org.jboss.tm.TransactionManagerLocator;
 
 /**
@@ -58,22 +57,7 @@ public class BridgeTest extends BridgeTestBase
    {
       super(name);
    }
-
-   protected void setUp() throws Exception
-   {
-      if (!ServerManagement.isRemote())
-      {
-         fail("Test should only be run in a remote configuration");
-      }
-      
-      super.setUp();     
-   }
-
-   protected void tearDown() throws Exception
-   {            
-      super.tearDown();      
-   }
-         
+  
    // MaxBatchSize but no MaxBatchTime
    
    public void testNoMaxBatchTime_AtMostOnce_P() throws Exception
@@ -343,8 +327,6 @@ public class BridgeTest extends BridgeTestBase
       
       try
       {               
-         setUpAdministeredObjects(true);
-                            
          int qosMode = Bridge.QOS_AT_MOST_ONCE;
          
          int batchSize = 10;
@@ -518,8 +500,6 @@ public class BridgeTest extends BridgeTestBase
             
       try
       {
-         setUpAdministeredObjects(true);
-         
          final int NUM_MESSAGES = 10;
          
          String selector = "vegetable='radish'";
@@ -580,26 +560,12 @@ public class BridgeTest extends BridgeTestBase
       {      
          if (connSource != null)
          {
-            try
-            {
-               connSource.close();
-            }
-            catch (Exception e)
-            {
-               log.error("Failed to close connection", e);
-            }
+            connSource.close();
          }
          
          if (connTarget != null)
          {
-            try
-            {
-               connTarget.close();
-            }
-            catch (Exception e)
-            {
-              log.error("Failed to close connection", e);
-            }
+            connTarget.close();
          }
          
          if (bridge != null)
@@ -607,23 +573,7 @@ public class BridgeTest extends BridgeTestBase
             bridge.stop();
          }
          
-         try
-         {
-            ServerManagement.undeployQueue("sourceQueue", 0);
-         }
-         catch (Exception e)
-         {
-            log.error("Failed to undeploy", e);
-         }
-         
-         try
-         {
-            ServerManagement.undeployQueue("destQueue", 1);
-         }
-         catch (Exception e)
-         {
-            log.error("Failed to undeploy", e);
-         }
+         removeAllMessages(sourceQueue.getQueueName(), true, 0);
       }                  
    }
    
@@ -645,9 +595,7 @@ public class BridgeTest extends BridgeTestBase
          mgr.begin();
          
          started = mgr.getTransaction();         
-         
-         setUpAdministeredObjects(true);
-         
+           
          final int NUM_MESSAGES = 10;
          
          bridge = new Bridge(cff0, cff1, sourceTopic, destQueue,
@@ -660,10 +608,7 @@ public class BridgeTest extends BridgeTestBase
          
          this.sendMessages(cf0, sourceTopic, 0, NUM_MESSAGES, false);
             
-         this.checkAllMessageReceivedInOrder(cf1, destQueue, 0, NUM_MESSAGES);
-         
-         this.checkNoneReceived(cf1, destQueue, 2000);
-                                
+         this.checkAllMessageReceivedInOrder(cf1, destQueue, 0, NUM_MESSAGES);                          
       }
       finally
       {      
@@ -702,9 +647,7 @@ public class BridgeTest extends BridgeTestBase
       Bridge bridge = null;
             
       try
-      {
-         this.setUpAdministeredObjects(true);
-         
+      {   
          final int NUM_MESSAGES = 10;
          
          bridge = new Bridge(cff0, cff1, sourceTopic, destQueue,
@@ -717,9 +660,7 @@ public class BridgeTest extends BridgeTestBase
             
          sendMessages(cf0, sourceTopic, 0, NUM_MESSAGES, false);
          
-         checkAllMessageReceivedInOrder(cf1, destQueue, 0, NUM_MESSAGES);
-         
-         this.checkNoneReceived(cf1, destQueue, 2000);                       
+         checkAllMessageReceivedInOrder(cf1, destQueue, 0, NUM_MESSAGES);                    
       }
       finally
       {                        
@@ -736,8 +677,6 @@ public class BridgeTest extends BridgeTestBase
             
       try
       {
-         this.setUpAdministeredObjects(true);
-         
          final int NUM_MESSAGES = 10;
          
          bridge = new Bridge(cff0, cff1, sourceTopic, destQueue,
@@ -750,10 +689,7 @@ public class BridgeTest extends BridgeTestBase
             
          sendMessages(cf0, sourceTopic, 0, NUM_MESSAGES, true);
          
-         checkAllMessageReceivedInOrder(cf1, destQueue, 0, NUM_MESSAGES);
-         
-         this.checkNoneReceived(cf1, destQueue, 2000);
-                       
+         checkAllMessageReceivedInOrder(cf1, destQueue, 0, NUM_MESSAGES);              
       }
       finally
       {                      
@@ -761,63 +697,16 @@ public class BridgeTest extends BridgeTestBase
          {
             bridge.stop();
          }
+         
+         //Now unsubscribe
+         Connection conn = cf0.createConnection();
+         conn.setClientID("clientid123");
+         Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         sess.unsubscribe("subTest");
+         conn.close();         
       }                  
    }
-   
-   public void testTimeout() throws Exception
-   { 
-      Bridge bridge = null;
-            
-      try
-      {
-         this.setUpAdministeredObjects(true);
-         
-         final int NUM_MESSAGES = 10;
-         
-         bridge = new Bridge(cff0, cff1, sourceQueue, destQueue,
-                  null, null, null, null,
-                  null, 5000, 10, Bridge.QOS_AT_MOST_ONCE,
-                  NUM_MESSAGES, -1,
-                  null, null, false);
-         
-         bridge.start();
-         
-         boolean persistent = true;
-            
-         //Send half the messges
-
-         this.sendMessages(cf0, sourceQueue, 0, NUM_MESSAGES / 2, persistent);
-                         
-         //Verify none are received
-         
-         this.checkNoneReceived(cf1, destQueue, 2000);
-         
-         log.info("Waiting");
-         Thread.sleep(120000);
-         
-         //Send the other half
-         
-         this.sendMessages(cf0, sourceQueue, NUM_MESSAGES / 2, NUM_MESSAGES / 2, persistent);
-         
-         //This should now be receivable
-         
-         this.checkAllMessageReceivedInOrder(cf1, destQueue, 0, NUM_MESSAGES);
-                  
-         
-         this.checkNoneReceived(cf1, destQueue, 2000);         
-         
-         this.checkNoneReceived(cf0, sourceQueue, 2000);
-      }
-      finally
-      {      
-         if (bridge != null)
-         {
-            log.info("Stopping bridge");
-            bridge.stop();
-         }         
-      }                  
-   }
-   
+      
    public void testMessageIDInHeader() throws Exception
    { 
       Bridge bridge = null;
@@ -828,8 +717,6 @@ public class BridgeTest extends BridgeTestBase
             
       try
       {
-         this.setUpAdministeredObjects(true);
-         
          final int NUM_MESSAGES = 10;
          
          bridge = new Bridge(cff0, cff1, sourceQueue, destQueue,
@@ -974,8 +861,6 @@ public class BridgeTest extends BridgeTestBase
             
       try
       {
-         this.setUpAdministeredObjects(true);
-         
          final int NUM_MESSAGES = 10;
          
          bridge = new Bridge(cff0, cff1, sourceQueue, destQueue,
@@ -1064,9 +949,7 @@ public class BridgeTest extends BridgeTestBase
       Thread t = null;
             
       try
-      {
-         this.setUpAdministeredObjects(true);
-           
+      {      
          bridge = new Bridge(cff0, cff1, sourceQueue, destQueue,
                   null, null, null, null,
                   null, 5000, 10, qosMode,
@@ -1081,7 +964,7 @@ public class BridgeTest extends BridgeTestBase
          
          MessageProducer prod = sessSend.createProducer(sourceQueue);
          
-         final int NUM_MESSAGES = 2000;
+         final int NUM_MESSAGES = 250;
          
          StressSender sender = new StressSender();
          sender.sess = sessSend;
@@ -1094,11 +977,7 @@ public class BridgeTest extends BridgeTestBase
          t.start();
          
          this.checkAllMessageReceivedInOrder(cf1, destQueue, 0, NUM_MESSAGES);
-         
-         this.checkNoneReceived(cf1, destQueue, 2000);
-         
-         this.checkNoneReceived(cf0, sourceQueue, 2000);
-                                      
+                                              
          t.join();
          
          if (sender.ex != null)
@@ -1144,9 +1023,7 @@ public class BridgeTest extends BridgeTestBase
       Thread t = null;
             
       try
-      {
-         this.setUpAdministeredObjects(true);
-           
+      {  
          bridge = new Bridge(cff0, cff0, sourceQueue, localDestQueue,
                   null, null, null, null,
                   null, 5000, 10, qosMode,
@@ -1174,11 +1051,7 @@ public class BridgeTest extends BridgeTestBase
          t.start();
          
          this.checkAllMessageReceivedInOrder(cf0, localDestQueue, 0, NUM_MESSAGES);
-         
-         this.checkNoneReceived(cf0, localDestQueue, 2000);
-         
-         this.checkNoneReceived(cf0, sourceQueue, 2000);
-                          
+                         
          t.join();
          
          if (sender.ex != null)
@@ -1221,8 +1094,6 @@ public class BridgeTest extends BridgeTestBase
             
       try
       {
-         this.setUpAdministeredObjects(true);
-         
          final int NUM_MESSAGES = 10;
          
          bridge = new Bridge(cff0, cff1, sourceQueue, destQueue,
@@ -1239,7 +1110,7 @@ public class BridgeTest extends BridgeTestBase
                          
          //Verify none are received
          
-         this.checkNoneReceived(cf1, destQueue, 2000);
+         this.checkEmpty(destQueue, 1);
          
          //Send the other half
          
@@ -1264,12 +1135,6 @@ public class BridgeTest extends BridgeTestBase
          this.checkAllMessageReceivedInOrder(cf1, destQueue, NUM_MESSAGES, 1);
          
          this.checkAllMessageReceivedInOrder(cf1, destQueue, 0, NUM_MESSAGES - 1);
-         
-         //Make sure no messages are left
-         
-         this.checkNoneReceived(cf1, destQueue, 2000);         
-         
-         this.checkNoneReceived(cf0, sourceQueue, 2000);
       }
       finally
       {      
@@ -1281,17 +1146,12 @@ public class BridgeTest extends BridgeTestBase
       }                  
    }
    
-   
-   
-   
    private void testNoMaxBatchTimeSameServer(int qosMode, boolean persistent) throws Exception
    {
       Bridge bridge = null;
             
       try
       {
-         this.setUpAdministeredObjects(true);
-         
          final int NUM_MESSAGES = 10;
          
          bridge = new Bridge(cff0, cff0, sourceQueue, localDestQueue,
@@ -1304,7 +1164,7 @@ public class BridgeTest extends BridgeTestBase
             
          this.sendMessages(cf0, sourceQueue, 0, NUM_MESSAGES / 2, persistent);
          
-         this.checkNoneReceived(cf1, destQueue, 2000);                
+         this.checkEmpty(destQueue, 1);                
          
          //Send the other half
          
@@ -1315,9 +1175,9 @@ public class BridgeTest extends BridgeTestBase
          
          this.checkAllMessageReceivedInOrder(cf0, localDestQueue, 0, NUM_MESSAGES);
          
-         this.checkNoneReceived(cf0, localDestQueue, 2000);
+         this.checkEmpty(localDestQueue, 0);
          
-         this.checkNoneReceived(cf0, sourceQueue, 2000);
+         this.checkEmpty(sourceQueue, 0);
          
          //Send another batch with one more than batch size
          
@@ -1334,12 +1194,6 @@ public class BridgeTest extends BridgeTestBase
          this.checkAllMessageReceivedInOrder(cf0, localDestQueue, NUM_MESSAGES, 1);
          
          this.checkAllMessageReceivedInOrder(cf0, localDestQueue, 0, NUM_MESSAGES - 1);
-         
-         //Make sure no messages are left
-         
-         this.checkNoneReceived(cf0, localDestQueue, 2000);         
-         
-         this.checkNoneReceived(cf0, sourceQueue, 2000);        
       }
       finally
       {               
@@ -1356,15 +1210,13 @@ public class BridgeTest extends BridgeTestBase
             
       try
       {
-         this.setUpAdministeredObjects(true);
-         
          final long MAX_BATCH_TIME = 3000;
          
          final int MAX_BATCH_SIZE = 100000; // something big so it won't reach it
          
          bridge = new Bridge(cff0, cff1, sourceQueue, destQueue,
                   null, null, null, null,
-                  null, 5000, 10, qosMode,
+                  null, 3000, 10, qosMode,
                   MAX_BATCH_SIZE, MAX_BATCH_TIME,
                   null, null, false);
          
@@ -1378,22 +1230,11 @@ public class BridgeTest extends BridgeTestBase
          
          //Verify none are received
          
-         this.checkNoneReceived(cf1, destQueue, 2000);
-         
-         //Wait a bit longer
-         
-         Thread.sleep(1500);
+         this.checkEmpty(destQueue, 1);
          
          //Messages should now be receivable
          
-         this.checkAllMessageReceivedInOrder(cf1, destQueue, 0, NUM_MESSAGES);
-         
-         this.checkNoneReceived(cf1, destQueue, 2000);
-         
-         //Make sure no messages are left in the source dest
-         
-         this.checkNoneReceived(cf0, sourceQueue, 2000);
-         
+         this.checkAllMessageReceivedInOrder(cf1, destQueue, 0, NUM_MESSAGES);         
       }
       finally
       {      
@@ -1410,15 +1251,13 @@ public class BridgeTest extends BridgeTestBase
             
       try
       {
-         this.setUpAdministeredObjects(true);
-         
          final long MAX_BATCH_TIME = 3000;
          
          final int MAX_BATCH_SIZE = 100000; // something big so it won't reach it
          
          bridge = new Bridge(cff0, cff0, sourceQueue, localDestQueue,
                   null, null, null, null,
-                  null, 5000, 10, qosMode,
+                  null, 3000, 10, qosMode,
                   MAX_BATCH_SIZE, MAX_BATCH_TIME,
                   null, null, false);
          
@@ -1434,22 +1273,11 @@ public class BridgeTest extends BridgeTestBase
          
          //Verify none are received
          
-         this.checkNoneReceived(cf0, localDestQueue, 2000);
-         
-         //Wait a bit longer
-         
-         Thread.sleep(1500);
+         this.checkEmpty(localDestQueue, 0);;
          
          //Messages should now be receivable
          
          this.checkAllMessageReceivedInOrder(cf0, localDestQueue, 0, NUM_MESSAGES);
-         
-         this.checkNoneReceived(cf0, localDestQueue, 2000);
-         
-         //Make sure no messages are left in the source dest
-         
-         this.checkNoneReceived(cf0, sourceQueue, 2000);
-         
       }
       finally
       {              

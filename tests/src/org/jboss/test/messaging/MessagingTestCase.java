@@ -146,6 +146,15 @@ public class MessagingTestCase extends ProxyAssertSupport
       assertEquals(0, messageCount.intValue());      
    }
    
+   protected void checkEmpty(Queue queue, int server) throws Exception
+   {
+   	ObjectName destObjectName =  new ObjectName("jboss.messaging.destination:service=Queue,name=" + queue.getQueueName());
+   	
+      Integer messageCount = (Integer)ServerManagement.getServer(server).getAttribute(destObjectName, "MessageCount");
+       
+      assertEquals(0, messageCount.intValue());      
+   }
+   
    protected void checkEmpty(Topic topic) throws Exception
    {
    	ObjectName destObjectName =  new ObjectName("jboss.messaging.destination:service=Topic,name=" + topic.getTopicName());
@@ -183,6 +192,14 @@ public class MessagingTestCase extends ProxyAssertSupport
       
       assertEquals(expected, messageCount.intValue());      
       return expected == messageCount.intValue();
+   }
+   
+   protected int getMessageCount(String queueName) throws Exception
+   {
+      ObjectName destObjectName = 
+         new ObjectName("jboss.messaging.destination:service=Queue,name=" + queueName);
+      Integer messageCount = (Integer)ServerManagement.getAttribute(destObjectName, "MessageCount");       
+      return messageCount.intValue();
    }
    
    protected void drainDestination(ConnectionFactory cf, Destination dest) throws Exception

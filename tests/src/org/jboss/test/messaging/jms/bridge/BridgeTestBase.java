@@ -29,7 +29,6 @@ import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.DeliveryMode;
 import javax.jms.Destination;
-import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.jms.Queue;
@@ -60,17 +59,17 @@ public class BridgeTestBase extends MessagingTestCase
 {
    private static final Logger log = Logger.getLogger(BridgeTestBase.class);
    
-   protected int nodeCount = 2;
+   protected static ServiceContainer sc;
    
-   protected ServiceContainer sc;
+   protected static ConnectionFactoryFactory cff0, cff1;
    
-   protected ConnectionFactoryFactory cff0, cff1;
+   protected static ConnectionFactory cf0, cf1;
    
-   protected ConnectionFactory cf0, cf1;
+   protected static Queue sourceQueue, destQueue, localDestQueue;
    
-   protected Destination sourceQueue, destQueue, sourceTopic, localDestQueue;
+   protected static Topic sourceTopic;
    
-   protected boolean useArjuna;
+   protected static boolean firstTime = true;
    
    public BridgeTestBase(String name)
    {
@@ -79,97 +78,55 @@ public class BridgeTestBase extends MessagingTestCase
 
    protected void setUp() throws Exception
    {
-      if (!ServerManagement.isRemote())
-      {
-         throw new IllegalStateException("This test should only be run in remote mode");
-      }
-      
       super.setUp();
-       
-      log.info("Starting " + nodeCount + " servers");
-                     
-      for (int i = 0; i < nodeCount; i++)
-      {
-         // make sure all servers are created and started; make sure that database is zapped
-         // ONLY for the first server, the others rely on values they expect to find in shared
-         // tables; don't clear the database for those.
-         ServerManagement.start(i, "all", i == 0);
-      }
       
-      //We need a local transaction and recovery manager
-      //We must start this after the remote servers have been created or it won't
-      //have deleted the database and the recovery manager may attempt to recover transactions
-      if (useArjuna)
+      if (firstTime)
       {
+      	//Start the servers
+      	
+      	ServerManagement.start(0, "all", true);
+
+      	ServerManagement.start(1, "all", false);
+
+      	ServerManagement.deployQueue("sourceQueue", 0);
+
+      	ServerManagement.deployTopic("sourceTopic", 0);  
+
+      	ServerManagement.deployQueue("localDestQueue", 0);
+
+      	ServerManagement.deployQueue("destQueue", 1);     
+      	
+      	setUpAdministeredObjects();
+      	
+      	//We need a local transaction and recovery manager
+         //We must start this after the remote servers have been created or it won't
+         //have deleted the database and the recovery manager may attempt to recover transactions
          sc = new ServiceContainer("jbossjta");   
-      }
-      else
-      {
-         sc = new ServiceContainer("transaction");
-      }
-      sc.start(false);
-      
-      ServerManagement.undeployQueue("sourceQueue", 0);
-      
-      ServerManagement.undeployTopic("sourceTopic", 0);  
-      
-      ServerManagement.undeployQueue("localDestQueue", 0);
          
-      ServerManagement.undeployQueue("destQueue", 1); 
-      
-      ServerManagement.deployQueue("sourceQueue", 0);
-      
-      ServerManagement.deployTopic("sourceTopic", 0);  
-      
-      ServerManagement.deployQueue("localDestQueue", 0);
-         
-      ServerManagement.deployQueue("destQueue", 1);                   
+         sc.start(false);   
+      	
+      	firstTime = false;
+      }          
+            
    }
+   
    
    protected void tearDown() throws Exception
    {       
-      try
-      {
-         ServerManagement.undeployQueue("sourceQueue", 0);
-      }
-      catch (Exception e)
-      {
-         log.error("Failed to undeploy", e);
-      }
-      
-      try
-      {
-         ServerManagement.undeployTopic("sourceTopic", 0);
-      }
-      catch (Exception e)
-      {
-         log.error("Failed to undeploy", e);
-      }
-      
-      try
-      {
-         ServerManagement.undeployQueue("destQueue", 1);
-      }
-      catch (Exception e)
-      {
-         log.error("Failed to undeploy", e);
-      }
-      
-      try
-      {
-         ServerManagement.undeployQueue("localDestQueue", 0);
-      }
-      catch (Exception e)
-      {
-         log.error("Failed to undeploy", e);
-      }
+      super.tearDown(); 
                   
-      sc.stop();
+      //sc.stop();  
       
-      super.tearDown();      
+      checkEmpty(sourceQueue);
+      checkEmpty(localDestQueue);
+      checkEmpty(destQueue, 1);
+      
+      // Check no subscriptions left lying around
+            
+      checkNoSubscriptions(sourceTopic);
    }
    
-   protected void setUpAdministeredObjects(boolean drain) throws Exception
+   protected void setUpAdministeredObjects() throws Exception
    {
       InitialContext ic0 = null, ic1 = null;
       try
@@ -196,16 +153,7 @@ public class BridgeTestBase extends MessagingTestCase
          
          sourceTopic = (Topic)ic0.lookup("/topic/sourceTopic");
          
-         localDestQueue = (Queue)ic0.lookup("/queue/localDestQueue");
-         
-         if (drain)
-         {         
-	         this.drainDestination(cf0, sourceQueue);
-	         
-	         this.drainDestination(cf1, destQueue);
-	         
-	         this.drainDestination(cf0, localDestQueue);
-         }
+         localDestQueue = (Queue)ic0.lookup("/queue/localDestQueue");         
       }
       finally
       {
@@ -225,8 +173,6 @@ public class BridgeTestBase extends MessagingTestCase
    {
       Connection conn = null;
       
-      log.trace("Sending " + numMessages + " messages");
- 
       try
       {
          conn = cf.createConnection();
@@ -243,8 +189,6 @@ public class BridgeTestBase extends MessagingTestCase
             
             prod.send(tm);
          }
-
-         log.trace("Sent the messages");
       }
       finally
       {
@@ -255,44 +199,12 @@ public class BridgeTestBase extends MessagingTestCase
       }
    }
    
-   protected void checkNoneReceived(ConnectionFactory cf, Destination dest, long timeout) throws Exception
+
+   protected void checkMessagesReceived(ConnectionFactory cf, Destination dest, int qosMode,
+   		                               int numMessages, boolean longWaitForFirst) throws Exception
    {
       Connection conn = null;
-      
-      log.trace("checkNoneReceived");
-
-      try
-      {
-         conn = cf.createConnection();
-         
-         conn.start();
-         
-         Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         
-         MessageConsumer cons = sess.createConsumer(dest);
-         
-         Message m = cons.receive(timeout);
-         
-         assertNull(m);
-
-         log.trace("Check complete");
-         
-      }
-      finally
-      {
-         if (conn != null)
-         {
-            conn.close();
-         }
-      }
-   }
-   
-   protected void checkMessagesReceived(ConnectionFactory cf, Destination dest, int qosMode, int numMessages) throws Exception
-   {
-      Connection conn = null;
-      
-      log.trace("checkMessagesReceived");
-      
+        
       try
       {
          conn = cf.createConnection();
@@ -308,15 +220,19 @@ public class BridgeTestBase extends MessagingTestCase
          Set msgs = new HashSet();
          
          int count = 0;
-         
+                           
+         //We always wait longer for the first one - it may take some time to arrive especially if we are
+         //waiting for recovery to kick in
          while (true)
          {
-            TextMessage tm = (TextMessage)cons.receive(3000);
+            TextMessage tm = (TextMessage)cons.receive(count == 0 ? (longWaitForFirst ? 60000 : 10000) : 5000);
               
             if (tm == null)
             {
                break;
             }
+            
+            log.info("Got message " + tm.getText());
             
             msgs.add(tm.getText());
 
@@ -360,10 +276,7 @@ public class BridgeTestBase extends MessagingTestCase
    
    protected void checkAllMessageReceivedInOrder(ConnectionFactory cf, Destination dest, int start, int numMessages) throws Exception
    {
-      Connection conn = null;
-      
-      log.trace("checkAllMessageReceievedInOrder");
-
+      Connection conn = null;     
       try
       {
          conn = cf.createConnection();
@@ -378,14 +291,12 @@ public class BridgeTestBase extends MessagingTestCase
            
          for (int i = 0; i < numMessages; i++)
          {            
-            TextMessage tm = (TextMessage)cons.receive(3000);
+            TextMessage tm = (TextMessage)cons.receive(30000);
             
             assertNotNull(tm);
               
             assertEquals("message" + (i + start), tm.getText());
          } 
-
-         log.trace("Check complete");
       }
       finally
       {

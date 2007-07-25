@@ -48,13 +48,6 @@ public class ReconnectWithRecoveryTest extends BridgeTestBase
 
    protected void setUp() throws Exception
    {   
-      if (!ServerManagement.isRemote())
-      {
-         fail("Test should only be run in a remote configuration");
-      }
-
-      useArjuna = true;
-      
       super.setUp();         
       
       //Now install local JMSProviderAdaptor classes
@@ -71,12 +64,12 @@ public class ReconnectWithRecoveryTest extends BridgeTestBase
    }
 
    protected void tearDown() throws Exception
-   {            
+   {  
+      super.tearDown();
+
       sc.stopRecoveryManager();
       
       sc.uninstallJMSProviderAdaptor("adaptor1");
-
-      super.tearDown();
 
       log.debug(this + " torn down");
    }
@@ -94,8 +87,6 @@ public class ReconnectWithRecoveryTest extends BridgeTestBase
             
       try
       {
-         setUpAdministeredObjects(true);
-         
          final int NUM_MESSAGES = 10;         
          
          bridge = new Bridge(cff0, cff1, sourceQueue, destQueue,
@@ -130,27 +121,18 @@ public class ReconnectWithRecoveryTest extends BridgeTestBase
                   
          ServerManagement.start(1, "all", false);
          
-         log.info("Restarted server");
+         log.info("Restarted server");    
          
          ServerManagement.deployQueue("destQueue", 1);
                   
+         this.setUpAdministeredObjects();
+                        
          log.info("Deployed queue");
-                  
-         //Give enough time for transaction recovery to happen
-         Thread.sleep(45000);
-
-         log.info("Slept");
-                           
-         setUpAdministeredObjects(false);
-                 
-         checkMessagesReceived(cf1, destQueue, Bridge.QOS_ONCE_AND_ONLY_ONCE, NUM_MESSAGES);
          
-         //Make sure no messages are left in the source dest
-         
-         this.checkNoneReceived(cf0, sourceQueue, 5000);
-         
-         log.info("Got here");
-         
+         log.info("*** waiting for recovery");
+             
+         //There may be a long wait for the first time (need to let recovery kick in)
+         checkMessagesReceived(cf1, destQueue, Bridge.QOS_ONCE_AND_ONLY_ONCE, NUM_MESSAGES, true);
       }
       finally
       {      
@@ -168,9 +150,6 @@ public class ReconnectWithRecoveryTest extends BridgeTestBase
       }                  
    }
    
-   
-   
-   // Inner classes -------------------------------------------------------------------
-   
+   // Inner classes -------------------------------------------------------------------   
 }
 

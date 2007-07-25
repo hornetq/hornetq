@@ -27,7 +27,6 @@ import java.util.Properties;
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
-import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.jms.Session;
@@ -58,24 +57,38 @@ public class BridgeMBeanTest extends BridgeTestBase
       super(name);
    }
    
-   protected void setUp() throws Exception
+   private static ObjectName sourceProviderLoader;
+   
+   private static ObjectName targetProviderLoader;
+   
+   public void setUp() throws Exception
    {
-      if (!ServerManagement.isRemote())
-      {
-         fail("Test should only be run in a remote configuration");
-      }
-      
-      nodeCount = 3;
-      
-      super.setUp();
+   	boolean first = firstTime;
+   	
+   	super.setUp();
+   	
+   	if (first)
+   	{   	
+	   	Properties props1 = new Properties();
+	      props1.putAll(ServerManagement.getJNDIEnvironment(0));
+	      
+	      Properties props2 = new Properties();
+	      props2.putAll(ServerManagement.getJNDIEnvironment(1));
+	      
+	      installJMSProviderLoader(0, props1, "/XAConnectionFactory", "adaptor1");
+	      
+	      installJMSProviderLoader(0, props2, "/XAConnectionFactory", "adaptor2");
+	      
+	      sourceProviderLoader = new ObjectName("jboss.messaging:service=JMSProviderLoader,name=adaptor1");
+	      targetProviderLoader = new ObjectName("jboss.messaging:service=JMSProviderLoader,name=adaptor2");
+   	}
    }
    
-   protected void tearDown() throws Exception
+   public void tearDown() throws Exception
    {
-      super.tearDown();      
+   	super.tearDown();
    }
    
-      
    public void testStopStartPauseResume() throws Exception
    {
       Connection connSource = null;
@@ -86,27 +99,8 @@ public class BridgeMBeanTest extends BridgeTestBase
       
    	try
    	{
-	      ServerManagement.deployQueue("sourceQueue", 1);
-	      ServerManagement.deployQueue("targetQueue", 2);
-	      
-	      Properties props1 = new Properties();
-	      props1.putAll(ServerManagement.getJNDIEnvironment(1));
-	      
-	      Properties props2 = new Properties();
-	      props2.putAll(ServerManagement.getJNDIEnvironment(2));
-	      
-	      installJMSProviderLoader(0, props1, "/XAConnectionFactory", "adaptor1");
-	      
-	      installJMSProviderLoader(0, props2, "/XAConnectionFactory", "adaptor2");
-	      
-	      log.info("Deploying bridge");
-	      
-	      ObjectName sourceProviderLoader = new ObjectName("jboss.messaging:service=JMSProviderLoader,name=adaptor1");
-	      ObjectName targetProviderLoader = new ObjectName("jboss.messaging:service=JMSProviderLoader,name=adaptor2");
-	      
-	      
 	      on = deployBridge(0, "Bridge1", sourceProviderLoader, targetProviderLoader,
-	                                   "/queue/sourceQueue", "/queue/targetQueue",
+	                                   "/queue/sourceQueue", "/queue/destQueue",
 	                                   null, null, null, null,
 	                                   Bridge.QOS_AT_MOST_ONCE, null, 1,
 	                                   -1, null, null, 5000, -1, false);
@@ -115,18 +109,7 @@ public class BridgeMBeanTest extends BridgeTestBase
 	      ServerManagement.getServer(0).invoke(on, "create", new Object[0], new String[0]);
 	      
 	      log.info("Created bridge");
-	      
-	      InitialContext icSource = new InitialContext(props1);
-	      InitialContext icTarget = new InitialContext(props2);
-      
-         ConnectionFactory cf0 = (ConnectionFactory)icSource.lookup("/XAConnectionFactory");
-         
-         ConnectionFactory cf1 = (ConnectionFactory)icTarget.lookup("/XAConnectionFactory");
-         
-         Destination destSource = (Destination)icSource.lookup("/queue/sourceQueue");
-         
-         Destination destTarget = (Destination)icTarget.lookup("/queue/targetQueue");
-         
+	      	          
          connSource = cf0.createConnection();
          
          connTarget = cf1.createConnection();
@@ -139,11 +122,11 @@ public class BridgeMBeanTest extends BridgeTestBase
          
          Session sessSource = connSource.createSession(false, Session.AUTO_ACKNOWLEDGE);
          
-         MessageProducer prod = sessSource.createProducer(destSource);
+         MessageProducer prod = sessSource.createProducer(sourceQueue);
          
          Session sessTarget = connTarget.createSession(false, Session.AUTO_ACKNOWLEDGE);
          
-         MessageConsumer cons = sessTarget.createConsumer(destTarget);
+         MessageConsumer cons = sessTarget.createConsumer(destQueue);
          
          for (int i = 0; i < NUM_MESSAGES; i++)
          {
@@ -154,9 +137,7 @@ public class BridgeMBeanTest extends BridgeTestBase
          
          //It's stopped so no messages should be received
          
-         Message m = cons.receive(2000);
-         
-         assertNull(m);
+         checkEmpty(destQueue, 1);
          
          //Start it
          
@@ -175,11 +156,8 @@ public class BridgeMBeanTest extends BridgeTestBase
             assertEquals("message" + i, tm.getText());
          }
          
-         m = cons.receive(2000);
-         
-         assertNull(m);
-         
-         
+         checkEmpty(destQueue, 1);
+                  
          //Send some more
          
          for (int i = NUM_MESSAGES; i < 2 * NUM_MESSAGES; i++)
@@ -200,9 +178,7 @@ public class BridgeMBeanTest extends BridgeTestBase
             assertEquals("message" + i, tm.getText());
          }
          
-         m = cons.receive(2000);
-         
-         assertNull(m);
+         checkEmpty(destQueue, 1);
          
          //Pause it
          
@@ -223,9 +199,7 @@ public class BridgeMBeanTest extends BridgeTestBase
          
          //These shouldn't be received
          
-         m = cons.receive(2000);
-         
-         assertNull(m);
+         checkEmpty(destQueue, 1);
          
          // Resume
          
@@ -242,9 +216,7 @@ public class BridgeMBeanTest extends BridgeTestBase
             assertEquals("message" + i, tm.getText());
          }
          
-         m = cons.receive(2000);
-         
-         assertNull(m);
+         checkEmpty(destQueue, 1);
          
          isPaused = ((Boolean)ServerManagement.getAttribute(on, "Paused")).booleanValue();
          
@@ -256,14 +228,7 @@ public class BridgeMBeanTest extends BridgeTestBase
          
          boolean isStarted = ((Boolean)ServerManagement.getAttribute(on, "Started")).booleanValue();
          
-         assertFalse(isStarted);
-         
-         MessageConsumer cons2 = sessSource.createConsumer(destSource);
-         
-         m = cons2.receive(2000);
-         
-         assertNull(m);
-         
+         assertFalse(isStarted); 
       }
       finally
       {         
@@ -289,28 +254,6 @@ public class BridgeMBeanTest extends BridgeTestBase
          {
             //Ignore            
          }
-         
-         try
-         {
-         	ServerManagement.undeployQueue("sourceQueue", 1);   	       
-         }
-         catch (Exception e)
-         {
-         	//Ignore
-         }
-         
-         try
-         {
-         	ServerManagement.undeployQueue("targetQueue", 2);
-         }
-         catch (Exception e)
-         {
-         	//Ignore
-         }
-         
-         uninstallJMSProviderLoader(0, "adaptor1");
-         
-         uninstallJMSProviderLoader(0,  "adaptor2");
       }
    }
          
@@ -319,27 +262,9 @@ public class BridgeMBeanTest extends BridgeTestBase
       ObjectName on = null;
       
       try
-      {       
-      	ServerManagement.deployQueue("sourceQueue", 1);
-         ServerManagement.deployQueue("targetQueue", 2);
-                  
-         Thread.sleep(5000);
-         
-         Properties props1 = new Properties();
-         props1.putAll(ServerManagement.getJNDIEnvironment(1));
-         
-         Properties props2 = new Properties();
-         props2.putAll(ServerManagement.getJNDIEnvironment(2));
-         
-         installJMSProviderLoader(0, props1, "/XAConnectionFactory", "adaptor1");
-         
-         installJMSProviderLoader(0, props2, "/XAConnectionFactory", "adaptor2");
-         
-         ObjectName sourceProviderLoader = new ObjectName("jboss.messaging:service=JMSProviderLoader,name=adaptor1");
-         ObjectName targetProviderLoader = new ObjectName("jboss.messaging:service=JMSProviderLoader,name=adaptor2");
-         
+      {                
          on = deployBridge(0, "Bridge2", sourceProviderLoader, targetProviderLoader,
-                           "/queue/sourceQueue", "/queue/targetQueue",
+                           "/queue/sourceQueue", "/queue/destQueue",
                            null, null, null, null,
                            Bridge.QOS_ONCE_AND_ONLY_ONCE, null, 1,
                            -1, null, null, 5000, -1, false);
@@ -380,11 +305,11 @@ public class BridgeMBeanTest extends BridgeTestBase
          
          {
             String destLookup = (String)ServerManagement.getAttribute(on, "TargetDestinationLookup");
-            assertEquals("/queue/targetQueue", destLookup);
+            assertEquals("/queue/destQueue", destLookup);
             ServerManagement.setAttribute(on, "TargetDestinationLookup", "/queue/WibbleQueue");
             destLookup = (String)ServerManagement.getAttribute(on, "TargetDestinationLookup");
             assertEquals("/queue/WibbleQueue", destLookup);
-            ServerManagement.setAttribute(on, "TargetDestinationLookup", "/queue/targetQueue");
+            ServerManagement.setAttribute(on, "TargetDestinationLookup", "/queue/destQueue");
          }
          
          {
@@ -526,10 +451,10 @@ public class BridgeMBeanTest extends BridgeTestBase
          
          {
             String destLookup = (String)ServerManagement.getAttribute(on, "TargetDestinationLookup");
-            assertEquals("/queue/targetQueue", destLookup);
+            assertEquals("/queue/destQueue", destLookup);
             ServerManagement.setAttribute(on, "TargetDestinationLookup", "/queue/WibbleQueue");
             destLookup = (String)ServerManagement.getAttribute(on, "TargetDestinationLookup");
-            assertEquals("/queue/targetQueue", destLookup);
+            assertEquals("/queue/destQueue", destLookup);
          }
          
          {
@@ -628,13 +553,17 @@ public class BridgeMBeanTest extends BridgeTestBase
             assertEquals(-1, maxRetries.intValue());
          }         
          
+         Properties props1 = new Properties();
+	      props1.putAll(ServerManagement.getJNDIEnvironment(0));	      
+	      Properties props2 = new Properties();
+	      props2.putAll(ServerManagement.getJNDIEnvironment(1));
          InitialContext icSource = new InitialContext(props1);
          InitialContext icTarget = new InitialContext(props2);
          
          log.trace("Checking bridged bridge");
          
          checkBridged(icSource, icTarget, "/ConnectionFactory", "/ConnectionFactory",
-                      "/queue/sourceQueue", "/queue/targetQueue");
+                      "/queue/sourceQueue", "/queue/destQueue");
          
          log.trace("Checked bridge");
          
@@ -653,28 +582,6 @@ public class BridgeMBeanTest extends BridgeTestBase
          {
             //Ignore            
          }         
-         
-         try
-         {
-         	ServerManagement.undeployQueue("sourceQueue", 1);   	       
-         }
-         catch (Exception e)
-         {
-         	//Ignore
-         }
-         
-         try
-         {
-         	ServerManagement.undeployQueue("targetQueue", 2);
-         }
-         catch (Exception e)
-         {
-         	//Ignore
-         }
-         
-         uninstallJMSProviderLoader(0, "adaptor1");
-         
-         uninstallJMSProviderLoader(0, "adaptor2");
       }
             
    }
@@ -790,17 +697,6 @@ public class BridgeMBeanTest extends BridgeTestBase
 
             assertEquals("message" + i, tm.getText());
          }
-         
-         Message m = cons.receive(1000);
-         
-         assertNull(m);
-         
-         MessageConsumer cons2 = sessSource.createConsumer(destSource);
-         
-         m = cons2.receive(1000);
-         
-         assertNull(m);
-         
       }
       finally
       {
@@ -838,13 +734,4 @@ public class BridgeMBeanTest extends BridgeTestBase
    	ServerManagement.getServer(0).deploy(config);
    }
 
-   private void uninstallJMSProviderLoader(int server, String name) throws Exception
-   {
-   	ObjectName on = new ObjectName("jboss.messaging:service=JMSProviderLoader,name=" + name);
-   	
-   	log.info("Uninstalling bridge:" + name);
-   	
-   	ServerManagement.getServer(0).undeploy(on);
-   }
-   
 }

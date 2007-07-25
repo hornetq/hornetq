@@ -7,7 +7,6 @@ import javax.naming.InitialContext;
 import org.jboss.jms.client.JBossConnectionFactory;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
-import org.jboss.test.messaging.tools.jmx.ServiceAttributeOverrides;
 
 /**
  * 

@@ -40,26 +40,7 @@ public class ReconnectTest extends BridgeTestBase
    {
       super(name);
    }
-
-   protected void setUp() throws Exception
-   {   
-      if (!ServerManagement.isRemote())
-      {
-         fail("Test should only be run in a remote configuration");
-      }
-
-      useArjuna = false;
-      
-      super.setUp();                  
-   }
-
-   protected void tearDown() throws Exception
-   {            
-      super.tearDown();
-
-      log.debug(this + " torn down");
-   }
-      
+        
    // Crash and reconnect
    
    // Once and only once
@@ -114,7 +95,6 @@ public class ReconnectTest extends BridgeTestBase
 
    public void testRetryConnectionOnStartup() throws Exception
    {
-      setUpAdministeredObjects(true);
       ServerManagement.kill(1);
 
       Bridge bridge = new Bridge(cff0, cff1, sourceQueue, destQueue,
@@ -130,6 +110,9 @@ public class ReconnectTest extends BridgeTestBase
          assertTrue(bridge.isFailed());
 
          ServerManagement.start(1, "all", false);
+         ServerManagement.deployQueue("destQueue", 1);         
+         setUpAdministeredObjects();
+         
          Thread.sleep(3000);
          
          assertTrue(bridge.isStarted());
@@ -160,9 +143,7 @@ public class ReconnectTest extends BridgeTestBase
       Bridge bridge = null;
          
       try
-      { 
-         setUpAdministeredObjects(true);
-         
+      {   
          bridge = new Bridge(cff0, cff1, sourceQueue, destQueue,
                   null, null, null, null,
                   null, 1000, -1, qosMode,
@@ -179,7 +160,7 @@ public class ReconnectTest extends BridgeTestBase
          
          //Verify none are received
          
-         checkNoneReceived(cf1, destQueue, 2000);
+         checkEmpty(destQueue, 1);
          
          //Now crash the dest server
          
@@ -188,8 +169,8 @@ public class ReconnectTest extends BridgeTestBase
          ServerManagement.kill(1);
          
          //Wait a while before starting up to simulate the dest being down for a while
-         log.info("Waiting 15 secs before bringing server back up");
-         Thread.sleep(10000);
+         log.info("Waiting 5 secs before bringing server back up");
+         Thread.sleep(5000);
          log.info("Done wait");
          
          //Restart the server
@@ -199,8 +180,8 @@ public class ReconnectTest extends BridgeTestBase
          ServerManagement.start(1, "all", false);
          
          ServerManagement.deployQueue("destQueue", 1);
-                                    
-         setUpAdministeredObjects(false);
+         
+         setUpAdministeredObjects();
          
          //Send some more messages
          
@@ -210,13 +191,7 @@ public class ReconnectTest extends BridgeTestBase
          
          log.info("Sent messages");
          
-         Thread.sleep(2000);
-                  
-         checkMessagesReceived(cf1, destQueue, qosMode, NUM_MESSAGES);
-                    
-         //Make sure no messages are left in the source dest
-         
-         this.checkNoneReceived(cf0, sourceQueue, 2000);                
+         checkMessagesReceived(cf1, destQueue, qosMode, NUM_MESSAGES, false);                  
       }
       finally
       {      
@@ -249,8 +224,6 @@ public class ReconnectTest extends BridgeTestBase
             
       try
       {
-         setUpAdministeredObjects(true);
-         
          bridge = new Bridge(cff0, cff1, sourceQueue, destQueue,
                   null, null, null, null,
                   null, 1000, -1, Bridge.QOS_ONCE_AND_ONLY_ONCE,
@@ -259,15 +232,14 @@ public class ReconnectTest extends BridgeTestBase
          
          bridge.start();
          
-         final int NUM_MESSAGES = 10;
-            
+         final int NUM_MESSAGES = 10;            
          //Send some messages
          
          this.sendMessages(cf0, sourceQueue, 0, NUM_MESSAGES / 2, persistent);
                   
          //verify none are received
          
-         this.checkNoneReceived(cf1, destQueue, 2000);
+         checkEmpty(destQueue, 1);
                   
          //Now crash the dest server
          
@@ -276,8 +248,8 @@ public class ReconnectTest extends BridgeTestBase
          ServerManagement.kill(1);
          
          //Wait a while before starting up to simulate the dest being down for a while
-         log.info("Waiting 15 secs before bringing server back up");
-         Thread.sleep(15000);
+         log.info("Waiting 5 secs before bringing server back up");
+         Thread.sleep(5000);
          log.info("Done wait");
          
          //Restart the server
@@ -285,19 +257,12 @@ public class ReconnectTest extends BridgeTestBase
          ServerManagement.start(1, "all", false);
          
          ServerManagement.deployQueue("destQueue", 1);
-                           
-         setUpAdministeredObjects(false);
+         
+         setUpAdministeredObjects();
          
          sendMessages(cf0, sourceQueue, NUM_MESSAGES / 2, NUM_MESSAGES / 2, persistent);
                            
-         checkMessagesReceived(cf1, destQueue, Bridge.QOS_ONCE_AND_ONLY_ONCE, NUM_MESSAGES);
-         
-         //Make sure no messages are left in the source dest
-         
-         checkNoneReceived(cf0, sourceQueue, 2000);
-         
-         log.info("Got here");
-         
+         checkMessagesReceived(cf1, destQueue, Bridge.QOS_ONCE_AND_ONLY_ONCE, NUM_MESSAGES, false);         
       }
       finally
       {      
