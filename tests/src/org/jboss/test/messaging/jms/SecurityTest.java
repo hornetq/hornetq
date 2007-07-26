@@ -31,14 +31,13 @@ import javax.jms.MessageProducer;
 import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.Topic;
-import javax.jms.JMSException;
-import javax.jms.TopicConnection;
-import javax.jms.TopicSession;
-import javax.jms.TopicConnectionFactory;
-import javax.jms.TopicPublisher;
-import javax.jms.DeliveryMode;
+import javax.jms.XAConnection;
+import javax.jms.XAConnectionFactory;
+import javax.jms.XASession;
 import javax.management.ObjectName;
-
+import javax.transaction.xa.XAResource;
+import org.jboss.jms.exception.MessagingXAException;
+import org.jboss.jms.tx.MessagingXid;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.util.XMLUtil;
 import org.jboss.test.messaging.tools.ServerManagement;
@@ -444,53 +443,6 @@ public class SecurityTest extends JMSTestCase
       }
    }
 
-   //TODO - this test doesn't belong here - this should be added to writeDestination()
-   public void testTransactedPublish() throws JMSException
-   {
-
-      TopicConnection conn = null;
-
-      try
-      {
-         conn = ((TopicConnectionFactory)cf).createTopicConnection("nobody", "nobody");
-         TopicSession topicSess = conn.createTopicSession(true , Session.AUTO_ACKNOWLEDGE);
-         try
-         {
-            TopicPublisher publisher = topicSess.createPublisher(topic1);
-            publisher.publish(topicSess.createTextMessage("test"), DeliveryMode.PERSISTENT, 4, 0l);
-            topicSess.commit();
-
-            fail("Test didn't throw expected exception");
-         }
-         catch (JMSSecurityException expected)
-         {
-         }
-
-         try
-         {
-            MessageProducer prod = topicSess.createPublisher(topic1);
-            prod.send(topicSess.createTextMessage("hello"));
-            topicSess.commit();
-
-            fail("Test didn't throw expected exception");
-         }
-         catch (JMSSecurityException expected)
-         {
-         }
-      }
-      finally
-      {
-         try
-         {
-            if (conn!=null) conn.close();
-         }
-         catch (Throwable ignored)
-         {
-         }
-      }
-
-   }
-
    /*
     * Test invalid durable subscription creation for connection preconfigured with client id
     */
@@ -608,7 +560,9 @@ public class SecurityTest extends JMSTestCase
          ServerManagement.setDefaultSecurityConfig(newSecurityConfig);
 
          assertFalse(canReadDestination(conn, queue2));
-         assertFalse(canWriteDestination(conn, queue2));
+         // we should only look non transacted, as looking on connection would require the test
+         // to wait 15s (eviction timeout)
+         assertFalse(canWriteDestination(conn, queue2, false));
 
          newSecurityConfig =
             "<security><role name=\"def\" read=\"true\" write=\"false\" create=\"false\"/></security>";
@@ -616,7 +570,8 @@ public class SecurityTest extends JMSTestCase
          ServerManagement.setDefaultSecurityConfig(newSecurityConfig);
 
          assertTrue(canReadDestination(conn, queue2));
-         assertFalse(canWriteDestination(conn, queue2));         
+         // to avoid cache evict timeout
+         assertFalse(canWriteDestination(conn, queue2, false));
       }
       finally
       {
@@ -655,7 +610,8 @@ public class SecurityTest extends JMSTestCase
          ServerManagement.invoke(on, "start", null, null);
          
          assertFalse(canReadDestination(conn, queue2));
-         assertFalse(canWriteDestination(conn, queue2));
+         // non transacted to avoid evict timeout
+         assertFalse(canWriteDestination(conn, queue2, false));
 
 
          newSecurityConfig =
@@ -666,7 +622,7 @@ public class SecurityTest extends JMSTestCase
          ServerManagement.invoke(on, "start", null, null);
 
          assertTrue(canReadDestination(conn, queue2));
-         assertFalse(canWriteDestination(conn, queue2));
+         assertFalse(canWriteDestination(conn, queue2, false));
 
          newSecurityConfig =
             "<security><role name=\"def\" read=\"true\" write=\"true\" create=\"false\"/></security>";
@@ -676,7 +632,7 @@ public class SecurityTest extends JMSTestCase
          ServerManagement.invoke(on, "start", null, null);
 
          assertTrue(canReadDestination(conn, queue2));
-         assertTrue(canWriteDestination(conn, queue2));
+         assertTrue(canWriteDestination(conn, queue2, false));
       }
       finally
       {      	         
@@ -716,7 +672,7 @@ public class SecurityTest extends JMSTestCase
          ServerManagement.invoke(on, "start", null, null);
          
          assertFalse(canReadDestination(conn, topic2));
-         assertFalse(canWriteDestination(conn, topic2));
+         assertFalse(canWriteDestination(conn, topic2, false));
 
 
          newSecurityConfig =
@@ -727,7 +683,7 @@ public class SecurityTest extends JMSTestCase
          ServerManagement.invoke(on, "start", null, null);
 
          assertTrue(canReadDestination(conn, topic2));
-         assertFalse(canWriteDestination(conn, topic2));
+         assertFalse(canWriteDestination(conn, topic2, false));
 
          newSecurityConfig =
             "<security><role name=\"def\" read=\"true\" write=\"true\" create=\"false\"/></security>";
@@ -737,7 +693,7 @@ public class SecurityTest extends JMSTestCase
          ServerManagement.invoke(on, "start", null, null);
 
          assertTrue(canReadDestination(conn, topic2));
-         assertTrue(canWriteDestination(conn, topic2));
+         assertTrue(canWriteDestination(conn, topic2, false));
       }
       finally
       {      	
@@ -769,7 +725,7 @@ public class SecurityTest extends JMSTestCase
          ServerManagement.configureSecurityForDestination("Queue2", newSecurityConfig);
          
          assertFalse(canReadDestination(conn, queue2));
-         assertFalse(canWriteDestination(conn, queue2));
+         assertFalse(canWriteDestination(conn, queue2, false));
 
 
          newSecurityConfig =
@@ -778,7 +734,7 @@ public class SecurityTest extends JMSTestCase
          ServerManagement.configureSecurityForDestination("Queue2", newSecurityConfig);
 
          assertTrue(canReadDestination(conn, queue2));
-         assertFalse(canWriteDestination(conn, queue2));
+         assertFalse(canWriteDestination(conn, queue2, false));
 
          newSecurityConfig =
             "<security><role name=\"def\" read=\"true\" write=\"true\" create=\"false\"/></security>";
@@ -786,7 +742,7 @@ public class SecurityTest extends JMSTestCase
          ServerManagement.configureSecurityForDestination("Queue2", newSecurityConfig);
 
          assertTrue(canReadDestination(conn, queue2));
-         assertTrue(canWriteDestination(conn, queue2));
+         assertTrue(canWriteDestination(conn, queue2, false));
          
          //Now set to null
          
@@ -798,12 +754,12 @@ public class SecurityTest extends JMSTestCase
          ServerManagement.setDefaultSecurityConfig(lockedConf);
          
          assertFalse(canReadDestination(conn, queue2));
-         assertFalse(canWriteDestination(conn, queue2));
+         assertFalse(canWriteDestination(conn, queue2, false));
          
          ServerManagement.setDefaultSecurityConfig(defConfig);
          
          assertTrue(canReadDestination(conn, queue2));
-         assertTrue(canWriteDestination(conn, queue2));
+         assertTrue(canWriteDestination(conn, queue2, false));
       }
       finally
       {         
@@ -836,7 +792,7 @@ public class SecurityTest extends JMSTestCase
          ServerManagement.configureSecurityForDestination("Topic2", newSecurityConfig);
          
          assertFalse(canReadDestination(conn, topic2));
-         assertFalse(canWriteDestination(conn, topic2));
+         assertFalse(canWriteDestination(conn, topic2, false));
 
 
          newSecurityConfig =
@@ -845,7 +801,7 @@ public class SecurityTest extends JMSTestCase
          ServerManagement.configureSecurityForDestination("Topic2", newSecurityConfig);
 
          assertTrue(canReadDestination(conn, topic2));
-         assertFalse(canWriteDestination(conn, topic2));
+         assertFalse(canWriteDestination(conn, topic2, false));
 
          newSecurityConfig =
             "<security><role name=\"def\" read=\"true\" write=\"true\" create=\"false\"/></security>";
@@ -853,7 +809,7 @@ public class SecurityTest extends JMSTestCase
          ServerManagement.configureSecurityForDestination("Topic2", newSecurityConfig);
 
          assertTrue(canReadDestination(conn, topic2));
-         assertTrue(canWriteDestination(conn, topic2));
+         assertTrue(canWriteDestination(conn, topic2, false));
          
          //Now set to null
          
@@ -865,12 +821,12 @@ public class SecurityTest extends JMSTestCase
          ServerManagement.setDefaultSecurityConfig(lockedConf);
          
          assertFalse(canReadDestination(conn, topic2));
-         assertFalse(canWriteDestination(conn, topic2));
+         assertFalse(canWriteDestination(conn, topic2, false));
          
          ServerManagement.setDefaultSecurityConfig(defConfig);
          
          assertTrue(canReadDestination(conn, topic2));
-         assertTrue(canWriteDestination(conn, topic2));
+         assertTrue(canWriteDestination(conn, topic2, false));
       }
       finally
       {
@@ -992,53 +948,79 @@ public class SecurityTest extends JMSTestCase
       }
       catch (JMSSecurityException e)
       {
-         log.trace("Can't read destination");
+         log.trace("Can't read destination", e);
          return false;
+      }
+      finally
+      {
+         sess.close();
       }
             
    }
-
    private boolean canWriteDestination(Connection conn, Destination dest) throws Exception
    {
-      Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      boolean transacted = canWriteDestination(conn, dest, true);
+      boolean nonTransacted = canWriteDestination(conn, dest, false);
 
-      boolean namedSucceeded = true;
+      return transacted || nonTransacted;
+   }
+
+   private boolean canWriteDestination(Connection conn, Destination dest, boolean transacted) throws Exception
+   {
+      Session sess = conn.createSession(transacted, Session.AUTO_ACKNOWLEDGE);
+
       try
       {
-         MessageProducer prod = sess.createProducer(dest);
-         Message m = sess.createTextMessage("Kippers");
-         prod.send(m);
-      }
-      catch (JMSSecurityException e)
-      {
-         log.trace("Can't write to destination using named producer");
-         namedSucceeded = false;
-      }
+         boolean namedSucceeded = true;
+         try
+         {
+            MessageProducer prod = sess.createProducer(dest);
+            Message m = sess.createTextMessage("Kippers");
+            prod.send(m);
+            if (transacted)
+            {
+               sess.commit();
+            }
+         }
+         catch (JMSSecurityException e)
+         {
+            log.trace("Can't write to destination using named producer", e);
+            namedSucceeded = false;
+         }
 
-      boolean anonSucceeded = true;
-      try
-      {
-         MessageProducer producerAnon = sess.createProducer(null);
-         Message m = sess.createTextMessage("Kippers");
-         producerAnon.send(dest, m);
-      }
-      catch (JMSSecurityException e)
-      {
-         log.trace("Can't write to destination using named producer");
-         anonSucceeded = false;
-      }
-      
-      if (namedSucceeded || anonSucceeded)
-      {
-      	if (dest instanceof Queue)
-      	{
-      		String destName = ((Queue)dest).getQueueName();
-      		removeAllMessages(destName, true, 0);
-      	}      	
-      }
+         boolean anonSucceeded = true;
+         try
+         {
+            MessageProducer producerAnon = sess.createProducer(null);
+            Message m = sess.createTextMessage("Kippers");
+            producerAnon.send(dest, m);
+            if (transacted)
+            {
+               sess.commit();
+            }
+         }
+         catch (JMSSecurityException e)
+         {
+            log.trace("Can't write to destination using named producer", e);
+            anonSucceeded = false;
+         }
 
-      log.trace("namedSucceeded:" + namedSucceeded + ", anonSucceeded:" + anonSucceeded);
-      return namedSucceeded || anonSucceeded;
+         if (namedSucceeded || anonSucceeded)
+         {
+            if (dest instanceof Queue)
+            {
+               String destName = ((Queue)dest).getQueueName();
+               removeAllMessages(destName, true, 0);
+            }
+         }
+
+         log.trace("namedSucceeded:" + namedSucceeded + ", anonSucceeded:" + anonSucceeded);
+         return namedSucceeded || anonSucceeded;
+      }
+      finally
+      {
+         sess.close();
+      }
 
    }
 
@@ -1057,7 +1039,6 @@ public class SecurityTest extends JMSTestCase
       }
       catch (JMSSecurityException e)
       {
-         log.error(e,e);
          log.trace("Can't create durable sub", e);
          return false;
       }
@@ -1114,6 +1095,66 @@ public class SecurityTest extends JMSTestCase
          conn.close();
       }
    }
+
+   /**
+    * This Validate sending messages on an Queue where the user don't have write authorization
+    * @throws Exception
+    */
+   public void testSecurityOnXA() throws Exception
+   {
+      XAConnection xaconn = null;
+
+      try
+      {
+         XAConnectionFactory xacf = (XAConnectionFactory)cf;
+
+         xaconn = xacf.createXAConnection("nobody", "nobody");
+
+         XASession xasession = xaconn.createXASession();
+
+         MessagingXid xid = new MessagingXid(new byte[]{1}, 1, new byte[]{1});
+
+         XAResource resource = xasession.getXAResource();
+
+         resource.start(xid, XAResource.TMNOFLAGS);
+
+         MessageProducer producer = xasession.createProducer(queue1);
+
+
+         for (int i=0;i<10;i++)
+         {
+            producer.send(xasession.createTextMessage("Test " + i));
+         }
+
+         try
+         {
+            resource.end(xid, XAResource.TMSUCCESS);
+            resource.prepare(xid);
+            fail("Didn't throw expected exception!");
+         }
+         catch (MessagingXAException expected)
+         {
+         }
+      }
+      finally
+      {
+         try
+         {
+            if (xaconn != null)
+            {
+               xaconn.close();
+            }
+            ServerManagement.undeployQueue("MyQueue2");
+         }
+         catch (Throwable ignored)
+         {
+         }
+      }
+   }
+
+
+
+
    
    // Inner classes -------------------------------------------------
 
