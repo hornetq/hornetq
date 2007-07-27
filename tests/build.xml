@@ -320,7 +320,7 @@
  
       <antcall target="remote-tests"/>
 
-      <antcall target="bridge-tests"/>
+      <!-- <antcall target="bridge-tests"/> -->
    </target>
 
    <target name="http-tests" depends="tests-jar, prepare-testdirs, clear-test-logs">
