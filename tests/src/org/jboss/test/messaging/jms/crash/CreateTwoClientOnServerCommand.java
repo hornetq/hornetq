@@ -29,7 +29,7 @@ import javax.jms.ConnectionFactory;
 import javax.jms.Topic;
 
 import org.jboss.jms.client.JBossConnection;
-import org.jboss.test.messaging.tools.jmx.rmi.Command;
+import org.jboss.test.messaging.tools.container.Command;
 
 /**
  * 

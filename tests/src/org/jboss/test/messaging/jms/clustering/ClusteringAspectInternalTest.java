@@ -22,10 +22,11 @@
 
 package org.jboss.test.messaging.jms.clustering;
 
-import org.jboss.test.messaging.MessagingTestCase;
-import org.jboss.jms.client.container.ClusteringAspect;
-import java.util.Map;
 import java.lang.reflect.Method;
+import java.util.Map;
+
+import org.jboss.jms.client.container.ClusteringAspect;
+import org.jboss.test.messaging.MessagingTestCase;
 
 /**
  * This class tests internal methods of ClusteringAspect.

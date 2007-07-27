@@ -21,14 +21,14 @@
 */
 package org.jboss.test.messaging.tools.junit;
 
-import junit.framework.TestSuite;
-import junit.framework.Test;
-import junit.framework.TestCase;
-
-import java.util.List;
-import java.util.Enumeration;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Enumeration;
+import java.util.List;
+
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
 
 
 

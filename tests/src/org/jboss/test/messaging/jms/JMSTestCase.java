@@ -5,6 +5,8 @@ import javax.jms.Topic;
 import javax.naming.InitialContext;
 
 import org.jboss.jms.client.JBossConnectionFactory;
+import org.jboss.jms.tx.ResourceManagerFactory;
+import org.jboss.messaging.core.impl.message.SimpleMessageStore;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
 
@@ -41,6 +43,8 @@ public class JMSTestCase extends MessagingTestCase
    protected static String conf;
    
    protected String overrideConf;
+   
+   protected boolean startMessagingServer = true;
    	
 	protected void setUp() throws Exception
 	{
@@ -64,15 +68,18 @@ public class JMSTestCase extends MessagingTestCase
 			changeServer = true;
 			
 			newConf = overrideConf;
-		}
+		}		
 		
-		if (changeServer)
+		if (changeServer || !ServerManagement.isStarted(0))
 		{
 			log.info("Config has changed so stopping server with " + conf + " config and starting new one with " + newConf);
 			
 			ServerManagement.stop();
 			
-			conf = newConf;
+			if (changeServer)
+			{
+				conf = newConf;
+			}
 			
 			ServerManagement.start(0, conf);
 			
@@ -93,6 +100,32 @@ public class JMSTestCase extends MessagingTestCase
       checkNoSubscriptions(topic1);
       checkNoSubscriptions(topic2); 
       checkNoSubscriptions(topic3); 		
+	}
+	
+	protected void tearDown() throws Exception
+	{
+		super.tearDown();
+		
+		//A few sanity checks
+		
+		if (ServerManagement.isStarted(0))
+		{
+			if (!ServerManagement.isRemote())
+			{		
+				SimpleMessageStore ms = (SimpleMessageStore)ServerManagement.getMessageStore();  
+				
+				if (ms.messageIds().size() != 0)
+				{
+					ms.dump();
+					fail("There are messages in the message store");
+				}
+			}
+			
+			checkNoMessageData();
+		}
+		
+		//This will tell us if any connections have been left open
+		assertEquals(0, ResourceManagerFactory.instance.size());
 	}
 
 	public JMSTestCase(String name)

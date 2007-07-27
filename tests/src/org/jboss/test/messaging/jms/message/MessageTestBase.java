@@ -79,9 +79,9 @@ public class MessageTestBase extends JMSTestCase
 
    public void tearDown() throws Exception
    {
-      super.tearDown();
+      conn.close();   
       
-      conn.close();            
+      super.tearDown();      
    }
 
    public void testNonPersistentSend() throws Exception

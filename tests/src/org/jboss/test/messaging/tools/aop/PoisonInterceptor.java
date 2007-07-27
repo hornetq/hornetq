@@ -21,7 +21,7 @@ import org.jboss.jms.server.endpoint.advised.ConnectionFactoryAdvised;
 import org.jboss.jms.server.endpoint.advised.SessionAdvised;
 import org.jboss.jms.tx.TransactionRequest;
 import org.jboss.logging.Logger;
-import org.jboss.test.messaging.tools.jmx.rmi.RMITestServer;
+import org.jboss.test.messaging.tools.container.RMITestServer;
 
 /**
  * Used to force a "poisoned" server to do all sorts of bad things. Used for testing.

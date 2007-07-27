@@ -23,6 +23,7 @@ package org.jboss.messaging.core.impl.message;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -134,6 +135,19 @@ public class SimpleMessageStore implements MessageStore
    public List messageIds()
    {
       return new ArrayList(messages.keySet());
+   }
+   
+   public void dump()
+   {
+   	log.info("*** DUMPING " + this);
+   	Iterator iter = messages.values().iterator();
+   	while (iter.hasNext())
+   	{
+   		MessageHolder holder = (MessageHolder)iter.next();
+   		
+   		log.info(holder.getMessage() + " count: " + holder.getInMemoryChannelCount());
+   	}
+   	log.info("*** End dump");
    }
    
    // MessagingComponent implementation --------------------------------

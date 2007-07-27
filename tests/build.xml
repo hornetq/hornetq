@@ -57,7 +57,7 @@
         Functional tests.
    -->
 
-   <property name="functional.tests.database" value="oracle"/>
+   <property name="functional.tests.database" value="mysql"/>
 
    <!--
         Stress tests.
@@ -66,7 +66,7 @@
    <property name="stress.tests.database" value="mysql"/>
 
    <!-- Clustering tests -->
-   <property name="clustering.tests.database" value="oracle"/>
+   <property name="clustering.tests.database" value="mysql"/>
    <property name ="test-mask" value="*Test"/>
 
    <!--
@@ -247,7 +247,7 @@
    <target name="start-rmi-server" depends="init"
            description="Starts the RMI server used by remote tests">
 
-      <java classname="org.jboss.test.messaging.tools.jmx.rmi.RMITestServer" fork="true" spawn="true">
+      <java classname="org.jboss.test.messaging.tools.container.RMITestServer" fork="true" spawn="true">
          <sysproperty key="module.output" value="${tests.output}"/>
          <sysproperty key="test.logfile.suffix" value="${remote.server.test.logfile.suffix}"/>
          <sysproperty key="test.bind.address" value="${test.bind.address}"/>
@@ -263,27 +263,9 @@
       </java>
    </target>
   
-   <target name="start-rmi-server-stress" depends="init"
-           description="Starts the RMI server used by remote stress tests">
-
-      <java classname="org.jboss.test.messaging.tools.jmx.rmi.RMITestServer" fork="true" spawn="true">
-         <jvmarg value="-Xmx768M"/>
-         <sysproperty key="module.output" value="${tests.output}"/>
-         <sysproperty key="test.logfile.suffix" value="remote-server-stress"/>
-         <sysproperty key="test.bind.address" value="${test.bind.address}"/>
-         <sysproperty key="jgroups.bind_addr" value="${test.bind.address}"/>
-         <sysproperty key="test.database" value="${stress.tests.database}"/>
-         <sysproperty key="test.remoting" value="${test.remoting}"/>
-         <sysproperty key="objectstore.dir" value="${objectstore.dir}"/>
-         <!-- <jvmarg line="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_shmem,server=y,suspend=y,address=rmiserver"/> -->
-         <classpath refid="stress.test.execution.classpath"/>
-
-      </java>
-   </target>
-
    <target name="stop-rmi-server" depends="init"
            description="Stops the RMI server used by remote tests">
-      <java classname="org.jboss.test.messaging.tools.jmx.rmi.StopRMIServer"
+      <java classname="org.jboss.test.messaging.tools.container.StopRMIServer"
             classpathref="test.execution.classpath">
          <sysproperty key="module.output" value="${tests.output}"/>
          <sysproperty key="test.logfile.suffix" value="stop-rmi-server"/>
@@ -292,7 +274,7 @@
 
    <target name="stop-rmi-server-clustering" depends="init"
            description="Stops the RMI server used by clustering tests">
-      <java classname="org.jboss.test.messaging.tools.jmx.rmi.StopRMIServer"
+      <java classname="org.jboss.test.messaging.tools.container.StopRMIServer"
             classpathref="test.execution.classpath">
          <sysproperty key="test.server.index" value="${test.server.index}"/>
          <sysproperty key="module.output" value="${tests.output}"/>
@@ -331,6 +313,16 @@
 
    </target>
 
+   <target name="short-tests" depends="tests-jar, prepare-testdirs, clear-test-logs">
+      <antcall target="crash-tests"/>
+
+      <antcall target="invm-tests"/>
+ 
+      <antcall target="remote-tests"/>
+
+      <antcall target="bridge-tests"/>
+   </target>
+
    <target name="http-tests" depends="tests-jar, prepare-testdirs, clear-test-logs">
       <antcall target="remote-tests">
          <param name="test.remoting" value="http"/>
@@ -345,7 +337,8 @@
       <echo message=""/>
 
       <junit printsummary="${junit.printsummary}"
-             fork="${junit.fork}"
+             fork="on"
+             forkMode="once"
              includeantruntime="${junit.includeantruntime}"
              haltonerror="${junit.haltonerror}"
              haltonfailure="${junit.haltonfailure}"
@@ -366,15 +359,17 @@
          -->
          <classpath refid="test.execution.classpath"/>
          <formatter type="xml" usefile="${junit.formatter.usefile}"/>
-         <batchtest fork="${junit.batchtest.fork}"
-                    todir="${junit.batchtest.todir}"
+         <batchtest todir="${junit.batchtest.todir}"
                     haltonfailure="${junit.batchtest.haltonfailure}"
                     haltonerror="${junit.batchtest.haltonerror}">
             <formatter type="plain" usefile="${junit.formatter.usefile}"/>
             <fileset dir="${build.tests.classes}">
-               <include name="**/${test-mask}.class"/>             
+
+	       <include name="**/messaging/core/**/${test-mask}.class"/>
+	       <include name="**/messaging/jms/**/${test-mask}.class"/>
+               <include name="**/messaging/util/**/${test-mask}.class"/>
+
                <exclude name="**/jms/MemLeakTest.class"/>
-               <exclude name="**/jms/LongRunningInvocationTest.class"/>
                <exclude name="**/jms/RemotingConnectionConfigurationTest.class"/>
                <exclude name="**/jms/XAResourceRecoveryTest.class"/>
                <exclude name="**/jms/stress/**"/>
@@ -382,7 +377,6 @@
                <exclude name="**/jms/bridge/**"/>
                <exclude name="**/jms/manual/**"/>
                <exclude name="**/jms/clustering/**"/>
-               <exclude name="**/thirdparty/**"/>
             </fileset>
          </batchtest>
       </junit>
@@ -439,7 +433,6 @@
            description="Runs remotely all tests for which it makes sense to run remotely">
 
       <antcall target="stop-rmi-server"/>
-      <antcall target="start-rmi-server"/>
 
       <mkdir dir="${build.tests.reports}"/>
 
@@ -498,7 +491,8 @@
 	       <exclude name="**/jms/PersistenceTest.class"/>
 	       <exclude name="**/jms/MemLeakTest.class"/>
                <exclude name="**/jms/ManifestTest.class"/>
-               <exclude name="**/jms/JCAWrapperTest.class"/> 
+               <exclude name="**/jms/JCAWrapperTest.class"/>
+	       <exclude name="**/jms/ClientExitTest.class"/>  
            
             </fileset>
          </batchtest>
@@ -513,7 +507,6 @@
            description="Runs remotely all thirdparty tests for which it makes sense to run remotely">
 
       <antcall target="stop-rmi-server"/>
-      <antcall target="start-rmi-server"/>
 
       <mkdir dir="${build.tests.reports}"/>
 
@@ -628,7 +621,6 @@
            description="Runs remotely all stress tests for which it makes sense to run remotely">
 
       <antcall target="stop-rmi-server"/>
-      <antcall target="start-rmi-server-stress"/>
       <mkdir dir="${build.tests.reports}"/>
 
       <junit printsummary="${junit.printsummary}"
@@ -793,7 +785,6 @@
            description="Runs bridge tests">
 
       <antcall target="stop-rmi-server"/>
-      <antcall target="start-rmi-server"/>
 
       <mkdir dir="${build.tests.reports}"/>
 
@@ -1163,6 +1154,8 @@
    </target>
 
    <target name="report" depends="tests, copy-stylesheets, compile-report"/>
+
+   <target name="short-report" depends="short-tests, copy-stylesheets, compile-report"/>
  
    <target name="stress-report" depends="stress-tests, copy-stylesheets, compile-report"/>
 

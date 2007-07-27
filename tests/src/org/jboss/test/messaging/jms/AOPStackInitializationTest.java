@@ -6,12 +6,12 @@
  */
 package org.jboss.test.messaging.jms;
 
+import javax.jms.Connection;
+import javax.jms.ConnectionFactory;
+import javax.naming.InitialContext;
+
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
-
-import javax.naming.InitialContext;
-import javax.jms.ConnectionFactory;
-import javax.jms.Connection;
 
 /**
  * Tests the very first server invocation, when the client-side AOP stack is initialized.

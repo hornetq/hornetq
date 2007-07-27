@@ -6,20 +6,20 @@
  */
 package org.jboss.test.messaging.jms.clustering;
 
-import org.jboss.test.messaging.tools.ServerManagement;
-import org.jboss.jms.client.JBossConnection;
-import org.jboss.jms.client.delegate.ClientConnectionDelegate;
+import java.util.Set;
 
 import javax.jms.Connection;
-import javax.jms.Session;
-import javax.jms.MessageListener;
 import javax.jms.Message;
+import javax.jms.MessageListener;
+import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.management.ObjectName;
 
-import EDU.oswego.cs.dl.util.concurrent.Slot;
+import org.jboss.jms.client.JBossConnection;
+import org.jboss.jms.client.delegate.ClientConnectionDelegate;
+import org.jboss.test.messaging.tools.ServerManagement;
 
-import java.util.Set;
+import EDU.oswego.cs.dl.util.concurrent.Slot;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>

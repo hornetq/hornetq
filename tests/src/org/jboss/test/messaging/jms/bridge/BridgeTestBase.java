@@ -43,7 +43,7 @@ import org.jboss.jms.server.bridge.JNDIConnectionFactoryFactory;
 import org.jboss.logging.Logger;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
-import org.jboss.test.messaging.tools.jmx.ServiceContainer;
+import org.jboss.test.messaging.tools.container.ServiceContainer;
 
 /**
  * 

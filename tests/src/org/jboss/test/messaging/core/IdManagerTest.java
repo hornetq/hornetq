@@ -26,8 +26,7 @@ import org.jboss.messaging.core.contract.PersistenceManager;
 import org.jboss.messaging.core.impl.IDManager;
 import org.jboss.messaging.core.impl.JDBCPersistenceManager;
 import org.jboss.test.messaging.MessagingTestCase;
-import org.jboss.test.messaging.tools.ServerManagement;
-import org.jboss.test.messaging.tools.jmx.ServiceContainer;
+import org.jboss.test.messaging.tools.container.ServiceContainer;
 
 /**
  * 
@@ -80,11 +79,9 @@ public class IdManagerTest extends MessagingTestCase
 
    public void tearDown() throws Exception
    {      
-      if (!ServerManagement.isRemote())
-      {
-         sc.stop();
-         sc = null;
-      }
+      sc.stop();
+      sc = null;
+      
       pm.stop();
       super.tearDown();
    }

@@ -27,7 +27,6 @@ import java.util.Map;
 import javax.jms.ConnectionFactory;
 import javax.jms.JMSException;
 import javax.jms.Session;
-import javax.naming.InitialContext;
 
 import org.jboss.jms.client.JBossConnection;
 import org.jboss.jms.client.JBossConnectionFactory;
@@ -39,7 +38,7 @@ import org.jboss.jms.server.ServerPeer;
 import org.jboss.jms.server.connectionmanager.SimpleConnectionManager;
 import org.jboss.jms.tx.MessagingXid;
 import org.jboss.jms.tx.TransactionRequest;
-import org.jboss.test.messaging.MessagingTestCase;
+import org.jboss.test.messaging.jms.JMSTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
 
 /**
@@ -51,15 +50,13 @@ import org.jboss.test.messaging.tools.ServerManagement;
  *
  * $Id$
  */
-public class SimpleConnectionManagerTest extends MessagingTestCase
+public class SimpleConnectionManagerTest extends JMSTestCase
 {
    // Constants -----------------------------------------------------
 
    // Static --------------------------------------------------------
 
    // Attributes ----------------------------------------------------
-
-   protected InitialContext initialContext;
 
    // Constructors --------------------------------------------------
 
@@ -69,69 +66,66 @@ public class SimpleConnectionManagerTest extends MessagingTestCase
    }
 
    // Public --------------------------------------------------------
-
-   public void setUp() throws Exception
-   {
-      if (ServerManagement.isRemote())
-      {
-         fail("this test is not supposed to run in a remote configuration!");
-      }
-
-      super.setUp();
-      ServerManagement.start("all");
-
-      initialContext = new InitialContext(ServerManagement.getJNDIEnvironment());
-
-      log.debug("setup done");
-   }
-
-   public void tearDown() throws Exception
-   {
-      super.tearDown();
-
-      initialContext.close();
-   }
-   
-   
+     
    public void testWithRealServer() throws Exception
    {
-      ConnectionFactory cf = (JBossConnectionFactory)initialContext.lookup("/ConnectionFactory");
+      ConnectionFactory cf = (JBossConnectionFactory)ic.lookup("/ConnectionFactory");
       
-      JBossConnection conn1 = (JBossConnection)cf.createConnection();
-      Session sess1 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      JBossConnection conn1 = null;
       
-      JBossConnection conn2 = (JBossConnection)cf.createConnection();
-      Session sess2 = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      JBossConnection conn2 = null;
       
-      ServerPeer peer = ServerManagement.getServer().getServerPeer();
       
-      SimpleConnectionManager cm = (SimpleConnectionManager)peer.getConnectionManager();
+      try
+      {
       
-      //Simulate failure on connection
-      
-      Map jmsClients = cm.getClients();
-      assertEquals(1, jmsClients.size());
-      
-      Map endpoints = (Map)jmsClients.values().iterator().next();
-      
-      assertEquals(2, endpoints.size());
-      
-      Iterator iter = endpoints.entrySet().iterator();
-            
-      Map.Entry entry = (Map.Entry)iter.next();
-      
-      String sessId1 = (String)entry.getKey();
-       
-      entry = (Map.Entry)iter.next();
-      
-      //Simulate failure of connection
-      
-      cm.handleClientFailure(sessId1, true);
-      
-      //both connections should be shut
-      
-      jmsClients = cm.getClients();
-      assertEquals(0, jmsClients.size());           
+	      conn1 = (JBossConnection)cf.createConnection();
+	      Session sess1 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
+	      
+	      conn2 = (JBossConnection)cf.createConnection();
+	      Session sess2 = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
+	      
+	      ServerPeer peer = ServerManagement.getServer().getServerPeer();
+	      
+	      SimpleConnectionManager cm = (SimpleConnectionManager)peer.getConnectionManager();
+	      
+	      //Simulate failure on connection
+	      
+	      Map jmsClients = cm.getClients();
+	      assertEquals(1, jmsClients.size());
+	      
+	      Map endpoints = (Map)jmsClients.values().iterator().next();
+	      
+	      assertEquals(2, endpoints.size());
+	      
+	      Iterator iter = endpoints.entrySet().iterator();
+	            
+	      Map.Entry entry = (Map.Entry)iter.next();
+	      
+	      String sessId1 = (String)entry.getKey();
+	       
+	      entry = (Map.Entry)iter.next();
+	      
+	      //Simulate failure of connection
+	      
+	      cm.handleClientFailure(sessId1, true);
+	      
+	      //both connections should be shut
+	      
+	      jmsClients = cm.getClients();
+	      assertEquals(0, jmsClients.size());        
+      }
+      finally
+      {
+      	if (conn1 != null)
+      	{
+      		conn1.close();
+      	}
+      	if (conn2 != null)
+      	{
+      		conn2.close();
+      	}
+      }
    }
    
 

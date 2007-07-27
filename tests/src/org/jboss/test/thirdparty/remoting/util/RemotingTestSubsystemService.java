@@ -6,15 +6,16 @@
  */
 package org.jboss.test.thirdparty.remoting.util;
 
-import org.jboss.logging.Logger;
-import org.jboss.test.messaging.tools.jmx.ServiceContainer;
-import org.jboss.test.messaging.tools.ServerManagement;
-import org.jboss.remoting.InvocationRequest;
+import java.lang.reflect.Constructor;
 
+import javax.management.MBeanRegistration;
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
-import javax.management.MBeanRegistration;
-import java.lang.reflect.Constructor;
+
+import org.jboss.logging.Logger;
+import org.jboss.remoting.InvocationRequest;
+import org.jboss.test.messaging.tools.ServerManagement;
+import org.jboss.test.messaging.tools.container.ServiceContainer;
 
 /**
  * A standard MBean service to be used when testing remoting.

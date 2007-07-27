@@ -22,18 +22,21 @@
 
 package org.jboss.test.messaging.jms.stress.clustering;
 
-import org.jboss.test.messaging.jms.clustering.ClusteringTestBase;
-import org.jboss.logging.Logger;
-import java.util.Set;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Set;
+
 import javax.jms.Connection;
-import javax.jms.Session;
-import javax.jms.MessageConsumer;
-import javax.jms.MessageProducer;
-import javax.jms.MessageListener;
-import javax.jms.Message;
 import javax.jms.JMSException;
+import javax.jms.Message;
+import javax.jms.MessageConsumer;
+import javax.jms.MessageListener;
+import javax.jms.MessageProducer;
+import javax.jms.Session;
+
+import org.jboss.logging.Logger;
+import org.jboss.test.messaging.jms.clustering.ClusteringTestBase;
+
 import EDU.oswego.cs.dl.util.concurrent.SynchronizedInt;
 
 public class ClusteredQueueStressTest extends ClusteringTestBase

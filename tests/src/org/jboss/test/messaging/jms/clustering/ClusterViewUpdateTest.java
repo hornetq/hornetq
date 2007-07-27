@@ -22,14 +22,15 @@
 
 package org.jboss.test.messaging.jms.clustering;
 
-import org.jboss.test.messaging.tools.ServerManagement;
+import javax.jms.Connection;
+import javax.jms.ConnectionFactory;
+import javax.jms.Session;
+
 import org.jboss.jms.client.JBossConnectionFactory;
-import org.jboss.jms.client.state.ConnectionState;
 import org.jboss.jms.client.delegate.ClientClusteredConnectionFactoryDelegate;
 import org.jboss.jms.client.delegate.ClientConnectionFactoryDelegate;
-import javax.jms.Connection;
-import javax.jms.Session;
-import javax.jms.ConnectionFactory;
+import org.jboss.jms.client.state.ConnectionState;
+import org.jboss.test.messaging.tools.ServerManagement;
 
 /**
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>

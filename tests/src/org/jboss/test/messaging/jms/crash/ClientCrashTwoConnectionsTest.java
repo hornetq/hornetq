@@ -24,15 +24,16 @@ package org.jboss.test.messaging.jms.crash;
 import javax.jms.ConnectionFactory;
 import javax.jms.Topic;
 import javax.naming.InitialContext;
+
 import org.jboss.jms.server.ConnectionManager;
 import org.jboss.jms.server.connectionmanager.SimpleConnectionManager;
 import org.jboss.logging.Logger;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
-import org.jboss.test.messaging.tools.jmx.ServiceContainer;
-import org.jboss.test.messaging.tools.jmx.rmi.LocalTestServer;
-import org.jboss.test.messaging.tools.jmx.rmi.Server;
-import org.jboss.test.messaging.tools.jndi.InVMInitialContextFactory;
+import org.jboss.test.messaging.tools.container.InVMInitialContextFactory;
+import org.jboss.test.messaging.tools.container.LocalTestServer;
+import org.jboss.test.messaging.tools.container.Server;
+import org.jboss.test.messaging.tools.container.ServiceContainer;
 
 /**
  * 

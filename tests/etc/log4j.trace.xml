@@ -71,7 +71,7 @@
       <priority value="DEBUG"/>
    </category>
 
-   <category name="org.jboss.test.messaging.tools.jmx.MockJBossSecurityManager">
+   <category name="org.jboss.test.messaging.tools.container.MockJBossSecurityManager">
       <priority value="DEBUG"/>
    </category>
 

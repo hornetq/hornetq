@@ -22,23 +22,12 @@
 
 package org.jboss.test.messaging.jms.manual;
 
-import org.jboss.test.messaging.jms.stress.SeveralClientsStressTest;
-import org.jboss.logging.Logger;
 import java.util.Properties;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.concurrent.SynchronousQueue;
-import java.util.concurrent.TimeUnit;
+
 import javax.naming.Context;
 import javax.naming.InitialContext;
-import javax.jms.ConnectionFactory;
-import javax.jms.Connection;
-import javax.jms.Session;
-import javax.jms.Queue;
-import javax.jms.MessageProducer;
-import javax.jms.MessageConsumer;
-import javax.jms.Message;
-import EDU.oswego.cs.dl.util.concurrent.SynchronizedInt;
+
+import org.jboss.test.messaging.jms.stress.SeveralClientsStressTest;
 
 /**
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>

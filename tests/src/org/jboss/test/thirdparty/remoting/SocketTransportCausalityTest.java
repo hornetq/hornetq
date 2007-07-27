@@ -8,17 +8,14 @@ package org.jboss.test.thirdparty.remoting;
 
 import java.io.Serializable;
 
-import javax.management.ObjectName;
-
 import org.jboss.logging.Logger;
 import org.jboss.remoting.Client;
 import org.jboss.remoting.InvokerLocator;
 import org.jboss.remoting.transport.PortUtil;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
-import org.jboss.test.messaging.tools.jmx.ServiceContainer;
-import org.jboss.test.messaging.tools.jmx.ServiceAttributeOverrides;
-import org.jboss.test.thirdparty.remoting.util.RemotingTestSubsystemService;
+import org.jboss.test.messaging.tools.container.ServiceAttributeOverrides;
+import org.jboss.test.messaging.tools.container.ServiceContainer;
 
 /**
  * 

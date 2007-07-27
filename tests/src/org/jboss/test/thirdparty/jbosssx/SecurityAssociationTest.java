@@ -37,7 +37,7 @@ import org.jboss.security.SecurityAssociation;
 import org.jboss.security.SimplePrincipal;
 import org.jboss.test.messaging.jms.JMSTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
-import org.jboss.test.messaging.tools.jmx.MockJBossSecurityManager;
+import org.jboss.test.messaging.tools.container.MockJBossSecurityManager;
 
 /**
  * Set of tests to insure consistent behavior relative to the JBoss AS security infrastructure.

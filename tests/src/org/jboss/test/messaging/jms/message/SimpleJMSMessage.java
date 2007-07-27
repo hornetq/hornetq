@@ -21,15 +21,15 @@
   */
 package org.jboss.test.messaging.jms.message;
 
-import javax.jms.Message;
-import javax.jms.JMSException;
-import javax.jms.Destination;
-import javax.jms.DeliveryMode;
-
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Collections;
+
+import javax.jms.DeliveryMode;
+import javax.jms.Destination;
+import javax.jms.JMSException;
+import javax.jms.Message;
 
 /**
  * Foreign message implementation. Used for testing only.

@@ -25,12 +25,12 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-import org.jboss.test.messaging.MessagingTestCase;
-import org.jboss.test.messaging.tools.jmx.ServiceContainer;
-import org.jboss.test.messaging.util.CoreMessageFactory;
 import org.jboss.messaging.core.contract.Message;
 import org.jboss.messaging.core.contract.MessageReference;
 import org.jboss.messaging.core.contract.MessageStore;
+import org.jboss.test.messaging.MessagingTestCase;
+import org.jboss.test.messaging.tools.container.ServiceContainer;
+import org.jboss.test.messaging.util.CoreMessageFactory;
 
 
 /**

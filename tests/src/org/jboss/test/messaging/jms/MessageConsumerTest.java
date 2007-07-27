@@ -1358,7 +1358,8 @@ public class MessageConsumerTest extends JMSTestCase
          sessReceive.commit();
 
          cons.close();
-
+         
+         connReceive.close();
 
          connReceive = cf.createConnection();
 

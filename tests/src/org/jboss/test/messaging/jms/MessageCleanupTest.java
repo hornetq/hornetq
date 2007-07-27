@@ -29,6 +29,7 @@ import javax.jms.MessageProducer;
 import javax.jms.Session;
 import javax.jms.TemporaryQueue;
 import javax.jms.TemporaryTopic;
+import javax.jms.Topic;
 
 import org.jboss.messaging.core.impl.message.SimpleMessageStore;
 import org.jboss.test.messaging.tools.ServerManagement;
@@ -51,6 +52,8 @@ public class MessageCleanupTest extends JMSTestCase
    
    // Attributes ----------------------------------------------------
 
+   protected Topic ourTopic;
+
    // Constructors --------------------------------------------------
    
    public MessageCleanupTest(String name)
@@ -60,6 +63,22 @@ public class MessageCleanupTest extends JMSTestCase
    
    // TestCase overrides -------------------------------------------
    
+   public void setUp() throws Exception
+   {
+      super.setUp();                  
+      
+      ServerManagement.deployTopic("TestTopic", 100, 10, 10);
+      
+      ourTopic = (Topic)ic.lookup("/topic/TestTopic");
+   }
+   
+   public void tearDown() throws Exception
+   {
+      super.tearDown();
+      
+      ServerManagement.undeployTopic("TestTopic");      
+   }
+   
    /*
     * Test that all messages on a non durable sub are removed on close
     */
@@ -67,118 +86,101 @@ public class MessageCleanupTest extends JMSTestCase
    {
       if (ServerManagement.isRemote()) return;
       
-      Connection conn = null;
+      SimpleMessageStore ms = (SimpleMessageStore)ServerManagement.getMessageStore();      
       
-      try
+      assertEquals(0, ms.messageIds().size());      
+      
+      Connection conn = cf.createConnection();
+      
+      Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      
+      MessageProducer prod = sess.createProducer(ourTopic);
+      
+      prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+      
+      MessageConsumer cons = sess.createConsumer(ourTopic);
+                  
+      for (int i = 0; i < 150; i++)
       {
-	      
-	      conn = cf.createConnection();
-	      
-	      Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-	      
-	      MessageProducer prod = sess.createProducer(topic1);
-	      
-	      prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
-	      
-	      MessageConsumer cons = sess.createConsumer(topic1);
-	                  
-	      for (int i = 0; i < 150; i++)
-	      {
-	         prod.send(sess.createMessage());
-	      }
-	      
-	      SimpleMessageStore ms = (SimpleMessageStore)ServerManagement.getMessageStore();
-	      
-	      assertEquals(100, ms.messageIds().size());
-	      
-	      //50 Should be paged onto disk
-	      
-	      assertEquals(50, getReferenceIds().size());
-	      
-	      assertEquals(50, getMessageIds().size());
-	      
-	      //Now we close the consumer
-	      
-	      cons.close();
-	      
-	      assertEquals(0, ms.messageIds().size());
-	      
-	      assertEquals(0, getReferenceIds().size());
-	      
-	      assertEquals(0, getMessageIds().size());
+         prod.send(sess.createMessage());
       }
-      finally
-      {
-      	if (conn != null)
-      	{
-      		conn.close();
-      	}
-      }
+      
+      assertEquals(100, ms.messageIds().size());
+      
+      //50 Should be paged onto disk
+      
+      assertEquals(50, getReferenceIds().size());
+      
+      assertEquals(50, getMessageIds().size());
+      
+      //Now we close the consumer
+      
+      cons.close();
+      
+      assertEquals(0, ms.messageIds().size());
+      
+      assertEquals(0, getReferenceIds().size());
+      
+      assertEquals(0, getMessageIds().size());
+      
+      conn.close();
    }
    
    public void testNonDurableClose2() throws Exception
    {
       if (ServerManagement.isRemote()) return;
       
-      Connection conn = null;
+      Connection conn = cf.createConnection();
       
-      try
-      {      
-	      conn = cf.createConnection();
-	      
-	      conn.setClientID("wibble12345");
-	      
-	      Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-	      
-	      MessageProducer prod = sess.createProducer(topic1);
-	      
-	      prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
-	      
-	      MessageConsumer cons1 = sess.createConsumer(topic1);
-	      
-	      MessageConsumer cons2 = sess.createDurableSubscriber(topic1, "sub1");
-	                  
-	      for (int i = 0; i < 150; i++)
-	      {
-	         prod.send(sess.createMessage());
-	      }
-	      
-	      SimpleMessageStore ms = (SimpleMessageStore)ServerManagement.getMessageStore();
-	      
-	      assertEquals(100, ms.messageIds().size());
-	      
-	      assertEquals(100, getReferenceIds().size());
-	      
-	      assertEquals(50, getMessageIds().size());
-	      
-	      //Now we close the consumers
-	      
-	      cons1.close();
-	      cons2.close();
-	      
-	      assertEquals(100, ms.messageIds().size());
-	      
-	      assertEquals(50, getReferenceIds().size());
-	      
-	      assertEquals(50, getMessageIds().size());
-	      
-	      sess.unsubscribe("sub1");
-	      
-	      assertEquals(0, ms.messageIds().size());
-	      
-	      assertEquals(0, getReferenceIds().size());
-	      
-	      assertEquals(0, getMessageIds().size());      
-      }
-      finally
+      conn.setClientID("wibble12345");
+      
+      Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      
+      MessageProducer prod = sess.createProducer(ourTopic);
+      
+      prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+      
+      MessageConsumer cons1 = sess.createConsumer(ourTopic);
+      
+      MessageConsumer cons2 = sess.createDurableSubscriber(ourTopic, "sub1");
+                  
+      for (int i = 0; i < 150; i++)
       {
-      	if (conn != null)
-      	{
-      		conn.close();
-      	}
+         prod.send(sess.createMessage());
       }
+      
+      SimpleMessageStore ms = (SimpleMessageStore)ServerManagement.getMessageStore();
+      
+      assertEquals(100, ms.messageIds().size());
+      
+      assertEquals(100, getReferenceIds().size());
+      
+      assertEquals(50, getMessageIds().size());
+      
+      //Now we close the consumers
+      
+      cons1.close();
+      cons2.close();
+      
+      assertEquals(100, ms.messageIds().size());
+      
+      assertEquals(50, getReferenceIds().size());
+      
+      assertEquals(50, getMessageIds().size());
+      
+      sess.unsubscribe("sub1");
+      
+      assertEquals(0, ms.messageIds().size());
+      
+      assertEquals(0, getReferenceIds().size());
+      
+      assertEquals(0, getMessageIds().size());
+      
+      
+      conn.close();
    }
    
+
 
    /*
     * Test that all messages on a temporary queue are removed on close
@@ -194,52 +196,41 @@ public class MessageCleanupTest extends JMSTestCase
 
       ConnectionFactory cf2 = (ConnectionFactory)ic.lookup("/TempQueueConnectionFactory");
       
-      Connection conn = null;
+      Connection conn = cf2.createConnection();
       
-      try
-      {      
-	      conn = cf2.createConnection();
-	      
-	      Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-	      
-	      TemporaryQueue queue = sess.createTemporaryQueue();
-	      
-	      MessageProducer prod = sess.createProducer(queue);
-	      
-	      prod.setDeliveryMode(DeliveryMode.PERSISTENT);
-	           
-	      conn.start();
-	      
-	      for (int i = 0; i < 150; i++)
-	      {
-	         prod.send(sess.createMessage());
-	      }
-	      
-	      SimpleMessageStore ms = (SimpleMessageStore)ServerManagement.getMessageStore();
-	      
-	      assertEquals(100, ms.messageIds().size());
-	      
-	      assertEquals(50, getReferenceIds().size());
-	      
-	      assertEquals(50, getMessageIds().size());
-	      
-	      //Now we close the connection
-	      
-	      conn.close();
-	      
-	      assertEquals(0, ms.messageIds().size());
-	      
-	      assertEquals(0, getReferenceIds().size());
-	      
-	      assertEquals(0, getMessageIds().size());
-      }
-      finally
+      Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      
+      TemporaryQueue queue = sess.createTemporaryQueue();
+      
+      MessageProducer prod = sess.createProducer(queue);
+      
+      prod.setDeliveryMode(DeliveryMode.PERSISTENT);
+           
+      conn.start();
+      
+      for (int i = 0; i < 150; i++)
       {
-      	if (conn != null)
-      	{
-      		conn.close();
-      	}
-      }      
+         prod.send(sess.createMessage());
+      }
+      
+      SimpleMessageStore ms = (SimpleMessageStore)ServerManagement.getMessageStore();
+      
+      assertEquals(100, ms.messageIds().size());
+      
+      assertEquals(50, getReferenceIds().size());
+      
+      assertEquals(50, getMessageIds().size());
+      
+      //Now we close the connection
+      
+      conn.close();
+      
+      assertEquals(0, ms.messageIds().size());
+      
+      assertEquals(0, getReferenceIds().size());
+      
+      assertEquals(0, getMessageIds().size());
+      
    }
    
    /*
@@ -256,56 +247,45 @@ public class MessageCleanupTest extends JMSTestCase
 
       ConnectionFactory cf2 = (ConnectionFactory)ic.lookup("/TempTopicConnectionFactory");
       
-      Connection conn = null;
+      Connection conn = cf2.createConnection();
       
-      try
-      {      
-	      conn = cf2.createConnection();
-	      
-	      Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-	      
-	      TemporaryTopic topic = sess.createTemporaryTopic();
-	      
-	      MessageProducer prod = sess.createProducer(topic);
-	      
-	      prod.setDeliveryMode(DeliveryMode.PERSISTENT);
-	           
-	      sess.createConsumer(topic);
-	      
-	      sess.createConsumer(topic);
-	      
-	      //Don't start the connection
-	      
-	      for (int i = 0; i < 150; i++)
-	      {
-	         prod.send(sess.createMessage());
-	      }
-	      
-	      SimpleMessageStore ms = (SimpleMessageStore)ServerManagement.getMessageStore();
-	      
-	      assertEquals(100, ms.messageIds().size());
-	      
-	      assertEquals(100, getReferenceIds().size());
-	      
-	      assertEquals(50, getMessageIds().size());
-	      
-	      //Now we close the connection
-	      
-	      conn.close();
-	      
-	      assertEquals(0, ms.messageIds().size());
-	      
-	      assertEquals(0, getReferenceIds().size());
-	      
-	      assertEquals(0, getMessageIds().size());
-      }
-      finally
+      Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      
+      TemporaryTopic topic = sess.createTemporaryTopic();
+      
+      MessageProducer prod = sess.createProducer(topic);
+      
+      prod.setDeliveryMode(DeliveryMode.PERSISTENT);
+           
+      sess.createConsumer(topic);
+      
+      sess.createConsumer(topic);
+      
+      //Don't start the connection
+      
+      for (int i = 0; i < 150; i++)
       {
-      	if (conn != null)
-      	{
-      		conn.close();
-      	}
-      }     
+         prod.send(sess.createMessage());
+      }
+      
+      SimpleMessageStore ms = (SimpleMessageStore)ServerManagement.getMessageStore();
+      
+      assertEquals(100, ms.messageIds().size());
+      
+      assertEquals(100, getReferenceIds().size());
+      
+      assertEquals(50, getMessageIds().size());
+      
+      //Now we close the connection
+      
+      conn.close();
+      
+      assertEquals(0, ms.messageIds().size());
+      
+      assertEquals(0, getReferenceIds().size());
+      
+      assertEquals(0, getMessageIds().size());
+      
    }
 
    // Public --------------------------------------------------------
@@ -314,10 +294,9 @@ public class MessageCleanupTest extends JMSTestCase
    
    // Protected -----------------------------------------------------
    
-   // Private -------------------------------------------------------   
-
-   // Inner classes -------------------------------------------------   
- 
+   // Private -------------------------------------------------------
+    
+   // Inner classes -------------------------------------------------      
 }
 
 

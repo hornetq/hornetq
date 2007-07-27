@@ -22,17 +22,18 @@
 
 package org.jboss.test.messaging.jms.clustering;
 
+import javax.jms.Connection;
+import javax.jms.ExceptionListener;
+import javax.jms.JMSException;
+import javax.jms.MessageConsumer;
+import javax.jms.MessageProducer;
+import javax.jms.Session;
+import javax.jms.TextMessage;
+
 import org.jboss.jms.client.JBossConnectionFactory;
 import org.jboss.jms.client.delegate.ClientClusteredConnectionFactoryDelegate;
 import org.jboss.test.messaging.tools.ServerManagement;
-import javax.jms.ConnectionFactory;
-import javax.jms.Connection;
-import javax.jms.JMSException;
-import javax.jms.Session;
-import javax.jms.MessageProducer;
-import javax.jms.MessageConsumer;
-import javax.jms.TextMessage;
-import javax.jms.ExceptionListener;
+
 import EDU.oswego.cs.dl.util.concurrent.Latch;
 
 /**

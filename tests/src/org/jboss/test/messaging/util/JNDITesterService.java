@@ -6,8 +6,9 @@
  */
 package org.jboss.test.messaging.util;
 
-import javax.naming.InitialContext;
 import java.util.Hashtable;
+
+import javax.naming.InitialContext;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>

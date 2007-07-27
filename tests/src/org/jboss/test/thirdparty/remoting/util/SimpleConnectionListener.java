@@ -6,10 +6,10 @@
  */
 package org.jboss.test.thirdparty.remoting.util;
 
-import org.jboss.remoting.ConnectionListener;
-import org.jboss.remoting.Client;
-
 import java.io.Serializable;
+
+import org.jboss.remoting.Client;
+import org.jboss.remoting.ConnectionListener;
 
 import EDU.oswego.cs.dl.util.concurrent.Channel;
 import EDU.oswego.cs.dl.util.concurrent.LinkedQueue;

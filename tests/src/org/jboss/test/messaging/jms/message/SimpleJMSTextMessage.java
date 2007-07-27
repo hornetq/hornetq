@@ -21,8 +21,8 @@
   */
 package org.jboss.test.messaging.jms.message;
 
-import javax.jms.TextMessage;
 import javax.jms.JMSException;
+import javax.jms.TextMessage;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>

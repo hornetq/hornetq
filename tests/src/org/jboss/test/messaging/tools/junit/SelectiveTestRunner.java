@@ -21,14 +21,14 @@
 */
 package org.jboss.test.messaging.tools.junit;
 
-import junit.textui.TestRunner;
-import junit.framework.TestResult;
-import junit.framework.Test;
-import junit.framework.TestSuite;
-
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.StringTokenizer;
+
+import junit.framework.Test;
+import junit.framework.TestResult;
+import junit.framework.TestSuite;
+import junit.textui.TestRunner;
 
 /**
  * A text TestRunner than runs only test methods specified on command line with "-t".

@@ -21,8 +21,8 @@
   */
 package org.jboss.test.messaging.jms.message;
 
-import javax.jms.Message;
 import javax.jms.DeliveryMode;
+import javax.jms.Message;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>

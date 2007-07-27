@@ -24,7 +24,6 @@ package org.jboss.test.messaging.jms.server.destination;
 import java.util.List;
 
 import javax.jms.Connection;
-import javax.jms.ConnectionFactory;
 import javax.jms.DeliveryMode;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
@@ -33,12 +32,9 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.jms.Topic;
 import javax.jms.TopicConnection;
-import javax.jms.TopicConnectionFactory;
 import javax.jms.TopicSession;
 import javax.management.ObjectName;
-import javax.naming.InitialContext;
 
-import org.jboss.jms.client.JBossConnectionFactory;
 import org.jboss.jms.server.destination.SubscriptionInfo;
 import org.jboss.test.messaging.jms.server.destination.base.DestinationManagementTestBase;
 import org.jboss.test.messaging.tools.ServerManagement;
@@ -69,17 +65,6 @@ public class TopicManagementTest extends DestinationManagementTestBase
 
    // Public --------------------------------------------------------
 
-   public void setUp() throws Exception
-   {
-      super.setUp();
-      log.debug("setup done");
-   }
-
-   public void tearDown() throws Exception
-   {
-      super.tearDown();
-   }
-
    public void testReloadTopic() throws Exception
    {      
       String config =
@@ -92,8 +77,7 @@ public class TopicManagementTest extends DestinationManagementTestBase
       ObjectName destObjectName = deploy(config);
       
       try
-      {
-   
+      {   
          assertEquals("ReloadTopic", ServerManagement.getAttribute(destObjectName, "Name"));
    
          String jndiName = "/topic/ReloadTopic";
@@ -101,10 +85,6 @@ public class TopicManagementTest extends DestinationManagementTestBase
          assertEquals(jndiName, s);
          
          //Send some messages to durable sub
-         
-         InitialContext ic = new InitialContext(ServerManagement.getJNDIEnvironment());
-         
-         ConnectionFactory cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
          
          Topic topic = (Topic)ic.lookup("/topic/ReloadTopic");
    
@@ -197,9 +177,6 @@ public class TopicManagementTest extends DestinationManagementTestBase
     */
    public void testRemoveAllMessages() throws Exception
    {
-      InitialContext ic = new InitialContext(ServerManagement.getJNDIEnvironment());
-      TopicConnectionFactory cf = (JBossConnectionFactory)ic.lookup("/ConnectionFactory");
- 
       ServerManagement.deployTopic("TopicRemoveAllMessages");
       
       try
@@ -263,8 +240,6 @@ public class TopicManagementTest extends DestinationManagementTestBase
          
          ServerManagement.invoke(destObjectName, "removeAllMessages", null, null);
          
-         Thread.sleep(1000);
-         
          count = ((Integer)ServerManagement.getAttribute(destObjectName, "AllMessageCount")).intValue();
          
          assertEquals(0, count);
@@ -288,8 +263,6 @@ public class TopicManagementTest extends DestinationManagementTestBase
          
          conn.close();
          
-         Thread.sleep(1000);
-         
          // Remove all messages from the topic
          ServerManagement.invoke(destObjectName, "removeAllMessages", null, null);
    
@@ -308,16 +281,12 @@ public class TopicManagementTest extends DestinationManagementTestBase
   
    public void testMessageCount() throws Exception
    {
-      InitialContext ic = new InitialContext(ServerManagement.getJNDIEnvironment());
-      TopicConnectionFactory cf = (JBossConnectionFactory)ic.lookup("/ConnectionFactory");
- 
       ServerManagement.deployTopic("TopicGetAllMessageCount");
       
       ServerManagement.invoke(ServerManagement.getServerPeerObjectName(), "enableMessageCounters", null, null);
       
       TopicConnection conn = null;
-      
-      
+            
       try
       {                  
          Topic topic = (Topic)ic.lookup("/topic/TopicGetAllMessageCount");
@@ -421,9 +390,6 @@ public class TopicManagementTest extends DestinationManagementTestBase
 
    public void testSubscriptionsCount() throws Exception
    {
-      InitialContext ic = new InitialContext(ServerManagement.getJNDIEnvironment());
-      TopicConnectionFactory cf = (JBossConnectionFactory)ic.lookup("/ConnectionFactory");
- 
       ServerManagement.deployTopic("TopicSubscriptionsCount");
       
       TopicConnection conn = null;
@@ -504,9 +470,6 @@ public class TopicManagementTest extends DestinationManagementTestBase
    
    public void testListSubscriptions() throws Exception
    {
-      InitialContext ic = new InitialContext(ServerManagement.getJNDIEnvironment());
-      TopicConnectionFactory cf = (JBossConnectionFactory)ic.lookup("/ConnectionFactory");
- 
       ServerManagement.deployTopic("TopicSubscriptionList");
       Topic topic = (Topic)ic.lookup("/topic/TopicSubscriptionList");
 
@@ -636,9 +599,6 @@ public class TopicManagementTest extends DestinationManagementTestBase
 
    public void testListSubscriptionsAsHTML() throws Exception
    {
-      InitialContext ic = new InitialContext(ServerManagement.getJNDIEnvironment());
-      TopicConnectionFactory cf = (JBossConnectionFactory)ic.lookup("/ConnectionFactory");
- 
       ServerManagement.deployTopic("TopicSubscriptionList");
       Topic topic = (Topic)ic.lookup("/topic/TopicSubscriptionList");
 
@@ -725,9 +685,6 @@ public class TopicManagementTest extends DestinationManagementTestBase
   
    public void testListMessages() throws Exception
    {   
-      InitialContext ic = new InitialContext(ServerManagement.getJNDIEnvironment());
-      TopicConnectionFactory cf = (JBossConnectionFactory)ic.lookup("/ConnectionFactory");
- 
       ServerManagement.deployTopic("TopicMessageList");
       
       TopicConnection conn = null;
@@ -790,10 +747,7 @@ public class TopicManagementTest extends DestinationManagementTestBase
          //visible
          
          cons.close();
-         
-         //Give time for cancel to occur
-         Thread.sleep(500);
-         
+           
          String sub1Id = ((SubscriptionInfo)durableSubs.get(0)).getId();
                 
          List allMsgs = (List)ServerManagement.invoke(destObjectName, "listAllMessages", new Object[] { sub1Id }, new String[] { "java.lang.String" });

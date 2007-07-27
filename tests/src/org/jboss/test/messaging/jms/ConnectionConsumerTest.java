@@ -60,7 +60,7 @@ public class ConnectionConsumerTest extends JMSTestCase
       super(name);
    }
 
-   // TestCase overrides -------------------------------------------
+   // TestCase overrides -------------------------------------------   
 
    // Public --------------------------------------------------------
 
@@ -307,6 +307,8 @@ public class ConnectionConsumerTest extends JMSTestCase
       {
          if (connConsumer != null) connConsumer.close();
          if (connConsumer != null) connProducer.close();
+         
+         removeAllMessages(queue1.getQueueName(), true, 0);
       }
    }
 

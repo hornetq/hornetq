@@ -41,7 +41,7 @@ import org.jboss.jms.client.delegate.DelegateSupport;
 import org.jboss.jms.client.state.ConnectionState;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
-import org.jboss.test.messaging.tools.jmx.ServiceAttributeOverrides;
+import org.jboss.test.messaging.tools.container.ServiceAttributeOverrides;
 
 import EDU.oswego.cs.dl.util.concurrent.LinkedQueue;
 

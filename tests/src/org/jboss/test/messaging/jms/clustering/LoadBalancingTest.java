@@ -6,21 +6,21 @@
  */
 package org.jboss.test.messaging.jms.clustering;
 
-import org.jboss.test.messaging.tools.ServerManagement;
-import org.jboss.test.messaging.tools.jmx.ServiceAttributeOverrides;
-import org.jboss.test.messaging.MessagingTestCase;
-import org.jboss.jms.client.JBossConnection;
-import org.jboss.jms.client.JBossConnectionFactory;
-import org.jboss.jms.client.state.ConnectionState;
-import org.jboss.jms.client.plugin.RandomLoadBalancingPolicy;
-import org.jboss.jms.client.plugin.RoundRobinLoadBalancingPolicy;
-import org.jboss.jms.client.delegate.ClientClusteredConnectionFactoryDelegate;
-import org.jboss.jms.client.delegate.DelegateSupport;
-
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
-import javax.naming.InitialContext;
 import javax.management.ObjectName;
+import javax.naming.InitialContext;
+
+import org.jboss.jms.client.JBossConnection;
+import org.jboss.jms.client.JBossConnectionFactory;
+import org.jboss.jms.client.delegate.ClientClusteredConnectionFactoryDelegate;
+import org.jboss.jms.client.delegate.DelegateSupport;
+import org.jboss.jms.client.plugin.RandomLoadBalancingPolicy;
+import org.jboss.jms.client.plugin.RoundRobinLoadBalancingPolicy;
+import org.jboss.jms.client.state.ConnectionState;
+import org.jboss.test.messaging.MessagingTestCase;
+import org.jboss.test.messaging.tools.ServerManagement;
+import org.jboss.test.messaging.tools.container.ServiceAttributeOverrides;
 
 /**
  * This test DOESN'T extend ClusteringTestBase because I want to have control over first invocations

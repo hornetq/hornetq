@@ -94,10 +94,10 @@ public class MessageBodyTest extends JMSTestCase
 
    public void tearDown() throws Exception
    {
-      super.tearDown();
-      
       producerConnection.close();
       consumerConnection.close();
+      
+      super.tearDown();      
    }
    
    public void testSMBodyReadable() throws Exception

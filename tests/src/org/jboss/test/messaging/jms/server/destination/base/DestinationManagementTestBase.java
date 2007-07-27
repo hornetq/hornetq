@@ -21,11 +21,11 @@
   */
 package org.jboss.test.messaging.jms.server.destination.base;
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
 import javax.jms.Connection;
-import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
@@ -35,7 +35,6 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.jms.Topic;
 import javax.management.ObjectName;
-import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import org.jboss.jms.destination.JBossDestination;
@@ -44,7 +43,7 @@ import org.jboss.jms.destination.JBossTopic;
 import org.jboss.jms.server.destination.ManagedDestination;
 import org.jboss.jms.server.messagecounter.MessageCounter;
 import org.jboss.messaging.util.XMLUtil;
-import org.jboss.test.messaging.MessagingTestCase;
+import org.jboss.test.messaging.jms.JMSTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
 import org.w3c.dom.Element;
 
@@ -57,7 +56,7 @@ import org.w3c.dom.Element;
  *
  * $Id$
  */
-public abstract class DestinationManagementTestBase extends MessagingTestCase
+public abstract class DestinationManagementTestBase extends JMSTestCase
 {
    // Constants -----------------------------------------------------
 
@@ -65,8 +64,6 @@ public abstract class DestinationManagementTestBase extends MessagingTestCase
    
    // Attributes ----------------------------------------------------
    
-   protected InitialContext initialContext;
-
    // Constructors --------------------------------------------------
 
    public DestinationManagementTestBase(String name)
@@ -76,20 +73,6 @@ public abstract class DestinationManagementTestBase extends MessagingTestCase
 
    // Public --------------------------------------------------------
 
-   public void setUp() throws Exception
-   {
-      super.setUp();
-      ServerManagement.start("all");   
-      
-      initialContext = new InitialContext(ServerManagement.getJNDIEnvironment());
-   }
-
-   public void tearDown() throws Exception
-   {
-      super.tearDown();
-   }
-   
-   
    public void testDeployDestinationAdministratively() throws Exception
    {
       ObjectName serverPeerObjectName = ServerManagement.getServerPeerObjectName();
@@ -110,21 +93,8 @@ public abstract class DestinationManagementTestBase extends MessagingTestCase
       String jndiName = (isQueue() ? "/queue" : "/topic") + "/Kirkwood";
       String s = (String)ServerManagement.getAttribute(destObjectName, "JNDIName");
       assertEquals(jndiName, s);
-  
-      Set destinations = (Set)ServerManagement.getAttribute(serverPeerObjectName, "Destinations");
-
-      assertEquals(1, destinations.size());
-
-      if (isQueue())
-      {
-         Queue q = (Queue)destinations.iterator().next();
-         assertEquals("Kirkwood", q.getQueueName());
-      }
-      else
-      {
-         Topic t = (Topic)destinations.iterator().next();
-         assertEquals("Kirkwood", t.getTopicName());
-      }
+        
+      assertTrue(destinationIsDeployed("Kirkwood", isQueue()));
 
       assertEquals(serverPeerObjectName,
                    ServerManagement.getAttribute(destObjectName, "ServerPeer"));
@@ -138,12 +108,12 @@ public abstract class DestinationManagementTestBase extends MessagingTestCase
 
       undeployDestination((String)ServerManagement.getAttribute(destObjectName, "Name"));
    }
-   
+     
    public void testDeployDestinationAdministrativelyWithParams() throws Exception
    {
-      ObjectName serverPeerObjectName = ServerManagement.getServerPeerObjectName();
-      
-      int fullSize = 77777;
+   	ObjectName serverPeerObjectName = ServerManagement.getServerPeerObjectName();
+
+   	int fullSize = 77777;
       
       int pageSize = 1234;
       
@@ -169,21 +139,7 @@ public abstract class DestinationManagementTestBase extends MessagingTestCase
       String s = (String)ServerManagement.getAttribute(destObjectName, "JNDIName");
       assertEquals(jndiName, s);
   
-      Set destinations = (Set)ServerManagement.getAttribute(serverPeerObjectName, "Destinations");
-
-      assertEquals(1, destinations.size());
-
-      if (isQueue())
-      {
-         Queue q = (Queue)destinations.iterator().next();
-         assertEquals("Kirkwood", q.getQueueName());
-         
-      }
-      else
-      {
-         Topic t = (Topic)destinations.iterator().next();
-         assertEquals("Kirkwood", t.getTopicName());
-      }
+      assertTrue(destinationIsDeployed("Kirkwood", isQueue()));
 
       assertEquals(serverPeerObjectName,
                    ServerManagement.getAttribute(destObjectName, "ServerPeer"));
@@ -270,8 +226,6 @@ public abstract class DestinationManagementTestBase extends MessagingTestCase
       assertEquals("Kirkwood", ServerManagement.getAttribute(destObjectName, "Name"));
       assertEquals(testJNDIName, ServerManagement.getAttribute(destObjectName, "JNDIName"));
 
-      InitialContext ic = new InitialContext(ServerManagement.getJNDIEnvironment());
-
       Destination d = (Destination)ic.lookup(testJNDIName);
 
       if (isQueue())
@@ -284,8 +238,6 @@ public abstract class DestinationManagementTestBase extends MessagingTestCase
          Topic t = (Topic)d;
          assertEquals("Kirkwood", t.getTopicName());
       }
-
-      ic.close();
 
       // try to change the JNDI name after initialization
 
@@ -317,8 +269,6 @@ public abstract class DestinationManagementTestBase extends MessagingTestCase
 
       assertEquals(expectedJNDIName, jndiName);
 
-      InitialContext ic = new InitialContext(ServerManagement.getJNDIEnvironment());
-
       if (isQueue())
       {
          Queue q = (Queue)ic.lookup(jndiName);
@@ -333,6 +283,8 @@ public abstract class DestinationManagementTestBase extends MessagingTestCase
       assertEquals(destinationName, ServerManagement.getAttribute(destObjectName, "Name"));
       assertEquals(expectedJNDIName,
                    (String)ServerManagement.getAttribute(destObjectName, "JNDIName"));
+      
+      assertTrue(destinationIsDeployed(destinationName, isQueue()));
 
       // undeploy it
 
@@ -355,13 +307,7 @@ public abstract class DestinationManagementTestBase extends MessagingTestCase
       Set set = ServerManagement.query(destObjectName);
       assertTrue(set.isEmpty());
  
-      set = (Set)ServerManagement.getAttribute(serverPeerObjectName, "Destinations");
-
-
-      assertTrue(set.isEmpty());
-
-      ic.close();
-
+      assertFalse(destinationIsDeployed(destinationName, isQueue()));
    }
    
    public void testDeployDestinationProgrammaticallyWithParams() throws Exception
@@ -391,8 +337,6 @@ public abstract class DestinationManagementTestBase extends MessagingTestCase
 
       assertEquals(expectedJNDIName, jndiName);
 
-      InitialContext ic = new InitialContext(ServerManagement.getJNDIEnvironment());
-
       if (isQueue())
       {
          Queue q = (Queue)ic.lookup(jndiName);
@@ -411,6 +355,7 @@ public abstract class DestinationManagementTestBase extends MessagingTestCase
       assertEquals(new Integer(fullSize), ServerManagement.getAttribute(destObjectName, "FullSize"));
       assertEquals(new Integer(pageSize), ServerManagement.getAttribute(destObjectName, "PageSize"));
       assertEquals(new Integer(downCacheSize), ServerManagement.getAttribute(destObjectName, "DownCacheSize"));
+      assertTrue(destinationIsDeployed(destinationName, isQueue()));
 
 
       // undeploy it
@@ -434,13 +379,7 @@ public abstract class DestinationManagementTestBase extends MessagingTestCase
       Set set = ServerManagement.query(destObjectName);
       assertTrue(set.isEmpty());
  
-      set = (Set)ServerManagement.getAttribute(serverPeerObjectName, "Destinations");
-
-
-      assertTrue(set.isEmpty());
-
-      ic.close();
-
+      assertFalse(destinationIsDeployed(destinationName, isQueue()));
    }
    
    public void testDestroyDestinationProgrammatically() throws Exception
@@ -464,8 +403,6 @@ public abstract class DestinationManagementTestBase extends MessagingTestCase
 
       assertEquals(expectedJNDIName, jndiName);
 
-      InitialContext ic = new InitialContext(ServerManagement.getJNDIEnvironment());
-
       if (isQueue())
       {
          Queue q = (Queue)ic.lookup(jndiName);
@@ -480,8 +417,6 @@ public abstract class DestinationManagementTestBase extends MessagingTestCase
       assertEquals(destinationName, ServerManagement.getAttribute(destObjectName, "Name"));
       assertEquals(expectedJNDIName,
                    (String)ServerManagement.getAttribute(destObjectName, "JNDIName"));
-      
-      ConnectionFactory cf = (ConnectionFactory)this.initialContext.lookup("/ConnectionFactory");
       
       Connection conn = cf.createConnection();
       
@@ -539,10 +474,7 @@ public abstract class DestinationManagementTestBase extends MessagingTestCase
       Set set = ServerManagement.query(destObjectName);
       assertTrue(set.isEmpty());
  
-      set = (Set)ServerManagement.getAttribute(serverPeerObjectName, "Destinations");
-
-
-      assertTrue(set.isEmpty());
+      assertFalse(destinationIsDeployed(destinationName, isQueue()));
       
       // Deploy it again
       jndiName = (String)ServerManagement.
@@ -569,15 +501,11 @@ public abstract class DestinationManagementTestBase extends MessagingTestCase
          cons = sess.createDurableSubscriber((Topic)dest, "sub1");
       }
       
-      Message m = cons.receive(2000);
+      Message m = cons.receive(1000);
       
       assertNull(m);
       
-      conn.close();
-      
-
-      ic.close();
-
+      conn.close();      
    }
 
    public void testDestroyNonProgrammaticDestination() throws Exception
@@ -692,12 +620,6 @@ public abstract class DestinationManagementTestBase extends MessagingTestCase
    
    public void testGetSetMessageCounterHistoryDayLimit() throws Exception
    {
-   	if (ServerManagement.isRemote())
-   	{
-   		//This test can't be run in a remote configuration since MessageCounter is not serializable
-   		return;   	
-   	}
-   	
       int defaultLimit = 12;
       
       ServerManagement.setAttribute(ServerManagement.getServerPeerObjectName(), "DefaultMessageCounterHistoryDayLimit", String.valueOf(defaultLimit));
@@ -710,9 +632,9 @@ public abstract class DestinationManagementTestBase extends MessagingTestCase
       
       try
       {         
-         initialContext.lookup("/queue/testQueue");
+         ic.lookup("/queue/testQueue");
          
-         Topic testTopic = (Topic)initialContext.lookup("/topic/testTopic");
+         Topic testTopic = (Topic)ic.lookup("/topic/testTopic");
                
          String queueON = "jboss.messaging.destination:service=Queue,name=testQueue";
          
@@ -721,8 +643,6 @@ public abstract class DestinationManagementTestBase extends MessagingTestCase
          MessageCounter queueCounter = (MessageCounter)ServerManagement.getAttribute(new ObjectName(queueON), "MessageCounter");
          
          assertEquals(defaultLimit, queueCounter.getHistoryLimit());
-         
-         ConnectionFactory cf = (ConnectionFactory)initialContext.lookup("/ConnectionFactory");
          
          conn = cf.createConnection();
          
@@ -765,6 +685,41 @@ public abstract class DestinationManagementTestBase extends MessagingTestCase
    // Protected -----------------------------------------------------
 
    protected abstract boolean isQueue();
+   
+   protected boolean destinationIsDeployed(String destName, boolean isQueue) throws Exception
+   {
+   	ObjectName serverPeerObjectName = ServerManagement.getServerPeerObjectName();
+
+   	Set destinations = (Set)ServerManagement.getAttribute(serverPeerObjectName, "Destinations");
+
+   	Iterator iter = destinations.iterator();
+
+   	boolean found = false;
+   	while (iter.hasNext())
+   	{
+   		Destination dest = (Destination)iter.next();
+   		
+   		if (dest instanceof Queue && isQueue)
+   		{
+   			Queue q = (Queue)dest;
+   			if (q.getQueueName().equals(destName))
+   			{
+   				found = true;
+   				break;
+   			}
+   		}
+   		else if (dest instanceof Topic && !isQueue)
+   		{
+   			Topic t = (Topic)dest;
+   			if (t.getTopicName().equals(destName))
+   			{
+   				found = true;
+   				break;
+   			}
+   		}
+   	}
+   	return found;
+   }
    
    protected ObjectName deploy(String destConfig) throws Exception
    {

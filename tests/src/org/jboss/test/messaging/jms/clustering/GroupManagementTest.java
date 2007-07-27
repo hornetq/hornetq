@@ -6,10 +6,12 @@
  */
 package org.jboss.test.messaging.jms.clustering;
 
+import java.util.Set;
+
+import javax.management.ObjectName;
+
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
-import javax.management.ObjectName;
-import java.util.Set;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>

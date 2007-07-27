@@ -23,19 +23,17 @@ package org.jboss.test.messaging.jms.server.connectionfactory;
 
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
-import javax.jms.Queue;
 import javax.jms.QueueConnectionFactory;
 import javax.jms.Session;
 import javax.jms.TopicConnectionFactory;
 import javax.jms.XAConnectionFactory;
 import javax.management.ObjectName;
-import javax.naming.InitialContext;
 import javax.naming.NameNotFoundException;
 
 import org.jboss.jms.client.JBossMessageConsumer;
 import org.jboss.jms.client.delegate.ClientConsumerDelegate;
 import org.jboss.jms.client.state.ConsumerState;
-import org.jboss.test.messaging.MessagingTestCase;
+import org.jboss.test.messaging.jms.JMSTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
 
 /**
@@ -46,15 +44,13 @@ import org.jboss.test.messaging.tools.ServerManagement;
  *
  * $Id$
  */
-public class ConnectionFactoryTest extends MessagingTestCase
+public class ConnectionFactoryTest extends JMSTestCase
 {
    // Constants -----------------------------------------------------
 
    // Static --------------------------------------------------------
 
    // Attributes ----------------------------------------------------
-
-   protected InitialContext initialContext;
 
    // Constructors --------------------------------------------------
 
@@ -64,55 +60,33 @@ public class ConnectionFactoryTest extends MessagingTestCase
    }
 
    // Public --------------------------------------------------------
-
-   public void setUp() throws Exception
-   {
-      if (ServerManagement.isRemote())
-      {
-         fail("this test is not supposed to run in a remote configuration!");
-      }
-
-      super.setUp();
-      ServerManagement.start("all");
-      
-      initialContext = new InitialContext(ServerManagement.getJNDIEnvironment());
-
-      log.debug("setup done");
-   }
-
-   public void tearDown() throws Exception
-   {
-      super.tearDown();
-
-      initialContext.close();
-   }
-
+ 
    public void testDefaultConnectionFactory() throws Exception
    {
       // These should be configured by default in connection-factories-service.xml
 
-      ConnectionFactory cf = (ConnectionFactory)initialContext.lookup("/ConnectionFactory");
+      ConnectionFactory cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
       log.debug("ConnectionFactory: " + cf);
       
-      XAConnectionFactory xacf = (XAConnectionFactory)initialContext.lookup("/XAConnectionFactory");
+      XAConnectionFactory xacf = (XAConnectionFactory)ic.lookup("/XAConnectionFactory");
       log.debug("ConnectionFactory: " + xacf);
 
-      cf = (ConnectionFactory)initialContext.lookup("java:/ConnectionFactory");
+      cf = (ConnectionFactory)ic.lookup("java:/ConnectionFactory");
       log.debug("ConnectionFactory: " + cf);
 
-      xacf = (XAConnectionFactory)initialContext.lookup("java:/XAConnectionFactory");
+      xacf = (XAConnectionFactory)ic.lookup("java:/XAConnectionFactory");
       log.debug("ConnectionFactory: " + xacf);
       
-      cf = (ConnectionFactory)initialContext.lookup("/ClusteredConnectionFactory");
+      cf = (ConnectionFactory)ic.lookup("/ClusteredConnectionFactory");
       log.debug("ConnectionFactory: " + cf);
 
-      xacf = (XAConnectionFactory)initialContext.lookup("/ClusteredXAConnectionFactory");
+      xacf = (XAConnectionFactory)ic.lookup("/ClusteredXAConnectionFactory");
       log.debug("ConnectionFactory: " + xacf);
 
-      cf = (ConnectionFactory)initialContext.lookup("java:/ClusteredConnectionFactory");
+      cf = (ConnectionFactory)ic.lookup("java:/ClusteredConnectionFactory");
       log.debug("ConnectionFactory: " + cf);
 
-      xacf = (XAConnectionFactory)initialContext.lookup("java:/ClusteredXAConnectionFactory");
+      xacf = (XAConnectionFactory)ic.lookup("java:/ClusteredXAConnectionFactory");
       log.debug("ConnectionFactory: " + xacf);
    }
 
@@ -123,7 +97,7 @@ public class ConnectionFactoryTest extends MessagingTestCase
 
       ServerManagement.deployConnectionFactory(objectName, jndiBindings);
 
-      ConnectionFactory cf = (ConnectionFactory)initialContext.lookup("/SomeConnectionFactory");
+      ConnectionFactory cf = (ConnectionFactory)ic.lookup("/SomeConnectionFactory");
 
       assertNotNull(cf);
       assertTrue(cf instanceof QueueConnectionFactory);
@@ -133,7 +107,7 @@ public class ConnectionFactoryTest extends MessagingTestCase
 
       try
       {
-         initialContext.lookup("/SomeConnectionFactory");
+         ic.lookup("/SomeConnectionFactory");
          fail("should throw exception");
       }
       catch(NameNotFoundException e)
@@ -144,10 +118,6 @@ public class ConnectionFactoryTest extends MessagingTestCase
    
    public void testDeploymentWithPrefetch() throws Exception
    {
-      ServerManagement.deployQueue("testQueue");
-      
-      Queue queue = (Queue)initialContext.lookup("/queue/testQueue");
-            
       String objectName = "somedomain:service=SomeConnectionFactory";
       String[] jndiBindings = new String[] { "/SomeConnectionFactory" };
 
@@ -155,39 +125,51 @@ public class ConnectionFactoryTest extends MessagingTestCase
       
       ServerManagement.deployConnectionFactory(objectName, jndiBindings, prefetchSize);
 
-      ConnectionFactory cf = (ConnectionFactory)initialContext.lookup("/SomeConnectionFactory");
+      ConnectionFactory cf = (ConnectionFactory)ic.lookup("/SomeConnectionFactory");
 
       assertNotNull(cf);
       assertTrue(cf instanceof QueueConnectionFactory);
       assertTrue(cf instanceof TopicConnectionFactory);
       
       
-      Connection conn = cf.createConnection();
+      Connection conn = null;
       
-      Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      
-      JBossMessageConsumer cons = (JBossMessageConsumer)sess.createConsumer(queue);
-      
-      ClientConsumerDelegate del = (ClientConsumerDelegate)cons.getDelegate();
-      
-      ConsumerState state = (ConsumerState)del.getState();
-      
-      int size = state.getBufferSize();
-      
-      assertEquals(prefetchSize, size);
-
-      ServerManagement.undeployConnectionFactory(new ObjectName(objectName));
-      
-      ServerManagement.undeployQueue("testQueue");
-
       try
-      {
-         initialContext.lookup("/SomeConnectionFactory");
-         fail("should throw exception");
+      {      
+	      conn = cf.createConnection();
+	      
+	      Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+	      
+	      JBossMessageConsumer cons = (JBossMessageConsumer)sess.createConsumer(queue1);
+	      
+	      ClientConsumerDelegate del = (ClientConsumerDelegate)cons.getDelegate();
+	      
+	      ConsumerState state = (ConsumerState)del.getState();
+	      
+	      int size = state.getBufferSize();
+	      
+	      assertEquals(prefetchSize, size);
+	
+	      ServerManagement.undeployConnectionFactory(new ObjectName(objectName));
+	      
+	      ServerManagement.undeployQueue("testQueue");
+	
+	      try
+	      {
+	         ic.lookup("/SomeConnectionFactory");
+	         fail("should throw exception");
+	      }
+	      catch(NameNotFoundException e)
+	      {
+	         // OK
+	      }
       }
-      catch(NameNotFoundException e)
+      finally
       {
-         // OK
+      	if (conn != null)
+      	{
+      		conn.close();
+      	}
       }
    }
 
@@ -197,20 +179,20 @@ public class ConnectionFactoryTest extends MessagingTestCase
       String[] jndiBindings = new String[] { "/name1", "/name2", "/name3" };
       ServerManagement.deployConnectionFactory(objectName, jndiBindings);
 
-      ConnectionFactory cf = (ConnectionFactory)initialContext.lookup("/name1");
+      ConnectionFactory cf = (ConnectionFactory)ic.lookup("/name1");
       assertNotNull(cf);
 
-      cf = (ConnectionFactory)initialContext.lookup("/name2");
+      cf = (ConnectionFactory)ic.lookup("/name2");
       assertNotNull(cf);
 
-      cf = (ConnectionFactory)initialContext.lookup("/name2");
+      cf = (ConnectionFactory)ic.lookup("/name2");
       assertNotNull(cf);
 
       ServerManagement.undeployConnectionFactory(new ObjectName(objectName));
 
       try
       {
-         initialContext.lookup("/name1");
+         ic.lookup("/name1");
          fail("should throw exception");
       }
       catch(NameNotFoundException e)
@@ -220,7 +202,7 @@ public class ConnectionFactoryTest extends MessagingTestCase
 
       try
       {
-         initialContext.lookup("/name2");
+         ic.lookup("/name2");
          fail("should throw exception");
       }
       catch(NameNotFoundException e)
@@ -230,7 +212,7 @@ public class ConnectionFactoryTest extends MessagingTestCase
 
       try
       {
-         initialContext.lookup("/name3");
+         ic.lookup("/name3");
          fail("should throw exception");
       }
       catch(NameNotFoundException e)
@@ -245,7 +227,7 @@ public class ConnectionFactoryTest extends MessagingTestCase
       String[] jndiBindings = new String[] { "/a/compound/jndi/name" };
       ServerManagement.deployConnectionFactory(objectName, jndiBindings);
 
-      ConnectionFactory cf = (ConnectionFactory)initialContext.lookup("/a/compound/jndi/name");
+      ConnectionFactory cf = (ConnectionFactory)ic.lookup("/a/compound/jndi/name");
       assertNotNull(cf);
 
       ServerManagement.undeployConnectionFactory(new ObjectName(objectName));

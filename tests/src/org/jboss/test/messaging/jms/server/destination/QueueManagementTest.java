@@ -24,7 +24,6 @@ package org.jboss.test.messaging.jms.server.destination;
 import java.util.List;
 
 import javax.jms.Connection;
-import javax.jms.ConnectionFactory;
 import javax.jms.DeliveryMode;
 import javax.jms.JMSException;
 import javax.jms.Message;
@@ -35,7 +34,6 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.management.ObjectName;
 import javax.management.RuntimeMBeanException;
-import javax.naming.InitialContext;
 
 import org.jboss.jms.message.JBossMessage;
 import org.jboss.jms.server.messagecounter.MessageCounter;
@@ -71,17 +69,6 @@ public class QueueManagementTest extends DestinationManagementTestBase
 
    // Public --------------------------------------------------------
 
-   public void setUp() throws Exception
-   {
-      super.setUp();
-      log.debug("setup done");
-   }
-
-   public void tearDown() throws Exception
-   {
-      super.tearDown();
-   }
-
    public void testReloadQueue() throws Exception
    {
       String config =
@@ -100,10 +87,6 @@ public class QueueManagementTest extends DestinationManagementTestBase
       assertEquals(jndiName, s);
 
       //Send some messages
-
-      InitialContext ic = new InitialContext(ServerManagement.getJNDIEnvironment());
-
-      ConnectionFactory cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
 
       Queue queue = (Queue)ic.lookup("/queue/ReloadQueue");
 
@@ -179,9 +162,6 @@ public class QueueManagementTest extends DestinationManagementTestBase
 
    public void testMessageCount() throws Exception
    {
-      InitialContext ic = new InitialContext(ServerManagement.getJNDIEnvironment());
-      ConnectionFactory cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
-
       ServerManagement.deployQueue("QueueMessageCount");
       
       ServerManagement.invoke(ServerManagement.getServerPeerObjectName(), "enableMessageCounters", null, null);
@@ -210,7 +190,6 @@ public class QueueManagementTest extends DestinationManagementTestBase
          count = (Integer)ServerManagement.getAttribute(destObjectName, "MessageCount");
          assertEquals(1, count.intValue());
 
-
          // Consume the message
          conn = cf.createConnection();
          session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -238,9 +217,6 @@ public class QueueManagementTest extends DestinationManagementTestBase
 
    public void testNegativeMessageCountBug() throws Exception
    {
-      InitialContext ic = new InitialContext(ServerManagement.getJNDIEnvironment());
-      ConnectionFactory cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
-      
       final String queueName = "QueueNegativeMessageCount";
       final ObjectName destObjectName =
          new ObjectName("jboss.messaging.destination:service=Queue,name=" + queueName);
@@ -305,9 +281,6 @@ public class QueueManagementTest extends DestinationManagementTestBase
 
    public void testScheduledMessageCount() throws Exception
    {
-      InitialContext ic = new InitialContext(ServerManagement.getJNDIEnvironment());
-      ConnectionFactory cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
-
       ServerManagement.deployQueue("QueueMessageCount");
       
       ServerManagement.invoke(ServerManagement.getServerPeerObjectName(), "enableMessageCounters", null, null);
@@ -372,12 +345,10 @@ public class QueueManagementTest extends DestinationManagementTestBase
 
    public void testMessageCountOverFullSize() throws Exception
    {
-      InitialContext ic = new InitialContext(ServerManagement.getJNDIEnvironment());
-      ConnectionFactory cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
       Connection conn = null;
 
       int fullSize = 10;
-      int MESSAGE_COUNT = 100;
+      int MESSAGE_COUNT = 20;
 
       ServerManagement.deployQueue("QueueMessageCount2", fullSize, fullSize / 2, fullSize / 2 - 1);
 
@@ -419,11 +390,10 @@ public class QueueManagementTest extends DestinationManagementTestBase
          {
             receivedCount++;
 
-            Thread.sleep(500);
+            Thread.sleep(250);
 
             int mc = ((Integer)ServerManagement.
                getAttribute(destObjectName, "MessageCount")).intValue();
-
 
              if ((MESSAGE_COUNT - receivedCount)!=mc)
              {
@@ -434,7 +404,6 @@ public class QueueManagementTest extends DestinationManagementTestBase
          }
 
          assertEquals(MESSAGE_COUNT, receivedCount);
-
       }
       finally
       {
@@ -451,9 +420,6 @@ public class QueueManagementTest extends DestinationManagementTestBase
 
    public void testMaxSize() throws Exception
    {
-      InitialContext ic = new InitialContext(ServerManagement.getJNDIEnvironment());
-      ConnectionFactory cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
-
       ServerManagement.deployQueue("QueueMaxSize");
       
       try
@@ -520,9 +486,6 @@ public class QueueManagementTest extends DestinationManagementTestBase
 
    public void testRemoveAllMessages() throws Exception
    {
-      InitialContext ic = new InitialContext(ServerManagement.getJNDIEnvironment());
-      ConnectionFactory cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
-
       ServerManagement.deployQueue("QueueRemoveMessages");
 
       try
@@ -573,10 +536,6 @@ public class QueueManagementTest extends DestinationManagementTestBase
 
    public void testListMessages() throws Exception
    {   
-      InitialContext ic = new InitialContext(ServerManagement.getJNDIEnvironment());
-      
-      ConnectionFactory cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
- 
       ServerManagement.deployQueue("QueueListMessages");
       
       Connection conn = null;
@@ -780,9 +739,6 @@ public class QueueManagementTest extends DestinationManagementTestBase
    		return;   	
    	}
    	
-      InitialContext ic = new InitialContext(ServerManagement.getJNDIEnvironment());
-      ConnectionFactory cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
-      
       ServerManagement.setAttribute(ServerManagement.getServerPeerObjectName(), "MessageCounterSamplePeriod", String.valueOf(1000));
       
       ServerManagement.invoke(ServerManagement.getServerPeerObjectName(), "enableMessageCounters", null, null);
@@ -860,14 +816,12 @@ public class QueueManagementTest extends DestinationManagementTestBase
       ServerManagement.undeployQueue("QueueMessageCounter");
       
       ServerManagement.invoke(ServerManagement.getServerPeerObjectName(), "disableMessageCounters", null, null);
+      
+      conn.close();
    }
    
    public void testConsumersCount() throws Exception
    {
-      InitialContext ic = new InitialContext(ServerManagement.getJNDIEnvironment());
-      ConnectionFactory cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
-      
-
       ServerManagement.deployQueue("QueueConsumerCount");
       
       Queue queue = (Queue)ic.lookup("/queue/QueueConsumerCount");      

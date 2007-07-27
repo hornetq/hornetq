@@ -6,14 +6,14 @@
  */
 package org.jboss.test.thirdparty.remoting;
 
+import javax.management.MBeanServer;
+
+import org.jboss.logging.Logger;
+import org.jboss.remoting.InvocationRequest;
 import org.jboss.remoting.ServerInvocationHandler;
 import org.jboss.remoting.ServerInvoker;
-import org.jboss.remoting.InvocationRequest;
 import org.jboss.remoting.callback.InvokerCallbackHandler;
 import org.jboss.test.thirdparty.remoting.util.TestableSubsystem;
-import org.jboss.logging.Logger;
-
-import javax.management.MBeanServer;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>

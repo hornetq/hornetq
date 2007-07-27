@@ -32,7 +32,7 @@ import javax.jms.Queue;
 import javax.jms.Session;
 
 import org.jboss.jms.client.JBossConnection;
-import org.jboss.test.messaging.tools.jmx.rmi.Command;
+import org.jboss.test.messaging.tools.container.Command;
 
 /**
  * 

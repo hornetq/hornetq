@@ -22,9 +22,10 @@
 
 package org.jboss.test.messaging.util;
 
-import junit.framework.TestCase;
 import junit.framework.Assert;
 import junit.framework.AssertionFailedError;
+import junit.framework.TestCase;
+
 import org.jboss.logging.Logger;
 
 /**

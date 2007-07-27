@@ -31,7 +31,7 @@ import javax.jms.TextMessage;
 import javax.management.ObjectName;
 
 import org.jboss.test.messaging.tools.ServerManagement;
-import org.jboss.test.messaging.tools.jmx.ServiceAttributeOverrides;
+import org.jboss.test.messaging.tools.container.ServiceAttributeOverrides;
 
 /**
  * 

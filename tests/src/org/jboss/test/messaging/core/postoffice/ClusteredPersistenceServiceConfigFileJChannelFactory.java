@@ -13,9 +13,8 @@ import org.jboss.logging.Logger;
 import org.jboss.messaging.core.contract.JChannelFactory;
 import org.jboss.messaging.core.impl.jchannelfactory.MultiplexerJChannelFactory;
 import org.jboss.messaging.util.XMLUtil;
+import org.jboss.test.messaging.tools.container.ServiceConfigHelper;
 import org.jboss.test.messaging.tools.jboss.MBeanConfigurationElement;
-import org.jboss.test.messaging.tools.jboss.ServiceDeploymentDescriptor;
-import org.jboss.test.messaging.tools.jmx.ServiceConfigHelper;
 import org.jgroups.JChannel;
 import org.w3c.dom.Element;
 

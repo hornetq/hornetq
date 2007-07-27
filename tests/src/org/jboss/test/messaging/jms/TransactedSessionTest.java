@@ -1159,9 +1159,10 @@ public class TransactedSessionTest extends JMSTestCase
             Message m = consumer.receive(500);
             if (m == null) break;
             count++;
+            m.acknowledge();
          }
    
-         assertEquals(NUM_MESSAGES * NUM_TX, count);         
+         assertEquals(NUM_MESSAGES * NUM_TX, count);
       }
       finally
       {      

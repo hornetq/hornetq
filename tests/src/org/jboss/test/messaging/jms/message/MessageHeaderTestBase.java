@@ -469,10 +469,11 @@ public class MessageHeaderTestBase extends JMSTestCase
 
    public void tearDown() throws Exception
    {
-      super.tearDown();
-      
       producerConnection.close();
       consumerConnection.close();
+      
+      super.tearDown();
+      
    }
    
    

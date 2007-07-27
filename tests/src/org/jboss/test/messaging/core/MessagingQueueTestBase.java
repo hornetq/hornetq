@@ -27,7 +27,6 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.jboss.messaging.core.contract.Delivery;
-import org.jboss.messaging.core.contract.Filter;
 import org.jboss.messaging.core.contract.Message;
 import org.jboss.messaging.core.contract.MessageReference;
 import org.jboss.messaging.core.contract.MessageStore;
@@ -36,12 +35,11 @@ import org.jboss.messaging.core.contract.Receiver;
 import org.jboss.messaging.core.impl.IDManager;
 import org.jboss.messaging.core.impl.JDBCPersistenceManager;
 import org.jboss.messaging.core.impl.MessagingQueue;
-import org.jboss.messaging.core.impl.message.CoreMessage;
 import org.jboss.messaging.core.impl.message.SimpleMessageStore;
 import org.jboss.messaging.core.impl.tx.Transaction;
 import org.jboss.messaging.core.impl.tx.TransactionRepository;
 import org.jboss.test.messaging.MessagingTestCase;
-import org.jboss.test.messaging.tools.jmx.ServiceContainer;
+import org.jboss.test.messaging.tools.container.ServiceContainer;
 import org.jboss.test.messaging.util.CoreMessageFactory;
 
 /**

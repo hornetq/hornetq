@@ -24,6 +24,9 @@ package org.jboss.jms.tx;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.jboss.jms.client.container.ConnectionAspect;
+import org.jboss.logging.Logger;
+
 /**
  * This class manages ResourceManager instances. It ensures there is one instance per instance of
  * JMS server as specified by the server ID.
@@ -43,6 +46,9 @@ public class ResourceManagerFactory
 {
    // Constants ------------------------------------------------------------------------------------
 
+   private static final Logger log = Logger.getLogger(ResourceManagerFactory.class);
+
+	
    // Static ---------------------------------------------------------------------------------------
 
    public static ResourceManagerFactory instance = new ResourceManagerFactory();
@@ -80,7 +86,6 @@ public class ResourceManagerFactory
     */
    public synchronized ResourceManager checkOutResourceManager(int serverID)
    {
-      
       Integer i = new Integer(serverID);
 
       Holder h = (Holder)holders.get(i);
@@ -109,7 +114,7 @@ public class ResourceManagerFactory
       }
 
       h.refCount--;
-      
+
       if (h.refCount == 0)
       {
          holders.remove(i);

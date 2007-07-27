@@ -25,7 +25,6 @@ import javax.naming.InitialContext;
 
 import org.jboss.jms.server.connectormanager.SimpleConnectorManager;
 import org.jboss.test.messaging.MessagingTestCase;
-import org.jboss.test.messaging.tools.ServerManagement;
 
 /**
  * 
@@ -55,28 +54,6 @@ public class SimpleConnectorManagerTest extends MessagingTestCase
    }
 
    // Public --------------------------------------------------------
-
-   public void setUp() throws Exception
-   {
-      if (ServerManagement.isRemote())
-      {
-         fail("this test is not supposed to run in a remote configuration!");
-      }
-
-      super.setUp();
-      ServerManagement.start("all");
-      
-      initialContext = new InitialContext(ServerManagement.getJNDIEnvironment());
-
-      log.debug("setup done");
-   }
-
-   public void tearDown() throws Exception
-   {
-      super.tearDown();
-
-      initialContext.close();
-   }
 
    public void testSimpleConnectorManager() throws Exception
    {

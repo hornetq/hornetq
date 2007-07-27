@@ -25,9 +25,10 @@ import javax.management.ObjectName;
 import javax.management.RuntimeMBeanException;
 
 import org.jboss.test.messaging.MessagingTestCase;
-import org.jboss.test.messaging.tools.jmx.ServiceAttributeOverrides;
-import org.jboss.test.messaging.tools.jmx.ServiceContainer;
-import org.jboss.test.messaging.tools.jmx.rmi.LocalTestServer;
+import org.jboss.test.messaging.tools.ServerManagement;
+import org.jboss.test.messaging.tools.container.LocalTestServer;
+import org.jboss.test.messaging.tools.container.ServiceAttributeOverrides;
+import org.jboss.test.messaging.tools.container.ServiceContainer;
 
 /**
  * Test ServerPeer configuration.
@@ -54,6 +55,15 @@ public class ServerPeerConfigurationTest extends MessagingTestCase
 
    // Public --------------------------------------------------------
    
+   public void setUp() throws Exception
+   {
+   	ServerManagement.stop();
+   }
+   
+   public void tearDown() throws Exception
+   {   	
+   }
+   
    public void testServerPeerID() throws Exception
    {
       testStartupOnlyAttribute("ServerPeerID", new Integer(5), new Integer(10));
@@ -79,12 +89,15 @@ public class ServerPeerConfigurationTest extends MessagingTestCase
       try
       {
          server.start("all", overrides, false, true);
-         server.stop();
          fail("Should have thrown an exception when setting ServerPeerID to a negative value");
       }
       catch (RuntimeMBeanException rmbe)
       {
          assertTrue(rmbe.getCause() instanceof IllegalArgumentException);
+      }
+      finally
+      {
+      	server.stop();
       }
    }
    

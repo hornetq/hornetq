@@ -39,7 +39,7 @@ import javax.transaction.xa.Xid;
 
 import org.jboss.test.messaging.jms.JMSTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
-import org.jboss.test.messaging.tools.jmx.ServiceContainer;
+import org.jboss.test.messaging.tools.container.ServiceContainer;
 import org.jboss.tm.TransactionManagerLocator;
 
 /**
@@ -490,7 +490,7 @@ public class JMSXDeliveryCountTest extends JMSTestCase
          
          tx.delistResource(consumerSess.getXAResource(), XAResource.TMSUCCESS);
          
-         tx.rollback();
+         mgr.rollback();         
          
          mgr.begin();
          
@@ -514,7 +514,7 @@ public class JMSXDeliveryCountTest extends JMSTestCase
          
          tx.delistResource(consumerSess.getXAResource(), XAResource.TMSUCCESS);
          
-         tx.rollback();
+         mgr.rollback();
          
          mgr.begin();
          
@@ -538,7 +538,7 @@ public class JMSXDeliveryCountTest extends JMSTestCase
          
          tx.delistResource(consumerSess.getXAResource(), XAResource.TMSUCCESS);
          
-         tx.rollback();
+         mgr.rollback();
               
          //Must close consumer first
          
@@ -583,7 +583,7 @@ public class JMSXDeliveryCountTest extends JMSTestCase
          {
          	try
          	{
-         		tx.commit();
+         		mgr.commit();
          	}
          	catch (Exception ignore)
          	{         		
@@ -605,10 +605,6 @@ public class JMSXDeliveryCountTest extends JMSTestCase
             {              
             }
          }
-         
-         // ***********************
-         // * REMOVE THIS WHEN ABOVE TEST PASSES
-         removeAllMessages(queue1.getQueueName(), true, 0);
       }
    }
    

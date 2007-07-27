@@ -92,6 +92,8 @@ public class JCAWrapperTest extends JMSTestCase
          assertEquals("one", rm.getText());
 
          conn.close();
+         
+         log.info("**** class is " + mcf);                  
       }
       finally
       {      
@@ -103,7 +105,7 @@ public class JCAWrapperTest extends JMSTestCase
          if (suspended != null)
          {
             TransactionManagerLocator.getInstance().locate().resume(suspended);
-         }
+         }                  
       }
    }
 
@@ -163,6 +165,14 @@ public class JCAWrapperTest extends JMSTestCase
    // Package protected ---------------------------------------------
    
    // Protected -----------------------------------------------------
+   
+   protected void tearDown() throws Exception
+   {
+   	//We don't want the managed connection pool hanging on to connections
+      ServerManagement.getServer(0).flushManagedConnectionPool();
+      
+   	super.tearDown();   	
+   }
 
    // Private -------------------------------------------------------
    

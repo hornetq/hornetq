@@ -23,7 +23,7 @@ package org.jboss.test.messaging.jms.clustering;
 
 import javax.management.ObjectName;
 
-import org.jboss.test.messaging.tools.jmx.ServiceAttributeOverrides;
+import org.jboss.test.messaging.tools.container.ServiceAttributeOverrides;
 
 /**
  * 

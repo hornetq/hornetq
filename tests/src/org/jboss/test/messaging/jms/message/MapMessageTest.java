@@ -22,8 +22,8 @@
 package org.jboss.test.messaging.jms.message;
 
 
-import javax.jms.MapMessage;
 import javax.jms.JMSException;
+import javax.jms.MapMessage;
 import javax.jms.Message;
 
 /**

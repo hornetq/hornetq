@@ -42,7 +42,7 @@ import org.jboss.messaging.core.impl.tx.Transaction;
 import org.jboss.messaging.core.impl.tx.TransactionRepository;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
-import org.jboss.test.messaging.tools.jmx.ServiceContainer;
+import org.jboss.test.messaging.tools.container.ServiceContainer;
 import org.jboss.test.messaging.util.CoreMessageFactory;
 import org.jboss.util.id.GUID;
 
@@ -79,10 +79,11 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       }
 
       super.setUp();
+      
+      ServerManagement.stop();
 
       sc = new ServiceContainer("all");
-      sc.start();                
-      
+      sc.start();                      
    }
    
    protected void doSetup(boolean batch, boolean useBinaryStream,
@@ -106,11 +107,9 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
 
    public void tearDown() throws Exception
    {
-      if (!ServerManagement.isRemote())
-      {
-         sc.stop();
-         sc = null;
-      }
+      sc.stop();
+      sc = null;
+      
       pm.stop();
       ms.stop();
       super.tearDown();
@@ -938,48 +937,6 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       assertTrue(containsMessage(ms, ref1.getMessage().getMessageID()));   
    }
    
-   
-   //Commented out until recovery work is complete
-
-//   public void testRetrievePreparedTransactions() throws Throwable
-//   {
-//      doSetup(false, 100);
-//      
-//      Channel channel = new SimpleChannel(0, ms);
-//      
-//      TransactionRepository txRep = new TransactionRepository(pm, new IDManager("TRANSACTION_ID", 10, pm));
-//      txRep.start();
-//
-//      Message[] messages = createMessages(10);
-//      
-//      Xid[] xids = new Xid[messages.length];
-//      Transaction[] txs = new Transaction[messages.length];
-//      
-//      for (int i = 0; i < messages.length; i++)
-//      {         
-//         xids[i] = new MockXid();
-//         txs[i] = txRep.createTransaction(xids[i]);
-//         MessageReference ref = ms.reference(messages[i]);
-//         pm.addReference(channel.getChannelID(), ref, txs[i]);
-//         txs[i].prepare();
-//      }
-//      
-//      List txList = pm.retrievePreparedTransactions();
-//      assertNotNull(txList);
-//      assertEquals(messages.length, txList.size());
-//      
-//      for (int i = 0; i < xids.length; i++)
-//      {
-//         Xid xid = xids[i];
-//         assertTrue(txList.contains(xid));
-//      }
-//      
-//      //rollback the txs
-//      for (int i = 0; i < txs.length; i++)
-//      {
-//         txs[i].rollback();
-//      }   
-//   }
    
    protected Message createMessage(byte i, boolean reliable) throws Throwable
    {

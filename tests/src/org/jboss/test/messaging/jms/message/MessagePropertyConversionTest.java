@@ -22,17 +22,13 @@
 package org.jboss.test.messaging.jms.message;
 
 import javax.jms.Connection;
-import javax.jms.ConnectionFactory;
-import javax.jms.Destination;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageFormatException;
 import javax.jms.MessageProducer;
 import javax.jms.Session;
-import javax.naming.InitialContext;
 
 import org.jboss.test.messaging.jms.JMSTestCase;
-import org.jboss.test.messaging.tools.ServerManagement;
 
 /**
  * 
@@ -79,11 +75,11 @@ public class MessagePropertyConversionTest extends JMSTestCase
    }
 
    public void tearDown() throws Exception
-   {
-      super.tearDown();
-      
+   {      
       producerConnection.close();
       consumerConnection.close();
+      
+      super.tearDown();
    }
    
    public void testBooleanConversion() throws Exception

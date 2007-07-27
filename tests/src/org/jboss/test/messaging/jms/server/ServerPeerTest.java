@@ -84,15 +84,19 @@ public class ServerPeerTest extends MessagingTestCase
       }
 
       super.setUp();
+      
+      ServerManagement.stop();
+      
       ServerManagement.start("all");
-      
-      
+            
       initialContext = new InitialContext(ServerManagement.getJNDIEnvironment());
    }
 
    public void tearDown() throws Exception
    {
       super.tearDown();
+      
+      ServerManagement.stop();
    }
 
    public void testNonContextAlreadyBound() throws Exception
@@ -135,7 +139,6 @@ public class ServerPeerTest extends MessagingTestCase
       {
          ServerManagement.undeployQueue("SomeQueue");
          ServerManagement.undeployTopic("SomeTopic");
-         ServerManagement.stopServerPeer();
       }
    }
 

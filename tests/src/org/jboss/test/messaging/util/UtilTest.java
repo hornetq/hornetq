@@ -21,8 +21,8 @@
 */
 package org.jboss.test.messaging.util;
 
-import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.messaging.util.Util;
+import org.jboss.test.messaging.MessagingTestCase;
 
 
 

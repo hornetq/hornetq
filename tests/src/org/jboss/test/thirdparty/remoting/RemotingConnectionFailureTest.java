@@ -6,19 +6,20 @@
  */
 package org.jboss.test.thirdparty.remoting;
 
-import org.jboss.test.messaging.MessagingTestCase;
-import org.jboss.test.messaging.tools.ServerManagement;
-import org.jboss.test.messaging.tools.jmx.ServiceContainer;
-import org.jboss.test.thirdparty.remoting.util.SimpleConnectionListener;
-import org.jboss.test.thirdparty.remoting.util.RemotingTestSubsystemService;
-import org.jboss.remoting.InvokerLocator;
-import org.jboss.remoting.Client;
-import org.jboss.remoting.CannotConnectException;
-
-import javax.management.ObjectName;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+
+import javax.management.ObjectName;
+
+import org.jboss.remoting.CannotConnectException;
+import org.jboss.remoting.Client;
+import org.jboss.remoting.InvokerLocator;
+import org.jboss.test.messaging.MessagingTestCase;
+import org.jboss.test.messaging.tools.ServerManagement;
+import org.jboss.test.messaging.tools.container.ServiceContainer;
+import org.jboss.test.thirdparty.remoting.util.RemotingTestSubsystemService;
+import org.jboss.test.thirdparty.remoting.util.SimpleConnectionListener;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>

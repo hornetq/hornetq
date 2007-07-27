@@ -6,23 +6,24 @@
  */
 package org.jboss.test.thirdparty.remoting.util;
 
-import org.jboss.remoting.ServerInvocationHandler;
-import org.jboss.remoting.ServerInvoker;
-import org.jboss.remoting.InvocationRequest;
-import org.jboss.remoting.callback.InvokerCallbackHandler;
-import org.jboss.remoting.callback.Callback;
-import org.jboss.remoting.callback.ServerInvokerCallbackHandler;
-import org.jboss.test.thirdparty.remoting.SocketTransportCausalityTest;
-import org.jboss.logging.Logger;
-
-import javax.management.MBeanServer;
 import java.io.Serializable;
-import java.util.List;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
-import EDU.oswego.cs.dl.util.concurrent.LinkedQueue;
+import javax.management.MBeanServer;
+
+import org.jboss.logging.Logger;
+import org.jboss.remoting.InvocationRequest;
+import org.jboss.remoting.ServerInvocationHandler;
+import org.jboss.remoting.ServerInvoker;
+import org.jboss.remoting.callback.Callback;
+import org.jboss.remoting.callback.InvokerCallbackHandler;
+import org.jboss.remoting.callback.ServerInvokerCallbackHandler;
+import org.jboss.test.thirdparty.remoting.SocketTransportCausalityTest;
+
 import EDU.oswego.cs.dl.util.concurrent.Channel;
+import EDU.oswego.cs.dl.util.concurrent.LinkedQueue;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>

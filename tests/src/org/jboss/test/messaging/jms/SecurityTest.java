@@ -36,6 +36,7 @@ import javax.jms.XAConnectionFactory;
 import javax.jms.XASession;
 import javax.management.ObjectName;
 import javax.transaction.xa.XAResource;
+
 import org.jboss.jms.exception.MessagingXAException;
 import org.jboss.jms.tx.MessagingXid;
 import org.jboss.logging.Logger;

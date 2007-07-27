@@ -22,8 +22,8 @@
 
 package org.jboss.test.messaging.core.postoffice;
 
-import org.jgroups.JChannel;
 import org.jboss.messaging.core.contract.JChannelFactory;
+import org.jgroups.JChannel;
 
 /**
  * A JChannelFactory that will use String JChannel configurations to create JChannel instances.

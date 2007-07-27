@@ -6,11 +6,11 @@
  */
 package org.jboss.test.messaging.jms.clustering;
 
+import javax.management.ObjectName;
+import javax.naming.InitialContext;
+
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
-
-import javax.naming.InitialContext;
-import javax.management.ObjectName;
 
 /**
  * Test spawning functionality of the ServerManagment. Used mostly in a clustered testing

@@ -34,14 +34,11 @@ import javax.jms.MessageProducer;
 import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.TextMessage;
-import javax.jms.Topic;
 import javax.management.ObjectName;
-import javax.naming.InitialContext;
 import javax.naming.NameNotFoundException;
 
 import org.jboss.jms.destination.JBossQueue;
 import org.jboss.jms.message.JBossMessage;
-import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
 
 /**
@@ -104,10 +101,6 @@ public class ExpiryQueueTest extends JMSTestCase
    
          assertNotNull(expiryQueue);
    
-         InitialContext ic = null;
- 
-         ic = new InitialContext(ServerManagement.getJNDIEnvironment());
-
          JBossQueue q = (JBossQueue)ic.lookup("/queue/ExpiryQueue");
 
          assertNotNull(q);
@@ -116,10 +109,7 @@ public class ExpiryQueueTest extends JMSTestCase
       }
       finally
       {
-         if (ic != null) ic.close();
-
          ServerManagement.undeployQueue("ExpiryQueue");
-
       }
    }
 
@@ -134,26 +124,15 @@ public class ExpiryQueueTest extends JMSTestCase
 
       assertNull(expiryQueue);
 
-      InitialContext ic = null;
-
       try
       {
-         ic = new InitialContext(ServerManagement.getJNDIEnvironment());
+         ic.lookup("/queue/ExpiryQueue");
 
-         try
-         {
-            ic.lookup("/queue/ExpiryQueue");
-
-            fail();
-         }
-         catch (NameNotFoundException e)
-         {
-            //Ok
-         }
+         fail();
       }
-      finally
+      catch (NameNotFoundException e)
       {
-         if (ic != null) ic.close();
+         //Ok
       }
    }
    
@@ -166,8 +145,7 @@ public class ExpiryQueueTest extends JMSTestCase
       ObjectName serverPeerObjectName = ServerManagement.getServerPeerObjectName();
       
       try
-      { 
-      
+      {       
          ServerManagement.deployQueue("DefaultExpiry");
          
          ServerManagement.deployQueue("OverrideExpiry");

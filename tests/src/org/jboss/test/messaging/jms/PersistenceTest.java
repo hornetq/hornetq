@@ -474,6 +474,10 @@ public class PersistenceTest extends JMSTestCase
 	      TextMessage rm = (TextMessage)ds.receive(3000);
 	      assertNotNull(rm);
 	      assertEquals("thebody", rm.getText());
+	      
+	      ds.close();
+	      
+	      s.unsubscribe("sub");
       }
       finally
       {
@@ -558,6 +562,14 @@ public class PersistenceTest extends JMSTestCase
 	         }
 	         assertEquals("message" + i, tm3.getText());
 	      }
+	      
+	      sub1.close();
+	      sub2.close();
+	      sub3.close();
+	      
+	      sessConsume.unsubscribe("sub1");
+	      sessConsume.unsubscribe("sub2");
+	      sessConsume.unsubscribe("sub3");
       }
       finally
       {

@@ -58,8 +58,8 @@ import org.jboss.jms.tx.ResourceManager;
 import org.jboss.jms.tx.ResourceManagerFactory;
 import org.jboss.logging.Logger;
 import org.jboss.test.messaging.tools.ServerManagement;
-import org.jboss.test.messaging.tools.jmx.ServiceContainer;
-import org.jboss.test.messaging.tools.jndi.InVMInitialContextFactory;
+import org.jboss.test.messaging.tools.container.InVMInitialContextFactory;
+import org.jboss.test.messaging.tools.container.ServiceContainer;
 import org.jboss.tm.TransactionManagerLocator;
 import org.jboss.tm.TxUtils;
 
@@ -1134,7 +1134,7 @@ public abstract class XATestBase extends JMSTestCase
          
          conn1 = cf.createXAConnection();
 
-         XAResource res = cf.createXAConnection().createXASession().getXAResource();
+         XAResource res = conn1.createXASession().getXAResource();
 
          Xid[] xids = res.recover(XAResource.TMSTARTRSCAN);
          assertEquals(1, xids.length);
@@ -2992,6 +2992,7 @@ public abstract class XATestBase extends JMSTestCase
          tm.commit();
 
          //verify that no messages are available
+         conn2.close();
          conn2 = cf.createConnection();
          Session sess = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
          conn2.start();
@@ -3078,6 +3079,7 @@ public abstract class XATestBase extends JMSTestCase
          tm.rollback();
 
          //verify that second message is available
+         conn2.close();
          conn2 = cf.createConnection();
          Session sess = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
          conn2.start();

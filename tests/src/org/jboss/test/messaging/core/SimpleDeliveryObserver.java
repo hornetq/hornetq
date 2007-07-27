@@ -21,10 +21,10 @@
 */
 package org.jboss.test.messaging.core;
 
+import org.jboss.logging.Logger;
 import org.jboss.messaging.core.contract.Delivery;
 import org.jboss.messaging.core.contract.DeliveryObserver;
 import org.jboss.messaging.core.impl.tx.Transaction;
-import org.jboss.logging.Logger;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>

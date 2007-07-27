@@ -22,9 +22,9 @@
 package org.jboss.test.messaging.jms.message;
 
 
-import javax.jms.TextMessage;
 import javax.jms.JMSException;
 import javax.jms.Message;
+import javax.jms.TextMessage;
 
 /**
  * A test that sends/receives text messages to the JMS provider and verifies their integrity.

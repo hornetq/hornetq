@@ -91,4 +91,4 @@ if [ $cygwin = false ]; then
 fi
 
 "$JAVA_HOME/java" $JAVA_OPTS -cp $CLASSPATH -Dtest.bind.address=localhost \
-org.jboss.test.messaging.tools.jmx.rmi.RMITestServer $port &
+org.jboss.test.messaging.tools.container.RMITestServer $port &

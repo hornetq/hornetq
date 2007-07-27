@@ -43,13 +43,13 @@ import org.jboss.messaging.core.contract.MessageStore;
 import org.jboss.messaging.core.contract.PersistenceManager;
 import org.jboss.remoting.ServerInvocationHandler;
 import org.jboss.test.messaging.tools.aop.PoisonInterceptor;
-import org.jboss.test.messaging.tools.jmx.ServiceAttributeOverrides;
-import org.jboss.test.messaging.tools.jmx.rmi.LocalTestServer;
-import org.jboss.test.messaging.tools.jmx.rmi.NotificationListenerID;
-import org.jboss.test.messaging.tools.jmx.rmi.RMITestServer;
-import org.jboss.test.messaging.tools.jmx.rmi.Server;
-import org.jboss.test.messaging.tools.jndi.InVMInitialContextFactory;
-import org.jboss.test.messaging.tools.jndi.RemoteInitialContextFactory;
+import org.jboss.test.messaging.tools.container.InVMInitialContextFactory;
+import org.jboss.test.messaging.tools.container.LocalTestServer;
+import org.jboss.test.messaging.tools.container.NotificationListenerID;
+import org.jboss.test.messaging.tools.container.RMITestServer;
+import org.jboss.test.messaging.tools.container.RemoteInitialContextFactory;
+import org.jboss.test.messaging.tools.container.Server;
+import org.jboss.test.messaging.tools.container.ServiceAttributeOverrides;
 
 /**
  * Collection of static methods to use to start/stop and interact with the in-memory JMS server. It
@@ -477,7 +477,7 @@ public class ServerManagement
          sb.append(" -Djava.net.preferIPv4Stack=true ");
       }
 
-      sb.append("org.jboss.test.messaging.tools.jmx.rmi.RMITestServer");
+      sb.append("org.jboss.test.messaging.tools.container.RMITestServer");
       
       String commandLine = sb.toString();
 

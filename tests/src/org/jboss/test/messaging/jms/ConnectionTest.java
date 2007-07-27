@@ -230,11 +230,12 @@ public class ConnectionTest extends JMSTestCase
       connection.close();
    }
 
-   public void testSetClientAfterStart()
+   public void testSetClientAfterStart() throws Exception
    {
+   	Connection connection = null;
       try
       {
-         Connection connection = cf.createConnection();
+         connection = cf.createConnection();
 
          //we start the connection
          connection.start();
@@ -253,6 +254,13 @@ public class ConnectionTest extends JMSTestCase
       catch (java.lang.IllegalStateException e)
       {
          fail("Should raise a javax.jms.IllegalStateException, not a java.lang.IllegalStateException");
+      }
+      finally
+      {
+      	if (connection != null)
+      	{
+      		connection.close();
+      	}
       }
       
    }
@@ -331,7 +339,8 @@ public class ConnectionTest extends JMSTestCase
       metaData.getProviderMajorVersion();
       metaData.getProviderMinorVersion();
       metaData.getProviderVersion();
-
+      
+      connection.close();
    }
 
 

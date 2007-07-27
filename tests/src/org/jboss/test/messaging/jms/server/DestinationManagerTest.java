@@ -66,9 +66,11 @@ public class DestinationManagerTest extends MessagingTestCase
       }
 
       super.setUp();
+      
+      ServerManagement.stop();
+      
       ServerManagement.start("all");
-      
-      
+            
       initialContext = new InitialContext(ServerManagement.getJNDIEnvironment());
 
       ServerManagement.undeployQueue("testQueue");

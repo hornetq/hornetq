@@ -705,6 +705,9 @@ public class XARecoveryTest extends JMSTestCase
          
          res.prepare(xid1);
          
+         conn1.close();
+         conn2.close();
+         
          conn1 = null;
          
          conn2 = null;
@@ -973,6 +976,8 @@ public class XARecoveryTest extends JMSTestCase
          
          res.prepare(xid1);
          
+         conn1.close();
+         conn2.close();
          conn1 = null;
          
          conn2 = null;
@@ -1533,6 +1538,10 @@ public class XARecoveryTest extends JMSTestCase
          
          assertNull(m);
          
+         conn1.close();
+         
+         conn2.close();
+         
          conn1 = null;
          
          conn2 = null;
@@ -1835,6 +1844,10 @@ public class XARecoveryTest extends JMSTestCase
          //prepare the tx
          
          res1.prepare(xid1);
+         
+         conn1.close();
+         
+         conn2.close();
          
          conn1 = null;
          
@@ -2321,7 +2334,8 @@ public class XARecoveryTest extends JMSTestCase
          
          res.prepare(xid1);
          
-         
+         conn1.close();
+         conn2.close();
          conn1 = null;
          
          conn2 = null;
@@ -2548,6 +2562,10 @@ public class XARecoveryTest extends JMSTestCase
    
          //Now "crash" the server
          
+         conn1.close();
+         
+         conn2.close();
+         
          conn1 = null;
          
          conn2 = null;
@@ -2557,8 +2575,10 @@ public class XARecoveryTest extends JMSTestCase
          ServerManagement.startServerPeer();
    
          deployAndLookupAdministeredObjects();       
+         
+         conn1 = cf.createXAConnection();
    
-         XAResource res = cf.createXAConnection().createXASession().getXAResource();
+         XAResource res = conn1.createXASession().getXAResource();
    
          log.trace("Recovering");
          
@@ -2735,7 +2755,7 @@ public class XARecoveryTest extends JMSTestCase
    
          res1.prepare(xid1);
          res2.prepare(xid2);
-   
+                     
          //Now "crash" the server
    
          ServerManagement.stopServerPeer();
@@ -2743,8 +2763,14 @@ public class XARecoveryTest extends JMSTestCase
          ServerManagement.startServerPeer();
    
          deployAndLookupAdministeredObjects();         
+         
+         conn1.close();
+         
+         conn2.close();
+         
+         conn1 = cf.createXAConnection();
    
-         XAResource res = cf.createXAConnection().createXASession().getXAResource();
+         XAResource res = conn1.createXASession().getXAResource();
    
          Xid[] xids = res.recover(XAResource.TMSTARTRSCAN);
          assertEquals(2, xids.length);
@@ -2900,9 +2926,15 @@ public class XARecoveryTest extends JMSTestCase
    
          ServerManagement.startServerPeer();
    
-         deployAndLookupAdministeredObjects();         
+         deployAndLookupAdministeredObjects();  
+         
+         conn1.close();
+         
+         conn2.close();
+         
+         conn1 = cf.createXAConnection();
    
-         XAResource res = cf.createXAConnection().createXASession().getXAResource();
+         XAResource res = conn1.createXASession().getXAResource();
    
          Xid[] xids = res.recover(XAResource.TMSTARTRSCAN);
          assertEquals(2, xids.length);
@@ -3040,9 +3072,15 @@ public class XARecoveryTest extends JMSTestCase
    
          ServerManagement.startServerPeer();
    
-         deployAndLookupAdministeredObjects();         
+         deployAndLookupAdministeredObjects();      
+         
+         conn1.close();
+         
+         conn2.close();
+         
+         conn1 = cf.createXAConnection();
    
-         XAResource res = cf.createXAConnection().createXASession().getXAResource();
+         XAResource res = conn1.createXASession().getXAResource();
    
          Xid[] xids = res.recover(XAResource.TMSTARTRSCAN);
          assertEquals(2, xids.length);
@@ -3185,7 +3223,13 @@ public class XARecoveryTest extends JMSTestCase
    
          deployAndLookupAdministeredObjects();
          
-         XAResource res = cf.createXAConnection().createXASession().getXAResource();
+         conn1.close();
+         
+         conn2.close();
+          
+         conn1 = cf.createXAConnection();
+         
+         XAResource res = conn1.createXASession().getXAResource();
    
          Xid[] xids = res.recover(XAResource.TMSTARTRSCAN);
          assertEquals(2, xids.length);

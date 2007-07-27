@@ -21,22 +21,23 @@
 */
 package org.jboss.test.messaging.jms;
 
-import org.jboss.test.messaging.MessagingTestCase;
-import org.jboss.test.messaging.tools.jmx.rmi.Server;
-import org.jboss.test.messaging.tools.jmx.rmi.LocalTestServer;
-import org.jboss.test.messaging.tools.ServerManagement;
-import org.jboss.logging.Logger;
-
-import javax.naming.InitialContext;
-import javax.jms.ConnectionFactory;
-import javax.jms.Queue;
-import javax.jms.Connection;
-import javax.jms.Session;
-import javax.jms.MessageConsumer;
-import javax.jms.TextMessage;
-import java.io.ObjectOutputStream;
-import java.io.FileOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.ObjectOutputStream;
+
+import javax.jms.Connection;
+import javax.jms.ConnectionFactory;
+import javax.jms.MessageConsumer;
+import javax.jms.Queue;
+import javax.jms.Session;
+import javax.jms.TextMessage;
+import javax.naming.InitialContext;
+
+import org.jboss.logging.Logger;
+import org.jboss.test.messaging.MessagingTestCase;
+import org.jboss.test.messaging.tools.ServerManagement;
+import org.jboss.test.messaging.tools.container.LocalTestServer;
+import org.jboss.test.messaging.tools.container.Server;
 
 /**
  * A test that makes sure that a Messaging client gracefully exists after the last connection is
@@ -74,14 +75,10 @@ public class ClientExitTest extends MessagingTestCase
 
    public void testGracefulClientExit() throws Exception
    {
-      if (ServerManagement.isRemote())
-      {
-         // doesn't make any sense to run in remote mode, since we'll start our won external VM
-         return;
-      }
-
       Server localServer = null;
       File serialized = null;
+      
+      Connection conn = null;
 
       try
       {
@@ -105,7 +102,7 @@ public class ClientExitTest extends MessagingTestCase
 
          // read the message from the queue
 
-         Connection conn = cf.createConnection();
+         conn = cf.createConnection();
          conn.start();
          Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
          MessageConsumer cons = sess.createConsumer(queue);
@@ -120,10 +117,11 @@ public class ClientExitTest extends MessagingTestCase
          p.waitFor();
 
          assertEquals(0, p.exitValue());
-
       }
       finally
       {
+      	conn.close();
+      	
          // TODO delete the file
          if (serialized != null)
          {
@@ -143,6 +141,8 @@ public class ClientExitTest extends MessagingTestCase
    protected void setUp() throws Exception
    {
       super.setUp();
+      
+      ServerManagement.stop();
    }
 
    protected void tearDown() throws Exception

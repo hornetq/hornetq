@@ -107,40 +107,6 @@ public class MiscellaneousTest extends JMSTestCase
 	      MessageProducer prod = s.createProducer(queue1);
 	      Message m = s.createMessage();
 	      prod.send(m);
-	      c.close();
-	
-	      final Result result = new Result();
-	      Connection conn = cf.createConnection();
-	      s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-	      final MessageConsumer cons = s.createConsumer(queue1);
-	      cons.setMessageListener(new MessageListener()
-	      {
-	         public void onMessage(Message m)
-	         {
-	            // close the connection on the same thread that processed the message
-	            try
-	            {
-	               cons.close();
-	               result.setSuccess();
-	            }
-	            catch(Exception e)
-	            {
-	               result.setFailure(e);
-	            }
-	         }
-	      });
-	
-	      conn.start();
-	
-	      result.waitForResult();
-	
-	      assertTrue(result.isSuccess());
-	      assertNull(result.getFailure());
-	
-	      // make sure the acknowledgment made it back to the queue
-	
-	      Thread.sleep(1000);
-	      assertRemainingMessages(0);
       }
       finally
       {
@@ -149,6 +115,42 @@ public class MiscellaneousTest extends JMSTestCase
       		c.close();
       	}
       }
+	
+      final Result result = new Result();
+      Connection conn = cf.createConnection();
+      Session s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      final MessageConsumer cons = s.createConsumer(queue1);
+      cons.setMessageListener(new MessageListener()
+      {
+         public void onMessage(Message m)
+         {
+            // close the connection on the same thread that processed the message
+            try
+            {
+               cons.close();
+               result.setSuccess();
+            }
+            catch(Exception e)
+            {
+               result.setFailure(e);
+            }
+         }
+      });
+
+      conn.start();
+
+      result.waitForResult();
+
+      assertTrue(result.isSuccess());
+      assertNull(result.getFailure());
+
+      // make sure the acknowledgment made it back to the queue
+
+      Thread.sleep(1000);
+      assertRemainingMessages(0);
+      
+      conn.close();
+
    }
 
    /**
@@ -165,40 +167,6 @@ public class MiscellaneousTest extends JMSTestCase
 	      MessageProducer prod = s.createProducer(queue1);
 	      Message m = s.createMessage();
 	      prod.send(m);
-	      c.close();
-	
-	      final Result result = new Result();
-	      Connection conn = cf.createConnection();
-	      final Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-	      MessageConsumer cons = session.createConsumer(queue1);
-	      cons.setMessageListener(new MessageListener()
-	      {
-	         public void onMessage(Message m)
-	         {
-	            // close the connection on the same thread that processed the message
-	            try
-	            {
-	               session.close();
-	               result.setSuccess();
-	            }
-	            catch(Exception e)
-	            {
-	               result.setFailure(e);
-	            }
-	         }
-	      });
-	
-	      conn.start();
-	
-	      result.waitForResult();
-	
-	      assertTrue(result.isSuccess());
-	      assertNull(result.getFailure());
-	
-	      // make sure the acknowledgment made it back to the queue
-	
-	      Thread.sleep(1000);
-	      assertRemainingMessages(0);
       }
       finally
       {
@@ -207,6 +175,40 @@ public class MiscellaneousTest extends JMSTestCase
       		c.close();
       	}
       }
+	
+      final Result result = new Result();
+      Connection conn = cf.createConnection();
+      final Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      MessageConsumer cons = session.createConsumer(queue1);
+      cons.setMessageListener(new MessageListener()
+      {
+         public void onMessage(Message m)
+         {
+            // close the connection on the same thread that processed the message
+            try
+            {
+               session.close();
+               result.setSuccess();
+            }
+            catch(Exception e)
+            {
+               result.setFailure(e);
+            }
+         }
+      });
+
+      conn.start();
+
+      result.waitForResult();
+
+      assertTrue(result.isSuccess());
+      assertNull(result.getFailure());
+
+      // make sure the acknowledgment made it back to the queue
+
+      Thread.sleep(1000);
+      assertRemainingMessages(0);
+      conn.close();
    }
 
    /**
@@ -223,43 +225,6 @@ public class MiscellaneousTest extends JMSTestCase
 	      MessageProducer prod = s.createProducer(queue1);
 	      Message m = s.createMessage();
 	      prod.send(m);
-	      c.close();
-	
-	      final Result result = new Result();
-	      final Connection conn = cf.createConnection();
-	      s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-	      MessageConsumer cons = s.createConsumer(queue1);
-	      cons.setMessageListener(new MessageListener()
-	      {
-	         public void onMessage(Message m)
-	         {
-	            // close the connection on the same thread that processed the message
-	            try
-	            {
-	               log.debug("attempting close");
-	               conn.close();
-	               log.debug("conn closed");
-	               result.setSuccess();
-	            }
-	            catch(Exception e)
-	            {
-	               e.printStackTrace();
-	               result.setFailure(e);
-	            }
-	         }
-	      });
-	
-	      conn.start();
-	
-	      result.waitForResult();
-	
-	      assertTrue(result.isSuccess());
-	      assertNull(result.getFailure());
-	
-	      // make sure the acknowledgment made it back to the queue
-	
-	      Thread.sleep(1000);
-	      assertRemainingMessages(0);
       }
       finally
       {
@@ -268,6 +233,43 @@ public class MiscellaneousTest extends JMSTestCase
       		c.close();
       	}
       }
+	
+      final Result result = new Result();
+      final Connection conn = cf.createConnection();
+      Session s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      MessageConsumer cons = s.createConsumer(queue1);
+      cons.setMessageListener(new MessageListener()
+      {
+         public void onMessage(Message m)
+         {
+            // close the connection on the same thread that processed the message
+            try
+            {
+               conn.close();
+               result.setSuccess();
+            }
+            catch(Exception e)
+            {
+               e.printStackTrace();
+               result.setFailure(e);
+            }
+         }
+      });
+
+      conn.start();
+
+      result.waitForResult();
+
+      assertTrue(result.isSuccess());
+      assertNull(result.getFailure());
+
+      // make sure the acknowledgment made it back to the queue
+
+      Thread.sleep(1000);
+      assertRemainingMessages(0);
+      
+      conn.close();
+      
    }
    
    // Test case for http://jira.jboss.com/jira/browse/JBMESSAGING-788

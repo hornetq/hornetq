@@ -6,6 +6,8 @@
  */
 package org.jboss.test.messaging.jms.clustering;
 
+import java.util.HashSet;
+
 import javax.jms.Connection;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
@@ -26,9 +28,8 @@ import org.jboss.jms.client.FailoverEvent;
 import org.jboss.jms.client.JBossConnection;
 import org.jboss.test.messaging.tools.ServerManagement;
 import org.jboss.test.messaging.tools.aop.PoisonInterceptor;
-import org.jboss.test.messaging.tools.jmx.ServiceContainer;
-import org.jboss.test.messaging.tools.jndi.InVMInitialContextFactory;
-import java.util.HashSet;
+import org.jboss.test.messaging.tools.container.InVMInitialContextFactory;
+import org.jboss.test.messaging.tools.container.ServiceContainer;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>

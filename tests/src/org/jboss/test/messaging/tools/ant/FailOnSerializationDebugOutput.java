@@ -22,8 +22,8 @@
 package org.jboss.test.messaging.tools.ant;
 
 
-import java.io.File;
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileReader;
 
 /**

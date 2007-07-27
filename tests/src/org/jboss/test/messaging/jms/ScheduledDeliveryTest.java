@@ -22,7 +22,6 @@
 package org.jboss.test.messaging.jms;
 
 import javax.jms.Connection;
-import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.jms.Session;
@@ -207,10 +206,6 @@ public class ScheduledDeliveryTest extends JMSTestCase
          now2 = System.currentTimeMillis();
          
          assertTrue(now2 - now >= 7000);
-         
-         Message m = cons.receive(1000);
-         
-         assertNull(m);
       }
       finally
       {
@@ -349,11 +344,7 @@ public class ScheduledDeliveryTest extends JMSTestCase
             
             assertTrue(time - now >= delay);
             assertTrue(time - now < delay + 250);
-         }
-         
-         TextMessage tm = (TextMessage)cons2.receive(1000);
-         
-         assertNull(tm);
+         }         
       }
       finally
       {
@@ -367,7 +358,7 @@ public class ScheduledDeliveryTest extends JMSTestCase
    private void delayedRedeliveryDefaultOnRollback(long delay) throws Exception
    {   
    	Connection conn = null;      
-
+   	
    	try
    	{
    		conn = cf.createConnection();
@@ -390,7 +381,7 @@ public class ScheduledDeliveryTest extends JMSTestCase
    		MessageConsumer cons = sess2.createConsumer(queue1);
 
    		conn.start();
-
+   		
    		for (int i = 0; i < NUM_MESSAGES; i++)
    		{
    			TextMessage tm = (TextMessage)cons.receive(500);
@@ -405,7 +396,7 @@ public class ScheduledDeliveryTest extends JMSTestCase
    		long now = System.currentTimeMillis();
       	   		
    		sess2.rollback();
-
+   		
    		//This should redeliver with a delayed redelivery
 	
    		for (int i = 0; i < NUM_MESSAGES; i++)
@@ -419,10 +410,8 @@ public class ScheduledDeliveryTest extends JMSTestCase
    			assertTrue(time - now >= delay);
    			assertTrue(time - now < delay + 250);
    		}
-
-   		TextMessage tm = (TextMessage)cons.receive(1000);
-
-   		assertNull(tm);
+   		
+   		sess2.commit();
    	}
    	finally
    	{
@@ -561,10 +550,6 @@ public class ScheduledDeliveryTest extends JMSTestCase
          now2 = System.currentTimeMillis();
          
          assertTrue(now2 - now >= 7000);
-         
-         Message m = cons.receive(1000);
-         
-         assertNull(m);
          
          if (tx)
          {

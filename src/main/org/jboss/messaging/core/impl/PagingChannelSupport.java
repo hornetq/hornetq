@@ -210,9 +210,6 @@ public abstract class PagingChannelSupport extends ChannelSupport
       }
    }
    
-   
-   
-      
    public void unload() throws Exception
    {
       synchronized (lock)
@@ -222,7 +219,27 @@ public abstract class PagingChannelSupport extends ChannelSupport
             throw new IllegalStateException("Cannot unload channel when active");
          }
          
+         //We need to release any message refs so the message is released from the message store if appropriate
+         
+         Iterator iter = messageRefs.iterator();
+         
+         while (iter.hasNext())
+         {
+         	MessageReference ref = (MessageReference)iter.next();
+         	
+         	ref.releaseMemoryReference();
+         }
+         
          messageRefs.clear();
+         
+         iter = downCache.iterator();
+         
+         while (iter.hasNext())
+         {
+         	MessageReference ref = (MessageReference)iter.next();
+         	
+         	ref.releaseMemoryReference();
+         }
          
          downCache.clear();
          

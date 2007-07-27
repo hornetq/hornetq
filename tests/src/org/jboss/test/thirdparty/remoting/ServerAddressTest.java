@@ -6,8 +6,8 @@
  */
 package org.jboss.test.thirdparty.remoting;
 
-import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.remoting.transport.socket.ServerAddress;
+import org.jboss.test.messaging.MessagingTestCase;
 
 /**
  * This test makes sure that Remoting implements ServerAddress.equals() correctly.
