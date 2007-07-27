@@ -65,8 +65,6 @@ public class ServerManagement
 {
    // Constants -----------------------------------------------------
 	
-	public static int wibble = 0;
-
    public static final int MAX_SERVER_COUNT = 10;
 
    // logging levels used by the remote client to forward log output on a remote server
@@ -148,17 +146,9 @@ public class ServerManagement
          }
          else
          {
-            Server s = acquireRemote(10, i, true);
-
-            if (s != null)
-            {
-               servers[i] = new ServerHolder(s, false);
-            }
-            else
-            {
-               // most likely the remote server is not started, so spawn it
-               servers[i] = new ServerHolder(ServerManagement.spawn(i), true);
-            }
+         	//Need to spawn a new server - we DON'T use start-rmi-server any more, so we know if the servers[i] is null
+         	//the server is not there - killing a server sets servers[i] to null
+            servers[i] = new ServerHolder(ServerManagement.spawn(i), true);            
          }
       }
       else
@@ -175,9 +165,6 @@ public class ServerManagement
     */
    public static void start(String config) throws Exception
    {
-   	wibble++;
-   	
-   	log.info("*** wiblle is now " + wibble);
       start(0, config, true);
    }
 
@@ -220,21 +207,15 @@ public class ServerManagement
    }
 
 
-   public static synchronized boolean isStarted(int i)
+   public static synchronized boolean isStarted(int i) throws Exception
    {
       if (servers[i] == null)
       {
          return false;
       }
-
-      try
+      else
       {
-         return servers[i].getServer().isStarted();
-      }
-      catch(Exception e)
-      {
-         log.warn("Exception on isStarted", e);
-         return false;
+      	return servers[i].getServer().isStarted();
       }
    }
 
@@ -356,12 +337,8 @@ public class ServerManagement
    }
 
    /**
-    * For a local test, is a noop, but for a remote test, the method call spawns a new VM,
-    * irrespective of the fact that a server with same index may already exist (if you want to
-    * avoid conflicts, you need to check this externally).
-    *
-    * The remote server so created is no different from a server started using start-rmi-server
-    * script.
+    * For a local test, is a noop, but for a remote test, the method call spawns a new VM
+    * 
     */
    private static synchronized Server spawn(final int i) throws Exception
    {
@@ -375,7 +352,6 @@ public class ServerManagement
       sb.append("java").append(' ');
 
       sb.append("-Xmx512M").append(' ');
-
 
       String remoteDebugIndex = System.getProperty("test.remote.debug.index");
       if (remoteDebugIndex != null)
@@ -394,8 +370,14 @@ public class ServerManagement
       }
 
       sb.append("-Dmodule.output=").append(moduleOutput).append(' ');
+      
+      String bindAddress = System.getProperty("test.bind.address");
+      if (bindAddress == null)
+      {
+      	bindAddress = "localhost";
+      }
 
-      sb.append("-Dtest.bind.address=localhost").append(' ');
+      sb.append("-Dtest.bind.address=").append(bindAddress).append(' ');
 
       String jgroupsBindAddr = System.getProperty(org.jgroups.Global.BIND_ADDR);
       
@@ -545,20 +527,11 @@ public class ServerManagement
       // put the invoking thread on wait until the server is actually up and running and bound
       // in the RMI registry
 
-      long maxWaitTime = 30; // seconds
-      long startTime = System.currentTimeMillis();
-      Server s = null;
-
       log.info("spawned server " + i + ", waiting for it to come online");
 
-      while (System.currentTimeMillis() - startTime < maxWaitTime * 1000)
-      {
-         s = acquireRemote(1, i, true);
-         if (s != null)
-         {
-            break;
-         }
-      }
+      Server s = acquireRemote(500, i, true);
+      
+      log.info("Server contacted");
 
       if (s == null)
       {
@@ -1129,7 +1102,7 @@ public class ServerManagement
             String msg = "trying to connect to the remote RMI server " + index +
                (attempt == 1 ? "" : ", attempt " + attempt);
 
-            if(quiet)
+            if (quiet)
             {
                log.debug(msg);
             }

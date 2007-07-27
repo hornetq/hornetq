@@ -244,25 +244,6 @@
       <property name="test.logs.cleared" value="true"/>
    </target>
 
-   <target name="start-rmi-server" depends="init"
-           description="Starts the RMI server used by remote tests">
-
-      <java classname="org.jboss.test.messaging.tools.container.RMITestServer" fork="true" spawn="true">
-         <sysproperty key="module.output" value="${tests.output}"/>
-         <sysproperty key="test.logfile.suffix" value="${remote.server.test.logfile.suffix}"/>
-         <sysproperty key="test.bind.address" value="${test.bind.address}"/>
-         <sysproperty key="jgroups.bind_addr" value="${test.bind.address}"/>
-         <sysproperty key="test.database" value="${functional.tests.database}"/>
-         <sysproperty key="test.remoting" value="${test.remoting}"/>
-         <sysproperty key="java.net.preferIPv4Stack" value="true"/>
-         <sysproperty key="objectstore.dir" value="${objectstore.dir}"/>
-         <!--
-         <jvmarg line="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_shmem,server=y,suspend=y,address=rmiserver"/>
-         -->
-         <classpath refid="test.execution.classpath"/>
-      </java>
-   </target>
-  
    <target name="stop-rmi-server" depends="init"
            description="Stops the RMI server used by remote tests">
       <java classname="org.jboss.test.messaging.tools.container.StopRMIServer"
@@ -485,6 +466,7 @@
 	       <include name="**/jms/${test-mask}.class"/> 
                <include name="**/jms/message/**/*Test.class"/>
                <include name="**/jms/selector/*Test.class"/>
+               <include name="**/jms/crash/*Test.class"/>
 
 	       <exclude name="**/jms/WireFormatTest.class"/>
 	       <exclude name="**/jms/ReferencingTest.class"/>
@@ -907,188 +889,6 @@
             </fileset>
          </batchtest>
       </junit>
-
-   </target>
-
-
-   <target name="crash-tests" depends="tests-jar, prepare-testdirs, clear-test-logs"
-      description="Runs crash tests">
-
-      <antcall target="stop-rmi-server"/>
-
-      <!--
-          ClientCrashTest over "bisocket"
-      -->
-
-      <antcall target="start-rmi-server">
-         <param name="remote.server.test.logfile.suffix" value="remote-crash"/>
-      </antcall>
-
-      <antcall target="crash-test">
-         <param name="crash.test.name" value="org.jboss.test.messaging.jms.crash.ClientCrashTest"/>
-      </antcall>
-
-      <!--
-          ClientCrashTest over "http"
-      -->
-
-      <antcall target="start-rmi-server">
-         <param name="test.remoting" value="http"/>
-         <param name="remote.server.test.logfile.suffix" value="remote-crash"/>
-      </antcall>
-
-      <antcall target="crash-test">
-         <param name="crash.test.name" value="org.jboss.test.messaging.jms.crash.ClientCrashTest"/>
-         <param name="test.remoting" value="http"/>
-      </antcall>
-
-      <!--
-          ClientCrashTwoConnectionsTest over "bisocket"
-      -->
-
-      <antcall target="start-rmi-server">
-         <param name="remote.server.test.logfile.suffix" value="remote-crash"/>
-      </antcall>
-
-
-      <antcall target="crash-test">
-         <param name="crash.test.name" value="org.jboss.test.messaging.jms.crash.ClientCrashTwoConnectionsTest"/>
-      </antcall>
-
-      <!--
-          ClientCrashTwoConnectionsTest over "http"
-      -->
-      <antcall target="start-rmi-server">
-         <param name="test.remoting" value="http"/>
-         <param name="remote.server.test.logfile.suffix" value="remote-crash"/>
-      </antcall>
-
-      <antcall target="crash-test">
-         <param name="crash.test.name" value="org.jboss.test.messaging.jms.crash.ClientCrashTwoConnectionsTest"/>
-         <param name="test.remoting" value="http"/>
-      </antcall>
-
-      <!--
-          ClientCrashNegativeLeaseTest over "bisocket"
-      -->
-
-      <antcall target="start-rmi-server">
-         <param name="remote.server.test.logfile.suffix" value="remote-crash"/>
-      </antcall>
-
-
-      <antcall target="crash-test">
-         <param name="crash.test.name" value="org.jboss.test.messaging.jms.crash.ClientCrashNegativeLeaseTest"/>
-      </antcall>
-
-      <!--
-          ClientCrashNegativeLeaseTest over "http"
-      -->
-
-      <antcall target="start-rmi-server">
-         <param name="test.remoting" value="http"/>
-         <param name="remote.server.test.logfile.suffix" value="remote-crash"/>
-      </antcall>
-
-      <antcall target="crash-test">
-         <param name="crash.test.name" value="org.jboss.test.messaging.jms.crash.ClientCrashNegativeLeaseTest"/>
-         <param name="test.remoting" value="http"/>
-      </antcall>
-
-      <!--
-          ClientCrashZeroLeaseTest over "bisocket"
-      -->
-
-      <antcall target="start-rmi-server">
-         <param name="remote.server.test.logfile.suffix" value="remote-crash"/>
-      </antcall>
-
-
-      <antcall target="crash-test">
-          <param name="crash.test.name" value="org.jboss.test.messaging.jms.crash.ClientCrashZeroLeaseTest"/>
-      </antcall>
-
-      <!--
-          ClientCrashZeroLeaseTest over "http"
-      -->
-
-      <antcall target="start-rmi-server">
-         <param name="test.remoting" value="http"/>
-         <param name="remote.server.test.logfile.suffix" value="remote-crash"/>
-      </antcall>
-
-      <antcall target="crash-test">
-         <param name="crash.test.name" value="org.jboss.test.messaging.jms.crash.ClientCrashZeroLeaseTest"/>
-         <param name="test.remoting" value="http"/>
-      </antcall>
-
-      <!--
-          ClientCrashLargeLeaseTest over "bisocket"
-      -->
-
-      <antcall target="start-rmi-server">
-         <param name="remote.server.test.logfile.suffix" value="remote-crash"/>
-      </antcall>
-
-
-      <antcall target="crash-test">
-          <param name="crash.test.name" value="org.jboss.test.messaging.jms.crash.ClientCrashLargeLeaseTest"/>
-      </antcall>
-
-      <!--
-          ClientCrashLargeLeaseTest over "http"
-      -->
-
-      <antcall target="start-rmi-server">
-         <param name="test.remoting" value="http"/>
-         <param name="remote.server.test.logfile.suffix" value="remote-crash"/>
-      </antcall>
-
-      <antcall target="crash-test">
-          <param name="crash.test.name" value="org.jboss.test.messaging.jms.crash.ClientCrashLargeLeaseTest"/>
-         <param name="test.remoting" value="http"/>
-      </antcall>
-
-   </target>
-
-   <target name="crash-test" depends="init" description="Runs crash test">
-
-      <junit printsummary="${junit.printsummary}"
-             fork="${junit.fork}"
-             includeantruntime="yes"
-             haltonerror="${junit.haltonerror}"
-             haltonfailure="${junit.haltonfailure}"
-             showoutput="${junit.showoutput}"
-             timeout="${junit.timeout}">
-
-         <sysproperty key="remote" value="true"/>
-         <sysproperty key="module.output" value="${tests.output}"/>
-         <sysproperty key="test.bind.address" value="${test.bind.address}"/>
-         <sysproperty key="jgroups.bind_addr" value="${test.bind.address}"/>
-         <sysproperty key="test.database" value="${functional.tests.database}"/>
-         <sysproperty key="test.remoting" value="${test.remoting}"/>
-         <sysproperty key="test.logfile.suffix" value="crash"/>
-         <jvmarg value="-Xmx512M"/>
-         <!--
-         <jvmarg line="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_shmem,server=y,suspend=y,address=antjunit"/>
-         -->
-         <classpath>
-            <path refid="test.execution.classpath"/>
-         </classpath>
-
-         <sysproperty key="jboss-junit-configuration" value="Crash-${test.remoting}"/>
-         <formatter classname="org.jboss.ant.taskdefs.XMLJUnitMultipleResultFormatter"
-                    usefile="${junit.formatter.usefile}" extension="-Crash-${test.remoting}.xml"/>
-
-         <test name="${crash.test.name}"
-               fork="true"
-               todir="${junit.batchtest.todir}"
-               haltonfailure="${junit.test.haltonfailure}"
-               haltonerror="${junit.test.haltonerror}">
-         </test>
-
-      </junit>
-
    </target>
 
    <target name="test" depends="tests-jar, prepare-testdirs, clear-test-logs"
@@ -1097,7 +897,6 @@
       <fail unless="test.classname"
             message="To run a single test, use: ./build.sh test -Dtest.classname=org.package.MyTest"/>
       <echo>Module root is:${module.root}</echo>
-      <antcall target="start-rmi-server"/>
       <property name="test.classname" value="dummy"/>
 
       <junit printsummary="${junit.printsummary}"
