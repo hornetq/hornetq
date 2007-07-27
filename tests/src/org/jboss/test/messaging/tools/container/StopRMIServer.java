@@ -21,11 +21,10 @@
 */
 package org.jboss.test.messaging.tools.container;
 
-import java.rmi.ConnectException;
 import java.rmi.Naming;
-import java.rmi.NotBoundException;
 
 import org.jboss.logging.Logger;
+import org.jboss.test.messaging.tools.ServerManagement;
 
 /**
  * A utility to stop runaway rmi servers.
@@ -40,7 +39,7 @@ public class StopRMIServer
    // Constants -----------------------------------------------------
 
    private static final Logger log = Logger.getLogger(StopRMIServer.class);
-
+   
    // Static --------------------------------------------------------
 
    public static void main(String[] args) throws Exception
@@ -52,54 +51,27 @@ public class StopRMIServer
          host = "localhost";
       }
       
-      int index;
+      int index = -1; // -1 implies kill all servers
 
       String serverIndex = System.getProperty("test.server.index");
-      if (serverIndex == null)
+      
+      index = Integer.parseInt(serverIndex);
+            
+      if (index != -1)
       {
-         index = RMITestServer.DEFAULT_SERVER_INDEX;
+      	killServer(host, index);
       }
       else
       {
-         index = Integer.parseInt(serverIndex);
-      }
-
-      String name =
-         "//" + host + ":" + RMITestServer.DEFAULT_REGISTRY_PORT + "/" +
-         RMITestServer.RMI_SERVER_PREFIX + index;
-
-      log.info("Stopping " + name);
-
-      Server server;
-      try
-      {
-         server = (Server)Naming.lookup(name);
-      }
-      catch(ConnectException e)
-      {
-         log.info("Cannot contact the registry, the server is probably shut down already");
-         return;
-      }
-      catch(NotBoundException e)
-      {
-         log.info("Cannot lookup " + name + ", the server is probably shut down already");
-         return;
-      }
-
-      try
-      {
-      	server.kill();
-      }
-      catch (Throwable t)
-      {      	
-      }
-
-      // The last RMI server will take with it the registry too
-
-      log.info("RMI server stopped");
-
+      	log.info("*** Attemptiong to kill all servers");
+      	//Kill em all
+      	for (int i = 0; i < ServerManagement.MAX_SERVER_COUNT; i++)
+      	{
+      		killServer(host, i);
+      	}
+      }           
    }
-
+      
    // Attributes ----------------------------------------------------
 
    // Constructors --------------------------------------------------
@@ -111,6 +83,51 @@ public class StopRMIServer
    // Protected -----------------------------------------------------
 
    // Private -------------------------------------------------------
+   
+   private static void killServer(String host, int index) throws Exception
+   {
+   	String name =
+         "//" + host + ":" + RMITestServer.DEFAULT_REGISTRY_PORT + "/" +
+         RMITestServer.RMI_SERVER_PREFIX + index;
+
+      Server server;
+      try
+      {
+         server = (Server)Naming.lookup(name);
+      }
+      catch(Throwable t)
+      {
+      	//Ignore
+         return;
+      }
+      
+      try
+      {
+      	server.kill();
+      }
+      catch (Throwable t)
+      {      	
+      	//Ignore
+      }
+      
+      try
+      {
+         while(true)
+         {
+            server.ping();           
+            Thread.sleep(100);
+         }
+      }
+      catch (Throwable e)
+      {
+         //Ok
+      }
+      
+      Thread.sleep(300);
+
+      log.info("*** Killed remote server " + index);
+   }
+
 
    // Inner classes -------------------------------------------------
 

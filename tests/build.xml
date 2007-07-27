@@ -253,22 +253,11 @@
      </java>
    </target>
 
-   <target name="stop-rmi-server-clustering" depends="init"
-           description="Stops the RMI server used by clustering tests">
-      <java classname="org.jboss.test.messaging.tools.container.StopRMIServer"
-            classpathref="test.execution.classpath">
-         <sysproperty key="test.server.index" value="${test.server.index}"/>
-         <sysproperty key="module.output" value="${tests.output}"/>
-         <sysproperty key="test.logfile.suffix" value="stop-rmi-server-clustering"/>
-      </java>
-   </target>
-
    <!-- ======================================================================================== -->
    <!-- Test Execution Tasks                                                                     -->
    <!-- ======================================================================================== -->
 
    <target name="tests" depends="tests-jar, prepare-testdirs, clear-test-logs">
-      <antcall target="crash-tests"/>
 
       <antcall target="invm-tests"/>
       <!--
@@ -295,13 +284,13 @@
    </target>
 
    <target name="short-tests" depends="tests-jar, prepare-testdirs, clear-test-logs">
-      <antcall target="crash-tests"/>
 
       <antcall target="invm-tests"/>
  
       <antcall target="remote-tests"/>
 
-      <!-- <antcall target="bridge-tests"/> -->
+      <antcall target="bridge-tests"/>
+
    </target>
 
    <target name="http-tests" depends="tests-jar, prepare-testdirs, clear-test-logs">
@@ -649,6 +638,8 @@
    <target name="clustering-stress-tests" depends="tests-jar, prepare-testdirs, clear-test-logs"
            description="Runs the clustering tests">
 
+      <antcall target="stop-rmi-server"/>
+
       <mkdir dir="${build.tests.reports}"/>
 
       <echo message=""/>
@@ -702,10 +693,13 @@
             </fileset>
          </batchtest>
       </junit>
+      <antcall target="stop-rmi-server"/>
    </target>
 
    <target name="clustering-tests" depends="tests-jar, prepare-testdirs, clear-test-logs"
            description="Runs the clustering tests">
+
+      <antcall target="stop-rmi-server"/>
 
       <mkdir dir="${build.tests.reports}"/>
 
@@ -761,6 +755,7 @@
             </fileset>
          </batchtest>
       </junit>
+      <antcall target="stop-rmi-server"/>
    </target>
    
  <target name="bridge-tests" depends="tests-jar, prepare-testdirs, clear-test-logs"
@@ -826,7 +821,6 @@
 
    <target name="memory-leak-tests" depends="tests-jar, prepare-testdirs, clear-test-logs"
            description="Runs MemoryLeakTests, but it starts the clustering for leak-clustering-tests">
-
 
       <mkdir dir="${build.tests.reports}"/>
 
