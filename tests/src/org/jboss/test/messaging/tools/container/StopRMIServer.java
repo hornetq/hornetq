@@ -55,7 +55,10 @@ public class StopRMIServer
 
       String serverIndex = System.getProperty("test.server.index");
       
-      index = Integer.parseInt(serverIndex);
+      if (serverIndex != null)
+      {     
+      	index = Integer.parseInt(serverIndex);
+      }
             
       if (index != -1)
       {
