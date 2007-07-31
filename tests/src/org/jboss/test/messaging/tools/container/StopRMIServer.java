@@ -66,7 +66,6 @@ public class StopRMIServer
       }
       else
       {
-      	log.info("*** Attemptiong to kill all servers");
       	//Kill em all
       	for (int i = 0; i < ServerManagement.MAX_SERVER_COUNT; i++)
       	{
@@ -126,9 +125,7 @@ public class StopRMIServer
          //Ok
       }
       
-      Thread.sleep(300);
-
-      log.info("*** Killed remote server " + index);
+      log.info("Killed remote server " + index);
    }
 
 
