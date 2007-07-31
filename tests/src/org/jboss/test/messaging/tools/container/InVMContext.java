@@ -41,6 +41,7 @@ import javax.naming.NamingException;
 import javax.naming.RefAddr;
 import javax.naming.Reference;
 
+import org.jboss.logging.Logger;
 import org.jboss.messaging.util.NotYetImplementedException;
 import org.jboss.util.naming.NonSerializableFactory;
 
@@ -56,6 +57,9 @@ public class InVMContext implements Context, Serializable
    // Constants -----------------------------------------------------
 
    private static final long serialVersionUID = 385743957345L;
+   
+   private static final Logger log = Logger.getLogger(InVMContext.class);
+
 
    // Static --------------------------------------------------------
 
@@ -72,7 +76,7 @@ public class InVMContext implements Context, Serializable
    }
 
    // Context implementation ----------------------------------------
-
+   
    public Object lookup(Name name) throws NamingException
    {
       throw new NotYetImplementedException();
@@ -318,6 +322,7 @@ public class InVMContext implements Context, Serializable
 
    private void internalBind(String name, Object obj, boolean rebind) throws NamingException
    {
+   	log.info("Binding " + name + " obj " + obj + " rebind " + rebind);
       name = trimSlashes(name);
       int i = name.lastIndexOf("/");
       InVMContext c = this;

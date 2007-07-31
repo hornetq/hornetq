@@ -21,9 +21,9 @@
 */
 package org.jboss.test.messaging.tools.container;
 
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Hashtable;
-import java.util.List;
+import java.util.Map;
 
 import javax.naming.Context;
 import javax.naming.NamingException;
@@ -43,12 +43,11 @@ public class InVMInitialContextFactory implements InitialContextFactory
 
    // Static --------------------------------------------------------
 
-   // List<InitialContext>
-   private static List initialContexts;
+   private static Map initialContexts;
 
    static
    {
-      initialContexts = new ArrayList();
+      initialContexts = new HashMap();
    }
 
    public static Hashtable getJNDIEnvironment()
@@ -76,8 +75,7 @@ public class InVMInitialContextFactory implements InitialContextFactory
 
    // Public --------------------------------------------------------
 
-   //NOTE!! This method MUST be synchronized
-   public synchronized Context getInitialContext(Hashtable environment) throws NamingException
+   public Context getInitialContext(Hashtable environment) throws NamingException      
    {
       // try first in the environment passed as argument ...
       String s = (String)environment.get(Constants.SERVER_INDEX_PROPERTY_NAME);
@@ -105,29 +103,22 @@ public class InVMInitialContextFactory implements InitialContextFactory
                                    Constants.SERVER_INDEX_PROPERTY_NAME +"\". " +
                                    s + " is not an integer");
       }
-  
-      int size = initialContexts.size();
 
-      // pad the list to the right size
-
-      if (size <= serverIndex)
-      {
-         for(int i = 0; i < serverIndex - size + 1; i++)
-         {
-            initialContexts.add(null);
-         }
-      }
-
-      InVMContext ic = (InVMContext)initialContexts.get(serverIndex);
-
-      if (ic == null)
-      {
-         ic = new InVMContext();
-         ic.bind("java:/", new InVMContext());
-         initialContexts.set(serverIndex, ic);
-      }
-
-      return ic;
+   	//Note! This MUST be synchronized
+   	synchronized (initialContexts)
+   	{
+	   	      
+	      InVMContext ic = (InVMContext)initialContexts.get(new Integer(serverIndex));
+	
+	      if (ic == null)
+	      {
+	         ic = new InVMContext();
+	         ic.bind("java:/", new InVMContext());
+	         initialContexts.put(new Integer(serverIndex), ic);
+	      }
+	
+	      return ic;
+   	}
    }
 
    // Package protected ---------------------------------------------
