@@ -1,0 +1,29 @@
+#!/bin/sh
+
+
+count=5000
+i=0
+
+while [ $i -lt $count ]; do
+	i=`expr $i + 1`
+   echo "#############################################"
+   echo "#                                           #"
+	echo "#         Running test loop $i"
+   echo "#                                           #"
+   echo "#############################################"
+   echo ""
+   cat /dev/null > ../output/logs/messaging-remote-client.log
+   cat /dev/null > ../output/logs/messaging-remote-server0.log
+   cat /dev/null > ../output/logs/messaging-remote-server1.log
+   if ! ./runtest -remote; then
+		echo "Test failed on loop $i"
+      exit 1
+   fi
+done
+
+
+echo "#############################################"
+echo "#                                           #"
+echo "#      $count loops ran successfully" 
+echo "#                                           #"
+echo "#############################################"
