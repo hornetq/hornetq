@@ -1422,8 +1422,10 @@ public class ServiceContainer
    {
       MockJBossSecurityManager sm = new MockJBossSecurityManager();
       this.initialContext.bind(MockJBossSecurityManager.TEST_SECURITY_DOMAIN, sm);
+      
+      toUnbindAtExit.add(MockJBossSecurityManager.TEST_SECURITY_DOMAIN);
 
-      log.debug("started JBoss Mock Security Manager");
+      log.debug("started JBoss Mock Security Manager, using ic: " + this.initialContext + " id " + System.identityHashCode(this.initialContext));
    }
 
    private void stopService(ObjectName target) throws Exception

@@ -76,7 +76,8 @@ public class InVMInitialContextFactory implements InitialContextFactory
 
    // Public --------------------------------------------------------
 
-   public Context getInitialContext(Hashtable environment) throws NamingException
+   //NOTE!! This method MUST be synchronized
+   public synchronized Context getInitialContext(Hashtable environment) throws NamingException
    {
       // try first in the environment passed as argument ...
       String s = (String)environment.get(Constants.SERVER_INDEX_PROPERTY_NAME);
@@ -104,7 +105,7 @@ public class InVMInitialContextFactory implements InitialContextFactory
                                    Constants.SERVER_INDEX_PROPERTY_NAME +"\". " +
                                    s + " is not an integer");
       }
-
+  
       int size = initialContexts.size();
 
       // pad the list to the right size
