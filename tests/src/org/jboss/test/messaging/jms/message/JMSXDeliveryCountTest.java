@@ -118,13 +118,17 @@ public class JMSXDeliveryCountTest extends JMSTestCase
 	      TextMessage tm = (TextMessage)c.receive(1000);
 	
 	      assertEquals("xoxo", tm.getText());
-	      assertEquals(1, tm.getIntProperty("JMSXDeliveryCount"));
+         assertTrue("JMSXDeliveryCount is supposed to exist as a property",
+                     tm.propertyExists("JMSXDeliveryCount"));
+         assertEquals(1, tm.getIntProperty("JMSXDeliveryCount"));
 	
 	      s.recover();
 	
 	      tm = (TextMessage)c.receive(1000);
 	
 	      assertEquals("xoxo", tm.getText());
+         assertTrue("JMSXDeliveryCount is supposed to exist as a property",
+                     tm.propertyExists("JMSXDeliveryCount"));
 	      assertEquals(2, tm.getIntProperty("JMSXDeliveryCount"));
 	      
 	      tm.acknowledge();
@@ -180,6 +184,8 @@ public class JMSXDeliveryCountTest extends JMSTestCase
 	            tm = (TextMessage)cons.receive(3000);
 	            assertNotNull(tm);
 	            assertEquals("testing" + i, tm.getText());
+               assertTrue("JMSXDeliveryCount is supposed to exist as a property",
+                           tm.propertyExists("JMSXDeliveryCount"));
 	            assertEquals(j + 1, tm.getIntProperty("JMSXDeliveryCount"));
 	         }
 	         if (j != NUM_RECOVERIES -1)
@@ -292,6 +298,8 @@ public class JMSXDeliveryCountTest extends JMSTestCase
          
          assertEquals(tm.getText(), rm.getText());
          
+         assertTrue("JMSXDeliveryCount is supposed to exist as a property",
+                     tm.propertyExists("JMSXDeliveryCount"));
          assertEquals(1, rm.getIntProperty("JMSXDeliveryCount"));
          
          assertFalse(rm.getJMSRedelivered());

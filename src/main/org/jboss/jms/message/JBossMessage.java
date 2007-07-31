@@ -568,7 +568,8 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message, S
 
    public boolean propertyExists(String name) throws JMSException
    {
-      return headers.containsKey(PROPERTY_PREFIX + name);
+      return headers.containsKey(PROPERTY_PREFIX + name)
+             || name.equals("JMSXDeliveryCount");
    }
 
    public boolean getBooleanProperty(String name) throws JMSException
