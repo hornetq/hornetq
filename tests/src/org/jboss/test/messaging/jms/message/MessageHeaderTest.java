@@ -70,7 +70,25 @@ public class MessageHeaderTest extends MessageHeaderTestBase
 
    // Public --------------------------------------------------------
 
-   
+
+   public void testClearMessage() throws Exception
+   {
+      queueProducer.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+
+      Message message = queueProducerSession.createTextMessage("some message");
+
+      queueProducer.send(message);
+
+      message = queueConsumer.receive(1000);
+
+      assertNotNull(message);
+
+      message.clearProperties();
+
+      assertNotNull(message.getJMSDestination());
+
+   }
+
    public void testMessageOrderQueue() throws Exception
    {
       final int NUM_MESSAGES = 10;

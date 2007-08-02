@@ -319,6 +319,7 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message, S
       super(other);
       this.connectionID = other.connectionID;   
       this.scheduledDeliveryTime = other.scheduledDeliveryTime;
+      this.destination = other.destination;
    }
 
    /**
