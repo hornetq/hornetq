@@ -142,6 +142,18 @@ public class ClusterConnectionManager implements ClusterNotificationListener
 		return connections;
 	}
 	
+	public void resetAllSuckers()
+	{
+		Iterator iter = connections.values().iterator();
+		
+		while (iter.hasNext())
+		{
+			ConnectionInfo conn = (ConnectionInfo)iter.next();
+			
+			conn.resetAllSuckers();
+		}
+	}
+	
 	/*
 	 * We respond to two types of events -
 	 * 
@@ -593,6 +605,20 @@ public class ClusterConnectionManager implements ClusterNotificationListener
 			connection.stop();
 			
 			started = false;
+		}
+		
+		synchronized void resetAllSuckers()
+		{
+			Iterator iter = suckers.values().iterator();
+			
+			while (iter.hasNext())
+			{
+				MessageSucker sucker = (MessageSucker)iter.next();
+				
+				sucker.setConsuming(false);
+			}
+			
+			
 		}
 		
 		synchronized void close()

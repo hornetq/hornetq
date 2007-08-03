@@ -1126,7 +1126,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
          
          JBossMessage copy = makeCopyForDLQOrExpiry(true, del);
          
-         moveInTransaction(copy, del, expiryQueue);
+         moveInTransaction(copy, del, expiryQueue, true);
       }
       else
       {
@@ -1655,7 +1655,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
             
             JBossMessage copy = makeCopyForDLQOrExpiry(true, del);
             
-            moveInTransaction(copy, del, rec.expiryQueue);
+            moveInTransaction(copy, del, rec.expiryQueue, false);
          }
          else
          {
@@ -1663,7 +1663,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
          	
             JBossMessage copy = makeCopyForDLQOrExpiry(false, del);
             
-            moveInTransaction(copy, del, rec.dlq);
+            moveInTransaction(copy, del, rec.dlq, true);
          }
       }      
       
@@ -1712,7 +1712,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
       return copy;
    }
    
-   private void moveInTransaction(JBossMessage msg, Delivery del, Queue queue) throws Throwable
+   private void moveInTransaction(JBossMessage msg, Delivery del, Queue queue, boolean dlq) throws Throwable
    {
       Transaction tx = tr.createTransaction();
       
@@ -1727,8 +1727,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
          }
          else
          {
-            log.warn("Cannot move to destination since destination has not been deployed! " +
-               "The message will be removed");
+            log.warn("No " + (dlq ? "DLQ" : "expiry queue") + " has been specified so the message will be removed");
             
             del.acknowledge(tx);
          }             

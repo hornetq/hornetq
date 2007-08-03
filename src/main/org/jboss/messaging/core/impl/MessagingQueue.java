@@ -254,6 +254,8 @@ public class MessagingQueue extends PagingChannelSupport implements Queue
          			
          			recoveryMap.put(new Long(message.getMessageID()), re);
          			
+         			deliveringCount.increment();
+         			
          			iter.remove();
          			
          			toTimeout.addLast(ref);
@@ -265,8 +267,7 @@ public class MessagingQueue extends PagingChannelSupport implements Queue
       		//This can happen if a delivery is replicated, the message delivered, then acked, then the node crashes
       		//before the ack is replicated.      		
       		//This is ok
-         	
-         	
+         	         	
          	//Set up a timeout to put the refs back in the queue if they don't get claimed by failed over consumers
          	         	                   
             MessagingTimeoutFactory.instance.getFactory().
@@ -282,6 +283,8 @@ public class MessagingQueue extends PagingChannelSupport implements Queue
    public List recoverDeliveries(List messageIds)
    {
    	if (trace) { log.trace("Recovering deliveries"); }
+   	
+   	log.info("There are "  + recoveryMap.size() + " entries in map");
    	
    	List refs = new ArrayList();
    	
@@ -302,6 +305,10 @@ public class MessagingQueue extends PagingChannelSupport implements Queue
 	   		if (trace) { log.trace("Recovered ref " + re.ref); }
 	   		
 	   		refs.add(del);
+   		}
+   		else
+   		{
+   			log.info("Can't find entry for message id " + messageID + " in map");
    		}
    	}
    	   
@@ -693,6 +700,8 @@ public class MessagingQueue extends PagingChannelSupport implements Queue
 					synchronized (lock)
 					{		
 						messageRefs.addFirst(ref, ref.getMessage().getPriority());		
+						
+						deliveringCount.decrement();
 					}					
 					
 					added = true;

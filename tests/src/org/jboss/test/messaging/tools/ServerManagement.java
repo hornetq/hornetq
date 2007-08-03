@@ -247,13 +247,24 @@ public class ServerManagement
          return stopped;
       }
    }
-
-
+   
    public static synchronized void kill(int i) throws Exception
    {
    	log.info("Attempting to kill server " + i);
    	
    	ServerHolder holder = servers[i];
+   	
+   	if (i == 0)
+   	{
+   		//Cannot kill server 0 if there are any other servers since it has the rmi registry in it
+   		for (int j = 1; j < servers.length; j++)
+   		{
+   			if (servers[j] != null)
+   			{
+   				throw new IllegalStateException("Cannot kill server 0, since server[" + j + "] still exists");
+   			}
+   		}
+   	}
 
       if (holder == null)
       {

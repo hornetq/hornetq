@@ -708,7 +708,8 @@
       <echo message=""/>
 
       <junit printsummary="${junit.printsummary}"
-             fork="${junit.fork}"
+             fork="on"
+             forkMode="once"
              includeantruntime="yes"
              haltonerror="${junit.haltonerror}"
              haltonfailure="${junit.haltonfailure}"
@@ -737,8 +738,7 @@
          <formatter classname="org.jboss.ant.taskdefs.XMLJUnitMultipleResultFormatter"
                     usefile="${junit.formatter.usefile}" extension="-Clustering.xml"/>
 
-         <batchtest fork="${junit.batchtest.fork}"
-                    todir="${junit.batchtest.todir}"
+         <batchtest todir="${junit.batchtest.todir}"
                     haltonfailure="${junit.batchtest.haltonfailure}"
                     haltonerror="${junit.batchtest.haltonerror}">
             <formatter type="plain" usefile="${junit.formatter.usefile}"/>
@@ -750,8 +750,14 @@
             <formatter classname="org.jboss.test.messaging.tools.ant.JUnitTestSuiteListener"/>
 
             <fileset dir="${build.tests.classes}">
-               <include name="**/jms/clustering/${test-mask}.class"/>
+              <!--  <include name="**/jms/clustering/${test-mask}.class"/> -->
                <exclude name="**/jms/clustering/ClusterLeakTest.class"/>
+<include name="**/jms/clustering/ChangeFailoverNodeTest.class"/>
+<include name="**/jms/clustering/ClusterConnectionManagerTest.class"/>
+<include name="**/jms/clustering/ClusteredConnectionFactoryTest.class"/>
+<!--
+<include name="**/jms/clustering/ClusterViewUpdateTest.class"/>
+-->
             </fileset>
          </batchtest>
       </junit>

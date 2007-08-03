@@ -126,17 +126,6 @@ public class MessagingTestCase extends ProxyAssertSupport
    	ServerManagement.getServer(server).invoke(new ObjectName(on), "removeAllMessages", null, null);
    }
    
-   protected void checkEmpty2(Queue queue) throws Exception
-   {
-   	ObjectName destObjectName =  new ObjectName("jboss.messaging.destination:service=Queue,name=" + queue.getQueueName());
-   	
-      Integer messageCount = (Integer)ServerManagement.getAttribute(destObjectName, "MessageCount");
-      
-      Integer deliveringCount = (Integer)ServerManagement.getAttribute(destObjectName, "DeliveringCount"); 
-      
-      assertEquals(0, messageCount.intValue() - deliveringCount.intValue());      
-   }
-   
    protected void checkEmpty(Queue queue) throws Exception
    {
    	ObjectName destObjectName =  new ObjectName("jboss.messaging.destination:service=Queue,name=" + queue.getQueueName());
@@ -151,8 +140,11 @@ public class MessagingTestCase extends ProxyAssertSupport
    	ObjectName destObjectName =  new ObjectName("jboss.messaging.destination:service=Queue,name=" + queue.getQueueName());
    	
       Integer messageCount = (Integer)ServerManagement.getServer(server).getAttribute(destObjectName, "MessageCount");
-       
-      assertEquals(0, messageCount.intValue());      
+      
+      if (messageCount.intValue() != 0)
+      {
+      	fail("Message count for queue " + queue.getQueueName() + " on server " + server + " is " + messageCount);
+      }
    }
    
    protected void checkEmpty(Topic topic) throws Exception
@@ -163,21 +155,21 @@ public class MessagingTestCase extends ProxyAssertSupport
       
       assertEquals(0, messageCount.intValue());      
    }
-   
-   protected void checkEmpty(Topic topic, String subName) throws Exception
-   {
-   	ObjectName destObjectName =  new ObjectName("jboss.messaging.destination:service=Topic,name=" + topic.getTopicName());
-   	
-   	List msgs = (List)ServerManagement.invoke(destObjectName, "listAllMessages", new Object[] { subName }, new String[] { "java.lang.String" });
-            
-      assertEquals(0, msgs.size());      
-   }
-   
+         
    protected void checkNoSubscriptions(Topic topic) throws Exception
    {
    	ObjectName destObjectName =  new ObjectName("jboss.messaging.destination:service=Topic,name=" + topic.getTopicName());
    	
       Integer messageCount = (Integer)ServerManagement.getAttribute(destObjectName, "AllSubscriptionsCount"); 
+      
+      assertEquals(0, messageCount.intValue());      
+   }
+   
+   protected void checkNoSubscriptions(Topic topic, int server) throws Exception
+   {
+   	ObjectName destObjectName =  new ObjectName("jboss.messaging.destination:service=Topic,name=" + topic.getTopicName());
+   	
+      Integer messageCount = (Integer)ServerManagement.getServer(server).getAttribute(destObjectName, "AllSubscriptionsCount"); 
       
       assertEquals(0, messageCount.intValue());      
    }
@@ -192,14 +184,6 @@ public class MessagingTestCase extends ProxyAssertSupport
       
       assertEquals(expected, messageCount.intValue());      
       return expected == messageCount.intValue();
-   }
-   
-   protected int getMessageCount(String queueName) throws Exception
-   {
-      ObjectName destObjectName = 
-         new ObjectName("jboss.messaging.destination:service=Queue,name=" + queueName);
-      Integer messageCount = (Integer)ServerManagement.getAttribute(destObjectName, "MessageCount");       
-      return messageCount.intValue();
    }
    
    protected void drainDestination(ConnectionFactory cf, Destination dest) throws Exception

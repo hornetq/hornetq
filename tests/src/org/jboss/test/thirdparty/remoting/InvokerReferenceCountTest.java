@@ -59,10 +59,7 @@ public class InvokerReferenceCountTest extends MessagingTestCase
       
       Queue queue = (Queue)ic.lookup("/queue/testQueue");
       
-      this.drainDestination(cf, queue);
-      
-      ic.close();
-      
+      ic.close();      
    }
 
    protected void tearDown() throws Exception

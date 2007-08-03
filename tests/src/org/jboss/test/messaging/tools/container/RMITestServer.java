@@ -102,7 +102,6 @@ public class RMITestServer extends UnicastRemoteObject implements Server
          registry = LocateRegistry.getRegistry(DEFAULT_REGISTRY_PORT);
          registry.bind(RMI_SERVER_PREFIX + serverIndex, testServer);
          registry.bind(NAMING_SERVER_PREFIX + serverIndex, testServer.getNamingDelegate());
-
       }
       catch(Exception e)
       {
@@ -115,31 +114,13 @@ public class RMITestServer extends UnicastRemoteObject implements Server
          registry.bind(NAMING_SERVER_PREFIX + serverIndex, testServer.getNamingDelegate());
       }
 
-      log.info("RMI server " + serverIndex + " bound");
-
-      // there is one crash test that needs to start the server, as an external VM...
-      // as one client will crash while another will be alive
-      boolean startAll=false;
-
-      for (int i=0;i<args.length;i++)
-      {
-         if (args[i].equals("-startAll"))
-         {
-            startAll=true;
-         }
-      }
-
-      if (startAll)
-      {
-         testServer.start("all", true);
-      }
+      log.info("RMI server " + serverIndex + " bound");     
    }
 
    // Attributes ----------------------------------------------------
 
    protected RemoteTestServer server;
    private RMINamingDelegate namingDelegate;
-   // Map<Long-ProxyNotificationListener>
    private Map proxyListeners;
 
    // Constructors --------------------------------------------------
@@ -178,16 +159,23 @@ public class RMITestServer extends UnicastRemoteObject implements Server
 
    public synchronized void kill() throws Exception
    {
-      //We deregister in another thread, them pause, then kill the VM
-   	//This ensures if the deregister hangs (which can happen if the RMI registry is dead) then it doesn't prevent
-   	//the kill
-   	//We always kill on this thread to ensure the kill completes in a timely manner which may not occur if it occurs
-   	//on its own thread due to thread scheduling differences
-      new Thread(new Deregisterer(), "Deregisterer").start();
-      
+   	log.info("kill() invoked - first deregistering from the rmi registry");
+
+      // unregister myself from the RMI registry
+
+      Registry registry = LocateRegistry.getRegistry(DEFAULT_REGISTRY_PORT);
+
+      String name = RMI_SERVER_PREFIX + server.getServerID();
+      registry.unbind(name);
+      log.info("unregistered " + name + " from registry");
+
+      // unregister myself from the RMI registry
+
+      name = NAMING_SERVER_PREFIX + server.getServerID();
+      registry.unbind(name);
+      log.info("unregistered " + name + " from registry");
+
       log.info("Killing VM!!!!");
-      
-      Thread.sleep(250);
       
       Runtime.getRuntime().halt(1);
    }
@@ -508,6 +496,11 @@ public class RMITestServer extends UnicastRemoteObject implements Server
    {
    	server.flushManagedConnectionPool();
    }
+   
+   public void resetAllSuckers() throws Exception
+   {
+   	server.resetAllSuckers();
+   }
 
    // Public --------------------------------------------------------
 
@@ -523,42 +516,4 @@ public class RMITestServer extends UnicastRemoteObject implements Server
    }
 
    // Inner classes -------------------------------------------------
-
-   public class Deregisterer implements Runnable
-   {
-      public void run()
-      {
-         log.info("Deregistering from RMI");
-
-         try
-         {
-            // unregister myself from the RMI registry
-
-            Registry registry = LocateRegistry.getRegistry(DEFAULT_REGISTRY_PORT);
-
-            String name = RMI_SERVER_PREFIX + server.getServerID();
-            registry.unbind(name);
-            log.info("unregistered " + name + " from registry");
-         }
-         catch (Throwable t)
-         {
-         	log.error("Failed to unregister", t);
-         }
-         
-         try
-         {
-            // unregister myself from the RMI registry
-
-            Registry registry = LocateRegistry.getRegistry(DEFAULT_REGISTRY_PORT);
-
-            String name = NAMING_SERVER_PREFIX + server.getServerID();
-            registry.unbind(name);
-            log.info("unregistered " + name + " from registry");
-         }
-         catch (Throwable t)
-         {
-         	log.error("Failed to unregister", t);
-         }                 
-      }
-   }
 }

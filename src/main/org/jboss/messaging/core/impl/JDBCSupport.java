@@ -155,13 +155,11 @@ public class JDBCSupport implements MessagingComponent
       if (createTablesOnStartup)
       {
          createSchema();
-      }
-      
-      log.debug(this + " started");      
+      }     
    }
+   
    public void stop() throws Exception
    {
-      log.debug(this + " stopped");
    }
    
    // Protected ----------------------------------------------------------     

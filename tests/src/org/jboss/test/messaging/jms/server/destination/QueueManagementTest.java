@@ -690,10 +690,7 @@ public class QueueManagementTest extends DestinationManagementTestBase
             conn.close();
          }
          
-         drainDestination(cf, queue);
-         
-         ServerManagement.undeployQueue("QueueListMessages");
-      
+         ServerManagement.undeployQueue("QueueListMessages");      
       }
    }
 

@@ -22,6 +22,9 @@
 
 package org.jboss.test.messaging.jms.clustering;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import javax.jms.Connection;
 
 import org.jboss.jms.client.JBossConnectionFactory;
@@ -34,7 +37,7 @@ import org.jboss.test.messaging.tools.aop.PoisonInterceptor;
  * @version <tt>$Revision$</tt>
  *          $Id$
  */
-public class ClusteredConnectionFactoryTest extends ClusteringTestBase
+public class ClusteredConnectionFactoryTest extends NewClusteringTestBase
 {
 
    // Constants ------------------------------------------------------------------------------------
@@ -53,44 +56,35 @@ public class ClusteredConnectionFactoryTest extends ClusteringTestBase
    // Public ---------------------------------------------------------------------------------------
 
    public void testGetAOPBroken() throws Exception
-   {
+   {      
+      ServerManagement.kill(2);
+      ServerManagement.kill(1);
+      ServerManagement.kill(0);
+
       try
       {
-         ServerManagement.kill(0);
-         ServerManagement.kill(1);
-         ServerManagement.kill(2);
-
-         try
-         {
-            assertNotNull(((JBossConnectionFactory)cf).getDelegate().getClientAOPStack());
-            fail ("This should try an exception as every server is down");
-         }
-         catch (MessagingNetworkFailureException e)
-         {
-            log.trace(e.toString(), e);
-         }
+         assertNotNull(((JBossConnectionFactory)cf).getDelegate().getClientAOPStack());
+         fail("This should throw an exception as every server is down");
       }
-      finally
+      catch (MessagingNetworkFailureException e)
       {
-         // need to re-start 0, it's the RMI server the other servers use
-         ServerManagement.start(0, "all", true);
+         log.trace(e.toString(), e);
       }
    }
-
+   
    public void testLoadAOP() throws Exception
    {
-
       Connection conn = null;
 
       try
       {
-         ServerManagement.kill(0);
+      	ServerManagement.kill(2);
          ServerManagement.kill(1);
-
+         
          assertNotNull(((JBossConnectionFactory)cf).getDelegate().getClientAOPStack());
 
          conn = cf.createConnection();
-         assertEquals(2, getServerId(conn));
+         assertEquals(0, getServerId(conn));
       }
       finally
       {
@@ -104,13 +98,9 @@ public class ClusteredConnectionFactoryTest extends ClusteringTestBase
             {
             }
          }
-
-         ServerManagement.kill(2);
-         // need to re-start 0, it's the RMI server the other servers use
-         ServerManagement.start(0, "all", true);
       }
    }
-   
+      
    public void testCreateConnectionOnBrokenServer() throws Exception
    {
       Connection conn = null;
@@ -120,11 +110,23 @@ public class ClusteredConnectionFactoryTest extends ClusteringTestBase
          conn = createConnectionOnServer(cf, 0);
          conn.close();
          conn = null;
-
+         
          ServerManagement.kill(1);
+         
+         conn = cf.createConnection();
+         
+         Set ids = new HashSet();
+         
+         ids.add(new Integer(getServerId(conn)));
+         
+         conn.close();
+         
          conn = cf.createConnection();
 
-         assertEquals(2, getServerId(conn));
+         ids.add(new Integer(getServerId(conn)));
+         
+         assertTrue(ids.contains(new Integer(0)));
+         assertTrue(ids.contains(new Integer(2)));
       }
       finally
       {
@@ -141,18 +143,27 @@ public class ClusteredConnectionFactoryTest extends ClusteringTestBase
 
       try
       {
-         // Poison each server with a different pointcut crash
-         ServerManagement.poisonTheServer(1, PoisonInterceptor.CF_CREATE_CONNECTION);
-
          conn = createConnectionOnServer(cf, 0);
          conn.close();
-         conn = null;
+         
+         // Poison the server
+         ServerManagement.poisonTheServer(1, PoisonInterceptor.CF_CREATE_CONNECTION);
 
          // this should break on server1
-         log.info("creating connection on server 1");
          conn = cf.createConnection();
 
-         assertEquals(2, getServerId(conn));
+         Set ids = new HashSet();
+         
+         ids.add(new Integer(getServerId(conn)));
+         
+         conn.close();
+         
+         conn = cf.createConnection();
+
+         ids.add(new Integer(getServerId(conn)));
+         
+         assertTrue(ids.contains(new Integer(0)));
+         assertTrue(ids.contains(new Integer(2)));
       }
       finally
       {
@@ -177,27 +188,9 @@ public class ClusteredConnectionFactoryTest extends ClusteringTestBase
          conn = cf.createConnection();
 
          assertEquals(0, getServerId(conn));
-      }
-      finally
-      {
-         if (conn != null)
-         {
-            conn.close();
-         }
-      }
-   }
-
-   public void testFailureOnGetBlockId() throws Exception
-   {
-      Connection conn = null;
-
-      try
-      {
-         conn = createConnectionOnServer(cf, 0);
+         
          conn.close();
-
-         ServerManagement.kill(1);
-         ServerManagement.kill(2);
+         
          conn = cf.createConnection();
 
          assertEquals(0, getServerId(conn));
@@ -211,22 +204,10 @@ public class ClusteredConnectionFactoryTest extends ClusteringTestBase
       }
    }
 
+
    // Package protected ----------------------------------------------------------------------------
 
    // Protected ------------------------------------------------------------------------------------
-
-   protected void setUp() throws Exception
-   {
-      nodeCount = 3;
-      super.setUp();
-
-      log.debug("setup done");
-   }
-
-   protected void tearDown() throws Exception
-   {
-      super.tearDown();
-   }
 
    // Private --------------------------------------------------------------------------------------
 

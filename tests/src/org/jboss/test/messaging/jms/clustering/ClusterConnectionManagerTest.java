@@ -23,14 +23,13 @@
 package org.jboss.test.messaging.jms.clustering;
 
 import javax.jms.Connection;
-import javax.jms.ConnectionFactory;
+import javax.jms.DeliveryMode;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.management.ObjectName;
-import javax.naming.InitialContext;
 
 import org.jboss.test.messaging.tools.ServerManagement;
 
@@ -46,7 +45,7 @@ import org.jboss.test.messaging.tools.ServerManagement;
  * $Id: $
  *
  */
-public class ClusterConnectionManagerTest extends ClusteringTestBase
+public class ClusterConnectionManagerTest extends NewClusteringTestBase
 {
 
    // Constants ------------------------------------------------------------------------------------
@@ -285,15 +284,16 @@ public class ClusterConnectionManagerTest extends ClusteringTestBase
 
    protected void setUp() throws Exception
    {
-      nodeCount = 2;
-      
       super.setUp();
 
-      log.debug("setup done");
-      
-      //undeploy CF
-      
-      undeployAll();   	
+      undeployAll();
+   }
+   
+   protected void tearDown() throws Exception
+   {
+   	super.tearDown();
+   	
+   	undeployAll();
    }
 
    private void undeployAll() throws Exception
@@ -325,13 +325,6 @@ public class ClusterConnectionManagerTest extends ClusteringTestBase
       {}
    }
    
-   protected void tearDown() throws Exception
-   {
-   	undeployAll();
-
-   	super.tearDown();
-   }
-
    // Private --------------------------------------------------------------------------------------
       
    private void deployCFRemote() throws Exception
@@ -354,27 +347,19 @@ public class ClusterConnectionManagerTest extends ClusteringTestBase
    
    private void deployLocal() throws Exception
    {
-   	 ServerManagement.deployQueue("suckQueue", 1);
+   	 ServerManagement.deployQueue("suckQueue", 0);
    }
    
    private void deployRemote() throws Exception
    {
-   	 ServerManagement.deployQueue("suckQueue", 0);
+   	 ServerManagement.deployQueue("suckQueue", 1);   	 
    }
    
    private void suck() throws Exception
-   {
-      InitialContext ic0 = new InitialContext(ServerManagement.getJNDIEnvironment(0));
+   {      
+      Queue queue0 = (Queue)ic[0].lookup("/queue/suckQueue");
       
-      Queue queue0 = (Queue)ic0.lookup("/queue/suckQueue");
-      
-      InitialContext ic1 = new InitialContext(ServerManagement.getJNDIEnvironment(1));
-      
-      Queue queue1 = (Queue)ic1.lookup("/queue/suckQueue");
-      
-      ConnectionFactory cf0 = (ConnectionFactory)ic0.lookup("/ConnectionFactory");
-      
-      ConnectionFactory cf1 = (ConnectionFactory)ic1.lookup("/ConnectionFactory");
+      Queue queue1 = (Queue)ic[1].lookup("/queue/suckQueue");
       
       Connection conn0 = null;
       
@@ -382,9 +367,9 @@ public class ClusterConnectionManagerTest extends ClusteringTestBase
       
       try
       {
-      	conn0 = this.createConnectionOnServer(cf0, 0);
+      	conn0 = this.createConnectionOnServer(cf, 0);
       	
-      	assertEquals(0, this.getServerId(conn0));
+      	assertEquals(0, getServerId(conn0));
       	
       	//Send some messages on node 0
       	
@@ -393,6 +378,13 @@ public class ClusterConnectionManagerTest extends ClusteringTestBase
       	Session sess0 = conn0.createSession(false, Session.AUTO_ACKNOWLEDGE);
       	
       	MessageProducer prod = sess0.createProducer(queue0);
+      	
+      	//Note! The message must be sent as non persistent for this test
+      	//Since we have not deployed suckQueue on all nodes of the cluster
+      	//this would cause persistent messages to not be delivered since they would
+      	//fail to replicate to their backup (since suckQueue is not deployed on it)
+      	
+      	prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
       	
       	for (int i = 0; i < NUM_MESSAGES; i++)
       	{
@@ -403,9 +395,9 @@ public class ClusterConnectionManagerTest extends ClusteringTestBase
       	
       	//Consume them on node 1
       	
-      	conn1 = this.createConnectionOnServer(cf1, 1);
+      	conn1 = this.createConnectionOnServer(cf, 1);
       	
-      	assertEquals(1, this.getServerId(conn1));
+      	assertEquals(1, getServerId(conn1));
       	
       	Session sess1 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
       	

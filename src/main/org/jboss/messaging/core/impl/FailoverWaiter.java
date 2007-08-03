@@ -173,5 +173,20 @@ public class FailoverWaiter implements ClusterNotificationListener
 				failoverStatusLock.notifyAll();
 			}
 		}
+		else if (notification.type == ClusterNotification.TYPE_NODE_JOIN)
+		{
+			synchronized (failoverStatusLock)
+			{
+				//A node that we previously failed over for has been restarted so we wipe the failover status
+				//It is vital that we do this otherwise if the resurrected node subsequently fails again
+				//when connections try to reconnect they will think that failover is already complete
+				if (notification.nodeID == failedOverFor)
+				{
+					failedOverFor = -1;
+					
+					failoverStatusLock.notifyAll();
+				}
+			}
+		}
 	}	
 }

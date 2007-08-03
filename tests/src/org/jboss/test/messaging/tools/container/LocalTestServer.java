@@ -896,6 +896,11 @@ public class LocalTestServer implements Server
    {
    	sc.flushManagedConnectionPool();
    }
+   
+   public void resetAllSuckers() throws Exception
+   {
+   	getServerPeer().resetAllSuckers();
+   }
 
    // Public ---------------------------------------------------------------------------------------
 

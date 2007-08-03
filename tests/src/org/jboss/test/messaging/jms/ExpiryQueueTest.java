@@ -168,12 +168,6 @@ public class ExpiryQueueTest extends JMSTestCase
          
          Queue overrideExpiry = (Queue)ic.lookup("/queue/OverrideExpiry");
          
-         drainDestination(cf, testQueue);
-               
-         drainDestination(cf, defaultExpiry);
-               
-         drainDestination(cf, overrideExpiry);
-                     
          conn = cf.createConnection();
          
          {         
@@ -300,8 +294,7 @@ public class ExpiryQueueTest extends JMSTestCase
       Connection conn = null;
       
       try
-      {    
-      
+      {          
          ServerManagement.deployQueue("ExpiryQueue");
          
          String defaultExpiryObjectName = "jboss.messaging.destination:service=Queue,name=ExpiryQueue";
@@ -312,8 +305,6 @@ public class ExpiryQueueTest extends JMSTestCase
           
          Queue defaultExpiry = (Queue)ic.lookup("/queue/ExpiryQueue");
          
-         drainDestination(cf, defaultExpiry);                   
-        
          conn = cf.createConnection();
          
          conn.setClientID("wib1");
@@ -453,8 +444,6 @@ public class ExpiryQueueTest extends JMSTestCase
    
          Queue expiryQueue = (Queue)ic.lookup("/queue/ExpiryQueue");
          
-         drainDestination(cf, expiryQueue);
-          
          final int NUM_MESSAGES = 5;
 
          conn = cf.createConnection();
@@ -536,8 +525,6 @@ public class ExpiryQueueTest extends JMSTestCase
    
          Queue expiryQueue = (Queue)ic.lookup("/queue/ExpiryQueue");
          
-         drainDestination(cf, expiryQueue);
-          
          final int NUM_MESSAGES = 5;
 
          conn = cf.createConnection();

@@ -1042,6 +1042,11 @@ public class ServerPeer extends ServiceMBeanSupport
 
    // Public ---------------------------------------------------------------------------------------
    
+   public void resetAllSuckers()
+   {
+   	clusterConnectionManager.resetAllSuckers();
+   }
+   
    public byte[] getClientAOPStack()
    {
       return clientAOPStack;

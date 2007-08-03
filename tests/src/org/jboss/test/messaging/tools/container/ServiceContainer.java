@@ -1681,9 +1681,7 @@ public class ServiceContainer
          connFactoryObjectNames.add(on);
       }
    }
-
-
-
+   
    private void parseConfig(String config)
    {
       config = config.toLowerCase();

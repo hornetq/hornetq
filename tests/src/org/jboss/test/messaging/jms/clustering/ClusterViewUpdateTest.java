@@ -38,7 +38,7 @@ import org.jboss.test.messaging.tools.ServerManagement;
  *
  * $Id$
  */
-public class ClusterViewUpdateTest extends ClusteringTestBase
+public class ClusterViewUpdateTest extends NewClusteringTestBase
 {
 
    // Constants ------------------------------------------------------------------------------------
@@ -56,7 +56,53 @@ public class ClusterViewUpdateTest extends ClusteringTestBase
 
    // Public ---------------------------------------------------------------------------------------
 
-   public void testUpdateConnectionFactory() throws Exception
+   public void testUpdateConnectionFactoryOnKill() throws Exception
+   {
+      Connection conn = createConnectionOnServer(cf, 0);
+
+      JBossConnectionFactory jbcf = (JBossConnectionFactory)cf;
+
+      ClientClusteredConnectionFactoryDelegate cfDelegate =
+         (ClientClusteredConnectionFactoryDelegate)jbcf.getDelegate();
+
+      assertEquals(4, cfDelegate.getDelegates().length);
+
+      Connection conn1 = cf.createConnection();
+
+      assertEquals(1, getServerId(conn1));
+
+      log.info("*** killing server");
+      ServerManagement.kill(1);
+      log.info("killed server");
+
+      log.info("sleeping 5 secs ...");
+      Thread.sleep(5000);
+
+      // first part of the test, verifies if the CF was updated
+      assertEquals(2, cfDelegate.getDelegates().length);
+      conn.close();
+
+      log.info("sleeping 5 secs ...");
+      Thread.sleep(5000);
+
+      // Second part, verifies a possible race condition on failoverMap and handleFilover
+
+      log.info("ServerId=" + getServerId(conn1));
+      assertTrue(1 != getServerId(conn1));
+     
+      conn1.close();
+      
+      //restart
+      ServerManagement.start(1, "all");
+      
+      Thread.sleep(5000);
+      
+      assertEquals(3, cfDelegate.getDelegates().length);
+      
+      log.info("Done!!");
+   }
+   
+   public void testUpdateConnectionFactoryOnStop() throws Exception
    {
       Connection conn = createConnectionOnServer(cf, 0);
 
@@ -89,9 +135,15 @@ public class ClusterViewUpdateTest extends ClusteringTestBase
 
       log.info("ServerId=" + getServerId(conn1));
       assertTrue(1 != getServerId(conn1));
-
-      //Session sess = conn1.createSession(true, Session.SESSION_TRANSACTED);
+     
       conn1.close();
+      
+      //restart
+      ServerManagement.start(1, "all");
+      
+      Thread.sleep(5000);
+      
+      assertEquals(3, cfDelegate.getDelegates().length);
       
       log.info("Done!!");
    }
@@ -198,19 +250,6 @@ public class ClusterViewUpdateTest extends ClusteringTestBase
    // Package protected ----------------------------------------------------------------------------
 
    // Protected ------------------------------------------------------------------------------------
-
-   protected void setUp() throws Exception
-   {
-      config = "all+http";
-      nodeCount = 3;
-      super.setUp();
-   }
-
-   protected void tearDown() throws Exception
-   {
-      super.tearDown();
-      config="all";
-   }
 
    // Private --------------------------------------------------------------------------------------
 
