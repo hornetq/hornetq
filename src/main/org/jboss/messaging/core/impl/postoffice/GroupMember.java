@@ -180,7 +180,7 @@ public class GroupMember
       			throw new IllegalStateException("Timed out waiting for first view to arrive");
       		}
       	}
-	      	      
+      	
 	   	//Now we can be considered started
 	   	started = true;	   	
    	}

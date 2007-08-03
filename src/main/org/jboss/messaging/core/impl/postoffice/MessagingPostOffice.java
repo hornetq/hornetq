@@ -432,50 +432,15 @@ public class MessagingPostOffice extends JDBCSupport
    		waitForBindUnbind(binding.queue.getName(), true);
    	}
    	
-   	if (added && !firstNode && supportsFailover && clustered && binding.queue.isClustered())
+   	if (added)
    	{
-   		//reverse lookup in failover map
-   		
-   		Integer masterNodeID = getMasterForFailoverNodeID(thisNodeID);
-   		   		   		
-   		if (masterNodeID != null)
-   		{
-   			Map nameMap = (Map)nameMaps.get(masterNodeID);
-   			
-   			if (nameMap != null)
-   			{
-   				Binding b = (Binding)nameMap.get(binding.queue.getName());
-   				
-   				if (b != null)
-   				{
-   					//Already deployed on master node - tell the master to send us the deliveries
-   					//This copes with the case when queues were deployed on the failover before being deployed on the master
-   					
-   					if (trace) { log.trace("Telling master to send us deliveries"); }
-   					
-   					PostOfficeAddressInfo info = (PostOfficeAddressInfo)nodeIDAddressMap.get(new Integer(thisNodeID));
-   		   		
-   		   		Address replyAddress = info.getControlChannelAddress();
-   					
-   					ClusterRequest request = new GetReplicatedDeliveriesRequest(binding.queue.getName(), replyAddress);
-   					
-   				   info = (PostOfficeAddressInfo)nodeIDAddressMap.get(masterNodeID);
-   				   			   
-   				   Address address = info.getControlChannelAddress();
-   				   
-   				   log.info("Sending the message to node " + masterNodeID + " with address " + address);
-   			   	   				   	
-   				   if (address != null)
-   				   {	   
-   				   	groupMember.unicastControl(request, address, false);
-   				   }
-   				}
-   			}
-   		}
+   		requestDeliveries(binding.queue);
    	}
    	
    	return added;
    }
+   
+   
           
    public Binding removeBinding(String queueName, boolean allNodes) throws Throwable
    {
@@ -1608,6 +1573,53 @@ public class MessagingPostOffice extends JDBCSupport
    	replyExecutor.shutdownNow();   	
    }
    
+   private void requestDeliveries(Queue queue) throws Exception
+   {
+   	if (!firstNode && supportsFailover && clustered && queue.isClustered())
+   	{
+	   	// reverse lookup in failover map
+			
+			Integer masterNodeID = getMasterForFailoverNodeID(thisNodeID);
+			   		   		
+			if (masterNodeID != null)
+			{
+				Map nameMap = (Map)nameMaps.get(masterNodeID);
+				
+				if (nameMap != null)
+				{
+					Binding b = (Binding)nameMap.get(queue.getName());
+					
+					if (b != null)
+					{
+						//Already deployed on master node - tell the master to send us the deliveries
+						//This copes with the case when queues were deployed on the failover before being deployed on the master
+						
+						if (trace) { log.trace("Telling master to send us deliveries"); }
+						
+						dumpFailoverMap(this.failoverMap);
+						
+						PostOfficeAddressInfo info = (PostOfficeAddressInfo)nodeIDAddressMap.get(new Integer(thisNodeID));
+			   		
+			   		Address replyAddress = info.getControlChannelAddress();
+						
+						ClusterRequest request = new GetReplicatedDeliveriesRequest(queue.getName(), replyAddress);
+						
+					   info = (PostOfficeAddressInfo)nodeIDAddressMap.get(masterNodeID);
+					   			   
+					   Address address = info.getControlChannelAddress();
+					   
+					   log.info("Sending the message to node " + masterNodeID + " with address " + address);
+				   	   				   	
+					   if (address != null)
+					   {	   
+					   	groupMember.unicastControl(request, address, false);
+					   }
+					}
+				}
+			}
+   	}
+   }
+   
    private Integer getMasterForFailoverNodeID(long failoverNodeID)
    {
    	//reverse lookup of master node id given failover node id
@@ -2455,6 +2467,8 @@ public class MessagingPostOffice extends JDBCSupport
 
             groupMember.multicastControl(request, false);         
          }      	
+         
+         requestDeliveries(queue);
       }
    }
     
