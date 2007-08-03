@@ -231,8 +231,9 @@ public class MessageSucker implements MessageListener
 				consuming = false;
 			}
 		}
-		catch (JMSException e)
+		catch (Exception e)
 		{
+			//We don't want to propagate up since that might cause failover to abort
 			log.error("Failed to change rate", e);
 		}
 	}
