@@ -31,9 +31,6 @@ import org.jboss.messaging.core.contract.ClusterNotificationListener;
 import org.jboss.messaging.core.contract.ClusterNotifier;
 import org.jboss.messaging.util.ConcurrentReaderHashSet;
 
-import EDU.oswego.cs.dl.util.concurrent.Callable;
-import EDU.oswego.cs.dl.util.concurrent.TimedCallable;
-
 
 /**
  * 
@@ -47,8 +44,6 @@ public class DefaultClusterNotifier implements ClusterNotifier
 {
    private static final Logger log = Logger.getLogger(DefaultClusterNotifier.class);
    
-   private static final long NOTIFICATION_TIMEOUT = 3000;
-	
 	private Set listeners;
 	
 	public DefaultClusterNotifier()
@@ -66,7 +61,7 @@ public class DefaultClusterNotifier implements ClusterNotifier
 		listeners.add(listener);
 	}
 
-	public void sendNotification(final ClusterNotification notification)
+	public void sendNotification(ClusterNotification notification)
 	{
 		Iterator iter = listeners.iterator();
 		
@@ -75,23 +70,6 @@ public class DefaultClusterNotifier implements ClusterNotifier
 			final ClusterNotificationListener listener = (ClusterNotificationListener)iter.next();
 			
 			listener.notify(notification);
-			
-			//We used a timed callable to make sure the call completes in a reasonable time
-			//This is because there have been issues with remoting hanging when closing message suckers
-			//and we don't want this to cause the entire failover process to hang
-			
-			Callable callable = new Callable() { public Object call() { listener.notify(notification); return null; } };
-			
-			Callable timedCallable = new TimedCallable(callable, NOTIFICATION_TIMEOUT);
-			
-			try
-			{
-				timedCallable.call();
-			}
-			catch (Exception e)
-			{
-				log.error("Failed to make notification", e);
-			}
 		}
 	}
 

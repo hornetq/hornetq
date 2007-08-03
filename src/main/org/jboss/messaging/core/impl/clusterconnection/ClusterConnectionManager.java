@@ -29,6 +29,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import javax.jms.JMSException;
+
 import org.jboss.jms.client.JBossConnection;
 import org.jboss.jms.client.JBossConnectionFactory;
 import org.jboss.jms.client.delegate.ClientConnectionFactoryDelegate;
@@ -39,6 +41,9 @@ import org.jboss.messaging.core.contract.ClusterNotificationListener;
 import org.jboss.messaging.core.contract.PostOffice;
 import org.jboss.messaging.core.contract.Queue;
 import org.jboss.messaging.core.contract.Replicator;
+
+import EDU.oswego.cs.dl.util.concurrent.Callable;
+import EDU.oswego.cs.dl.util.concurrent.TimedCallable;
 
 /**
  * 
@@ -57,7 +62,9 @@ import org.jboss.messaging.core.contract.Replicator;
 public class ClusterConnectionManager implements ClusterNotificationListener
 {
    private static final Logger log = Logger.getLogger(ClusterConnectionManager.class);
-	
+   
+   private static final long CLOSE_TIMEOUT = 2000;
+		
    private boolean trace = log.isTraceEnabled();	
    
 	private Map connections;
@@ -634,15 +641,34 @@ public class ClusterConnectionManager implements ClusterNotificationListener
 			
 			suckers.clear();
 			
+			
+			//Note we use a timed callable since remoting has a habit of hanging on attempting to close
+			//We do not want this to hang the system - especially failover
+			
+			Callable callable = new Callable() { public Object call()
+			{
+				try
+				{
+					connection.close();
+				}
+				catch (JMSException ignore)
+				{					
+				}
+				return null;
+		    } };
+			
+			Callable timedCallable = new TimedCallable(callable, CLOSE_TIMEOUT);
+			
 			try
 			{
-				connection.close();
+				timedCallable.call();
 			}
 			catch (Throwable t)
 			{
-				//Ignore - the other server might have closed so this is ok
+				//Ignore - the server might have already closed - so this is ok
 			}
 			
+
 			connection = null;
 			
 			started = false;
