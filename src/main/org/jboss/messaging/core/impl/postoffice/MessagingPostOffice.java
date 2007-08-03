@@ -460,9 +460,11 @@ public class MessagingPostOffice extends JDBCSupport
    					ClusterRequest request = new GetReplicatedDeliveriesRequest(binding.queue.getName(), replyAddress);
    					
    				   info = (PostOfficeAddressInfo)nodeIDAddressMap.get(masterNodeID);
-   				   
+   				   			   
    				   Address address = info.getControlChannelAddress();
-   				   	
+   				   
+   				   log.info("Sending the message to node " + masterNodeID + " with address " + address);
+   			   	   				   	
    				   if (address != null)
    				   {	   
    				   	groupMember.unicastControl(request, address, false);

@@ -722,7 +722,7 @@ public class ChangeFailoverNodeTest extends NewClusteringTestBase
       	//Don't ack
       	
       	//We stop the failover node for node 1
-      	int failoverNodeId = this.getFailoverNodeForNode(factory, 1);
+      	int failoverNodeId = this.getFailoverNodeForNode(factory, 1);      	      	
       	
       	int recoveryMapSize = ServerManagement.getServer(failoverNodeId).getRecoveryMapSize(queueName);
       	assertEquals(0, recoveryMapSize);
