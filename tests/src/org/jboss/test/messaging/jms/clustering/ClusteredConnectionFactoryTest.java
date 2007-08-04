@@ -22,9 +22,6 @@
 
 package org.jboss.test.messaging.jms.clustering;
 
-import java.util.HashSet;
-import java.util.Set;
-
 import javax.jms.Connection;
 
 import org.jboss.jms.client.JBossConnectionFactory;
@@ -55,9 +52,16 @@ public class ClusteredConnectionFactoryTest extends NewClusteringTestBase
 
    // Public ---------------------------------------------------------------------------------------
 
+   
+   protected void setUp() throws Exception
+   {
+   	nodeCount = 2;
+   	
+   	super.setUp();
+   }
+   
    public void testGetAOPBroken() throws Exception
    {      
-      ServerManagement.kill(2);
       ServerManagement.kill(1);
       ServerManagement.kill(0);
 
@@ -78,7 +82,6 @@ public class ClusteredConnectionFactoryTest extends NewClusteringTestBase
 
       try
       {
-      	ServerManagement.kill(2);
          ServerManagement.kill(1);
          
          assertNotNull(((JBossConnectionFactory)cf).getDelegate().getClientAOPStack());
@@ -115,18 +118,15 @@ public class ClusteredConnectionFactoryTest extends NewClusteringTestBase
          
          conn = cf.createConnection();
          
-         Set ids = new HashSet();
-         
-         ids.add(new Integer(getServerId(conn)));
+         assertEquals(0, getServerId(conn));
          
          conn.close();
          
          conn = cf.createConnection();
-
-         ids.add(new Integer(getServerId(conn)));
          
-         assertTrue(ids.contains(new Integer(0)));
-         assertTrue(ids.contains(new Integer(2)));
+         assertEquals(0, getServerId(conn));
+         
+         conn.close();
       }
       finally
       {
@@ -151,19 +151,16 @@ public class ClusteredConnectionFactoryTest extends NewClusteringTestBase
 
          // this should break on server1
          conn = cf.createConnection();
-
-         Set ids = new HashSet();
          
-         ids.add(new Integer(getServerId(conn)));
+         assertEquals(0, getServerId(conn));
          
          conn.close();
          
          conn = cf.createConnection();
-
-         ids.add(new Integer(getServerId(conn)));
          
-         assertTrue(ids.contains(new Integer(0)));
-         assertTrue(ids.contains(new Integer(2)));
+         assertEquals(0, getServerId(conn));
+         
+         conn.close();
       }
       finally
       {
@@ -173,37 +170,6 @@ public class ClusteredConnectionFactoryTest extends NewClusteringTestBase
          }
       }
    }
-
-   public void testCreateConnectionTwoServersBroken() throws Exception
-   {
-      Connection conn = null;
-
-      try
-      {
-         conn = createConnectionOnServer(cf, 0);
-         conn.close();
-
-         ServerManagement.kill(1);
-         ServerManagement.kill(2);
-         conn = cf.createConnection();
-
-         assertEquals(0, getServerId(conn));
-         
-         conn.close();
-         
-         conn = cf.createConnection();
-
-         assertEquals(0, getServerId(conn));
-      }
-      finally
-      {
-         if (conn != null)
-         {
-            conn.close();
-         }
-      }
-   }
-
 
    // Package protected ----------------------------------------------------------------------------
 

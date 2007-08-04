@@ -28,7 +28,7 @@ import EDU.oswego.cs.dl.util.concurrent.Latch;
  *
  * $Id: FailoverTest.java 2685 2007-05-15 07:56:12Z timfox $
  */
-public class DisableLoadBalancingAndFailoverTest extends ClusteringTestBase
+public class DisableLoadBalancingAndFailoverTest extends NewClusteringTestBase
 {
    // Constants ------------------------------------------------------------------------------------
 

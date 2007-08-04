@@ -72,7 +72,7 @@ public class NewClusteringTestBase extends MessagingTestCase
 
    protected static JBossConnectionFactory cf;
    
-   protected static int nodeCount = 4;
+   protected int nodeCount = 4;
 
    // Constructors ---------------------------------------------------------------------------------
 
@@ -119,6 +119,48 @@ public class NewClusteringTestBase extends MessagingTestCase
    protected void setUp() throws Exception
    {
       super.setUp();            
+      
+      log.info("node count is " + nodeCount);
+      
+      if (ic != null && ic.length < nodeCount)
+      {
+      	log.info("Node count has increased from " + ic.length + " to " + nodeCount);
+      	//Node count has increased
+      	InitialContext[] oldIc = ic;
+      	ic = new InitialContext[nodeCount];
+      	Queue[] oldQueue = queue;
+      	queue = new Queue[nodeCount];
+      	Topic[] oldTopic = topic;
+      	topic = new Topic[nodeCount];
+      	for (int i = 0; i < oldIc.length; i++)
+      	{
+      		ic[i] = oldIc[i];
+      		queue[i] = oldQueue[i];
+      		topic[i] = oldTopic[i];
+      	}
+      }
+      else if (ic != null && ic.length > nodeCount)
+      {
+      	log.info("Node count has decreased from " + ic.length + " to " + nodeCount);
+      	//Node count has decreased
+      	InitialContext[] oldIc = ic;
+      	ic = new InitialContext[nodeCount];
+      	Queue[] oldQueue = queue;
+      	queue = new Queue[nodeCount];
+      	Topic[] oldTopic = topic;
+      	topic = new Topic[nodeCount];
+      	for (int i = 0; i < nodeCount; i++)
+      	{
+      		ic[i] = oldIc[i];
+      		queue[i] = oldQueue[i];
+      		topic[i] = oldTopic[i];
+      	}
+      	
+      	for (int i = nodeCount; i < ic.length; i++)
+      	{
+      		ServerManagement.kill(i);
+      	}
+      }
       
       for (int i = 0; i < nodeCount; i++)
       {

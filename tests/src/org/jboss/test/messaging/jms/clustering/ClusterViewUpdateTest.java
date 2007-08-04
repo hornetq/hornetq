@@ -56,6 +56,14 @@ public class ClusterViewUpdateTest extends NewClusteringTestBase
 
    // Public ---------------------------------------------------------------------------------------
 
+   protected void setUp() throws Exception
+   {
+   	nodeCount = 2;
+   	
+   	super.setUp();
+   }
+   
+   
    public void testUpdateConnectionFactoryOnKill() throws Exception
    {
       Connection conn = createConnectionOnServer(cf, 0);
@@ -65,21 +73,19 @@ public class ClusterViewUpdateTest extends NewClusteringTestBase
       ClientClusteredConnectionFactoryDelegate cfDelegate =
          (ClientClusteredConnectionFactoryDelegate)jbcf.getDelegate();
 
-      assertEquals(4, cfDelegate.getDelegates().length);
+      assertEquals(2, cfDelegate.getDelegates().length);
 
       Connection conn1 = cf.createConnection();
 
       assertEquals(1, getServerId(conn1));
 
-      log.info("*** killing server");
       ServerManagement.kill(1);
-      log.info("killed server");
 
       log.info("sleeping 5 secs ...");
       Thread.sleep(5000);
 
       // first part of the test, verifies if the CF was updated
-      assertEquals(2, cfDelegate.getDelegates().length);
+      assertEquals(1, cfDelegate.getDelegates().length);
       conn.close();
 
       log.info("sleeping 5 secs ...");
@@ -88,7 +94,7 @@ public class ClusterViewUpdateTest extends NewClusteringTestBase
       // Second part, verifies a possible race condition on failoverMap and handleFilover
 
       log.info("ServerId=" + getServerId(conn1));
-      assertTrue(1 != getServerId(conn1));
+      assertEquals(0, getServerId(conn1));
      
       conn1.close();
       
@@ -97,9 +103,9 @@ public class ClusterViewUpdateTest extends NewClusteringTestBase
       
       Thread.sleep(5000);
       
-      assertEquals(3, cfDelegate.getDelegates().length);
+      assertEquals(2, cfDelegate.getDelegates().length);
       
-      log.info("Done!!");
+      ServerManagement.stop(1);
    }
    
    public void testUpdateConnectionFactoryOnStop() throws Exception
@@ -111,30 +117,26 @@ public class ClusterViewUpdateTest extends NewClusteringTestBase
       ClientClusteredConnectionFactoryDelegate cfDelegate =
          (ClientClusteredConnectionFactoryDelegate)jbcf.getDelegate();
 
-      assertEquals(3, cfDelegate.getDelegates().length);
+      assertEquals(2, cfDelegate.getDelegates().length);
 
       Connection conn1 = cf.createConnection();
 
       assertEquals(1, getServerId(conn1));
 
-      log.info("*** killing server");
       ServerManagement.kill(1);
-      log.info("killed server");
 
       log.info("sleeping 5 secs ...");
       Thread.sleep(5000);
 
       // first part of the test, verifies if the CF was updated
-      assertEquals(2, cfDelegate.getDelegates().length);
+      assertEquals(1, cfDelegate.getDelegates().length);
       conn.close();
 
       log.info("sleeping 5 secs ...");
       Thread.sleep(5000);
 
       // Second part, verifies a possible race condition on failoverMap and handleFilover
-
-      log.info("ServerId=" + getServerId(conn1));
-      assertTrue(1 != getServerId(conn1));
+      assertEquals(0, getServerId(conn1));
      
       conn1.close();
       
@@ -143,9 +145,7 @@ public class ClusterViewUpdateTest extends NewClusteringTestBase
       
       Thread.sleep(5000);
       
-      assertEquals(3, cfDelegate.getDelegates().length);
-      
-      log.info("Done!!");
+      assertEquals(2, cfDelegate.getDelegates().length);
    }
 
    public void testUpdateMixedConnectionFactory() throws Exception
@@ -156,7 +156,7 @@ public class ClusterViewUpdateTest extends NewClusteringTestBase
       ClientClusteredConnectionFactoryDelegate cfDelegate =
          (ClientClusteredConnectionFactoryDelegate)jbcf.getDelegate();
 
-      assertEquals(3, cfDelegate.getDelegates().length);
+      assertEquals(2, cfDelegate.getDelegates().length);
 
       ConnectionFactory httpCF = (ConnectionFactory)ic[0].lookup("/HTTPConnectionFactory");
       JBossConnectionFactory jbhttpCF = (JBossConnectionFactory) httpCF;
@@ -166,8 +166,7 @@ public class ClusterViewUpdateTest extends NewClusteringTestBase
       ClientClusteredConnectionFactoryDelegate httpcfDelegate =
          (ClientClusteredConnectionFactoryDelegate)jbhttpCF.getDelegate();
 
-      assertEquals(3, httpcfDelegate.getDelegates().length);
-
+      assertEquals(2, httpcfDelegate.getDelegates().length);
 
       validateCFs(cfDelegate, httpcfDelegate);
 
@@ -183,8 +182,8 @@ public class ClusterViewUpdateTest extends NewClusteringTestBase
       Thread.sleep(5000);
 
       // first part of the test, verifies if the CF was updated
-      assertEquals(2, cfDelegate.getDelegates().length);
-      assertEquals(2, httpcfDelegate.getDelegates().length);
+      assertEquals(1, cfDelegate.getDelegates().length);
+      assertEquals(1, httpcfDelegate.getDelegates().length);
 
       validateCFs(cfDelegate, httpcfDelegate);
 
@@ -197,7 +196,8 @@ public class ClusterViewUpdateTest extends NewClusteringTestBase
       // Second part, verifies a possible racing condition on failoverMap and handleFilover
 
       log.info("ServerId=" + getServerId(conn1));
-      assertTrue(1 != getServerId(conn1));
+      assertEquals(0, getServerId(conn1));
+      assertEquals(0, getServerId(httpConn1));
 
       conn1.close();
       httpConn.close();
@@ -214,7 +214,7 @@ public class ClusterViewUpdateTest extends NewClusteringTestBase
       JBossConnectionFactory jbcf = (JBossConnectionFactory) cf;
       ClientClusteredConnectionFactoryDelegate cfDelegate =
          (ClientClusteredConnectionFactoryDelegate) jbcf.getDelegate();
-      assertEquals(3, cfDelegate.getDelegates().length);
+      assertEquals(2, cfDelegate.getDelegates().length);
 
       Connection conn1 = cf.createConnection();
 
@@ -222,7 +222,7 @@ public class ClusterViewUpdateTest extends NewClusteringTestBase
 
       assertEquals(1, getServerId(conn1));
       
-      assertEquals(2, getServerId(conn2));
+      assertEquals(0, getServerId(conn2));
 
       ConnectionState state = this.getConnectionState(conn1);
 
@@ -237,10 +237,10 @@ public class ClusterViewUpdateTest extends NewClusteringTestBase
       conn1.createSession(true, Session.SESSION_TRANSACTED);
 
       // first part of the test, verifies if the CF was updated
-      assertEquals(2, cfDelegate.getDelegates().length);
+      assertEquals(1, cfDelegate.getDelegates().length);
 
-      assertTrue(1 != getServerId(conn1));
-
+      assertEquals(0, getServerId(conn1));
+      
       conn.close();
       conn1.close();
       conn2.close();
