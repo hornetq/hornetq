@@ -188,8 +188,6 @@ public class RecoverDeliveriesTest extends NewClusteringTestBase
       		
       	int failoverNodeId = this.getFailoverNodeForNode(cf, 1);
       	
-      	assertEquals(2, failoverNodeId);
-      	
       	int recoveryMapSize = ServerManagement.getServer(failoverNodeId).getRecoveryMapSize(timeoutQueue.getQueueName());
       	assertEquals(0, recoveryMapSize);
       	Map recoveryArea = ServerManagement.getServer(failoverNodeId).getRecoveryArea(timeoutQueue.getQueueName());
