@@ -32,7 +32,7 @@ import org.jboss.test.messaging.tools.aop.PoisonInterceptor;
  *
  * $Id$
  */
-public class FailoverTest extends ClusteringTestBase
+public class FailoverTest extends NewClusteringTestBase
 {
    // Constants ------------------------------------------------------------------------------------
 
@@ -55,20 +55,14 @@ public class FailoverTest extends ClusteringTestBase
 
       try
       {
-         conn = createConnectionOnServer1();
+         conn = createConnectionOnServer(cf, 1);
          conn.start();
 
          // register a failover listener
          SimpleFailoverListener failoverListener = new SimpleFailoverListener();
          ((JBossConnection)conn).registerFailoverListener(failoverListener);
 
-         log.debug("killing node 1 ....");
-
          ServerManagement.kill(1);
-
-         log.info("########");
-         log.info("######## KILLED NODE 1");
-         log.info("########");
 
          // wait for the client-side failover to complete
 
@@ -85,11 +79,7 @@ public class FailoverTest extends ClusteringTestBase
             }
          }
 
-         // failover complete
-         log.info("failover completed");
-
          assertEquals(0, getServerId(conn));
-
       }
       finally
       {
@@ -106,7 +96,7 @@ public class FailoverTest extends ClusteringTestBase
 
       try
       {
-         conn = createConnectionOnServer1();
+         conn = createConnectionOnServer(cf, 1);
          conn.start();
 
          Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -115,13 +105,7 @@ public class FailoverTest extends ClusteringTestBase
          SimpleFailoverListener failoverListener = new SimpleFailoverListener();
          ((JBossConnection)conn).registerFailoverListener(failoverListener);
 
-         log.debug("killing node 1 ....");
-
          ServerManagement.kill(1);
-
-         log.info("########");
-         log.info("######## KILLED NODE 1");
-         log.info("########");
 
          // wait for the client-side failover to complete
 
@@ -139,26 +123,16 @@ public class FailoverTest extends ClusteringTestBase
          }
 
          // failover complete
-         log.info("failover completed");
-
          assertEquals(0, getServerId(conn));
          
-         log.info("here1");
-
          // use the old session to send/receive a message
          session.createProducer(queue[0]).send(session.createTextMessage("blik"));
-         
-         log.info("here 2");
-
+              
          TextMessage m = (TextMessage)session.createConsumer(queue[0]).receive(5000);
          
-         log.info("Here3: " + m);
-
          assertNotNull(m);
          
          assertEquals("blik", m.getText());
-         
-         log.info("here4");
       }
       finally
       {
@@ -175,7 +149,7 @@ public class FailoverTest extends ClusteringTestBase
 
       try
       {
-         conn = createConnectionOnServer1();
+         conn = createConnectionOnServer(cf, 1);
 
          conn.start();
 
@@ -186,13 +160,7 @@ public class FailoverTest extends ClusteringTestBase
          SimpleFailoverListener failoverListener = new SimpleFailoverListener();
          ((JBossConnection)conn).registerFailoverListener(failoverListener);
 
-         log.debug("killing node 1 ....");
-
          ServerManagement.kill(1);
-
-         log.info("########");
-         log.info("######## KILLED NODE 1");
-         log.info("########");
 
          // wait for the client-side failover to complete
 
@@ -208,9 +176,6 @@ public class FailoverTest extends ClusteringTestBase
                fail("Did not get expected FAILOVER_COMPLETED event");
             }
          }
-
-         // failover complete
-         log.info("failover completed");
 
          assertEquals(0, getServerId(conn));
 
@@ -239,7 +204,7 @@ public class FailoverTest extends ClusteringTestBase
 
       try
       {
-         conn = createConnectionOnServer1();
+         conn = createConnectionOnServer(cf, 1);
 
          Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
          MessageConsumer cons = session.createConsumer(queue[1]);
@@ -256,13 +221,7 @@ public class FailoverTest extends ClusteringTestBase
          SimpleFailoverListener failoverListener = new SimpleFailoverListener();
          ((JBossConnection)conn).registerFailoverListener(failoverListener);
 
-         log.debug("killing node 1 ....");
-
          ServerManagement.kill(1);
-
-         log.info("########");
-         log.info("######## KILLED NODE 1");
-         log.info("########");
 
          // wait for the client-side failover to complete
 
@@ -280,8 +239,6 @@ public class FailoverTest extends ClusteringTestBase
          }
 
          // failover complete
-         log.info("failover completed");
-
          assertEquals(0, getServerId(conn));
 
          // activate the failed-over consumer
@@ -306,7 +263,7 @@ public class FailoverTest extends ClusteringTestBase
 
       try
       {
-         conn = createConnectionOnServer1();
+         conn = createConnectionOnServer(cf, 1);
 
          Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
          MessageConsumer cons = session.createConsumer(queue[1]);
@@ -317,25 +274,17 @@ public class FailoverTest extends ClusteringTestBase
 
          conn.start();
 
-         log.info("*** sending message");
          Message m = session.createTextMessage("nik");
          prod.send(m);
 
          // wait a bit so the message makes it to the client
-         log.info("sleeping 2 secs ...");
          Thread.sleep(2000);
 
          // register a failover listener
          SimpleFailoverListener failoverListener = new SimpleFailoverListener();
          ((JBossConnection)conn).registerFailoverListener(failoverListener);
 
-         log.debug("killing node 1 ....");
-
          ServerManagement.kill(1);
-
-         log.info("########");
-         log.info("######## KILLED NODE 1");
-         log.info("########");
 
          // wait for the client-side failover to complete
 
@@ -353,13 +302,12 @@ public class FailoverTest extends ClusteringTestBase
          }
 
          // failover complete
-         log.info("failover completed");
-
          assertEquals(0, getServerId(conn));
-
+         
          TextMessage rm = (TextMessage)cons.receive(2000);
          assertNotNull(rm);
          assertEquals("nik", rm.getText());
+         
       }
       finally
       {
@@ -377,7 +325,7 @@ public class FailoverTest extends ClusteringTestBase
       try
       {
          // create a connection to node 1
-         conn = createConnectionOnServer1();
+         conn = createConnectionOnServer(cf, 1);
 
          Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
@@ -398,13 +346,7 @@ public class FailoverTest extends ClusteringTestBase
          SimpleFailoverListener failoverListener = new SimpleFailoverListener();
          ((JBossConnection)conn).registerFailoverListener(failoverListener);
 
-         log.debug("killing node 1 ....");
-
          ServerManagement.kill(1);
-
-         log.info("########");
-         log.info("######## KILLED NODE 1");
-         log.info("########");
 
          // wait for the client-side failover to complete
 
@@ -422,8 +364,6 @@ public class FailoverTest extends ClusteringTestBase
          }
 
          // failover complete
-         log.info("failover completed");
-
          assertEquals(0, getServerId(conn));
 
          en = browser.getEnumeration();
@@ -434,6 +374,8 @@ public class FailoverTest extends ClusteringTestBase
          assertEquals("click", tm.getText());
 
          assertFalse(en.hasMoreElements());
+         
+         removeAllMessages(queue[1].getQueueName(), true, 0);
       }
       finally
       {
@@ -451,7 +393,7 @@ public class FailoverTest extends ClusteringTestBase
       try
       {
          // create a connection to node 1
-         conn = createConnectionOnServer1();
+         conn = createConnectionOnServer(cf, 1);
 
          Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
@@ -464,13 +406,7 @@ public class FailoverTest extends ClusteringTestBase
          SimpleFailoverListener failoverListener = new SimpleFailoverListener();
          ((JBossConnection)conn).registerFailoverListener(failoverListener);
 
-         log.debug("killing node 1 ....");
-
          ServerManagement.kill(1);
-
-         log.info("########");
-         log.info("######## KILLED NODE 1");
-         log.info("########");
 
          // wait for the client-side failover to complete
 
@@ -488,8 +424,6 @@ public class FailoverTest extends ClusteringTestBase
          }
 
          // failover complete
-         log.info("failover completed");
-
          assertEquals(0, getServerId(conn));
 
          // send one persistent and one non-persistent message
@@ -517,6 +451,8 @@ public class FailoverTest extends ClusteringTestBase
 
          assertTrue(texts.contains("click"));
          assertTrue(texts.contains("clack"));
+         
+         removeAllMessages(queue[1].getQueueName(), true, 0);
       }
       finally
       {
@@ -536,7 +472,7 @@ public class FailoverTest extends ClusteringTestBase
 
       try
       {
-         conn = createConnectionOnServer1();
+         conn = createConnectionOnServer(cf, 1);
 
          conn.start();
 
@@ -564,13 +500,7 @@ public class FailoverTest extends ClusteringTestBase
          SimpleFailoverListener failoverListener = new SimpleFailoverListener();
          ((JBossConnection)conn).registerFailoverListener(failoverListener);
 
-         log.debug("killing node 1 ....");
-
          ServerManagement.kill(1);
-
-         log.info("########");
-         log.info("######## KILLED NODE 1");
-         log.info("########");
 
          // wait for the client-side failover to complete
 
@@ -588,8 +518,6 @@ public class FailoverTest extends ClusteringTestBase
          }
 
          // failover complete
-         log.info("failover completed");
-
          assertEquals(0, getServerId(conn));
 
          // commit the failed-over session
@@ -600,7 +528,6 @@ public class FailoverTest extends ClusteringTestBase
          TextMessage tm = (TextMessage)cons.receive(2000);
          assertNotNull(tm);
          assertEquals("clik-persistent", tm.getText());
-
       }
       finally
       {
@@ -620,7 +547,7 @@ public class FailoverTest extends ClusteringTestBase
 
       try
       {
-         conn = createConnectionOnServer1();
+         conn = createConnectionOnServer(cf, 1);
 
          conn.start();
 
@@ -647,13 +574,7 @@ public class FailoverTest extends ClusteringTestBase
          SimpleFailoverListener failoverListener = new SimpleFailoverListener();
          ((JBossConnection)conn).registerFailoverListener(failoverListener);
 
-         log.debug("killing node 1 ....");
-
          ServerManagement.kill(1);
-
-         log.info("########");
-         log.info("######## KILLED NODE 1");
-         log.info("########");
 
          // wait for the client-side failover to complete
 
@@ -671,7 +592,6 @@ public class FailoverTest extends ClusteringTestBase
          }
 
          // failover complete
-         log.info("failover completed");
 
          assertEquals(0, getServerId(conn));
 
@@ -683,7 +603,6 @@ public class FailoverTest extends ClusteringTestBase
          TextMessage tm = (TextMessage)cons.receive(2000);
          assertNotNull(tm);
          assertEquals("clik-non-persistent", tm.getText());
-
       }
       finally
       {
@@ -703,7 +622,7 @@ public class FailoverTest extends ClusteringTestBase
 
       try
       {
-         conn = createConnectionOnServer1();
+         conn = createConnectionOnServer(cf, 1);
 
          conn.start();
 
@@ -732,13 +651,7 @@ public class FailoverTest extends ClusteringTestBase
          SimpleFailoverListener failoverListener = new SimpleFailoverListener();
          ((JBossConnection)conn).registerFailoverListener(failoverListener);
 
-         log.debug("killing node 1 ....");
-
          ServerManagement.kill(1);
-
-         log.info("########");
-         log.info("######## KILLED NODE 1");
-         log.info("########");
 
          // wait for the client-side failover to complete
 
@@ -756,8 +669,6 @@ public class FailoverTest extends ClusteringTestBase
          }
 
          // failover complete
-         log.info("failover completed");
-
          assertEquals(0, getServerId(conn));
 
          // commit the failed-over session
@@ -791,7 +702,7 @@ public class FailoverTest extends ClusteringTestBase
 
       try
       {
-         conn = createConnectionOnServer1();
+         conn = createConnectionOnServer(cf, 1);
 
          conn.start();
 
@@ -820,13 +731,7 @@ public class FailoverTest extends ClusteringTestBase
          SimpleFailoverListener failoverListener = new SimpleFailoverListener();
          ((JBossConnection)conn).registerFailoverListener(failoverListener);
 
-         log.debug("killing node 1 ....");
-
          ServerManagement.kill(1);
-
-         log.info("########");
-         log.info("######## KILLED NODE 1");
-         log.info("########");
 
          // wait for the client-side failover to complete
 
@@ -844,8 +749,6 @@ public class FailoverTest extends ClusteringTestBase
          }
 
          // failover complete
-         log.info("failover completed");
-
          assertEquals(0, getServerId(conn));
 
          // commit the failed-over session
@@ -880,7 +783,7 @@ public class FailoverTest extends ClusteringTestBase
 
       try
       {
-         conn = createConnectionOnServer1();
+         conn = createConnectionOnServer(cf, 1);
 
          conn.start();
 
@@ -911,13 +814,7 @@ public class FailoverTest extends ClusteringTestBase
          SimpleFailoverListener failoverListener = new SimpleFailoverListener();
          ((JBossConnection)conn).registerFailoverListener(failoverListener);
 
-         log.debug("killing node 1 ....");
-
          ServerManagement.kill(1);
-
-         log.info("########");
-         log.info("######## KILLED NODE 1");
-         log.info("########");
 
          // wait for the client-side failover to complete
 
@@ -935,8 +832,6 @@ public class FailoverTest extends ClusteringTestBase
          }
 
          // failover complete
-         log.info("failover completed");
-
          assertEquals(0, getServerId(conn));
 
          // commit the failed-over session
@@ -951,7 +846,6 @@ public class FailoverTest extends ClusteringTestBase
          tm = (TextMessage)cons.receive(2000);
          assertNotNull(tm);
          assertEquals("clak-persistent", tm.getText());
-
       }
       finally
       {
@@ -968,7 +862,7 @@ public class FailoverTest extends ClusteringTestBase
 
       try
       {
-         conn = createConnectionOnServer1();
+         conn = createConnectionOnServer(cf, 1);
 
          conn.start();
 
@@ -998,13 +892,7 @@ public class FailoverTest extends ClusteringTestBase
          SimpleFailoverListener failoverListener = new SimpleFailoverListener();
          ((JBossConnection)conn).registerFailoverListener(failoverListener);
 
-         log.debug("killing node 1 ....");
-
          ServerManagement.kill(1);
-
-         log.info("########");
-         log.info("######## KILLED NODE 1");
-         log.info("########");
 
          // wait for the client-side failover to complete
 
@@ -1022,8 +910,6 @@ public class FailoverTest extends ClusteringTestBase
          }
 
          // failover complete
-         log.info("failover completed");
-
          assertEquals(0, getServerId(conn));
 
          // acknowledge the messages
@@ -1031,8 +917,7 @@ public class FailoverTest extends ClusteringTestBase
          clak.acknowledge();
 
          // make sure no messages are left in the queue
-         Message m = cons.receive(3000);
-         assertNull(m);
+         checkEmpty(queue[1], 0);
       }
       finally
       {
@@ -1085,13 +970,7 @@ public class FailoverTest extends ClusteringTestBase
          SimpleFailoverListener failoverListener = new SimpleFailoverListener();
          ((JBossConnection)conn).registerFailoverListener(failoverListener);
 
-         log.debug("killing node 1 ....");
-
          ServerManagement.kill(1);
-
-         log.info("########");
-         log.info("######## KILLED NODE 1");
-         log.info("########");
 
          // wait for the client-side failover to complete
 
@@ -1109,16 +988,13 @@ public class FailoverTest extends ClusteringTestBase
          }
 
          // failover complete
-         log.info("failover completed");
-
          assertEquals(0, getServerId(conn));
 
          // acknowledge the messages
          session.commit();
 
          // make sure no messages are left in the queue
-         Message m = cons.receive(3000);
-         assertNull(m);
+         checkEmpty(queue[1], 0);
       }
       finally
       {
@@ -1136,7 +1012,7 @@ public class FailoverTest extends ClusteringTestBase
 
       try
       {
-         conn = createConnectionOnServer1();
+         conn = createConnectionOnServer(cf, 1);
 
          conn.start();
 
@@ -1168,13 +1044,7 @@ public class FailoverTest extends ClusteringTestBase
          SimpleFailoverListener failoverListener = new SimpleFailoverListener();
          ((JBossConnection)conn).registerFailoverListener(failoverListener);
 
-         log.debug("killing node 1 ....");
-
          ServerManagement.kill(1);
-
-         log.info("########");
-         log.info("######## KILLED NODE 1");
-         log.info("########");
 
          // wait for the client-side failover to complete
 
@@ -1192,8 +1062,6 @@ public class FailoverTest extends ClusteringTestBase
          }
 
          // failover complete
-         log.info("failover completed");
-
          assertEquals(0, getServerId(conn));
 
          session.rollback();
@@ -1202,8 +1070,9 @@ public class FailoverTest extends ClusteringTestBase
          assertNotNull(m);
          assertEquals("clik-persistent", m.getText());
 
-         m = (TextMessage)cons.receive(2000);
-         assertNull(m);
+         session.commit();
+         
+         checkEmpty(queue[1], 0);
       }
       finally
       {
@@ -1221,7 +1090,7 @@ public class FailoverTest extends ClusteringTestBase
 
       try
       {
-         conn = createConnectionOnServer1();
+         conn = createConnectionOnServer(cf, 1);
          conn.start();
 
          SimpleFailoverListener failoverListener = new SimpleFailoverListener();
@@ -1229,31 +1098,22 @@ public class FailoverTest extends ClusteringTestBase
 
          // kill node 1
 
-         log.debug("killing node 1");
-
          ServerManagement.kill(1);
-
-         log.info("########");
-         log.info("######## KILLED NODE 1");
-         log.info("########");
 
          FailoverEvent event = failoverListener.getEvent(30000);
 
          assertNotNull(event);
          assertEquals(FailoverEvent.FAILURE_DETECTED, event.getType());
-         log.info("got " + event);
 
          event = failoverListener.getEvent(30000);
 
          assertNotNull(event);
          assertEquals(FailoverEvent.FAILOVER_STARTED, event.getType());
-         log.info("got " + event);
 
          event = failoverListener.getEvent(30000);
 
          assertNotNull(event);
          assertEquals(FailoverEvent.FAILOVER_COMPLETED, event.getType());
-         log.info("got " + event);
       }
       finally
       {
@@ -1270,7 +1130,7 @@ public class FailoverTest extends ClusteringTestBase
 
       try
       {
-         conn = createConnectionOnServer1();
+         conn = createConnectionOnServer(cf, 1);
          conn.start();
 
          SimpleFailoverListener listener = new SimpleFailoverListener();
@@ -1287,13 +1147,7 @@ public class FailoverTest extends ClusteringTestBase
 
          // kill node 1
 
-         log.debug("killing node 1");
-
          ServerManagement.kill(1);
-
-         log.info("########");
-         log.info("######## KILLED NODE 1");
-         log.info("########");
 
          // wait until the failure (not the completion of client-side failover) is detected
 
@@ -1332,7 +1186,7 @@ public class FailoverTest extends ClusteringTestBase
 
       try
       {
-         conn = createConnectionOnServer1();
+         conn = createConnectionOnServer(cf, 1);
          conn.start();
 
          SimpleFailoverListener listener = new SimpleFailoverListener();
@@ -1348,43 +1202,27 @@ public class FailoverTest extends ClusteringTestBase
 
          // kill node 1
 
-         log.debug("killing node 1");
-
          ServerManagement.kill(1);
-
-         log.info("########");
-         log.info("######## KILLED NODE 1");
-         log.info("########");
 
          // wait until the failure (not the completion of client-side failover) is detected
 
          assertEquals(FailoverEvent.FAILURE_DETECTED, listener.getEvent(60000).getType());
          
-         log.info("Failure detected");
-
          // create a consumer the very next moment the failure is detected. This way, we also
          // test the client-side failover valve
          
-         log.info("**** CREATING CONSUMER");
-
          MessageConsumer cons = session.createConsumer(queue[1]);
          
-         log.info("Created consumer");
-
          // we must receive the message
 
          TextMessage tm = (TextMessage)cons.receive(60000);
-         assertEquals("blip", tm.getText());
-         
-         log.info("Got message");
+         assertEquals("blip", tm.getText());         
       }
       finally
       {
          if (conn != null)
          {
-         	log.info("Closing connection");
             conn.close();
-            log.info("Closed");
          }
       }
    }
@@ -1415,7 +1253,7 @@ public class FailoverTest extends ClusteringTestBase
 
       try
       {
-         conn = createConnectionOnServer1();
+         conn = createConnectionOnServer(cf, 1);
 
          // we "cripple" the remoting connection by removing ConnectionListener. This way, failures
          // cannot be "cleanly" detected by the client-side pinger, and we'll fail on an invocation
@@ -1424,10 +1262,6 @@ public class FailoverTest extends ClusteringTestBase
          rc.removeConnectionListener();
 
          ServerManagement.kill(1);
-
-         log.info("########");
-         log.info("######## KILLED NODE 1");
-         log.info("########");
 
          conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
       }
@@ -1446,7 +1280,7 @@ public class FailoverTest extends ClusteringTestBase
 
       try
       {
-         conn = createConnectionOnServer1();
+         conn = createConnectionOnServer(cf, 1);
 
          // we "cripple" the remoting connection by removing ConnectionListener. This way, failures
          // cannot be "cleanly" detected by the client-side pinger, and we'll fail on an invocation
@@ -1493,7 +1327,7 @@ public class FailoverTest extends ClusteringTestBase
 
       try
       {
-         conn = createConnectionOnServer1();
+         conn = createConnectionOnServer(cf, 1);
          conn.start();
 
          Session s1 = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -1508,9 +1342,6 @@ public class FailoverTest extends ClusteringTestBase
          // kill node 1
 
          ServerManagement.kill(1);
-         log.info("########");
-         log.info("######## KILLED NODE 1");
-         log.info("########");
 
          try
          {
@@ -1819,13 +1650,7 @@ public class FailoverTest extends ClusteringTestBase
          SimpleFailoverListener failoverListener = new SimpleFailoverListener();
          ((JBossConnection)conn1).registerFailoverListener(failoverListener);
 
-         log.debug("killing node 1 ....");
-
          ServerManagement.kill(1);
-
-         log.info("########");
-         log.info("######## KILLED NODE 1");
-         log.info("########");
 
          // wait for the client-side failover to complete
 
@@ -1843,9 +1668,7 @@ public class FailoverTest extends ClusteringTestBase
          }
 
          // failover complete
-         log.info("failover completed");
          
-
          //now commit
          
          session1.commit();
@@ -1866,11 +1689,7 @@ public class FailoverTest extends ClusteringTestBase
          
          assertEquals(tm3.getText(), rm3.getText());
          
-         rm3 = (TextMessage)cons3.receive(2000);
-         
-         assertNull(rm3);
-
-         
+         checkEmpty(queue[1], 0);
       }
       finally
       {
@@ -1896,31 +1715,10 @@ public class FailoverTest extends ClusteringTestBase
       nodeCount = 2;
 
       super.setUp();
-
-      log.debug("setup done");
-   }
-
-   protected void tearDown() throws Exception
-   {
-      super.tearDown();
-      
-      for (int i = 0; i < nodeCount; i++)
-      {
-         if (ServerManagement.isStarted(i))
-         {
-            ServerManagement.log(ServerManagement.INFO, "Undeploying Server " + i, i);
-            ServerManagement.stop(i);
-         }
-      }
    }
 
    // Private --------------------------------------------------------------------------------------
    
-   private Connection createConnectionOnServer1() throws Exception
-   {
-      return createConnectionOnServer(cf, 1);
-   }
-
    private void simpleFailover(String userName, String password) throws Exception
    {
       Connection conn = null;
@@ -1959,9 +1757,6 @@ public class FailoverTest extends ClusteringTestBase
          // kill node 1
 
          ServerManagement.kill(1);
-         log.info("########");
-         log.info("######## KILLED NODE 1");
-         log.info("########");
 
          try
          {
@@ -2026,10 +1821,7 @@ public class FailoverTest extends ClusteringTestBase
 
          assertEquals("before-poison", tm.getText());
 
-         tm = (TextMessage)consumer.receive(3000);
-
-         assertNull(tm);
-
+         checkEmpty(queue[1], 0);
       }
       finally
       {

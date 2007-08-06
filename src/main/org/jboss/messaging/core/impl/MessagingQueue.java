@@ -254,6 +254,7 @@ public class MessagingQueue extends PagingChannelSupport implements Queue
          			
          			recoveryMap.put(new Long(message.getMessageID()), re);
          			
+         			log.info("merge in, incing delivery count for " + message);
          			deliveringCount.increment();
          			
          			iter.remove();
@@ -353,6 +354,9 @@ public class MessagingQueue extends PagingChannelSupport implements Queue
    		synchronized (lock)
 			{
 				messageRefs.addFirst(ref, ref.getMessage().getPriority());
+				
+				//Need to decrement the delivery count too
+				deliveringCount.decrement();
 			}
 							
 			if (trace) { log.trace("Found one, added back on queue"); }   

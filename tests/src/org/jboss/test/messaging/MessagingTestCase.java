@@ -186,6 +186,15 @@ public class MessagingTestCase extends ProxyAssertSupport
       return expected == messageCount.intValue();
    }
    
+   protected int getNumberOfMessages(Queue queue, int server) throws Exception
+   {
+   	ObjectName destObjectName =  new ObjectName("jboss.messaging.destination:service=Queue,name=" + queue.getQueueName());
+   	
+      Integer messageCount = (Integer)ServerManagement.getServer(server).getAttribute(destObjectName, "MessageCount");
+      
+      return messageCount.intValue();
+   }
+   
    protected void drainDestination(ConnectionFactory cf, Destination dest) throws Exception
    {
       Connection conn = null;

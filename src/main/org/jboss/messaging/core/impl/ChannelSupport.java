@@ -332,6 +332,8 @@ public abstract class ChannelSupport implements Channel
    {
       synchronized (lock)
       {      
+      	if (trace) { log.trace("Getting message count mr: "+  messageRefs.size() + " dc " + getDeliveringCount() + " sc " + getScheduledCount()); }
+      	
          return messageRefs.size() + getDeliveringCount() + getScheduledCount();
       }
    }
@@ -522,6 +524,7 @@ public abstract class ChannelSupport implements Channel
                      }
                   }
                                   
+                  log.info("deliverinternal, incing delivery count for " + ref);
                   deliveringCount.increment();                     
                }               
             }
