@@ -379,8 +379,6 @@ public class GroupManagementTest extends MessagingTestCase
          assertEquals(2, view.size());
          assertTrue(view.contains(new Integer(0)));
          assertTrue(view.contains(new Integer(9)));
-
-
       }
       finally
       {
@@ -389,7 +387,6 @@ public class GroupManagementTest extends MessagingTestCase
          ServerManagement.kill(9);
       }
    }
-
 
    // Package protected ---------------------------------------------
 

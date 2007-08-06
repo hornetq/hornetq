@@ -175,6 +175,20 @@ public class ClusterConnectionManager implements ClusterNotificationListener
 		}		
 	}
 	
+	public void setPreserveOrdering(boolean preserveOrdering) throws Exception
+	{
+		boolean needToClose = this.preserveOrdering != preserveOrdering;
+		if (needToClose)
+		{
+			closeAllSuckers();
+		}
+		this.preserveOrdering = preserveOrdering;
+		if (needToClose)
+		{
+			createAllSuckers();
+		}		
+	}
+	
 	public void closeAllSuckers()
 	{
 		Iterator iter = connections.values().iterator();

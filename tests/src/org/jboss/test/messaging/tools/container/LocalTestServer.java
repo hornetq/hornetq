@@ -906,6 +906,11 @@ public class LocalTestServer implements Server
    {
    	getServerPeer().setUseXAForMessagePull(xa);
    }
+   
+   public void setPreserveOrdering(boolean preserve) throws Exception
+   {
+   	getServerPeer().setDefaultPreserveOrdering(preserve);
+   }
 
    // Public ---------------------------------------------------------------------------------------
 

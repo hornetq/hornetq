@@ -292,4 +292,6 @@ public interface Server extends Remote
    
    void setUseXAForMessagePull(boolean xa) throws Exception;
    
+   void setPreserveOrdering(boolean preserve) throws Exception;
+   
 }

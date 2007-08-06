@@ -29,8 +29,6 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.jms.Topic;
 
-import org.jboss.test.messaging.tools.ServerManagement;
-
 
 /**
  * A test for temporary destinations in a clustered enviroment.

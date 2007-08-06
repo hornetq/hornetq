@@ -28,10 +28,8 @@ import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.jms.Session;
 import javax.jms.TextMessage;
-import javax.management.ObjectName;
 
 import org.jboss.test.messaging.tools.ServerManagement;
-import org.jboss.test.messaging.tools.container.ServiceAttributeOverrides;
 
 /**
  * 
@@ -41,7 +39,7 @@ import org.jboss.test.messaging.tools.container.ServiceAttributeOverrides;
  * $Id: $
  *
  */
-public class PreserveOrderingTest extends ClusteringTestBase
+public class PreserveOrderingTest extends NewClusteringTestBase
 {
 
    // Constants -----------------------------------------------------
@@ -87,29 +85,16 @@ public class PreserveOrderingTest extends ClusteringTestBase
    {
       nodeCount = 3;
       
-      overrides = new ServiceAttributeOverrides();      
-      
-      overrides.put(new ObjectName("jboss.messaging:service=ServerPeer"), "DefaultPreserveOrdering", "true");
-
       super.setUp();
+      
+      for (int i = 0; i < nodeCount; i++)
+      {
+      	ServerManagement.getServer(i).setPreserveOrdering(true);
+      }
       
       log.debug("setup done");
    }
 
-   protected void tearDown() throws Exception
-   {
-      super.tearDown();
-      
-      for (int i = 0; i < nodeCount; i++)
-      {
-         if (ServerManagement.isStarted(i))
-         {
-            ServerManagement.log(ServerManagement.INFO, "Undeploying Server " + i, i);
-            ServerManagement.stop(i);
-         }
-      }
-   }
-   
    protected void preserveOrderingQueue(boolean persistent) throws Exception
    {
       Connection conn0 = null;

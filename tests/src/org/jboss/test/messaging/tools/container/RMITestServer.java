@@ -506,6 +506,11 @@ public class RMITestServer extends UnicastRemoteObject implements Server
    {
    	server.setUseXAForMessagePull(xa);
    }
+   
+   public void setPreserveOrdering(boolean preserve) throws Exception
+   {
+   	server.setPreserveOrdering(preserve);
+   }
 
    // Public --------------------------------------------------------
 

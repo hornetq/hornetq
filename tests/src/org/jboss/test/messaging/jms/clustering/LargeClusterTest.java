@@ -27,7 +27,7 @@ import EDU.oswego.cs.dl.util.concurrent.Slot;
  *
  * $Id$
  */
-public class LargeClusterTest extends ClusteringTestBase
+public class LargeClusterTest extends NewClusteringTestBase
 {
    // Constants -----------------------------------------------------
 
@@ -246,7 +246,6 @@ public class LargeClusterTest extends ClusteringTestBase
       assertTrue(view.contains(new Integer(5)));
       assertTrue(view.contains(new Integer(6)));
 
-
       // We get the first node to re-join
 
       ServerManagement.start(0, "all");
@@ -267,7 +266,6 @@ public class LargeClusterTest extends ClusteringTestBase
       assertTrue(view.contains(new Integer(6)));
 
       ServerManagement.removeNotificationListener(5, postOfficeObjectName, clusterEvent);
-
    }
 
    public void testDistributedTopic() throws Exception

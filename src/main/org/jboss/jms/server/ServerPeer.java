@@ -259,7 +259,6 @@ public class ServerPeer extends ServiceMBeanSupport
 	         clusterNotifier.registerListener(clusterConnectionManager);
          }
          
-
          // Start the wired components
 
          messageIDManager.start();
@@ -612,13 +611,13 @@ public class ServerPeer extends ServiceMBeanSupport
    	return defaultPreserveOrdering;
    }
    
-   public void setDefaultPreserveOrdering(boolean preserve)
+   public void setDefaultPreserveOrdering(boolean preserve) throws Exception
    {
-   	if (started)
-      {
-         throw new IllegalStateException("Cannot set DefaultPreserveOrdering while the service is running");
-      }
    	this.defaultPreserveOrdering = preserve;
+   	if (started)
+   	{
+   		clusterConnectionManager.setPreserveOrdering(preserve);
+   	}
    }
    
    public long getRecoverDeliveriesTimeout()
