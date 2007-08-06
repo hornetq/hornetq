@@ -42,7 +42,7 @@ import org.jboss.test.messaging.tools.ServerManagement;
  *
  * $Id$
  */
-public class TemporaryDestinationTest extends ClusteringTestBase
+public class TemporaryDestinationTest extends NewClusteringTestBase
 {
    // Constants ------------------------------------------------------------------------------------
 
@@ -223,22 +223,6 @@ public class TemporaryDestinationTest extends ClusteringTestBase
       nodeCount = 2;
 
       super.setUp();
-
-      log.debug("setup done");
-   }
-
-   protected void tearDown() throws Exception
-   {
-      super.tearDown();
-      
-      for (int i = 0; i < nodeCount; i++)
-      {
-         if (ServerManagement.isStarted(i))
-         {
-            ServerManagement.log(ServerManagement.INFO, "Undeploying Server " + i, i);
-            ServerManagement.stop(i);
-         }
-      }
    }
 
    // Private --------------------------------------------------------------------------------------

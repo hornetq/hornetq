@@ -38,7 +38,7 @@ import org.jboss.test.messaging.tools.container.ServiceContainer;
  * $Id$
  *
  */
-public class XAFailoverTest extends ClusteringTestBase
+public class XAFailoverTest extends NewClusteringTestBase
 {
    // Constants ------------------------------------------------------------------------------------
 
@@ -90,15 +90,6 @@ public class XAFailoverTest extends ClusteringTestBase
       if (suspended != null)
       {
          tm.resume(suspended);
-      }
-      
-      for (int i = 0; i < nodeCount; i++)
-      {
-         if (ServerManagement.isStarted(i))
-         {
-            ServerManagement.log(ServerManagement.INFO, "Undeploying Server " + i, i);
-            ServerManagement.stop(i);
-         }
       }
    }
 
@@ -489,27 +480,24 @@ public class XAFailoverTest extends ClusteringTestBase
             prod.send(sent1);
 
             sess.close();
+            
+            conn0.close();
+            
+            conn1.close();
          }
 
          xaConn0.start();
          
          xaConn1.start();
                   
-
          // register a failover listener
          SimpleFailoverListener failoverListener = new SimpleFailoverListener();
          ((JBossConnection)xaConn1).registerFailoverListener(failoverListener);
-         
-         
-         
-         
-                     
+                
          tm.begin();
          
          Transaction tx = tm.getTransaction();
-         
-
-         
+            
          //receive and send a message on each
          
          // node 0
@@ -538,9 +526,7 @@ public class XAFailoverTest extends ClusteringTestBase
          
          //Make sure the consumer is closed otherwise message might be sucked
          cons0.close();
-         
-
-         
+                  
          //node 1
          
          XASession sess1 = xaConn1.createXASession();
@@ -566,9 +552,7 @@ public class XAFailoverTest extends ClusteringTestBase
          prod1.send(msg1);
          
          cons1.close();
-         
-         
-
+                 
          tx.delistResource(res0, XAResource.TMSUCCESS);
          
          tx.delistResource(res1, XAResource.TMSUCCESS);
@@ -661,7 +645,6 @@ public class XAFailoverTest extends ClusteringTestBase
                conn.close();
             }
          }
-
       }
       finally
       {
@@ -676,9 +659,6 @@ public class XAFailoverTest extends ClusteringTestBase
       }
    }
    
-   
-   
-   
    public void testSendAndReceiveFailAfterPrepareAndRetryCommit() throws Exception
    {
       XAConnection xaConn1 = null;
@@ -689,7 +669,6 @@ public class XAFailoverTest extends ClusteringTestBase
 
       // Sending a messages
       {
-
          Connection conn1 = createConnectionOnServer(cf, 1);
 
          assertEquals(1, getServerId(conn1));
@@ -707,7 +686,6 @@ public class XAFailoverTest extends ClusteringTestBase
          conn1.close();
       }
 
-
       try
       {
          xaConn1 = createXAConnectionOnServer(xaCF, 1);
@@ -715,11 +693,9 @@ public class XAFailoverTest extends ClusteringTestBase
 
          xaConn1.start();
                   
-
          // register a failover listener
          SimpleFailoverListener failoverListener = new SimpleFailoverListener();
-         ((JBossConnection)xaConn1).registerFailoverListener(failoverListener);
-         
+         ((JBossConnection)xaConn1).registerFailoverListener(failoverListener);         
          
          XASession sess1 = xaConn1.createXASession();
          
@@ -728,8 +704,7 @@ public class XAFailoverTest extends ClusteringTestBase
          MessageProducer prod1 = sess1.createProducer(queue[1]);
          
          MessageConsumer cons1 = sess1.createConsumer(queue[1]);
-         
-                           
+                                    
          tm.begin();
          
          Transaction tx = tm.getTransaction();
@@ -740,8 +715,7 @@ public class XAFailoverTest extends ClusteringTestBase
          
          XAResource dummy = new DummyXAResource();
          tx.enlistResource(dummy);
-         
-         
+                  
          //receive a message
          
          TextMessage received = (TextMessage)cons1.receive(2000);
@@ -903,6 +877,10 @@ public class XAFailoverTest extends ClusteringTestBase
          prod.send(sent1);
 
          sess.close();
+         
+         conn0.close();
+         
+         conn1.close();
       }
 
       try
@@ -956,8 +934,7 @@ public class XAFailoverTest extends ClusteringTestBase
          
          //Make sure the consumer is closed otherwise message might be sucked
          cons0.close();
-         
-         
+                 
          //node 1
          
          XASession sess1 = xaConn1.createXASession();
@@ -983,9 +960,7 @@ public class XAFailoverTest extends ClusteringTestBase
          prod1.send(msg1);
          
          cons1.close();
-         
-         
-                  
+              
          tx.delistResource(res0, XAResource.TMSUCCESS);
          
          tx.delistResource(res1, XAResource.TMSUCCESS);
@@ -1095,8 +1070,6 @@ public class XAFailoverTest extends ClusteringTestBase
       }
    }
    
-
-
    // Inner classes --------------------------------------------------------------------------------
 
    static class DummyXAResource implements XAResource
@@ -1150,10 +1123,6 @@ public class XAFailoverTest extends ClusteringTestBase
 
       public void start(Xid arg0, int arg1) throws XAException
       {
-
-      }
-      
-   }
-   
-
+      }      
+   }  
 }
