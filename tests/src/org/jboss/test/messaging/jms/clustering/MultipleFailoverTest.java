@@ -46,7 +46,7 @@ import org.jboss.test.messaging.tools.ServerManagement;
  *
  * $Id$
  */
-public class MultipleFailoverTest extends ClusteringTestBase
+public class MultipleFailoverTest extends NewClusteringTestBase
 {
    // Constants ------------------------------------------------------------------------------------
 
@@ -72,7 +72,6 @@ public class MultipleFailoverTest extends ClusteringTestBase
 
       try
       {
-
          conn = this.createConnectionOnServer(cf, 1);
          conn.start();
 
@@ -161,6 +160,7 @@ public class MultipleFailoverTest extends ClusteringTestBase
 
          ServerManagement.start(1, "all", false);
          ServerManagement.deployQueue("testDistributedQueue", 1);
+         ServerManagement.deployTopic("testDistributedTopic", 1);
 
          // send/receive message
          prod.send(s.createTextMessage("step7"));
@@ -317,22 +317,6 @@ public class MultipleFailoverTest extends ClusteringTestBase
       nodeCount = 3;
 
       super.setUp();
-
-      log.debug("setup done");
-   }
-
-   protected void tearDown() throws Exception
-   {
-      super.tearDown();
-      
-      for (int i = 0; i < nodeCount; i++)
-      {
-         if (ServerManagement.isStarted(i))
-         {
-            ServerManagement.log(ServerManagement.INFO, "Undeploying Server " + i, i);
-            ServerManagement.stop(i);
-         }
-      }
    }
 
    // Private --------------------------------------------------------------------------------------
@@ -409,6 +393,7 @@ public class MultipleFailoverTest extends ClusteringTestBase
             log.info("Starting server 1");
             ServerManagement.start(1, "all", false);
             ServerManagement.deployQueue("testDistributedQueue", 1);
+            ServerManagement.deployTopic("testDistributedTopic", 1);
             
             Thread.sleep(10000);
             

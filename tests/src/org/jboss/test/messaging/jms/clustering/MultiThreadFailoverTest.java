@@ -46,7 +46,7 @@ import org.jboss.test.messaging.tools.ServerManagement;
  *
  * $Id$
  */
-public class MultiThreadFailoverTest extends ClusteringTestBase
+public class MultiThreadFailoverTest extends NewClusteringTestBase
 {
 
    // Constants ------------------------------------------------------------------------------------
@@ -255,14 +255,10 @@ public class MultiThreadFailoverTest extends ClusteringTestBase
       multiThreadFailover(1, 1, false, true);
    }
 
-   // TODO TEST TEMPORARILY COMMENTED OUT.
-   //      MUST BE UNCOMMENTED FOR  1.2.1!
-   //      http://jira.jboss.org/jira/browse/JBMESSAGING-883
-
-//   public void testMultiThreadFailoverSingleThreadTransacted() throws Exception
-//   {
-//      multiThreadFailover(1, 1, true, true);
-//   }
+   public void testMultiThreadFailoverSingleThreadTransacted() throws Exception
+   {
+      multiThreadFailover(1, 1, true, true);
+   }
 
    public void testMultiThreadFailoverSingleThreadNonPersistent() throws Exception
    {
@@ -274,14 +270,10 @@ public class MultiThreadFailoverTest extends ClusteringTestBase
       multiThreadFailover(5, 10, false, true);
    }
 
-   // TODO TEST TEMPORARILY COMMENTED OUT.
-   //      MUST BE UNCOMMENTED FOR  1.2.1!
-   //      See http://jira.jboss.org/jira/browse/JBMESSAGING-883
-
-//   public void testMultiThreadFailoverSeveralThreadsTransacted() throws Exception
-//   {
-//      multiThreadFailover(5, 10, true, true);
-//   }
+   public void testMultiThreadFailoverSeveralThreadsTransacted() throws Exception
+   {
+      multiThreadFailover(5, 10, true, true);
+   }
 
    public void testMultiThreadFailoverNonPersistent() throws Exception
    {
@@ -470,22 +462,6 @@ public class MultiThreadFailoverTest extends ClusteringTestBase
       nodeCount = 3;
 
       super.setUp();
-
-      log.debug("setup done");
-   }
-
-   protected void tearDown() throws Exception
-   {
-      super.tearDown();
-      
-      for (int i = 0; i < nodeCount; i++)
-      {
-         if (ServerManagement.isStarted(i))
-         {
-            ServerManagement.log(ServerManagement.INFO, "Undeploying Server " + i, i);
-            ServerManagement.stop(i);
-         }
-      }
    }
 
 
