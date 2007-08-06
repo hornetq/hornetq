@@ -8,19 +8,15 @@ package org.jboss.test.messaging.jms.clustering;
 
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
-import javax.management.ObjectName;
 import javax.naming.InitialContext;
 
 import org.jboss.jms.client.JBossConnection;
 import org.jboss.jms.client.JBossConnectionFactory;
 import org.jboss.jms.client.delegate.ClientClusteredConnectionFactoryDelegate;
 import org.jboss.jms.client.delegate.DelegateSupport;
-import org.jboss.jms.client.plugin.RandomLoadBalancingPolicy;
 import org.jboss.jms.client.plugin.RoundRobinLoadBalancingPolicy;
 import org.jboss.jms.client.state.ConnectionState;
-import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
-import org.jboss.test.messaging.tools.container.ServiceAttributeOverrides;
 
 /**
  * This test DOESN'T extend ClusteringTestBase because I want to have control over first invocations
@@ -31,7 +27,7 @@ import org.jboss.test.messaging.tools.container.ServiceAttributeOverrides;
  *
  * $Id$
  */
-public class LoadBalancingTest extends MessagingTestCase
+public class LoadBalancingTest extends NewClusteringTestBase
 {
 
    // Constants ------------------------------------------------------------------------------------
@@ -53,105 +49,69 @@ public class LoadBalancingTest extends MessagingTestCase
    {
       // the round robin policy is default
 
-      ServerManagement.start(0, "all", true);
+      JBossConnectionFactory jbcf = (JBossConnectionFactory)cf;
+      ClientClusteredConnectionFactoryDelegate clusteredDelegate =
+         (ClientClusteredConnectionFactoryDelegate )jbcf.getDelegate();
 
-      try
-      {
-         InitialContext ic = new InitialContext(ServerManagement.getJNDIEnvironment(0));
+      assertSame(RoundRobinLoadBalancingPolicy.class,
+         clusteredDelegate.getLoadBalancingPolicy().getClass());
 
-         ConnectionFactory cf = (ConnectionFactory)ic.lookup("/ClusteredConnectionFactory");
+      Connection conn0 = cf.createConnection();
+      
+      final int oneId = getServerId(conn0);
+      final int otherId = 1 - oneId;
 
-         JBossConnectionFactory jbcf = (JBossConnectionFactory)cf;
-         ClientClusteredConnectionFactoryDelegate clusteredDelegate =
-            (ClientClusteredConnectionFactoryDelegate )jbcf.getDelegate();
+      Connection conn1 = cf.createConnection();
+      
+      assertEquals(otherId, getServerId(conn1));
 
-         assertSame(RoundRobinLoadBalancingPolicy.class,
-            clusteredDelegate.getLoadBalancingPolicy().getClass());
+      Connection conn2 = cf.createConnection();
+      
+      assertEquals(oneId, getServerId(conn2));
 
-         Connection conn0 = cf.createConnection();
-
-         assertEquals(0, getServerId(conn0));
-
-         Connection conn1 = cf.createConnection();
-
-         assertEquals(0, getServerId(conn1));
-
-         Connection conn2 = cf.createConnection();
-
-         assertEquals(0, getServerId(conn2));
-
-         conn0.close();
-         conn1.close();
-         conn2.close();
-
-         ic.close();
-      }
-      finally
-      {
-         ServerManagement.stop(0);
-      }
+      conn0.close();
+      conn1.close();
+      conn2.close();
    }
+   
 
    public void testRoundRobinLoadBalancingTwoNodes() throws Exception
    {
-      // Make sure all servers are created and started; make sure that database is zapped ONLY for
-      // the first server, the others rely on values they expect to find in shared tables; don't
-      // clear the database for those.
+      JBossConnectionFactory jbcf = (JBossConnectionFactory)cf;
+      ClientClusteredConnectionFactoryDelegate clusteredDelegate =
+         (ClientClusteredConnectionFactoryDelegate )jbcf.getDelegate();
 
-      ServerManagement.start(0, "all", true);
-      ServerManagement.start(1, "all", false);
+      assertSame(RoundRobinLoadBalancingPolicy.class,
+         clusteredDelegate.getLoadBalancingPolicy().getClass());
 
-      // the round robin policy is default
+      Connection conn0 = cf.createConnection();
+      
+      final int oneId = getServerId(conn0);
+      final int otherId = 1 - oneId;
 
-      try
-      {
-         InitialContext ic0 = new InitialContext(ServerManagement.getJNDIEnvironment(0));
+      assertEquals(oneId, getServerId(conn0));
 
-         ConnectionFactory cf = (ConnectionFactory)ic0.lookup("/ClusteredConnectionFactory");
+      Connection conn1 = cf.createConnection();
 
-         JBossConnectionFactory jbcf = (JBossConnectionFactory)cf;
-         ClientClusteredConnectionFactoryDelegate clusteredDelegate =
-            (ClientClusteredConnectionFactoryDelegate )jbcf.getDelegate();
+      assertEquals(otherId, getServerId(conn1));
 
-         assertSame(RoundRobinLoadBalancingPolicy.class,
-            clusteredDelegate.getLoadBalancingPolicy().getClass());
+      Connection conn2 = cf.createConnection();
 
-         Connection conn0 = cf.createConnection();
-         
-         final int oneId = getServerId(conn0);
-         final int otherId = 1 - oneId;
+      assertEquals(oneId, getServerId(conn2));
 
-         assertEquals(oneId, getServerId(conn0));
+      Connection conn3 = cf.createConnection();
 
-         Connection conn1 = cf.createConnection();
+      assertEquals(otherId, getServerId(conn3));
 
-         assertEquals(otherId, getServerId(conn1));
+      Connection conn4 = cf.createConnection();
 
-         Connection conn2 = cf.createConnection();
+      assertEquals(oneId, getServerId(conn4));
 
-         assertEquals(oneId, getServerId(conn2));
-
-         Connection conn3 = cf.createConnection();
-
-         assertEquals(otherId, getServerId(conn3));
-
-         Connection conn4 = cf.createConnection();
-
-         assertEquals(oneId, getServerId(conn4));
-
-         conn0.close();
-         conn1.close();
-         conn2.close();
-         conn3.close();
-         conn4.close();
-
-         ic0.close();
-      }
-      finally
-      {
-         ServerManagement.stop(1);
-         ServerManagement.stop(0);
-      }
+      conn0.close();
+      conn1.close();
+      conn2.close();
+      conn3.close();
+      conn4.close();
    }
    
    public void testRoundRobinLoadBalancingStartsWithRandomNode() throws Exception
@@ -160,143 +120,25 @@ public class LoadBalancingTest extends MessagingTestCase
       // the first server, the others rely on values they expect to find in shared tables; don't
       // clear the database for those.
 
-      ServerManagement.start(0, "all", true);
-      ServerManagement.start(1, "all", false);
-
-      try
+      int[] counts = new int[2];
+      
+      for (int i = 0; i < 10; i++)
       {
-         int[] counts = new int[2];
-         
-         for (int i = 0; i < 10; i++)
-         {
-            InitialContext ic = new InitialContext(ServerManagement.getJNDIEnvironment(0));
-            ConnectionFactory cf = (ConnectionFactory)ic.lookup("/ClusteredConnectionFactory");
-            Connection firstConnection = cf.createConnection();
-            int serverPeerID = getServerId(firstConnection);
-            firstConnection.close();
-            ic.close();
+         InitialContext ic = new InitialContext(ServerManagement.getJNDIEnvironment(0));
+         ConnectionFactory cf = (ConnectionFactory)ic.lookup("/ClusteredConnectionFactory");
+         Connection firstConnection = cf.createConnection();
+         int serverPeerID = getServerId(firstConnection);
+         firstConnection.close();
+         ic.close();
 
-            counts[serverPeerID]++;
-         }
-         
-         assertTrue("Should have connected to ServerPeer 0 at least once", counts[0] > 0);
-         assertTrue("Should have connected to ServerPeer 1 at least once", counts[1] > 0);
+         counts[serverPeerID]++;
       }
-      finally
-      {
-         ServerManagement.stop(1);
-         ServerManagement.stop(0);
-      }
+      
+      assertTrue("Should have connected to ServerPeer 0 at least once", counts[0] > 0);
+      assertTrue("Should have connected to ServerPeer 1 at least once", counts[1] > 0);
    }
 
-   public void testRandomRobinLoadBalancingSingleNode() throws Exception
-   {
-      // Make sure all servers are created and started; make sure that database is zapped ONLY for
-      // the first server, the others rely on values they expect to find in shared tables; don't
-      // clear the database for those.
-
-      ServiceAttributeOverrides override = new ServiceAttributeOverrides();
-      override.put(new ObjectName("jboss.messaging.connectionfactory:service=ClusteredConnectionFactory"),
-         "LoadBalancingFactory", "org.jboss.jms.client.plugin.RandomLoadBalancingFactory");
-      ServerManagement.start(0, "all", override, true);
-
-      try
-      {
-         InitialContext ic0 = new InitialContext(ServerManagement.getJNDIEnvironment(0));
-
-         ConnectionFactory cf = (ConnectionFactory)ic0.lookup("/ClusteredConnectionFactory");
-
-         JBossConnectionFactory jbcf = (JBossConnectionFactory)cf;
-         ClientClusteredConnectionFactoryDelegate clusteredDelegate =
-            (ClientClusteredConnectionFactoryDelegate )jbcf.getDelegate();
-
-         assertSame(RandomLoadBalancingPolicy.class,
-            clusteredDelegate.getLoadBalancingPolicy().getClass());
-
-         Connection conn0 = cf.createConnection();
-         assertEquals(0, getConnectionState(conn0).getServerID());
-
-         Connection conn1 = cf.createConnection();
-         assertEquals(0, getConnectionState(conn1).getServerID());
-
-         Connection conn2 = cf.createConnection();
-         assertEquals(0, getConnectionState(conn2).getServerID());
-
-         Connection conn3 = cf.createConnection();
-         assertEquals(0, getConnectionState(conn3).getServerID());
-
-         Connection conn4 = cf.createConnection();
-         assertEquals(0, getConnectionState(conn4).getServerID());
-
-         conn0.close();
-         conn1.close();
-         conn2.close();
-         conn3.close();
-         conn4.close();
-
-         ic0.close();
-      }
-      finally
-      {
-         ServerManagement.stop(1);
-         ServerManagement.stop(0);
-      }
-   }
-
-
-
-   public void testRandomRobinLoadBalancingTwoNodes() throws Exception
-   {
-      // Make sure all servers are created and started; make sure that database is zapped ONLY for
-      // the first server, the others rely on values they expect to find in shared tables; don't
-      // clear the database for those.
-
-      ServiceAttributeOverrides override = new ServiceAttributeOverrides();
-      override.put(new ObjectName("jboss.messaging.connectionfactory:service=ClusteredConnectionFactory"),
-         "LoadBalancingFactory", "org.jboss.jms.client.plugin.RandomLoadBalancingFactory");
-      ServerManagement.start(0, "all", override, true);
-      ServerManagement.start(1, "all", override, false);
-
-      try
-      {
-         InitialContext ic0 = new InitialContext(ServerManagement.getJNDIEnvironment(0));
-
-         ConnectionFactory cf = (ConnectionFactory)ic0.lookup("/ClusteredConnectionFactory");
-
-         JBossConnectionFactory jbcf = (JBossConnectionFactory)cf;
-         ClientClusteredConnectionFactoryDelegate clusteredDelegate =
-            (ClientClusteredConnectionFactoryDelegate )jbcf.getDelegate();
-
-         assertSame(RandomLoadBalancingPolicy.class,
-            clusteredDelegate.getLoadBalancingPolicy().getClass());
-
-         Connection conn0 = cf.createConnection();
-
-         Connection conn1 = cf.createConnection();
-
-         Connection conn2 = cf.createConnection();
-
-         Connection conn3 = cf.createConnection();
-
-         Connection conn4 = cf.createConnection();
-
-         conn0.close();
-         conn1.close();
-         conn2.close();
-         conn3.close();
-         conn4.close();
-
-         ic0.close();
-      }
-      finally
-      {
-         ServerManagement.stop(1);
-         ServerManagement.stop(0);
-      }
-   }
-
-
-
+ 
    // Package protected ----------------------------------------------------------------------------
 
    // Protected ------------------------------------------------------------------------------------
@@ -309,13 +151,8 @@ public class LoadBalancingTest extends MessagingTestCase
 
    protected void setUp() throws Exception
    {
+   	nodeCount = 2;
       super.setUp();
-      log.debug("setup done");
-   }
-
-   protected void tearDown() throws Exception
-   {
-      super.tearDown();
    }
 
    // Private --------------------------------------------------------------------------------------
