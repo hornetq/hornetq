@@ -42,7 +42,7 @@ import EDU.oswego.cs.dl.util.concurrent.Latch;
  * @version <tt>$Revision$</tt>
  *          $Id$
  */
-public class NoFailoverTest extends ClusteringTestBase
+public class NoFailoverTest extends NewClusteringTestBase
 {
 
    // Constants ------------------------------------------------------------------------------------
@@ -133,10 +133,6 @@ public class NoFailoverTest extends ClusteringTestBase
          ServerManagement.deployQueue("testDistributedQueue", 1);
          ServerManagement.deployTopic("testDistributedTopic", 1);
 
-
-         // Since there is no active connection, the cf won't be notified about the change on nodes
-         lookups();
-
          conn = createConnectionOnServer(cf, 1);
 
          sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -149,8 +145,6 @@ public class NoFailoverTest extends ClusteringTestBase
          rm = (TextMessage) cons.receive(1000);
 
          assertEquals(rm.getText(), "Before Crash");
-
-
       }
       finally
       {
@@ -168,23 +162,9 @@ public class NoFailoverTest extends ClusteringTestBase
 
    protected void setUp() throws Exception
    {
-      config = "all-failover";
       this.nodeCount=3;
-      super.setUp();
-   }
-
-   protected void tearDown() throws Exception
-   {
-      super.tearDown();
       
-      for (int i = 0; i < nodeCount; i++)
-      {
-         if (ServerManagement.isStarted(i))
-         {
-            ServerManagement.log(ServerManagement.INFO, "Undeploying Server " + i, i);
-            ServerManagement.stop(i);
-         }
-      }
+      super.setUp();
    }
 
    // Private --------------------------------------------------------------------------------------

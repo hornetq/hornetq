@@ -79,7 +79,6 @@ public class MultiThreadFailoverTest extends NewClusteringTestBase
     */
    public void testMultiThreadOnReceive() throws Exception
    {
-
       Connection conn1 = cf.createConnection();
       Connection conn2 = cf.createConnection();
       Connection conn3 = cf.createConnection();
@@ -450,6 +449,10 @@ public class MultiThreadFailoverTest extends NewClusteringTestBase
          conn2.close();
 
          conn3.close();
+         
+         this.removeAllMessages(queue[0].getQueueName(), true, 0);
+         this.removeAllMessages(queue[1].getQueueName(), true, 1);
+         this.removeAllMessages(queue[2].getQueueName(), true, 2);
       }
    }
 

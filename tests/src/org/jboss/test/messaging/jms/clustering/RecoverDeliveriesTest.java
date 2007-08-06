@@ -36,7 +36,6 @@ import javax.jms.TextMessage;
 
 import org.jboss.jms.client.FailoverEvent;
 import org.jboss.jms.client.JBossConnection;
-import org.jboss.jms.client.JBossConnectionFactory;
 import org.jboss.jms.client.delegate.ClientClusteredConnectionFactoryDelegate;
 import org.jboss.messaging.util.MessageQueueNameHelper;
 import org.jboss.test.messaging.tools.ServerManagement;
@@ -50,7 +49,7 @@ import org.jboss.test.messaging.tools.ServerManagement;
  * $Id: $
  *
  */
-public class RecoverDeliveriesTest extends ClusteringTestBase
+public class RecoverDeliveriesTest extends NewClusteringTestBase
 {
    
    // Constants -----------------------------------------------------
@@ -140,11 +139,9 @@ public class RecoverDeliveriesTest extends ClusteringTestBase
    {
    	final long timeout = 20 * 1000;
    	
-   	JBossConnectionFactory factory = (JBossConnectionFactory) ic[0].lookup("/ClusteredConnectionFactory");
+   	((ClientClusteredConnectionFactoryDelegate)cf.getDelegate()).setSupportsFailover(false);
    	
-   	((ClientClusteredConnectionFactoryDelegate)factory.getDelegate()).setSupportsFailover(false);
-   	
-      Connection conn1 = createConnectionOnServer(factory,1);
+      Connection conn1 = createConnectionOnServer(cf,1);
       
       Connection conn2 = null;
  
@@ -189,7 +186,7 @@ public class RecoverDeliveriesTest extends ClusteringTestBase
       		assertEquals("message" + i, tm.getText());
       	}
       		
-      	int failoverNodeId = this.getFailoverNodeForNode(factory, 1);
+      	int failoverNodeId = this.getFailoverNodeForNode(cf, 1);
       	
       	assertEquals(2, failoverNodeId);
       	
@@ -238,7 +235,7 @@ public class RecoverDeliveriesTest extends ClusteringTestBase
       	
       	log.info("Creating connection");
       	
-      	conn2 = createConnectionOnServer(factory, failoverNodeId);
+      	conn2 = createConnectionOnServer(cf, failoverNodeId);
                      
        	Session sess2 = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
        	
@@ -281,6 +278,8 @@ public class RecoverDeliveriesTest extends ClusteringTestBase
          {
             conn2.close();
          }
+         
+         ((ClientClusteredConnectionFactoryDelegate)cf.getDelegate()).setSupportsFailover(true);
       }
    }
    
@@ -295,31 +294,13 @@ public class RecoverDeliveriesTest extends ClusteringTestBase
       nodeCount = 3;
 
       super.setUp();
-
-      log.debug("setup done");
-   }
-   
-   protected void tearDown() throws Exception
-   {
-      super.tearDown();
-      
-      for (int i = 0; i < nodeCount; i++)
-      {
-         if (ServerManagement.isStarted(i))
-         {
-            ServerManagement.log(ServerManagement.INFO, "Undeploying Server " + i, i);
-            ServerManagement.stop(i);
-         }
-      }
    }
    
    // Private -------------------------------------------------------
 
    private void simple(boolean transactional) throws Exception
    {
-   	JBossConnectionFactory factory = (JBossConnectionFactory) ic[0].lookup("/ClusteredConnectionFactory");
-
-      Connection conn1 = createConnectionOnServer(factory,1);
+      Connection conn1 = createConnectionOnServer(cf,1);
  
       try
       {
@@ -361,7 +342,7 @@ public class RecoverDeliveriesTest extends ClusteringTestBase
       	
       	//Now kill server
       	
-      	int failoverNodeId = this.getFailoverNodeForNode(factory, 1);
+      	int failoverNodeId = this.getFailoverNodeForNode(cf, 1);
       	
       	int recoveryMapSize = ServerManagement.getServer(failoverNodeId).getRecoveryMapSize(queue[failoverNodeId].getQueueName());
       	assertEquals(0, recoveryMapSize);
@@ -447,9 +428,7 @@ public class RecoverDeliveriesTest extends ClusteringTestBase
    
    private void durableSub(boolean transactional) throws Exception
    {
-   	JBossConnectionFactory factory = (JBossConnectionFactory) ic[0].lookup("/ClusteredConnectionFactory");
-
-      Connection conn1 = createConnectionOnServer(factory,1);
+      Connection conn1 = createConnectionOnServer(cf,1);
  
       try
       {
@@ -503,7 +482,7 @@ public class RecoverDeliveriesTest extends ClusteringTestBase
       	
       	//Now kill server
       	
-      	int failoverNodeId = this.getFailoverNodeForNode(factory, 1);
+      	int failoverNodeId = this.getFailoverNodeForNode(cf, 1);
       	
       	log.info("Failover node is " + failoverNodeId);
       	
@@ -578,6 +557,8 @@ public class RecoverDeliveriesTest extends ClusteringTestBase
          tm = (TextMessage)cons1.receive(5000);
       		
       	assertNull(tm);      		
+      	
+      	sess1.unsubscribe(subName);
       }
       finally
       {
@@ -590,9 +571,7 @@ public class RecoverDeliveriesTest extends ClusteringTestBase
    
    private void cancel(boolean transactional) throws Exception
    {
-   	JBossConnectionFactory factory = (JBossConnectionFactory) ic[0].lookup("/ClusteredConnectionFactory");
-
-      Connection conn1 = createConnectionOnServer(factory,1);
+      Connection conn1 = createConnectionOnServer(cf,1);
  
       try
       {
@@ -632,7 +611,7 @@ public class RecoverDeliveriesTest extends ClusteringTestBase
       	
       	//Don't ack
       	
-      	int failoverNodeId = this.getFailoverNodeForNode(factory, 1);      	      	
+      	int failoverNodeId = this.getFailoverNodeForNode(cf, 1);      	      	
 
       	int recoveryMapSize = ServerManagement.getServer(failoverNodeId).getRecoveryMapSize(queue[failoverNodeId].getQueueName());
       	assertEquals(0, recoveryMapSize);
@@ -663,6 +642,8 @@ public class RecoverDeliveriesTest extends ClusteringTestBase
          {
             conn1.close();
          }
+         
+         this.removeAllMessages(queue[0].getQueueName(), true, 1);
       }
    }
    
@@ -670,11 +651,9 @@ public class RecoverDeliveriesTest extends ClusteringTestBase
    
    private void connectionOnNewNode(boolean transactional) throws Exception
    {
-   	JBossConnectionFactory factory = (JBossConnectionFactory) ic[0].lookup("/ClusteredConnectionFactory");
-
-      Connection conn1 = createConnectionOnServer(factory,1);
+      Connection conn1 = createConnectionOnServer(cf,1);
       
-      Connection conn2 = createConnectionOnServer(factory,2);
+      Connection conn2 = createConnectionOnServer(cf,2);
  
       try
       {
@@ -723,7 +702,7 @@ public class RecoverDeliveriesTest extends ClusteringTestBase
       	
       	//Now kill server
       	
-      	int failoverNodeId = this.getFailoverNodeForNode(factory, 1);      	
+      	int failoverNodeId = this.getFailoverNodeForNode(cf, 1);      	
       	
       	int recoveryMapSize = ServerManagement.getServer(failoverNodeId).getRecoveryMapSize(queue[failoverNodeId].getQueueName());
       	assertEquals(0, recoveryMapSize);
@@ -811,13 +790,11 @@ public class RecoverDeliveriesTest extends ClusteringTestBase
    
    private void connectionsOnAllNodes(boolean transactional) throws Exception
    {
-   	JBossConnectionFactory factory = (JBossConnectionFactory) ic[0].lookup("/ClusteredConnectionFactory");
-
-      Connection conn0 = createConnectionOnServer(factory, 0);
+      Connection conn0 = createConnectionOnServer(cf, 0);
       
-      Connection conn1 = createConnectionOnServer(factory, 1);
+      Connection conn1 = createConnectionOnServer(cf, 1);
       
-      Connection conn2 = createConnectionOnServer(factory, 2);
+      Connection conn2 = createConnectionOnServer(cf, 2);
  
       try
       {
@@ -968,7 +945,7 @@ public class RecoverDeliveriesTest extends ClusteringTestBase
       	
       	//Now kill server
       	
-      	int failoverNodeId = this.getFailoverNodeForNode(factory, 1);    
+      	int failoverNodeId = this.getFailoverNodeForNode(cf, 1);    
       	
       	ServerManagement.kill(1);
 
@@ -1072,24 +1049,6 @@ public class RecoverDeliveriesTest extends ClusteringTestBase
          }
       }
    }
-   
-   /*
-    * Test recoveryArea timeout
-    * 
-    * Create session, consume messages but don't ack
-    * 
-    * kill the server
-    * 
-    * somehow prevent the client failing over. ??
-    * 
-    * assert recovery area is full
-    * 
-    * wait for timeout
-    * 
-    * assert messages can be consumed
-    * 
-    * assert recovery area is empty
-    */
    
    // Inner classes -------------------------------------------------
    
