@@ -198,8 +198,7 @@ public class NewClusteringTestBase extends MessagingTestCase
 	      ServerManagement.getServer(i).resetAllSuckers();
       }
       
-      cf = (JBossConnectionFactory)ic[0].lookup("/ClusteredConnectionFactory");  
-      log.info("Looked up new clustered connection factory");      
+      cf = (JBossConnectionFactory)ic[0].lookup("/ClusteredConnectionFactory");    
    }
    
    protected void tearDown() throws Exception

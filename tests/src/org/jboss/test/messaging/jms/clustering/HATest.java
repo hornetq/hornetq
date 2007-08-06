@@ -22,7 +22,6 @@
 
 package org.jboss.test.messaging.jms.clustering;
 
-import java.util.Map;
 import java.util.Set;
 
 import javax.jms.Connection;
@@ -34,9 +33,8 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.jms.Topic;
 
+import org.jboss.jms.client.FailoverEvent;
 import org.jboss.jms.client.JBossConnection;
-import org.jboss.jms.client.JBossConnectionFactory;
-import org.jboss.jms.client.JBossMessageConsumer;
 import org.jboss.jms.client.JBossSession;
 import org.jboss.jms.client.delegate.ClientClusteredConnectionFactoryDelegate;
 import org.jboss.jms.client.delegate.ClientConnectionDelegate;
@@ -44,7 +42,6 @@ import org.jboss.jms.client.delegate.ClientConnectionFactoryDelegate;
 import org.jboss.jms.client.delegate.ClientSessionDelegate;
 import org.jboss.jms.client.remoting.JMSRemotingConnection;
 import org.jboss.jms.client.state.ConnectionState;
-import org.jboss.jms.client.state.ConsumerState;
 import org.jboss.jms.client.state.SessionState;
 import org.jboss.jms.message.MessageProxy;
 import org.jboss.test.messaging.tools.ServerManagement;
@@ -58,7 +55,7 @@ import org.jboss.test.messaging.tools.ServerManagement;
  * $Id$
  *
  */
-public class HATest extends ClusteringTestBase
+public class HATest extends NewClusteringTestBase
 {
    
    // Constants -----------------------------------------------------
@@ -94,34 +91,28 @@ public class HATest extends ClusteringTestBase
     */
    public void testCloseOnFailover() throws Exception
    {
-      JBossConnectionFactory factory = (JBossConnectionFactory) ic[0].lookup("/ClusteredConnectionFactory");
-
-      Connection conn1 = createConnectionOnServer(factory,0);
-      Connection conn2 = createConnectionOnServer(factory,1);
-      Connection conn3 = createConnectionOnServer(factory,2);
-
-      Connection[] conn = new Connection[]{conn1, conn2, conn3};
+      Connection conn1 = createConnectionOnServer(cf,0);
+      Connection conn2 = createConnectionOnServer(cf,1);
+      Connection conn3 = createConnectionOnServer(cf,2);
       
-      this.checkConnectionsDifferentServers(conn);
-
-      log.info("Connection delegate information after creation");
-
-      for (int i = 0; i < conn.length; i++)
-      {
-         log.info("conn" + i + ".serverid=" + getServerId(conn[i]) + " conn" + i + ".ObjectID=" +
-            getObjectId(conn[i]) + " locatorURL=" + getLocatorURL(conn[i]));
-      }
-
-      log.info("Killing server 1 and waiting 30 seconds for failover to kick in on client (from Lease)");
+      SimpleFailoverListener failoverListener = new SimpleFailoverListener();
+      ((JBossConnection)conn2).registerFailoverListener(failoverListener);
+      
       ServerManagement.kill(1);
-      Thread.sleep(30000);
 
-      log.info("Connection delegate information after failover");
+      //wait for the client-side failover to complete
 
-      for (int i = 0; i < conn.length; i++)
+      while(true)
       {
-         log.info("conn" + i + ".serverid=" + getServerId(conn[i]) + " conn" + i + ".ObjectID=" +
-            getObjectId(conn[i]) + " locatorURL=" + getLocatorURL(conn[i]));
+         FailoverEvent event = failoverListener.getEvent(30000);
+         if (event != null && FailoverEvent.FAILOVER_COMPLETED == event.getType())
+         {
+            break;
+         }
+         if (event == null)
+         {
+            fail("Did not get expected FAILOVER_COMPLETED event");
+         }
       }
 
       ConnectionState state2 = getConnectionState(conn2);
@@ -143,8 +134,6 @@ public class HATest extends ClusteringTestBase
       assertNotNull(state3.getRemotingConnection().getRemotingClient().getInvoker());
       assertTrue(state3.getRemotingConnection().getRemotingClient().getInvoker().isConnected());
 
-      log.info("Closing connection 3 now");
-
       // When I created the testcase this was failing, throwing exceptions. This was basically why
       // I created this testcase
       conn3.close();
@@ -156,13 +145,8 @@ public class HATest extends ClusteringTestBase
     */
    public void testRoundRobinConnectionCreation() throws Exception
    {
-      JBossConnectionFactory factory =  (JBossConnectionFactory )ic[0].lookup("/ClusteredConnectionFactory");
-
       ClientClusteredConnectionFactoryDelegate delegate =
-         (ClientClusteredConnectionFactoryDelegate)factory.getDelegate();
-
-      log.info ("number of delegates = " + delegate.getDelegates().length);
-      log.info ("number of servers = " + ServerManagement.getServer(0).getNodeIDView().size());
+         (ClientClusteredConnectionFactoryDelegate)cf.getDelegate();
 
       assertEquals(3, delegate.getDelegates().length);
 
@@ -192,15 +176,15 @@ public class HATest extends ClusteringTestBase
 
       try
       {
-         conn1 = createConnectionOnServer(factory, 0);  //server 0
+         conn1 = createConnectionOnServer(cf, 0);  //server 0
 
-         conn2 = createConnectionOnServer(factory, 1);  //server 1
+         conn2 = createConnectionOnServer(cf, 1);  //server 1
 
-         conn3 = createConnectionOnServer(factory, 2);  //server 2
+         conn3 = createConnectionOnServer(cf, 2);  //server 2
 
-         conn4 = createConnectionOnServer(factory, 0);  //server 0
+         conn4 = createConnectionOnServer(cf, 0);  //server 0
 
-         conn5 = createConnectionOnServer(factory, 1);  //server 1
+         conn5 = createConnectionOnServer(cf, 1);  //server 1
 
          int serverID1 = getServerId(conn1);
 
@@ -211,16 +195,6 @@ public class HATest extends ClusteringTestBase
          int serverID4 = getServerId(conn4);
 
          int serverID5 = getServerId(conn5);
-
-         log.info("server id 1: " + serverID1);
-
-         log.info("server id 2: " + serverID2);
-
-         log.info("server id 3: " + serverID3);
-
-         log.info("server id 4: " + serverID4);
-
-         log.info("server id 5: " + serverID5);
 
          assertEquals(0, serverID1);
 
@@ -262,282 +236,19 @@ public class HATest extends ClusteringTestBase
 
    }
 
-   /*
-    * Test that the failover mapping is created correctly and updated properly when nodes leave
-    * or join
-    */
-   public void testDefaultFailoverMap() throws Exception
-   {
-      {
-         JBossConnectionFactory factory =  (JBossConnectionFactory )ic[0].lookup("/ClusteredConnectionFactory");
-
-         ClientClusteredConnectionFactoryDelegate delegate =
-            (ClientClusteredConnectionFactoryDelegate)factory.getDelegate();
-
-         assertEquals(3, ServerManagement.getServer(0).getNodeIDView().size());
-
-         ClientConnectionFactoryDelegate[] delegates = delegate.getDelegates();
-
-         ClientConnectionFactoryDelegate cf1 = delegate.getDelegates()[0];
-
-         ClientConnectionFactoryDelegate cf2 = delegate.getDelegates()[1];
-
-         ClientConnectionFactoryDelegate cf3 = delegate.getDelegates()[2];
-
-         //The order here depends on the order the servers were started in
-
-         //If any servers get stopped and then started then the order will change
-
-         log.info("cf1 serverid=" + cf1.getServerID());
-
-         log.info("cf2 serverid=" + cf2.getServerID());
-
-         log.info("cf3 serverid=" + cf3.getServerID());
-
-
-         assertEquals(0, cf1.getServerID());
-
-         assertEquals(1, cf2.getServerID());
-
-         assertEquals(2, cf3.getServerID());
-
-         Map failoverMap = delegate.getFailoverMap();
-
-         assertEquals(3, delegates.length);
-
-         assertEquals(3, failoverMap.size());
-
-         // Default failover policy just chooses the node to the right
-
-         assertEquals(cf2.getServerID(), ((Integer)failoverMap.get(new Integer(cf1.getServerID()))).intValue());
-
-         assertEquals(cf3.getServerID(), ((Integer)failoverMap.get(new Integer(cf2.getServerID()))).intValue());
-
-         assertEquals(cf1.getServerID(), ((Integer)failoverMap.get(new Integer(cf3.getServerID()))).intValue());
-      }
-
-      //Now cleanly stop one of the servers
-
-      log.info("************** STOPPING SERVER 0");
-      ServerManagement.stop(0);
-      
-      Thread.sleep(5000);
-
-      log.info("server stopped");
-
-      assertEquals(2, ServerManagement.getServer(1).getNodeIDView().size());
-
-      {
-         //Lookup another connection factory
-
-         JBossConnectionFactory factory =  (JBossConnectionFactory )ic[1].lookup("/ClusteredConnectionFactory");
-
-         log.info("Got connection factory");
-
-         ClientClusteredConnectionFactoryDelegate delegate =
-            (ClientClusteredConnectionFactoryDelegate)factory.getDelegate();
-
-         ClientConnectionFactoryDelegate[] delegates = delegate.getDelegates();
-
-         Map failoverMap = delegate.getFailoverMap();
-
-         log.info("Got failover map");
-
-         assertEquals(2, delegates.length);
-
-         ClientConnectionFactoryDelegate cf1 = delegate.getDelegates()[0];
-
-         ClientConnectionFactoryDelegate cf2 = delegate.getDelegates()[1];
-
-         //Order here depends on order servers were started in
-
-         log.info("cf1 serverid=" + cf1.getServerID());
-
-         log.info("cf2 serverid=" + cf2.getServerID());
-
-         assertEquals(1, cf1.getServerID());
-
-         assertEquals(2, cf2.getServerID());
-
-
-         assertEquals(2, failoverMap.size());
-
-         assertEquals(cf2.getServerID(), ((Integer)failoverMap.get(new Integer(cf1.getServerID()))).intValue());
-
-         assertEquals(cf1.getServerID(), ((Integer)failoverMap.get(new Integer(cf2.getServerID()))).intValue());
-      }
-
-      //Cleanly stop another server
-
-      log.info("Server 1 is started: " + ServerManagement.getServer(1).isServerPeerStarted());
-
-      ServerManagement.stop(1);
-      
-      Thread.sleep(5000);
-
-      assertEquals(1, ServerManagement.getServer(2).getNodeIDView().size());
-
-      {
-         //Lookup another connection factory
-
-         JBossConnectionFactory factory =  (JBossConnectionFactory )ic[2].lookup("/ClusteredConnectionFactory");
-
-         ClientClusteredConnectionFactoryDelegate delegate =
-            (ClientClusteredConnectionFactoryDelegate)factory.getDelegate();
-
-         ClientConnectionFactoryDelegate[] delegates = delegate.getDelegates();
-
-         Map failoverMap = delegate.getFailoverMap();
-
-         assertEquals(1, delegates.length);
-
-         ClientConnectionFactoryDelegate cf1 = delegate.getDelegates()[0];
-
-         assertEquals(2, cf1.getServerID());
-
-
-         assertEquals(1, failoverMap.size());
-
-         assertEquals(cf1.getServerID(), ((Integer)failoverMap.get(new Integer(cf1.getServerID()))).intValue());
-      }
-
-      //Restart server 0
-
-      ServerManagement.start(0, "all");
-
-      {
-         JBossConnectionFactory factory =  (JBossConnectionFactory )ic[0].lookup("/ClusteredConnectionFactory");
-
-         log.info("Got connection factory");
-
-         ClientClusteredConnectionFactoryDelegate delegate =
-            (ClientClusteredConnectionFactoryDelegate)factory.getDelegate();
-
-         ClientConnectionFactoryDelegate[] delegates = delegate.getDelegates();
-
-         Map failoverMap = delegate.getFailoverMap();
-
-         log.info("Got failover map");
-
-         assertEquals(2, delegates.length);
-
-         ClientConnectionFactoryDelegate cf1 = delegate.getDelegates()[0];
-
-         ClientConnectionFactoryDelegate cf2 = delegate.getDelegates()[1];
-
-         log.info("cf1 serverid=" + cf1.getServerID());
-
-         log.info("cf2 serverid=" + cf2.getServerID());
-
-         assertEquals(0, cf1.getServerID());
-
-         assertEquals(2, cf2.getServerID());
-
-
-         assertEquals(2, failoverMap.size());
-
-         assertEquals(cf2.getServerID(), ((Integer)failoverMap.get(new Integer(cf1.getServerID()))).intValue());
-
-         assertEquals(cf1.getServerID(), ((Integer)failoverMap.get(new Integer(cf2.getServerID()))).intValue());
-      }
-
-
-      //Restart server 1
-
-      ServerManagement.start(1, "all");
-
-      {
-         JBossConnectionFactory factory =  (JBossConnectionFactory )ic[1].lookup("/ClusteredConnectionFactory");
-
-         log.info("Got connection factory");
-
-         ClientClusteredConnectionFactoryDelegate delegate =
-            (ClientClusteredConnectionFactoryDelegate)factory.getDelegate();
-
-         ClientConnectionFactoryDelegate[] delegates = delegate.getDelegates();
-
-         Map failoverMap = delegate.getFailoverMap();
-
-         log.info("Got failover map");
-
-         assertEquals(3, delegates.length);
-
-         ClientConnectionFactoryDelegate cf1 = delegate.getDelegates()[0];
-
-         ClientConnectionFactoryDelegate cf2 = delegate.getDelegates()[1];
-
-         ClientConnectionFactoryDelegate cf3 = delegate.getDelegates()[2];
-
-         log.info("cf1 serverid=" + cf1.getServerID());
-
-         log.info("cf2 serverid=" + cf2.getServerID());
-
-         log.info("cf3 serverid=" + cf3.getServerID());
-
-         assertEquals(0, cf1.getServerID());
-
-         assertEquals(1, cf2.getServerID());
-
-         assertEquals(2, cf3.getServerID());
-
-
-         assertEquals(3, failoverMap.size());
-
-         assertEquals(cf2.getServerID(), ((Integer)failoverMap.get(new Integer(cf1.getServerID()))).intValue());
-
-         assertEquals(cf3.getServerID(), ((Integer)failoverMap.get(new Integer(cf2.getServerID()))).intValue());
-
-         assertEquals(cf1.getServerID(), ((Integer)failoverMap.get(new Integer(cf3.getServerID()))).intValue());
-      }
-   }
-
    public void testSimpleFailover() throws Exception
    {
-      JBossConnectionFactory factory =  (JBossConnectionFactory )ic[0].lookup("/ClusteredConnectionFactory");
-
-      ClientClusteredConnectionFactoryDelegate delegate =
-         (ClientClusteredConnectionFactoryDelegate)factory.getDelegate();
-
       Set nodeIDView = ServerManagement.getServer(0).getNodeIDView();
       assertEquals(3, nodeIDView.size());
-
-      ClientConnectionFactoryDelegate[] delegates = delegate.getDelegates();
-
-      ClientConnectionFactoryDelegate cf1 = delegates[0];
-
-      ClientConnectionFactoryDelegate cf2 = delegates[1];
-
-      ClientConnectionFactoryDelegate cf3 = delegates[2];
-
-      int server0Id = cf1.getServerID();
-
-      int server1Id = cf2.getServerID();
-
-      int server2Id = cf3.getServerID();
-
-      log.info("server 0 id: " + server0Id);
-
-      log.info("server 1 id: " + server1Id);
-
-      log.info("server 2 id: " + server2Id);
-
-      Map failoverMap = delegate.getFailoverMap();
-
-      log.info(failoverMap.get(new Integer(server0Id)));
-      log.info(failoverMap.get(new Integer(server1Id)));
-      log.info(failoverMap.get(new Integer(server2Id)));
-
-      int server1FailoverId = ((Integer)failoverMap.get(new Integer(server1Id))).intValue();
-
-      // server 1 should failover onto server 2
-
-      assertEquals(server2Id, server1FailoverId);
 
       Connection conn = null;
 
       try
       {
-         conn = createConnectionOnServer(factory, 1);
+         conn = createConnectionOnServer(cf, 1);
+         
+         SimpleFailoverListener failoverListener = new SimpleFailoverListener();
+         ((JBossConnection)conn).registerFailoverListener(failoverListener);
 
          assertEquals(1, getServerId(conn));
 
@@ -560,28 +271,22 @@ public class HATest extends ClusteringTestBase
          //So we now kill server 1
          //Which should cause transparent failover of connection conn onto server 1
 
-         log.info("######");
-         log.info("###### KILLING (CRASHING) SERVER 1");
-         log.info("######");
-
          ServerManagement.kill(1);
 
-         long sleepTime = 10;
+         //wait for the client-side failover to complete
 
-         log.info("killed server, now waiting for " + sleepTime + " seconds");
-
-         // NOTE: the sleep time needs to be longer than the Remoting connector's lease period
-         Thread.sleep(sleepTime * 1000);
-
-         log.info("done wait");
-
-         int finalServerID = getServerId(conn);
-
-         log.info("final server id= " + finalServerID);
-
-         //server id should now be 2
-
-         assertEquals(2, finalServerID);
+         while(true)
+         {
+            FailoverEvent event = failoverListener.getEvent(30000);
+            if (event != null && FailoverEvent.FAILOVER_COMPLETED == event.getType())
+            {
+               break;
+            }
+            if (event == null)
+            {
+               fail("Did not get expected FAILOVER_COMPLETED event");
+            }
+         }
 
          conn.start();
 
@@ -589,26 +294,16 @@ public class HATest extends ClusteringTestBase
          {
             TextMessage tm = (TextMessage)cons.receive(1000);
 
-            log.debug("message is " + tm);
-
             assertNotNull(tm);
 
             assertEquals("message:" + i, tm.getText());
          }
-         log.info("done");
       }
       finally
       {
          if (conn != null)
          {
-            try
-            {
-               conn.close();
-            }
-            catch (Exception e)
-            {
-               e.printStackTrace();
-            }
+            conn.close();
          }
 
          ServerManagement.start(1, "all");
@@ -618,51 +313,8 @@ public class HATest extends ClusteringTestBase
 
    public void testFailoverWithUnackedMessagesClientAcknowledge() throws Exception
    {
-      JBossConnectionFactory factory =  (JBossConnectionFactory )ic[0].lookup("/ClusteredConnectionFactory");
-
-      ClientClusteredConnectionFactoryDelegate delegate =
-         (ClientClusteredConnectionFactoryDelegate)factory.getDelegate();
-
       Set nodeIDView = ServerManagement.getServer(0).getNodeIDView();
       assertEquals(3, nodeIDView.size());
-
-      ClientConnectionFactoryDelegate[] delegates = delegate.getDelegates();
-
-      ClientConnectionFactoryDelegate cf1 = delegates[0];
-
-      ClientConnectionFactoryDelegate cf2 = delegates[1];
-
-      ClientConnectionFactoryDelegate cf3 = delegates[2];
-
-      int server0Id = cf1.getServerID();
-
-      int server1Id = cf2.getServerID();
-
-      int server2Id = cf3.getServerID();
-
-      log.info("server 0 id: " + server0Id);
-
-      log.info("server 1 id: " + server1Id);
-
-      log.info("server 2 id: " + server2Id);
-
-      assertEquals(0, server0Id);
-
-      assertEquals(1, server1Id);
-
-      assertEquals(2, server2Id);
-
-      Map failoverMap = delegate.getFailoverMap();
-
-      log.info(failoverMap.get(new Integer(server0Id)));
-      log.info(failoverMap.get(new Integer(server1Id)));
-      log.info(failoverMap.get(new Integer(server2Id)));
-
-      int server1FailoverId = ((Integer)failoverMap.get(new Integer(server1Id))).intValue();
-
-      // server 1 should failover onto server 2
-
-      assertEquals(server2Id, server1FailoverId);
 
       Connection conn = null;
 
@@ -670,9 +322,12 @@ public class HATest extends ClusteringTestBase
 
       try
       {
-         conn = createConnectionOnServer(factory, 1);
+         conn = createConnectionOnServer(cf, 1);
 
          JBossConnection jbc = (JBossConnection)conn;
+         
+         SimpleFailoverListener failoverListener = new SimpleFailoverListener();
+         ((JBossConnection)conn).registerFailoverListener(failoverListener);
 
          ClientConnectionDelegate del = (ClientConnectionDelegate)jbc.getDelegate();
 
@@ -715,39 +370,33 @@ public class HATest extends ClusteringTestBase
          //So we now kill server 1
          //Which should cause transparent failover of connection conn onto server 2
 
-         log.info("here we go");
-         log.info("######");
-         log.info("###### KILLING (CRASHING) SERVER 1");
-         log.info("######");
-
          ServerManagement.kill(1);
 
          killed = true;
 
-         long sleepTime = 10;
+         // wait for the client-side failover to complete
 
-         log.info("killed server, now waiting for " + sleepTime + " seconds");
+         while(true)
+         {
+            FailoverEvent event = failoverListener.getEvent(30000);
+            if (event != null && FailoverEvent.FAILOVER_COMPLETED == event.getType())
+            {
+               break;
+            }
+            if (event == null)
+            {
+               fail("Did not get expected FAILOVER_COMPLETED event");
+            }
+         }
 
-         // NOTE: the sleep time needs to be longer than the Remoting connector's lease period
-         Thread.sleep(sleepTime * 1000);
-
-         log.info("done wait");
 
          state = (ConnectionState)del.getState();
 
          int finalServerID = state.getServerID();
 
-         log.info("final server id= " + finalServerID);
-
-         //server id should now be 2
-
-         assertEquals(server1FailoverId, finalServerID);
-
          conn.start();
 
          //Now should be able to consume the rest of the messages
-
-         log.info("here1");
 
          TextMessage tm = null;
 
@@ -757,12 +406,8 @@ public class HATest extends ClusteringTestBase
             
             assertNotNull(tm);
             
-         	log.info("receiving: " + tm.getText());         	
-            
-           // assertEquals("message:" + i, tm.getText());
+            assertEquals("message:" + i, tm.getText());
          }
-
-         log.info("here2");
 
          //Now should be able to acknowledge them
 
@@ -771,15 +416,7 @@ public class HATest extends ClusteringTestBase
          //Now check there are no more messages there
          sess.close();
 
-         sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-
-         cons = sess.createConsumer(queue[1]);
-
-         Message m = cons.receive(500);
-
-         assertNull(m);
-
-         log.info("got to end of test");
+         checkEmpty(queue[finalServerID], finalServerID);
       }
       finally
       {
@@ -807,46 +444,9 @@ public class HATest extends ClusteringTestBase
      
    public void testFailoverWithUnackedMessagesTransactional() throws Exception
    {
-      JBossConnectionFactory factory =  (JBossConnectionFactory )ic[0].lookup("/ClusteredConnectionFactory");
-
-      ClientClusteredConnectionFactoryDelegate delegate =
-         (ClientClusteredConnectionFactoryDelegate)factory.getDelegate();
-
       Set nodeIDView = ServerManagement.getServer(0).getNodeIDView();
       assertEquals(3, nodeIDView.size());
-
-      ClientConnectionFactoryDelegate[] delegates = delegate.getDelegates();
-
-      ClientConnectionFactoryDelegate cf1 = delegates[0];
-
-      ClientConnectionFactoryDelegate cf2 = delegates[1];
-
-      ClientConnectionFactoryDelegate cf3 = delegates[2];
-
-      int server0Id = cf1.getServerID();
-
-      int server1Id = cf2.getServerID();
-
-      int server2Id = cf3.getServerID();
-
-      log.info("server 0 id: " + server0Id);
-
-      log.info("server 1 id: " + server1Id);
-
-      log.info("server 2 id: " + server2Id);
-
-      Map failoverMap = delegate.getFailoverMap();
-
-      log.info(failoverMap.get(new Integer(server0Id)));
-      log.info(failoverMap.get(new Integer(server1Id)));
-      log.info(failoverMap.get(new Integer(server2Id)));
-
-      int server1FailoverId = ((Integer)failoverMap.get(new Integer(server1Id))).intValue();
-
-      // server 1 should failover onto server 2
-
-      assertEquals(server2Id, server1FailoverId);
-
+     
       Connection conn = null;
 
       boolean killed = false;
@@ -855,7 +455,10 @@ public class HATest extends ClusteringTestBase
       {
          //Get a connection on server 1
 
-         conn = createConnectionOnServer(factory, 1);
+         conn = createConnectionOnServer(cf, 1);
+         
+         SimpleFailoverListener failoverListener = new SimpleFailoverListener();
+         ((JBossConnection)conn).registerFailoverListener(failoverListener);
 
          JBossConnection jbc = (JBossConnection)conn;
 
@@ -900,42 +503,33 @@ public class HATest extends ClusteringTestBase
 
          //So now, messages should be in queue[1] on server 1
          //So we now kill server 1
-         //Which should cause transparent failover of connection conn onto server 1
-
-         log.info("######");
-         log.info("###### KILLING (CRASHING) SERVER 1");
-         log.info("######");
-
+         //Which should cause transparent failover of connection conn onto server 2
+         
          ServerManagement.kill(1);
 
          killed = true;
 
-         log.info("killed server, now waiting");
+         //       wait for the client-side failover to complete
 
-         long sleepTime = 10;
-
-         log.info("killed server, now waiting for " + sleepTime + " seconds");
-
-         // NOTE: the sleep time needs to be longer than the Remoting connector's lease period
-         Thread.sleep(sleepTime * 1000);
-
-         log.info("done wait");
-
+         while(true)
+         {
+            FailoverEvent event = failoverListener.getEvent(30000);
+            if (event != null && FailoverEvent.FAILOVER_COMPLETED == event.getType())
+            {
+               break;
+            }
+            if (event == null)
+            {
+               fail("Did not get expected FAILOVER_COMPLETED event");
+            }
+         }
          state = (ConnectionState)del.getState();
 
          int finalServerID = state.getServerID();
 
-         log.info("final server id= " + finalServerID);
-
-         //server id should now be 2
-
-         assertEquals(server1FailoverId, finalServerID);
-
          conn.start();
 
          //Now should be able to consume the rest of the messages
-
-         log.info("here1");
 
          TextMessage tm = null;
 
@@ -943,14 +537,10 @@ public class HATest extends ClusteringTestBase
          {
             tm = (TextMessage)cons.receive(5000);
 
-            log.debug("message is " + tm.getText());
-
             assertNotNull(tm);
 
             assertEquals("message:" + i, tm.getText());
          }
-
-         log.info("here2");
 
          //Now should be able to commit them
 
@@ -959,15 +549,7 @@ public class HATest extends ClusteringTestBase
          //Now check there are no more messages there
          sess.close();
 
-         sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-
-         cons = sess.createConsumer(queue[1]);
-
-         Message m = cons.receive(500);
-
-         assertNull(m);
-
-         log.info("got to end of test");
+         checkEmpty(queue[1], finalServerID);
       }
       finally
       {
@@ -993,38 +575,27 @@ public class HATest extends ClusteringTestBase
 
    public void testTopicSubscriber() throws Exception
    {
-      log.info("++testTopicSubscriber");
-
-      log.info(">>Lookup Queue");
-      
       Destination destination = (Destination) topic[1];
 
       JBossConnection conn = (JBossConnection)createConnectionOnServer(cf, 1);
+      
+      SimpleFailoverListener failoverListener = new SimpleFailoverListener();
+      ((JBossConnection)conn).registerFailoverListener(failoverListener);
+
 
       conn.setClientID("testClient");
       conn.start();
 
       try
       {
-
          JBossSession session = (JBossSession) conn.createSession(true, Session.SESSION_TRANSACTED);
          ClientSessionDelegate clientSessionDelegate = (ClientSessionDelegate) session.getDelegate();
          SessionState sessionState = (SessionState) clientSessionDelegate.getState();
 
          MessageConsumer consumerHA = session.createDurableSubscriber((Topic) destination, "T1");
-         JBossMessageConsumer jbossConsumerHA = (JBossMessageConsumer) consumerHA;
 
-         org.jboss.jms.client.delegate.ClientConsumerDelegate clientDelegate =
-            (org.jboss.jms.client.delegate.ClientConsumerDelegate) jbossConsumerHA.getDelegate();
-         ConsumerState consumerState = (ConsumerState) clientDelegate.getState();
-
-         log.info("subscriptionName=" + consumerState.getSubscriptionName());
-
-         log.info(">>Creating Producer");
          MessageProducer producer = session.createProducer(destination);
-         log.info(">>creating Message");
          Message message = session.createTextMessage("Hello Before");
-         log.info(">>sending Message");
          producer.send(message);
          session.commit();
 
@@ -1041,22 +612,30 @@ public class HATest extends ClusteringTestBase
 
          JMSRemotingConnection originalRemoting = delegate.getRemotingConnection();
 
-         ServerManagement.kill(1);
+         // wait for the client-side failover to complete
 
-         Thread.sleep(10000);
+         while(true)
+         {
+            FailoverEvent event = failoverListener.getEvent(30000);
+            if (event != null && FailoverEvent.FAILOVER_COMPLETED == event.getType())
+            {
+               break;
+            }
+            if (event == null)
+            {
+               fail("Did not get expected FAILOVER_COMPLETED event");
+            }
+         }
          // if failover happened, this object was replaced
          assertNotSame(originalRemoting, delegate.getRemotingConnection());
 
          message = session.createTextMessage("Hello After");
-         log.info(">>Sending new message");
          producer.send(message);
 
          assertEquals(txID, sessionState.getCurrentTxId());
-         log.info(">>Final commit");
-
+ 
          session.commit();
 
-         log.info("Calling alternate receiver");
          receiveMessage("consumerHA", consumerHA, true, false);
          receiveMessage("consumerHA", consumerHA, true, false);
          receiveMessage("consumerHA", consumerHA, true, true);
@@ -1081,22 +660,6 @@ public class HATest extends ClusteringTestBase
       nodeCount = 3;
 
       super.setUp();
-
-      log.debug("setup done");
-   }
-   
-   protected void tearDown() throws Exception
-   {
-      super.tearDown();
-      
-      for (int i = 0; i < nodeCount; i++)
-      {
-         if (ServerManagement.isStarted(i))
-         {
-            ServerManagement.log(ServerManagement.INFO, "Undeploying Server " + i, i);
-            ServerManagement.stop(i);
-         }
-      }
    }
    
    // Private -------------------------------------------------------
