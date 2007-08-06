@@ -901,6 +901,11 @@ public class LocalTestServer implements Server
    {
    	getServerPeer().resetAllSuckers();
    }
+   
+   public void setUseXAForMessagePull(boolean xa) throws Exception
+   {
+   	getServerPeer().setUseXAForMessagePull(xa);
+   }
 
    // Public ---------------------------------------------------------------------------------------
 

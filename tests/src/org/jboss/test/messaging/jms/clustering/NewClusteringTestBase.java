@@ -156,8 +156,9 @@ public class NewClusteringTestBase extends MessagingTestCase
       		topic[i] = oldTopic[i];
       	}
       	
-      	for (int i = nodeCount; i < ic.length; i++)
+      	for (int i = nodeCount; i < oldIc.length; i++)
       	{
+      		log.info("*** killing server");
       		ServerManagement.kill(i);
       	}
       }
@@ -198,27 +199,16 @@ public class NewClusteringTestBase extends MessagingTestCase
       }
       
       cf = (JBossConnectionFactory)ic[0].lookup("/ClusteredConnectionFactory");  
-      log.info("Looked up new clustered connection factory");
-      
+      log.info("Looked up new clustered connection factory");      
    }
    
    protected void tearDown() throws Exception
    {
       super.tearDown();
-      
-      //If server 0 was killed with a killOverride we must kill the others
-      if (ServerManagement.getServer(0) == null)
-      {
-      	for (int i = 1; i < nodeCount; i++)
-      	{
-      		ServerManagement.kill(i);
-      	}      	
-      }
-           
+                 
       // This will tell us if any connections have been left open
 		assertEquals(0, ResourceManagerFactory.instance.size());	
    }
-
 
    protected String getLocatorURL(Connection conn)
    {
@@ -237,9 +227,7 @@ public class NewClusteringTestBase extends MessagingTestCase
       return (ConnectionState) (((DelegateSupport) ((JBossConnection) conn).
          getDelegate()).getState());
    }
-
-   
-
+  
    protected void waitForFailoverComplete(int serverID, Connection conn1)
       throws Exception
    {

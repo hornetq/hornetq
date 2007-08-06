@@ -44,7 +44,7 @@ import org.jboss.test.messaging.tools.ServerManagement;
  * $Id$
  *
  */
-public class DistributedTopicTest extends ClusteringTestBase
+public class DistributedTopicTest extends NewClusteringTestBase
 {
 
    // Constants -----------------------------------------------------
@@ -147,9 +147,6 @@ public class DistributedTopicTest extends ClusteringTestBase
       ServerManagement.deployTopic("nonClusteredTopic", "nonClusteredTopic", 300000, 3000, 3000, 1, false);
       
       ServerManagement.deployTopic("nonClusteredTopic", "nonClusteredTopic", 300000, 3000, 3000, 2, false);
-     
-      
-      log.debug("setup done");
    }
 
    protected void tearDown() throws Exception
@@ -529,6 +526,8 @@ public class DistributedTopicTest extends ClusteringTestBase
          
          MessageConsumer epsilon = sess1.createDurableSubscriber(topic[1], "epsilon");
          
+         Thread.sleep(2000);
+         
          conn0.start();
          conn1.start();
          conn2.start();
@@ -711,8 +710,7 @@ public class DistributedTopicTest extends ClusteringTestBase
       }
    }
    
-   
-
+  
    /*
     * Create shared durable subs on multiple nodes, the local instance should always get the message
     */

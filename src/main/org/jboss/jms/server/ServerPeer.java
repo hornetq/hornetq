@@ -597,13 +597,14 @@ public class ServerPeer extends ServiceMBeanSupport
    	return useXAForMessagePull;
    }
    
-   public void setUseXAForMessagePull(boolean useXA)
+   public void setUseXAForMessagePull(boolean useXA) throws Exception
    {
-   	if (started)
-      {
-         throw new IllegalStateException("Cannot set UseXAForMessagePull while the service is running");
-      }
    	this.useXAForMessagePull = useXA;
+   	
+   	if (started)
+   	{
+   		clusterConnectionManager.setIsXA(useXA);
+   	}
    }
    
    public boolean isDefaultPreserveOrdering()
@@ -1046,7 +1047,7 @@ public class ServerPeer extends ServiceMBeanSupport
    {
    	clusterConnectionManager.resetAllSuckers();
    }
-   
+     
    public byte[] getClientAOPStack()
    {
       return clientAOPStack;

@@ -22,7 +22,6 @@
 package org.jboss.test.messaging.jms.clustering;
 
 import javax.jms.Connection;
-import javax.jms.ConnectionFactory;
 import javax.jms.DeliveryMode;
 import javax.jms.Destination;
 import javax.jms.JMSException;
@@ -30,13 +29,8 @@ import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageListener;
 import javax.jms.MessageProducer;
-import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.TextMessage;
-import javax.naming.InitialContext;
-
-import org.jboss.test.messaging.MessagingTestCase;
-import org.jboss.test.messaging.tools.ServerManagement;
 
 /**
  * A test for distributed request-response pattern
@@ -46,7 +40,7 @@ import org.jboss.test.messaging.tools.ServerManagement;
  *
  * $Id: TemporaryDestinationTest.java 2701 2007-05-17 16:01:05Z timfox $
  */
-public class DistributedRequestResponseTest extends MessagingTestCase
+public class DistributedRequestResponseTest extends NewClusteringTestBase
 {
    // Constants ------------------------------------------------------------------------------------
 
@@ -89,29 +83,14 @@ public class DistributedRequestResponseTest extends MessagingTestCase
 
    protected void setUp() throws Exception
    {
+   	nodeCount = 2;
+   	
       super.setUp();
-      
-      ServerManagement.start(0, "all", null, true);
-      ServerManagement.start(1, "all", null, false);
-
-      ServerManagement.deployQueue("testDistributedQueue", 0);
-      ServerManagement.deployQueue("testDistributedQueue", 1);
-      
-      removeAllMessages("testDistributedQueue", true, 0);
-      removeAllMessages("testDistributedQueue", true, 1);
-
-      
-
-      log.debug("setup done");
    }
 
    protected void tearDown() throws Exception
    {
-      super.tearDown();
-      
-   	ServerManagement.undeployQueue("testDistributedQueue", 0);
-   	
-      ServerManagement.undeployQueue("testDistributedQueue", 1);         	
+      super.tearDown();    	
    }
 
    // Private --------------------------------------------------------------------------------------
@@ -123,24 +102,10 @@ public class DistributedRequestResponseTest extends MessagingTestCase
    	Connection conn1 = null;
       
       try
-      {      
-	      InitialContext ic0 = new InitialContext(ServerManagement.getJNDIEnvironment(0));
-	      InitialContext ic1 = new InitialContext(ServerManagement.getJNDIEnvironment(1));
-	
-	      ConnectionFactory cf = (ConnectionFactory)ic0.lookup("/ClusteredConnectionFactory");
-	      
-	      Queue queue0 = (Queue)ic0.lookup("/queue/testDistributedQueue");
-	      Queue queue1 = (Queue)ic1.lookup("/queue/testDistributedQueue");
-	   	
+      {      	
          conn0 = this.createConnectionOnServer(cf, 0);
          
-         conn1 = cf.createConnection();
-         
-         assertEquals(0, getServerId(conn0));
-         
-         assertEquals(1, getServerId(conn1));
-         
-         // Make sure the connections are on different servers
+         conn1 = this.createConnectionOnServer(cf, 1);
          
          Session session0 = conn0.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
@@ -174,7 +139,6 @@ public class DistributedRequestResponseTest extends MessagingTestCase
 				{
 					try
 					{
-						log.info("Received message in listener!");
 						Destination dest = msg.getJMSReplyTo();
 						MessageProducer prod = sess.createProducer(dest);
 						prod.setDeliveryMode(persistent ? DeliveryMode.PERSISTENT : DeliveryMode.NON_PERSISTENT);
@@ -182,7 +146,6 @@ public class DistributedRequestResponseTest extends MessagingTestCase
 						String text = tm.getText();
 						tm.clearBody();
 						tm.setText(text + "reply");
-						log.info("Sending response");
 						prod.send(msg);
 					}
 					catch (JMSException e)
@@ -197,7 +160,7 @@ public class DistributedRequestResponseTest extends MessagingTestCase
                   
          Session session1 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
          
-         MessageConsumer cons1 = session1.createConsumer(queue1);
+         MessageConsumer cons1 = session1.createConsumer(queue[1]);
          
          MyListener listener = new MyListener(session1);
          
@@ -206,7 +169,7 @@ public class DistributedRequestResponseTest extends MessagingTestCase
          conn1.start();
          
                                     
-         MessageProducer prod = session0.createProducer(queue0);
+         MessageProducer prod = session0.createProducer(queue[0]);
          
          prod.setDeliveryMode(persistent ? DeliveryMode.PERSISTENT : DeliveryMode.NON_PERSISTENT);
          
@@ -216,8 +179,6 @@ public class DistributedRequestResponseTest extends MessagingTestCase
             
             sm.setJMSReplyTo(tempDest);
             
-            log.info("Sending message!");
-            
             prod.send(sm);
             
             TextMessage tm = (TextMessage)cons0.receive(60000);
@@ -225,8 +186,6 @@ public class DistributedRequestResponseTest extends MessagingTestCase
             assertNotNull(tm);
             
             assertEquals(sm.getText() + "reply", tm.getText());
-            
-            log.info("Received reply!");
          }   
       }
       finally

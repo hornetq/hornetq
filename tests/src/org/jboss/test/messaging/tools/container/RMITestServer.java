@@ -501,6 +501,11 @@ public class RMITestServer extends UnicastRemoteObject implements Server
    {
    	server.resetAllSuckers();
    }
+   
+   public void setUseXAForMessagePull(boolean xa) throws Exception
+   {
+   	server.setUseXAForMessagePull(xa);
+   }
 
    // Public --------------------------------------------------------
 

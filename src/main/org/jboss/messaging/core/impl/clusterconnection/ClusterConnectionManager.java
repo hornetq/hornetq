@@ -161,6 +161,32 @@ public class ClusterConnectionManager implements ClusterNotificationListener
 		}
 	}
 	
+	public void setIsXA(boolean xa) throws Exception
+	{
+		boolean needToClose = this.xa != xa;
+		if (needToClose)
+		{
+			closeAllSuckers();
+		}
+		this.xa = xa;
+		if (needToClose)
+		{
+			createAllSuckers();
+		}		
+	}
+	
+	public void closeAllSuckers()
+	{
+		Iterator iter = connections.values().iterator();
+		
+		while (iter.hasNext())
+		{
+			ConnectionInfo conn = (ConnectionInfo)iter.next();
+			
+			conn.closeAllSuckers();
+		}	
+	}
+	
 	/*
 	 * We respond to two types of events -
 	 * 
@@ -624,11 +650,9 @@ public class ClusterConnectionManager implements ClusterNotificationListener
 				
 				sucker.setConsuming(false);
 			}
-			
-			
 		}
 		
-		synchronized void close()
+		synchronized void closeAllSuckers()
 		{
 			Iterator iter = suckers.values().iterator();
 			
@@ -640,7 +664,11 @@ public class ClusterConnectionManager implements ClusterNotificationListener
 			}
 			
 			suckers.clear();
-			
+		}
+		
+		synchronized void close()
+		{
+			closeAllSuckers();			
 			
 			//Note we use a timed callable since remoting has a habit of hanging on attempting to close
 			//We do not want this to hang the system - especially failover
@@ -668,7 +696,6 @@ public class ClusterConnectionManager implements ClusterNotificationListener
 				//Ignore - the server might have already closed - so this is ok
 			}
 			
-
 			connection = null;
 			
 			started = false;

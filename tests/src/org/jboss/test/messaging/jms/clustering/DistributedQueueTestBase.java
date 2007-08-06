@@ -33,7 +33,6 @@ import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 
-import org.jboss.jms.client.JBossConnectionFactory;
 import org.jboss.test.messaging.tools.ServerManagement;
 
 
@@ -97,13 +96,11 @@ public abstract class DistributedQueueTestBase extends NewClusteringTestBase
    
    public void testWithConnectionsOnAllNodesClientAck() throws Exception
    {
-   	JBossConnectionFactory factory = (JBossConnectionFactory) ic[0].lookup("/ClusteredConnectionFactory");
-
-      Connection conn0 = createConnectionOnServer(factory, 0);
+      Connection conn0 = createConnectionOnServer(cf, 0);
       
-      Connection conn1 = createConnectionOnServer(factory, 1);
+      Connection conn1 = createConnectionOnServer(cf, 1);
       
-      Connection conn2 = createConnectionOnServer(factory, 2);
+      Connection conn2 = createConnectionOnServer(cf, 2);
       
       try
       {
@@ -143,6 +140,8 @@ public abstract class DistributedQueueTestBase extends NewClusteringTestBase
       		msgIds.add(tm0_1.getText());
       	}
       	
+      	tm0_1.acknowledge();
+      	
       	cons0_1.close();
       	
       	Session sess0_2 = conn0.createSession(false, Session.CLIENT_ACKNOWLEDGE);
@@ -159,6 +158,8 @@ public abstract class DistributedQueueTestBase extends NewClusteringTestBase
       		
       		msgIds.add(tm0_2.getText());
       	}
+      	
+      	tm0_2.acknowledge();
       	
       	cons0_2.close();
       	
@@ -180,6 +181,8 @@ public abstract class DistributedQueueTestBase extends NewClusteringTestBase
       		msgIds.add(tm1_1.getText());
       	}
       	
+      	tm1_1.acknowledge();
+      	
       	cons1_1.close();
      
       	Session sess1_2 = conn1.createSession(false, Session.CLIENT_ACKNOWLEDGE);
@@ -196,6 +199,8 @@ public abstract class DistributedQueueTestBase extends NewClusteringTestBase
       		
       		msgIds.add(tm1_2.getText());
       	}
+      	
+      	tm1_2.acknowledge();
       	
       	cons1_2.close();
       	
@@ -217,6 +222,8 @@ public abstract class DistributedQueueTestBase extends NewClusteringTestBase
       		msgIds.add(tm2_1.getText());
       	}
       	
+      	tm2_1.acknowledge();
+      	
       	cons2_1.close();
       	
       	Session sess2_2 = conn2.createSession(false, Session.CLIENT_ACKNOWLEDGE);
@@ -233,6 +240,8 @@ public abstract class DistributedQueueTestBase extends NewClusteringTestBase
       		
       		msgIds.add(tm2_2.getText());
       	}
+      	
+      	tm2_2.acknowledge();
       	
       	cons2_2.close();
       	
@@ -332,8 +341,6 @@ public abstract class DistributedQueueTestBase extends NewClusteringTestBase
             if (tm != null)
             {                     
 	            msgs.add(tm.getText());
-	            
-	            log.info("Got message " + tm.getText());
             }
          }           
          while (tm != null);
@@ -385,13 +392,6 @@ public abstract class DistributedQueueTestBase extends NewClusteringTestBase
       nodeCount = 3;
 
       super.setUp();
-
-      log.debug("setup done");
-   }
-
-   protected void tearDown() throws Exception
-   {
-      super.tearDown();
    }
 
    // private -----------------------------------------------------

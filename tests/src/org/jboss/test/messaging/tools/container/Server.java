@@ -290,4 +290,6 @@ public interface Server extends Remote
    
    void resetAllSuckers() throws Exception;
    
+   void setUseXAForMessagePull(boolean xa) throws Exception;
+   
 }
