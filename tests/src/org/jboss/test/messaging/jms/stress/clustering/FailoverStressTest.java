@@ -32,7 +32,7 @@ import javax.jms.Session;
 import org.jboss.jms.client.FailoverEvent;
 import org.jboss.jms.client.FailoverListener;
 import org.jboss.jms.client.JBossConnection;
-import org.jboss.test.messaging.jms.clustering.ClusteringTestBase;
+import org.jboss.test.messaging.jms.clustering.NewClusteringTestBase;
 import org.jboss.test.messaging.tools.ServerManagement;
 
 import EDU.oswego.cs.dl.util.concurrent.SynchronizedInt;
@@ -43,7 +43,7 @@ import EDU.oswego.cs.dl.util.concurrent.SynchronizedInt;
  * 
  * $Id$
  */
-public class FailoverStressTest extends ClusteringTestBase
+public class FailoverStressTest extends NewClusteringTestBase
 {
    // Constants -----------------------------------------------------
 

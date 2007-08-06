@@ -19,10 +19,10 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 
 import org.jboss.logging.Logger;
-import org.jboss.test.messaging.jms.clustering.ClusteringTestBase;
+import org.jboss.test.messaging.jms.clustering.NewClusteringTestBase;
 
 
-public class ClusteredTopicStressTest extends ClusteringTestBase
+public class ClusteredTopicStressTest extends NewClusteringTestBase
 {
    // Constants -----------------------------------------------------
 
