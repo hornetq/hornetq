@@ -305,8 +305,6 @@ public class HATest extends NewClusteringTestBase
          {
             conn.close();
          }
-
-         ServerManagement.start(1, "all");
       }
    }
 
@@ -317,8 +315,6 @@ public class HATest extends NewClusteringTestBase
       assertEquals(3, nodeIDView.size());
 
       Connection conn = null;
-
-      boolean killed = false;
 
       try
       {
@@ -371,8 +367,6 @@ public class HATest extends NewClusteringTestBase
          //Which should cause transparent failover of connection conn onto server 2
 
          ServerManagement.kill(1);
-
-         killed = true;
 
          // wait for the client-side failover to complete
 
@@ -431,12 +425,6 @@ public class HATest extends NewClusteringTestBase
                e.printStackTrace();
             }
          }
-
-         // Resurrect dead server
-         if (killed)
-         {
-            ServerManagement.start(1, "all");
-         }
       }
 
    }
@@ -448,8 +436,6 @@ public class HATest extends NewClusteringTestBase
       assertEquals(3, nodeIDView.size());
      
       Connection conn = null;
-
-      boolean killed = false;
 
       try
       {
@@ -507,8 +493,6 @@ public class HATest extends NewClusteringTestBase
          
          ServerManagement.kill(1);
 
-         killed = true;
-
          //       wait for the client-side failover to complete
 
          while(true)
@@ -564,13 +548,7 @@ public class HATest extends NewClusteringTestBase
                e.printStackTrace();
             }
          }
-
-         if (killed)
-         {
-            ServerManagement.start(1, "all");
-         }
       }
-
    }
 
    public void testTopicSubscriber() throws Exception
@@ -611,6 +589,8 @@ public class HATest extends NewClusteringTestBase
          ClientConnectionDelegate delegate = (ClientConnectionDelegate) conn.getDelegate();
 
          JMSRemotingConnection originalRemoting = delegate.getRemotingConnection();
+
+         ServerManagement.kill(1);
 
          // wait for the client-side failover to complete
 
