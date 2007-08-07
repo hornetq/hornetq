@@ -750,18 +750,44 @@
             <formatter classname="org.jboss.test.messaging.tools.ant.JUnitTestSuiteListener"/>
 
             <fileset dir="${build.tests.classes}">
-              <!--  <include name="**/jms/clustering/${test-mask}.class"/> -->
-               <exclude name="**/jms/clustering/ClusterLeakTest.class"/>
+
+<!--
+
+              <include name="**/jms/clustering/${test-mask}.class"/>i
+              <exclude name="**/jms/clustering/ClusterLeakTest.class"/>
+-->
+
 <include name="**/jms/clustering/ChangeFailoverNodeTest.class"/>
 <include name="**/jms/clustering/ClusterConnectionManagerTest.class"/>
 <include name="**/jms/clustering/ClusteredConnectionFactoryTest.class"/>
 <include name="**/jms/clustering/ClusteringAspectInternalTest.class"/>
-<!-- <include name="**/jms/clustering/ClusterViewUpdateTest.class"/> -->
+
+
+
+
+
+
+
+
+<include name="**/jms/clustering/ClusterViewUpdateTest.class"/>
 <include name="**/jms/clustering/DisableLoadBalancingAndFailoverTest.class"/>
 <include name="**/jms/clustering/DistributedQueueDontUseXATest.class"/>
 <include name="**/jms/clustering/DistributedQueueUseXATest.class"/>
 <include name="**/jms/clustering/DistributedRequestResponseTest.class"/>
 <include name="**/jms/clustering/DistributedTopicTest.class"/>
+<include name="**/jms/clustering/FailoverTest.class"/>
+<include name="**/jms/clustering/GroupManagementTest.class"/>
+<include name="**/jms/clustering/HATest.class"/>
+<include name="**/jms/clustering/LargeClusterTest.class"/>
+<include name="**/jms/clustering/LoadBalancingTest.class"/>
+<include name="**/jms/clustering/MergeQueueTest.class"/>
+<include name="**/jms/clustering/MultipleFailoverTest.class"/>
+<include name="**/jms/clustering/MultiThreadFailoverTest.class"/>
+<include name="**/jms/clustering/NoFailoverTest.class"/>
+<include name="**/jms/clustering/PreserveOrderingTest.class"/>
+<include name="**/jms/clustering/RecoverDeliveriesTest.class"/>
+<include name="**/jms/clustering/TemporaryDestinationTest.class"/>
+<include name="**/jms/clustering/XAFailoverTest.class"/>
             </fileset>
          </batchtest>
       </junit>
