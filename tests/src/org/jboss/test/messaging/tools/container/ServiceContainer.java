@@ -85,6 +85,7 @@ import org.jboss.test.messaging.tools.jboss.ServiceDeploymentDescriptor;
 import org.jboss.tm.TransactionManagerService;
 import org.jboss.tm.TxManager;
 import org.jboss.tm.usertx.client.ServerVMClientUserTransaction;
+import org.jboss.util.id.GUID;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
@@ -416,11 +417,6 @@ public class ServiceContainer
          startServiceController();
 
          registerClassLoader();
-
-         if (jbossjta)
-         {
-            deleteObjectStore();
-         }
 
          if (transaction || jbossjta)
          {
@@ -1080,8 +1076,10 @@ public class ServiceContainer
       {
          if (jbossjta)
          {
+            setObjectStore();         
+         	
             log.info("Starting arjuna tx mgr");
-            tm = com.arjuna.ats.jta.TransactionManager.transactionManager();
+            tm = com.arjuna.ats.jta.TransactionManager.transactionManager();                       
          }
          else
          {
@@ -1124,27 +1122,17 @@ public class ServiceContainer
       return directory.delete();
    }
 
-   private void deleteObjectStore()
+   private void setObjectStore()
    {
       // First delete the object store - might have been left over from a previous run
 
-      String objectStoreDir = System.getProperty("objectstore.dir");
+      //We must ensure each node has its own object store
+      String newObjectStore = "TestObjectStore-" + new GUID().toString();
+      
+      log.info("Setting objectstore.dir to " + newObjectStore);
 
-      log.info("Deleting object store: " + objectStoreDir);
-
-      if (objectStoreDir == null)
-      {
-         log.warn("Cannot find objectstore.dir parameter");
-      }
-      else
-      {
-         File f = new File(objectStoreDir);
-
-         deleteDirectory(f);
-      }
+      System.setProperty("com.arjuna.ats.arjuna.objectstore.objectStoreDir", newObjectStore);
    }
-
-
 
    private void startCachedConnectionManager(ObjectName on) throws Exception
    {
@@ -1700,7 +1688,7 @@ public class ServiceContainer
 
          if ("all".equals(tok))
          {
-            transaction = true;
+            jbossjta = true;
             database = true;
             jca = true;
             remoting = true;
@@ -1709,7 +1697,7 @@ public class ServiceContainer
          else
          if ("all-failover".equals(tok))
          {
-            transaction = true;
+            jbossjta = true;
             database = true;
             jca = true;
             remoting = true;
@@ -1719,7 +1707,7 @@ public class ServiceContainer
          else
          if ("all+http".equals(tok))
          {
-            transaction = true;
+            jbossjta = true;
             database = true;
             jca = true;
             remoting = true;
@@ -1790,7 +1778,7 @@ public class ServiceContainer
          }
          else if ("none".equals(tok))
          {
-            transaction = false;
+            jbossjta = false;
             database = false;
             jca = false;
             remoting = false;
