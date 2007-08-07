@@ -293,7 +293,8 @@ public class MessageSucker implements MessageListener
 				
 				tx.delistResource(localSession.getXAResource(), XAResource.TMSUCCESS);
 				
-				tx.commit();
+			//	tx.commit();
+tm.commit();
 				
 				if (trace) { log.trace("Committed JTA transaction"); }
 			}
@@ -312,7 +313,7 @@ public class MessageSucker implements MessageListener
 			
 			try
 			{
-				if (tx != null) tx.rollback();
+				if (tx != null) tm.rollback();
 			}
 			catch (Throwable t)
 			{

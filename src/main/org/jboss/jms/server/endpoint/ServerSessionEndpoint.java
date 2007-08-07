@@ -1331,8 +1331,10 @@ public class ServerSessionEndpoint implements SessionEndpoint
    		waitingToClose = false;
    	}
    }
-   
-   void handleDelivery(Delivery delivery, ServerConsumerEndpoint consumer) throws Exception
+  
+   //TODO NOTE! This needs to be synchronized to prevent deliveries coming back
+   //out of order! There maybe some better way of doing this 
+   synchronized void handleDelivery(Delivery delivery, ServerConsumerEndpoint consumer) throws Exception
    {
    	 long deliveryId = -1;
    	 
