@@ -132,7 +132,13 @@ public class MessagingTestCase extends ProxyAssertSupport
    	
       Integer messageCount = (Integer)ServerManagement.getAttribute(destObjectName, "MessageCount");
        
-      assertEquals(0, messageCount.intValue());      
+      if (messageCount.intValue() != 0)
+      {
+      	//Delete before failing - so as not to make all other tests fail
+      	removeAllMessages(queue.getQueueName(), true, 0);
+      	
+      	fail("Message count for queue " + queue.getQueueName() + " on server is " + messageCount);
+      }    
    }
    
    protected void checkEmpty(Queue queue, int server) throws Exception
@@ -143,6 +149,9 @@ public class MessagingTestCase extends ProxyAssertSupport
       
       if (messageCount.intValue() != 0)
       {
+      	//Delete before failing - so as not to make all other tests fail
+      	removeAllMessages(queue.getQueueName(), true, 0);
+      	
       	fail("Message count for queue " + queue.getQueueName() + " on server " + server + " is " + messageCount);
       }
    }
@@ -153,7 +162,13 @@ public class MessagingTestCase extends ProxyAssertSupport
    	
       Integer messageCount = (Integer)ServerManagement.getAttribute(destObjectName, "AllMessageCount"); 
       
-      assertEquals(0, messageCount.intValue());      
+      if (messageCount.intValue() != 0)
+      {
+      	//Delete before failing - so as not to make all other tests fail
+      	removeAllMessages(topic.getTopicName(), true, 0);
+      	
+      	fail("Message count for queue " + topic.getTopicName() + " is " + messageCount);
+      }     
    }
          
    protected void checkNoSubscriptions(Topic topic) throws Exception
