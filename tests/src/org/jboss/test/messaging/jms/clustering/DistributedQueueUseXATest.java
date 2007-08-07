@@ -59,7 +59,7 @@ public class DistributedQueueUseXATest extends DistributedQueueTestBase
       super.setUp();
 
       for (int i = 0; i < nodeCount; i++)
-      {
+      {      	
       	ServerManagement.getServer(i).setUseXAForMessagePull(true);
       }      
    }

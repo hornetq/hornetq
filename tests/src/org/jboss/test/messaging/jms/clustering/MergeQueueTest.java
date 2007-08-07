@@ -95,7 +95,7 @@ public class MergeQueueTest extends NewClusteringTestBase
 
          Session session1 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         MessageProducer producer1 = session1.createProducer(this.queue[1]);
+         MessageProducer producer1 = session1.createProducer(queue[1]);
 
          producer1.setDeliveryMode(DeliveryMode.PERSISTENT);
 
@@ -197,7 +197,7 @@ public class MergeQueueTest extends NewClusteringTestBase
 
          Session session1 = conn1.createSession(true, Session.SESSION_TRANSACTED);
 
-         MessageProducer producer1 = session1.createProducer(this.queue[1]);
+         MessageProducer producer1 = session1.createProducer(queue[1]);
 
          producer1.setDeliveryMode(DeliveryMode.PERSISTENT);
 

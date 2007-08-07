@@ -499,7 +499,7 @@ public class MessagingTestCase extends ProxyAssertSupport
    	while (true)
    	{
    		if (count++>10)
-   			return null;
+   			throw new IllegalStateException("Cannot make connection to node " + serverId);
 
    		Connection connection = factory.createConnection();
 
@@ -522,7 +522,7 @@ public class MessagingTestCase extends ProxyAssertSupport
    	while (true)
    	{
    		if (count++>10)
-   			return null;
+   			throw new IllegalStateException("Cannot make connection to node " + serverId);
 
    		Connection connection = factory.createConnection(user, password);
 
