@@ -55,7 +55,6 @@
         <!--
         (Must be unique across all Arjuna instances.)
       -->
-        <property name="com.arjuna.ats.arjuna.xa.nodeIdentifier" value="1"/>
         <!-- property
         name="com.arjuna.ats.arjuna.coordinator.actionStore"
 		value="HashedActionStore"

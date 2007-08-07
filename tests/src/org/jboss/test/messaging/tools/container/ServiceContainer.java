@@ -1076,7 +1076,22 @@ public class ServiceContainer
       {
          if (jbossjta)
          {
-            setObjectStore();         
+         	//We must ensure each node has its own object store
+            String newObjectStore = "TestObjectStore-" + new GUID().toString();
+            
+            log.info("Setting com.arjuna.ats.arjuna.common.Environment.OBJECTSTORE_DIR to " + newObjectStore);
+
+            System.setProperty(com.arjuna.ats.arjuna.common.Environment.OBJECTSTORE_DIR, newObjectStore);  
+            
+            //We must also make sure the node identifier is unique for each node
+            //Otherwise xids might overlap
+            String arjunanodeId = "TestNodeID-" + new GUID().toString();
+            
+            log.info("Setting com.arjuna.ats.arjuna.common.Environment.XA_NODE_IDENTIFIER to " + arjunanodeId);
+            
+            System.setProperty(com.arjuna.ats.arjuna.common.Environment.XA_NODE_IDENTIFIER, arjunanodeId);
+            
+            log.info("Setting objectstore.dir to " + newObjectStore);
          	
             log.info("Starting arjuna tx mgr");
             tm = com.arjuna.ats.jta.TransactionManager.transactionManager();                       
