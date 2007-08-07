@@ -64,7 +64,7 @@ public class TransactionRepository implements MessagingComponent
    
    private boolean trace = log.isTraceEnabled();
    
-   private Map globalToLocalMap;     
+   private Map map;     
    
    private PersistenceManager persistenceManager;
 
@@ -86,7 +86,7 @@ public class TransactionRepository implements MessagingComponent
       
       this.idManager = idManager;
       
-      globalToLocalMap = new ConcurrentHashMap();        
+      map = new ConcurrentHashMap();        
    }
    
    // Injection ----------------------------------------
@@ -127,7 +127,7 @@ public class TransactionRepository implements MessagingComponent
       
       ArrayList prepared = new ArrayList();
 
-      Iterator iter = globalToLocalMap.values().iterator();
+      Iterator iter = map.values().iterator();
       
       while (iter.hasNext())
       {
@@ -188,7 +188,7 @@ public class TransactionRepository implements MessagingComponent
             //This method may be called more than once - e.g. when failover occurs so we don't want to add the
             //prepared tx if it is already in memory
             
-            if (!globalToLocalMap.containsKey(txInfo.getXid()))
+            if (!map.containsKey(txInfo.getXid()))
             {
                Transaction tx = createTransaction(txInfo);
                
@@ -209,16 +209,16 @@ public class TransactionRepository implements MessagingComponent
    
    public List getPreparedTransactions()
    {
-      return new ArrayList(globalToLocalMap.keySet());
+      return new ArrayList(map.keySet());
    }
 
    public Transaction getPreparedTx(Xid xid) throws Exception
    {            
-      Transaction tx = (Transaction)globalToLocalMap.get(xid);
+      Transaction tx = (Transaction)map.get(xid);
 
       if (tx == null)
       {
-         throw new TransactionException("Cannot find local tx for xid:" + xid);
+         throw new TransactionException("Cannot find entry for xid:" + xid);
       }
       if (tx.getState() != Transaction.STATE_PREPARED)
       {
@@ -242,20 +242,20 @@ public class TransactionRepository implements MessagingComponent
 		   throw new TransactionException("Transaction with xid " + id + " can't be removed as it's not yet commited or rolledback: (Current state is " + Transaction.stateToString(state));
 	   }
       
-	   globalToLocalMap.remove(id);	   
+	   map.remove(id);	   
    }
    
    public Transaction createTransaction(Xid xid) throws Exception
    {
-      if (globalToLocalMap.containsKey(xid))
+      if (map.containsKey(xid))
       {
-         throw new TransactionException("There is already a local tx for global tx " + xid);
+         throw new TransactionException("There is already an entry for xid " + xid);
       }
       Transaction tx = new Transaction(idManager.getID(), xid, this);
       
       if (trace) { log.trace("created transaction " + tx); }
       
-      globalToLocalMap.put(xid, tx);
+      map.put(xid, tx);
       
       return tx;
    }
@@ -271,13 +271,13 @@ public class TransactionRepository implements MessagingComponent
 
    public boolean removeTransaction(Xid xid)
    {
-      return globalToLocalMap.remove(xid) != null;
+      return map.remove(xid) != null;
    }
    
    /** To be used only by testcases */
    public int getNumberOfRegisteredTransactions()
    {
-	  return this.globalToLocalMap.size();   
+	  return this.map.size();   
    }
    
    
@@ -456,10 +456,10 @@ public class TransactionRepository implements MessagingComponent
 	 */
 	private Transaction createTransaction(PreparedTxInfo txInfo) throws Exception
    {
-		if (globalToLocalMap.containsKey(txInfo.getXid()))
+		if (map.containsKey(txInfo.getXid()))
       {
 			throw new TransactionException(
-					"There is already a local tx for global tx "	+ txInfo.getXid());
+					"There is already an entry for xid "	+ txInfo.getXid());
 		}
 
 		// Resurrected tx
@@ -469,7 +469,7 @@ public class TransactionRepository implements MessagingComponent
 			log.trace("created transaction " + tx);
 		}
 
-		globalToLocalMap.put(txInfo.getXid(), tx);
+		map.put(txInfo.getXid(), tx);
 
 		return tx;
 	}

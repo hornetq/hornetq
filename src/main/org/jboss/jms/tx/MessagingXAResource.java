@@ -110,7 +110,7 @@ public class MessagingXAResource implements XAResource
       
       boolean same = ((MessagingXAResource)xaResource).rm.getServerID() == this.rm.getServerID();
       
-      if (trace) { log.trace("Calling isSameRM, result is " + same); }
+      if (trace) { log.trace("Calling isSameRM, result is " + same + " " + ((MessagingXAResource)xaResource).rm.getServerID() + " " + this.rm.getServerID()); }
             
       return same;
    }
