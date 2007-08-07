@@ -87,11 +87,6 @@ public class ConnectionFactoryJNDIMapper
 
    private Replicator replicator;
    
-   // Map<Integer(nodeID)->Integer(failoverNodeID)>
-   // The map is updated when a node joins of leaves the cluster via the replicationListener. When
-   // a new ConnectionFactories are deployed we use the cached map.
-   //protected Map failoverMap;
-   
    // Constructors ---------------------------------------------------------------------------------
 
    public ConnectionFactoryJNDIMapper(ServerPeer serverPeer) throws Exception

@@ -757,10 +757,13 @@
               <exclude name="**/jms/clustering/ClusterLeakTest.class"/>
 -->
 
-<include name="**/jms/clustering/ChangeFailoverNodeTest.class"/>
+<!-- <include name="**/jms/clustering/ChangeFailoverNodeTest.class"/> -->
 <include name="**/jms/clustering/ClusterConnectionManagerTest.class"/>
+
+<!--
 <include name="**/jms/clustering/ClusteredConnectionFactoryTest.class"/>
 <include name="**/jms/clustering/ClusteringAspectInternalTest.class"/>
+-->
 <include name="**/jms/clustering/ClusterViewUpdateTest.class"/>
 
 
