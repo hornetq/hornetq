@@ -201,10 +201,10 @@ public class SimpleConnectionManager implements ConnectionManager, ConnectionLis
     */
    public void notify(ClusterNotification notification)
 	{	
-		if (notification.type == ClusterNotification.TYPE_FAILOVER_START)
+		if (notification.type == ClusterNotification.TYPE_NODE_LEAVE)
 		{
 
-         log.trace("SimpleConnectionManager was notified about FailoverStart from node " +
+         log.trace("SimpleConnectionManager was notified about node leaving from node " +
                     notification.nodeID);
          try
 			{

@@ -878,6 +878,10 @@ public class MessagingPostOffice extends JDBCSupport
       
       boolean doneFailover = false;
       
+      ClusterNotification notification = new ClusterNotification(ClusterNotification.TYPE_NODE_LEAVE, leftNodeID.intValue(), null);
+      
+      clusterNotifier.sendNotification(notification);
+      
       if (crashed && isSupportsFailover())
       {	      
 

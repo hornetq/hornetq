@@ -83,9 +83,9 @@ public class DistributedRequestResponseTest extends NewClusteringTestBase
 
    protected void setUp() throws Exception
    {
-   	nodeCount = 2;
+   	nodeCount = 3;
    	
-      super.setUp();
+      super.setUp();     
    }
 
    protected void tearDown() throws Exception
