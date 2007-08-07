@@ -70,7 +70,7 @@ public class LargeClusterTest extends NewClusteringTestBase
 
       // We start programatically the eighth node.
 
-      ServerManagement.start(7, "all");
+      ServerManagement.start(7, "all", false);
 
       // wait for change to propagate
 
@@ -248,7 +248,7 @@ public class LargeClusterTest extends NewClusteringTestBase
 
       // We get the first node to re-join
 
-      ServerManagement.start(0, "all");
+      ServerManagement.start(0, "all", false);
 
       if (!clusterEvent.viewChanged(30000))
       {

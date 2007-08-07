@@ -95,16 +95,17 @@ public class ClusterViewUpdateTest extends NewClusteringTestBase
 
       log.info("ServerId=" + getServerId(conn1));
       assertEquals(0, getServerId(conn1));
-     
-      conn1.close();
-      
+       
       //restart
-      ServerManagement.start(1, "all");
+      log.info("Restarting server");
+      ServerManagement.start(1, "all", false);
       
       Thread.sleep(5000);
       
       assertEquals(2, cfDelegate.getDelegates().length);
       
+      conn1.close();
+            
       ServerManagement.stop(1);
    }
    
@@ -138,14 +139,16 @@ public class ClusterViewUpdateTest extends NewClusteringTestBase
       // Second part, verifies a possible race condition on failoverMap and handleFilover
       assertEquals(0, getServerId(conn1));
      
-      conn1.close();
-      
       //restart
-      ServerManagement.start(1, "all");
+      ServerManagement.start(1, "all", false);
       
       Thread.sleep(5000);
       
       assertEquals(2, cfDelegate.getDelegates().length);
+      
+      conn1.close();
+      
+      ServerManagement.stop(1);
    }
 
    public void testUpdateMixedConnectionFactory() throws Exception
@@ -200,7 +203,7 @@ public class ClusterViewUpdateTest extends NewClusteringTestBase
       assertEquals(0, getServerId(httpConn1));
 
       conn1.close();
-      httpConn.close();
+      httpConn1.close();
    }
 
    /**

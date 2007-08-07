@@ -761,15 +761,11 @@
 <include name="**/jms/clustering/ClusterConnectionManagerTest.class"/>
 <include name="**/jms/clustering/ClusteredConnectionFactoryTest.class"/>
 <include name="**/jms/clustering/ClusteringAspectInternalTest.class"/>
-
-
-
-
-
-
-
-
 <include name="**/jms/clustering/ClusterViewUpdateTest.class"/>
+
+
+
+
 <include name="**/jms/clustering/DisableLoadBalancingAndFailoverTest.class"/>
 <include name="**/jms/clustering/DistributedQueueDontUseXATest.class"/>
 <include name="**/jms/clustering/DistributedQueueUseXATest.class"/>
