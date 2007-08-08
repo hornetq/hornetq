@@ -396,7 +396,7 @@ public class GroupManagementTest extends MessagingTestCase
    {
       super.setUp();
       
-      for (int i = 0 ; i < ServerManagement.MAX_SERVER_COUNT; i++)
+      for (int i = ServerManagement.MAX_SERVER_COUNT - 1; i >=0; i--)
       {
       	ServerManagement.kill(i);
       }
