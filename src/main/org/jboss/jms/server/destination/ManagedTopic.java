@@ -288,9 +288,7 @@ public class ManagedTopic extends ManagedDestination
       Iterator iter = queues.iterator();
       
       int count = 0;
-      
-      log.info("Getting message count for " + this.name);
-      
+       
       while (iter.hasNext())
       {
          Queue queue = (Queue)iter.next();
@@ -299,8 +297,6 @@ public class ManagedTopic extends ManagedDestination
              || (type == NON_DURABLE && !queue.isRecoverable()))
          {            
             count += queue.getMessageCount();
-            
-            log.info("Count for " + queue.getName() + " is " + queue.getMessageCount());
          }
       }
 

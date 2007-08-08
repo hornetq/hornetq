@@ -395,6 +395,11 @@ public class GroupManagementTest extends MessagingTestCase
    protected void setUp() throws Exception
    {
       super.setUp();
+      
+      for (int i = 0 ; i < ServerManagement.MAX_SERVER_COUNT; i++)
+      {
+      	ServerManagement.kill(i);
+      }
    }
 
    protected void tearDown() throws Exception

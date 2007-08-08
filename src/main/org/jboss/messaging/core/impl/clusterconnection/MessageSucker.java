@@ -268,7 +268,6 @@ public class MessageSucker implements MessageListener
 			{
 				//Add a header saying we have sucked the message
 				((MessageProxy)msg).getMessage().putHeader(org.jboss.messaging.core.contract.Message.CLUSTER_SUCKED, "x");
-				log.info("Added clustersucked header");
 			}
 			
 			long timeToLive = msg.getJMSExpiration();
