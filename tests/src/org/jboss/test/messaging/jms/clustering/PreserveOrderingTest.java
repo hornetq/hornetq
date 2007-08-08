@@ -374,7 +374,15 @@ public class PreserveOrderingTest extends NewClusteringTestBase
             {
             	tm.acknowledge();
             }
-         }                   
+         }         
+         
+         sub1_1.close();
+         
+         sub1_2.close();
+         
+         sess1.unsubscribe("sub1");
+         
+         sess1.unsubscribe("sub2");
       }
       finally
       {
