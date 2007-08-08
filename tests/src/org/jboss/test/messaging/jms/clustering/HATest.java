@@ -55,7 +55,7 @@ import org.jboss.test.messaging.tools.ServerManagement;
  * $Id$
  *
  */
-public class HATest extends NewClusteringTestBase
+public class HATest extends ClusteringTestBase
 {
    
    // Constants -----------------------------------------------------

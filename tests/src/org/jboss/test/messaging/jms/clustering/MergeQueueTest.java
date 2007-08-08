@@ -25,7 +25,7 @@ import org.jboss.test.messaging.tools.ServerManagement;
  *
  * $Id$
  */
-public class MergeQueueTest extends NewClusteringTestBase
+public class MergeQueueTest extends ClusteringTestBase
 {
    // Constants ------------------------------------------------------------------------------------
 

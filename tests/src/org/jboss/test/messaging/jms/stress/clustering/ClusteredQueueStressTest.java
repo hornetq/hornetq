@@ -35,11 +35,11 @@ import javax.jms.MessageProducer;
 import javax.jms.Session;
 
 import org.jboss.logging.Logger;
-import org.jboss.test.messaging.jms.clustering.NewClusteringTestBase;
+import org.jboss.test.messaging.jms.clustering.ClusteringTestBase;
 
 import EDU.oswego.cs.dl.util.concurrent.SynchronizedInt;
 
-public class ClusteredQueueStressTest extends NewClusteringTestBase
+public class ClusteredQueueStressTest extends ClusteringTestBase
 {
    // Constants -----------------------------------------------------
 

@@ -37,7 +37,7 @@ import org.jboss.test.messaging.tools.ServerManagement;
  *
  * $Id$
  */
-public class ClusterViewUpdateTest extends NewClusteringTestBase
+public class ClusterViewUpdateTest extends ClusteringTestBase
 {
 
    // Constants ------------------------------------------------------------------------------------

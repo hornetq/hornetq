@@ -46,7 +46,7 @@ import EDU.oswego.cs.dl.util.concurrent.Latch;
  * @version <tt>$Revision$</tt>
  *          $Id$
  */
-public class NoFailoverTest extends NewClusteringTestBase
+public class NoFailoverTest extends ClusteringTestBase
 {
 
    // Constants ------------------------------------------------------------------------------------

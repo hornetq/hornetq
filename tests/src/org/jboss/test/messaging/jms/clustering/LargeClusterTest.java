@@ -17,6 +17,7 @@ import javax.management.ObjectName;
 
 import org.jboss.jms.client.JBossConnection;
 import org.jboss.jms.client.delegate.ClientConnectionDelegate;
+import org.jboss.jms.tx.ResourceManagerFactory;
 import org.jboss.test.messaging.tools.ServerManagement;
 
 import EDU.oswego.cs.dl.util.concurrent.Slot;
@@ -27,7 +28,7 @@ import EDU.oswego.cs.dl.util.concurrent.Slot;
  *
  * $Id$
  */
-public class LargeClusterTest extends NewClusteringTestBase
+public class LargeClusterTest extends ClusteringTestBase
 {
    // Constants -----------------------------------------------------
 
@@ -112,9 +113,7 @@ public class LargeClusterTest extends NewClusteringTestBase
    {
       // By this time, after running setUp(), we should have an already formed cluster of seven
       // nodes
-
-     
-
+    
       Set view = ServerManagement.getServer(0).getNodeIDView();
 
       assertEquals(7, view.size());
@@ -430,6 +429,8 @@ public class LargeClusterTest extends NewClusteringTestBase
    protected void tearDown() throws Exception
    {
       super.tearDown();
+      
+      assertEquals(0, ResourceManagerFactory.instance.size());	
    }
 
 

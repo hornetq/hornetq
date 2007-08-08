@@ -51,7 +51,7 @@ import EDU.oswego.cs.dl.util.concurrent.LinkedQueue;
  * @version <tt>$Revision: 2928 $</tt>
  * $Id: ClusteringTestBase.java 2928 2007-07-27 00:33:55Z timfox $
  */
-public class NewClusteringTestBase extends MessagingTestCase
+public class ClusteringTestBase extends MessagingTestCase
 {
    // Constants ------------------------------------------------------------------------------------
 
@@ -77,7 +77,7 @@ public class NewClusteringTestBase extends MessagingTestCase
    
    // Constructors ---------------------------------------------------------------------------------
 
-   public NewClusteringTestBase(String name)
+   public ClusteringTestBase(String name)
    {
       super(name);
    }
@@ -120,6 +120,8 @@ public class NewClusteringTestBase extends MessagingTestCase
    protected void setUp() throws Exception
    {
       super.setUp();            
+      
+      assertEquals(0, ResourceManagerFactory.instance.size());	
             
       log.info("node count is " + nodeCount);
       

@@ -44,7 +44,7 @@ import org.jboss.test.messaging.tools.ServerManagement;
  * $Id$
  *
  */
-public class DistributedTopicTest extends NewClusteringTestBase
+public class DistributedTopicTest extends ClusteringTestBase
 {
 
    // Constants -----------------------------------------------------

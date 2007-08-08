@@ -50,7 +50,7 @@ import org.jboss.test.messaging.tools.container.Server;
  * $Id: $
  *
  */
-public class RecoverDeliveriesTest extends NewClusteringTestBase
+public class RecoverDeliveriesTest extends ClusteringTestBase
 {
    
    // Constants -----------------------------------------------------

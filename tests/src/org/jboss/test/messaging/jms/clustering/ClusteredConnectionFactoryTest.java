@@ -34,7 +34,7 @@ import org.jboss.test.messaging.tools.aop.PoisonInterceptor;
  * @version <tt>$Revision$</tt>
  *          $Id$
  */
-public class ClusteredConnectionFactoryTest extends NewClusteringTestBase
+public class ClusteredConnectionFactoryTest extends ClusteringTestBase
 {
 
    // Constants ------------------------------------------------------------------------------------

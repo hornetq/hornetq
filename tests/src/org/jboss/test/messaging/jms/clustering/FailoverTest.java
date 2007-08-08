@@ -32,7 +32,7 @@ import org.jboss.test.messaging.tools.aop.PoisonInterceptor;
  *
  * $Id$
  */
-public class FailoverTest extends NewClusteringTestBase
+public class FailoverTest extends ClusteringTestBase
 {
    // Constants ------------------------------------------------------------------------------------
 

@@ -52,7 +52,7 @@ import org.jboss.test.messaging.tools.ServerManagement;
  *          <p/>
  *          $Id$
  */
-public class ClusterLeakTest extends NewClusteringTestBase
+public class ClusterLeakTest extends ClusteringTestBase
 {
 
    // Constants ------------------------------------------------------------------------------------

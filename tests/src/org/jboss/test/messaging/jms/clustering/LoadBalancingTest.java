@@ -16,6 +16,7 @@ import org.jboss.jms.client.delegate.ClientClusteredConnectionFactoryDelegate;
 import org.jboss.jms.client.delegate.DelegateSupport;
 import org.jboss.jms.client.plugin.RoundRobinLoadBalancingPolicy;
 import org.jboss.jms.client.state.ConnectionState;
+import org.jboss.jms.tx.ResourceManagerFactory;
 import org.jboss.test.messaging.tools.ServerManagement;
 
 /**
@@ -27,7 +28,7 @@ import org.jboss.test.messaging.tools.ServerManagement;
  *
  * $Id$
  */
-public class LoadBalancingTest extends NewClusteringTestBase
+public class LoadBalancingTest extends ClusteringTestBase
 {
 
    // Constants ------------------------------------------------------------------------------------
@@ -152,7 +153,17 @@ public class LoadBalancingTest extends NewClusteringTestBase
    protected void setUp() throws Exception
    {
    	nodeCount = 2;
+   	
       super.setUp();
+      
+      assertEquals(0, ResourceManagerFactory.instance.size());	
+   }
+   
+   protected void tearDown() throws Exception
+   {
+   	super.tearDown();
+   	
+   	assertEquals(0, ResourceManagerFactory.instance.size());	
    }
 
    // Private --------------------------------------------------------------------------------------

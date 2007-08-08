@@ -45,7 +45,7 @@ import org.jboss.test.messaging.tools.ServerManagement;
  * $Id: $
  *
  */
-public class ClusterConnectionManagerTest extends NewClusteringTestBase
+public class ClusterConnectionManagerTest extends ClusteringTestBase
 {
 
    // Constants ------------------------------------------------------------------------------------

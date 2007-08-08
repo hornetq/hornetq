@@ -40,7 +40,7 @@ import org.jboss.test.messaging.tools.container.ServiceContainer;
  * $Id: $
  *
  */
-public class PreserveOrderingTest extends NewClusteringTestBase
+public class PreserveOrderingTest extends ClusteringTestBase
 {
    // Constants -----------------------------------------------------
 

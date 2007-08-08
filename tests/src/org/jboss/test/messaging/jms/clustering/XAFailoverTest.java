@@ -38,7 +38,7 @@ import org.jboss.test.messaging.tools.container.ServiceContainer;
  * $Id$
  *
  */
-public class XAFailoverTest extends NewClusteringTestBase
+public class XAFailoverTest extends ClusteringTestBase
 {
    // Constants ------------------------------------------------------------------------------------
 

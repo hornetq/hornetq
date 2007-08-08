@@ -40,7 +40,7 @@ import javax.jms.Topic;
  *
  * $Id$
  */
-public class TemporaryDestinationTest extends NewClusteringTestBase
+public class TemporaryDestinationTest extends ClusteringTestBase
 {
    // Constants ------------------------------------------------------------------------------------
 

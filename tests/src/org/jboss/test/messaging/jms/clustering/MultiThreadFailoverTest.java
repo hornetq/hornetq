@@ -46,7 +46,7 @@ import org.jboss.test.messaging.tools.ServerManagement;
  *
  * $Id$
  */
-public class MultiThreadFailoverTest extends NewClusteringTestBase
+public class MultiThreadFailoverTest extends ClusteringTestBase
 {
 
    // Constants ------------------------------------------------------------------------------------

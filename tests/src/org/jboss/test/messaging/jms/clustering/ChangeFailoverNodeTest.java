@@ -45,7 +45,7 @@ import org.jboss.test.messaging.tools.ServerManagement;
  * $Id: $
  *
  */
-public class ChangeFailoverNodeTest extends NewClusteringTestBase
+public class ChangeFailoverNodeTest extends ClusteringTestBase
 {
    
    // Constants -----------------------------------------------------

@@ -40,7 +40,7 @@ import javax.jms.TextMessage;
  *
  * $Id: TemporaryDestinationTest.java 2701 2007-05-17 16:01:05Z timfox $
  */
-public class DistributedRequestResponseTest extends NewClusteringTestBase
+public class DistributedRequestResponseTest extends ClusteringTestBase
 {
    // Constants ------------------------------------------------------------------------------------
 
