@@ -83,7 +83,6 @@ import org.jboss.test.messaging.tools.ServerManagement;
 import org.jboss.test.messaging.tools.jboss.MBeanConfigurationElement;
 import org.jboss.test.messaging.tools.jboss.ServiceDeploymentDescriptor;
 import org.jboss.tm.TransactionManagerService;
-import org.jboss.tm.TxManager;
 import org.jboss.tm.usertx.client.ServerVMClientUserTransaction;
 import org.jboss.util.id.GUID;
 import org.w3c.dom.Element;
@@ -217,7 +216,6 @@ public class ServiceContainer
    private JBossManagedConnectionPool mcp;
 
    private boolean transaction;
-   private boolean jbossjta; //To use the ex-Arjuna tx mgr
    private boolean database;
    private boolean jca;
    private boolean remoting;
@@ -418,7 +416,7 @@ public class ServiceContainer
 
          registerClassLoader();
 
-         if (transaction || jbossjta)
+         if (transaction)
          {
             startTransactionManager();
          }
@@ -444,7 +442,7 @@ public class ServiceContainer
             startWrapperDataSourceService();
          }
 
-         if (database && (transaction || jbossjta) && jca && cleanDatabase)
+         if (database && transaction && jca && cleanDatabase)
          {
             // We make sure the database is clean (only if we have all dependencies the database,
             // otherwise we'll get an access error)
@@ -1074,33 +1072,25 @@ public class ServiceContainer
    {
       if (tm == null)
       {
-         if (jbossjta)
-         {
-         	//We must ensure each node has its own object store
-            String newObjectStore = "TestObjectStore-" + new GUID().toString();
-            
-            log.info("Setting com.arjuna.ats.arjuna.common.Environment.OBJECTSTORE_DIR to " + newObjectStore);
+      	//We must ensure each node has its own object store
+         String newObjectStore = "TestObjectStore-" + new GUID().toString();
+         
+         log.info("Setting com.arjuna.ats.arjuna.common.Environment.OBJECTSTORE_DIR to " + newObjectStore);
 
-            System.setProperty(com.arjuna.ats.arjuna.common.Environment.OBJECTSTORE_DIR, newObjectStore);  
-            
-            //We must also make sure the node identifier is unique for each node
-            //Otherwise xids might overlap
-            String arjunanodeId = "TestNodeID-" + new GUID().toString();
-            
-            log.info("Setting com.arjuna.ats.arjuna.common.Environment.XA_NODE_IDENTIFIER to " + arjunanodeId);
-            
-            System.setProperty(com.arjuna.ats.arjuna.common.Environment.XA_NODE_IDENTIFIER, arjunanodeId);
-            
-            log.info("Setting objectstore.dir to " + newObjectStore);
-         	
-            log.info("Starting arjuna tx mgr");
-            tm = com.arjuna.ats.jta.TransactionManager.transactionManager();                       
-         }
-         else
-         {
-            log.info("Starting non arjuna tx mgr");
-            tm = TxManager.getInstance();
-         }
+         System.setProperty(com.arjuna.ats.arjuna.common.Environment.OBJECTSTORE_DIR, newObjectStore);  
+         
+         //We must also make sure the node identifier is unique for each node
+         //Otherwise xids might overlap
+         String arjunanodeId = "TestNodeID-" + new GUID().toString();
+         
+         log.info("Setting com.arjuna.ats.arjuna.common.Environment.XA_NODE_IDENTIFIER to " + arjunanodeId);
+         
+         System.setProperty(com.arjuna.ats.arjuna.common.Environment.XA_NODE_IDENTIFIER, arjunanodeId);
+         
+         log.info("Setting objectstore.dir to " + newObjectStore);
+      	
+         log.info("Starting arjuna tx mgr");
+         tm = com.arjuna.ats.jta.TransactionManager.transactionManager();                       
       }
 
       TransactionManagerJMXWrapper mbean = new TransactionManagerJMXWrapper(tm);
@@ -1137,18 +1127,6 @@ public class ServiceContainer
       return directory.delete();
    }
 
-   private void setObjectStore()
-   {
-      // First delete the object store - might have been left over from a previous run
-
-      //We must ensure each node has its own object store
-      String newObjectStore = "TestObjectStore-" + new GUID().toString();
-      
-      log.info("Setting objectstore.dir to " + newObjectStore);
-
-      System.setProperty("com.arjuna.ats.arjuna.objectstore.objectStoreDir", newObjectStore);
-   }
-
    private void startCachedConnectionManager(ObjectName on) throws Exception
    {
       CachedConnectionManager ccm = new CachedConnectionManager();
@@ -1159,7 +1137,6 @@ public class ServiceContainer
       mbeanServer.registerMBean(ccm, on);
       mbeanServer.invoke(on, "start", new Object[0], new String[0]);
       log.debug("started " + on);
-
    }
 
    /**
@@ -1703,7 +1680,7 @@ public class ServiceContainer
 
          if ("all".equals(tok))
          {
-            jbossjta = true;
+            transaction = true;
             database = true;
             jca = true;
             remoting = true;
@@ -1712,7 +1689,7 @@ public class ServiceContainer
          else
          if ("all-failover".equals(tok))
          {
-            jbossjta = true;
+         	transaction = true;
             database = true;
             jca = true;
             remoting = true;
@@ -1722,7 +1699,7 @@ public class ServiceContainer
          else
          if ("all+http".equals(tok))
          {
-            jbossjta = true;
+         	transaction = true;
             database = true;
             jca = true;
             remoting = true;
@@ -1735,20 +1712,6 @@ public class ServiceContainer
             if (minus)
             {
                transaction = false;
-            }
-         }
-         else if ("jbossjta".equals(tok))
-         {
-            if (transaction)
-            {
-               throw new IllegalArgumentException("Cannot have the old JBoss transaction manager AND the JBoss Transactions transaction manager");
-            }
-            
-            //Use the JBoss Transactions (ex Arjuna) JTA
-            jbossjta = true;
-            if (minus)
-            {
-               jbossjta = false;
             }
          }
          else if ("database".equals(tok))
@@ -1793,7 +1756,7 @@ public class ServiceContainer
          }
          else if ("none".equals(tok))
          {
-            jbossjta = false;
+            transaction = false;
             database = false;
             jca = false;
             remoting = false;

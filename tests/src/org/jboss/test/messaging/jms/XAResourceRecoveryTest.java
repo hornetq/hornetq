@@ -92,7 +92,7 @@ public class XAResourceRecoveryTest extends JMSTestCase
 		// won't
 		// have deleted the database and the recovery manager may attempt to
 		// recover transactions
-		sc = new ServiceContainer("all,-transaction,jbossjta");
+		sc = new ServiceContainer("all");
 
 		// Don't drop the tables again!
 

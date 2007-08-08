@@ -76,7 +76,7 @@ import com.arjuna.ats.internal.jta.transaction.arjunacore.TransactionManagerImpl
  * $Id$
  *
  */
-public abstract class XATestBase extends JMSTestCase
+public class XATest extends JMSTestCase
 {
    // Constants -----------------------------------------------------
 
@@ -90,11 +90,9 @@ public abstract class XATestBase extends JMSTestCase
 
    protected ServiceContainer sc;
 
-   protected boolean useArjuna;
-
    // Constructors --------------------------------------------------
 
-   public XATestBase(String name)
+   public XATest(String name)
    {
       super(name);
    }
@@ -103,12 +101,7 @@ public abstract class XATestBase extends JMSTestCase
    // TestCase overrides -------------------------------------------
 
    public void setUp() throws Exception
-   {
-      if (useArjuna)
-      {
-         overrideConf = "all,-transaction,jbossjta";
-      }
-            
+   { 
       super.setUp();
       
       ResourceManagerFactory.instance.clear();      
@@ -116,14 +109,7 @@ public abstract class XATestBase extends JMSTestCase
       //Also need a local tx mgr if test is running remote
       if (ServerManagement.isRemote())
       {
-         if (useArjuna)
-         {
-            sc = new ServiceContainer("all,-transaction,jbossjta");
-         }
-         else
-         {
-            sc = new ServiceContainer("transaction");
-         }
+         sc = new ServiceContainer("transaction");         
 
          //Don't drop the tables again!
          sc.start(false);
@@ -133,14 +119,7 @@ public abstract class XATestBase extends JMSTestCase
 
       tm = (TransactionManager)localIc.lookup(ServiceContainer.TRANSACTION_MANAGER_JNDI_NAME);
 
-      if (useArjuna)
-      {
-         assertTrue(tm instanceof TransactionManagerImple);
-      }
-      else
-      {
-         assertTrue(tm instanceof org.jboss.tm.TxManager);
-      }
+      assertTrue(tm instanceof TransactionManagerImple);
      
       if (!ServerManagement.isRemote())
       {

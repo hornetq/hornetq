@@ -101,7 +101,7 @@ public class BridgeTestBase extends MessagingTestCase
       	//We need a local transaction and recovery manager
          //We must start this after the remote servers have been created or it won't
          //have deleted the database and the recovery manager may attempt to recover transactions
-         sc = new ServiceContainer("jbossjta");   
+         sc = new ServiceContainer("transaction");   
          
          sc.start(false);   
       	
