@@ -383,6 +383,7 @@ public class PreserveOrderingTest extends NewClusteringTestBase
          sess1.unsubscribe("sub1");
          
          sess1.unsubscribe("sub2");
+         
       }
       finally
       {
