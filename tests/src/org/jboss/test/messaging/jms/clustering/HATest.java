@@ -621,6 +621,9 @@ public class HATest extends NewClusteringTestBase
          receiveMessage("consumerHA", consumerHA, true, true);
 
          session.commit();
+
+         consumerHA.close();
+         session.unsubscribe("T1");
       }
       finally
       {

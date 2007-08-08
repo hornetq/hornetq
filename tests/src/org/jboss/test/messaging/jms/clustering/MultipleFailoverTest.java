@@ -104,6 +104,7 @@ public class MultipleFailoverTest extends NewClusteringTestBase
 
          ServerManagement.start(3, "all", false);
          ServerManagement.deployQueue("testDistributedQueue", 3);
+         ServerManagement.deployTopic("testDistributedTopic", 3);
 
          // send/receive message
          prod.send(s.createTextMessage("step3"));
@@ -132,6 +133,7 @@ public class MultipleFailoverTest extends NewClusteringTestBase
          ServerManagement.start(4, "all", false);
          log.info("deploying queue on4");
          ServerManagement.deployQueue("testDistributedQueue", 4);
+         ServerManagement.deployTopic("testDistributedTopic", 4);
          log.info("deployed it");
 
          // send/receive message
@@ -349,6 +351,7 @@ public class MultipleFailoverTest extends NewClusteringTestBase
             log.info("starting server 1");
             ServerManagement.start(1, "all", false);
             ServerManagement.deployQueue("testDistributedQueue", 1);
+            ServerManagement.deployTopic("testDistributedTopic", 1);
             
             Thread.sleep(5000);
             
@@ -360,6 +363,7 @@ public class MultipleFailoverTest extends NewClusteringTestBase
             log.info("Starting server 2");
             ServerManagement.start(2, "all", false);
             ServerManagement.deployQueue("testDistributedQueue", 2);
+            ServerManagement.deployTopic("testDistributedTopic", 2);
             
             Thread.sleep(5000);
             
@@ -371,6 +375,7 @@ public class MultipleFailoverTest extends NewClusteringTestBase
             log.info("Starting server 1");
             ServerManagement.start(1, "all", false);
             ServerManagement.deployQueue("testDistributedQueue", 1);
+            ServerManagement.deployTopic("testDistributedTopic", 1);
             
             Thread.sleep(5000);
             
@@ -382,6 +387,7 @@ public class MultipleFailoverTest extends NewClusteringTestBase
             log.info("Starting server 2");
             ServerManagement.start(2, "all", false);
             ServerManagement.deployQueue("testDistributedQueue", 2);
+            ServerManagement.deployTopic("testDistributedTopic", 2);
             
             Thread.sleep(5000);
             

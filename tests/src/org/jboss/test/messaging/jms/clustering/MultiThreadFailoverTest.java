@@ -449,9 +449,6 @@ public class MultiThreadFailoverTest extends NewClusteringTestBase
          conn2.close();
 
          conn3.close();
-
-         this.removeAllMessages(queue[1].getQueueName(), true, 1);
-         this.removeAllMessages(queue[2].getQueueName(), true, 2);
       }
    }
 
@@ -466,6 +463,23 @@ public class MultiThreadFailoverTest extends NewClusteringTestBase
       super.setUp();
    }
 
+   protected void tearDown() throws Exception
+   {
+
+      if (ServerManagement.getServer(0) != null)
+      {      
+         this.removeAllMessages(queue[0].getQueueName(), true, 0);
+      }
+      if (ServerManagement.getServer(1) != null)
+      {
+         this.removeAllMessages(queue[1].getQueueName(), true, 1);
+      }
+      if (ServerManagement.getServer(2) != null)
+      {
+         this.removeAllMessages(queue[2].getQueueName(), true, 2);
+      }
+      super.tearDown();
+   }
 
    // Private --------------------------------------------------------------------------------------
 

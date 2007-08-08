@@ -501,6 +501,7 @@ public class MessagingQueue extends PagingChannelSupport implements Queue
    
    public Map getRecoveryArea()
    {
+        log.info("Getting recovery area, it is " + this.recoveryArea);
    	return this.recoveryArea;
    }
    
