@@ -751,13 +751,18 @@
 
             <fileset dir="${build.tests.classes}">
 
-<!--
 
+<!--
               <include name="**/jms/clustering/${test-mask}.class"/>i
               <exclude name="**/jms/clustering/ClusterLeakTest.class"/>
 -->
 
-<!-- <include name="**/jms/clustering/ChangeFailoverNodeTest.class"/> 
+<!-- Put the tests that kill servers first -->
+<include name="**/jms/clustering/ChangeFailoverNodeTest.class"/> 
+
+
+
+
 <include name="**/jms/clustering/ClusterConnectionManagerTest.class"/>
 
 
@@ -782,11 +787,9 @@
 <include name="**/jms/clustering/MergeQueueTest.class"/>
 <include name="**/jms/clustering/MultipleFailoverTest.class"/>
 <include name="**/jms/clustering/MultiThreadFailoverTest.class"/>
--->
 <include name="**/jms/clustering/NoFailoverTest.class"/>
-<!--
+
 <include name="**/jms/clustering/PreserveOrderingTest.class"/>
--->
 <include name="**/jms/clustering/RecoverDeliveriesTest.class"/>
 <include name="**/jms/clustering/TemporaryDestinationTest.class"/>
 <include name="**/jms/clustering/XAFailoverTest.class"/>
