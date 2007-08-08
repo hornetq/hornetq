@@ -1770,6 +1770,7 @@ public class FailoverTest extends NewClusteringTestBase
          // we must receive the message
 
          TextMessage tm = (TextMessage)c1.receive(3000);
+         assertNotNull(tm);
          assertEquals("blip", tm.getText());
 
       }
