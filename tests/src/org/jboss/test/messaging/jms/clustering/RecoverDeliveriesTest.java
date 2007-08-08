@@ -39,6 +39,7 @@ import org.jboss.jms.client.JBossConnection;
 import org.jboss.jms.client.delegate.ClientClusteredConnectionFactoryDelegate;
 import org.jboss.messaging.util.MessageQueueNameHelper;
 import org.jboss.test.messaging.tools.ServerManagement;
+import org.jboss.test.messaging.tools.container.Server;
 
 
 /**
@@ -139,6 +140,8 @@ public class RecoverDeliveriesTest extends NewClusteringTestBase
    {
    	final long timeout = 20 * 1000;
    	
+   	long oldTimeout = 0;
+   	
    	((ClientClusteredConnectionFactoryDelegate)cf.getDelegate()).setSupportsFailover(false);
    	
       Connection conn1 = createConnectionOnServer(cf,1);
@@ -147,7 +150,16 @@ public class RecoverDeliveriesTest extends NewClusteringTestBase
  
       try
       {      	
-      	ServerManagement.getServer(2).setAttribute(ServerManagement.getServerPeerObjectName(), "RecoverDeliveriesTimeout", String.valueOf(timeout));      	      	
+      	for (int i = 0; i < ServerManagement.MAX_SERVER_COUNT; i++)
+      	{
+      		Server server = ServerManagement.getServer(i);
+      		
+      		if (server != null)
+      		{
+      			oldTimeout = ((Long)server.getAttribute(ServerManagement.getServerPeerObjectName(), "RecoverDeliveriesTimeout")).longValue();
+      			server.setAttribute(ServerManagement.getServerPeerObjectName(), "RecoverDeliveriesTimeout", String.valueOf(timeout));      	      	               
+      		}
+      	}
       	
       	ServerManagement.deployQueue("timeoutQueue", 0);
       	ServerManagement.deployQueue("timeoutQueue", 1);
@@ -248,8 +260,6 @@ public class RecoverDeliveriesTest extends NewClusteringTestBase
        		
        		assertNotNull(tm);
        		
-       		//assertEquals("message" + i, tm.getText());
-       		
        		log.info("Got message:" + tm.getText());
        		
        		msgs.add(tm.getText());
@@ -278,6 +288,16 @@ public class RecoverDeliveriesTest extends NewClusteringTestBase
          }
          
          ((ClientClusteredConnectionFactoryDelegate)cf.getDelegate()).setSupportsFailover(true);
+         
+         for (int i = 0; i < ServerManagement.MAX_SERVER_COUNT; i++)
+      	{
+      		Server server = ServerManagement.getServer(i);
+      		
+      		if (server != null)
+      		{
+      			server.setAttribute(ServerManagement.getServerPeerObjectName(), "RecoverDeliveriesTimeout", String.valueOf(oldTimeout));      	      	               
+      		}
+      	}
       }
    }
    
