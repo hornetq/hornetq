@@ -40,8 +40,8 @@ import javax.naming.NamingException;
 import javax.naming.Reference;
 
 import org.jboss.jms.delegate.ConnectionFactoryDelegate;
-import org.jboss.jms.referenceable.SerializableObjectRefAddr;
 import org.jboss.jms.delegate.CreateConnectionResult;
+import org.jboss.jms.referenceable.SerializableObjectRefAddr;
 import org.jboss.logging.Logger;
 
 /**

@@ -21,8 +21,8 @@
   */
 package org.jboss.jms.destination;
 
-import javax.jms.Topic;
 import javax.jms.JMSException;
+import javax.jms.Topic;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>

@@ -289,6 +289,8 @@ public class ServerPeer extends ServiceMBeanSupport
          JMSServerInvocationHandler.setClosed(false);
 
          started = true;
+         
+         log.info("**** preserve ordering " + this.defaultPreserveOrdering);
 
          log.info("JBoss Messaging " + getVersion().getProviderVersion() + " server [" +
             getServerPeerID()+ "] started");
@@ -598,12 +600,12 @@ public class ServerPeer extends ServiceMBeanSupport
    
    public void setUseXAForMessagePull(boolean useXA) throws Exception
    {
-   	this.useXAForMessagePull = useXA;
-   	
-   	if (started)
-   	{
-   		clusterConnectionManager.setIsXA(useXA);
-   	}
+      if (started)
+      {
+         throw new IllegalStateException("Cannot set UseXAForMessagePull while the service is running");
+      }
+      
+   	this.useXAForMessagePull = useXA;   	
    }
    
    public boolean isDefaultPreserveOrdering()
@@ -613,11 +615,12 @@ public class ServerPeer extends ServiceMBeanSupport
    
    public void setDefaultPreserveOrdering(boolean preserve) throws Exception
    {
+      if (started)
+      {
+         throw new IllegalStateException("Cannot set DefaultPreserveOrdering while the service is running");
+      }
+      
    	this.defaultPreserveOrdering = preserve;
-   	if (started)
-   	{
-   		clusterConnectionManager.setPreserveOrdering(preserve);
-   	}
    }
    
    public long getRecoverDeliveriesTimeout()
@@ -1273,12 +1276,6 @@ public class ServerPeer extends ServiceMBeanSupport
    {
    	return failoverWaiter;
    }
-
-//   public synchronized int getNextObjectID()
-//   {
-//      return objectIDSequence++;
-//   }
-//
 
    public boolean isSupportsFailover()
    {

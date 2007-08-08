@@ -21,12 +21,12 @@
   */
 package org.jboss.jms.client;
 
-import javax.jms.QueueBrowser;
-import javax.jms.Queue;
-import javax.jms.JMSException;
-
 import java.io.Serializable;
 import java.util.Enumeration;
+
+import javax.jms.JMSException;
+import javax.jms.Queue;
+import javax.jms.QueueBrowser;
 
 import org.jboss.jms.delegate.BrowserDelegate;
 

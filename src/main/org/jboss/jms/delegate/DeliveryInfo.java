@@ -21,7 +21,6 @@
   */
 package org.jboss.jms.delegate;
 
-import org.jboss.jms.delegate.SessionDelegate;
 import org.jboss.jms.message.MessageProxy;
 
 /**

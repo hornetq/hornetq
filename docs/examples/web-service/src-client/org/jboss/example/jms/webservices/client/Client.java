@@ -22,25 +22,25 @@
 
 package org.jboss.example.jms.webservices.client;
 
-import org.jboss.example.jms.common.ExampleSupport;
-import org.jboss.example.jms.webservices.endpoint.JMSSample;
-import org.jboss.ws.core.jaxrpc.client.ServiceFactoryImpl;
-import org.jboss.ws.core.jaxrpc.client.ServiceImpl;
-import javax.xml.rpc.ServiceFactory;
-import javax.xml.rpc.ServiceException;
-import javax.xml.namespace.QName;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
-import javax.jms.Destination;
-import javax.jms.ConnectionFactory;
-import javax.jms.Session;
-import java.net.URL;
-import java.net.MalformedURLException;
 import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.rmi.RemoteException;
 
-import javax.jms.*;
+import javax.jms.Connection;
+import javax.jms.ConnectionFactory;
+import javax.jms.Destination;
 import javax.jms.IllegalStateException;
+import javax.jms.JMSException;
+import javax.jms.MessageConsumer;
+import javax.jms.Session;
+import javax.jms.TextMessage;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+import javax.xml.namespace.QName;
+
+import org.jboss.example.jms.common.ExampleSupport;
+import org.jboss.system.ServiceFactory;
 
 /**
  * This Client will use auto generated classes from WebServices. You need to compile this class using ant.

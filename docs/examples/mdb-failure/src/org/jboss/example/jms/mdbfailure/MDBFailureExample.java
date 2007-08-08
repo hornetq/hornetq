@@ -6,13 +6,22 @@
  */
 package org.jboss.example.jms.mdbfailure;
 
-import javax.jms.*;
+import java.util.HashSet;
+import java.util.Set;
+
+import javax.ejb.EJBException;
 import javax.ejb.MessageDrivenBean;
 import javax.ejb.MessageDrivenContext;
-import javax.ejb.EJBException;
+import javax.jms.Connection;
+import javax.jms.ConnectionFactory;
+import javax.jms.Destination;
+import javax.jms.JMSException;
+import javax.jms.Message;
+import javax.jms.MessageListener;
+import javax.jms.MessageProducer;
+import javax.jms.Session;
+import javax.jms.TextMessage;
 import javax.naming.InitialContext;
-import java.util.Set;
-import java.util.HashSet;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>

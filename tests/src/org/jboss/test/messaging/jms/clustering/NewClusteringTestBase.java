@@ -65,15 +65,16 @@ public class NewClusteringTestBase extends MessagingTestCase
    protected static Queue queue[];
    protected static Topic topic[];
    
-   protected ServiceAttributeOverrides overrides;
-
    // No need to have multiple connection factories since a clustered connection factory will create
    // connections in a round robin fashion on different servers.
 
    protected static JBossConnectionFactory cf;
    
    protected int nodeCount = 4;
-
+   protected ServiceAttributeOverrides overrides;
+   
+   protected static ServiceAttributeOverrides currentOverrides;
+   
    // Constructors ---------------------------------------------------------------------------------
 
    public NewClusteringTestBase(String name)
@@ -119,7 +120,7 @@ public class NewClusteringTestBase extends MessagingTestCase
    protected void setUp() throws Exception
    {
       super.setUp();            
-      
+            
       log.info("node count is " + nodeCount);
       
       if (ic != null && ic.length < nodeCount)
@@ -163,13 +164,24 @@ public class NewClusteringTestBase extends MessagingTestCase
       	}
       }
       
+      if (overridesChanged(overrides, currentOverrides))
+      {
+      	log.info("Overrides have changed so stopping and restarting all servers");
+      	currentOverrides = overrides;
+      	
+      	for (int i = 0; i < nodeCount; i++)
+         {
+      		ServerManagement.stop(i);
+         }
+      }
+      
       for (int i = 0; i < nodeCount; i++)
       {
 	      if (!ServerManagement.isStarted(i))
 	      {
 	      	log.info("Server " + i + " is not started - starting it");
 	      	
-	      	ServerManagement.start(i, config, overrides, ic == null);
+	      	ServerManagement.start(i, config, currentOverrides, ic == null);
 	      	
 	      	if (ic == null)
 	         {
@@ -198,7 +210,47 @@ public class NewClusteringTestBase extends MessagingTestCase
 	      ServerManagement.getServer(i).resetAllSuckers();
       }
       
-      cf = (JBossConnectionFactory)ic[0].lookup("/ClusteredConnectionFactory");    
+      if (ic != null)
+      {
+      	cf = (JBossConnectionFactory)ic[0].lookup("/ClusteredConnectionFactory");
+      }
+   }
+   
+   private boolean overridesChanged(ServiceAttributeOverrides sao1, ServiceAttributeOverrides sao2)
+   {
+   	Map map1 = sao1 == null ? null : sao1.getMap();
+   	
+   	Map map2 = sao2 == null ? null : sao2.getMap();
+   	
+   	if (map1 == null && map2 == null)
+   	{
+   		return false;
+   	}
+   	if ((map1 == null && map2 != null) || (map2 == null && map1 != null))
+   	{
+   		return true;
+   	}
+   	
+   	if (map1.size() != map2.size())
+   	{
+   		return true;
+   	}
+   	
+   	Iterator iter = map1.entrySet().iterator();
+   	while (iter.hasNext())
+   	{
+   		Map.Entry entry = (Map.Entry)iter.next();
+   		Object otherVal = map2.get(entry.getKey());
+   		if (otherVal == null)
+   		{
+   			return true;
+   		}
+   		if (!otherVal.equals(entry.getValue()))
+   		{
+   			return true;
+   		}
+   	}   	
+   	return false;
    }
    
    protected void tearDown() throws Exception

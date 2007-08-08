@@ -224,6 +224,8 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
          return delivery;
       }
       
+      log.info("Preserve ordering is " + preserveOrdering);
+      
       if (preserveOrdering && remote)
       {
       	//If the header exists it means the message has already been sucked once - so reject.

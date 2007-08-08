@@ -26,9 +26,9 @@ import javax.jms.ConnectionFactory;
 import javax.jms.JMSException;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
+import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.TextMessage;
-import javax.jms.Queue;
 import javax.naming.InitialContext;
 
 import org.jboss.example.jms.common.ExampleSupport;

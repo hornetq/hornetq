@@ -22,6 +22,7 @@
 package org.jboss.example.jms.stateless.client;
 
 import javax.naming.InitialContext;
+
 import org.jboss.example.jms.common.ExampleSupport;
 import org.jboss.example.jms.stateless.bean.StatelessSessionExample;
 import org.jboss.example.jms.stateless.bean.StatelessSessionExampleHome;

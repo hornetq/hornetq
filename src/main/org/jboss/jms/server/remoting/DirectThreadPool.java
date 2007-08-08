@@ -6,9 +6,9 @@
  */
 package org.jboss.jms.server.remoting;
 
-import org.jboss.util.threadpool.ThreadPool;
-import org.jboss.util.threadpool.TaskWrapper;
 import org.jboss.util.threadpool.Task;
+import org.jboss.util.threadpool.TaskWrapper;
+import org.jboss.util.threadpool.ThreadPool;
 
 /**
  * A "noop" thread pool that just forwards the invocations, without doing any kind of pooling.

@@ -39,8 +39,8 @@ import org.jboss.jms.delegate.ConsumerDelegate;
 import org.jboss.jms.delegate.SessionDelegate;
 import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.message.MessageProxy;
-import org.jboss.messaging.util.MessageQueueNameHelper;
 import org.jboss.logging.Logger;
+import org.jboss.messaging.util.MessageQueueNameHelper;
 
 import EDU.oswego.cs.dl.util.concurrent.SynchronizedInt;
 

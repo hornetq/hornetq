@@ -220,7 +220,6 @@ public class ServiceContainer
    private boolean jca;
    private boolean remoting;
    private boolean security;
-   private boolean supportsFailover = true;
    private boolean httpConnectionFactory;
    private boolean multiplexer; // the JGroups channels multiplexer
 
@@ -869,16 +868,10 @@ public class ServiceContainer
       return config.isClustered();
    }
 
-   public boolean isSupportsFailover()
-   {
-      return supportsFailover;
-   }
-
    public void installJMSProviderAdaptor(String jndi, JMSProviderAdapter adaptor) throws Exception
    {
       log.info("Binding adaptor " + adaptor + " in JNDI: " + jndi);
       initialContext.bind(jndi, adaptor);
-
    }
 
    public void uninstallJMSProviderAdaptor(String jndi) throws Exception
@@ -1670,8 +1663,6 @@ public class ServiceContainer
          String tok = st.nextToken();
          boolean minus = false;
 
-         supportsFailover = true;
-
          if (tok.startsWith("-"))
          {
             tok = tok.substring(1);
@@ -1686,17 +1677,7 @@ public class ServiceContainer
             remoting = true;
             security = true;
          }
-         else
-         if ("all-failover".equals(tok))
-         {
-         	transaction = true;
-            database = true;
-            jca = true;
-            remoting = true;
-            security = true;
-            supportsFailover = false;
-         }
-         else
+         else         
          if ("all+http".equals(tok))
          {
          	transaction = true;

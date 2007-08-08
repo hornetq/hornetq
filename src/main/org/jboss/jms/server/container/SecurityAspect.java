@@ -22,8 +22,8 @@
 package org.jboss.jms.server.container;
 
 import java.util.HashSet;
-import java.util.Set;
 import java.util.Iterator;
+import java.util.Set;
 
 import javax.jms.Destination;
 import javax.jms.JMSSecurityException;
@@ -32,17 +32,17 @@ import javax.jms.Message;
 import org.jboss.aop.joinpoint.Invocation;
 import org.jboss.aop.joinpoint.MethodInvocation;
 import org.jboss.jms.destination.JBossDestination;
+import org.jboss.jms.message.JBossMessage;
 import org.jboss.jms.server.SecurityManager;
 import org.jboss.jms.server.endpoint.ServerConnectionEndpoint;
 import org.jboss.jms.server.endpoint.ServerConsumerEndpoint;
 import org.jboss.jms.server.endpoint.ServerSessionEndpoint;
+import org.jboss.jms.server.endpoint.advised.ConnectionAdvised;
 import org.jboss.jms.server.endpoint.advised.ConsumerAdvised;
 import org.jboss.jms.server.endpoint.advised.SessionAdvised;
-import org.jboss.jms.server.endpoint.advised.ConnectionAdvised;
 import org.jboss.jms.server.security.SecurityMetadata;
-import org.jboss.jms.tx.TransactionRequest;
 import org.jboss.jms.tx.ClientTransaction;
-import org.jboss.jms.message.JBossMessage;
+import org.jboss.jms.tx.TransactionRequest;
 import org.jboss.logging.Logger;
 import org.jboss.security.SecurityAssociation;
 

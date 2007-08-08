@@ -22,8 +22,9 @@
 
 package org.jboss.jms.client.plugin;
 
-import org.jboss.jms.delegate.ConnectionFactoryDelegate;
 import java.io.Serializable;
+
+import org.jboss.jms.delegate.ConnectionFactoryDelegate;
 
 /**
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>

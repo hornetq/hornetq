@@ -21,12 +21,12 @@
   */
 package org.jboss.jms.client.container;
 
+import java.lang.reflect.Method;
+
 import org.jboss.aop.advice.Interceptor;
 import org.jboss.aop.joinpoint.Invocation;
 import org.jboss.aop.joinpoint.MethodInvocation;
 import org.jboss.logging.Logger;
-
-import java.lang.reflect.Method;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>

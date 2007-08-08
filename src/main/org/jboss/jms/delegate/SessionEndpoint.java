@@ -27,8 +27,6 @@ import java.util.List;
 import javax.jms.JMSException;
 
 import org.jboss.jms.client.Closeable;
-import org.jboss.jms.delegate.BrowserDelegate;
-import org.jboss.jms.delegate.ConsumerDelegate;
 import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.destination.JBossQueue;
 import org.jboss.jms.destination.JBossTopic;

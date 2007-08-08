@@ -6,16 +6,17 @@
  */
 package org.jboss.jms.client;
 
-import org.jboss.logging.Logger;
-import EDU.oswego.cs.dl.util.concurrent.ReadWriteLock;
-import EDU.oswego.cs.dl.util.concurrent.ReentrantWriterPreferenceReadWriteLock;
-import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
-
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Stack;
-import java.util.Iterator;
-import java.io.StringWriter;
-import java.io.PrintWriter;
+
+import org.jboss.logging.Logger;
+
+import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
+import EDU.oswego.cs.dl.util.concurrent.ReadWriteLock;
+import EDU.oswego.cs.dl.util.concurrent.ReentrantWriterPreferenceReadWriteLock;
 
 /**
  * The valve will block any call as long as it is closed.

@@ -6,9 +6,9 @@
  */
 package org.jboss.jms.client.plugin;
 
-import org.jboss.jms.delegate.ConnectionFactoryDelegate;
-
 import java.io.Serializable;
+
+import org.jboss.jms.delegate.ConnectionFactoryDelegate;
 
 /**
  * The interface that must be implemented by any load balancing policy plugin.

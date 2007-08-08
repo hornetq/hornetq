@@ -23,7 +23,6 @@
 package org.jboss.messaging.core.impl.clusterconnection;
 
 import javax.jms.DeliveryMode;
-import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageListener;
 import javax.jms.Session;
@@ -269,6 +268,7 @@ public class MessageSucker implements MessageListener
 			{
 				//Add a header saying we have sucked the message
 				((MessageProxy)msg).getMessage().putHeader(org.jboss.messaging.core.contract.Message.CLUSTER_SUCKED, "x");
+				log.info("Added clustersucked header");
 			}
 			
 			long timeToLive = msg.getJMSExpiration();
@@ -293,8 +293,7 @@ public class MessageSucker implements MessageListener
 				
 				tx.delistResource(localSession.getXAResource(), XAResource.TMSUCCESS);
 				
-			//	tx.commit();
-tm.commit();
+				tm.commit();
 				
 				if (trace) { log.trace("Committed JTA transaction"); }
 			}

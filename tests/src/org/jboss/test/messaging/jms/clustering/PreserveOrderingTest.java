@@ -29,7 +29,8 @@ import javax.jms.MessageProducer;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 
-import org.jboss.test.messaging.tools.ServerManagement;
+import org.jboss.test.messaging.tools.container.ServiceAttributeOverrides;
+import org.jboss.test.messaging.tools.container.ServiceContainer;
 
 /**
  * 
@@ -41,7 +42,6 @@ import org.jboss.test.messaging.tools.ServerManagement;
  */
 public class PreserveOrderingTest extends NewClusteringTestBase
 {
-
    // Constants -----------------------------------------------------
 
    // Static --------------------------------------------------------
@@ -85,14 +85,11 @@ public class PreserveOrderingTest extends NewClusteringTestBase
    {
       nodeCount = 3;
       
+      this.overrides = new ServiceAttributeOverrides();
+      
+      overrides.put(ServiceContainer.SERVER_PEER_OBJECT_NAME, "DefaultPreserveOrdering", "true");
+   	      
       super.setUp();
-      
-      for (int i = 0; i < nodeCount; i++)
-      {
-      	ServerManagement.getServer(i).setPreserveOrdering(true);
-      }
-      
-      log.debug("setup done");
    }
 
    protected void preserveOrderingQueue(boolean persistent) throws Exception
@@ -141,6 +138,8 @@ public class PreserveOrderingTest extends NewClusteringTestBase
          for (int i = 0; i < NUM_MESSAGES; i++)
          {
             TextMessage tm = (TextMessage)cons1.receive(5000);
+            
+            log.info("Got message: " + tm);
 
             assertNotNull(tm);
 

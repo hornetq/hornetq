@@ -21,8 +21,8 @@
   */
 package org.jboss.jms.destination;
 
-import javax.jms.Queue;
 import javax.jms.JMSException;
+import javax.jms.Queue;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>

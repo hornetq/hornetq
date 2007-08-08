@@ -22,7 +22,6 @@
 package org.jboss.jms.server;
 
 import org.jboss.messaging.core.contract.Condition;
-import org.jboss.messaging.core.contract.MessageReference;
 
 /**
  * A JMSCondition

@@ -268,21 +268,20 @@ public class RMITestServer extends UnicastRemoteObject implements Server
    }
 
    public void startServerPeer(int serverPeerID, String defaultQueueJNDIContext,
-                               String defaultTopicJNDIContext, boolean clustered, boolean supportsFailover) throws Exception
+                               String defaultTopicJNDIContext, boolean clustered) throws Exception
    {
       startServerPeer(serverPeerID, defaultQueueJNDIContext,
-                      defaultTopicJNDIContext, null, clustered, supportsFailover);
+                      defaultTopicJNDIContext, null, clustered);
    }
 
 
    public void startServerPeer(int serverPeerID, String defaultQueueJNDIContext,
                                String defaultTopicJNDIContext,
-                               ServiceAttributeOverrides attrOverrides, boolean clustered,
-                               boolean supportsFailover)
+                               ServiceAttributeOverrides attrOverrides, boolean clustered)
       throws Exception
    {
       server.startServerPeer(serverPeerID, defaultQueueJNDIContext,
-                             defaultTopicJNDIContext, attrOverrides, clustered, supportsFailover);
+                             defaultTopicJNDIContext, attrOverrides, clustered);
    }
 
    public void stopServerPeer() throws Exception
@@ -500,18 +499,8 @@ public class RMITestServer extends UnicastRemoteObject implements Server
    public void resetAllSuckers() throws Exception
    {
    	server.resetAllSuckers();
-   }
+   }   
    
-   public void setUseXAForMessagePull(boolean xa) throws Exception
-   {
-   	server.setUseXAForMessagePull(xa);
-   }
-   
-   public void setPreserveOrdering(boolean preserve) throws Exception
-   {
-   	server.setPreserveOrdering(preserve);
-   }
-
    // Public --------------------------------------------------------
 
    // Package protected ---------------------------------------------

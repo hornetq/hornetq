@@ -21,7 +21,6 @@
 */
 package org.jboss.example.jms.common;
 
-import javax.management.Attribute;
 import javax.management.MBeanServerConnection;
 import javax.management.ObjectName;
 import javax.naming.InitialContext;

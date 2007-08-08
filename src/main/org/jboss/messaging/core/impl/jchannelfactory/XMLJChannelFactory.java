@@ -22,9 +22,9 @@
 
 package org.jboss.messaging.core.impl.jchannelfactory;
 
-import org.w3c.dom.Element;
 import org.jboss.messaging.core.contract.JChannelFactory;
 import org.jgroups.JChannel;
+import org.w3c.dom.Element;
 
 /**
  * A JChannelFactory that will use Elements to create channels.

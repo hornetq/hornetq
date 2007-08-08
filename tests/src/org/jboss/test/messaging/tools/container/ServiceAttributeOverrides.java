@@ -67,6 +67,11 @@ public class ServiceAttributeOverrides implements Serializable
 
       attrs.put(attrName, attrValue);
    }
+   
+   public Map getMap()
+   {
+   	return map;
+   }
 
    // Package protected ----------------------------------------------------------------------------
 

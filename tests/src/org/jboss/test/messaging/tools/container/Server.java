@@ -123,8 +123,7 @@ public interface Server extends Remote
                         String defaultQueueJNDIContext,
                         String defaultTopicJNDIContext,
                         ServiceAttributeOverrides attrOverrides,
-                        boolean clustered,
-                        boolean supportsFailover) throws Exception;
+                        boolean clustered) throws Exception;
 
    void stopServerPeer() throws Exception;
 
@@ -288,10 +287,5 @@ public interface Server extends Remote
    
    void flushManagedConnectionPool() throws Exception;
    
-   void resetAllSuckers() throws Exception;
-   
-   void setUseXAForMessagePull(boolean xa) throws Exception;
-   
-   void setPreserveOrdering(boolean preserve) throws Exception;
-   
+   void resetAllSuckers() throws Exception;   
 }

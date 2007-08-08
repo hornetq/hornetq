@@ -24,7 +24,6 @@ package org.jboss.jms.tx;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.jboss.jms.client.container.ConnectionAspect;
 import org.jboss.logging.Logger;
 
 /**

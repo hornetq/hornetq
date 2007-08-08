@@ -21,24 +21,22 @@
   */
 package org.jboss.jms.server.security;
 
-import java.util.Set;
-import java.util.HashSet;
-import java.util.HashMap;
 import java.io.StringReader;
-import javax.xml.parsers.DocumentBuilderFactory;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
+
 import javax.xml.parsers.DocumentBuilder;
-
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Attr;
-import org.w3c.dom.NodeList;
-
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-
+import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.jboss.logging.Logger;
 import org.jboss.security.SimplePrincipal;
+import org.w3c.dom.Attr;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 /**
  * SecurityMetadata.java
  *

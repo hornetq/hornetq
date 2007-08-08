@@ -147,7 +147,7 @@ public class LocalTestServer implements Server
 
          if (startMessagingServer)
          {
-            startServerPeer(serverIndex, null, null, attrOverrides, sc.isClustered(), sc.isSupportsFailover());
+            startServerPeer(serverIndex, null, null, attrOverrides, sc.isClustered());
          }
 
          log.info("Server " + serverIndex + " started");
@@ -289,8 +289,7 @@ public class LocalTestServer implements Server
                                String defaultQueueJNDIContext,
                                String defaultTopicJNDIContext,
                                ServiceAttributeOverrides attrOverrides,
-                               boolean clustered,
-                               boolean supportsFailover) throws Exception
+                               boolean clustered) throws Exception
    {
    	List toStop = new ArrayList();
       try
@@ -341,8 +340,6 @@ public class LocalTestServer implements Server
          // overwrite the config file security domain
          sc.setAttribute(serverPeerObjectName, "SecurityDomain",
                          MockJBossSecurityManager.TEST_SECURITY_DOMAIN);
-
-         sc.setAttribute(serverPeerObjectName,"SupportsFailover", supportsFailover?"true":"false");
 
          log.debug("starting JMS server");
 
@@ -902,16 +899,6 @@ public class LocalTestServer implements Server
    	getServerPeer().resetAllSuckers();
    }
    
-   public void setUseXAForMessagePull(boolean xa) throws Exception
-   {
-   	getServerPeer().setUseXAForMessagePull(xa);
-   }
-   
-   public void setPreserveOrdering(boolean preserve) throws Exception
-   {
-   	getServerPeer().setDefaultPreserveOrdering(preserve);
-   }
-
    // Public ---------------------------------------------------------------------------------------
 
    // Package protected ----------------------------------------------------------------------------

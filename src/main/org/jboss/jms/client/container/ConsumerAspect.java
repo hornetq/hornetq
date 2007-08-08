@@ -30,9 +30,9 @@ import org.jboss.jms.client.remoting.CallbackManager;
 import org.jboss.jms.client.state.ConnectionState;
 import org.jboss.jms.client.state.ConsumerState;
 import org.jboss.jms.client.state.SessionState;
+import org.jboss.jms.delegate.ConnectionDelegate;
 import org.jboss.jms.delegate.ConsumerDelegate;
 import org.jboss.jms.delegate.SessionDelegate;
-import org.jboss.jms.delegate.ConnectionDelegate;
 import org.jboss.messaging.util.MessageQueueNameHelper;
 
 import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;

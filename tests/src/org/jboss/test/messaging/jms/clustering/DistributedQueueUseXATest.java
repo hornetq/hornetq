@@ -21,7 +21,8 @@
  */
 package org.jboss.test.messaging.jms.clustering;
 
-import org.jboss.test.messaging.tools.ServerManagement;
+import org.jboss.test.messaging.tools.container.ServiceAttributeOverrides;
+import org.jboss.test.messaging.tools.container.ServiceContainer;
 
 /**
  * 
@@ -56,12 +57,11 @@ public class DistributedQueueUseXATest extends DistributedQueueTestBase
    
    protected void setUp() throws Exception
    {
+      this.overrides = new ServiceAttributeOverrides();
+      
+      overrides.put(ServiceContainer.SERVER_PEER_OBJECT_NAME, "UseXAForMessagePull", "true");
+   	   	
       super.setUp();
-
-      for (int i = 0; i < nodeCount; i++)
-      {      	
-      	ServerManagement.getServer(i).setUseXAForMessagePull(true);
-      }      
    }
 
    // private -----------------------------------------------------

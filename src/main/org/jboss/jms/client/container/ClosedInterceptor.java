@@ -31,8 +31,8 @@ import org.jboss.aop.advice.Interceptor;
 import org.jboss.aop.joinpoint.Invocation;
 import org.jboss.aop.joinpoint.MethodInvocation;
 import org.jboss.jms.client.Closeable;
-import org.jboss.jms.client.state.HierarchicalState;
 import org.jboss.jms.client.delegate.DelegateSupport;
+import org.jboss.jms.client.state.HierarchicalState;
 import org.jboss.logging.Logger;
 
 

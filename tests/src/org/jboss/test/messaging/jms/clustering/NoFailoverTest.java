@@ -23,16 +23,20 @@
 package org.jboss.test.messaging.jms.clustering;
 
 import javax.jms.Connection;
+import javax.jms.ConnectionFactory;
 import javax.jms.ExceptionListener;
 import javax.jms.JMSException;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.jms.Session;
 import javax.jms.TextMessage;
+import javax.naming.InitialContext;
 
 import org.jboss.jms.client.JBossConnectionFactory;
 import org.jboss.jms.client.delegate.ClientClusteredConnectionFactoryDelegate;
 import org.jboss.test.messaging.tools.ServerManagement;
+import org.jboss.test.messaging.tools.container.ServiceAttributeOverrides;
+import org.jboss.test.messaging.tools.container.ServiceContainer;
 
 import EDU.oswego.cs.dl.util.concurrent.Latch;
 
@@ -129,9 +133,11 @@ public class NoFailoverTest extends NewClusteringTestBase
          conn.close();
 
          // Restarting the server
-         ServerManagement.start(1, "all-failover", false);
+         ServerManagement.start(1, "all", false);
          ServerManagement.deployQueue("testDistributedQueue", 1);
          ServerManagement.deployTopic("testDistributedTopic", 1);
+         InitialContext ic = new InitialContext(ServerManagement.getJNDIEnvironment(1));
+         ConnectionFactory cf = (ConnectionFactory)ic.lookup("/ClusteredConnectionFactory");
 
          conn = createConnectionOnServer(cf, 1);
 
@@ -162,8 +168,12 @@ public class NoFailoverTest extends NewClusteringTestBase
 
    protected void setUp() throws Exception
    {
-      this.nodeCount=3;
+      this.nodeCount = 3;
       
+      this.overrides = new ServiceAttributeOverrides();
+      
+      overrides.put(ServiceContainer.SERVER_PEER_OBJECT_NAME, "SupportsFailover", "false");
+            
       super.setUp();
    }
 
