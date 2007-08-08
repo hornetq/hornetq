@@ -91,9 +91,17 @@ public class LargeClusterTest extends NewClusteringTestBase
       assertTrue(view.contains(new Integer(6)));
       assertTrue(view.contains(new Integer(7)));
 
-      ServerManagement.removeNotificationListener(4, postOfficeObjectName, clusterEvent);
-
       ServerManagement.kill(7);
+
+      if (!clusterEvent.viewChanged(30000))
+      {
+         fail("Did not receive view changed");
+      }
+
+      view = ServerManagement.getServer(0).getNodeIDView();
+      assertEquals(7, view.size());
+
+      ServerManagement.removeNotificationListener(4, postOfficeObjectName, clusterEvent);
    }
 
    /**
@@ -104,6 +112,8 @@ public class LargeClusterTest extends NewClusteringTestBase
    {
       // By this time, after running setUp(), we should have an already formed cluster of seven
       // nodes
+
+     
 
       Set view = ServerManagement.getServer(0).getNodeIDView();
 
@@ -249,6 +259,8 @@ public class LargeClusterTest extends NewClusteringTestBase
       // We get the first node to re-join
 
       ServerManagement.start(0, "all", false);
+      ServerManagement.deployQueue("testDistributedQueue", 0);
+      ServerManagement.deployTopic("testDistributedTopic", 0);
 
       if (!clusterEvent.viewChanged(30000))
       {
