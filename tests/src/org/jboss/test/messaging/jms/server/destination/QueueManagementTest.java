@@ -690,6 +690,8 @@ public class QueueManagementTest extends DestinationManagementTestBase
             conn.close();
          }
          
+         removeAllMessages("QueueListMessages", true, 0);
+         
          ServerManagement.undeployQueue("QueueListMessages");      
       }
    }
@@ -723,7 +725,7 @@ public class QueueManagementTest extends DestinationManagementTestBase
          assertEquals(0, list.size());
       }
       finally
-      {
+      {      	
          ServerManagement.undeployQueue("QueueListMessages");
       }
    }
