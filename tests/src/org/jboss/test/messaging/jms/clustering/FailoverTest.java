@@ -11,6 +11,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import javax.jms.Connection;
+import javax.jms.ConnectionFactory;
 import javax.jms.DeliveryMode;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
@@ -51,11 +52,17 @@ public class FailoverTest extends ClusteringTestBase
 
    public void testSimpleConnectionFailover() throws Exception
    {
+   	//We need to sleep and relookup the connection factory due to http://jira.jboss.com/jira/browse/JBMESSAGING-1038
+   	//remove this when this task is complete
+   	Thread.sleep(2000);
+   	
+   	ConnectionFactory theCF = (ConnectionFactory)ic[0].lookup("/ClusteredConnectionFactory");
+   	
       Connection conn = null;
 
       try
       {
-         conn = createConnectionOnServer(cf, 1);
+         conn = createConnectionOnServer(theCF, 1);
          conn.start();
 
          // register a failover listener

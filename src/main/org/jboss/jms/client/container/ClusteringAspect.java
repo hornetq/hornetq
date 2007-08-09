@@ -7,6 +7,7 @@
 package org.jboss.jms.client.container;
 
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.Map;
 
 import javax.jms.JMSException;
@@ -264,6 +265,8 @@ public class ClusteringAspect
       			                           "It is likely you haven't deployed the connection factory on all nodes in the cluster.");
       }
       
+      if (trace) { dumpFailoverMap(failoverMap); }
+      
       Integer failoverNodeID = (Integer)failoverMap.get(nodeID);
       
       log.trace("Found failover node id = " + failoverNodeID);
@@ -287,6 +290,17 @@ public class ClusteringAspect
       }
 
       return null;
+   }
+   
+   private void dumpFailoverMap(Map failoverMap)
+   {
+      log.trace("Dumping failover map");
+      Iterator iter = failoverMap.entrySet().iterator();
+      while (iter.hasNext())
+      {
+      	Map.Entry entry = (Map.Entry)iter.next();
+      	log.trace(entry.getKey() + "-->" + entry.getValue());
+      }
    }
 
    /**
