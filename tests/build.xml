@@ -458,7 +458,6 @@
 
             <fileset dir="${build.tests.classes}">
 
-	       <include name="**/jms/${test-mask}.class"/> 
                <include name="**/jms/message/**/*Test.class"/>
                <include name="**/jms/selector/*Test.class"/>
                <include name="**/jms/crash/*Test.class"/>
