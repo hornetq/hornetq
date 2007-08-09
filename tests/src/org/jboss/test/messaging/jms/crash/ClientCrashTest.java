@@ -70,6 +70,9 @@ public class ClientCrashTest extends MessagingTestCase
 
    public void setUp() throws Exception
    {
+   	//Server might have been left around by other tests
+   	ServerManagement.kill(1);
+   	
       ServerManagement.stop();
       
       // Start the local server
