@@ -22,6 +22,9 @@
 
 package org.jboss.test.messaging.jms.clustering;
 
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
 
 import javax.jms.Connection;
@@ -32,6 +35,7 @@ import javax.jms.MessageProducer;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.jms.Topic;
+import javax.management.ObjectName;
 
 import org.jboss.jms.client.FailoverEvent;
 import org.jboss.jms.client.JBossConnection;
@@ -73,7 +77,61 @@ public class HATest extends ClusteringTestBase
    
    // Public --------------------------------------------------------
    
-   //
+   public void testAddToFailoverMapOnKill() throws Exception
+   {
+   	Connection conn = null;
+   	
+   	try
+   	{	   	
+	   	conn = this.createConnectionOnServer(cf, 0);
+	   	
+	   	Map failoverMap = ((ClientClusteredConnectionFactoryDelegate)(cf.getDelegate())).getFailoverMap();
+	   	
+	   	dumpFailoverMap(failoverMap);
+	   		   	
+	   	assertEquals(3, failoverMap.size());
+	   	
+	   	Map mapCopy = new HashMap(failoverMap);
+	   	
+	   	ServerManagement.kill(1);
+	   	
+	   	Thread.sleep(5000);
+	   		   	
+	   	failoverMap = ((ClientClusteredConnectionFactoryDelegate)(cf.getDelegate())).getFailoverMap();
+	   	
+	   	dumpFailoverMap(failoverMap);
+	   	
+	   	//Failover map should be added to not replaced
+	   	
+	   	assertEquals(3, failoverMap.size());
+	   	
+	   	assertEquals(2, ((Integer)failoverMap.get(new Integer(0))).intValue());
+	   	
+	   	assertEquals(0, ((Integer)failoverMap.get(new Integer(2))).intValue());
+	   	
+	   	assertEquals(((Integer)mapCopy.get(new Integer(1))).intValue(), ((Integer)failoverMap.get(new Integer(1))).intValue());
+   	}
+   	finally
+   	{
+   		if (conn != null)
+   		{
+   			conn.close();
+   		}
+   	}
+   }
+   
+   private void dumpFailoverMap(Map failoverMap)
+   {
+      log.info("Dumping failover map");
+      Iterator iter = failoverMap.entrySet().iterator();
+      while (iter.hasNext())
+      {
+      	Map.Entry entry = (Map.Entry)iter.next();
+      	log.info(entry.getKey() + "-->" + entry.getValue());
+      }
+   }
+   
+   
 
    /**
     * This test was created as per http://jira.jboss.org/jira/browse/JBMESSAGING-685.

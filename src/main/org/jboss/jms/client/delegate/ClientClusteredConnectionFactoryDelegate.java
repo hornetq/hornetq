@@ -139,7 +139,6 @@ public class ClientClusteredConnectionFactoryDelegate
    
    public ClientConnectionFactoryDelegate[] getDelegates()
    {
-   	sanityCheck();
       return delegates;
    }
 
@@ -151,7 +150,6 @@ public class ClientClusteredConnectionFactoryDelegate
 
    public Map getFailoverMap()
    {
-   	sanityCheck();
       return failoverMap;
    }
 
@@ -178,10 +176,15 @@ public class ClientClusteredConnectionFactoryDelegate
    
    /** Method used to update the delegate and failoverMap during viewChange */
    public synchronized void updateFailoverInfo(ClientConnectionFactoryDelegate[] delegates,
-                                               Map failoverMap)
+                                               Map newFailoverMap)
    {	
+   	log.trace("Updating failover info " + delegates.length + " map " + newFailoverMap);
+   	
       this.delegates = delegates;
-      this.failoverMap = failoverMap;
+      
+      //Note! We do not overwrite the failoverMap, we *add* to it, see http://jira.jboss.com/jira/browse/JBMESSAGING-1041
+      
+      failoverMap.putAll(newFailoverMap);
 
       if (supportsLoadBalancing)
       {
@@ -218,14 +221,6 @@ public class ClientClusteredConnectionFactoryDelegate
 
    // Private --------------------------------------------------------------------------------------
    
-   private void sanityCheck()
-   {
-   	if (delegates.length != failoverMap.size())
-   	{
-         throw new IllegalStateException("Number of delegates (" + delegates.length + ") and failover map size (" + failoverMap.size() + " )are not equal");
-   	}
-   }
-
    // Inner classes --------------------------------------------------------------------------------
 
 }
