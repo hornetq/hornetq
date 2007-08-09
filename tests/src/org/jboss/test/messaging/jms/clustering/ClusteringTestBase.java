@@ -120,9 +120,7 @@ public class ClusteringTestBase extends MessagingTestCase
    protected void setUp() throws Exception
    {
       super.setUp();            
-      
-      assertEquals(0, ResourceManagerFactory.instance.size());	
-            
+             
       log.info("node count is " + nodeCount);
       
       if (ic != null && ic.length < nodeCount)
@@ -259,8 +257,12 @@ public class ClusteringTestBase extends MessagingTestCase
    {
       super.tearDown();
                  
-      // This will tell us if any connections have been left open
-		assertEquals(0, ResourceManagerFactory.instance.size());	
+      if (ResourceManagerFactory.instance.size() != 0)
+      {
+      	ResourceManagerFactory.instance.dump();
+      	
+      	fail("Connection(s) have been left open");
+      }
    }
 
    protected String getLocatorURL(Connection conn)

@@ -34,6 +34,7 @@ import javax.naming.InitialContext;
 
 import org.jboss.jms.client.JBossConnectionFactory;
 import org.jboss.jms.client.delegate.ClientClusteredConnectionFactoryDelegate;
+import org.jboss.jms.tx.ResourceManagerFactory;
 import org.jboss.test.messaging.tools.ServerManagement;
 import org.jboss.test.messaging.tools.container.ServiceAttributeOverrides;
 import org.jboss.test.messaging.tools.container.ServiceContainer;
@@ -71,8 +72,14 @@ public class NoFailoverTest extends ClusteringTestBase
       try
       {
          assertFalse(((ClientClusteredConnectionFactoryDelegate)((JBossConnectionFactory)cf).getDelegate()).isSupportsFailover());
+         
+         log.info("dump 1");
+         ResourceManagerFactory.instance.dump();
 
          conn = createConnectionOnServer(cf, 1);
+         
+         log.info("dump 2");
+         ResourceManagerFactory.instance.dump();
 
       	MyListener listener = new MyListener();
 
@@ -93,6 +100,9 @@ public class NoFailoverTest extends ClusteringTestBase
          log.info("KILLED SERVER 1");
 
          JMSException e = listener.waitForException(20000);
+         
+         log.info("dump 3");
+         ResourceManagerFactory.instance.dump();
 
          assertNotNull(e);
 
@@ -106,7 +116,6 @@ public class NoFailoverTest extends ClusteringTestBase
          conn.close();
 
          conn = createConnectionOnServer(cf, 2); 
-            cf.createConnection();
 
          sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
@@ -151,6 +160,8 @@ public class NoFailoverTest extends ClusteringTestBase
          rm = (TextMessage) cons.receive(1000);
 
          assertEquals(rm.getText(), "Before Crash");
+         
+         log.info("Got to end");
       }
       finally
       {

@@ -22,6 +22,7 @@
 package org.jboss.jms.tx;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 import org.jboss.logging.Logger;
@@ -154,6 +155,19 @@ public class ResourceManagerFactory
          Holder h = new Holder(oldRM);
          holders.put(new Integer(newServerID), h);
       }
+   }
+   
+   public void dump()
+   {
+   	log.info("Dumping " + this);
+   	Iterator iter = holders.entrySet().iterator();
+   	while (iter.hasNext())
+   	{
+   		Map.Entry entry = (Map.Entry)iter.next();
+   		
+   		log.info(entry.getKey() + "--->" + entry.getValue());
+   	}
+   	log.info("End dump");
    }
 
    // Package protected ----------------------------------------------------------------------------
