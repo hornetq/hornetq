@@ -258,13 +258,6 @@ public class ClusteringAspect
       
       Map failoverMap = clusteredDelegate.getFailoverMap();
       
-      //Sanity check
-      if (failoverMap.size() != delegates.length)
-      {
-      	throw new IllegalStateException("Unable to failover. Number of servers is not the same as number of connection factories. " +
-      			                           "It is likely you haven't deployed the connection factory on all nodes in the cluster.");
-      }
-      
       if (trace) { dumpFailoverMap(failoverMap); }
       
       Integer failoverNodeID = (Integer)failoverMap.get(nodeID);
