@@ -289,7 +289,13 @@
  
       <antcall target="remote-tests"/>
 
-      <antcall target="bridge-tests"/>
+   </target>
+
+   <target name="thirdparty-tests" depends="tests-jar, prepare-testdirs, clear-test-logs">
+
+      <antcall target="invm-thirdparty-tests"/>
+ 
+      <antcall target="remote-thirdparty-tests"/>
 
    </target>
 
