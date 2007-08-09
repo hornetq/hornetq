@@ -524,7 +524,6 @@ public abstract class ChannelSupport implements Channel
                      }
                   }
                                   
-                  log.info("deliverinternal, incing delivery count for " + ref);
                   deliveringCount.increment();                     
                }               
             }

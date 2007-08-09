@@ -290,8 +290,6 @@ public class ServerPeer extends ServiceMBeanSupport
 
          started = true;
          
-         log.info("**** preserve ordering " + this.defaultPreserveOrdering);
-
          log.info("JBoss Messaging " + getVersion().getProviderVersion() + " server [" +
             getServerPeerID()+ "] started");
       }

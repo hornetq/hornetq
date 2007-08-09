@@ -254,7 +254,6 @@ public class MessagingQueue extends PagingChannelSupport implements Queue
          			
          			recoveryMap.put(new Long(message.getMessageID()), re);
          			
-         			log.info("merge in, incing delivery count for " + message);
          			deliveringCount.increment();
          			
          			iter.remove();
@@ -285,8 +284,6 @@ public class MessagingQueue extends PagingChannelSupport implements Queue
    {
    	if (trace) { log.trace("Recovering deliveries"); }
    	
-   	log.info("There are "  + recoveryMap.size() + " entries in map");
-   	
    	List refs = new ArrayList();
    	
    	Iterator iter = messageIds.iterator();
@@ -306,10 +303,6 @@ public class MessagingQueue extends PagingChannelSupport implements Queue
 	   		if (trace) { log.trace("Recovered ref " + re.ref); }
 	   		
 	   		refs.add(del);
-   		}
-   		else
-   		{
-   			log.info("Can't find entry for message id " + messageID + " in map");
    		}
    	}
    	   
@@ -501,7 +494,8 @@ public class MessagingQueue extends PagingChannelSupport implements Queue
    
    public Map getRecoveryArea()
    {
-        log.info("Getting recovery area, it is " + this.recoveryArea);
+      if (trace) { log.trace("Getting recovery area, it is " + this.recoveryArea); }
+      
    	return this.recoveryArea;
    }
    
