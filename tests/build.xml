@@ -890,6 +890,43 @@
       </junit>
    </target>
 
+   <target name="drop-tables" depends="tests-jar, prepare-testdirs, clear-test-logs"
+           description="Drops all tables">
+
+      <echo message=""/>
+      <echo message="Running invm tests, fork=${junit.fork}, junit.batchtest.fork=${junit.batchtest.fork}"/>
+      <echo message=""/>
+
+      <junit printsummary="${junit.printsummary}"
+             fork="on"
+             forkMode="once"
+             includeantruntime="${junit.includeantruntime}"
+             haltonerror="${junit.haltonerror}"
+             haltonfailure="${junit.haltonfailure}"
+             showoutput="${junit.showoutput}"
+             timeout="${junit.timeout}">
+
+         <sysproperty key="remote" value="false"/>
+         <sysproperty key="module.output" value="${tests.output}"/>
+         <sysproperty key="test.database" value="${functional.tests.database}"/>
+         <sysproperty key="test.logfile.suffix" value="invm"/>
+         <sysproperty key="build.lib" value="${build.lib}"/>
+         <sysproperty key="objectstore.dir" value="${objectstore.dir}"/>
+         <jvmarg value="-Xmx512M"/>
+         <!--
+         <jvmarg line="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_shmem,server=y,suspend=y,address=antjunit"/>
+         -->
+         <classpath refid="test.execution.classpath"/>
+         <formatter type="xml" usefile="${junit.formatter.usefile}"/>
+         <test name="org.jboss.test.messaging.DropTablesTest"
+               fork="false"
+               todir="${junit.batchtest.todir}"
+               haltonfailure="${junit.test.haltonfailure}"
+               haltonerror="${junit.test.haltonerror}">
+         </test>
+      </junit>
+   </target>
+
    <target name="test" depends="tests-jar, prepare-testdirs, clear-test-logs"
            description="Runs a single test, specified by its FQ class name via 'test.classname'">
 
