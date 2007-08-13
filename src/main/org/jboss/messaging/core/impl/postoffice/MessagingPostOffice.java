@@ -2195,6 +2195,8 @@ public class MessagingPostOffice extends JDBCSupport
    {
    	lock.writeLock().acquire();
    	
+   	Binding binding = null;
+   	
    	try
    	{
    		Integer nid = new Integer(nodeID);
@@ -2206,7 +2208,7 @@ public class MessagingPostOffice extends JDBCSupport
 	   		return null;
 	   	}
 	   	
-	   	Binding binding = (Binding)nameMap.remove(queueName);
+	   	binding = (Binding)nameMap.remove(queueName);
 	   	
 	   	if (binding == null)
 	   	{
@@ -2249,17 +2251,18 @@ public class MessagingPostOffice extends JDBCSupport
 	      	mappings.remove(binding.condition);
 	      }
 	      
-	      // Send a notification
-	      ClusterNotification notification = new ClusterNotification(ClusterNotification.TYPE_UNBIND, nodeID, queueName);
-	      
-	      clusterNotifier.sendNotification(notification);
-	      
-	      return binding;
    	}
    	finally
    	{
    		lock.writeLock().release();
    	}
+   	
+      // Send a notification
+      ClusterNotification notification = new ClusterNotification(ClusterNotification.TYPE_UNBIND, nodeID, queueName);
+      
+      clusterNotifier.sendNotification(notification);
+      
+      return binding;
    }
    
    private boolean addBindingInMemory(Binding binding) throws Exception
