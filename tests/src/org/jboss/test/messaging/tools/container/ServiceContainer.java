@@ -388,24 +388,8 @@ public class ServiceContainer
 
          initialContext = new InitialContext();
 
-         boolean java5 = false;
-
-         try
-         {
-            ClassLoader cl = Thread.currentThread().getContextClassLoader();
-            cl.loadClass("java.lang.management.ManagementFactory");
-            java5 = true;
-         }
-         catch(ClassNotFoundException e)
-         {
-            // OK
-         }
-
-         if (java5)
-         {
-            System.setProperty("javax.management.builder.initial",
-                               "org.jboss.test.messaging.tools.container.MBeanServerBuilder");
-         }
+         System.setProperty("javax.management.builder.initial",
+                               "org.jboss.test.messaging.tools.container.MBeanServerBuilder");         
 
          mbeanServer = MBeanServerFactory.createMBeanServer("jboss");
 
@@ -1449,6 +1433,8 @@ public class ServiceContainer
             // Ignore
             log.debug("Failed to execute statement", e);
             exception = true;
+            
+            throw e;
          }
       }
       finally
