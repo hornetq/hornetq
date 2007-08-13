@@ -1433,8 +1433,6 @@ public class ServiceContainer
             // Ignore
             log.debug("Failed to execute statement", e);
             exception = true;
-            
-            throw e;
          }
       }
       finally
