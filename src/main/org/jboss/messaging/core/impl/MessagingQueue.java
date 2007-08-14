@@ -385,7 +385,7 @@ public class MessagingQueue extends PagingChannelSupport implements Queue
    	{
 	   	boolean removed = suckers.remove(sucker);
 	   	
-	   	if (removed)
+	   	if (removed && suckers.isEmpty())
 	   	{
 	   		handleFlowControlForConsumers = false;
 	   	}
@@ -511,9 +511,10 @@ public class MessagingQueue extends PagingChannelSupport implements Queue
 		super.deliverInternal();
 		
 		if (trace) { log.trace(this + " deliverInternal"); }
-   			
+		
 		if (handleFlowControlForConsumers && getReceiversReady() && localDistributor.getNumberOfReceivers() > 0)
 		{
+			if (trace) { log.trace("Informing suckers"); }
 			//The receivers are still ready for more messages but there is nothing left in the local queue
 			//so we inform the message suckers to start consuming (if they aren't already)
 			informSuckers(true);

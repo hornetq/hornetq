@@ -32,6 +32,8 @@ import javax.jms.MessageProducer;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 
+import org.jboss.test.messaging.tools.ServerManagement;
+
 /**
  * A test for distributed request-response pattern
  *
@@ -76,6 +78,16 @@ public class DistributedRequestResponseTest extends ClusteringTestBase
    {
    	distributedRequestResponse(true, false);
    }
+   
+   // http://jira.jboss.com/jira/browse/JBMESSAGING-1024
+   public void testSuckAfterKill() throws Exception
+   {
+   	ServerManagement.kill(2);
+   	
+   	Thread.sleep(3000);
+   	
+   	distributedRequestResponse(false, true);
+   }
 
    // Package protected ----------------------------------------------------------------------------
 
@@ -100,7 +112,7 @@ public class DistributedRequestResponseTest extends ClusteringTestBase
    {
    	Connection conn0 = null;   	
    	Connection conn1 = null;
-      
+   	
       try
       {      	
          conn0 = this.createConnectionOnServer(cf, 0);
@@ -139,6 +151,7 @@ public class DistributedRequestResponseTest extends ClusteringTestBase
 				{
 					try
 					{
+						log.info("Received message in listener");
 						Destination dest = msg.getJMSReplyTo();
 						MessageProducer prod = sess.createProducer(dest);
 						prod.setDeliveryMode(persistent ? DeliveryMode.PERSISTENT : DeliveryMode.NON_PERSISTENT);
@@ -181,11 +194,15 @@ public class DistributedRequestResponseTest extends ClusteringTestBase
             
             prod.send(sm);
             
+            log.info("Sent message");
+            
             TextMessage tm = (TextMessage)cons0.receive(60000);
             
             assertNotNull(tm);
             
             assertEquals(sm.getText() + "reply", tm.getText());
+            
+            log.info("Got reply");
          }   
       }
       finally
