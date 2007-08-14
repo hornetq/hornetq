@@ -61,17 +61,50 @@ public class ClusterViewUpdateTest extends ClusteringTestBase
    	
    	super.setUp();
    }
+      
+   public void testUpdateConnectionFactoryWithNoConnections() throws Exception
+   {
+   	ServerManagement.kill(1);
+   	
+   	Thread.sleep(5000);
+   	
+   	Connection conn = createConnectionOnServer(cf, 0);
+   	
+   	ClientClusteredConnectionFactoryDelegate cfDelegate =
+         (ClientClusteredConnectionFactoryDelegate)cf.getDelegate();
+
+      assertEquals(1, cfDelegate.getDelegates().length);
+   	
+   	conn.close();
+   }
    
+   public void testUpdateConnectionFactoryWithNoInitialConnections() throws Exception
+   {
+   	//We kill all the servers - this tests the connection factory's ability to create a first connection
+   	//when its entire cached set of delegates is stale
+   	
+   	ServerManagement.kill(1);
+   	
+   	ServerManagement.kill(0);
+   	
+   	ServerManagement.start(0, "all", false);      
+   	
+   	Thread.sleep(5000);
+   	
+   	Connection conn = createConnectionOnServer(cf, 0);
+   	
+   	ClientClusteredConnectionFactoryDelegate cfDelegate =
+         (ClientClusteredConnectionFactoryDelegate)cf.getDelegate();
+
+      assertEquals(1, cfDelegate.getDelegates().length);
+   	
+   	conn.close();
+   	
+   	ServerManagement.kill(0);
+   }
    
    public void testUpdateConnectionFactoryOnKill() throws Exception
    {
-   	Thread.sleep(3000);
-   	
-   	//FIXME
-   	//Temporary kludge - we need to lookup the cf again or it won't be updated with the latest server list-
-   	//This is becasue updates only happen when there is an active connection
-   	cf = (JBossConnectionFactory)ic[0].lookup("/ClusteredConnectionFactory");
-   	   	
       Connection conn = createConnectionOnServer(cf, 0);
 
       JBossConnectionFactory jbcf = (JBossConnectionFactory)cf;
