@@ -21,6 +21,8 @@
   */
 package org.jboss.test.messaging.jms;
 
+import java.io.Serializable;
+
 import javax.jms.Connection;
 import javax.jms.DeliveryMode;
 import javax.jms.Destination;
@@ -30,6 +32,7 @@ import javax.jms.MessageProducer;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 
+import org.jboss.test.messaging.jms.message.SimpleJMSMessage;
 import org.jboss.test.messaging.jms.message.SimpleJMSTextMessage;
 
 /**
@@ -56,6 +59,45 @@ public class MessageProducerTest extends JMSTestCase
 
    // Public --------------------------------------------------------
 
+   public void testSendForeignWithForeignDestinationSet() throws Exception
+   {   	   	
+      Connection conn = null;      
+ 
+      try
+      {
+      	conn = cf.createConnection();
+
+         Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         
+         MessageProducer p = sess.createProducer(queue1);
+         
+         MessageConsumer c = sess.createConsumer(queue1);
+
+         conn.start();
+        
+         Message foreign = new SimpleJMSMessage(new SimpleDestination());
+         
+         foreign.setJMSDestination(new SimpleDestination());
+         
+         //the producer destination should override the foreign destination and the send should succeed
+         
+         p.send(foreign);
+
+         Message m = c.receive(1000);
+         
+         assertNotNull(m);
+         
+      }
+      finally
+      {
+         conn.close();
+      }
+   }
+   
+   private static class SimpleDestination implements Destination, Serializable
+   {
+   }
+   
    /**
     * The simplest possible non-transacted test.
     */
@@ -716,5 +758,7 @@ public class MessageProducerTest extends JMSTestCase
    // Private -------------------------------------------------------
    
    // Inner classes -------------------------------------------------
+   
+   
 
 }

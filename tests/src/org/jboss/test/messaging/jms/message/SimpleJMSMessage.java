@@ -25,6 +25,7 @@ import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
+import org.jboss.logging.Logger;
 
 import javax.jms.DeliveryMode;
 import javax.jms.Destination;
@@ -42,10 +43,14 @@ import javax.jms.Message;
 public class SimpleJMSMessage implements Message
 {
    // Constants -----------------------------------------------------
-
+	
+   private static final Logger log = Logger.getLogger(SimpleJMSMessage.class);
+   
    // Static --------------------------------------------------------
    
    // Attributes ----------------------------------------------------
+   
+   private boolean ignoreSetDestination;
    
    // Constructors --------------------------------------------------
    
@@ -53,6 +58,17 @@ public class SimpleJMSMessage implements Message
    {
       properties.put("JMSXDeliveryCount", new Integer(0));
    }
+   
+   /*
+    * This constructor is used to simulate an activemq message in which the set of the destination is ignored after receipt.
+    */
+   public SimpleJMSMessage(Destination dest)
+   {
+   	this();
+   	this.ignoreSetDestination = true;
+   	this.destination = dest;
+   }
+      
 
    // Message implementation ----------------------------------------
 
@@ -150,7 +166,11 @@ public class SimpleJMSMessage implements Message
 
    public void setJMSDestination(Destination destination) throws JMSException
    {
-      this.destination = destination;
+   	if (!this.ignoreSetDestination)
+   	{
+   		log.info("*********** setting destination to: " + destination);
+   		this.destination = destination;
+   	}
    }
 
 

@@ -645,7 +645,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
    
    void sendMessage(JBossMessage msg, Transaction tx, boolean checkForDuplicates) throws Exception
    {
-      if (trace) { log.trace(this + " sending " + msg + (tx == null ? " non-transactionally" : " in " + tx)); }
+      if (trace) { log.trace(this + " sending message " + msg + (tx == null ? " non-transactionally" : " in " + tx)); }
 
       JBossDestination dest = (JBossDestination)msg.getJMSDestination();
       

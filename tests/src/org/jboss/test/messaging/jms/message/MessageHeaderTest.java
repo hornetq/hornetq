@@ -837,13 +837,15 @@ public class MessageHeaderTest extends MessageHeaderTestBase
    
    public void testForeignJMSReplyTo() throws JMSException
    {
-      JBossMessage jbossMessage = ((MessageProxy) queueProducerSession.createTextMessage()).getMessage();
+   	Message msg = queueProducerSession.createTextMessage();
+   	
+      JBossMessage jbossMessage = ((MessageProxy) msg).getMessage();
       
       Destination foreignDestination = new ForeignDestination();
       
       jbossMessage.setJMSReplyTo(foreignDestination);
       
-      queueProducer.send(jbossMessage);
+      queueProducer.send(msg);
       
       Message receivedMessage = queueConsumer.receive(2000);
 

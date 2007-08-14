@@ -159,8 +159,6 @@ public class ProducerAspect
                                                     "these destinations must be equal");
          }
       }
-
-      m.setJMSDestination(destination);
       
       SessionState sessionState = (SessionState)producerState.getParent();
                   
@@ -176,7 +174,7 @@ public class ProducerAspect
       if (!(m instanceof MessageProxy))
       {
          // it's a foreign message
-
+      	
          foreign = true;
          
          // JMS 1.1 Sect. 3.11.4: A provider must be prepared to accept, from a client,
@@ -209,11 +207,16 @@ public class ProducerAspect
          }
          
          messageToSend.setJMSMessageID(null);
+         
+         //We must set the destination *after* converting from foreign message
+         messageToSend.setJMSDestination(destination);              
       }
       else
       {
          // get the actual message
          MessageProxy proxy = (MessageProxy)m;
+         
+         m.setJMSDestination(destination);
                                     
          //The following line executed on the proxy should cause a copy to occur
          //if it is necessary
@@ -224,7 +227,7 @@ public class ProducerAspect
          
          proxy.beforeSend();
       }
-      
+          
       // Set the new id
       
       messageToSend.setMessageId(id);
