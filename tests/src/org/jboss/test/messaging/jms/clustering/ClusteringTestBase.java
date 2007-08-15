@@ -123,6 +123,8 @@ public class ClusteringTestBase extends MessagingTestCase
              
       log.info("node count is " + nodeCount);
       
+      boolean changed = false;
+      
       if (ic != null && ic.length < nodeCount)
       {
       	log.info("Node count has increased from " + ic.length + " to " + nodeCount);
@@ -162,6 +164,8 @@ public class ClusteringTestBase extends MessagingTestCase
       		log.info("*** killing server");
       		ServerManagement.kill(i);
       	}
+      	
+      	changed = true;
       }
       
       if (overridesChanged(overrides, currentOverrides))
@@ -173,6 +177,8 @@ public class ClusteringTestBase extends MessagingTestCase
          {
       		ServerManagement.stop(i);
          }
+      	
+      	changed = true;
       }
       
       for (int i = 0; i < nodeCount; i++)
@@ -198,6 +204,8 @@ public class ClusteringTestBase extends MessagingTestCase
 	          
 	         queue[i] = (Queue)ic[i].lookup("queue/testDistributedQueue");
 	         topic[i] = (Topic)ic[i].lookup("topic/testDistributedTopic");
+	         
+	         changed = true;
 
 	      }
 	      
@@ -208,6 +216,13 @@ public class ClusteringTestBase extends MessagingTestCase
 	      checkNoSubscriptions(topic[i], i);	
 	      
 	      ServerManagement.getServer(i).resetAllSuckers();
+      }
+      
+      if (changed)
+      {
+      	//Wait a little while before starting the test to ensure the new view propagates
+      	//otherwise the view change might hit after the test has started
+      	Thread.sleep(4000);
       }
       
       if (ic != null)
