@@ -232,8 +232,7 @@ public class MessageSucker implements MessageListener
 		}
 		catch (Exception e)
 		{
-			//We don't want to propagate up since that might cause failover to abort
-			log.error("Failed to change rate", e);
+			//We ignore the exception - we might fail to change rate when stoping a sucker for a dead server
 		}
 	}
 		
