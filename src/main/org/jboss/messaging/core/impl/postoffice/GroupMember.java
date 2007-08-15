@@ -42,11 +42,6 @@ import org.jgroups.blocks.RequestHandler;
 import org.jgroups.util.Rsp;
 import org.jgroups.util.RspList;
 
-import EDU.oswego.cs.dl.util.concurrent.LinkedQueue;
-import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
-import EDU.oswego.cs.dl.util.concurrent.ReadWriteLock;
-import EDU.oswego.cs.dl.util.concurrent.ReentrantWriterPreferenceReadWriteLock;
-
 /**
  * 
  * This class handles the interface with JGroups
@@ -83,14 +78,17 @@ public class GroupMember
    
    private volatile View currentView;
    
-   private QueuedExecutor viewExecutor;
-   
    private Object waitLock = new Object();
-
-   //Still needs to be volatile since the ReadWriteLock won't synchronize between threads
-   private volatile boolean started;
    
-   private ReadWriteLock lock;
+   private static final int STOPPED = 1;
+
+   private static final int WAITING_FOR_FIRST_VIEW = 2;
+   
+   private static final int WAITING_FOR_STATE = 3;
+   
+   private static final int STARTED = 4;
+   
+   private volatile int startedState;
    
    public GroupMember(String groupName, long stateTimeout, long castTimeout,
    		             JChannelFactory jChannelFactory, RequestTarget requestTarget,
@@ -107,115 +105,99 @@ public class GroupMember
    	this.requestTarget = requestTarget;
    	
    	this.groupListener = groupListener;
-   	 	
-   	this.lock = new ReentrantWriterPreferenceReadWriteLock();
    }
      
    public void start() throws Exception
-   {
-   	lock.writeLock().acquire();
+   {		
+   	this.controlChannel = jChannelFactory.createControlChannel();
    	
-   	try
-   	{
-      	this.viewExecutor = new QueuedExecutor(new LinkedQueue());
-      	     		
-	   	this.controlChannel = jChannelFactory.createControlChannel();
-	   	
-	      this.dataChannel = jChannelFactory.createDataChannel();
-	
-	      // We don't want to receive local messages on any of the channels
-	      controlChannel.setOpt(Channel.LOCAL, Boolean.FALSE);
-	
-	      dataChannel.setOpt(Channel.LOCAL, Boolean.FALSE);
-	      
-	      MessageListener messageListener = new ControlMessageListener();
-	      
-	      MembershipListener membershipListener = new ControlMembershipListener();
-	      
-	      RequestHandler requestHandler = new ControlRequestHandler();
-	      
-	      dispatcher = new MessageDispatcher(controlChannel, messageListener, membershipListener, requestHandler, true);
-	      	      
-	      Receiver dataReceiver = new DataReceiver();
-	      
-	      dataChannel.setReceiver(dataReceiver);
-	
-	      controlChannel.connect(groupName);
-	      
-	      dataChannel.connect(groupName);
-	      
-	      //Note we're not started until getState() is successfullly called
-	      
-	      if (!getState())
-      	{
-      		if (trace) { log.trace(this + " is the first member of group"); }
-      	}
-      	else
-      	{
-      		if (trace) { log.trace(this + " is not the first member of group"); }
-      	}
-	      
-	      //Wait for the first view to arrive
+      this.dataChannel = jChannelFactory.createDataChannel();
+      
+      this.startedState = STOPPED;
 
-      	synchronized (waitLock)
-      	{ 
-   			long timeRemaining = 5000; //Hardcoded for now
-   			
-   			long start = System.currentTimeMillis();
-   			
-      		while (currentView == null && timeRemaining > 0)
-      		{
-      			waitLock.wait(stateTimeout);
-      			
-      			if (currentView == null)
-      			{
-      				long waited = System.currentTimeMillis() - start;
-      				
-      				timeRemaining -= waited;
-      			}
-      		}
-      		
-      		if (currentView == null)
-      		{
-      			throw new IllegalStateException("Timed out waiting for first view to arrive");
-      		}
-      	}
-      	
-	   	//Now we can be considered started
-	   	started = true;	   	
-   	}
-   	finally
+      // We don't want to receive local messages on any of the channels
+      controlChannel.setOpt(Channel.LOCAL, Boolean.FALSE);
+
+      dataChannel.setOpt(Channel.LOCAL, Boolean.FALSE);
+      
+      MessageListener messageListener = new ControlMessageListener();
+      
+      MembershipListener membershipListener = new ControlMembershipListener();
+      
+      RequestHandler requestHandler = new ControlRequestHandler();
+      
+      dispatcher = new MessageDispatcher(controlChannel, messageListener, membershipListener, requestHandler, true);
+      	      
+      Receiver dataReceiver = new DataReceiver();
+      
+      dataChannel.setReceiver(dataReceiver);
+      
+      this.startedState = WAITING_FOR_FIRST_VIEW;
+
+      controlChannel.connect(groupName);
+         
+      //The first thing that happens after connect is a view change arrives
+      //Then the state will arrive (if we are not the first member)
+      //Then the control messages will start arriving.
+      //We can guarantee that messages won't arrive until after the state is set because we use 
+      //the FLUSH protocol on the control channel
+      
+      //First wait for view
+      waitForStateChange(WAITING_FOR_STATE);
+      
+      log.debug("First view arrived");
+      
+      //Now wait for state if we are not the first member
+      
+      if (controlChannel.getState(null, stateTimeout))
    	{
-   		lock.writeLock().release();
+   		//We are not the first member of the group, so let's wait for state to be got and processed
+   		
+   		waitForStateChange(STARTED);
+   		
+   		log.debug("State arrived");
    	}
+   	else
+   	{
+   		//We are the first member, no need to wait
+   		
+   		startedState = STARTED;
+   		
+   		log.debug("We are the first member of the group so no need to wait for state");
+   	}
+      
+      //Now connect the data channel.
+   	
+      dataChannel.connect(groupName);
    }
       
    public void stop() throws Exception
-   {
-   	lock.writeLock().acquire();
-   	
+   {	
    	try
-   	{	   	
-   		viewExecutor.shutdownAfterProcessingCurrentTask();
-   		
-	   	controlChannel.close();
-	   	
-	   	dataChannel.close();
-	   	
-	   	controlChannel = null;
-	   	
-	   	dataChannel = null;
-	   	
-	   	currentView = null;
-	   	
-	   	viewExecutor = null;
-
-	   	started = false;
-   	}
-   	finally
    	{
-   		lock.writeLock().release();
+   		dataChannel.close();
    	}
+   	catch (Exception e)
+   	{
+   		log.debug("Failed to close data channel", e);
+   	}
+   	   	
+   	try
+   	{
+   		controlChannel.close();
+   	}
+   	catch (Exception e)
+   	{
+   		log.debug("Failed to close control channel", e);
+   	}
+   	
+   	controlChannel = null;
+   	
+   	dataChannel = null;
+   	
+   	currentView = null;
+   	
+   	startedState = STOPPED;
    }
    
    public Address getSyncAddress()
@@ -240,106 +222,53 @@ public class GroupMember
    
    public void multicastControl(ClusterRequest request, boolean sync) throws Exception
    {
-   	lock.readLock().acquire();
-   	
-   	try
-   	{   	
-	   	if (started)
-	   	{   		
-		   	if (trace) { log.trace(this + " multicasting " + request + " to control channel, sync=" + sync); }
-		
-		   	Message message = new Message(null, null, writeRequest(request));
+   	if (startedState == STARTED)
+   	{   		
+	   	if (trace) { log.trace(this + " multicasting " + request + " to control channel, sync=" + sync); }
+	
+	   	Message message = new Message(null, null, writeRequest(request));
 
-		   	RspList rspList =
-		   		dispatcher.castMessage(null, message, sync ? GroupRequest.GET_ALL: GroupRequest.GET_NONE, castTimeout);	
+	   	RspList rspList =
+	   		dispatcher.castMessage(null, message, sync ? GroupRequest.GET_ALL: GroupRequest.GET_NONE, castTimeout);	
+	   	
+	   	if (sync)
+	   	{			   	
+		   	Iterator iter = rspList.values().iterator();
 		   	
-		   	if (sync)
-		   	{			   	
-			   	Iterator iter = rspList.values().iterator();
-			   	
-			   	while (iter.hasNext())
-			   	{
-			   		Rsp rsp = (Rsp)iter.next();
-			   		
-			   		if (!rsp.wasReceived())
-			   		{
-			   			throw new IllegalStateException(this + " response not received from " + rsp.getSender() + " - there may be others");
-			   		}
-			   	}		
-		   	}
+		   	while (iter.hasNext())
+		   	{
+		   		Rsp rsp = (Rsp)iter.next();
+		   		
+		   		if (!rsp.wasReceived())
+		   		{
+		   			throw new IllegalStateException(this + " response not received from " + rsp.getSender() + " - there may be others");
+		   		}
+		   	}		
 	   	}
-   	}
-   	finally
-   	{
-   		lock.readLock().release();
-   	}
-   }
-   
-   public void unicastControl(ClusterRequest request, Address address, boolean sync) throws Exception
-   {
-   	lock.readLock().acquire();
-   	
-   	try
-   	{   	
-	   	if (started)
-	   	{   		
-		   	if (trace) { log.trace(this + " multicasting " + request + " to control channel, sync=" + sync); }
-		
-		   	Message message = new Message(address, null, writeRequest(request));
-
-		   	String ret = (String)dispatcher.sendMessage(message, sync ? GroupRequest.GET_ALL: GroupRequest.GET_NONE, castTimeout);
-		   				   	
-		   	if (sync && !"ok".equals(ret))
-		   	{			   				   	
-		   		throw new IllegalStateException("Invalid response received " + ret);		   				   				   			   		
-		   	}
-	   	}
-   	}
-   	finally
-   	{
-   		lock.readLock().release();
    	}
    }
    
    public void multicastData(ClusterRequest request) throws Exception
    {
-   	lock.readLock().acquire();
-   	
-   	try
-   	{   	
-	   	if (started)
-	   	{   		
-		   	if (trace) { log.trace(this + " multicasting " + request + " to data channel"); }
-		
-		      byte[] bytes = writeRequest(request);
-		      
-		      dataChannel.send(new Message(null, null, bytes));
-	   	}
-   	}
-   	finally
-   	{
-   		lock.readLock().release();
+   	if (startedState == STARTED)
+   	{   		
+	   	if (trace) { log.trace(this + " multicasting " + request + " to data channel"); }
+	
+	      byte[] bytes = writeRequest(request);
+	      
+	      dataChannel.send(new Message(null, null, bytes));
    	}
    }
    
    public void unicastData(ClusterRequest request, Address address) throws Exception
    {
-   	lock.readLock().acquire();
-   	
-   	try
-   	{ 
-	   	if (started)
-	   	{
-		   	if (trace) { log.trace(this + " unicasting " + request + " to address " + address); }
-		
-		      byte[] bytes = writeRequest(request);
-		      
-		      dataChannel.send(new Message(address, null, bytes));
-	   	}
-   	}
-   	finally
+   	if (startedState == STARTED)
    	{
-   		lock.readLock().release();
+	   	if (trace) { log.trace(this + " unicasting " + request + " to address " + address); }
+	
+	      byte[] bytes = writeRequest(request);
+	      
+	      dataChannel.send(new Message(address, null, bytes));
    	}
    }
    
@@ -352,34 +281,43 @@ public class GroupMember
    	{
    		//We are not the first member of the group, so let's wait for state to be got and processed
    		
-   		synchronized (waitLock)
-      	{ 
-   			long timeRemaining = stateTimeout;
-   			
-   			long start = System.currentTimeMillis();
-   			
-      		while (!started && timeRemaining > 0)
-      		{
-      			waitLock.wait(stateTimeout);
-      			
-      			if (!started)
-      			{
-      				long waited = System.currentTimeMillis() - start;
-      				
-      				timeRemaining -= waited;
-      			}
-      		}
-      		
-      		if (!started)
-      		{
-      			throw new IllegalStateException("Timed out waiting for state to arrive");
-      		}
-      	}
+   		waitForStateChange(STARTED);
    		
    		retrievedState = true;
    	}
+   	else
+   	{
+   		this.startedState = STARTED;
+   	}
 
    	return retrievedState;
+   }
+   
+   private void waitForStateChange(int newState) throws Exception
+   {
+   	synchronized (waitLock)
+   	{ 
+			long timeRemaining = stateTimeout;
+			
+			long start = System.currentTimeMillis();
+			
+   		while (startedState != newState && timeRemaining > 0)
+   		{
+   			waitLock.wait(stateTimeout);
+   			
+   			if (startedState != newState)
+   			{
+   				long waited = System.currentTimeMillis() - start;
+   				
+   				timeRemaining -= waited;
+   			}
+   		}
+   		
+   		if (startedState != newState)
+   		{
+   			throw new IllegalStateException("Timed out waiting for state to arrive");
+   		}
+   	}
    }
    
    
@@ -418,34 +356,23 @@ public class GroupMember
       public byte[] getState()
       {
          try
-         {
-	      	lock.readLock().acquire();
-	      		      
-	      	try
-	      	{	      	
-		      	if (!started)
-		      	{
-		      		//Ignore if received after stopped
-		      		
-		      		return null;
-		      	}
-	      		
-		         if (trace) { log.trace(this + ".ControlMessageListener got state"); }		         
-	
-		         byte[] state = groupListener.getState();
-		         
-		         return state;		        
-	      	}
-	      	finally
+         {     	
+	      	if (startedState != STARTED)
 	      	{
-	      		lock.readLock().release();
+	      		throw new IllegalStateException("Received control message but group member is not started: " + startedState);
 	      	}
+      		
+	         if (trace) { log.trace(this + ".ControlMessageListener got state"); }		         
+
+	         byte[] state = groupListener.getState();
+	         
+	         return state;		        
       	}
          catch (Exception e)
          {
          	log.error("Failed to get state", e);
          	
-         	return null;
+         	throw new IllegalStateException("Failed to get state");
          }
       }
 
@@ -457,6 +384,11 @@ public class GroupMember
       {
          synchronized (waitLock)
          {
+         	if (startedState != WAITING_FOR_STATE)
+         	{
+         		throw new IllegalStateException("Received state but started state is " + startedState);
+         	}
+         	
          	try
          	{
          		groupListener.setState(bytes);
@@ -466,7 +398,7 @@ public class GroupMember
          		log.error("Failed to set state", e);
          	}
          	
-         	started = true;
+         	startedState = STARTED;
          	
             waitLock.notify();
          }
@@ -490,19 +422,67 @@ public class GroupMember
 
       public void viewAccepted(View newView)
       {
+      	log.debug(this  + " got new view " + newView + ", old view is " + currentView);
+      	
+      	if (currentView == null)
+      	{
+      		//The first view is arriving
+      		
+      		if (startedState != WAITING_FOR_FIRST_VIEW)
+      		{
+      			throw new IllegalStateException("Got first view but started state is " + startedState);
+      		}
+      	}
+
+         // JGroups will make sure this method is never called by more than one thread concurrently
+
+         View oldView = currentView;
+         
+         currentView = newView;
+
          try
          {
-            // We queue up changes and execute them asynchronously.
-            // This is because JGroups will not let us do stuff like send synch messages using the
-            // same thread that delivered the view change and this is what we need to do in
-            // failover, for example.
+            // Act on membership change, on both cases when an old member left or a new member joined
 
-            viewExecutor.execute(new HandleViewAcceptedRunnable(newView));
+            if (oldView != null)
+            {
+               for (Iterator i = oldView.getMembers().iterator(); i.hasNext(); )
+               {
+                  Address address = (Address)i.next();
+                  if (!newView.containsMember(address))
+                  {
+                     // this is where the failover happens, if necessary
+                     groupListener.nodeLeft(address);
+                  }
+               }
+            }
+
+            for (Iterator i = newView.getMembers().iterator(); i.hasNext(); )
+            {
+               Address address = (Address)i.next();
+               if (oldView == null || !oldView.containsMember(address))
+               {
+                  groupListener.nodeJoined(address);
+               }
+            }
          }
-         catch (InterruptedException e)
+         catch (Throwable e)
          {
-            log.warn("Caught InterruptedException", e);
+            log.error("Caught Exception in MembershipListener", e);
+            IllegalStateException e2 = new IllegalStateException(e.getMessage());
+            e2.setStackTrace(e.getStackTrace());
+            throw e2;
          }
+         
+         if (startedState == WAITING_FOR_FIRST_VIEW)
+   		{
+         	synchronized (waitLock)
+         	{         	
+	   			startedState = WAITING_FOR_STATE;
+	   			
+	   			waitLock.notify();
+         	}
+   		}
       }
 
       public byte[] getState()
@@ -544,27 +524,16 @@ public class GroupMember
 
          try
          {
-         	lock.readLock().acquire();
-         	
-         	try
-         	{
-         		if (!started)
-         		{
-         			//Ignore messages received when not started
-         			
-         			return;
-         		}
-         		
-	            byte[] bytes = message.getBuffer();
-	
-	            ClusterRequest request = readRequest(bytes);
-	            
-	            request.execute(requestTarget);
-         	}
-         	finally
-         	{
-         		lock.readLock().release();
-         	}
+      		if (startedState != STARTED)
+      		{
+      			throw new IllegalStateException("Received data message but member is not started " + startedState);
+      		}
+      		
+            byte[] bytes = message.getBuffer();
+
+            ClusterRequest request = readRequest(bytes);
+            
+            request.execute(requestTarget);
          }
          catch (Throwable e)
          {
@@ -593,27 +562,16 @@ public class GroupMember
 
          try
          {
-         	lock.readLock().acquire();
-         	
-         	try
-         	{
-         		if (!started)
-         		{
-         			//Ignore messages received when stopped
-         			
-         			return null;
-         		}
-         		         		
-	            byte[] bytes = message.getBuffer();
-	
-	            ClusterRequest request = readRequest(bytes);
-	
-	            return request.execute(requestTarget);
-         	}
-         	finally
-         	{
-         		lock.readLock().release();
-         	}
+      		if (startedState != STARTED)
+      		{
+      			throw new IllegalStateException("Received control message but member is not started " + startedState);
+      		}
+      		         		
+            byte[] bytes = message.getBuffer();
+
+            ClusterRequest request = readRequest(bytes);
+
+            return request.execute(requestTarget);
          }
          catch (Throwable e)
          {
@@ -625,59 +583,5 @@ public class GroupMember
       }
    }
    
-   private class HandleViewAcceptedRunnable implements Runnable
-   {
-      private View newView;
-
-      HandleViewAcceptedRunnable(View newView)
-      {
-         this.newView = newView;
-      }
-
-      public void run()
-      {
-         log.debug(this  + " got new view " + newView + ", old view is " + currentView);
-
-         // JGroups will make sure this method is never called by more than one thread concurrently
-
-         View oldView = currentView;
-         
-         currentView = newView;
-
-         try
-         {
-            // Act on membership change, on both cases when an old member left or a new member joined
-
-            if (oldView != null)
-            {
-               for (Iterator i = oldView.getMembers().iterator(); i.hasNext(); )
-               {
-                  Address address = (Address)i.next();
-                  if (!newView.containsMember(address))
-                  {
-                     // this is where the failover happens, if necessary
-                     groupListener.nodeLeft(address);
-                  }
-               }
-            }
-
-            for (Iterator i = newView.getMembers().iterator(); i.hasNext(); )
-            {
-               Address address = (Address)i.next();
-               if (oldView == null || !oldView.containsMember(address))
-               {
-                  groupListener.nodeJoined(address);
-               }
-            }
-         }
-         catch (Throwable e)
-         {
-            log.error("Caught Exception in MembershipListener", e);
-            IllegalStateException e2 = new IllegalStateException(e.getMessage());
-            e2.setStackTrace(e.getStackTrace());
-            throw e2;
-         }
-      }
-   }
 
 }

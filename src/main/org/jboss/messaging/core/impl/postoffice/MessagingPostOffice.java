@@ -613,7 +613,7 @@ public class MessagingPostOffice extends JDBCSupport
    		
    		PostOfficeAddressInfo info = (PostOfficeAddressInfo)nodeIDAddressMap.get(new Integer(thisNodeID));
    		
-   		replyAddress = info.getControlChannelAddress();
+   		replyAddress = info.getDataChannelAddress();
    	}
    	
    	ClusterRequest request = new ReplicateDeliveryMessage(thisNodeID, queueName, sessionID, messageID, deliveryID, replyAddress);
@@ -621,11 +621,11 @@ public class MessagingPostOffice extends JDBCSupport
    	if (trace) { log.trace(this + " sending replicate delivery message " + queueName + " " + sessionID + " " + messageID); }
 			   
    	//TODO could be optimised too
-	   Address address = getFailoverNodeForControlChannelAddress();
+	   Address address = getFailoverNodeDataChannelAddress();
 	   	
 	   if (address != null)
 	   {	   
-	   	groupMember.unicastControl(request, address, false);
+	   	groupMember.unicastData(request, address);
 	   }
    }
 
@@ -636,11 +636,11 @@ public class MessagingPostOffice extends JDBCSupport
 	
 	   ClusterRequest request = new ReplicateAckMessage(thisNodeID, queueName, messageID);		   
    	
-	   Address address = getFailoverNodeForControlChannelAddress();
+	   Address address = getFailoverNodeDataChannelAddress();
 	   	
 	   if (address != null)
 	   {	   
-	   	groupMember.unicastControl(request, address, false);
+	   	groupMember.unicastData(request, address);
 	   }
 	}
 	
@@ -1205,7 +1205,7 @@ public class MessagingPostOffice extends JDBCSupport
 		   		{
 		   			try
 		   			{
-		   				groupMember.unicastControl(request, replyAddress, false);
+		   				groupMember.unicastData(request, replyAddress);
 		   			}
 		   			catch (Exception e)
 		   			{
@@ -1604,19 +1604,19 @@ public class MessagingPostOffice extends JDBCSupport
 						
 						PostOfficeAddressInfo info = (PostOfficeAddressInfo)nodeIDAddressMap.get(new Integer(thisNodeID));
 			   		
-			   		Address replyAddress = info.getControlChannelAddress();
+			   		Address replyAddress = info.getDataChannelAddress();
 						
 						ClusterRequest request = new GetReplicatedDeliveriesRequest(queue.getName(), replyAddress);
 						
 					   info = (PostOfficeAddressInfo)nodeIDAddressMap.get(masterNodeID);
 					   			   
-					   Address address = info.getControlChannelAddress();
+					   Address address = info.getDataChannelAddress();
 					   
 					   log.info("Sending the message to node " + masterNodeID + " with address " + address);
 				   	   				   	
 					   if (address != null)
 					   {	   
-					   	groupMember.unicastControl(request, address, false);
+					   	groupMember.unicastData(request, address);
 					   }
 					}
 				}
@@ -1651,7 +1651,7 @@ public class MessagingPostOffice extends JDBCSupport
    	return nodeID;
    }
    
-   private Address getFailoverNodeForControlChannelAddress()
+   private Address getFailoverNodeDataChannelAddress()
    {
    	PostOfficeAddressInfo info = (PostOfficeAddressInfo)nodeIDAddressMap.get(new Integer(failoverNodeID));
    	
@@ -1660,7 +1660,7 @@ public class MessagingPostOffice extends JDBCSupport
    		return null;
    	}
    	
-   	Address address = info.getControlChannelAddress();
+   	Address address = info.getDataChannelAddress();
    	
    	return address;
    }
@@ -2763,7 +2763,7 @@ public class MessagingPostOffice extends JDBCSupport
 	   		
 	   		ClusterRequest request = new AckAllReplicatedDeliveriesMessage(thisNodeID);
 	   		
-	   		groupMember.unicastControl(request, info.getControlChannelAddress(), false);
+	   		groupMember.unicastData(request, info.getDataChannelAddress());
 	   		
 	   		if (trace) { log.trace("Sent AckAllReplicatedDeliveriesMessage"); }
 	   	}
@@ -2813,7 +2813,7 @@ public class MessagingPostOffice extends JDBCSupport
 						
 						ClusterRequest request = new AddAllReplicatedDeliveriesMessage(thisNodeID, deliveries);
 						
-						groupMember.unicastControl(request, info.getControlChannelAddress(), false);
+						groupMember.unicastData(request, info.getDataChannelAddress());
 			   		
 			   		if (trace) { log.trace("Sent AddAllReplicatedDeliveriesMessage"); }
 					}
@@ -3008,7 +3008,7 @@ public class MessagingPostOffice extends JDBCSupport
       			{
    	   			ClusterRequest req = new AddAllReplicatedDeliveriesMessage(thisNodeID, dels);
    	   			
-   	   			groupMember.unicastControl(req, address, false);
+   	   			groupMember.unicastData(req, address);
       			}
       			   			
       		}
