@@ -48,7 +48,6 @@ import org.jboss.jms.message.JBossMessage;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.contract.MessagingComponent;
 import org.jboss.tm.TransactionManagerLocator;
-import org.jboss.tm.TxManager;
 
 /**
  * 
@@ -808,11 +807,9 @@ public class Bridge implements MessagingComponent
          }
          
          //Sanity check
-         if (tm instanceof TxManager)
+         if (!(tm instanceof com.arjuna.ats.internal.jta.transaction.arjunacore.TransactionManagerImple))
          {
-            log.warn("WARNING! The old JBoss transaction manager is being used. " +
-                     "This does not have XA transaction recovery functionality. " +
-                     "For XA transaction recovery please deploy the JBoss Transactions JTA/JTS implementation.");
+            log.warn("WARNING! The JBoss Transactions JTA transaction manager is not be used!");
          }
       }
       

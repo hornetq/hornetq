@@ -25,7 +25,9 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.contract.JChannelFactory;
@@ -446,14 +448,18 @@ public class GroupMember
 
             if (oldView != null)
             {
+            	List leftNodes = new ArrayList();
                for (Iterator i = oldView.getMembers().iterator(); i.hasNext(); )
                {
                   Address address = (Address)i.next();
                   if (!newView.containsMember(address))
                   {
-                     // this is where the failover happens, if necessary
-                     groupListener.nodeLeft(address);
+                  	leftNodes.add(address);
                   }
+               }
+               if (!leftNodes.isEmpty())
+               {
+               	groupListener.nodesLeft(leftNodes);
                }
             }
 

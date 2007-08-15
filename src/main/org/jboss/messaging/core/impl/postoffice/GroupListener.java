@@ -21,6 +21,8 @@
  */
 package org.jboss.messaging.core.impl.postoffice;
 
+import java.util.List;
+
 import org.jgroups.Address;
 
 /**
@@ -33,7 +35,7 @@ import org.jgroups.Address;
  */
 interface GroupListener
 {
-	void nodeLeft(Address address) throws Throwable;
+	void nodesLeft(List addresses) throws Throwable;
 	
 	void nodeJoined(Address address) throws Exception;
 	

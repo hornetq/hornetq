@@ -841,85 +841,88 @@ public class MessagingPostOffice extends JDBCSupport
       
       // Currently does nothing
    }
-
-   /*
-    * A node has left the group
-    */
-   public void nodeLeft(Address address) throws Throwable
+   
+   public void nodesLeft(List addresses) throws Throwable
    {
-      log.debug(this + ": " + address + " left");
-
-      Integer leftNodeID = getNodeIDForSyncAddress(address);
-
-      if (leftNodeID == null)
-      {
-         throw new IllegalStateException(this + " cannot find node ID for address " + address);
-      }
-
-      boolean crashed = !leaveMessageReceived(leftNodeID);
-
-      log.debug(this + ": node " + leftNodeID + " has " + (crashed ? "crashed" : "cleanly left the group"));
-      
-      // Need to evaluate this before we regenerate the failover map	      
-      
-      Integer fnodeID = (Integer)failoverMap.get(leftNodeID);
-      
-      log.debug(this + " the failover node for the crashed node is " + fnodeID);
-	         
-      //Recalculate the failover map
-      
-      int oldFailoverNodeID = failoverNodeID;
-      
-      if (trace) { log.trace("Old failover node id: " + oldFailoverNodeID); }
-      
-      calculateFailoverMap();
-      
+   	if (trace) { log.trace("Nodes left " + addresses.size()); }
+   	
+   	Map oldFailoverMap = new HashMap(this.failoverMap);
+   	
+   	int oldFailoverNodeID = failoverNodeID;
+   	
+      if (trace) { log.trace("Old failover node id: " + oldFailoverNodeID); }      
+   	
+   	calculateFailoverMap();
+   	
       if (trace) { log.trace("First node is now " + firstNode); }
-      
-      boolean doneFailover = false;
-      
-      ClusterNotification notification = new ClusterNotification(ClusterNotification.TYPE_NODE_LEAVE, leftNodeID.intValue(), null);
-      
-      clusterNotifier.sendNotification(notification);
-      
-      if (crashed && isSupportsFailover())
-      {	      
+            
+   	Iterator iter = addresses.iterator();
+   	
+   	while (iter.hasNext())
+   	{
+   		Address address = (Address)iter.next();
 
-	      if (fnodeID == null)
+         log.debug(this + ": " + address + " left");
+
+	      Integer leftNodeID = getNodeIDForSyncAddress(address);
+	
+	      if (leftNodeID == null)
 	      {
-	      	throw new IllegalStateException("Cannot find failover node for node " + leftNodeID);
+	         throw new IllegalStateException(this + " cannot find node ID for address " + address);
 	      }
-	      
-	      if (fnodeID.intValue() == thisNodeID)
-	      {
-	         // The node crashed and we are the failover node so let's perform failover
 	
-	         log.debug(this + ": I am the failover node for node " + leftNodeID + " that crashed");
+	      boolean crashed = !leaveMessageReceived(leftNodeID);
 	
-	         performFailover(leftNodeID);
+	      log.debug(this + ": node " + leftNodeID + " has " + (crashed ? "crashed" : "cleanly left the group"));
+      
+	      Integer fnodeID = (Integer)oldFailoverMap.get(leftNodeID);
+      
+         log.debug(this + " the failover node for the crashed node is " + fnodeID);
 	         
-	         doneFailover = true;
+	      boolean doneFailover = false;
+	      
+	      ClusterNotification notification = new ClusterNotification(ClusterNotification.TYPE_NODE_LEAVE, leftNodeID.intValue(), null);
+	      
+	      clusterNotifier.sendNotification(notification);
+      
+	      if (crashed && isSupportsFailover())
+	      {	      
+		      if (fnodeID == null)
+		      {
+		      	throw new IllegalStateException("Cannot find failover node for node " + leftNodeID);
+		      }
+		      
+		      if (fnodeID.intValue() == thisNodeID)
+		      {
+		         // The node crashed and we are the failover node so let's perform failover
+		
+		         log.debug(this + ": I am the failover node for node " + leftNodeID + " that crashed");
+		
+		         performFailover(leftNodeID);
+		         
+		         doneFailover = true;
+		      }
 	      }
-      }
       
-      if (!doneFailover)
-      {
-	      // Remove any replicant data and non durable bindings for the node -  This will notify any listeners which will
-	      // recalculate the connection factory delegates and failover delegates.
-	
-	      cleanDataForNode(leftNodeID);
-      }
+	      if (!doneFailover)
+	      {
+		      // Remove any replicant data and non durable bindings for the node -  This will notify any listeners which will
+		      // recalculate the connection factory delegates and failover delegates.
+		
+		      cleanDataForNode(leftNodeID);
+	      }
       
-      if (trace) {log.trace("First node: " + firstNode + " oldFailoverNodeID: " + oldFailoverNodeID + " failoverNodeID: " + failoverNodeID); }
-      
-      if (oldFailoverNodeID != failoverNodeID)
-      {
-      	//Failover node for this node has changed
-      	
-      	failoverNodeChanged(oldFailoverNodeID, firstNode, false);      	
-      }
-      
-      sendJMXNotification(VIEW_CHANGED_NOTIFICATION);
+	      if (trace) {log.trace("First node: " + firstNode + " oldFailoverNodeID: " + oldFailoverNodeID + " failoverNodeID: " + failoverNodeID); }
+	      
+	      if (oldFailoverNodeID != failoverNodeID)
+	      {
+	      	//Failover node for this node has changed
+	      	
+	      	failoverNodeChanged(oldFailoverNodeID, firstNode, false);      	
+	      }
+   	}
+	      
+	   sendJMXNotification(VIEW_CHANGED_NOTIFICATION);
    }
    
    // RequestTarget implementation ------------------------------------------------------------
@@ -1855,65 +1858,62 @@ public class MessagingPostOffice extends JDBCSupport
       return removed;
    }
    
-   private void calculateFailoverMap()
+   private synchronized void calculateFailoverMap()
    {
-   	synchronized (failoverMap)
+   	failoverMap.clear();
+   	
+   	View view = groupMember.getCurrentView();
+   	
+   	Vector members = view.getMembers();
+   	
+   	for (int i = 0; i < members.size(); i++)
    	{
-	   	failoverMap.clear();
-	   	
-	   	View view = groupMember.getCurrentView();
-	   	
-	   	Vector members = view.getMembers();
-	   	
-	   	for (int i = 0; i < members.size(); i++)
-	   	{
-	   		Address address = (Address)members.get(i);
-	   		
-	   		Integer theNodeID = findNodeIDForAddress(address);
-	   		
-	   		if (theNodeID == null)
-	   		{
-	   			throw new IllegalStateException("Cannot find node id for address " + address);
-	   		}
-	   		
-	   		int j;
-	   		
-	   		if (i != members.size() - 1)
-	   		{
-	   			j = i + 1;
-	   		}
-	   		else
-	   		{
-	   			j = 0;
-	   		}
-	   		
-	   		Address failoverAddress = (Address)members.get(j);
-	   		
-	   		Integer failoverNodeID = this.findNodeIDForAddress(failoverAddress);
-	   		
-	   		if (failoverNodeID == null)
-	   		{
-	   			throw new IllegalStateException("Cannot find node id for address " + failoverAddress);
-	   		}
-	   		
-	   		failoverMap.put(theNodeID, failoverNodeID);	   			   		   
-	   	}   	
-	   	
-	   	int fid = ((Integer)failoverMap.get(new Integer(thisNodeID))).intValue();
-	   	
-	   	//if we are the first node in the cluster we don't want to be our own failover node!
-	   	
-	   	if (fid == thisNodeID)
-	   	{
-	   		firstNode = true;
-	   		failoverNodeID = -1;
-	   	}
-	   	else
-	   	{
-	   		failoverNodeID = fid;
-	   		firstNode = false;	   		
-	   	}	   	
-   	}   
+   		Address address = (Address)members.get(i);
+   		
+   		Integer theNodeID = findNodeIDForAddress(address);
+   		
+   		if (theNodeID == null)
+   		{
+   			throw new IllegalStateException("Cannot find node id for address " + address);
+   		}
+   		
+   		int j;
+   		
+   		if (i != members.size() - 1)
+   		{
+   			j = i + 1;
+   		}
+   		else
+   		{
+   			j = 0;
+   		}
+   		
+   		Address failoverAddress = (Address)members.get(j);
+   		
+   		Integer failoverNodeID = this.findNodeIDForAddress(failoverAddress);
+   		
+   		if (failoverNodeID == null)
+   		{
+   			throw new IllegalStateException("Cannot find node id for address " + failoverAddress);
+   		}
+   		
+   		failoverMap.put(theNodeID, failoverNodeID);	   			   		   
+   	}   	
+   	
+   	int fid = ((Integer)failoverMap.get(new Integer(thisNodeID))).intValue();
+   	
+   	//if we are the first node in the cluster we don't want to be our own failover node!
+   	
+   	if (fid == thisNodeID)
+   	{
+   		firstNode = true;
+   		failoverNodeID = -1;
+   	}
+   	else
+   	{
+   		failoverNodeID = fid;
+   		firstNode = false;	   		
+   	}	   	   	 
    	
       log.debug("Updated failover map:\n" + dumpFailoverMap(failoverMap));   	      
    }
