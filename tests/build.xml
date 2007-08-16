@@ -758,6 +758,7 @@
             <fileset dir="${build.tests.classes}">
               <include name="**/jms/clustering/${test-mask}.class"/>
               <exclude name="**/jms/clustering/ClusterLeakTest.class"/>
+              <exclude name="**/jms/clustering/ClusterViewUpdateTest.class"/>
            </fileset>
          </batchtest>
       </junit>
