@@ -291,12 +291,7 @@ public class XARecoveryTest extends JMSTestCase
          m = cons2.receive(1000);
          
          assertNull(m);
-         
-         if (checkNoMessageData())
-         {
-            fail("Data remains in database");
-         }
-         
+           
       }
       finally
       {
@@ -526,13 +521,7 @@ public class XARecoveryTest extends JMSTestCase
          
          m = cons2.receive(1000);
          
-         assertNull(m);
-         
-         if (checkNoMessageData())
-         {
-            fail("Data remains in database");
-         }
-         
+         assertNull(m);         
       }
       finally
       {
@@ -796,12 +785,6 @@ public class XARecoveryTest extends JMSTestCase
          m = cons2.receive(1000);
          
          assertNull(m);
-         
-         if (checkNoMessageData())
-         {
-            fail("Data remains in database");
-         }
-         
       }
       finally
       {
@@ -1070,12 +1053,6 @@ public class XARecoveryTest extends JMSTestCase
          assertNull(m);
          
          cons1.close();
-         
-         if (checkNoMessageData())
-         {
-            fail("Data remains in database");
-         }
-         
       }
       finally
       {
@@ -1296,12 +1273,6 @@ public class XARecoveryTest extends JMSTestCase
          m = cons2.receive(1000);
          
          assertNull(m);
-         
-         if (checkNoMessageData())
-         {
-            fail("Data remains in database");
-         }
-         
       }
       finally
       {
@@ -1437,10 +1408,6 @@ public class XARecoveryTest extends JMSTestCase
          
          assertEquals(tm1.getText(), rm1.getText());
          
-         if (checkNoMessageData())
-         {
-            fail("Data remains in database");
-         }
       }
       finally
       {
@@ -1603,11 +1570,7 @@ public class XARecoveryTest extends JMSTestCase
          assertNotNull(rm1);
          
          assertEquals(tm1.getText(), rm1.getText());
-         
-         if (checkNoMessageData())
-         {
-            fail("Data remains in database");
-         }
+   
       }
       finally
       {
@@ -1747,10 +1710,6 @@ public class XARecoveryTest extends JMSTestCase
          
          assertNull(m);
          
-         if (checkNoMessageData())
-         {
-            fail("Data remains in database");
-         }
       }
       finally
       {
@@ -1898,11 +1857,7 @@ public class XARecoveryTest extends JMSTestCase
          Message m = cons1.receive(1000);
          
          assertNull(m);
-         
-         if (checkNoMessageData())
-         {
-            fail("Data remains in database");
-         }                  
+                       
       }
       finally
       {
@@ -2161,10 +2116,6 @@ public class XARecoveryTest extends JMSTestCase
          
          sess1.unsubscribe("sub2");
          
-         if (checkNoMessageData())
-         {
-            fail("Data remains in database");
-         }
       }
       finally
       {
@@ -2434,11 +2385,7 @@ public class XARecoveryTest extends JMSTestCase
          sess1.unsubscribe("sub1");
          
          sess1.unsubscribe("sub2");         
-         
-         if (checkNoMessageData())
-         {
-            fail("Data remains in database");
-         }
+
       }
       finally
       {
@@ -2651,11 +2598,6 @@ public class XARecoveryTest extends JMSTestCase
          
          TextMessage m5 = (TextMessage)cons.receive(1000);
          assertNull(m5);
-         
-         if (checkNoMessageData())
-         {
-            fail("Data remains in database");
-         }
       }
       finally
       {
@@ -2812,11 +2754,7 @@ public class XARecoveryTest extends JMSTestCase
    
          Message nullMessage = cons.receive(MIN_TIMEOUT);
          assertTrue(nullMessage == null);
-         
-         if (checkNoMessageData())
-         {
-            fail("Data remains in database");
-         }
+
       }
       finally
       {
@@ -2965,11 +2903,7 @@ public class XARecoveryTest extends JMSTestCase
          assertNotNull(m2);
    
          assertEquals("testing2", m2.getText());
-         
-         if (checkNoMessageData())
-         {
-            fail("Data remains in database");
-         }
+
       }
       finally
       {
@@ -3111,11 +3045,6 @@ public class XARecoveryTest extends JMSTestCase
          assertNotNull(m2);
    
          assertEquals("testing2", m2.getText());
-         
-         if (checkNoMessageData())
-         {
-            fail("Data remains in database");
-         }
       }
       finally
       {
@@ -3268,10 +3197,6 @@ public class XARecoveryTest extends JMSTestCase
          assertNotNull(m3);
          assertEquals("testing3", m3.getText());
          
-         if (checkNoMessageData())
-         {
-            fail("Data remains in database");
-         }
       }
       finally
       {

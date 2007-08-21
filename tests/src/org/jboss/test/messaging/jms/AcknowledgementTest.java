@@ -65,7 +65,7 @@ public class AcknowledgementTest extends JMSTestCase
    // TestCase overrides -------------------------------------------
 
    // Public --------------------------------------------------------
-      
+
    /* Topics shouldn't hold on to messages if there are no subscribers */
    public void testPersistentMessagesForTopicDropped() throws Exception
    {

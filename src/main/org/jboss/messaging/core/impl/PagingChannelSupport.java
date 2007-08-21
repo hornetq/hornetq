@@ -231,8 +231,6 @@ public abstract class PagingChannelSupport extends ChannelSupport
          
          paging = false;
          
-         pm.setPaging(channelID, false);         
-         
          firstPagingOrder = nextPagingOrder = 0;  
          
          clearAllScheduledDeliveries();
@@ -305,9 +303,7 @@ public abstract class PagingChannelSupport extends ChannelSupport
          
          if (messageRefs.size() != fullSize)
          {
-            paging = false;
-            
-            pm.setPaging(channelID, false);            
+            paging = false;    
          }
       }    
    }
@@ -367,8 +363,6 @@ public abstract class PagingChannelSupport extends ChannelSupport
       {
          paging = false;
          
-         pm.setPaging(channelID, false);
-         
          return false;
       }
    }
@@ -388,9 +382,7 @@ public abstract class PagingChannelSupport extends ChannelSupport
             // We are full in memory - go into paging mode
             if (trace) { log.trace(this + " going into paging mode"); }
 
-            paging = true;
-            
-            pm.setPaging(channelID, true);            
+            paging = true;     
          }
       }      
    }
@@ -497,8 +489,6 @@ public abstract class PagingChannelSupport extends ChannelSupport
          paging = false;
       }
             
-      pm.setPaging(channelID, paging);     
-      
       Map refMap = processReferences(ili.getRefInfos());
       
       Iterator iter = ili.getRefInfos().iterator();
@@ -523,9 +513,7 @@ public abstract class PagingChannelSupport extends ChannelSupport
       ref.setPagingOrder(-1);
       
       ref.setScheduledDeliveryTime(info.getScheduledDelivery());
-      
-      ref.getMessage().incrementPersistentCount();
-      
+         
       //Schedule the delivery if necessary, or just add to the in memory queue
       if (!checkAndSchedule(ref))
       {

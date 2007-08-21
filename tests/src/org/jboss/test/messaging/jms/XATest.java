@@ -1130,11 +1130,6 @@ public class XATest extends JMSTestCase
          assertEqualByteArrays(trailing.getBranchQualifier(), trailing2.getBranchQualifier());
 
          res.commit(trailing, false);
-
-         if (checkNoMessageData())
-         {
-            fail("Data remains in database");
-         }
       }
       finally
       {

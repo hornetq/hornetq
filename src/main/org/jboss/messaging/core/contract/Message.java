@@ -149,14 +149,6 @@ public interface Message extends Streamable
     */
    MessageReference createReference();
    
-   void setPersistentCount(int count);
-   
-   int getPersistentCount();
-   
-   void incrementPersistentCount();
-   
-   void decrementPersistentCount();
-   
    boolean isPersisted();
    
    void setPersisted(boolean persisted);

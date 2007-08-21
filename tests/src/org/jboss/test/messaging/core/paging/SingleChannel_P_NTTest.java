@@ -90,7 +90,7 @@ public class SingleChannel_P_NTTest extends PagingStateTestBase
       assertSameIds(refIds, refs, 0, 98);
       
       //Verify 99 msgs in storage
-      List msgIds = getMessageIds();
+      pm.reapUnreferencedMessages(); List msgIds = getMessageIds();
       assertEquals(99, msgIds.size());
       assertSameIds(msgIds, refs, 0, 98);
        
@@ -124,7 +124,7 @@ public class SingleChannel_P_NTTest extends PagingStateTestBase
       assertSameIds(refIds, refs, 0, 99);
       
       //Verify 100 msgs in storage
-      msgIds = getMessageIds();
+      pm.reapUnreferencedMessages(); msgIds = getMessageIds();
       assertEquals(100, msgIds.size());
       assertSameIds(msgIds, refs, 0, 99);
       
@@ -161,7 +161,7 @@ public class SingleChannel_P_NTTest extends PagingStateTestBase
       assertSameIds(refIds, refs, 0, 108);      
       
       //Verify 100 msgs in storage
-      msgIds = getMessageIds();
+      pm.reapUnreferencedMessages(); msgIds = getMessageIds();
       assertEquals(109, msgIds.size());
       assertSameIds(msgIds, refs, 0, 108);
       
@@ -194,7 +194,7 @@ public class SingleChannel_P_NTTest extends PagingStateTestBase
       assertSameIds(refIds, refs, 0, 109);
       
       //Verify 110 msgs in storage
-      msgIds = getMessageIds();
+      pm.reapUnreferencedMessages(); msgIds = getMessageIds();
       assertEquals(110, msgIds.size()); 
       assertSameIds(msgIds, refs, 0, 109);
       
@@ -230,7 +230,7 @@ public class SingleChannel_P_NTTest extends PagingStateTestBase
       assertSameIds(refIds, refs, 0, 110);
       
       //Verify 111 msgs in storage
-      msgIds = getMessageIds();
+      pm.reapUnreferencedMessages(); msgIds = getMessageIds();
       assertEquals(111, msgIds.size()); 
       assertSameIds(msgIds, refs, 0, 110);
       
@@ -269,7 +269,7 @@ public class SingleChannel_P_NTTest extends PagingStateTestBase
       assertSameIds(refIds, refs, 0, 119);
       
       //Verify 120 msgs in storage
-      msgIds = getMessageIds();
+      pm.reapUnreferencedMessages(); msgIds = getMessageIds();
       assertEquals(120, msgIds.size()); 
       assertSameIds(msgIds, refs, 0, 119);
        
@@ -309,7 +309,7 @@ public class SingleChannel_P_NTTest extends PagingStateTestBase
       assertSameIds(refIds, refs, 0, 129);
       
       //Verify 130 msgs in storage
-      msgIds = getMessageIds();
+      pm.reapUnreferencedMessages(); msgIds = getMessageIds();
       assertEquals(130, msgIds.size()); 
       assertSameIds(msgIds, refs, 0, 129);
       
@@ -350,7 +350,7 @@ public class SingleChannel_P_NTTest extends PagingStateTestBase
       assertSameIds(refIds, refs, 0, 139);
       
       //Verify 140 msgs in storage
-      msgIds = getMessageIds();
+      pm.reapUnreferencedMessages(); msgIds = getMessageIds();
       assertEquals(140, msgIds.size()); 
       assertSameIds(msgIds, refs, 0, 139);
       
@@ -387,7 +387,7 @@ public class SingleChannel_P_NTTest extends PagingStateTestBase
       assertSameIds(refIds, refs, 0, 140);
       
       //Verify 141 msgs in storage
-      msgIds = getMessageIds();
+      pm.reapUnreferencedMessages(); msgIds = getMessageIds();
       assertEquals(141, msgIds.size()); 
       assertSameIds(msgIds, refs, 0, 140);
       
@@ -423,7 +423,7 @@ public class SingleChannel_P_NTTest extends PagingStateTestBase
       assertSameIds(refIds, refs, 1, 140);      
       
       //Verify 140 msgs in storage
-      msgIds = getMessageIds();
+      pm.reapUnreferencedMessages(); msgIds = getMessageIds();
       assertEquals(140, msgIds.size()); 
       assertSameIds(msgIds, refs, 1, 140);
       
@@ -461,7 +461,7 @@ public class SingleChannel_P_NTTest extends PagingStateTestBase
       assertSameIds(refIds, refs, 19, 140);
       
       //Verify 122 msgs in storage
-      msgIds = getMessageIds();
+      pm.reapUnreferencedMessages(); msgIds = getMessageIds();
       assertEquals(122, msgIds.size()); 
       assertSameIds(msgIds, refs, 19, 140);
 
@@ -499,7 +499,7 @@ public class SingleChannel_P_NTTest extends PagingStateTestBase
       assertSameIds(refIds, refs, 20, 140);
       
       //Verify 121 msgs in storage
-      msgIds = getMessageIds();
+      pm.reapUnreferencedMessages(); msgIds = getMessageIds();
       assertEquals(121, msgIds.size()); 
       assertSameIds(msgIds, refs, 20, 140);
       
@@ -535,7 +535,7 @@ public class SingleChannel_P_NTTest extends PagingStateTestBase
       assertSameIds(refIds, refs, 40, 140);
       
       //Verify 120 msgs in storage
-      msgIds = getMessageIds();
+      pm.reapUnreferencedMessages(); msgIds = getMessageIds();
       assertEquals(101, msgIds.size()); 
       assertSameIds(msgIds, refs, 40, 140);
       
@@ -570,7 +570,7 @@ public class SingleChannel_P_NTTest extends PagingStateTestBase
       assertSameIds(refIds, refs, 41, 140);
       
       //Verify 100 msgs in storage
-      msgIds = getMessageIds();
+      pm.reapUnreferencedMessages(); msgIds = getMessageIds();
       assertEquals(100, msgIds.size()); 
       assertSameIds(msgIds, refs, 41, 140); 
       
@@ -605,7 +605,7 @@ public class SingleChannel_P_NTTest extends PagingStateTestBase
       assertSameIds(refIds, refs, 61, 140);
       
       //Verify 80 msgs in storage
-      msgIds = getMessageIds();
+      pm.reapUnreferencedMessages(); msgIds = getMessageIds();
       assertEquals(80, msgIds.size()); 
       assertSameIds(msgIds, refs, 61, 140); 
        
@@ -639,7 +639,7 @@ public class SingleChannel_P_NTTest extends PagingStateTestBase
       assertSameIds(refIds, refs, 121, 140);
       
       //Verify 20 msgs in storage
-      msgIds = getMessageIds();
+      pm.reapUnreferencedMessages(); msgIds = getMessageIds();
       assertEquals(20, msgIds.size()); 
       assertSameIds(msgIds, refs, 121, 140);  
       
@@ -674,7 +674,7 @@ public class SingleChannel_P_NTTest extends PagingStateTestBase
       assertSameIds(refIds, refs, 121, 160);
       
       //Verify 40 msgs in storage
-      msgIds = getMessageIds();
+      pm.reapUnreferencedMessages(); msgIds = getMessageIds();
       assertEquals(40, msgIds.size()); 
       assertSameIds(msgIds, refs, 121, 160);
           
@@ -710,7 +710,7 @@ public class SingleChannel_P_NTTest extends PagingStateTestBase
       assertSameIds(refIds, refs, 121, 180);
       
       //Verify 60 msgs in storage
-      msgIds = getMessageIds();
+      pm.reapUnreferencedMessages(); msgIds = getMessageIds();
       assertEquals(60, msgIds.size()); 
       assertSameIds(msgIds, refs, 121, 180); 
       
@@ -748,7 +748,7 @@ public class SingleChannel_P_NTTest extends PagingStateTestBase
       assertSameIds(refIds, refs, 121, 240);
       
       //Verify 120 msgs in storage
-      msgIds = getMessageIds();
+      pm.reapUnreferencedMessages(); msgIds = getMessageIds();
       assertEquals(120, msgIds.size()); 
       assertSameIds(msgIds, refs, 121, 240);
       
@@ -785,7 +785,7 @@ public class SingleChannel_P_NTTest extends PagingStateTestBase
       assertSameIds(refIds, refs, 121, 240);
       
       //Verify 120 msgs in storage
-      msgIds = getMessageIds();
+      pm.reapUnreferencedMessages(); msgIds = getMessageIds();
       assertEquals(120, msgIds.size()); 
       assertSameIds(msgIds, refs, 121, 240);
   
@@ -820,7 +820,7 @@ public class SingleChannel_P_NTTest extends PagingStateTestBase
       assertSameIds(refIds, refs, 121, 240);
       
       //Verify 120 msgs in storage
-      msgIds = getMessageIds();
+      pm.reapUnreferencedMessages(); msgIds = getMessageIds();
       assertEquals(120, msgIds.size()); 
       assertSameIds(msgIds, refs, 121, 240);      
   
@@ -856,7 +856,7 @@ public class SingleChannel_P_NTTest extends PagingStateTestBase
       assertSameIds(refIds, refs, 121, 240);
       
       //Verify 120 msgs in storage
-      msgIds = getMessageIds();
+      pm.reapUnreferencedMessages(); msgIds = getMessageIds();
       assertEquals(120, msgIds.size()); 
       assertSameIds(msgIds, refs, 121, 240);      
             
@@ -892,7 +892,7 @@ public class SingleChannel_P_NTTest extends PagingStateTestBase
       assertSameIds(refIds, refs, 121, 240);
       
       //Verify 120 msgs in storage
-      msgIds = getMessageIds();
+      pm.reapUnreferencedMessages(); msgIds = getMessageIds();
       assertEquals(120, msgIds.size()); 
       assertSameIds(msgIds, refs, 121, 240);
 
@@ -926,7 +926,7 @@ public class SingleChannel_P_NTTest extends PagingStateTestBase
       assertSameIds(refIds, refs, 171, 240);
       
       //Verify 70 msgs in storage
-      msgIds = getMessageIds();
+      pm.reapUnreferencedMessages(); msgIds = getMessageIds();
       assertEquals(70, msgIds.size()); 
       assertSameIds(msgIds, refs, 171, 240); 
 
@@ -956,7 +956,7 @@ public class SingleChannel_P_NTTest extends PagingStateTestBase
       assertEquals(0, refIds.size());     
       
       //Verify 0 msgs in storage
-      msgIds = getMessageIds();
+      pm.reapUnreferencedMessages(); msgIds = getMessageIds();
       assertEquals(0, msgIds.size()); 
 
       //Verify 0 refs in queue

@@ -76,8 +76,6 @@ public abstract class MessageSupport implements Message, Serializable
 	// Must be hidden from subclasses
 	private byte[] payloadAsByteArray;
 	
-	private transient volatile int persistentCount;
-	
 	private transient volatile boolean persisted;
 
 	// Constructors --------------------------------------------------
@@ -314,26 +312,6 @@ public abstract class MessageSupport implements Message, Serializable
 	public MessageReference createReference()
 	{
 		return new SimpleMessageReference(this);
-	}
-	
-	public int getPersistentCount()
-	{
-		return persistentCount;
-	}
-	
-	public void setPersistentCount(int count)
-	{
-		persistentCount = count;
-	}
-	
-	public void decrementPersistentCount()
-	{
-		persistentCount--;
-	}
-	
-	public void incrementPersistentCount()
-	{
-		persistentCount++;
 	}
 	
 	public boolean isPersisted()

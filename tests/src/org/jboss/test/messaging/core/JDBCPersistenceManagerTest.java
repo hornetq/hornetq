@@ -139,9 +139,6 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
          Message m1 = messages[i * 2];
          Message m2 = messages[i * 2 + 1];
          
-         m1.setPersistentCount(2);
-         m2.setPersistentCount(2);
-         
          MessageReference ref1_1 = ms.reference(m1);
          MessageReference ref1_2 = ms.reference(m1);
                 
@@ -168,6 +165,7 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
          assertTrue(refs.contains(new Long(m1.getMessageID())));
          assertTrue(refs.contains(new Long(m2.getMessageID())));
          
+         pm.reapUnreferencedMessages();
          List msgs = getMessageIds();
          assertNotNull(msgs);
          assertEquals(2, msgs.size());
@@ -187,6 +185,7 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
          assertTrue(refs.contains(new Long(m1.getMessageID())));
          assertTrue(refs.contains(new Long(m2.getMessageID())));
          
+         pm.reapUnreferencedMessages();
          msgs = getMessageIds();
          assertNotNull(msgs);
          assertEquals(2, msgs.size());
@@ -205,6 +204,7 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
          assertEquals(1, refs.size());         
          assertTrue(refs.contains(new Long(m2.getMessageID())));
          
+         pm.reapUnreferencedMessages();
          msgs = getMessageIds();
          assertNotNull(msgs);
          assertEquals(1, msgs.size()); 
@@ -221,6 +221,7 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
          assertEquals(1, refs.size());         
          assertTrue(refs.contains(new Long(m2.getMessageID())));
          
+         pm.reapUnreferencedMessages();
          msgs = getMessageIds();
          assertNotNull(msgs);
          assertEquals(1, msgs.size());
@@ -236,6 +237,7 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
          assertNotNull(refs);
          assertTrue(refs.isEmpty());
          
+         pm.reapUnreferencedMessages();
          msgs = getMessageIds();
          assertNotNull(msgs);
          assertTrue(msgs.isEmpty());
@@ -515,6 +517,7 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       assertTrue(refIds.contains(new Long(ref15.getMessage().getMessageID())));
      
       
+      pm.reapUnreferencedMessages();
       List msgs = getMessageIds();
       assertNotNull(msgs);
       assertEquals(10, msgs.size());
@@ -557,6 +560,7 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       assertEquals(1, refIds.size());
       assertTrue(refIds.contains(new Long(ref11.getMessage().getMessageID())));
       
+      pm.reapUnreferencedMessages();
       ms = getMessageIds();
 
       assertNotNull(ms);
@@ -591,7 +595,7 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       assertTrue(refIds.contains(new Long(ref9.getMessage().getMessageID())));
       assertTrue(refIds.contains(new Long(ref10.getMessage().getMessageID())));
      
-      
+      pm.reapUnreferencedMessages();
       ms = getMessageIds();
         
       assertNotNull(ms);
@@ -620,6 +624,7 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       refs.add(ref10);
       pm.removeDepagedReferences(channel1.getChannelID(), refs);
       
+      pm.reapUnreferencedMessages();
       ms = getMessageIds();
       assertNotNull(ms);
       assertEquals(0, ms.size());
@@ -760,6 +765,7 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       assertTrue(refIds.contains(new Long(ref9.getMessage().getMessageID())));
       assertTrue(refIds.contains(new Long(ref10.getMessage().getMessageID())));
       
+      pm.reapUnreferencedMessages();
       List msgs = getMessageIds();
       assertNotNull(msgs);
       assertEquals(10, msgs.size());
@@ -909,6 +915,7 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       assertTrue(refIds.contains(new Long(ref9.getMessage().getMessageID())));
       assertTrue(refIds.contains(new Long(ref10.getMessage().getMessageID())));
       
+      pm.reapUnreferencedMessages();
       List msgs = getMessageIds();
       assertNotNull(msgs);
       assertEquals(10, msgs.size());
@@ -1304,8 +1311,6 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       log.debug("adding references non-transactionally");
 
       // Add first two refs non transactionally
-      ref1.getMessage().incrementPersistentCount();
-      ref2.getMessage().incrementPersistentCount();
       pm.addReference(channel.getChannelID(), ref1, null);
       pm.addReference(channel.getChannelID(), ref2, null);
       
@@ -1316,6 +1321,7 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       assertTrue(refs.contains(new Long(ref1.getMessage().getMessageID())));
       assertTrue(refs.contains(new Long(ref2.getMessage().getMessageID())));
       
+      pm.reapUnreferencedMessages();
       List msgs = getMessageIds();
       assertNotNull(msgs);
       assertEquals(2, msgs.size());
@@ -1325,9 +1331,6 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       log.debug("ref1 and ref2 are there");
 
       //Add the next 3 refs transactionally
-      ref3.getMessage().incrementPersistentCount();
-      ref4.getMessage().incrementPersistentCount();
-      ref5.getMessage().incrementPersistentCount();
       pm.addReference(channel.getChannelID(), ref3, tx);
       pm.addReference(channel.getChannelID(), ref4, tx);
       pm.addReference(channel.getChannelID(), ref5, tx);
@@ -1343,6 +1346,7 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       assertTrue(refs.contains(new Long(ref1.getMessage().getMessageID())));
       assertTrue(refs.contains(new Long(ref2.getMessage().getMessageID())));  
       
+      pm.reapUnreferencedMessages();
       msgs = getMessageIds();
       assertNotNull(msgs);
       assertEquals(2, msgs.size());
@@ -1362,6 +1366,7 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       assertTrue(refs.contains(new Long(ref4.getMessage().getMessageID())));  
       assertTrue(refs.contains(new Long(ref5.getMessage().getMessageID())));
       
+      pm.reapUnreferencedMessages();
       msgs = getMessageIds();
       assertNotNull(msgs);
       assertEquals(3, msgs.size());
@@ -1408,8 +1413,6 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       MessageReference ref5 = ms.reference(m5);  
 
       //Add first two refs non transactionally
-      ref1.getMessage().incrementPersistentCount();
-      ref2.getMessage().incrementPersistentCount();
       pm.addReference(channel.getChannelID(), ref1, null);
       pm.addReference(channel.getChannelID(), ref2, null);
       
@@ -1420,6 +1423,7 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       assertTrue(refs.contains(new Long(ref1.getMessage().getMessageID())));
       assertTrue(refs.contains(new Long(ref2.getMessage().getMessageID())));      
       
+      pm.reapUnreferencedMessages();
       List msgs = getMessageIds();
       assertNotNull(msgs);
       assertEquals(2, msgs.size());
@@ -1429,9 +1433,6 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       
       
       //Add the next 3 refs transactionally
-      ref3.getMessage().incrementPersistentCount();
-      ref4.getMessage().incrementPersistentCount();
-      ref5.getMessage().incrementPersistentCount();
       pm.addReference(channel.getChannelID(), ref3, tx);
       pm.addReference(channel.getChannelID(), ref4, tx);
       pm.addReference(channel.getChannelID(), ref5, tx);
@@ -1447,6 +1448,7 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       assertTrue(refs.contains(new Long(ref1.getMessage().getMessageID())));
       assertTrue(refs.contains(new Long(ref2.getMessage().getMessageID())));  
       
+      pm.reapUnreferencedMessages();
       msgs = getMessageIds();
       assertNotNull(msgs);
       assertEquals(2, msgs.size());
@@ -1462,6 +1464,7 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       assertTrue(refs.contains(new Long(ref1.getMessage().getMessageID())));
       assertTrue(refs.contains(new Long(ref2.getMessage().getMessageID())));  
       
+      pm.reapUnreferencedMessages();
       msgs = getMessageIds();
       assertNotNull(msgs);
       assertEquals(2, msgs.size());

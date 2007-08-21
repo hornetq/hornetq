@@ -307,8 +307,6 @@ public class TransactionRepository implements MessagingComponent
          
          MessageReference ref = messageStore.reference(msg);  
          
-         ref.getMessage().incrementPersistentCount();
-         
          ref.getMessage().setPersisted(true);
 
          Binding binding = postOffice.getBindingForChannelID(channelID);
@@ -367,8 +365,6 @@ public class TransactionRepository implements MessagingComponent
          MessageReference ref = null;
          
          ref = messageStore.reference(msg);    
-         
-         ref.getMessage().incrementPersistentCount();
          
          ref.getMessage().setPersisted(true);
 

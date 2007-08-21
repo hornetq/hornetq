@@ -56,46 +56,46 @@ public class LockMap
       this.map = new ConcurrentHashMap();
    }
    
-   public void obtainLock(Object obj)
-   {      
-      Entry entry = null;
-      synchronized (obj)
-      {
-         entry = (Entry)map.get(obj);
-         if (entry == null)
-         {
-            entry = new Entry();
-            map.put(obj, entry);
-         }        
-         entry.refCount++;
-      }
-      try
-      {
-         entry.lock.acquire();
-      }
-      catch (InterruptedException e)
-      {
-         throw new IllegalStateException("Thread interrupted while acquiring lock");
-      }
-   }
-   
-   public void releaseLock(Object obj)
-   {
-      synchronized (obj)
-      {
-         Entry entry = (Entry)map.get(obj);
-         if (entry == null)
-         {
-            throw new IllegalArgumentException("Cannot find mutex in map for " + obj);
-         }    
-         if (entry.refCount == 1)
-         {
-            map.remove(obj);
-         }
-         entry.refCount--;
-         entry.lock.release();         
-      }      
-   }
+//   public void obtainLock(Object obj)
+//   {      
+//      Entry entry = null;
+//      synchronized (obj)
+//      {
+//         entry = (Entry)map.get(obj);
+//         if (entry == null)
+//         {
+//            entry = new Entry();
+//            map.put(obj, entry);
+//         }        
+//         entry.refCount++;
+//      }
+//      try
+//      {
+//         entry.lock.acquire();
+//      }
+//      catch (InterruptedException e)
+//      {
+//         throw new IllegalStateException("Thread interrupted while acquiring lock");
+//      }
+//   }
+//   
+//   public void releaseLock(Object obj)
+//   {
+//      synchronized (obj)
+//      {
+//         Entry entry = (Entry)map.get(obj);
+//         if (entry == null)
+//         {
+//            throw new IllegalArgumentException("Cannot find mutex in map for " + obj);
+//         }    
+//         if (entry.refCount == 1)
+//         {
+//            map.remove(obj);
+//         }
+//         entry.refCount--;
+//         entry.lock.release();         
+//      }      
+//   }
    
    public int getSize()
    {

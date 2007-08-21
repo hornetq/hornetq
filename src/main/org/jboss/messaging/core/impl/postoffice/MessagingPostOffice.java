@@ -348,6 +348,12 @@ public class MessagingPostOffice extends JDBCSupport
 	      put(Replicator.JVM_ID_KEY, JMSClientVMIdentifier.instance);
 	      
 	      groupMember.multicastControl(new JoinClusterRequest(thisNodeID, info), true);
+	      
+	      checkStartReaper();
+      }
+      else
+      {
+      	pm.startReaper();
       }
    
       //Now load the bindings for this node
@@ -837,14 +843,24 @@ public class MessagingPostOffice extends JDBCSupport
     */
    public void nodeJoined(Address address) throws Exception
    {
-      log.debug(this + ": " + address + " joined");
-      
-      // Currently does nothing
+      log.debug(this + ": " + address + " joined");      
+   }
+   
+   private void checkStartReaper()
+   {
+   	if (groupMember.getCurrentView().size() == 1)
+   	{
+   		//We are the only member in the group - start the message reaper
+   		
+   		pm.startReaper();
+   	}
    }
    
    public void nodesLeft(List addresses) throws Throwable
    {
    	if (trace) { log.trace("Nodes left " + addresses.size()); }
+   	
+   	checkStartReaper();
    	
    	Map oldFailoverMap = new HashMap(this.failoverMap);
    	
@@ -2089,14 +2105,6 @@ public class MessagingPostOffice extends JDBCSupport
          		
          		startedTx = true;
          	}
-         	
-         	//We set the persistent count to be the same as the localReliableCount
-         	//Note that we MUST set the persistent count before routing to any of the queues
-         	//if we only set it when we actually persist in a channel then we could have the situation where
-         	//a ref arrives in a subscription then gets acknowledged and removed before hitting the next sub
-         	//so we would end up with a churn where the message is getting added and removed multiple times for
-         	//a single route
-         	ref.getMessage().setPersistentCount(localReliableCount);
          	
          	//Now actually route the ref
          	

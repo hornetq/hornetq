@@ -288,4 +288,6 @@ public interface Server extends Remote
    void flushManagedConnectionPool() throws Exception;
    
    void resetAllSuckers() throws Exception;   
+   
+   void reapMessages() throws Exception;
 }

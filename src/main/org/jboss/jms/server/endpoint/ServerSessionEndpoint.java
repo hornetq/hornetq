@@ -1724,7 +1724,6 @@ public class ServerSessionEndpoint implements SessionEndpoint
       {               
          if (queue != null)
          {          
-         	msg.setPersistentCount(1);
             queue.handle(null, ref, tx);
             del.acknowledge(tx);
          }
