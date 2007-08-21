@@ -39,12 +39,10 @@ public interface MessageReference
    long getPagingOrder();
    
    void setPagingOrder(long order);   
-   
-   void releaseMemoryReference();
+    
+   Message getMessage();
    
    MessageReference copy();
-   
-   Message getMessage();
    
    /**
     * 
@@ -60,5 +58,5 @@ public interface MessageReference
     */
    int getDeliveryCount();
    
-   void setDeliveryCount(int deliveryCount);     
+   void setDeliveryCount(int deliveryCount);        
 }

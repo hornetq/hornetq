@@ -460,6 +460,8 @@ public class ClusterConnectionManager implements ClusterNotificationListener
 			
 			Queue localQueue = binding.queue;
 			
+			log.info("local queue is: " + localQueue);
+			
 			if (localQueue.isClustered())
 			{							
 				MessageSucker sucker = new MessageSucker(localQueue, info.connection, localInfo.connection, xa, preserveOrdering);

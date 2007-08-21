@@ -121,6 +121,8 @@ public class DurableSubscriptionTest extends JMSTestCase
 	      TextMessage tm = (TextMessage)durable.receive(1000);
 	      assertEquals("k", tm.getText());
 	
+	      log.info("*** consuming");
+	      
 	      Message m = durable.receive(1000);
 	      assertNull(m);
 	      

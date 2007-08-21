@@ -484,9 +484,9 @@ public class TopicManagementTest extends DestinationManagementTestBase
          TopicSession s = conn.createTopicSession(false, Session.AUTO_ACKNOWLEDGE);
 
          // Create 2 durable subscription and 2 non-durable subscription
-         s.createDurableSubscriber(topic, "SubscriberA");
+         MessageConsumer cons1 = s.createDurableSubscriber(topic, "SubscriberA");
          
-         s.createDurableSubscriber(topic, "SubscriberB", "wibble is null", false);
+         MessageConsumer cons2 = s.createDurableSubscriber(topic, "SubscriberB", "wibble is null", false);
          
          s.createSubscriber(topic);
          
@@ -583,6 +583,17 @@ public class TopicManagementTest extends DestinationManagementTestBase
          assertEquals(null, sub4.getSelector());
          assertEquals(null, sub4.getName());
          
+         cons1.close();
+         
+         cons2.close();     
+         
+         s.unsubscribe("SubscriberA");
+         
+         s.unsubscribe("SubscriberB"); 
+         
+         conn.close();
+         
+         removeAllMessages("TopicSubscriptionList", false, 0); 
          
       }
       finally
@@ -678,6 +689,8 @@ public class TopicManagementTest extends DestinationManagementTestBase
             conn.close();
          }
       
+         this.removeAllMessages("TopicSubscriptionList", false, 0);
+         
          ServerManagement.undeployTopic("TopicSubscriptionList");
       }
    }
@@ -862,6 +875,8 @@ public class TopicManagementTest extends DestinationManagementTestBase
          {
             conn.close();
          }
+         
+         this.removeAllMessages("TopicMessageList", false, 0);
          
          ServerManagement.undeployTopic("TopicMessageList");
       

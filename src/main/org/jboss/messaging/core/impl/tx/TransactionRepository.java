@@ -305,49 +305,40 @@ public class TransactionRepository implements MessagingComponent
          
          long channelID = pair.getChannelId();
          
-         MessageReference ref = null;
+         MessageReference ref = messageStore.reference(msg);  
          
-         try
+         ref.getMessage().incrementPersistentCount();
+         
+         ref.getMessage().setPersisted(true);
+
+         Binding binding = postOffice.getBindingForChannelID(channelID);
+         
+         if (binding == null)
          {
-            ref = messageStore.reference(msg);         
-
-            Binding binding = postOffice.getBindingForChannelID(channelID);
-            
-            if (binding == null)
-            {
-               throw new IllegalStateException("Cannot find binding for channel id " + channelID);
-            }
-            
-            Queue queue = binding.queue;
-                        
-            if (trace) log.trace("Destination for message[ID=" + ref.getMessage().getMessageID() + "] is: " + queue);
-   
-            // The actual jmx queue may not have been deployed yet, so we need to activate the core queue if so, 
-            // or the handle will have no effect
-                        
-            boolean deactivate = false;
-
-            if (!queue.isActive())
-            {
-            	queue.activate();
-
-            	deactivate = true;
-            }
-
-            queue.handle(null, ref, tx);
-
-            if (deactivate)
-            {
-            	queue.deactivate();
-            }
+            throw new IllegalStateException("Cannot find binding for channel id " + channelID);
          }
-         finally
+         
+         Queue queue = binding.queue;
+                     
+         if (trace) log.trace("Destination for message[ID=" + ref.getMessage().getMessageID() + "] is: " + queue);
+
+         // The actual jmx queue may not have been deployed yet, so we need to activate the core queue if so, 
+         // or the handle will have no effect
+                     
+         boolean deactivate = false;
+
+         if (!queue.isActive())
          {
-            if (ref != null)
-            {
-               //Need to release reference
-               ref.releaseMemoryReference();
-            }
+         	queue.activate();
+
+         	deactivate = true;
+         }
+
+         queue.handle(null, ref, tx);
+
+         if (deactivate)
+         {
+         	queue.deactivate();
          }
       }
    }
@@ -375,70 +366,62 @@ public class TransactionRepository implements MessagingComponent
          
          MessageReference ref = null;
          
+         ref = messageStore.reference(msg);    
+         
+         ref.getMessage().incrementPersistentCount();
+         
+         ref.getMessage().setPersisted(true);
+
+         Binding binding = postOffice.getBindingForChannelID(channelID);
+         
+         if (binding == null)
+         {
+            throw new IllegalStateException("Cannot find binding for channel id " + channelID);
+         }                       
+
+         Queue queue = binding.queue;
+         
+         if (trace) log.trace("Destination for message[ID=" + ref.getMessage().getMessageID() + "] is: " + queue);            
+         
+         //Create a new delivery - note that it must have a delivery observer otherwise acknowledge will fail
+         Delivery del = new SimpleDelivery(queue, ref, true, true);
+
+         if (trace) log.trace("Acknowledging..");
+
          try
          {
-            ref = messageStore.reference(msg);         
+         	// The actual jmx queue may not have been deployed yet, so we need to the core queue if so, 
+            // or the acknowledge will have no effect
+                        
+            boolean deactivate = false;
 
-            Binding binding = postOffice.getBindingForChannelID(channelID);
-            
-            if (binding == null)
+            if (!queue.isActive())
             {
-               throw new IllegalStateException("Cannot find binding for channel id " + channelID);
-            }                       
-   
-            Queue queue = binding.queue;
-            
-            if (trace) log.trace("Destination for message[ID=" + ref.getMessage().getMessageID() + "] is: " + queue);            
-            
-            //Create a new delivery - note that it must have a delivery observer otherwise acknowledge will fail
-            Delivery del = new SimpleDelivery(queue, ref, true, true);
+            	queue.activate();
 
-            if (trace) log.trace("Acknowledging..");
-
-            try
-            {
-            	// The actual jmx queue may not have been deployed yet, so we need to the core queue if so, 
-               // or the acknowledge will have no effect
-                           
-               boolean deactivate = false;
-
-               if (!queue.isActive())
-               {
-               	queue.activate();
-
-               	deactivate = true;
-               }
-
-               del.acknowledge(tx);
-
-               if (deactivate)
-               {
-               	queue.deactivate();
-               }
+            	deactivate = true;
             }
-            catch (Throwable t)
+
+            del.acknowledge(tx);
+
+            if (deactivate)
             {
-               log.error("Failed to acknowledge " + del + " during recovery", t);
+            	queue.deactivate();
             }
-            
-            dels.add(del);            
          }
-         finally
+         catch (Throwable t)
          {
-            if (ref != null)
-            {
-               //Need to release reference
-               ref.releaseMemoryReference();
-            }
+            log.error("Failed to acknowledge " + del + " during recovery", t);
          }
+         
+         dels.add(del);            
       }
       
       if (!dels.isEmpty())
       {
          //Add a callback so these dels get cancelled on rollback
          tx.addCallback(new CancelCallback(dels), this);
-      }
-      
+      }      
    }
    
    // Protected -----------------------------------------------------         

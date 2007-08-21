@@ -1718,12 +1718,13 @@ public class ServerSessionEndpoint implements SessionEndpoint
    {
       Transaction tx = tr.createTransaction();
       
-      MessageReference ref = ms.reference(msg);      
+      MessageReference ref = msg.createReference();
                     
       try
       {               
          if (queue != null)
-         {                                                       
+         {          
+         	msg.setPersistentCount(1);
             queue.handle(null, ref, tx);
             del.acknowledge(tx);
          }
@@ -1741,13 +1742,6 @@ public class ServerSessionEndpoint implements SessionEndpoint
          tx.rollback();
          throw t;
       } 
-      finally
-      {
-         if (ref != null)
-         {
-            ref.releaseMemoryReference();
-         }
-      }
       
       //Need to prompt delivery on the dlq/expiry queue
       

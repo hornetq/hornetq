@@ -139,6 +139,9 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
          Message m1 = messages[i * 2];
          Message m2 = messages[i * 2 + 1];
          
+         m1.setPersistentCount(2);
+         m2.setPersistentCount(2);
+         
          MessageReference ref1_1 = ms.reference(m1);
          MessageReference ref1_2 = ms.reference(m1);
                 
@@ -204,7 +207,7 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
          
          msgs = getMessageIds();
          assertNotNull(msgs);
-         assertEquals(1, msgs.size());
+         assertEquals(1, msgs.size()); 
          assertTrue(msgs.contains(new Long(m2.getMessageID())));
          
          pm.removeReference(channel1.getChannelID(), ref2_1, null);
@@ -1301,6 +1304,8 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       log.debug("adding references non-transactionally");
 
       // Add first two refs non transactionally
+      ref1.getMessage().incrementPersistentCount();
+      ref2.getMessage().incrementPersistentCount();
       pm.addReference(channel.getChannelID(), ref1, null);
       pm.addReference(channel.getChannelID(), ref2, null);
       
@@ -1320,6 +1325,9 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       log.debug("ref1 and ref2 are there");
 
       //Add the next 3 refs transactionally
+      ref3.getMessage().incrementPersistentCount();
+      ref4.getMessage().incrementPersistentCount();
+      ref5.getMessage().incrementPersistentCount();
       pm.addReference(channel.getChannelID(), ref3, tx);
       pm.addReference(channel.getChannelID(), ref4, tx);
       pm.addReference(channel.getChannelID(), ref5, tx);
@@ -1400,6 +1408,8 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       MessageReference ref5 = ms.reference(m5);  
 
       //Add first two refs non transactionally
+      ref1.getMessage().incrementPersistentCount();
+      ref2.getMessage().incrementPersistentCount();
       pm.addReference(channel.getChannelID(), ref1, null);
       pm.addReference(channel.getChannelID(), ref2, null);
       
@@ -1419,6 +1429,9 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       
       
       //Add the next 3 refs transactionally
+      ref3.getMessage().incrementPersistentCount();
+      ref4.getMessage().incrementPersistentCount();
+      ref5.getMessage().incrementPersistentCount();
       pm.addReference(channel.getChannelID(), ref3, tx);
       pm.addReference(channel.getChannelID(), ref4, tx);
       pm.addReference(channel.getChannelID(), ref5, tx);

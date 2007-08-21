@@ -75,8 +75,6 @@ public abstract class ChannelSupport implements Channel
 
    protected Distributor distributor;
 
-   protected MessageStore ms;
-
    protected boolean receiversReady;
 
    protected PriorityLinkedList messageRefs;
@@ -106,12 +104,10 @@ public abstract class ChannelSupport implements Channel
     
    // Constructors ---------------------------------------------------------------------------------
 
-   protected ChannelSupport(long channelID, MessageStore ms, PersistenceManager pm,
+   protected ChannelSupport(long channelID, PersistenceManager pm,
                             boolean recoverable, int maxSize)
    {
       if (trace) { log.trace("creating " + (pm != null ? "recoverable " : "non-recoverable ") + "channel[" + channelID + "]"); }
-
-      this.ms = ms;
 
       this.pm = pm;
 
@@ -615,7 +611,7 @@ public abstract class ChannelSupport implements Channel
             {
                // Reliable message in a recoverable state - also add to db
                if (trace) { log.trace(this + " adding " + ref + " to database non-transactionally"); }
-
+               
                // TODO - this db access could safely be done outside the event loop
                pm.addReference(channelID, ref, null);        
             }
@@ -657,8 +653,6 @@ public abstract class ChannelSupport implements Channel
       {
          log.error("Failed to handle message", t);
 
-         ref.releaseMemoryReference();
-
          return null;
       }
 
@@ -694,14 +688,12 @@ public abstract class ChannelSupport implements Channel
    protected void acknowledgeInternal(Delivery d, Transaction tx, boolean persist) throws Exception
    {   
       if (tx == null)
-      {                  
+      {            
          if (persist && recoverable && d.getReference().getMessage().isReliable())
          {
             pm.removeReference(channelID, d.getReference(), null);
          }
               
-         d.getReference().releaseMemoryReference(); 
-         
          if (!d.isRecovered())
          {
          	deliveringCount.decrement();
@@ -878,8 +870,6 @@ public abstract class ChannelSupport implements Channel
 
                if (trace) { log.trace(this + " removing " + del + " after commit"); }
 
-               del.getReference().releaseMemoryReference();
-               
                if (!del.isRecovered())
                {
                	deliveringCount.decrement();
@@ -905,13 +895,7 @@ public abstract class ChannelSupport implements Channel
 
       public void afterRollback(boolean onePhase) throws Exception
       {
-         for(Iterator i = refsToAdd.iterator(); i.hasNext(); )
-         {
-            MessageReference ref = (MessageReference)i.next();
-
-            if (trace) { log.trace(this + " releasing memory " + ref + " after rollback"); }
-            ref.releaseMemoryReference();
-         }
+      	//NOOP
       }
 
       public String toString()

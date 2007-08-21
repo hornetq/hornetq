@@ -109,19 +109,11 @@ public class JMSTestCase extends MessagingTestCase
 		//A few sanity checks
 		
 		if (ServerManagement.isStarted(0))
-		{
-			if (!ServerManagement.isRemote())
-			{		
-				SimpleMessageStore ms = (SimpleMessageStore)ServerManagement.getMessageStore();  
-				
-				if (ms.messageIds().size() != 0)
-				{
-					ms.dump();
-					fail("There are messages in the message store");
-				}
+		{			
+			if (checkNoMessageData())
+			{
+				fail("Message Data exists");
 			}
-			
-			checkNoMessageData();
 		}
 		
 		//This will tell us if any connections have been left open

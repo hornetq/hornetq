@@ -24,7 +24,6 @@ package org.jboss.messaging.core.impl.message;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.contract.Message;
 import org.jboss.messaging.core.contract.MessageReference;
-import org.jboss.messaging.core.contract.MessageStore;
 
 /**
  * A Simple MessageReference implementation.
@@ -46,18 +45,13 @@ public class SimpleMessageReference implements MessageReference
 
    private boolean trace = log.isTraceEnabled();
    
-   protected transient MessageStore ms;
-   
-   private MessageHolder holder;
-   
    private long pagingOrder = -1;
-   
-   private boolean released;
-      
+    
    private int deliveryCount;   
    
    private long scheduledDeliveryTime;
    
+   private Message message;
    
    // Constructors --------------------------------------------------
 
@@ -71,34 +65,26 @@ public class SimpleMessageReference implements MessageReference
 
    public SimpleMessageReference(SimpleMessageReference other)
    {
-      this.ms = other.ms;
-      
-      this.holder = other.holder;
-      
       this.pagingOrder = other.pagingOrder;
-      
-      this.released = other.released;
       
       this.deliveryCount = other.deliveryCount;
       
-      this.scheduledDeliveryTime = other.scheduledDeliveryTime;            
+      this.scheduledDeliveryTime = other.scheduledDeliveryTime;       
+      
+      this.message = other.message;
    }
    
-   protected SimpleMessageReference(MessageHolder holder, MessageStore ms)
+   protected SimpleMessageReference(Message message)
    {
-      this.holder = holder;
-      
-      this.ms = ms;
-   }
-
-   // Message implementation ----------------------------------------
-
-   public boolean isReference()
-   {
-      return true;
-   }
-
+   	this.message = message;
+   }   
+   
    // MessageReference implementation -------------------------------
+   
+   public MessageReference copy()
+   {
+   	return new SimpleMessageReference(this);
+   }
    
    public int getDeliveryCount()
    {
@@ -122,29 +108,9 @@ public class SimpleMessageReference implements MessageReference
       
    public Message getMessage()
    {
-      return holder.getMessage();
+      return message;
    }         
    
-   public void releaseMemoryReference()
-   {
-      if (released)
-      {
-         //Do nothing -
-         //It's possible releaseMemoryReference can be called more than once on a reference since it's
-         //allowable that acknowledge is called more than once for a delivery and each call will call this
-         //method - so we don't want to throw an exception
-         return;
-      }
-      holder.decrementInMemoryChannelCount();
-      
-      released = true;
-   }
-   
-   public int getInMemoryChannelCount()
-   {
-      return holder.getInMemoryChannelCount();
-   }
-  
    public long getPagingOrder()
    {
       return pagingOrder;
@@ -153,15 +119,6 @@ public class SimpleMessageReference implements MessageReference
    public void setPagingOrder(long order)
    {
       this.pagingOrder = order;
-   }
-   
-   public MessageReference copy()
-   {
-      SimpleMessageReference ref = new SimpleMessageReference(this);
-      
-      ref.holder.incrementInMemoryChannelCount();
-      
-      return ref;
    }
    
    // Public --------------------------------------------------------

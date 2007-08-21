@@ -1487,14 +1487,6 @@ public class ServerPeer extends ServiceMBeanSupport
       {
          return false;
       }
-                  
-      //undeploy the mbean
-      if (!undeployDestination(isQueue, name))
-      {
-         return false;
-      }
-            
-      //Unbind the destination's queues
       
       JMSCondition condition = new JMSCondition(isQueue, name);  
       
@@ -1505,6 +1497,29 @@ public class ServerPeer extends ServiceMBeanSupport
       while (iter.hasNext())            
       {
          Queue queue = (Queue)iter.next();
+         
+         queue.removeAllReferences();
+      }
+                       
+      //undeploy the mbean
+      if (!undeployDestination(isQueue, name))
+      {
+         return false;
+      }
+            
+      //Unbind the destination's queues
+      
+      log.info("Destroying destination " + name);
+      
+      log.info("Got queues " + queues.size());
+
+      while (iter.hasNext())            
+      {
+         Queue queue = (Queue)iter.next();
+         
+         log.info("Queue is " + queue);
+         
+         queue.removeAllReferences();
          
          //Durable subs need to be removed on all nodes
          boolean all = !isQueue && queue.isRecoverable();

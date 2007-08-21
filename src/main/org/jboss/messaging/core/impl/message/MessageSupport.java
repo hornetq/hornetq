@@ -31,6 +31,7 @@ import java.util.Map;
 
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.contract.Message;
+import org.jboss.messaging.core.contract.MessageReference;
 import org.jboss.messaging.util.StreamUtils;
 
 /**
@@ -74,8 +75,10 @@ public abstract class MessageSupport implements Message, Serializable
 
 	// Must be hidden from subclasses
 	private byte[] payloadAsByteArray;
-
-	private transient boolean persisted;
+	
+	private transient volatile int persistentCount;
+	
+	private transient volatile boolean persisted;
 
 	// Constructors --------------------------------------------------
 
@@ -288,16 +291,6 @@ public abstract class MessageSupport implements Message, Serializable
 		this.payloadAsByteArray = null;
 	}
 
-	public synchronized boolean isPersisted()
-	{
-		return persisted;
-	}
-
-	public synchronized void setPersisted(boolean persisted)
-	{
-		this.persisted = persisted;
-	}
-
 	public boolean isExpired()
 	{
 		if (expiration == 0)
@@ -316,6 +309,41 @@ public abstract class MessageSupport implements Message, Serializable
 			return true;
 		}
 		return false;
+	}
+	
+	public MessageReference createReference()
+	{
+		return new SimpleMessageReference(this);
+	}
+	
+	public int getPersistentCount()
+	{
+		return persistentCount;
+	}
+	
+	public void setPersistentCount(int count)
+	{
+		persistentCount = count;
+	}
+	
+	public void decrementPersistentCount()
+	{
+		persistentCount--;
+	}
+	
+	public void incrementPersistentCount()
+	{
+		persistentCount++;
+	}
+	
+	public boolean isPersisted()
+	{
+		return persisted;
+	}
+	
+	public void setPersisted(boolean persisted)
+	{
+		this.persisted = persisted;
 	}
 
 	// Public --------------------------------------------------------

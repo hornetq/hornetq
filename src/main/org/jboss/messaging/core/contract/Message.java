@@ -140,20 +140,24 @@ public interface Message extends Streamable
     
    /**
     * 
-    * @return true if the message has already been persisted
-    */
-   boolean isPersisted();
-   
-   /**
-    * Set the message's persisted state to the specified value
-    * @param persisted
-    */
-   void setPersisted(boolean persisted);
-   
-   /**
-    * 
     * @return the type of the message
     */
-   byte getType();
+   byte getType();   
    
+   /*
+    * @return a reference for this message
+    */
+   MessageReference createReference();
+   
+   void setPersistentCount(int count);
+   
+   int getPersistentCount();
+   
+   void incrementPersistentCount();
+   
+   void decrementPersistentCount();
+   
+   boolean isPersisted();
+   
+   void setPersisted(boolean persisted);
 }

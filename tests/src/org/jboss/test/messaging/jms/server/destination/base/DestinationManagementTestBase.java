@@ -450,7 +450,7 @@ public abstract class DestinationManagementTestBase extends JMSTestCase
       
       conn.close();
             
-      // destroy it
+      // destroy it      
 
       Boolean b = (Boolean)ServerManagement.invoke(serverPeerObjectName, destroyMethod,
                                                    new Object[] { destinationName },
@@ -469,7 +469,6 @@ public abstract class DestinationManagementTestBase extends JMSTestCase
       }
       
       //Make sure no bindings exist
-      //ServerManagement.gets
 
       Set set = ServerManagement.query(destObjectName);
       assertTrue(set.isEmpty());

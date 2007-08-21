@@ -40,7 +40,7 @@
    CREATE_IDX_MESSAGE_REF_PAGE_ORD=CREATE INDEX JBM_MSG_REF_PAGE_ORD ON JBM_MSG_REF (PAGE_ORD)
    CREATE_IDX_MESSAGE_REF_MESSAGE_ID=CREATE INDEX JBM_MSG_REF_MESSAGE_ID ON JBM_MSG_REF (MESSAGE_ID)
    CREATE_IDX_MESSAGE_REF_SCHED_DELIVERY=CREATE INDEX JBM_MSG_REF_SCHED_DELIVERY ON JBM_MSG_REF (SCHED_DELIVERY)
-   CREATE_MESSAGE=CREATE TABLE JBM_MSG (MESSAGE_ID BIGINT, RELIABLE CHAR(1), EXPIRATION BIGINT, TIMESTAMP BIGINT, PRIORITY TINYINT, HEADERS IMAGE, PAYLOAD IMAGE, CHANNEL_COUNT INT, TYPE TINYINT, PRIMARY KEY (MESSAGE_ID))
+   CREATE_MESSAGE=CREATE TABLE JBM_MSG (MESSAGE_ID BIGINT, RELIABLE CHAR(1), EXPIRATION BIGINT, TIMESTAMP BIGINT, PRIORITY TINYINT, HEADERS IMAGE, PAYLOAD IMAGE, TYPE TINYINT, PRIMARY KEY (MESSAGE_ID))
    CREATE_TRANSACTION=CREATE TABLE JBM_TX (NODE_ID INTEGER, TRANSACTION_ID BIGINT, BRANCH_QUAL VARBINARY(254), FORMAT_ID INT, GLOBAL_TXID VARBINARY(254), PRIMARY KEY (TRANSACTION_ID))
    CREATE_COUNTER=CREATE TABLE JBM_COUNTER (NAME VARCHAR(255), NEXT_ID BIGINT, PRIMARY KEY(NAME))
    INSERT_MESSAGE_REF=INSERT INTO JBM_MSG_REF (CHANNEL_ID, MESSAGE_ID, TRANSACTION_ID, STATE, ORD, PAGE_ORD, DELIVERY_COUNT, SCHED_DELIVERY) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
@@ -60,10 +60,9 @@
    UPDATE_DELIVERY_COUNT=UPDATE JBM_MSG_REF SET DELIVERY_COUNT = ? WHERE CHANNEL_ID = ? AND MESSAGE_ID = ?
    UPDATE_CHANNEL_ID=UPDATE JBM_MSG_REF SET CHANNEL_ID = ? WHERE CHANNEL_ID = ?
    LOAD_MESSAGES=SELECT MESSAGE_ID, RELIABLE, EXPIRATION, TIMESTAMP, PRIORITY, HEADERS, PAYLOAD, TYPE FROM JBM_MSG
-   INSERT_MESSAGE=INSERT INTO JBM_MSG (MESSAGE_ID, RELIABLE, EXPIRATION, TIMESTAMP, PRIORITY, HEADERS, PAYLOAD, CHANNEL_COUNT, TYPE) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-   INC_CHANNEL_COUNT=UPDATE JBM_MSG SET CHANNEL_COUNT = CHANNEL_COUNT + 1 WHERE MESSAGE_ID=?
-   DEC_CHANNEL_COUNT=UPDATE JBM_MSG SET CHANNEL_COUNT = CHANNEL_COUNT - 1 WHERE MESSAGE_ID=?
-   DELETE_MESSAGE=DELETE FROM JBM_MSG WHERE MESSAGE_ID=? AND CHANNEL_COUNT=0
+   INSERT_MESSAGE=INSERT INTO JBM_MSG (MESSAGE_ID, RELIABLE, EXPIRATION, TIMESTAMP, PRIORITY, HEADERS, PAYLOAD, TYPE) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+   DELETE_MESSAGE=DELETE FROM JBM_MSG WHERE MESSAGE_ID=?
+   DELETE_PAGED_MESSAGE=DELETE FROM JBM_MSG WHERE MESSAGE_ID=? AND NOT EXISTS (SELECT * FROM JBM_MSG_REF WHERE MESSAGE_ID = ?)  
    MESSAGE_ID_COLUMN=MESSAGE_ID
    MESSAGE_EXISTS=SELECT MESSAGE_ID FROM JBM_MSG WITH (HOLDLOCK, ROWLOCK) WHERE MESSAGE_ID = ?
    INSERT_TRANSACTION=INSERT INTO JBM_TX (NODE_ID, TRANSACTION_ID, BRANCH_QUAL, FORMAT_ID, GLOBAL_TXID) VALUES(?, ?, ?, ?, ?)
@@ -141,51 +140,101 @@ LOAD_BINDINGS=SELECT QUEUE_NAME, COND, SELECTOR, CHANNEL_ID, CLSTERED, ALL_NODES
       <attribute name="ChannelPartitionName">${jboss.partition.name:DefaultPartition}-JMS</attribute>
       -->
       
-      <!-- JGroups stack configuration for the data channel - used when casting messages across the cluster -->
-                  
+      <!-- JGroups stack configuration for the data channel - used for sending data across the cluster -->               
+      
       <attribute name="DataChannelConfig">
          <config>
-            <UDP mcast_recv_buf_size="500000" down_thread="false" ip_mcast="true" mcast_send_buf_size="32000"
-           mcast_port="45567" ucast_recv_buf_size="500000" use_incoming_packet_handler="false"
-           mcast_addr="228.8.8.8" use_outgoing_packet_handler="true" loopback="true" ucast_send_buf_size="32000" ip_ttl="32" />
-            <AUTOCONF down_thread="false" up_thread="false"/>
+            <UDP
+               mcast_addr="228.8.8.8"
+               mcast_port="45567"
+               tos="8"
+               ucast_recv_buf_size="20000000"
+               ucast_send_buf_size="640000"
+               mcast_recv_buf_size="25000000"
+               mcast_send_buf_size="640000"
+               loopback="false"
+               discard_incompatible_packets="true"
+               max_bundle_size="64000"
+               max_bundle_timeout="30"
+               use_incoming_packet_handler="true"
+               use_outgoing_packet_handler="false"
+               ip_ttl="2"
+               down_thread="false" up_thread="false"
+               enable_bundling="false"/>
             <PING timeout="2000" down_thread="false" num_initial_members="3" up_thread="false"/>
-            <MERGE2 max_interval="10000" down_thread="false" min_interval="5000" up_thread="false"/>
+            <MERGE2 max_interval="100000" down_thread="false" min_interval="20000" up_thread="false"/>
             <FD_SOCK down_thread="false" up_thread="false"/>
-            <FD timeout="20000" max_tries="3" down_thread="false" up_thread="false" shun="true"/>
+            <FD timeout="10000" max_tries="5" down_thread="false" up_thread="false" shun="true"/>
             <VERIFY_SUSPECT timeout="1500" down_thread="false" up_thread="false"/>
-            <pbcast.NAKACK max_xmit_size="8192" down_thread="false" use_mcast_xmit="true" gc_lag="50" up_thread="false"
-                         retransmit_timeout="100,200,600,1200,2400,4800"/>
-            <UNICAST timeout="1200,2400,3600" down_thread="false" up_thread="false"/>
-            <pbcast.STABLE stability_delay="1000" desired_avg_gossip="20000" down_thread="false" max_bytes="0" up_thread="false"/>
-            <FRAG frag_size="8192" down_thread="false" up_thread="false"/>
-            <VIEW_SYNC avg_send_interval="60000" down_thread="false" up_thread="false" />
-            <pbcast.GMS print_local_addr="true" join_timeout="3000" down_thread="false" join_retry_timeout="2000" up_thread="false" shun="true"/>
+            <pbcast.NAKACK
+               max_xmit_size="60000"
+               use_mcast_xmit="false"
+               gc_lag="0"
+               retransmit_timeout="300,600,1200,2400,4800"
+               down_thread="false" up_thread="false"
+               discard_delivered_msgs="true"/>
+            <UNICAST timeout="300,600,1200,2400,3600"
+                     down_thread="false" up_thread="false"/>
+            <pbcast.STABLE stability_delay="1000" desired_avg_gossip="50000"
+                           down_thread="false" up_thread="false"
+                           max_bytes="400000"/>
+            <pbcast.GMS print_local_addr="true" join_timeout="3000" use_flush="true" flush_timeout="3000"
+                        down_thread="false" up_thread="false"
+                        join_retry_timeout="2000" shun="false"
+                        view_bundling="true"
+                        view_ack_collection_timeout="5000"/>
+            <FC max_credits="2000000" down_thread="false" up_thread="false"
+                min_threshold="0.10"/>
+            <FRAG2 frag_size="60000" down_thread="false" up_thread="false"/>      
          </config>
       </attribute>
       
-      <!-- JGroups stack configuration to use for the control channel - used for bind/unbind requests amongst others -->           
-      
+      <!-- JGroups stack configuration to use for the control channel - used for control messages -->         
+       
       <attribute name="ControlChannelConfig">
          <config>
-            <UDP mcast_recv_buf_size="500000" down_thread="false" ip_mcast="true" mcast_send_buf_size="32000"
-           mcast_port="45568" ucast_recv_buf_size="500000" use_incoming_packet_handler="false"
-           mcast_addr="228.8.8.8" use_outgoing_packet_handler="true" loopback="true" ucast_send_buf_size="32000" ip_ttl="32" />
-            <AUTOCONF down_thread="false" up_thread="false"/>
-            <PING timeout="2000" down_thread="false" num_initial_members="3" up_thread="false"/>
-            <MERGE2 max_interval="10000" down_thread="false" min_interval="5000" up_thread="false"/>
+            <UDP
+                 mcast_addr="228.8.8.8"
+                 mcast_port="45568"
+                 tos="8"
+                 ucast_recv_buf_size="20000000"
+                 ucast_send_buf_size="640000"
+                 mcast_recv_buf_size="25000000"
+                 mcast_send_buf_size="640000"
+                 loopback="false"
+                 discard_incompatible_packets="true"
+                 max_bundle_size="64000"
+                 max_bundle_timeout="30"
+                 use_incoming_packet_handler="true"
+                 use_outgoing_packet_handler="false"
+                 ip_ttl="2"
+                 down_thread="false" up_thread="false"
+                 enable_bundling="false"/>
+            <PING timeout="2000"
+                  down_thread="false" up_thread="false" num_initial_members="3"/>
+            <MERGE2 max_interval="100000"
+                    down_thread="false" up_thread="false" min_interval="20000"/>
             <FD_SOCK down_thread="false" up_thread="false"/>
-            <FD timeout="20000" max_tries="3" down_thread="false" up_thread="false" shun="true"/>
+            <FD timeout="10000" max_tries="5" down_thread="false" up_thread="false" shun="true"/>
             <VERIFY_SUSPECT timeout="1500" down_thread="false" up_thread="false"/>
-            <pbcast.NAKACK max_xmit_size="8192" down_thread="false" use_mcast_xmit="true" gc_lag="50" up_thread="false"
-                         retransmit_timeout="100,200,600,1200,2400,4800"/>
-            <UNICAST timeout="1200,2400,3600" down_thread="false" up_thread="false"/>
-            <pbcast.STABLE stability_delay="1000" desired_avg_gossip="20000" down_thread="false" max_bytes="0" up_thread="false"/>
-            <FRAG frag_size="8192" down_thread="false" up_thread="false"/>
-            <VIEW_SYNC avg_send_interval="60000" down_thread="false" up_thread="false" />
-            <pbcast.GMS print_local_addr="true" join_timeout="3000" down_thread="false" join_retry_timeout="2000" up_thread="false" shun="true"/>
-            <pbcast.STATE_TRANSFER down_thread="false" up_thread="false"/>
-         </config>
+            <pbcast.NAKACK max_xmit_size="60000"
+                           use_mcast_xmit="false" gc_lag="0"
+                           retransmit_timeout="300,600,1200,2400,4800"
+                           down_thread="false" up_thread="false"
+                           discard_delivered_msgs="true"/>
+            <UNICAST timeout="300,600,1200,2400,3600"
+                     down_thread="false" up_thread="false"/>
+            <pbcast.STABLE stability_delay="1000" desired_avg_gossip="50000"
+                           down_thread="false" up_thread="false"
+                           max_bytes="400000"/>
+            <pbcast.GMS print_local_addr="true" join_timeout="3000" use_flush="true" flush_timeout="3000"
+                        down_thread="false" up_thread="false"
+                        join_retry_timeout="2000" shun="false"
+                        view_bundling="true"/>
+            <FRAG2 frag_size="60000" down_thread="false" up_thread="false"/>
+            <pbcast.STATE_TRANSFER down_thread="false" up_thread="false" use_flush="true" flush_timeout="3000"/>
+            <pbcast.FLUSH down_thread="false" up_thread="false" timeout="20000" auto_flush_conf="false"/>
+        </config>
       </attribute>
    </mbean>
    

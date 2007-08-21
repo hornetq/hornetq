@@ -83,13 +83,9 @@ public class ChannelShare_P_TTest extends PagingStateTestBase
                 
          queue1.handle(null, refs1[i], tx); 
          
-         refs1[i].releaseMemoryReference();
-         
          refs2[i] = ms.reference(msgs[i]);
          
          queue2.handle(null, refs2[i], tx); 
-         
-         refs2[i].releaseMemoryReference();
       }
       tx.commit();
       
@@ -126,8 +122,6 @@ public class ChannelShare_P_TTest extends PagingStateTestBase
             
       //Msgs
       
-      assertEquals(50, ms.size());
-      
       List msgIds = getMessageIds();
       assertEquals(50, msgIds.size()); 
       
@@ -141,13 +135,9 @@ public class ChannelShare_P_TTest extends PagingStateTestBase
                 
          queue1.handle(null, refs1[i], tx); 
          
-         refs1[i].releaseMemoryReference();
-         
          refs2[i] = ms.reference(msgs[i]);
          
          queue2.handle(null, refs2[i], tx); 
-         
-         refs2[i].releaseMemoryReference();
       }
       tx.commit();
       
@@ -185,8 +175,6 @@ public class ChannelShare_P_TTest extends PagingStateTestBase
             
       //Msgs
       
-      assertEquals(75, ms.size());
-      
       msgIds = getMessageIds();
       assertEquals(75, msgIds.size());
       
@@ -201,14 +189,10 @@ public class ChannelShare_P_TTest extends PagingStateTestBase
          refs1[i] = ms.reference(msgs[i]);
                 
          queue1.handle(null, refs1[i], tx); 
-         
-         refs1[i].releaseMemoryReference();
-         
+
          refs2[i] = ms.reference(msgs[i]);
          
          queue2.handle(null, refs2[i], tx); 
-         
-         refs2[i].releaseMemoryReference();
       }
       tx.commit();
       
@@ -246,8 +230,6 @@ public class ChannelShare_P_TTest extends PagingStateTestBase
             
       //Msgs
       
-      assertEquals(100, ms.size());
-      
       msgIds = getMessageIds();
       assertEquals(100, msgIds.size());
       
@@ -261,14 +243,10 @@ public class ChannelShare_P_TTest extends PagingStateTestBase
          refs1[i] = ms.reference(msgs[i]);
                 
          queue1.handle(null, refs1[i], tx); 
-         
-         refs1[i].releaseMemoryReference();
-         
+
          refs2[i] = ms.reference(msgs[i]);
          
          queue2.handle(null, refs2[i], tx); 
-         
-         refs2[i].releaseMemoryReference();
       }
       tx.commit();
       
@@ -305,9 +283,7 @@ public class ChannelShare_P_TTest extends PagingStateTestBase
       assertEquals(0, queue2.getDeliveringCount());
             
       //Msgs
-      
-      assertEquals(100, ms.size());
-      
+         
       msgIds = getMessageIds();
       assertEquals(150, msgIds.size());
       
@@ -349,8 +325,6 @@ public class ChannelShare_P_TTest extends PagingStateTestBase
       assertEquals(0, queue2.getDeliveringCount());
             
       //Msgs
-      
-      assertEquals(0, ms.size());
       
       msgIds = getMessageIds();
       assertEquals(0, msgIds.size());

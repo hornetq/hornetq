@@ -120,7 +120,7 @@
    &libraries;
 
    <!--
-       This module is based on Java 1.4
+       This module is based on Java 1.5
    -->
 
    <property name="javac.target" value="1.5"/>

@@ -27,7 +27,6 @@
 	<classpathentry kind="lib" path="thirdparty/hsqldb/lib/hsqldb.jar"/>
 	<classpathentry kind="lib" path="thirdparty/apache-logging/lib/commons-logging.jar"/>
 	<classpathentry kind="lib" path="thirdparty/jboss/serialization/lib/jboss-serialization.jar"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="thirdparty/sun-javacc/lib/javacc.jar"/>
 	<classpathentry kind="lib" path="thirdparty/apache-xerces/lib/xercesImpl.jar"/>
 	<classpathentry kind="lib" path="thirdparty/dom4j/lib/dom4j.jar"/>
@@ -61,5 +60,6 @@
 	<classpathentry kind="lib" path="thirdparty/jbossas/core-libs/lib/jboss-jca.jar"/>
 	<classpathentry kind="lib" path="thirdparty/jbossas/core-libs/lib/jboss-local-jdbc.jar"/>
 	<classpathentry kind="lib" path="thirdparty/jbossas/core-libs/lib/jboss-xml-binding.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

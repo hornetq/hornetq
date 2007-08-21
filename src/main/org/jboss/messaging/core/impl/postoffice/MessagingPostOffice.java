@@ -1154,21 +1154,9 @@ public class MessagingPostOffice extends JDBCSupport
 
       Condition routingKey = conditionFactory.createCondition(routingKeyText);
 
-      MessageReference ref = null;
-      
-      try
-      {
-         ref = ms.reference(message);
+      MessageReference ref = message.createReference();
          
-         routeInternal(ref, routingKey, null, true, queueNames);        
-      }
-      finally
-      {
-         if (ref != null)
-         {
-            ref.releaseMemoryReference();
-         }
-      }
+      routeInternal(ref, routingKey, null, true, queueNames);        
    }
       
    //TODO - these do not belong here
@@ -1614,9 +1602,7 @@ public class MessagingPostOffice extends JDBCSupport
 					   info = (PostOfficeAddressInfo)nodeIDAddressMap.get(masterNodeID);
 					   			   
 					   Address address = info.getDataChannelAddress();
-					   
-					   log.info("Sending the message to node " + masterNodeID + " with address " + address);
-				   	   				   	
+					      	
 					   if (address != null)
 					   {	   
 					   	groupMember.unicastData(request, address);
@@ -2103,6 +2089,14 @@ public class MessagingPostOffice extends JDBCSupport
          		
          		startedTx = true;
          	}
+         	
+         	//We set the persistent count to be the same as the localReliableCount
+         	//Note that we MUST set the persistent count before routing to any of the queues
+         	//if we only set it when we actually persist in a channel then we could have the situation where
+         	//a ref arrives in a subscription then gets acknowledged and removed before hitting the next sub
+         	//so we would end up with a churn where the message is getting added and removed multiple times for
+         	//a single route
+         	ref.getMessage().setPersistentCount(localReliableCount);
          	
          	//Now actually route the ref
          	

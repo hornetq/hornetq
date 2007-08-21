@@ -87,9 +87,7 @@ public class MessageCleanupTest extends JMSTestCase
       if (ServerManagement.isRemote()) return;
       
       SimpleMessageStore ms = (SimpleMessageStore)ServerManagement.getMessageStore();      
-      
-      assertEquals(0, ms.messageIds().size());      
-      
+        
       Connection conn = cf.createConnection();
       
       Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -104,9 +102,7 @@ public class MessageCleanupTest extends JMSTestCase
       {
          prod.send(sess.createMessage());
       }
-      
-      assertEquals(100, ms.messageIds().size());
-      
+        
       //50 Should be paged onto disk
       
       assertEquals(50, getReferenceIds().size());
@@ -116,8 +112,6 @@ public class MessageCleanupTest extends JMSTestCase
       //Now we close the consumer
       
       cons.close();
-      
-      assertEquals(0, ms.messageIds().size());
       
       assertEquals(0, getReferenceIds().size());
       
@@ -151,8 +145,6 @@ public class MessageCleanupTest extends JMSTestCase
       
       SimpleMessageStore ms = (SimpleMessageStore)ServerManagement.getMessageStore();
       
-      assertEquals(100, ms.messageIds().size());
-      
       assertEquals(100, getReferenceIds().size());
       
       assertEquals(50, getMessageIds().size());
@@ -161,17 +153,13 @@ public class MessageCleanupTest extends JMSTestCase
       
       cons1.close();
       cons2.close();
-      
-      assertEquals(100, ms.messageIds().size());
-      
+       
       assertEquals(50, getReferenceIds().size());
       
       assertEquals(50, getMessageIds().size());
       
       sess.unsubscribe("sub1");
-      
-      assertEquals(0, ms.messageIds().size());
-      
+        
       assertEquals(0, getReferenceIds().size());
       
       assertEquals(0, getMessageIds().size());
@@ -215,8 +203,6 @@ public class MessageCleanupTest extends JMSTestCase
       
       SimpleMessageStore ms = (SimpleMessageStore)ServerManagement.getMessageStore();
       
-      assertEquals(100, ms.messageIds().size());
-      
       assertEquals(50, getReferenceIds().size());
       
       assertEquals(50, getMessageIds().size());
@@ -224,8 +210,6 @@ public class MessageCleanupTest extends JMSTestCase
       //Now we close the connection
       
       conn.close();
-      
-      assertEquals(0, ms.messageIds().size());
       
       assertEquals(0, getReferenceIds().size());
       
@@ -269,9 +253,7 @@ public class MessageCleanupTest extends JMSTestCase
       }
       
       SimpleMessageStore ms = (SimpleMessageStore)ServerManagement.getMessageStore();
-      
-      assertEquals(100, ms.messageIds().size());
-      
+
       assertEquals(100, getReferenceIds().size());
       
       assertEquals(50, getMessageIds().size());
@@ -279,9 +261,7 @@ public class MessageCleanupTest extends JMSTestCase
       //Now we close the connection
       
       conn.close();
-      
-      assertEquals(0, ms.messageIds().size());
-      
+        
       assertEquals(0, getReferenceIds().size());
       
       assertEquals(0, getMessageIds().size());

@@ -85,15 +85,19 @@ public abstract class PagingChannelSupport extends ChannelSupport
     */
    protected long nextPagingOrder;
    
+   protected MessageStore ms;
+   
    /**
     * Constructor with default paging params.
     */
    public PagingChannelSupport(long channelID, MessageStore ms, PersistenceManager pm,
                                boolean recoverable, int maxSize)
    {
-      super(channelID, ms, pm, recoverable, maxSize);
+      super(channelID, pm, recoverable, maxSize);
       
       downCache = new ArrayList(downCacheSize);    
+      
+      this.ms = ms;
    }
    
    /**
@@ -103,7 +107,7 @@ public abstract class PagingChannelSupport extends ChannelSupport
                                boolean recoverable, int maxSize,
                                int fullSize, int pageSize, int downCacheSize)
    {
-      super(channelID, ms, pm, recoverable, maxSize);
+      super(channelID, pm, recoverable, maxSize);
       
       if (pageSize >= fullSize)
       {
@@ -129,6 +133,8 @@ public abstract class PagingChannelSupport extends ChannelSupport
       this.pageSize = pageSize;
       
       this.downCacheSize = downCacheSize;
+      
+      this.ms = ms;
    }
     
    // Receiver implementation ----------------------------------------------------------------------
@@ -219,31 +225,13 @@ public abstract class PagingChannelSupport extends ChannelSupport
             throw new IllegalStateException("Cannot unload channel when active");
          }
          
-         //We need to release any message refs so the message is released from the message store if appropriate
-         
-         Iterator iter = messageRefs.iterator();
-         
-         while (iter.hasNext())
-         {
-         	MessageReference ref = (MessageReference)iter.next();
-         	
-         	ref.releaseMemoryReference();
-         }
-         
          messageRefs.clear();
-         
-         iter = downCache.iterator();
-         
-         while (iter.hasNext())
-         {
-         	MessageReference ref = (MessageReference)iter.next();
-         	
-         	ref.releaseMemoryReference();
-         }
          
          downCache.clear();
          
          paging = false;
+         
+         pm.setPaging(channelID, false);         
          
          firstPagingOrder = nextPagingOrder = 0;  
          
@@ -318,6 +306,8 @@ public abstract class PagingChannelSupport extends ChannelSupport
          if (messageRefs.size() != fullSize)
          {
             paging = false;
+            
+            pm.setPaging(channelID, false);            
          }
       }    
    }
@@ -377,6 +367,8 @@ public abstract class PagingChannelSupport extends ChannelSupport
       {
          paging = false;
          
+         pm.setPaging(channelID, false);
+         
          return false;
       }
    }
@@ -397,6 +389,8 @@ public abstract class PagingChannelSupport extends ChannelSupport
             if (trace) { log.trace(this + " going into paging mode"); }
 
             paging = true;
+            
+            pm.setPaging(channelID, true);            
          }
       }      
    }
@@ -458,7 +452,7 @@ public abstract class PagingChannelSupport extends ChannelSupport
       while (iter.hasNext())
       {
          MessageReference ref = (MessageReference) iter.next();
-           
+         
          if (ref.getMessage().isReliable() && recoverable)
          {
             toUpdate.add(ref);
@@ -473,21 +467,10 @@ public abstract class PagingChannelSupport extends ChannelSupport
       {
          pm.pageReferences(channelID, toAdd, true);
       }
+      
       if (!toUpdate.isEmpty())
       {
          pm.updatePageOrder(channelID, toUpdate);
-      }
-
-      // Release in memory refs for the refs we just spilled
-      // Note! This must be done after the db inserts - to ensure message is
-      // still in memory
-      iter = downCache.iterator();
-
-      while (iter.hasNext())
-      {
-         MessageReference ref = (MessageReference) iter.next();
-
-         ref.releaseMemoryReference();
       }
 
       downCache.clear();         
@@ -505,7 +488,7 @@ public abstract class PagingChannelSupport extends ChannelSupport
          
          nextPagingOrder = ili.getMaxPageOrdering().longValue() + 1;
                            
-         paging = true;
+         paging = true;    
       }
       else
       {
@@ -513,6 +496,8 @@ public abstract class PagingChannelSupport extends ChannelSupport
          
          paging = false;
       }
+            
+      pm.setPaging(channelID, paging);     
       
       Map refMap = processReferences(ili.getRefInfos());
       
@@ -539,6 +524,8 @@ public abstract class PagingChannelSupport extends ChannelSupport
       
       ref.setScheduledDeliveryTime(info.getScheduledDelivery());
       
+      ref.getMessage().incrementPersistentCount();
+      
       //Schedule the delivery if necessary, or just add to the in memory queue
       if (!checkAndSchedule(ref))
       {
@@ -551,9 +538,9 @@ public abstract class PagingChannelSupport extends ChannelSupport
 
    protected Map processReferences(List refInfos) throws Exception
    {
-      Map refMap = new HashMap(refInfos.size());
+      Map<Long, MessageReference> refMap = new HashMap<Long, MessageReference>(refInfos.size());
 
-      List msgIdsToLoad = new ArrayList(refInfos.size());
+      List<Long> msgIdsToLoad = new ArrayList<Long>(refInfos.size());
 
       Iterator iter = refInfos.iterator();
 
@@ -568,12 +555,12 @@ public abstract class PagingChannelSupport extends ChannelSupport
 
          if (ref != null)
          {
-            refMap.put(new Long(msgId), ref);
+            refMap.put(msgId, ref);
          }
          else
          {
             // Add id to list of msg ids to load
-            msgIdsToLoad.add(new Long(msgId));
+            msgIdsToLoad.add(msgId);
          }
       }
 
@@ -598,13 +585,9 @@ public abstract class PagingChannelSupport extends ChannelSupport
          while (iter.hasNext())
          {
             Message m = (Message)iter.next();
-
-            // Message might actually be know to the store since we did the
-            // first check since might have been added by different channel
-            // in intervening period, but this is ok - the store knows to only
-            // return a reference to the pre-existing message
-            MessageReference ref = ms.reference(m);
             
+            MessageReference ref = ms.reference(m);
+
             refMap.put(new Long(m.getMessageID()), ref);
          }
       }

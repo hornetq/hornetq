@@ -8,7 +8,9 @@ package org.jboss.messaging.core.contract;
 
 
 /**
- * An interface to a referencing/dereferencing message store.
+ * When loading a message from storage, references from different channels can reference the same message.
+ * In order to avoid loading the message more than once, loaded or paged references are stored in the message store
+ * 
  *
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -18,27 +20,7 @@ package org.jboss.messaging.core.contract;
  */
 public interface MessageStore extends MessagingComponent
 {
-   /**
-    * Message m is stored in the store if it is not already known to the store, then
-    * a new MessageReference is returned for the Message
-    *
-    * @param m The Message for which to create the MessageReference
-    * @return The new MessageReference
-    */
-   MessageReference reference(Message m);
-   
-   /**
-    * Return a new reference for a message already stored in the store and identified by <messageID>
-    * @param messageID
-    * @return The reference or null if the message is not already stored in the store
-    */
-   MessageReference reference(long messageID);
-
-   /**
-    * Remove a message from the store
-    * 
-    * @param messageID
-    * @return
-    */
-   public boolean forgetMessage(long messageID);   
+	 MessageReference reference(long messageID);
+	 
+	 MessageReference reference(Message message);
 }

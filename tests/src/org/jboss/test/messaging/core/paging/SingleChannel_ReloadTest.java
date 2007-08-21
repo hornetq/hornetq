@@ -80,8 +80,6 @@ public class SingleChannel_ReloadTest extends PagingStateTestBase
          refs[i] = ms.reference(msgs[i]);
                 
          queue.handle(null, refs[i], null); 
-         
-         refs[i].releaseMemoryReference();
       }
       
       //Send 50 p messages
@@ -92,8 +90,6 @@ public class SingleChannel_ReloadTest extends PagingStateTestBase
          refs[i] = ms.reference(msgs[i]);
                 
          queue.handle(null, refs[i], null); 
-         
-         refs[i].releaseMemoryReference();
       }
 
       List refIds = getReferenceIdsOrderedByPageOrd(queue.getChannelID());
@@ -179,8 +175,6 @@ public class SingleChannel_ReloadTest extends PagingStateTestBase
          refs[i] = ms.reference(msgs[i]);
                 
          queue.handle(null, refs[i], null); 
-         
-         refs[i].releaseMemoryReference();
       }
       
       //Send 50 p messages
@@ -191,8 +185,6 @@ public class SingleChannel_ReloadTest extends PagingStateTestBase
          refs[i] = ms.reference(msgs[i]);
                 
          queue.handle(null, refs[i], null); 
-         
-         refs[i].releaseMemoryReference();
       }
 
       List refIds = getReferenceIdsOrderedByPageOrd(queue.getChannelID());
@@ -272,8 +264,6 @@ public class SingleChannel_ReloadTest extends PagingStateTestBase
          refs[i] = ms.reference(msgs[i]);
                 
          queue.handle(null, refs[i], null); 
-         
-         refs[i].releaseMemoryReference();
       }
       
       //Send 50 p messages
@@ -284,8 +274,6 @@ public class SingleChannel_ReloadTest extends PagingStateTestBase
          refs[i] = ms.reference(msgs[i]);
                 
          queue.handle(null, refs[i], null); 
-         
-         refs[i].releaseMemoryReference();
       }
 
       List refIds = getReferenceIdsOrderedByPageOrd(queue.getChannelID());

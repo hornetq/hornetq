@@ -150,7 +150,7 @@ public class MessageFactory
       }
       
       m.setPersisted(true);
-      
+
       return m;
    }
 

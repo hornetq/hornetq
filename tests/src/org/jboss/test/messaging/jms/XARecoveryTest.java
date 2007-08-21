@@ -718,6 +718,8 @@ public class XARecoveryTest extends JMSTestCase
 
          ServerManagement.startServerPeer();
          
+         log.info("Restarted the server");
+         
          deployAndLookupAdministeredObjects();
                   
          conn3 = cf.createXAConnection();

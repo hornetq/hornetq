@@ -77,7 +77,6 @@ public class SingleChannel_NP_NTTest extends PagingStateTestBase
          msgs[i] = CoreMessageFactory.createCoreMessage(i, false, null);
          refs[i] = ms.reference(msgs[i]);
          queue.handle(null, refs[i], null);
-         refs[i].releaseMemoryReference();
       }
       
       //verify no refs in storage
@@ -88,9 +87,6 @@ public class SingleChannel_NP_NTTest extends PagingStateTestBase
       //Verify no msgs in storage
       List msgIds = getMessageIds();
       assertTrue(msgIds.isEmpty());
-      
-      //Verify 99 msgs in store
-      assertEquals(99, ms.size());
       
       //Verify 99 refs in queue
       assertEquals(99, queue.memoryRefCount());
@@ -110,8 +106,7 @@ public class SingleChannel_NP_NTTest extends PagingStateTestBase
       msgs[99] = CoreMessageFactory.createCoreMessage(99, false, null);
       refs[99] = ms.reference(msgs[99]);
       queue.handle(null, refs[99], null);
-      refs[99].releaseMemoryReference();
-      
+  
       //verify no refs in storage
       
       refIds = getReferenceIdsOrderedByPageOrd(queue.getChannelID());
@@ -120,9 +115,6 @@ public class SingleChannel_NP_NTTest extends PagingStateTestBase
       //Verify no msgs in storage
       msgIds = getMessageIds();
       assertTrue(msgIds.isEmpty());
-      
-      //Verify 100 msgs in store
-      assertEquals(100, ms.size());
       
       //Verify 100 refs in queue
       assertEquals(100, queue.memoryRefCount());
@@ -143,7 +135,6 @@ public class SingleChannel_NP_NTTest extends PagingStateTestBase
          msgs[i] = CoreMessageFactory.createCoreMessage(i, false, null);
          refs[i] = ms.reference(msgs[i]);
          queue.handle(null, refs[i], null); 
-         refs[i].releaseMemoryReference();
       }
       
       //verify no refs in storage
@@ -154,10 +145,7 @@ public class SingleChannel_NP_NTTest extends PagingStateTestBase
       //Verify no msgs in storage
       msgIds = getMessageIds();
       assertTrue(msgIds.isEmpty());
-      
-      //Verify 100 msgs in store
-      assertEquals(109, ms.size());
-      
+          
       //Verify 100 refs in queue
       assertEquals(100, queue.memoryRefCount());
       
@@ -178,8 +166,7 @@ public class SingleChannel_NP_NTTest extends PagingStateTestBase
       msgs[109] = CoreMessageFactory.createCoreMessage(109, false, null);
       refs[109] = ms.reference(msgs[109]);
       queue.handle(null, refs[109], null);
-      refs[109].releaseMemoryReference();
-      
+    
       //verify 10 refs in storage
       
       refIds = getReferenceIdsOrderedByPageOrd(queue.getChannelID());
@@ -190,9 +177,6 @@ public class SingleChannel_NP_NTTest extends PagingStateTestBase
       msgIds = getMessageIds();
       assertEquals(10, msgIds.size()); 
       assertSameIds(msgIds, refs, 100, 109);
-      
-      //Verify 100 msgs in store
-      assertEquals(100, ms.size());
       
       //Verify 100 refs in queue
       assertEquals(100, queue.memoryRefCount());
@@ -213,7 +197,6 @@ public class SingleChannel_NP_NTTest extends PagingStateTestBase
       msgs[110] = CoreMessageFactory.createCoreMessage(110, false, null);
       refs[110] = ms.reference(msgs[110]);
       queue.handle(null, refs[110], null);
-      refs[110].releaseMemoryReference();
       
       //verify 10 refs in storage
       
@@ -225,9 +208,6 @@ public class SingleChannel_NP_NTTest extends PagingStateTestBase
       msgIds = getMessageIds();
       assertEquals(10, msgIds.size()); 
       assertSameIds(msgIds, refs, 100, 109);
-      
-      //Verify 101 msgs in store
-      assertEquals(101, ms.size());
       
       //Verify 100 refs in queue
       assertEquals(100, queue.memoryRefCount());
@@ -250,7 +230,6 @@ public class SingleChannel_NP_NTTest extends PagingStateTestBase
          msgs[i] = CoreMessageFactory.createCoreMessage(i, false, null);
          refs[i] = ms.reference(msgs[i]);
          queue.handle(null, refs[i], null);         
-         refs[i].releaseMemoryReference();
       }      
       
       //verify 20 refs in storage
@@ -263,9 +242,6 @@ public class SingleChannel_NP_NTTest extends PagingStateTestBase
       msgIds = getMessageIds();
       assertEquals(20, msgIds.size()); 
       assertSameIds(msgIds, refs, 100, 119);
-      
-      //Verify 100 msgs in store
-      assertEquals(100, ms.size());
       
       //Verify 100 refs in queue
       assertEquals(100, queue.memoryRefCount());
@@ -289,7 +265,6 @@ public class SingleChannel_NP_NTTest extends PagingStateTestBase
          msgs[i] = CoreMessageFactory.createCoreMessage(i, false, null);
          refs[i] = ms.reference(msgs[i]);
          queue.handle(null, refs[i], null);         
-         refs[i].releaseMemoryReference();
       }  
       
       //verify 30 refs in storage
@@ -302,9 +277,6 @@ public class SingleChannel_NP_NTTest extends PagingStateTestBase
       msgIds = getMessageIds();
       assertEquals(30, msgIds.size()); 
       assertSameIds(msgIds, refs, 100, 129);
-      
-      //Verify 100 msgs in store
-      assertEquals(100, ms.size());
       
       //Verify 100 refs in queue
       assertEquals(100, queue.memoryRefCount());
@@ -328,7 +300,6 @@ public class SingleChannel_NP_NTTest extends PagingStateTestBase
          msgs[i] = CoreMessageFactory.createCoreMessage(i, false, null);
          refs[i] = ms.reference(msgs[i]);
          queue.handle(null, refs[i], null);         
-         refs[i].releaseMemoryReference();
       }  
       
       //verify 40 refs in storage
@@ -341,9 +312,6 @@ public class SingleChannel_NP_NTTest extends PagingStateTestBase
       msgIds = getMessageIds();
       assertEquals(40, msgIds.size()); 
       assertSameIds(msgIds, refs, 100, 139);
-      
-      //Verify 100 msgs in store
-      assertEquals(100, ms.size());
       
       //Verify 100 refs in queue
       assertEquals(100, queue.memoryRefCount());
@@ -365,7 +333,6 @@ public class SingleChannel_NP_NTTest extends PagingStateTestBase
       msgs[140] = CoreMessageFactory.createCoreMessage(140, false, null);
       refs[140] = ms.reference(msgs[140]);
       queue.handle(null, refs[140], null);
-      refs[140].releaseMemoryReference();
       
       //verify 40 refs in storage
       
@@ -377,9 +344,6 @@ public class SingleChannel_NP_NTTest extends PagingStateTestBase
       msgIds = getMessageIds();
       assertEquals(40, msgIds.size()); 
       assertSameIds(msgIds, refs, 100, 139);
-      
-      //Verify 100 msgs in store
-      assertEquals(101, ms.size());
       
       //Verify 100 refs in queue
       assertEquals(100, queue.memoryRefCount());
@@ -411,9 +375,6 @@ public class SingleChannel_NP_NTTest extends PagingStateTestBase
       msgIds = getMessageIds();
       assertEquals(40, msgIds.size()); 
       assertSameIds(msgIds, refs, 100, 139);
-      
-      //Verify 100 msgs in store
-      assertEquals(100, ms.size());
       
       //Verify 99 refs in queue
       assertEquals(99, queue.memoryRefCount());
@@ -449,9 +410,6 @@ public class SingleChannel_NP_NTTest extends PagingStateTestBase
       assertEquals(40, msgIds.size()); 
       assertSameIds(msgIds, refs, 100, 139);
       
-      //Verify 82 msgs in store
-      assertEquals(82, ms.size());
-      
       //Verify 81 refs in queue
       assertEquals(81, queue.memoryRefCount());
       
@@ -485,10 +443,7 @@ public class SingleChannel_NP_NTTest extends PagingStateTestBase
       msgIds = getMessageIds();
       assertEquals(21, msgIds.size()); 
       assertSameIds(msgIds, refs, 120, 140);
-      
-      //Verify 100 msgs in store
-      assertEquals(100, ms.size());
-      
+        
       //Verify 100 refs in queue
       assertEquals(100, queue.memoryRefCount());
       
@@ -519,10 +474,7 @@ public class SingleChannel_NP_NTTest extends PagingStateTestBase
       msgIds = getMessageIds();
       assertEquals(1, msgIds.size()); 
       assertSameIds(msgIds, refs, 140, 140);
-      
-      //Verify 100 msgs in store
-      assertEquals(100, ms.size());
-      
+
       //Verify 100 refs in queue
       assertEquals(100, queue.memoryRefCount());
       
@@ -551,9 +503,6 @@ public class SingleChannel_NP_NTTest extends PagingStateTestBase
       //Verify 0 msgs in storage
       msgIds = getMessageIds();
       assertEquals(0, msgIds.size()); 
-      
-      //Verify 81 msgs in store
-      assertEquals(100, ms.size());
       
       //Verify 81 refs in queue
       assertEquals(100, queue.memoryRefCount());
@@ -584,9 +533,6 @@ public class SingleChannel_NP_NTTest extends PagingStateTestBase
       msgIds = getMessageIds();
       assertEquals(0, msgIds.size()); 
       
-      //Verify 80 msgs in store
-      assertEquals(80, ms.size());
-      
       //Verify 80 refs in queue
       assertEquals(80, queue.memoryRefCount());
       
@@ -616,9 +562,6 @@ public class SingleChannel_NP_NTTest extends PagingStateTestBase
       msgIds = getMessageIds();
       assertEquals(0, msgIds.size()); 
       
-      //Verify 20 msgs in store
-      assertEquals(20, ms.size());
-      
       //Verify 20 refs in queue
       assertEquals(20, queue.memoryRefCount());
       
@@ -639,7 +582,6 @@ public class SingleChannel_NP_NTTest extends PagingStateTestBase
          msgs[i] = CoreMessageFactory.createCoreMessage(i, false, null);
          refs[i] = ms.reference(msgs[i]);
          queue.handle(null, refs[i], null);
-         refs[i].releaseMemoryReference();
       }
       
       //verify 0 ref in storage
@@ -650,10 +592,7 @@ public class SingleChannel_NP_NTTest extends PagingStateTestBase
       //Verify 0 msgs in storage
       msgIds = getMessageIds();
       assertEquals(0, msgIds.size()); 
-      
-      //Verify 40 msgs in store
-      assertEquals(40, ms.size());
-      
+   
       //Verify 40 refs in queue
       assertEquals(40, queue.memoryRefCount());
       
@@ -675,7 +614,6 @@ public class SingleChannel_NP_NTTest extends PagingStateTestBase
          msgs[i] = CoreMessageFactory.createCoreMessage(i, false, null);
          refs[i] = ms.reference(msgs[i]);
          queue.handle(null, refs[i], null);
-         refs[i].releaseMemoryReference();
       }
       
       //verify 0 ref in storage
@@ -686,9 +624,6 @@ public class SingleChannel_NP_NTTest extends PagingStateTestBase
       //Verify 0 msgs in storage
       msgIds = getMessageIds();
       assertEquals(0, msgIds.size()); 
-      
-      //Verify 60 msgs in store
-      assertEquals(60, ms.size());
       
       //Verify 60 refs in queue
       assertEquals(60, queue.memoryRefCount());
@@ -710,7 +645,6 @@ public class SingleChannel_NP_NTTest extends PagingStateTestBase
          msgs[i] = CoreMessageFactory.createCoreMessage(i, false, null);
          refs[i] = ms.reference(msgs[i]);
          queue.handle(null, refs[i], null);
-         refs[i].releaseMemoryReference();
       }
       
       //verify 20 ref in storage
@@ -723,10 +657,7 @@ public class SingleChannel_NP_NTTest extends PagingStateTestBase
       msgIds = getMessageIds();
       assertEquals(20, msgIds.size()); 
       assertSameIds(msgIds, refs, 221, 240);
-      
-      //Verify 100 msgs in store
-      assertEquals(100, ms.size());
-      
+        
       //Verify 100 refs in queue
       assertEquals(100, queue.memoryRefCount());
       
@@ -759,9 +690,6 @@ public class SingleChannel_NP_NTTest extends PagingStateTestBase
       msgIds = getMessageIds();
       assertEquals(0, msgIds.size()); 
   
-      //Verify 120 msgs in store
-      assertEquals(120, ms.size());
-      
       //Verify 100 refs in queue
       assertEquals(100, queue.memoryRefCount());
       
@@ -791,9 +719,6 @@ public class SingleChannel_NP_NTTest extends PagingStateTestBase
       msgIds = getMessageIds();
       assertEquals(0, msgIds.size()); 
   
-      //Verify 120 msgs in store
-      assertEquals(120, ms.size());
-      
       //Verify 100 refs in queue
       assertEquals(100, queue.memoryRefCount());
       
@@ -824,9 +749,6 @@ public class SingleChannel_NP_NTTest extends PagingStateTestBase
       msgIds = getMessageIds();
       assertEquals(10, msgIds.size()); 
       assertSameIds(msgIds, refs, 231, 240);
-      
-      //Verify 110 msgs in store
-      assertEquals(110, ms.size());
       
       //Verify 100 refs in queue
       assertEquals(100, queue.memoryRefCount());
@@ -859,9 +781,6 @@ public class SingleChannel_NP_NTTest extends PagingStateTestBase
       assertEquals(20, msgIds.size()); 
       assertSameIds(msgIds, refs, 221, 240);
       
-      //Verify 100 msgs in store
-      assertEquals(100, ms.size());
-      
       //Verify 100 refs in queue
       assertEquals(100, queue.memoryRefCount());
       
@@ -890,10 +809,7 @@ public class SingleChannel_NP_NTTest extends PagingStateTestBase
       //Verify 0 msgs in storage
       msgIds = getMessageIds();
       assertEquals(0, msgIds.size()); 
-
-      //Verify 70 msgs in store
-      assertEquals(70, ms.size());
-      
+    
       //Verify 0 deliveries
       assertEquals(0, queue.getDeliveringCount());
       
@@ -924,9 +840,6 @@ public class SingleChannel_NP_NTTest extends PagingStateTestBase
       msgIds = getMessageIds();
       assertEquals(0, msgIds.size()); 
 
-      //Verify 0 msgs in store
-      assertEquals(0, ms.size());
-      
       //Verify 0 refs in queue
       assertEquals(0, queue.memoryRefCount());
       

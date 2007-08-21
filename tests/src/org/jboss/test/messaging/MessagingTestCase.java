@@ -324,6 +324,11 @@ public class MessagingTestCase extends ProxyAssertSupport
          
          boolean exists = rs.next();
          
+         if (exists)
+         {
+         	log.info("Message reference data exists");
+         }
+         
          if (!exists)
          {
             rs.close();
@@ -334,7 +339,12 @@ public class MessagingTestCase extends ProxyAssertSupport
             
             rs = ps.executeQuery();
            
-            exists = rs.next();
+            exists = rs.next();      
+            
+            if (exists)
+            {
+            	log.info("Message data exists");
+            }
          }
          
          return exists;

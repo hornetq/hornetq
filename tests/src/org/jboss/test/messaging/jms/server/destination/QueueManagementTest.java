@@ -271,6 +271,8 @@ public class QueueManagementTest extends DestinationManagementTestBase
          }
          
          conn.close();
+         
+         ServerManagement.invoke(destObjectName, "removeAllMessages", new Object[0], new String[0]);
       }
       finally
       {
@@ -811,12 +813,14 @@ public class QueueManagementTest extends DestinationManagementTestBase
       assertNotNull(html);
       
       assertTrue(html.indexOf("QueueMessageCounter") != -1);
+      
+      ServerManagement.invoke(destObjectName, "removeAllMessages", new Object[0], new String[0]);
                   
       ServerManagement.undeployQueue("QueueMessageCounter");
       
       ServerManagement.invoke(ServerManagement.getServerPeerObjectName(), "disableMessageCounters", null, null);
       
-      conn.close();
+      conn.close();            
    }
    
    public void testConsumersCount() throws Exception

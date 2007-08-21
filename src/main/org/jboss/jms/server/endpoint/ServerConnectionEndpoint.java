@@ -669,57 +669,45 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
       // handling is complete. Each channel then takes copies of the reference if they decide to
       // maintain it internally
       
-      MessageReference ref = null; 
+      MessageReference ref = msg.createReference();
       
-      try
-      {         
-         ref = ms.reference(msg);
-         
-         long schedDeliveryTime = msg.getScheduledDeliveryTime();
-         
-         if (schedDeliveryTime > 0)
+      long schedDeliveryTime = msg.getScheduledDeliveryTime();
+      
+      if (schedDeliveryTime > 0)
+      {
+         ref.setScheduledDeliveryTime(schedDeliveryTime);
+      }
+      
+      if (dest.isDirect())
+      {
+      	//Route directly to queue - temp kludge for clustering
+      	
+      	Binding binding = postOffice.getBindingForQueueName(dest.getName());
+      	
+      	if (binding == null)
+      	{
+      		throw new IllegalArgumentException("Cannot find binding for queue " + dest.getName());
+      	}
+      	
+      	Queue queue = binding.queue;
+      	
+      	Delivery del = queue.handle(null, ref, tx);
+      	
+      	if (del == null)
+      	{
+      		throw new JMSException("Failed to route " + ref + " to " + dest.getName());
+      	}
+      }
+      else if (dest.isQueue())
+      {
+         if (!postOffice.route(ref, new JMSCondition(true, dest.getName()), tx))
          {
-            ref.setScheduledDeliveryTime(schedDeliveryTime);
-         }
-         
-         if (dest.isDirect())
-         {
-         	//Route directly to queue - temp kludge for clustering
-         	
-         	Binding binding = postOffice.getBindingForQueueName(dest.getName());
-         	
-         	if (binding == null)
-         	{
-         		throw new IllegalArgumentException("Cannot find binding for queue " + dest.getName());
-         	}
-         	
-         	Queue queue = binding.queue;
-         	
-         	Delivery del = queue.handle(null, ref, tx);
-         	
-         	if (del == null)
-         	{
-         		throw new JMSException("Failed to route " + ref + " to " + dest.getName());
-         	}
-         }
-         else if (dest.isQueue())
-         {
-            if (!postOffice.route(ref, new JMSCondition(true, dest.getName()), tx))
-            {
-               throw new JMSException("Failed to route " + ref + " to " + dest.getName());
-            }
-         }
-         else
-         {
-            postOffice.route(ref, new JMSCondition(false, dest.getName()), tx);   
+            throw new JMSException("Failed to route " + ref + " to " + dest.getName());
          }
       }
-      finally
+      else
       {
-         if (ref != null)
-         {
-            ref.releaseMemoryReference();
-         }
+         postOffice.route(ref, new JMSCondition(false, dest.getName()), tx);   
       }
          
       if (trace) { log.trace("sent " + msg); }

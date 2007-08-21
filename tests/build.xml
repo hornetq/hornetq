@@ -340,9 +340,8 @@
                     haltonerror="${junit.batchtest.haltonerror}">
             <formatter type="plain" usefile="${junit.formatter.usefile}"/>
             <fileset dir="${build.tests.classes}">
-
-	       <include name="**/messaging/core/**/${test-mask}.class"/>
-	       <include name="**/messaging/jms/**/${test-mask}.class"/>
+	       <include name="**/messaging/core/**/${test-mask}.class"/> 
+	       <include name="**/jms/**/${test-mask}.class"/>
                <include name="**/messaging/util/**/${test-mask}.class"/>
 
                <exclude name="**/jms/MemLeakTest.class"/>
@@ -546,8 +545,10 @@
    <target name="stress-tests" depends="tests-jar, prepare-testdirs, clear-test-logs">
       <antcall target="invm-stress-tests"/>
       <antcall target="remote-stress-tests"/> <!-- default remoting configuration (bisocket) -->
-      <antcall target="clustering-stress-tests"/>
 
+<!--
+      <antcall target="clustering-stress-tests"/>
+-->
       <!-- We DO NOT run the test suite using the HTTP transport - it is not sufficiently stable
       <antcall target="remote-stress-tests">
          <param name="test.remoting" value="http"/>
@@ -588,7 +589,7 @@
                     haltonerror="${junit.batchtest.haltonerror}">
             <formatter type="plain" usefile="${junit.formatter.usefile}"/>
             <fileset dir="${build.tests.classes}">
-               <include name="**/jms/stress/TopicStressTest.class"/>
+               <include name="**/jms/stress/*Test.class"/>
             </fileset>
          </batchtest>
       </junit>

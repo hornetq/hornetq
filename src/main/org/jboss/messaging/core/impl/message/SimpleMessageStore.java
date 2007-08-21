@@ -21,11 +21,8 @@
   */
 package org.jboss.messaging.core.impl.message;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
+import java.util.WeakHashMap;
 
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.contract.Message;
@@ -51,103 +48,47 @@ public class SimpleMessageStore implements MessageStore
    
    // Attributes ----------------------------------------------------
    
-   private boolean trace = log.isTraceEnabled();
- 
-   // <messageID - MessageHolder>
-   private Map messages;
+   private Map<Long, Message> messages;
 
    // Constructors --------------------------------------------------
 
    public SimpleMessageStore()
    {  
-      messages = new HashMap();
+      messages = new WeakHashMap<Long, Message>();
 
       log.debug(this + " initialized");
    }
 
    // MessageStore implementation ---------------------------
-
-   public Object getInstance()
+      
+   public synchronized MessageReference reference(Message m)
    {
-      return this;
-   }
-
-   // TODO If we can assume that the message is not known to the store before
-   // (true when sending messages)
-   // Then we can avoid synchronizing on this and use a ConcurrentHashmap
-   // Which will give us much better concurrency for many threads
-   public MessageReference reference(Message m)
-   {
-      MessageHolder holder;
-      
-      synchronized (this)
-      {         
-         holder = (MessageHolder)messages.get(new Long(m.getMessageID()));
-         
-         if (holder == null)
-         {      
-            holder = addMessage(m);
-         }
-      }
-      holder.incrementInMemoryChannelCount();
-      
-      MessageReference ref = new SimpleMessageReference(holder, this);
-      
-      if (trace) { log.trace(this + " generated " + ref + " for " + m); }
-      
-      return ref;
-   }
-
-   public MessageReference reference(long messageID)
-   {
-      MessageHolder holder;
-      
-      synchronized (this)
-      {
-         holder = (MessageHolder)messages.get(new Long(messageID));         
-      }
-      
-      if (holder == null)
-      {
-         return null;
-      }
-       
-      MessageReference ref = new SimpleMessageReference(holder, this);
-      
-      if (trace) { log.trace(this + " generates " + ref + " for " + messageID); }
-      
-      holder.incrementInMemoryChannelCount();
-      
-      return ref;      
-   }
-   
-
-   public boolean forgetMessage(long messageID)
-   {
-      return messages.remove(new Long(messageID)) != null;
-   }
-   
-   public int size()
-   {
-      return messages.size();
-   }
-   
-   public List messageIds()
-   {
-      return new ArrayList(messages.keySet());
-   }
-   
-   public void dump()
-   {
-   	log.info("*** DUMPING " + this);
-   	Iterator iter = messages.values().iterator();
-   	while (iter.hasNext())
+   	//If already exists, return reference to existing message
+   	
+   	Message message = (Message)messages.get(m.getMessageID());
+   	
+   	if (message == null)
    	{
-   		MessageHolder holder = (MessageHolder)iter.next();
+   		messages.put(m.getMessageID(), m);
    		
-   		log.info(holder.getMessage() + " count: " + holder.getInMemoryChannelCount());
+   		message = m;
    	}
-   	log.info("*** End dump");
+   	
+   	return message.createReference();
+   }
+   
+   public synchronized MessageReference reference(long messageID)
+   {
+   	Message message = (Message)messages.get(messageID);
+   	
+   	if (message == null)
+   	{
+   		return null;
+   	}
+   	else
+   	{
+   		return message.createReference();
+   	}
    }
    
    // MessagingComponent implementation --------------------------------
@@ -172,15 +113,6 @@ public class SimpleMessageStore implements MessageStore
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
-   
-   protected MessageHolder addMessage(Message m)
-   {
-      MessageHolder holder = new MessageHolder(m, this);
-      
-      messages.put(new Long(m.getMessageID()), holder);
-      
-      return holder;
-   }
    
    // Private -------------------------------------------------------
    

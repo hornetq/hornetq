@@ -204,8 +204,7 @@ public class PagingStateTestBase extends MessagingTestCase
          //Wait for them all to arrive first
          
          synchronized (this)
-         {
-         
+         {         
             while (count < numToConsume)
             {
                wait(10000);
