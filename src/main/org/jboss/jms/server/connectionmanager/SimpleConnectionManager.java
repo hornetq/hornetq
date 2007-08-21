@@ -25,10 +25,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.jms.JMSException;
 
@@ -39,9 +39,11 @@ import org.jboss.messaging.core.contract.ClusterNotification;
 import org.jboss.messaging.core.contract.ClusterNotificationListener;
 import org.jboss.messaging.core.contract.Replicator;
 import org.jboss.messaging.util.Util;
+import org.jboss.messaging.util.ConcurrentHashSet;
 import org.jboss.remoting.Client;
 import org.jboss.remoting.ClientDisconnectedException;
 import org.jboss.remoting.ConnectionListener;
+import org.jboss.remoting.callback.ServerInvokerCallbackHandler;
 
 /**
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
@@ -62,14 +64,15 @@ public class SimpleConnectionManager implements ConnectionManager, ConnectionLis
 
    // Attributes -----------------------------------------------------------------------------------
 
-   // Map<jmsClientVMID<String> - Map<remotingClientSessionID<String> - ConnectionEndpoint>>
-   private Map jmsClients;
+   private Map</** VMID */String, Map</** RemoteSessionID */String, ConnectionEndpoint>> jmsClients;
 
    // Map<remotingClientSessionID<String> - jmsClientVMID<String>
    private Map remotingSessions;
 
    // Set<ConnectionEndpoint>
    private Set activeConnectionEndpoints;
+
+   private Map</** CFUniqueName*/ String, ConnectionFactoryCallbackInformation> cfCallbackInfo;
    
    private Replicator replicator;
 
@@ -80,6 +83,7 @@ public class SimpleConnectionManager implements ConnectionManager, ConnectionLis
       jmsClients = new HashMap();
       remotingSessions = new HashMap();
       activeConnectionEndpoints = new HashSet();
+      cfCallbackInfo = new ConcurrentHashMap<String, ConnectionFactoryCallbackInformation>();
    }
 
    // ConnectionManager implementation -------------------------------------------------------------
@@ -88,7 +92,7 @@ public class SimpleConnectionManager implements ConnectionManager, ConnectionLis
                                                String remotingClientSessionID,
                                                ConnectionEndpoint endpoint)
    {    
-      Map endpoints = (Map)jmsClients.get(jmsClientVMID);
+      Map<String, ConnectionEndpoint> endpoints = jmsClients.get(jmsClientVMID);
       
       if (endpoints == null)
       {
@@ -109,11 +113,11 @@ public class SimpleConnectionManager implements ConnectionManager, ConnectionLis
    public synchronized ConnectionEndpoint unregisterConnection(String jmsClientVMId,
                                                                String remotingClientSessionID)
    {
-      Map endpoints = (Map)jmsClients.get(jmsClientVMId);
+      Map<String, ConnectionEndpoint> endpoints = jmsClients.get(jmsClientVMId);
       
       if (endpoints != null)
       {
-         ConnectionEndpoint e = (ConnectionEndpoint)endpoints.remove(remotingClientSessionID);
+         ConnectionEndpoint e = endpoints.remove(remotingClientSessionID);
 
          if (e != null)
          {
@@ -148,7 +152,7 @@ public class SimpleConnectionManager implements ConnectionManager, ConnectionLis
    {
       String jmsClientID = (String)remotingSessions.get(remotingSessionID);
 
-      if (jmsClientID != null)
+      if (jmsClientID == null)
       {
          log.warn(this + " cannot look up remoting session ID " + remotingSessionID);
       }
@@ -191,7 +195,25 @@ public class SimpleConnectionManager implements ConnectionManager, ConnectionLis
          handleClientFailure(remotingSessionID, true);
       }
    }
-   
+
+   /** Synchronized is not really needed.. just to be safe as this is not supposed to be highly contended */
+   public synchronized void addConnectionFactoryCallback(String uniqueName, String JVMID, ServerInvokerCallbackHandler handler)
+   {
+      getCFInfo(uniqueName).addClient(JVMID, handler);
+   }
+
+   /** Synchronized is not really needed.. just to be safe as this is not supposed to be highly contended */
+   public synchronized void removeConnectionFactoryCallback(String uniqueName, String JVMID, ServerInvokerCallbackHandler handler)
+   {
+      getCFInfo(uniqueName).removeHandler(JVMID, handler);
+   }
+
+   /** Synchronized is not really needed.. just to be safe as this is not supposed to be highly contended */
+   public synchronized ServerInvokerCallbackHandler[] getConnectionFactoryCallback(String uniqueName)
+   {
+      return getCFInfo(uniqueName).getAllHandlers();
+   }
+
    // ClusterNotificationListener implementation ---------------------------------------------------
 
 
@@ -292,22 +314,34 @@ public class SimpleConnectionManager implements ConnectionManager, ConnectionLis
    // Protected ------------------------------------------------------------------------------------
 
    // Private --------------------------------------------------------------------------------------
-   
+
+   private ConnectionFactoryCallbackInformation getCFInfo(String uniqueName)
+   {
+      ConnectionFactoryCallbackInformation callback = cfCallbackInfo.get(uniqueName);
+      if (callback == null)
+      {
+         callback = new ConnectionFactoryCallbackInformation(uniqueName);
+         cfCallbackInfo.put(uniqueName, callback);
+         callback = cfCallbackInfo.get(uniqueName);
+      }
+      return callback;
+   }
+
+
    private synchronized void closeConsumersForClientVMID(String jmsClientID)
    {
    	// Remoting only provides one pinger per invoker, not per connection therefore when the pinger
       // dies we must close ALL connections corresponding to that jms client ID.
 
-      Map endpoints = (Map)jmsClients.get(jmsClientID);
+      Map<String, ConnectionEndpoint> endpoints = jmsClients.get(jmsClientID);
 
       if (endpoints != null)
       {
-         List sces = new ArrayList();
+         List<ConnectionEndpoint> sces = new ArrayList();
 
-         for(Iterator i = endpoints.entrySet().iterator(); i.hasNext(); )
+         for(Map.Entry<String, ConnectionEndpoint> entry: endpoints.entrySet())
          {
-            Map.Entry entry = (Map.Entry)i.next();
-            ConnectionEndpoint sce = (ConnectionEndpoint)entry.getValue();
+            ConnectionEndpoint sce = entry.getValue();
             sces.add(sce);
          }
 
@@ -315,13 +349,11 @@ public class SimpleConnectionManager implements ConnectionManager, ConnectionLis
          // to remove the data from the jmsClients and sessions maps.
          // Note we do this outside the loop to prevent ConcurrentModificationException
 
-         for(Iterator i = sces.iterator(); i.hasNext(); )
+         for(ConnectionEndpoint sce: sces )
          {
-            ConnectionEndpoint sce = (ConnectionEndpoint)i.next();
-
             try
             {
-      			log.debug("clearing up state for connection " + sce);
+      			log.debug("clPearing up state for connection " + sce);
                sce.closing();
                sce.close();
                log.debug("cleared up state for connection " + sce);
@@ -332,8 +364,94 @@ public class SimpleConnectionManager implements ConnectionManager, ConnectionLis
             }          
          }
       }
+
+      for (ConnectionFactoryCallbackInformation cfInfo: cfCallbackInfo.values())
+      {
+         ServerInvokerCallbackHandler[] handlers = cfInfo.getAllHandlers(jmsClientID);
+         for (ServerInvokerCallbackHandler handler: handlers)
+         {
+            try
+            {
+               handler.getCallbackClient().disconnect();
+            }
+            catch (Throwable e)
+            {
+               log.warn (e, e);
+            }
+
+            try
+            {
+               handler.destroy();
+            }
+            catch (Throwable e)
+            {
+               log.warn (e, e);
+            }
+
+            cfInfo.removeHandler(jmsClientID, handler);
+         }
+
+      }
+
    }
 
    // Inner classes --------------------------------------------------------------------------------
+
+   /** Class used to organize Callbacks on ClusteredConnectionFactories */
+   static class ConnectionFactoryCallbackInformation
+   {
+
+      // We keep two lists, one containing all clients a CF will have to maintain and another
+      //   organized by JVMId as we will need that organization when cleaning up dead clients
+      String uniqueName;
+      Map</**VMID */ String , /** Active clients*/ConcurrentHashSet<ServerInvokerCallbackHandler>> clientHandlersByVM;
+      ConcurrentHashSet<ServerInvokerCallbackHandler> clientHandlers;
+
+
+      public ConnectionFactoryCallbackInformation(String uniqueName)
+      {
+         this.uniqueName = uniqueName;
+         this.clientHandlersByVM = new ConcurrentHashMap<String, ConcurrentHashSet<ServerInvokerCallbackHandler>>();
+         this.clientHandlers = new ConcurrentHashSet<ServerInvokerCallbackHandler>();
+      }
+
+      public void addClient(String vmID, ServerInvokerCallbackHandler handler)
+      {
+         clientHandlers.add(handler);
+         getHandlersList(vmID).add(handler);
+      }
+
+      public ServerInvokerCallbackHandler[] getAllHandlers(String vmID)
+      {
+         Set<ServerInvokerCallbackHandler> list = getHandlersList(vmID);
+         ServerInvokerCallbackHandler[] array = new ServerInvokerCallbackHandler[list.size()];
+         return (ServerInvokerCallbackHandler[])list.toArray(array);
+      }
+
+      public ServerInvokerCallbackHandler[] getAllHandlers()
+      {
+         ServerInvokerCallbackHandler[] array = new ServerInvokerCallbackHandler[clientHandlers.size()];
+         return (ServerInvokerCallbackHandler[])clientHandlers.toArray(array);
+      }
+
+      public void removeHandler(String vmID, ServerInvokerCallbackHandler handler)
+      {
+         clientHandlers.remove(handler);
+         getHandlersList(vmID).remove(handler);
+      }
+
+      private ConcurrentHashSet<ServerInvokerCallbackHandler> getHandlersList(String vmID)
+      {
+         ConcurrentHashSet<ServerInvokerCallbackHandler> perVMList = clientHandlersByVM.get(vmID);
+         if (perVMList == null)
+         {
+            perVMList = new ConcurrentHashSet<ServerInvokerCallbackHandler>();
+            clientHandlersByVM.put(vmID, perVMList);
+            perVMList = clientHandlersByVM.get(vmID);
+         }
+         return perVMList;
+      }
+
+   }
 
 }

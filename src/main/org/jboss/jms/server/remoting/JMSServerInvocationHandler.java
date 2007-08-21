@@ -31,6 +31,7 @@ import javax.management.MBeanServer;
 import org.jboss.jms.exception.MessagingJMSException;
 import org.jboss.jms.wireformat.ConnectionFactoryCreateConnectionDelegateRequest;
 import org.jboss.jms.wireformat.RequestSupport;
+import org.jboss.jms.wireformat.CallbackRequestSupport;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.util.Util;
 import org.jboss.remoting.InvocationRequest;
@@ -135,31 +136,9 @@ public class JMSServerInvocationHandler implements ServerInvocationHandler
            
          RequestSupport request = (RequestSupport)invocation.getParameter();
          
-         if (request instanceof ConnectionFactoryCreateConnectionDelegateRequest)
+         if (request instanceof CallbackRequestSupport)
          {
-            //Create connection request
-            
-            ConnectionFactoryCreateConnectionDelegateRequest cReq = 
-               (ConnectionFactoryCreateConnectionDelegateRequest)request;
-            
-            String remotingSessionId = cReq.getRemotingSessionID();
-            
-            ServerInvokerCallbackHandler callbackHandler = null;
-            synchronized(callbackHandlers)
-            {
-               callbackHandler = (ServerInvokerCallbackHandler)callbackHandlers.get(remotingSessionId);
-            }
-            if (callbackHandler != null)
-            {
-               log.debug("found calllback handler for remoting session " + Util.guidToString(remotingSessionId));
-               
-               cReq.setCallbackHandler(callbackHandler);
-            }
-            else
-            {
-               throw new IllegalStateException("Cannot find callback handler " +
-                                               "for session id " + remotingSessionId);
-            }
+            performCallbackRequest(request);
          }
       
          return request.serverInvoke();
@@ -238,6 +217,32 @@ public class JMSServerInvocationHandler implements ServerInvocationHandler
    // Protected ------------------------------------------------------------------------------------
    
    // Private --------------------------------------------------------------------------------------
-   
+
+   private void performCallbackRequest(RequestSupport request)
+   {
+      CallbackRequestSupport cReq =
+         (CallbackRequestSupport)request;
+
+      String remotingSessionId = cReq.getRemotingSessionID();
+
+      ServerInvokerCallbackHandler callbackHandler = null;
+      synchronized(callbackHandlers)
+      {
+               callbackHandler = (ServerInvokerCallbackHandler)callbackHandlers.get(remotingSessionId);
+      }
+      if (callbackHandler != null)
+      {
+         log.debug("found calllback handler for remoting session " + Util.guidToString(remotingSessionId));
+
+         cReq.setCallbackHandler(callbackHandler);
+      }
+      else
+      {
+         throw new IllegalStateException("Cannot find callback handler " +
+                                         "for session id " + remotingSessionId);
+      }
+   }
+
+
    // Inner classes --------------------------------------------------------------------------------
 }

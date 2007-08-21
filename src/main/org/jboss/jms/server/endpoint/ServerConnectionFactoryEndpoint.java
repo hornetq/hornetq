@@ -32,6 +32,7 @@ import org.jboss.jms.client.delegate.ClientConnectionDelegate;
 import org.jboss.jms.client.delegate.ClientConnectionFactoryDelegate;
 import org.jboss.jms.delegate.ConnectionFactoryEndpoint;
 import org.jboss.jms.delegate.CreateConnectionResult;
+import org.jboss.jms.delegate.TopologyResult;
 import org.jboss.jms.server.ServerPeer;
 import org.jboss.jms.server.connectionfactory.JNDIBindings;
 import org.jboss.jms.server.endpoint.advised.ConnectionAdvised;
@@ -39,6 +40,7 @@ import org.jboss.jms.wireformat.ConnectionFactoryUpdate;
 import org.jboss.jms.wireformat.Dispatcher;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.util.ExceptionUtil;
+import org.jboss.messaging.util.ConcurrentHashSet;
 import org.jboss.remoting.callback.Callback;
 import org.jboss.remoting.callback.ServerInvokerCallbackHandler;
 import org.jboss.security.SecurityAssociation;
@@ -66,6 +68,8 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
 
    private String clientID;
 
+   private String uniqueName;
+
    private String id;
 
    private JNDIBindings jndiBindings;
@@ -81,14 +85,24 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
    private int dupsOKBatchSize;
    
    private boolean supportsFailover;
+
+   /** Cluster Topology on ClusteredConnectionFactories
+       Information to failover to other connections on clients **/
+   ClientConnectionFactoryDelegate[] delegates;
+
+   /** Cluster Topology on ClusteredConnectionFactories
+       Information to failover to other connections on clients **/
+   Map failoverMap;
+
    
+
    // Constructors ---------------------------------------------------------------------------------
 
    /**
     * @param jndiBindings - names under which the corresponding JBossConnectionFactory is bound in
     *        JNDI.
     */
-   public ServerConnectionFactoryEndpoint(String id, ServerPeer serverPeer,
+   public ServerConnectionFactoryEndpoint(String uniqueName, String id, ServerPeer serverPeer,
                                           String defaultClientID,
                                           JNDIBindings jndiBindings,
                                           int preFetchSize,
@@ -98,6 +112,7 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
                                           int dupsOKBatchSize,
                                           boolean supportsFailover)
    {
+      this.uniqueName = uniqueName;
       this.serverPeer = serverPeer;
       this.clientID = defaultClientID;
       this.id = id;
@@ -263,6 +278,25 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
       }
    }
 
+   public void addCallback(String VMID, String remotingSessionID,
+                           ServerInvokerCallbackHandler callbackHandler) throws JMSException
+   {
+      log.debug("Adding callbackHandler on ConnectionFactory");
+      serverPeer.getConnectionManager().addConnectionFactoryCallback(this.uniqueName, VMID, callbackHandler);
+   }
+
+   public void removeCallback(String VMID, String remotingSessionID,
+                           ServerInvokerCallbackHandler callbackHandler) throws JMSException
+   {
+      log.debug("Removing callbackHandler on ConnectionFactory");
+      serverPeer.getConnectionManager().removeConnectionFactoryCallback(this.uniqueName, VMID, callbackHandler);
+   }
+
+   public TopologyResult getTopology() throws JMSException
+   {
+      return new TopologyResult(uniqueName, delegates, failoverMap);
+   }
+
    // Public ---------------------------------------------------------------------------------------
    
    public String getID()
@@ -289,33 +323,27 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
    public void updateClusteredClients(ClientConnectionFactoryDelegate[] delegates, Map failoverMap)
       throws Exception
    {
-      // TODO Should we lock the CFEndpoint now allowing new connections to come while doing this?
+      updateTopology(delegates, failoverMap);
 
-      List activeConnections = serverPeer.getConnectionManager().getActiveConnections();
+      ServerInvokerCallbackHandler[] clientFactoriesToUpdate = serverPeer.getConnectionManager().getConnectionFactoryCallback(this.uniqueName);
+      log.debug("updateClusteredClients being called!!! clientFactoriesToUpdate.size = " + clientFactoriesToUpdate.length);
 
       ConnectionFactoryUpdate message =
-         new ConnectionFactoryUpdate(delegates, failoverMap);
+         new ConnectionFactoryUpdate(uniqueName, delegates, failoverMap);
 
       Callback callback = new Callback(message);
 
-      for (Iterator i = activeConnections.iterator(); i.hasNext();)
+      for (ServerInvokerCallbackHandler o: clientFactoriesToUpdate)
       {
-         ServerConnectionEndpoint connEndpoint = (ServerConnectionEndpoint)i.next();
-
-         if (connEndpoint.getConnectionFactoryEndpoint() == this)
-         {
-            log.trace(this + " sending cluster view update to " + connEndpoint);
-
-            try
-            {
-               connEndpoint.getCallbackHandler().handleCallbackOneway(callback);
-            }
-            catch (Exception e)
-            {
-               log.error("Callback failed on connection " + connEndpoint, e);
-            }
-         }
+         log.debug("Updating CF on callback " + o);
+         o.handleCallbackOneway(callback);
       }
+   }
+
+   public void updateTopology(ClientConnectionFactoryDelegate[] delegates, Map failoverMap)
+   {
+      this.delegates = delegates;
+      this.failoverMap = failoverMap;
    }
 
    public String toString()

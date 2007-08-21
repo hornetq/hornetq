@@ -39,9 +39,9 @@ import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
  *
  * $Id: ConcurrentReaderHashSet.java 1935 2007-01-09 23:29:20Z clebert.suconic@jboss.com $
  */
-public class ConcurrentHashSet extends AbstractSet
+public class ConcurrentHashSet<E> extends AbstractSet<E>
 {
-   private Map theMap;
+   private Map<E, Object> theMap;
    
    private static Object dummy = new Object();
    
@@ -77,7 +77,7 @@ public class ConcurrentHashSet extends AbstractSet
       return theMap.isEmpty();
    }
    
-   public boolean add(Object o)
+   public boolean add(E o)
    {
       return theMap.put(o, dummy) == dummy;
    }

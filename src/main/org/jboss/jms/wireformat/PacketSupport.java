@@ -77,6 +77,9 @@ public abstract class PacketSupport implements Streamable
    public static final int REQ_CONNECTIONFACTORY_CREATECONNECTIONDELEGATE = 100;
    public static final int REQ_CONNECTIONFACTORY_GETIDBLOCK = 101;
    public static final int REQ_CONNECTIONFACTORY_GETCLIENTAOPSTACK = 102;
+   public static final int REQ_CONNECTIONFACTORY_ADDCALLBACK = 103;
+   public static final int REQ_CONNECTIONFACTORY_REMOVECALLBACK = 104;
+   public static final int REQ_CONNECTIONFACTORY_GETTOPOLOGY = 105;
    
    // Connection
    // ----------
@@ -137,8 +140,9 @@ public abstract class PacketSupport implements Streamable
    public static final int RESP_CONNECTIONFACTORY_CREATECONNECTIONDELEGATE = 100100;   
    public static final int RESP_CONNECTIONFACTORY_GETIDBLOCK = 100101;   
    public static final int RESP_CONNECTIONFACTORY_GETCLIENTAOPSTACK = 100102;
+   public static final int RESP_CONNECTIONFACTORY_GETTOPOLOGY = 100105;
       
-   // Connection 
+   // Connection
    // -------------------------------------
    
    public static final int RESP_CONNECTION_CREATESESSIONDELEGATE = 100200;   
@@ -207,8 +211,17 @@ public abstract class PacketSupport implements Streamable
          case REQ_CONNECTIONFACTORY_GETCLIENTAOPSTACK:
             packet = new ConnectionFactoryGetClientAOPStackRequest();
             break;
-            
-         // Connection   
+         case REQ_CONNECTIONFACTORY_ADDCALLBACK:
+            packet = new ConnectionFactoryAddCallbackRequest();
+            break;
+         case REQ_CONNECTIONFACTORY_REMOVECALLBACK:
+            packet = new ConnectionFactoryRemoveCallbackRequest();
+            break;
+         case REQ_CONNECTIONFACTORY_GETTOPOLOGY:
+            packet = new ConnectionFactoryGetTopologyRequest();
+            break;
+
+         // Connection
          case REQ_CONNECTION_CREATESESSIONDELEGATE:
             packet = new ConnectionCreateSessionDelegateRequest();
             break;
@@ -302,9 +315,12 @@ public abstract class PacketSupport implements Streamable
             break;
          case RESP_CONNECTIONFACTORY_GETCLIENTAOPSTACK:
             packet = new ConnectionFactoryGetClientAOPStackResponse();
-            break;            
+            break;
+         case RESP_CONNECTIONFACTORY_GETTOPOLOGY:
+            packet = new ConnectionFactoryGetTopologyResponse();
+            break;
             
-         // Connection 
+         // Connection
          case RESP_CONNECTION_CREATESESSIONDELEGATE:
             packet = new ConnectionCreateSessionDelegateResponse();
             break;

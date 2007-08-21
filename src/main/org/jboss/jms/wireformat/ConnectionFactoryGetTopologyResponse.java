@@ -24,80 +24,37 @@ package org.jboss.jms.wireformat;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
-import java.util.Map;
-
-import org.jboss.jms.client.delegate.ClientConnectionFactoryDelegate;
 import org.jboss.jms.delegate.TopologyResult;
 
 /**
- * This class holds the update cluster view sent by the server to client-side clustered connection
- * factories.
- *
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- * @author <a href="mailto:tim.fox@jboss.org">Tim Fox</a>
  * @version <tt>$Revision$</tt>
- *
- * $Id$
+ *          $Id$
  */
-public class ConnectionFactoryUpdate extends CallbackSupport
+public class ConnectionFactoryGetTopologyResponse extends ResponseSupport
 {
 
    // Constants ------------------------------------------------------------------------------------
 
    // Attributes -----------------------------------------------------------------------------------
 
-   TopologyResult topology;
+   TopologyResult result;
 
    // Static ---------------------------------------------------------------------------------------
 
    // Constructors ---------------------------------------------------------------------------------
 
-   public ConnectionFactoryUpdate(String uniqueName, ClientConnectionFactoryDelegate[] delegates,
-                                  Map failoverMap)
+   public ConnectionFactoryGetTopologyResponse(TopologyResult result)
    {
-      super(PacketSupport.CONNECTIONFACTORY_UPDATE);
-
-      topology = new TopologyResult(uniqueName, delegates, failoverMap);
+      super(RESP_CONNECTIONFACTORY_GETTOPOLOGY);
+      this.result = result;
    }
-   
-   public ConnectionFactoryUpdate()
-   {      
+
+   public ConnectionFactoryGetTopologyResponse()
+   {
    }
 
    // Public ---------------------------------------------------------------------------------------
-
-   public String toString()
-   {
-      return "ConnectionFactoryUpdateMessage{" + topology + "}";
-   }
-
-   public TopologyResult getTopology()
-   {
-      return topology;
-   }
-
-   public void setTopology(TopologyResult topology)
-   {
-      this.topology = topology;
-   }
-
-   // Streamable implementation
-   // ---------------------------------------------------------------     
-
-   public void read(DataInputStream is) throws Exception
-   {
-      topology = new TopologyResult();
-      topology.read(is);
-   }
-
-   public void write(DataOutputStream os) throws Exception
-   {
-      super.write(os);
-
-      topology.write(os);
-
-      os.flush();
-   }
 
    // Package protected ----------------------------------------------------------------------------
 
@@ -107,4 +64,22 @@ public class ConnectionFactoryUpdate extends CallbackSupport
 
    // Inner classes --------------------------------------------------------------------------------
 
+   public void read(DataInputStream is) throws Exception
+   {
+      result = new TopologyResult();
+      result.read(is);
+   }
+
+
+   public void write(DataOutputStream os) throws Exception
+   {
+      super.write(os);
+      result.write(os);
+      os.flush();
+   }
+
+   public Object getResponse()
+   {
+      return result;
+   }
 }

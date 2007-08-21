@@ -33,6 +33,7 @@ import org.jboss.jms.client.container.JMSClientVMIdentifier;
 import org.jboss.jms.client.remoting.JMSRemotingConnection;
 import org.jboss.jms.delegate.ConnectionFactoryDelegate;
 import org.jboss.jms.delegate.CreateConnectionResult;
+import org.jboss.jms.delegate.TopologyResult;
 import org.jboss.jms.exception.MessagingNetworkFailureException;
 import org.jboss.jms.server.ServerPeer;
 import org.jboss.jms.wireformat.ConnectionFactoryCreateConnectionDelegateRequest;
@@ -63,6 +64,9 @@ public class ClientConnectionFactoryDelegate
    // Attributes -----------------------------------------------------------------------------------
 
    //This data is needed in order to create a connection
+
+   private String uniqueName;
+
    private String serverLocatorURI;
 
    private Version serverVersion;
@@ -99,11 +103,12 @@ public class ClientConnectionFactoryDelegate
 
    // Constructors ---------------------------------------------------------------------------------
 
-   public ClientConnectionFactoryDelegate(String objectID, int serverID, String serverLocatorURI,
+   public ClientConnectionFactoryDelegate(String uniqueName, String objectID, int serverID, String serverLocatorURI,
                                           Version serverVersion, boolean clientPing)
    {
       super(objectID);
-      
+
+      this.uniqueName = uniqueName;
       this.serverID = serverID;
       this.serverLocatorURI = serverLocatorURI;
       this.serverVersion = serverVersion;
@@ -115,7 +120,7 @@ public class ClientConnectionFactoryDelegate
    }
 
    // ConnectionFactoryDelegate implementation -----------------------------------------------------
- 
+
    public CreateConnectionResult createConnectionDelegate(String username,
                                                           String password,
                                                           int failedNodeID)
@@ -186,8 +191,6 @@ public class ClientConnectionFactoryDelegate
          connectionDelegate.setRemotingConnection(remotingConnection);
          
          connectionDelegate.setVersionToUse(version);
-
-         remotingConnection.getCallbackManager().setConnectionDelegate(connectionDelegate);
       }
       else
       {
@@ -226,7 +229,12 @@ public class ClientConnectionFactoryDelegate
       
       return (byte[])doInvoke(theClient, req); 
    }
-      
+
+   public TopologyResult getTopology() throws JMSException
+   {
+      throw new IllegalStateException("This invocation should not be handled here!");
+   }
+
    // Public ---------------------------------------------------------------------------------------
 
    public String toString()

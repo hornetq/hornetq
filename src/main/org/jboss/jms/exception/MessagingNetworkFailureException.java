@@ -34,7 +34,7 @@ public class MessagingNetworkFailureException extends MessagingJMSException
 {
    private static final long serialVersionUID = 1255764532063281353L;
 
-   public MessagingNetworkFailureException(Exception cause)
+   public MessagingNetworkFailureException(Throwable cause)
    {
       super(cause);
    }

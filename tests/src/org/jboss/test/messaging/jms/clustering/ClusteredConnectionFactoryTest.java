@@ -25,8 +25,12 @@ package org.jboss.test.messaging.jms.clustering;
 import javax.jms.Connection;
 
 import org.jboss.jms.client.JBossConnectionFactory;
+import org.jboss.jms.client.delegate.ClientConnectionFactoryDelegate;
+import org.jboss.jms.client.delegate.ClientClusteredConnectionFactoryDelegate;
 import org.jboss.jms.exception.MessagingNetworkFailureException;
 import org.jboss.test.messaging.tools.ServerManagement;
+import org.jboss.test.messaging.tools.container.ServiceAttributeOverrides;
+import org.jboss.test.messaging.tools.container.ServiceContainer;
 import org.jboss.test.messaging.tools.aop.PoisonInterceptor;
 
 /**
@@ -169,6 +173,45 @@ public class ClusteredConnectionFactoryTest extends ClusteringTestBase
             conn.close();
          }
       }
+   }
+
+   public void testRestartServer() throws Exception
+   {
+      JBossConnectionFactory cf2 = (JBossConnectionFactory) ic[1].lookup("/ConnectionFactory");
+
+      ClientClusteredConnectionFactoryDelegate clusterCF = (ClientClusteredConnectionFactoryDelegate)cf.getDelegate();
+      ClientConnectionFactoryDelegate delegates[] = clusterCF.getDelegates();
+      clusterCF.closeCallback();
+
+      ServerManagement.kill(1);
+
+      //Restart the server on the same place
+      ServiceAttributeOverrides attr = new ServiceAttributeOverrides();
+      attr.put(ServiceContainer.REMOTING_OBJECT_NAME, "LocatorURI",delegates[1].getServerLocatorURI());
+      ServerManagement.start(1,config,attr,false);
+
+      // The server back on the same remoting port as before
+      startDefaultServer(1, attr, false);
+
+      Connection conn = null;
+      try
+      {
+         conn = cf2.createConnection();
+      }
+      finally
+      {
+         try
+         {
+            if (conn != null)
+            {
+               conn.close();
+            }
+         }
+         catch (Throwable ignored)
+         {
+         }
+      }
+      
    }
 
    // Package protected ----------------------------------------------------------------------------

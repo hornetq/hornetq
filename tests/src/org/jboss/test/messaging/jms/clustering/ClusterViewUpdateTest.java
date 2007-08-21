@@ -24,12 +24,19 @@ package org.jboss.test.messaging.jms.clustering;
 
 import javax.jms.Connection;
 import javax.jms.Session;
+import javax.jms.MessageProducer;
+import javax.jms.MessageConsumer;
+import javax.jms.TextMessage;
 
 import org.jboss.jms.client.JBossConnectionFactory;
+import org.jboss.jms.client.container.ClusteringAspect;
+import org.jboss.jms.client.remoting.ConnectionFactoryCallbackHandler;
 import org.jboss.jms.client.delegate.ClientClusteredConnectionFactoryDelegate;
 import org.jboss.jms.client.delegate.ClientConnectionFactoryDelegate;
 import org.jboss.jms.client.state.ConnectionState;
+import org.jboss.jms.delegate.TopologyResult;
 import org.jboss.test.messaging.tools.ServerManagement;
+import java.lang.ref.WeakReference;
 
 /**
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
@@ -61,46 +68,222 @@ public class ClusterViewUpdateTest extends ClusteringTestBase
    	
    	super.setUp();
    }
-      
+
+   /** This method is to make sure CFs are being released on GC, validating if the callbacks
+    *  are not making any hard references */
+   public void testUpdateTopology() throws Throwable
+   {
+
+      JBossConnectionFactory cf = (JBossConnectionFactory)ic[0].lookup("/ClusteredConnectionFactory");
+      ClientClusteredConnectionFactoryDelegate clusterDelegate = (ClientClusteredConnectionFactoryDelegate)cf.getDelegate();
+      assertEquals(2, clusterDelegate.getDelegates().length);
+      clusterDelegate.getTopology();
+      assertEquals(2, clusterDelegate.getDelegates().length);
+
+      // Kill the same node as the CF is connected to
+      for (int i=5;i>0;i--)
+      {
+         log.info("kill in " + i);
+         Thread.sleep(1000);
+      }
+      ServerManagement.kill(1);
+      Thread.sleep(5000);
+      assertEquals(1, clusterDelegate.getDelegates().length);
+      TopologyResult topology = clusterDelegate.getTopology();
+      assertEquals(1, topology.getDelegates().length);
+
+      clusterDelegate.closeCallback();
+   }
+
+
+   /** This method is to make sure CFs are being released on GC, validating if the callbacks
+    *  are not making any hard references.
+    *
+    * Note: Even though this test is looking for memory leaks, it's important this test
+    *       runs as part of the validation of ConnectionFactory updates, as a leak on CF would
+    *       cause problems with excessive number of connections.
+    *  */
+  public void testGarbageCollectionOnClusteredCF() throws Throwable
+   {
+
+      JBossConnectionFactory cf = (JBossConnectionFactory)ic[0].lookup("/ClusteredConnectionFactory");
+      ClientClusteredConnectionFactoryDelegate clusterDelegate = (ClientClusteredConnectionFactoryDelegate)cf.getDelegate();
+      WeakReference<ClientClusteredConnectionFactoryDelegate> ref = new WeakReference<ClientClusteredConnectionFactoryDelegate>(clusterDelegate);
+
+      // Using a separate block, as everything on this block has to be released (no references from the method)
+      {
+         Connection conn = cf.createConnection();
+         conn.start();
+         Session session = conn.createSession(true, Session.SESSION_TRANSACTED);
+         MessageProducer prod = session.createProducer(queue[0]);
+         MessageConsumer cons = session.createConsumer(queue[0]);
+         prod.send(session.createTextMessage("Hello"));
+         session.commit();
+         TextMessage message = (TextMessage)cons.receive(1000);
+         assertEquals("Hello", message.getText());
+         log.info("Received message " + message.getText());
+         session.commit();
+         conn.close();
+      }
+
+
+      // cf = null;
+      clusterDelegate = null;
+
+      int loops = 0;
+      // Stays on loop until GC is done
+      while (ref.get()!=null)
+      {
+         for (int i=0;i<10000;i++)
+         {
+            /// Just throwing extra garbage on the memory.. to make sure GC will happen
+            
+            String str = "GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE " + i;
+         }
+
+         log.info("Calling system.gc()");
+         System.gc();
+         Thread.sleep(1000);
+         if (loops++ > 10)
+         {
+            // This should be more than enough already... even the object wasn't cleared on more than
+            // 2 GC cycles we have a leak already.
+
+            // Note! Due to AOP references the CFDelegate will be released from AOP instances
+            //       only after 2 or more GC cycles.
+            break;
+         }
+      }
+
+        // Case there are still references to the ConnectionFactory, uncomment this code,
+        //  add -agentlib:jbossAgent to your JVM arguments (with jboss-profiler lib on path or LD_LIBRARY_PATH)
+        //  and this will tell you where the code is leaking.
+//      org.jboss.profiler.jvmti.JVMTIInterface jvmti = new org.jboss.profiler.jvmti.JVMTIInterface();
+//
+//
+//      if (ref.get() != null)
+//      {
+//         if (jvmti.isActive())
+//         {
+//            log.info("There are still references to CF");
+//            HashMap refMap = jvmti.createIndexMatrix();
+//            log.info(jvmti.exploreObjectReferences(refMap, ref.get(), 5, true));
+//         }
+//         else
+//         {
+//            log.info("Profiler is not active");
+//         }
+//      }
+//
+      assertNull("There is a memory leak on ClientClusteredConnectionFactoryDelegate", ref.get());
+   }
+   
    public void testUpdateConnectionFactoryWithNoConnections() throws Exception
    {
-   	ServerManagement.kill(1);
+
+      ServerManagement.kill(1);
    	
    	Thread.sleep(5000);
    	
    	Connection conn = createConnectionOnServer(cf, 0);
-   	
-   	ClientClusteredConnectionFactoryDelegate cfDelegate =
-         (ClientClusteredConnectionFactoryDelegate)cf.getDelegate();
+      try
+      {
 
-      assertEquals(1, cfDelegate.getDelegates().length);
-   	
-   	conn.close();
+         ClientClusteredConnectionFactoryDelegate cfDelegate =
+            (ClientClusteredConnectionFactoryDelegate)cf.getDelegate();
+
+         assertEquals(1, cfDelegate.getDelegates().length);
+      }
+      finally
+      {
+         conn.close();
+      }
    }
    
    public void testUpdateConnectionFactoryWithNoInitialConnections() throws Exception
    {
-   	//We kill all the servers - this tests the connection factory's ability to create a first connection
-   	//when its entire cached set of delegates is stale
-   	
-   	ServerManagement.kill(1);
-   	
-   	ServerManagement.kill(0);
-   	
-   	ServerManagement.start(0, "all", false);      
-   	
-   	Thread.sleep(5000);
-   	
-   	Connection conn = createConnectionOnServer(cf, 0);
-   	
-   	ClientClusteredConnectionFactoryDelegate cfDelegate =
-         (ClientClusteredConnectionFactoryDelegate)cf.getDelegate();
+      try
+      {
+         ClientClusteredConnectionFactoryDelegate clusterDelegate = (ClientClusteredConnectionFactoryDelegate)this.cf.getDelegate();
 
-      assertEquals(1, cfDelegate.getDelegates().length);
-   	
-   	conn.close();
-   	
-   	ServerManagement.kill(0);
+         //JBossConnectionFactory cf2 = (JBossConnectionFactory)ic[0].lookup("/ClusteredConnectionFactory");
+         //ClientClusteredConnectionFactoryDelegate clusterDelegate2 = (ClientClusteredConnectionFactoryDelegate)cf2.getDelegate();
+
+         //We kill all the servers - this tests the connection factory's ability to create a first connection
+         //when its entire cached set of delegates is stale
+
+         startDefaultServer(2, currentOverrides, false);
+
+         assertEquals(3, clusterDelegate.getDelegates().length);
+
+         // assertEquals(3, clusterDelegate2.getDelegates().length);
+         log.info("#################################### Killing server 1 and 0");
+         ServerManagement.log(ServerManagement.INFO, "Killing server1", 2);
+         ServerManagement.kill(1);
+         // Need some time for Lease 
+         Thread.sleep(5000);
+
+         assertEquals("Delegates are different on topology", 2,clusterDelegate.getTopology().getDelegates().length);
+         assertEquals(2, clusterDelegate.getDelegates().length);
+
+         ServerManagement.log(ServerManagement.INFO, "Stopping server0", 2);
+         ServerManagement.stop(0);
+
+         Thread.sleep(1000);
+
+         assertEquals(1, clusterDelegate.getDelegates().length);
+
+         Connection conn = createConnectionOnServer(cf, 2);
+
+         ClientClusteredConnectionFactoryDelegate cfDelegate =
+            (ClientClusteredConnectionFactoryDelegate)cf.getDelegate();
+
+         assertEquals(1, cfDelegate.getDelegates().length);
+
+         conn.close();
+      }
+      finally
+      {
+         ServerManagement.kill(2);
+      }
+   }
+
+
+   /** Case the updateCF is not captured, the hopping should run nicely.
+    *  This test will disable CF callback for a connection and validate if hoping is working*/
+   public void testNoUpdateCaptured() throws Exception
+   {
+      JBossConnectionFactory cfNoCallback = (JBossConnectionFactory)ic[0].lookup("/ClusteredConnectionFactory");
+      ClientClusteredConnectionFactoryDelegate noCallbackDelegate =  (ClientClusteredConnectionFactoryDelegate )cfNoCallback.getDelegate();
+      noCallbackDelegate.closeCallback();
+
+      ServerManagement.kill(1);
+
+      Connection conn = null;
+
+      for (int i=0; i<4; i++)
+      {
+         try
+         {
+            conn = cfNoCallback.createConnection();
+            // 0 is the only server alive, so.. all connection should be performed on it
+            assertEquals(0, getServerId(conn));
+         }
+         finally
+         {
+            try
+            {
+               if (conn != null)
+               {
+                  conn.close();
+               }
+            }
+            catch (Throwable ignored)
+            {
+            }
+         }
+      }
+
    }
    
    public void testUpdateConnectionFactoryOnKill() throws Exception

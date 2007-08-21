@@ -95,6 +95,10 @@ import org.jboss.jms.wireformat.SessionDeleteTemporaryDestinationRequest;
 import org.jboss.jms.wireformat.SessionRecoverDeliveriesRequest;
 import org.jboss.jms.wireformat.SessionSendRequest;
 import org.jboss.jms.wireformat.SessionUnsubscribeRequest;
+import org.jboss.jms.wireformat.ConnectionFactoryAddCallbackRequest;
+import org.jboss.jms.wireformat.ConnectionFactoryGetTopologyRequest;
+import org.jboss.jms.wireformat.ConnectionFactoryGetTopologyResponse;
+import org.jboss.jms.wireformat.ConnectionFactoryRemoveCallbackRequest;
 import org.jboss.remoting.InvocationRequest;
 
 /**
@@ -149,6 +153,11 @@ public class WireFormatTest extends JMSTestCase
    public void testConnectionFactoryGetClientAOPStack() throws Exception
    {                         
       wf.testConnectionFactoryGetClientAOPStack();
+   }
+
+   public void testConnectionFactoryGetTopology() throws Exception
+   {
+      wf.testConnectionFactoryGetTopology();
    }
    
    // Connection
@@ -309,7 +318,17 @@ public class WireFormatTest extends JMSTestCase
    {                        
       wf.testConnectionFactoryGetClientAOPStackResponse();
    }
-   
+
+   public void testConnectionFactoryAddCabllack() throws Exception
+   {
+      wf.testConnectionFactoryAddCabllack();
+   }
+
+   public void testConnectionFactoryRemoveCabllack() throws Exception
+   {
+      wf.testConnectionFactoryRemoveCabllack();
+   }
+
    // Connection
    
    public void testConnectionCreateSessionDelegateResponse() throws Exception
@@ -378,8 +397,8 @@ public class WireFormatTest extends JMSTestCase
    {                 
       wf.testClosingResponse();
    }
-   
-   
+
+
    //We just check the first byte to make sure serialization is not be used.
    
    private class TestWireFormat extends JMSWireFormat
@@ -452,10 +471,34 @@ public class WireFormatTest extends JMSTestCase
       {
          RequestSupport req =
             new ConnectionFactoryGetClientAOPStackRequest("23", (byte)77);;
-                 
-         testPacket(req, PacketSupport.REQ_CONNECTIONFACTORY_GETCLIENTAOPSTACK);                           
+
+         testPacket(req, PacketSupport.REQ_CONNECTIONFACTORY_GETCLIENTAOPSTACK);
       }
-      
+
+      public void testConnectionFactoryAddCabllack() throws Exception
+      {
+         RequestSupport req =
+            new ConnectionFactoryAddCallbackRequest("12", "23", "24",(byte)0);
+
+         testPacket(req, PacketSupport.REQ_CONNECTIONFACTORY_ADDCALLBACK);
+      }
+
+      public void testConnectionFactoryRemoveCabllack() throws Exception
+      {
+         RequestSupport req =
+            new ConnectionFactoryRemoveCallbackRequest("12", "23", "24",(byte)0);
+
+         testPacket(req, PacketSupport.REQ_CONNECTIONFACTORY_REMOVECALLBACK);
+      }
+
+      public void testConnectionFactoryGetTopology() throws Exception
+      {
+         RequestSupport req =
+            new ConnectionFactoryGetTopologyRequest("123");
+
+         testPacket(req, PacketSupport.REQ_CONNECTIONFACTORY_GETTOPOLOGY);
+      }
+
       // Connection
       
       public void testConnectionCreateSessionDelegateRequest() throws Exception

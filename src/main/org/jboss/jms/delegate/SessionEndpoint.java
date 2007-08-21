@@ -43,18 +43,10 @@ import org.jboss.jms.message.JBossMessage;
  */
 public interface SessionEndpoint extends Closeable
 {
-   /**
-    * @param failoverChannelID - the ID of the channel for which there is a failover process in
-    *        progress. -1 means regular (non-failover) consumer delegate creation.
-    */
    ConsumerDelegate createConsumerDelegate(JBossDestination destination, String selector,
                                            boolean noLocal, String subscriptionName,
                                            boolean connectionConsumer, boolean autoFlowControl) throws JMSException;
    
-   /**
-    * @param failoverChannelID - the ID of the channel for which there is a failover process in
-    *        progress. -1 means regular (non-failover) browser delegate creation.
-    */
    BrowserDelegate createBrowserDelegate(JBossDestination queue, String messageSelector) throws JMSException;
 
    /**

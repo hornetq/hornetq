@@ -46,7 +46,7 @@ public class MessagingJMSException extends JMSException
      this(reason, null, null);
    }
 
-   public MessagingJMSException(Exception cause) {
+   public MessagingJMSException(Throwable cause) {
      this(null, null, cause);
    }
 

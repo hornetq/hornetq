@@ -27,11 +27,20 @@ import java.util.Map;
 import javax.jms.JMSException;
 
 import org.jboss.jms.client.plugin.LoadBalancingPolicy;
+import org.jboss.jms.client.remoting.JMSRemotingConnection;
+import org.jboss.jms.client.remoting.ConnectionFactoryCallbackHandler;
+import org.jboss.jms.client.container.JMSClientVMIdentifier;
 import org.jboss.jms.delegate.ConnectionFactoryDelegate;
 import org.jboss.jms.delegate.CreateConnectionResult;
 import org.jboss.jms.delegate.IDBlock;
+import org.jboss.jms.delegate.TopologyResult;
 import org.jboss.jms.exception.MessagingNetworkFailureException;
+import org.jboss.jms.wireformat.ConnectionFactoryAddCallbackRequest;
+import org.jboss.jms.wireformat.ConnectionFactoryGetTopologyRequest;
+import org.jboss.jms.wireformat.ConnectionFactoryGetTopologyResponse;
+import org.jboss.jms.wireformat.ConnectionFactoryRemoveCallbackRequest;
 import org.jboss.logging.Logger;
+import org.jboss.messaging.util.Version;
 
 /**
  * A ClientClusteredConnectionFactoryDelegate.
@@ -48,7 +57,7 @@ import org.jboss.logging.Logger;
  *
  * $Id$
  */
-public class ClientClusteredConnectionFactoryDelegate
+public class ClientClusteredConnectionFactoryDelegate extends DelegateSupport
    implements Serializable, ConnectionFactoryDelegate
 {
    // Constants ------------------------------------------------------------------------------------
@@ -57,10 +66,125 @@ public class ClientClusteredConnectionFactoryDelegate
 
    private static final Logger log =
       Logger.getLogger(ClientClusteredConnectionFactoryDelegate.class);
+   private static boolean trace = log.isTraceEnabled();
 
+   // Serialization and CallbackHandler code -------------------------------------------------------
+
+   private transient JMSRemotingConnection remoting;
+   private transient ClientConnectionFactoryDelegate currentDelegate;
+
+   private void readObject(java.io.ObjectInputStream s)
+        throws java.io.IOException, ClassNotFoundException
+   {
+      s.defaultReadObject();
+      establishCallback();
+   }
+
+   public synchronized void establishCallback()
+   {
+
+      log.debug(" Establishing CFCallback\n");
+
+      for (int server = delegates.length - 1; server >= 0; server--)
+      {
+         if (trace) log.trace("Closing current callback");
+         closeCallback();
+
+         if (trace) log.trace("Trying communication on server(" + server + ")=" + delegates[server].getServerLocatorURI());
+         try
+         {
+            remoting = new JMSRemotingConnection(delegates[server].getServerLocatorURI(), true);
+            remoting.start();
+            currentDelegate = delegates[server];
+            if (trace) log.trace("Adding callback");
+            addCallback(delegates[server]);
+            if (trace) log.trace("Getting topology");
+            TopologyResult topology = getTopology();
+            if (trace) log.trace("delegates.size = " + topology.getDelegates().length);
+
+            break;
+         }
+         catch (Throwable e)
+         {
+            log.warn("Server communication to server[" + server + "] (" +
+               delegates[server].getServerLocatorURI() + ") during establishCallback was broken, " +
+               "trying the next one", e);
+            if (remoting != null)
+            {
+               remoting.stop();
+               remoting = null;
+               currentDelegate = null;
+            }
+         }
+      }
+   }
+
+   private void addCallback(ClientConnectionFactoryDelegate delegate) throws Throwable
+   {
+      remoting.getCallbackManager().setConnectionfactoryCallbackHandler(new ConnectionFactoryCallbackHandler(this, remoting));
+
+      ConnectionFactoryAddCallbackRequest request =
+         new ConnectionFactoryAddCallbackRequest (JMSClientVMIdentifier.instance,
+               remoting.getRemotingClient().getSessionId(),
+               delegate.getID(),
+               Version.instance().getProviderIncrementingVersion());
+
+      remoting.getRemotingClient().invoke(request, null);
+
+   }
+
+   private void removeCallback() throws Throwable
+   {
+      ConnectionFactoryRemoveCallbackRequest request =
+         new ConnectionFactoryRemoveCallbackRequest (JMSClientVMIdentifier.instance,
+               remoting.getRemotingClient().getSessionId(),
+               currentDelegate.getID(),
+               Version.instance().getProviderIncrementingVersion());
+
+      remoting.getRemotingClient().invoke(request, null);
+   }
+
+   protected void finalize() throws Throwable
+   {
+      super.finalize();
+      closeCallback();
+
+   }
+
+   public void closeCallback()
+   {
+      if (remoting != null)
+      {
+         try
+         {
+            removeCallback();
+         }
+         catch (Throwable warn)
+         {
+            log.warn(warn, warn);
+         }
+
+         try
+         {
+            remoting.removeConnectionListener();
+            remoting.stop();
+            currentDelegate = null;
+         }
+         catch (Throwable ignored)
+         {
+         }
+
+         remoting = null;
+      }
+   }
+   // Serialization and CallbackHandler code -------------------------------------------------------
+
+   
    // Static ---------------------------------------------------------------------------------------
 
    // Attributes -----------------------------------------------------------------------------------
+
+   private String uniqueName;
 
    private ClientConnectionFactoryDelegate[] delegates;
 
@@ -75,11 +199,13 @@ public class ClientClusteredConnectionFactoryDelegate
 
    // Constructors ---------------------------------------------------------------------------------
 
-   public ClientClusteredConnectionFactoryDelegate(ClientConnectionFactoryDelegate[] delegates,
+   public ClientClusteredConnectionFactoryDelegate(String uniqueName,
+                                                   ClientConnectionFactoryDelegate[] delegates,
                                                    Map failoverMap,
                                                    LoadBalancingPolicy loadBalancingPolicy,
                                                    boolean supportsFailover)
    {
+      this.uniqueName = uniqueName;
       this.delegates = delegates;
       this.failoverMap = failoverMap;
       this.loadBalancingPolicy = loadBalancingPolicy;
@@ -167,7 +293,36 @@ public class ClientClusteredConnectionFactoryDelegate
    {
    	return supportsFailover;
    }
-   
+
+   public String getUniqueName()
+   {
+      return uniqueName;
+   }
+
+
+   public TopologyResult getTopology() throws JMSException
+   {
+
+      try
+      {
+         ConnectionFactoryGetTopologyRequest request =
+            new ConnectionFactoryGetTopologyRequest(currentDelegate.getID());
+
+         ConnectionFactoryGetTopologyResponse response = (ConnectionFactoryGetTopologyResponse)remoting.getRemotingClient().invoke(request, null);
+
+
+         TopologyResult topology = (TopologyResult)response.getResponse();
+
+         updateFailoverInfo(topology.getDelegates(), topology.getFailoverMap());
+
+         return topology;
+      }
+      catch (Throwable e)
+      {
+         throw handleThrowable(e);
+      }
+   }
+
    //Only used in testing
    public void setSupportsFailover(boolean failover)
    {
@@ -186,10 +341,7 @@ public class ClientClusteredConnectionFactoryDelegate
       
       failoverMap.putAll(newFailoverMap);
 
-      if (supportsLoadBalancing)
-      {
-      	loadBalancingPolicy.updateView(delegates);
-      }
+      loadBalancingPolicy.updateView(delegates);
    }
 
    public String toString()

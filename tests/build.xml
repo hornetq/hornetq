@@ -189,8 +189,8 @@
       <mkdir dir="${build.tests.classes}"/>
       <javac destdir="${build.tests.classes}"
              optimize="${javac.optimize}"
-             target="1.4"
-             source="1.4"
+             target="1.5"
+             source="1.5"
              debug="${javac.debug}"
              depend="${javac.depend}"
              verbose="${javac.verbose}"
@@ -758,7 +758,6 @@
             <fileset dir="${build.tests.classes}">
               <include name="**/jms/clustering/${test-mask}.class"/>
               <exclude name="**/jms/clustering/ClusterLeakTest.class"/>
-              <exclude name="**/jms/clustering/ClusterViewUpdateTest.class"/>
            </fileset>
          </batchtest>
       </junit>

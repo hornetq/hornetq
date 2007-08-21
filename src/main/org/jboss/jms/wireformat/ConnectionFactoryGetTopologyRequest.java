@@ -22,81 +22,61 @@
 
 package org.jboss.jms.wireformat;
 
-import java.io.DataInputStream;
 import java.io.DataOutputStream;
-import java.util.Map;
-
-import org.jboss.jms.client.delegate.ClientConnectionFactoryDelegate;
-import org.jboss.jms.delegate.TopologyResult;
+import java.io.DataInputStream;
+import org.jboss.messaging.util.Version;
+import org.jboss.jms.delegate.ConnectionFactoryEndpoint;
 
 /**
- * This class holds the update cluster view sent by the server to client-side clustered connection
- * factories.
- *
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- * @author <a href="mailto:tim.fox@jboss.org">Tim Fox</a>
  * @version <tt>$Revision$</tt>
- *
- * $Id$
+ *          $Id$
  */
-public class ConnectionFactoryUpdate extends CallbackSupport
+public class ConnectionFactoryGetTopologyRequest extends RequestSupport
 {
 
    // Constants ------------------------------------------------------------------------------------
 
    // Attributes -----------------------------------------------------------------------------------
 
-   TopologyResult topology;
-
    // Static ---------------------------------------------------------------------------------------
 
    // Constructors ---------------------------------------------------------------------------------
 
-   public ConnectionFactoryUpdate(String uniqueName, ClientConnectionFactoryDelegate[] delegates,
-                                  Map failoverMap)
+   public ConnectionFactoryGetTopologyRequest()
    {
-      super(PacketSupport.CONNECTIONFACTORY_UPDATE);
-
-      topology = new TopologyResult(uniqueName, delegates, failoverMap);
    }
-   
-   public ConnectionFactoryUpdate()
-   {      
+
+   public ConnectionFactoryGetTopologyRequest(String objectId)
+   {
+      super(objectId, REQ_CONNECTIONFACTORY_GETTOPOLOGY, Version.instance().getProviderIncrementingVersion());
    }
 
    // Public ---------------------------------------------------------------------------------------
 
-   public String toString()
-   {
-      return "ConnectionFactoryUpdateMessage{" + topology + "}";
-   }
-
-   public TopologyResult getTopology()
-   {
-      return topology;
-   }
-
-   public void setTopology(TopologyResult topology)
-   {
-      this.topology = topology;
-   }
-
-   // Streamable implementation
-   // ---------------------------------------------------------------     
-
-   public void read(DataInputStream is) throws Exception
-   {
-      topology = new TopologyResult();
-      topology.read(is);
-   }
 
    public void write(DataOutputStream os) throws Exception
    {
       super.write(os);
-
-      topology.write(os);
-
       os.flush();
+   }
+
+   public void read(DataInputStream is) throws Exception
+   {
+      super.read(is);
+   }
+
+   public ResponseSupport serverInvoke() throws Exception
+   {
+      ConnectionFactoryEndpoint endpoint =
+         (ConnectionFactoryEndpoint)Dispatcher.instance.getTarget(objectId);
+
+      if (endpoint == null)
+      {
+         throw new IllegalStateException("Cannot find object with ID " + objectId + " in dispatcher");
+      }
+
+      return new ConnectionFactoryGetTopologyResponse(endpoint.getTopology());
    }
 
    // Package protected ----------------------------------------------------------------------------

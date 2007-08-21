@@ -23,10 +23,11 @@
 package org.jboss.jms.client.remoting;
 
 import org.jboss.jms.client.delegate.ClientClusteredConnectionFactoryDelegate;
-import org.jboss.jms.client.delegate.ClientConnectionDelegate;
-import org.jboss.jms.client.state.ConnectionState;
 import org.jboss.jms.wireformat.ConnectionFactoryUpdate;
 import org.jboss.logging.Logger;
+import org.jboss.remoting.ConnectionListener;
+import org.jboss.remoting.Client;
+import java.lang.ref.WeakReference;
 
 /**
  * This class will manage ConnectionFactory messages updates
@@ -43,8 +44,9 @@ public class ConnectionFactoryCallbackHandler
 
    // Attributes -----------------------------------------------------------------------------------
 
-   private ClientConnectionDelegate connectionDelegate;
-   private ConnectionState state;
+   // Without a WeakReference here, the CF would never be released!
+   private WeakReference<ClientClusteredConnectionFactoryDelegate> delegateRef;
+   private JMSRemotingConnection remotingConnection;
 
    // Static ---------------------------------------------------------------------------------------
 
@@ -52,9 +54,12 @@ public class ConnectionFactoryCallbackHandler
 
    // Constructors ---------------------------------------------------------------------------------
 
-   public ConnectionFactoryCallbackHandler(ClientConnectionDelegate connectionDelegate)
+   public ConnectionFactoryCallbackHandler(ClientClusteredConnectionFactoryDelegate cfDelegate,
+                                           JMSRemotingConnection remotingConnection)
    {
-      this.connectionDelegate = connectionDelegate;
+      this.delegateRef = new WeakReference<ClientClusteredConnectionFactoryDelegate>(cfDelegate);
+      this.remotingConnection = remotingConnection;
+      this.remotingConnection.addPlainConnectionListener(new CallbackConnectionListener());
    }
 
    // Public ---------------------------------------------------------------------------------------
@@ -65,44 +70,42 @@ public class ConnectionFactoryCallbackHandler
 
       ConnectionFactoryUpdate viewChange = (ConnectionFactoryUpdate)message;
 
-      ConnectionState state = getState();
-            
-      if (state != null)
-      {      
-      	Object d = state.getClusteredConnectionFactoryDelegate();
-      	
-      	if (d instanceof ClientClusteredConnectionFactoryDelegate)
-         {
-            ClientClusteredConnectionFactoryDelegate clusteredDelegate =
-               (ClientClusteredConnectionFactoryDelegate)d;
+      ClientClusteredConnectionFactoryDelegate delegate = delegateRef.get();
 
-            clusteredDelegate.updateFailoverInfo(viewChange.getDelegates(),
-                                                 viewChange.getFailoverMap());
-         }
-      }      
+      if (delegate!=null)
+      {
+         delegate.updateFailoverInfo(viewChange.getTopology().getDelegates(),
+                                           viewChange.getTopology().getFailoverMap());
+      }
    }
+
 
    public String toString()
    {
-      return "ConnectionFactoryCallbackHandler[" + connectionDelegate + "]";
+      return "ConnectionFactoryCallbackHandler[" + delegateRef.get() + "]";
    }
 
    // Package protected ----------------------------------------------------------------------------
 
    // Protected ------------------------------------------------------------------------------------
 
-   // When ConnectionFactoryCallbackHandler is created, is not guaranteed that state is set
-   // as this could be later initialized by the aop stack
-   protected ConnectionState getState()
-   {
-      if (state==null)
-      {
-         this.state = (ConnectionState)connectionDelegate.getState();
-      }
-      return this.state;
-   }
-
    // Private --------------------------------------------------------------------------------------
 
    // Inner classes --------------------------------------------------------------------------------
+
+   class CallbackConnectionListener implements ConnectionListener
+   {
+
+      public void handleConnectionException(Throwable throwable, Client client)
+      {
+         ClientClusteredConnectionFactoryDelegate delegate = delegateRef.get();
+
+         if (delegate!=null)
+         {
+            delegate.establishCallback();
+         }
+
+         //remotingConnection.removePlainConnectionListener(this);
+      }
+   }
 }

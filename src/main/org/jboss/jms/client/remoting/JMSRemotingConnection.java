@@ -23,6 +23,7 @@ package org.jboss.jms.client.remoting;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.net.MalformedURLException;
 
 import org.jboss.jms.server.ServerPeer;
 import org.jboss.jms.wireformat.JMSWireFormat;
@@ -31,6 +32,7 @@ import org.jboss.messaging.util.GUIDGenerator;
 import org.jboss.remoting.Client;
 import org.jboss.remoting.InvokerLocator;
 import org.jboss.remoting.ServerInvoker;
+import org.jboss.remoting.ConnectionListener;
 import org.jboss.remoting.callback.CallbackPoller;
 import org.jboss.remoting.callback.InvokerCallbackHandler;
 import org.jboss.remoting.transport.bisocket.Bisocket;
@@ -244,7 +246,7 @@ public class JMSRemotingConnection
 
    // Constructors ---------------------------------------------------------------------------------
 
-   public JMSRemotingConnection(String serverLocatorURI, boolean clientPing) throws Throwable
+   public JMSRemotingConnection(String serverLocatorURI, boolean clientPing) throws Exception
    {
       serverLocator = new InvokerLocator(serverLocatorURI);
       this.clientPing = clientPing;
@@ -380,6 +382,16 @@ public class JMSRemotingConnection
       remotingConnectionListener = listener;
 
       return true;
+   }
+
+   public synchronized void addPlainConnectionListener(ConnectionListener listener)
+   {
+      client.addConnectionListener(listener);
+   }
+
+   public synchronized void removePlainConnectionListener(ConnectionListener listener)
+   {
+      client.removeConnectionListener(listener);
    }
 
    public synchronized ConsolidatedRemotingConnectionListener getConnectionListener()

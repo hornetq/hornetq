@@ -43,7 +43,10 @@ public interface ConnectionFactoryEndpoint
                                                    String password, 
                                                    int failedNodeID)
       throws JMSException;
+
+   /** Get the current Cluster topology associated with a ClusteredConnectionFactory */
+   TopologyResult getTopology() throws JMSException;
    
-   byte[] getClientAOPStack() throws JMSException;     
+   byte[] getClientAOPStack() throws JMSException;
 }
 

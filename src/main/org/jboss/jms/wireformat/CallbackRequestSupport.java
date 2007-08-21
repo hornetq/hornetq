@@ -22,81 +22,95 @@
 
 package org.jboss.jms.wireformat;
 
-import java.io.DataInputStream;
+import org.jboss.remoting.callback.ServerInvokerCallbackHandler;
 import java.io.DataOutputStream;
-import java.util.Map;
-
-import org.jboss.jms.client.delegate.ClientConnectionFactoryDelegate;
-import org.jboss.jms.delegate.TopologyResult;
+import java.io.DataInputStream;
 
 /**
- * This class holds the update cluster view sent by the server to client-side clustered connection
- * factories.
+ * Support of establishing server2client callback mechanism.
  *
+ * (JMSServerInvocationHandler looks up for the callbackHandler based on the remoteSessionId.
+ *  That routine used to be dependent on ConnectionFactoryCreateConnectionDelegateRequest
+ *  but we also needed the same thing to establish callback on ConnectionFactory updates,
+ *  so we created another level for RequestSupport having the callback information)
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- * @author <a href="mailto:tim.fox@jboss.org">Tim Fox</a>
  * @version <tt>$Revision$</tt>
- *
- * $Id$
+ *          $Id$
  */
-public class ConnectionFactoryUpdate extends CallbackSupport
+public abstract class CallbackRequestSupport extends RequestSupport
 {
 
    // Constants ------------------------------------------------------------------------------------
 
    // Attributes -----------------------------------------------------------------------------------
 
-   TopologyResult topology;
+   private String remotingSessionId;
+
+   private transient ServerInvokerCallbackHandler callbackHandler;
+
+   private String clientVMId;
 
    // Static ---------------------------------------------------------------------------------------
 
    // Constructors ---------------------------------------------------------------------------------
 
-   public ConnectionFactoryUpdate(String uniqueName, ClientConnectionFactoryDelegate[] delegates,
-                                  Map failoverMap)
+   protected CallbackRequestSupport()
    {
-      super(PacketSupport.CONNECTIONFACTORY_UPDATE);
-
-      topology = new TopologyResult(uniqueName, delegates, failoverMap);
    }
-   
-   public ConnectionFactoryUpdate()
-   {      
+
+   protected CallbackRequestSupport(String clientVMId, String remotingSessionId, String objectId, int methodId, byte version)
+   {
+      super(objectId, methodId, version);
+      this.remotingSessionId = remotingSessionId;
+      this.clientVMId = clientVMId;
    }
 
    // Public ---------------------------------------------------------------------------------------
 
-   public String toString()
+   public String getRemotingSessionID()
    {
-      return "ConnectionFactoryUpdateMessage{" + topology + "}";
+      return remotingSessionId;
    }
 
-   public TopologyResult getTopology()
+
+   public String getClientVMID()
    {
-      return topology;
+      return clientVMId;
    }
 
-   public void setTopology(TopologyResult topology)
+   public void setRemotingSessionId(String remotingSessionId)
    {
-      this.topology = topology;
+      this.remotingSessionId = remotingSessionId;
    }
 
-   // Streamable implementation
-   // ---------------------------------------------------------------     
-
-   public void read(DataInputStream is) throws Exception
+   public ServerInvokerCallbackHandler getCallbackHandler()
    {
-      topology = new TopologyResult();
-      topology.read(is);
+      return callbackHandler;
+   }
+
+   public void setCallbackHandler(ServerInvokerCallbackHandler callbackHandler)
+   {
+      this.callbackHandler = callbackHandler;
    }
 
    public void write(DataOutputStream os) throws Exception
    {
       super.write(os);
 
-      topology.write(os);
+      os.writeUTF(remotingSessionId);
 
-      os.flush();
+      os.writeUTF(clientVMId);
+   }
+
+   public void read(DataInputStream is) throws Exception
+   {
+      super.read(is);
+
+      remotingSessionId = is.readUTF();
+
+      clientVMId = is.readUTF();
+      
+
    }
 
    // Package protected ----------------------------------------------------------------------------

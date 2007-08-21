@@ -86,7 +86,7 @@ public class ConnectionFactoryJNDIMapper
    private Map delegates;
 
    private Replicator replicator;
-   
+
    // Constructors ---------------------------------------------------------------------------------
 
    public ConnectionFactoryJNDIMapper(ServerPeer serverPeer) throws Exception
@@ -118,7 +118,7 @@ public class ConnectionFactoryJNDIMapper
    {
       log.debug(this + " registering connection factory '" + uniqueName +
          "', bindings: " + jndiBindings);
-      
+
       // Sanity check
       if (delegates.containsKey(uniqueName))
       {
@@ -126,11 +126,14 @@ public class ConnectionFactoryJNDIMapper
                                             "registered with name " + uniqueName);
       }
 
-      String id = GUIDGenerator.generateGUID();
+      // See http://www.jboss.com/index.html?module=bb&op=viewtopic&p=4076040#4076040
+      //String id = GUIDGenerator.generateGUID();
+      String id = uniqueName;
+      
       Version version = serverPeer.getVersion();
 
       ServerConnectionFactoryEndpoint endpoint =
-         new ServerConnectionFactoryEndpoint(id, serverPeer, clientID,
+         new ServerConnectionFactoryEndpoint(uniqueName, id, serverPeer, clientID,
                                              jndiBindings, prefetchSize,
                                              defaultTempQueueFullSize,
                                              defaultTempQueuePageSize,
@@ -145,13 +148,13 @@ public class ConnectionFactoryJNDIMapper
       {
          setupReplicator();
       }
-      
+
       if (supportsFailover && replicator == null)
       {
       	log.warn("supportsFailover attribute is true on connection factory: " + uniqueName + " but post office is non clustered. " +
       			   "So connection factory will *not* support failover");
       }
-      
+
       if (supportsLoadBalancing && replicator == null)
       {
       	log.warn("supportsLoadBalancing attribute is true on connection factory: " + uniqueName + " but post office is non clustered. " +
@@ -161,7 +164,7 @@ public class ConnectionFactoryJNDIMapper
       boolean creatingClustered = (supportsFailover || supportsLoadBalancing) && replicator != null;
 
       ClientConnectionFactoryDelegate localDelegate =
-         new ClientConnectionFactoryDelegate(id, serverPeer.getServerPeerID(),
+         new ClientConnectionFactoryDelegate(uniqueName, id, serverPeer.getServerPeerID(),
                                              locatorURI, version, clientPing);
 
       log.debug(this + " created local delegate " + localDelegate);
@@ -172,18 +175,18 @@ public class ConnectionFactoryJNDIMapper
       // connection factory list. This will happen locally too, so we will get the replication
       // message locally - to avoid updating it again we can ignore any "add" replication updates
       // that originate from the current node.
-      
+
       if (creatingClustered)
       {
          // Create a clustered delegate
-         
+
          if (!supportsLoadBalancing)
          {
          	loadBalancingFactory = new NoLoadBalancingLoadBalancingFactory(localDelegate);
          }
 
          Map localDelegates = replicator.get(Replicator.CF_PREFIX + uniqueName);
-         delegate = createClusteredDelegate(localDelegates.values(), loadBalancingFactory, supportsFailover);
+         delegate = createClusteredDelegate(uniqueName, localDelegates.values(), loadBalancingFactory, endpoint, supportsFailover);
 
          log.debug(this + " created clustered delegate " + delegate);
       }
@@ -198,13 +201,13 @@ public class ConnectionFactoryJNDIMapper
 
       // Now bind it in JNDI
       rebindConnectionFactory(initialContext, jndiBindings, delegate);
-      
+
       ConnectionFactoryAdvised advised;
-      
+
       // Need to synchronized to prevent a deadlock
       // See http://jira.jboss.com/jira/browse/JBMESSAGING-797
       synchronized (AspectManager.instance())
-      {       
+      {
          advised = new ConnectionFactoryAdvised(endpoint);
       }
 
@@ -213,8 +216,8 @@ public class ConnectionFactoryJNDIMapper
       Dispatcher.instance.registerTarget(id, advised);
 
       // Replicate the change - we will ignore this locally
-   	
-      if (replicator != null) replicator.put(Replicator.CF_PREFIX + uniqueName, localDelegate);            
+
+      if (replicator != null) replicator.put(Replicator.CF_PREFIX + uniqueName, localDelegate);
    }
 
    public synchronized void unregisterConnectionFactory(String uniqueName, boolean supportsFailover, boolean supportsLoadBalancing)
@@ -254,11 +257,11 @@ public class ConnectionFactoryJNDIMapper
       if (replicator != null)
       {
       	if (!replicator.remove(Replicator.CF_PREFIX + uniqueName))
-         {            	
+         {
             throw new IllegalStateException("Cannot find replicant to remove: " +
             		Replicator.CF_PREFIX + uniqueName);
          }
-      }      
+      }
 
       Dispatcher.instance.unregisterTarget(endpoint.getID(), endpoint);
    }
@@ -286,7 +289,7 @@ public class ConnectionFactoryJNDIMapper
       log.debug(this + " received notification from node " + notification.nodeID );
 
       try
-      {      	      	
+      {
       	if (notification.type == ClusterNotification.TYPE_NODE_JOIN || notification.type == ClusterNotification.TYPE_NODE_LEAVE)
       	{
             // We respond to changes in the node-address mapping. This will be replicated whan a
@@ -318,22 +321,25 @@ public class ConnectionFactoryJNDIMapper
          else if ((notification.type == ClusterNotification.TYPE_REPLICATOR_PUT || notification.type == ClusterNotification.TYPE_REPLICATOR_REMOVE) &&
          		   (notification.data instanceof String) && ((String)notification.data).startsWith(Replicator.CF_PREFIX))
          {
+
+            log.debug("Updating CF information for " + notification.data);
             // A connection factory has been deployed / undeployed
 
          	// NOTE! All connection factories MUST be deployed on all nodes!
          	// Otherwise the server might failover onto a node which doesn't have that connection factory deployed
             // so the connection won't be able to recconnect.
-         	
+
          	String key = (String)notification.data;
-         	
+
             String uniqueName = key.substring(Replicator.CF_PREFIX.length());
 
             log.debug(this + " received '" + uniqueName +  "' connection factory deploy / undeploy");
 
             ConnectionFactoryDelegate cfd = (ConnectionFactoryDelegate)delegates.get(uniqueName);
-              
+
             if (cfd == null)
             {
+               log.info("cfd == null");
                //This is ok - connection factory a might be deployed on node A before being deployed on node B so
             	//node B might get the notification before it has deployed a itself
             }
@@ -341,23 +347,24 @@ public class ConnectionFactoryJNDIMapper
             {
                if (cfd instanceof ClientConnectionFactoryDelegate)
                {
-               	//Non clustered - ignore
-               	
+                  log.info("Non Clustered!!!");
+                  //Non clustered - ignore
+
                	//We still replicate non clustered connection factories since the ClusterPullConnectionFactory
                	//is non clustered but needs to be available across the cluster
                }
                else
                {
                	ClientClusteredConnectionFactoryDelegate del = (ClientClusteredConnectionFactoryDelegate)cfd;
-            	
+
 	            	Map updatedReplicantMap = replicator.get(key);
-	            	            	
+
 		            List newDels = sortDelegatesOnServerID(updatedReplicantMap.values());
-		
+
 		            ClientConnectionFactoryDelegate[] delArr =
 		               (ClientConnectionFactoryDelegate[])newDels.
 		                  toArray(new ClientConnectionFactoryDelegate[newDels.size()]);
-		
+
                   Map failoverMap = serverPeer.getPostOfficeInstance().getFailoverMap();
 
 		            del.setDelegates(delArr);
@@ -365,12 +372,12 @@ public class ConnectionFactoryJNDIMapper
 
 		            ServerConnectionFactoryEndpoint endpoint =
 		               (ServerConnectionFactoryEndpoint)endpoints.get(uniqueName);
-		
+
 		            if (endpoint == null)
 		            {
 		               throw new IllegalStateException("Cannot find endpoint with name " + uniqueName);
 		            }
-		
+
 		            rebindConnectionFactory(initialContext, endpoint.getJNDIBindings(), del);
 
 		            endpoint.updateClusteredClients(delArr, failoverMap);
@@ -410,8 +417,9 @@ public class ConnectionFactoryJNDIMapper
    /**
     * @param localDelegates - Collection<ClientConnectionFactoryDelegate>
     */
-   private ClientClusteredConnectionFactoryDelegate  createClusteredDelegate(Collection localDelegates, LoadBalancingFactory loadBalancingFactory,
-      		                                                                 boolean supportsFailover)
+   private ClientClusteredConnectionFactoryDelegate  createClusteredDelegate(String uniqueName, Collection localDelegates, LoadBalancingFactory loadBalancingFactory,
+                                                                             ServerConnectionFactoryEndpoint endpoint,
+                                                                             boolean supportsFailover)
       throws Exception
    {
       log.trace(this + " creating a clustered ConnectionFactoryDelegate based on " + localDelegates);
@@ -426,8 +434,10 @@ public class ConnectionFactoryJNDIMapper
       Map failoverMap = serverPeer.getPostOfficeInstance().getFailoverMap();
 
       LoadBalancingPolicy lbp = loadBalancingFactory.createLoadBalancingPolicy(delegates);
-      
-      return new ClientClusteredConnectionFactoryDelegate(delegates, failoverMap, lbp, supportsFailover);
+
+      endpoint.updateTopology(delegates, failoverMap);
+
+      return new ClientClusteredConnectionFactoryDelegate(uniqueName, delegates, failoverMap, lbp, supportsFailover);
    }
 
    private void rebindConnectionFactory(Context ic, JNDIBindings jndiBindings,

@@ -37,17 +37,13 @@ import org.jboss.remoting.callback.ServerInvokerCallbackHandler;
  * $Id$
  *
  */
-public class ConnectionFactoryCreateConnectionDelegateRequest extends RequestSupport
+public class ConnectionFactoryCreateConnectionDelegateRequest extends CallbackRequestSupport
 {
    private String username;
    
    private String password;
    
    private int failedNodeId;
-   
-   private String remotingSessionId;
-   
-   private String clientVMId;
    
    private transient ServerInvokerCallbackHandler callbackHandler;
    
@@ -62,11 +58,7 @@ public class ConnectionFactoryCreateConnectionDelegateRequest extends RequestSup
                                                            String username, String password,
                                                            int failedNodeId)
    {
-      super(objectId, PacketSupport.REQ_CONNECTIONFACTORY_CREATECONNECTIONDELEGATE, version);
-      
-      this.remotingSessionId = remotingSessionId;
-      
-      this.clientVMId = clientVMId;
+      super(clientVMId, remotingSessionId, objectId, PacketSupport.REQ_CONNECTIONFACTORY_CREATECONNECTIONDELEGATE, version);
       
       this.username = username;
       
@@ -78,10 +70,6 @@ public class ConnectionFactoryCreateConnectionDelegateRequest extends RequestSup
    public void read(DataInputStream is) throws Exception
    {
       super.read(is);
-      
-      remotingSessionId = is.readUTF();
-      
-      clientVMId = is.readUTF();
       
       username = readNullableString(is);
       
@@ -102,7 +90,7 @@ public class ConnectionFactoryCreateConnectionDelegateRequest extends RequestSup
       
       CreateConnectionResult del = 
          advised.createConnectionDelegate(username, password, failedNodeId,
-                                           remotingSessionId, clientVMId, version,
+                                           getRemotingSessionID(), getClientVMID(), version,
                                            callbackHandler);
       
       return new ConnectionFactoryCreateConnectionDelegateResponse(del);
@@ -111,10 +99,6 @@ public class ConnectionFactoryCreateConnectionDelegateRequest extends RequestSup
    public void write(DataOutputStream os) throws Exception
    {
       super.write(os);
-      
-      os.writeUTF(remotingSessionId);
-      
-      os.writeUTF(clientVMId);
       
       //Write the args
            
@@ -125,16 +109,6 @@ public class ConnectionFactoryCreateConnectionDelegateRequest extends RequestSup
       os.writeInt(failedNodeId); 
       
       os.flush();
-   }
-   
-   public String getRemotingSessionID()
-   {
-      return remotingSessionId;
-   }
-   
-   public String getClientVMID()
-   {
-      return clientVMId;
    }
    
    public ServerInvokerCallbackHandler getCallbackHandler()

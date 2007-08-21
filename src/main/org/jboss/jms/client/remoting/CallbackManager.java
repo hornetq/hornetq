@@ -62,12 +62,9 @@ public class CallbackManager implements InvokerCallbackHandler
 
    private static boolean trace = log.isTraceEnabled();
 
-   protected static CallbackManager theManager;
-
    // Attributes -----------------------------------------------------------------------------------
 
-   // Map<Long(lookup)-ClientConsumer>
-   protected Map callbackHandlers;
+   protected Map<String, ClientConsumer> callbackHandlers;
    protected ConnectionFactoryCallbackHandler connectionfactoryCallbackHandler;
 
    // Constructors ---------------------------------------------------------------------------------
@@ -115,12 +112,17 @@ public class CallbackManager implements InvokerCallbackHandler
       }
       else if (parameter instanceof ConnectionFactoryUpdate)
       {
-         ConnectionFactoryUpdate viewChange = (ConnectionFactoryUpdate)parameter;
 
-         if (trace) { log.trace(this + " receiving cluster view change " + viewChange); }
-
-         if (connectionfactoryCallbackHandler != null)
+         if (connectionfactoryCallbackHandler == null)
          {
+            log.warn("ConnectionFactoryUpdate was received but there is no callbackHandler set");
+         }
+         else
+         {
+            ConnectionFactoryUpdate viewChange = (ConnectionFactoryUpdate)parameter;
+
+            if (trace) { log.trace(this + " receiving cluster view change " + viewChange); }
+
             connectionfactoryCallbackHandler.handleMessage(viewChange);
          }
       }
@@ -137,15 +139,20 @@ public class CallbackManager implements InvokerCallbackHandler
       callbackHandlers.put(consumerID, handler);
    }
 
-   public void setConnectionDelegate(ClientConnectionDelegate connectionDelegate)
-   {
-      this.connectionfactoryCallbackHandler =
-         new ConnectionFactoryCallbackHandler(connectionDelegate);
-   }
-
    public ClientConsumer unregisterHandler(String consumerID)
    { 
       return (ClientConsumer)callbackHandlers.remove(consumerID);
+   }
+
+
+   public ConnectionFactoryCallbackHandler getConnectionfactoryCallbackHandler()
+   {
+      return connectionfactoryCallbackHandler;
+   }
+
+   public void setConnectionfactoryCallbackHandler(ConnectionFactoryCallbackHandler connectionfactoryCallbackHandler)
+   {
+      this.connectionfactoryCallbackHandler = connectionfactoryCallbackHandler;
    }
 
    public String toString()

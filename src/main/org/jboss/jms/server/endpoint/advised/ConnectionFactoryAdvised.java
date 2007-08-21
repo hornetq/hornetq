@@ -25,6 +25,7 @@ import javax.jms.JMSException;
 
 import org.jboss.jms.delegate.ConnectionFactoryEndpoint;
 import org.jboss.jms.delegate.CreateConnectionResult;
+import org.jboss.jms.delegate.TopologyResult;
 import org.jboss.jms.server.endpoint.ConnectionFactoryInternalEndpoint;
 import org.jboss.jms.server.endpoint.ServerConnectionFactoryEndpoint;
 import org.jboss.remoting.callback.ServerInvokerCallbackHandler;
@@ -73,7 +74,26 @@ public class ConnectionFactoryAdvised extends AdvisedSupport
    {
       return endpoint.getClientAOPStack();
    }
-   
+
+   public void addCallback(String vmID, String remotingSessionID,
+                           ServerInvokerCallbackHandler callbackHandler) throws JMSException
+   {
+      ((ServerConnectionFactoryEndpoint)endpoint).addCallback(vmID,  remotingSessionID,
+                            callbackHandler);
+   }
+
+   public void removeCallback(String vmID, String remotingSessionID,
+                           ServerInvokerCallbackHandler callbackHandler) throws JMSException
+   {
+      ((ServerConnectionFactoryEndpoint)endpoint).removeCallback(vmID,  remotingSessionID,
+                            callbackHandler);
+   }
+
+   public TopologyResult getTopology() throws JMSException
+   {
+      return endpoint.getTopology();
+   }
+
    // ConnectionFactoryInternalEndpoint implementation ---------------------------------------------
    public CreateConnectionResult
       createConnectionDelegate(String username,

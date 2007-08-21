@@ -186,20 +186,16 @@ public class ClusteringTestBase extends MessagingTestCase
 	      if (!ServerManagement.isStarted(i))
 	      {
 	      	log.info("Server " + i + " is not started - starting it");
-	      	
-	      	ServerManagement.start(i, config, currentOverrides, ic == null);
-	      	
-	      	if (ic == null)
-	         {
-	         	ic = new InitialContext[nodeCount];
-	            queue = new Queue[nodeCount];
-	            topic = new Topic[nodeCount];
-	         }
-	      	
-	      	log.info("deploying queue on node " + i);
-	      	ServerManagement.deployQueue("testDistributedQueue", i);
-	         ServerManagement.deployTopic("testDistributedTopic", i);
+
+            startDefaultServer(i, overrides, ic == null);
 	         
+            if (ic == null)
+            {
+               ic = new InitialContext[nodeCount];
+               queue = new Queue[nodeCount];
+               topic = new Topic[nodeCount];
+            }
+
 	         ic[i] = new InitialContext(ServerManagement.getJNDIEnvironment(i));
 	          
 	         queue[i] = (Queue)ic[i].lookup("queue/testDistributedQueue");
@@ -230,7 +226,17 @@ public class ClusteringTestBase extends MessagingTestCase
       	cf = (JBossConnectionFactory)ic[0].lookup("/ClusteredConnectionFactory");
       }
    }
-   
+
+   protected void startDefaultServer(int serverNumber, ServiceAttributeOverrides attributes, boolean cleanDatabase)
+      throws Exception
+   {
+      ServerManagement.start(serverNumber, config, attributes, cleanDatabase);
+
+      log.info("deploying queue on node " + serverNumber);
+      ServerManagement.deployQueue("testDistributedQueue", serverNumber);
+      ServerManagement.deployTopic("testDistributedTopic", serverNumber);
+   }
+
    private boolean overridesChanged(ServiceAttributeOverrides sao1, ServiceAttributeOverrides sao2)
    {
    	Map map1 = sao1 == null ? null : sao1.getMap();
