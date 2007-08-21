@@ -504,7 +504,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
    // ===============================                 
    
    //Used to page NP messages or P messages in a non recoverable queue
-   public void pageReferences(long channelID, List references, boolean page) throws Exception
+   public synchronized void pageReferences(long channelID, List references, boolean page) throws Exception
    {
       Connection conn = null;
       PreparedStatement psInsertReference = null;  
@@ -527,8 +527,8 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
          psInsertReference = conn.prepareStatement(getSQLStatement("INSERT_MESSAGE_REF"));
          psInsertMessage = conn.prepareStatement(getSQLStatement("INSERT_MESSAGE"));
          
-         boolean added = false;
-         
+         boolean insertsInBatch = false;
+              
          while (iter.hasNext())
          {
             //We may need to persist the message itself 
@@ -577,7 +577,19 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
             		{
             			storeMessage(m, psInsertMessage); 
             			
-            			added = true;
+            			if (usingBatchUpdates)
+      	            {
+      	               psInsertMessage.addBatch();	 
+      	               
+      	               insertsInBatch = true;
+      	            }
+      	            else
+      	            {
+      	               int rows = executeWithRetry(psInsertMessage);
+      	                                      
+                        if (trace) { log.trace("Inserted " + rows + " rows"); }	               
+      	            } 
+      	            m.setPersisted(true);
             		}
             	}
             	finally
@@ -588,21 +600,6 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
             		}
             	}  	                               	
             }    
-            
-            if (added)
-            {
-	            if (usingBatchUpdates)
-	            {
-	               psInsertMessage.addBatch();	               
-	            }
-	            else
-	            {
-	               int rows = executeWithRetry(psInsertMessage);
-	                                      
-                  if (trace) { log.trace("Inserted " + rows + " rows"); }	               
-	            } 
-	            m.setPersisted(true);
-            }
          }         
          
          if (usingBatchUpdates)
@@ -611,7 +608,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
             
             if (trace) { logBatchUpdate(getSQLStatement("INSERT_MESSAGE_REF"), rowsReference, "inserted"); }
             
-            if (added)
+            if (insertsInBatch)
             {
                int[] rowsMessage = executeWithRetryBatch(psInsertMessage);
                
