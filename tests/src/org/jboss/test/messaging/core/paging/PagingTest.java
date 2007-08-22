@@ -67,10 +67,10 @@ public class PagingTest extends MessagingTestCase
       CoreMessage m = null;
 
       m = CoreMessageFactory.createCoreMessage(0);
-      p.handle(null, ms.reference(m), null);
+      p.handle(null, m.createReference(), null);
 
       m = CoreMessageFactory.createCoreMessage(1);
-      p.handle(null, ms.reference(m), null);
+      p.handle(null, m.createReference(), null);
 
    }
 

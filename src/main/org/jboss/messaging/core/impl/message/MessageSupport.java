@@ -77,7 +77,7 @@ public abstract class MessageSupport implements Message, Serializable
 	private byte[] payloadAsByteArray;
 	
 	private transient volatile boolean persisted;
-
+	
 	// Constructors --------------------------------------------------
 
 	/*

@@ -23,4 +23,6 @@ public interface MessageStore extends MessagingComponent
 	 MessageReference reference(long messageID);
 	 
 	 MessageReference reference(Message message);
+	 
+	 void clear();
 }

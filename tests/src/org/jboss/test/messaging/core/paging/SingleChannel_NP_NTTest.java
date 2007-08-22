@@ -74,7 +74,7 @@ public class SingleChannel_NP_NTTest extends PagingStateTestBase
       for (int i = 0; i < 99; i++)
       {
          msgs[i] = CoreMessageFactory.createCoreMessage(i, false, null);
-         refs[i] = ms.reference(msgs[i]);
+         refs[i] = msgs[i].createReference();
          queue.handle(null, refs[i], null);
       }
       
@@ -132,7 +132,7 @@ public class SingleChannel_NP_NTTest extends PagingStateTestBase
       for (int i = 100; i < 109; i++)
       {
          msgs[i] = CoreMessageFactory.createCoreMessage(i, false, null);
-         refs[i] = ms.reference(msgs[i]);
+         refs[i] = msgs[i].createReference();
          queue.handle(null, refs[i], null); 
       }
       
@@ -227,7 +227,7 @@ public class SingleChannel_NP_NTTest extends PagingStateTestBase
       for (int i = 111; i < 120; i++)
       {
          msgs[i] = CoreMessageFactory.createCoreMessage(i, false, null);
-         refs[i] = ms.reference(msgs[i]);
+         refs[i] = msgs[i].createReference();
          queue.handle(null, refs[i], null);         
       }      
       
@@ -262,7 +262,7 @@ public class SingleChannel_NP_NTTest extends PagingStateTestBase
       for (int i = 120; i < 130; i++)
       {
          msgs[i] = CoreMessageFactory.createCoreMessage(i, false, null);
-         refs[i] = ms.reference(msgs[i]);
+         refs[i] = msgs[i].createReference();
          queue.handle(null, refs[i], null);         
       }  
       
@@ -297,7 +297,7 @@ public class SingleChannel_NP_NTTest extends PagingStateTestBase
       for (int i = 130; i < 140; i++)
       {
          msgs[i] = CoreMessageFactory.createCoreMessage(i, false, null);
-         refs[i] = ms.reference(msgs[i]);
+         refs[i] = msgs[i].createReference();
          queue.handle(null, refs[i], null);         
       }  
       
@@ -579,7 +579,7 @@ public class SingleChannel_NP_NTTest extends PagingStateTestBase
       for (int i = 141; i < 161; i++)
       {
          msgs[i] = CoreMessageFactory.createCoreMessage(i, false, null);
-         refs[i] = ms.reference(msgs[i]);
+         refs[i] = msgs[i].createReference();
          queue.handle(null, refs[i], null);
       }
       
@@ -611,7 +611,7 @@ public class SingleChannel_NP_NTTest extends PagingStateTestBase
       for (int i = 161; i < 181; i++)
       {
          msgs[i] = CoreMessageFactory.createCoreMessage(i, false, null);
-         refs[i] = ms.reference(msgs[i]);
+         refs[i] = msgs[i].createReference();
          queue.handle(null, refs[i], null);
       }
       
@@ -642,7 +642,7 @@ public class SingleChannel_NP_NTTest extends PagingStateTestBase
       for (int i = 181; i < 241; i++)
       {
          msgs[i] = CoreMessageFactory.createCoreMessage(i, false, null);
-         refs[i] = ms.reference(msgs[i]);
+         refs[i] = msgs[i].createReference();
          queue.handle(null, refs[i], null);
       }
       
@@ -669,15 +669,6 @@ public class SingleChannel_NP_NTTest extends PagingStateTestBase
       //Verify no deliveries
       assertEquals(0, queue.getDeliveringCount());;
       
-      
-       
-      //test cancellation
-      
-      //remove 20 but don't ack them yet
-      //this should cause a load to be triggered
-      
-//      CancellingReceiver r = new CancellingReceiver(20);
-//      queue.add(r);
       SimpleDelivery[] dels = getDeliveries(queue, 20);
       
       //verify 0 ref in storage
@@ -819,9 +810,6 @@ public class SingleChannel_NP_NTTest extends PagingStateTestBase
       
 //    Verify not paging
       assertFalse(queue.isPaging());      
-      
-      
-      
       
       
       

@@ -76,7 +76,7 @@ public class SingleChannel_P_TTest extends PagingStateTestBase
       for (int i = 0; i < 99; i++)
       {
          msgs[i] = CoreMessageFactory.createCoreMessage(i, true, null);
-         refs[i] = ms.reference(msgs[i]);
+         refs[i] = msgs[i].createReference();
          queue.handle(null, refs[i], tx);
       }
       tx.commit();
@@ -151,7 +151,7 @@ public class SingleChannel_P_TTest extends PagingStateTestBase
       for (int i = 100; i < 109; i++)
       {
          msgs[i] = CoreMessageFactory.createCoreMessage(i, true, null);
-         refs[i] = ms.reference(msgs[i]);
+         refs[i] = msgs[i].createReference();
          queue.handle(null, refs[i], tx);         
       }
       tx.commit();
@@ -266,7 +266,7 @@ public class SingleChannel_P_TTest extends PagingStateTestBase
       for (int i = 111; i < 120; i++)
       {
          msgs[i] = CoreMessageFactory.createCoreMessage(i, true, null);
-         refs[i] = ms.reference(msgs[i]);
+         refs[i] = msgs[i].createReference();
          queue.handle(null, refs[i], tx);         
       }      
       tx.commit();
@@ -307,7 +307,7 @@ public class SingleChannel_P_TTest extends PagingStateTestBase
       for (int i = 120; i < 130; i++)
       {
          msgs[i] = CoreMessageFactory.createCoreMessage(i, true, null);
-         refs[i] = ms.reference(msgs[i]);
+         refs[i] = msgs[i].createReference();
          queue.handle(null, refs[i], tx);         
       }  
       tx.commit();
@@ -356,7 +356,7 @@ public class SingleChannel_P_TTest extends PagingStateTestBase
       for (int i = 130; i < 140; i++)
       {
          msgs[i] = CoreMessageFactory.createCoreMessage(i, true, null);
-         refs[i] = ms.reference(msgs[i]);
+         refs[i] = msgs[i].createReference();
          queue.handle(null, refs[i], tx); 
       }  
       tx.commit();
@@ -687,7 +687,7 @@ public class SingleChannel_P_TTest extends PagingStateTestBase
       for (int i = 141; i < 161; i++)
       {
          msgs[i] = CoreMessageFactory.createCoreMessage(i, true, null);
-         refs[i] = ms.reference(msgs[i]);
+         refs[i] = msgs[i].createReference();
          queue.handle(null, refs[i], tx);
       }
       tx.commit();
@@ -725,7 +725,7 @@ public class SingleChannel_P_TTest extends PagingStateTestBase
       for (int i = 161; i < 181; i++)
       {
          msgs[i] = CoreMessageFactory.createCoreMessage(i, true, null);
-         refs[i] = ms.reference(msgs[i]);
+         refs[i] = msgs[i].createReference();
          queue.handle(null, refs[i], tx);
       }
       tx.commit();
@@ -762,7 +762,7 @@ public class SingleChannel_P_TTest extends PagingStateTestBase
       for (int i = 181; i < 241; i++)
       {
          msgs[i] = CoreMessageFactory.createCoreMessage(i, true, null);
-         refs[i] = ms.reference(msgs[i]);
+         refs[i] = msgs[i].createReference();
          queue.handle(null, refs[i], tx);
       }
       tx.commit();

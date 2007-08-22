@@ -82,10 +82,6 @@ public class PagingStateTestBase extends MessagingTestCase
 
    // Public --------------------------------------------------------
    
-   public void testEmpty()
-   {
-      
-   }
 
    public void setUp() throws Exception
    {
@@ -109,11 +105,18 @@ public class PagingStateTestBase extends MessagingTestCase
       
       tr = new TransactionRepository(pm, ms, idm);
       tr.start();          
+      
+      ms.clear();
    }
    
    
    public void tearDown() throws Exception
    {
+   	pm.reapUnreferencedMessages(); 
+   	if (checkNoMessageData())
+   	{
+   		fail("Message data still exists");
+   	}  	
       pm.stop();
       tr.stop();
       ms.stop();

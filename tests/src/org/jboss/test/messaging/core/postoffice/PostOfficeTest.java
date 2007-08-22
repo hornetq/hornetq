@@ -174,12 +174,7 @@ public class PostOfficeTest extends PostOfficeTestBase
          queues = office3.getQueuesForCondition(condition2, true);
          assertNotNull(queues);
          assertTrue(queues.isEmpty());
-         
-         if (checkNoBindingData())
-         {
-            fail("Binding data still in database");
-         }
-                  
+                 
       }
       finally
       {
@@ -307,11 +302,6 @@ public class PostOfficeTest extends PostOfficeTestBase
          assertTrue(queues.contains(queue7));
          assertTrue(queues.contains(queue8));
          
-         if (checkNoBindingData())
-         {
-            fail("Binding data still in database");
-         }
-         
       }
       finally
       {
@@ -387,10 +377,6 @@ public class PostOfficeTest extends PostOfficeTestBase
          b3 = office.getBindingForQueueName("queue3");
          assertNull(b3);                     
                   
-         if (checkNoBindingData())
-         {
-            fail("Binding data still in database");
-         }
       }
       finally
       {
@@ -463,11 +449,7 @@ public class PostOfficeTest extends PostOfficeTestBase
  
          b3 = office.getBindingForChannelID(queue3.getChannelID());
          assertNull(b3);                     
-         
-         if (checkNoBindingData())
-         {
-            fail("Binding data still in database");
-         }
+
       }
       finally
       {
@@ -651,11 +633,6 @@ public class PostOfficeTest extends PostOfficeTestBase
          msgs = receiver6.getMessages();
          assertNotNull(msgs);
          assertTrue(msgs.isEmpty());
-         
-         if (checkNoMessageData())
-         {
-            fail("data still in database");
-         }
       }
       finally
       {
@@ -698,12 +675,6 @@ public class PostOfficeTest extends PostOfficeTestBase
          List msgs = receiver1.getMessages();
          assertNotNull(msgs);
          assertTrue(msgs.isEmpty());  
-         
-         if (checkNoMessageData())
-         {
-            fail("data still in database");
-         }
-         
       }
       finally
       {
@@ -898,18 +869,20 @@ public class PostOfficeTest extends PostOfficeTestBase
          assertNotNull(msgs);
          assertTrue(msgs.isEmpty());
          
+         postOffice.removeBinding("queue1", false);
+         postOffice.removeBinding("queue2", false);
+         postOffice.removeBinding("queue3", false);
+         postOffice.removeBinding("queue4", false);
+         postOffice.removeBinding("queue5", false);
+         postOffice.removeBinding("queue6", false);         
+         
       }
       finally
       {
          if (postOffice != null)
          {
             postOffice.stop();
-         }
-         
-         if (checkNoMessageData())
-         {
-            fail("data still in database");
-         }
+         }         
       }
    }
    
@@ -1149,12 +1122,10 @@ public class PostOfficeTest extends PostOfficeTestBase
          
          
          receiver2.acknowledge(msgRec1, null);
-         receiver2.acknowledge(msgRec2, null);
+         receiver2.acknowledge(msgRec2, null);         
          
-         if (checkNoMessageData())
-         {
-            fail("data still in database");
-         }
+         postOffice.removeBinding("queue1", false);
+         postOffice.removeBinding("queue2", false);
       }
       finally
       {
@@ -1254,13 +1225,7 @@ public class PostOfficeTest extends PostOfficeTestBase
          receiver3.acknowledge(msgRec3, null);
          msgs = queue3.browse(null);
          assertNotNull(msgs);
-         assertTrue(msgs.isEmpty()); 
-         
-         if (checkNoMessageData())
-         {
-            fail("data still in database");
-         }
-         
+         assertTrue(msgs.isEmpty());          
       }
       finally
       {

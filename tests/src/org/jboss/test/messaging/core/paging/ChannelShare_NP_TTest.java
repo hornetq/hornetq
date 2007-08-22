@@ -80,11 +80,11 @@ public class ChannelShare_NP_TTest extends PagingStateTestBase
       {
          msgs[i] = CoreMessageFactory.createCoreMessage(i, false, null);
          
-         refs1[i] = ms.reference(msgs[i]);
+         refs1[i] = msgs[i].createReference();
                 
          queue1.handle(null, refs1[i], tx); 
          
-         refs2[i] = ms.reference(msgs[i]);
+         refs2[i] = msgs[i].createReference();
          
          queue2.handle(null, refs2[i], tx); 
       }
@@ -128,11 +128,11 @@ public class ChannelShare_NP_TTest extends PagingStateTestBase
       {
          msgs[i] = CoreMessageFactory.createCoreMessage(i, false, null);
          
-         refs1[i] = ms.reference(msgs[i]);
+         refs1[i] = msgs[i].createReference();
                 
          queue1.handle(null, refs1[i], tx); 
          
-         refs2[i] = ms.reference(msgs[i]);
+         refs2[i] = msgs[i].createReference();
          
          queue2.handle(null, refs2[i], tx); 
       }
@@ -177,11 +177,11 @@ public class ChannelShare_NP_TTest extends PagingStateTestBase
       {
          msgs[i] = CoreMessageFactory.createCoreMessage(i, false, null);
          
-         refs1[i] = ms.reference(msgs[i]);
+         refs1[i] = msgs[i].createReference();
                 
          queue1.handle(null, refs1[i], tx); 
          
-         refs2[i] = ms.reference(msgs[i]);
+         refs2[i] = msgs[i].createReference();
          
          queue2.handle(null, refs2[i], tx); 
       }
@@ -226,11 +226,11 @@ public class ChannelShare_NP_TTest extends PagingStateTestBase
       {
          msgs[i] = CoreMessageFactory.createCoreMessage(i, false, null);
          
-         refs1[i] = ms.reference(msgs[i]);
+         refs1[i] = msgs[i].createReference();
                 
          queue1.handle(null, refs1[i], tx); 
 
-         refs2[i] = ms.reference(msgs[i]);
+         refs2[i] = msgs[i].createReference();
          
          queue2.handle(null, refs2[i], tx); 
       }

@@ -536,13 +536,13 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
    public void pageReferences(final long channelID, final List references, final boolean page) throws Exception
    {      
    	class PageReferencesRunner extends JDBCTxRunner
-      {
+      {	
       	public Object doTransaction() throws Exception
    		{
       		PreparedStatement psInsertReference = null;
       		PreparedStatement psInsertMessage = null;
       		
-      		List<Message> persistedMessages = new ArrayList<Message>();
+      		List<Message> pagedMessages = new ArrayList<Message>();
       		
       		try
       		{      		
@@ -578,18 +578,40 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
 	         		{
 	         			if (!m.isPersisted())
 	         			{            	               
-	         				//The message might actually already exist due to it already being paged
+	         				//The message might actually still already exist (despite pagedcount=0) due to it already being paged
 	         				//so we insert and ignore key violations
 	
 	         				storeMessage(m, psInsertMessage); 
 	
-	         				rows = psInsertMessage.executeUpdate();
+	         				try
+	         				{
+	         					rows = psInsertMessage.executeUpdate();
+	         				}
+	         				catch (SQLException e)
+	         				{
+	         					if (e.getSQLState().equals("23000"))
+	         					{
+	         						//This is a primary key violation
+	         						//It might legitimately occur if the ref has been paged to two channels so it is not
+	         						//left in memory any more, then loaded by one channel
+	         						//The paged count would then be one, not two
+	         						if (trace) { log.trace("Primary key violation detected", e); }
+	         						
+	         						//When we retry we don't want to insert again, so set persisted to true
+	         						m.setPersisted(true);
+	         						
+	         						//Throw the exception so the tx is retried - the next time it won't try and insert the message
+	         						violationOk = true;
+	         						
+	         						throw e;
+	         					}
+	         				}
 	
 	         				if (trace) { log.trace("Inserted " + rows + " rows"); }	               
 	
 	         				m.setPersisted(true);
 	         				
-	         				persistedMessages.add(m);
+	         				pagedMessages.add(m);
 	         			}
 	         		}
 	         	} 
@@ -600,11 +622,11 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
       		{
       			//The tx will be rolled back
       			//so we need to set the messages to not persisted
-      			for (Iterator iter = persistedMessages.iterator(); iter.hasNext(); )
+      			for (Iterator iter = pagedMessages.iterator(); iter.hasNext(); )
                {
                   Message msg = (Message)iter.next();
       			
-                  msg.setPersisted(false);      				
+                  msg.setPersisted(false);
       			}
       			
       			throw e;
@@ -632,7 +654,9 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
       {
       	public Object doTransaction() throws Exception
    		{
-		      PreparedStatement psDeleteReference = null;  
+		      PreparedStatement psDeleteReference = null; 
+		      
+		      List<Message> depagedReferences = new ArrayList<Message>();
 		       
 		      try
 		      {	
@@ -654,10 +678,22 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
 		            //and the tx is committed so the message be attempted to be inserted twice but this should be ok
 		            //since we ignore key violations on message insert		      
 		            
-		            ref.getMessage().setPersisted(false); 
+		            ref.getMessage().setPersisted(false);
+		            
+		            depagedReferences.add(ref.getMessage());
 		         }         
 		         
 		         return null;
+		      }
+		      catch (Exception e)
+		      {
+		      	for (Iterator iter = depagedReferences.iterator(); iter.hasNext(); )
+               {
+                  Message msg = (Message)iter.next();
+      			
+                  msg.setPersisted(true);
+      			}
+		      	throw e;
 		      }
 		      finally
 		      {
@@ -2397,6 +2433,8 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
 
       TransactionWrapper wrap;
       
+      boolean violationOk;
+      
 		public Object execute() throws Exception
 		{
 	      wrap = new TransactionWrapper();
@@ -2437,17 +2475,25 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
 	         }
 	         catch (SQLException e)
 	         {
-	            log.warn("SQLException caught, SQLState " + e.getSQLState() + " code:" + e.getErrorCode() + "- assuming deadlock detected, try:" + (tries + 1), e);
-	            
-	            tries++;
-	            if (tries == MAX_TRIES)
-	            {
-	               log.error("Retried " + tries + " times, now giving up");
-	               throw new IllegalStateException("Failed to excecute transaction");
-	            }
-	            log.warn("Trying again after a pause");
-	            //Now we wait for a random amount of time to minimise risk of deadlock
-	            Thread.sleep((long)(Math.random() * 500));
+	         	if (e.getSQLState().equals("23000") && violationOk)
+	         	{
+	         		//Primary key violation - this is ok - we retry immediately
+	         		violationOk = false;
+	         	}
+	         	else
+	         	{		         	
+		            log.warn("SQLException caught, SQLState " + e.getSQLState() + " code:" + e.getErrorCode() + "- assuming deadlock detected, try:" + (tries + 1), e);
+		            
+		            tries++;
+		            if (tries == MAX_TRIES)
+		            {
+		               log.error("Retried " + tries + " times, now giving up");
+		               throw new IllegalStateException("Failed to excecute transaction");
+		            }
+		            log.warn("Trying again after a pause");
+		            //Now we wait for a random amount of time to minimise risk of deadlock
+		            Thread.sleep((long)(Math.random() * 500));
+	         	}
 	         }  
 	      }
 		}

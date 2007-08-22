@@ -151,5 +151,5 @@ public interface Message extends Streamable
    
    boolean isPersisted();
    
-   void setPersisted(boolean persisted);
+   void setPersisted(boolean persisted);   
 }

@@ -91,6 +91,11 @@ public class SimpleMessageStore implements MessageStore
    	}
    }
    
+   public synchronized void clear()
+   {
+   	messages.clear();
+   }
+   
    // MessagingComponent implementation --------------------------------
    
    public void start() throws Exception

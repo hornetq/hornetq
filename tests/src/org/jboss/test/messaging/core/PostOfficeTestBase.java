@@ -267,8 +267,20 @@ public class PostOfficeTestBase extends MessagingTestCase
 
    protected void tearDown() throws Exception
    {
+      pm.reapUnreferencedMessages();
+      
+      if (this.checkNoMessageData())
+      {
+      	fail("Message data still exists");
+      }
+      
+      if (this.checkNoBindingData())
+      {
+      	fail("Binding data still exists");
+      }
       sc.stop();
       sc = null;
+      
       
       pm.stop();
       tr.stop();

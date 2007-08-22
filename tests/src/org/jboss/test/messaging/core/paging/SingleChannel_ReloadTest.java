@@ -76,7 +76,7 @@ public class SingleChannel_ReloadTest extends PagingStateTestBase
       {
          msgs[i] = CoreMessageFactory.createCoreMessage(i, false, null);
          
-         refs[i] = ms.reference(msgs[i]);
+         refs[i] = msgs[i].createReference();
                 
          queue.handle(null, refs[i], null); 
       }
@@ -86,7 +86,7 @@ public class SingleChannel_ReloadTest extends PagingStateTestBase
       {
          msgs[i] = CoreMessageFactory.createCoreMessage(i, true, null);
          
-         refs[i] = ms.reference(msgs[i]);
+         refs[i] = msgs[i].createReference();
                 
          queue.handle(null, refs[i], null); 
       }
@@ -169,7 +169,7 @@ public class SingleChannel_ReloadTest extends PagingStateTestBase
       {
          msgs[i] = CoreMessageFactory.createCoreMessage(i, false, null);
          
-         refs[i] = ms.reference(msgs[i]);
+         refs[i] = msgs[i].createReference();
                 
          queue.handle(null, refs[i], null); 
       }
@@ -179,7 +179,7 @@ public class SingleChannel_ReloadTest extends PagingStateTestBase
       {
          msgs[i] = CoreMessageFactory.createCoreMessage(i, true, null);
          
-         refs[i] = ms.reference(msgs[i]);
+         refs[i] = msgs[i].createReference();
                 
          queue.handle(null, refs[i], null); 
       }
@@ -257,7 +257,7 @@ public class SingleChannel_ReloadTest extends PagingStateTestBase
       {
          msgs[i] = CoreMessageFactory.createCoreMessage(i, false, null);
          
-         refs[i] = ms.reference(msgs[i]);
+         refs[i] = msgs[i].createReference();
                 
          queue.handle(null, refs[i], null); 
       }
@@ -267,7 +267,7 @@ public class SingleChannel_ReloadTest extends PagingStateTestBase
       {
          msgs[i] = CoreMessageFactory.createCoreMessage(i, true, null);
          
-         refs[i] = ms.reference(msgs[i]);
+         refs[i] = msgs[i].createReference();
                 
          queue.handle(null, refs[i], null); 
       }
