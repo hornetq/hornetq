@@ -1058,9 +1058,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
          
          ps.close();
          
-         conn.close();
-         
-         conn = ds.getConnection();         
+         ps = null;
          
          ps = conn.prepareStatement(getSQLStatement("LOAD_UNPAGED_REFS"));
          
@@ -1489,9 +1487,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
 		      List<Message> messagesStored = new ArrayList<Message>();
 		 
 		      try
-		      {
-		         conn = ds.getConnection();
-		         
+		      { 
 		         //Insert the tx record
 		         if (!refsToAdd.isEmpty() || !refsToRemove.isEmpty())
 		         {
