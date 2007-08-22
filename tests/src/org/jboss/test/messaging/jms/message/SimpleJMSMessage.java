@@ -25,12 +25,13 @@ import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
-import org.jboss.logging.Logger;
 
 import javax.jms.DeliveryMode;
 import javax.jms.Destination;
 import javax.jms.JMSException;
 import javax.jms.Message;
+
+import org.jboss.logging.Logger;
 
 /**
  * Foreign message implementation. Used for testing only.

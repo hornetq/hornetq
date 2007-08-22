@@ -6,7 +6,6 @@ import javax.naming.InitialContext;
 
 import org.jboss.jms.client.JBossConnectionFactory;
 import org.jboss.jms.tx.ResourceManagerFactory;
-import org.jboss.messaging.core.impl.message.SimpleMessageStore;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
 

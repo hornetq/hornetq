@@ -35,7 +35,6 @@ import javax.jms.MessageProducer;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.jms.Topic;
-import javax.management.ObjectName;
 
 import org.jboss.jms.client.FailoverEvent;
 import org.jboss.jms.client.JBossConnection;

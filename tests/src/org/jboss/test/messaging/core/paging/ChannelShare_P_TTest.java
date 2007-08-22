@@ -27,7 +27,6 @@ import org.jboss.messaging.core.contract.Message;
 import org.jboss.messaging.core.contract.MessageReference;
 import org.jboss.messaging.core.impl.MessagingQueue;
 import org.jboss.messaging.core.impl.tx.Transaction;
-import org.jboss.messaging.util.LockMap;
 import org.jboss.test.messaging.util.CoreMessageFactory;
 
 /**
@@ -339,9 +338,6 @@ public class ChannelShare_P_TTest extends PagingStateTestBase
       assertEquals(0, queue1.getMessageCount());
       
       assertEquals(0, queue2.getMessageCount());
-      
-      assertEquals(0, LockMap.instance.getSize());
-      
    }
 
 }

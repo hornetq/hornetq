@@ -29,7 +29,6 @@ import org.jboss.messaging.core.impl.JDBCPersistenceManager;
 import org.jboss.messaging.core.impl.MessagingQueue;
 import org.jboss.messaging.core.impl.message.SimpleMessageStore;
 import org.jboss.messaging.core.impl.tx.TransactionRepository;
-import org.jboss.messaging.util.LockMap;
 import org.jboss.test.messaging.util.CoreMessageFactory;
 
 /**
@@ -152,8 +151,6 @@ public class SingleChannel_ReloadTest extends PagingStateTestBase
       assertEquals(0, queue2.getDeliveringCount());
       
       assertEquals(0, queue2.getMessageCount());
-      
-      assertEquals(0, LockMap.instance.getSize());
    }
    
    public void testNonRecoverableQueueCrash() throws Throwable
@@ -242,8 +239,6 @@ public class SingleChannel_ReloadTest extends PagingStateTestBase
       assertEquals(0, queue2.getDeliveringCount());
       
       assertEquals(0, queue2.getMessageCount());
-      
-      assertEquals(0, LockMap.instance.getSize());
    }
    
    public void testNonRecoverableQueueRemoveAllReferences() throws Throwable
@@ -306,8 +301,6 @@ public class SingleChannel_ReloadTest extends PagingStateTestBase
       assertEquals(0, queue.getDeliveringCount());
       
       assertEquals(0, queue.getMessageCount());
-      
-      assertEquals(0, LockMap.instance.getSize());
    }
    
 

@@ -26,7 +26,6 @@ import javax.jms.Destination;
 import javax.jms.Topic;
 import javax.naming.InitialContext;
 
-import org.jboss.messaging.util.LockMap;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
 
@@ -76,11 +75,11 @@ public class StressTestBase extends MessagingTestCase
       
       //We test with small values for paging params to really stress it
       
-      final int fullSize = 1000;
+      final int fullSize = 2000;
       
-      final int pageSize = 100;
+      final int pageSize = 300;
       
-      final int downCacheSize = 100;
+      final int downCacheSize = 300;
       
       ServerManagement.deployQueue("Queue1", fullSize, pageSize, downCacheSize);
       ServerManagement.deployQueue("Queue2", fullSize, pageSize, downCacheSize);
@@ -108,8 +107,13 @@ public class StressTestBase extends MessagingTestCase
 
    public void tearDown() throws Exception
    {
-      assertEquals(0, LockMap.instance.getSize());
-            
+   	ServerManagement.getServer().reapMessages();
+   	
+   	if (checkNoMessageData())
+   	{
+   		fail("Message data still exists");
+   	}
+   	
       ServerManagement.undeployQueue("Queue1");
       ServerManagement.undeployQueue("Queue2");
       ServerManagement.undeployQueue("Queue3");

@@ -25,13 +25,13 @@ package org.jboss.test.messaging.jms.clustering;
 import javax.jms.Connection;
 
 import org.jboss.jms.client.JBossConnectionFactory;
-import org.jboss.jms.client.delegate.ClientConnectionFactoryDelegate;
 import org.jboss.jms.client.delegate.ClientClusteredConnectionFactoryDelegate;
+import org.jboss.jms.client.delegate.ClientConnectionFactoryDelegate;
 import org.jboss.jms.exception.MessagingNetworkFailureException;
 import org.jboss.test.messaging.tools.ServerManagement;
+import org.jboss.test.messaging.tools.aop.PoisonInterceptor;
 import org.jboss.test.messaging.tools.container.ServiceAttributeOverrides;
 import org.jboss.test.messaging.tools.container.ServiceContainer;
-import org.jboss.test.messaging.tools.aop.PoisonInterceptor;
 
 /**
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>

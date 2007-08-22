@@ -26,7 +26,6 @@ import java.util.List;
 import org.jboss.messaging.core.contract.Message;
 import org.jboss.messaging.core.contract.MessageReference;
 import org.jboss.messaging.core.impl.MessagingQueue;
-import org.jboss.messaging.util.LockMap;
 import org.jboss.test.messaging.util.CoreMessageFactory;
 
 
@@ -309,8 +308,5 @@ public class ChannelShare_NP_NTTest extends PagingStateTestBase
       assertEquals(0, queue1.getMessageCount());
       
       assertEquals(0, queue2.getMessageCount());
-      
-      assertEquals(0, LockMap.instance.getSize());
-      
    }
 }

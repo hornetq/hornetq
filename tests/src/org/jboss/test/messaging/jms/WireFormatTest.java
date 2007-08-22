@@ -58,10 +58,13 @@ import org.jboss.jms.wireformat.ClosingRequest;
 import org.jboss.jms.wireformat.ClosingResponse;
 import org.jboss.jms.wireformat.ConnectionCreateSessionDelegateRequest;
 import org.jboss.jms.wireformat.ConnectionCreateSessionDelegateResponse;
+import org.jboss.jms.wireformat.ConnectionFactoryAddCallbackRequest;
 import org.jboss.jms.wireformat.ConnectionFactoryCreateConnectionDelegateRequest;
 import org.jboss.jms.wireformat.ConnectionFactoryCreateConnectionDelegateResponse;
 import org.jboss.jms.wireformat.ConnectionFactoryGetClientAOPStackRequest;
 import org.jboss.jms.wireformat.ConnectionFactoryGetClientAOPStackResponse;
+import org.jboss.jms.wireformat.ConnectionFactoryGetTopologyRequest;
+import org.jboss.jms.wireformat.ConnectionFactoryRemoveCallbackRequest;
 import org.jboss.jms.wireformat.ConnectionGetClientIDRequest;
 import org.jboss.jms.wireformat.ConnectionGetClientIDResponse;
 import org.jboss.jms.wireformat.ConnectionGetIDBlockRequest;
@@ -95,10 +98,6 @@ import org.jboss.jms.wireformat.SessionDeleteTemporaryDestinationRequest;
 import org.jboss.jms.wireformat.SessionRecoverDeliveriesRequest;
 import org.jboss.jms.wireformat.SessionSendRequest;
 import org.jboss.jms.wireformat.SessionUnsubscribeRequest;
-import org.jboss.jms.wireformat.ConnectionFactoryAddCallbackRequest;
-import org.jboss.jms.wireformat.ConnectionFactoryGetTopologyRequest;
-import org.jboss.jms.wireformat.ConnectionFactoryGetTopologyResponse;
-import org.jboss.jms.wireformat.ConnectionFactoryRemoveCallbackRequest;
 import org.jboss.remoting.InvocationRequest;
 
 /**

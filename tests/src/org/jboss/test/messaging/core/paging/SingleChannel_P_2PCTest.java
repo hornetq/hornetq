@@ -28,7 +28,6 @@ import org.jboss.messaging.core.contract.MessageReference;
 import org.jboss.messaging.core.impl.MessagingQueue;
 import org.jboss.messaging.core.impl.SimpleDelivery;
 import org.jboss.messaging.core.impl.tx.Transaction;
-import org.jboss.messaging.util.LockMap;
 import org.jboss.test.messaging.util.CoreMessageFactory;
 
 /**
@@ -1011,9 +1010,5 @@ public class SingleChannel_P_2PCTest extends PagingStateTestBase
       //Make sure there are no more refs in queue
       
       assertEquals(0, queue.getMessageCount());
-      
-      
-      assertEquals(0, LockMap.instance.getSize());
-         
    }
 }
