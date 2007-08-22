@@ -82,9 +82,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
    private static final Logger log = Logger.getLogger(JDBCPersistenceManager.class); 
 
    // Static --------------------------------------------------------
-   
-   // Attributes ----------------------------------------------------
-   
+      
    private boolean trace = log.isTraceEnabled();
       
    private boolean usingBinaryStream = true;
