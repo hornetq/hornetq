@@ -1485,6 +1485,8 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
 		      PreparedStatement psReference = null;
 		      PreparedStatement psInsertMessage = null;
 		      PreparedStatement psUpdateReference = null;
+		      
+		      List<Message> messagesStored = new ArrayList<Message>();
 		 
 		      try
 		      {
@@ -1531,6 +1533,8 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
 			            	if (trace) { log.trace("Inserted " + rows + " rows"); }
 
 				            m.setPersisted(true);				   			
+				            
+				            messagesStored.add(m);
 			            }
 		            }
 		         }         
@@ -1556,6 +1560,16 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
 		         }         
 		         
 		         return null;
+		      }
+		      catch (Exception e)
+		      {
+		      	for (Iterator i = messagesStored.iterator(); i.hasNext(); )
+		         {
+		      		Message msg = (Message)i.next();
+		      		
+		      		msg.setPersisted(false);
+		         }
+		      	throw e;
 		      }
 		      finally
 		      {
