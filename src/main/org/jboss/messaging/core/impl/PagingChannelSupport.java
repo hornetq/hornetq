@@ -247,11 +247,7 @@ public abstract class PagingChannelSupport extends ChannelSupport
       // Must flush the down cache first
       flushDownCache();
       
-      log.info("flushed down cache");
-      
       List refInfos = pm.getPagedReferenceInfos(channelID, firstPagingOrder, number);     
-      
-      log.info("Loaded " + refInfos.size() + " ref infos");
       
       Map refMap = processReferences(refInfos);
 
@@ -268,16 +264,12 @@ public abstract class PagingChannelSupport extends ChannelSupport
          
          MessageReference ref = addFromRefInfo(info, refMap);
          
-         log.info("ref is " + ref + " recoverable " + recoverable);
-         
          if (recoverable && ref.getMessage().isReliable())
          {
-         	log.info("loaded reliable");
             loadedReliable = true;
          }
          else
          {
-         	log.info("Loaded not reliable");
             // We put the non reliable refs (or reliable in a non-recoverable store)
             // in a list to be removed
             toRemove.add(ref);
@@ -551,7 +543,6 @@ public abstract class PagingChannelSupport extends ChannelSupport
 
          if (ref != null)
          {
-         	log.info("Found ref in store, msg is " + ref.getMessage());
             refMap.put(msgId, ref);
          }
          else
