@@ -441,6 +441,8 @@ public abstract class PagingChannelSupport extends ChannelSupport
 
       Iterator iter = downCache.iterator();
       
+      log.info("Flushing down cache");
+      
       while (iter.hasNext())
       {
          MessageReference ref = (MessageReference) iter.next();
