@@ -39,6 +39,7 @@ import javax.jms.Topic;
 import org.jboss.jms.client.FailoverEvent;
 import org.jboss.jms.client.JBossConnection;
 import org.jboss.jms.client.JBossSession;
+import org.jboss.jms.client.JBossConnectionFactory;
 import org.jboss.jms.client.delegate.ClientClusteredConnectionFactoryDelegate;
 import org.jboss.jms.client.delegate.ClientConnectionDelegate;
 import org.jboss.jms.client.delegate.ClientConnectionFactoryDelegate;
@@ -689,6 +690,58 @@ public class HATest extends ClusteringTestBase
             try { conn.close(); } catch (Throwable ignored) {}
          }
       }
+   }
+
+   /** testcase for http://jira.jboss.com/jira/browse/JBMESSAGING-1038 */
+   public void testHopping() throws Exception
+   {
+
+      JBossConnectionFactory localcf = (JBossConnectionFactory)ic[0].lookup("/ClusteredConnectionFactory");
+      ClientClusteredConnectionFactoryDelegate cfdelegate = (ClientClusteredConnectionFactoryDelegate)localcf.getDelegate();
+
+      ((ClientClusteredConnectionFactoryDelegate)cf.getDelegate()).closeCallback();
+
+      // After this, the CF won't get any callbacks
+      cfdelegate.closeCallback();
+
+      Connection conn = createConnectionOnServer(localcf, 1);
+
+      try
+      {
+
+         Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         MessageProducer producer = sess.createProducer(queue[1]);
+
+         MessageConsumer consumer = sess.createConsumer(queue[1]);
+
+         conn.start();
+
+         producer.send(sess.createTextMessage("sent before kill"));
+         TextMessage msg = (TextMessage)consumer.receive(2000);
+
+         assertNotNull(msg);
+         assertEquals("sent before kill", msg.getText());
+
+         ServerManagement.kill(2);
+         ServerManagement.kill(1);
+
+         // We need to guarantee we still have the old failover map (before the topology change for the test to be valid)
+         assertEquals(3, cfdelegate.getDelegates().length);
+
+         log.info("Sending Message");
+         producer.send(sess.createTextMessage("sent after kill"));
+         msg = (TextMessage) consumer.receive(2000);
+
+         assertNotNull(msg);
+         assertEquals("sent after kill", msg.getText());
+
+         assertEquals(0, getServerId(conn));
+      }
+      finally
+      {
+         conn.close();
+      }
+
    }
 
    // Package protected ---------------------------------------------

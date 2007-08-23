@@ -106,10 +106,11 @@ public class ClusteringAspect
          // since an exception might be captured during an attempt, this has to be the first
          // operation
          attemptCount++;
+
+         int nextHopingServer = -1;
          try
          {
             int failedNodeIDToServer = -1;
-
             if (delegate == null)
             {
                if (failedNodeID != null && failedNodeID.intValue() >= 0)
@@ -117,6 +118,7 @@ public class ClusteringAspect
                	//It's a reconnect after failover
                   delegate = getFailoverDelegateForNode(failedNodeID);
                   failedNodeIDToServer = failedNodeID.intValue();
+                  nextHopingServer = delegate.getServerID();
                }
                else
                {
@@ -223,8 +225,10 @@ public class ClusteringAspect
          }
          catch (MessagingNetworkFailureException e)
          {
+            // Setting up the next failover
+            failedNodeID = new Integer(nextHopingServer);
             delegate = null;
-            log.warn("Exception captured on createConnection... hopping to a new connection factory", e);
+            log.warn("Exception captured on createConnection... hopping to a new connection factory on server (" + failedNodeID + ")", e);
             // Currently hardcoded
             Thread.sleep(2000);
          }
