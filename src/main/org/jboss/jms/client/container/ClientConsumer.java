@@ -129,7 +129,7 @@ public class ClientConsumer
                                     boolean shouldAck)
       throws JMSException
    {      
-      if (checkExpiredOrReachedMaxdeliveries(m, sess, maxDeliveries, shouldAck))
+      if (checkExpiredOrReachedMaxdeliveries(m, connectionConsumerSession!=null?connectionConsumerSession:sess, maxDeliveries, shouldAck))
       {
          //Message has been cancelled
          return;
