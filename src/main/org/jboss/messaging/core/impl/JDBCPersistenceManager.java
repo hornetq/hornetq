@@ -1993,7 +1993,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
       map.put("CREATE_MESSAGE",
               "CREATE TABLE JBM_MSG (MESSAGE_ID BIGINT, RELIABLE CHAR(1), " +
               "EXPIRATION BIGINT, TIMESTAMP BIGINT, PRIORITY TINYINT, HEADERS LONGVARBINARY, " +
-              "PAYLOAD LONGVARBINARY, TYPE TINYINT " +
+              "PAYLOAD LONGVARBINARY, TYPE TINYINT, " +
               "PRIMARY KEY (MESSAGE_ID))"); 
       map.put("CREATE_IDX_MESSAGE_TIMESTAMP", "CREATE INDEX JBM_MSG_REF_TIMESTAMP ON JBM_MSG (TIMESTAMP)");
       //Transaction
