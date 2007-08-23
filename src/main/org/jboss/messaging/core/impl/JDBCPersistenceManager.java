@@ -135,6 +135,8 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
       super.start();
 
       Connection conn = null;
+      
+      PreparedStatement ps = null;
 
       TransactionWrapper wrap = new TransactionWrapper();
 
@@ -154,6 +156,27 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
                "                         Using an isolation level more strict than READ_COMMITTED may lead to deadlock.\n";
             log.warn(warn);
          }
+         
+         //Now we need to insert a row in the DUAL table if it doesn't contain one already
+         ps = conn.prepareStatement(this.getSQLStatement("INSERT_DUAL"));
+         
+         try
+         {
+         	int rows = ps.executeUpdate();
+         
+         	if (trace) { log.trace("Inserted " + rows + " rows into dual"); }
+         }
+         catch (SQLException e)
+         {
+         	if (e.getSQLState().equals("23000"))
+         	{
+         		//Ignore  PK violation - since might already be inserted
+         	}
+         	else
+         	{
+         		throw e;
+         	}
+         }         
       }
       catch (Exception e)
       {
@@ -162,13 +185,11 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
       }
       finally
       {
-         if (conn != null)
-         {
-            conn.close();
-         }
+         closeStatement(ps);
+         closeConnection(conn);
          wrap.end();
       }
-             
+         
       log.debug(this + " started");
    }
    
@@ -531,14 +552,12 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
       		PreparedStatement psInsertReference = null;
       		PreparedStatement psInsertMessage = null;
       		
-      		List<Message> pagedMessages = new ArrayList<Message>();
-      		
       		try
       		{      		
 	      		Iterator iter = references.iterator();
 	
 	         	psInsertReference = conn.prepareStatement(getSQLStatement("INSERT_MESSAGE_REF"));
-	         	psInsertMessage = conn.prepareStatement(getSQLStatement("INSERT_MESSAGE"));
+	         	psInsertMessage = conn.prepareStatement(getSQLStatement("INSERT_MESSAGE_CONDITIONAL"));
 	
 	         	while (iter.hasNext())
 	         	{
@@ -563,62 +582,18 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
 	         		//Maybe we need to persist the message itself
 	         		Message m = ref.getMessage();
 	
-	         		synchronized (m)
-	         		{
-	         			if (!m.isPersisted())
-	         			{            	               
-	         				//The message might actually still already exist (despite pagedcount=0) due to it already being paged
-	         				//so we insert and ignore key violations
-	
-	         				storeMessage(m, psInsertMessage); 
-	
-	         				try
-	         				{
-	         					rows = psInsertMessage.executeUpdate();
-	         				}
-	         				catch (SQLException e)
-	         				{
-	         					if (e.getSQLState().equals("23000"))
-	         					{
-	         						//This is a primary key violation
-	         						//It might legitimately occur if the ref has been paged to two channels so it is not
-	         						//left in memory any more, then loaded by one channel
-	         						//The paged count would then be one, not two
-	         						if (trace) { log.trace("Primary key violation detected", e); }
-	         						
-	         						//When we retry we don't want to insert again, so set persisted to true
-	         						m.setPersisted(true);
-	         						
-	         						//Throw the exception so the tx is retried - the next time it won't try and insert the message
-	         						violationOk = true;
-	         					}
-         						
-         						throw e;
-	         				}
-	
-	         				if (trace) { log.trace("Inserted " + rows + " rows"); }	               
-	
-	         				m.setPersisted(true);
-	         				
-	         				pagedMessages.add(m);
-	         			}
-	         		}
+	         		//We always try and insert the message, even if it might already be paged -
+	         		//we use a conditional insert though, so it won't insert it if it already exists
+
+      				storeMessage(m, psInsertMessage); 
+      				psInsertMessage.setLong(9, m.getMessageID());
+
+      			   rows = psInsertMessage.executeUpdate();
+      				
+      				if (trace) { log.trace("Inserted " + rows + " rows"); }	               
 	         	} 
 	         	
 	         	return null;
-      		}
-      		catch (Exception e)
-      		{
-      			//The tx will be rolled back
-      			//so we need to set the messages to not persisted
-      			for (Iterator iter = pagedMessages.iterator(); iter.hasNext(); )
-               {
-                  Message msg = (Message)iter.next();
-      			
-                  msg.setPersisted(false);
-      			}
-      			
-      			throw e;
       		}
       		finally
       		{
@@ -642,8 +617,6 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
    		{
 		      PreparedStatement psDeleteReference = null; 
 		      
-		      List<Message> depagedReferences = new ArrayList<Message>();
-		       
 		      try
 		      {	
 		         psDeleteReference = conn.prepareStatement(getSQLStatement("DELETE_MESSAGE_REF"));
@@ -658,29 +631,11 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
 		            
 		            int rows = psDeleteReference.executeUpdate();
 		               
-		            if (trace) { log.trace("Deleted " + rows + " rows"); }		            
-		                          
-		            //There is a small possibility that the ref is depaged here, then paged again, before this flag is set
-		            //and the tx is committed so the message be attempted to be inserted twice but this should be ok
-		            //since we ignore key violations on message insert		      
-		            
-		            ref.getMessage().setPersisted(false);
-		            
-		            depagedReferences.add(ref.getMessage());
+		            if (trace) { log.trace("Deleted " + rows + " rows"); }		            		                          
 		         }         
 		         
 		         return null;
-		      }
-		      catch (Exception e)
-		      {
-		      	for (Iterator iter = depagedReferences.iterator(); iter.hasNext(); )
-               {
-                  Message msg = (Message)iter.next();
-      			
-                  msg.setPersisted(true);
-      			}
-		      	throw e;
-		      }
+		      }		      
 		      finally
 		      {
 		      	closeStatement(psDeleteReference);       
@@ -2023,6 +1978,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
    protected Map getDefaultDDLStatements()
    {
       Map<String, String> map = new LinkedHashMap<String, String>();
+      map.put("CREATE_DUAL", "CREATE TABLE JBM_DUAL (DUMMY INTEGER)");
       //Message reference
       map.put("CREATE_MESSAGE_REFERENCE",
               "CREATE TABLE JBM_MSG_REF (CHANNEL_ID BIGINT, " +
@@ -2054,6 +2010,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
    protected Map getDefaultDMLStatements()
    {                
       Map<String, String> map = new LinkedHashMap<String, String>();
+      map.put("INSERT_DUAL", "INSERT INTO JBM_DUAL VALUES (1) WHERE NOT EXISTS (SELECT * FROM JBM_DUAL)");
       //Message reference
       map.put("INSERT_MESSAGE_REF",
               "INSERT INTO JBM_MSG_REF (CHANNEL_ID, MESSAGE_ID, TRANSACTION_ID, STATE, ORD, PAGE_ORD, DELIVERY_COUNT, SCHED_DELIVERY) " +
@@ -2091,6 +2048,11 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
               "INSERT INTO JBM_MSG (MESSAGE_ID, RELIABLE, EXPIRATION, " +
               "TIMESTAMP, PRIORITY, HEADERS, PAYLOAD, TYPE) " +           
               "VALUES (?, ?, ?, ?, ?, ?, ?, ?)" );
+      map.put("INSERT_MESSAGE_CONDITIONAL",
+      		  "INSERT INTO JBM_MSG (MESSAGE_ID, RELIABLE, EXPIRATION, " +
+              "TIMESTAMP, PRIORITY, HEADERS, PAYLOAD, TYPE) " +     
+              "SELECT (?, ?, ?, ?, ?, ?, ?, ?) " + 
+              "FROM JBM_DUAL WHERE NOT EXISTS (SELECT MESSAGE_ID FROM JBM_MSG WHERE MESSAGE_ID = ?)");	
       map.put("MESSAGE_ID_COLUMN", "MESSAGE_ID");
       map.put("MESSAGE_EXISTS", "SELECT MESSAGE_ID FROM JBM_MSG WHERE MESSAGE_ID = ?");
       map.put("REAP_MESSAGES", "DELETE FROM JBM_MSG WHERE TIMESTAMP <= ? AND NOT EXISTS (SELECT * FROM JBM_MSG_REF WHERE JBM_MSG_REF.MESSAGE_ID = JBM_MSG.MESSAGE_ID)");
@@ -2418,9 +2380,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
    	Connection conn;
 
       TransactionWrapper wrap;
-      
-      boolean violationOk;
-      
+         
 		public Object execute() throws Exception
 		{
 	      wrap = new TransactionWrapper();
@@ -2460,26 +2420,18 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
 	            return res;	            
 	         }
 	         catch (SQLException e)
-	         {
-	         	if (e.getSQLState().equals("23000") && violationOk)
-	         	{
-	         		//Primary key violation - this is ok - we retry immediately
-	         		violationOk = false;
-	         	}
-	         	else
-	         	{		         	
-		            log.warn("SQLException caught, SQLState " + e.getSQLState() + " code:" + e.getErrorCode() + "- assuming deadlock detected, try:" + (tries + 1), e);
-		            
-		            tries++;
-		            if (tries == MAX_TRIES)
-		            {
-		               log.error("Retried " + tries + " times, now giving up");
-		               throw new IllegalStateException("Failed to excecute transaction");
-		            }
-		            log.warn("Trying again after a pause");
-		            //Now we wait for a random amount of time to minimise risk of deadlock
-		            Thread.sleep((long)(Math.random() * 500));
-	         	}
+	         {       	
+	            log.warn("SQLException caught, SQLState " + e.getSQLState() + " code:" + e.getErrorCode() + "- assuming deadlock detected, try:" + (tries + 1), e);
+	            
+	            tries++;
+	            if (tries == MAX_TRIES)
+	            {
+	               log.error("Retried " + tries + " times, now giving up");
+	               throw new IllegalStateException("Failed to excecute transaction");
+	            }
+	            log.warn("Trying again after a pause");
+	            //Now we wait for a random amount of time to minimise risk of deadlock
+	            Thread.sleep((long)(Math.random() * 500));	         	
 	         }  
 	      }
 		}
