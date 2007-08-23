@@ -2051,7 +2051,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
       map.put("INSERT_MESSAGE_CONDITIONAL",
       		  "INSERT INTO JBM_MSG (MESSAGE_ID, RELIABLE, EXPIRATION, " +
               "TIMESTAMP, PRIORITY, HEADERS, PAYLOAD, TYPE) " +     
-              "SELECT (?, ?, ?, ?, ?, ?, ?, ?) " + 
+              "SELECT ?, ?, ?, ?, ?, ?, ?, ? " + 
               "FROM JBM_DUAL WHERE NOT EXISTS (SELECT MESSAGE_ID FROM JBM_MSG WHERE MESSAGE_ID = ?)");	
       map.put("MESSAGE_ID_COLUMN", "MESSAGE_ID");
       map.put("MESSAGE_EXISTS", "SELECT MESSAGE_ID FROM JBM_MSG WHERE MESSAGE_ID = ?");
