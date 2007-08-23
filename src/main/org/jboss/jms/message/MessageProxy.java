@@ -466,7 +466,7 @@ public class MessageProxy implements Message, Serializable
 
    public String toString()
    {
-      return "delegator->" + message;
+      return "delegator->" + message + ", deliveryId=" + deliveryId;
    }
 
    // Package protected ---------------------------------------------

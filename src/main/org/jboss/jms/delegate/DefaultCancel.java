@@ -93,6 +93,14 @@ public class DefaultCancel implements Cancel
       return reachedMaxDeliveryAttempts;
    }
 
+   public String toString()
+   {
+      return "DefaultCancel(deliveryId=" + deliveryId +
+             ", deliveryCount=" + deliveryCount +
+             ", expired=" + expired +
+             ", reachedMaxDeliveryAttempts=" + reachedMaxDeliveryAttempts + ")";
+   }
+
    // Class YYY overrides -------------------------------------------
 
    // Protected -----------------------------------------------------
