@@ -601,9 +601,9 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
 	         						
 	         						//Throw the exception so the tx is retried - the next time it won't try and insert the message
 	         						violationOk = true;
-	         						
-	         						throw e;
 	         					}
+         						
+         						throw e;
 	         				}
 	
 	         				if (trace) { log.trace("Inserted " + rows + " rows"); }	               
