@@ -518,16 +518,6 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
    // Related to paging functionality
    // ===============================                 
    
-   //We need to prevent pageReferences and removeDepagedReferences being called concurrently
-   //This is because otherwise we could end up with a ref being depaged from channel A, then paged
-   //from channel B, but the channel B page doesn't insert the message since persisted is not set to true until after the
-   //the ref has been paged from A.
-   //We need to lock around the entire DB operation *including* the commit
-   //The locking could be made more fine grained but this would involve fine grained locking on list of messages
-   //which is fiddly since we would have to order them to prevent deadlocks
-   private Object pageLock = new Object();
-   
-   
    //Used to page NP messages or P messages in a non recoverable queue
    
    public void pageReferences(final long channelID, final List references, final boolean page) throws Exception
@@ -638,10 +628,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
    		}      	      	      	
       }
    	
-   	synchronized (pageLock)
-   	{
-   		new PageReferencesRunner().executeWithRetry();
-   	}
+   	new PageReferencesRunner().executeWithRetry();   	
    }
          
    //After loading paged refs this is used to remove any NP or P messages in a unrecoverable channel
@@ -701,10 +688,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
    		}
       }
       
-      synchronized (pageLock)
-      {
-      	new RemoveDepagedReferencesRunner().executeWithRetry();
-      }
+      new RemoveDepagedReferencesRunner().executeWithRetry();      
    }
    
    // After loading paged refs this is used to update P messages to non paged
