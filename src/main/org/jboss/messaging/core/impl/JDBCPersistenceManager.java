@@ -2218,44 +2218,42 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
       return order;
    }
    
-   private void reapUnreferencedMessages(long timestamp) throws Exception
+   private void reapUnreferencedMessages(final long timestamp) throws Exception
    {
-   	 Connection conn = null;
-       PreparedStatement ps = null;
-       TransactionWrapper wrap = new TransactionWrapper();
-       
-       int rows = -1;
-       
-   	 long start = System.currentTimeMillis();
-   	        
-       try
-       {
-          conn = ds.getConnection();
-          
-          ps = conn.prepareStatement(getSQLStatement("REAP_MESSAGES"));
-          
-          ps.setLong(1, timestamp);
-          
-          rows = ps.executeUpdate();             
-       }
-       catch (Exception e)
-       {
-          wrap.exceptionOccurred();
-          throw e;
-       }
-       finally
-       {
-       	closeStatement(ps);
-       	closeConnection(conn);
-         wrap.end();
-         
-         long end = System.currentTimeMillis();
-         
-         if (trace) { log.trace("Reaper reaped " + rows + " messages in " + (end - start) + " ms"); }
-       }   	
+   	class ReaperRunner extends JDBCTxRunner
+   	{
+			public Object doTransaction() throws Exception
+			{
+				PreparedStatement ps = null;
+			   
+		       int rows = -1;
+		       		   	      
+		       try
+		       {
+		          ps = conn.prepareStatement(getSQLStatement("REAP_MESSAGES"));
+		          
+		          ps.setLong(1, timestamp);
+		          
+		          rows = ps.executeUpdate();
+		          
+		          return rows;
+		       }		       
+		       finally
+		       {
+		       	closeStatement(ps);		         		        
+		       }
+			}   		
+   	}
+   	
+   	long start = System.currentTimeMillis();
+	   
+   	int rows = (Integer)new ReaperRunner().executeWithRetry();
+   	 
+   	long end = System.currentTimeMillis();
+      
+      if (trace) { log.trace("Reaper reaped " + rows + " messages in " + (end - start) + " ms"); }
    }
-  
-   
+     
    // Inner classes -------------------------------------------------
             
    private class Reaper extends TimerTask
