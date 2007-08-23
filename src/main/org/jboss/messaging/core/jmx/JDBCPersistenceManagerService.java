@@ -53,6 +53,8 @@ public class JDBCPersistenceManagerService extends JDBCServiceSupport
    
    private int maxParams = 100;
    
+   private long reaperPeriod = 5000;
+   
    // Constructors --------------------------------------------------------
    
    public JDBCPersistenceManagerService()
@@ -84,7 +86,7 @@ public class JDBCPersistenceManagerService extends JDBCServiceSupport
          persistenceManager =
             new JDBCPersistenceManager(ds, tm, sqlProperties,
                                        createTablesOnStartup, usingBatchUpdates,
-                                       usingBinaryStream, usingTrailingByte, maxParams);
+                                       usingBinaryStream, usingTrailingByte, maxParams, reaperPeriod);
          
          persistenceManager.start();
          
@@ -159,5 +161,20 @@ public class JDBCPersistenceManagerService extends JDBCServiceSupport
    public void setUsingTrailingByte(boolean b)
    {
       usingTrailingByte = b;
+   }
+   
+   public void setReaperPeriod(long reaperPeriod)
+   {
+   	if (reaperPeriod <= 0)
+   	{
+   		throw new IllegalArgumentException("reaperPeriod must be >= 0");
+   	}
+   	
+   	this.reaperPeriod = reaperPeriod;
+   }
+   
+   public long getReaperPeriod()
+   {
+   	return reaperPeriod;
    }
 }

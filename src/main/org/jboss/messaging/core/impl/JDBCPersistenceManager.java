@@ -108,7 +108,8 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
     
    public JDBCPersistenceManager(DataSource ds, TransactionManager tm, Properties sqlProperties,
                                  boolean createTablesOnStartup, boolean usingBatchUpdates,
-                                 boolean usingBinaryStream, boolean usingTrailingByte, int maxParams)
+                                 boolean usingBinaryStream, boolean usingTrailingByte, int maxParams,
+                                 long reaperPeriod)
    {
       super(ds, tm, sqlProperties, createTablesOnStartup);
       
@@ -120,7 +121,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
       
       this.maxParams = maxParams;    
       
-      this.reaperPeriod = 5000;
+      this.reaperPeriod = reaperPeriod;
       
       reaperTimer = new Timer(true);
       

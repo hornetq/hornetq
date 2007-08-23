@@ -63,7 +63,13 @@
       <description>The max number of params to be used in a generated PreparedStatement</description>
       <name>MaxParams</name>
       <type>int</type>
-   </attribute>     
+   </attribute> 
+   
+   <attribute access="read-write" getMethod="getReaperPeriod" setMethod="setReaperPeriod">
+      <description>The period in ms for the reaper to kick in and delete unreferenced messages from the database</description>
+      <name>ReaperPeriod</name>
+      <type>long</type>
+   </attribute>        
 
    <!-- Managed operations -->
 

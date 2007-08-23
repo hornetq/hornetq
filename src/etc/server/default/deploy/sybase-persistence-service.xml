@@ -89,6 +89,8 @@
       <!-- The maximum number of parameters to include in a prepared statement -->
                   
       <attribute name="MaxParams">500</attribute>
+      
+      <attribute name="ReaperPeriod">5000</attribute>
    </mbean>
 
    <!-- Messaging Post Office MBean configuration
