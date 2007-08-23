@@ -281,7 +281,8 @@ public abstract class PagingChannelSupport extends ChannelSupport
       if (!toRemove.isEmpty())
       {
          // Now we remove the references we loaded (only the non persistent or persistent in a non-recoverable store)
-         
+         if (trace) { log.trace(this + " removing depaged refs " + toRemove.size()); }
+ 
          pm.removeDepagedReferences(channelID, toRemove);
       }
 
@@ -290,11 +291,15 @@ public abstract class PagingChannelSupport extends ChannelSupport
          // If we loaded any reliable refs then we must set the page ordering to null in
          // the store otherwise they may get loaded again, the next time we do a load
          // We can't delete them since they're reliable and haven't been acked yet
+
+         if (trace) { log.trace("Updating refs not paged"); }
             
          pm.updateReferencesNotPagedInRange(channelID, firstPagingOrder, firstPagingOrder + number - 1, number - unreliableNumber);
       }
             
       firstPagingOrder += number;
+
+      if (trace) { log.trace(this + " set firstPagingOrder to " + firstPagingOrder); }
       
       if (firstPagingOrder == nextPagingOrder)
       {
