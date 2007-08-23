@@ -2010,7 +2010,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
    protected Map getDefaultDMLStatements()
    {                
       Map<String, String> map = new LinkedHashMap<String, String>();
-      map.put("INSERT_DUAL", "INSERT INTO JBM_DUAL VALUES (1) WHERE NOT EXISTS (SELECT * FROM JBM_DUAL)");
+      map.put("INSERT_DUAL", "INSERT INTO JBM_DUAL VALUES (1)");
       //Message reference
       map.put("INSERT_MESSAGE_REF",
               "INSERT INTO JBM_MSG_REF (CHANNEL_ID, MESSAGE_ID, TRANSACTION_ID, STATE, ORD, PAGE_ORD, DELIVERY_COUNT, SCHED_DELIVERY) " +
