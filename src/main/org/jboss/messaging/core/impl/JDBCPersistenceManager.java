@@ -2053,8 +2053,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
               "TIMESTAMP, PRIORITY, HEADERS, PAYLOAD, TYPE) " +     
               "SELECT ?, ?, ?, ?, ?, ?, ?, ? " + 
               "FROM JBM_DUAL WHERE NOT EXISTS (SELECT MESSAGE_ID FROM JBM_MSG WHERE MESSAGE_ID = ?)");	
-      map.put("MESSAGE_ID_COLUMN", "MESSAGE_ID");
-      map.put("MESSAGE_EXISTS", "SELECT MESSAGE_ID FROM JBM_MSG WHERE MESSAGE_ID = ?");
+      map.put("MESSAGE_ID_COLUMN", "MESSAGE_ID");     
       map.put("REAP_MESSAGES", "DELETE FROM JBM_MSG WHERE TIMESTAMP <= ? AND NOT EXISTS (SELECT * FROM JBM_MSG_REF WHERE JBM_MSG_REF.MESSAGE_ID = JBM_MSG.MESSAGE_ID)");
       //Transaction
       map.put("INSERT_TRANSACTION",
