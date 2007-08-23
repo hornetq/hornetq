@@ -80,11 +80,6 @@ public class ClusterViewUpdateTest extends ClusteringTestBase
       assertEquals(2, clusterDelegate.getDelegates().length);
 
       // Kill the same node as the CF is connected to
-      for (int i=5;i>0;i--)
-      {
-         log.info("kill in " + i);
-         Thread.sleep(1000);
-      }
       ServerManagement.kill(1);
       Thread.sleep(5000);
       assertEquals(1, clusterDelegate.getDelegates().length);
