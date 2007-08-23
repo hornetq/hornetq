@@ -31,7 +31,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -532,7 +531,9 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
    //Used to page NP messages or P messages in a non recoverable queue
    
    public void pageReferences(final long channelID, final List references, final boolean page) throws Exception
-   {      
+   {  
+   	if (trace) { log.trace("Paging references in channel " + channelID + " refs " + references.size()); }
+   	
    	class PageReferencesRunner extends JDBCTxRunner
       {	
       	public Object doTransaction() throws Exception
@@ -646,7 +647,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
    //After loading paged refs this is used to remove any NP or P messages in a unrecoverable channel
    public void removeDepagedReferences(final long channelID, final List references) throws Exception
    {   	
-      if (trace) { log.trace(this + " Removing " + references.size() + " refs from channel " + channelID); }
+      if (trace) { log.trace(this + " Removing depaged " + references.size() + " refs from channel " + channelID); }
       
       class RemoveDepagedReferencesRunner extends JDBCTxRunner
       {
@@ -748,211 +749,6 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
       }
       
       new UpdateReferencesNotPagedInRangeRunner().executeWithRetry();
-   }
-
-   public void mergeTransactions(final long fromChannelID, final long toChannelID) throws Exception
-   {
-      if (trace) { log.trace("Merging transactions from channel " + fromChannelID + " to " + toChannelID); }
-      
-      // Sanity check
-      
-      if (fromChannelID == toChannelID)
-      {
-      	throw new IllegalArgumentException("Cannot merge transactions - they have the same channel id!!");
-      }
-      
-      class MergeTransactionsRunner extends JDBCTxRunner
-      {
-      	public Object doTransaction() throws Exception
-   		{
-		      PreparedStatement statement = null;
-		      try
-		      {
-		         statement = conn.prepareStatement(getSQLStatement("UPDATE_TX"));
-		         statement.setLong(1, toChannelID);
-		         statement.setLong(2, fromChannelID);
-		         int affected = statement.executeUpdate();
-		
-		         log.debug("Merged " + affected + " transactions from channel " + fromChannelID + " into node " + toChannelID);
-		         
-		         return null;
-		      }
-		      finally
-		      {
-		         closeStatement(statement);
-		      }
-   		}
-      }
-      
-      new MergeTransactionsRunner().executeWithRetry();
-   }
-   
-   public InitialLoadInfo mergeAndLoad(final long fromChannelID, final long toChannelID, final int numberToLoad, final long firstPagingOrder, final long nextPagingOrder) throws Exception
-   {
-      if (trace) { log.trace("Merging channel from " + fromChannelID + " to " + toChannelID + " numberToLoad:" + numberToLoad + " firstPagingOrder:" + firstPagingOrder + " nextPagingOrder:" + nextPagingOrder); }
-      
-      //Sanity
-      
-      if (fromChannelID == toChannelID)
-      {
-      	throw new IllegalArgumentException("Cannot merge queues - they have the same channel id!!");
-      }
-
-      class MergeAndLoadRunner extends JDBCTxRunner
-      {
-      	public Object doTransaction() throws Exception
-   		{      
-		      PreparedStatement ps = null;
-		      ResultSet rs = null;      
-		      PreparedStatement ps2 = null;
-		    
-		      try
-		      {
-		         /*
-		          * If channel is paging and has full size f
-		          * 
-		          * then we don't need to load any refs but we need to:
-		          * 
-		          * make sure the page ord is correct across the old paged and new refs
-		          * 
-		          * we know the max page ord (from the channel) for the old refs so we just need to:
-		          * 
-		          * 1) Iterate through the failed channel and update page_ord = max + 1, max + 2 etc
-		          * 
-		          * 2) update channel id
-		          * 
-		          * 
-		          * If channel is not paging and the total refs before and after <=f
-		          * 
-		          * 1) Load all refs from failed channel
-		          * 
-		          * 2) Update channel id
-		          * 
-		          * return those refs
-		          * 
-		          * 
-		          * If channel is not paging but total new refs > f
-		          * 
-		          * 1) Iterate through failed channel refs and take the first x to make the channel full
-		          * 
-		          * 2) Update the others with page_ord starting at zero 
-		          * 
-		          * 3) Update channel id
-		          * 
-		          * In general:
-		          * 
-		          * We have number to load n, max page size p
-		          * 
-		          * 1) Iterate through failed channel refs in page_ord order
-		          * 
-		          * 2) Put the first n in a List.
-		          * 
-		          * 3) Initialise page_ord_count to be p or 0 depending on whether it was specified
-		          * 
-		          * 4) Update the page_ord of the remaining refs accordiningly
-		          * 
-		          * 5) Update the channel id
-		          * 
-		          */
-		         
-		         //First load the refs from the failed channel
-		
-		         List<ReferenceInfo> refs = new ArrayList<ReferenceInfo>();
-		         
-		         ps = conn.prepareStatement(getSQLStatement("LOAD_REFS"));
-		         
-		         ps.setLong(1, fromChannelID);
-		                 
-		         rs = ps.executeQuery();
-		         
-		         int count = 0;
-		         
-		         boolean arePaged = false;
-		         
-		         long pageOrd = nextPagingOrder;
-		         
-		         while (rs.next())
-		         {
-		            long msgId = rs.getLong(1);            
-		            int deliveryCount = rs.getInt(2);
-		            long sched = rs.getLong(3);
-		            
-		            if (count < numberToLoad)
-		            {           
-		               ReferenceInfo ri = new ReferenceInfo(msgId, deliveryCount, sched);
-		               
-		               refs.add(ri);
-		            }
-		            
-		            // Set page ord
-		            
-		            if (ps2 == null)
-		            {
-		               ps2 = conn.prepareStatement(getSQLStatement("UPDATE_PAGE_ORDER"));
-		            }
-		                
-		            if (count < numberToLoad)
-		            {
-		               ps2.setNull(1, Types.BIGINT);
-		               
-		               if (trace) { log.trace("Set page ord to null"); }
-		            }
-		            else
-		            {                                 
-		               ps2.setLong(1, pageOrd);
-		               
-		               if (trace) { log.trace("Set page ord to " + pageOrd); }
-		               
-		               arePaged = true; 
-		               
-		               pageOrd++;                      
-		            }
-		            
-		            ps2.setLong(2, msgId);
-		            
-		            ps2.setLong(3, fromChannelID);
-		            
-		            int rows = ps2.executeUpdate();
-		            
-		            if (trace) { log.trace("Update page ord updated " + rows + " rows"); }
-		
-		            count++;            
-		         }
-		         
-		         ps.close();
-		         
-		         ps = null;
-		         
-		         // Now swap the channel id
-		         
-		         ps = conn.prepareStatement(getSQLStatement("UPDATE_CHANNEL_ID"));
-		         
-		         ps.setLong(1, toChannelID);
-		         
-		         ps.setLong(2, fromChannelID);
-		         
-		         int rows = ps.executeUpdate();
-		         
-		         if (trace) { log.trace("Update channel id updated " + rows + " rows"); }
-		                           
-		         if (arePaged)
-		         {            
-		            return new InitialLoadInfo(new Long(firstPagingOrder), new Long(pageOrd - 1), refs);
-		         }
-		         else
-		         {
-		            return new InitialLoadInfo(null, null, refs);
-		         }         
-		      }
-		      finally
-		      {      
-		         closeResultSet(rs);
-		      	closeStatement(ps);
-		      	closeStatement(ps2);
-		      }
-   		}
-      }
-      return (InitialLoadInfo)new MergeAndLoadRunner().executeWithRetry();      
    }
    
    public void updatePageOrder(final long channelID, final List references) throws Exception
@@ -1158,6 +954,214 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
       }      
    }   
    
+   
+   // Merging functionality
+   // --------------------
+   
+   public void mergeTransactions(final long fromChannelID, final long toChannelID) throws Exception
+   {
+      if (trace) { log.trace("Merging transactions from channel " + fromChannelID + " to " + toChannelID); }
+      
+      // Sanity check
+      
+      if (fromChannelID == toChannelID)
+      {
+      	throw new IllegalArgumentException("Cannot merge transactions - they have the same channel id!!");
+      }
+      
+      class MergeTransactionsRunner extends JDBCTxRunner
+      {
+      	public Object doTransaction() throws Exception
+   		{
+		      PreparedStatement statement = null;
+		      try
+		      {
+		         statement = conn.prepareStatement(getSQLStatement("UPDATE_TX"));
+		         statement.setLong(1, toChannelID);
+		         statement.setLong(2, fromChannelID);
+		         int affected = statement.executeUpdate();
+		
+		         log.debug("Merged " + affected + " transactions from channel " + fromChannelID + " into node " + toChannelID);
+		         
+		         return null;
+		      }
+		      finally
+		      {
+		         closeStatement(statement);
+		      }
+   		}
+      }
+      
+      new MergeTransactionsRunner().executeWithRetry();
+   }
+   
+   public InitialLoadInfo mergeAndLoad(final long fromChannelID, final long toChannelID, final int numberToLoad, final long firstPagingOrder, final long nextPagingOrder) throws Exception
+   {
+      if (trace) { log.trace("Merging channel from " + fromChannelID + " to " + toChannelID + " numberToLoad:" + numberToLoad + " firstPagingOrder:" + firstPagingOrder + " nextPagingOrder:" + nextPagingOrder); }
+      
+      //Sanity
+      
+      if (fromChannelID == toChannelID)
+      {
+      	throw new IllegalArgumentException("Cannot merge queues - they have the same channel id!!");
+      }
+
+      class MergeAndLoadRunner extends JDBCTxRunner
+      {
+      	public Object doTransaction() throws Exception
+   		{      
+		      PreparedStatement ps = null;
+		      ResultSet rs = null;      
+		      PreparedStatement ps2 = null;
+		    
+		      try
+		      {
+		         /*
+		          * If channel is paging and has full size f
+		          * 
+		          * then we don't need to load any refs but we need to:
+		          * 
+		          * make sure the page ord is correct across the old paged and new refs
+		          * 
+		          * we know the max page ord (from the channel) for the old refs so we just need to:
+		          * 
+		          * 1) Iterate through the failed channel and update page_ord = max + 1, max + 2 etc
+		          * 
+		          * 2) update channel id
+		          * 
+		          * 
+		          * If channel is not paging and the total refs before and after <=f
+		          * 
+		          * 1) Load all refs from failed channel
+		          * 
+		          * 2) Update channel id
+		          * 
+		          * return those refs
+		          * 
+		          * 
+		          * If channel is not paging but total new refs > f
+		          * 
+		          * 1) Iterate through failed channel refs and take the first x to make the channel full
+		          * 
+		          * 2) Update the others with page_ord starting at zero 
+		          * 
+		          * 3) Update channel id
+		          * 
+		          * In general:
+		          * 
+		          * We have number to load n, max page size p
+		          * 
+		          * 1) Iterate through failed channel refs in page_ord order
+		          * 
+		          * 2) Put the first n in a List.
+		          * 
+		          * 3) Initialise page_ord_count to be p or 0 depending on whether it was specified
+		          * 
+		          * 4) Update the page_ord of the remaining refs accordiningly
+		          * 
+		          * 5) Update the channel id
+		          * 
+		          */
+		         
+		         //First load the refs from the failed channel
+		
+		         List<ReferenceInfo> refs = new ArrayList<ReferenceInfo>();
+		         
+		         ps = conn.prepareStatement(getSQLStatement("LOAD_REFS"));
+		         
+		         ps.setLong(1, fromChannelID);
+		                 
+		         rs = ps.executeQuery();
+		         
+		         int count = 0;
+		         
+		         boolean arePaged = false;
+		         
+		         long pageOrd = nextPagingOrder;
+		         
+		         while (rs.next())
+		         {
+		            long msgId = rs.getLong(1);            
+		            int deliveryCount = rs.getInt(2);
+		            long sched = rs.getLong(3);
+		            
+		            if (count < numberToLoad)
+		            {           
+		               ReferenceInfo ri = new ReferenceInfo(msgId, deliveryCount, sched);
+		               
+		               refs.add(ri);
+		            }
+		            
+		            // Set page ord
+		            
+		            if (ps2 == null)
+		            {
+		               ps2 = conn.prepareStatement(getSQLStatement("UPDATE_PAGE_ORDER"));
+		            }
+		                
+		            if (count < numberToLoad)
+		            {
+		               ps2.setNull(1, Types.BIGINT);
+		               
+		               if (trace) { log.trace("Set page ord to null"); }
+		            }
+		            else
+		            {                                 
+		               ps2.setLong(1, pageOrd);
+		               
+		               if (trace) { log.trace("Set page ord to " + pageOrd); }
+		               
+		               arePaged = true; 
+		               
+		               pageOrd++;                      
+		            }
+		            
+		            ps2.setLong(2, msgId);
+		            
+		            ps2.setLong(3, fromChannelID);
+		            
+		            int rows = ps2.executeUpdate();
+		            
+		            if (trace) { log.trace("Update page ord updated " + rows + " rows"); }
+		
+		            count++;            
+		         }
+		         
+		         ps.close();
+		         
+		         ps = null;
+		         
+		         // Now swap the channel id
+		         
+		         ps = conn.prepareStatement(getSQLStatement("UPDATE_CHANNEL_ID"));
+		         
+		         ps.setLong(1, toChannelID);
+		         
+		         ps.setLong(2, fromChannelID);
+		         
+		         int rows = ps.executeUpdate();
+		         
+		         if (trace) { log.trace("Update channel id updated " + rows + " rows"); }
+		                           
+		         if (arePaged)
+		         {            
+		            return new InitialLoadInfo(new Long(firstPagingOrder), new Long(pageOrd - 1), refs);
+		         }
+		         else
+		         {
+		            return new InitialLoadInfo(null, null, refs);
+		         }         
+		      }
+		      finally
+		      {      
+		         closeResultSet(rs);
+		      	closeStatement(ps);
+		      	closeStatement(ps2);
+		      }
+   		}
+      }
+      return (InitialLoadInfo)new MergeAndLoadRunner().executeWithRetry();      
+   }
    
    // End of paging functionality
    // ===========================
