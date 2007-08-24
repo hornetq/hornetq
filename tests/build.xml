@@ -343,7 +343,6 @@
 	       <include name="**/messaging/core/**/${test-mask}.class"/> 
 	       <include name="**/jms/**/${test-mask}.class"/>
                <include name="**/messaging/util/**/${test-mask}.class"/>
-
                <exclude name="**/jms/MemLeakTest.class"/>
                <exclude name="**/jms/RemotingConnectionConfigurationTest.class"/>
                <exclude name="**/jms/XAResourceRecoveryTest.class"/>

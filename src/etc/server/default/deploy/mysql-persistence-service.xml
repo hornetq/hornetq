@@ -144,8 +144,8 @@ LOAD_BINDINGS=SELECT QUEUE_NAME, COND, SELECTOR, CHANNEL_ID, CLUSTERED, ALL_NODE
       <attribute name="ChannelPartitionName">${jboss.partition.name:DefaultPartition}-JMS</attribute>
       -->
       
-      <!-- JGroups stack configuration for the data channel - used for sending data across the cluster -->               
-      
+      <!-- JGroups stack configuration for the data channel - used for sending data across the cluster --> 
+                        
       <attribute name="DataChannelConfig">
          <config>
             <UDP
@@ -189,12 +189,13 @@ LOAD_BINDINGS=SELECT QUEUE_NAME, COND, SELECTOR, CHANNEL_ID, CLUSTERED, ALL_NODE
                         view_ack_collection_timeout="5000"/>
             <FC max_credits="2000000" down_thread="false" up_thread="false"
                 min_threshold="0.10"/>
-            <FRAG2 frag_size="60000" down_thread="false" up_thread="false"/>   
+            <FRAG2 frag_size="60000" down_thread="false" up_thread="false"/>         
+            
          </config>
       </attribute>
       
       <!-- JGroups stack configuration to use for the control channel - used for control messages -->         
-       
+              
       <attribute name="ControlChannelConfig">
          <config>
             <UDP
@@ -239,7 +240,8 @@ LOAD_BINDINGS=SELECT QUEUE_NAME, COND, SELECTOR, CHANNEL_ID, CLUSTERED, ALL_NODE
             <pbcast.STATE_TRANSFER down_thread="false" up_thread="false" use_flush="true" flush_timeout="3000"/>
             <pbcast.FLUSH down_thread="false" up_thread="false" timeout="20000" auto_flush_conf="false"/>
         </config>
-      </attribute>
+     </attribute>	    
+      
    </mbean>
    
    <!-- Messaging JMS User Manager MBean config

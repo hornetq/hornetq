@@ -1509,15 +1509,9 @@ public class ServerPeer extends ServiceMBeanSupport
             
       //Unbind the destination's queues
       
-      log.info("Destroying destination " + name);
-      
-      log.info("Got queues " + queues.size());
-
       while (iter.hasNext())            
       {
          Queue queue = (Queue)iter.next();
-         
-         log.info("Queue is " + queue);
          
          queue.removeAllReferences();
          

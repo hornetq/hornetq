@@ -410,6 +410,8 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
          // Stop office 2
          office2.stop();
          
+         Thread.sleep(1000);
+         
          queues = office3.getQueuesForCondition(condition1, false);
          assertNotNull(queues);
          assertEquals(1, queues.size());
@@ -468,8 +470,9 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
          
          //Unbind it
          
+         log.info("Removing queue6 binding");
          removed = office1.removeBinding(queue6.getName(), false);
-         assertNotNull(removed);
+         assertNotNull(removed);         
          
          queues = office1.getQueuesForCondition(condition1, false);
          assertNotNull(queues);
@@ -558,7 +561,10 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
          assertNotNull(queues);
          assertEquals(2, queues.size());
          assertTrue(queues.contains(queue8));
-         assertTrue(queues.contains(queue9));                   
+         assertTrue(queues.contains(queue9));        
+         
+         log.info("at end");    
+         //Thread.sleep(10000000);
       }
       catch (Throwable e)
       {
@@ -569,23 +575,37 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
       {
          if (office1 != null)
          {
-            office1.stop();
+         	try
+         	{
+         		office1.stop();
+         	}
+         	catch (Exception ignore)
+         	{         		
+         	}
          }
          
          if (office2 != null)
          {
-            office2.stop();
+         	try
+         	{
+         		office2.stop();
+         	}
+         	catch (Exception ignore)
+         	{         		
+         	}
          }
          
          if (office3 != null)
          {
-            office3.stop();
+         	try
+         	{
+         		office3.stop();
+         	}
+         	catch (Exception ignore)
+         	{         		
+         	}
          }
          
-         if (checkNoBindingData())
-         {
-            fail("data still in database");
-         }
       }
    }
    
@@ -712,12 +732,7 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
          assertTrue(bindings.isEmpty());
          
          bindings = office3.getAllBindings();         
-         assertTrue(bindings.isEmpty());
-         
-         if (checkNoBindingData())
-         {
-            fail("data still in database");
-         }                                  
+         assertTrue(bindings.isEmpty());                                        
       }
       finally
       {
@@ -827,12 +842,7 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
          assertTrue(bindings.isEmpty());
          
          bindings = office3.getAllBindings();         
-         assertTrue(bindings.isEmpty());
-                  
-         if (checkNoBindingData())
-         {
-            fail("data still in database");
-         }                                  
+         assertTrue(bindings.isEmpty());                                              
       }
       finally
       {
@@ -928,12 +938,7 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
          assertTrue(bindings.isEmpty());
          
          bindings = office3.getAllBindings();         
-         assertTrue(bindings.isEmpty());
-         
-         if (checkNoBindingData())
-         {
-            fail("data still in database");
-         }                                  
+         assertTrue(bindings.isEmpty());                                    
       }
       finally
       {
@@ -1034,13 +1039,7 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
          assertTrue(bindings.isEmpty());
          
          bindings = office3.getAllBindings();         
-         assertTrue(bindings.isEmpty());
-         
-         
-         if (checkNoBindingData())
-         {
-            fail("data still in database");
-         }                                  
+         assertTrue(bindings.isEmpty());                  
       }
       finally
       {
@@ -1149,12 +1148,7 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
          assertTrue(bindings.isEmpty());
          
          bindings = office3.getAllBindings();         
-         assertTrue(bindings.isEmpty());
-         
-         if (checkNoBindingData())
-         {
-            fail("data still in database");
-         }                                  
+         assertTrue(bindings.isEmpty());                       
       }
       finally
       {
@@ -1290,12 +1284,7 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
          assertGotAll(2, bindings, queue1.getName());
          
          bindings = office3.getAllBindings();         
-         assertGotAll(3, bindings, queue1.getName());         
-                  
-         if (checkNoBindingData())
-         {
-            fail("data still in database");
-         }                                  
+         assertGotAll(3, bindings, queue1.getName());                                                         
       }
       finally
       {
@@ -1518,12 +1507,7 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
    		receiver4.acknowledge(msgRec3, null);
    		msgs = queue4.browse(null);
    		assertNotNull(msgs);
-   		assertTrue(msgs.isEmpty()); 
-   		
-   		if (checkNoMessageData())
-   		{
-   			fail("Message data still in database");
-   		}
+   		assertTrue(msgs.isEmpty());    		
    	}
    	finally
    	{
@@ -1920,13 +1904,7 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
             msgs = queues[i].browse(null);
             assertNotNull(msgs);
             assertTrue(msgs.isEmpty());
-         }
-         
-        
-         if (checkNoMessageData())
-         {
-            fail("Message data still in database");
-         }
+         }         
       }
       finally
       {
@@ -2056,11 +2034,6 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
    		msgs = queue3.browse(null);
    		assertNotNull(msgs);
    		assertTrue(msgs.isEmpty()); 
-
-   		if (checkNoMessageData())
-   		{
-   			fail("Message data still in database");
-   		}
    	}
    	finally
    	{
@@ -2210,11 +2183,6 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
    		msgs = queue4.browse(null);
    		assertNotNull(msgs);
    		assertTrue(msgs.isEmpty()); 
-   		
-   		if (checkNoMessageData())
-   		{
-   			fail("Message data still in database");
-   		}
    	}
    	finally
    	{
@@ -2410,11 +2378,6 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
    			}
 
    		}
-
-   		if (checkNoMessageData())
-   		{
-   			fail("Message data still in database");
-   		}
    	}
    	finally
    	{
@@ -2609,11 +2572,6 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
    			}
 
    		}
-
-   		if (checkNoMessageData())
-   		{
-   			fail("Message data still in database");
-   		}
    	}
    	finally
    	{
@@ -2786,13 +2744,6 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
    		checkNotGetsMessage(queue0, receiver0);
 
    		checkNotGetsMessage(queue2, receiver2);
-
-
-
-   		if (checkNoMessageData())
-   		{
-   			fail("Message data still in database");
-   		}
    	}
    	finally
    	{
@@ -2936,13 +2887,6 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
    		checkNotGetsMessage(queue0, receiver0);
 
    		checkNotGetsMessage(queue2, receiver2);
-
-
-
-   		if (checkNoMessageData())
-   		{
-   			fail("Message data still in database");
-   		}
    	}
    	finally
    	{

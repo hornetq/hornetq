@@ -44,6 +44,10 @@ import org.jgroups.blocks.RequestHandler;
 import org.jgroups.util.Rsp;
 import org.jgroups.util.RspList;
 
+import EDU.oswego.cs.dl.util.concurrent.Executor;
+import EDU.oswego.cs.dl.util.concurrent.LinkedQueue;
+import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
+
 /**
  * 
  * This class handles the interface with JGroups
@@ -92,6 +96,12 @@ public class GroupMember
    
    private volatile int startedState;
    
+   private volatile Thread viewThread;
+   
+   //We need to process view changes on a different thread, since if we have more than one node running
+   //in the same VM then the thread that sends the leave message ends up executing the view change on the other node
+   //We probably don't need this if all nodes are in different VMs
+
    public GroupMember(String groupName, long stateTimeout, long castTimeout,
    		             JChannelFactory jChannelFactory, RequestTarget requestTarget,
    		             GroupListener groupListener)
@@ -116,7 +126,7 @@ public class GroupMember
       this.dataChannel = jChannelFactory.createDataChannel();
       
       this.startedState = STOPPED;
-
+      
       // We don't want to receive local messages on any of the channels
       controlChannel.setOpt(Channel.LOCAL, Boolean.FALSE);
 
@@ -172,9 +182,14 @@ public class GroupMember
    	
       dataChannel.connect(groupName);
    }
-      
+   
    public void stop() throws Exception
    {	
+   	if (startedState == STOPPED)
+   	{
+   		throw new IllegalStateException("Is already stopped");
+   	}
+   	
    	try
    	{
    		dataChannel.close();
@@ -195,11 +210,9 @@ public class GroupMember
    	
    	controlChannel = null;
    	
-   	dataChannel = null;
+   	dataChannel = null;   	   	
    	
-   	currentView = null;
-   	
-   	startedState = STOPPED;
+   	currentView = null;   	
    }
    
    public Address getSyncAddress()
@@ -317,7 +330,7 @@ public class GroupMember
    		
    		if (startedState != newState)
    		{
-   			throw new IllegalStateException("Timed out waiting for state to arrive");
+   			throw new IllegalStateException("Timed out waiting for state to change");
    		}
    	}
    }
@@ -406,7 +419,7 @@ public class GroupMember
          }
       }
    }
-
+   
    /*
     * We use this class so we notice when members leave the group
     */
@@ -422,10 +435,10 @@ public class GroupMember
          // NOOP
       }
 
-      public void viewAccepted(View newView)
-      {
+      public void viewAccepted(final View newView)
+      {     	
       	log.debug(this  + " got new view " + newView + ", old view is " + currentView);
-      	
+		      
       	if (currentView == null)
       	{
       		//The first view is arriving
@@ -435,61 +448,80 @@ public class GroupMember
       			throw new IllegalStateException("Got first view but started state is " + startedState);
       		}
       	}
-
-         // JGroups will make sure this method is never called by more than one thread concurrently
-
-         View oldView = currentView;
-         
-         currentView = newView;
-
-         try
-         {
-            // Act on membership change, on both cases when an old member left or a new member joined
-
-            if (oldView != null)
-            {
-            	List leftNodes = new ArrayList();
-               for (Iterator i = oldView.getMembers().iterator(); i.hasNext(); )
-               {
-                  Address address = (Address)i.next();
-                  if (!newView.containsMember(address))
-                  {
-                  	leftNodes.add(address);
-                  }
-               }
-               if (!leftNodes.isEmpty())
-               {
-               	groupListener.nodesLeft(leftNodes);
-               }
-            }
-
-            for (Iterator i = newView.getMembers().iterator(); i.hasNext(); )
-            {
-               Address address = (Address)i.next();
-               if (oldView == null || !oldView.containsMember(address))
-               {
-                  groupListener.nodeJoined(address);
-               }
-            }
-         }
-         catch (Throwable e)
-         {
-            log.error("Caught Exception in MembershipListener", e);
-            IllegalStateException e2 = new IllegalStateException(e.getMessage());
-            e2.setStackTrace(e.getStackTrace());
-            throw e2;
-         }
-         
-         if (startedState == WAITING_FOR_FIRST_VIEW)
-   		{
-         	synchronized (waitLock)
-         	{         	
-	   			startedState = WAITING_FOR_STATE;
-	   			
-	   			waitLock.notify();
-         	}
-   		}
+      	else
+      	{
+      		if (startedState != STARTED)
+      		{
+      			return;
+      		}
+      	}
+      	
+      	class ViewChangeRunnable implements Runnable
+      	{	
+      		public void run()
+      		{      		
+   	         // JGroups will make sure this method is never called by more than one thread concurrently
+   	
+   	         View oldView = currentView;
+   	         
+   	         currentView = newView;
+   	
+   	         try
+   	         {
+   	            // Act on membership change, on both cases when an old member left or a new member joined
+   	
+   	            if (oldView != null)
+   	            {
+   	            	List leftNodes = new ArrayList();
+   	               for (Iterator i = oldView.getMembers().iterator(); i.hasNext(); )
+   	               {
+   	                  Address address = (Address)i.next();
+   	                  if (!newView.containsMember(address))
+   	                  {
+   	                  	leftNodes.add(address);
+   	                  }
+   	               }
+   	               if (!leftNodes.isEmpty())
+   	               {
+   	               	groupListener.nodesLeft(leftNodes);
+   	               }
+   	            }
+   	
+   	            for (Iterator i = newView.getMembers().iterator(); i.hasNext(); )
+   	            {
+   	               Address address = (Address)i.next();
+   	               if (oldView == null || !oldView.containsMember(address))
+   	               {
+   	                  groupListener.nodeJoined(address);
+   	               }
+   	            }
+   	         }
+   	         catch (Throwable e)
+   	         {
+   	            log.error("Caught Exception in MembershipListener", e);
+   	            IllegalStateException e2 = new IllegalStateException(e.getMessage());
+   	            e2.setStackTrace(e.getStackTrace());
+   	            throw e2;
+   	         }
+   	         
+   	         if (startedState == WAITING_FOR_FIRST_VIEW)
+   	   		{
+   	         	synchronized (waitLock)
+   	         	{         	
+   		   			startedState = WAITING_FOR_STATE;
+   		   			
+   		   			waitLock.notify();
+   	         	}
+   	   		}
+      		}
+      	}
+      	
+      	//Needs to be executed on different thread to avoid deadlock when running invm
+      	viewThread = new Thread(new ViewChangeRunnable());
+	      	
+	      viewThread.start();      	
       }
+      	
 
       public byte[] getState()
       {
@@ -498,6 +530,11 @@ public class GroupMember
       }
    }
    
+      
+      
+   	
+   	
+      
    /*
     * This class is used to listen for messages on the async channel
     */
