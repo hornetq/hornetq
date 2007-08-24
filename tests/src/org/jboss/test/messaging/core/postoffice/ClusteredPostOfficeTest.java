@@ -560,6 +560,11 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
          assertTrue(queues.contains(queue8));
          assertTrue(queues.contains(queue9));                   
       }
+      catch (Throwable e)
+      {
+         log.warn(e, e);
+         throw e;
+      }
       finally
       {
          if (office1 != null)
