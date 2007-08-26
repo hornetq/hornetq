@@ -430,34 +430,36 @@ public class ClusterConnectionManager implements ClusterNotificationListener
 	
 	private void createSucker(String queueName, int nodeID) throws Exception
 	{
-		ConnectionInfo info = (ConnectionInfo)connections.get(new Integer(nodeID));
-		
+      log.debug("createSucker " + queueName + " nodeID=" + nodeID);
+
+      ConnectionInfo info = (ConnectionInfo)connections.get(new Integer(nodeID));
+
 		if (info == null)
 		{
 			if (trace) { log.trace("Cluster pull connection factory has not yet been deployed on node " + nodeID); }
-						
+
 			return;
 		}
-		
+
 		ConnectionInfo localInfo = (ConnectionInfo)connections.get(new Integer(this.nodeID));
-		
+
 		if (localInfo == null)
 		{
 			if (trace) { log.trace("Cluster pull connection factory has not yet been deployed on local node"); }
-			
+
 			return;
 		}
-		
+
 		//Only create if it isn't already there
-		
+
 		if (!info.hasSucker(queueName))
-		{					
+		{
 			if (trace) { log.trace("Creating Sucker for queue " + queueName + " node " + nodeID); }
-			
+
 			// Need to lookup the local queue
-			
+
 			Binding binding = this.postOffice.getBindingForQueueName(queueName);
-			
+
 			Queue localQueue = binding.queue;
 			
 			if (localQueue.isClustered())
@@ -479,6 +481,8 @@ public class ClusterConnectionManager implements ClusterNotificationListener
 	
 	private void removeSucker(String queueName, int nodeID)
 	{
+      log.debug("removeSucker " + queueName + " nodeID=" + nodeID);
+
 		ConnectionInfo info = (ConnectionInfo)connections.get(new Integer(nodeID));
 		
 		if (info == null)
@@ -501,7 +505,9 @@ public class ClusterConnectionManager implements ClusterNotificationListener
 	
 	private void removeAllSuckers(String queueName)
 	{
-		Iterator iter = connections.values().iterator();
+      log.debug("removeAllSuckers " + queueName);
+
+      Iterator iter = connections.values().iterator();
 		
 		while (iter.hasNext())
 		{
