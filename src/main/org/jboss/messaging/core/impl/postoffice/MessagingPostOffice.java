@@ -1735,7 +1735,7 @@ public class MessagingPostOffice extends JDBCSupport
 				{	
 					try
 					{
-						if (trace) { log.trace(this + " waiting for bind unbind lock"); }
+						if (trace) { log.trace(this + " waiting for bind unbind lock, timeout=" + groupMember.getCastTimeout()); }
 						
 						waitForBindUnbindLock.wait(groupMember.getCastTimeout());
 
@@ -1827,39 +1827,40 @@ public class MessagingPostOffice extends JDBCSupport
       }
 
       Binding removed = removeBindingInMemory(thisNodeID, queueName);
-      
+
       //The queue might not be removed (it's already removed) if two unbind all requests are sent simultaneously on the cluster
       if (removed != null)
-      {	      
+      {
 	      Queue queue = removed.queue;
-	      
+
 	      Condition condition = removed.condition;
-	      	     	
+
 	      if (queue.isRecoverable())
 	      {
 	         //Need to remove from db too
-	
+
 	         deleteBindingFromStorage(queue);
 	      }
-	
-	      queue.removeAllReferences();
-	      
+
 	      if (clustered && queue.isClustered())
 	      {
-	      	String filterString = queue.getFilter() == null ? null : queue.getFilter().getFilterString();      	
-	      	
+	      	String filterString = queue.getFilter() == null ? null : queue.getFilter().getFilterString();
+
 	      	MappingInfo info = new MappingInfo(thisNodeID, queue.getName(), condition.toText(), filterString, queue.getChannelID(),
 	      			                             queue.isRecoverable(), true, allNodes);
-	      	
+
 		      UnbindRequest request = new UnbindRequest(info, allNodes);
-		
+
 		      groupMember.multicastControl(request, sync);
 	      }
+
+         queue.removeAllReferences();
+
       }
-      
+
       return removed;
    }
-   
+
    private synchronized void calculateFailoverMap()
    {
    	failoverMap.clear();
@@ -2192,7 +2193,32 @@ public class MessagingPostOffice extends JDBCSupport
 
       return routed;
    }   
-         
+
+   private Binding lookupBinding(int nodeID, String queueName) throws Exception
+   {
+      lock.readLock().acquire();
+
+      try
+      {
+         Integer nid = new Integer(nodeID);
+
+         Map nameMap = (Map)nameMaps.get(nid);
+
+         if (nameMap == null)
+         {
+            return null;
+         }
+
+         return (Binding)nameMap.get(queueName);
+
+      }
+      finally
+      {
+         lock.readLock().acquire();
+      }
+
+   }
+
    private Binding removeBindingInMemory(int nodeID, String queueName) throws Exception
    {
    	lock.writeLock().acquire();

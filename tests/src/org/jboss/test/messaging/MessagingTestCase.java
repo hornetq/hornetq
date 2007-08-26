@@ -158,25 +158,37 @@ public class MessagingTestCase extends ProxyAssertSupport
       
       assertEquals(0, messageCount.intValue());    
    }
-         
+
    protected void checkNoSubscriptions(Topic topic) throws Exception
    {
-   	ObjectName destObjectName =  new ObjectName("jboss.messaging.destination:service=Topic,name=" + topic.getTopicName());
-   	
-      Integer messageCount = (Integer)ServerManagement.getAttribute(destObjectName, "AllSubscriptionsCount"); 
-      
-      assertEquals(0, messageCount.intValue());      
+      Integer messageCount = getNoSubscriptions(topic);
+
+      assertEquals(0, messageCount.intValue());
    }
-   
+
+
    protected void checkNoSubscriptions(Topic topic, int server) throws Exception
    {
-   	ObjectName destObjectName =  new ObjectName("jboss.messaging.destination:service=Topic,name=" + topic.getTopicName());
-   	
-      Integer messageCount = (Integer)ServerManagement.getServer(server).getAttribute(destObjectName, "AllSubscriptionsCount"); 
+      Integer messageCount = getNoSubscriptions(topic, server);
       
       assertEquals(0, messageCount.intValue());      
    }
-      
+
+   protected int getNoSubscriptions(Topic topic)
+      throws Exception
+   {
+      return getNoSubscriptions(topic,0);
+   }
+
+   protected int getNoSubscriptions(Topic topic, int server)
+      throws Exception
+   {
+      ObjectName destObjectName =  new ObjectName("jboss.messaging.destination:service=Topic,name=" + topic.getTopicName());
+
+      Integer messageCount = (Integer) ServerManagement.getAttribute(server, destObjectName, "AllSubscriptionsCount");
+      return messageCount.intValue();
+   }
+
    protected boolean assertRemainingMessages(int expected) throws Exception
    {
       ObjectName destObjectName = 

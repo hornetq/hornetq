@@ -32,6 +32,7 @@ import javax.jms.TextMessage;
 import javax.jms.Topic;
 
 import org.jboss.test.messaging.tools.ServerManagement;
+import java.util.ArrayList;
 
 
 /**
@@ -130,6 +131,110 @@ public class DistributedTopicTest extends ClusteringTestBase
    public void testNonClusteredTopicDurablePersistent() throws Exception
    {
    	nonClusteredTopicDurable(true);
+   }
+
+   public void testFloodSubscriptions() throws Exception
+   {
+      Connection conn0 = this.createConnectionOnServer(cf, 0);
+      Connection conn1 = this.createConnectionOnServer(cf, 1);
+      Connection conn2 = this.createConnectionOnServer(cf, 2);
+
+      try
+      {
+         checkConnectionsDifferentServers(new Connection[] {conn0, conn1, conn2});
+
+         conn0.setClientID("c1");
+         conn1.setClientID("c1");
+         conn2.setClientID("c1");
+
+         Session session [] = new Session[3];
+         session[0] = conn0.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         session[1] = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         session[2] = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+         conn0.start();
+         conn1.start();
+         conn2.start();
+
+         ArrayList<MessageConsumer> consumersArray[] = new ArrayList[3];
+
+
+         MessageProducer prod = session[2].createProducer(topic[0]);
+         prod.setDeliveryMode(DeliveryMode.PERSISTENT);
+
+         int NUMBER_OF_MESSAGES = 10;
+         int NUMBER_OF_SUBSCRIPTIONS = 50;
+
+         int sessId=0;
+         for (Session sess : session)
+         {
+            consumersArray[sessId] = new ArrayList<MessageConsumer>();
+            for (int i=0;i<NUMBER_OF_SUBSCRIPTIONS;i++)
+            {
+               MessageConsumer consumer = sess.createDurableSubscriber(topic[sessId], "sess_" + sessId + "_" + i);
+               consumersArray[sessId].add(consumer);
+            }
+
+            sessId++;
+         }
+
+
+         for (int i=0;i<NUMBER_OF_MESSAGES;i++)
+         {
+            log.info("Sending message " + i);
+            prod.send(session[0].createTextMessage("test" + i));
+         }
+
+
+         assertEquals(NUMBER_OF_SUBSCRIPTIONS * 3, getNoSubscriptions(topic[0]));
+
+         int messageRead = 0;
+
+         for (ArrayList<MessageConsumer> consumers: consumersArray)
+         {
+            for (MessageConsumer consumer: consumers)
+            {
+               TextMessage msg = null;
+               for (int i=0;i<NUMBER_OF_MESSAGES;i++)
+               {
+                  msg = (TextMessage)consumer.receive(5000);
+                  assertNotNull(msg);
+                  log.info("Msg:" + msg + " text - " + msg.getText());
+                  assertEquals("test" + i, msg.getText());
+                  messageRead ++;
+               }
+            }
+         }
+
+         assertEquals(NUMBER_OF_SUBSCRIPTIONS * NUMBER_OF_MESSAGES * 3, messageRead);
+
+         MessageProducer prod1 = session[1].createProducer(topic[0]);
+
+         for (ArrayList<MessageConsumer> consumers: consumersArray)
+         {
+            for (MessageConsumer consumer: consumers)
+            {
+               consumer.close();
+            }
+         }
+
+         for (sessId = 0; sessId < 3; sessId++)
+         {
+            for (int i=0;i<NUMBER_OF_SUBSCRIPTIONS;i++)
+            {
+               session[sessId].unsubscribe("sess_" + sessId + "_" + i);
+            }
+         }
+
+         checkNoSubscriptions(topic[0]);
+         
+      }
+      finally
+      {
+         try { if (conn0 != null) conn0.close(); } catch (Exception ignored){}
+         try { if (conn1 != null) conn1.close(); } catch (Exception ignored){}
+         try { if (conn2 != null) conn2.close(); } catch (Exception ignored){}
+      }
    }
    
    // Package protected ---------------------------------------------
@@ -597,7 +702,7 @@ public class DistributedTopicTest extends ClusteringTestBase
                  
          //close beta
          beta.close();
-  
+
          // Create another beta - this one node 0
          MessageConsumer beta0 = sess0.createDurableSubscriber(topic[0], "beta");
          
@@ -677,19 +782,19 @@ public class DistributedTopicTest extends ClusteringTestBase
          
          beta0.close();
          beta1.close();	
-         
+
          alpha.close();
          beta.close();
          gamma.close();
          delta.close();
          epsilon.close();
-         
+
          sess0.unsubscribe("alpha");
          sess1.unsubscribe("beta");
          sess2.unsubscribe("gamma");
          sess0.unsubscribe("delta");
          sess1.unsubscribe("epsilon");
-         
+
       }
       finally
       {
