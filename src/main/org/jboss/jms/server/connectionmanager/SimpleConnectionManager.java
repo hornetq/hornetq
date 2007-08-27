@@ -67,7 +67,7 @@ public class SimpleConnectionManager implements ConnectionManager, ConnectionLis
    private Map</** VMID */String, Map</** RemoteSessionID */String, ConnectionEndpoint>> jmsClients;
 
    // Map<remotingClientSessionID<String> - jmsClientVMID<String>
-   private Map remotingSessions;
+   private Map<String, String> remotingSessions;
 
    // Set<ConnectionEndpoint>
    private Set activeConnectionEndpoints;
@@ -161,7 +161,7 @@ public class SimpleConnectionManager implements ConnectionManager, ConnectionLis
          (clientToServer ?
             "with the connection to remote client ":
             "trying to send a message to remote client ") +
-         remotingSessionID + ". It is possible the client has exited without closing " +
+         remotingSessionID + ", jmsClientID=" + jmsClientID + ". It is possible the client has exited without closing " +
          "its connection(s) or there is a network problem. All connection resources " +
          "corresponding to that client process will now be removed.");
 
@@ -197,8 +197,9 @@ public class SimpleConnectionManager implements ConnectionManager, ConnectionLis
    }
 
    /** Synchronized is not really needed.. just to be safe as this is not supposed to be highly contended */
-   public synchronized void addConnectionFactoryCallback(String uniqueName, String JVMID, ServerInvokerCallbackHandler handler)
+   public synchronized void addConnectionFactoryCallback(String uniqueName, String JVMID, String remotingSessionID, ServerInvokerCallbackHandler handler)
    {
+      remotingSessions.put(remotingSessionID, JVMID);
       getCFInfo(uniqueName).addClient(JVMID, handler);
    }
 
@@ -330,7 +331,11 @@ public class SimpleConnectionManager implements ConnectionManager, ConnectionLis
 
    private synchronized void closeConsumersForClientVMID(String jmsClientID)
    {
-   	// Remoting only provides one pinger per invoker, not per connection therefore when the pinger
+      if (jmsClientID == null)
+      {
+         return;
+      }
+      // Remoting only provides one pinger per invoker, not per connection therefore when the pinger
       // dies we must close ALL connections corresponding to that jms client ID.
 
       Map<String, ConnectionEndpoint> endpoints = jmsClients.get(jmsClientID);

@@ -60,7 +60,7 @@ public interface ConnectionManager extends MessagingComponent
     */
    List getActiveConnections();
 
-   void addConnectionFactoryCallback(String uniqueName, String JVMID, ServerInvokerCallbackHandler handler);
+   void addConnectionFactoryCallback(String uniqueName, String JVMID, String remotingSessionID, ServerInvokerCallbackHandler handler);
 
    void removeConnectionFactoryCallback(String uniqueName, String JVMID, ServerInvokerCallbackHandler handler);
    

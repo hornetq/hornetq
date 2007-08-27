@@ -374,6 +374,14 @@ public class ServerManagement
             append(index).append(' ');
       }
 
+
+      String objectStoreDir = System.getProperty("objectstore.dir");
+
+      if (objectStoreDir != null)
+      {
+         sb.append("-Dobjectstore.dir=" + objectStoreDir).append(" ");
+      }
+
       String moduleOutput = System.getProperty("module.output");
       if (moduleOutput == null)
       {

@@ -282,7 +282,7 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
                            ServerInvokerCallbackHandler callbackHandler) throws JMSException
    {
       log.debug("Adding callbackHandler on ConnectionFactory");
-      serverPeer.getConnectionManager().addConnectionFactoryCallback(this.uniqueName, VMID, callbackHandler);
+      serverPeer.getConnectionManager().addConnectionFactoryCallback(this.uniqueName, VMID, remotingSessionID, callbackHandler);
    }
 
    public void removeCallback(String VMID, String remotingSessionID,

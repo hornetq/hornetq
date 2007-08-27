@@ -95,7 +95,7 @@
    <property name="build.tests.stylesheets" value="${tests.output}/stylesheets"/>
    <property name="build.tests.archive" value="jboss-messaging-tests.jar"/>
    <property name="build.tests.ejbarchive" value="jboss-messaging-tests-ejb.jar"/>
-   <property name="objectstore.dir" value="${tests.root}/bin/ObjectStore"/>
+   <property name="objectstore.dir" value="${tests.root}/output/ObjectStore"/>
 
    <!--
         JUnit configuration (values specified in ./build.properties have priority)

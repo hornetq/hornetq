@@ -210,6 +210,9 @@ public class ClusteredConnectionFactoryTest extends ClusteringTestBase
          catch (Throwable ignored)
          {
          }
+
+         // The next test will fail If I don't kill the server started here on this test
+         ServerManagement.kill(1);
       }
       
    }

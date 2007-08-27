@@ -1049,8 +1049,17 @@ public class ServiceContainer
    {
       if (tm == null)
       {
-      	//We must ensure each node has its own object store
+
+         String objectStoreDir = System.getProperty("objectstore.dir");
+         log.trace("ObjectStoreDir===" + objectStoreDir);
+
+         //We must ensure each node has its own object store
          String newObjectStore = "TestObjectStore-" + new GUID().toString();
+
+         if (objectStoreDir != null)
+         {
+            newObjectStore = objectStoreDir + "/" + newObjectStore;
+         }
          
          log.info("Setting com.arjuna.ats.arjuna.common.Environment.OBJECTSTORE_DIR to " + newObjectStore);
 
