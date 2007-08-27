@@ -1491,7 +1491,9 @@ public class ServiceContainer
       executeStatement(mgr, ds, "DROP TABLE JBM_USER");
       
       executeStatement(mgr, ds, "DROP TABLE JBM_ROLE");
-      
+
+      executeStatement(mgr, ds, "DROP TABLE JBM_DUAL");
+
       if (txOld != null)
       {
          mgr.resume(txOld);
