@@ -108,7 +108,7 @@
       <ant antfile="build-messaging.xml" target="source-bundle"/>
    </target>
 
-   <target name="clean">
+   <target name="clean" depends="createthirdparty">
       <ant antfile="build-messaging.xml" target="clean"/>
    </target>
 
