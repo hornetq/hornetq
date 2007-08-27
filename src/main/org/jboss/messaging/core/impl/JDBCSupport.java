@@ -156,6 +156,10 @@ public class JDBCSupport implements MessagingComponent
       {
          createSchema();
       }     
+      else
+      {
+        log.debug("Schema is not being created as createTablesOnStartup=" + createTablesOnStartup);
+      }
    }
    
    public void stop() throws Exception
@@ -292,6 +296,10 @@ public class JDBCSupport implements MessagingComponent
                   
                   tx.exceptionOccurred();
                }  
+            }
+            else
+            {
+                log.debug("createSchema ignoring statement for " + statementName);
             }
          }
          finally
