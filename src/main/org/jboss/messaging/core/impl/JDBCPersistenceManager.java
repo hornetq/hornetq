@@ -595,10 +595,18 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
                   }
                   catch (SQLException e)
                   {
-                     log.warn("An exception happened while storing message (probably a duplicated key)", e);
+                     rows = 0;
+                     // According to docs and tests, this will be aways the same on duplicated index
+                     // Per XOpen documentation
+                     if (e.getSQLState().equals("23000"))
+                     {
+                        log.debug("Message was already stored, just ignoring the exception - " + e.toString());
+                     }
+                     else
+                     {
+                        throw e;
+                     }
                   }
-
-                  m.setPersisted(true);
 
                   if (trace) { log.trace("Inserted " + rows + " rows"); }
 	         	} 
