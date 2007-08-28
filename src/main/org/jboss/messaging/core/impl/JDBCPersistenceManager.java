@@ -583,26 +583,23 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
 	         		//Maybe we need to persist the message itself
 	         		Message m = ref.getMessage();
 
-                  if (!m.isPersisted())
+                  if (trace)
                   {
-                     if (trace)
-                     {
-                        log.trace("Storing message " + m);
-                     }
-                     try
-                     {
-                        storeMessage(m, psInsertMessage);
-
-                        rows = psInsertMessage.executeUpdate();
-                     }
-                     catch (SQLException e)
-                     {
-                        log.warn("An exception happened while storing message (probably a duplicated key)", e);
-                     }
-
-                     m.setPersisted(true);
+                     log.trace("Storing message " + m);
                   }
-      				
+                  try
+                  {
+                     storeMessage(m, psInsertMessage);
+
+                     rows = psInsertMessage.executeUpdate();
+                  }
+                  catch (SQLException e)
+                  {
+                     log.warn("An exception happened while storing message (probably a duplicated key)", e);
+                  }
+
+                  m.setPersisted(true);
+
                   if (trace) { log.trace("Inserted " + rows + " rows"); }
 	         	} 
 	         	
