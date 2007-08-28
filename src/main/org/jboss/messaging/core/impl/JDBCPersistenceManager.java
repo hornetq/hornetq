@@ -103,6 +103,13 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
    private long reaperPeriod;
    
    private boolean reaperRunning;
+
+   private String duplicateKeyState;
+
+   // due to a nasty bug on the Oracle Driver, we have to behave differently on the Oracle Driver
+   // What is really disappointing..
+   // http://www.jboss.com/index.html?module=bb&op=viewtopic&p=4078923#4078923
+   private boolean supportMessageConditional;
           
    // Constructors --------------------------------------------------
     
@@ -134,6 +141,10 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
    public void start() throws Exception
    {
       super.start();
+
+      this.duplicateKeyState = this.getSQLStatement("DUPLICATE_KEY_STATE");
+
+      this.supportMessageConditional = this.getSQLStatement("SUPPORT_MESSAGE_CONDITIONAL").equals("Y");
 
       Connection conn = null;
       
@@ -169,7 +180,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
          }
          catch (SQLException e)
          {
-         	if (e.getSQLState().equals("23000"))
+         	if (e.getSQLState().equals(duplicateKeyState))
          	{
          		//Ignore  PK violation - since might already be inserted
          	}
@@ -558,9 +569,17 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
 	      		Iterator iter = references.iterator();
 	
 	         	psInsertReference = conn.prepareStatement(getSQLStatement("INSERT_MESSAGE_REF"));
-	         	psInsertMessage = conn.prepareStatement(getSQLStatement("INSERT_MESSAGE"));
+
+               if (supportMessageConditional)
+               {
+                  psInsertMessage = conn.prepareStatement(getSQLStatement("INSERT_MESSAGE_CONDITIONAL"));
+               }
+               else
+               {
+                  psInsertMessage = conn.prepareStatement(getSQLStatement("INSERT_MESSAGE"));
+               }
 	
-	         	while (iter.hasNext())
+               while (iter.hasNext())
 	         	{
 	         		//We may need to persist the message itself 
 	         		MessageReference ref = (MessageReference) iter.next();
@@ -583,28 +602,31 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
 	         		//Maybe we need to persist the message itself
 	         		Message m = ref.getMessage();
 
-                  if (trace)
-                  {
-                     log.trace("Storing message " + m);
-                  }
-                  try
-                  {
-                     storeMessage(m, psInsertMessage);
+                  storeMessage(m, psInsertMessage);
 
+                  if (supportMessageConditional)
+                  {
+                     psInsertMessage.setLong(9, m.getMessageID());
                      rows = psInsertMessage.executeUpdate();
                   }
-                  catch (SQLException e)
+                  else
                   {
-                     rows = 0;
-                     // According to docs and tests, this will be aways the same on duplicated index
-                     // Per XOpen documentation
-                     if (e.getSQLState().equals("23000"))
+                     try
                      {
-                        log.debug("Message was already stored, just ignoring the exception - " + e.toString());
+                        rows = psInsertMessage.executeUpdate();
                      }
-                     else
+                     catch (SQLException e)
                      {
-                        throw e;
+                        rows = 0;
+                        if (e.getSQLState().equals(duplicateKeyState))
+                        {
+                           // do nothing...
+                           log.debug("Duplicate key being ignored on storeMessage");
+                        }
+                        else
+                        {
+                           throw e;
+                        }
                      }
                   }
 
@@ -2089,6 +2111,8 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
       map.put("INSERT_COUNTER", "INSERT INTO JBM_COUNTER (NAME, NEXT_ID) VALUES (?, ?)");
       //Other
       map.put("SELECT_ALL_CHANNELS", "SELECT DISTINCT(CHANNEL_ID) FROM JBM_MSG_REF");
+      map.put("DUPLICATE_KEY_STATE","23000");
+      map.put("SUPPORT_MESSAGE_CONDITIONAL", "Y");
 
       return map;
    }
