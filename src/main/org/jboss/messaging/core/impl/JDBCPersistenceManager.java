@@ -558,7 +558,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
 	      		Iterator iter = references.iterator();
 	
 	         	psInsertReference = conn.prepareStatement(getSQLStatement("INSERT_MESSAGE_REF"));
-	         	psInsertMessage = conn.prepareStatement(getSQLStatement("INSERT_MESSAGE_CONDITIONAL"));
+	         	psInsertMessage = conn.prepareStatement(getSQLStatement("INSERT_MESSAGE"));
 	
 	         	while (iter.hasNext())
 	         	{
@@ -582,16 +582,28 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
 	
 	         		//Maybe we need to persist the message itself
 	         		Message m = ref.getMessage();
-	
-	         		//We always try and insert the message, even if it might already be paged -
-	         		//we use a conditional insert though, so it won't insert it if it already exists
 
-      				storeMessage(m, psInsertMessage); 
-      				psInsertMessage.setLong(9, m.getMessageID());
+                  if (!m.isPersisted())
+                  {
+                     if (trace)
+                     {
+                        log.trace("Storing message " + m);
+                     }
+                     try
+                     {
+                        storeMessage(m, psInsertMessage);
 
-      			   rows = psInsertMessage.executeUpdate();
+                        rows = psInsertMessage.executeUpdate();
+                     }
+                     catch (SQLException e)
+                     {
+                        log.warn("An exception happened while storing message (probably a duplicated key)", e);
+                     }
+
+                     m.setPersisted(true);
+                  }
       				
-      				if (trace) { log.trace("Inserted " + rows + " rows"); }	               
+                  if (trace) { log.trace("Inserted " + rows + " rows"); }
 	         	} 
 	         	
 	         	return null;
