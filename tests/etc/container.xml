@@ -42,7 +42,7 @@
       </database-configuration>
 
       <database-configuration name="postgresql">
-         <url>jdbc:postgresql://dev01-priv:5432/messaging</url>
+         <url>jdbc:postgresql://localhost:5432/messaging</url>
          <driver>org.postgresql.Driver</driver>
          <isolation>TRANSACTION_READ_COMMITTED</isolation>
          <username>messaging</username>
