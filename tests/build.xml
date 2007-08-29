@@ -351,8 +351,6 @@
                <exclude name="**/jms/bridge/**"/>
                <exclude name="**/jms/manual/**"/>
                <exclude name="**/jms/clustering/**"/>
-               <exclude name="**/ClusteredPostOfficeTest.class"/> <!-- Remove temporarily -->  
-
             </fileset>
          </batchtest>
       </junit>
@@ -470,8 +468,6 @@
                <exclude name="**/jms/ManifestTest.class"/>
                <exclude name="**/jms/JCAWrapperTest.class"/>
                <exclude name="**/jms/ClientExitTest.class"/>
-               <exclude name="**/ClusteredPostOfficeTest.class"/> <!-- Remove temporarily -->  
-
             </fileset>
          </batchtest>
       </junit>

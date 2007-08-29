@@ -1513,7 +1513,11 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
    	{
    		if (office1 != null)
    		{
-   			office1.stop();
+            office1.removeBinding("queue1", true);
+            office1.removeBinding("queue2", true);
+            office1.removeBinding("queue3", true);
+            office1.removeBinding("queue4", true);
+            office1.stop();
    		}
    	}
    }
@@ -2002,7 +2006,7 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
    		assertNotNull(msgs);
    		assertEquals(1, msgs.size());
    		Message msgRec = (Message)msgs.get(0);
-   		assertTrue(msg2 == msgRec);
+   		assertEquals(msg2, msgRec);
    		receiver1.acknowledge(msgRec, null);
    		msgs = queue1.browse(null);
    		assertNotNull(msgs);
@@ -2012,7 +2016,7 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
    		assertNotNull(msgs);
    		assertEquals(1, msgs.size());
    		msgRec = (Message)msgs.get(0);
-   		assertTrue(msg3 == msgRec);
+   		assertEquals(msg3, msgRec);
    		receiver2.acknowledge(msgRec, null);
    		msgs = queue2.browse(null);
    		assertNotNull(msgs);
@@ -2022,11 +2026,11 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
    		assertNotNull(msgs);
    		assertEquals(3, msgs.size());
    		Message msgRec1 = (Message)msgs.get(0);
-   		assertTrue(msg1 == msgRec1);
+   		assertEquals(msg1, msgRec1);
    		Message msgRec2 = (Message)msgs.get(1);
-   		assertTrue(msg2 == msgRec2);
+   		assertEquals(msg2, msgRec2);
    		Message msgRec3 = (Message)msgs.get(2);
-   		assertTrue(msg3 == msgRec3);
+   		assertEquals(msg3, msgRec3);
 
    		receiver3.acknowledge(msgRec1, null);
    		receiver3.acknowledge(msgRec2, null);
@@ -2120,11 +2124,11 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
    		assertNotNull(msgs);
    		assertEquals(3, msgs.size());
    		Message msgRec1 = (Message)msgs.get(0);
-   		assertTrue(msg1 == msgRec1);
+   		assertEquals(msg1,  msgRec1);
    		Message msgRec2 = (Message)msgs.get(1);
-   		assertTrue(msg2 == msgRec2);
+   		assertEquals(msg2, msgRec2);
    		Message msgRec3 = (Message)msgs.get(2);
-   		assertTrue(msg3 == msgRec3);
+   		assertEquals(msg3, msgRec3);
 
    		receiver1.acknowledge(msgRec1, null);
    		receiver1.acknowledge(msgRec2, null);
@@ -2137,11 +2141,11 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
    		assertNotNull(msgs);
    		assertEquals(3, msgs.size());
    		msgRec1 = (Message)msgs.get(0);
-   		assertTrue(msg1 == msgRec1);
+   		assertEquals(msg1, msgRec1);
    		msgRec2 = (Message)msgs.get(1);
-   		assertTrue(msg2 == msgRec2);
+   		assertEquals(msg2, msgRec2);
    		msgRec3 = (Message)msgs.get(2);
-   		assertTrue(msg3 == msgRec3);
+   		assertEquals(msg3, msgRec3);
 
    		receiver2.acknowledge(msgRec1, null);
    		receiver2.acknowledge(msgRec2, null);
@@ -2154,11 +2158,11 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
    		assertNotNull(msgs);
    		assertEquals(3, msgs.size());
    		msgRec1 = (Message)msgs.get(0);
-   		assertTrue(msg1 == msgRec1);
+   		assertEquals(msg1, msgRec1);
    		msgRec2 = (Message)msgs.get(1);
-   		assertTrue(msg2 == msgRec2);
+   		assertEquals(msg2, msgRec2);
    		msgRec3 = (Message)msgs.get(2);
-   		assertTrue(msg3 == msgRec3);
+   		assertEquals(msg3, msgRec3);
 
    		receiver3.acknowledge(msgRec1, null);
    		receiver3.acknowledge(msgRec2, null);
@@ -2171,11 +2175,11 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
    		assertNotNull(msgs);
    		assertEquals(3, msgs.size());
    		msgRec1 = (Message)msgs.get(0);
-   		assertTrue(msg1 == msgRec1);
+   		assertEquals(msg1, msgRec1);
    		msgRec2 = (Message)msgs.get(1);
-   		assertTrue(msg2 == msgRec2);
+   		assertEquals(msg2, msgRec2);
    		msgRec3 = (Message)msgs.get(2);
-   		assertTrue(msg3 == msgRec3);
+   		assertEquals(msg3, msgRec3);
 
    		receiver4.acknowledge(msgRec1, null);
    		receiver4.acknowledge(msgRec2, null);

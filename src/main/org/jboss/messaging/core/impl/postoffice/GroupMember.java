@@ -212,7 +212,10 @@ public class GroupMember
    	
    	dataChannel = null;   	   	
    	
-   	currentView = null;   	
+   	currentView = null;
+
+      // Workaround for JGroups
+      Thread.sleep(1000);
    }
    
    public Address getSyncAddress()
