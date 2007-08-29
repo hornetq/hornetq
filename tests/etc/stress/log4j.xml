@@ -30,7 +30,7 @@
    <appender name="FILE" class="org.jboss.logging.appender.DailyRollingFileAppender">
       <errorHandler class="org.jboss.logging.util.OnlyOnceErrorHandler"/>
 
-      <param name="File" value="${module.output}/logs/messaging-tests${test.logfile.suffix}.stress.log"/>
+      <param name="File" value="${module.output}/logs/stress-messaging-tests${test.logfile.suffix}.stress.log"/>
 
       <!-- since majority of the tests are ran in fork mode by ant, the log file is overwritten
            for each test. We need to append if we want to preserve a full testsuite run log.
@@ -39,7 +39,7 @@
       <param name="Append" value="true"/>
       <param name="DatePattern" value="'.'yyyy-MM-dd"/>
 
-     <!-- <param name="Threshold" value="INFO"/> -->
+      <param name="Threshold" value="INFO"/> 
 
       <layout class="org.apache.log4j.PatternLayout">
          <!-- The default pattern: Date Priority [Category] Message\n -->
@@ -71,7 +71,7 @@
    <!-- ================ -->
 
    <category name="org.jboss">
-      <priority value="DEBUG"/>
+      <priority value="INFO"/>
    </category>
 
 
