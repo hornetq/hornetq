@@ -2073,7 +2073,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
               "FROM JBM_MSG");
       map.put("INSERT_MESSAGE",
               "INSERT INTO JBM_MSG (MESSAGE_ID, RELIABLE, EXPIRATION, " +
-              "TIMESTAMP, PRIORITY, HEADERS, PAYLOAD, TYPE) " +           
+              "TIMESTAMP, PRIORITY, TYPE, HEADERS, PAYLOAD) " +           
               "VALUES (?, ?, ?, ?, ?, ?, ?, ?)" );
       map.put("INSERT_MESSAGE_CONDITIONAL",
       		  "INSERT INTO JBM_MSG (MESSAGE_ID, RELIABLE, EXPIRATION, " +
