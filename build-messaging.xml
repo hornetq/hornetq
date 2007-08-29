@@ -49,9 +49,9 @@
    <property name="messaging.version.minor" value="4"/>
    <property name="messaging.version.revision" value="0"/>
    <property name="messaging.version.incrementing" value="16"/>
-   <property name="messaging.version.tag" value="CR1"/>
+   <property name="messaging.version.tag" value="CR2"/>
    <property name="messaging.version.name" value="Tadpole"/>
-   <property name="messaging.version.cvstag" value="JBossMessaging_1_4_0_CR1"/>
+   <property name="messaging.version.cvstag" value="JBossMessaging_1_4_0_CR2"/>
    <property name="module.name" value="messaging"/>
    <property name="module.Name" value="JBoss Messaging"/>
    <property name="module.version" value="${messaging.version.major}.${messaging.version.minor}.${messaging.version.revision}.${messaging.version.tag}"/>
