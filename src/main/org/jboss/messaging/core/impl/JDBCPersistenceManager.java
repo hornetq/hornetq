@@ -106,11 +106,6 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
 
    private String duplicateKeyState;
 
-   // due to a nasty bug on the Oracle Driver, we have to behave differently on the Oracle Driver
-   // What is really disappointing..
-   // http://www.jboss.com/index.html?module=bb&op=viewtopic&p=4078923#4078923
-   private boolean supportMessageConditional;
-          
    // Constructors --------------------------------------------------
     
    public JDBCPersistenceManager(DataSource ds, TransactionManager tm, Properties sqlProperties,
@@ -143,8 +138,6 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
       super.start();
 
       this.duplicateKeyState = this.getSQLStatement("DUPLICATE_KEY_STATE");
-
-      this.supportMessageConditional = this.getSQLStatement("SUPPORT_MESSAGE_CONDITIONAL").equals("Y");
 
       Connection conn = null;
       
@@ -563,21 +556,17 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
    		{
       		PreparedStatement psInsertReference = null;
       		PreparedStatement psInsertMessage = null;
-      		
-      		try
+            PreparedStatement psUpdateMessage = null;
+
+            try
       		{      		
 	      		Iterator iter = references.iterator();
 	
 	         	psInsertReference = conn.prepareStatement(getSQLStatement("INSERT_MESSAGE_REF"));
 
-               if (supportMessageConditional)
-               {
-                  psInsertMessage = conn.prepareStatement(getSQLStatement("INSERT_MESSAGE_CONDITIONAL"));
-               }
-               else
-               {
-                  psInsertMessage = conn.prepareStatement(getSQLStatement("INSERT_MESSAGE"));
-               }
+               psInsertMessage = conn.prepareStatement(getSQLStatement("INSERT_MESSAGE_CONDITIONAL"));
+
+               psUpdateMessage = conn.prepareStatement(getSQLStatement("UPDATE_MESSAGE_4CONDITIONAL"));
 	
                while (iter.hasNext())
 	         	{
@@ -602,31 +591,19 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
 	         		//Maybe we need to persist the message itself
 	         		Message m = ref.getMessage();
 
-                  storeMessage(m, psInsertMessage);
+                  storeMessage(m, psInsertMessage, false);
+                  psInsertMessage.setLong(7, m.getMessageID());
+                  rows = psInsertMessage.executeUpdate();
 
-                  if (supportMessageConditional)
+                  if (rows == 1)
                   {
-                     psInsertMessage.setLong(9, m.getMessageID());
-                     rows = psInsertMessage.executeUpdate();
-                  }
-                  else
-                  {
-                     try
+                     bindBlobs(m, psUpdateMessage, 1, 2);
+                     psUpdateMessage.setLong(3, m.getMessageID());
+                     rows = psUpdateMessage.executeUpdate();
+                     if (rows != 1)
                      {
-                        rows = psInsertMessage.executeUpdate();
-                     }
-                     catch (SQLException e)
-                     {
-                        rows = 0;
-                        if (e.getSQLState().equals(duplicateKeyState))
-                        {
-                           // do nothing...
-                           log.debug("Duplicate key being ignored on storeMessage");
-                        }
-                        else
-                        {
-                           throw e;
-                        }
+                        throw new IllegalStateException("Couldn't update messageId=" +
+                           m.getMessageID() + " on paging");
                      }
                   }
 
@@ -1172,7 +1149,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
 	               // First time so persist the message
 	               psMessage = conn.prepareStatement(getSQLStatement("INSERT_MESSAGE"));
 	               
-	               storeMessage(m, psMessage);
+	               storeMessage(m, psMessage, true);
 	                                    
 		            rows = psMessage.executeUpdate();
 		            
@@ -1403,7 +1380,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
 			            	}
 			            	
 			               // First time so add message
-			               storeMessage(m, psInsertMessage);
+			               storeMessage(m, psInsertMessage, true);
 			                 
 		                  if (trace) { log.trace("Message does not already exist so inserting it"); }
 		                  rows = psInsertMessage.executeUpdate();
@@ -1554,7 +1531,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
 			            		psInsertMessage = conn.prepareStatement(getSQLStatement("INSERT_MESSAGE"));
 			            	}
 				            		
-				            storeMessage(m, psInsertMessage);               
+				            storeMessage(m, psInsertMessage, true);               
 				            
 				            rows = psInsertMessage.executeUpdate();
 			
@@ -1842,7 +1819,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
    /**
     * Stores the message in the MESSAGE table.
     */
-   protected void storeMessage(Message m, PreparedStatement ps) throws Exception
+   protected void storeMessage(Message m, PreparedStatement ps, boolean bindBlobs) throws Exception
    {      
       // physically insert the row in the database
       // first set the fields from org.jboss.messaging.core.Routable
@@ -1851,32 +1828,42 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
       ps.setLong(3, m.getExpiration());
       ps.setLong(4, m.getTimestamp());
       ps.setByte(5, m.getPriority());
-      
+
+      ps.setByte(6, m.getType());
+
+      if (bindBlobs)
+      {
+         bindBlobs(m, ps, 7, 8);
+
+      }
+   }
+
+   private void bindBlobs(Message m, PreparedStatement ps, int headerPosition, int payloadPosition)
+      throws Exception
+   {
       //headers
       byte[] bytes = mapToBytes(((MessageSupport) m).getHeaders());
       if (bytes != null)
       {
-         setBytes(ps, 6, bytes);
+         setBytes(ps, headerPosition, bytes);
       }
       else
       {
-         ps.setNull(6, Types.LONGVARBINARY);
+         ps.setNull(headerPosition, Types.LONGVARBINARY);
       }
-      
-      
+
+
       byte[] payload = m.getPayloadAsByteArray();
       if (payload != null)
       {
-         setBytes(ps, 7, payload);
+         setBytes(ps, payloadPosition, payload);
       }
       else
       {
-         ps.setNull(7, Types.LONGVARBINARY);
+         ps.setNull(payloadPosition, Types.LONGVARBINARY);
       }
-      
-      ps.setByte(8, m.getType());
    }
-   
+
    protected void setVarBinaryColumn(int column, PreparedStatement ps, byte[] bytes) throws Exception
    {
       if (usingTrailingByte)
@@ -2090,10 +2077,11 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
               "VALUES (?, ?, ?, ?, ?, ?, ?, ?)" );
       map.put("INSERT_MESSAGE_CONDITIONAL",
       		  "INSERT INTO JBM_MSG (MESSAGE_ID, RELIABLE, EXPIRATION, " +
-              "TIMESTAMP, PRIORITY, HEADERS, PAYLOAD, TYPE) " +     
-              "SELECT ?, ?, ?, ?, ?, ?, ?, ? " + 
-              "FROM JBM_DUAL WHERE NOT EXISTS (SELECT MESSAGE_ID FROM JBM_MSG WHERE MESSAGE_ID = ?)");	
-      map.put("MESSAGE_ID_COLUMN", "MESSAGE_ID");     
+              "TIMESTAMP, PRIORITY, TYPE) " +
+              "SELECT ?, ?, ?, ?, ?, ? " + 
+              "FROM JBM_DUAL WHERE NOT EXISTS (SELECT MESSAGE_ID FROM JBM_MSG WHERE MESSAGE_ID = ?)");
+      map.put("UPDATE_MESSAGE_4CONDITIONAL", "UPDATE JBM_MSG SET HEADERS=?, PAYLOAD=? WHERE MESSAGE_ID=?");
+      map.put("MESSAGE_ID_COLUMN", "MESSAGE_ID");
       map.put("REAP_MESSAGES", "DELETE FROM JBM_MSG WHERE TIMESTAMP <= ? AND NOT EXISTS (SELECT * FROM JBM_MSG_REF WHERE JBM_MSG_REF.MESSAGE_ID = JBM_MSG.MESSAGE_ID)");
       //Transaction
       map.put("INSERT_TRANSACTION",
@@ -2112,7 +2100,6 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
       //Other
       map.put("SELECT_ALL_CHANNELS", "SELECT DISTINCT(CHANNEL_ID) FROM JBM_MSG_REF");
       map.put("DUPLICATE_KEY_STATE","23000");
-      map.put("SUPPORT_MESSAGE_CONDITIONAL", "Y");
 
       return map;
    }
