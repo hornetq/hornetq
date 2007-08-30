@@ -14,6 +14,7 @@
 
    <!-- These properties may be overriden by calling ants when this example is used in a smoke test -->
    <property file="../examples.properties"/>
+   <property name="remoting.path" value="../config"/>
    <property name="messaging.client.jar.path" value="../../"/>
    <property name="messaging.client.jar.name" value="jboss-messaging-client.jar"/>
    <property name="jboss.home" value="${ENV.JBOSS_HOME}"/>
@@ -73,7 +74,7 @@
    </target>
 
    <target name="deploy">
-      <copy file="../../../src/etc/remoting/remoting-http-service.xml"
+      <copy file="${remoting.path}/remoting-http-service.xml"
             todir="${jboss.home}/server/${jboss.configuration}/deploy"/>
       <copy file="./etc/messaging-http-service.xml"
             todir="${jboss.home}/server/${jboss.configuration}/deploy"/>

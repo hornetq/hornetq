@@ -123,6 +123,10 @@
       <!-- Copy the JMS provider loader stuff -->
       <copy todir="${jboss.home}/server/${messaging.config.name}/deploy">
          <fileset dir="${jboss.home}/server/${messaging.config.source}/deploy/jms" includes="jms-ds.xml,hajndi-jms-ds.xml"/>
+         <filterset begintoken="&quot;" endtoken="&quot;">
+            <filter token="jboss.mq:service=JMSProviderLoader,name=JMSProvider" value="&quot;jboss.messaging:service=JMSProviderLoader,name=JMSProvider&quot;"/>
+            <filter token="jboss.mq:service=ServerSessionPoolMBean,name=StdJMSPool" value="&quot;jboss.messaging:service=ServerSessionPoolMBean,name=StdJMSPool&quot;"/>
+         </filterset>
       </copy>
 
    </target>

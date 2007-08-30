@@ -480,6 +480,9 @@
             <include name="*-persistence-service.xml"/>
             <include name="*-ds.xml"/>
          </fileset>
+         <fileset dir="./src/etc/remoting">
+            <include name="*-service.xml"/>
+         </fileset>
       </copy>
    </target>
 

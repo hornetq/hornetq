@@ -8,12 +8,15 @@ package org.jboss.example.jms.common;
 
 import javax.jms.Connection;
 import javax.jms.ConnectionMetaData;
+import javax.jms.ConnectionFactory;
 import javax.naming.InitialContext;
 
 import org.jboss.example.jms.common.bean.Management;
 import org.jboss.example.jms.common.bean.ManagementHome;
 import org.jboss.jms.client.JBossConnection;
+import org.jboss.jms.client.JBossConnectionFactory;
 import org.jboss.jms.client.delegate.DelegateSupport;
+import org.jboss.jms.client.delegate.ClientClusteredConnectionFactoryDelegate;
 import org.jboss.jms.client.state.ConnectionState;
 
 /**
@@ -246,7 +249,22 @@ public abstract class ExampleSupport
       System.out.println("#####################");
       System.exit(0);
    }
-   
+
+   // this is not necessary in real applications.. This is to avoid a client disconnect message on the server
+   // since clustered connection factories are connected objects that will receive notifications
+   // on the topology
+   protected void releaseClusteredCF(ConnectionFactory cf)
+   {
+      try
+         {
+            ((ClientClusteredConnectionFactoryDelegate)
+            ((JBossConnectionFactory)cf).getDelegate()).closeCallback();
+         }
+         catch (Exception ignored)
+      {
+      }
+   }
+
    // Inner classes -------------------------------------------------
-   
+
 }

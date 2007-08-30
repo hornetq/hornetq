@@ -56,13 +56,15 @@ public class DistributedQueueExample extends ExampleSupport
       Connection connection0 = null;
       Connection connection1 = null;
 
+      ConnectionFactory cf = null;
+
       try
       {
          // connecting to the first node
 
          ic = new InitialContext();
 
-         ConnectionFactory cf = (ConnectionFactory)ic.lookup("/ClusteredConnectionFactory");
+         cf = (ConnectionFactory)ic.lookup("/ClusteredConnectionFactory");
          Queue distributedQueue = (Queue)ic.lookup(destinationName);
          log("Distributed queue " + destinationName + " exists");
 
@@ -151,6 +153,11 @@ public class DistributedQueueExample extends ExampleSupport
             log("Could not close connection " + connection1 + ", exception was " + e);
             throw e;
          }
+
+         // this is not necessary in real applications.. This is to avoid a client disconnect message on the server
+         // since clustered connection factories are connected objects that will receive notifications
+         // on the topology
+         releaseClusteredCF(cf);
       }
    }
 
