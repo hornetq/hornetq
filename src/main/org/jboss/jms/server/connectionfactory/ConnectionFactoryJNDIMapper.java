@@ -339,7 +339,6 @@ public class ConnectionFactoryJNDIMapper
 
             if (cfd == null)
             {
-               log.info("cfd == null");
                //This is ok - connection factory a might be deployed on node A before being deployed on node B so
             	//node B might get the notification before it has deployed a itself
             }
@@ -347,7 +346,6 @@ public class ConnectionFactoryJNDIMapper
             {
                if (cfd instanceof ClientConnectionFactoryDelegate)
                {
-                  log.info("Non Clustered!!!");
                   //Non clustered - ignore
 
                	//We still replicate non clustered connection factories since the ClusterPullConnectionFactory
