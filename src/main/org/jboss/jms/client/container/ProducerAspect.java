@@ -87,6 +87,8 @@ public class ProducerAspect
       int priority = ((Integer)args[3]).intValue();
       long timeToLive = ((Long)args[4]).longValue();
 
+      boolean keepID = args.length>5? ((Boolean)args[5]).booleanValue() : false;
+
       // configure the message for sending, using attributes stored as metadata
 
       ProducerState producerState = getProducerState(mi);
@@ -165,16 +167,15 @@ public class ProducerAspect
       // Generate the message id
       ConnectionState connectionState = (ConnectionState)sessionState.getParent();
       
-      long id =
-         connectionState.getIdGenerator().getId((ConnectionDelegate)connectionState.getDelegate());
-    
+      long id = 0;
+
       JBossMessage messageToSend;
       boolean foreign = false;
 
       if (!(m instanceof MessageProxy))
       {
          // it's a foreign message
-      	
+
          foreign = true;
          
          // JMS 1.1 Sect. 3.11.4: A provider must be prepared to accept, from a client,
@@ -215,6 +216,12 @@ public class ProducerAspect
       {
          // get the actual message
          MessageProxy proxy = (MessageProxy)m;
+
+         if (keepID)
+         {
+            id = ((MessageProxy)m).getMessage().getMessageID();
+         }
+
          
          m.setJMSDestination(destination);
                                     
@@ -230,6 +237,11 @@ public class ProducerAspect
           
       // Set the new id
       
+      if (!keepID && id == 0l)
+      {
+         id = connectionState.getIdGenerator().getId((ConnectionDelegate)connectionState.getDelegate());
+      }
+
       messageToSend.setMessageId(id);
       
       // This only really used for BytesMessages and StreamMessages to reset their state

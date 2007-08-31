@@ -148,7 +148,13 @@ public class ClientProducerDelegate extends DelegateSupport implements ProducerD
    {
       throw new IllegalStateException("This invocation should not be handled here!");
    }
-   
+
+
+   public void send(JBossDestination destination, Message message, int deliveryMode, int priority, long timeToLive, boolean keepOriginalID) throws JMSException
+   {
+      throw new IllegalStateException("This invocation should not be handled here!");
+   }
+
    /**
     * This invocation should either be handled by the client-side interceptor chain or by the
     * server-side endpoint.

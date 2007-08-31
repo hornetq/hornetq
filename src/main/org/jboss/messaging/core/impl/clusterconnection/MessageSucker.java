@@ -279,7 +279,7 @@ public class MessageSucker implements MessageListener
 				}
 			}
 			
-			producer.send(null, msg, msg.getJMSDeliveryMode(), msg.getJMSPriority(), timeToLive);
+			producer.send(null, msg, msg.getJMSDeliveryMode(), msg.getJMSPriority(), timeToLive, true);
 			
 			if (trace) { log.trace(this + " forwarded message to queue"); }
 
