@@ -34,6 +34,8 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 
 import org.jboss.test.messaging.tools.ServerManagement;
+import org.jboss.jms.message.JBossMessage;
+import org.jboss.jms.message.TextMessageProxy;
 
 
 /**
@@ -537,12 +539,19 @@ public abstract class DistributedQueueTestBase extends ClusteringTestBase
          cons1.close();
          
          //Send more messages at node 0
-         
+
+         String messageIdCorrelate[] = new String[NUM_MESSAGES];
+
          for (int i = 0; i < NUM_MESSAGES; i++)
          {
             TextMessage tm = sess0.createTextMessage("message3-" + i);
 
             prod0.send(tm);
+
+            messageIdCorrelate[i] = tm.getJMSMessageID();
+
+            log.info("SetID[" + i + "]=" + tm.getJMSMessageID());
+
          }
               
          // consume them on node2
@@ -550,7 +559,8 @@ public abstract class DistributedQueueTestBase extends ClusteringTestBase
          for (int i = 0; i < NUM_MESSAGES; i++)
          {
             TextMessage tm = (TextMessage)cons2.receive(1000);
-                  
+
+            assertEquals(messageIdCorrelate[i], tm.getJMSMessageID());
             assertNotNull(tm);
             
             assertEquals("message3-" + i, tm.getText());
