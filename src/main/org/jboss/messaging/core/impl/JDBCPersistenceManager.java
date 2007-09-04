@@ -32,6 +32,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -104,8 +105,6 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
    
    private boolean reaperRunning;
 
-   private String duplicateKeyState;
-
    // Constructors --------------------------------------------------
     
    public JDBCPersistenceManager(DataSource ds, TransactionManager tm, Properties sqlProperties,
@@ -136,8 +135,6 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
    public void start() throws Exception
    {
       super.start();
-
-      this.duplicateKeyState = this.getSQLStatement("DUPLICATE_KEY_STATE");
 
       Connection conn = null;
       
@@ -173,14 +170,34 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
          }
          catch (SQLException e)
          {
-         	if (e.getSQLState().equals(duplicateKeyState))
-         	{
-         		//Ignore  PK violation - since might already be inserted
-         	}
-         	else
-         	{
-         		throw e;
-         	}
+
+            Statement selectCount = conn.createStatement();
+            ResultSet rset = selectCount.executeQuery(this.getSQLStatement("CHECK_DUAL"));
+            try
+            {
+               // if JBM_DUAL is empty, and if an exception happened, we should warn!
+               if (!rset.next())
+               {
+                  throw e;
+               }
+
+               // if JBM_DUAL has a line already, we don't care about the exception...
+               if (rset.next())
+               {
+                  throw new IllegalStateException("JBM_DUAL is missing a primary key as it allowed a duplicate value");
+               }
+            }
+            finally
+            {
+               try
+               {
+                  rset.close();
+                  selectCount.close();
+               }
+               catch (Throwable ignored)
+               {
+               }
+            }
          }         
       }
       catch (Exception e)
@@ -2038,6 +2055,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
    {                
       Map<String, String> map = new LinkedHashMap<String, String>();
       map.put("INSERT_DUAL", "INSERT INTO JBM_DUAL VALUES (1)");
+      map.put("CHECK_DUAL", "SELECT 1 FROM JBM_DUAL");
       //Message reference
       map.put("INSERT_MESSAGE_REF",
               "INSERT INTO JBM_MSG_REF (CHANNEL_ID, MESSAGE_ID, TRANSACTION_ID, STATE, ORD, PAGE_ORD, DELIVERY_COUNT, SCHED_DELIVERY) " +
@@ -2099,7 +2117,6 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
       map.put("INSERT_COUNTER", "INSERT INTO JBM_COUNTER (NAME, NEXT_ID) VALUES (?, ?)");
       //Other
       map.put("SELECT_ALL_CHANNELS", "SELECT DISTINCT(CHANNEL_ID) FROM JBM_MSG_REF");
-      map.put("DUPLICATE_KEY_STATE","23000");
 
       return map;
    }
