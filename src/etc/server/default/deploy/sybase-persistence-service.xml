@@ -83,7 +83,7 @@
    INSERT_COUNTER=INSERT INTO JBM_COUNTER (NAME, NEXT_ID) VALUES (?, ?)
    SELECT_ALL_CHANNELS=SELECT DISTINCT(CHANNEL_ID) FROM JBM_MSG_REF
    UPDATE_TX=UPDATE JBM_TX SET NODE_ID=? WHERE NODE_ID=?
-   DUPLICATE_KEY_STATE=23000
+   DUPLICATE_KEY_STATE=S1000
       ]]></attribute>
       
       <!-- The maximum number of parameters to include in a prepared statement -->
