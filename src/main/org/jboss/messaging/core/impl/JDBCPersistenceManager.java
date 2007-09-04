@@ -176,12 +176,14 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
             try
             {
                // if JBM_DUAL is empty, and if an exception happened, we should warn!
+               // if JBM_DUAL has a line already, we don't care about the exception...
                if (!rset.next())
                {
                   throw e;
                }
 
-               // if JBM_DUAL has a line already, we don't care about the exception...
+
+               // if there are two lines or more on JBM_DUAL, that is also a problem
                if (rset.next())
                {
                   throw new IllegalStateException("JBM_DUAL is missing a primary key as it allowed a duplicate value");
