@@ -158,6 +158,8 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
                "                         Using an isolation level more strict than READ_COMMITTED may lead to deadlock.\n";
             log.warn(warn);
          }
+
+         log.debug("Adding record on JBM_DUAL");
          
          //Now we need to insert a row in the DUAL table if it doesn't contain one already
          ps = conn.prepareStatement(this.getSQLStatement("INSERT_DUAL"));
@@ -170,6 +172,11 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
          }
          catch (SQLException e)
          {
+            wrap.exceptionOccurred();
+            wrap.end();
+            wrap = new TransactionWrapper();
+
+            log.debug("Checking for existance on JBM_DUAL");
 
             Statement selectCount = conn.createStatement();
             ResultSet rset = selectCount.executeQuery(this.getSQLStatement("CHECK_DUAL"));
@@ -179,6 +186,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
                // if JBM_DUAL has a line already, we don't care about the exception...
                if (!rset.next())
                {
+                  log.debug("JBM_DUAL didn't have a record.. throwing exception", e);
                   throw e;
                }
 
@@ -186,6 +194,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
                // if there are two lines or more on JBM_DUAL, that is also a problem
                if (rset.next())
                {
+                  log.debug("duplicated record found on JBM_DUAL... throwing exception");
                   throw new IllegalStateException("JBM_DUAL is missing a primary key as it allowed a duplicate value");
                }
             }
