@@ -70,6 +70,7 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
 
    public final void testSimpleJoinLeave() throws Throwable
    {
+      log.info("testSimpleJoinLeave starts here");
       PostOffice office1 = null;
       PostOffice office2 = null;
       PostOffice office3 = null;

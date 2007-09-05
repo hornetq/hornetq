@@ -165,7 +165,8 @@ public class PostOfficeTestBase extends MessagingTestCase
 	
 	protected PostOffice createClusteredPostOffice(int nodeID, String groupName) throws Exception
    {
-		return createClusteredPostOffice(nodeID, groupName, 5000, 5000, sc, ms, tr, pm);
+      log.info("Creating clusteredPostOffice node " + nodeID);
+      return createClusteredPostOffice(nodeID, groupName, 5000, 5000, sc, ms, tr, pm);
    }
    
    protected List sendMessages(String conditionText, boolean persistent, PostOffice office, int num, Transaction tx) throws Exception
