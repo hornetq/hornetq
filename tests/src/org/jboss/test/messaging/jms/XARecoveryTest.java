@@ -36,6 +36,7 @@ import javax.transaction.xa.Xid;
 import org.jboss.jms.tx.MessagingXid;
 import org.jboss.jms.tx.ResourceManagerFactory;
 import org.jboss.test.messaging.tools.ServerManagement;
+import org.jboss.test.messaging.tools.container.ServiceContainer;
 
 import com.arjuna.ats.arjuna.common.Uid;
 import com.arjuna.ats.jta.xa.XidImple;
@@ -67,6 +68,14 @@ public class XARecoveryTest extends JMSTestCase
    }
 
    // TestCase overrides -------------------------------------------
+
+
+   protected void setUp() throws Exception
+   {
+      // if this is not set testMockCoordinatorRecoveryWithJBossTSXids will create an invalid ObjectStore
+      ServiceContainer.setupObjectStoreDir();
+      super.setUp();
+   }
 
    public void tearDown() throws Exception
    {

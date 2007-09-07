@@ -881,8 +881,48 @@ public class ServiceContainer
       if (recoveryManager != null)
       {
          recoveryManager.stop();
-      }      
+      }
    }
+
+
+   static boolean storeAlreadySet = false;
+
+   // Recovery doesn't play well with reseting the ObjectStore, so we do that per VM
+   public static void setupObjectStoreDir()
+   {
+      String name = "TestObjectStore-";
+      if (!storeAlreadySet)
+      {
+         storeAlreadySet = true;
+         String objectStoreDir = System.getProperty("objectstore.dir");
+         log.trace("ObjectStoreDir===" + objectStoreDir);
+
+         //We must ensure each node has its own object store
+
+         String newObjectStore = name + new GUID().toString();
+
+         if (objectStoreDir != null)
+         {
+            newObjectStore = objectStoreDir + "/" + newObjectStore;
+         }
+
+         log.info("Setting com.arjuna.ats.arjuna.common.Environment.OBJECTSTORE_DIR to " + newObjectStore);
+
+         System.setProperty(com.arjuna.ats.arjuna.common.Environment.OBJECTSTORE_DIR, newObjectStore);
+
+         //We must also make sure the node identifier is unique for each node
+         //Otherwise xids might overlap
+         String arjunanodeId = "TestNodeID-" + new GUID().toString();
+
+         log.info("Setting com.arjuna.ats.arjuna.common.Environment.XA_NODE_IDENTIFIER to " + arjunanodeId);
+
+         System.setProperty(com.arjuna.ats.arjuna.common.Environment.XA_NODE_IDENTIFIER, arjunanodeId);
+
+         log.info("Setting objectstore.dir to " + newObjectStore);
+      }
+   }
+
+   
 
    public String toString()
    {
@@ -1045,38 +1085,15 @@ public class ServiceContainer
       // hsqldbServer.stop();
    }
 
+
    private void startTransactionManager() throws Exception
    {
       if (tm == null)
       {
 
-         String objectStoreDir = System.getProperty("objectstore.dir");
-         log.trace("ObjectStoreDir===" + objectStoreDir);
-
-         //We must ensure each node has its own object store
-         String newObjectStore = "TestObjectStore-" + new GUID().toString();
-
-         if (objectStoreDir != null)
-         {
-            newObjectStore = objectStoreDir + "/" + newObjectStore;
-         }
-         
-         log.info("Setting com.arjuna.ats.arjuna.common.Environment.OBJECTSTORE_DIR to " + newObjectStore);
-
-         System.setProperty(com.arjuna.ats.arjuna.common.Environment.OBJECTSTORE_DIR, newObjectStore);  
-         
-         //We must also make sure the node identifier is unique for each node
-         //Otherwise xids might overlap
-         String arjunanodeId = "TestNodeID-" + new GUID().toString();
-         
-         log.info("Setting com.arjuna.ats.arjuna.common.Environment.XA_NODE_IDENTIFIER to " + arjunanodeId);
-         
-         System.setProperty(com.arjuna.ats.arjuna.common.Environment.XA_NODE_IDENTIFIER, arjunanodeId);
-         
-         log.info("Setting objectstore.dir to " + newObjectStore);
-      	
+         setupObjectStoreDir();
          log.info("Starting arjuna tx mgr");
-         tm = com.arjuna.ats.jta.TransactionManager.transactionManager();                       
+         tm = com.arjuna.ats.jta.TransactionManager.transactionManager();
       }
 
       TransactionManagerJMXWrapper mbean = new TransactionManagerJMXWrapper(tm);
