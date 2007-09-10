@@ -23,6 +23,8 @@ package org.jboss.jms.client.delegate;
 
 import java.io.Serializable;
 import java.util.Map;
+import java.util.Set;
+import java.util.Collections;
 
 import javax.jms.JMSException;
 
@@ -41,6 +43,7 @@ import org.jboss.jms.wireformat.ConnectionFactoryGetTopologyResponse;
 import org.jboss.jms.wireformat.ConnectionFactoryRemoveCallbackRequest;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.util.Version;
+import org.jboss.messaging.util.WeakHashSet;
 
 /**
  * A ClientClusteredConnectionFactoryDelegate.
@@ -101,6 +104,7 @@ public class ClientClusteredConnectionFactoryDelegate extends DelegateSupport
             if (trace) log.trace("Getting topology");
             TopologyResult topology = getTopology();
             if (trace) log.trace("delegates.size = " + topology.getDelegates().length);
+            addShutdownHook();
 
             break;
          }
@@ -131,6 +135,11 @@ public class ClientClusteredConnectionFactoryDelegate extends DelegateSupport
 
       remoting.getRemotingClient().invoke(request, null);
 
+   }
+
+   private void addShutdownHook()
+   {
+      finalizerHook.addDelegate(this);
    }
 
    private void removeCallback() throws Throwable
@@ -374,5 +383,46 @@ public class ClientClusteredConnectionFactoryDelegate extends DelegateSupport
    // Private --------------------------------------------------------------------------------------
    
    // Inner classes --------------------------------------------------------------------------------
+
+   static FinalizerShutdownHook finalizerHook;
+
+   static
+   {
+      finalizerHook = new FinalizerShutdownHook();
+      Runtime.getRuntime().addShutdownHook(finalizerHook);
+
+   }
+
+
+   // A Single ShutdownHook for the entire class
+   static class FinalizerShutdownHook extends Thread
+   {
+
+      Set<ClientClusteredConnectionFactoryDelegate> delegates;
+
+      public FinalizerShutdownHook()
+      {
+         delegates = Collections.synchronizedSet(new WeakHashSet());
+      }
+
+      public void addDelegate(ClientClusteredConnectionFactoryDelegate delegate)
+      {
+         delegates.add(delegate);
+      }
+
+      public void run()
+      {
+         for (ClientClusteredConnectionFactoryDelegate delegate: delegates)
+         {
+            try
+            {
+               delegate.finalize();
+            }
+            catch (Throwable ignored)
+            {
+            }
+         }
+      }
+   }
 
 }

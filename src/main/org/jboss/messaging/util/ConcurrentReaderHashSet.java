@@ -21,10 +21,7 @@
   */
 package org.jboss.messaging.util;
 
-import java.util.AbstractSet;
-import java.util.Iterator;
 import java.util.Map;
-
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentReaderHashMap;
 
 /**
@@ -34,54 +31,21 @@ import EDU.oswego.cs.dl.util.concurrent.ConcurrentReaderHashMap;
  * Offers same concurrency as ConcurrentHashMap but for a Set
  * 
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
+ * @author <a href="clebert.suconic@jboss.com">Clebert Suconic</a>
  * @version <tt>$Revision$</tt>
  *
  * $Id$
  */
-public class ConcurrentReaderHashSet extends AbstractSet
+public class ConcurrentReaderHashSet<Key> extends AbstractHashSet<Key>
 {
-   private Map theMap;
-   
-   private static Object dummy = new Object();
-   
    public ConcurrentReaderHashSet()
    {
-      theMap = new ConcurrentReaderHashMap();
+      super();
    }
-   
-   public int size()
+
+   protected Map buildInternalHashMap()
    {
-      return theMap.size();
-   }
-   
-   public Iterator iterator()
-   {
-      return theMap.keySet().iterator();
-   }
-   
-   public boolean isEmpty()
-   {
-      return theMap.isEmpty();
-   }
-   
-   public boolean add(Object o)
-   {
-      return theMap.put(o, dummy) == dummy;
-   }
-   
-   public boolean contains(Object o)
-   {
-      return theMap.containsKey(o);
-   }
-   
-   public void clear()
-   {
-      theMap.clear();
-   }
-   
-   public boolean remove(Object o)
-   {
-      return theMap.remove(o) == dummy;
+      return new ConcurrentReaderHashMap();
    }
 
 }
