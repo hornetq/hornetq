@@ -105,6 +105,10 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
    
    private boolean reaperRunning;
 
+   // Some versions of the oracle driver don't support binding blobs on select clauses,
+   // what would force us to use a two stage insert (insert and if successful, update)
+   private Boolean supportsBlobSelect;
+
    // Constructors --------------------------------------------------
     
    public JDBCPersistenceManager(DataSource ds, TransactionManager tm, Properties sqlProperties,
@@ -277,7 +281,19 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
    {
    	reapUnreferencedMessages(System.currentTimeMillis());
    }
-      
+
+   public boolean isSupportsBlobSelect()
+   {
+
+      if (supportsBlobSelect == null)
+      {
+         supportsBlobSelect = getSQLStatement("SUPPORTS_BLOB_ON_SELECT").equals("Y") ? Boolean.TRUE:
+                                              Boolean.FALSE;
+      }
+
+      return supportsBlobSelect.booleanValue();
+   }
+
    // Related to XA Recovery
    // ======================
    
@@ -592,9 +608,16 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
 	
 	         	psInsertReference = conn.prepareStatement(getSQLStatement("INSERT_MESSAGE_REF"));
 
-               psInsertMessage = conn.prepareStatement(getSQLStatement("INSERT_MESSAGE_CONDITIONAL"));
 
-               psUpdateMessage = conn.prepareStatement(getSQLStatement("UPDATE_MESSAGE_4CONDITIONAL"));
+               if (isSupportsBlobSelect())
+               {
+                  psInsertMessage = conn.prepareStatement(getSQLStatement("INSERT_MESSAGE_CONDITIONAL_FULL"));
+               }
+               else
+               {
+                  psInsertMessage = conn.prepareStatement(getSQLStatement("INSERT_MESSAGE_CONDITIONAL"));
+                  psUpdateMessage = conn.prepareStatement(getSQLStatement("UPDATE_MESSAGE_4CONDITIONAL"));
+               }
 	
                while (iter.hasNext())
 	         	{
@@ -620,19 +643,30 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
 	         		Message m = ref.getMessage();
 
                   storeMessage(m, psInsertMessage, false);
-                  psInsertMessage.setLong(7, m.getMessageID());
-                  rows = psInsertMessage.executeUpdate();
 
-                  if (rows == 1)
+
+                  if (psUpdateMessage != null)
                   {
-                     bindBlobs(m, psUpdateMessage, 1, 2);
-                     psUpdateMessage.setLong(3, m.getMessageID());
-                     rows = psUpdateMessage.executeUpdate();
-                     if (rows != 1)
+                     psInsertMessage.setLong(7, m.getMessageID());
+                     rows = psInsertMessage.executeUpdate();
+
+                     if (rows == 1)
                      {
-                        throw new IllegalStateException("Couldn't update messageId=" +
-                           m.getMessageID() + " on paging");
+                        bindBlobs(m, psUpdateMessage, 1, 2);
+                        psUpdateMessage.setLong(3, m.getMessageID());
+                        rows = psUpdateMessage.executeUpdate();
+                        if (rows != 1)
+                        {
+                           throw new IllegalStateException("Couldn't update messageId=" +
+                              m.getMessageID() + " on paging");
+                        }
                      }
+                  }
+                  else
+                  {
+                     bindBlobs(m, psInsertMessage, 7, 8);
+                     psInsertMessage.setLong(9, m.getMessageID());
+                     rows = psInsertMessage.executeUpdate();
                   }
 
                   if (trace) { log.trace("Inserted " + rows + " rows"); }
@@ -643,7 +677,8 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
       		finally
       		{
       			closeStatement(psInsertReference);
-      			closeStatement(psInsertMessage);
+               closeStatement(psInsertMessage);
+               closeStatement(psUpdateMessage);
       		}
    		}      	      	      	
       }
@@ -2095,6 +2130,9 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
       map.put("SELECT_EXISTS_REF_MESSAGE_ID", "SELECT MESSAGE_ID FROM JBM_MSG_REF WHERE MESSAGE_ID = ?");
       map.put("UPDATE_DELIVERY_COUNT", "UPDATE JBM_MSG_REF SET DELIVERY_COUNT = ? WHERE CHANNEL_ID = ? AND MESSAGE_ID = ?");
       map.put("UPDATE_CHANNEL_ID", "UPDATE JBM_MSG_REF SET CHANNEL_ID = ? WHERE CHANNEL_ID = ?");
+      map.put("INSERT_MESSAGE_CONDITIONAL_FULL", "INSERT INTO JBM_MSG (MESSAGE_ID, RELIABLE, EXPIRATION, TIMESTAMP, PRIORITY, TYPE, HEADERS, PAYLOAD) SELECT ?, ?, ?, ?, ?, ?, ?, ? FROM JBM_DUAL WHERE NOT EXISTS (SELECT MESSAGE_ID FROM JBM_MSG WHERE MESSAGE_ID = ?)");
+      map.put("SUPPORTS_BLOB_ON_SELECT", "N");
+
       //Message
       map.put("LOAD_MESSAGES",
               "SELECT MESSAGE_ID, RELIABLE, EXPIRATION, TIMESTAMP, " +
