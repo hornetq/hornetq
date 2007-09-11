@@ -33,6 +33,7 @@ import javax.jms.Session;
 
 import org.jboss.jms.client.JBossConnection;
 import org.jboss.test.messaging.tools.container.Command;
+import org.jboss.test.messaging.tools.container.Server;
 
 /**
  * 
@@ -67,7 +68,7 @@ public class CreateClientOnServerCommand implements Command
    /*
     * Just create a connection, send and receive a message and leave the connection open.
     */
-   public Object execute() throws Exception
+   public Object execute(Server server) throws Exception
    {
       if (retainReference)
       {

@@ -31,6 +31,7 @@ import javax.jms.Session;
 
 import org.jboss.jms.client.JBossConnection;
 import org.jboss.test.messaging.tools.container.Command;
+import org.jboss.test.messaging.tools.container.Server;
 
 /**
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
@@ -51,7 +52,7 @@ public class CreateHangingConsumerCommand implements Command
       this.queue = queue;
    }
    
-   public Object execute() throws Exception
+   public Object execute(Server server) throws Exception
    {
       Connection conn = cf.createConnection();
           

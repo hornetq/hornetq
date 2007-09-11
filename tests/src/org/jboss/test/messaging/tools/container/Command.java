@@ -36,5 +36,11 @@ import java.io.Serializable;
  */
 public interface Command extends Serializable
 {
-   public Object execute() throws Exception;
+   /**
+    *
+    * @param server The server where this command is being executed at
+    * @return
+    * @throws Exception
+    */
+   public Object execute(Server server) throws Exception;
 }

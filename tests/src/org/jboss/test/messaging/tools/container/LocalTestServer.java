@@ -837,7 +837,7 @@ public class LocalTestServer implements Server
 
    public Object executeCommand(Command command) throws Exception
    {
-      return command.execute();
+      return command.execute(this);
    }
 
    public UserTransaction getUserTransaction() throws Exception

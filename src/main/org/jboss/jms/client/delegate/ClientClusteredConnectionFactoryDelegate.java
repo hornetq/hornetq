@@ -153,7 +153,7 @@ public class ClientClusteredConnectionFactoryDelegate extends DelegateSupport
       remoting.getRemotingClient().invoke(request, null);
    }
 
-   protected void finalize() throws Throwable
+   public void finalize() throws Throwable
    {
       super.finalize();
       closeCallback();
