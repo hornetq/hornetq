@@ -95,6 +95,8 @@ public class ConnectionConsumerTest extends JMSTestCase
          Session sessProd = connProducer.createSession(false, Session.AUTO_ACKNOWLEDGE);
          MessageProducer prod = sessProd.createProducer(queue1);
 
+         forceGC();
+         
          for (int i = 0; i < NUM_MESSAGES; i++)
          {
             TextMessage m = sessProd.createTextMessage("testing testing");

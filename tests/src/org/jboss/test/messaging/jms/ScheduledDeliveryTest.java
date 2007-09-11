@@ -302,6 +302,8 @@ public class ScheduledDeliveryTest extends JMSTestCase
          MessageProducer prod = sess.createProducer(queue1);
          
          final int NUM_MESSAGES = 5;
+
+         forceGC();
          
          for (int i = 0; i < NUM_MESSAGES; i++)
          {
