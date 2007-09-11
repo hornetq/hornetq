@@ -22,26 +22,14 @@
 
 package org.jboss.test.messaging.jms.clustering;
 
-import org.jboss.logging.Logger;
-import org.jboss.test.messaging.tools.container.Server;
-import org.jboss.test.messaging.tools.container.LocalTestServer;
-import org.jboss.test.messaging.tools.container.InVMInitialContextFactory;
-import org.jboss.test.messaging.tools.container.ServiceContainer;
-import org.jboss.test.messaging.tools.container.Command;
-import org.jboss.test.messaging.tools.ServerManagement;
-import org.jboss.test.messaging.jms.crash.CreateClientOnServerCommand;
-import org.jboss.test.messaging.jms.crash.CreateTwoClientOnServerCommand;
-import org.jboss.test.messaging.MessagingTestCase;
-import org.jboss.jms.server.ConnectionManager;
-import org.jboss.jms.server.connectionmanager.SimpleConnectionManager;
-import org.jboss.jms.client.delegate.ClientClusteredConnectionFactoryDelegate;
-import javax.naming.InitialContext;
-import javax.jms.ConnectionFactory;
-import javax.jms.Queue;
-import javax.jms.Topic;
-import javax.jms.Connection;
-import javax.jms.Message;
 import java.lang.ref.WeakReference;
+import javax.jms.Connection;
+import javax.jms.ConnectionFactory;
+import org.jboss.jms.client.delegate.ClientClusteredConnectionFactoryDelegate;
+import org.jboss.logging.Logger;
+import org.jboss.test.messaging.tools.ServerManagement;
+import org.jboss.test.messaging.tools.container.Command;
+import org.jboss.test.messaging.tools.container.Server;
 
 /**
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
@@ -114,13 +102,13 @@ public class ClusteredClientCrashTest extends ClusteringTestBase
 
       assertEquals("OK", remoteServer.executeCommand(command));
 
-      assertEquals("1",ServerManagement.getServer(1).executeCommand(new VerifySizeOfCFClients(cfDelegate.getUniqueName())));
+      assertEquals(new Integer(1),ServerManagement.getServer(1).executeCommand(new VerifySizeOfCFClients(cfDelegate.getUniqueName())));
 
       ServerManagement.kill(2);
       Thread.sleep(30000);
 
-      assertEquals("0",ServerManagement.getServer(0).executeCommand(new VerifySizeOfCFClients(cfDelegate.getUniqueName())));
-      assertEquals("0",ServerManagement.getServer(1).executeCommand(new VerifySizeOfCFClients(cfDelegate.getUniqueName())));
+      assertEquals(new Integer(0), ServerManagement.getServer(0).executeCommand(new VerifySizeOfCFClients(cfDelegate.getUniqueName())));
+      assertEquals(new Integer(0), ServerManagement.getServer(1).executeCommand(new VerifySizeOfCFClients(cfDelegate.getUniqueName())));
 
 
       //localServer.setAttribute(ServiceContainer.REMOTING_OBJECT_NAME, "LeasePeriod", "2000");
@@ -172,7 +160,7 @@ public class ClusteredClientCrashTest extends ClusteringTestBase
 
          int size = server.getServerPeer().getConnectionManager().getConnectionFactoryCallback(uniqueName).length;
 
-         return Integer.toString(size);
+         return new Integer(size);
       }
    }
 
