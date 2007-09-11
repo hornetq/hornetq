@@ -25,6 +25,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
+import java.lang.ref.WeakReference;
 
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
@@ -583,6 +584,23 @@ public class MessagingTestCase extends ProxyAssertSupport
    			connection.close();
    		}
    	}
+   }
+
+   /** Some testcases are time sensitive, and we need to make sure a GC would happen before certain scenarios*/
+   protected void forceGC()
+   {
+      WeakReference dumbReference = new WeakReference(new Object());
+      // A loopt that will wait GC, using the minimal time as possible
+      while (dumbReference.get() != null)
+      {
+         System.gc();
+         try
+         {
+            Thread.sleep(500);
+         } catch (InterruptedException e)
+         {
+         }
+      }
    }
 
    // Private -------------------------------------------------------

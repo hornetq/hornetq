@@ -2193,8 +2193,7 @@ public class MessageConsumerTest extends JMSTestCase
 			  
 			  //This is a really weird test - the received object is always going to be null since no message is sent!!
 
-			  System.gc();       /// If A GC need to be executed, it' s better to be executed now
-			  Thread.sleep(1000);
+			  forceGC();       /// If A GC need to be executed, it' s better to be executed now
 			  if (log.isTraceEnabled()) log.trace("testTimeoutReceiveOnClose");
 
 			  Object monitor = new Object();

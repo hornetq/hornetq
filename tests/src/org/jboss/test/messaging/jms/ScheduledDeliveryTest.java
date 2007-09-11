@@ -127,7 +127,7 @@ public class ScheduledDeliveryTest extends JMSTestCase
          //Now stop the server and restart it
          
          conn.close();
-         
+
          ServerManagement.stopServerPeer();
          
          ServerManagement.startServerPeer();
@@ -143,22 +143,24 @@ public class ScheduledDeliveryTest extends JMSTestCase
          
          MessageConsumer cons = sess.createConsumer(queue1);
  
+         forceGC();
+
          //First the non scheduled messages should be received
-         
+
          TextMessage rm1 = (TextMessage)cons.receive(250);      
          assertNotNull(rm1);      
          assertEquals(tm2.getText(), rm1.getText());
          
-         TextMessage rm2 = (TextMessage)cons.receive(250);      
+         TextMessage rm2 = (TextMessage)cons.receive(250);
          assertNotNull(rm2);      
          assertEquals(tm3.getText(), rm2.getText());
          
-         TextMessage rm3 = (TextMessage)cons.receive(250);      
+         TextMessage rm3 = (TextMessage)cons.receive(250);
          assertNotNull(rm3);      
          assertEquals(tm4.getText(), rm3.getText());
          
          //Now the one with a scheduled with a -ve number
-         TextMessage rm5 = (TextMessage)cons.receive(250);      
+         TextMessage rm5 = (TextMessage)cons.receive(250);
          assertNotNull(rm5);      
          assertEquals(tm9.getText(), rm5.getText());
          
@@ -486,23 +488,25 @@ public class ScheduledDeliveryTest extends JMSTestCase
          {
          	sess.commit();
          }
- 
+
          //First the non scheduled messages should be received
-         
-         TextMessage rm1 = (TextMessage)cons.receive(250);      
+         forceGC();
+
+
+         TextMessage rm1 = (TextMessage)cons.receive(250);
          assertNotNull(rm1);      
          assertEquals(tm2.getText(), rm1.getText());
          
-         TextMessage rm2 = (TextMessage)cons.receive(250);      
+         TextMessage rm2 = (TextMessage)cons.receive(250);
          assertNotNull(rm2);      
          assertEquals(tm3.getText(), rm2.getText());
          
-         TextMessage rm3 = (TextMessage)cons.receive(250);      
+         TextMessage rm3 = (TextMessage)cons.receive(250);
          assertNotNull(rm3);      
          assertEquals(tm4.getText(), rm3.getText());
          
          //Now the one with a scheduled with a -ve number
-         TextMessage rm5 = (TextMessage)cons.receive(250);      
+         TextMessage rm5 = (TextMessage)cons.receive(250);
          assertNotNull(rm5);      
          assertEquals(tm9.getText(), rm5.getText());
          
