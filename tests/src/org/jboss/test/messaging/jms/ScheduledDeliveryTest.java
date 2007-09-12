@@ -347,7 +347,10 @@ public class ScheduledDeliveryTest extends JMSTestCase
             long time = System.currentTimeMillis();
             
             assertTrue(time - now >= delay);
-            assertTrue(time - now < delay + 250);
+            if (time - now < delay + 250)
+            {
+               fail((time - now)  + "<" + (delay + 250));
+            }
          }         
       }
       finally
@@ -412,8 +415,12 @@ public class ScheduledDeliveryTest extends JMSTestCase
    			long time = System.currentTimeMillis();
 
    			assertTrue(time - now >= delay);
-   			assertTrue(time - now < delay + 250);
-   		}
+            if (time - now < delay + 250)
+            {
+               fail((time - now)  + "<" + (delay + 250));
+            }
+
+         }
    		
    		sess2.commit();
    	}
