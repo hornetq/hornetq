@@ -2194,31 +2194,6 @@ public class MessagingPostOffice extends JDBCSupport
       return routed;
    }   
 
-   private Binding lookupBinding(int nodeID, String queueName) throws Exception
-   {
-      lock.readLock().acquire();
-
-      try
-      {
-         Integer nid = new Integer(nodeID);
-
-         Map nameMap = (Map)nameMaps.get(nid);
-
-         if (nameMap == null)
-         {
-            return null;
-         }
-
-         return (Binding)nameMap.get(queueName);
-
-      }
-      finally
-      {
-         lock.readLock().acquire();
-      }
-
-   }
-
    private Binding removeBindingInMemory(int nodeID, String queueName) throws Exception
    {
    	lock.writeLock().acquire();
