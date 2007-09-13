@@ -561,8 +561,8 @@ public abstract class DistributedQueueTestBase extends ClusteringTestBase
             TextMessage tm = (TextMessage)cons2.receive(1000);
 
             assertNotNull(tm);
-            assertEquals(messageIdCorrelate[i], tm.getJMSCorrelationID());
-            
+            assertEquals(messageIdCorrelate[i], tm.getJMSMessageID());
+
             assertEquals("message3-" + i, tm.getText());
          }                 
 

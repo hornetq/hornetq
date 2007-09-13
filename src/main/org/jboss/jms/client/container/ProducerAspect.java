@@ -60,27 +60,27 @@ import org.jboss.logging.Logger;
  * $Id$
  */
 public class ProducerAspect
-{   
+{
    // Constants ------------------------------------------------------------------------------------
-   
+
    private static final Logger log = Logger.getLogger(ProducerAspect.class);
-   
+
    // Attributes -----------------------------------------------------------------------------------
-   
+
    private boolean trace = log.isTraceEnabled();
-   
+
    // Static ---------------------------------------------------------------------------------------
-   
+
    // Constructors ---------------------------------------------------------------------------------
-   
+
    // Public ---------------------------------------------------------------------------------------
 
    public Object handleSend(Invocation invocation) throws Throwable
-   { 
+   {
       MethodInvocation mi = (MethodInvocation)invocation;
-      
+
       Object[] args = mi.getArguments();
-      
+
       Destination destination = (Destination)args[0];
       Message m = (Message)args[1];
       int deliveryMode = ((Integer)args[2]).intValue();
@@ -88,13 +88,6 @@ public class ProducerAspect
       long timeToLive = ((Long)args[4]).longValue();
 
       boolean keepID = args.length>5? ((Boolean)args[5]).booleanValue() : false;
-
-      String correlatedMessage = null;
-
-      if (keepID)
-      {
-         correlatedMessage = m.getJMSMessageID();
-      }
 
       // configure the message for sending, using attributes stored as metadata
 
@@ -131,7 +124,7 @@ public class ProducerAspect
          timeToLive = producerState.getTimeToLive();
          if (trace) { log.trace("Using producer's default timeToLive: " + timeToLive); }
       }
-      
+
       if (timeToLive == 0)
       {
          // Zero implies never expires
@@ -146,7 +139,7 @@ public class ProducerAspect
       {
          // use destination from producer
          destination = producerState.getDestination();
-         
+
          if (destination == null)
          {
             throw new UnsupportedOperationException("Destination not specified");
@@ -168,14 +161,13 @@ public class ProducerAspect
                                                     "these destinations must be equal");
          }
       }
-      
+
       SessionState sessionState = (SessionState)producerState.getParent();
-                  
+
       // Generate the message id
       ConnectionState connectionState = (ConnectionState)sessionState.getParent();
-      
-      long id =
-         connectionState.getIdGenerator().getId((ConnectionDelegate)connectionState.getDelegate());
+
+      long id = 0;
 
       JBossMessage messageToSend;
       boolean foreign = false;
@@ -185,7 +177,7 @@ public class ProducerAspect
          // it's a foreign message
 
          foreign = true;
-         
+
          // JMS 1.1 Sect. 3.11.4: A provider must be prepared to accept, from a client,
          // a message whose implementation is not one of its own.
 
@@ -214,37 +206,43 @@ public class ProducerAspect
          {
             messageToSend = new JBossMessage(m, 0);
          }
-         
+
          messageToSend.setJMSMessageID(null);
-         
+
          //We must set the destination *after* converting from foreign message
-         messageToSend.setJMSDestination(destination);              
+         messageToSend.setJMSDestination(destination);
       }
       else
       {
          // get the actual message
          MessageProxy proxy = (MessageProxy)m;
 
+         if (keepID)
+         {
+            id = ((MessageProxy)m).getMessage().getMessageID();
+         }
+
+
          m.setJMSDestination(destination);
-                                    
+
          //The following line executed on the proxy should cause a copy to occur
          //if it is necessary
          proxy.setJMSMessageID(null);
-         
+
          //Get the underlying message
-         messageToSend = proxy.getMessage();     
-         
+         messageToSend = proxy.getMessage();
+
          proxy.beforeSend();
       }
-          
-      // Set the new id
-      
-      messageToSend.setMessageId(id);
 
-      if (correlatedMessage != null)
+      // Set the new id
+
+      if (!keepID && id == 0l)
       {
-         messageToSend.setJMSCorrelationID(correlatedMessage);
+         id = connectionState.getIdGenerator().getId((ConnectionDelegate)connectionState.getDelegate());
       }
+
+      messageToSend.setMessageId(id);
       
       // This only really used for BytesMessages and StreamMessages to reset their state
       messageToSend.doBeforeSend(); 
