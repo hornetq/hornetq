@@ -386,9 +386,9 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
          throw new IllegalArgumentException("block size must be > 0");
       }
       
-      class ReserveIDBlockRunner extends JDBCTxRunner
+      class ReserveIDBlockRunner extends JDBCTxRunner<Long>
       {
-      	public Object doTransaction() throws Exception
+      	public Long doTransaction() throws Exception
    		{
             //	For the clustered case - this MUST use SELECT .. FOR UPDATE or a similar
             //construct the locks the row
@@ -456,7 +456,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
    		}
       }
       
-      return (Long)new ReserveIDBlockRunner().executeWithRetry();
+      return new ReserveIDBlockRunner().executeWithRetry();
    }
          
    /*
@@ -2502,69 +2502,4 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
       }
    }
    
-   private abstract class JDBCTxRunner
-   {   
-   	private static final int MAX_TRIES = 25;
-   	
-   	Connection conn;
-
-      TransactionWrapper wrap;
-         
-		public Object execute() throws Exception
-		{
-	      wrap = new TransactionWrapper();
-	      
-	      try
-	      {
-	         conn = ds.getConnection();
-	         
-	         return doTransaction();
-	      }
-	      catch (Exception e)
-	      {
-	         wrap.exceptionOccurred();
-	         throw e;
-	      }
-	      finally
-	      {	      		      
-	      	closeConnection(conn);
-	         wrap.end();
-	      }  
-		}
-		
-		public Object executeWithRetry() throws Exception
-		{
-	      int tries = 0;
-	      
-	      while (true)
-	      {
-	         try
-	         {
-	            Object res = execute();
-	            
-	            if (tries > 0)
-	            {
-	               log.warn("Update worked after retry");
-	            }
-	            return res;	            
-	         }
-	         catch (SQLException e)
-	         {       	
-	            log.warn("SQLException caught, SQLState " + e.getSQLState() + " code:" + e.getErrorCode() + "- assuming deadlock detected, try:" + (tries + 1), e);
-	            
-	            tries++;
-	            if (tries == MAX_TRIES)
-	            {
-	               log.error("Retried " + tries + " times, now giving up");
-	               throw new IllegalStateException("Failed to excecute transaction");
-	            }
-	            log.warn("Trying again after a pause");
-	            //Now we wait for a random amount of time to minimise risk of deadlock
-	            Thread.sleep((long)(Math.random() * 500));	         	
-	         }  
-	      }
-		}
-		
-		public abstract Object doTransaction() throws Exception;
-   }  
 }

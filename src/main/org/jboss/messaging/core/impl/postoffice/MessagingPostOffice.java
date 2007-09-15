@@ -2373,80 +2373,75 @@ public class MessagingPostOffice extends JDBCSupport
    
    private Map getBindingsFromStorage() throws Exception
    {
-      Connection conn = null;
-      PreparedStatement ps  = null;
-      ResultSet rs = null;
-      TransactionWrapper wrap = new TransactionWrapper();
-
-      Map bindings = new HashMap();
-      
-      try
+      class LoadBindings extends JDBCTxRunner<Map>
       {
-         conn = ds.getConnection();
-
-         ps = conn.prepareStatement(getSQLStatement("LOAD_BINDINGS"));
-
-         ps.setString(1, officeName);
-         
-         ps.setInt(2, thisNodeID);
-
-         rs = ps.executeQuery();
-
-         while (rs.next())
+         public Map doTransaction() throws Exception
          {
-            String queueName = rs.getString(1);
-            String conditionText = rs.getString(2);
-            String selector = rs.getString(3);
+            PreparedStatement ps  = null;
+            ResultSet rs = null;
 
-            if (rs.wasNull())
-            {
-               selector = null;
-            }
+            Map bindings = new HashMap();
 
-            long channelID = rs.getLong(4);
-                       
-            boolean bindingClustered = rs.getString(5).equals("Y");
-            
-            boolean allNodes = rs.getString(6).equals("Y");
-            
-            //If the node is not clustered then we load the bindings as non clustered
-                    	
-            Filter filter = null;
-            
-            if (selector != null)
+            try
             {
-            	filter = filterFactory.createFilter(selector);
+               ps = conn.prepareStatement(getSQLStatement("LOAD_BINDINGS"));
+
+               ps.setString(1, officeName);
+
+               ps.setInt(2, thisNodeID);
+
+               rs = ps.executeQuery();
+
+               while (rs.next())
+               {
+                  String queueName = rs.getString(1);
+                  String conditionText = rs.getString(2);
+                  String selector = rs.getString(3);
+
+                  if (rs.wasNull())
+                  {
+                     selector = null;
+                  }
+
+                  long channelID = rs.getLong(4);
+
+                  boolean bindingClustered = rs.getString(5).equals("Y");
+
+                  boolean allNodes = rs.getString(6).equals("Y");
+
+                  //If the node is not clustered then we load the bindings as non clustered
+
+                  Filter filter = null;
+
+                  if (selector != null)
+                  {
+                     filter = filterFactory.createFilter(selector);
+                  }
+
+                  Queue queue = new MessagingQueue(thisNodeID, queueName, channelID, ms, pm,
+                                                   true, filter, bindingClustered && clustered);
+
+                  if (trace) { log.trace(this + " loaded binding from storage: " + queueName); }
+
+                  Condition condition = conditionFactory.createCondition(conditionText);
+
+                  Binding binding = new Binding(condition, queue, allNodes);
+
+                  bindings.put(queueName, binding);
+               }
+
+               return bindings;
             }
-            
-            Queue queue = new MessagingQueue(thisNodeID, queueName, channelID, ms, pm,
-                                             true, filter, bindingClustered && clustered);
-            
-            if (trace) { log.trace(this + " loaded binding from storage: " + queueName); }
-            
-            Condition condition = conditionFactory.createCondition(conditionText);
-            
-            Binding binding = new Binding(condition, queue, allNodes);
-            
-            bindings.put(queueName, binding);                        
+            finally
+            {
+               closeResultSet(rs);
+
+               closeStatement(ps);
+            }
          }
-         
-         return bindings;
       }
-      catch (Exception e)
-      {
-      	wrap.exceptionOccurred();
-      	throw e;
-      }
-      finally
-      {
-         closeResultSet(rs);
-         
-         closeStatement(ps);
-         
-         closeConnection(conn);
 
-         wrap.end();
-      }	
+      return new LoadBindings().executeWithRetry();
    }
    
    private void loadBindings() throws Exception
@@ -2483,95 +2478,91 @@ public class MessagingPostOffice extends JDBCSupport
    }
     
 
-   private void insertBindingInStorage(Condition condition, Queue queue, boolean allNodes) throws Exception
+   private void insertBindingInStorage(final Condition condition, final Queue queue, final boolean allNodes) throws Exception
    {
-      Connection conn = null;
-      PreparedStatement ps  = null;
-      TransactionWrapper wrap = new TransactionWrapper();
-
-      try
+      class InsertBindings extends JDBCTxRunner
       {
-         conn = ds.getConnection();
+         public Object doTransaction() throws Exception
+         {
+            PreparedStatement ps  = null;
 
-         ps = conn.prepareStatement(getSQLStatement("INSERT_BINDING"));
+            try
+            {
+               ps = conn.prepareStatement(getSQLStatement("INSERT_BINDING"));
 
-         ps.setString(1, officeName);
-         ps.setInt(2, thisNodeID);
-         ps.setString(3, queue.getName());
-         ps.setString(4, condition.toText());
-         String filterString = queue.getFilter() != null ? queue.getFilter().getFilterString() : null;
-         if (filterString != null)
-         {
-            ps.setString(5, filterString);
-         }
-         else
-         {
-            ps.setNull(5, Types.VARCHAR);
-         }
-         ps.setLong(6, queue.getChannelID());        
-         if (queue.isClustered())
-         {
-            ps.setString(7, "Y");
-         }
-         else
-         {
-            ps.setString(7, "N");
-         }
-         if (allNodes)
-         {
-         	ps.setString(8, "Y");
-         }
-         else
-         {
-         	ps.setString(8, "N");
-         }
+               ps.setString(1, officeName);
+               ps.setInt(2, thisNodeID);
+               ps.setString(3, queue.getName());
+               ps.setString(4, condition.toText());
+               String filterString = queue.getFilter() != null ? queue.getFilter().getFilterString() : null;
+               if (filterString != null)
+               {
+                  ps.setString(5, filterString);
+               }
+               else
+               {
+                  ps.setNull(5, Types.VARCHAR);
+               }
+               ps.setLong(6, queue.getChannelID());
+               if (queue.isClustered())
+               {
+                  ps.setString(7, "Y");
+               }
+               else
+               {
+                  ps.setString(7, "N");
+               }
+               if (allNodes)
+               {
+                  ps.setString(8, "Y");
+               }
+               else
+               {
+                  ps.setString(8, "N");
+               }
 
-         ps.executeUpdate();
+               ps.executeUpdate();
+            }
+            finally
+            {
+               closeStatement(ps);
+            }
+
+            return null;
+         }
       }
-      catch (Exception e)
-      {
-      	wrap.exceptionOccurred();
-      	throw e;
-      }
-      finally
-      {
-      	closeStatement(ps);
-      	closeConnection(conn);
-         wrap.end();
-      }
+
+      new InsertBindings().executeWithRetry();
    }
 
-   private boolean deleteBindingFromStorage(Queue queue) throws Exception
+   private boolean deleteBindingFromStorage(final Queue queue) throws Exception
    {
-      Connection conn = null;
-      PreparedStatement ps  = null;
-      TransactionWrapper wrap = new TransactionWrapper();
-
-      try
+      class DeleteBindings extends JDBCTxRunner<Boolean>
       {
-         conn = ds.getConnection();
+         public Boolean doTransaction() throws Exception
+         {
+            PreparedStatement ps  = null;
 
-         ps = conn.prepareStatement(getSQLStatement("DELETE_BINDING"));
+            try
+            {
+               ps = conn.prepareStatement(getSQLStatement("DELETE_BINDING"));
 
-         ps.setString(1, officeName);
-         ps.setInt(2, queue.getNodeID());
-         ps.setString(3, queue.getName());
+               ps.setString(1, officeName);
+               ps.setInt(2, queue.getNodeID());
+               ps.setString(3, queue.getName());
 
-         int rows = ps.executeUpdate();
+               int rows = ps.executeUpdate();
 
-         return rows == 1;
+               return rows == 1;
+            }
+            finally
+            {
+               closeStatement(ps);
+            }
+         }
       }
-      catch (Exception e)
-      {
-      	wrap.exceptionOccurred();
-      	throw e;
-      }
-      finally
-      {
-      	closeStatement(ps);
-      	closeConnection(conn);
-         wrap.end();
-      }
+
+      return new DeleteBindings().executeWithRetry();
    }
 
    private boolean leaveMessageReceived(Integer nodeId) throws Exception

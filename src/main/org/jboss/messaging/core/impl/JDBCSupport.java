@@ -24,6 +24,7 @@ package org.jboss.messaging.core.impl;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.sql.SQLException;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -364,4 +365,71 @@ public class JDBCSupport implements MessagingComponent
          return failed;
       }
    }
+
+   protected abstract class JDBCTxRunner<T>
+   {
+   	private static final int MAX_TRIES = 25;
+
+   	protected Connection conn;
+
+      private TransactionWrapper wrap;
+
+      public T execute() throws Exception
+		{
+	      wrap = new TransactionWrapper();
+
+	      try
+	      {
+	         conn = ds.getConnection();
+
+	         return doTransaction();
+	      }
+	      catch (Exception e)
+	      {
+	         wrap.exceptionOccurred();
+	         throw e;
+	      }
+	      finally
+	      {
+	      	closeConnection(conn);
+	         wrap.end();
+	      }
+		}
+
+		public T executeWithRetry() throws Exception
+		{
+	      int tries = 0;
+
+	      while (true)
+	      {
+	         try
+	         {
+	            T res = execute();
+
+	            if (tries > 0)
+	            {
+	               log.warn("Update worked after retry");
+	            }
+	            return res;
+	         }
+	         catch (SQLException e)
+	         {
+	            log.warn("SQLException caught, SQLState " + e.getSQLState() + " code:" + e.getErrorCode() + "- assuming deadlock detected, try:" + (tries + 1), e);
+
+	            tries++;
+	            if (tries == MAX_TRIES)
+	            {
+	               log.error("Retried " + tries + " times, now giving up");
+	               throw new IllegalStateException("Failed to excecute transaction");
+	            }
+	            log.warn("Trying again after a pause");
+	            //Now we wait for a random amount of time to minimise risk of deadlock
+	            Thread.sleep((long)(Math.random() * 500));
+	         }
+	      }
+		}
+
+		public abstract T doTransaction() throws Exception;
+   }
+
 }
