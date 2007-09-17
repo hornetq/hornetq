@@ -35,9 +35,11 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 
 import org.jboss.jms.client.JBossConnection;
+import org.jboss.jms.client.remoting.JMSRemotingConnection;
 import org.jboss.jms.client.delegate.ClientConnectionDelegate;
 import org.jboss.logging.Logger;
 import org.jboss.test.messaging.tools.ServerManagement;
+import org.jboss.test.messaging.tools.aop.PoisonInterceptor;
 
 /**
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
@@ -124,6 +126,40 @@ public class MultiThreadFailoverTest extends ClusteringTestBase
       conn.close();
    }
 
+   /**
+    * This test will open several Consumers at the same Connection and it will kill the server,
+    * expecting failover to happen inside the Valve
+    */
+   public void testMultiThreadFailoverSingleThread() throws Exception
+   {
+      multiThreadFailover(1, 1, false, true);
+   }
+
+   public void testMultiThreadFailoverSingleThreadTransacted() throws Exception
+   {
+      multiThreadFailover(1, 1, true, true);
+   }
+
+   public void testMultiThreadFailoverSingleThreadNonPersistent() throws Exception
+   {
+      multiThreadFailover(1, 1, false, false);
+   }
+
+   public void testMultiThreadFailoverSeveralThreads() throws Exception
+   {
+      multiThreadFailover(5, 10, false, true);
+   }
+
+   public void testMultiThreadFailoverSeveralThreadsTransacted() throws Exception
+   {
+      multiThreadFailover(5, 10, true, true);
+   }
+
+   public void testMultiThreadFailoverNonPersistent() throws Exception
+   {
+      multiThreadFailover(5, 10, false, false);
+   }
+
    // TODO TEST TEMPORARILY COMMENTED OUT.
    //      MUST BE UNCOMMENTED FOR  1.2.1!
    //      See http://jira.jboss.org/jira/browse/JBMESSAGING-815
@@ -131,19 +167,14 @@ public class MultiThreadFailoverTest extends ClusteringTestBase
    // Crash the Server when you have two clients in receive and send simultaneously
 //   public void testFailureOnSendReceiveSynchronized() throws Throwable
 //   {
-//      Connection conn0 = null;
 //      Connection conn1 = null;
 //      Connection conn2 = null;
 //
 //      try
 //      {
-//         conn0 = cf.createConnection();
-//         conn0.close();
-//         conn0 = null;
+//         conn1 = createConnectionOnServer(cf, 1);
 //
-//         conn1 = cf.createConnection();
-//
-//         conn2 = cf.createConnection();
+//         conn2 = createConnectionOnServer(cf, 2);
 //
 //         assertEquals(1, ((JBossConnection)conn1).getServerID());
 //         assertEquals(2, ((JBossConnection)conn2).getServerID());
@@ -241,43 +272,15 @@ public class MultiThreadFailoverTest extends ClusteringTestBase
 //         {
 //            conn1.close();
 //         }
+//         if (conn2 != null)
+//         {
+//            conn2.close();
+//         }
 //      }
 //
 //   }
 
-   /**
-    * This test will open several Consumers at the same Connection and it will kill the server,
-    * expecting failover to happen inside the Valve
-    */
-   public void testMultiThreadFailoverSingleThread() throws Exception
-   {
-      multiThreadFailover(1, 1, false, true);
-   }
-
-   public void testMultiThreadFailoverSingleThreadTransacted() throws Exception
-   {
-      multiThreadFailover(1, 1, true, true);
-   }
-
-   public void testMultiThreadFailoverSingleThreadNonPersistent() throws Exception
-   {
-      multiThreadFailover(1, 1, false, false);
-   }
-
-   public void testMultiThreadFailoverSeveralThreads() throws Exception
-   {
-      multiThreadFailover(5, 10, false, true);
-   }
-
-   public void testMultiThreadFailoverSeveralThreadsTransacted() throws Exception
-   {
-      multiThreadFailover(5, 10, true, true);
-   }
-
-   public void testMultiThreadFailoverNonPersistent() throws Exception
-   {
-      multiThreadFailover(5, 10, false, false);
-   }
+   
 
    // I kept this method on public area on purpose.. just to be easier to read the code
    // As this is the real test being executed by test methods here.
