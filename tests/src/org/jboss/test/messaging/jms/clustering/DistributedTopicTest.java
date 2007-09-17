@@ -72,6 +72,16 @@ public class DistributedTopicTest extends ClusteringTestBase
    {
       clusteredTopicNonDurable(true);
    }
+   
+   public void testClusteredTopicNonDurableNoLocalNonPersistent() throws Exception
+   {
+      clusteredTopicNoLocal(false);
+   }
+
+   public void testClusteredTopicNonDurableNoLocalPersistent() throws Exception
+   {
+   	clusteredTopicNoLocal(true);
+   }
 
    public void testClusteredTopicNonDurableWithSelectorsNonPersistent() throws Exception
    {
@@ -398,6 +408,100 @@ public class DistributedTopicTest extends ClusteringTestBase
          msg = cons4.receive(3000);
          
          assertNull(msg);
+      }
+      finally
+      {
+         if (conn0 != null)
+         {
+            conn0.close();
+         }
+
+         if (conn1 != null)
+         {
+            conn1.close();
+         }
+
+         if (conn2 != null)
+         {
+            conn2.close();
+         }
+      }
+   }
+   
+   
+   /* Test with noLocal set to true */
+   private void clusteredTopicNoLocal(boolean persistent) throws Exception
+   {
+      Connection conn0 = null;
+      Connection conn1 = null;
+      Connection conn2 = null;
+      try
+      {
+         //This will create 3 different connection on 3 different nodes, since
+         //the cf is clustered
+         conn0 = this.createConnectionOnServer(cf, 0);
+         conn1 = this.createConnectionOnServer(cf, 1);
+         conn2 = this.createConnectionOnServer(cf, 2);
+         
+         checkConnectionsDifferentServers(new Connection[] {conn0, conn1, conn2});
+
+         Session sess0 = conn0.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         Session sess1 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         Session sess2 = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+         MessageConsumer cons0 = sess0.createConsumer(topic[0], null, true);
+         MessageConsumer cons1 = sess1.createConsumer(topic[1], null, true);
+         MessageConsumer cons2 = sess2.createConsumer(topic[2], null, true);        
+
+         conn0.start();
+         conn1.start();
+         conn2.start();
+
+         // Send at node 0
+
+         MessageProducer prod = sess0.createProducer(topic[0]);
+
+         prod.setDeliveryMode(persistent ? DeliveryMode.PERSISTENT : DeliveryMode.NON_PERSISTENT);
+
+         final int NUM_MESSAGES = 100;
+
+         for (int i = 0; i < NUM_MESSAGES; i++)
+         {
+            TextMessage tm = sess0.createTextMessage("message" + i);
+
+            prod.send(tm);
+         }
+
+         Message msg = cons0.receive(3000);
+         
+         assertNull(msg);
+
+         for (int i = 0; i < NUM_MESSAGES; i++)
+         {
+            TextMessage tm = (TextMessage)cons1.receive(3000);
+
+            assertNotNull(tm);
+            
+ 
+            assertEquals("message" + i, tm.getText());
+         }
+         
+         msg = cons1.receive(3000);
+         
+         assertNull(msg);
+
+         for (int i = 0; i < NUM_MESSAGES; i++)
+         {
+            TextMessage tm = (TextMessage)cons2.receive(3000);
+
+            assertNotNull(tm);
+            
+            assertEquals("message" + i, tm.getText());
+         }
+         
+         msg = cons2.receive(3000);
+         
+         assertNull(msg);         
       }
       finally
       {

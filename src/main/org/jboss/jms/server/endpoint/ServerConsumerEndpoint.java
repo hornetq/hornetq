@@ -301,7 +301,7 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
 
             if (trace) { log.trace("message connection id: " + conId + " current connection connection id: " + sessionEndpoint.getConnectionEndpoint().getConnectionID()); }
 
-            accept = !conId.equals(sessionEndpoint.getConnectionEndpoint().getConnectionID());
+            accept = !sessionEndpoint.getConnectionEndpoint().getConnectionID().equals(conId);
 
             if (trace) { log.trace("accepting? " + accept); }
          }
