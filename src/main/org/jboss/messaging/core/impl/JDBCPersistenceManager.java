@@ -468,121 +468,126 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
     * e.g. Oracle ARRAY types in Oracle which can be submitted as a param to an Oracle prepared statement
     * Although this would all be DB specific.
     */
-   public List getMessages(List messageIds) throws Exception
+   public List getMessages(final List messageIds) throws Exception
    {
       if (trace) { log.trace("Getting batch of messages for " + messageIds); }
-      
-      Connection conn = null;
-      PreparedStatement ps = null;
-      ResultSet rs = null;
-      TransactionWrapper wrap = new TransactionWrapper();
-      
-      try
+
+      class GetMessageListTX extends JDBCTxRunner<List>
       {
-         conn = ds.getConnection();
-         
-         Iterator iter = messageIds.iterator();
-         
-         int size = messageIds.size();
-         
-         int count = 0;
-         
-         List<Message> msgs = new ArrayList<Message>();
-         
-         while (iter.hasNext())
+
+         public List<Message> doTransaction() throws Exception
          {
-            if (ps == null)
+            PreparedStatement ps = null;
+            ResultSet rs = null;
+
+            try
             {
-               //PreparedStatements are cached in the JCA layer so we will never actually have more than
-               //100 distinct ones            
-               int numParams;
-               if (count < (size / maxParams) * maxParams)
+               Iterator iter = messageIds.iterator();
+
+               int size = messageIds.size();
+
+               int count = 0;
+
+               List<Message> msgs = new ArrayList<Message>();
+
+               while (iter.hasNext())
                {
-                  numParams = maxParams;
-               }
-               else
-               {
-                  numParams = size % maxParams;
-               }
-               StringBuffer buff = new StringBuffer(getSQLStatement("LOAD_MESSAGES"));
-               buff.append(" WHERE ").append(getSQLStatement("MESSAGE_ID_COLUMN")).append(" IN (");
-               for (int i = 0; i < numParams; i++)
-               {
-                  buff.append("?");
-                  if (i < numParams - 1)
+                  if (ps == null)
                   {
-                     buff.append(",");
+                     //PreparedStatements are cached in the JCA layer so we will never actually have more than
+                     //100 distinct ones
+                     int numParams;
+                     if (count < (size / maxParams) * maxParams)
+                     {
+                        numParams = maxParams;
+                     }
+                     else
+                     {
+                        numParams = size % maxParams;
+                     }
+                     StringBuffer buff = new StringBuffer(getSQLStatement("LOAD_MESSAGES"));
+                     buff.append(" WHERE ").append(getSQLStatement("MESSAGE_ID_COLUMN")).append(" IN (");
+                     for (int i = 0; i < numParams; i++)
+                     {
+                        buff.append("?");
+                        if (i < numParams - 1)
+                        {
+                           buff.append(",");
+                        }
+                     }
+                     buff.append(")");
+                     ps = conn.prepareStatement(buff.toString());
+
+                     if (trace)
+                     {
+                        log.trace(buff.toString());
+                     }
+                  }
+
+                  long msgId = ((Long)iter.next()).longValue();
+
+                  ps.setLong((count % maxParams) + 1, msgId);
+
+                  count++;
+
+                  if (!iter.hasNext() || count % maxParams == 0)
+                  {
+                     rs = ps.executeQuery();
+
+                     while (rs.next())
+                     {
+                        long messageId = rs.getLong(1);
+
+                        boolean reliable = rs.getString(2).equals("Y");
+
+                        long expiration = rs.getLong(3);
+
+                        long timestamp = rs.getLong(4);
+
+                        byte priority = rs.getByte(5);
+
+                        byte[] bytes = getBytes(rs, 6);
+
+                        HashMap headers = bytesToMap(bytes);
+
+                        byte[] payload = getBytes(rs, 7);
+
+                        byte type = rs.getByte(8);
+
+                        Message m = MessageFactory.createMessage(messageId, reliable, expiration, timestamp, priority,
+                                                                 headers, payload, type);
+                        msgs.add(m);
+                     }
+
+                     rs.close();
+                     rs = null;
+
+                     ps.close();
+                     ps = null;
                   }
                }
-               buff.append(")");
-               ps = conn.prepareStatement(buff.toString());
-               
-               if (trace)
-               {
-                  log.trace(buff.toString());
-               }
+
+               if (trace) { log.trace("Loaded " + msgs.size() + " messages in total"); }
+
+               return msgs;
             }
-            
-            long msgId = ((Long)iter.next()).longValue();
-            
-            ps.setLong((count % maxParams) + 1, msgId);
-            
-            count++;
-            
-            if (!iter.hasNext() || count % maxParams == 0)
+            catch (Exception e)
             {
-               rs = ps.executeQuery();
-               
-               while (rs.next())
-               {       
-                  long messageId = rs.getLong(1);
-                  
-                  boolean reliable = rs.getString(2).equals("Y");
-                  
-                  long expiration = rs.getLong(3);
-                  
-                  long timestamp = rs.getLong(4);
-                  
-                  byte priority = rs.getByte(5);        
-                  
-                  byte[] bytes = getBytes(rs, 6);
-                  
-                  HashMap headers = bytesToMap(bytes);
-                  
-                  byte[] payload = getBytes(rs, 7);
-                  
-                  byte type = rs.getByte(8);
-                  
-                  Message m = MessageFactory.createMessage(messageId, reliable, expiration, timestamp, priority,
-                                                           headers, payload, type);
-                  msgs.add(m);
-               }
-               
-               rs.close();
-               rs = null;
-               
-               ps.close();
-               ps = null;
+               throw e;
+            }
+            finally
+            {
+               closeResultSet(rs);
+               closeStatement(ps);
             }
          }
-         
-         if (trace) { log.trace("Loaded " + msgs.size() + " messages in total"); }
+      }
 
-         return msgs;
-      }
-      catch (Exception e)
-      {
-         wrap.exceptionOccurred();
-         throw e;
-      }
-      finally
-      {
-      	closeResultSet(rs);
-      	closeStatement(ps);
-      	closeConnection(conn);
-         wrap.end();
-      }
-   }  
+
+      return new GetMessageListTX().executeWithRetry();
+
+      
+   }
    
        
    // Related to paging functionality
