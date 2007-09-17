@@ -120,17 +120,25 @@ public class ClientExitTest extends MessagingTestCase
       }
       finally
       {
-      	conn.close();
-      	
-         // TODO delete the file
-         if (serialized != null)
+         try
          {
-            serialized.delete();
-         }
+            if (conn != null)
+               conn.close();
 
-         localServer.undeployDestination(true, "Queue");
-         localServer.stopServerPeer();
-         localServer.stop();
+            // TODO delete the file
+            if (serialized != null)
+            {
+               serialized.delete();
+            }
+
+            localServer.undeployDestination(true, "Queue");
+            localServer.stopServerPeer();
+            localServer.stop();
+         }
+         catch (Throwable ignored)
+         {
+            log.warn("Exception ignored:" + ignored.toString(), ignored);
+         }
       }
    }
 
