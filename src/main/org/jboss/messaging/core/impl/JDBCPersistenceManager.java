@@ -1173,7 +1173,6 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
 			{
 	         PreparedStatement psReference = null;
             PreparedStatement psInsertMessage = null;
-            PreparedStatement psUpdateMessage = null;
 
 	         Message m = ref.getMessage();     
 	         
@@ -1191,18 +1190,10 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
 	            if (!m.isPersisted())
 	            {
 	               // First time so persist the message
-                  if (isSupportsBlobSelect())
-                  {
-                     psInsertMessage = conn.prepareStatement(getSQLStatement("INSERT_MESSAGE_CONDITIONAL_FULL"));
-                  }
-                  else
-                  {
-                     psInsertMessage = conn.prepareStatement(getSQLStatement("INSERT_MESSAGE_CONDITIONAL"));
-                     psUpdateMessage = conn.prepareStatement(getSQLStatement("UPDATE_MESSAGE_4CONDITIONAL"));
-                  }
-                  
+                  psInsertMessage = conn.prepareStatement(getSQLStatement("INSERT_MESSAGE"));
 
-                  rows = storeMessage(m, psInsertMessage, psUpdateMessage);
+                  storeMessage(m, psInsertMessage, true);
+                  rows = psInsertMessage.executeUpdate();
 		            
 		            if (trace) { log.trace("Inserted/updated " + rows + " rows"); }     
 		            
@@ -1218,7 +1209,6 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
 	         {
 	         	closeStatement(psReference);
                closeStatement(psInsertMessage);
-               closeStatement(psUpdateMessage);
 	         }
 			}   		
    	}
@@ -1398,7 +1388,6 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
 		         
 		      PreparedStatement psReference = null;
 		      PreparedStatement psInsertMessage = null;
-            PreparedStatement psUpdateMessage = null;
             PreparedStatement psDeleteReference = null;
 		      
 		      List<Message> messagesStored = new ArrayList<Message>();
@@ -1429,22 +1418,15 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
 			            {   
 			            	if (psInsertMessage == null)
 			            	{
-                           if (isSupportsBlobSelect())
-                           {
-                              psInsertMessage = conn.prepareStatement(getSQLStatement("INSERT_MESSAGE_CONDITIONAL_FULL"));
-                           }
-                           else
-                           {
-                              psInsertMessage = conn.prepareStatement(getSQLStatement("INSERT_MESSAGE_CONDITIONAL"));
-                              psUpdateMessage = conn.prepareStatement(getSQLStatement("UPDATE_MESSAGE_4CONDITIONAL"));
-                           }
+                           psInsertMessage = conn.prepareStatement(getSQLStatement("INSERT_MESSAGE"));
 			            	}
 			            	
 			               // First time so add message
                         // And in case of clustered queues/topics, the message could possibly be already persisted on the different node
                         // so we persist also using the Conditional Update
                         if (trace) { log.trace("Message does not already exist so inserting it"); }
-                        rows = storeMessage(m, psInsertMessage, psUpdateMessage);
+                        storeMessage(m, psInsertMessage, true);
+                        rows = psInsertMessage.executeUpdate();
                         if (trace) { log.trace("Inserted " + rows + " rows"); }
 
 			               m.setPersisted(true);
@@ -1489,7 +1471,6 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
                closeStatement(psReference);
 		      	closeStatement(psDeleteReference);
 		      	closeStatement(psInsertMessage);
-               closeStatement(psUpdateMessage);
 		      }
 			}   		
    	}   	      
@@ -1554,7 +1535,6 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
 		      PreparedStatement psReference = null;
 		      PreparedStatement psInsertMessage = null;
             PreparedStatement psUpdateReference = null;
-            PreparedStatement psUpdateMessage = null;
 
 		      List<Message> messagesStored = new ArrayList<Message>();
 		 
@@ -1591,18 +1571,11 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
 			            {	            	
 			            	if (psInsertMessage == null)
 			            	{
-                           if (isSupportsBlobSelect())
-                           {
-                              psInsertMessage = conn.prepareStatement(getSQLStatement("INSERT_MESSAGE_CONDITIONAL_FULL"));
-                           }
-                           else
-                           {
-                              psInsertMessage = conn.prepareStatement(getSQLStatement("INSERT_MESSAGE_CONDITIONAL"));
-                              psUpdateMessage = conn.prepareStatement(getSQLStatement("UPDATE_MESSAGE_4CONDITIONAL"));
-                           }
+                           psInsertMessage = conn.prepareStatement(getSQLStatement("INSERT_MESSAGE"));
 			            	}
-				            		
-				            rows = storeMessage(m, psInsertMessage, psUpdateMessage);               
+
+                        storeMessage(m, psInsertMessage, true);
+                        rows = psInsertMessage.executeUpdate();
 				            
 			            	if (trace) { log.trace("Inserted " + rows + " rows"); }
 
@@ -1650,7 +1623,6 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
 		      	closeStatement(psReference);
 		      	closeStatement(psInsertMessage);  
 		      	closeStatement(psUpdateReference);
-               closeStatement(psUpdateMessage);
 		      }
 			}   		
    	}

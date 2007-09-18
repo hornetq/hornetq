@@ -89,6 +89,8 @@ public class ProducerAspect
 
       boolean keepID = args.length>5? ((Boolean)args[5]).booleanValue() : false;
 
+      String keptId = null;
+
       // configure the message for sending, using attributes stored as metadata
 
       ProducerState producerState = getProducerState(mi);
@@ -219,7 +221,7 @@ public class ProducerAspect
 
          if (keepID)
          {
-            id = ((MessageProxy)m).getMessage().getMessageID();
+            keptId = m.getJMSMessageID();
          }
 
 
@@ -237,13 +239,15 @@ public class ProducerAspect
 
       // Set the new id
 
-      if (!keepID && id == 0l)
+      id = connectionState.getIdGenerator().getId((ConnectionDelegate)connectionState.getDelegate());
+      messageToSend.setMessageId(id);
+
+      if (keptId != null)
       {
-         id = connectionState.getIdGenerator().getId((ConnectionDelegate)connectionState.getDelegate());
+         messageToSend.setJMSMessageID(keptId);
       }
 
-      messageToSend.setMessageId(id);
-      
+
       // This only really used for BytesMessages and StreamMessages to reset their state
       messageToSend.doBeforeSend(); 
       

@@ -87,6 +87,9 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message, S
    private static final String REPLYTO_HEADER_NAME = "H.REPLYTO";
    
    private static final String CORRELATIONID_HEADER_NAME = "H.CORRELATIONID";
+
+   // When the message is sent through the cluster, it needs to keep the original messageID
+   private static final String JBM_MESSAGE_ID = "JBM_MESSAGE_ID";
    
    private static final String CORRELATIONIDBYTES_HEADER_NAME = "H.CORRELATIONIDBYTES";
    
@@ -376,8 +379,16 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message, S
    public String getJMSMessageID()
    {
       if (jmsMessageID == null)
-      {       
-         jmsMessageID = "ID:JBM-" + messageID;
+      {
+         String headerID = (String)headers.get(JBM_MESSAGE_ID);
+         if (headerID == null)
+         {
+            jmsMessageID = "ID:JBM-" + messageID;
+         }
+         else
+         {
+            jmsMessageID = headerID;
+         }
       }
       return jmsMessageID;
    }
@@ -387,6 +398,14 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message, S
       if (jmsMessageID != null && !jmsMessageID.startsWith("ID:"))
       {
          throw new JMSException("JMSMessageID must start with ID:");
+      }
+      if (jmsMessageID == null)
+      {
+         headers.remove(JBM_MESSAGE_ID);
+      }
+      else
+      {
+         headers.put(JBM_MESSAGE_ID, jmsMessageID);
       }
       this.jmsMessageID = jmsMessageID;
    }
