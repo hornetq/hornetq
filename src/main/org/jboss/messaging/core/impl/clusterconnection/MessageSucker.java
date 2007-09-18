@@ -301,8 +301,6 @@ public class MessageSucker implements MessageListener
 				
 				if (trace) { log.trace("Acknowledged message"); }
 			}
-			
-			//if (queue.)
 		}
 		catch (Exception e)
 		{

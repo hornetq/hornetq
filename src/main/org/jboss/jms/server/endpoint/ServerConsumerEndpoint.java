@@ -107,6 +107,8 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
    
    private boolean replicating;
    
+   private boolean slow;
+   
    // Constructors ---------------------------------------------------------------------------------
 
    ServerConsumerEndpoint(String id, Queue messageQueue, String queueName,
@@ -150,6 +152,8 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
       this.preserveOrdering = sessionEndpoint.getConnectionEndpoint().getServerPeer().isDefaultPreserveOrdering();
       
       this.replicating = replicating;
+      
+      this.slow = sessionEndpoint.getConnectionEndpoint().getConnectionFactoryEndpoint().isSlowConsumers();
       
       if (dest.isTopic() && !messageQueue.isRecoverable())
       {
@@ -260,6 +264,17 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
             return delivery;
          }
          
+         if (slow)
+         {
+         	//If this is a slow consumer, we do not want to do any message buffering, so we immediately
+         	//set clientAccepting to false
+         	//When the client has consumed the message it will send a changeRate + message which will set
+         	//clientAccepting to true again
+         	//We cannot just rely on setting the prefetchSize to 1, since this is not a hard guarantee that only one message
+         	//will be buffered at once due to the asynchronous nature of sending changeRate
+         	this.clientAccepting = false;
+         }
+         
          try
          {
          	sessionEndpoint.handleDelivery(delivery, this);
@@ -270,7 +285,7 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
          	
          	this.started = false; // DO NOT return null or the message might get delivered more than once
          }
-                                  
+                          
          return delivery;
       }
    }

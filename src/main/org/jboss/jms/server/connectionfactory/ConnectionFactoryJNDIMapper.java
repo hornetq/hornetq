@@ -107,6 +107,7 @@ public class ConnectionFactoryJNDIMapper
                                                       String locatorURI,
                                                       boolean clientPing,
                                                       int prefetchSize,
+                                                      boolean slowConsumers,
                                                       int defaultTempQueueFullSize,
                                                       int defaultTempQueuePageSize,
                                                       int defaultTempQueueDownCacheSize,
@@ -135,6 +136,7 @@ public class ConnectionFactoryJNDIMapper
       ServerConnectionFactoryEndpoint endpoint =
          new ServerConnectionFactoryEndpoint(uniqueName, id, serverPeer, clientID,
                                              jndiBindings, prefetchSize,
+                                             slowConsumers,
                                              defaultTempQueueFullSize,
                                              defaultTempQueuePageSize,
                                              defaultTempQueueDownCacheSize,

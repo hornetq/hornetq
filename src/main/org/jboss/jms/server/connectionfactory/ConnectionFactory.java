@@ -45,6 +45,8 @@ public class ConnectionFactory extends ServiceMBeanSupport
    
    private int prefetchSize = 150;
    
+   private boolean slowConsumers;
+   
    private boolean supportsFailover;
    
    private boolean supportsLoadBalancing;
@@ -145,7 +147,7 @@ public class ConnectionFactory extends ServiceMBeanSupport
          
          connectionFactoryManager.
             registerConnectionFactory(getServiceName().getCanonicalName(), clientID, jndiBindings,
-                                      locatorURI, enablePing, prefetchSize,
+                                      locatorURI, enablePing, prefetchSize, slowConsumers,
                                       defaultTempQueueFullSize, defaultTempQueuePageSize,                                      
                                       defaultTempQueueDownCacheSize, dupsOKBatchSize, supportsFailover, supportsLoadBalancing,
                                       loadBalancingFactory);
@@ -231,6 +233,16 @@ public class ConnectionFactory extends ServiceMBeanSupport
    public void setPrefetchSize(int prefetchSize)
    {
       this.prefetchSize = prefetchSize;
+   }
+   
+   public boolean isSlowConsumers()
+   {
+   	return slowConsumers;
+   }
+   
+   public void setSlowConsumers(boolean slowConsumers)
+   {
+   	this.slowConsumers = slowConsumers;
    }
 
    public String getClientID()

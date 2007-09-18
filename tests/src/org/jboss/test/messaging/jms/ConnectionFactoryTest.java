@@ -24,9 +24,14 @@ package org.jboss.test.messaging.jms;
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.JMSException;
+import javax.jms.Message;
+import javax.jms.MessageConsumer;
+import javax.jms.MessageListener;
+import javax.jms.MessageProducer;
 import javax.jms.QueueConnection;
 import javax.jms.QueueConnectionFactory;
 import javax.jms.Session;
+import javax.jms.TextMessage;
 import javax.jms.Topic;
 import javax.jms.TopicConnection;
 import javax.jms.TopicConnectionFactory;
@@ -185,11 +190,11 @@ public class ConnectionFactoryTest extends JMSTestCase
       ObjectName c2 = deployConnector(1235, name2);
       ObjectName c3 = deployConnector(1236, name3);
       
-      ObjectName cf1 = deployConnectionFactory("jboss.messaging.destination:service=TestConnectionFactory1", name1, "/TestConnectionFactory1", "clientid1");
-      ObjectName cf2 = deployConnectionFactory("jboss.messaging.destination:service=TestConnectionFactory2", name2, "/TestConnectionFactory2", "clientid2");
-      ObjectName cf3 = deployConnectionFactory("jboss.messaging.destination:service=TestConnectionFactory3", name3, "/TestConnectionFactory3", "clientid3");
+      ObjectName cf1 = deployConnectionFactory("jboss.messaging.destination:service=TestConnectionFactory1", name1, "/TestConnectionFactory1", "clientid1", false);
+      ObjectName cf2 = deployConnectionFactory("jboss.messaging.destination:service=TestConnectionFactory2", name2, "/TestConnectionFactory2", "clientid2", false);
+      ObjectName cf3 = deployConnectionFactory("jboss.messaging.destination:service=TestConnectionFactory3", name3, "/TestConnectionFactory3", "clientid3", false);
       //Last one shares the same connector
-      ObjectName cf4 = deployConnectionFactory("jboss.messaging.destination:service=TestConnectionFactory4", name3, "/TestConnectionFactory4", "clientid4");
+      ObjectName cf4 = deployConnectionFactory("jboss.messaging.destination:service=TestConnectionFactory4", name3, "/TestConnectionFactory4", "clientid4", false);
       
       
       JBossConnectionFactory f1 = (JBossConnectionFactory)ic.lookup("/TestConnectionFactory1");            
@@ -265,7 +270,7 @@ public class ConnectionFactoryTest extends JMSTestCase
    // Added for http://jira.jboss.org/jira/browse/JBMESSAGING-939
    public void testDurableSubscriptionOnPreConfiguredConnectionFactory() throws Exception
    {
-      ObjectName cf1 = deployConnectionFactory("jboss.messaging.destination:service=TestConnectionFactory1", ServiceContainer.REMOTING_OBJECT_NAME.getCanonicalName(), "/TestDurableCF", "cfTest");
+      ObjectName cf1 = deployConnectionFactory("jboss.messaging.destination:service=TestConnectionFactory1", ServiceContainer.REMOTING_OBJECT_NAME.getCanonicalName(), "/TestDurableCF", "cfTest", false);
 
       ServerManagement.deployTopic("TestSubscriber");
 
@@ -324,6 +329,163 @@ public class ConnectionFactoryTest extends JMSTestCase
 
    }
 
+   
+   public void testSlowConsumers() throws Exception
+   {
+      ObjectName cf1 = deployConnectionFactory("jboss.messaging.destination:service=TestConnectionFactorySlowConsumers",
+      		                                   ServiceContainer.REMOTING_OBJECT_NAME.getCanonicalName(), "/TestSlowConsumersCF", null, true);
+
+      Connection conn = null;
+
+      try
+      {
+         ConnectionFactory cf = (ConnectionFactory) ic.lookup("/TestSlowConsumersCF");
+         
+         conn = cf.createConnection();
+
+         Session session1 = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         
+         Session session2 = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         
+         final Object waitLock = new Object();
+         
+         final int numMessages = 500;
+               
+         class FastListener implements MessageListener
+         {
+         	volatile int processed;
+         	
+         	public void onMessage(Message msg)
+				{
+         		processed++;
+         		
+         		TextMessage tm = (TextMessage)msg;
+         		
+         		try
+         		{
+         			log.info("Fast listener got message " + tm.getText());
+         		}
+               catch (JMSException e)
+               {               	
+               }
+               
+         		if (processed == numMessages - 1)
+         		{
+         			synchronized (waitLock)
+         			{
+         				log.info("Notifying");
+         				waitLock.notifyAll();
+         			}
+         		}
+				}
+         }
+         
+         final FastListener fast = new FastListener();
+         
+         class SlowListener implements MessageListener
+         {
+
+				public void onMessage(Message msg)
+				{
+               TextMessage tm = (TextMessage)msg;
+         		
+               try
+               {
+               	log.info("Slow listener got message " + tm.getText());
+               }
+               catch (JMSException e)
+               {               	
+               }
+					
+               synchronized (waitLock)
+               {
+               	//Should really cope with spurious wakeups
+               	while (fast.processed != numMessages - 1)
+               	{
+               		log.info("Waiting");
+               		try
+               		{
+               			waitLock.wait(20000);
+               		}
+               		catch (InterruptedException e)
+               		{               			
+               		}
+               		log.info("Waited");
+               	}
+               }
+				}         	
+         }
+         
+
+         MessageConsumer cons1 = session1.createConsumer(queue1);
+         
+         cons1.setMessageListener(new SlowListener());
+         
+         MessageConsumer cons2 = session2.createConsumer(queue1);
+         
+         cons2.setMessageListener(fast);
+         
+   
+         Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         
+         MessageProducer prod = sessSend.createProducer(queue1);
+         
+         conn.start();
+         
+         for (int i = 0; i < numMessages; i++)
+         {
+         	TextMessage tm = sessSend.createTextMessage("message" + i);
+         	
+         	prod.send(tm);
+         }
+         
+         //All the messages bar one should be consumed by the fast listener  - since the slow listener shouldn't buffer any.
+         
+         synchronized (waitLock)
+         {
+         	//Should really cope with spurious wakeups
+         	while (fast.processed != numMessages - 1)
+         	{
+         		log.info("Waiting");
+         		waitLock.wait(20000);
+         		log.info("Waited");
+         	}
+         }
+         
+         assertTrue(fast.processed == numMessages - 1);
+         
+      }
+      finally
+      {
+         try
+         {
+            if (conn != null)
+            {
+            	log.info("Closing connection");
+               conn.close();
+               log.info("Closed connection");
+            }
+         }
+         catch (Exception e)
+         {
+            log.warn(e.toString(), e);
+         }
+
+
+         try
+         {
+            stopService(cf1);
+         }
+         catch (Exception e)
+         {
+            log.warn(e.toString(), e);
+         }
+
+      }
+
+   }
+   
+   
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
@@ -375,7 +537,7 @@ public class ConnectionFactoryTest extends JMSTestCase
       return on;
    }
    
-   private ObjectName deployConnectionFactory(String name, String connectorName, String binding, String clientID) throws Exception
+   private ObjectName deployConnectionFactory(String name, String connectorName, String binding, String clientID, boolean slowConsumers) throws Exception
    {
       String mbeanConfig =
             "<mbean code=\"org.jboss.jms.server.connectionfactory.ConnectionFactory\"\n" +
@@ -391,6 +553,7 @@ public class ConnectionFactoryTest extends JMSTestCase
             "            <binding>" + binding + " </binding>\n" +
             "          </bindings>\n" +
             "       </attribute>\n" +
+            "       <attribute name=\"SlowConsumers\">" + slowConsumers + "</attribute>\n" +            
             " </mbean>";
 
       ObjectName on = ServerManagement.deploy(mbeanConfig);

@@ -85,6 +85,8 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
    private int dupsOKBatchSize;
    
    private boolean supportsFailover;
+   
+   private boolean slowConsumers;
 
    /** Cluster Topology on ClusteredConnectionFactories
        Information to failover to other connections on clients **/
@@ -106,6 +108,7 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
                                           String defaultClientID,
                                           JNDIBindings jndiBindings,
                                           int preFetchSize,
+                                          boolean slowConsumers,
                                           int defaultTempQueueFullSize,
                                           int defaultTempQueuePageSize,
                                           int defaultTempQueueDownCacheSize,
@@ -123,6 +126,11 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
       this.defaultTempQueueDownCacheSize = defaultTempQueueDownCacheSize;
       this.dupsOKBatchSize = dupsOKBatchSize;
       this.supportsFailover = supportsFailover;
+      this.slowConsumers = slowConsumers;
+      if (slowConsumers)
+      {
+      	this.prefetchSize = 1;
+      }
    }
 
    // ConnectionFactoryDelegate implementation -----------------------------------------------------
@@ -344,6 +352,11 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
    {
       this.delegates = delegates;
       this.failoverMap = failoverMap;
+   }
+   
+   public boolean isSlowConsumers()
+   {
+   	return slowConsumers;
    }
 
    public String toString()

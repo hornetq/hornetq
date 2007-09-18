@@ -47,6 +47,12 @@
       <name>PrefetchSize</name>
       <type>int</type>
    </attribute>
+   
+   <attribute access="read-write" getMethod="isSlowConsumers" setMethod="setSlowConsumers">
+      <description>Does this connection factory create slow consumers? Slow consumers never buffer messages</description>
+      <name>SlowConsumers</name>
+      <type>boolean</type>
+   </attribute>   
 
    <attribute access="read-write" getMethod="getDefaultTempQueueFullSize" setMethod="setDefaultTempQueueFullSize">
       <description>The default value of paging full size for any temporary queues created for connections from this connection factory</description>

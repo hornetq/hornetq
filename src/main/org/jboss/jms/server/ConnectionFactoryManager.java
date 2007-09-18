@@ -41,6 +41,7 @@ public interface ConnectionFactoryManager extends MessagingComponent
    void registerConnectionFactory(String uniqueName, String clientID, JNDIBindings jndiBindings,
                                  String locatorURI, boolean clientPing,
                                  int prefetchSize,
+                                 boolean slowConsumers,
                                  int defaultTempQueueFullSize,
                                  int defaultTempQueuePageSize,
                                  int defaultTempQueueDownCacheSize,

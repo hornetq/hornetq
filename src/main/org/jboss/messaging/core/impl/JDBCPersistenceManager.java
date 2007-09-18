@@ -284,7 +284,6 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
 
    public boolean isSupportsBlobSelect()
    {
-
       if (supportsBlobSelect == null)
       {
          supportsBlobSelect = getSQLStatement("SUPPORTS_BLOB_ON_SELECT").equals("Y") ? Boolean.TRUE:

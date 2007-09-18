@@ -2038,6 +2038,8 @@ POPULATE.TABLES.1=INSERT INTO JBM_USER (USER_ID,PASSWD,CLIENTID) VALUES ('dilber
       &lt;attribute name="LoadBalancingFactory"&gt;org.acme.MyLoadBalancingFactory&lt;/attribute&gt;
           
       &lt;attribute name="PrefetchSize"&gt;1000&lt;/attribute&gt; 
+
+      &lt;attribute name="SlowConsumers"&gt;false&lt;/attribute&gt;
       
       &lt;attribute name="DefaultTempQueueFullSize"&gt;50000&lt;/attribute&gt; 
       
@@ -2056,7 +2058,7 @@ POPULATE.TABLES.1=INSERT INTO JBM_USER (USER_ID,PASSWD,CLIENTID) VALUES ('dilber
 	        <literal>myClientID</literal> and bind the connection factory in two places in
 	        the JNDI tree: <literal>/MyConnectionFactory</literal>
 	        and <literal>/factories/cf</literal>. 
-	        The connection factory overrides the default values for PreFetchSize,
+	        The connection factory overrides the default values for PreFetchSize, 
 	        DefaultTempQueueFullSize, DefaultTempQueuePageSize, DefaultTempQueueDownCacheSize and
 	        DupsOKBatchSize, SupportsFailover, SupportsLoadBalancing and LoadBalancingFactory.
 	        The connection factory will use the default
@@ -2096,7 +2098,16 @@ POPULATE.TABLES.1=INSERT INTO JBM_USER (USER_ID,PASSWD,CLIENTID) VALUES ('dilber
 	            The prefetchSize determines the size of this buffer. Larger values give better throughput.
 	           </para>
 	        </section>
+
+               <section id="conf.connectionfactory.attributes.slowconsumers">
+	           <title>SlowConsumers</title>
 	
+	           <para>
+	            If you have very slow consumers, then you probably want to make sure they don't buffer any messages.
+                    Since this can prevent them from being consumed by faster consumers.
+	           </para>
+	        </section>		      
+
 	        <section id="conf.connectionfactory.attributes.tempqueuepaging">
 	           <title>Temporary queue paging parameters</title>
 	
