@@ -6,14 +6,20 @@
  */
 package org.jboss.jms.server.destination;
 
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.StringTokenizer;
 
 import javax.management.InstanceNotFoundException;
 import javax.management.ObjectName;
 
+import org.jboss.jms.server.JMSCondition;
 import org.jboss.jms.server.ServerPeer;
 import org.jboss.jms.server.messagecounter.MessageCounter;
+import org.jboss.messaging.core.contract.Condition;
 import org.jboss.messaging.core.contract.MessagingComponent;
+import org.jboss.messaging.core.contract.PostOffice;
+import org.jboss.messaging.core.contract.Queue;
 import org.jboss.messaging.util.ExceptionUtil;
 import org.jboss.system.ServiceMBeanSupport;
 import org.w3c.dom.Element;
@@ -87,6 +93,9 @@ public abstract class DestinationServiceSupport extends ServiceMBeanSupport impl
                	
          nodeId = serverPeer.getServerPeerID();
          
+         
+         
+         
          String name = null;
                   
          if (serviceName != null)
@@ -102,7 +111,9 @@ public abstract class DestinationServiceSupport extends ServiceMBeanSupport impl
          }                  
          
          destination.setName(name);         
-         
+         //must be set after the peer is set on the destination.
+         //http://jira.jboss.com/jira/browse/JBMESSAGING-1075
+         this.setMaxSizeForQueues();
          // http://jira.jboss.com/jira/browse/JBMESSAGING-976
          if (destination.getSecurityConfig() != null)
          {
@@ -245,9 +256,34 @@ public abstract class DestinationServiceSupport extends ServiceMBeanSupport impl
       return destination.getMaxSize();
    }
    
+   /**
+    * This is post startup processing for MaxSize for Queues.  This can also be set during runtime, 
+    * given that the destination service is started. Setting max size requires
+    * that the peer be setup. http://jira.jboss.com/jira/browse/JBMESSAGING-1075
+    * @throws Exception if  the post office can't be reached.
+    */
+   private void setMaxSizeForQueues() throws Exception
+   {
+	   Condition cond = new JMSCondition(isQueue(), this.getName());	      
+	   PostOffice postOffice = serverPeer.getPostOfficeInstance();	      
+	   Collection subs = postOffice.getQueuesForCondition(cond, true);	      
+	   Iterator iter = subs.iterator();
+	   while (iter.hasNext())
+	   {
+	      Queue queue = (Queue)iter.next();	         
+	      queue.setMaxSize(this.getMaxSize());
+	   }
+   }
+   
    public void setMaxSize(int maxSize) throws Exception
    {
-      destination.setMaxSize(maxSize);
+	  destination.setMaxSize(maxSize);
+	  //added so that max size can be changed on the fly
+	  //http://jira.jboss.com/jira/browse/JBMESSAGING-1075
+	  if(started)
+      {
+    	this.setMaxSizeForQueues();
+      }
    }
    
    public Element getSecurityConfig()

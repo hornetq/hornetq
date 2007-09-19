@@ -273,23 +273,16 @@ public abstract class ManagedDestination implements MessagingComponent
       return maxSize;
    }
    
+   /**
+    * Sets the max size for the destination.  This will only set the MaxSize field.  Processing must be
+    * done to enable this for the queues.  
+    * @param maxSize
+    * @throws Exception
+    */
    public void setMaxSize(int maxSize) throws Exception
    {
-      Condition cond = new JMSCondition(isQueue(), name);
-      
-      PostOffice postOffice = serverPeer.getPostOfficeInstance();
-      
-      Collection subs = postOffice.getQueuesForCondition(cond, true);
-      
-      Iterator iter = subs.iterator();
-
-      while (iter.hasNext())
-      {
-         Queue queue = (Queue)iter.next();
-         
-         queue.setMaxSize(maxSize);
-      }
-      
+      //took out processing for max size and moved it into the DestinationServiceSupport 
+	  //http://jira.jboss.com/jira/browse/JBMESSAGING-1075
       this.maxSize = maxSize;
    }
    
