@@ -453,7 +453,7 @@ the JBoss Transactions Recovery Manager</para>
         <listitem>
            <para>
               <warning>SECURITY RISK! To avoid a security risk, you MUST specify the value of the attribute SuckerPassword in the Server Peer config (messaging-service.xml). If you do not specify a value, the default value will be used. Any person
-that knows the default value will be able to obtain read access to all destinations on the server. The password chosen
+that knows the default value will be able to access to all destinations on the server. The password chosen
 should only be exposed to administrators</warning>
            </para>               
         </listitem>

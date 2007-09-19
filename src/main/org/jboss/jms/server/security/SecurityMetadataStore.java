@@ -210,8 +210,8 @@ public class SecurityMetadataStore implements SecurityStore
       if (SUCKER_USER.equals(user))
       {
       	//The special user SUCKER_USER is used for creating internal connections that suck messages between nodes
-      	//It has automatic read access to all destinations
-      	return (checkType.equals(CheckType.READ));
+      	//It has automatic read/write access to all destinations
+      	return (checkType.equals(CheckType.READ) || checkType.equals(CheckType.WRITE));
       }
 
       Principal principal = user == null ? null : new SimplePrincipal(user);
@@ -226,12 +226,7 @@ public class SecurityMetadataStore implements SecurityStore
    // Public --------------------------------------------------------
    
    public void setSuckerPassword(String password)
-   {
-   	if (password == null)
-   	{
-   		password = DEFAULT_SUCKER_USER_PASSWORD;
-   	}
-   	
+   {   	   	
    	checkDefaultSuckerPassword(password);
    	   	
    	this.suckerPassword = password;

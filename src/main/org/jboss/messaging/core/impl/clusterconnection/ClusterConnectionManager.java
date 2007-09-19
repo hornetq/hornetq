@@ -102,6 +102,10 @@ public class ClusterConnectionManager implements ClusterNotificationListener
 		
 		this.preserveOrdering = preserveOrdering;
 		
+		this.suckerUser = suckerUser;
+		
+		this.suckerPassword = suckerPassword;
+		
 		if (trace) { log.trace("Created " + this); }
 	}
 	

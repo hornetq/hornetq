@@ -375,7 +375,7 @@
                These connections are made with the user name of a special reserved user.
                The password used by that user is specified by this parameter.
                <warning>This must be specified at install time, or the default password will be used. Any one who then knows
-               the default password will be able to gain read access to any destinations on the server</warning>   
+               the default password will be able to gain access to any destinations on the server</warning>   
             </para>
       </section>
 

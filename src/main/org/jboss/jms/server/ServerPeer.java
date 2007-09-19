@@ -255,11 +255,15 @@ public class ServerPeer extends ServiceMBeanSupport
          failoverWaiter = new FailoverWaiter(serverPeerID, failoverStartTimeout, failoverCompleteTimeout, txRepository);
          clusterNotifier.registerListener(failoverWaiter);         
          
+         if (suckerPassword == null)
+      	{
+         	suckerPassword = SecurityMetadataStore.DEFAULT_SUCKER_USER_PASSWORD;
+      	}   
          if (clusterPullConnectionFactoryName != null)
          {         
 	         clusterConnectionManager = new ClusterConnectionManager(useXAForMessagePull, serverPeerID,
 	         		                                                  clusterPullConnectionFactoryName, defaultPreserveOrdering,
-	         		                                                  suckerPassword, SecurityMetadataStore.SUCKER_USER);
+	         		                                                  SecurityMetadataStore.SUCKER_USER, suckerPassword);
 	         clusterNotifier.registerListener(clusterConnectionManager);
          }
          
@@ -273,7 +277,7 @@ public class ServerPeer extends ServiceMBeanSupport
          connectionManager.start();
          connectorManager.start();
          memoryManager.start();
-         messageStore.start();
+         messageStore.start();               
          securityStore.setSuckerPassword(suckerPassword);
          securityStore.start();
          txRepository.start();
