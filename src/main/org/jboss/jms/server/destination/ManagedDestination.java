@@ -276,6 +276,7 @@ public abstract class ManagedDestination implements MessagingComponent
    /**
     * Sets the max size for the destination.  This will only set the MaxSize field.  Processing must be
     * done to enable this for the queues.  
+    * http://jira.jboss.com/jira/browse/JBMESSAGING-1075
     * @param maxSize
     * @throws Exception
     */

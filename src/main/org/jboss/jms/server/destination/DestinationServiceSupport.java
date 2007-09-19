@@ -112,6 +112,8 @@ public abstract class DestinationServiceSupport extends ServiceMBeanSupport impl
          
          destination.setName(name);         
          //must be set after the peer is set on the destination.
+         //setMaxSizeForQueues must be called always when setting
+         //max Size
          //http://jira.jboss.com/jira/browse/JBMESSAGING-1075
          this.setMaxSizeForQueues();
          // http://jira.jboss.com/jira/browse/JBMESSAGING-976
