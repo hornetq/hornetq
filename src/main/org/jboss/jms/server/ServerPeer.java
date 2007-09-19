@@ -144,6 +144,8 @@ public class ServerPeer extends ServiceMBeanSupport
    private boolean defaultPreserveOrdering;
    
    private long recoverDeliveriesTimeout = 5 * 60 * 1000;
+   
+   private String suckerPassword;
       
    // wired components
 
@@ -255,7 +257,9 @@ public class ServerPeer extends ServiceMBeanSupport
          
          if (clusterPullConnectionFactoryName != null)
          {         
-	         clusterConnectionManager = new ClusterConnectionManager(useXAForMessagePull, serverPeerID, clusterPullConnectionFactoryName, defaultPreserveOrdering);
+	         clusterConnectionManager = new ClusterConnectionManager(useXAForMessagePull, serverPeerID,
+	         		                                                  clusterPullConnectionFactoryName, defaultPreserveOrdering,
+	         		                                                  suckerPassword, SecurityMetadataStore.SUCKER_USER);
 	         clusterNotifier.registerListener(clusterConnectionManager);
          }
          
@@ -270,6 +274,7 @@ public class ServerPeer extends ServiceMBeanSupport
          connectorManager.start();
          memoryManager.start();
          messageStore.start();
+         securityStore.setSuckerPassword(suckerPassword);
          securityStore.start();
          txRepository.start();
          clusterConnectionManager.start();
@@ -677,6 +682,21 @@ public class ServerPeer extends ServiceMBeanSupport
       }
 
       this.defaultTopicJNDIContext = defaultTopicJNDIContext;
+   }
+   
+   public synchronized void setSuckerPassword(String password)
+   {
+   	if (started)
+      {
+         throw new IllegalStateException("Cannot set SuckerPassword while the service is running");
+      }
+   	
+   	if (password == null)
+   	{
+   		throw new IllegalArgumentException("SuckerPassword cannot be null");
+   	}
+   	
+   	this.suckerPassword = password;
    }
    
    public void enableMessageCounters()
@@ -1184,7 +1204,7 @@ public class ServerPeer extends ServiceMBeanSupport
 
    // access to hard-wired server extensions
 
-   public SecurityManager getSecurityManager()
+   public SecurityStore getSecurityManager()
    {
       return securityStore;
    }

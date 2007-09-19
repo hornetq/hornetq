@@ -83,8 +83,14 @@ public class ClusterConnectionManager implements ClusterNotificationListener
 	
 	private boolean preserveOrdering;
 	
+	private String suckerUser;
+	
+	private String suckerPassword;
+	
 	public ClusterConnectionManager(boolean xa, int nodeID,
-			                          String connectionFactoryUniqueName, boolean preserveOrdering)
+			                          String connectionFactoryUniqueName, boolean preserveOrdering,
+			                          String suckerUser,
+			                          String suckerPassword)
 	{
 		connections = new HashMap();
 		
@@ -411,7 +417,7 @@ public class ClusterConnectionManager implements ClusterNotificationListener
 			{
 				try
 				{
-   				ConnectionInfo info = new ConnectionInfo(new JBossConnectionFactory(delegate));
+   				ConnectionInfo info = new ConnectionInfo(new JBossConnectionFactory(delegate), suckerUser, suckerPassword);
    				
    				log.trace(this + " created connection info " + info);
    				
@@ -610,11 +616,19 @@ public class ClusterConnectionManager implements ClusterNotificationListener
 		
 		private boolean started;
 		
-		ConnectionInfo(JBossConnectionFactory connectionFactory) throws Exception
+		private String suckerUser;
+		
+		private String suckerPassword;
+		
+		ConnectionInfo(JBossConnectionFactory connectionFactory, String suckerUser, String suckerPassword) throws Exception
 		{
 			this.connectionFactory = connectionFactory;
 			
 			this.suckers = new HashMap();
+			
+			this.suckerUser = suckerUser;
+			
+			this.suckerPassword = suckerPassword;
 		}
 		
 		synchronized void start() throws Exception
@@ -626,7 +640,7 @@ public class ClusterConnectionManager implements ClusterNotificationListener
 			
 			if (connection == null)
 		   {
-				connection = (JBossConnection)connectionFactory.createConnection();			
+				connection = (JBossConnection)connectionFactory.createConnection(suckerUser, suckerPassword);			
 		   }
 			
 			connection.start();

@@ -211,6 +211,12 @@
       <name>SupportsFailover</name>
       <type>boolean</type>
    </attribute>
+   
+   <attribute access="write-only" setMethod="setSuckerPassword">
+      <description>The password used for message suckers</description>
+      <name>SuckerPassword</name>
+      <type>java.lang.String</type>
+   </attribute>   
 
 
    <!-- Managed operations -->

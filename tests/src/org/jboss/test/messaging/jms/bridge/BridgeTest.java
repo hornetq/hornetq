@@ -255,6 +255,19 @@ public class BridgeTest extends BridgeTestBase
       testStress(Bridge.QOS_ONCE_AND_ONLY_ONCE, false, 1);
    }
    
+   // Max batch time
+   
+   public void testStressMaxBatchTime_OnceAndOnlyOnce_NP() throws Exception
+   {
+   	this.testStressBatchTime(Bridge.QOS_ONCE_AND_ONLY_ONCE, false, 200);
+   }
+   
+   public void testStressMaxBatchTime_OnceAndOnlyOnce_P() throws Exception
+   {
+   	this.testStressBatchTime(Bridge.QOS_ONCE_AND_ONLY_ONCE, true, 200);
+   }
+   
+   
    // Stress on same server
    
    // Stress with batch size of 50
@@ -965,6 +978,79 @@ public class BridgeTest extends BridgeTestBase
          MessageProducer prod = sessSend.createProducer(sourceQueue);
          
          final int NUM_MESSAGES = 250;
+         
+         StressSender sender = new StressSender();
+         sender.sess = sessSend;
+         sender.prod = prod;
+         sender.numMessages = NUM_MESSAGES;
+         prod.setDeliveryMode(persistent ? DeliveryMode.PERSISTENT : DeliveryMode.NON_PERSISTENT);
+                          
+         t = new Thread(sender);
+         
+         t.start();
+         
+         this.checkAllMessageReceivedInOrder(cf1, destQueue, 0, NUM_MESSAGES);
+                                              
+         t.join();
+         
+         if (sender.ex != null)
+         {
+            //An error occurred during the send
+            throw sender.ex;
+         }
+           
+      }
+      finally
+      {    
+         if (t != null)
+         {
+            t.join(10000);
+         }
+         
+         if (connSource != null)
+         {
+            try
+            {
+               connSource.close();
+            }
+            catch (Exception e)
+            {
+               log.error("Failed to close connection", e);
+            }
+         }                
+         
+         if (bridge != null)
+         {
+            bridge.stop();
+         }                  
+      }      
+   }
+   
+   private void testStressBatchTime(int qosMode, boolean persistent, int maxBatchTime) throws Exception
+   {
+      Connection connSource = null;
+      
+      Bridge bridge = null;
+      
+      Thread t = null;
+            
+      try
+      {      
+         bridge = new Bridge(cff0, cff1, sourceQueue, destQueue,
+                  null, null, null, null,
+                  null, 5000, 10, qosMode,
+                  2, maxBatchTime,
+                  null, null, false);
+         
+         bridge.start();
+            
+         connSource = cf0.createConnection();
+         
+         Session sessSend = connSource.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         
+         MessageProducer prod = sessSend.createProducer(sourceQueue);
+         
+         final int NUM_MESSAGES = 5000;
          
          StressSender sender = new StressSender();
          sender.sess = sessSend;

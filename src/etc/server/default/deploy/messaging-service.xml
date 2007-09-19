@@ -93,6 +93,11 @@
       <!-- Max. time to hold previously delivered messages back waiting for clients to reconnect after failover -->
       
       <attribute name="RecoverDeliveriesTimeout">300000</attribute>
+      
+      <!-- The password used by the message sucker connections to create connections.
+           THIS SHOULD ALWAYS BE CHANGED AT INSTALL TIME TO SECURE SYSTEM
+      <attribute name="SuckerPassword"></attribute>
+      -->
 
       <depends optional-attribute-name="PersistenceManager">jboss.messaging:service=PersistenceManager</depends>
       

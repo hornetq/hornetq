@@ -33,13 +33,14 @@ import org.jboss.aop.joinpoint.Invocation;
 import org.jboss.aop.joinpoint.MethodInvocation;
 import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.message.JBossMessage;
-import org.jboss.jms.server.SecurityManager;
+import org.jboss.jms.server.SecurityStore;
 import org.jboss.jms.server.endpoint.ServerConnectionEndpoint;
 import org.jboss.jms.server.endpoint.ServerConsumerEndpoint;
 import org.jboss.jms.server.endpoint.ServerSessionEndpoint;
 import org.jboss.jms.server.endpoint.advised.ConnectionAdvised;
 import org.jboss.jms.server.endpoint.advised.ConsumerAdvised;
 import org.jboss.jms.server.endpoint.advised.SessionAdvised;
+import org.jboss.jms.server.security.CheckType;
 import org.jboss.jms.server.security.SecurityMetadata;
 import org.jboss.jms.tx.ClientTransaction;
 import org.jboss.jms.tx.TransactionRequest;
@@ -280,7 +281,7 @@ public class SecurityAspect
       boolean isQueue = jbd.isQueue();
       String name = jbd.getName();
 
-      SecurityManager sm = conn.getSecurityManager();
+      SecurityStore sm = conn.getSecurityManager();
       SecurityMetadata securityMetadata = sm.getSecurityMetadata(isQueue, name);
 
       if (securityMetadata == null)
@@ -292,7 +293,7 @@ public class SecurityAspect
       // which will be used in the authorization process. However, we need to make sure we clean up
       // thread local immediately after we used the information, otherwise some other people
       // security my be screwed up, on account of thread local security stack being corrupted.
-
+      
       sm.authenticate(conn.getUsername(), conn.getPassword());
 
       // Authorize
@@ -301,7 +302,7 @@ public class SecurityAspect
                        securityMetadata.getCreatePrincipals();
       try
       {
-         if (!sm.authorize(conn.getUsername(), principals))
+         if (!sm.authorize(conn.getUsername(), principals, checkType))
          {
             String msg = "User: " + conn.getUsername() +
                " is not authorized to " +
@@ -345,31 +346,7 @@ public class SecurityAspect
    }
    
    // Inner classes -------------------------------------------------
-   
-   private static class CheckType
-   {
-      private int type;
-      private CheckType(int type)
-      {
-         this.type = type;
-      }      
-      public static final int TYPE_READ = 0;
-      public static final int TYPE_WRITE = 1;
-      public static final int TYPE_CREATE = 2;
-      public static CheckType READ = new CheckType(TYPE_READ);
-      public static CheckType WRITE = new CheckType(TYPE_WRITE);
-      public static CheckType CREATE = new CheckType(TYPE_CREATE);      
-      public boolean equals(Object other)
-      {
-         if (!(other instanceof CheckType)) return false;
-         CheckType ct = (CheckType)other;
-         return ct.type == this.type;
-      }
-      public int hashCode() 
-      {
-         return type;
-      }
-   }
+  
 }
 
 

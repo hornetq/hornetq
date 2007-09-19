@@ -44,7 +44,7 @@ import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.message.JBossMessage;
 import org.jboss.jms.server.ConnectionManager;
 import org.jboss.jms.server.JMSCondition;
-import org.jboss.jms.server.SecurityManager;
+import org.jboss.jms.server.SecurityStore;
 import org.jboss.jms.server.ServerPeer;
 import org.jboss.jms.server.endpoint.advised.SessionAdvised;
 import org.jboss.jms.tx.ClientTransaction;
@@ -106,7 +106,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
 
    // access to server's extensions
    private PostOffice postOffice;
-   private SecurityManager sm;
+   private SecurityStore sm;
    private ConnectionManager cm;
    private TransactionRepository tr;
    private MessageStore ms;
@@ -531,7 +531,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
       return password;
    }
 
-   public SecurityManager getSecurityManager()
+   public SecurityStore getSecurityManager()
    {
       return sm;
    }

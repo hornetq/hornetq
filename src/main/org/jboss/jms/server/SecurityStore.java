@@ -26,6 +26,7 @@ import java.util.Set;
 import javax.jms.JMSSecurityException;
 import javax.security.auth.Subject;
 
+import org.jboss.jms.server.security.CheckType;
 import org.jboss.jms.server.security.SecurityMetadata;
 import org.w3c.dom.Element;
 
@@ -35,7 +36,7 @@ import org.w3c.dom.Element;
  *
  * $Id$
  */
-public interface SecurityManager
+public interface SecurityStore
 {
    /**
     * @return the security meta-data for the given destination.
@@ -43,6 +44,7 @@ public interface SecurityManager
    SecurityMetadata getSecurityMetadata(boolean isQueue, String destName);
 
    void setSecurityConfig(boolean isQueue, String destName, Element conf) throws Exception;
+   
    void clearSecurityConfig(boolean isQueue, String name) throws Exception;
 
    /**
@@ -65,6 +67,5 @@ public interface SecurityManager
     * @param rolePrincipals - The set of roles allowed to read/write/create the destination.
     * @return true if the subject is authorized, or false if not.
     */
-   boolean authorize(String user, Set rolePrincipals);
-
+   boolean authorize(String user, Set rolePrincipals, CheckType checkType);  
 }

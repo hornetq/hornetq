@@ -132,6 +132,11 @@
       
       &lt;attribute name="RecoverDeliveriesTimeout"&gt;300000&lt;/attribute&gt;
 
+      &lt;!-- The password used by the message sucker connections to create connections.
+           THIS SHOULD ALWAYS BE CHANGED AT INSTALL TIME TO SECURE SYSTEM
+      &lt;attribute name="SuckerPassword"&gt;&lt;/attribute&gt;
+      --&gt;
+
       &lt;depends optional-attribute-name="PersistenceManager"&gt;jboss.messaging:service=PersistenceManager&lt;/depends&gt;
       
       &lt;depends optional-attribute-name="JMSUserManager"&gt;jboss.messaging:service=JMSUserManager&lt;/depends&gt;
@@ -359,6 +364,18 @@
 
             <para>
               When failover occurs, already delivered messages will be kept aside, waiting for clients to reconnect. In the case that clients never reconnect (e.g. the client is dead) then eventually these messages will timeout and be added back to the queue. The value is in ms. The default is 5 mins.
+            </para>
+      </section>
+
+      <section id="conf.serverpeer.attributes.suckerpassword">
+            <title>SuckerPassword</title>
+
+            <para>
+               For clustering. JBoss Messaging internally makes connections between nodes in order to redistribute messages.
+               These connections are made with the user name of a special reserved user.
+               The password used by that user is specified by this parameter.
+               <warning>This must be specified at install time, or the default password will be used. Any one who then knows
+               the default password will be able to gain read access to any destinations on the server</warning>   
             </para>
       </section>
 

@@ -31,7 +31,7 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.security.auth.Subject;
 
-import org.jboss.jms.server.SecurityManager;
+import org.jboss.jms.server.SecurityStore;
 import org.jboss.logging.Logger;
 import org.jboss.security.AuthenticationManager;
 import org.jboss.security.RealmMapping;
@@ -51,11 +51,15 @@ import org.w3c.dom.Element;
  *
  * $Id$
  */
-public class SecurityMetadataStore implements SecurityManager
+public class SecurityMetadataStore implements SecurityStore
 {
    // Constants -----------------------------------------------------
    
    private static final Logger log = Logger.getLogger(SecurityMetadataStore.class);
+   
+   public static final String SUCKER_USER = "JBM.SUCKER";
+   
+   public static final String DEFAULT_SUCKER_USER_PASSWORD = "CHANGE ME!!";
    
    // Attributes ----------------------------------------------------
    
@@ -69,6 +73,8 @@ public class SecurityMetadataStore implements SecurityManager
    
    private Element defaultSecurityConfig;
    private String securityDomain;
+      
+   private String suckerPassword;
 
    // Static --------------------------------------------------------
    
@@ -153,11 +159,11 @@ public class SecurityMetadataStore implements SecurityManager
          topicSecurityConf.remove(name);
       }
    }
-
+   
    public Subject authenticate(String user, String password) throws JMSSecurityException
    {
       if (trace) { log.trace("authenticating user " + user); }
-
+      
       SimplePrincipal principal = new SimplePrincipal(user);
       char[] passwordChars = null;
       if (password != null)
@@ -166,8 +172,25 @@ public class SecurityMetadataStore implements SecurityManager
       }
 
       Subject subject = new Subject();
+      
+      boolean authenticated = false;
+      
+      if (SUCKER_USER.equals(user))
+      {
+      	if (trace) { log.trace("Authenticating sucker user"); }
+      	
+      	checkDefaultSuckerPassword(password);
+      	
+      	// The special user SUCKER_USER is used for creating internal connections that suck messages between nodes
+      	
+      	authenticated = suckerPassword.equals(password);
+      }
+      else
+      {
+      	authenticated = authenticationManager.isValid(principal, passwordChars, subject);
+      }
 
-      if (authenticationManager.isValid(principal, passwordChars, subject))
+      if (authenticated)
       {
          // Warning! This "taints" thread local. Make sure you pop it off the stack as soon as
          //          you're done with it.
@@ -180,20 +203,39 @@ public class SecurityMetadataStore implements SecurityManager
       }
    }
 
-   public boolean authorize(String user, Set rolePrincipals)
+   public boolean authorize(String user, Set rolePrincipals, CheckType checkType)
    {
       if (trace) { log.trace("authorizing user " + user + " for role(s) " + rolePrincipals.toString()); }
+      
+      if (SUCKER_USER.equals(user))
+      {
+      	//The special user SUCKER_USER is used for creating internal connections that suck messages between nodes
+      	//It has automatic read access to all destinations
+      	return (checkType.equals(CheckType.READ));
+      }
 
       Principal principal = user == null ? null : new SimplePrincipal(user);
-
+	
       boolean hasRole = realmMapping.doesUserHaveRole(principal, rolePrincipals);
 
       if (trace) { log.trace("user " + user + (hasRole ? " is " : " is NOT ") + "authorized"); }
 
-      return hasRole;
+      return hasRole;     
    }
-
+   
    // Public --------------------------------------------------------
+   
+   public void setSuckerPassword(String password)
+   {
+   	if (password == null)
+   	{
+   		password = DEFAULT_SUCKER_USER_PASSWORD;
+   	}
+   	
+   	checkDefaultSuckerPassword(password);
+   	   	
+   	this.suckerPassword = password;
+   }
    
    public void start() throws NamingException
    {
@@ -265,7 +307,16 @@ public class SecurityMetadataStore implements SecurityManager
    // Package Private -----------------------------------------------
 
    // Private -------------------------------------------------------
+   
+   private void checkDefaultSuckerPassword(String password)
+   {
+   	// Sanity check
+   	if (DEFAULT_SUCKER_USER_PASSWORD.equals(password))
+   	{
+   		log.warn("*** THE DEFAULT SUCKER USER PASSWORD HAS NOT BE CHANGED FROM THE INSTALLATION DEFAULT - THIS IS A SECURITY RISK - PLEASE CHANGE THIS!! **");
+   	}
+   }
 
-   // Inner class ---------------------------------------------------
+   // Inner class ---------------------------------------------------      
 
 }

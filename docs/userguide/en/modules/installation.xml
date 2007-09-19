@@ -19,7 +19,7 @@
 
       <filename>jboss-messaging.sar</filename>
 
-       over to the JBoss instance 
+       over to the JBoss instance w
 
       <filename>deploy</filename>
 
@@ -448,10 +448,21 @@ the JBoss Transactions Recovery Manager</para>
     <section id="install.extra-steps">
       <title>Extra steps to complete your installation</title>
 
+      <itemizedlist>
+
+        <listitem>
+           <para>
+              <warning>SECURITY RISK! To avoid a security risk, you MUST specify the value of the attribute SuckerPassword in the Server Peer config (messaging-service.xml). If you do not specify a value, the default value will be used. Any person
+that knows the default value will be able to obtain read access to all destinations on the server. The password chosen
+should only be exposed to administrators</warning>
+           </para>               
+        </listitem>
+
+
       <para>You should also make these changes on any configuration you
       choose, to remove all references to the old JBossMQ:</para>
 
-      <itemizedlist>
+
         <listitem>
           <para>Edit <literal>$JBOSS_CONFIG/deploy/jms-ds.xml</literal> and replace
           jboss.mq by jboss.messaging on every occurrence</para>
