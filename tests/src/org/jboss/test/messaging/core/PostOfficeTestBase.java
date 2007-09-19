@@ -269,30 +269,37 @@ public class PostOfficeTestBase extends MessagingTestCase
    protected void tearDown() throws Exception
    {
    	Thread.sleep(2000);
-   	
-      pm.reapUnreferencedMessages();
-      
-      if (this.checkNoMessageData())
-      {
-      	fail("Message data still exists");
-      }      
-      
-      if (this.checkNoBindingData())
-      {
-      	fail("Binding data still exists");
-      }
-      
-      sc.stop();
-      sc = null;
-      
-      
-      pm.stop();
-      tr.stop();
-      ms.stop();
-      transactionIDManager.stop();
-      channelIDManager.stop();
 
-      super.tearDown();
+       try
+       {
+           pm.reapUnreferencedMessages();
+
+           if (this.checkNoMessageData())
+           {
+               fail("Message data still exists");
+           }
+
+           if (this.checkNoBindingData())
+           {
+               fail("Binding data still exists");
+           }
+       }
+       finally
+       {
+          sc.stop();
+          sc = null;
+
+
+          pm.stop();
+          tr.stop();
+          ms.stop();
+          transactionIDManager.stop();
+          channelIDManager.stop();
+
+          super.tearDown();
+       }
+
+
    }
 
    // Private -------------------------------------------------------
