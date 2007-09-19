@@ -34,6 +34,7 @@ import javax.jms.Session;
 
 import org.jboss.jms.client.delegate.DelegateSupport;
 import org.jboss.jms.client.state.ConsumerState;
+import org.jboss.jms.client.state.SessionState;
 import org.jboss.jms.delegate.ConnectionDelegate;
 import org.jboss.jms.delegate.ConsumerDelegate;
 import org.jboss.jms.delegate.SessionDelegate;
@@ -121,6 +122,10 @@ public class JBossConnectionConsumer implements ConnectionConsumer, Runnable
       // Create a consumer. The ClientConsumer knows we are a connection consumer so will
       // not call pre or postDeliver so messages won't be acked, or stored in session/tx.
       sess = conn.createSessionDelegate(false, Session.CLIENT_ACKNOWLEDGE, false);
+      
+      SessionState sstate = (SessionState)((DelegateSupport)sess).getState();
+      
+      sstate.setTreatAsNonTransactedWhenNotEnlisted(false);
 
       cons = sess.createConsumerDelegate(dest, messageSelector, false, subName, true, true);
 

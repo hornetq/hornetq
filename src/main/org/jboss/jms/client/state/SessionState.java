@@ -101,6 +101,13 @@ public class SessionState extends HierarchicalStateSupport
    
    //The distinguished message listener - for ASF
    private MessageListener sessionListener;
+   
+   //This is somewhat strange - but some of the MQ and TCK tests expect an XA session to behaviour as AUTO_ACKNOWLEDGE when not enlisted in
+   //a transaction
+   //This is the opposite behaviour as what is required when the XA session handles MDB delivery or when using the message bridge.
+   //In that case we want it to act as transacted, so when the session is subsequently enlisted the work can be converted into the
+   //XA transaction
+   private boolean treatAsNonTransactedWhenNotEnlisted = true;
       
    // Constructors ---------------------------------------------------------------------------------
 
@@ -346,6 +353,16 @@ public class SessionState extends HierarchicalStateSupport
    
    // Public ---------------------------------------------------------------------------------------
 
+   public void setTreatAsNonTransactedWhenNotEnlisted(boolean b)
+   {
+   	treatAsNonTransactedWhenNotEnlisted = b;
+   }
+   
+   public boolean getTreatAsNonTransactedWhenNotEnlisted()
+   {
+   	return treatAsNonTransactedWhenNotEnlisted;
+   }
+   
    /**
     * @return List<AckInfo>
     */
