@@ -912,7 +912,8 @@ public class SessionAspect
     * */
    private boolean isXAAndConsideredNonTransacted(SessionState state)
    {
-      return state.isXA() && (state.getCurrentTxId() instanceof LocalTx) && state.getTreatAsNonTransactedWhenNotEnlisted();
+      return state.isXA() && (state.getCurrentTxId() instanceof LocalTx) && state.getTreatAsNonTransactedWhenNotEnlisted()
+             && state.getDistinguishedListener() == null;
    }
 
    // Inner Classes -------------------------------------------------
