@@ -36,13 +36,13 @@ import org.jboss.jms.server.selector.SelectorFactory;
 import org.jboss.messaging.core.contract.ClusterNotifier;
 import org.jboss.messaging.core.contract.ConditionFactory;
 import org.jboss.messaging.core.contract.FilterFactory;
-import org.jboss.messaging.core.contract.JChannelFactory;
+import org.jboss.messaging.core.contract.ChannelFactory;
 import org.jboss.messaging.core.contract.MessageStore;
 import org.jboss.messaging.core.contract.MessagingComponent;
 import org.jboss.messaging.core.contract.PersistenceManager;
 import org.jboss.messaging.core.impl.IDManager;
-import org.jboss.messaging.core.impl.jchannelfactory.MultiplexerJChannelFactory;
-import org.jboss.messaging.core.impl.jchannelfactory.XMLJChannelFactory;
+import org.jboss.messaging.core.impl.jchannelfactory.MultiplexerChannelFactory;
+import org.jboss.messaging.core.impl.jchannelfactory.XMLChannelFactory;
 import org.jboss.messaging.core.impl.postoffice.MessagingPostOffice;
 import org.jboss.messaging.core.impl.tx.TransactionRepository;
 import org.jboss.messaging.util.ExceptionUtil;
@@ -351,7 +351,7 @@ public class MessagingPostOfficeService extends JDBCServiceSupport
                   
          FilterFactory ff = new SelectorFactory();
          
-         JChannelFactory jChannelFactory = null;
+         ChannelFactory jChannelFactory = null;
 
          if (channelFactoryName != null)
          {
@@ -372,19 +372,19 @@ public class MessagingPostOfficeService extends JDBCServiceSupport
                log.debug(this + " uses MultiplexerJChannelFactory");
 
                jChannelFactory =
-                  new MultiplexerJChannelFactory(server, channelFactoryName, channelPartitionName,
+                  new MultiplexerChannelFactory(server, channelFactoryName, channelPartitionName,
                                                  controlChannelName, dataChannelName);
             }
             else
             {
                log.debug(this + " uses XMLJChannelFactory");
-               jChannelFactory = new XMLJChannelFactory(controlChannelConfig, dataChannelConfig);
+               jChannelFactory = new XMLChannelFactory(controlChannelConfig, dataChannelConfig);
             }
          }
          else
          {
             log.debug(this + " uses XMLJChannelFactory");
-            jChannelFactory = new XMLJChannelFactory(controlChannelConfig, dataChannelConfig);
+            jChannelFactory = new XMLChannelFactory(controlChannelConfig, dataChannelConfig);
          }
 
          if (clustered)

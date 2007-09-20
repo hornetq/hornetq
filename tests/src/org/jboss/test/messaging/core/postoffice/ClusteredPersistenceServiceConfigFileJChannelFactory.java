@@ -10,11 +10,12 @@ import javax.management.MBeanServer;
 import javax.management.ObjectName;
 
 import org.jboss.logging.Logger;
-import org.jboss.messaging.core.contract.JChannelFactory;
-import org.jboss.messaging.core.impl.jchannelfactory.MultiplexerJChannelFactory;
+import org.jboss.messaging.core.contract.ChannelFactory;
+import org.jboss.messaging.core.impl.jchannelfactory.MultiplexerChannelFactory;
 import org.jboss.messaging.util.XMLUtil;
 import org.jboss.test.messaging.tools.container.ServiceConfigHelper;
 import org.jboss.test.messaging.tools.jboss.MBeanConfigurationElement;
+import org.jgroups.Channel;
 import org.jgroups.JChannel;
 import org.w3c.dom.Element;
 
@@ -28,7 +29,7 @@ import org.w3c.dom.Element;
  *
  * $Id$
  */
-public class ClusteredPersistenceServiceConfigFileJChannelFactory implements JChannelFactory
+public class ClusteredPersistenceServiceConfigFileJChannelFactory implements ChannelFactory
 {
    // Constants ------------------------------------------------------------------------------------
 
@@ -43,7 +44,7 @@ public class ClusteredPersistenceServiceConfigFileJChannelFactory implements JCh
 
    // we're either using a delegate MultiplexerJChannelFactory, if we find one configured in the
    // file ...
-   private JChannelFactory multiplexorDelegate;
+   private ChannelFactory multiplexorDelegate;
 
    // ... or just plain XML configuration.
    private Element controlConfig;
@@ -70,9 +71,9 @@ public class ClusteredPersistenceServiceConfigFileJChannelFactory implements JCh
       init(configFilePath, skipMultiplex, mbeanServer);
    }
 
-   // JChannelFactory ------------------------------------------------------------------------------
+   // ChannelFactory ------------------------------------------------------------------------------
 
-   public JChannel createControlChannel() throws Exception
+   public Channel createControlChannel() throws Exception
    {
       if (multiplexorDelegate != null)
       {
@@ -84,7 +85,7 @@ public class ClusteredPersistenceServiceConfigFileJChannelFactory implements JCh
       }
    }
 
-   public JChannel createDataChannel() throws Exception
+   public Channel createDataChannel() throws Exception
    {
       if (multiplexorDelegate != null)
       {
@@ -152,7 +153,7 @@ public class ClusteredPersistenceServiceConfigFileJChannelFactory implements JCh
             if(mbeanServer.getMBeanInfo(channelFactoryName) != null)
             {
                multiplexorDelegate =
-                  new MultiplexerJChannelFactory(mbeanServer, channelFactoryName,
+                  new MultiplexerChannelFactory(mbeanServer, channelFactoryName,
                                                  channelPartitionName, controlChannelName,
                                                  dataChannelName);
 

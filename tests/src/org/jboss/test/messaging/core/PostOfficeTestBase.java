@@ -28,7 +28,7 @@ import org.jboss.messaging.core.contract.ClusterNotifier;
 import org.jboss.messaging.core.contract.Condition;
 import org.jboss.messaging.core.contract.ConditionFactory;
 import org.jboss.messaging.core.contract.FilterFactory;
-import org.jboss.messaging.core.contract.JChannelFactory;
+import org.jboss.messaging.core.contract.ChannelFactory;
 import org.jboss.messaging.core.contract.Message;
 import org.jboss.messaging.core.contract.MessageReference;
 import org.jboss.messaging.core.contract.MessageStore;
@@ -86,7 +86,7 @@ public class PostOfficeTestBase extends MessagingTestCase
 
       // TODO (ovidiu) we're temporarily ignoring the multiplex option, it doesn't work well
       boolean ignoreMultiplexer = true;
-      JChannelFactory jChannelFactory =
+      ChannelFactory jChannelFactory =
          new ClusteredPersistenceServiceConfigFileJChannelFactory(configFilePath,
                                                                   ignoreMultiplexer,
                                                                   sc.getMBeanServer());

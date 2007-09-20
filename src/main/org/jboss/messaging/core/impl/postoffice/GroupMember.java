@@ -30,7 +30,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.jboss.logging.Logger;
-import org.jboss.messaging.core.contract.JChannelFactory;
+import org.jboss.messaging.core.contract.ChannelFactory;
 import org.jgroups.Address;
 import org.jgroups.Channel;
 import org.jgroups.MembershipListener;
@@ -70,7 +70,7 @@ public class GroupMember
 
    private long castTimeout;
    
-   private JChannelFactory jChannelFactory;
+   private ChannelFactory jChannelFactory;
 
    private Channel controlChannel;
 
@@ -103,7 +103,7 @@ public class GroupMember
    //We probably don't need this if all nodes are in different VMs
 
    public GroupMember(String groupName, long stateTimeout, long castTimeout,
-   		             JChannelFactory jChannelFactory, RequestTarget requestTarget,
+   		             ChannelFactory jChannelFactory, RequestTarget requestTarget,
    		             GroupListener groupListener)
    {
    	this.groupName = groupName;

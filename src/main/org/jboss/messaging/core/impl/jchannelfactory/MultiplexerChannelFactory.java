@@ -25,17 +25,17 @@ package org.jboss.messaging.core.impl.jchannelfactory;
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
 
-import org.jboss.messaging.core.contract.JChannelFactory;
-import org.jgroups.JChannel;
+import org.jboss.messaging.core.contract.ChannelFactory;
+import org.jgroups.Channel;
 
 /**
- * A JChannelFactory that will use the MBean JChannelFactory interface
+ * A ChannelFactory that will use the MBean ChannelFactory interface
  *
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  * @version <tt>$Revision$</tt>
  * $Id$
  */
-public class MultiplexerJChannelFactory implements JChannelFactory
+public class MultiplexerChannelFactory implements ChannelFactory
 {
 
    // Constants ------------------------------------------------------------------------------------
@@ -46,8 +46,8 @@ public class MultiplexerJChannelFactory implements JChannelFactory
    // Attributes -----------------------------------------------------------------------------------
    MBeanServer server;
    ObjectName channelFactory;
-   String asyncStack;
-   String syncStack;
+   String dataStack;
+   String controlStack;
    String uniqueID;
    private static final String MUX_OPERATION = "createMultiplexerChannel";
 
@@ -55,17 +55,17 @@ public class MultiplexerJChannelFactory implements JChannelFactory
 
    // Constructors ---------------------------------------------------------------------------------
 
-   public MultiplexerJChannelFactory(MBeanServer server,
+   public MultiplexerChannelFactory(MBeanServer server,
                                     ObjectName channelFactory,
                                     String uniqueID,
-                                    String syncStack,
-                                    String asyncStack)
+                                    String controlStack,
+                                    String dataStack)
    {
       this.server = server;
       this.channelFactory = channelFactory;
       this.uniqueID = uniqueID;
-      this.asyncStack = asyncStack;
-      this.syncStack = syncStack;
+      this.dataStack = dataStack;
+      this.controlStack = controlStack;
    }
 
    // Public ---------------------------------------------------------------------------------------
@@ -90,24 +90,24 @@ public class MultiplexerJChannelFactory implements JChannelFactory
       this.channelFactory = channelFactory;
    }
 
-   public String getAsyncStack()
+   public String getDataStack()
    {
-      return asyncStack;
+      return dataStack;
    }
 
-   public void setAsyncStack(String asyncStack)
+   public void setDataStack(String dataStack)
    {
-      this.asyncStack = asyncStack;
+      this.dataStack = dataStack;
    }
 
-   public String getSyncStack()
+   public String getControlStack()
    {
-      return syncStack;
+      return controlStack;
    }
 
-   public void setSyncStack(String syncStack)
+   public void setControlStack(String controlStack)
    {
-      this.syncStack = syncStack;
+      this.controlStack = controlStack;
    }
 
    public String getUniqueID()
@@ -120,16 +120,16 @@ public class MultiplexerJChannelFactory implements JChannelFactory
       this.uniqueID = uniqueID;
    }
 
-   public JChannel createControlChannel() throws Exception
+   public Channel createControlChannel() throws Exception
    {
-      return (JChannel) server.invoke(this.channelFactory, MUX_OPERATION,
-         new Object[]{syncStack, uniqueID, Boolean.TRUE, uniqueID}, MUX_SIGNATURE);
+      return (Channel) server.invoke(this.channelFactory, MUX_OPERATION,
+         new Object[]{controlStack, uniqueID + "-CTRL", Boolean.TRUE, uniqueID}, MUX_SIGNATURE);
    }
 
-   public JChannel createDataChannel() throws Exception
+   public Channel createDataChannel() throws Exception
    {
-      return (JChannel) server.invoke(this.channelFactory, MUX_OPERATION,
-         new Object[]{asyncStack, uniqueID, Boolean.TRUE, uniqueID}, MUX_SIGNATURE);
+      return (Channel) server.invoke(this.channelFactory, MUX_OPERATION,
+         new Object[]{dataStack, uniqueID + "-DATA", Boolean.TRUE, uniqueID}, MUX_SIGNATURE);
    }
 
    // Package protected ----------------------------------------------------------------------------

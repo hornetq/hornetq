@@ -22,7 +22,7 @@
 
 package org.jboss.test.messaging.core.postoffice;
 
-import org.jboss.messaging.core.contract.JChannelFactory;
+import org.jboss.messaging.core.contract.ChannelFactory;
 import org.jgroups.JChannel;
 
 /**
@@ -33,7 +33,7 @@ import org.jgroups.JChannel;
  *
  * $Id$
  */
-public class SimpleJChannelFactory implements JChannelFactory
+public class SimpleJChannelFactory implements ChannelFactory
 {
    // Constants ------------------------------------------------------------------------------------
 

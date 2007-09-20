@@ -22,66 +22,67 @@
 
 package org.jboss.messaging.core.impl.jchannelfactory;
 
-import org.jboss.messaging.core.contract.JChannelFactory;
+import org.jboss.messaging.core.contract.ChannelFactory;
+import org.jgroups.Channel;
 import org.jgroups.JChannel;
 import org.w3c.dom.Element;
 
 /**
- * A JChannelFactory that will use Elements to create channels.
+ * A ChannelFactory that will use Elements to create channels.
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  * @version <tt>$Revision:1909 $</tt>
  * $Id:XMLJChannelFactory.java 1909 2007-01-06 06:08:03Z clebert.suconic@jboss.com $
  */
-public class XMLJChannelFactory implements JChannelFactory
+public class XMLChannelFactory implements ChannelFactory
 {
 
    // Constants ------------------------------------------------------------------------------------
 
    // Attributes -----------------------------------------------------------------------------------
-   Element syncConfig;
-   Element asyncConfig;
+   Element controlConfig;
+   Element dataConfig;
 
    // Static ---------------------------------------------------------------------------------------
 
    // Constructors ---------------------------------------------------------------------------------
 
-   public XMLJChannelFactory(Element syncConfig, Element asyncConfig)
+   public XMLChannelFactory(Element controlConfig, Element dataConfig)
    {
-      this.syncConfig = syncConfig;
-      this.asyncConfig = asyncConfig;
+      this.controlConfig = controlConfig;
+      this.dataConfig = dataConfig;
    }
 
    // Public ---------------------------------------------------------------------------------------
 
-   public Element getSyncConfig()
+   public Element getControlConfig()
    {
-      return syncConfig;
+      return controlConfig;
    }
 
-   public void setSyncConfig(Element syncConfig)
+   public void setControlConfig(Element controlConfig)
    {
-      this.syncConfig = syncConfig;
+      this.controlConfig = controlConfig;
    }
 
-   public Element getAsyncConfig()
+   public Element getDataConfig()
    {
-      return asyncConfig;
+      return dataConfig;
    }
 
-   public void setAsyncConfig(Element asyncConfig)
+   public void setDataConfig(Element dataConfig)
    {
-      this.asyncConfig = asyncConfig;
+      this.dataConfig = dataConfig;
    }
 
    // implementation of JChannelFactory ------------------------------------------------------------
-   public JChannel createControlChannel() throws Exception
+   public Channel createControlChannel() throws Exception
    {
-      return new JChannel(syncConfig);
+      return new JChannel(controlConfig);
    }
 
-   public JChannel createDataChannel() throws Exception
+   public Channel createDataChannel() throws Exception
    {
-      return new JChannel(asyncConfig);
+      return new JChannel(dataConfig);
    }
 
    // Package protected ----------------------------------------------------------------------------

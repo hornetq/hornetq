@@ -60,7 +60,7 @@ import org.jboss.messaging.core.contract.ConditionFactory;
 import org.jboss.messaging.core.contract.Delivery;
 import org.jboss.messaging.core.contract.Filter;
 import org.jboss.messaging.core.contract.FilterFactory;
-import org.jboss.messaging.core.contract.JChannelFactory;
+import org.jboss.messaging.core.contract.ChannelFactory;
 import org.jboss.messaging.core.contract.Message;
 import org.jboss.messaging.core.contract.MessageReference;
 import org.jboss.messaging.core.contract.MessageStore;
@@ -285,7 +285,7 @@ public class MessagingPostOffice extends JDBCSupport
                               IDManager channelIDManager,
                               ClusterNotifier clusterNotifier,
                               String groupName,
-                              JChannelFactory jChannelFactory,
+                              ChannelFactory jChannelFactory,
                               long stateTimeout, long castTimeout,
                               boolean supportsFailover)
       throws Exception
