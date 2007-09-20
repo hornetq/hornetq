@@ -48,7 +48,7 @@
    </para>
 
    <para>
-      This guide is work in progress, as new features will be added to the 1.2 baseline at a very
+      This guide is work in progress, as new features will be added at a very
       quick pace.
    </para>
    <para>
@@ -57,14 +57,15 @@
    </para>
 
    <para> Permanent Team:
-      Tim Fox - Project Lead, Clebert Suconic - Core Developer
+      Tim Fox (Project Lead), Clebert Suconic (Core Developer), Andy Taylor (Core Developer)
    </para>
    
-   <para>Contributors: Ovidiu Feodorov, Sergey Koshcheyev, Adrian Brock, Alex Fu, Luc Texier, Aaron Walker,
-         Rajdeep Dua, Madhusudhan Konda, Juha Lindfors and Ron Sigal.
+   <para>Ovidiu Feodorov (Project Founder), Sergey Koshcheyev, Ron Sigal, Madhu Konda, Jay Howell, Aaron Walker, Adrian Brock, Rajdeep Dua, Tom Elrod, Alex Fu, Juha Lindfors, Alexey Loubyansky, Luc Texier, Scott Stark
    </para>
    
-   <para>Other thanks to Pete Bennett, Jay Howell and David Boeren</para>
+   <para>Messaging support team: Jay Howell, David Boeren, Mike Clark
+   </para>
 
+   <para>Other thanks to Mark LIttle and Pete Bennett</para>
 
 </chapter>
