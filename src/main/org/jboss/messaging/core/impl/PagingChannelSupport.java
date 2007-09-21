@@ -565,16 +565,7 @@ public abstract class PagingChannelSupport extends ChannelSupport
 
          if (messages.size() != msgIdsToLoad.size())
          {
-            // Sanity check
-         	
-         	iter = messages.iterator();
-
-            while (iter.hasNext())
-            {
-               Message m = (Message)iter.next();
-               
-               log.info("Loaded " + m);
-            }
+            // Sanity check         	
             
             throw new IllegalStateException("Did not load correct number of messages, wanted:" +
                                             msgIdsToLoad.size() + " but got:" +
