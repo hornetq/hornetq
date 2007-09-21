@@ -458,6 +458,13 @@ should only be exposed to administrators</warning>
            </para>               
         </listitem>
 
+       <listitem>
+          <para>
+             <note>JBoss Messaging 1.4.0 requires a patched version of jboss-remoting.jar. This version is not available
+             in the JBoss AS 4.2.0 or JBoss AS 4.2.1 distributions. The patched jar can be found <ulink url="http://repository.jboss.com/jboss/remoting/2.2.2.SP1-brew/lib/">here</ulink>. Please download it and copy it into the <literal>$JBOSS_HOME/server/&lt;your server name&gt;/lib directory</literal> of any server profiles that use JBoss Messaging 1.4.0. If you are using JBoss Messaging from a standalone client also make sure this jar is on your classpath *before* jbossall-client.jar.</note>             
+          </para>
+       </listitem>
+
 
       <para>You should also make these changes on any configuration you
       choose, to remove all references to the old JBossMQ:</para>
@@ -569,7 +576,7 @@ JBoss Messaging Warning: DataSource connection transaction isolation should be R
                          Using an isolation level less strict than READ_COMMITTED may lead to data consistency problems.
                          Using an isolation level more strict than READ_COMMITTED may lead to deadlock.
 
-13:19:15,166 INFO  [ServerPeer] JBoss Messaging 1.4.0.CR1 server [0] started
+13:19:15,166 INFO  [ServerPeer] JBoss Messaging 1.4.0.CR3 server [0] started
 13:19:15,411 INFO  [ConnectionFactory] Connector bisocket://127.0.0.1:4457 has leasing enabled, lease period 10000 milliseconds
 13:19:15,412 INFO  [ConnectionFactory] [/ConnectionFactory, /XAConnectionFactory, java:/ConnectionFactory, java:/XAConnectionFactory] started
 13:19:15,412 WARN  [ConnectionFactoryJNDIMapper] supportsFailover attribute is true on connection factory: jboss.messaging.connectionfactory:service=ClusteredConnectionFactory but post office is non clustered. So connection factory will *not* support failover
@@ -713,6 +720,12 @@ Total time: 5 seconds
     </para>
     
     <itemizedlist>
+       <listitem>
+	  <para>
+             <note>JBoss Messaging 1.4.0 requires a patched version of jboss-remoting.jar. This version is not available
+             in the JBoss AS 4.2.0 or JBoss AS 4.2.1 distributions. The patched jar can be found <ulink url="http://repository.jboss.com/jboss/remoting/2.2.2.SP1-brew/lib/">here</ulink>. Please download it and make sure this jar is on your classpath *before* jbossall-client.jar.</note>           
+          </para>
+       </listitem>
        <listitem>
           <para>
           jboss-messaging-client.jar - This is available in the messaging distribution
