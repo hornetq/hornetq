@@ -139,7 +139,7 @@
    <target name="deploy" depends="war">
       <copy file="./output/lib/jms-web-service.war"
             todir="${jboss.home}/server/${jboss.configuration}/deploy"/>
-      <antcall target="sleep"><param name="sleep.interval" value="5"/></antcall>
+      <antcall target="sleep"><param name="sleep.interval" value="10"/></antcall>
    </target>
 
    <target name="compile-client">
