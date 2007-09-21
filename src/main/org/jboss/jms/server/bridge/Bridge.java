@@ -807,13 +807,7 @@ public class Bridge implements MessagingComponent
          if (tm == null)
          {
             throw new IllegalStateException("Cannot locate a transaction manager");
-         }
-         
-         //Sanity check
-         if (!(tm instanceof com.arjuna.ats.internal.jta.transaction.arjunacore.TransactionManagerImple))
-         {
-            log.warn("WARNING! The JBoss Transactions JTA transaction manager is not be used!");
-         }
+         }         
       }
       
       return tm;
