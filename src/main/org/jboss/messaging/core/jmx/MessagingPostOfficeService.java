@@ -351,44 +351,44 @@ public class MessagingPostOfficeService extends JDBCServiceSupport
                   
          FilterFactory ff = new SelectorFactory();
          
-         ChannelFactory jChannelFactory = null;
+         if (clustered)
+         {        
+            ChannelFactory jChannelFactory = null;
 
-         if (channelFactoryName != null)
-         {
-            Object info = null;
-            try
+         	if (channelFactoryName != null)
             {
-               info = server.getMBeanInfo(channelFactoryName);
-            }
-            catch (Exception e)
-            {
-               // log.error("Error", e);
-               // noop... means we couldn't find the channel hence we should use regular
-               // XMLChannelFactories
-            }
+               Object info = null;
+               try
+               {
+                  info = server.getMBeanInfo(channelFactoryName);
+               }
+               catch (Exception e)
+               {
+                  // log.error("Error", e);
+                  // noop... means we couldn't find the channel hence we should use regular
+                  // XMLChannelFactories
+               }
 
-            if (info != null)
-            {
-               log.debug(this + " uses MultiplexerJChannelFactory");
+               if (info != null)
+               {
+                  log.debug(this + " uses MultiplexerJChannelFactory");
 
-               jChannelFactory =
-                  new MultiplexerChannelFactory(server, channelFactoryName, channelPartitionName,
-                                                 controlChannelName, dataChannelName);
+                  jChannelFactory =
+                     new MultiplexerChannelFactory(server, channelFactoryName, channelPartitionName,
+                                                    controlChannelName, dataChannelName);
+               }
+               else
+               {
+                  log.debug(this + " uses XMLJChannelFactory");
+                  jChannelFactory = new XMLChannelFactory(controlChannelConfig, dataChannelConfig);
+               }
             }
             else
             {
                log.debug(this + " uses XMLJChannelFactory");
                jChannelFactory = new XMLChannelFactory(controlChannelConfig, dataChannelConfig);
             }
-         }
-         else
-         {
-            log.debug(this + " uses XMLJChannelFactory");
-            jChannelFactory = new XMLChannelFactory(controlChannelConfig, dataChannelConfig);
-         }
-
-         if (clustered)
-         {         
+         	
 	         postOffice =  new MessagingPostOffice(ds, tm, sqlProperties,
 	                                               createTablesOnStartup,
 	                                               nodeId, officeName, ms,
