@@ -23,6 +23,7 @@
 package org.jboss.test.messaging.jms.clustering;
 
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
 
 import javax.jms.Connection;
 import javax.jms.MessageConsumer;
@@ -97,7 +98,7 @@ public class ClusterViewUpdateTest extends ClusteringTestBase
     *       runs as part of the validation of ConnectionFactory updates, as a leak on CF would
     *       cause problems with excessive number of connections.
     *  */
-  public void testGarbageCollectionOnClusteredCF() throws Throwable
+   public void testGarbageCollectionOnClusteredCF() throws Throwable
    {
 
       JBossConnectionFactory cf = (JBossConnectionFactory)ic[0].lookup("/ClusteredConnectionFactory");
@@ -128,16 +129,26 @@ public class ClusterViewUpdateTest extends ClusteringTestBase
       // Stays on loop until GC is done
       while (ref.get()!=null)
       {
-         for (int i=0;i<10000;i++)
+         ArrayList<String> garbageList = new ArrayList<String>();
+         try
          {
-            /// Just throwing extra garbage on the memory.. to make sure GC will happen
-            
-            String str = "GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE " + i;
+            WeakReference refDumb = new WeakReference(new Object());
+
+            long i = 0;
+            while (refDumb.get() != null)
+            {
+               /// Just throwing extra garbage on the memory.. to make sure GC will happen
+               garbageList.add("GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE " + (i++));
+            }
+         }
+         catch (Throwable ignored)
+         {
          }
 
-         log.info("Calling system.gc()");
-         System.gc();
-         Thread.sleep(1000);
+         garbageList.clear();
+
+         forceGC();
+
          if (loops++ > 10)
          {
             // This should be more than enough already... even the object wasn't cleared on more than
