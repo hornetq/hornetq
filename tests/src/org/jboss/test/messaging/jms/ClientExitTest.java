@@ -106,7 +106,7 @@ public class ClientExitTest extends MessagingTestCase
          conn.start();
          Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
          MessageConsumer cons = sess.createConsumer(queue);
-         TextMessage tm = (TextMessage)cons.receive(5000);
+         TextMessage tm = (TextMessage)cons.receive(15000);
 
          assertNotNull(tm);
          assertEquals(MESSAGE_TEXT, tm.getText());
