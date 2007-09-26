@@ -37,6 +37,7 @@
       <pathelement path="../common/output/classes"/>
       <pathelement path="./output/classes"/>
       <fileset file="${messaging.client.jar.path}/${messaging.client.jar.name}"/>
+      <fileset file="${jboss.home}/server/${jboss.configuration0}/lib/jboss-remoting.jar"/>
       <fileset file="${jboss.home}/client/jbossall-client.jar"/>
       <fileset file="${jboss.home}/server/${jboss.configuration0}/lib/log4j.jar"/>
       <fileset file="${jboss.home}/server/${jboss.configuration0}/lib/javassist.jar"/>

@@ -58,6 +58,7 @@
       <pathelement path="./output/client-classes"/>
 
       <!-- all this stuff for WebServices -->
+      <fileset file="${jboss.home}/server/${jboss.configuration}/lib/jboss-remoting.jar"/>
       <pathelement location="${jboss.client}/activation.jar"/>
       <pathelement location="${jboss.client}/commons-logging.jar"/>
       <pathelement location="${jboss.client}/javassist.jar"/>
