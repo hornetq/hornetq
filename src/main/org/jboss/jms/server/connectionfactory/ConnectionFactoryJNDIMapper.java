@@ -114,7 +114,8 @@ public class ConnectionFactoryJNDIMapper
                                                       int dupsOKBatchSize,
                                                       boolean supportsFailover,
                                                       boolean supportsLoadBalancing,
-                                                      LoadBalancingFactory loadBalancingFactory)
+                                                      LoadBalancingFactory loadBalancingFactory,
+                                                      boolean strictTck)
       throws Exception
    {
       log.debug(this + " registering connection factory '" + uniqueName +
@@ -167,7 +168,7 @@ public class ConnectionFactoryJNDIMapper
 
       ClientConnectionFactoryDelegate localDelegate =
          new ClientConnectionFactoryDelegate(uniqueName, id, serverPeer.getServerPeerID(),
-                                             locatorURI, version, clientPing);
+                                             locatorURI, version, clientPing, strictTck);
 
       log.debug(this + " created local delegate " + localDelegate);
 

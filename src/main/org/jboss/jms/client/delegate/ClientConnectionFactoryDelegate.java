@@ -74,6 +74,8 @@ public class ClientConnectionFactoryDelegate
    private int serverID;
    
    private boolean clientPing;
+
+   private boolean strictTck;
    
    // Static ---------------------------------------------------------------------------------------
    
@@ -104,7 +106,7 @@ public class ClientConnectionFactoryDelegate
    // Constructors ---------------------------------------------------------------------------------
 
    public ClientConnectionFactoryDelegate(String uniqueName, String objectID, int serverID, String serverLocatorURI,
-                                          Version serverVersion, boolean clientPing)
+                                          Version serverVersion, boolean clientPing, boolean strictTck)
    {
       super(objectID);
 
@@ -113,6 +115,7 @@ public class ClientConnectionFactoryDelegate
       this.serverLocatorURI = serverLocatorURI;
       this.serverVersion = serverVersion;
       this.clientPing = clientPing;
+      this.strictTck = strictTck;
    }
    
    public ClientConnectionFactoryDelegate()
@@ -146,7 +149,7 @@ public class ClientConnectionFactoryDelegate
       
       try
       {         
-         remotingConnection = new JMSRemotingConnection(serverLocatorURI, clientPing);
+         remotingConnection = new JMSRemotingConnection(serverLocatorURI, clientPing, strictTck);
          
          remotingConnection.start();
    
@@ -262,7 +265,13 @@ public class ClientConnectionFactoryDelegate
       return serverVersion;
    }
 
-   public void synchronizeWith(DelegateSupport newDelegate) throws Exception
+
+   public boolean getStrictTck()
+   {
+       return strictTck;
+   }
+
+    public void synchronizeWith(DelegateSupport newDelegate) throws Exception
    {
       super.synchronizeWith(newDelegate);
    }
@@ -316,6 +325,8 @@ public class ClientConnectionFactoryDelegate
       serverID = in.readInt();
       
       clientPing = in.readBoolean();
+
+      strictTck = in.readBoolean();
    }
 
    public void write(DataOutputStream out) throws Exception
@@ -329,6 +340,8 @@ public class ClientConnectionFactoryDelegate
       out.writeInt(serverID);
       
       out.writeBoolean(clientPing);
+
+      out.writeBoolean(strictTck);
    }
 
    // Inner Classes --------------------------------------------------------------------------------

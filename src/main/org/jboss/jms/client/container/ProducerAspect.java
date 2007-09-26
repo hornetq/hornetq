@@ -213,6 +213,10 @@ public class ProducerAspect
 
          //We must set the destination *after* converting from foreign message
          messageToSend.setJMSDestination(destination);
+         if(connectionState.getRemotingConnection().isStrictTck())
+         {
+            m.setJMSDestination(destination);
+         }
       }
       else
       {

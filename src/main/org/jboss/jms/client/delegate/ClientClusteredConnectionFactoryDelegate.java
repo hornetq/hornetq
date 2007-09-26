@@ -96,7 +96,7 @@ public class ClientClusteredConnectionFactoryDelegate extends DelegateSupport
          if (trace) log.trace("Trying communication on server(" + server + ")=" + delegates[server].getServerLocatorURI());
          try
          {
-            remoting = new JMSRemotingConnection(delegates[server].getServerLocatorURI(), true);
+            remoting = new JMSRemotingConnection(delegates[server].getServerLocatorURI(), true, delegates[server].getStrictTck());
             remoting.start();
             currentDelegate = delegates[server];
             if (trace) log.trace("Adding callback");

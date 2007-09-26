@@ -48,7 +48,8 @@ public interface ConnectionFactoryManager extends MessagingComponent
                                  int dupsOKBatchSize,
                                  boolean supportsFailover,
                                  boolean supportsLoadBalancing,
-                                 LoadBalancingFactory loadBalancingPolicy) throws Exception;
+                                 LoadBalancingFactory loadBalancingPolicy,
+                                 boolean strictTck) throws Exception;
 
    void unregisterConnectionFactory(String uniqueName, boolean supportsFailover, boolean supportsLoadBalancing) throws Exception;
 }

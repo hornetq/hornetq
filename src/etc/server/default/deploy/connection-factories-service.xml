@@ -115,7 +115,11 @@
       <!- - The class name of the factory used to create the load balancing policy to use on the client side - ->
       
       <attribute name="LoadBalancingFactory">org.jboss.jms.client.plugin.RoundRobinLoadBalancingFactory</attribute>  
-      
+
+      <!- - Whether we should be strict TCK compliant, i.e. how we deal with foreign messages, defaults to false- ->
+
+      <attribute name="StrictTck">true</attribute>
+
       <!- - The connection factory will be bound in the following places in JNDI - ->
 
       <attribute name="JNDIBindings">

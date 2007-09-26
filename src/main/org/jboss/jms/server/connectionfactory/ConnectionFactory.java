@@ -73,6 +73,8 @@ public class ConnectionFactory extends ServiceMBeanSupport
 
    private boolean started;
 
+   private boolean strictTck;
+
    // Constructors ---------------------------------------------------------------------------------
 
    public ConnectionFactory()
@@ -150,7 +152,7 @@ public class ConnectionFactory extends ServiceMBeanSupport
                                       locatorURI, enablePing, prefetchSize, slowConsumers,
                                       defaultTempQueueFullSize, defaultTempQueuePageSize,                                      
                                       defaultTempQueueDownCacheSize, dupsOKBatchSize, supportsFailover, supportsLoadBalancing,
-                                      loadBalancingFactory);
+                                      loadBalancingFactory, strictTck);
       
          InvokerLocator locator = new InvokerLocator(locatorURI);
 
@@ -363,7 +365,17 @@ public class ConnectionFactory extends ServiceMBeanSupport
       return this.dupsOKBatchSize;
    }
 
-   // JMX managed operations -----------------------------------------------------------------------
+    public boolean isStrictTck()
+    {
+        return strictTck;
+    }
+
+    public void setStrictTck(boolean strictTck)
+    {
+        this.strictTck = strictTck;
+    }
+
+    // JMX managed operations -----------------------------------------------------------------------
 
    // Public ---------------------------------------------------------------------------------------
 

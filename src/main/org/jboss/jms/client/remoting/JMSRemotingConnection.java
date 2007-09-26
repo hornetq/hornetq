@@ -236,6 +236,7 @@ public class JMSRemotingConnection
    private boolean clientPing;
    private InvokerLocator serverLocator;
    private CallbackManager callbackManager;
+   private boolean strictTck;
 
    // When a failover is performed, this flag is set to true
    protected boolean failed = false;
@@ -246,10 +247,11 @@ public class JMSRemotingConnection
 
    // Constructors ---------------------------------------------------------------------------------
 
-   public JMSRemotingConnection(String serverLocatorURI, boolean clientPing) throws Exception
+   public JMSRemotingConnection(String serverLocatorURI, boolean clientPing, boolean strictTck) throws Exception
    {
       serverLocator = new InvokerLocator(serverLocatorURI);
       this.clientPing = clientPing;
+      this.strictTck = strictTck;
 
       log.trace(this + " created");
    }
@@ -337,7 +339,13 @@ public class JMSRemotingConnection
       return callbackManager;
    }
 
-   public synchronized boolean isFailed()
+
+   public boolean isStrictTck()
+   {
+       return strictTck;
+   }
+
+    public synchronized boolean isFailed()
    {
       return failed;
    }

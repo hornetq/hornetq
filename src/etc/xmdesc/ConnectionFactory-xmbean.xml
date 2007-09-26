@@ -112,6 +112,12 @@
       <type>java.lang.String</type>
    </attribute>
 
+    <attribute access="read-write" getMethod="isStrictTck" setMethod="setStrictTck">
+      <description>Does this CF support StrictTCK</description>
+      <name>StrictTck</name>
+      <type>boolean</type>
+   </attribute>
+
    <!-- Managed operations -->
 
    <operation>
