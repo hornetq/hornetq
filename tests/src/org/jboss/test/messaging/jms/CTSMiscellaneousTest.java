@@ -36,9 +36,15 @@ import javax.jms.TextMessage;
 import javax.jms.TopicConnection;
 import javax.jms.TopicSession;
 import javax.naming.InitialContext;
+import javax.management.ObjectName;
 
 import org.jboss.test.messaging.jms.message.SimpleJMSBytesMessage;
 import org.jboss.test.messaging.jms.message.SimpleJMSMessage;
+import org.jboss.test.messaging.jms.message.SimpleJMSTextMessage;
+import org.jboss.test.messaging.tools.container.ServiceAttributeOverrides;
+import org.jboss.test.messaging.tools.container.ServiceContainer;
+import org.jboss.test.messaging.tools.ServerManagement;
+import org.jboss.jms.client.JBossConnectionFactory;
 
 /**
  * Safeguards for previously detected TCK failures.
@@ -56,17 +62,75 @@ public class CTSMiscellaneousTest extends JMSTestCase
    // Static --------------------------------------------------------
 
    // Attributes ----------------------------------------------------
+   protected static JBossConnectionFactory cf;
+   protected ServiceAttributeOverrides overrides;
+    private static final String ORG_JBOSS_MESSAGING_SERVICE_LBCONNECTION_FACTORY = "org.jboss.messaging:service=StrictTckConnectionFactory";
 
-   protected InitialContext ic;
-
-   // Constructors --------------------------------------------------
+    // Constructors --------------------------------------------------
 
    public CTSMiscellaneousTest(String name)
    {
       super(name);
    }
 
-   // Public --------------------------------------------------------
+    protected void setUp() throws Exception
+    {
+        try
+        {
+            super.setUp();
+            //Deploy a connection factory with load balancing but no failover on node0
+            ServerManagement.getServer(0).deployConnectionFactory(ORG_JBOSS_MESSAGING_SERVICE_LBCONNECTION_FACTORY,
+                                                        new String[] { "/StrictTCKConnectionFactory" }, true);
+            cf = (JBossConnectionFactory) ic.lookup("/StrictTCKConnectionFactory");
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+
+    }
+
+    // Public --------------------------------------------------------
+
+   public void testForiengMessageSetDestination() throws Exception
+   {
+      Connection c = null;
+
+      try
+      {
+	      c = cf.createConnection();
+	      Session s = c.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+	      MessageProducer p = s.createProducer(queue1);
+
+	      // create a Bytes foreign message
+	      SimpleJMSTextMessage txt = new SimpleJMSTextMessage("hello from Brazil!");
+         txt.setJMSDestination(null);
+
+         p.send(txt);
+
+         assertNotNull(txt.getJMSDestination());
+
+         MessageConsumer cons = s.createConsumer(queue1);
+	     c.start();
+
+	     TextMessage tm = (TextMessage)cons.receive();
+	     assertNotNull(tm);
+         assertEquals("hello from Brazil!", txt.getText());
+      }
+      catch(Exception e)
+      {
+          e.printStackTrace();
+      }
+      finally
+      {
+      	if (c != null)
+      	{
+      		c.close();
+      	}
+      }
+
+   }
 
    public void testForeignByteMessage() throws Exception
    {
@@ -231,8 +295,13 @@ public class CTSMiscellaneousTest extends JMSTestCase
       }
    }
 
+    protected void tearDown() throws Exception
+    {
+        super.tearDown();
+        ServerManagement.undeployConnectionFactory(new ObjectName(ORG_JBOSS_MESSAGING_SERVICE_LBCONNECTION_FACTORY));
+    }
 
-   // Package protected ---------------------------------------------
+    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
    

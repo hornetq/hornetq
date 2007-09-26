@@ -709,16 +709,22 @@ public class LocalTestServer implements Server
                                        String[] jndiBindings,
                                        int prefetchSize) throws Exception
    {
-      deployConnectionFactory(objectName, jndiBindings, prefetchSize, -1, -1, -1, false, false);
+      deployConnectionFactory(objectName, jndiBindings, prefetchSize, -1, -1, -1, false, false, false);
    }
 
    public void deployConnectionFactory(String objectName,
                                        String[] jndiBindings) throws Exception
    {
-      deployConnectionFactory(objectName, jndiBindings, -1, -1, -1, -1, false, false);
+      deployConnectionFactory(objectName, jndiBindings, -1, -1, -1, -1, false, false, false);
    }
-   
-   public void deployConnectionFactory(String objectName,
+
+
+    public void deployConnectionFactory(String objectName, String[] jndiBindings, boolean strictTck)  throws Exception
+    {
+        deployConnectionFactory(objectName, jndiBindings, -1, -1, -1, -1, false, false, strictTck);
+    }
+
+    public void deployConnectionFactory(String objectName,
          String[] jndiBindings,
          int prefetchSize,
          int defaultTempQueueFullSize,
@@ -726,7 +732,7 @@ public class LocalTestServer implements Server
          int defaultTempQueueDownCacheSize) throws Exception
    {
    	this.deployConnectionFactory(objectName, jndiBindings, prefetchSize, defaultTempQueueFullSize,
-   			defaultTempQueuePageSize, defaultTempQueueDownCacheSize, false, false);   			
+   			defaultTempQueuePageSize, defaultTempQueueDownCacheSize, false, false, false);
    }
    
    public void deployConnectionFactory(String objectName,
@@ -734,7 +740,7 @@ public class LocalTestServer implements Server
          boolean supportsFailover, boolean supportsLoadBalancing) throws Exception
    {
    	this.deployConnectionFactory(objectName, jndiBindings, -1, -1,
-   			-1, -1, supportsFailover, supportsLoadBalancing);   			
+   			-1, -1, supportsFailover, supportsLoadBalancing, false);
    }
 
    private void deployConnectionFactory(String objectName,
@@ -744,7 +750,8 @@ public class LocalTestServer implements Server
                                        int defaultTempQueuePageSize,
                                        int defaultTempQueueDownCacheSize,
                                        boolean supportsFailover,
-                                       boolean supportsLoadBalancing) throws Exception
+                                       boolean supportsLoadBalancing,
+                                       boolean strictTck) throws Exception
    {
       log.trace("deploying connection factory with name: " + objectName);
       
@@ -778,7 +785,7 @@ public class LocalTestServer implements Server
       
       config += "<attribute name=\"SupportsFailover\">" + supportsFailover + "</attribute>";
       config += "<attribute name=\"SupportsLoadBalancing\">" + supportsLoadBalancing + "</attribute>";
-
+      config += "<attribute name=\"StrictTck\">" + strictTck + "</attribute>";
       if (jndiBindings != null)
       {
 	      config += "<attribute name=\"JNDIBindings\"><bindings>";
