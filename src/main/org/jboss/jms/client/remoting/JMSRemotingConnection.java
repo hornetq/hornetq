@@ -24,6 +24,9 @@ package org.jboss.jms.client.remoting;
 import java.util.HashMap;
 import java.util.Map;
 import java.net.MalformedURLException;
+import java.security.AccessController;
+import java.security.PrivilegedExceptionAction;
+import java.security.PrivilegedActionException;
 
 import org.jboss.jms.server.ServerPeer;
 import org.jboss.jms.wireformat.JMSWireFormat;
@@ -273,7 +276,16 @@ public class JMSRemotingConnection
       if (log.isTraceEnabled()) { log.trace(this + " created client"); }
 
       callbackManager = new CallbackManager();
-      client.connect();
+
+      //Do a privileged Action to connect
+      AccessController.doPrivileged( new PrivilegedExceptionAction()
+      {
+         public Object run() throws Exception
+         {
+            client.connect();
+            return null;
+         }
+      });
 
       // We explicitly set the Marshaller since otherwise remoting tries to resolve the marshaller
       // every time which is very slow - see org.jboss.remoting.transport.socket.ProcessInvocation
