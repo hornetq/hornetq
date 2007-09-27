@@ -44,6 +44,7 @@ import org.jboss.remoting.transport.socket.SocketServerInvoker;
 import org.jboss.util.id.GUID;
 
 
+
 /**
  * Encapsulates the state and behaviour from jboss remoting needed for a JMS connection.
  * 
