@@ -44,8 +44,7 @@ import org.jboss.jms.server.security.CheckType;
 import org.jboss.jms.server.security.SecurityMetadata;
 import org.jboss.jms.tx.ClientTransaction;
 import org.jboss.jms.tx.TransactionRequest;
-import org.jboss.logging.Logger;
-import org.jboss.security.SecurityAssociation;
+import org.jboss.logging.Logger; 
 
 /**
  * This aspect enforces the JBossMessaging JMS security policy.
@@ -316,7 +315,7 @@ public class SecurityAspect
       finally
       {
          // pop the Messaging SecurityContext, it did its job
-         SecurityAssociation.popSubjectContext();
+         SecurityActions.popSubjectContext();
       }
 
       // if we get here we're granted, add to the cache

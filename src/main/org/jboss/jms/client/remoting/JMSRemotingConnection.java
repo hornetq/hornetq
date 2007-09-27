@@ -21,21 +21,19 @@
   */
 package org.jboss.jms.client.remoting;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.net.MalformedURLException;
 import java.security.AccessController;
 import java.security.PrivilegedExceptionAction;
-import java.security.PrivilegedActionException;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.jboss.jms.server.ServerPeer;
 import org.jboss.jms.wireformat.JMSWireFormat;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.util.GUIDGenerator;
 import org.jboss.remoting.Client;
+import org.jboss.remoting.ConnectionListener;
 import org.jboss.remoting.InvokerLocator;
 import org.jboss.remoting.ServerInvoker;
-import org.jboss.remoting.ConnectionListener;
 import org.jboss.remoting.callback.CallbackPoller;
 import org.jboss.remoting.callback.InvokerCallbackHandler;
 import org.jboss.remoting.transport.bisocket.Bisocket;

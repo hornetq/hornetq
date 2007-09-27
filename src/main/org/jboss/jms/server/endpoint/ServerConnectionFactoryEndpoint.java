@@ -21,8 +21,6 @@
   */
 package org.jboss.jms.server.endpoint;
 
-import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 
 import javax.jms.JMSException;
@@ -40,10 +38,8 @@ import org.jboss.jms.wireformat.ConnectionFactoryUpdate;
 import org.jboss.jms.wireformat.Dispatcher;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.util.ExceptionUtil;
-import org.jboss.messaging.util.ConcurrentHashSet;
 import org.jboss.remoting.callback.Callback;
-import org.jboss.remoting.callback.ServerInvokerCallbackHandler;
-import org.jboss.security.SecurityAssociation;
+import org.jboss.remoting.callback.ServerInvokerCallbackHandler; 
 
 /**
  * Concrete implementation of ConnectionFactoryEndpoint
@@ -226,7 +222,7 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
       serverPeer.getSecurityManager().authenticate(username, password);
 
       // We don't need the SubjectContext on thread local anymore, clean it up
-      SecurityAssociation.popSubjectContext();
+      SecurityActions.popSubjectContext();
 
       String clientIDUsed = clientID;
 
