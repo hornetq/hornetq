@@ -2259,7 +2259,9 @@ POPULATE.TABLES.1=INSERT INTO JBM_USER (USER_ID,PASSWD,CLIENTID)
 
       &lt;attribute name="SlowConsumers"&gt;false&lt;/attribute&gt;
       
-      &lt;attribute name="DefaultTempQueueFullSize"&gt;50000&lt;/attribute&gt; 
+      &lt;attribute name="StrictTck"&gt;true&lt;/attribute&gt;
+
+      &lt;attribute name="DefaultTempQueueFullSize"&gt;50000&lt;/attribute&gt;
       
       &lt;attribute name="DefaultTempQueuePageSize"&gt;1000&lt;/attribute&gt; 
             
@@ -2317,16 +2319,25 @@ POPULATE.TABLES.1=INSERT INTO JBM_USER (USER_ID,PASSWD,CLIENTID)
 	           </para>
 	        </section>
 
-               <section id="conf.connectionfactory.attributes.slowconsumers">
+              <section id="conf.connectionfactory.attributes.slowconsumers">
 	           <title>SlowConsumers</title>
 	
 	           <para>
 	            If you have very slow consumers, then you probably want to make sure they don't buffer any messages.
                     Since this can prevent them from being consumed by faster consumers.
 	           </para>
-	        </section>		      
+	        </section>
 
-	        <section id="conf.connectionfactory.attributes.tempqueuepaging">
+           <section id="conf.connectionfactory.attributes.tckstrictbehavior">
+              <title>StrictTck</title>
+              <para>
+                 As part of JMS specification foreign messages should receive a new destination when the message is sent, but when the Bridge is playing with other providers
+                 such as ActiveMQ this could affect the regular operation on those providers. We disabled that by default but if you need this behavior activated you should just set this attribute to
+                 True on the ConnectionFactory.
+              </para>
+           </section>
+
+                <section id="conf.connectionfactory.attributes.tempqueuepaging">
 	           <title>Temporary queue paging parameters</title>
 	
 	              <para>DefaultTempQueueFullSize, DefaultTempQueuePageSize, DefaultTempQueueDownCacheSize are optional attributes that determine the default paging parameters to be used for
