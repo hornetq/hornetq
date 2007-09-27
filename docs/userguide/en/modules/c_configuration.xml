@@ -19,7 +19,7 @@ JBoss Messaging balances messages between nodes, catering for faster or slower c
    <para>JBoss Messaging also supports clustered temporary topics and queues. All temporary topics and queues will be clustered if the post office is clustered
    </para>
 
-   <para>If you do want your nodes to participate in a cluster, or only have one non clustered server you can set the clustered attribute on the postoffice to false
+   <para>If you don't want your nodes to participate in a cluster, or only have one non clustered server you can set the clustered attribute on the postoffice to false
    </para>
 
    <para>If you wish to apply strict JMS ordering to messages, such that a particular JMS consumer consumes messages in the same order as they were produced by a particular producer, you can set the DefaultPreserveOrdering attribute in the server peer to true. By default this is false. The side-effect of setting this to true is that messages cannot be distributed as freely around the cluster

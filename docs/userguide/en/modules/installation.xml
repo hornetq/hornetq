@@ -181,22 +181,32 @@
             &lt;attribute name="Configuration"&gt;&lt;![CDATA[
 	   &lt;config&gt;
             &lt;invoker transport="bisocket"&gt;
-               &lt;attribute name="marshaller" isParam="true"&gt;org.jboss.jms.wireformat.JMSWireFormat&lt;/attribute&gt;
-               &lt;attribute name="unmarshaller" isParam="true"&gt;org.jboss.jms.wireformat.JMSWireFormat&lt;/attribute&gt;
+               &lt;attribute name="marshaller" isParam="true"&gt;
+                  org.jboss.jms.wireformat.JMSWireFormat
+               &lt;/attribute&gt;
+               &lt;attribute name="unmarshaller" isParam="true"&gt;
+                  org.jboss.jms.wireformat.JMSWireFormat
+               &lt;/attribute&gt;
                &lt;attribute name="dataType" isParam="true"&gt;jms&lt;/attribute&gt;
                &lt;attribute name="socket.check_connection" isParam="true"&gt;false&lt;/attribute&gt;
                &lt;attribute name="timeout" isParam="true"&gt;0&lt;/attribute&gt;
                &lt;attribute name="serverBindAddress"&gt;${jboss.bind.address}&lt;/attribute&gt;
                &lt;attribute name="serverBindPort"&gt;4657&lt;/attribute&gt;
                &lt;attribute name="leasePeriod"&gt;10000&lt;/attribute&gt;
-               &lt;attribute name="clientSocketClass" isParam="true"&gt;org.jboss.jms.client.remoting.ClientSocketWrapper&lt;/attribute&gt;
-               &lt;attribute name="serverSocketClass"&gt;org.jboss.jms.server.remoting.ServerSocketWrapper&lt;/attribute&gt;
+               &lt;attribute name="clientSocketClass" isParam="true"&gt;
+                  org.jboss.jms.client.remoting.ClientSocketWrapper
+               &lt;/attribute&gt;
+               &lt;attribute name="serverSocketClass"&gt;
+                  org.jboss.jms.server.remoting.ServerSocketWrapper
+               &lt;/attribute&gt;
                &lt;attribute name="numberOfRetries" isParam="true"&gt;1&lt;/attribute&gt;
                &lt;attribute name="numberOfCallRetries" isParam="true"&gt;1&lt;/attribute&gt;
                &lt;attribute name="clientMaxPoolSize" isParam="true"&gt;50&lt;/attribute&gt;
             &lt;/invoker&gt;
             &lt;handlers&gt;
-               &lt;handler subsystem="JMS"&gt;org.jboss.jms.server.remoting.JMSServerInvocationHandler&lt;/handler&gt;
+               &lt;handler subsystem="JMS"&gt;
+                  org.jboss.jms.server.remoting.JMSServerInvocationHandler
+               &lt;/handler&gt;
             &lt;/handlers&gt;
          &lt;/config&gt;
             ]]&gt;&lt;/attribute&gt;
@@ -398,22 +408,32 @@ the JBoss Transactions Recovery Manager</para>
             &lt;attribute name="Configuration"&gt;&lt;![CDATA[
 	   &lt;config&gt;
             &lt;invoker transport="bisocket"&gt;
-               &lt;attribute name="marshaller" isParam="true"&gt;org.jboss.jms.wireformat.JMSWireFormat&lt;/attribute&gt;
-               &lt;attribute name="unmarshaller" isParam="true"&gt;org.jboss.jms.wireformat.JMSWireFormat&lt;/attribute&gt;
+               &lt;attribute name="marshaller" isParam="true"&gt;
+                  org.jboss.jms.wireformat.JMSWireFormat
+               &lt;/attribute&gt;
+               &lt;attribute name="unmarshaller" isParam="true"&gt;
+                  org.jboss.jms.wireformat.JMSWireFormat
+               &lt;/attribute&gt;
                &lt;attribute name="dataType" isParam="true"&gt;jms&lt;/attribute&gt;
                &lt;attribute name="socket.check_connection" isParam="true"&gt;false&lt;/attribute&gt;
                &lt;attribute name="timeout" isParam="true"&gt;0&lt;/attribute&gt;
                &lt;attribute name="serverBindAddress"&gt;${jboss.bind.address}&lt;/attribute&gt;
                &lt;attribute name="serverBindPort"&gt;4657&lt;/attribute&gt;
                &lt;attribute name="leasePeriod"&gt;10000&lt;/attribute&gt;
-               &lt;attribute name="clientSocketClass" isParam="true"&gt;org.jboss.jms.client.remoting.ClientSocketWrapper&lt;/attribute&gt;
-               &lt;attribute name="serverSocketClass"&gt;org.jboss.jms.server.remoting.ServerSocketWrapper&lt;/attribute&gt;
+               &lt;attribute name="clientSocketClass" isParam="true"&gt;
+                  org.jboss.jms.client.remoting.ClientSocketWrapper
+               &lt;/attribute&gt;
+               &lt;attribute name="serverSocketClass"&gt;
+                  org.jboss.jms.server.remoting.ServerSocketWrapper
+               &lt;/attribute&gt;
                &lt;attribute name="numberOfRetries" isParam="true"&gt;1&lt;/attribute&gt;
                &lt;attribute name="numberOfCallRetries" isParam="true"&gt;1&lt;/attribute&gt;
                &lt;attribute name="clientMaxPoolSize" isParam="true"&gt;50&lt;/attribute&gt;
             &lt;/invoker&gt;
             &lt;handlers&gt;
-               &lt;handler subsystem="JMS"&gt;org.jboss.jms.server.remoting.JMSServerInvocationHandler&lt;/handler&gt;
+               &lt;handler subsystem="JMS"&gt;
+                  org.jboss.jms.server.remoting.JMSServerInvocationHandler
+               &lt;/handler&gt;
             &lt;/handlers&gt;
          &lt;/config&gt;
             ]]&gt;&lt;/attribute&gt;
@@ -572,41 +592,75 @@ cd $JBOSS_HOME/bin
 ....
 13:19:14,914 WARN  [JDBCPersistenceManager] 
 
-JBoss Messaging Warning: DataSource connection transaction isolation should be READ_COMMITTED, but it is currently NONE.
-                         Using an isolation level less strict than READ_COMMITTED may lead to data consistency problems.
-                         Using an isolation level more strict than READ_COMMITTED may lead to deadlock.
+JBoss Messaging Warning: DataSource connection transaction isolation should be READ_COMMITTED,
+but it is currently NONE.
+                         Using an isolation level less strict than READ_COMMITTED may lead to
+data consistency problems.
+                         Using an isolation level more strict than READ_COMMITTED may lead to
+deadlock.
 
 13:19:15,166 INFO  [ServerPeer] JBoss Messaging 1.4.0.CR3 server [0] started
-13:19:15,411 INFO  [ConnectionFactory] Connector bisocket://127.0.0.1:4457 has leasing enabled, lease period 10000 milliseconds
-13:19:15,412 INFO  [ConnectionFactory] [/ConnectionFactory, /XAConnectionFactory, java:/ConnectionFactory, java:/XAConnectionFactory] started
-13:19:15,412 WARN  [ConnectionFactoryJNDIMapper] supportsFailover attribute is true on connection factory: jboss.messaging.connectionfactory:service=ClusteredConnectionFactory but post office is non clustered. So connection factory will *not* support failover
-13:19:15,413 WARN  [ConnectionFactoryJNDIMapper] supportsLoadBalancing attribute is true on connection factory: jboss.messaging.connectionfactory:service=ClusteredConnectionFactory but post office is non clustered. So connection factory will *not* support load balancing
-13:19:15,449 INFO  [ConnectionFactory] Connector bisocket://127.0.0.1:4457 has leasing enabled, lease period 10000 milliseconds
-13:19:15,449 INFO  [ConnectionFactory] [/ClusteredConnectionFactory, /ClusteredXAConnectionFactory, java:/ClusteredConnectionFactory, java:/ClusteredXAConnectionFactory] started
-13:19:15,468 INFO  [QueueService] Queue[/queue/DLQ] started, fullSize=200000, pageSize=2000, downCacheSize=2000
-13:19:15,474 INFO  [QueueService] Queue[/queue/ExpiryQueue] started, fullSize=200000, pageSize=2000, downCacheSize=2000
-13:19:15,476 INFO  [TopicService] Topic[/topic/testTopic] started, fullSize=200000, pageSize=2000, downCacheSize=2000
-13:19:15,478 INFO  [TopicService] Topic[/topic/securedTopic] started, fullSize=200000, pageSize=2000, downCacheSize=2000
-13:19:15,479 INFO  [TopicService] Topic[/topic/testDurableTopic] started, fullSize=200000, pageSize=2000, downCacheSize=2000
-13:19:15,482 INFO  [QueueService] Queue[/queue/testQueue] started, fullSize=200000, pageSize=2000, downCacheSize=2000
-13:19:15,483 INFO  [QueueService] Queue[/queue/A] started, fullSize=200000, pageSize=2000, downCacheSize=2000
-13:19:15,485 INFO  [QueueService] Queue[/queue/B] started, fullSize=200000, pageSize=2000, downCacheSize=2000
-13:19:15,487 INFO  [QueueService] Queue[/queue/C] started, fullSize=200000, pageSize=2000, downCacheSize=2000
-13:19:15,489 INFO  [QueueService] Queue[/queue/D] started, fullSize=200000, pageSize=2000, downCacheSize=2000
-13:19:15,490 INFO  [QueueService] Queue[/queue/ex] started, fullSize=200000, pageSize=2000, downCacheSize=2000
-13:19:15,501 INFO  [QueueService] Queue[/queue/PrivateDLQ] started, fullSize=200000, pageSize=2000, downCacheSize=2000
-13:19:15,503 INFO  [QueueService] Queue[/queue/PrivateExpiryQueue] started, fullSize=200000, pageSize=2000, downCacheSize=2000
-13:19:15,507 INFO  [QueueService] Queue[/queue/QueueWithOwnDLQAndExpiryQueue] started, fullSize=200000, pageSize=2000, downCacheSize=2000
-13:19:15,508 INFO  [TopicService] Topic[/topic/TopicWithOwnDLQAndExpiryQueue] started, fullSize=200000, pageSize=2000, downCacheSize=2000
-13:19:15,511 INFO  [QueueService] Queue[/queue/QueueWithOwnRedeliveryDelay] started, fullSize=200000, pageSize=2000, downCacheSize=2000
-13:19:15,512 INFO  [TopicService] Topic[/topic/TopicWithOwnRedeliveryDelay] started, fullSize=200000, pageSize=2000, downCacheSize=2000
-13:19:15,514 INFO  [QueueService] Queue[/queue/testDistributedQueue] started, fullSize=200000, pageSize=2000, downCacheSize=2000
-13:19:15,519 INFO  [TopicService] Topic[/topic/testDistributedTopic] started, fullSize=200000, pageSize=2000, downCacheSize=2000
-13:19:15,809 INFO  [ConnectionFactoryBindingService] Bound ConnectionManager 'jboss.jca:service=ConnectionFactoryBinding,name=JmsXA' to JNDI name 'java:JmsXA'
-13:19:15,834 INFO  [TomcatDeployer] deploy, ctxPath=/jmx-console, warUrl=.../deploy/jmx-console.war/
+13:19:15,411 INFO  [ConnectionFactory] Connector bisocket://127.0.0.1:4457 has leasing enabled
+, lease period 10000 milliseconds
+13:19:15,412 INFO  [ConnectionFactory] [/ConnectionFactory, /XAConnectionFactory, java:/Connec
+tionFactory, java:/XAConnectionFactory] started
+13:19:15,412 WARN  [ConnectionFactoryJNDIMapper] supportsFailover attribute is true on connect
+ion factory: jboss.messaging.connectionfactory:service=ClusteredConnectionFactory but
+post office is non clustered. So connection factory will *not* support failover
+13:19:15,413 WARN  [ConnectionFactoryJNDIMapper] supportsLoadBalancing attribute is true on co
+nnection factory: jboss.messaging.connectionfactory:service=ClusteredConnectionFactory
+but post office is non clustered. So connection factory will *not* support load balanc
+ing
+13:19:15,449 INFO  [ConnectionFactory] Connector bisocket://127.0.0.1:4457 has leasing enabled
+, lease period 10000 milliseconds
+13:19:15,449 INFO  [ConnectionFactory] [/ClusteredConnectionFactory, /ClusteredXAConnectionFac
+tory, java:/ClusteredConnectionFactory, java:/ClusteredXAConnectionFactory] started
+13:19:15,468 INFO  [QueueService] Queue[/queue/DLQ] started, fullSize=200000, pageSize=2000, d
+ownCacheSize=2000
+13:19:15,474 INFO  [QueueService] Queue[/queue/ExpiryQueue] started, fullSize=200000, pageSize
+=2000, downCacheSize=2000
+13:19:15,476 INFO  [TopicService] Topic[/topic/testTopic] started, fullSize=200000, pageSize=2
+000, downCacheSize=2000
+13:19:15,478 INFO  [TopicService] Topic[/topic/securedTopic] started, fullSize=200000, pageSiz
+e=2000, downCacheSize=2000
+13:19:15,479 INFO  [TopicService] Topic[/topic/testDurableTopic] started, fullSize=200000, pag
+eSize=2000, downCacheSize=2000
+13:19:15,482 INFO  [QueueService] Queue[/queue/testQueue] started, fullSize=200000, pageSize=2
+000, downCacheSize=2000
+13:19:15,483 INFO  [QueueService] Queue[/queue/A] started, fullSize=200000, pageSize=2000, dow
+nCacheSize=2000
+13:19:15,485 INFO  [QueueService] Queue[/queue/B] started, fullSize=200000, pageSize=2000, dow
+nCacheSize=2000
+13:19:15,487 INFO  [QueueService] Queue[/queue/C] started, fullSize=200000, pageSize=2000, dow
+nCacheSize=2000
+13:19:15,489 INFO  [QueueService] Queue[/queue/D] started, fullSize=200000, pageSize=2000, dow
+nCacheSize=2000
+13:19:15,490 INFO  [QueueService] Queue[/queue/ex] started, fullSize=200000, pageSize=2000, do
+wnCacheSize=2000
+13:19:15,501 INFO  [QueueService] Queue[/queue/PrivateDLQ] started, fullSize=200000, pageSize=
+2000, downCacheSize=2000
+13:19:15,503 INFO  [QueueService] Queue[/queue/PrivateExpiryQueue] started, fullSize=200000, p
+ageSize=2000, downCacheSize=2000
+13:19:15,507 INFO  [QueueService] Queue[/queue/QueueWithOwnDLQAndExpiryQueue] started, fullSiz
+e=200000, pageSize=2000, downCacheSize=2000
+13:19:15,508 INFO  [TopicService] Topic[/topic/TopicWithOwnDLQAndExpiryQueue] started, fullSiz
+e=200000, pageSize=2000, downCacheSize=2000
+13:19:15,511 INFO  [QueueService] Queue[/queue/QueueWithOwnRedeliveryDelay] started, fullSize=
+200000, pageSize=2000, downCacheSize=2000
+13:19:15,512 INFO  [TopicService] Topic[/topic/TopicWithOwnRedeliveryDelay] started, fullSize=
+200000, pageSize=2000, downCacheSize=2000
+13:19:15,514 INFO  [QueueService] Queue[/queue/testDistributedQueue] started, fullSize=200000,
+pageSize=2000, downCacheSize=2000
+13:19:15,519 INFO  [TopicService] Topic[/topic/testDistributedTopic] started, fullSize=200000,
+pageSize=2000, downCacheSize=2000
+13:19:15,809 INFO  [ConnectionFactoryBindingService] Bound ConnectionManager 'jboss.jca:servic
+e=ConnectionFactoryBinding,name=JmsXA' to JNDI name 'java:JmsXA'
+13:19:15,834 INFO  [TomcatDeployer] deploy, ctxPath=/jmx-console, warUrl=.../deploy/jmx-consol
+e.war/
 13:19:16,322 INFO  [Http11Protocol] Starting Coyote HTTP/1.1 on http-127.0.0.1-8080
 13:19:16,342 INFO  [AjpProtocol] Starting Coyote AJP/1.3 on ajp-127.0.0.1-8009
-13:19:16,480 INFO  [Server] JBoss (MX MicroKernel) [4.2.0.GA (build: SVNTag=JBoss_4_2_0_GA date=200705111440)] Started in 19s:359ms
+13:19:16,480 INFO  [Server] JBoss (MX MicroKernel) [4.2.0.GA (build: SVNTag=JBoss_4_2_0_GA dat
+e=200705111440)] Started in 19s:359ms
 
    </programlisting>
 
@@ -680,12 +734,16 @@ identify:
 sanity-check:
 
 init:
-    [mkdir] Created dir: /home/tim/dev/jboss-messaging/trunk/docs/examples/queue/output/classes
-    [mkdir] Created dir: /home/tim/dev/jboss-messaging/trunk/docs/examples/common/output/classes
+    [mkdir] Created dir: /home/tim/dev/jboss-messaging/trunk/docs/examples/queue/output/classe
+s
+    [mkdir] Created dir: /home/tim/dev/jboss-messaging/trunk/docs/examples/common/output/class
+es
 
 compile:
-    [javac] Compiling 5 source files to /home/tim/dev/jboss-messaging/trunk/docs/examples/common/output/classes
-    [javac] Compiling 1 source file to /home/tim/dev/jboss-messaging/trunk/docs/examples/queue/output/classes
+    [javac] Compiling 5 source files to /home/tim/dev/jboss-messaging/trunk/docs/examples/comm
+on/output/classes
+    [javac] Compiling 1 source file to /home/tim/dev/jboss-messaging/trunk/docs/examples/queue
+/output/classes
 
 run:
      [java] Queue /queue/testQueue exists

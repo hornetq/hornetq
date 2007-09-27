@@ -5,7 +5,7 @@
   <section id="bridge.overview">
      <title>Message bridge overview</title>
 
-	  <para>JBoss Messaging includes a fully functional message bridge</para>
+	  <para>JBoss Messaging includes a fully functional message bridge.</para>
 	  
 	  <para>The function of the bridge is to consume messages from a source queue or topic, and send them to target
 	  queue or topic, typically on a different server.
@@ -134,10 +134,12 @@ the configuration you want.</para>
           xmbean-dd="xmdesc/Bridge-xmbean.xml"&gt;
           
       &lt;!-- The JMS provider loader that is used to lookup the source destination --&gt;   
-      &lt;depends optional-attribute-name="SourceProviderLoader"&gt;jboss.messaging:service=JMSProviderLoader,name=JMSProvider&lt;/depends&gt;     
+      &lt;depends optional-attribute-name="SourceProviderLoader"&gt;
+          jboss.messaging:service=JMSProviderLoader,name=JMSProvider&lt;/depends&gt;
       
       &lt;!-- The JMS provider loader that is used to lookup the target destination --&gt;
-      &lt;depends optional-attribute-name="TargetProviderLoader"&gt;jboss.messaging:service=JMSProviderLoader,name=JMSProvider&lt;/depends&gt;    
+      &lt;depends optional-attribute-name="TargetProviderLoader"&gt;
+          jboss.messaging:service=JMSProviderLoader,name=JMSProvider&lt;/depends&gt;    
       
       &lt;!-- The JNDI lookup for the source destination --&gt;
       &lt;attribute name="SourceDestinationLookup"&gt;/queue/A&lt;/attribute&gt; 
@@ -171,10 +173,12 @@ the configuration you want.</para>
       &lt;attribute name="Selector"&gt;specify jms selector here&lt;/attribute&gt;
       --&gt;
       
-      &lt;!-- The maximum number of messages to consume from the source before sending to the target --&gt;
+      &lt;!-- The maximum number of messages to consume from the source
+          before sending to the target --&gt;
       &lt;attribute name="MaxBatchSize"&gt;5&lt;/attribute&gt;     
       
-      &lt;!-- The maximum time to wait (in ms) before sending a batch to the target even if MaxBatchSize is not exceeded.
+      &lt;!-- The maximum time to wait (in ms) before sending a batch to the target
+          even if MaxBatchSize is not exceeded.
            -1 means wait forever --&gt;   
       &lt;attribute name="MaxBatchTime"&gt;-1&lt;/attribute&gt;
       
@@ -186,15 +190,17 @@ the configuration you want.</para>
       &lt;attribute name="ClientID"&gt;myClientID&lt;/attribute&gt;
       --&gt;
       
-      &lt;!-- The number of ms to wait between connection retrues in the event connections to source or target fail --&gt;
+      &lt;!-- The number of ms to wait between connection retrues in the event connections
+          to source or target fail --&gt;
       &lt;attribute name="FailureRetryInterval"&gt;5000&lt;/attribute&gt;      
       
-      &lt;!-- The maximum number of connection retries to make in case of failure, before giving up
-           -1 means try forever--&gt;
+      &lt;!-- The maximum number of connection retries to make in case of failure,
+          before giving up -1 means try forever--&gt;
       &lt;attribute name="MaxRetries"&gt;-1&lt;/attribute&gt;
 
-      &lt;!-- If true then the message id of the message before bridging will be added as a header to the message so it is available
-           to the receiver. Can then be sent as correlation id to correlate in a distributed request-response --&gt;
+      &lt;!-- If true then the message id of the message before bridging will be added
+          as a header to the message so it is available to the receiver. Can then be
+          sent as correlation id to correlate in a distributed request-response --&gt;
       &lt;attribute name="AddMessageIDInHeader"&gt;false&lt;/attribute&gt;
       
     &lt;/mbean&gt;
@@ -253,7 +259,13 @@ the configuration you want.</para>
       <section id="bridge.configuration.qualityofservicemode">
          <title>QualityOfServiceMode</title>
          <para>This integer represents the desired quality of service mode</para>
-         <para>Possible values are QOS_AT_MOST_ONCE = 0, QOS_DUPLICATES_OK = 1, QOS_ONCE_AND_ONLY_ONCE = 2</para>
+          <para>Possible values are:
+              <itemizedlist>
+                  <listitem>QOS_AT_MOST_ONCE = 0</listitem>
+                  <listitem>QOS_DUPLICATES_OK = 1</listitem>
+                  <listitem>QOS_ONCE_AND_ONLY_ONCE = 2</listitem>
+              </itemizedlist>
+          </para>
          <para>Please see <xref linkend="bridge.overview"/> for an explanation of what these mean.</para>
       </section>
 
