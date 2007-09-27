@@ -21,6 +21,7 @@ import org.jboss.messaging.core.contract.MessagingComponent;
 import org.jboss.messaging.core.contract.PostOffice;
 import org.jboss.messaging.core.contract.Queue;
 import org.jboss.messaging.util.ExceptionUtil;
+import org.jboss.messaging.util.JMXAccessor;
 import org.jboss.system.ServiceMBeanSupport;
 import org.w3c.dom.Element;
 
@@ -87,7 +88,7 @@ public abstract class DestinationServiceSupport extends ServiceMBeanSupport impl
       
       try
       {
-         serverPeer = (ServerPeer)server.getAttribute(serverPeerObjectName, "Instance");
+         serverPeer = (ServerPeer)JMXAccessor.getJMXAttributeOverSecurity(server, serverPeerObjectName, "Instance");
                	      
          destination.setServerPeer(serverPeer);
                	
@@ -191,8 +192,8 @@ public abstract class DestinationServiceSupport extends ServiceMBeanSupport impl
          
          try
          {         
-            dest = (ManagedQueue)getServer().
-               getAttribute(dlqObjectName, "Instance");
+            dest = (ManagedQueue)JMXAccessor.getJMXAttributeOverSecurity(server,dlqObjectName, "Instance" );
+
          }
          catch (InstanceNotFoundException e)
          {
@@ -222,8 +223,7 @@ public abstract class DestinationServiceSupport extends ServiceMBeanSupport impl
       {         
          try
          {         
-            dest = (ManagedQueue)getServer().
-               getAttribute(expiryQueueObjectName, "Instance");
+            dest = (ManagedQueue)JMXAccessor.getJMXAttributeOverSecurity(server,expiryQueueObjectName, "Instance" );
          }
          catch (InstanceNotFoundException e)
          {

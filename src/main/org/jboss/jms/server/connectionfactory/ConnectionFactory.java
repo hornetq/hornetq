@@ -14,6 +14,7 @@ import org.jboss.jms.server.ConnectionManager;
 import org.jboss.jms.server.ConnectorManager;
 import org.jboss.jms.server.ServerPeer;
 import org.jboss.messaging.util.ExceptionUtil;
+import org.jboss.messaging.util.JMXAccessor;
 import org.jboss.remoting.InvokerLocator;
 import org.jboss.system.ServiceMBeanSupport;
 import org.w3c.dom.Element;
@@ -112,8 +113,9 @@ public class ConnectionFactory extends ServiceMBeanSupport
                                                "each Connection Factory");
          }
       
-         String locatorURI = (String)server.getAttribute(connectorObjectName, "InvokerLocator");
-         ServerPeer serverPeer = (ServerPeer)server.getAttribute(serverPeerObjectName, "Instance");
+         String locatorURI = (String)JMXAccessor.getJMXAttributeOverSecurity(server, connectorObjectName, "InvokerLocator");
+
+         ServerPeer serverPeer = (ServerPeer)JMXAccessor.getJMXAttributeOverSecurity(server, serverPeerObjectName, "Instance");
 
          if (!serverPeer.isSupportsFailover())
          {
@@ -126,8 +128,7 @@ public class ConnectionFactory extends ServiceMBeanSupport
 
          int refCount = connectorManager.registerConnector(connectorObjectName.getCanonicalName());
 
-         long leasePeriod =
-            ((Long)server.getAttribute(connectorObjectName, "LeasePeriod")).longValue();
+         long leasePeriod = (Long)JMXAccessor.getJMXAttributeOverSecurity(server, connectorObjectName, "LeasePeriod");
 
          // if leasePeriod <= 0, disable pinging altogether
 

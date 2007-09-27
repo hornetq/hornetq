@@ -46,6 +46,7 @@ import org.jboss.messaging.core.impl.jchannelfactory.XMLChannelFactory;
 import org.jboss.messaging.core.impl.postoffice.MessagingPostOffice;
 import org.jboss.messaging.core.impl.tx.TransactionRepository;
 import org.jboss.messaging.util.ExceptionUtil;
+import org.jboss.messaging.util.JMXAccessor;
 import org.w3c.dom.Element;
 
 /**
@@ -333,8 +334,8 @@ public class MessagingPostOfficeService extends JDBCServiceSupport
       {
          TransactionManager tm = getTransactionManagerReference();
 
-         ServerPeer serverPeer = (ServerPeer)server.getAttribute(serverPeerObjectName, "Instance");
-         
+         ServerPeer serverPeer = (ServerPeer) JMXAccessor.getJMXAttributeOverSecurity(server, serverPeerObjectName, "Instance");
+
          MessageStore ms = serverPeer.getMessageStore();
          
          PersistenceManager pm = serverPeer.getPersistenceManagerInstance();

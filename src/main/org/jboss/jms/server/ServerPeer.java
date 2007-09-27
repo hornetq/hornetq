@@ -74,6 +74,7 @@ import org.jboss.messaging.core.impl.tx.TransactionRepository;
 import org.jboss.messaging.util.ExceptionUtil;
 import org.jboss.messaging.util.Util;
 import org.jboss.messaging.util.Version;
+import org.jboss.messaging.util.JMXAccessor;
 import org.jboss.mx.loading.UnifiedClassLoader3;
 import org.jboss.remoting.marshal.MarshalFactory;
 import org.jboss.system.ServiceCreator;
@@ -225,12 +226,10 @@ public class ServerPeer extends ServiceMBeanSupport
          // circumventing the MBeanServer. However, they are installed as services to take advantage
          // of their automatically-creating management interface.
 
-         persistenceManager = (PersistenceManager)mbeanServer.
-            getAttribute(persistenceManagerObjectName, "Instance");
+         persistenceManager = (PersistenceManager)JMXAccessor.getJMXAttributeOverSecurity(mbeanServer, persistenceManagerObjectName, "Instance");
          ((JDBCPersistenceManager)persistenceManager).injectNodeID(serverPeerID);
 
-         jmsUserManager = (JMSUserManager)mbeanServer.
-            getAttribute(jmsUserManagerObjectName, "Instance");
+         jmsUserManager = (JMSUserManager)JMXAccessor.getJMXAttributeOverSecurity(mbeanServer, jmsUserManagerObjectName, "Instance");
 
          // We get references to some plugins lazily to avoid problems with circular MBean
          // dependencies
@@ -1122,16 +1121,10 @@ public class ServerPeer extends ServiceMBeanSupport
       if (defaultDLQObjectName != null)
       { 
          ManagedQueue dest = null;
-         
-         try
-         {         
-            dest = (ManagedQueue)getServer().getAttribute(defaultDLQObjectName, "Instance");
-         }
-         catch (InstanceNotFoundException e)
-         {
-            //Ok
-         }
-         
+
+         // This can be null... JMXAccessor will return null if InstanceNotFoundException is caught
+         dest = (ManagedQueue) JMXAccessor.getJMXAttributeOverSecurity(getServer(), defaultDLQObjectName, "Instance");
+
          if (dest != null && dest.getName() != null)
          {            
             Binding binding = postOffice.getBindingForQueueName(dest.getName());
@@ -1162,8 +1155,9 @@ public class ServerPeer extends ServiceMBeanSupport
          ManagedQueue dest = null;
          
          try
-         {         
-            dest = (ManagedQueue)getServer().getAttribute(defaultExpiryQueueObjectName, "Instance");
+         {
+
+            dest = (ManagedQueue)JMXAccessor.getJMXAttributeOverSecurity(getServer(), defaultExpiryQueueObjectName, "Instance");
          }
          catch (InstanceNotFoundException e)
          {
@@ -1260,8 +1254,7 @@ public class ServerPeer extends ServiceMBeanSupport
       // We get the reference lazily to avoid problems with MBean circular dependencies
       if (postOffice == null)
       {
-         postOffice = (PostOffice)getServer().getAttribute(postOfficeObjectName, "Instance");
-
+         postOffice = (PostOffice)JMXAccessor.getJMXAttributeOverSecurity(getServer(), postOfficeObjectName, "Instance");
          // We also inject the replicator dependency into the ConnectionFactoryJNDIMapper. This is
          // a bit messy but we have a circular dependency POJOContainer should be able to help us
          // here. Yes, this is nasty.
@@ -1462,7 +1455,7 @@ public class ServerPeer extends ServiceMBeanSupport
       mbeanServer.invoke(on, "create", new Object[0], new String[0]);
       mbeanServer.invoke(on, "start", new Object[0], new String[0]);
 
-      return (String)mbeanServer.getAttribute(on, "JNDIName");
+      return (String)JMXAccessor.getJMXAttributeOverSecurity(mbeanServer, on, "JNDIName");
    }
 
    
@@ -1483,7 +1476,7 @@ public class ServerPeer extends ServiceMBeanSupport
       {
          return false;
       }
-      Boolean b = (Boolean)mbeanServer.getAttribute(on, "CreatedProgrammatically");
+      Boolean b = (Boolean)JMXAccessor.getJMXAttributeOverSecurity(mbeanServer, on, "CreatedProgrammatically");
       if (!b.booleanValue())
       {
          log.warn("Cannot undeploy a destination that has not been created programatically");
