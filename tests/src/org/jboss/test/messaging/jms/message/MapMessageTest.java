@@ -105,9 +105,9 @@ public class MapMessageTest extends MessageTestBase
       mm.setString("string", "this is a string");
    }
 
-   protected void assertEquivalent(Message m, int mode) throws JMSException
+   protected void assertEquivalent(Message m, int mode, boolean redelivery) throws JMSException
    {
-      super.assertEquivalent(m, mode);
+      super.assertEquivalent(m, mode, redelivery);
 
       MapMessage mm = (MapMessage)m;
 

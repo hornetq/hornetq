@@ -65,9 +65,9 @@ public class ForeignStreamMessageTest extends ForeignMessageTest
         return m;
     }
     
-    protected void assertEquivalent(Message m, int mode) throws JMSException
+    protected void assertEquivalent(Message m, int mode, boolean redelivery) throws JMSException
     {
-        super.assertEquivalent(m,mode);
+        super.assertEquivalent(m,mode, redelivery);
         
         StreamMessage sm = (StreamMessage)m;
         

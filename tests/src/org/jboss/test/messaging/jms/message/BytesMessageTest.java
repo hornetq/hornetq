@@ -84,9 +84,9 @@ public class BytesMessageTest extends MessageTestBase
       bm.reset();
    }
 
-   protected void assertEquivalent(Message m, int mode) throws JMSException
+   protected void assertEquivalent(Message m, int mode, boolean redelivered) throws JMSException
    {
-      super.assertEquivalent(m, mode);
+      super.assertEquivalent(m, mode, redelivered);
 
       BytesMessage bm = (BytesMessage)m;
 

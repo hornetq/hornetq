@@ -85,9 +85,9 @@ public class TextMessageTest extends MessageTestBase
       tm.setText("this is the payload");
    }
 
-   protected void assertEquivalent(Message m, int mode) throws JMSException
+   protected void assertEquivalent(Message m, int mode, boolean redelivery) throws JMSException
    {
-      super.assertEquivalent(m, mode);
+      super.assertEquivalent(m, mode, redelivery);
 
       TextMessage tm = (TextMessage)m;
       assertEquals("this is the payload", tm.getText());

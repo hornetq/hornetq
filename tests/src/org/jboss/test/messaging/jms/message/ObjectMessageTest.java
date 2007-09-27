@@ -122,9 +122,9 @@ public class ObjectMessageTest extends MessageTestBase
 
    }
 
-   protected void assertEquivalent(Message m, int mode) throws JMSException
+   protected void assertEquivalent(Message m, int mode, boolean redelivery) throws JMSException
    {
-      super.assertEquivalent(m, mode);
+      super.assertEquivalent(m, mode, redelivery);
 
       ObjectMessage om = (ObjectMessage)m;
       assertEquals("this is the serializable object", om.getObject());

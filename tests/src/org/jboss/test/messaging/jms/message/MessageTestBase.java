@@ -50,11 +50,11 @@ public class MessageTestBase extends JMSTestCase
    protected Connection conn;
    
    protected Session session;
-   
+
    protected MessageProducer queueProd;
-   
+
    protected MessageConsumer queueCons;
-   
+
    // Constructors --------------------------------------------------
 
    public MessageTestBase(String name)
@@ -70,7 +70,7 @@ public class MessageTestBase extends JMSTestCase
       
       conn = cf.createConnection();
       session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-     
+
       queueProd = session.createProducer(queue1);
       queueCons = session.createConsumer(queue1);
 
@@ -120,6 +120,39 @@ public class MessageTestBase extends JMSTestCase
       assertEquivalent(r, DeliveryMode.PERSISTENT);
    }
 
+   public void testRedelivery() throws Exception
+   {
+      prepareMessage(message);
+
+      session.close();
+      session = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
+
+      queueProd = session.createProducer(queue1);
+      queueProd.setDeliveryMode(DeliveryMode.PERSISTENT);
+      queueCons = session.createConsumer(queue1);
+
+      queueProd.send(message);
+
+      Message r = queueCons.receive(500);
+
+      assertEquivalent(r, DeliveryMode.PERSISTENT);
+
+      queueCons.close();
+      session.close();
+
+      session = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
+      queueCons = session.createConsumer(queue1);
+      r = queueCons.receive(1000);
+
+      assertEquivalent(r, DeliveryMode.PERSISTENT, true);
+
+      r.acknowledge();
+
+      assertNull(queueCons.receive(100));
+
+      
+   }
+
    // Package protected ---------------------------------------------
    
    // Protected -----------------------------------------------------
@@ -140,8 +173,15 @@ public class MessageTestBase extends JMSTestCase
       m.setJMSType("someArbitraryType");
    }
 
-   protected void assertEquivalent(Message m, int mode) throws JMSException
+   
+   private void assertEquivalent(Message m, int mode) throws JMSException
    {
+      assertEquivalent(m, mode, false);
+   }
+
+   protected void assertEquivalent(Message m, int mode, boolean redelivered) throws JMSException
+   {
+      assertNotNull(m);
       assertEquals(true, m.getBooleanProperty("booleanProperty"));
       assertEquals((byte)3, m.getByteProperty("byteProperty"));
       assertEquals(new Double(4.0), new Double(m.getDoubleProperty("doubleProperty")));
@@ -155,7 +195,7 @@ public class MessageTestBase extends JMSTestCase
       assertEquals(topic1, m.getJMSReplyTo());
       assertEquals("someArbitraryType", m.getJMSType());
       assertEquals(queue1, m.getJMSDestination());
-      assertFalse(m.getJMSRedelivered());
+      assertTrue(m.getJMSRedelivered() == redelivered);
       assertEquals(mode, m.getJMSDeliveryMode());
    }
 
