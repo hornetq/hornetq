@@ -1,101 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <chapter id="examples">
-
   <title>Running the Examples</title>
 
-  <para>
-      In the directory <literal>docs/examples</literal>, you will find a set of examples demonstrating
-      JBoss Messaging working in various examples, they include:
-      
-      <itemizedlist>
-         <listitem>
-            <para>docs/example/queue</para>
-            <para>This example shows a simple send and receive to a remote queue using a JMS client</para>
-         </listitem>
-         
-         <listitem>
-            <para>docs/example/topic</para>
-            <para>This example shows a simple send and receive to a remote topic using a JMS client</para>
-         </listitem>
-         
-         <listitem>
-            <para>docs/example/mdb</para>
-            <para>This example demonstrates usage of an EJB2.1 MDB with JBoss Messaging</para>
-         </listitem> 
-         
-         <listitem>
-            <para>docs/example/ejb3mdb</para>
-            <para>This example demonstrates usage of an EJB3 MDB with JBoss Messaging</para>
-         </listitem>   
-         
-         <listitem>
-            <para>docs/example/stateless</para>
-            <para>This example demonstrates an EJB2.1 stateless session bean interacting with JBoss Messaging</para>
-         </listitem>
-         
-         <listitem>
-            <para>docs/example/mdb-failure</para>
-            <para>This example demonstrates rollback and redelivery occuring with an EJB2.1 MDB</para>
-         </listitem> 
-         
-         <listitem>
-            <para>docs/example/secure-socket</para>
-            <para>This example demonstrates a JMS client interacting with a JBoss Messaging server
-            using SSL encrypted transport</para>
-         </listitem>  
-         
-         <listitem>
-            <para>docs/example/http</para>
-            <para>This example demonstrates a JMS client interacting with a JBoss Messaging server
-            tunneling traffic over the HTTP protocol</para>
-         </listitem>   
-         
-         <listitem>
-            <para>docs/example/web-service</para>
-            <para>This example demonstrates JBoss web-service interacting with JBoss Messaging</para>
-         </listitem>   
-         
-         <listitem>
-            <para>docs/example/distributed-queue</para>
-            <para>This example demonstrates a JMS client interacting with a JBoss Messaging distributed
-            queue - it requires two JBoss AS instances to be running</para>
-         </listitem>   
-         
-         <listitem>
-            <para>docs/example/distributed-topic</para>
-            <para>This example demonstrates a JMS client interacting with a JBoss Messaging distributed
-            topic - it requires two JBoss AS instances to be running</para>
-         </listitem>  
-         
-         <listitem>
-            <para>docs/example/stateless-clustered</para>
-            <para>This example demonstrates a JMS client interacting with clustered EJB2.1
-            stateless session bean, which in turn interactes with JBoss Messaging.
-            The example uses HAJNDI to lookup the connection factory</para>
-         </listitem>         
+  <para>In the directory <literal>docs/examples</literal>, you will find a set
+  of examples demonstrating JBoss Messaging working in various examples, they
+  include: <itemizedlist>
+      <listitem>
+        <para>docs/example/queue</para>
 
-         <listitem>
-            <para>docs/example/bridge</para>
-            <para>This example demonstrates using a message bridge. It deploys a message bridge in JBoss AS which then
-proceeds to move messages from a source to a target queue</para>
-         </listitem>  
-               
-      </itemizedlist>
-  </para>
-  
-  <para>It is highly recommended that you familiarise yourself with the examples.</para>
-  
-  <para>
-     Make sure you start the JBoss server(s) before running the examples!
-  </para>
-  
-  <para>The non clustered examples expect a JBoss AS instance to be running with all the default settings
-  </para>
-  
-  <para>The clustered examples expect two JBoss AS instances to running with ports settings as per ports-01 and
-  ports-02.</para>
-  
-  <para>For each example, you can always override the default ports it will try to connect to by editing
-  jndi.properties in the particular example directory
-  </para>
+        <para>This example shows a simple send and receive to a remote queue
+        using a JMS client</para>
+      </listitem>
 
+      <listitem>
+        <para>docs/example/topic</para>
+
+        <para>This example shows a simple send and receive to a remote topic
+        using a JMS client</para>
+      </listitem>
+
+      <listitem>
+        <para>docs/example/mdb</para>
+
+        <para>This example demonstrates usage of an EJB2.1 MDB with JBoss
+        Messaging</para>
+      </listitem>
+
+      <listitem>
+        <para>docs/example/ejb3mdb</para>
+
+        <para>This example demonstrates usage of an EJB3 MDB with JBoss
+        Messaging</para>
+      </listitem>
+
+      <listitem>
+        <para>docs/example/stateless</para>
+
+        <para>This example demonstrates an EJB2.1 stateless session bean
+        interacting with JBoss Messaging</para>
+      </listitem>
+
+      <listitem>
+        <para>docs/example/mdb-failure</para>
+
+        <para>This example demonstrates rollback and redelivery occuring with
+        an EJB2.1 MDB</para>
+      </listitem>
+
+      <listitem>
+        <para>docs/example/secure-socket</para>
+
+        <para>This example demonstrates a JMS client interacting with a JBoss
+        Messaging server using SSL encrypted transport</para>
+      </listitem>
+
+      <listitem>
+        <para>docs/example/http</para>
+
+        <para>This example demonstrates a JMS client interacting with a JBoss
+        Messaging server tunneling traffic over the HTTP protocol</para>
+      </listitem>
+
+      <listitem>
+        <para>docs/example/web-service</para>
+
+        <para>This example demonstrates JBoss web-service interacting with
+        JBoss Messaging</para>
+      </listitem>
+
+      <listitem>
+        <para>docs/example/distributed-queue</para>
+
+        <para>This example demonstrates a JMS client interacting with a JBoss
+        Messaging distributed queue - it requires two JBoss AS instances to be
+        running</para>
+      </listitem>
+
+      <listitem>
+        <para>docs/example/distributed-topic</para>
+
+        <para>This example demonstrates a JMS client interacting with a JBoss
+        Messaging distributed topic - it requires two JBoss AS instances to be
+        running</para>
+      </listitem>
+
+      <listitem>
+        <para>docs/example/stateless-clustered</para>
+
+        <para>This example demonstrates a JMS client interacting with
+        clustered EJB2.1 stateless session bean, which in turn interactes with
+        JBoss Messaging. The example uses HAJNDI to lookup the connection
+        factory</para>
+      </listitem>
+
+      <listitem>
+        <para>docs/example/bridge</para>
+
+        <para>This example demonstrates using a message bridge. It deploys a
+        message bridge in JBoss AS which then proceeds to move messages from a
+        source to a target queue</para>
+      </listitem>
+    </itemizedlist></para>
+
+  <para>It is highly recommended that you familiarise yourself with the
+  examples.</para>
+
+  <para>Make sure you start the JBoss server(s) before running the
+  examples!</para>
+
+  <para>The non clustered examples expect a JBoss AS instance to be running
+  with all the default settings</para>
+
+  <para>The clustered examples expect two JBoss AS instances to running with
+  ports settings as per ports-01 and ports-02.</para>
+
+  <para>For each example, you can always override the default ports it will
+  try to connect to by editing jndi.properties in the particular example
+  directory</para>
 </chapter>

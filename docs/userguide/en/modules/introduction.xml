@@ -1,236 +1,204 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <chapter id="introduction">
+  <title>Introduction</title>
 
-   <title>Introduction</title>
+  <para>JBoss Messaging provides an open source and standards-based messaging
+  platform that brings enterprise-class messaging to the mass market.</para>
 
-   <para>
-      JBoss Messaging provides an open source and standards-based messaging platform that brings
-      enterprise-class messaging to the mass market.
-   </para>
+  <para>JBoss Messaging implements a high performance, robust messaging core
+  that is designed to support the largest and most heavily utilized SOAs,
+  enterprise service buses (ESBs) and other integration needs ranging from the
+  simplest to the highest demand networks.</para>
 
-   <para>
-      JBoss Messaging implements a high performance, robust messaging core that is designed to
-      support the largest and most heavily utilized SOAs, enterprise service buses (ESBs) and other
-      integration needs ranging from the simplest to the highest demand networks.
-   </para>
-   <para>
-      It will allow you to smoothly distribute your application load across your cluster,
-      intelligently balancing and utilizing each nodes CPU cycles, with no single point of failure,
-      providing a highly scalable and perform-ant clustering implementation.
-   </para>
-   <para>   
-    JBoss Messaging includes
-      a JMS front-end to deliver messaging in a standards-based format as well as being designed to be
-      able to support other messaging protocols in the future.
-   </para>
+  <para>It will allow you to smoothly distribute your application load across
+  your cluster, intelligently balancing and utilizing each nodes CPU cycles,
+  with no single point of failure, providing a highly scalable and perform-ant
+  clustering implementation.</para>
 
-   <para>
-      JBoss Messaging is destined to become an integral part of the JBoss Enterprise Application Platform, 
-      and the new Service Integration Platform.
-   </para>
-   <para>   
-    Currently it is available for embedded use within the JBoss Application Server
-      4.2.0.GA or later (JBossAS). Work to integrate JBoss Messaging with the new JBoss Microcontainer is under way.      
-   </para>
-   
-   <para>
-      JBoss Messaging is also an integral part of Red Hat's strategy for messaging.
-      JBoss Messaging is fully committed to AMQP ( <ulink url="http://www.amqp.org">AMQP</ulink>)- the new messaging standard from Red Hat
-      and others. Later versions of JBoss Messaging will support AMQP, and JBoss Messaging will be focussed
-      on becoming the premier AMQP Java broker.
-   </para>
+  <para>JBoss Messaging includes a JMS front-end to deliver messaging in a
+  standards-based format as well as being designed to be able to support other
+  messaging protocols in the future.</para>
 
-   <section id="support">
-      <title>JBoss Messaging support cover from Red Hat</title>
+  <para>JBoss Messaging is destined to become an integral part of the JBoss
+  Enterprise Application Platform, and the new Service Integration
+  Platform.</para>
 
-      <para>
-         JBoss Messaging is destained to become part of both Application Server Platform (JBoss 4.2
-         series) and Service Integration Platform (JBoss ESB 4 series) as default JMS provider.
-         Production support will then be fully available for these plaforms and it will cover JBoss
-         Messaging.
-      </para>
-      <para>
-         Currently developer support is available for JBoss Messaging when installed in JBoss 4.2.x
-      </para>
+  <para>Currently it is available for embedded use within the JBoss
+  Application Server 4.2.0.GA or later (JBossAS). Work to integrate JBoss
+  Messaging with the new JBoss Microcontainer is under way.</para>
 
+  <para>JBoss Messaging is also an integral part of Red Hat's strategy for
+  messaging. JBoss Messaging is fully committed to AMQP ( <ulink
+  url="http://www.amqp.org">AMQP</ulink>)- the new messaging standard from Red
+  Hat and others. Later versions of JBoss Messaging will support AMQP, and
+  JBoss Messaging will be focussed on becoming the premier AMQP Java
+  broker.</para>
 
-   </section>
+  <section id="support">
+    <title>JBoss Messaging support cover from Red Hat</title>
 
-   <section id="features">
-      <title>JBoss Messaging Features</title>
+    <para>JBoss Messaging is destained to become part of both Application
+    Server Platform (JBoss 4.2 series) and Service Integration Platform (JBoss
+    ESB 4 series) as default JMS provider. Production support will then be
+    fully available for these plaforms and it will cover JBoss
+    Messaging.</para>
 
-      <para>
-         JBoss Messaging provides:
-      </para>
+    <para>Currently developer support is available for JBoss Messaging when
+    installed in JBoss 4.2.x</para>
+  </section>
 
-      <itemizedlist>
-         <listitem>
-            <para>
-               A fully compatible and Sun certified JMS 1.1 implementation, that currently works
-               with a standard 4.2.x JBoss Application Server installation.
-            </para>
-         </listitem>
-         <listitem>
-            <para>
-               A strong focus on performance, reliability and scalability with high throughput and
-               low latency.
-            </para>
-         </listitem>
-         <listitem>
-            <para>
-               A foundation for JBoss ESB for SOA initiatives; JBoss ESB uses
-               JBoss Messaging as its default JMS provider.
-            </para>
-         </listitem>
-      </itemizedlist>
+  <section id="features">
+    <title>JBoss Messaging Features</title>
 
-      <para>
-         Other JBoss Messaging features include:
-      </para>
+    <para>JBoss Messaging provides:</para>
 
-      <itemizedlist>
-         <listitem>
-            <para>
-               Publish-subscribe and point-to-point messaging models
-            </para>
-         </listitem>
-         <listitem>
-            <para>
-               Persistent and non-persistent messages
-            </para>
-         </listitem>
-         <listitem>
-            <para>
-               Guaranteed message delivery that ensures that messages arrive once and only once where required
-            </para>
-         </listitem>
-         <listitem>
-            <para>
-               Transactional and reliable  - supporting ACID semantics
-            </para>
-         </listitem>
-         <listitem>
-            <para>
-               Customizable security framework based on JAAS
-            </para>
-         </listitem>
-         <listitem>
-            <para>
-               Fully integrated with JBoss Transactions (formerly known as Arjuna JTA) for full transaction recoverability.
-            </para>
-         </listitem>
-         <listitem>
-            <para>
-               Extensive JMX management interface
-            </para>
-         </listitem>
-         <listitem>
-            <para>
-               Support for most major databases including Oracle, Sybase, MS SQL Server, PostgreSQL and MySQL
-            </para>
-         </listitem>
-         <listitem>
-            <para>
-               HTTP transport
-            </para>
-         </listitem>
-         <listitem>
-            <para>
-               SSL transport
-            </para>
-         </listitem>
-      </itemizedlist>
+    <itemizedlist>
+      <listitem>
+        <para>A fully compatible and Sun certified JMS 1.1 implementation,
+        that currently works with a standard 4.2.x JBoss Application Server
+        installation.</para>
+      </listitem>
 
-      <para>
-         Clustering features:
-      </para>
+      <listitem>
+        <para>A strong focus on performance, reliability and scalability with
+        high throughput and low latency.</para>
+      </listitem>
 
-      <itemizedlist>
-         <listitem>
-            <para>
-               Distributed queues. Messages sent to a distributed queue while attached to a
-               particular node will be routed to a queue instance on a particular node according
-               to a routing policy.
-            </para>
-         </listitem>
-         <listitem>
-            <para>
-               Distributed topics. Messages sent to a distributed topic while attached at a
-               particular node will be received by subscriptions on other nodes.
-            </para>
-         </listitem>
-         <listitem>
-            <para>
-               Fully reliable message distribution. Once and only once delivery is fully guaranteed.
-               When sending messages to a topic with multiple durable subscriptions
-               across a cluster we guarantee that message reaches all the subscriptions
-               (or none of them in case of failure).
-            </para>
-         </listitem>
-         <listitem>
-            <para>
-                  Pluggable routing implementation. The policy for routing messages to a queue is fully
-                     pluggable and easily replaceable. The default policy always chooses a queue at the local
-                     node if there is one, and if not, it round robins between queues on different nodes.
-            </para>
-         </listitem>
-         <listitem>
-            <para>
-                  Intelligent message redistribution policy. Messages are automatically distributed between
-                     nodes depending on how fast or slow consumers are on certain nodes. If there are no or slow
-                     consumers on a particular queue node, messages will be pulled from that queue to a queue with
-                     faster consumers on a different node. The policy is fully pluggable.
-            </para>
-         </listitem>
-         <listitem>
-            <para>
-                  Shared durable subscriptions. Consumers can connect to the same durable subscription while
-                     attached to different nodes. This allows processing load from durable subscriptions to be
-                     distributed across the cluster in a similar way to queues.
-            </para>
-         </listitem>
-         <listitem>
-            <para>
-                  High availability and seamless fail-over. If the node you are connected to fails, you
-                     will automatically fail over to another node and will not lose any persistent messages.
-                     You can carry on with your session seamlessly where you left off. Once and only once
-                     delivery of persistent messages is respected at all times.
-         </para>
-         </listitem>
-         <listitem>
-            <para>
-               Message bridge. JBoss Messaging contains a message bridge component which enables you to bridge messages between any two JMS1.1 destinations
-               on the same or physical separate locations. (E.g. separated by a WAN)
-         </para>
-         </listitem>
-      </itemizedlist>
+      <listitem>
+        <para>A foundation for JBoss ESB for SOA initiatives; JBoss ESB uses
+        JBoss Messaging as its default JMS provider.</para>
+      </listitem>
+    </itemizedlist>
 
+    <para>Other JBoss Messaging features include:</para>
 
-   </section>
+    <itemizedlist>
+      <listitem>
+        <para>Publish-subscribe and point-to-point messaging models</para>
+      </listitem>
 
+      <listitem>
+        <para>Persistent and non-persistent messages</para>
+      </listitem>
 
-   <section id="compatibility">
-      <title>Compatibility with JBossMQ</title>
+      <listitem>
+        <para>Guaranteed message delivery that ensures that messages arrive
+        once and only once where required</para>
+      </listitem>
 
-      <para>
-         JBoss MQ is the JMS implementation currently shipped within JBoss AS.
-         Since JBoss Messaging is JMS 1.1 and JMS 1.0.2b compatible, the JMS code  written against
-         JBossMQ will run with JBoss Messaging without any changes.
-      </para>
-      
-      <para>
-         JBoss Messaging does not have wire format compatibility with JBoss MQ so it would be necessary to upgrade
-         JBoss MQ clients with JBoss Messaging client jars
-      </para>
+      <listitem>
+        <para>Transactional and reliable - supporting ACID semantics</para>
+      </listitem>
 
-      <important>
-         Even if JBoss Messaging deployment descriptors are very similar to JBoss MQ
-         deployment descriptors, they are <emphasis>not</emphasis> identical, so they will require
-         some simple adjustments to get them to work with JBoss Messaging. Also, the database
-         data model is completely different, so don't attempt to use JBoss Messaging with a JBoss MQ
-         data schema and vice-versa.
-      </important>
-            
-   </section>
-   
+      <listitem>
+        <para>Customizable security framework based on JAAS</para>
+      </listitem>
 
+      <listitem>
+        <para>Fully integrated with JBoss Transactions (formerly known as
+        Arjuna JTA) for full transaction recoverability.</para>
+      </listitem>
+
+      <listitem>
+        <para>Extensive JMX management interface</para>
+      </listitem>
+
+      <listitem>
+        <para>Support for most major databases including Oracle, Sybase, MS
+        SQL Server, PostgreSQL and MySQL</para>
+      </listitem>
+
+      <listitem>
+        <para>HTTP transport</para>
+      </listitem>
+
+      <listitem>
+        <para>SSL transport</para>
+      </listitem>
+    </itemizedlist>
+
+    <para>Clustering features:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>Distributed queues. Messages sent to a distributed queue while
+        attached to a particular node will be routed to a queue instance on a
+        particular node according to a routing policy.</para>
+      </listitem>
+
+      <listitem>
+        <para>Distributed topics. Messages sent to a distributed topic while
+        attached at a particular node will be received by subscriptions on
+        other nodes.</para>
+      </listitem>
+
+      <listitem>
+        <para>Fully reliable message distribution. Once and only once delivery
+        is fully guaranteed. When sending messages to a topic with multiple
+        durable subscriptions across a cluster we guarantee that message
+        reaches all the subscriptions (or none of them in case of
+        failure).</para>
+      </listitem>
+
+      <listitem>
+        <para>Pluggable routing implementation. The policy for routing
+        messages to a queue is fully pluggable and easily replaceable. The
+        default policy always chooses a queue at the local node if there is
+        one, and if not, it round robins between queues on different
+        nodes.</para>
+      </listitem>
+
+      <listitem>
+        <para>Intelligent message redistribution policy. Messages are
+        automatically distributed between nodes depending on how fast or slow
+        consumers are on certain nodes. If there are no or slow consumers on a
+        particular queue node, messages will be pulled from that queue to a
+        queue with faster consumers on a different node. The policy is fully
+        pluggable.</para>
+      </listitem>
+
+      <listitem>
+        <para>Shared durable subscriptions. Consumers can connect to the same
+        durable subscription while attached to different nodes. This allows
+        processing load from durable subscriptions to be distributed across
+        the cluster in a similar way to queues.</para>
+      </listitem>
+
+      <listitem>
+        <para>High availability and seamless fail-over. If the node you are
+        connected to fails, you will automatically fail over to another node
+        and will not lose any persistent messages. You can carry on with your
+        session seamlessly where you left off. Once and only once delivery of
+        persistent messages is respected at all times.</para>
+      </listitem>
+
+      <listitem>
+        <para>Message bridge. JBoss Messaging contains a message bridge
+        component which enables you to bridge messages between any two JMS1.1
+        destinations on the same or physical separate locations. (E.g.
+        separated by a WAN)</para>
+      </listitem>
+    </itemizedlist>
+  </section>
+
+  <section id="compatibility">
+    <title>Compatibility with JBossMQ</title>
+
+    <para>JBoss MQ is the JMS implementation currently shipped within JBoss
+    AS. Since JBoss Messaging is JMS 1.1 and JMS 1.0.2b compatible, the JMS
+    code written against JBossMQ will run with JBoss Messaging without any
+    changes.</para>
+
+    <para>JBoss Messaging does not have wire format compatibility with JBoss
+    MQ so it would be necessary to upgrade JBoss MQ clients with JBoss
+    Messaging client jars</para>
+
+    <important>
+       Even if JBoss Messaging deployment descriptors are very similar to JBoss MQ deployment descriptors, they are 
+
+      <emphasis>not</emphasis>
+
+       identical, so they will require some simple adjustments to get them to work with JBoss Messaging. Also, the database data model is completely different, so don't attempt to use JBoss Messaging with a JBoss MQ data schema and vice-versa. 
+    </important>
+  </section>
 </chapter>

@@ -1,31 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <chapter id="c_configuration">
+  <title>JBoss Messaging Clustering Configuration</title>
 
-   <title>JBoss Messaging Clustering Configuration</title>
+  <para>JBoss Messaging clustering should work out of the box in most cases
+  with no configuration changes. It is however crucial that every node in the
+  cluster is assigned a unique server id, as specified in the installation
+  guide.</para>
 
-   <para>
-      JBoss Messaging clustering should work out of the box in most cases with no configuration changes. It is however crucial that every node in the cluster is assigned a unique server id, as specified in the installation guide.
-   </para>
+  <para>JBoss Messaging clusters JMS queues and topics transparently across
+  the cluster. Messages sent to a distributed queue or topic on one node are
+  consumable on other nodes. To designate that a particular destination is
+  clustered simply set the clustered attribute in the destination deployment
+  descriptor to true.</para>
 
-   <para>JBoss Messaging clusters JMS queues and topics transparently across the cluster. Messages sent to a distributed queue or topic on one node are consumable on other nodes. To designate that a particular destination is clustered simply set the clustered attribute in the destination deployment descriptor to true.
-   </para>
+  <para>JBoss Messaging balances messages between nodes, catering for faster
+  or slower consumers to efficiently balance processing load across the
+  cluster.</para>
 
-   <para>
-JBoss Messaging balances messages between nodes, catering for faster or slower consumers to efficiently balance processing load across the cluster.
-   </para>
+  <para>With JBoss Messaging durable subscrtiptions can also be clustered.
+  This means multiple subscribers can consume from the same durable
+  subscription from different nodes of the cluster. A durable subscription
+  will be clustered if it's topic is clustered</para>
 
-   <para>With JBoss Messaging durable subscrtiptions can also be clustered. This means multiple subscribers can consume from the same durable subscription from different nodes of the cluster. A durable subscription will be clustered if it's topic is clustered
-   </para>
+  <para>JBoss Messaging also supports clustered temporary topics and queues.
+  All temporary topics and queues will be clustered if the post office is
+  clustered</para>
 
-   <para>JBoss Messaging also supports clustered temporary topics and queues. All temporary topics and queues will be clustered if the post office is clustered
-   </para>
+  <para>If you don't want your nodes to participate in a cluster, or only have
+  one non clustered server you can set the clustered attribute on the
+  postoffice to false</para>
 
-   <para>If you don't want your nodes to participate in a cluster, or only have one non clustered server you can set the clustered attribute on the postoffice to false
-   </para>
+  <para>If you wish to apply strict JMS ordering to messages, such that a
+  particular JMS consumer consumes messages in the same order as they were
+  produced by a particular producer, you can set the DefaultPreserveOrdering
+  attribute in the server peer to true. By default this is false. The
+  side-effect of setting this to true is that messages cannot be distributed
+  as freely around the cluster</para>
 
-   <para>If you wish to apply strict JMS ordering to messages, such that a particular JMS consumer consumes messages in the same order as they were produced by a particular producer, you can set the DefaultPreserveOrdering attribute in the server peer to true. By default this is false. The side-effect of setting this to true is that messages cannot be distributed as freely around the cluster
-   </para>
-
-   <para>When pulling reliable messages from one node to another, by default JBoss Messaging uses an XA transaction to ensure that message was removed from one node and added to another transactionally. Using XA transactions is a fairly heavyweight operation. If you are willing to to relax the reliability guarantee somewhat in order to gain some performance then you can set the attribute UseXAForMessagePull in server peer to false. By default it is true
-   </para> 
-
+  <para>When pulling reliable messages from one node to another, by default
+  JBoss Messaging uses an XA transaction to ensure that message was removed
+  from one node and added to another transactionally. Using XA transactions is
+  a fairly heavyweight operation. If you are willing to to relax the
+  reliability guarantee somewhat in order to gain some performance then you
+  can set the attribute UseXAForMessagePull in server peer to false. By
+  default it is true</para>
 </chapter>

@@ -2,17 +2,19 @@
 <chapter id="recovery">
   <title>JBoss Messaging XA Recovery Configuration</title>
 
-  <para>This section describes how to configure JBoss Transactions in JBoss AS 4.2.0 to handle XA recovery for JBoss Messaging
-  resources.
-  </para>
-  
-  <para>JBoss Transactions recovery manager can easily be configured to continually poll for and recover JBoss Messaging XA resources,
-  this provides an extremely high level of durability of transactions.
-  </para>
+  <para>This section describes how to configure JBoss Transactions in JBoss AS
+  4.2.0 to handle XA recovery for JBoss Messaging resources.</para>
 
-  <para>Enabling JBoss Transactions Recovery Manager to recover JBoss Messaging resources is a very simple matter and involves adding a line to the file ${JBOSS_CONFIG}/conf/jbossjta-properties.xml</para>
+  <para>JBoss Transactions recovery manager can easily be configured to
+  continually poll for and recover JBoss Messaging XA resources, this provides
+  an extremely high level of durability of transactions.</para>
 
-  <para>Here's an example section of a jbossjta-properties.xml file with the line added (note the whole file is not shown)</para>
+  <para>Enabling JBoss Transactions Recovery Manager to recover JBoss
+  Messaging resources is a very simple matter and involves adding a line to
+  the file ${JBOSS_CONFIG}/conf/jbossjta-properties.xml</para>
+
+  <para>Here's an example section of a jbossjta-properties.xml file with the
+  line added (note the whole file is not shown)</para>
 
   <programlisting>
      &lt;properties depends="arjuna" name="jta"&gt;
@@ -41,20 +43,27 @@
     &lt;/properties&gt;
      
   </programlisting>
-  
-  <para>In the above example the recovery manager will attempt to recover JMS resources using the JMSProviderLoader "DefaultJMSProvider"</para>
-  <para>DefaultJMSProvider is the default JMS provider loader that ships with JBoss AS and is defined in jms-ds.xml (or hajndi-jms-ds.xml in
-  a clustered configuration). If you want to recovery using a different JMS provider loader - e.g. one corresponding to a remote JMS provider
-  then just add another line and instead of DefaultJMSProvider specify the name of the remote JMS provider as specified in it's MBean configuration.
-  </para>
-  <para>For each line you add, the name must be unique, so you could specify "com.arjuna.ats.jta.recovery.XAResourceRecovery.JBMESSAGING1",
-  "com.arjuna.ats.jta.recovery.XAResourceRecovery.JBMESSAGING2, ..." etc.</para>
-  <para>In actual fact, the recovery also should work with any JMS provider that implements recoverable XAResources (i.e. it properly implements XAResource.recover())
-  , not just JBoss Messaging</para>
 
-  <para>Please note that to configure the recovery manager to recovery transactions from any node of the cluster it will be necessary to specify a line in the configuration for every node of the cluster
-  </para>
-  
-  
+  <para>In the above example the recovery manager will attempt to recover JMS
+  resources using the JMSProviderLoader "DefaultJMSProvider"</para>
 
+  <para>DefaultJMSProvider is the default JMS provider loader that ships with
+  JBoss AS and is defined in jms-ds.xml (or hajndi-jms-ds.xml in a clustered
+  configuration). If you want to recovery using a different JMS provider
+  loader - e.g. one corresponding to a remote JMS provider then just add
+  another line and instead of DefaultJMSProvider specify the name of the
+  remote JMS provider as specified in it's MBean configuration.</para>
+
+  <para>For each line you add, the name must be unique, so you could specify
+  "com.arjuna.ats.jta.recovery.XAResourceRecovery.JBMESSAGING1",
+  "com.arjuna.ats.jta.recovery.XAResourceRecovery.JBMESSAGING2, ..."
+  etc.</para>
+
+  <para>In actual fact, the recovery also should work with any JMS provider
+  that implements recoverable XAResources (i.e. it properly implements
+  XAResource.recover()) , not just JBoss Messaging</para>
+
+  <para>Please note that to configure the recovery manager to recovery
+  transactions from any node of the cluster it will be necessary to specify a
+  line in the configuration for every node of the cluster</para>
 </chapter>
