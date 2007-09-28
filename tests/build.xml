@@ -106,9 +106,8 @@
    <property name="junit.haltonfailure" value="false"/>
    <property name="junit.fork" value="true"/>
    <property name="junit.includeantruntime" value="true"/>
-   <property name="junit.timeout" value="600000"/>             <!-- 10 mins -->
-   <property name="thirdparty.junit.timeout" value="1200000"/>             <!-- 20 mins -->
-   <property name="clustering.junit.timeout" value="1200000"/> <!-- 90 mins -->
+   <property name="junit.timeout" value="5400000"/>             <!-- 90 mins -->
+   <property name="clustering.junit.timeout" value="5400000"/> <!-- 90 mins -->
    <property name="clustering.stress.junit.timeout" value="5400000"/> <!-- 90 mins -->
    <property name="stress.junit.timeout" value="5400000"/>      <!-- 90 mins -->
    <property name="bridge.junit.timeout" value="5400000"/>     <!-- 90 mins -->
@@ -287,7 +286,7 @@
    <target name="short-tests" depends="tests-jar, prepare-testdirs, clear-test-logs">
 
       <antcall target="invm-tests"/>
- 
+
       <antcall target="remote-tests"/>
 
    </target>
@@ -295,7 +294,7 @@
    <target name="thirdparty-tests" depends="tests-jar, prepare-testdirs, clear-test-logs">
 
       <antcall target="invm-thirdparty-tests"/>
- 
+
       <antcall target="remote-thirdparty-tests"/>
 
    </target>
@@ -320,7 +319,7 @@
              haltonerror="${junit.haltonerror}"
              haltonfailure="${junit.haltonfailure}"
              showoutput="${junit.showoutput}"
-             timeout="${thirdparty.junit.timeout}">
+             timeout="${junit.timeout}">
 
          <sysproperty key="remote" value="false"/>
          <sysproperty key="module.output" value="${tests.output}"/>
@@ -341,7 +340,7 @@
                     haltonerror="${junit.batchtest.haltonerror}">
             <formatter type="plain" usefile="${junit.formatter.usefile}"/>
             <fileset dir="${build.tests.classes}">
-	       <include name="**/messaging/core/**/${test-mask}.class"/> 
+	       <include name="**/messaging/core/**/${test-mask}.class"/>
 	       <include name="**/jms/**/${test-mask}.class"/>
                <include name="**/messaging/util/**/${test-mask}.class"/>
                <exclude name="**/jms/MemLeakTest.class"/>
@@ -370,7 +369,7 @@
              haltonerror="${junit.haltonerror}"
              haltonfailure="${junit.haltonfailure}"
              showoutput="${junit.showoutput}"
-             timeout="${thirdparty.junit.timeout}">
+             timeout="${junit.timeout}">
 
          <sysproperty key="remote" value="false"/>
          <sysproperty key="module.output" value="${tests.output}"/>
@@ -422,7 +421,7 @@
              haltonerror="${junit.haltonerror}"
              haltonfailure="${junit.haltonfailure}"
              showoutput="${junit.showoutput}"
-             timeout="${thirdparty.junit.timeout}">
+             timeout="${junit.timeout}">
 
          <sysproperty key="remote" value="true"/>
          <sysproperty key="module.output" value="${tests.output}"/>
@@ -493,7 +492,7 @@
              fork="on"
              forkMode="once"
              includeantruntime="yes"
-             haltonerror="${thirdparty.junit.haltonerror}"
+             haltonerror="${junit.haltonerror}"
              haltonfailure="${junit.haltonfailure}"
              showoutput="${junit.showoutput}"
              timeout="${junit.timeout}">
