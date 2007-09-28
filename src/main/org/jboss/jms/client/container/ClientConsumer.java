@@ -487,7 +487,13 @@ public class ClientConsumer
                if (timeout != 0)
                {
                   timeout -= System.currentTimeMillis() - startTimestamp;
-               }                            
+                  if (timeout == 0)
+                  {
+                     // As 0 means waitForever, we make it noWait
+                     timeout = -1;
+                  }
+
+               }
             }           
          }
          finally
