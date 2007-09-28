@@ -107,7 +107,8 @@
    <property name="junit.fork" value="true"/>
    <property name="junit.includeantruntime" value="true"/>
    <property name="junit.timeout" value="60000"/>             <!-- 10 mins -->
-   <property name="clustering.junit.timeout" value="5400000"/> <!-- 90 mins -->
+   <property name="thirdparty.junit.timeout" value="120000"/>             <!-- 10 mins -->
+   <property name="clustering.junit.timeout" value="120000"/> <!-- 90 mins -->
    <property name="clustering.stress.junit.timeout" value="5400000"/> <!-- 90 mins -->
    <property name="stress.junit.timeout" value="5400000"/>      <!-- 90 mins -->
    <property name="bridge.junit.timeout" value="5400000"/>     <!-- 90 mins -->
@@ -319,7 +320,7 @@
              haltonerror="${junit.haltonerror}"
              haltonfailure="${junit.haltonfailure}"
              showoutput="${junit.showoutput}"
-             timeout="${junit.timeout}">
+             timeout="${thirdparty.junit.timeout}">
 
          <sysproperty key="remote" value="false"/>
          <sysproperty key="module.output" value="${tests.output}"/>
@@ -369,7 +370,7 @@
              haltonerror="${junit.haltonerror}"
              haltonfailure="${junit.haltonfailure}"
              showoutput="${junit.showoutput}"
-             timeout="${junit.timeout}">
+             timeout="${thirdparty.junit.timeout}">
 
          <sysproperty key="remote" value="false"/>
          <sysproperty key="module.output" value="${tests.output}"/>
@@ -421,7 +422,7 @@
              haltonerror="${junit.haltonerror}"
              haltonfailure="${junit.haltonfailure}"
              showoutput="${junit.showoutput}"
-             timeout="${junit.timeout}">
+             timeout="${thirdparty.junit.timeout}">
 
          <sysproperty key="remote" value="true"/>
          <sysproperty key="module.output" value="${tests.output}"/>
@@ -492,7 +493,7 @@
              fork="on"
              forkMode="once"
              includeantruntime="yes"
-             haltonerror="${junit.haltonerror}"
+             haltonerror="${thirdparty.junit.haltonerror}"
              haltonfailure="${junit.haltonfailure}"
              showoutput="${junit.showoutput}"
              timeout="${junit.timeout}">
