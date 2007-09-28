@@ -1721,12 +1721,8 @@
          </section>
          <section id="conf.connectionfactory.attributes.tckstrictbehavior">
             <title>StrictTck</title>
-            <para>As part of JMS specification foreign messages should receive
-            a new destination when the message is sent, but when the Bridge is
-            playing with other providers such as ActiveMQ this could affect
-            the regular operation on those providers. We disabled that by
-            default but if you need this behavior activated you should just
-            set this attribute to True on the ConnectionFactory.</para>
+            <para>Set this to true if you want strict JMS behaviour as
+                  required by the TCK.</para>
          </section>
          <section id="conf.connectionfactory.attributes.tempqueuepaging">
             <title>Temporary queue paging parameters</title>
