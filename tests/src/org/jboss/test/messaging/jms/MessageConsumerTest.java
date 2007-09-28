@@ -2031,7 +2031,7 @@ public class MessageConsumerTest extends JMSTestCase
 	
 	      for (int i = 0; i < count; i++)
 	      {
-	         Message m = topicConsumer.receive(3000);
+	         Message m = topicConsumer.receive(10000);
 	         assertNotNull(m);
 	      }
 	      
