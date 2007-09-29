@@ -3,12 +3,12 @@
 <head>
   <meta content="text/html; charset=ISO-8859-1"
  http-equiv="content-type">
-  <title>JBoss Messaging 1.4.0.CR3 Release Notes</title>
+  <title>JBoss Messaging 1.4.0.GA Release Notes</title>
 </head>
 <body>
 
 <br>
-21st September 2007<br>
+28th September 2007<br>
 <br>
 <br>
 JBoss Messaging is the new JBoss JMS 1.1-compliant JMS provider.
@@ -23,39 +23,29 @@ formats.&nbsp; The guide is also available on-line at&nbsp; <a
  href="http://labs.jboss.com/portal/jbossmessaging/docs/index.html">http://labs.jboss.com/portal/jbossmessaging/docs/index.html</a><br>
 
 <h1>
-Release Notes - JBoss Messaging - Version 1.4.0 CR3
+Release Notes - JBoss Messaging - Version 1.4.0 GA
 </h1>
 
 <hr/>
-    
+
 <h2>Bug</h2>
 <ul>
-<li>[<a href='http://jira.jboss.com/jira/browse/JBMESSAGING-1063'>JBMESSAGING-1063</a>] - MessageID changes when the message is transfered over the cluster.</li>
-<li>[<a href='http://jira.jboss.com/jira/browse/JBMESSAGING-1068'>JBMESSAGING-1068</a>] - MessageBridge will fail under load</li>
-<li>[<a href='http://jira.jboss.com/jira/browse/JBMESSAGING-1069'>JBMESSAGING-1069</a>] - NPE when using consumer with noLocal=true across cluster</li>
-<li>[<a href='http://jira.jboss.com/jira/browse/JBMESSAGING-1070'>JBMESSAGING-1070</a>] - Override security info for message suckers</li>
-<li>[<a href='http://jira.jboss.com/jira/browse/JBMESSAGING-1074'>JBMESSAGING-1074</a>] - Failover issue when using message redistribution</li>
-<li>[<a href='http://jira.jboss.com/jira/browse/JBMESSAGING-1075'>JBMESSAGING-1075</a>] - MaxSize attribute being set causes a NullPointerException</li>
+<li>[<a href='http://jira.jboss.com/jira/browse/JBMESSAGING-1079'>JBMESSAGING-1079</a>] - JBM should call BytesMessage.reset() before redelivery, or not redeliver the same message instance</li>
+<li>[<a href='http://jira.jboss.com/jira/browse/JBMESSAGING-1080'>JBMESSAGING-1080</a>] - examples use incompatible jboss remoting library</li>
+<li>[<a href='http://jira.jboss.com/jira/browse/JBMESSAGING-1082'>JBMESSAGING-1082</a>] - Privileged Block to pop Subject Context</li>
+<li>[<a href='http://jira.jboss.com/jira/browse/JBMESSAGING-1083'>JBMESSAGING-1083</a>] - Privileged Blocks to deal with MBean Server</li>
+<li>[<a href='http://jira.jboss.com/jira/browse/JBMESSAGING-1085'>JBMESSAGING-1085</a>] - DLQTest will hang forever eventually</li>
 </ul>
-        
+
 <h2>Feature Request</h2>
 <ul>
-<li>[<a href='http://jira.jboss.com/jira/browse/JBMESSAGING-1051'>JBMESSAGING-1051</a>] - Failure of one JMS Server may cause VIEW to not propogate in JBM cluster</li>
-<li>[<a href='http://jira.jboss.com/jira/browse/JBMESSAGING-1067'>JBMESSAGING-1067</a>] - Use of Shutdown Hooks on ClusteredConnectionFactories</li>
-<li>[<a href='http://jira.jboss.com/jira/browse/JBMESSAGING-1071'>JBMESSAGING-1071</a>] - MySQL Cluster Test Runs and configs</li>
+<li>[<a href='http://jira.jboss.com/jira/browse/JBMESSAGING-1078'>JBMESSAGING-1078</a>] - TCK strict behavior</li>
 </ul>
-                    
+
 <h2>Task</h2>
 <ul>
-<li>[<a href='http://jira.jboss.com/jira/browse/JBMESSAGING-1054'>JBMESSAGING-1054</a>] - Create a test where a client failing with a ClusteredCF</li>
-<li>[<a href='http://jira.jboss.com/jira/browse/JBMESSAGING-1066'>JBMESSAGING-1066</a>] - XARecoveryTest::testMockCoordinatorRecoveryWithJBossTSXids makes XAResourceRecoveryTest::testRecoveryOnSend to fail</li>
-<li>[<a href='http://jira.jboss.com/jira/browse/JBMESSAGING-1072'>JBMESSAGING-1072</a>] - Implement slow consumers flag</li>
-<li>[<a href='http://jira.jboss.com/jira/browse/JBMESSAGING-1077'>JBMESSAGING-1077</a>] - Allow data and control channel to use same underlying channel when using multiplexor</li>
+<li>[<a href='http://jira.jboss.com/jira/browse/JBMESSAGING-1044'>JBMESSAGING-1044</a>] - Cleanup docs using xml editor</li>
 </ul>
-
-
-
-
 
 
 
