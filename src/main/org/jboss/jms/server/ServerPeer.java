@@ -346,13 +346,14 @@ public class ServerPeer extends ServiceMBeanSupport
          messageStore.stop();
          messageStore = null;
          securityStore.stop();
-         securityStore = null;
+         //securityStore = null; - if securitySTore is set to null, The ServerPeer won't survive a restart of the service (stop/start)
          txRepository.stop();
          txRepository = null;
          messageCounterManager.stop();
          messageCounterManager = null;
          clusterConnectionManager.stop();
          clusterConnectionManager = null;
+         postOffice = null;
          
          unloadServerAOPConfig();
 

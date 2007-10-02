@@ -317,7 +317,7 @@ public class MessagingPostOffice extends JDBCSupport
    		return;
    	}
    	
-      if (trace) { log.trace(this + " starting"); }
+      log.debug(this + " starting");
       
       super.start();
       
