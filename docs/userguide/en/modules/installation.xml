@@ -53,7 +53,7 @@
                based on the default configuration:</para>
                <programlisting>
          cd util
-         ant -f release-admin.aml
+         ant -f release-admin.xml
          </programlisting>
                <para>If you want to create a clustered installation based on
                the all configuration or change the configuration name:</para>
