@@ -31,6 +31,7 @@ import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.jms.Session;
+import javax.jms.TextMessage;
 
 import org.jboss.test.messaging.jms.JMSTestCase;
 
@@ -643,6 +644,58 @@ public class SelectorTest extends JMSTestCase
 	         int value = m.getIntProperty("weight");
 	         assertEquals(value, 2);
 	      }
+      }
+      finally
+      {
+      	if (conn != null)
+      	{
+      		conn.close();
+      	}
+      }
+   }
+
+   public void testDeliveryModeOnSelector() throws Exception
+   {
+      Connection conn = null;
+
+      try
+      {
+	      conn = cf.createConnection();
+	      conn.start();
+
+	      Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+	      MessageProducer prodNonPersistent = session.createProducer(queue1);
+	      prodNonPersistent.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+
+         MessageProducer prodPersistent = session.createProducer(queue1);
+         prodPersistent.setDeliveryMode(DeliveryMode.PERSISTENT);
+
+	      String selector = "JMSDeliveryMode = 'PERSISTENT'";
+	      MessageConsumer persistentConsumer = session.createConsumer(queue1, selector);
+	      conn.start();
+
+	      TextMessage msg = session.createTextMessage("NonPersistent");
+         prodNonPersistent.send(msg);
+
+         msg = session.createTextMessage("Persistent");
+         prodPersistent.send(msg);
+
+         msg = (TextMessage)persistentConsumer.receive(2000);
+         assertNotNull(msg);
+         assertEquals(DeliveryMode.PERSISTENT, msg.getJMSDeliveryMode());
+         assertEquals("Persistent", msg.getText());
+
+         assertNull(persistentConsumer.receive(1000));
+
+         persistentConsumer.close();
+
+         MessageConsumer genericConsumer = session.createConsumer(queue1);
+         msg = (TextMessage)genericConsumer.receive(1000);
+
+         assertNotNull(msg);
+
+         assertEquals("NonPersistent", msg.getText());
+         assertEquals(DeliveryMode.NON_PERSISTENT, msg.getJMSDeliveryMode());
       }
       finally
       {

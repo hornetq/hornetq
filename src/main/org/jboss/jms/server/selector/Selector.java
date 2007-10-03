@@ -23,11 +23,10 @@ package org.jboss.jms.server.selector;
 
 import java.util.HashMap;
 import java.util.Iterator;
-
+import javax.jms.DeliveryMode;
 import javax.jms.InvalidSelectorException;
 import javax.jms.JMSException;
 import javax.jms.Message;
-
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.contract.Filter;
 
@@ -132,9 +131,9 @@ public class Selector implements Filter
          while (i.hasNext())
          {
             Identifier id = (Identifier) i.next();
-            
+
             Object find = mess.getObjectProperty(id.name);
-            
+
             if (find == null)
                find = getHeaderFieldReferences(mess, id.name);
             
@@ -195,7 +194,9 @@ public class Selector implements Filter
       //                JMSTimeStamp, JMSCorrelationID and JMSType
       //
       if (idName.equals("JMSDeliveryMode"))
-         return new Integer(mess.getJMSDeliveryMode());
+      {
+         return mess.getJMSDeliveryMode()==DeliveryMode.PERSISTENT ? "PERSISTENT" : "NON_PERSISTENT";
+      }
       else if (idName.equals("JMSPriority"))
          return new Integer(mess.getJMSPriority());
       else if (idName.equals("JMSMessageID"))
