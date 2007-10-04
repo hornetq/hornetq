@@ -34,6 +34,7 @@ import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.destination.JBossQueue;
 import org.jboss.jms.destination.JBossTopic;
 import org.jboss.jms.message.JBossMessage;
+import org.jboss.jms.server.endpoint.ServerSessionEndpoint;
 
 /**
  * The server-side advised instance corresponding to a Session. It is bound to the AOP
@@ -78,6 +79,11 @@ public class SessionAdvised extends AdvisedSupport implements SessionEndpoint
    public void send(JBossMessage msg, boolean checkForDuplicates) throws JMSException
    {
       endpoint.send(msg, checkForDuplicates);
+   }
+   
+   public void send(JBossMessage msg, boolean checkForDuplicates, long seq) throws JMSException
+   {
+      ((ServerSessionEndpoint)endpoint).send(msg, checkForDuplicates, seq);
    }
    
    public ConsumerDelegate createConsumerDelegate(JBossDestination destination, String selector,

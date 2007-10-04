@@ -25,10 +25,12 @@ package org.jboss.jms.wireformat;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 
-import org.jboss.jms.delegate.SessionEndpoint;
 import org.jboss.jms.message.JBossMessage;
-import org.jboss.jms.server.endpoint.ServerSessionEndpoint;
+import org.jboss.jms.server.ServerPeer;
+import org.jboss.jms.server.endpoint.advised.SessionAdvised;
 import org.jboss.messaging.core.impl.message.MessageFactory;
+import org.jboss.remoting.InvocationRequest;
+import org.jboss.remoting.invocation.OnewayInvocation;
 
 /**
  * 
@@ -80,15 +82,15 @@ public class SessionSendRequest extends RequestSupport
 
    public ResponseSupport serverInvoke() throws Exception
    {
-      SessionEndpoint endpoint = 
-         (SessionEndpoint)Dispatcher.instance.getTarget(objectId);
+      SessionAdvised advised = 
+         (SessionAdvised)Dispatcher.instance.getTarget(objectId);
       
-      if (endpoint == null)
+      if (advised == null)
       {
          throw new IllegalStateException("Cannot find object in dispatcher with id " + objectId);
       }
 
-      ((ServerSessionEndpoint)endpoint).send(msg, checkForDuplicates, sequence);
+      advised.send(msg, checkForDuplicates, sequence);
       
       return null;
    }
@@ -106,6 +108,24 @@ public class SessionSendRequest extends RequestSupport
       os.writeLong(sequence);
       
       os.flush();
+   }
+   
+   public Object getPayload()
+   {
+   	if (sequence != -1)
+   	{	   	
+	   	OnewayInvocation oi = new OnewayInvocation(this);
+	
+	   	InvocationRequest request =
+	   		new InvocationRequest(null, ServerPeer.REMOTING_JMS_SUBSYSTEM,
+	   				oi, ONE_WAY_METADATA, null, null);
+	
+	   	return request;     
+   	}
+   	else
+   	{
+   		return super.getPayload();
+   	}
    }
 
 }

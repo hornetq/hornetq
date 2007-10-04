@@ -448,7 +448,7 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
    	
       RequestSupport req = new SessionSendRequest(id, version, m, checkForDuplicates, seq);
 
-      if (seq != -1)
+      if (seq == -1)
       {      
       	doInvoke(client, req);
       }
