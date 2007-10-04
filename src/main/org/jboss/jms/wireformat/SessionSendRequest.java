@@ -27,6 +27,7 @@ import java.io.DataOutputStream;
 
 import org.jboss.jms.delegate.SessionEndpoint;
 import org.jboss.jms.message.JBossMessage;
+import org.jboss.jms.server.endpoint.ServerSessionEndpoint;
 import org.jboss.messaging.core.impl.message.MessageFactory;
 
 /**
@@ -44,6 +45,7 @@ public class SessionSendRequest extends RequestSupport
    
    private JBossMessage msg;
    private boolean checkForDuplicates;
+   private long sequence;
    
    public SessionSendRequest()
    {      
@@ -52,11 +54,13 @@ public class SessionSendRequest extends RequestSupport
    public SessionSendRequest(String objectId,
                              byte version,
                              JBossMessage msg,
-                             boolean checkForDuplicates)
+                             boolean checkForDuplicates,
+                             long sequence)
    {
       super(objectId, PacketSupport.REQ_SESSION_SEND, version);
       this.msg = msg;
       this.checkForDuplicates = checkForDuplicates;
+      this.sequence = sequence;
    }
 
    public void read(DataInputStream is) throws Exception
@@ -70,6 +74,8 @@ public class SessionSendRequest extends RequestSupport
       msg.read(is);
 
       checkForDuplicates = is.readBoolean();
+      
+      sequence = is.readLong();
    }
 
    public ResponseSupport serverInvoke() throws Exception
@@ -82,7 +88,7 @@ public class SessionSendRequest extends RequestSupport
          throw new IllegalStateException("Cannot find object in dispatcher with id " + objectId);
       }
 
-      endpoint.send(msg, checkForDuplicates);
+      ((ServerSessionEndpoint)endpoint).send(msg, checkForDuplicates, sequence);
       
       return null;
    }
@@ -96,6 +102,8 @@ public class SessionSendRequest extends RequestSupport
       msg.write(os);
 
       os.writeBoolean(checkForDuplicates);
+      
+      os.writeLong(sequence);
       
       os.flush();
    }

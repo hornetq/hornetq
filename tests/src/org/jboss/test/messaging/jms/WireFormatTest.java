@@ -667,7 +667,7 @@ public class WireFormatTest extends JMSTestCase
          JBossMessage msg = new JBossMessage(123);
          
          RequestSupport req =
-            new SessionSendRequest("23", (byte)77, msg, false);
+            new SessionSendRequest("23", (byte)77, msg, false, 123);
                  
          testPacket(req, PacketSupport.REQ_SESSION_SEND);                           
       }

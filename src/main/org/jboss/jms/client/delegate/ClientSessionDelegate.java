@@ -439,12 +439,23 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
    {
       throw new IllegalStateException("This invocation should not be handled here!");
    }
+   
+   private long sequence;
 
    public void send(JBossMessage m, boolean checkForDuplicates) throws JMSException
-   {
-      RequestSupport req = new SessionSendRequest(id, version, m, checkForDuplicates);
+   {   	
+   	long seq = m.isReliable() ? -1 : sequence++;
+   	
+      RequestSupport req = new SessionSendRequest(id, version, m, checkForDuplicates, seq);
 
-      doInvoke(client, req);
+      if (seq != -1)
+      {      
+      	doInvoke(client, req);
+      }
+      else
+      {
+      	doInvokeOneway(client, req);
+      }
    }
 
    public void cancelDeliveries(List cancels) throws JMSException

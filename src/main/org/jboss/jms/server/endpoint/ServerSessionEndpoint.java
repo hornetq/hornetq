@@ -336,11 +336,51 @@ public class ServerSessionEndpoint implements SessionEndpoint
       return -1;
    }
  
+   private long expectedSequence = 0;
+   
+   private Map<Long, JBossMessage> heldBack = new HashMap<Long, JBossMessage>();
+   
    public void send(JBossMessage message, boolean checkForDuplicates) throws JMSException
+   {
+   	throw new IllegalStateException("Should not be handled on the server");
+   }
+   
+   public synchronized void send(JBossMessage message, boolean checkForDuplicates, long thisSequence) throws JMSException
    {
       try
       {                
-         connectionEndpoint.sendMessage(message, null, checkForDuplicates);         
+      	if (!message.isReliable())
+      	{
+      		//Need to make sure it is in correct order since np messages are sent
+      		//one way so they can arrive out of sequence
+      		
+      		//This is a workaround to allow us to use one way messages for np messages for performance
+      		//reasons
+      		      	         
+      		if (thisSequence == expectedSequence)
+      		{
+      			do
+      			{
+      				connectionEndpoint.sendMessage(message, null, false); 
+      				
+         			expectedSequence++;
+         			
+         			message = (JBossMessage)heldBack.remove(expectedSequence);
+      				
+      			} while (message != null);
+      			
+      		}
+      		else
+      		{
+      			//Not the expected one - add it to the map
+      			
+      			heldBack.put(thisSequence, message);      			
+      		}
+      	}
+      	else
+      	{
+      		connectionEndpoint.sendMessage(message, null, checkForDuplicates);
+      	}        
       }
       catch (Throwable t)
       {
