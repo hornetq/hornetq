@@ -348,6 +348,9 @@ public class FailoverTest extends ClusteringTestBase
          prod.send(session.createTextMessage("click"));
          prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
          prod.send(session.createTextMessage("clack"));
+         
+         //Give time for the NP message to arrive
+         Thread.sleep(2000);
 
          // register a failover listener
          SimpleFailoverListener failoverListener = new SimpleFailoverListener();
@@ -440,6 +443,9 @@ public class FailoverTest extends ClusteringTestBase
          prod.send(session.createTextMessage("click"));
          prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
          prod.send(session.createTextMessage("clack"));
+         
+         //Give time for the NP message to arrive         
+         Thread.sleep(2000);
 
          en = browser.getEnumeration();
 
