@@ -145,7 +145,7 @@ public class FailoverValve
 
    public void close() throws InterruptedException
    {
-      log.debug(this + " closing ...");
+      log.debug(this + " close ...");
 
       // Before assuming a write lock, we need to release reentrant read locks.
       // When simultaneous threads are closing a valve (as simultaneous threads are capturing a

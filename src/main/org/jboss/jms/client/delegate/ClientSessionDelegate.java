@@ -32,6 +32,7 @@ import javax.transaction.xa.XAResource;
 
 import org.jboss.jms.client.state.ConnectionState;
 import org.jboss.jms.client.state.HierarchicalState;
+import org.jboss.jms.client.state.SessionState;
 import org.jboss.jms.delegate.Ack;
 import org.jboss.jms.delegate.BrowserDelegate;
 import org.jboss.jms.delegate.Cancel;
@@ -142,9 +143,9 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
       doInvoke(client, req);
    }
 
-   public long closing() throws JMSException
-   {
-      RequestSupport req = new ClosingRequest(id, version);
+   public long closing(long sequence) throws JMSException
+   {   	   	
+      RequestSupport req = new ClosingRequest(((SessionState)state).getNPSendSequence(), id, version);
 
       return ((Long)doInvoke(client, req)).longValue();
    }
@@ -440,11 +441,19 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
       throw new IllegalStateException("This invocation should not be handled here!");
    }
    
-   private long sequence;
-
    public void send(JBossMessage m, boolean checkForDuplicates) throws JMSException
    {   	
-   	long seq = m.isReliable() ? -1 : sequence++;
+   	long seq;
+   	if (m.isReliable())
+   	{
+   		seq = -1;
+   	}
+   	else
+   	{
+   		SessionState sstate = (SessionState)state;
+   		seq = sstate.getNPSendSequence();
+   		sstate.incNpSendSequence();
+   	}
    	
       RequestSupport req = new SessionSendRequest(id, version, m, checkForDuplicates, seq);
 

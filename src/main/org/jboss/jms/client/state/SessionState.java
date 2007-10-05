@@ -108,7 +108,9 @@ public class SessionState extends HierarchicalStateSupport
    //In that case we want it to act as transacted, so when the session is subsequently enlisted the work can be converted into the
    //XA transaction
    private boolean treatAsNonTransactedWhenNotEnlisted = true;
-      
+   
+   private long npSendSequence;
+   
    // Constructors ---------------------------------------------------------------------------------
 
    public SessionState(ConnectionState parent, ClientSessionDelegate delegate,
@@ -205,6 +207,8 @@ public class SessionState extends HierarchicalStateSupport
 
       String oldSessionID = sessionID;
       sessionID = newState.sessionID;
+      
+      npSendSequence = 0;
       
       // We need to clear anything waiting in the session executor - since there may be messages
       // from before failover waiting in there and we don't want them to get delivered after
@@ -453,6 +457,16 @@ public class SessionState extends HierarchicalStateSupport
    public String getSessionID()
    {
       return sessionID;
+   }
+   
+   public long getNPSendSequence()
+   {
+   	return npSendSequence;
+   }
+   
+   public void incNpSendSequence()
+   {
+   	npSendSequence++;
    }
    
    public String toString()

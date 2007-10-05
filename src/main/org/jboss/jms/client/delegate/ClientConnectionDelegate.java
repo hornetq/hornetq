@@ -153,9 +153,9 @@ public class ClientConnectionDelegate extends DelegateSupport implements Connect
       doInvoke(client, req);
    }
 
-   public long closing() throws JMSException
+   public long closing(long sequence) throws JMSException
    {
-      RequestSupport req = new ClosingRequest(id, version);
+      RequestSupport req = new ClosingRequest(sequence, id, version);
 
       return ((Long)doInvoke(client, req)).longValue();
    }

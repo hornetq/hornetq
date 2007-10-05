@@ -145,7 +145,7 @@
    <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientSessionDelegate->redeliver(..))">
       <advice name="handleRedeliver" aspect="org.jboss.jms.client.container.SessionAspect"/>
    </bind>
-   <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientSessionDelegate->closing())">
+   <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientSessionDelegate->closing(..))">
       <advice name="handleClosing" aspect="org.jboss.jms.client.container.SessionAspect"/>         
    </bind>
    <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientSessionDelegate->close())">
@@ -195,7 +195,7 @@
    <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientConsumerDelegate->receiveNoWait())">
       <advice name="handleReceiveNoWait" aspect="org.jboss.jms.client.container.ConsumerAspect"/>         
    </bind>    
-   <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientConsumerDelegate->closing())">
+   <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientConsumerDelegate->closing(..))">
       <advice name="handleClosing" aspect="org.jboss.jms.client.container.ConsumerAspect"/>         
    </bind>
    <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientConsumerDelegate->getDestination())">
@@ -254,7 +254,7 @@
    <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientProducerDelegate->setTimeToLive(..))">
       <advice name="handleSetTimeToLive" aspect="org.jboss.jms.client.container.ProducerAspect"/>         
    </bind> 
-   <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientProducerDelegate->closing())">
+   <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientProducerDelegate->closing(..))">
       <advice name="handleClosing" aspect="org.jboss.jms.client.container.ProducerAspect"/>
    </bind>
    <bind pointcut="execution(* org.jboss.jms.client.delegate.ClientProducerDelegate->close())">

@@ -80,7 +80,7 @@ public class ClientProducerDelegate extends DelegateSupport implements ProducerD
     * This invocation should either be handled by the client-side interceptor chain or by the
     * server-side endpoint.
     */
-   public long closing() throws JMSException
+   public long closing(long sequence) throws JMSException
    {
       throw new IllegalStateException("This invocation should not be handled here!");
    }

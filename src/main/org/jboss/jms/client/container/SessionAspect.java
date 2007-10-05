@@ -195,7 +195,7 @@ public class SessionAspect
          
          cancelDeliveries(del, dels);        
       }
-                  
+
       return invocation.invokeNext();
    }      
    
@@ -626,7 +626,7 @@ public class SessionAspect
          return null;
       }
 
-      if (trace) { log.trace("sending message NON-transactionally"); }
+      if (trace) { log.trace("sending message NON-transactionally"); }            
 
       return invocation.invokeNext();
    }

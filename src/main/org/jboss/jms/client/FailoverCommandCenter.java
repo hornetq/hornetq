@@ -179,7 +179,7 @@ public class FailoverCommandCenter
          {
             log.debug(this + " aborted failover");
             ClientConnectionDelegate connDelegate = (ClientConnectionDelegate)state.getDelegate();
-            connDelegate.closing();
+            connDelegate.closing(-1);
             connDelegate.close();
             
             broadcastFailoverEvent(new FailoverEvent(FailoverEvent.FAILOVER_FAILED, this));

@@ -344,7 +344,7 @@ public class ClientConsumer
    
    public void close(long lastDeliveryId) throws JMSException
    {     
-   	log.trace(this + " closing");
+   	log.trace(this + " close");
          	
    	//Wait for the last delivery to arrive
       waitForLastDelivery(lastDeliveryId);

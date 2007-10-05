@@ -305,7 +305,7 @@ public class JMSRemotingConnection
 
    public void stop()
    {
-      log.trace(this + " closing");
+      log.trace(this + " stop");
 
       // explicitly remove the callback listener, to avoid race conditions on server
       // (http://jira.jboss.org/jira/browse/JBMESSAGING-535)

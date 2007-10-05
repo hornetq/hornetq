@@ -105,7 +105,7 @@ public class FailoverValve2
 
    public synchronized void close()
    {
-      if (trace) { log.trace(this + " closing " + (locked ? "LOCKED" : "UNLOCKED") + " valve"); }
+      if (trace) { log.trace(this + " close " + (locked ? "LOCKED" : "UNLOCKED") + " valve"); }
 
       if (trace && threads.contains(Thread.currentThread()))
       {

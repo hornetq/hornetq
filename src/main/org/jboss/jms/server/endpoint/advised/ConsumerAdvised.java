@@ -59,9 +59,9 @@ public class ConsumerAdvised extends AdvisedSupport implements ConsumerEndpoint
       endpoint.close();
    }
 
-   public long closing() throws JMSException
+   public long closing(long sequence) throws JMSException
    {
-      return endpoint.closing();
+      return endpoint.closing(sequence);
    }
 
    public void changeRate(float newRate) throws JMSException

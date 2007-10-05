@@ -207,7 +207,7 @@ public class ServerBrowserEndpoint implements BrowserEndpoint
       }
    }
          
-   public long closing() throws JMSException
+   public long closing(long sequence) throws JMSException
    {
       // Do nothing
       return -1;

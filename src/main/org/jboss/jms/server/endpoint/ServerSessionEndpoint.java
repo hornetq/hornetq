@@ -127,6 +127,8 @@ public class ServerSessionEndpoint implements SessionEndpoint
    static final String TEMP_QUEUE_MESSAGECOUNTER_PREFIX = "TempQueue.";
    
    private static final long DELIVERY_WAIT_TIMEOUT = 5 * 1000;
+   
+   private static final long CLOSE_WAIT_TIMEOUT = 5 * 1000;
       
    // Static ---------------------------------------------------------------------------------------
 
@@ -173,6 +175,8 @@ public class ServerSessionEndpoint implements SessionEndpoint
    private LinkedQueue toDeliver = new LinkedQueue();
    
    private boolean waitingToClose = false;
+   
+   private Object waitLock = new Object();
    
    // Constructors ---------------------------------------------------------------------------------
 
@@ -328,15 +332,42 @@ public class ServerSessionEndpoint implements SessionEndpoint
       }
    }
       
-   public long closing() throws JMSException
+   public long closing(long sequence) throws JMSException
    {
-      // currently does nothing
-      if (trace) log.trace(this + " closing (noop)");
+      if (trace) log.trace(this + " closing");
+      
+      // Wait for last np message to arrive
+      
+      if (sequence != 0)
+      {
+      	synchronized (waitLock)
+      	{      		
+      		long wait = CLOSE_WAIT_TIMEOUT;
+      		
+	      	while (sequence != expectedSequence && wait > 0)
+	      	{
+	      		long start = System.currentTimeMillis(); 
+	      		try
+	      		{
+	      			waitLock.wait();
+	      		}
+	      		catch (InterruptedException e)
+	      		{	      			
+	      		}
+	      		wait -= (System.currentTimeMillis() - start);
+	      	}
+	      	
+	      	if (wait <= 0)
+	      	{
+	      		log.warn("Timed out waiting for last message");
+	      	}
+      	}      	
+      }      
       
       return -1;
    }
  
-   private long expectedSequence = 0;
+   private volatile long expectedSequence = 0;
    
    private Map<Long, JBossMessage> heldBack = new HashMap<Long, JBossMessage>();
    
@@ -345,7 +376,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
    	throw new IllegalStateException("Should not be handled on the server");
    }
    
-   public synchronized void send(JBossMessage message, boolean checkForDuplicates, long thisSequence) throws JMSException
+   public void send(JBossMessage message, boolean checkForDuplicates, long thisSequence) throws JMSException
    {
       try
       {                
@@ -356,25 +387,29 @@ public class ServerSessionEndpoint implements SessionEndpoint
       		
       		//This is a workaround to allow us to use one way messages for np messages for performance
       		//reasons
-      		      	         
-      		if (thisSequence == expectedSequence)
-      		{
-      			do
-      			{
-      				connectionEndpoint.sendMessage(message, null, false); 
-      				
-         			expectedSequence++;
-         			
-         			message = (JBossMessage)heldBack.remove(expectedSequence);
-      				
-      			} while (message != null);
-      			
-      		}
-      		else
-      		{
-      			//Not the expected one - add it to the map
-      			
-      			heldBack.put(thisSequence, message);      			
+      		
+      		synchronized (waitLock)
+      		{	      		      	        
+	      		if (thisSequence == expectedSequence)
+	      		{
+	      			do
+	      			{
+	      				connectionEndpoint.sendMessage(message, null, false); 
+	      				
+	         			expectedSequence++;
+	         			
+	         			message = (JBossMessage)heldBack.remove(expectedSequence);
+	      				
+	      			} while (message != null);	      			
+	      		}
+	      		else
+	      		{
+	      			//Not the expected one - add it to the map
+	      			
+	      			heldBack.put(thisSequence, message);      			
+	      		}
+	      		
+	      		waitLock.notify();
       		}
       	}
       	else

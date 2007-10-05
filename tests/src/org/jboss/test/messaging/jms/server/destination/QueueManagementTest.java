@@ -576,6 +576,9 @@ public class QueueManagementTest extends DestinationManagementTestBase
          prod.send(tm5);
          prod.send(tm6);
          
+         //Give them time to arrive
+         Thread.sleep(3000);
+         
          ObjectName destObjectName = 
             new ObjectName("jboss.messaging.destination:service=Queue,name=QueueListMessages");
           

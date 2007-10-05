@@ -359,7 +359,7 @@ public class SimpleConnectionManager implements ConnectionManager, ConnectionLis
             try
             {
       			log.debug("clPearing up state for connection " + sce);
-               sce.closing();
+               sce.closing(-1);
                sce.close();
                log.debug("cleared up state for connection " + sce);
             }

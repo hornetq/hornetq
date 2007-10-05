@@ -302,7 +302,7 @@ public class ClosedInterceptor implements Interceptor
          Closeable del = (Closeable)child.getDelegate();
          try
          {
-            del.closing();
+            del.closing(-1);
             del.close();
          }
          catch (Throwable t)

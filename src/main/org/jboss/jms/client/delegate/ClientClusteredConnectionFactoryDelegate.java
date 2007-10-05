@@ -85,7 +85,6 @@ public class ClientClusteredConnectionFactoryDelegate extends DelegateSupport
 
    public synchronized void establishCallback()
    {
-
       log.debug(" Establishing CFCallback\n");
 
       for (int server = delegates.length - 1; server >= 0; server--)

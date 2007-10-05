@@ -46,5 +46,5 @@ public interface Closeable
     * 
     * @throws JMSException
     */
-   long closing() throws JMSException;
+   long closing(long sequence) throws JMSException;
 }

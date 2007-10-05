@@ -36,18 +36,24 @@ import org.jboss.jms.client.Closeable;
  */
 public class ClosingRequest extends RequestSupport
 {
+	private long sequence;
+	
    public ClosingRequest()
    {      
    }
    
-   public ClosingRequest(String objectId, byte version)
+   public ClosingRequest(long sequence, String objectId, byte version)
    {
       super(objectId, PacketSupport.REQ_CLOSING, version);
+      
+      this.sequence = sequence;
    }
    
    public void read(DataInputStream is) throws Exception
    {
       super.read(is);
+      
+      this.sequence = is.readLong();
    }
 
    public ResponseSupport serverInvoke() throws Exception
@@ -59,7 +65,7 @@ public class ClosingRequest extends RequestSupport
          throw new IllegalStateException("Cannot find object in dispatcher with id " + objectId);
       }
       
-      long id = endpoint.closing();
+      long id = endpoint.closing(sequence);
       
       return new ClosingResponse(id);
    }
@@ -67,6 +73,9 @@ public class ClosingRequest extends RequestSupport
    public void write(DataOutputStream os) throws Exception
    {
       super.write(os);
+      
+      os.writeLong(sequence);
+      
       os.flush();
    }
 

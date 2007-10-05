@@ -425,7 +425,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
       } 
    }
    
-   public long closing() throws JMSException
+   public long closing(long sequence) throws JMSException
    {
       log.trace(this + " closing (noop)");    
       

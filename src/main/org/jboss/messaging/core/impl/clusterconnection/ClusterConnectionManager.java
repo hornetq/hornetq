@@ -48,11 +48,7 @@ import EDU.oswego.cs.dl.util.concurrent.TimedCallable;
 /**
  * 
  * This class handles connections to other nodes that are used to pull messages from remote queues to local queues
- * 
- *
- * TODO - clean closing of suckers
- * 
- * 
+ *  
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision: $</tt>20 Jun 2007
  *

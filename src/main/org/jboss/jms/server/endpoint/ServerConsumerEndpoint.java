@@ -326,7 +326,7 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
 
    // Closeable implementation ---------------------------------------------------------------------
 
-   public long closing() throws JMSException
+   public long closing(long sequence) throws JMSException
    {
       try
       {

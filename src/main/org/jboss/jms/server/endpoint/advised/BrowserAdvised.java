@@ -60,9 +60,9 @@ public class BrowserAdvised extends AdvisedSupport implements BrowserEndpoint
       endpoint.close();
    }
 
-   public long closing() throws JMSException
+   public long closing(long sequence) throws JMSException
    {
-      return endpoint.closing();
+      return endpoint.closing(sequence);
    }
 
    public void reset() throws JMSException

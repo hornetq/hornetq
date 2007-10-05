@@ -334,7 +334,7 @@ public class JBossConnectionConsumer implements ConnectionConsumer, Runnable
       
       try
       {      
-         sess.closing();
+         sess.closing(-1);
          sess.close();
       }
       catch (Throwable t)

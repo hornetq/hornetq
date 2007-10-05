@@ -271,7 +271,7 @@ public class SimpleConnectionManagerTest extends JMSTestCase
          closed = true;
       }
 
-      public long closing() throws JMSException
+      public long closing(long seq) throws JMSException
       {
          return -1;
       }

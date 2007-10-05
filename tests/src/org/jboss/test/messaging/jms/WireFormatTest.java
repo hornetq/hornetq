@@ -725,7 +725,7 @@ public class WireFormatTest extends JMSTestCase
       
       public void testClosingRequest() throws Exception
       { 
-         RequestSupport req =  new ClosingRequest("23", (byte)77);
+         RequestSupport req =  new ClosingRequest(12, "23", (byte)77);
                  
          testPacket(req, PacketSupport.REQ_CLOSING);                           
       }
