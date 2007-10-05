@@ -73,6 +73,9 @@ public class MiscellaneousTest extends JMSTestCase
 	      TextMessage m = session.createTextMessage("message one");
 	
 	      prod.send(m);
+	      
+	      //Give the message time to reach the queue
+	      Thread.sleep(2000);
 	
 	      QueueBrowser browser = session.createBrowser(queue1);
 	
