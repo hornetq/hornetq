@@ -26,12 +26,14 @@ import java.io.Serializable;
 import javax.jms.Connection;
 import javax.jms.DeliveryMode;
 import javax.jms.Destination;
+import javax.jms.InvalidDestinationException;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 
+import org.jboss.jms.destination.JBossTopic;
 import org.jboss.test.messaging.jms.message.SimpleJMSMessage;
 import org.jboss.test.messaging.jms.message.SimpleJMSTextMessage;
 
@@ -98,10 +100,17 @@ public class MessageProducerTest extends JMSTestCase
    {
    }
    
-   /**
-    * The simplest possible non-transacted test.
-    */
-   public void testSimpleSend() throws Exception
+   public void testSendToQueuePersistent() throws Exception
+   {
+   	sendToQueue(true);
+   }
+   
+   public void testSendToQueueNonPersistent() throws Exception
+   {
+   	sendToQueue(false);
+   }
+   
+   private void sendToQueue(boolean persistent) throws Exception
    {
       Connection pconn = null;      
       Connection cconn = null;
@@ -133,10 +142,17 @@ public class MessageProducerTest extends JMSTestCase
       }
    }
 
-   /**
-    * The simplest possible transacted test.
-    */
-   public void testTransactedSend() throws Exception
+   public void testTransactedSendPersistent() throws Exception
+   {
+   	transactedSend(true);
+   }
+   
+   public void testTransactedSendNonPersistent() throws Exception
+   {
+   	transactedSend(false);
+   }
+   
+   private void transactedSend(boolean persistent) throws Exception
    {
       Connection pconn = null;
       Connection cconn = null;
@@ -203,8 +219,18 @@ public class MessageProducerTest extends JMSTestCase
          }
       }
    }
-
+   
    public void testPersistentSendToTopic() throws Exception
+   {
+   	sendToTopic(true);
+   }
+   
+   public void testNonPersistentSendToTopic() throws Exception
+   {
+   	sendToTopic(false);      
+   }
+
+   private void sendToTopic(boolean persistent) throws Exception
    {
 
       Connection pconn = cf.createConnection();
@@ -215,6 +241,9 @@ public class MessageProducerTest extends JMSTestCase
          Session ps = pconn.createSession(false, Session.AUTO_ACKNOWLEDGE);
          Session cs = cconn.createSession(false, Session.AUTO_ACKNOWLEDGE);
          final MessageProducer p = ps.createProducer(topic1);
+         
+         p.setDeliveryMode(persistent ? DeliveryMode.PERSISTENT : DeliveryMode.NON_PERSISTENT);
+         
          MessageConsumer c = cs.createConsumer(topic1);
 
          cconn.start();
@@ -246,6 +275,8 @@ public class MessageProducerTest extends JMSTestCase
          cconn.close();
       }
    }
+   
+
 
    /**
     *  Test sending via anonymous producer
@@ -394,7 +425,7 @@ public class MessageProducerTest extends JMSTestCase
 //      {
 //         pconn.close();
 //      }
-//   }
+//   }  
 
    //
    // disabled MessageID tests

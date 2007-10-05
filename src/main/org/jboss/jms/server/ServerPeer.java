@@ -28,6 +28,8 @@ import java.io.PrintWriter;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -72,9 +74,9 @@ import org.jboss.messaging.core.impl.message.SimpleMessageStore;
 import org.jboss.messaging.core.impl.postoffice.MessagingPostOffice;
 import org.jboss.messaging.core.impl.tx.TransactionRepository;
 import org.jboss.messaging.util.ExceptionUtil;
+import org.jboss.messaging.util.JMXAccessor;
 import org.jboss.messaging.util.Util;
 import org.jboss.messaging.util.Version;
-import org.jboss.messaging.util.JMXAccessor;
 import org.jboss.mx.loading.UnifiedClassLoader3;
 import org.jboss.remoting.marshal.MarshalFactory;
 import org.jboss.system.ServiceCreator;
@@ -90,6 +92,7 @@ import EDU.oswego.cs.dl.util.concurrent.ConcurrentReaderHashMap;
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:juha@jboss.org">Juha Lindfors</a>
+ * @author <a href="mailto:aslak@conduct.no">Aslak Knutsen</a>
  * 
  * @version <tt>$Revision$</tt>
  *
@@ -842,6 +845,14 @@ public class ServerPeer extends ServiceMBeanSupport
    public String listMessageCountersAsHTML() throws Exception
    {
       List counters = getMessageCounters();
+
+      Collections.sort(counters, new Comparator() {
+      	public int compare(Object o1, Object o2) {
+      		MessageCounter m1 = (MessageCounter)o1;
+      		MessageCounter m2 = (MessageCounter)o2;
+      		return m1.getDestinationName().compareTo(m2.getDestinationName());
+      	}
+      });
 
       String ret =
          "<table width=\"100%\" border=\"1\" cellpadding=\"1\" cellspacing=\"1\">"

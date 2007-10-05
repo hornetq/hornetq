@@ -35,6 +35,7 @@ import org.jboss.jms.destination.JBossQueue;
 import org.jboss.jms.destination.JBossTopic;
 import org.jboss.jms.message.JBossMessage;
 import org.jboss.jms.server.endpoint.ServerSessionEndpoint;
+import org.jboss.jms.server.endpoint.SessionInternalEndpoint;
 
 /**
  * The server-side advised instance corresponding to a Session. It is bound to the AOP
@@ -47,10 +48,10 @@ import org.jboss.jms.server.endpoint.ServerSessionEndpoint;
  *
  * $Id$
  */
-public class SessionAdvised extends AdvisedSupport implements SessionEndpoint
+public class SessionAdvised extends AdvisedSupport implements SessionInternalEndpoint
 {
    // Constants -----------------------------------------------------
-
+	
    // Attributes ----------------------------------------------------
 
    protected SessionEndpoint endpoint;
@@ -78,7 +79,7 @@ public class SessionAdvised extends AdvisedSupport implements SessionEndpoint
 
    public void send(JBossMessage msg, boolean checkForDuplicates) throws JMSException
    {
-      endpoint.send(msg, checkForDuplicates);
+      throw new IllegalStateException("Invocation should not be handle here");
    }
    
    public void send(JBossMessage msg, boolean checkForDuplicates, long seq) throws JMSException

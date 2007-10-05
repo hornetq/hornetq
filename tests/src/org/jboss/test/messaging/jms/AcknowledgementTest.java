@@ -954,8 +954,7 @@ public class AcknowledgementTest extends JMSTestCase
 	      conn = cf.createConnection();
 	      Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 	      MessageProducer prod = sessSend.createProducer(queue1);
-	      prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
-	      
+  
 	      log.trace("Sending messages");
 	      
 	      TextMessage tm1 = sessSend.createTextMessage("a");
@@ -1086,8 +1085,7 @@ public class AcknowledgementTest extends JMSTestCase
 	      conn = cf.createConnection();
 	      Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 	      MessageProducer prod = sessSend.createProducer(queue1);
-	      prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
-	      
+
 	      log.trace("Sending messages");
 	      
 	      TextMessage tm1 = sessSend.createTextMessage("a");
@@ -1150,7 +1148,7 @@ public class AcknowledgementTest extends JMSTestCase
 	      conn = cf.createConnection();
 	      Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 	      MessageProducer prod = sessSend.createProducer(queue1);
-	      prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+
 	      TextMessage tm1 = sessSend.createTextMessage("a");
 	      TextMessage tm2 = sessSend.createTextMessage("b");
 	      TextMessage tm3 = sessSend.createTextMessage("c");
@@ -1196,7 +1194,7 @@ public class AcknowledgementTest extends JMSTestCase
 	      conn = cf.createConnection();
 	      Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 	      MessageProducer prod = sessSend.createProducer(queue1);
-	      prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+
 	      TextMessage tm1 = sessSend.createTextMessage("a");
 	      TextMessage tm2 = sessSend.createTextMessage("b");
 	      TextMessage tm3 = sessSend.createTextMessage("c");

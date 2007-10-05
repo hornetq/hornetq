@@ -85,12 +85,15 @@ public class SessionSendRequest extends RequestSupport
       SessionAdvised advised = 
          (SessionAdvised)Dispatcher.instance.getTarget(objectId);
       
-      if (advised == null)
-      {
-         throw new IllegalStateException("Cannot find object in dispatcher with id " + objectId);
+      if (advised != null)
+      {         
+         advised.send(msg, checkForDuplicates, sequence);
       }
-
-      advised.send(msg, checkForDuplicates, sequence);
+      else
+      {
+      	//Since NP messages are sent one way, there is a possibility the session has closed
+      	//by the time the message arrives, so we ignore this
+      }
       
       return null;
    }

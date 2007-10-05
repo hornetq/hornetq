@@ -94,15 +94,18 @@ public class MessageCleanupTest extends JMSTestCase
       
       MessageProducer prod = sess.createProducer(ourTopic);
       
-      prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
-      
+      prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);      
+       
       MessageConsumer cons = sess.createConsumer(ourTopic);
                   
       for (int i = 0; i < 150; i++)
       {
          prod.send(sess.createMessage());
       }
-        
+      
+      //Give them time to arrive NP messages are sent one way
+      Thread.sleep(5000);
+              
       //50 Should be paged onto disk
       
       assertEquals(50, getReferenceIds().size());
@@ -145,8 +148,9 @@ public class MessageCleanupTest extends JMSTestCase
          prod.send(sess.createMessage());
       }
       
-      SimpleMessageStore ms = (SimpleMessageStore)ServerManagement.getMessageStore();
-      
+      //Give them time to arrive NP messages are sent one way
+      Thread.sleep(5000);
+       
       assertEquals(100, getReferenceIds().size());
       
       assertEquals(50, getMessageIds().size());

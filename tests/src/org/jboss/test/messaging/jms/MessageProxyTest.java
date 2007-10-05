@@ -81,8 +81,7 @@ public class MessageProxyTest extends JMSTestCase
          Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
          
          MessageProducer prod = sess.createProducer(queue1);
-         prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
-         
+     
          MessageConsumer cons = sess.createConsumer(queue1);
          
          Message msent = sess.createMessage();
@@ -139,8 +138,7 @@ public class MessageProxyTest extends JMSTestCase
          Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
          
          MessageProducer prod = sess.createProducer(queue1);
-         prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
-         
+    
          MessageConsumer cons = sess.createConsumer(queue1);
          
          Message msent = sess.createMessage();
@@ -193,9 +191,7 @@ public class MessageProxyTest extends JMSTestCase
          Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
          
          MessageProducer prod = sess.createProducer(queue1);
-         
-         prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
-          
+               
          MapMessage m = sess.createMapMessage();
          
          JBossMessage check1 = ((MessageProxy)m).getMessage();
@@ -320,9 +316,7 @@ public class MessageProxyTest extends JMSTestCase
          Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
          
          MessageProducer prod = sess.createProducer(queue1);
-         
-         prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
-          
+              
          MapMessage m = sess.createMapMessage();
          
          MessageConsumer cons = sess.createConsumer(queue1);

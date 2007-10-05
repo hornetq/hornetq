@@ -91,6 +91,9 @@ public class JMSPriorityHeaderTest extends JMSTestCase
       prod.send(m7, DeliveryMode.NON_PERSISTENT, 7, 0);
       prod.send(m8, DeliveryMode.NON_PERSISTENT, 8, 0);
       prod.send(m9, DeliveryMode.NON_PERSISTENT, 9, 0);
+      
+      //NP messages are sent async so we need to allow them time to all hit the server
+      Thread.sleep(2000);
 
       Session sessReceive = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
       
@@ -163,6 +166,9 @@ public class JMSPriorityHeaderTest extends JMSTestCase
       prod.send(m7, DeliveryMode.NON_PERSISTENT, 5, 0);
       prod.send(m8, DeliveryMode.NON_PERSISTENT, 5, 0);
       prod.send(m9, DeliveryMode.NON_PERSISTENT, 6, 0);
+      
+      //Give them time to hit the server
+      Thread.sleep(2000);
       
       cons = sessReceive.createConsumer(queue1);         
       
@@ -418,6 +424,9 @@ public class JMSPriorityHeaderTest extends JMSTestCase
       TextMessage m0 = sessSend.createTextMessage("a");
          
       prod.send(m0, DeliveryMode.NON_PERSISTENT, 7, 0);
+      
+      //Let it hit server
+      Thread.sleep(2000);
 
       Session sessReceive = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
       

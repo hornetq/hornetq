@@ -189,6 +189,10 @@ public class BridgeTestBase extends MessagingTestCase
             
             prod.send(tm);
          }
+         
+         //NP messages are sent async so if you close the connection too quickly you may lose the last
+         //one
+         Thread.sleep(1000);
       }
       finally
       {
@@ -294,6 +298,8 @@ public class BridgeTestBase extends MessagingTestCase
             TextMessage tm = (TextMessage)cons.receive(30000);
             
             assertNotNull(tm);
+            
+            log.info("Got message " + tm.getText());
               
             assertEquals("message" + (i + start), tm.getText());
          } 

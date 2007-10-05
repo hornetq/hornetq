@@ -903,6 +903,9 @@ public class ServiceContainer
 
          if (objectStoreDir != null)
          {
+         	//Delete the old one
+         	//deleteDirectory(new File(objectStoreDir));
+         	
             newObjectStore = objectStoreDir + "/" + newObjectStore;
          }
 
@@ -1090,7 +1093,6 @@ public class ServiceContainer
    {
       if (tm == null)
       {
-
          setupObjectStoreDir();
          log.info("Starting arjuna tx mgr");
          tm = com.arjuna.ats.jta.TransactionManager.transactionManager();
@@ -1112,7 +1114,7 @@ public class ServiceContainer
       log.debug("bound " + USER_TRANSACTION_JNDI_NAME);
    }
 
-   private boolean deleteDirectory(File directory)
+   private static boolean deleteDirectory(File directory)
    {
       if (directory.isDirectory())
       {
