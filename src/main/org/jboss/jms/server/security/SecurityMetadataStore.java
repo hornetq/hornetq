@@ -308,7 +308,9 @@ public class SecurityMetadataStore implements SecurityStore
    	// Sanity check
    	if (DEFAULT_SUCKER_USER_PASSWORD.equals(password))
    	{
-   		log.warn("*** THE DEFAULT SUCKER USER PASSWORD HAS NOT BEEN CHANGED FROM THE INSTALLATION DEFAULT - THIS IS A SECURITY RISK - PLEASE CHANGE THIS!! **");
+   		log.warn("WARNING! POTENTIAL SECURITY RISK. It has been detected that the MessageSucker component " +
+   				   "which sucks messages from one node to another has not had its password changed from the installation default. " +
+   				   "Please see the userguide for instructions on how to do this.");
    	}
    }
 
