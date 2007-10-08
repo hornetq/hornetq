@@ -1041,7 +1041,7 @@ public class Bridge implements MessagingComponent
             enlistResources(tx);                  
          }
          
-         producer = sess.createProducer(targetDestination);
+         producer = sess.createProducer(null);
                           
          consumer.setMessageListener(new SourceListener());
          
@@ -1152,10 +1152,6 @@ public class Bridge implements MessagingComponent
       return false;      
    }
     
-   /*
-    * If one of the JMS operations fail, then we try and lookup the connection factories, create
-    * the connections and retry, up to a certain number of times
-    */
    private void sendBatch() 
    {
       if (trace) { log.trace("Sending batch of " + messages.size() + " messages"); }
@@ -1197,8 +1193,20 @@ public class Bridge implements MessagingComponent
             
             if (trace) { log.trace("Sending message " + msg); }
             
-            producer.send(msg);
+            long timeToLive = msg.getJMSExpiration();
             
+   			if (timeToLive != 0)
+   			{
+   				timeToLive -=  System.currentTimeMillis();
+   				
+   				if (timeToLive <= 0)
+   				{
+   					timeToLive = 1; //Should have already expired - set to 1 so it expires when it is consumed or delivered
+   				}
+   			}
+            
+   			producer.send(targetDestination, msg, msg.getJMSDeliveryMode(), msg.getJMSPriority(), timeToLive);
+   			
             if (trace) { log.trace("Sent message " + msg); }                    
          }
          
