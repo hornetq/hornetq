@@ -217,6 +217,8 @@ public class DistributedRequestResponseTest extends ClusteringTestBase
          {
             conn1.close();
          }
+         
+         Thread.sleep(4000);
       }
    }
    

@@ -100,6 +100,9 @@ public class ClusterViewUpdateTest extends ClusteringTestBase
     *  */
    public void testGarbageCollectionOnClusteredCF() throws Throwable
    {
+   	//FIXME - this test seems fishy to me
+   	//AFAIK it is not possible to be make sure GC actually runs
+   	//all we can do is give the VM a hint - Tim
 
       JBossConnectionFactory cf = (JBossConnectionFactory)ic[0].lookup("/ClusteredConnectionFactory");
       ClientClusteredConnectionFactoryDelegate clusterDelegate = (ClientClusteredConnectionFactoryDelegate)cf.getDelegate();
@@ -114,7 +117,7 @@ public class ClusterViewUpdateTest extends ClusteringTestBase
          MessageConsumer cons = session.createConsumer(queue[0]);
          prod.send(session.createTextMessage("Hello"));
          session.commit();
-         TextMessage message = (TextMessage)cons.receive(1000);
+         TextMessage message = (TextMessage)cons.receive(10000);
          assertEquals("Hello", message.getText());
          log.info("Received message " + message.getText());
          session.commit();
