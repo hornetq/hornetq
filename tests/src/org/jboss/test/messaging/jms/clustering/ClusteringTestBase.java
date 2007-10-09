@@ -218,7 +218,7 @@ public class ClusteringTestBase extends MessagingTestCase
       {
       	//Wait a little while before starting the test to ensure the new view propagates
       	//otherwise the view change might hit after the test has started
-      	Thread.sleep(4000);
+      	Thread.sleep(10000);
       }
       
       if (ic != null)
