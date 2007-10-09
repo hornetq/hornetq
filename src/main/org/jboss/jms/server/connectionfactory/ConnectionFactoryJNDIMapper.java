@@ -51,7 +51,6 @@ import org.jboss.logging.Logger;
 import org.jboss.messaging.core.contract.ClusterNotification;
 import org.jboss.messaging.core.contract.ClusterNotificationListener;
 import org.jboss.messaging.core.contract.Replicator;
-import org.jboss.messaging.util.GUIDGenerator;
 import org.jboss.messaging.util.JNDIUtil;
 import org.jboss.messaging.util.Version;
 
@@ -165,10 +164,13 @@ public class ConnectionFactoryJNDIMapper
       }
 
       boolean creatingClustered = (supportsFailover || supportsLoadBalancing) && replicator != null;
+      
+      //The server peer strict setting overrides the connection factory
+      boolean useStrict = serverPeer.isStrictTck() || strictTck;
 
       ClientConnectionFactoryDelegate localDelegate =
          new ClientConnectionFactoryDelegate(uniqueName, id, serverPeer.getServerPeerID(),
-                                             locatorURI, version, clientPing, strictTck);
+                                             locatorURI, version, clientPing, useStrict);
 
       log.debug(this + " created local delegate " + localDelegate);
 

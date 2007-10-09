@@ -56,6 +56,7 @@ public class ProducerState extends HierarchicalStateSupport
    private int priority = 4;
    private long timeToLive = 0;
    private int deliveryMode = DeliveryMode.PERSISTENT;
+   private int strictTCK; // cache here
 
    private SessionState parent;
    private ProducerDelegate delegate;

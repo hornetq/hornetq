@@ -380,7 +380,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
    {
       try
       {                
-      	if (!message.isReliable())
+      	if (thisSequence != -1)
       	{
       		//Need to make sure it is in correct order since np messages are sent
       		//one way so they can arrive out of sequence

@@ -150,6 +150,12 @@ public class ServerPeer extends ServiceMBeanSupport
    private long recoverDeliveriesTimeout = 5 * 60 * 1000;
    
    private String suckerPassword;
+   
+   //Global override for strict behaviour
+   private boolean strictTck;
+   
+   //From a system property - this overrides
+   private boolean strictTckProperty;
       
    // wired components
 
@@ -234,6 +240,8 @@ public class ServerPeer extends ServiceMBeanSupport
 
          jmsUserManager = (JMSUserManager)JMXAccessor.getJMXAttributeOverSecurity(mbeanServer, jmsUserManagerObjectName, "Instance");
 
+         strictTckProperty = "true".equalsIgnoreCase(System.getProperty("jboss.messaging.stricttck"));
+         
          // We get references to some plugins lazily to avoid problems with circular MBean
          // dependencies
 
@@ -704,6 +712,16 @@ public class ServerPeer extends ServiceMBeanSupport
    	}
    	
    	this.suckerPassword = password;
+   }
+   
+   public void setStrictTck(boolean strictTck)
+   {
+   	this.strictTck = strictTck || strictTckProperty;
+   }
+   
+   public boolean isStrictTck()
+   {
+   	return strictTck || strictTckProperty;
    }
    
    public void enableMessageCounters()

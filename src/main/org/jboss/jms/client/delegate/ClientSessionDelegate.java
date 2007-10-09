@@ -30,6 +30,7 @@ import javax.jms.JMSException;
 import javax.jms.MessageListener;
 import javax.transaction.xa.XAResource;
 
+import org.jboss.jms.client.remoting.JMSRemotingConnection;
 import org.jboss.jms.client.state.ConnectionState;
 import org.jboss.jms.client.state.HierarchicalState;
 import org.jboss.jms.client.state.SessionState;
@@ -90,6 +91,8 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
    // Attributes -----------------------------------------------------------------------------------
 
    private int dupsOKBatchSize;
+   
+   private boolean strictTck;
 
    // Static ---------------------------------------------------------------------------------------
 
@@ -121,17 +124,23 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
       // synchronize (recursively) the client-side state
 
       state.synchronizeWith(newDelegate.getState());
+      
+      JMSRemotingConnection conn = ((ConnectionState)state.getParent()).getRemotingConnection();
 
-      client = ((ConnectionState)state.getParent()).getRemotingConnection().
-         getRemotingClient();
+      client = conn.getRemotingClient();
+      
+      strictTck = conn.isStrictTck();
    }
 
    public void setState(HierarchicalState state)
    {
       super.setState(state);
+      
+      JMSRemotingConnection conn = ((ConnectionState)state.getParent()).getRemotingConnection();
 
-      client = ((ConnectionState)state.getParent()).getRemotingConnection().
-                  getRemotingClient();
+      client = conn.getRemotingClient();
+      
+      strictTck = conn.isStrictTck();
    }
 
    // Closeable implementation ---------------------------------------------------------------------
@@ -444,14 +453,17 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
    public void send(JBossMessage m, boolean checkForDuplicates) throws JMSException
    {   	
    	long seq;
-   	if (m.isReliable())
+   	
+   	if (m.isReliable() || strictTck)
    	{
    		seq = -1;
    	}
    	else
    	{
    		SessionState sstate = (SessionState)state;
+   		
    		seq = sstate.getNPSendSequence();
+   		
    		sstate.incNpSendSequence();
    	}
    	

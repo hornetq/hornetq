@@ -212,6 +212,12 @@
       <type>boolean</type>
    </attribute>
    
+   <attribute access="read-write" getMethod="isStrictTck" setMethod="setStrictTck">
+      <description>Should strict TCK behaviour be always followed?</description>
+      <name>StrictTck</name>
+      <type>boolean</type>
+   </attribute>
+   
    <attribute access="write-only" setMethod="setSuckerPassword">
       <description>The password used for message suckers</description>
       <name>SuckerPassword</name>
