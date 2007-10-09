@@ -2794,6 +2794,44 @@ public class MessageConsumerTest extends JMSTestCase
          }
       }
    }
+   
+   public void testNoLocalMemoryExhaustion() throws Exception
+   {
+   	Connection conn = null;
+   	
+   	try
+   	{
+   		conn = cf.createConnection();
+   		
+   		Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+   		
+   		MessageProducer prod = sess.createProducer(topic1);
+   		
+   		MessageConsumer cons = sess.createConsumer(topic1, null, true);
+   		
+   		final int numMessages = 100;
+   		
+   		for (int i = 0; i < numMessages; i++)
+   		{
+   			prod.send(sess.createMessage());
+   		}
+   		
+   		conn.start();
+   		
+   		Message msg = cons.receive(3000);
+   		
+   		assertNull(msg);
+   		
+   		checkEmpty(topic1);
+   	}
+   	finally
+   	{
+   		if (conn != null)
+   		{
+   			conn.close();
+   		}
+   	}
+   }
 
    /*
     *

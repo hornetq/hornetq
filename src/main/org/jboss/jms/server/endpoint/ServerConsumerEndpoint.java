@@ -264,6 +264,31 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
             return delivery;
          }
          
+         if (noLocal)
+         {
+            String conId = ((JBossMessage) message).getConnectionID();
+
+            if (trace) { log.trace("message connection id: " + conId + " current connection connection id: " + sessionEndpoint.getConnectionEndpoint().getConnectionID()); }
+
+            if (sessionEndpoint.getConnectionEndpoint().getConnectionID().equals(conId))
+            {
+            	if (trace) { log.trace("Message from local connection so rejecting"); }
+            	
+            	try
+             	{
+             		delivery.acknowledge(null);
+             	}
+             	catch (Throwable t)
+             	{
+             		log.error("Failed to acknowledge delivery", t);
+             		
+             		return null;
+             	}
+             	
+             	return delivery;
+            }            
+         }
+                  
          if (slow)
          {
          	//If this is a slow consumer, we do not want to do any message buffering, so we immediately
@@ -307,20 +332,7 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
             if (trace) { log.trace("message selector " + (accept ? "accepts " : "DOES NOT accept ") + "the message"); }
          }
       }
-
-      if (accept)
-      {
-         if (noLocal)
-         {
-            String conId = ((JBossMessage) msg).getConnectionID();
-
-            if (trace) { log.trace("message connection id: " + conId + " current connection connection id: " + sessionEndpoint.getConnectionEndpoint().getConnectionID()); }
-
-            accept = !sessionEndpoint.getConnectionEndpoint().getConnectionID().equals(conId);
-
-            if (trace) { log.trace("accepting? " + accept); }
-         }
-      }
+      
       return accept;
    }
 
