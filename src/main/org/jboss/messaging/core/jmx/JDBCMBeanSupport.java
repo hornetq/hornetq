@@ -34,7 +34,7 @@ import javax.transaction.TransactionManager;
 
 import org.jboss.messaging.util.ExceptionUtil;
 import org.jboss.system.ServiceMBeanSupport;
-import org.jboss.tm.TransactionManagerServiceMBean;
+import org.jboss.tm.TransactionManagerLocator;
 
 /**
  * A JDBCMBeanSupport
@@ -167,11 +167,7 @@ public class JDBCMBeanSupport extends ServiceMBeanSupport
       // lazy initialization
       if (tm == null)
       {
-         TransactionManagerServiceMBean tms =
-            (TransactionManagerServiceMBean)MBeanServerInvocationHandler.
-            newProxyInstance(getServer(), tmObjectName, TransactionManagerServiceMBean.class, false);
-
-         tm = tms.getTransactionManager();
+         tm = TransactionManagerLocator.getInstance().locate();
       }
 
       return tm;
