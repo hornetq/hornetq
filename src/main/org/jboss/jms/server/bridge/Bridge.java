@@ -823,9 +823,7 @@ public class Bridge implements MessagingComponent
       
       return tm;
    }
-   
-   
-   
+         
    private Connection createConnection(String username, String password, ConnectionFactoryFactory cff)
       throws Exception
    {
@@ -865,8 +863,6 @@ public class Bridge implements MessagingComponent
             conn = cf.createConnection(username, password);            
          }  
       }
-      
-      conn.setExceptionListener(new BridgeExceptionListener());
       
       return conn;
    }
@@ -939,8 +935,7 @@ public class Bridge implements MessagingComponent
       	//Lookup the destinations
       	sourceDestination = sourceDestinationFactory.createDestination();
       	
-      	targetDestination = targetDestinationFactory.createDestination();
-      	      
+      	targetDestination = targetDestinationFactory.createDestination();      	      
          
          sourceConn = createConnection(sourceUsername, sourcePassword, sourceCff);
          
@@ -948,7 +943,7 @@ public class Bridge implements MessagingComponent
          {
             targetConn = createConnection(targetUsername, targetPassword, targetCff);
             
-          //  targetConn.setExceptionListener(exceptionListener); 
+            targetConn.setExceptionListener(new BridgeExceptionListener());            
          }
                   
          if (clientID != null)
@@ -956,7 +951,7 @@ public class Bridge implements MessagingComponent
             sourceConn.setClientID(clientID);
          }
          
-        // sourceConn.setExceptionListener(exceptionListener);         
+         sourceConn.setExceptionListener(new BridgeExceptionListener());         
           
          Session sess;
          
