@@ -366,7 +366,7 @@ public class BridgeTest extends BridgeTestBase
          
          try
          {
-            bridge= new Bridge(null, cff1, sourceQueue, destQueue,
+            bridge= new Bridge(null, cff1, sourceQueueFactory, targetQueueFactory,
                                sourceUsername, sourcePassword, destUsername, destPassword,
                                selector, failureRetryInterval, maxRetries, qosMode,
                                batchSize, maxBatchTime,
@@ -379,7 +379,7 @@ public class BridgeTest extends BridgeTestBase
          
          try
          {
-            bridge= new Bridge(cff0, null, sourceQueue, destQueue,
+            bridge= new Bridge(cff0, null, sourceQueueFactory, targetQueueFactory,
                                sourceUsername, sourcePassword, destUsername, destPassword,
                                selector, failureRetryInterval, maxRetries, qosMode,
                                batchSize, maxBatchTime,
@@ -392,7 +392,7 @@ public class BridgeTest extends BridgeTestBase
          
          try
          {
-            bridge= new Bridge(cff0, cff1, null, destQueue,
+            bridge= new Bridge(cff0, cff1, null, targetQueueFactory,
                                sourceUsername, sourcePassword, destUsername, destPassword,
                                selector, failureRetryInterval, maxRetries, qosMode,
                                batchSize, maxBatchTime,
@@ -405,7 +405,7 @@ public class BridgeTest extends BridgeTestBase
          
          try
          {
-            bridge= new Bridge(cff0, cff1, sourceQueue, null,
+            bridge= new Bridge(cff0, cff1, sourceQueueFactory, null,
                                sourceUsername, sourcePassword, destUsername, destPassword,
                                selector, failureRetryInterval, maxRetries, qosMode,
                                batchSize, maxBatchTime,
@@ -418,7 +418,7 @@ public class BridgeTest extends BridgeTestBase
          
          try
          {
-            bridge= new Bridge(cff0, cff1, sourceQueue, destQueue,
+            bridge= new Bridge(cff0, cff1, sourceQueueFactory, targetQueueFactory,
                                sourceUsername, sourcePassword, destUsername, destPassword,
                                selector, -2, maxRetries, qosMode,
                                batchSize, maxBatchTime,
@@ -431,7 +431,7 @@ public class BridgeTest extends BridgeTestBase
          
          try
          {
-            bridge= new Bridge(cff0, cff1, sourceQueue, destQueue,
+            bridge= new Bridge(cff0, cff1, sourceQueueFactory, targetQueueFactory,
                                sourceUsername, sourcePassword, destUsername, destPassword,
                                selector, -1, 10, qosMode,
                                batchSize, maxBatchTime,
@@ -444,7 +444,7 @@ public class BridgeTest extends BridgeTestBase
          
          try
          {
-            bridge= new Bridge(cff0, cff1, sourceQueue, null,
+            bridge= new Bridge(cff0, cff1, sourceQueueFactory, null,
                                sourceUsername, sourcePassword, destUsername, destPassword,
                                selector, failureRetryInterval, maxRetries, -2,
                                batchSize, maxBatchTime,
@@ -457,7 +457,7 @@ public class BridgeTest extends BridgeTestBase
          
          try
          {
-            bridge= new Bridge(cff0, cff1, sourceQueue, null,
+            bridge= new Bridge(cff0, cff1, sourceQueueFactory, null,
                                sourceUsername, sourcePassword, destUsername, destPassword,
                                selector, failureRetryInterval, maxRetries, 3,
                                batchSize, maxBatchTime,
@@ -470,7 +470,7 @@ public class BridgeTest extends BridgeTestBase
          
          try
          {
-            bridge= new Bridge(cff0, cff1, sourceQueue, null,
+            bridge= new Bridge(cff0, cff1, sourceQueueFactory, null,
                                sourceUsername, sourcePassword, destUsername, destPassword,
                                selector, failureRetryInterval, maxRetries, 3,
                                0, maxBatchTime,
@@ -483,7 +483,7 @@ public class BridgeTest extends BridgeTestBase
          
          try
          {
-            bridge= new Bridge(cff0, cff1, sourceQueue, null,
+            bridge= new Bridge(cff0, cff1, sourceQueueFactory, null,
                                sourceUsername, sourcePassword, destUsername, destPassword,
                                selector, failureRetryInterval, maxRetries, 3,
                                batchSize, -2,
@@ -517,7 +517,7 @@ public class BridgeTest extends BridgeTestBase
          
          String selector = "vegetable='radish'";
          
-         bridge = new Bridge(cff0, cff1, sourceQueue, destQueue,
+         bridge = new Bridge(cff0, cff1, sourceQueueFactory, targetQueueFactory,
                   null, null, null, null,
                   selector, 5000, 10, Bridge.QOS_AT_MOST_ONCE,
                   1, -1,
@@ -551,7 +551,7 @@ public class BridgeTest extends BridgeTestBase
          
          Session sessRec = connTarget.createSession(false, Session.AUTO_ACKNOWLEDGE);
          
-         MessageConsumer cons = sessRec.createConsumer(destQueue);
+         MessageConsumer cons = sessRec.createConsumer(targetQueue);
          
          connTarget.start();
                                  
@@ -611,7 +611,7 @@ public class BridgeTest extends BridgeTestBase
            
          final int NUM_MESSAGES = 10;
          
-         bridge = new Bridge(cff0, cff1, sourceTopic, destQueue,
+         bridge = new Bridge(cff0, cff1, sourceTopicFactory, targetQueueFactory,
                   null, null, null, null,
                   null, 5000, 10, Bridge.QOS_AT_MOST_ONCE,
                   1, -1,
@@ -621,7 +621,7 @@ public class BridgeTest extends BridgeTestBase
          
          this.sendMessages(cf0, sourceTopic, 0, NUM_MESSAGES, false);
             
-         this.checkAllMessageReceivedInOrder(cf1, destQueue, 0, NUM_MESSAGES);                          
+         this.checkAllMessageReceivedInOrder(cf1, targetQueue, 0, NUM_MESSAGES);                          
       }
       finally
       {      
@@ -663,7 +663,7 @@ public class BridgeTest extends BridgeTestBase
       {   
          final int NUM_MESSAGES = 10;
          
-         bridge = new Bridge(cff0, cff1, sourceTopic, destQueue,
+         bridge = new Bridge(cff0, cff1, sourceTopicFactory, targetQueueFactory,
                   null, null, null, null,
                   null, 5000, 10, Bridge.QOS_AT_MOST_ONCE,
                   1, -1,
@@ -673,7 +673,7 @@ public class BridgeTest extends BridgeTestBase
             
          sendMessages(cf0, sourceTopic, 0, NUM_MESSAGES, false);
          
-         checkAllMessageReceivedInOrder(cf1, destQueue, 0, NUM_MESSAGES);                    
+         checkAllMessageReceivedInOrder(cf1, targetQueue, 0, NUM_MESSAGES);                    
       }
       finally
       {                        
@@ -692,7 +692,7 @@ public class BridgeTest extends BridgeTestBase
       {
          final int NUM_MESSAGES = 10;
          
-         bridge = new Bridge(cff0, cff1, sourceTopic, destQueue,
+         bridge = new Bridge(cff0, cff1, sourceTopicFactory, targetQueueFactory,
                   null, null, null, null,
                   null, 5000, 10, Bridge.QOS_AT_MOST_ONCE,
                   1, -1,
@@ -702,7 +702,7 @@ public class BridgeTest extends BridgeTestBase
             
          sendMessages(cf0, sourceTopic, 0, NUM_MESSAGES, true);
          
-         checkAllMessageReceivedInOrder(cf1, destQueue, 0, NUM_MESSAGES);              
+         checkAllMessageReceivedInOrder(cf1, targetQueue, 0, NUM_MESSAGES);              
       }
       finally
       {                      
@@ -742,7 +742,7 @@ public class BridgeTest extends BridgeTestBase
       {
          final int NUM_MESSAGES = 10;
          
-         bridge = new Bridge(cff0, cff1, sourceQueue, destQueue,
+         bridge = new Bridge(cff0, cff1, sourceQueueFactory, targetQueueFactory,
                   null, null, null, null,
                   null, 5000, 10, Bridge.QOS_AT_MOST_ONCE,
                   1, -1,
@@ -785,7 +785,7 @@ public class BridgeTest extends BridgeTestBase
          
          Session sessTarget = connTarget.createSession(false, Session.AUTO_ACKNOWLEDGE);
          
-         MessageConsumer cons = sessTarget.createConsumer(destQueue);
+         MessageConsumer cons = sessTarget.createConsumer(targetQueue);
          
          connTarget.start();
          
@@ -913,7 +913,7 @@ public class BridgeTest extends BridgeTestBase
       {
          final int NUM_MESSAGES = 10;
          
-         bridge = new Bridge(cff0, cff1, sourceQueue, destQueue,
+         bridge = new Bridge(cff0, cff1, sourceQueueFactory, targetQueueFactory,
                   null, null, null, null,
                   null, 5000, 10, Bridge.QOS_AT_MOST_ONCE,
                   1, -1,
@@ -931,7 +931,7 @@ public class BridgeTest extends BridgeTestBase
          
          Session sessTarget = connTarget.createSession(false, Session.AUTO_ACKNOWLEDGE);
          
-         MessageConsumer cons = sessTarget.createConsumer(destQueue);
+         MessageConsumer cons = sessTarget.createConsumer(targetQueue);
          
          connTarget.start();
          
@@ -1031,7 +1031,7 @@ public class BridgeTest extends BridgeTestBase
       {
          final int NUM_MESSAGES = 10;
          
-         bridge = new Bridge(cff0, cff1, sourceQueue, destQueue,
+         bridge = new Bridge(cff0, cff1, sourceQueueFactory, targetQueueFactory,
                   null, null, null, null,
                   null, 5000, 10, Bridge.QOS_AT_MOST_ONCE,
                   1, -1,
@@ -1065,7 +1065,7 @@ public class BridgeTest extends BridgeTestBase
          
          Session sessTarget = connTarget.createSession(false, Session.AUTO_ACKNOWLEDGE);
          
-         MessageConsumer cons = sessTarget.createConsumer(destQueue);
+         MessageConsumer cons = sessTarget.createConsumer(targetQueue);
          
          connTarget.start();
          
@@ -1118,7 +1118,7 @@ public class BridgeTest extends BridgeTestBase
             
       try
       {      
-         bridge = new Bridge(cff0, cff1, sourceQueue, destQueue,
+         bridge = new Bridge(cff0, cff1, sourceQueueFactory, targetQueueFactory,
                   null, null, null, null,
                   null, 5000, 10, qosMode,
                   batchSize, -1,
@@ -1144,7 +1144,7 @@ public class BridgeTest extends BridgeTestBase
          
          t.start();
          
-         this.checkAllMessageReceivedInOrder(cf1, destQueue, 0, NUM_MESSAGES);
+         this.checkAllMessageReceivedInOrder(cf1, targetQueue, 0, NUM_MESSAGES);
                                               
          t.join();
          
@@ -1191,7 +1191,7 @@ public class BridgeTest extends BridgeTestBase
             
       try
       {      
-         bridge = new Bridge(cff0, cff1, sourceQueue, destQueue,
+         bridge = new Bridge(cff0, cff1, sourceQueueFactory, targetQueueFactory,
                   null, null, null, null,
                   null, 5000, 10, qosMode,
                   2, maxBatchTime,
@@ -1217,7 +1217,7 @@ public class BridgeTest extends BridgeTestBase
          
          t.start();
          
-         this.checkAllMessageReceivedInOrder(cf1, destQueue, 0, NUM_MESSAGES);
+         this.checkAllMessageReceivedInOrder(cf1, targetQueue, 0, NUM_MESSAGES);
                                               
          t.join();
          
@@ -1265,7 +1265,7 @@ public class BridgeTest extends BridgeTestBase
             
       try
       {  
-         bridge = new Bridge(cff0, cff0, sourceQueue, localDestQueue,
+         bridge = new Bridge(cff0, cff0, sourceQueueFactory, localTargetQueueFactory,
                   null, null, null, null,
                   null, 5000, 10, qosMode,
                   batchSize, -1,
@@ -1291,7 +1291,7 @@ public class BridgeTest extends BridgeTestBase
          
          t.start();
          
-         this.checkAllMessageReceivedInOrder(cf0, localDestQueue, 0, NUM_MESSAGES);
+         this.checkAllMessageReceivedInOrder(cf0, localTargetQueue, 0, NUM_MESSAGES);
                          
          t.join();
          
@@ -1337,7 +1337,7 @@ public class BridgeTest extends BridgeTestBase
       {
          final int NUM_MESSAGES = 10;
          
-         bridge = new Bridge(cff0, cff1, sourceQueue, destQueue,
+         bridge = new Bridge(cff0, cff1, sourceQueueFactory, targetQueueFactory,
                   null, null, null, null,
                   null, 5000, 10, qosMode,
                   NUM_MESSAGES, -1,
@@ -1351,7 +1351,7 @@ public class BridgeTest extends BridgeTestBase
                          
          //Verify none are received
          
-         this.checkEmpty(destQueue, 1);
+         this.checkEmpty(targetQueue, 1);
          
          //Send the other half
          
@@ -1359,7 +1359,7 @@ public class BridgeTest extends BridgeTestBase
          
          //This should now be receivable
          
-         this.checkAllMessageReceivedInOrder(cf1, destQueue, 0, NUM_MESSAGES);
+         this.checkAllMessageReceivedInOrder(cf1, targetQueue, 0, NUM_MESSAGES);
          
          //Send another batch with one more than batch size
          
@@ -1367,15 +1367,15 @@ public class BridgeTest extends BridgeTestBase
                   
          //Make sure only batch size are received
          
-         this.checkAllMessageReceivedInOrder(cf1, destQueue, 0, NUM_MESSAGES);
+         this.checkAllMessageReceivedInOrder(cf1, targetQueue, 0, NUM_MESSAGES);
          
          //Final batch
          
          this.sendMessages(cf0, sourceQueue, 0, NUM_MESSAGES - 1, persistent);
          
-         this.checkAllMessageReceivedInOrder(cf1, destQueue, NUM_MESSAGES, 1);
+         this.checkAllMessageReceivedInOrder(cf1, targetQueue, NUM_MESSAGES, 1);
          
-         this.checkAllMessageReceivedInOrder(cf1, destQueue, 0, NUM_MESSAGES - 1);
+         this.checkAllMessageReceivedInOrder(cf1, targetQueue, 0, NUM_MESSAGES - 1);
       }
       finally
       {      
@@ -1395,7 +1395,7 @@ public class BridgeTest extends BridgeTestBase
       {
          final int NUM_MESSAGES = 10;
          
-         bridge = new Bridge(cff0, cff0, sourceQueue, localDestQueue,
+         bridge = new Bridge(cff0, cff0, sourceQueueFactory, localTargetQueueFactory,
                   null, null, null, null,
                   null, 5000, 10, qosMode,
                   NUM_MESSAGES, -1,
@@ -1405,7 +1405,7 @@ public class BridgeTest extends BridgeTestBase
             
          this.sendMessages(cf0, sourceQueue, 0, NUM_MESSAGES / 2, persistent);
          
-         this.checkEmpty(destQueue, 1);                
+         this.checkEmpty(targetQueue, 1);                
          
          //Send the other half
          
@@ -1414,9 +1414,9 @@ public class BridgeTest extends BridgeTestBase
          
          //This should now be receivable
          
-         this.checkAllMessageReceivedInOrder(cf0, localDestQueue, 0, NUM_MESSAGES);
+         this.checkAllMessageReceivedInOrder(cf0, localTargetQueue, 0, NUM_MESSAGES);
          
-         this.checkEmpty(localDestQueue, 0);
+         this.checkEmpty(localTargetQueue, 0);
          
          this.checkEmpty(sourceQueue, 0);
          
@@ -1426,15 +1426,15 @@ public class BridgeTest extends BridgeTestBase
          
          //Make sure only batch size are received
          
-         this.checkAllMessageReceivedInOrder(cf0, localDestQueue, 0, NUM_MESSAGES);
+         this.checkAllMessageReceivedInOrder(cf0, localTargetQueue, 0, NUM_MESSAGES);
          
          //Final batch
          
          this.sendMessages(cf0, sourceQueue, 0, NUM_MESSAGES - 1, persistent);
          
-         this.checkAllMessageReceivedInOrder(cf0, localDestQueue, NUM_MESSAGES, 1);
+         this.checkAllMessageReceivedInOrder(cf0, localTargetQueue, NUM_MESSAGES, 1);
          
-         this.checkAllMessageReceivedInOrder(cf0, localDestQueue, 0, NUM_MESSAGES - 1);
+         this.checkAllMessageReceivedInOrder(cf0, localTargetQueue, 0, NUM_MESSAGES - 1);
       }
       finally
       {               
@@ -1455,7 +1455,7 @@ public class BridgeTest extends BridgeTestBase
          
          final int MAX_BATCH_SIZE = 100000; // something big so it won't reach it
          
-         bridge = new Bridge(cff0, cff1, sourceQueue, destQueue,
+         bridge = new Bridge(cff0, cff1, sourceQueueFactory, targetQueueFactory,
                   null, null, null, null,
                   null, 3000, 10, qosMode,
                   MAX_BATCH_SIZE, MAX_BATCH_TIME,
@@ -1471,11 +1471,11 @@ public class BridgeTest extends BridgeTestBase
          
          //Verify none are received
          
-         this.checkEmpty(destQueue, 1);
+         this.checkEmpty(targetQueue, 1);
          
          //Messages should now be receivable
          
-         this.checkAllMessageReceivedInOrder(cf1, destQueue, 0, NUM_MESSAGES);         
+         this.checkAllMessageReceivedInOrder(cf1, targetQueue, 0, NUM_MESSAGES);         
       }
       finally
       {      
@@ -1496,7 +1496,7 @@ public class BridgeTest extends BridgeTestBase
          
          final int MAX_BATCH_SIZE = 100000; // something big so it won't reach it
          
-         bridge = new Bridge(cff0, cff0, sourceQueue, localDestQueue,
+         bridge = new Bridge(cff0, cff0, sourceQueueFactory, localTargetQueueFactory,
                   null, null, null, null,
                   null, 3000, 10, qosMode,
                   MAX_BATCH_SIZE, MAX_BATCH_TIME,
@@ -1514,11 +1514,11 @@ public class BridgeTest extends BridgeTestBase
          
          //Verify none are received
          
-         this.checkEmpty(localDestQueue, 0);;
+         this.checkEmpty(localTargetQueue, 0);;
          
          //Messages should now be receivable
          
-         this.checkAllMessageReceivedInOrder(cf0, localDestQueue, 0, NUM_MESSAGES);
+         this.checkAllMessageReceivedInOrder(cf0, localTargetQueue, 0, NUM_MESSAGES);
       }
       finally
       {              

@@ -23,10 +23,7 @@ package org.jboss.jms.server.bridge;
 
 import java.util.Properties;
 
-import javax.jms.Destination;
 import javax.management.ObjectName;
-import javax.naming.Context;
-import javax.naming.InitialContext;
 
 import org.jboss.messaging.core.contract.MessagingComponent;
 import org.jboss.system.ServiceMBeanSupport;
@@ -316,14 +313,6 @@ public class BridgeService extends ServiceMBeanSupport implements BridgeMBean
       
       Properties targetProps = (Properties)server.getAttribute(targetProviderLoader, "Properties");
       
-      Context icSource = new InitialContext(sourceProps);
-      
-      Context icTarget = new InitialContext(targetProps);
-      
-      Destination sourceDest = (Destination)icSource.lookup(sourceDestinationLookup);
-      
-      Destination targetDest = (Destination)icTarget.lookup(targetDestinationLookup);
-            
       String sourceCFRef = (String)server.getAttribute(sourceProviderLoader, "FactoryRef");
       
       String targetCFRef = (String)server.getAttribute(targetProviderLoader, "FactoryRef");
@@ -342,14 +331,18 @@ public class BridgeService extends ServiceMBeanSupport implements BridgeMBean
       	destCff= new JNDIConnectionFactoryFactory(targetProps, targetCFRef);
       }
       
-      bridge.setSourceDestination(sourceDest);
-      
-      bridge.setTargetDestination(targetDest);
-      
       bridge.setSourceConnectionFactoryFactory(sourceCff);
       
       bridge.setDestConnectionFactoryFactory(destCff);
       
+      DestinationFactory sourceDestinationFactory = new JNDIDestinationFactory(sourceProps, sourceDestinationLookup);
+      
+      DestinationFactory targetDestinationFactory = new JNDIDestinationFactory(targetProps, targetDestinationLookup);
+      
+      bridge.setSourceDestinationFactory(sourceDestinationFactory);
+      
+      bridge.setTargetDestinationFactory(targetDestinationFactory);
+
       bridge.start();      
       
       log.info("Started bridge " + this.getName() + ". Source: " + sourceDestinationLookup + " Target: " + targetDestinationLookup);

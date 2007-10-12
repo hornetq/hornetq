@@ -30,6 +30,7 @@ import java.util.Map;
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
+import javax.jms.ExceptionListener;
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
@@ -165,13 +166,17 @@ public class Bridge implements MessagingComponent
    
    private boolean started;
    
-   private LinkedList messages;
+   private LinkedList<Message> messages;
    
    private Object lock;
    
    private ConnectionFactoryFactory sourceCff;
    
    private ConnectionFactoryFactory targetCff;
+   
+   private DestinationFactory sourceDestinationFactory;
+   
+   private DestinationFactory targetDestinationFactory;
    
    private Connection sourceConn; 
    
@@ -201,20 +206,26 @@ public class Bridge implements MessagingComponent
    
    private boolean failed;
    
-   private boolean usingXA;
+   private int forwardMode;
+   
+   private static final int FORWARD_MODE_XA = 0;
+   
+   private static final int FORWARD_MODE_LOCALTX = 1;
+   
+   private static final int FORWARD_MODE_NONTX = 2;
    
    /*
     * Constructor for MBean
     */
    public Bridge()
    {      
-      this.messages = new LinkedList();      
+      this.messages = new LinkedList<Message>();      
       
       this.lock = new Object();      
    }
    
    public Bridge(ConnectionFactoryFactory sourceCff, ConnectionFactoryFactory destCff,
-                 Destination sourceDestination, Destination targetDestination,         
+                 DestinationFactory sourceDestinationFactory, DestinationFactory targetDestinationFactory,         
                  String sourceUsername, String sourcePassword,
                  String targetUsername, String targetPassword,
                  String selector, long failureRetryInterval,
@@ -230,9 +241,9 @@ public class Bridge implements MessagingComponent
       
       this.targetCff = destCff;
       
-      this.sourceDestination = sourceDestination;
+      this.sourceDestinationFactory = sourceDestinationFactory;
       
-      this.targetDestination = targetDestination;
+      this.targetDestinationFactory = targetDestinationFactory;
       
       this.sourceUsername = sourceUsername;
       
@@ -259,7 +270,7 @@ public class Bridge implements MessagingComponent
       this.clientID = clientID;
       
       this.addMessageIDInHeader = addMessageIDInHeader;
-            
+              
       if (trace)
       {
          log.trace("Created " + this);
@@ -435,35 +446,35 @@ public class Bridge implements MessagingComponent
       
       if (trace) { log.trace("Resumed " + this); }
    }
-   
-   public Destination getSourceDestination()
+      
+   public DestinationFactory getSourceDestinationFactory()
    {
-      return sourceDestination;
+   	return sourceDestinationFactory;
+   }
+
+   public void setSourceDestinationFactory(DestinationFactory dest)
+   {
+   	if (started)
+   	{
+   		log.warn("Cannot set SourceDestinationFactory while bridge is started");
+   		return;
+   	}
+   	sourceDestinationFactory = dest;
    }
    
-   public void setSourceDestination(Destination dest)
+   public DestinationFactory getTargetDestinationFactory()
    {
-      if (started)
-      {
-         log.warn("Cannot set SourceDestination while bridge is started");
-         return;
-      }
-      this.sourceDestination = dest;
+   	return targetDestinationFactory;
    }
-   
-   public Destination getTargetDestination()
+
+   public void setTargetDestinationFactory(DestinationFactory dest)
    {
-      return targetDestination;
-   }
-   
-   public void setTargetDestination(Destination dest)
-   {
-      if (started)
-      {
-         log.warn("Cannot set TargetDestination while bridge is started");
-         return;
-      }
-      this.targetDestination = dest;
+   	if (started)
+   	{
+   		log.warn("Cannot set TargetDestinationFactory while bridge is started");
+   		return;
+   	}
+   	targetDestinationFactory = dest;
    }
    
    public String getSourceUsername()
@@ -704,19 +715,19 @@ public class Bridge implements MessagingComponent
    {
       if (sourceCff == null)
       {
-         throw new IllegalArgumentException("sourceCfFactory cannot be null");
+         throw new IllegalArgumentException("sourceCff cannot be null");
       }
       if (targetCff == null)
       {
-         throw new IllegalArgumentException("destCfFactory cannot be null");
+         throw new IllegalArgumentException("targetCff cannot be null");
       }
-      if (sourceDestination == null)
+      if (sourceDestinationFactory == null)
       {
-         throw new IllegalArgumentException("destSource cannot be null");
+         throw new IllegalArgumentException("sourceDestinationFactory cannot be null");
       }
-      if (targetDestination == null)
+      if (targetDestinationFactory == null)
       {
-         throw new IllegalArgumentException("destDest cannot be null");
+         throw new IllegalArgumentException("targetDestinationFactory cannot be null");
       }
       if (failureRetryInterval < 0 && failureRetryInterval != -1)
       {
@@ -813,6 +824,8 @@ public class Bridge implements MessagingComponent
       return tm;
    }
    
+   
+   
    private Connection createConnection(String username, String password, ConnectionFactoryFactory cff)
       throws Exception
    {
@@ -852,6 +865,9 @@ public class Bridge implements MessagingComponent
             conn = cf.createConnection(username, password);            
          }  
       }
+      
+      conn.setExceptionListener(new BridgeExceptionListener());
+      
       return conn;
    }
     
@@ -892,25 +908,59 @@ public class Bridge implements MessagingComponent
    {
       try
       {  
-         //Are source and target destinations on the server? If so we can get once and only once
-         //just using a local transacted session
-         boolean sourceAndTargetSameServer = sourceCff == targetCff;
+      	//Lookup the destinations
+      	sourceDestination = sourceDestinationFactory.createDestination();
+      	
+      	targetDestination = targetDestinationFactory.createDestination();
+      	      
+         if (sourceCff == targetCff)
+         {
+            //Source and target destinations are on the server - we can get once and only once
+            //just using a local transacted session
+         	//everything becomes once and only once
+         	
+         	forwardMode = FORWARD_MODE_LOCALTX;
+         }
+         else
+         {
+         	//Different servers
+         	if (qualityOfServiceMode == QOS_ONCE_AND_ONLY_ONCE)
+         	{
+         		//Use XA
+         		
+         		forwardMode = FORWARD_MODE_XA;
+         	}
+         	else
+         	{
+         		forwardMode = FORWARD_MODE_NONTX;
+         	}
+         }
+         
+      	//Lookup the destinations
+      	sourceDestination = sourceDestinationFactory.createDestination();
+      	
+      	targetDestination = targetDestinationFactory.createDestination();
+      	      
          
          sourceConn = createConnection(sourceUsername, sourcePassword, sourceCff);
          
-         if (!sourceAndTargetSameServer)
+         if (forwardMode != FORWARD_MODE_LOCALTX)
          {
             targetConn = createConnection(targetUsername, targetPassword, targetCff);
+            
+          //  targetConn.setExceptionListener(exceptionListener); 
          }
                   
          if (clientID != null)
          {
             sourceConn.setClientID(clientID);
          }
+         
+        // sourceConn.setExceptionListener(exceptionListener);         
           
          Session sess;
          
-         if (sourceAndTargetSameServer)
+         if (forwardMode == FORWARD_MODE_LOCALTX)
          {
             //We simply use a single local transacted session for consuming and sending      
             
@@ -920,9 +970,7 @@ public class Bridge implements MessagingComponent
          }
          else
          {
-            //Source and destination are on different resource managers
-            
-            if (qualityOfServiceMode == QOS_ONCE_AND_ONLY_ONCE)
+            if (forwardMode == FORWARD_MODE_XA)
             {
                //Create an XASession for consuming from the source
                if (trace) { log.trace("Creating XA source session"); }
@@ -930,8 +978,6 @@ public class Bridge implements MessagingComponent
                sourceSession = ((XAConnection)sourceConn).createXASession();
                
                sess = ((XASession)sourceSession).getSession();
-               
-               usingXA = true;
             }
             else
             {
@@ -939,35 +985,15 @@ public class Bridge implements MessagingComponent
                
                //Create a standard session for consuming from the source
                
-               //If the QoS is at_most_once, and max batch size is 1 then we use AUTO_ACKNOWLEDGE
-               //If the QoS is at_most_once, and max batch size > 1 or -1, then we use CLIENT_ACKNOWLEDGE
-               //We could use CLIENT_ACKNOWLEDGE for both the above but AUTO_ACKNOWLEGE may be slightly more
-               //performant in some implementations that manually acking every time but it really depends
-               //on the implementation.
-               //We could also use local transacted for both the above but don't for the same reasons.
-               
-               //If the QoS is duplicates_ok, we use CLIENT_ACKNOWLEDGE
-               //We could use local transacted, whether one is faster than the other probably depends on the
-               //messaging implementation but there's probably not much in it
-               
-               int ackMode;
-               if (qualityOfServiceMode == QOS_AT_MOST_ONCE && maxBatchSize == 1)
-               {
-                  ackMode = Session.AUTO_ACKNOWLEDGE;
-               }
-               else
-               {
-                  ackMode = Session.CLIENT_ACKNOWLEDGE;
- 
-               }
-               
-               sourceSession = sourceConn.createSession(false, ackMode);
+               //We use ack mode client ack
+                              
+               sourceSession = sourceConn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
                
                sess = sourceSession;
             }
          }
          
-         if (usingXA && sourceSession instanceof JBossSession)
+         if (forwardMode == FORWARD_MODE_XA && sourceSession instanceof JBossSession)
          {
          	JBossSession jsession = (JBossSession)sourceSession;
          	
@@ -1002,9 +1028,10 @@ public class Bridge implements MessagingComponent
          
          //Now the sending session
          
-         if (!sourceAndTargetSameServer)
+         
+         if (forwardMode != FORWARD_MODE_LOCALTX)
          {            
-            if (usingXA)
+            if (forwardMode == FORWARD_MODE_XA)
             {
                if (trace) { log.trace("Creating XA dest session"); }
                
@@ -1018,21 +1045,19 @@ public class Bridge implements MessagingComponent
             {
                if (trace) { log.trace("Creating non XA dest session"); }
                
-               //Create a standard session for sending to the destination
+               //Create a standard session for sending to the target
+                                             
+               //If batch size > 1 we use a transacted session since is more efficient
                
-               //If maxBatchSize == 1 we just create a non transacted session, otherwise we
-               //create a transacted session for the send, since sending the batch in a transaction
-               //is likely to be more efficient than sending messages individually
+               boolean transacted = maxBatchSize > 1;
                
-               boolean manualCommit = maxBatchSize == 1;
-               
-               targetSession = targetConn.createSession(manualCommit, manualCommit ? Session.SESSION_TRANSACTED : Session.AUTO_ACKNOWLEDGE);
+               targetSession = targetConn.createSession(transacted, transacted ? Session.SESSION_TRANSACTED : Session.AUTO_ACKNOWLEDGE);
                
                sess = targetSession;
             }       
          }
          
-         if (usingXA)
+         if (forwardMode == FORWARD_MODE_XA)
          {
             if (trace) { log.trace("Starting JTA transaction"); }
             
@@ -1151,7 +1176,114 @@ public class Bridge implements MessagingComponent
       //If we get here then we exceed maxRetries
       return false;      
    }
-    
+      
+   private void sendBatchNonTransacted()
+   {
+   	try
+      {         
+   		if (qualityOfServiceMode == QOS_AT_MOST_ONCE)
+   		{
+   			//We client ack before sending
+   			
+            if (trace) { log.trace("Client acking source session"); }
+               			
+            ((Message)messages.getLast()).acknowledge();
+            
+            if (trace) { log.trace("Client acked source session"); }            
+   		}
+   		   		
+         sendMessages();
+         
+         if (maxBatchSize > 1)
+         {
+         	//The sending session is transacted - we need to commit it
+         	
+            if (trace) { log.trace("Committing target session"); }
+                     	
+         	targetSession.commit();
+         	
+            if (trace) { log.trace("Committed source session"); }            
+         }
+         
+         if (qualityOfServiceMode == QOS_DUPLICATES_OK)
+   		{
+   			//We client ack after sending
+         	
+         	//Note we could actually use Session.DUPS_OK_ACKNOWLEDGE here
+         	//For a slightly less strong delivery guarantee
+   		
+            if (trace) { log.trace("Client acking source session"); }
+               			
+            ((Message)messages.getLast()).acknowledge();
+            
+            if (trace) { log.trace("Client acked source session"); }            
+   		}
+                                         
+         //Clear the messages
+         messages.clear();            
+      }
+      catch (Exception e)
+      {
+         log.warn("Failed to send + acknowledge batch, closing JMS objects", e);
+      
+         handleFailureOnSend();                                                 
+      }	
+   }
+   
+   private void sendBatchXA()
+   {
+   	try
+      {         
+         sendMessages();
+         
+         //Commit the JTA transaction and start another
+                                 
+         delistResources(tx);
+            
+         if (trace) { log.trace("Committing JTA transaction"); }
+         
+         tx.commit();
+
+         if (trace) { log.trace("Committed JTA transaction"); }
+         
+         tx = startTx();  
+         
+         enlistResources(tx);
+                  
+         //Clear the messages
+         messages.clear();            
+      }
+      catch (Exception e)
+      {
+         log.warn("Failed to send + acknowledge batch, closing JMS objects", e);
+      
+         handleFailureOnSend();                                                 
+      }
+   }
+   
+   private void sendBatchLocalTx()
+   {
+   	try
+      {         
+         sendMessages();
+                     
+         if (trace) { log.trace("Committing source session"); }
+         
+         sourceSession.commit();
+         
+         if (trace) { log.trace("Committed source session"); }     
+         
+         //Clear the messages
+         messages.clear();           
+      }
+      catch (Exception e)
+      {
+         log.warn("Failed to send + acknowledge batch, closing JMS objects", e);
+      
+         handleFailureOnSend();                                                 
+      }
+   }
+   
    private void sendBatch() 
    {
       if (trace) { log.trace("Sending batch of " + messages.size() + " messages"); }
@@ -1163,109 +1295,55 @@ public class Bridge implements MessagingComponent
          
          return;            
       }
-         
-      try
-      {         
-         if (qualityOfServiceMode == QOS_AT_MOST_ONCE)
-         {
-            //We ack *before* we send
-            if (sourceSession.getAcknowledgeMode() == Session.CLIENT_ACKNOWLEDGE)
-            {
-               //Ack on the last message
-               ((Message)messages.getLast()).acknowledge();       
-            }
-         }
-         
-         //Now send the message(s)   
-            
-         Iterator iter = messages.iterator();
-         
-         Message msg = null;
-         
-         while (iter.hasNext())
-         {
-            msg = (Message)iter.next();
-            
-            if (addMessageIDInHeader)
-            {
-            	addMessageIDInHeader(msg);            	
-            }
-            
-            if (trace) { log.trace("Sending message " + msg); }
-            
-            long timeToLive = msg.getJMSExpiration();
-            
-   			if (timeToLive != 0)
-   			{
-   				timeToLive -=  System.currentTimeMillis();
-   				
-   				if (timeToLive <= 0)
-   				{
-   					timeToLive = 1; //Should have already expired - set to 1 so it expires when it is consumed or delivered
-   				}
-   			}
-            
-   			producer.send(targetDestination, msg, msg.getJMSDeliveryMode(), msg.getJMSPriority(), timeToLive);
-   			
-            if (trace) { log.trace("Sent message " + msg); }                    
-         }
-         
-         if (qualityOfServiceMode == QOS_DUPLICATES_OK)
-         {
-            //We ack the source message(s) after sending
-            
-            if (sourceSession.getAcknowledgeMode() == Session.CLIENT_ACKNOWLEDGE)
-            {               
-               //Ack on the last message
-               ((Message)messages.getLast()).acknowledge();
-            }                  
-         }
-         
-         //Now we commit the sending session if necessary
-         if (targetSession != null && targetSession.getTransacted() && !usingXA)
-         {
-            if (trace) { log.trace("Committing target session"); }
-            
-            targetSession.commit();    
-            
-            if (trace) { log.trace("Committed target session"); }
-         }
-         
-         //And commit the consuming session if necessary
-         if (sourceSession.getTransacted() && !usingXA)
-         {
-            if (trace) { log.trace("Committing source session"); }
-            
-            sourceSession.commit();
-            
-            if (trace) { log.trace("Committed source session"); }
-         }
-         
-         if (usingXA)
-         {
-            //Commit the JTA transaction and start another
-                                    
-            delistResources(tx);
-               
-            if (trace) { log.trace("Committing JTA transaction"); }
-            
-            tx.commit();
-
-            if (trace) { log.trace("Committed JTA transaction"); }
-            
-            tx = startTx();  
-            
-            enlistResources(tx);
-         }
-         
-         //Clear the messages
-         messages.clear();            
-      }
-      catch (Exception e)
+      
+      if (forwardMode == FORWARD_MODE_LOCALTX)
       {
-         log.warn("Failed to send + acknowledge batch, closing JMS objects", e);
+      	sendBatchLocalTx();
+      }
+      else if (forwardMode == FORWARD_MODE_XA)      	
+      {
+      	sendBatchXA();
+      }
+      else
+      {
+      	sendBatchNonTransacted();
+      }
+   }
+   
+   private void sendMessages() throws Exception
+   {
+      Iterator iter = messages.iterator();
+      
+      Message msg = null;
+      
+      while (iter.hasNext())
+      {
+      	msg = (Message)iter.next();
+      	
+      	if (addMessageIDInHeader)
+         {
+         	addMessageIDInHeader(msg);            	
+         }
          
-         handleFailureOnSend();                                                 
+         if (trace) { log.trace("Sending message " + msg); }
+         
+         //Make sure the correct time to live gets propagated
+         
+         long timeToLive = msg.getJMSExpiration();
+         
+   		if (timeToLive != 0)
+   		{
+   			timeToLive -=  System.currentTimeMillis();
+   			
+   			if (timeToLive <= 0)
+   			{
+   				timeToLive = 1; //Should have already expired - set to 1 so it expires when it is consumed or delivered
+   			}
+   		}
+         
+   		producer.send(targetDestination, msg, msg.getJMSDeliveryMode(), msg.getJMSPriority(), timeToLive);
+   		
+         if (trace) { log.trace("Sent message " + msg); }     
       }
    }
    
@@ -1308,7 +1386,7 @@ public class Bridge implements MessagingComponent
    	
    	Enumeration en = msg.getPropertyNames();
    	
-   	Map oldProps = null;
+   	Map<String, Object> oldProps = null;
    	
    	while (en.hasMoreElements())
    	{
@@ -1316,7 +1394,7 @@ public class Bridge implements MessagingComponent
    		
    		if (oldProps == null)
    		{
-   			oldProps = new HashMap();
+   			oldProps = new HashMap<String, Object>();
    		}
    		
    		oldProps.put(propName, msg.getObjectProperty(propName));
@@ -1389,7 +1467,7 @@ public class Bridge implements MessagingComponent
 
       protected void succeeded()
       {
-         log.debug("Succeeded in reconnecting to servers");
+         log.info("Succeeded in reconnecting to servers");
          
          synchronized (lock)
          {
@@ -1456,7 +1534,7 @@ public class Bridge implements MessagingComponent
       protected void succeeded()
       {
          // Don't call super - a bit ugly in this case but better than taking the lock twice.
-         log.debug("Succeeded in connecting to servers");
+         log.info("Succeeded in connecting to servers");
          
          synchronized (lock)
          {
@@ -1564,4 +1642,24 @@ public class Bridge implements MessagingComponent
       }      
    }   
    
+   private class BridgeExceptionListener implements ExceptionListener
+   {
+		public void onException(JMSException e)
+		{
+			log.warn("Detected failure on connection", e);
+			
+			synchronized (lock)
+			{
+				if (failed)
+				{
+					//The failure has already been detected and is being handled
+					if (trace) { log.trace("Failure recovery already in progress"); }
+				}
+				else
+			   {				
+					handleFailure(new FailureHandler());
+			   }
+			}
+		}   	
+   }   
 }

@@ -39,7 +39,9 @@ import javax.naming.InitialContext;
 
 import org.jboss.jms.server.bridge.Bridge;
 import org.jboss.jms.server.bridge.ConnectionFactoryFactory;
+import org.jboss.jms.server.bridge.DestinationFactory;
 import org.jboss.jms.server.bridge.JNDIConnectionFactoryFactory;
+import org.jboss.jms.server.bridge.JNDIDestinationFactory;
 import org.jboss.logging.Logger;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
@@ -65,7 +67,9 @@ public class BridgeTestBase extends MessagingTestCase
    
    protected static ConnectionFactory cf0, cf1;
    
-   protected static Queue sourceQueue, destQueue, localDestQueue;
+   protected static DestinationFactory sourceQueueFactory, targetQueueFactory, localTargetQueueFactory, sourceTopicFactory;
+   
+   protected static Queue sourceQueue, targetQueue, localTargetQueue;
    
    protected static Topic sourceTopic;
    
@@ -92,9 +96,9 @@ public class BridgeTestBase extends MessagingTestCase
 
       	ServerManagement.deployTopic("sourceTopic", 0);  
 
-      	ServerManagement.deployQueue("localDestQueue", 0);
+      	ServerManagement.deployQueue("localTargetQueue", 0);
 
-      	ServerManagement.deployQueue("destQueue", 1);     
+      	ServerManagement.deployQueue("targetQueue", 1);     
       	
       	setUpAdministeredObjects();
       	
@@ -114,12 +118,10 @@ public class BridgeTestBase extends MessagingTestCase
    protected void tearDown() throws Exception
    {       
       super.tearDown(); 
-                  
-      //sc.stop();  
-      
+                             
       checkEmpty(sourceQueue);
-      checkEmpty(localDestQueue);
-      checkEmpty(destQueue, 1);
+      checkEmpty(localTargetQueue);
+      checkEmpty(targetQueue, 1);
       
       // Check no subscriptions left lying around
             
@@ -147,13 +149,21 @@ public class BridgeTestBase extends MessagingTestCase
          
          cf1 = (ConnectionFactory)ic1.lookup("/ConnectionFactory");
          
-         sourceQueue = (Queue)ic0.lookup("/queue/sourceQueue");
+         sourceQueueFactory = new JNDIDestinationFactory(props0, "/queue/sourceQueue");
          
-         destQueue = (Queue)ic1.lookup("/queue/destQueue");
+         sourceQueue = (Queue)sourceQueueFactory.createDestination();
          
-         sourceTopic = (Topic)ic0.lookup("/topic/sourceTopic");
+         targetQueueFactory = new JNDIDestinationFactory(props1, "/queue/targetQueue");
          
-         localDestQueue = (Queue)ic0.lookup("/queue/localDestQueue");         
+         targetQueue = (Queue)targetQueueFactory.createDestination();
+         
+         sourceTopicFactory = new JNDIDestinationFactory(props0, "/topic/sourceTopic");
+         
+         sourceTopic = (Topic)sourceTopicFactory.createDestination();
+         
+         localTargetQueueFactory = new JNDIDestinationFactory(props0, "/queue/localTargetQueue"); 
+         
+         localTargetQueue = (Queue)localTargetQueueFactory.createDestination();
       }
       finally
       {

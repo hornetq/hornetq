@@ -24,7 +24,6 @@ package org.jboss.jms.server.bridge;
 import java.util.Hashtable;
 
 import javax.jms.ConnectionFactory;
-import javax.naming.InitialContext;
 
 /**
  * A JNDIConnectionFactoryFactory
@@ -35,46 +34,16 @@ import javax.naming.InitialContext;
  * $Id$
  *
  */
-public class JNDIConnectionFactoryFactory implements ConnectionFactoryFactory
+public class JNDIConnectionFactoryFactory extends JNDIFactorySupport implements ConnectionFactoryFactory
 {
-   private Hashtable jndiProperties;
-   
-   private String lookup;
-   
-   public JNDIConnectionFactoryFactory(Hashtable jndiProperties, String lookup)
+	public JNDIConnectionFactoryFactory(Hashtable jndiProperties, String lookup)
    {
-      this.jndiProperties = jndiProperties;
-      
-      this.lookup = lookup;       
+      super(jndiProperties, lookup);      
    }
 
    public ConnectionFactory createConnectionFactory() throws Exception
    {
-      InitialContext ic = null;
-      
-      ConnectionFactory cf = null;
-      
-      try
-      {
-         if (jndiProperties == null)
-         {
-            ic = new InitialContext();
-         }
-         else
-         {
-            ic = new InitialContext(jndiProperties);
-         }
-         
-         cf = (ConnectionFactory)ic.lookup(lookup);         
-      }
-      finally
-      {
-         if (ic != null)
-         {
-            ic.close();
-         }
-      }
-      return cf;      
+   	return (ConnectionFactory)createObject();   	
    }
 
 }

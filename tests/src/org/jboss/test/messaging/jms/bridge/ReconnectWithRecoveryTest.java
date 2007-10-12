@@ -89,7 +89,7 @@ public class ReconnectWithRecoveryTest extends BridgeTestBase
       {
          final int NUM_MESSAGES = 10;         
          
-         bridge = new Bridge(cff0, cff1, sourceQueue, destQueue,
+         bridge = new Bridge(cff0, cff1, sourceQueueFactory, targetQueueFactory,
                   null, null, null, null,
                   null, 1000, -1, Bridge.QOS_ONCE_AND_ONLY_ONCE,
                   NUM_MESSAGES, -1,
@@ -123,7 +123,7 @@ public class ReconnectWithRecoveryTest extends BridgeTestBase
          
          log.info("Restarted server");    
          
-         ServerManagement.deployQueue("destQueue", 1);
+         ServerManagement.deployQueue("targetQueue", 1);
                   
          this.setUpAdministeredObjects();
                         
@@ -132,7 +132,7 @@ public class ReconnectWithRecoveryTest extends BridgeTestBase
          log.info("*** waiting for recovery");
              
          //There may be a long wait for the first time (need to let recovery kick in)
-         checkMessagesReceived(cf1, destQueue, Bridge.QOS_ONCE_AND_ONLY_ONCE, NUM_MESSAGES, true);
+         checkMessagesReceived(cf1, targetQueue, Bridge.QOS_ONCE_AND_ONLY_ONCE, NUM_MESSAGES, true);
       }
       finally
       {      

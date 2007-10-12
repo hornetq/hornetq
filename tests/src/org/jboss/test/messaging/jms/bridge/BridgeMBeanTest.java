@@ -100,7 +100,7 @@ public class BridgeMBeanTest extends BridgeTestBase
    	try
    	{
 	      on = deployBridge(0, "Bridge1", sourceProviderLoader, targetProviderLoader,
-	                                   "/queue/sourceQueue", "/queue/destQueue",
+	                                   "/queue/sourceQueue", "/queue/targetQueue",
 	                                   null, null, null, null,
 	                                   Bridge.QOS_AT_MOST_ONCE, null, 1,
 	                                   -1, null, null, 5000, -1, false);
@@ -126,7 +126,7 @@ public class BridgeMBeanTest extends BridgeTestBase
          
          Session sessTarget = connTarget.createSession(false, Session.AUTO_ACKNOWLEDGE);
          
-         MessageConsumer cons = sessTarget.createConsumer(destQueue);
+         MessageConsumer cons = sessTarget.createConsumer(targetQueue);
          
          for (int i = 0; i < NUM_MESSAGES; i++)
          {
@@ -137,7 +137,7 @@ public class BridgeMBeanTest extends BridgeTestBase
          
          //It's stopped so no messages should be received
          
-         checkEmpty(destQueue, 1);
+         checkEmpty(targetQueue, 1);
          
          //Start it
          
@@ -156,7 +156,7 @@ public class BridgeMBeanTest extends BridgeTestBase
             assertEquals("message" + i, tm.getText());
          }
          
-         checkEmpty(destQueue, 1);
+         checkEmpty(targetQueue, 1);
                   
          //Send some more
          
@@ -178,7 +178,7 @@ public class BridgeMBeanTest extends BridgeTestBase
             assertEquals("message" + i, tm.getText());
          }
          
-         checkEmpty(destQueue, 1);
+         checkEmpty(targetQueue, 1);
          
          //Pause it
          
@@ -199,7 +199,7 @@ public class BridgeMBeanTest extends BridgeTestBase
          
          //These shouldn't be received
          
-         checkEmpty(destQueue, 1);
+         checkEmpty(targetQueue, 1);
          
          // Resume
          
@@ -216,7 +216,7 @@ public class BridgeMBeanTest extends BridgeTestBase
             assertEquals("message" + i, tm.getText());
          }
          
-         checkEmpty(destQueue, 1);
+         checkEmpty(targetQueue, 1);
          
          isPaused = ((Boolean)ServerManagement.getAttribute(on, "Paused")).booleanValue();
          
@@ -264,7 +264,7 @@ public class BridgeMBeanTest extends BridgeTestBase
       try
       {                
          on = deployBridge(0, "Bridge2", sourceProviderLoader, targetProviderLoader,
-                           "/queue/sourceQueue", "/queue/destQueue",
+                           "/queue/sourceQueue", "/queue/targetQueue",
                            null, null, null, null,
                            Bridge.QOS_ONCE_AND_ONLY_ONCE, null, 1,
                            -1, null, null, 5000, -1, false);
@@ -305,11 +305,11 @@ public class BridgeMBeanTest extends BridgeTestBase
          
          {
             String destLookup = (String)ServerManagement.getAttribute(on, "TargetDestinationLookup");
-            assertEquals("/queue/destQueue", destLookup);
+            assertEquals("/queue/targetQueue", destLookup);
             ServerManagement.setAttribute(on, "TargetDestinationLookup", "/queue/WibbleQueue");
             destLookup = (String)ServerManagement.getAttribute(on, "TargetDestinationLookup");
             assertEquals("/queue/WibbleQueue", destLookup);
-            ServerManagement.setAttribute(on, "TargetDestinationLookup", "/queue/destQueue");
+            ServerManagement.setAttribute(on, "TargetDestinationLookup", "/queue/targetQueue");
          }
          
          {
@@ -451,10 +451,10 @@ public class BridgeMBeanTest extends BridgeTestBase
          
          {
             String destLookup = (String)ServerManagement.getAttribute(on, "TargetDestinationLookup");
-            assertEquals("/queue/destQueue", destLookup);
+            assertEquals("/queue/targetQueue", destLookup);
             ServerManagement.setAttribute(on, "TargetDestinationLookup", "/queue/WibbleQueue");
             destLookup = (String)ServerManagement.getAttribute(on, "TargetDestinationLookup");
-            assertEquals("/queue/destQueue", destLookup);
+            assertEquals("/queue/targetQueue", destLookup);
          }
          
          {
@@ -563,7 +563,7 @@ public class BridgeMBeanTest extends BridgeTestBase
          log.trace("Checking bridged bridge");
          
          checkBridged(icSource, icTarget, "/ConnectionFactory", "/ConnectionFactory",
-                      "/queue/sourceQueue", "/queue/destQueue");
+                      "/queue/sourceQueue", "/queue/targetQueue");
          
          log.trace("Checked bridge");
          

@@ -1332,7 +1332,7 @@ public class ServerPeer extends ServiceMBeanSupport
       if (started)
       {
          throw new IllegalAccessException("supportsFailover can only be changed when " +
-                                          "connection factory is stopped");
+                                          "server peer is stopped");
       }
       this.supportsFailover = supportsFailover;
    }

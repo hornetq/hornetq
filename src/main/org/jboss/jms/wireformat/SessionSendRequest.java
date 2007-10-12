@@ -90,9 +90,18 @@ public class SessionSendRequest extends RequestSupport
          advised.send(msg, checkForDuplicates, sequence);
       }
       else
-      {
-      	//Since NP messages are sent one way, there is a possibility the session has closed
-      	//by the time the message arrives, so we ignore this
+      {      	
+      	if (sequence == -1)
+      	{
+      		//Persistent message
+
+      		throw new IllegalStateException("Cannot find object in dispatcher with id " + objectId);
+      	}
+      	else
+      	{
+      		// Since NP messages are sent one way, there is a possibility the session has closed
+         	//by the time the message arrives, so we ignore this
+      	}
       }
       
       return null;
