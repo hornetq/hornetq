@@ -21,14 +21,10 @@
   */
 package org.jboss.jms.message;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.util.Map;
 
 import javax.jms.JMSException;
 import javax.jms.TextMessage;
-
-import org.jboss.messaging.util.SafeUTF;
 
 /**
  * This class implements javax.jms.TextMessage ported from SpyTextMessage in JBossMQ.
@@ -117,8 +113,8 @@ public class JBossTextMessage extends JBossMessage implements TextMessage
 
    public void setText(String string) throws JMSException
    {
-      setPayload(string);
-      clearPayloadAsByteArray();
+      payload = string;
+      payloadAsByteArray = null;
    }
 
    public String getText() throws JMSException
@@ -136,17 +132,6 @@ public class JBossTextMessage extends JBossMessage implements TextMessage
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
-
-   protected void writePayload(DataOutputStream out, Object thePayload) throws Exception
-   {
-      SafeUTF.instance.safeWriteUTF(out, (String)thePayload);
-   }
-
-   protected Object readPayload(DataInputStream in, int length)
-      throws Exception
-   {
-      return SafeUTF.instance.safeReadUTF(in);
-   }
 
    // Private -------------------------------------------------------
 

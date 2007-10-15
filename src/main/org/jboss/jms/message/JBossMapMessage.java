@@ -21,8 +21,6 @@
   */
 package org.jboss.jms.message;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -32,7 +30,7 @@ import javax.jms.JMSException;
 import javax.jms.MapMessage;
 import javax.jms.MessageFormatException;
 
-import org.jboss.messaging.util.StreamUtils;
+import org.jboss.logging.Logger;
 import org.jboss.util.Primitives;
 
 /**
@@ -74,8 +72,7 @@ public class JBossMapMessage extends JBossMessage implements MapMessage
    public JBossMapMessage(long messageID)
    {
       super(messageID);
-      this.setPayload(new HashMap());
-      clearPayloadAsByteArray();
+      payload = new HashMap();
    }
 
    /*
@@ -101,8 +98,7 @@ public class JBossMapMessage extends JBossMessage implements MapMessage
    public JBossMapMessage(MapMessage foreign, long id) throws JMSException
    {
       super(foreign, id);     
-      this.setPayload(new HashMap());
-      clearPayloadAsByteArray();
+      payload = new HashMap();
       Enumeration names = foreign.getMapNames();
       while (names.hasMoreElements())
       {
@@ -118,14 +114,11 @@ public class JBossMapMessage extends JBossMessage implements MapMessage
    {
       return JBossMapMessage.TYPE;
    }
-   
-   
-   public void copyPayload(Object payload) throws JMSException
-   {      
-      this.setPayload(new HashMap((Map)payload));
-      clearPayloadAsByteArray();
+      
+   public void copyPayload(Object otherPayload) throws JMSException
+   {         	
+      payload = new HashMap((Map)otherPayload);
    }
-
 
    // MapMessage implementation -------------------------------------
 
@@ -454,16 +447,12 @@ public class JBossMapMessage extends JBossMessage implements MapMessage
 
    public Enumeration getMapNames() throws JMSException
    {
-
       return Collections.enumeration(new HashMap(((Map)getPayload())).keySet());
-
    }
 
    public boolean itemExists(String name) throws JMSException
    {
-
       return ((Map)getPayload()).containsKey(name);
-
    }
 
    // JBossMessage overrides ----------------------------------------
@@ -471,8 +460,8 @@ public class JBossMapMessage extends JBossMessage implements MapMessage
    public void clearBody() throws JMSException
    {
       super.clearBody();
-      setPayload(new HashMap());
-      clearPayloadAsByteArray();
+      payload = new HashMap();
+      payloadAsByteArray = null;
    }
    
    public JBossMessage doCopy()
@@ -483,17 +472,6 @@ public class JBossMapMessage extends JBossMessage implements MapMessage
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
-
-   protected void writePayload(DataOutputStream out, Object thePayload) throws Exception
-   {
-      StreamUtils.writeMap(out, ((Map)getPayload()), true);
-   }
-
-   protected Object readPayload(DataInputStream in, int length)
-      throws Exception
-   {
-      return StreamUtils.readMap(in, true);
-   }
 
    // Private -------------------------------------------------------
 

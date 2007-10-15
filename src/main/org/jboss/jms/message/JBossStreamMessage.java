@@ -80,8 +80,7 @@ public class JBossStreamMessage extends JBossMessage implements StreamMessage
    public JBossStreamMessage(long messageID)
    {
       super(messageID);      
-      setPayload(new ArrayList());
-      clearPayloadAsByteArray();
+      payload = new ArrayList();
       position = 0;
       size = 0;
       offset = 0;
@@ -113,8 +112,7 @@ public class JBossStreamMessage extends JBossMessage implements StreamMessage
       
       foreign.reset();
       
-      setPayload(new ArrayList());
-      clearPayloadAsByteArray();
+      payload = new ArrayList();
       position = 0;
       size = 0;
       offset = 0;
@@ -144,11 +142,18 @@ public class JBossStreamMessage extends JBossMessage implements StreamMessage
       reset();
    }
    
+   public void doBeforeReceive() throws JMSException
+   {
+   	//We need to reset before receive too http://jira.jboss.com/jira/browse/JBMESSAGING-1079
+   	
+   	reset();
+   }
+   
    public void copyPayload(Object other) throws JMSException
    {
       reset();
-      setPayload(new ArrayList((List)other));
-      clearPayloadAsByteArray();
+      payload = new ArrayList((List)other);
+      payloadAsByteArray = null;
    }
 
    // StreamMessage implementation ----------------------------------
@@ -658,8 +663,8 @@ public class JBossStreamMessage extends JBossMessage implements StreamMessage
    {
       super.clearBody();
       
-      setPayload(new ArrayList());
-      clearPayloadAsByteArray();
+      payload = new ArrayList();
+      payloadAsByteArray = null;
       position = 0;
       offset = 0;
       size = 0;
@@ -674,17 +679,6 @@ public class JBossStreamMessage extends JBossMessage implements StreamMessage
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
-
-   protected void writePayload(DataOutputStream out, Object thePayload) throws Exception
-   {
-      StreamUtils.writeList(out, (List)thePayload);
-   }
-
-   protected Object readPayload(DataInputStream in, int length)
-      throws Exception
-   {
-      return StreamUtils.readList(in);
-   }
 
    // Private -------------------------------------------------------
 

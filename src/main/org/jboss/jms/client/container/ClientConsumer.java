@@ -640,10 +640,7 @@ public class ClientConsumer
 
          proxy.setSessionDelegate(sessionDelegate, isConnectionConsumer);
 
-
-         // In some redelivery scenarios, a ByteMessage or StreamMessages needs to be reset
-         // so, this call is also being made here (not just when the message is is sent)
-         proxy.getMessage().doBeforeSend();
+         proxy.getMessage().doBeforeReceive();
 
          //Add it to the buffer
          buffer.addLast(proxy, proxy.getJMSPriority());

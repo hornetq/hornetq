@@ -581,9 +581,9 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message, S
 
    public void clearBody() throws JMSException
    {
-      this.setPayload(null);
-      
-      clearPayloadAsByteArray();
+   	payload = null;
+   	
+   	payloadAsByteArray = null;
    }
 
    public boolean propertyExists(String name) throws JMSException
@@ -962,6 +962,10 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message, S
    public void doBeforeSend() throws JMSException
    {      
    }
+   
+   public void doBeforeReceive() throws JMSException
+   {  	
+   }
 
    public byte getType()
    {
@@ -1102,7 +1106,7 @@ public class JBossMessage extends MessageSupport implements javax.jms.Message, S
          throw new JMSException("Can only set JMSXGroupId, JMSXGroupSeq, JMSXDeliveryCount");
       }           
    }
-
+   
    // Protected -----------------------------------------------------
    
    // Inner classes -------------------------------------------------

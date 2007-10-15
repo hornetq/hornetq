@@ -106,5 +106,4 @@ public class BytesMessageTest extends MessageTestBase
       assertEquals("this is an UTF String", bm.readUTF());
    }
 
-
 }

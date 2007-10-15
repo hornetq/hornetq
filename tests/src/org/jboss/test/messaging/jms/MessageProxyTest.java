@@ -191,6 +191,8 @@ public class MessageProxyTest extends JMSTestCase
          Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
          
          MessageProducer prod = sess.createProducer(queue1);
+         
+         prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
                
          MapMessage m = sess.createMapMessage();
          
@@ -296,9 +298,8 @@ public class MessageProxyTest extends JMSTestCase
          removeAllMessages(queue1.getQueueName(), true, 0);
       }
    }
-   
-   
-   public void testReceivedMessage() throws Exception
+         
+   public void testReceivedMessage(boolean persistent) throws Exception
    {
       if (ServerManagement.isRemote())
       {
@@ -316,6 +317,8 @@ public class MessageProxyTest extends JMSTestCase
          Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
          
          MessageProducer prod = sess.createProducer(queue1);
+         
+         prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
               
          MapMessage m = sess.createMapMessage();
          
@@ -333,8 +336,8 @@ public class MessageProxyTest extends JMSTestCase
          
          JBossMessage check3 = ((MessageProxy)m).getMessage();
          
-         //Underlying message should be different
          checkSameUnderlyingMessage(check1, check3, true);
+         
          checkSameBody(check1, check3, true);
          
          prod.send(m);
@@ -384,7 +387,7 @@ public class MessageProxyTest extends JMSTestCase
          
          // But the body should be the same
          checkSameBody(check6, check7, true);
-         
+           
          // Set the body
          m.setString("key1", "blah");
          
@@ -436,9 +439,13 @@ public class MessageProxyTest extends JMSTestCase
    
    private void checkSameBody(JBossMessage m1, JBossMessage m2, boolean same)
    {
-      if ((m1.getPayload() == m2.getPayload()) && !same)
-      {         
-         fail("Body not same");
+      if (same && (m1.getPayload() != m2.getPayload()))
+      {
+      	fail("Body not same");
+      }
+      else if (!same && (m1.getPayload() == m2.getPayload()))
+      {
+      	fail("Body same");
       }
    }
       

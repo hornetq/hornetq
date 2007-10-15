@@ -108,10 +108,12 @@ public class JBossObjectMessage extends JBossMessage implements ObjectMessage
 
    public void setObject(Serializable object) throws JMSException
    {  
-      //Store it in it's serialized form
-      setPayload(object);
+      payload = object;
+      
+      //Trigger serialization
       getPayloadAsByteArray();
-      setPayload(null);
+      
+      payload = null;
    }
 
    public Serializable getObject() throws JMSException

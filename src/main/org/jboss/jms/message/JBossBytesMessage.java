@@ -84,8 +84,6 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage
    public JBossBytesMessage(long messageID)
    {
       super(messageID);
-      baos = new ByteArrayOutputStream();
-      dos = new DataOutputStream(baos);
    }
 
    /*
@@ -100,9 +98,6 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage
                             byte[] payloadAsByteArray)
    {
       super(messageID, reliable, expiration, timestamp, priority, coreHeaders, payloadAsByteArray);            
-      
-      baos = new ByteArrayOutputStream();
-      dos = new DataOutputStream(baos);
    }
 
    /**
@@ -115,8 +110,7 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage
    {
       super(other);
       
-      if (trace) { log.trace("Creating new JBossBytesMessage from other JBossBytesMessage"); }
-      
+      if (trace) { log.trace("Creating new JBossBytesMessage from other JBossBytesMessage"); }      
    }
 
    public JBossBytesMessage(BytesMessage foreign, long id) throws JMSException
@@ -142,11 +136,6 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage
    public void read(DataInputStream in) throws Exception
    {
       super.read(in);
-
-      // transfer the value read into payloadAsBytes by superclass to payload, since this is how
-      // BytesMessage instances keep it
-      copyPayloadAsByteArrayToPayload();
-      clearPayloadAsByteArray();
    }
 
    // BytesMessage implementation -----------------------------------
@@ -366,6 +355,7 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage
 
    public void writeBoolean(boolean value) throws JMSException
    {
+   	checkWrite();
       try
       {
          dos.writeBoolean(value);
@@ -378,6 +368,7 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage
 
    public void writeByte(byte value) throws JMSException
    {
+   	checkWrite();
       try
       {
          dos.writeByte(value);
@@ -390,6 +381,7 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage
 
    public void writeShort(short value) throws JMSException
    {
+   	checkWrite();
       try
       {
          dos.writeShort(value);
@@ -402,6 +394,7 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage
 
    public void writeChar(char value) throws JMSException
    {
+   	checkWrite();
       try
       {
          dos.writeChar(value);
@@ -414,6 +407,7 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage
 
    public void writeInt(int value) throws JMSException
    {
+   	checkWrite();
       try
       {
          dos.writeInt(value);
@@ -426,6 +420,7 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage
 
    public void writeLong(long value) throws JMSException
    {
+   	checkWrite();
       try
       {
          dos.writeLong(value);
@@ -438,6 +433,7 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage
 
    public void writeFloat(float value) throws JMSException
    {
+   	checkWrite();
       try
       {
          dos.writeFloat(value);
@@ -450,6 +446,7 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage
 
    public void writeDouble(double value) throws JMSException
    {
+   	checkWrite();
       try
       {
          dos.writeDouble(value);
@@ -462,6 +459,7 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage
 
    public void writeUTF(String value) throws JMSException
    {
+   	checkWrite();
       try
       {
          dos.writeUTF((String)value);
@@ -474,6 +472,7 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage
 
    public void writeBytes(byte[] value) throws JMSException
    {
+   	checkWrite();
       try
       {
          dos.write(value, 0, value.length);
@@ -486,6 +485,7 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage
 
    public void writeBytes(byte[] value, int offset, int length) throws JMSException
    {
+   	checkWrite();
       try
       {
          dos.write(value, offset, length);
@@ -498,6 +498,7 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage
 
    public void writeObject(Object value) throws JMSException
    {
+   	checkWrite();
       try
       {
          if (value == null)
@@ -553,18 +554,15 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage
 
    public void reset() throws JMSException
    {
-      if (trace) log.trace("reset()");
       try
       {
          if (baos != null)
          {
-            if (trace)  { log.trace("Flushing ostream to array"); }
-
             dos.flush();
-            this.setPayload(baos.toByteArray());
-            this.clearPayloadAsByteArray();
-
-            if (trace) { log.trace("Array is now: " + this.getPayload()); }
+            
+            payload = baos.toByteArray();
+            
+            payloadAsByteArray = (byte[])payload;
 
             baos.close();
          }
@@ -582,14 +580,15 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage
    }
 
    // MessageSupport overrides --------------------------------------
-
-   /**
-    * A JBossBytesMessage avoid double serialization by holding on its original payload, which is
-    * a byte[] to start with.
-    */
+   
+   public Object getPayload()
+   {
+   	return payload;
+   }
+   
    public byte[] getPayloadAsByteArray()
    {
-      return (byte[])getPayload();
+   	return payloadAsByteArray;
    }
 
    // JBossMessage overrides ----------------------------------------
@@ -597,6 +596,13 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage
    public void doBeforeSend() throws JMSException
    {
       reset();
+   }
+   
+   public void doBeforeReceive() throws JMSException
+   {
+   	//We need to reset before receive too http://jira.jboss.com/jira/browse/JBMESSAGING-1079
+   	
+   	reset();
    }
 
    public void clearBody() throws JMSException
@@ -609,10 +615,6 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage
          }
          else
          {
-            // REVIEW: istream is only initialised on a read.
-            // It looks like it is possible to acknowledge
-            // a message without reading it? Guard against
-            // an NPE in this case.
             if (bais != null)
             {
                bais.close();
@@ -626,17 +628,16 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage
 
       baos = new ByteArrayOutputStream();
       dos = new DataOutputStream(baos);
-      this.setPayload(null);
+      payload = null;
+      payloadAsByteArray = null;
       bais = null;
       dis = null;
-
-      super.clearBody();
    }
 
    public long getBodyLength() throws JMSException
    {
       checkRead();
-      return ((byte[])this.getPayload()).length;
+      return payloadAsByteArray.length;
    }
 
    // Public --------------------------------------------------------
@@ -658,12 +659,15 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage
       byte[] otherBytes = (byte[])payload;
       if (otherBytes == null)
       {
-         this.setPayload(null);
+         payload = null;
       }
       else
       {
-         this.setPayload(new byte[otherBytes.length]);
-         System.arraycopy(otherBytes, 0, this.getPayload(), 0, otherBytes.length);
+         payload = new byte[otherBytes.length];
+         
+         System.arraycopy(otherBytes, 0, payload, 0, otherBytes.length);
+         
+         payloadAsByteArray = (byte[])payload;
       }     
    }
    
@@ -673,21 +677,24 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage
 
    // Private -------------------------------------------------------
 
-   /**
-    * Check the message is readable
-    *
-    * @throws JMSException when not readable
-    */
-   void checkRead() throws JMSException
+   void checkRead()
    {   
       // We have just received/reset() the message, and the client is trying to
       // read it
-      if (bais == null || dis == null)
+      if (bais == null)
       {
-         if (trace) {  log.trace("internalArray:" + this.getPayload()); }
-         bais = new ByteArrayInputStream((byte[])this.getPayload());
+         bais = new ByteArrayInputStream(payloadAsByteArray);
          dis = new DataInputStream(bais);
       }
+   }
+   
+   void checkWrite()
+   {
+   	if (baos == null)
+   	{
+         baos = new ByteArrayOutputStream();
+         dos = new DataOutputStream(baos);
+   	}
    }
 
    // Inner classes -------------------------------------------------

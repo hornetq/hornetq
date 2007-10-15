@@ -30,6 +30,7 @@ import javax.jms.Message;
 import javax.jms.MessageNotWriteableException;
 
 import org.jboss.jms.delegate.SessionDelegate;
+import org.jboss.logging.Logger;
 
 /**
  * 
@@ -55,6 +56,9 @@ public class MessageProxy implements Message, Serializable
    // Constants -----------------------------------------------------
 
    private static final long serialVersionUID = 5903095946142192468L;
+   
+   protected Logger log = Logger.getLogger(MessageProxy.class);
+
    
    // Static --------------------------------------------------------
 
@@ -486,7 +490,7 @@ public class MessageProxy implements Message, Serializable
       if (needToCopyBody)
       {
          headerChange();
-                  
+              
          message.copyPayload(message.getPayload());
          
          needToCopyBody = false;
@@ -502,7 +506,5 @@ public class MessageProxy implements Message, Serializable
       needToCopyHeader = false;      
    }
 
-
-   // Inner classes -------------------------------------------------
-   
+   // Inner classes -------------------------------------------------   
 }

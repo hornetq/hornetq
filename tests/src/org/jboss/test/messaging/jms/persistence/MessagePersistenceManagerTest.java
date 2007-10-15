@@ -135,8 +135,6 @@ public class MessagePersistenceManagerTest extends JDBCPersistenceManagerTest
       m.setJMSType("testType");
       setCorrelationID(m, i);
       
-      m.setPayload(new WibblishObject());
-      
       return m;
    }
    
@@ -191,9 +189,7 @@ public class MessagePersistenceManagerTest extends JDBCPersistenceManagerTest
          byte[] bytes = new GUID().toString().getBytes();
          m.setJMSCorrelationIDAsBytes(bytes);
       }
-   }
-   
- 
+   }    
 }
 
 

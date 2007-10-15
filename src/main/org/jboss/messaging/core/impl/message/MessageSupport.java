@@ -41,8 +41,9 @@ import org.jboss.messaging.util.StreamUtils;
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision: 2740 $</tt>
  * 
- * Note this class is only serializable so messages can't be returned from JMX operations
+ * Note this class is only serializable so messages can be returned from JMX operations
  * e.g. listAllMessages.
+ * 
  * For normal message transportation serialization is not used
  * 
  * $Id: MessageSupport.java 2740 2007-05-30 11:36:28Z timfox $
@@ -70,11 +71,9 @@ public abstract class MessageSupport implements Message, Serializable
 
 	protected byte priority;
 
-	// Must be hidden from subclasses
-	private transient Object payload;
+	protected transient Object payload;
 
-	// Must be hidden from subclasses
-	private byte[] payloadAsByteArray;
+	protected byte[] payloadAsByteArray;
 	
 	private transient volatile boolean persisted;
 	
@@ -110,7 +109,8 @@ public abstract class MessageSupport implements Message, Serializable
 		if (headers == null)
 		{
 			this.headers = new HashMap();
-		} else
+		}
+		else
 		{
 			this.headers = new HashMap(headers);
 		}
@@ -206,32 +206,21 @@ public abstract class MessageSupport implements Message, Serializable
 	{
 		if (payloadAsByteArray == null && payload != null)
 		{
-			// convert the payload into a byte array and store internally
-
-			// TODO - investigate how changing the buffer size effects
-			// performance
-
-			// Ideally I would like to use the pre-existing DataOutputStream and
-			// not create another one - but would then have to add markers on the
-			// stream
-			// to signify the end of the payload
-			// This would have the advantage of us not having to allocate buffers
-			// here
-			// We could do this by creating our own FilterOutputStream that makes
-			// sure
-			// the end of marker sequence doesn't occur in the payload
-
 			final int BUFFER_SIZE = 2048;
 
 			try
 			{
 				ByteArrayOutputStream bos = new ByteArrayOutputStream(BUFFER_SIZE);
 				DataOutputStream daos = new DataOutputStream(bos);
-				writePayload(daos, payload);
+				StreamUtils.writeObject(daos, payload, true, true);
 				daos.close();
-				payloadAsByteArray = bos.toByteArray();
+				payloadAsByteArray = bos.toByteArray();				
+				
+				//Note we set payload to null - if we didn't then we'd end up with the message stored in memory twice - 
+				//once as the payload, once as the byte[] - this means it would take up twice the RAM
 				payload = null;
-			} catch (Exception e)
+			}
+			catch (Exception e)
 			{
 				RuntimeException e2 = new RuntimeException(e.getMessage());
 				e2.setStackTrace(e.getStackTrace());
@@ -241,27 +230,19 @@ public abstract class MessageSupport implements Message, Serializable
 		return payloadAsByteArray;
 	}
 
-	/**
-	 * Warning! Calling getPayload will cause the payload to be deserialized so
-	 * should not be called on the server.
-	 */
 	public synchronized Object getPayload()
-	{
+	{		
 		if (payload != null)
 		{
 			return payload;
 		}
 		else if (payloadAsByteArray != null)
 		{
-			// deserialize the payload from byte[]
-
-			// TODO use the same DataInputStream as in the read() method and
-			// add markers on the stream to represent end of payload
 			ByteArrayInputStream bis = new ByteArrayInputStream(payloadAsByteArray);
 			DataInputStream dis = new DataInputStream(bis);
 			try
 			{
-				payload = readPayload(dis, payloadAsByteArray.length);
+				payload = StreamUtils.readObject(dis, true);
 			}
 			catch (Exception e)
 			{
@@ -271,6 +252,7 @@ public abstract class MessageSupport implements Message, Serializable
 			}
 
 			payloadAsByteArray = null;
+			
 		   return payload;
 		}
 		else
@@ -278,15 +260,10 @@ public abstract class MessageSupport implements Message, Serializable
 			return null;
 		}
 	}
-
-	public void setPayload(Serializable payload)
+	
+	public void setPayload(Object payload)
 	{
 		this.payload = payload;
-	}
-
-	protected void clearPayloadAsByteArray()
-	{
-		this.payloadAsByteArray = null;
 	}
 
 	public boolean isExpired()
@@ -373,7 +350,8 @@ public abstract class MessageSupport implements Message, Serializable
 			out.writeInt(bytes.length);
 
 			out.write(bytes);
-		} else
+		}
+		else
 		{
 			out.writeInt(0);
 		}
@@ -399,7 +377,8 @@ public abstract class MessageSupport implements Message, Serializable
 		{
 			// no payload
 			payloadAsByteArray = null;
-		} else
+		}
+		else
 		{
 			payloadAsByteArray = new byte[length];
 
@@ -410,39 +389,6 @@ public abstract class MessageSupport implements Message, Serializable
 	// Package protected ---------------------------------------------
 
 	// Protected -----------------------------------------------------
-
-	/**
-	 * Override this if you want more sophisticated payload externalization.
-	 * 
-	 * @throws Exception
-	 *            TODO
-	 */
-	protected void writePayload(DataOutputStream out, Object thePayload)
-			throws Exception
-	{
-		StreamUtils.writeObject(out, thePayload, true, true);
-	}
-
-	/**
-	 * Override this if you want more sophisticated payload externalization.
-	 * 
-	 * @throws Exception
-	 *            TODO
-	 */
-	protected Object readPayload(DataInputStream in, int length)
-			throws Exception
-	{
-		return StreamUtils.readObject(in, true);
-	}
-
-	/**
-	 * It makes sense to use this method only from within JBossBytesMessage
-	 * (optimization). Using it from anywhere else will lead to corrupted data.
-	 */
-	protected final void copyPayloadAsByteArrayToPayload()
-	{
-		payload = payloadAsByteArray;
-	}
 
 	// Private -------------------------------------------------------
 

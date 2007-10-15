@@ -21,6 +21,7 @@
   */
 package org.jboss.test.messaging.jms;
 
+import javax.jms.BytesMessage;
 import javax.jms.Connection;
 import javax.jms.DeliveryMode;
 import javax.jms.MessageConsumer;

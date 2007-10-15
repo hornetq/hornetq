@@ -1876,7 +1876,6 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
       if (bindBlobs)
       {
          bindBlobs(m, ps, 7, 8);
-
       }
    }
 

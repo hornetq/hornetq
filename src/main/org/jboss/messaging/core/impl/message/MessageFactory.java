@@ -41,7 +41,7 @@ import org.jboss.messaging.core.contract.Message;
 public class MessageFactory
 {
    // Constants ------------------------------------------------------------------------------------
-
+	
    // Static ---------------------------------------------------------------------------------------
 
    public static Message createMessage(byte type)
@@ -120,7 +120,7 @@ public class MessageFactory
             break;
          }
          case JBossBytesMessage.TYPE:
-         {
+         {         	
             m = new JBossBytesMessage(messageID, reliable, expiration,
                                       timestamp, priority, headers, payload);
             break;

@@ -24,7 +24,9 @@ package org.jboss.test.messaging.jms;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.jms.BytesMessage;
 import javax.jms.Connection;
+import javax.jms.DeliveryMode;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.jms.Session;
@@ -84,7 +86,69 @@ public class QueueTest extends JMSTestCase
          }
       }
    }
+   
 
+   //http://jira.jboss.com/jira/browse/JBMESSAGING-1101
+   public void testBytesMessagePersistence() throws Exception
+   {
+      Connection conn = null;
+      
+      byte[] bytes = new byte[] { 'a', 'b', 'c', 'd', 'e', 'f', 'g', 123, 55, 0, 12, -100, -11};		
+      
+      try
+      {      
+	      conn = cf.createConnection();
+	      Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+	      MessageProducer prod = sess.createProducer(queue1);
+	      prod.setDeliveryMode(DeliveryMode.PERSISTENT);
+	      
+	      for (int i = 0; i < 1; i++)
+	      {
+	      	BytesMessage bm = sess.createBytesMessage();
+				
+				bm.writeBytes(bytes);
+				
+	         prod.send(bm);
+	      }
+	      
+	      conn.close();
+	      
+	      ServerManagement.stopServerPeer();
+	      
+	      ServerManagement.startServerPeer();
+	      
+	      // Messaging server restart implies new ConnectionFactory lookup
+	      deployAndLookupAdministeredObjects();
+	      
+	      conn = cf.createConnection();
+	      sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+	      conn.start();
+	      MessageConsumer cons = sess.createConsumer(queue1);
+	      for (int i = 0; i < 1; i++)
+	      {
+	      	BytesMessage bm = (BytesMessage)cons.receive(3000);
+				
+				assertNotNull(bm);
+						
+				byte[] bytes2 = new byte[bytes.length];
+				
+				bm.readBytes(bytes2);
+				
+				for (int j = 0; j < bytes.length; j++)
+				{
+					assertEquals(bytes[j], bytes2[j]);
+				}
+	      }
+      }
+      finally
+      {
+      	if (conn != null)
+      	{
+      		conn.close();
+      	}
+      }
+   }
+      
    // added for http://jira.jboss.org/jira/browse/JBMESSAGING-899
    public void testClosedConsumerAfterStart() throws Exception
    {
