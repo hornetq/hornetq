@@ -95,6 +95,8 @@ public class MessagingPostOfficeService extends JDBCServiceSupport
    private String groupName;
    
    private boolean clustered;
+   
+   private int maxConcurrentReplications = 100;
 
    private MessagingPostOffice postOffice;
 
@@ -305,6 +307,16 @@ public class MessagingPostOfficeService extends JDBCServiceSupport
        this.clustered = clustered;
    }
    
+   public int getMaxConcurrentReplications()
+   {
+   	return maxConcurrentReplications;
+   }
+   
+   public void setMaxConcurrentReplications(int number)
+   {
+   	this.maxConcurrentReplications = number;
+   }
+   
    public String listBindings()
    {
       return postOffice.printBindingInformation();
@@ -399,7 +411,8 @@ public class MessagingPostOfficeService extends JDBCServiceSupport
 	                                               groupName,
 	                                               jChannelFactory,
 	                                               stateTimeout, castTimeout,
-                                                  serverPeer.isSupportsFailover());
+                                                  serverPeer.isSupportsFailover(),
+                                                  maxConcurrentReplications);
          }
          else
          {

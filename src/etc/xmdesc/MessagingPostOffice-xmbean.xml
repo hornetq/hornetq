@@ -119,6 +119,12 @@
       <type>java.lang.String</type>
    </attribute>
    
+   <attribute access="read-write" getMethod="getMaxConcurrentReplications" setMethod="setMaxConcurrentReplications">
+      <description>The maximum number of concurrent replications</description>
+      <name>MaxConcurrentReplications</name>
+      <type>int</type>
+   </attribute>
+   
    <attribute access="read-only" getMethod="getNodeIDView">
       <description>Get the set of nodes in the cluster</description>
       <name>NodeIDView</name>

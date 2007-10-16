@@ -22,7 +22,6 @@
 package org.jboss.messaging.core.impl.postoffice;
 
 import java.io.Serializable;
-import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Types;
@@ -38,6 +37,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.Vector;
+import java.util.concurrent.Semaphore;
 
 import javax.management.ListenerNotFoundException;
 import javax.management.MBeanNotificationInfo;
@@ -53,6 +53,7 @@ import org.jboss.jms.server.ServerPeer;
 import org.jboss.jms.server.endpoint.ServerSessionEndpoint;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.contract.Binding;
+import org.jboss.messaging.core.contract.ChannelFactory;
 import org.jboss.messaging.core.contract.ClusterNotification;
 import org.jboss.messaging.core.contract.ClusterNotifier;
 import org.jboss.messaging.core.contract.Condition;
@@ -60,7 +61,6 @@ import org.jboss.messaging.core.contract.ConditionFactory;
 import org.jboss.messaging.core.contract.Delivery;
 import org.jboss.messaging.core.contract.Filter;
 import org.jboss.messaging.core.contract.FilterFactory;
-import org.jboss.messaging.core.contract.ChannelFactory;
 import org.jboss.messaging.core.contract.Message;
 import org.jboss.messaging.core.contract.MessageReference;
 import org.jboss.messaging.core.contract.MessageStore;
@@ -221,6 +221,10 @@ public class MessagingPostOffice extends JDBCSupport
    
    private volatile boolean firstNode;
    
+   //We keep use a semaphore to limit the number of concurrent replication requests to avoid
+   //overwhelming JGroups
+   private Semaphore replicateSemaphore;
+      
    // Constructors ---------------------------------------------------------------------------------
 
    /*
@@ -287,7 +291,8 @@ public class MessagingPostOffice extends JDBCSupport
                               String groupName,
                               ChannelFactory jChannelFactory,
                               long stateTimeout, long castTimeout,
-                              boolean supportsFailover)
+                              boolean supportsFailover,
+                              int maxConcurrentReplications)
       throws Exception
    {
    	this(ds, tm, sqlProperties, createTablesOnStartup, nodeId, officeName, ms, pm, tr,
@@ -300,6 +305,8 @@ public class MessagingPostOffice extends JDBCSupport
       this.supportsFailover = supportsFailover;
       
       nbSupport = new NotificationBroadcasterSupport();
+      
+      replicateSemaphore = new Semaphore(maxConcurrentReplications, true);
    }
       
    // MessagingComponent overrides -----------------------------------------------------------------
@@ -603,36 +610,51 @@ public class MessagingPostOffice extends JDBCSupport
    }
    
    //TODO - these don't belong here
-    
+       
    public void sendReplicateDeliveryMessage(String queueName, String sessionID, long messageID, long deliveryID,
    		                                   boolean reply, boolean sync)
    	throws Exception
    {
-   	//There is no need to lock this while failover node change is occuring since the receiving node is tolerant to duplicate
-		//adds or acks
-   	   	   		   
-   	Address replyAddress = null;
+   	//We use a semaphore to limit the number of outstanding replicates we can send without getting a response
+   	//This is to prevent overwhelming JGroups
+   	//See http://jira.jboss.com/jira/browse/JBMESSAGING-1112
    	
-   	if (reply)
-   	{
-   		//TODO optimise this
-   		
-   		PostOfficeAddressInfo info = (PostOfficeAddressInfo)nodeIDAddressMap.get(new Integer(thisNodeID));
-   		
-   		replyAddress = info.getDataChannelAddress();
-   	}
+   	replicateSemaphore.acquire();
    	
-   	ClusterRequest request = new ReplicateDeliveryMessage(thisNodeID, queueName, sessionID, messageID, deliveryID, replyAddress);
-   	
-   	if (trace) { log.trace(this + " sending replicate delivery message " + queueName + " " + sessionID + " " + messageID); }
-			   
-   	//TODO could be optimised too
-	   Address address = getFailoverNodeDataChannelAddress();
+   	try
+   	{	   	   	
+	   	//There is no need to lock this while failover node change is occuring since the receiving node is tolerant to duplicate
+			//adds or acks
+	   	   	   		   
+	   	Address replyAddress = null;
 	   	
-	   if (address != null)
-	   {	   
-	   	groupMember.unicastData(request, address);
-	   }
+	   	if (reply)
+	   	{
+	   		//TODO optimise this
+	   		
+	   		PostOfficeAddressInfo info = (PostOfficeAddressInfo)nodeIDAddressMap.get(new Integer(thisNodeID));
+	   		
+	   		replyAddress = info.getDataChannelAddress();
+	   	}
+	   	
+	   	ClusterRequest request = new ReplicateDeliveryMessage(thisNodeID, queueName, sessionID, messageID, deliveryID, replyAddress);
+	   	
+	   	if (trace) { log.trace(this + " sending replicate delivery message " + queueName + " " + sessionID + " " + messageID); }
+				   
+	   	//TODO could be optimised too
+		   Address address = getFailoverNodeDataChannelAddress();
+		   	
+		   if (address != null)
+		   {	   
+		   	groupMember.unicastData(request, address);
+		   }
+   	}
+   	catch (Exception e)
+   	{
+   		replicateSemaphore.release();
+   		
+   		throw e;
+   	}
    }
 
 	public void sendReplicateAckMessage(String queueName, long messageID) throws Exception
@@ -1257,19 +1279,22 @@ public class MessagingPostOffice extends JDBCSupport
    	queue.removeFromRecoveryArea(nodeID, messageID);  
    }
    
+   
    public void handleReplicateDeliveryAck(String sessionID, long deliveryID) throws Exception
    {
    	if (trace) { log.trace(this + " handleReplicateDeliveryAck " + sessionID + " " + deliveryID); }
    	  	
-   	//TOD - this does not belong here
+   	//TODO - this does not belong here
    	ServerSessionEndpoint session = serverPeer.getSession(sessionID);
+   	
+   	replicateSemaphore.release();
    	
    	if (session == null)
    	{
    		log.warn("Cannot find session " + sessionID);
    		
    		return;
-   	}
+   	}   	   	
    	
    	session.replicateDeliveryResponseReceived(deliveryID);
    }

@@ -146,6 +146,10 @@ LOAD_BINDINGS=SELECT QUEUE_NAME, COND, SELECTOR, CHANNEL_ID, CLSTERED, ALL_NODES
                   
       <attribute name="CastTimeout">5000</attribute>
       
+      <!-- Max number of concurrent replications -->
+      
+      <attribute name="MaxConcurrentReplications">100</attribute>
+                  
       <!-- Enable this when the JGroups multiplexer comes of age
       <attribute name="ChannelFactoryName">jgroups.mux:name=Multiplexer</attribute>      
       <attribute name="ControlChannelName">udp-sync</attribute>

@@ -987,8 +987,6 @@ public class ServerSessionEndpoint implements SessionEndpoint
    	return gotSome;
    }
       
-   private Object myLock = new Object();
-   
    public void replicateDeliveryResponseReceived(long deliveryID) throws Exception
    {
    	//We look up the delivery in the list and actually perform the delivery
@@ -1002,114 +1000,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
    		throw new java.lang.IllegalStateException("Cannot find delivery with id " + deliveryID);
    	}
    	   	
-   	boolean delivered = false;
-   	
-   	//I have commented this out since we should be able guarantee responses come back in order if we use
-   	//a QueuedExecutor on the other node to send the response
-   	
-//   	//Note there will only be contention on this if two or more responses come back at the same time - which is unlikely
-//   	//TODO - This can occur since replicates are sent to the other node, and the responses are sent back using a pool which
-//   	//means earlier responses can be received after later ones -hence we need to cope with this
-//   	//However - if we used a queued executor on the other node to send back responses we could remove all this locking!!
-//   	synchronized (myLock)
-//   	{
-//   		long toWait = DELIVERY_WAIT_TIMEOUT;
-//   		
-//   		while (toWait > 0)
-//      	{
-//      		DeliveryRecord dr = (DeliveryRecord)toDeliver.peek();
-//      		      	      		
-//      		if (dr == null)
-//      		{
-//      			if (trace) { log.trace("No more deliveries in list"); }
-//      			
-//      			break;
-//      		}
-//      		
-//      		if (trace) { log.trace("Peeked delivery record: " + dr.deliveryID); }
-//      		
-//      		boolean wait = false;
-//      		
-//      		//Needs to be synchronized to prevent delivery occurring twice e.g. if this occurs at same time as collectDeliveries
-//      		synchronized (dr)
-//      		{	   		
-//   	   		boolean performDelivery = false;
-//   	   		
-//   	   		if (dr.waitingForResponse)
-//   	   		{
-//   	   			if (dr == rec)
-//   	   			{
-//   	   				if (trace) { log.trace("Found our delivery"); }
-//   	   				
-//   	   				performDelivery = true;
-//   	   			}
-//   	   			else
-//   	   			{
-//   	   				if (!delivered)
-//   	   				{
-//	   	   				//We have to wait for another response to arrive first
-//	   	   				
-//	   	   				if (trace) { log.trace("Not ours - need to wait"); }
-//	   	   				
-//	   	   				wait = true;
-//   	   				}
-//   	   				else
-//   	   				{
-//   	   					//We have delivered ours and possibly any non replicated deliveries too   	   					   	   					
-//   	   	   	   	
-//   	   	   	   	myLock.notify();
-//   	   	   	   	
-//   	   					break;
-//   	   				}
-//   	   			}
-//   	   		}
-//   	   		else
-//   	   		{
-//   	   			//Non replicated delivery
-//   	   			
-//   	   			if (trace) { log.trace("Non replicated delivery"); }
-//   	   			
-//   	   			performDelivery = true;
-//   	   		}
-//   	   		
-//   	   		if (performDelivery)
-//   	   		{
-//   	   			toDeliver.take();
-//   	   			
-//   	   			performDelivery(dr.del.getReference(), dr.deliveryID, dr.getConsumer()); 
-//   	   			
-//   	   			delivered = true;
-//   	   	   	
-//   	   	   	dr.waitingForResponse = false;
-//   	   	   	
-//   	   	   	delivered = true;
-//   	   		}
-//      		}
-//      		
-//      		if (wait)
-//      		{
-//   				long start = System.currentTimeMillis();
-//   				
-//      			try
-//      			{
-//      				if (trace) { log.trace("Waiting"); }
-//      				
-//      				//We need to wait since responses have come back out of order
-//      				myLock.wait(toWait);
-//      				
-//      				if (trace) { log.trace("Woke up"); }
-//      			}
-//      			catch (InterruptedException e)
-//      			{      				
-//      			}
-//      			toWait -= (System.currentTimeMillis() - start);
-//      		}      		
-//      	}
-//   		if (toWait <= 0)
-//   		{
-//   			throw new IllegalStateException("Timed out waiting for previous response to arrive");
-//   		}
-//   	}   	   	
+   	boolean delivered = false;   	
    	
 		while (true)
    	{
@@ -1143,7 +1034,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
 	   				{
    	   				//We have to wait for another response to arrive first
    	   				
-   	   				throw new IllegalStateException("Reponses have come back our of order");
+   	   				throw new IllegalStateException("Responses have come back our of order");
 	   				}
 	   				else
 	   				{

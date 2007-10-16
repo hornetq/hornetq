@@ -369,7 +369,7 @@ public class ServerManagement
       {
          int index = Integer.parseInt(remoteDebugIndex);
 
-         sb.append("-Xdebug -Xnoagent -Djava.compiler=NONE ").
+         sb.append("-Xmx1024M -Xdebug -Xnoagent -Djava.compiler=NONE ").
             append("-Xrunjdwp:transport=dt_shmem,server=n,suspend=n,address=rmiserver_").
             append(index).append(' ');
       }
@@ -398,13 +398,9 @@ public class ServerManagement
 
       sb.append("-Dtest.bind.address=").append(bindAddress).append(' ');
 
-      String jgroupsBindAddr = System.getProperty(org.jgroups.Global.BIND_ADDR);
+      //Use test.bind.address for the jgroups.bind_addr
       
-      //If not found default to localhost
-      if (jgroupsBindAddr == null)
-      {
-      	jgroupsBindAddr = "localhost";
-      }
+      String jgroupsBindAddr = bindAddress;
       
       sb.append("-D").append(org.jgroups.Global.BIND_ADDR).append("=")
          .append(jgroupsBindAddr).append(' ');      

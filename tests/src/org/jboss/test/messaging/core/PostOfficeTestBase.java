@@ -96,7 +96,7 @@ public class PostOfficeTestBase extends MessagingTestCase
                                  sc.getPostOfficeSQLProperties(), true, nodeID,
                                  "Clustered", ms, pm, tr, ff, cf, idm, cn,
                                  groupName, jChannelFactory,
-                                 stateTimeout, castTimeout, true);
+                                 stateTimeout, castTimeout, true, 100);
       
       postOffice.start();
 
