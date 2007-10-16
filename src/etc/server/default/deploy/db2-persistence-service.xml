@@ -140,7 +140,7 @@ LOAD_BINDINGS=SELECT QUEUE_NAME, COND, SELECTOR, CHANNEL_ID, CLUSTERED, ALL_NODE
       
       <!-- Max number of concurrent replications -->
       
-      <attribute name="MaxConcurrentReplications">100</attribute>
+      <attribute name="MaxConcurrentReplications">25</attribute>
       
       
       <!-- Enable this when the JGroups multiplexer comes of age 

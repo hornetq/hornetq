@@ -30,6 +30,7 @@
                <attribute name="numberOfRetries" isParam="true">1</attribute>
                <attribute name="numberOfCallRetries" isParam="true">1</attribute>
                <attribute name="clientMaxPoolSize" isParam="true">50</attribute>
+               <attribute name="pingFrequency" isParam="true">100000000</attribute>
             </invoker>
             <handlers>
                <handler subsystem="JMS">org.jboss.jms.server.remoting.JMSServerInvocationHandler</handler>

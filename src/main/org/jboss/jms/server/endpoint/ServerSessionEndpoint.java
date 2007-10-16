@@ -1422,7 +1422,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
       	 }
        }
        
-       log.info("del count " + this.toDeliverCount.get());
+       //log.info("del count " + this.toDeliverCount.get());
 
    }
    

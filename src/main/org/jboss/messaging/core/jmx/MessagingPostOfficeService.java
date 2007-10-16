@@ -96,7 +96,7 @@ public class MessagingPostOfficeService extends JDBCServiceSupport
    
    private boolean clustered;
    
-   private int maxConcurrentReplications = 100;
+   private int maxConcurrentReplications = 25;
 
    private MessagingPostOffice postOffice;
 
