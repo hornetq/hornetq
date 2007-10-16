@@ -2915,15 +2915,6 @@ public class MessagingPostOffice extends JDBCSupport
             //maps when the other nodes detect failure
             removeBindingInMemory(binding.queue.getNodeID(), binding.queue.getName());
       		
-      		//Delete from storage
-      		deleteBindingFromStorage(queue);
-      	
-            log.debug(this + " deleted binding for " + queue.getName());
-
-            // Note we do not need to send an unbind request across the cluster - this is because
-            // when the node crashes a view change will hit the other nodes and that will cause
-            // all binding data for that node to be removed anyway.
-            
             //Find if there is a local queue with the same name
             
             Queue localQueue = null;
@@ -2950,7 +2941,24 @@ public class MessagingPostOffice extends JDBCSupport
             	
             	throw new IllegalStateException("Cannot failover " + queue.getName() + " since it does not exist on this node. " + 
             			                          "You must deploy your clustered destinations on ALL nodes of the cluster");
-            }            
+            }    
+            
+      		//Delete from storage
+            
+            //Note we must do this *after* we have done any merge.
+            //This is because if we did it first, then the merge failed, we'd be left with the old channel deleted
+            //but the messages would have still be in the old channel
+            //meaning they would have disappeared from the users point of view and it would involve manual
+            //database intervention to correct it
+            //See http://jira.jboss.com/jira/browse/JBMESSAGING-1113
+            
+      		deleteBindingFromStorage(queue);
+      	
+            log.debug(this + " deleted binding for " + queue.getName());
+
+            // Note we do not need to send an unbind request across the cluster - this is because
+            // when the node crashes a view change will hit the other nodes and that will cause
+            // all binding data for that node to be removed anyway.            
          }
 
          log.debug(this + ": server side fail over is now complete");
