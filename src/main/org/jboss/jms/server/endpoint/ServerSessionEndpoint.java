@@ -93,6 +93,7 @@ import org.jboss.remoting.callback.ServerInvokerCallbackHandler;
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
 import EDU.oswego.cs.dl.util.concurrent.LinkedQueue;
 import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
+import EDU.oswego.cs.dl.util.concurrent.SynchronizedInt;
 import EDU.oswego.cs.dl.util.concurrent.SynchronizedLong;
 
 /**
@@ -177,6 +178,9 @@ public class ServerSessionEndpoint implements SessionEndpoint
    private boolean waitingToClose = false;
    
    private Object waitLock = new Object();
+   
+   //debug
+   private SynchronizedInt toDeliverCount = new SynchronizedInt(0);
    
    // Constructors ---------------------------------------------------------------------------------
 
@@ -907,6 +911,8 @@ public class ServerSessionEndpoint implements SessionEndpoint
    		while (iter.hasNext())
    		{
    			toDeliver.put(iter.next());
+   			
+   			this.toDeliverCount.increment();
    		}
    	}
    	
@@ -1056,6 +1062,8 @@ public class ServerSessionEndpoint implements SessionEndpoint
 	   		if (performDelivery)
 	   		{
 	   			toDeliver.take();
+	   			
+	   			this.toDeliverCount.decrement();
 	   			
 	   			performDelivery(dr.del.getReference(), dr.deliveryID, dr.getConsumer()); 
 	   			
@@ -1290,7 +1298,10 @@ public class ServerSessionEndpoint implements SessionEndpoint
    		if (toWait <= 0)
    		{
    			//Clear toDeliver
-   			while (toDeliver.poll(0) != null) {}
+   			while (toDeliver.poll(0) != null)
+   			{
+   				this.toDeliverCount.decrement();
+   			}
    			
    			log.warn("Timed out waiting for response to arrive");
    		}   		
@@ -1359,11 +1370,15 @@ public class ServerSessionEndpoint implements SessionEndpoint
       		 //producer in flight (since np don't need to be replicated)
       		 toDeliver.put(rec);
       		 
+      		 this.toDeliverCount.increment();
+      		 
       		 //Race check (there's a small chance the message in the queue got removed between the empty check
       		 //and the put so we do another check:
       		 if (toDeliver.peek() == rec)
       		 {
       			 toDeliver.take();
+      			 
+      			 this.toDeliverCount.decrement();
       			 
       			 performDelivery(delivery.getReference(), deliveryId, consumer);
       		 }
@@ -1388,6 +1403,8 @@ public class ServerSessionEndpoint implements SessionEndpoint
          	 
          	 toDeliver.put(rec);
          	 
+         	 this.toDeliverCount.increment();
+         	 
          	 postOffice.sendReplicateDeliveryMessage(consumer.getQueueName(), id,
                                                      delivery.getReference().getMessage().getMessageID(),
                                                      deliveryId, true, false);
@@ -1404,6 +1421,8 @@ public class ServerSessionEndpoint implements SessionEndpoint
          	 performDelivery(delivery.getReference(), deliveryId, consumer); 	  
       	 }
        }
+       
+       log.info("del count " + this.toDeliverCount.get());
 
    }
    
