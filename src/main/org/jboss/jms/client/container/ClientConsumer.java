@@ -872,7 +872,7 @@ public class ClientConsumer
                 if (token != currentToken)
                 {
                	 //This message was queued up from before failover - we don't want to add it
-               	 log.info("Ignoring message " + message);
+               	 log.trace("Ignoring message " + message);
                	 return;
                 }
                 

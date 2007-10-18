@@ -159,15 +159,15 @@ public class ResourceManagerFactory
    
    public void dump()
    {
-   	log.info("Dumping " + this);
+   	log.debug("Dumping " + this);
    	Iterator iter = holders.entrySet().iterator();
    	while (iter.hasNext())
    	{
    		Map.Entry entry = (Map.Entry)iter.next();
    		
-   		log.info(entry.getKey() + "--->" + entry.getValue());
+   		log.debug(entry.getKey() + "--->" + entry.getValue());
    	}
-   	log.info("End dump");
+   	log.debug("End dump");
    }
 
    // Package protected ----------------------------------------------------------------------------

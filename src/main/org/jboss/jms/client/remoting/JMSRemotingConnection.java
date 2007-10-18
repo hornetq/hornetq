@@ -126,6 +126,17 @@ public class JMSRemotingConnection
             metadata.put(Client.CALLBACK_SERVER_PORT, propertyPort);
          }
          
+         Map params = serverLocator.getParameters();
+         int maxPoolSize = 50;
+         if (params != null)
+         {
+         	String val = (String)params.get(MicroSocketClientInvoker.MAX_POOL_SIZE_FLAG);
+         	maxPoolSize = Integer.valueOf((String)val).intValue();
+         }
+         
+         //Use the same value for the callback server
+         metadata.put(MicroSocketClientInvoker.MAX_POOL_SIZE_FLAG, String.valueOf(maxPoolSize));
+         
          String protocol = serverLocator.getProtocol();
          if ("bisocket".equals(protocol) || "sslbisocket".equals(protocol))
          {
