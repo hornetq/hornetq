@@ -35,7 +35,7 @@ public class FailoverCommandCenter
 
    private static boolean trace = log.isTraceEnabled();
 
-   // Attributes -----------------------------------------------------------------------------------
+   // Attributes-----------------------------------------------------------------------------------
 
    private ConnectionState state;
 
@@ -71,7 +71,7 @@ public class FailoverCommandCenter
                                   JMSRemotingConnection remotingConnection)
       throws Exception
    {
-      log.debug("failure detected by " + source);
+      log.debug("failure detected by " + source, reason);
 
       // generate a FAILURE_DETECTED event
       broadcastFailoverEvent(new FailoverEvent(FailoverEvent.FAILURE_DETECTED, source));

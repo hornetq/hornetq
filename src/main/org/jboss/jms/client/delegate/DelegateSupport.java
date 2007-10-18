@@ -25,6 +25,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.Serializable;
+import java.net.SocketException;
 
 import javax.jms.JMSException;
 
@@ -214,9 +215,28 @@ public abstract class DelegateSupport implements Streamable, Serializable
       {
          return (JMSException)t;
       }
-      else if ((t instanceof CannotConnectException) ||
-         (t instanceof IOException) ||
-         (t instanceof ConnectionFailedException))
+      else if (t instanceof CannotConnectException)
+      {
+      	boolean failover = true;
+      	CannotConnectException cc = (CannotConnectException)t;
+      	Throwable underlying = cc.getCause();
+      	if (underlying != null && underlying instanceof SocketException)
+      	{
+      		//If remoting fails to find a connection because the client pool is full
+      		//then it throws a SocketException! - in this case we DO NOT want to failover
+      		//See http://jira.jboss.com/jira/browse/JBMESSAGING-1114
+      		if (underlying.getMessage() != null &&
+      			 underlying.getMessage().startsWith("Can not obtain client socket connection from pool"))
+      		{
+      			failover = false;
+      		}
+      	}
+      	if (failover)
+      	{
+      		return new MessagingNetworkFailureException(cc);
+      	}      	      	      	      	      	
+      }
+      else if ((t instanceof IOException) || (t instanceof ConnectionFailedException))
       {
          return new MessagingNetworkFailureException((Exception)t);
       }
@@ -244,8 +264,7 @@ public abstract class DelegateSupport implements Streamable, Serializable
          }
       }
          
-      return new MessagingJMSException("Failed to invoke", t);
-      
+      return new MessagingJMSException("Failed to invoke", t);      
    }
 
    public Client getClient()
