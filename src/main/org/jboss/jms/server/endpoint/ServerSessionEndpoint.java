@@ -512,7 +512,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
    
    public void recoverDeliveries(List deliveryRecoveryInfos, String oldSessionID) throws JMSException
    {
-      if (trace) { log.trace(this + "recovers deliveries " + deliveryRecoveryInfos); }
+      if (trace) { log.trace(this + " recovers deliveries " + deliveryRecoveryInfos); }
 
       try
       {
@@ -1744,8 +1744,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
       
       if (rec == null)
       {
-         log.warn("Cannot find " + ack + " to acknowledge, " +
-            "maybe it was already acknowledged before failover!");
+         log.debug("Cannot find " + ack + " to acknowledge, it was probably acknowledged before ");
          return;
       }
       

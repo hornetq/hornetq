@@ -121,39 +121,50 @@ public class FailoverCommandCenter
          broadcastFailoverEvent(new FailoverEvent(FailoverEvent.FAILOVER_STARTED, this));        
          
          int failedNodeID = state.getServerID();
-         ConnectionFactoryDelegate clusteredDelegate =
-            state.getClusteredConnectionFactoryDelegate();
-         
-         // re-try creating the connection
+                  
+         ConnectionFactoryDelegate clusteredDelegate = state.getClusteredConnectionFactoryDelegate();
+                           
+         // try recreating the connection
+         log.trace("Creating new connection");
          res = clusteredDelegate.
             createConnectionDelegate(state.getUsername(), state.getPassword(), failedNodeID);
+         log.trace("Created connection");
          
          if (res == null)
          {
             // Failover did not occur
             failoverSuccessful = false;
+            log.trace("No failover");
          }
          else
          {      
             // recursively synchronize state
             ClientConnectionDelegate newDelegate = (ClientConnectionDelegate)res.getDelegate();
             
+            log.trace("Synchronizing state");
             state.getDelegate().synchronizeWith(newDelegate);
+            log.trace("Synchronized state");
                            
+            log.trace("Opening valve");
             valve.open();
+            log.trace("Opened valve");
             valveOpened = true;
             
             //Now start the connection - note! this can't be done while the valve is closed
             //or it will block itself
             
-            // start the connection again on the serverEndpoint if necessary
+            // start the connection again on the serverEndpoint if necessary            
             if (state.isStarted())
             {
+            	log.trace("Starting new connection");
                newDelegate.start();
+               log.trace("Started new connection");
             }
             
             failoverSuccessful = true;                        
          }
+         
+         log.trace("failureDetected() complete");
          
          return failoverSuccessful;
       }
@@ -167,7 +178,9 @@ public class FailoverCommandCenter
       {
          if (!valveOpened)
          {
+         	log.trace("finally opening valve");
             valve.open();
+            log.trace("valve opened");
          }
 
          if (failoverSuccessful)

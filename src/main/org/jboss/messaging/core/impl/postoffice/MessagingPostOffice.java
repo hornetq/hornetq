@@ -619,7 +619,10 @@ public class MessagingPostOffice extends JDBCSupport
    	//This is to prevent overwhelming JGroups
    	//See http://jira.jboss.com/jira/browse/JBMESSAGING-1112
    	
-   	replicateSemaphore.acquire();
+   	if (reply)
+   	{
+   		replicateSemaphore.acquire();
+   	}
    	
    	try
    	{	   	   	
@@ -651,7 +654,10 @@ public class MessagingPostOffice extends JDBCSupport
    	}
    	catch (Exception e)
    	{
-   		replicateSemaphore.release();
+   		if (reply)
+   		{
+   			replicateSemaphore.release();
+   		}
    		
    		throw e;
    	}

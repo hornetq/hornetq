@@ -49,7 +49,7 @@ public class MessageIdGenerator
 
    private boolean trace = log.isTraceEnabled();
 
-   protected long high;
+   protected long high = -1;
    protected long nextID;
    protected int blockSize;
 
@@ -74,7 +74,7 @@ public class MessageIdGenerator
 
    public synchronized long getId(ConnectionEndpoint connection) throws JMSException
    {
-      if (nextID == high)
+      if (nextID == high + 1)
       {
          getNextBlock(connection);
       }

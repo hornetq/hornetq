@@ -215,7 +215,7 @@ public class ClientConsumer
    private boolean shouldAck;
    private boolean handleFlowControl;
    private long redeliveryDelay;
-        
+   private volatile int currentToken;
    
    // Constructors ---------------------------------------------------------------------------------
 
@@ -261,21 +261,8 @@ public class ClientConsumer
       //       failover where a message is sent then the valve is locked, and the message send cause
       //       a message delivery back to the same client which tries to ack but can't get through
       //       the valve. This won't be necessary when we move to a non blocking transport
-      this.sessionExecutor.execute(
-         new Runnable()
-         {
-            public void run()
-            {
-               try
-               {
-                  handleMessageInternal(message);
-               }
-               catch (Exception e)
-               {
-                  log.error("Failed to handle message", e);
-               }
-            }
-         });
+   	
+      sessionExecutor.execute(new HandleMessageRunnable(currentToken, message));         
    }
    
    public void setMessageListener(MessageListener listener) throws JMSException
@@ -546,21 +533,23 @@ public class ClientConsumer
 
    /**
     * Needed for failover
+    * Note this can't lock the mainLock since receive() also locks the main lock
+    * and this would prevent failover occuring when a consumer is blocked on receive()
     */
    public void synchronizeWith(ClientConsumer newHandler)
    {
+      currentToken++;
+   	
       consumerID = newHandler.consumerID;
 
-      // Clear the buffer. This way the non persistent messages that managed to arive are
-      // irremendiably lost, while the peristent ones are failed-over on the server and will be
+      // Clear the buffer. This way the non persistent messages that managed to arrive are
+      // irredeemably lost, while the persistent ones are failed-over on the server and will be
       // resent
-
-      // TODO If we don't zap this buffer, we may be able to salvage some non-persistent messages
 
       buffer.clear();
       
       // need to reset toggle state
-      serverSending = true;      
+      serverSending = true;
    }
    
    public long getRedeliveryDelay()
@@ -623,41 +612,6 @@ public class ClientConsumer
       }
    }
    
-   private void handleMessageInternal(Object message) throws Exception
-   {
-      MessageProxy proxy = (MessageProxy) message;
-
-      if (trace) { log.trace(this + " receiving message " + proxy + " from the remoting layer"); }
-
-      synchronized (mainLock)
-      {
-         if (closed)
-         {
-            // Sanity - this should never happen - we should always wait for all deliveries to arrive
-            // when closing
-            throw new IllegalStateException(this + " is closed, so ignoring message");
-         }
-
-         proxy.setSessionDelegate(sessionDelegate, isConnectionConsumer);
-
-         proxy.getMessage().doBeforeReceive();
-
-         //Add it to the buffer
-         buffer.addLast(proxy, proxy.getJMSPriority());
-
-         lastDeliveryId = proxy.getDeliveryId();
-         
-         if (trace) { log.trace(this + " added message(s) to the buffer are now " + buffer.size() + " messages"); }
-
-         messageAdded();
-
-         if (handleFlowControl)
-         {
-         	checkStop();
-         }
-      }
-   }
-
    private void checkStop()
    {
       int size = buffer.size();
@@ -885,6 +839,69 @@ public class ClientConsumer
       }
    }
    
+   private class HandleMessageRunnable implements Runnable
+   {
+   	private int token;
+   	
+   	private Object message;
+   	
+   	HandleMessageRunnable(int token, Object message)
+   	{
+   		this.token = token;
+   		
+   		this.message = message;
+   	}
+   	
+   	public void run()
+      {
+         try
+         {
+         	 MessageProxy proxy = (MessageProxy) message;
+
+             if (trace) { log.trace(this + " receiving message " + proxy + " from the remoting layer"); }
+
+             synchronized (mainLock)
+             {
+                if (closed)
+                {
+                   // Sanity - this should never happen - we should always wait for all deliveries to arrive
+                   // when closing
+                   throw new IllegalStateException(this + " is closed, so ignoring message");
+                }
+                
+                if (token != currentToken)
+                {
+               	 //This message was queued up from before failover - we don't want to add it
+               	 log.info("Ignoring message " + message);
+               	 return;
+                }
+                
+                proxy.setSessionDelegate(sessionDelegate, isConnectionConsumer);
+
+                proxy.getMessage().doBeforeReceive();
+
+                //Add it to the buffer
+                buffer.addLast(proxy, proxy.getJMSPriority());
+
+                lastDeliveryId = proxy.getDeliveryId();
+                
+                if (trace) { log.trace(this + " added message(s) to the buffer are now " + buffer.size() + " messages"); }
+
+                messageAdded();
+
+                if (handleFlowControl)
+                {
+                	checkStop();
+                }
+             }
+         }
+         catch (Exception e)
+         {
+            log.error("Failed to handle message", e);
+         }
+      }
+   }
+   
    /*
     * This class handles the execution of onMessage methods
     */
@@ -911,24 +928,7 @@ public class ClientConsumer
             
             // remove a message from the buffer
 
-            mp = (MessageProxy)buffer.removeFirst();
-                          
-//            if (!buffer.isEmpty())
-//            {
-//            	//Queue up the next runner to run
-//            	
-//            	if (trace) { log.trace("More messages in buffer so queueing next onMessage to run"); }
-//            	
-//            	queueRunner(this);
-//            	
-//            	if (trace) { log.trace("Queued next onMessage to run"); }
-//            }
-//            else
-//            {
-//            	if (trace) { log.trace("no more messages in buffer, marking listener as not running"); }
-//            	
-//            	listenerRunning  = false;
-//            }               
+            mp = (MessageProxy)buffer.removeFirst();                                       
          }
          
          /*
@@ -940,8 +940,7 @@ public class ClientConsumer
           * 
           * Solution - don't use a session executor - have a sesion thread instead much nicer
           */
-         
-                        
+                                
          if (mp != null)
          {
             try

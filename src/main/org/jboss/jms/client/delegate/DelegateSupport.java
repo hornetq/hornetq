@@ -228,6 +228,8 @@ public abstract class DelegateSupport implements Streamable, Serializable
       		if (underlying.getMessage() != null &&
       			 underlying.getMessage().startsWith("Can not obtain client socket connection from pool"))
       		{
+      			log.warn("Timed out getting a connection from the pool. Try increasing clientMaxPoolSize and/or numberOfRetries " +
+      					   "attributes in remoting-xxx-service.xml");
       			failover = false;
       		}
       	}

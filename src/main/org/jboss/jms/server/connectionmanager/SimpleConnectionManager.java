@@ -162,7 +162,7 @@ public class SimpleConnectionManager implements ConnectionManager, ConnectionLis
             "with the connection to remote client ":
             "trying to send a message to remote client ") +
          remotingSessionID + ", jmsClientID=" + jmsClientID + ". It is possible the client has exited without closing " +
-         "its connection(s) or there is a network problem. All connection resources " +
+         "its connection(s) or the network has failed. All connection resources " +
          "corresponding to that client process will now be removed.");
 
       closeConsumersForClientVMID(jmsClientID);
