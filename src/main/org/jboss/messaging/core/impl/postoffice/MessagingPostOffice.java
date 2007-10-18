@@ -2858,7 +2858,8 @@ public class MessagingPostOffice extends JDBCSupport
     */
    private void performFailover(Integer failedNodeID) throws Exception
    {
-      log.debug(this + " performing failover for failed node " + failedNodeID);
+   	log.info("JBoss Messaging is failing over for failed node " + failedNodeID + 
+   			   ". If there are many messages to reload this may take some time...");
       
       ClusterNotification notification = new ClusterNotification(ClusterNotification.TYPE_FAILOVER_START, failedNodeID.intValue(), null);
       
@@ -2987,6 +2988,8 @@ public class MessagingPostOffice extends JDBCSupport
       
       //for testing only
       sendJMXNotification(FAILOVER_COMPLETED_NOTIFICATION);
+      
+      log.info("JBoss Messaging failover completed");
    }
 
    private void sendJMXNotification(String notificationType)
