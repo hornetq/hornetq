@@ -69,7 +69,13 @@
       <description>The period in ms for the reaper to kick in and delete unreferenced messages from the database</description>
       <name>ReaperPeriod</name>
       <type>long</type>
-   </attribute>        
+   </attribute>    
+   
+   <attribute access="read-write" getMethod="getSynchronousReapMessages" setMethod="setSynchronousReapMessages">
+      <description>The number of messages to synchronously force a reap after, or zero to reap asynchronously</description>
+      <name>SynchronousReapMessages</name>
+      <type>int</type>
+   </attribute>      
 
    <!-- Managed operations -->
 

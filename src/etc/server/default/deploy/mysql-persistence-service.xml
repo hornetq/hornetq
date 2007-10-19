@@ -87,7 +87,13 @@
                   
       <attribute name="MaxParams">500</attribute>
       
+      <!-- The period between asynchronous reaps of unreferenced messages, or zero for synchronous reaping -->
+      
       <attribute name="ReaperPeriod">5000</attribute>
+      
+      <!-- The number of messages to do a synchronous reap after, or zero for asynchronous reaping -->
+      
+      <attribute name="SynchronousReapMessages">0</attribute>
    </mbean>
 
    <!-- Messaging Post Office MBean configuration
@@ -121,7 +127,7 @@ INSERT_BINDING=INSERT INTO JBM_POSTOFFICE (POSTOFFICE_NAME, NODE_ID, QUEUE_NAME,
 DELETE_BINDING=DELETE FROM JBM_POSTOFFICE WHERE POSTOFFICE_NAME=? AND NODE_ID=? AND QUEUE_NAME=?
 LOAD_BINDINGS=SELECT QUEUE_NAME, COND, SELECTOR, CHANNEL_ID, CLUSTERED, ALL_NODES FROM JBM_POSTOFFICE WHERE POSTOFFICE_NAME=? AND NODE_ID=?
       ]]></attribute>
-       
+      
       <!-- This post office is clustered. If you don't want a clustered post office then set to false -->
       
       <attribute name="Clustered">true</attribute>

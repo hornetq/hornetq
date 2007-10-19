@@ -55,6 +55,8 @@ public class JDBCPersistenceManagerService extends JDBCServiceSupport
    
    private long reaperPeriod = 5000;
    
+   private int synchronousReapMessages = 0;
+   
    // Constructors --------------------------------------------------------
    
    public JDBCPersistenceManagerService()
@@ -83,10 +85,21 @@ public class JDBCPersistenceManagerService extends JDBCServiceSupport
       {  
          TransactionManager tm = getTransactionManagerReference();
          
+         if (reaperPeriod == 0 && synchronousReapMessages == 0)
+         {
+         	throw new IllegalArgumentException("One of reaperPeriod or synchronousReapMessage must be > 0");
+         }
+         
+         if (reaperPeriod > 0 && synchronousReapMessages > 0)
+         {
+         	throw new IllegalArgumentException("Only one of reaperPeriod or synchronousReapMessage can be > 0");
+         }
+         
          persistenceManager =
             new JDBCPersistenceManager(ds, tm, sqlProperties,
                                        createTablesOnStartup, usingBatchUpdates,
-                                       usingBinaryStream, usingTrailingByte, maxParams, reaperPeriod);
+                                       usingBinaryStream, usingTrailingByte, maxParams, reaperPeriod,
+                                       synchronousReapMessages);
          
          persistenceManager.start();
          
@@ -165,9 +178,9 @@ public class JDBCPersistenceManagerService extends JDBCServiceSupport
    
    public void setReaperPeriod(long reaperPeriod)
    {
-   	if (reaperPeriod <= 0)
+   	if (reaperPeriod < 0)
    	{
-   		throw new IllegalArgumentException("reaperPeriod must be >= 0");
+   		throw new IllegalArgumentException("reaperPeriod must be > 0");
    	}
    	
    	this.reaperPeriod = reaperPeriod;
@@ -176,5 +189,20 @@ public class JDBCPersistenceManagerService extends JDBCServiceSupport
    public long getReaperPeriod()
    {
    	return reaperPeriod;
+   }
+   
+   public void setSynchronousReapMessages(int msgs)
+   {
+   	if (msgs < 0)
+   	{
+   		throw new IllegalArgumentException("synchronousReapMessages must be > 0");
+   	}
+   	
+   	this.synchronousReapMessages = msgs;
+   }
+   
+   public int getSynchronousReapMessages()
+   {
+   	return synchronousReapMessages;
    }
 }

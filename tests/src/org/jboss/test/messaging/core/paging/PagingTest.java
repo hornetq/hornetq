@@ -87,7 +87,7 @@ public class PagingTest extends MessagingTestCase
       pm =
          new JDBCPersistenceManager(sc.getDataSource(), sc.getTransactionManager(),
                   sc.getPersistenceManagerSQLProperties(),
-                  true, true, true, false, 100, 5000);   
+                  true, true, true, false, 100, 5000, 0);   
       ((JDBCPersistenceManager)pm).injectNodeID(1);
       pm.start();
             

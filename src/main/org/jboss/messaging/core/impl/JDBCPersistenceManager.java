@@ -31,8 +31,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Types;
 import java.sql.Statement;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -44,6 +44,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.sql.DataSource;
 import javax.transaction.TransactionManager;
@@ -104,6 +105,10 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
    private long reaperPeriod;
    
    private boolean reaperRunning;
+   
+   private int synchronousReapMessages;
+   
+   private AtomicInteger syncReapCount;
 
    // Some versions of the oracle driver don't support binding blobs on select clauses,
    // what would force us to use a two stage insert (insert and if successful, update)
@@ -114,7 +119,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
    public JDBCPersistenceManager(DataSource ds, TransactionManager tm, Properties sqlProperties,
                                  boolean createTablesOnStartup, boolean usingBatchUpdates,
                                  boolean usingBinaryStream, boolean usingTrailingByte, int maxParams,
-                                 long reaperPeriod)
+                                 long reaperPeriod, int synchronousReapMessages)
    {
       super(ds, tm, sqlProperties, createTablesOnStartup);
       
@@ -128,9 +133,16 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
       
       this.reaperPeriod = reaperPeriod;
       
-      reaperTimer = new Timer(true);
-      
-      reaper = new Reaper();
+      if (reaperPeriod > 0)
+      {
+	      reaperTimer = new Timer(true);
+	      
+	      reaper = new Reaper();
+      }
+      else
+      {
+      	syncReapCount = new AtomicInteger(0);
+      }
    }
    
    
@@ -258,7 +270,8 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
    	{
    		return;
    	}
-   	if (reaperPeriod != -1)
+   	
+   	if (reaper != null && reaperPeriod != -1)
    	{
    		reaperTimer.schedule(reaper, reaperPeriod, reaperPeriod);
    		
@@ -272,9 +285,13 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
    	{
    		return;
    	}
-   	reaper.cancel();
    	
-   	reaperRunning = false;
+   	if (reaper != null)
+   	{
+	   	reaper.cancel();
+	   	
+	   	reaperRunning = false;
+   	}
    }
    
    public void reapUnreferencedMessages() throws Exception
@@ -646,7 +663,6 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
 	         		//Maybe we need to persist the message itself
 	         		Message m = ref.getMessage();
 
-
                   rows = storeMessage(m, psInsertMessage, psUpdateMessage);
 
                   if (trace) { log.trace("Inserted " + rows + " rows"); }
@@ -690,6 +706,8 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
 		            removeReference(channelID, ref, psDeleteReference);
 		            
 		            int rows = psDeleteReference.executeUpdate();
+		            
+		            addToReapCount(rows);
 		               
 		            if (trace) { log.trace("Deleted " + rows + " rows"); }		            		                          
 		         }         
@@ -703,7 +721,9 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
    		}
       }
       
-      new RemoveDepagedReferencesRunner().executeWithRetry();      
+      new RemoveDepagedReferencesRunner().executeWithRetry();   
+      
+      checkReap();      
    }
    
    // After loading paged refs this is used to update P messages to non paged
@@ -1284,7 +1304,9 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
 	               return null;
 	            }
 	            
-	            if (trace) { log.trace("Deleted " + rows + " rows"); }             
+	            if (trace) { log.trace("Deleted " + rows + " rows"); }  
+	            	            
+	            incrementReapCount();
 	            
 	            return null;
 	         }
@@ -1308,6 +1330,8 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
          //No tx so we remove the reference directly from the db
       
          new RemoveReferenceRunner().executeWithRetry();
+         
+         checkReap();         
       }
    }
    
@@ -1451,7 +1475,9 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
 		                        
 		            int rows = psDeleteReference.executeUpdate();
 		            
-		            if (trace) { log.trace("Deleted " + rows + " rows"); }                         
+		            if (trace) { log.trace("Deleted " + rows + " rows"); }
+		            
+		            incrementReapCount();
 		         }
 		         
 		         return null;
@@ -1475,6 +1501,8 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
 			}   		
    	}   	      
    	new HandleBeforeCommit1PCRunner().executeWithRetry();
+   	
+      checkReap();      
    }
    
    protected void handleBeforeCommit2PC(final Transaction tx) throws Exception
@@ -1506,6 +1534,8 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
 		         
 		         rows = ps.executeUpdate();
 		         
+		         addToReapCount(rows);
+		         
 		         if (trace) { log.trace(JDBCUtil.statementToString(getSQLStatement("COMMIT_MESSAGE_REF2"), new Long(tx.getId())) + " updated " + rows + " row(s)"); }
 		         
 		         removeTXRecord(conn, tx);
@@ -1520,6 +1550,8 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
    	}
    	
    	new HandleBeforeCommit2PCRunner().executeWithRetry();
+   	
+   	checkReap();
    }
    
    protected void handleBeforePrepare(final List refsToAdd, final List refsToRemove, final Transaction tx) throws Exception
@@ -1646,6 +1678,8 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
 		         
 		         int rows = ps.executeUpdate();
 		         
+		         addToReapCount(rows);
+		         
 		         if (trace)
 		         {
 		            log.trace(JDBCUtil.statementToString(getSQLStatement("ROLLBACK_MESSAGE_REF1"), new Long(tx.getId())) + " removed " + rows + " row(s)");
@@ -1676,6 +1710,8 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
    	}
    	
    	new HandleBeforeRollbackRunner().executeWithRetry();
+   	
+   	checkReap();
    }
    
    
@@ -2322,6 +2358,32 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
       }
       
       return order;
+   }
+   
+   private void incrementReapCount()
+   {
+   	if (syncReapCount != null)
+   	{
+   		syncReapCount.incrementAndGet();
+   	}
+   }
+   
+   private void addToReapCount(int delta)
+   {
+   	if (syncReapCount != null)
+   	{
+   		syncReapCount.addAndGet(delta);
+   	}
+   }
+   
+   private synchronized void checkReap() throws Exception
+   {
+   	if (synchronousReapMessages > 0 && syncReapCount.get() >= synchronousReapMessages)
+   	{
+   		reapUnreferencedMessages();
+   		
+   		syncReapCount.set(0);
+   	}
    }
    
    private void reapUnreferencedMessages(final long timestamp) throws Exception
