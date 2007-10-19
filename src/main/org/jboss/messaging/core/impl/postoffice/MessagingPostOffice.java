@@ -612,7 +612,7 @@ public class MessagingPostOffice extends JDBCSupport
    //TODO - these don't belong here
        
    public void sendReplicateDeliveryMessage(String queueName, String sessionID, long messageID, long deliveryID,
-   		                                   boolean reply, boolean sync, boolean bodgesync)
+   		                                   boolean reply, boolean sync)
    	throws Exception
    {
    	//We use a semaphore to limit the number of outstanding replicates we can send without getting a response
@@ -631,7 +631,7 @@ public class MessagingPostOffice extends JDBCSupport
 	   	   	   		   
 	   	Address replyAddress = null;
 	   	
-	   	if (reply && !bodgesync)
+	   	if (reply)
 	   	{
 	   		//TODO optimise this
 	   		
@@ -648,15 +648,8 @@ public class MessagingPostOffice extends JDBCSupport
 		   Address address = getFailoverNodeDataChannelAddress();
 		   	
 		   if (address != null)
-		   {	  
-		   	if (bodgesync)
-		   	{
-		   		groupMember.unicastControl(request, address, true);
-		   	}
-		   	else
-		   	{
-		   		groupMember.unicastData(request, address);
-		   	}
+		   {	   
+		   	groupMember.unicastData(request, address);
 		   }
    	}
    	catch (Exception e)

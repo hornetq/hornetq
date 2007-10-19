@@ -179,9 +179,6 @@ public class ServerSessionEndpoint implements SessionEndpoint
    
    private Object waitLock = new Object();
    
-   
-   private boolean dosync = true;
-   
    // Constructors ---------------------------------------------------------------------------------
 
    ServerSessionEndpoint(String sessionID, ServerConnectionEndpoint connectionEndpoint) throws Exception
@@ -621,7 +618,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
                
                if (supportsFailover)
                {
-               	postOffice.sendReplicateDeliveryMessage(queueName, id, del.getReference().getMessage().getMessageID(), deliveryId, false, true, true);
+               	postOffice.sendReplicateDeliveryMessage(queueName, id, del.getReference().getMessage().getMessageID(), deliveryId, false, true);
                }
             }
          }
@@ -1370,7 +1367,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
       		 if (toDeliver.peek() == rec)
       		 {
       			 toDeliver.take();
-      			 
+
       			 performDelivery(delivery.getReference(), deliveryId, consumer);
       		 }
       	 }
@@ -1393,12 +1390,10 @@ public class ServerSessionEndpoint implements SessionEndpoint
          	 rec.waitingForResponse = true;      	 
          	 
          	 toDeliver.put(rec);
-         	 
+         	  
          	 postOffice.sendReplicateDeliveryMessage(consumer.getQueueName(), id,
                                                      delivery.getReference().getMessage().getMessageID(),
-                                                     deliveryId, true, false, dosync);
-         	 
-         	 performDelivery(delivery.getReference(), deliveryId, consumer);
+                                                     deliveryId, true, false);
       	 }
       	 else
       	 {
