@@ -309,12 +309,45 @@ public class ConnectionConsumerTest extends JMSTestCase
       {
          if (connConsumer != null) connConsumer.close();
          if (connConsumer != null) connProducer.close();
-         
+
          removeAllMessages(queue1.getQueueName(), true, 0);
       }
    }
 
-   
+   public void testStopWhileProcessing() throws Exception
+   {
+      if (ServerManagement.isRemote()) return;
+
+
+      Connection connConsumer = null;
+
+      try
+      {
+         connConsumer = cf.createConnection();
+
+         connConsumer.start();
+
+         Session sessCons = connConsumer.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+         SimpleMessageListener listener = new SimpleMessageListener(0);
+
+         sessCons.setMessageListener(listener);
+
+         ServerSessionPool pool = new MockServerSessionPool(sessCons);
+
+         JBossConnectionConsumer cc = (JBossConnectionConsumer)connConsumer.createConnectionConsumer(queue1, null, pool, 1);
+
+         ServerManagement.stop();
+         connConsumer.close();
+         connConsumer = null;
+      }
+      finally
+      {
+         if (connConsumer != null) connConsumer.close();
+      }
+   }
+
+
    class SimpleMessageListener implements MessageListener
    {
       Latch latch = new Latch();

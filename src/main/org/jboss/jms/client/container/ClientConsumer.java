@@ -249,7 +249,13 @@ public class ClientConsumer
    }
         
    // Public ---------------------------------------------------------------------------------------
-  
+
+
+   public boolean isClosed()
+   {
+      return closed;
+   }
+
    /**
     * Handles a message sent from the server.
     *
