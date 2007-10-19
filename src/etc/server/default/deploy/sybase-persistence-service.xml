@@ -75,6 +75,7 @@
    INSERT_MESSAGE_CONDITIONAL_FULL=INSERT INTO JBM_MSG (MESSAGE_ID, RELIABLE, EXPIRATION, TIMESTAMP, PRIORITY, TYPE, INS_TIME, HEADERS, PAYLOAD) SELECT ?, ?, ?, ?, ?, ?, ?, ?, ? FROM JBM_DUAL WHERE NOT EXISTS (SELECT MESSAGE_ID FROM JBM_MSG WHERE MESSAGE_ID = ?)   
    MESSAGE_ID_COLUMN=MESSAGE_ID
    REAP_MESSAGES=DELETE FROM JBM_MSG WHERE INS_TIME < ? AND NOT EXISTS (SELECT * FROM JBM_MSG_REF WHERE JBM_MSG_REF.MESSAGE_ID = JBM_MSG.MESSAGE_ID)
+   DELETE_MESSAGE=DELETE FROM JBM_MSG WHERE MESSAGE_ID = ? AND NOT EXISTS (SELECT * FROM JBM_MSG_REF WHERE JBM_MSG_REF.MESSAGE_ID = ?)   
    INSERT_TRANSACTION=INSERT INTO JBM_TX (NODE_ID, TRANSACTION_ID, BRANCH_QUAL, FORMAT_ID, GLOBAL_TXID) VALUES(?, ?, ?, ?, ?)
    DELETE_TRANSACTION=DELETE FROM JBM_TX WHERE NODE_ID = ? AND TRANSACTION_ID = ?
    SELECT_PREPARED_TRANSACTIONS=SELECT TRANSACTION_ID, BRANCH_QUAL, FORMAT_ID, GLOBAL_TXID FROM JBM_TX WHERE NODE_ID = ?
@@ -93,11 +94,8 @@
       
       <!-- The period between asynchronous reaps of unreferenced messages, or zero for synchronous reaping -->
       
-      <attribute name="ReaperPeriod">5000</attribute>
+      <attribute name="ReaperPeriod">0</attribute>
       
-      <!-- The number of messages to do a synchronous reap after, or zero for asynchronous reaping -->
-      
-      <attribute name="SynchronousReapMessages">0</attribute>
    </mbean>
 
    <!-- Messaging Post Office MBean configuration
