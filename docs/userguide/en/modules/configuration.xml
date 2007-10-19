@@ -1854,23 +1854,5 @@
       <para>See the chapter on installation for a description of how to set-up
       the service binding manager for JBoss Messaging</para>
    </section>
-   <section id="conf.callback">
-      <title>Configuring the callback</title>
-      <para>JBoss Messaging uses a callback mechanism from Remoting that needs
-      a Socket for callback operations. These socket properties are passed to
-      the server by a remote call when the connection is being estabilished.
-      As we said before we will support bidirectional protocols in future
-      releases.</para>
-      <para>By default JBoss Messaging will execute
-      InetAddress.getLocalHost().getHostAddress() to access your local host
-      IP, but in case you need to setup a different IP, you can define a
-      system property in your java arguments:</para>
-      <para>Use java -Djboss.messaging.callback.bind.address=YourHost - That
-      will determine the callBack host in your client.</para>
-      <para>The client port will be selected randomly for any non used port.
-      But if you defined -Djboss.messaging.callback.bind.port=NumericPort in
-      your System Properties that number is going to be used for the call back
-      client port.</para>
-   </section>
    <!-- End conf.callback -->
 </chapter>
