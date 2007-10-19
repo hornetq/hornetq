@@ -83,7 +83,7 @@
       
       <!-- Use XA when pulling persistent messages from a remote node to this one. -->
       
-      <attribute name="UseXAForMessagePull">true</attribute>
+      <attribute name="UseXAForMessagePull">false</attribute>
       
       <!-- When redistributing messages in the cluster. Do we need to preserve the order of messages received
             by a particular consumer from a particular producer? -->

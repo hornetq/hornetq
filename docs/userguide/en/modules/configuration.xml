@@ -298,7 +298,7 @@
             <para>If true, then move a reliable message from one node to
             another in an XA transaction. Relaxing this gives better
             performance at the expense of some reliability. See the cluster
-            configurations section for more details. Default is true.</para>
+            configurations section for more details. Default is false.</para>
          </section>
          <section id="conf.serverpeer.attributes.defaultpreserveordering">
             <title>DefaultPreserveOrdering</title>
