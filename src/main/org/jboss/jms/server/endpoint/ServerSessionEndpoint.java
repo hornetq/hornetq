@@ -179,8 +179,8 @@ public class ServerSessionEndpoint implements SessionEndpoint
    
    private Object waitLock = new Object();
    
-   //debug
-   private SynchronizedInt toDeliverCount = new SynchronizedInt(0);
+   
+   private boolean dosync = true;
    
    // Constructors ---------------------------------------------------------------------------------
 
@@ -621,7 +621,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
                
                if (supportsFailover)
                {
-               	postOffice.sendReplicateDeliveryMessage(queueName, id, del.getReference().getMessage().getMessageID(), deliveryId, false, true);
+               	postOffice.sendReplicateDeliveryMessage(queueName, id, del.getReference().getMessage().getMessageID(), deliveryId, false, true, true);
                }
             }
          }
@@ -911,8 +911,6 @@ public class ServerSessionEndpoint implements SessionEndpoint
    		while (iter.hasNext())
    		{
    			toDeliver.put(iter.next());
-   			
-   			this.toDeliverCount.increment();
    		}
    	}
    	
@@ -1062,8 +1060,6 @@ public class ServerSessionEndpoint implements SessionEndpoint
 	   		if (performDelivery)
 	   		{
 	   			toDeliver.take();
-	   			
-	   			this.toDeliverCount.decrement();
 	   			
 	   			performDelivery(dr.del.getReference(), dr.deliveryID, dr.getConsumer()); 
 	   			
@@ -1300,7 +1296,6 @@ public class ServerSessionEndpoint implements SessionEndpoint
    			//Clear toDeliver
    			while (toDeliver.poll(0) != null)
    			{
-   				this.toDeliverCount.decrement();
    			}
    			
    			log.warn("Timed out waiting for response to arrive");
@@ -1370,15 +1365,11 @@ public class ServerSessionEndpoint implements SessionEndpoint
       		 //producer in flight (since np don't need to be replicated)
       		 toDeliver.put(rec);
       		 
-      		 this.toDeliverCount.increment();
-      		 
       		 //Race check (there's a small chance the message in the queue got removed between the empty check
       		 //and the put so we do another check:
       		 if (toDeliver.peek() == rec)
       		 {
       			 toDeliver.take();
-      			 
-      			 this.toDeliverCount.decrement();
       			 
       			 performDelivery(delivery.getReference(), deliveryId, consumer);
       		 }
@@ -1403,11 +1394,11 @@ public class ServerSessionEndpoint implements SessionEndpoint
          	 
          	 toDeliver.put(rec);
          	 
-         	 this.toDeliverCount.increment();
-         	 
          	 postOffice.sendReplicateDeliveryMessage(consumer.getQueueName(), id,
                                                      delivery.getReference().getMessage().getMessageID(),
-                                                     deliveryId, true, false);
+                                                     deliveryId, true, false, dosync);
+         	 
+         	 performDelivery(delivery.getReference(), deliveryId, consumer);
       	 }
       	 else
       	 {
@@ -1420,10 +1411,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
       		 // Actually do the delivery now - we are only node in the cluster
          	 performDelivery(delivery.getReference(), deliveryId, consumer); 	  
       	 }
-       }
-       
-       //log.info("del count " + this.toDeliverCount.get());
-
+       }       
    }
    
    void performDelivery(MessageReference ref, long deliveryID, ServerConsumerEndpoint consumer)

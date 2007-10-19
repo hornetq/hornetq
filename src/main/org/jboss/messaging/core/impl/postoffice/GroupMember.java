@@ -28,6 +28,7 @@ import java.io.DataOutputStream;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Vector;
 
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.contract.ChannelFactory;
@@ -43,10 +44,6 @@ import org.jgroups.blocks.MessageDispatcher;
 import org.jgroups.blocks.RequestHandler;
 import org.jgroups.util.Rsp;
 import org.jgroups.util.RspList;
-
-import EDU.oswego.cs.dl.util.concurrent.Executor;
-import EDU.oswego.cs.dl.util.concurrent.LinkedQueue;
-import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
 
 /**
  * 
@@ -248,6 +245,37 @@ public class GroupMember
 
 	   	RspList rspList =
 	   		dispatcher.castMessage(null, message, sync ? GroupRequest.GET_ALL: GroupRequest.GET_NONE, castTimeout);	
+	   	
+	   	if (sync)
+	   	{			   	
+		   	Iterator iter = rspList.values().iterator();
+		   	
+		   	while (iter.hasNext())
+		   	{
+		   		Rsp rsp = (Rsp)iter.next();
+		   		
+		   		if (!rsp.wasReceived())
+		   		{
+		   			throw new IllegalStateException(this + " response not received from " + rsp.getSender() + " - there may be others");
+		   		}
+		   	}		
+	   	}
+   	}
+   }
+   
+   public void unicastControl(ClusterRequest request, Address address, boolean sync) throws Exception
+   {
+   	if (startedState == STARTED)
+   	{   		
+	   	if (trace) { log.trace(this + " multicasting " + request + " to control channel, sync=" + sync); }
+	
+	   	Message message = new Message(address, null, writeRequest(request));
+
+	   	Vector v = new Vector();
+	   	v.add(address);
+	   	
+	   	RspList rspList =
+	   		dispatcher.castMessage(v, message, sync ? GroupRequest.GET_ALL: GroupRequest.GET_NONE, castTimeout);	
 	   	
 	   	if (sync)
 	   	{			   	
