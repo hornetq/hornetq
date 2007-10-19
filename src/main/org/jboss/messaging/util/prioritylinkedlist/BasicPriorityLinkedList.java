@@ -53,20 +53,20 @@ public class BasicPriorityLinkedList implements PriorityLinkedList
    
    public void dump()
    {
-   	log.trace("Dumping " + this);
-   	log.trace("Size:" + size);
-   	log.trace("===============");
+   	log.debug("Dumping " + this);
+   	log.debug("Size:" + size);
+   	log.debug("===============");
    	
    	for (int i = 0; i < linkedLists.length; i++)
    	{
-   		log.trace("Priority:" + i);
-   		log.trace("----------------");
+   		log.debug("Priority:" + i);
+   		log.debug("----------------");
    		
    		Iterator iter = linkedLists[i].iterator();
    		
    		while (iter.hasNext())
    		{
-   			log.info("Ref: "+ iter.next());
+   			log.debug("Ref: "+ iter.next());
    		}
    	}
    }
