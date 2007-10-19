@@ -225,6 +225,8 @@ public class MessagingPostOffice extends JDBCSupport
    //overwhelming JGroups
    private Semaphore replicateSemaphore;
       
+   private int maxConcurrentReplications;
+   
    // Constructors ---------------------------------------------------------------------------------
 
    /*
@@ -305,6 +307,8 @@ public class MessagingPostOffice extends JDBCSupport
       this.supportsFailover = supportsFailover;
       
       nbSupport = new NotificationBroadcasterSupport();
+      
+      this.maxConcurrentReplications = maxConcurrentReplications;
       
       replicateSemaphore = new Semaphore(maxConcurrentReplications, true);
    }
@@ -2844,6 +2848,14 @@ public class MessagingPostOffice extends JDBCSupport
 					}
 	   		}
 	   	}  	
+   	}
+   	
+   	//Now we replace the semaphore since some of the acks may not come back from the old failover node
+   	if (this.replicateSemaphore != null)
+   	{
+   		replicateSemaphore.release(maxConcurrentReplications);
+   		
+   		replicateSemaphore = new Semaphore(maxConcurrentReplications);
    	}
    }
    
