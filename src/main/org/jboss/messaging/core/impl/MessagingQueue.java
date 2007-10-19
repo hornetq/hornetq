@@ -512,7 +512,8 @@ public class MessagingQueue extends PagingChannelSupport implements Queue
 		
 		if (trace) { log.trace(this + " deliverInternal"); }
 		
-		if (handleFlowControlForConsumers && getReceiversReady() && localDistributor.getNumberOfReceivers() > 0)
+		if (handleFlowControlForConsumers && getReceiversReady() &&
+			 localDistributor.getNumberOfReceivers() > 0 && messageRefs.isEmpty())
 		{
 			if (trace) { log.trace("Informing suckers"); }
 			//The receivers are still ready for more messages but there is nothing left in the local queue
