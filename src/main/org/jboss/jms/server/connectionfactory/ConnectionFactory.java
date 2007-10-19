@@ -6,7 +6,6 @@
  */
 package org.jboss.jms.server.connectionfactory;
 
-import java.util.Iterator;
 import java.util.Map;
 
 import javax.management.ObjectName;
@@ -126,6 +125,57 @@ public class ConnectionFactory extends ServiceMBeanSupport
          {
             this.supportsFailover = false;
          }
+         
+         InvokerLocator locator = new InvokerLocator(locatorURI);
+         
+         String protocol = locator.getProtocol();
+         
+         if (!disableRemotingChecks && (protocol.equals("bisocket") || protocol.equals("sslbisocket")))
+         {         
+	         //Sanity check - If users are using the AS Service Binding Manager to provide the remoting connector
+	         //configuration, it is quite easy for them to end up using an old version depending on what version on 
+	         //the AS they are running in - e.g. if they have forgotten to update it.
+	         //This can lead to subtle errors - therefore we do a sanity check by checking the existence of some properties
+	         //which should always be there
+	         Map params = locator.getParameters();	         
+	         
+	         //The "compulsory" parameters
+	         boolean cont =
+	         	checkParam(params, "marshaller", "org.jboss.jms.wireformat.JMSWireFormat") &&	         		
+		         checkParam(params, "unmarshaller", "org.jboss.jms.wireformat.JMSWireFormat") &&
+		         checkParam(params, "dataType", "jms") &&
+		         checkParam(params, "timeout", "0") &&
+		         checkParam(params, "clientSocketClass", "org.jboss.jms.client.remoting.ClientSocketWrapper") &&
+		         checkParam(params, "serverSocketClass", "org.jboss.jms.server.remoting.ServerSocketWrapper") &&
+		         checkParam(params, "numberOfCallRetries", "1") &&
+		         checkParam(params, "pingFrequency", "214748364") &&
+		         checkParam(params, "pingWindowFactor", "10");
+	         
+	         if (!cont)
+	         {
+	         	throw new IllegalArgumentException("Failed to deploy connection factory since remoting configuration seems incorrect.");	         			                            
+	         }
+
+	         String val = (String)params.get("clientLeasePeriod");	  
+	         if (val != null)
+	         {
+		         int i = Integer.parseInt(val);
+		         if (i < 5000)
+		         {
+		         	log.warn("Value of clientLeasePeriod at " + i + " seems low. Normal values are >= 5000");
+		         }
+	         }
+	         
+	         val = (String)params.get("clientMaxPoolSize");	
+	         if (val != null)
+	         {
+		         int i = Integer.parseInt(val);
+		         if (i < 50)
+		         {
+		         	log.warn("Value of clientMaxPoolSize at " + i + " seems low. Normal values are >= 50");
+		         }
+	         }
+         }
 
          connectionFactoryManager = serverPeer.getConnectionFactoryManager();
          connectorManager = serverPeer.getConnectorManager();
@@ -158,67 +208,7 @@ public class ConnectionFactory extends ServiceMBeanSupport
                                       locatorURI, enablePing, prefetchSize, slowConsumers,
                                       defaultTempQueueFullSize, defaultTempQueuePageSize,                                      
                                       defaultTempQueueDownCacheSize, dupsOKBatchSize, supportsFailover, supportsLoadBalancing,
-                                      loadBalancingFactory, strictTck);
-      
-         InvokerLocator locator = new InvokerLocator(locatorURI);
-         
-         String protocol = locator.getProtocol();
-         
-         if (!disableRemotingChecks && (protocol.equals("bisocket") || protocol.equals("sslbisocket")))
-         {         
-	         //Sanity check - If users are using the AS Service Binding Manager to provide the remoting connector
-	         //configuration, it is quite easy for them to end up using an old version depending on what version on 
-	         //the AS they are running in - e.g. if they have forgotten to update it.
-	         //This can lead to subtle errors - therefore we do a sanity check by checking the existence of some properties
-	         //which should always be there
-	         Map params = locator.getParameters();
-	         
-	         Iterator iter= params.entrySet().iterator();
-	         log.info("Remoting connector params:");
-	         while (iter.hasNext())
-	         {
-	         	Map.Entry entry = (Map.Entry)iter.next();
-	         	log.info(entry.getKey() + "-->" + entry.getValue());
-	         }
-	         
-	         //The "compulsory" parameters
-	         boolean cont =
-	         	checkParam(params, "marshaller", "org.jboss.jms.wireformat.JMSWireFormat") &&	         		
-		         checkParam(params, "unmarshaller", "org.jboss.jms.wireformat.JMSWireFormat") &&
-		         checkParam(params, "dataType", "jms") &&
-		         checkParam(params, "timeout", "0") &&
-		         checkParam(params, "clientSocketClass", "org.jboss.jms.client.remoting.ClientSocketWrapper") &&
-		         checkParam(params, "serverSocketClass", "org.jboss.jms.server.remoting.ServerSocketWrapper") &&
-		         checkParam(params, "numberOfCallRetries", "1") &&
-		         checkParam(params, "pingFrequency", "214748364") &&
-		         checkParam(params, "pingWindowFactor", "10") &&
-		         checkParam(params, "onewayThreadPool", "org.jboss.jms.server.remoting.DirectThreadPool");
-	         
-	         if (!cont)
-	         {
-	         	return;
-	         }
-
-	         String val = (String)params.get("clientLeasePeriod");	  
-	         if (val != null)
-	         {
-		         int i = Integer.parseInt(val);
-		         if (i < 5000)
-		         {
-		         	log.warn("Value of clientLeasePeriod at " + i + " seems low. Normal values are >= 5000");
-		         }
-	         }
-	         
-	         val = (String)params.get("clientMaxPoolSize");	
-	         if (val != null)
-	         {
-		         int i = Integer.parseInt(val);
-		         if (i < 50)
-		         {
-		         	log.warn("Value of clientMaxPoolSize at " + i + " seems low. Normal values are >= 50");
-		         }
-	         }
-         }
+                                      loadBalancingFactory, strictTck);               
          
          String info = "Connector " + locator.getProtocol() + "://" +
             locator.getHost() + ":" + locator.getPort();
