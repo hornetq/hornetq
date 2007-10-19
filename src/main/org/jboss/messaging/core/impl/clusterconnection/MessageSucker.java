@@ -203,7 +203,7 @@ public class MessageSucker implements MessageListener
 		return this.localQueue.getName();
 	}
 	
-	public void setConsuming(boolean consume)
+	public synchronized void setConsuming(boolean consume)
 	{
 		if (trace) { log.trace(this + " setConsuming " + consume); }
 		
