@@ -2851,11 +2851,13 @@ public class MessagingPostOffice extends JDBCSupport
    	}
    	
    	//Now we replace the semaphore since some of the acks may not come back from the old failover node
-   	if (this.replicateSemaphore != null)
+   	if (replicateSemaphore != null)
    	{
-   		replicateSemaphore.release(maxConcurrentReplications);
-   		
+   		Semaphore oldSem = replicateSemaphore;
+
    		replicateSemaphore = new Semaphore(maxConcurrentReplications);
+   		
+   		oldSem.release(maxConcurrentReplications);   		
    	}
    }
    

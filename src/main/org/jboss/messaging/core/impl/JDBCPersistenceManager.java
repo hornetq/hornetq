@@ -133,6 +133,8 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
       
       this.reaperPeriod = reaperPeriod;
       
+      this.synchronousReapMessages = synchronousReapMessages;
+      
       if (reaperPeriod > 0)
       {
 	      reaperTimer = new Timer(true);
