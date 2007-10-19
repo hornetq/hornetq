@@ -53,6 +53,7 @@ import org.jboss.messaging.core.contract.ClusterNotificationListener;
 import org.jboss.messaging.core.contract.Replicator;
 import org.jboss.messaging.util.JNDIUtil;
 import org.jboss.messaging.util.Version;
+import org.jboss.remoting.InvokerLocator;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
@@ -117,8 +118,7 @@ public class ConnectionFactoryJNDIMapper
                                                       boolean strictTck)
       throws Exception
    {
-      log.debug(this + " registering connection factory '" + uniqueName +
-         "', bindings: " + jndiBindings);
+      log.debug(this + " registering connection factory '" + uniqueName + "', bindings: " + jndiBindings);
 
       // Sanity check
       if (delegates.containsKey(uniqueName))
@@ -128,7 +128,6 @@ public class ConnectionFactoryJNDIMapper
       }
 
       // See http://www.jboss.com/index.html?module=bb&op=viewtopic&p=4076040#4076040
-      //String id = GUIDGenerator.generateGUID();
       String id = uniqueName;
       
       Version version = serverPeer.getVersion();
@@ -191,6 +190,15 @@ public class ConnectionFactoryJNDIMapper
          }
 
          Map localDelegates = replicator.get(Replicator.CF_PREFIX + uniqueName);
+         boolean ok = sanityCheckFactories(localDelegates.values());
+         if (!ok)
+         {
+         	final String msg = "The remoting locator configuration for a particular clustered connection factory must " +
+         	                   "be the same on each node in the cluster. We have detected that the configuration differs on this " +
+         	                   "node. Please correct and redeploy the connection factory";
+         	log.error(msg);
+         	throw new IllegalArgumentException(msg);
+         }
          delegate = createClusteredDelegate(uniqueName, localDelegates.values(), loadBalancingFactory, endpoint, supportsFailover);
 
          log.debug(this + " created clustered delegate " + delegate);
@@ -224,7 +232,7 @@ public class ConnectionFactoryJNDIMapper
 
       if (replicator != null) replicator.put(Replicator.CF_PREFIX + uniqueName, localDelegate);
    }
-
+   
    public synchronized void unregisterConnectionFactory(String uniqueName, boolean supportsFailover, boolean supportsLoadBalancing)
       throws Exception
    {
@@ -477,6 +485,57 @@ public class ConnectionFactoryJNDIMapper
          });
 
       return localDels;
+   }
+   
+   private boolean sanityCheckFactories(Collection factories) throws Exception
+   {
+   	Iterator iter = factories.iterator();
+   	InvokerLocator prevLocator = null;
+   	while (iter.hasNext())
+   	{
+   		ClientConnectionFactoryDelegate fact = (ClientConnectionFactoryDelegate)iter.next();
+   		
+   		//Sanity check - the locator protocol and params MUST be the same on each node
+   		String locatorString = fact.getServerLocatorURI();
+   		
+   		InvokerLocator locator = new InvokerLocator(locatorString);
+   		
+   		if (prevLocator != null)
+   		{
+   			//Do checks
+   			
+   			if (!locator.getProtocol().equals(prevLocator.getProtocol()))
+   			{
+   				log.error("Protocol to be used for connection factory does not match protocol specified at other nodes in the cluster " +
+   						    locator.getProtocol() + ", " + prevLocator.getProtocol());
+   				return false;
+   			}
+   			Map prevParams = prevLocator.getParameters();
+   			Map params = locator.getParameters();
+   			if (prevParams.size() != params.size())
+   			{
+   				log.error("Locator for connection factory has different number of parameters");
+   				return false;
+   			}
+   			Iterator iter2 = prevParams.entrySet().iterator();
+   			while (iter2.hasNext())
+   			{
+   				Map.Entry entry = (Map.Entry)iter2.next();
+   				
+   				String prevKey = (String)entry.getKey();
+   				String prevValue = (String)entry.getValue();
+   				String value = (String)params.get(prevKey);
+   				if (value == null || !prevValue.equals(value))
+   				{
+   					log.error("Locator param does not exist or has wrong value");
+   					return false;
+   				}   				
+   			}
+   		}
+   		
+   		prevLocator = locator;   		
+   	}
+   	return true;
    }
 
    // Inner classes --------------------------------------------------------------------------------

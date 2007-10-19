@@ -78,6 +78,8 @@ public class ConnectionFactory extends ServiceMBeanSupport
    private boolean started;
 
    private boolean strictTck;
+   
+   private boolean disableRemotingChecks;
 
    // Constructors ---------------------------------------------------------------------------------
 
@@ -160,19 +162,62 @@ public class ConnectionFactory extends ServiceMBeanSupport
       
          InvokerLocator locator = new InvokerLocator(locatorURI);
          
-         //Sanity check - If users are using the AS Service Binding Manager to provide the remoting connector
-         //configuration, it is quite easy for them to end up using an old version depending on what version on 
-         //the AS they are running in - e.g. if they have forgotten to update it.
-         //This can lead to subtle errors - therefore we do a sanity check by checking the existence of some properties
-         //which should always be there
-         Map params = locator.getParameters();
+         String protocol = locator.getProtocol();
          
-         Iterator iter= params.entrySet().iterator();
-         log.info("Remoting connector params:");
-         while (iter.hasNext())
-         {
-         	Map.Entry entry = (Map.Entry)iter.next();
-         	log.info(entry.getKey() + "-->" + entry.getValue());
+         if (!disableRemotingChecks && (protocol.equals("bisocket") || protocol.equals("sslbisocket")))
+         {         
+	         //Sanity check - If users are using the AS Service Binding Manager to provide the remoting connector
+	         //configuration, it is quite easy for them to end up using an old version depending on what version on 
+	         //the AS they are running in - e.g. if they have forgotten to update it.
+	         //This can lead to subtle errors - therefore we do a sanity check by checking the existence of some properties
+	         //which should always be there
+	         Map params = locator.getParameters();
+	         
+	         Iterator iter= params.entrySet().iterator();
+	         log.info("Remoting connector params:");
+	         while (iter.hasNext())
+	         {
+	         	Map.Entry entry = (Map.Entry)iter.next();
+	         	log.info(entry.getKey() + "-->" + entry.getValue());
+	         }
+	         
+	         //The "compulsory" parameters
+	         boolean cont =
+	         	checkParam(params, "marshaller", "org.jboss.jms.wireformat.JMSWireFormat") &&	         		
+		         checkParam(params, "unmarshaller", "org.jboss.jms.wireformat.JMSWireFormat") &&
+		         checkParam(params, "dataType", "jms") &&
+		         checkParam(params, "timeout", "0") &&
+		         checkParam(params, "clientSocketClass", "org.jboss.jms.client.remoting.ClientSocketWrapper") &&
+		         checkParam(params, "serverSocketClass", "org.jboss.jms.server.remoting.ServerSocketWrapper") &&
+		         checkParam(params, "numberOfCallRetries", "1") &&
+		         checkParam(params, "pingFrequency", "214748364") &&
+		         checkParam(params, "pingWindowFactor", "10") &&
+		         checkParam(params, "onewayThreadPool", "org.jboss.jms.server.remoting.DirectThreadPool");
+	         
+	         if (!cont)
+	         {
+	         	return;
+	         }
+
+	         String val = (String)params.get("clientLeasePeriod");	  
+	         if (val != null)
+	         {
+		         int i = Integer.parseInt(val);
+		         if (i < 5000)
+		         {
+		         	log.warn("Value of clientLeasePeriod at " + i + " seems low. Normal values are >= 5000");
+		         }
+	         }
+	         
+	         val = (String)params.get("clientMaxPoolSize");	
+	         if (val != null)
+	         {
+		         int i = Integer.parseInt(val);
+		         if (i < 50)
+		         {
+		         	log.warn("Value of clientMaxPoolSize at " + i + " seems low. Normal values are >= 50");
+		         }
+	         }
          }
          
          String info = "Connector " + locator.getProtocol() + "://" +
@@ -195,7 +240,7 @@ public class ConnectionFactory extends ServiceMBeanSupport
          throw ExceptionUtil.handleJMXInvocation(t, this + " startService");
       } 
    }
-
+   
    public synchronized void stopService() throws Exception
    {
       try
@@ -375,26 +420,48 @@ public class ConnectionFactory extends ServiceMBeanSupport
          log.warn("DupsOKBatchSize can only be changed when connection factory is stopped");
          return;
       }
-      
+
       this.dupsOKBatchSize = size;
    }
-   
+
    public int getDupsOKBatchSize()
    {
-      return this.dupsOKBatchSize;
+   	return dupsOKBatchSize;
    }
 
-    public boolean isStrictTck()
-    {
-        return strictTck;
-    }
+   public boolean isStrictTck()
+   {
+   	return strictTck;
+   }
 
-    public void setStrictTck(boolean strictTck)
-    {
-        this.strictTck = strictTck;
-    }
+   public void setStrictTck(boolean strictTck)
+   {
+      if (started)
+      {
+         log.warn("StrictTCK can only be changed when connection factory is stopped");
+         return;         
+      }
+      
+   	this.strictTck = strictTck;
+   }
+   
+   public boolean isDisableRemotingChecks()
+   {
+   	return disableRemotingChecks;
+   }
+   
+   public void setDisableRemotingChecks(boolean disable)
+   {
+      if (started)
+      {
+         log.warn("DisableRemotingChecks can only be changed when connection factory is stopped");
+         return;
+      }
+      
+   	this.disableRemotingChecks = disable;
+   }
 
-    // JMX managed operations -----------------------------------------------------------------------
+   // JMX managed operations -----------------------------------------------------------------------
 
    // Public ---------------------------------------------------------------------------------------
 
@@ -404,5 +471,30 @@ public class ConnectionFactory extends ServiceMBeanSupport
 
    // Private --------------------------------------------------------------------------------------
 
+   private boolean checkParam(Map params, String key, String value)
+   {
+   	String val = (String)params.get(key);
+   	if (val == null)
+   	{
+   		log.error("Parameter " + key + " is not specified in the remoting congiguration");
+   		return false;
+   	}   	
+   	else if (!val.equals(value))
+   	{
+   		log.error("Parameter " + key + " has a different value ( " + val + ") to the default shipped with this version of " +
+   				    "JBM (" + value + "). " +
+   				    "There is rarely a valid reason to change this parameter value. " +
+   				    "If you are using ServiceBindingManager to supply the remoting configuration you should check " +
+   				    "that the parameter value specified there exactly matches the value in the configuration supplied with JBM. " +
+   				    "This connection factory will now not deploy. To override these checks set 'disableRemotingChecks' to " +
+   				    "true on the connection factory. Only do this if you are absolutely sure you know the consequences.");
+   		return false;
+   	}
+   	else
+   	{
+   		return true;
+   	}
+   }
+   
    // Inner classes --------------------------------------------------------------------------------
 }

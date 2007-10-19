@@ -43,6 +43,12 @@
                     the max number of sessions/consumers you expect -->
                <attribute name="clientMaxPoolSize" isParam="true">200</attribute> 
                
+               <!-- Use these parameters to specify values for binding and connecting control connections to 
+                    work with your firewall/NAT configuration
+               <attribute name="secondaryBindPort">xyz</attribute>                           
+               <attribute name="secondaryConnectPort">abc</attribute>               
+               -->
+               
             </invoker>
             <handlers>
                <handler subsystem="JMS">org.jboss.jms.server.remoting.JMSServerInvocationHandler</handler>

@@ -119,6 +119,10 @@
       <!- - Whether we should be strict TCK compliant, i.e. how we deal with foreign messages, defaults to false- ->
 
       <attribute name="StrictTck">true</attribute>
+      
+      <!- - Disable JBoss Remoting Connector sanity checks - There is rarely a good reason to set this to true - ->
+      
+      <attribute name="DisableRemotingChecks">false</attribute>
 
       <!- - The connection factory will be bound in the following places in JNDI - ->
 

@@ -43,6 +43,12 @@
                <!-- Max Number of connections in client pool. This should be significantly higher than
                     the max number of sessions/consumers you expect -->
                <attribute name="clientMaxPoolSize" isParam="true">200</attribute>
+               
+               <!-- Use these parameters to specify values for binding and connecting control connections to 
+                    work with your firewall/NAT configuration
+               <attribute name="secondaryBindPort">xyz</attribute>                           
+               <attribute name="secondaryConnectPort">abc</attribute>               
+               -->
                               
             </invoker>
             <handlers>
