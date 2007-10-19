@@ -6,6 +6,9 @@
  */
 package org.jboss.jms.server.connectionfactory;
 
+import java.util.Iterator;
+import java.util.Map;
+
 import javax.management.ObjectName;
 
 import org.jboss.jms.client.plugin.LoadBalancingFactory;
@@ -156,7 +159,22 @@ public class ConnectionFactory extends ServiceMBeanSupport
                                       loadBalancingFactory, strictTck);
       
          InvokerLocator locator = new InvokerLocator(locatorURI);
-
+         
+         //Sanity check - If users are using the AS Service Binding Manager to provide the remoting connector
+         //configuration, it is quite easy for them to end up using an old version depending on what version on 
+         //the AS they are running in - e.g. if they have forgotten to update it.
+         //This can lead to subtle errors - therefore we do a sanity check by checking the existence of some properties
+         //which should always be there
+         Map params = locator.getParameters();
+         
+         Iterator iter= params.entrySet().iterator();
+         log.info("Remoting connector params:");
+         while (iter.hasNext())
+         {
+         	Map.Entry entry = (Map.Entry)iter.next();
+         	log.info(entry.getKey() + "-->" + entry.getValue());
+         }
+         
          String info = "Connector " + locator.getProtocol() + "://" +
             locator.getHost() + ":" + locator.getPort();
                  
