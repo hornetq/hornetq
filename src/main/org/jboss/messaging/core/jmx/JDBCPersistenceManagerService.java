@@ -49,13 +49,15 @@ public class JDBCPersistenceManagerService extends JDBCServiceSupport
    
    private boolean usingBinaryStream = true;
    
-   private boolean usingTrailingByte = false;
+   private boolean usingTrailingByte;
    
    private int maxParams = 100;
    
    private long reaperPeriod = 5000;
    
    private int synchronousReapMessages = 0;
+   
+   private boolean supportsBlobOnSelect = true;
    
    // Constructors --------------------------------------------------------
    
@@ -99,7 +101,7 @@ public class JDBCPersistenceManagerService extends JDBCServiceSupport
             new JDBCPersistenceManager(ds, tm, sqlProperties,
                                        createTablesOnStartup, usingBatchUpdates,
                                        usingBinaryStream, usingTrailingByte, maxParams, reaperPeriod,
-                                       synchronousReapMessages);
+                                       synchronousReapMessages, supportsBlobOnSelect);
          
          persistenceManager.start();
          
@@ -205,4 +207,15 @@ public class JDBCPersistenceManagerService extends JDBCServiceSupport
    {
    	return synchronousReapMessages;
    }
+   
+   public boolean isSupportsBlobOnSelect()
+   {
+   	return supportsBlobOnSelect;
+   }
+   
+   public void setSupportsBlobOnSelect(boolean b)
+   {
+   	this.supportsBlobOnSelect = b;
+   }
+      
 }

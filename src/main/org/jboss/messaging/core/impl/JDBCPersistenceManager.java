@@ -65,8 +65,8 @@ import org.jboss.messaging.util.StreamUtils;
 import org.jboss.messaging.util.Util;
 
 /**
- * JDBC implementation of PersistenceManager.
- *  
+ * JDBC implementation of PersistenceManager
+ * 
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:adrian@jboss.org">Adrian Brock</a>
@@ -112,14 +112,14 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
 
    // Some versions of the oracle driver don't support binding blobs on select clauses,
    // what would force us to use a two stage insert (insert and if successful, update)
-   private Boolean supportsBlobSelect;
+   private boolean supportsBlobSelect;
 
    // Constructors --------------------------------------------------
     
    public JDBCPersistenceManager(DataSource ds, TransactionManager tm, Properties sqlProperties,
                                  boolean createTablesOnStartup, boolean usingBatchUpdates,
                                  boolean usingBinaryStream, boolean usingTrailingByte, int maxParams,
-                                 long reaperPeriod, int synchronousReapMessages)
+                                 long reaperPeriod, int synchronousReapMessages, boolean supportsBlobSelect)
    {
       super(ds, tm, sqlProperties, createTablesOnStartup);
       
@@ -145,6 +145,8 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
       {
       	syncReapCount = new AtomicInteger(0);
       }
+      
+      this.supportsBlobSelect = supportsBlobSelect;
    }
    
    
@@ -299,17 +301,6 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
    public void reapUnreferencedMessages() throws Exception
    {
    	reapUnreferencedMessages(System.currentTimeMillis());
-   }
-
-   public boolean isSupportsBlobSelect()
-   {
-      if (supportsBlobSelect == null)
-      {
-         supportsBlobSelect = getSQLStatement("SUPPORTS_BLOB_ON_SELECT").equals("Y") ? Boolean.TRUE:
-                                              Boolean.FALSE;
-      }
-
-      return supportsBlobSelect.booleanValue();
    }
 
    // Related to XA Recovery
@@ -631,8 +622,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
 	
 	         	psInsertReference = conn.prepareStatement(getSQLStatement("INSERT_MESSAGE_REF"));
 
-
-               if (isSupportsBlobSelect())
+               if (supportsBlobSelect)
                {
                   psInsertMessage = conn.prepareStatement(getSQLStatement("INSERT_MESSAGE_CONDITIONAL_FULL"));
                }
@@ -1908,13 +1898,13 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
       ps.setLong(3, m.getExpiration());
       ps.setLong(4, m.getTimestamp());
       ps.setByte(5, m.getPriority());
-
       ps.setByte(6, m.getType());
+      ps.setLong(7, System.currentTimeMillis());
 
       if (bindBlobs)
       {
-         bindBlobs(m, ps, 7, 8);
-      }
+         bindBlobs(m, ps, 8, 9);
+      }            
    }
 
 
@@ -1923,10 +1913,11 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
       throws Exception
    {
       int rows;
-      if (psUpdateMessage != null)
+      if (!supportsBlobSelect)
       {
+      	//Need to store in two phases
          storeMessage(message, psInsertMessage, false);
-         psInsertMessage.setLong(7, message.getMessageID());
+         psInsertMessage.setLong(8, message.getMessageID());
          rows = psInsertMessage.executeUpdate();
 
          if (rows == 1)
@@ -1937,14 +1928,15 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
             if (rows != 1)
             {
                throw new IllegalStateException("Couldn't update messageId=" +
-                  message.getMessageID() + " on paging");
+                                               message.getMessageID() + " on paging");
             }
          }
       }
       else
       {
+      	//Can store in one go
          storeMessage(message, psInsertMessage, true);
-         psInsertMessage.setLong(9, message.getMessageID());
+         psInsertMessage.setLong(10, message.getMessageID());
          rows = psInsertMessage.executeUpdate();
       }
       return rows;
@@ -2133,7 +2125,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
       map.put("CREATE_MESSAGE",
               "CREATE TABLE JBM_MSG (MESSAGE_ID BIGINT, RELIABLE CHAR(1), " +
               "EXPIRATION BIGINT, TIMESTAMP BIGINT, PRIORITY TINYINT, HEADERS LONGVARBINARY, " +
-              "PAYLOAD LONGVARBINARY, TYPE TINYINT, " +
+              "PAYLOAD LONGVARBINARY, TYPE TINYINT, INST_TIME BIGINT, " +
               "PRIMARY KEY (MESSAGE_ID))"); 
       map.put("CREATE_IDX_MESSAGE_TIMESTAMP", "CREATE INDEX JBM_MSG_REF_TIMESTAMP ON JBM_MSG (TIMESTAMP)");
       //Transaction
@@ -2180,9 +2172,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
       map.put("SELECT_EXISTS_REF_MESSAGE_ID", "SELECT MESSAGE_ID FROM JBM_MSG_REF WHERE MESSAGE_ID = ?");
       map.put("UPDATE_DELIVERY_COUNT", "UPDATE JBM_MSG_REF SET DELIVERY_COUNT = ? WHERE CHANNEL_ID = ? AND MESSAGE_ID = ?");
       map.put("UPDATE_CHANNEL_ID", "UPDATE JBM_MSG_REF SET CHANNEL_ID = ? WHERE CHANNEL_ID = ?");
-      map.put("INSERT_MESSAGE_CONDITIONAL_FULL", "INSERT INTO JBM_MSG (MESSAGE_ID, RELIABLE, EXPIRATION, TIMESTAMP, PRIORITY, TYPE, HEADERS, PAYLOAD) SELECT ?, ?, ?, ?, ?, ?, ?, ? FROM JBM_DUAL WHERE NOT EXISTS (SELECT MESSAGE_ID FROM JBM_MSG WHERE MESSAGE_ID = ?)");
-      map.put("SUPPORTS_BLOB_ON_SELECT", "N");
-
+      
       //Message
       map.put("LOAD_MESSAGES",
               "SELECT MESSAGE_ID, RELIABLE, EXPIRATION, TIMESTAMP, " +
@@ -2190,16 +2180,17 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
               "FROM JBM_MSG");
       map.put("INSERT_MESSAGE",
               "INSERT INTO JBM_MSG (MESSAGE_ID, RELIABLE, EXPIRATION, " +
-              "TIMESTAMP, PRIORITY, TYPE, HEADERS, PAYLOAD) " +           
-              "VALUES (?, ?, ?, ?, ?, ?, ?, ?)" );
+              "TIMESTAMP, PRIORITY, TYPE, HEADERS, INS_TIME, PAYLOAD) " +           
+              "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)" );
       map.put("INSERT_MESSAGE_CONDITIONAL",
       		  "INSERT INTO JBM_MSG (MESSAGE_ID, RELIABLE, EXPIRATION, " +
-              "TIMESTAMP, PRIORITY, TYPE) " +
-              "SELECT ?, ?, ?, ?, ?, ? " + 
+              "TIMESTAMP, PRIORITY, TYPE, INS_TIME) " +
+              "SELECT ?, ?, ?, ?, ?, ?, ? " + 
               "FROM JBM_DUAL WHERE NOT EXISTS (SELECT MESSAGE_ID FROM JBM_MSG WHERE MESSAGE_ID = ?)");
+      map.put("INSERT_MESSAGE_CONDITIONAL_FULL", "INSERT INTO JBM_MSG (MESSAGE_ID, RELIABLE, EXPIRATION, TIMESTAMP, PRIORITY, TYPE, INS_TIME, HEADERS, PAYLOAD) SELECT ?, ?, ?, ?, ?, ?, ?, ?, ? FROM JBM_DUAL WHERE NOT EXISTS (SELECT MESSAGE_ID FROM JBM_MSG WHERE MESSAGE_ID = ?)");
       map.put("UPDATE_MESSAGE_4CONDITIONAL", "UPDATE JBM_MSG SET HEADERS=?, PAYLOAD=? WHERE MESSAGE_ID=?");
       map.put("MESSAGE_ID_COLUMN", "MESSAGE_ID");
-      map.put("REAP_MESSAGES", "DELETE FROM JBM_MSG WHERE TIMESTAMP <= ? AND NOT EXISTS (SELECT * FROM JBM_MSG_REF WHERE JBM_MSG_REF.MESSAGE_ID = JBM_MSG.MESSAGE_ID)");
+      map.put("REAP_MESSAGES", "DELETE FROM JBM_MSG WHERE INS_TIME <= ? AND NOT EXISTS (SELECT * FROM JBM_MSG_REF WHERE JBM_MSG_REF.MESSAGE_ID = JBM_MSG.MESSAGE_ID)");
       //Transaction
       map.put("INSERT_TRANSACTION",
               "INSERT INTO JBM_TX (NODE_ID, TRANSACTION_ID, BRANCH_QUAL, FORMAT_ID, GLOBAL_TXID) " +

@@ -501,30 +501,35 @@ public class ConnectionFactoryTest extends JMSTestCase
      "</mbean>";
       
       String config =
-         "<attribute name=\"Configuration\">\n" +
-         
-         "<config>" +
-         "<invoker transport=\"bisocket\"> " +
-            "<attribute name=\"marshaller\" isParam=\"true\">org.jboss.jms.wireformat.JMSWireFormat</attribute>" +
-            "<attribute name=\"unmarshaller\" isParam=\"true\">org.jboss.jms.wireformat.JMSWireFormat</attribute>" +
-            "<attribute name=\"dataType\" isParam=\"true\">jms</attribute>" +
-            "<attribute name=\"socket.check_connection\" isParam=\"true\">false</attribute>" +
-            "<attribute name=\"timeout\" isParam=\"true\">0</attribute>" +
-            "<attribute name=\"serverBindAddress\">localhost</attribute>" +
-            "<attribute name=\"serverBindPort\">" + port  +"</attribute>" +
-            "<attribute name=\"leasePeriod\">10000</attribute>" +
-            "<attribute name=\"clientSocketClass\" isParam=\"true\">org.jboss.jms.client.remoting.ClientSocketWrapper</attribute>" +
-            "<attribute name=\"serverSocketClass\">org.jboss.jms.server.remoting.ServerSocketWrapper</attribute>" +
-            "<attribute name=\"numberOfRetries\" isParam=\"true\">1</attribute>" +
-            "<attribute name=\"numberOfCallRetries\" isParam=\"true\">1</attribute>" +
-            "<attribute name=\"clientMaxPoolSize\" isParam=\"true\">50</attribute>" +
-         "</invoker>" +
-         "<handlers>" +
-            "<handler subsystem=\"JMS\">org.jboss.jms.server.remoting.JMSServerInvocationHandler</handler>" +
-         "</handlers>" +
-      "</config>" +
-                 
-      "</attribute>\n";
+         "<attribute name=\"Configuration\">\n" +         
+	         "<config>" +
+			      "<invoker transport=\"bisocket\">" +
+			                
+			         "<attribute name=\"marshaller\" isParam=\"true\">org.jboss.jms.wireformat.JMSWireFormat</attribute>" +
+			         "<attribute name=\"unmarshaller\" isParam=\"true\">org.jboss.jms.wireformat.JMSWireFormat</attribute>" +
+			         "<attribute name=\"dataType\" isParam=\"true\">jms</attribute>" +
+			         "<attribute name=\"socket.check_connection\" isParam=\"true\">false</attribute>" +
+			         "<attribute name=\"timeout\" isParam=\"true\">0</attribute>" +
+			         "<attribute name=\"serverBindAddress\">localhost</attribute>" +
+			         "<attribute name=\"serverBindPort\">" + port + "</attribute>" +
+			         "<attribute name=\"clientSocketClass\" isParam=\"true\">org.jboss.jms.client.remoting.ClientSocketWrapper</attribute>"+
+			         "<attribute name=\"serverSocketClass\" isParam=\"true\">org.jboss.jms.server.remoting.ServerSocketWrapper</attribute>" +
+			         "<attribute name=\"numberOfCallRetries\" isParam=\"true\">1</attribute>" +
+			         "<attribute name=\"pingFrequency\" isParam=\"true\">214748364</attribute>" +
+			         "<attribute name=\"pingWindowFactor\" isParam=\"true\">10</attribute>" +
+			         "<attribute name=\"onewayThreadPool\">org.jboss.jms.server.remoting.DirectThreadPool</attribute>" +
+			                                     
+			         "<attribute name=\"clientLeasePeriod\" isParam=\"true\">10000</attribute>" +
+			
+			         "<attribute name=\"numberOfRetries\" isParam=\"true\">10</attribute>" +
+			         "<attribute name=\"clientMaxPoolSize\" isParam=\"true\">200</attribute>" +        
+			                        
+			      "</invoker>" +
+			      "<handlers>" +
+			         "<handler subsystem=\"JMS\">org.jboss.jms.server.remoting.JMSServerInvocationHandler</handler>" +
+			      "</handlers>" +
+			   "</config>" +
+        "</attribute>\n";
       
       ObjectName on = ServerManagement.deploy(mbeanConfig);
       

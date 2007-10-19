@@ -75,7 +75,13 @@
       <description>The number of messages to synchronously force a reap after, or zero to reap asynchronously</description>
       <name>SynchronousReapMessages</name>
       <type>int</type>
-   </attribute>      
+   </attribute> 
+   
+   <attribute access="read-write" getMethod="isSupportsBlobOnSelect" setMethod="setSupportsBlobOnSelect">
+      <description>Some databases don't support binding blobs on select clauses</description>
+      <name>SupportsBlobOnSelect</name>
+      <type>boolean</type>
+   </attribute>     
 
    <!-- Managed operations -->
 
