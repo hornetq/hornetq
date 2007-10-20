@@ -31,11 +31,16 @@
    attribute in the server peer to true. By default this is false. The
    side-effect of setting this to true is that messages cannot be distributed
    as freely around the cluster</para>
-   <para>When pulling reliable messages from one node to another, by default
-   JBoss Messaging uses an XA transaction to ensure that message was removed
-   from one node and added to another transactionally. Using XA transactions
-   is a fairly heavyweight operation. If you are willing to to relax the
-   reliability guarantee somewhat in order to gain some performance then you
-   can set the attribute UseXAForMessagePull in server peer to false. By
-   default it is true</para>
+   <para>When pulling reliable messages from one node to another,
+   JBoss Messaging can use client acnowledgement or an XA transaction. The
+   default is client acknowledgement. Using XA transactions
+   is a fairly heavyweight operation but ensures absolute once and only once delivery.</para>
+   <para>
+   If the call to send a persistent message to a persistent destination returns successfully with no exception,
+   then you can be sure that the message was persisted.
+   However if the call doesn't return successfully e.g. if an exception is thrown, then you *can't be sure the message wasn't persisted*. Since the       failure might have occurred after persisting the message but before writing the response to the caller.
+This is a common attribute of any RPC type call: You can't tell by the call not returning that the call didn't actually succeed. Whether it's a web services call, an HTTP get request, an ejb invocation the same applies.
+The trick is to code your application so your operations are *idempotent* - i.e. they can be repeated without getting the system into an inconsistent state.
+With a message system you can do this on the application level, by checking for duplicate messages, and discarding them if they arrive. Duplicate checking is a very powerful technique that can remove the need for XA transactions in many cases.
+   </para>
 </chapter>
