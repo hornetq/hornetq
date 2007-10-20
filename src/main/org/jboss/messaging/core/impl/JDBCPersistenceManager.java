@@ -118,6 +118,8 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
    {
       super(ds, tm, sqlProperties, createTablesOnStartup);
       
+      log.info("Set blob " + supportsBlobSelect);
+      
       //usingBatchUpdates is currently ignored due to sketchy support from databases
       
       this.usingBinaryStream = usingBinaryStream;
