@@ -16,17 +16,13 @@ public class ClearableSemaphore
 {
    protected Logger log = Logger.getLogger(ClearableSemaphore.class);
 	
-	private Semaphore semaphore;
-	
-	private volatile boolean enabled;
+	private volatile Semaphore semaphore;
 	
 	private int permits;
 	
 	private void createSemaphore()
 	{
 		semaphore = new Semaphore(permits, true);
-		
-		enabled = true;
 	}
 	
 	public ClearableSemaphore(int permits)
@@ -40,7 +36,7 @@ public class ClearableSemaphore
 	{
 		Semaphore sem = semaphore;
 		
-		if (enabled && sem != null)
+		if (sem != null)
 		{
 			sem.acquire();
 		}
@@ -50,7 +46,7 @@ public class ClearableSemaphore
 	{
 		Semaphore sem = semaphore;
 		
-		if (enabled && sem != null)
+		if (sem != null)
 		{
 			sem.release();
 		}
@@ -58,11 +54,9 @@ public class ClearableSemaphore
 	
 	public synchronized void enable()
 	{
-		if (!enabled)
+		if (semaphore == null)
 		{
 			createSemaphore();
-			
-			enabled = true;
 		}
 	}
 	
@@ -71,13 +65,11 @@ public class ClearableSemaphore
 	// In which case we don't want to acquire a token since we might end up locking and using up all permits	
 	public synchronized void disable()
 	{
-		if (enabled)
+		if (semaphore != null)
 		{
 			semaphore.release(permits);
 			
 			semaphore = null;
-			
-			enabled = false;
 		}
 	}
 }
