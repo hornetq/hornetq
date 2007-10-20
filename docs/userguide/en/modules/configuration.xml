@@ -16,8 +16,8 @@
    services it configures, the configuration data is distributed between
    <filename>messaging-service.xml</filename>,
    <filename>remoting-bisocket-service.xml</filename>,
-   <filename>xxx-persistence-service.xml</filename>
-   <filename>connection-factories-service.xml</filename> and
+   <filename>xxx-persistence-service.xml</filename> (where xx is the name of
+   your databse) , <filename>connection-factories-service.xml</filename> and
    <filename>destinations-service.xml</filename>.</para>
    <para>The AOP client-side and server-side interceptor stacks are configured
    in <filename>aop-messaging-client.xml</filename> and
@@ -35,24 +35,19 @@
       <para>An example of a Server Peer configuration is presented below. Note
       that not all values for the server peer's attributes are specified in
       the example</para>
-      <programlisting>
-  &lt;mbean code="org.jboss.jms.server.ServerPeer"
+      <programlisting>&lt;mbean code="org.jboss.jms.server.ServerPeer"
       name="jboss.messaging:service=ServerPeer"
       xmbean-dd="xmdesc/ServerPeer-xmbean.xml"&gt;
 
-      &lt;!-- The unique id of the server peer
-          - in a cluster each node MUST have a unique value 
-          - must be an integer --&gt;
+      &lt;!-- The unique id of the server peer - in a cluster each node MUST have a unique value - must be an integer --&gt;
 
       &lt;attribute name="ServerPeerID"&gt;0&lt;/attribute&gt;
       
-      &lt;!-- The default JNDI context to use for queues
-          when they are deployed without specifying one --&gt; 
+      &lt;!-- The default JNDI context to use for queues when they are deployed without specifying one --&gt; 
       
       &lt;attribute name="DefaultQueueJNDIContext"&gt;/queue&lt;/attribute&gt;
       
-      &lt;!-- The default JNDI context to use for topics
-          when they are deployed without specifying one --&gt; 
+      &lt;!-- The default JNDI context to use for topics when they are deployed without specifying one --&gt; 
       
       &lt;attribute name="DefaultTopicJNDIContext"&gt;/topic&lt;/attribute&gt;
 
@@ -62,8 +57,7 @@
 	  
       &lt;attribute name="SecurityDomain"&gt;java:/jaas/messaging&lt;/attribute&gt;
       
-      &lt;!-- The default security configuration to apply to destinations
-          - this can be overridden on a per destination basis --&gt;
+      &lt;!-- The default security configuration to apply to destinations - this can be overridden on a per destination basis --&gt;
       
       &lt;attribute name="DefaultSecurityConfig"&gt;
         &lt;security&gt;
@@ -74,40 +68,32 @@
       &lt;!-- The default Dead Letter Queue (DLQ) to use for destinations.
            This can be overridden on a per destinatin basis --&gt;
       
-      &lt;attribute name="DefaultDLQ"&gt;
-          jboss.messaging.destination:service=Queue,name=DLQ&lt;
-      /attribute&gt;
+      &lt;attribute name="DefaultDLQ"&gt;jboss.messaging.destination:service=Queue,name=DLQ&lt;/attribute&gt;
       
-      &lt;!-- The default maximum number of times to attempt delivery of a message
-          before sending to the DLQ (if configured).
+      &lt;!-- The default maximum number of times to attempt delivery of a message before sending to the DLQ (if configured).
            This can be overridden on a per destinatin basis --&gt;
       
       &lt;attribute name="DefaultMaxDeliveryAttempts"&gt;10&lt;/attribute&gt;
       
-      &lt;!-- The default Expiry Queue to use for destinations.
-          This can be overridden on a per destinatin basis --&gt;
+      &lt;!-- The default Expiry Queue to use for destinations. This can be overridden on a per destinatin basis --&gt;
       
-      &lt;attribute name="DefaultExpiryQueue"&gt;
-          jboss.messaging.destination:service=Queue,name=ExpiryQueue
-      &lt;/attribute&gt;
+      &lt;attribute name="DefaultExpiryQueue"&gt;jboss.messaging.destination:service=Queue,name=ExpiryQueue&lt;/attribute&gt;
       
-      &lt;!-- The default redelivery delay to impose.
-          This can be overridden on a per destination basis --&gt;
+      &lt;!-- The default redelivery delay to impose. This can be overridden on a per destination basis --&gt;
       
       &lt;attribute name="DefaultRedeliveryDelay"&gt;0&lt;/attribute&gt;
       
-      &lt;!-- The periodicity of the message counter manager enquiring on queues
-          for statistics --&gt;
+      &lt;!-- The periodicity of the message counter manager enquiring on queues for statistics --&gt;
       
       &lt;attribute name="MessageCounterSamplePeriod"&gt;5000&lt;/attribute&gt;
       
-      &lt;!-- The maximum amount of time for a client to wait for failover
-          to start on the server side after it has detected failure --&gt;
+      &lt;!-- The maximum amount of time for a client to wait for failover to start on the server side after
+           it has detected failure --&gt;
       
       &lt;attribute name="FailoverStartTimeout"&gt;60000&lt;/attribute&gt;
       
-      &lt;!-- The maximum amount of time for a client to wait for failover to complete
-          on the server side after it has detected failure --&gt;
+      &lt;!-- The maximum amount of time for a client to wait for failover to complete on the server side after
+           it has detected failure --&gt;
       
       &lt;attribute name="FailoverCompleteTimeout"&gt;300000&lt;/attribute&gt;
       
@@ -115,43 +101,35 @@
       
       &lt;attribute name="DefaultMessageCounterHistoryDayLimit"&gt;-1&lt;/attribute&gt;
       
-      &lt;!-- The name of the connection factory to use for creating connections between nodes
-          to pull messages --&gt;
+      &lt;!-- The name of the connection factory to use for creating connections between nodes to pull messages --&gt;
       
-      &lt;attribute name="ClusterPullConnectionFactoryName"&gt;
-          jboss.messaging.connectionfactory:service=ClusterPullConnectionFactory
-      &lt;/attribute&gt;
+      &lt;attribute name="ClusterPullConnectionFactoryName"&gt;jboss.messaging.connectionfactory:service=ClusterPullConnectionFactory&lt;/attribute&gt;
       
       &lt;!-- Use XA when pulling persistent messages from a remote node to this one. --&gt;
       
-      &lt;attribute name="UseXAForMessagePull"&gt;true&lt;/attribute&gt;
+      &lt;attribute name="UseXAForMessagePull"&gt;false&lt;/attribute&gt;
       
-      &lt;!-- When redistributing messages in the cluster. Do we need to preserve the order of
-          messages received by a particular consumer from a particular producer? --&gt;
+      &lt;!-- When redistributing messages in the cluster. Do we need to preserve the order of messages received
+            by a particular consumer from a particular producer? --&gt;
             
       &lt;attribute name="DefaultPreserveOrdering"&gt;false&lt;/attribute&gt;
       
-      &lt;!-- Max. time to hold previously delivered messages back waiting for clients
-          to reconnect after failover --&gt;
+      &lt;!-- Max. time to hold previously delivered messages back waiting for clients to reconnect after failover --&gt;
       
       &lt;attribute name="RecoverDeliveriesTimeout"&gt;300000&lt;/attribute&gt;
-
+      
       &lt;!-- The password used by the message sucker connections to create connections.
            THIS SHOULD ALWAYS BE CHANGED AT INSTALL TIME TO SECURE SYSTEM
       &lt;attribute name="SuckerPassword"&gt;&lt;/attribute&gt;
       --&gt;
 
-      &lt;depends optional-attribute-name="PersistenceManager"&gt;
-          jboss.messaging:service=PersistenceManager
-      &lt;/depends&gt;
+      &lt;depends optional-attribute-name="PersistenceManager"&gt;jboss.messaging:service=PersistenceManager&lt;/depends&gt;
       
-      &lt;depends optional-attribute-name="JMSUserManager"&gt;
-          jboss.messaging:service=JMSUserManager
-      &lt;/depends&gt;
+      &lt;depends optional-attribute-name="JMSUserManager"&gt;jboss.messaging:service=JMSUserManager&lt;/depends&gt;
       
       &lt;depends&gt;jboss.messaging:service=Connector,transport=bisocket&lt;/depends&gt;
 
-   &lt;/mbean&gt;   
+   &lt;/mbean&gt;
       </programlisting>
       <section id="conf.serverpeer.attributes">
          <title>ServerPeer attributes</title>
@@ -171,7 +149,7 @@
          </section>
          <section id="conf.serverpeer.attributes.defaultopicjndicontext">
             <title>DefaultTopicJNDIContext</title>
-            <para>The default JNDI context to use when binding topics.
+            <para>The default JNDI context to use when binding topics.wa
             Defaults to /topic.</para>
          </section>
          <section id="conf.serverpeer.attributes.postoffice">
@@ -321,8 +299,12 @@
             These connections are made with the user name of a special
             reserved user. The password used by that user is specified by this
             parameter. <warning>
-                   This must be specified at install time, or the default password will be used. Any one who then knows the default password will be able to gain access to any destinations on the server. This value MUST be changed at install time.
+                   This must be specified at install time, or the default password will be used. Any one who then knows the default password will be able to gain access to any destinations on the server. This value MUST be changed at install time. 
                </warning></para>
+         </section>
+         <section id="conf.serverpeer.attributes.stricttck">
+            <title>StrictTCK</title>
+            <para>Set to true if you want strict JMS TCK semantiocs</para>
          </section>
          <section id="conf.serverpeer.attributes.destinations">
             <title>Destinations</title>
@@ -528,19 +510,15 @@
       database).</para>
       <para>Here is an example of a post office configuration:</para>
       <programlisting>
-&lt;mbean code="org.jboss.messaging.core.jmx.MessagingPostOfficeService"
+   &lt;mbean code="org.jboss.messaging.core.jmx.MessagingPostOfficeService"
       name="jboss.messaging:service=PostOffice"
       xmbean-dd="xmdesc/MessagingPostOffice-xmbean.xml"&gt;
       
-      &lt;depends optional-attribute-name="ServerPeer"&gt;
-          jboss.messaging:service=ServerPeer
-      &lt;/depends&gt;
+      &lt;depends optional-attribute-name="ServerPeer"&gt;jboss.messaging:service=ServerPeer&lt;/depends&gt;
                 
       &lt;depends&gt;jboss.jca:service=DataSourceBinding,name=DefaultDS&lt;/depends&gt;
       
-      &lt;depends optional-attribute-name="TransactionManager"&gt;
-          jboss:service=TransactionManager
-      &lt;/depends&gt;
+      &lt;depends optional-attribute-name="TransactionManager"&gt;jboss:service=TransactionManager&lt;/depends&gt;
       
       &lt;!-- The name of the post office --&gt;                  
       
@@ -555,28 +533,18 @@
       &lt;attribute name="CreateTablesOnStartup"&gt;true&lt;/attribute&gt;
       
       &lt;attribute name="SqlProperties"&gt;&lt;![CDATA[
-          CREATE_POSTOFFICE_TABLE=CREATE TABLE JBM_POSTOFFICE (POSTOFFICE_NAME VARCHAR(255),
-          NODE_ID INTEGER, QUEUE_NAME VARCHAR(255), COND VARCHAR(1023),
-          SELECTOR VARCHAR(1023), CHANNEL_ID BIGINT, CLUSTERED CHAR(1),
-          ALL_NODES CHAR(1), PRIMARY KEY(POSTOFFICE_NAME, NODE_ID, QUEUE_NAME))
-          ENGINE = INNODB
-          INSERT_BINDING=INSERT INTO JBM_POSTOFFICE (POSTOFFICE_NAME, NODE_ID, QUEUE_NAME,
-          COND, SELECTOR, CHANNEL_ID, CLUSTERED, ALL_NODES)
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-          DELETE_BINDING=DELETE FROM JBM_POSTOFFICE WHERE POSTOFFICE_NAME=? AND NODE_ID=?
-          AND QUEUE_NAME=? LOAD_BINDINGS=SELECT QUEUE_NAME, COND, SELECTOR,
-          CHANNEL_ID, CLUSTERED, ALL_NODES FROM JBM_POSTOFFICE WHERE POSTOFFICE_NAME=?
-          AND NODE_ID=?
+CREATE_POSTOFFICE_TABLE=CREATE TABLE JBM_POSTOFFICE (POSTOFFICE_NAME VARCHAR(255), NODE_ID INTEGER, QUEUE_NAME VARCHAR(255), COND VARCHAR(1023), SELECTOR VARCHAR(1023), CHANNEL_ID BIGINT, CLUSTERED CHAR(1), ALL_NODES CHAR(1), PRIMARY KEY(POSTOFFICE_NAME, NODE_ID, QUEUE_NAME)) ENGINE = INNODB
+INSERT_BINDING=INSERT INTO JBM_POSTOFFICE (POSTOFFICE_NAME, NODE_ID, QUEUE_NAME, COND, SELECTOR, CHANNEL_ID, CLUSTERED, ALL_NODES) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+DELETE_BINDING=DELETE FROM JBM_POSTOFFICE WHERE POSTOFFICE_NAME=? AND NODE_ID=? AND QUEUE_NAME=?
+LOAD_BINDINGS=SELECT QUEUE_NAME, COND, SELECTOR, CHANNEL_ID, CLUSTERED, ALL_NODES FROM JBM_POSTOFFICE WHERE POSTOFFICE_NAME=? AND NODE_ID=?
       ]]&gt;&lt;/attribute&gt;
-       
-      &lt;!-- This post office is clustered. If you don't want a clustered post office
-          then set to false --&gt;
+      
+      &lt;!-- This post office is clustered. If you don't want a clustered post office then set to false --&gt;
       
       &lt;attribute name="Clustered"&gt;true&lt;/attribute&gt;
       
-      &lt;!-- All the remaining properties only have to be specified if the post office
-          is clustered. You can safely comment them out if your post office is
-          non clustered --&gt;
+      &lt;!-- All the remaining properties only have to be specified if the post office is clustered.
+           You can safely comment them out if your post office is non clustered --&gt;
       
       &lt;!-- The JGroups group name that the post office will use --&gt;            
       
@@ -586,78 +554,119 @@
                   
       &lt;attribute name="StateTimeout"&gt;5000&lt;/attribute&gt;
       
-      &lt;!-- Max time to wait for a synchronous call to node members using
-          the MessageDispatcher --&gt;            
+      &lt;!-- Max time to wait for a synchronous call to node members using the MessageDispatcher --&gt;            
                   
       &lt;attribute name="CastTimeout"&gt;50000&lt;/attribute&gt;
       
-      &lt;!-- Enable this when the JGroups multiplexer comes of age
+      &lt;!-- Max number of concurrent replications --&gt;
+      
+      &lt;attribute name="MaxConcurrentReplications"&gt;50&lt;/attribute&gt;
+      
+      &lt;!-- 
       &lt;attribute name="ChannelFactoryName"&gt;jgroups.mux:name=Multiplexer&lt;/attribute&gt;      
       &lt;attribute name="ControlChannelName"&gt;udp-sync&lt;/attribute&gt;
       &lt;attribute name="DataChannelName"&gt;udp&lt;/attribute&gt;
-      &lt;attribute name="ChannelPartitionName"&gt;
-          ${jboss.partition.name:DefaultPartition}-JMS
-      &lt;/attribute&gt;
+      &lt;attribute name="ChannelPartitionName"&gt;${jboss.partition.name:DefaultPartition}-JMS&lt;/attribute&gt;
       --&gt;
       
-      &lt;!-- JGroups stack configuration for the data channel - used when casting
-          messages across the cluster --&gt;               
-      
+      &lt;!-- JGroups stack configuration for the data channel - used for sending data across the cluster --&gt; 
+                        
       &lt;attribute name="DataChannelConfig"&gt;
          &lt;config&gt;
-            &lt;UDP   mcast_recv_buf_size="500000"
-                      down_thread="false"
-                      ip_mcast="true"
-                      mcast_send_buf_size="32000"
-                      mcast_port="45567"
-                      ucast_recv_buf_size="500000"
-                      use_incoming_packet_handler="false"
-                      mcast_addr="228.8.8.8"
-                      use_outgoing_packet_handler="true"
-                      loopback="true"
-                      ucast_send_buf_size="32000"
-                      ip_ttl="32"/&gt;
-            &lt;AUTOCONF    down_thread="false"
-                            up_thread="false"/&gt;
-            &lt;PING    timeout="2000"
-                        down_thread="false"
-                        num_initial_members="3"
-                        up_thread="false"/&gt;
-            ... (truncated)
+            &lt;UDP
+               mcast_addr="228.8.8.8"
+               mcast_port="45567"
+               tos="8"
+               ucast_recv_buf_size="20000000"
+               ucast_send_buf_size="640000"
+               mcast_recv_buf_size="25000000"
+               mcast_send_buf_size="640000"
+               loopback="false"
+               discard_incompatible_packets="true"
+               max_bundle_size="64000"
+               max_bundle_timeout="30"
+               use_incoming_packet_handler="true"
+               use_outgoing_packet_handler="false"
+               ip_ttl="2"
+               down_thread="false" up_thread="false"
+               enable_bundling="false"/&gt;
+            &lt;PING timeout="2000" down_thread="false" num_initial_members="3" up_thread="false"/&gt;
+            &lt;MERGE2 max_interval="100000" down_thread="false" min_interval="20000" up_thread="false"/&gt;
+            &lt;FD_SOCK down_thread="false" up_thread="false"/&gt;
+            &lt;FD timeout="10000" max_tries="5" down_thread="false" up_thread="false" shun="true"/&gt;
+            &lt;VERIFY_SUSPECT timeout="1500" down_thread="false" up_thread="false"/&gt;
+            &lt;pbcast.NAKACK
+               max_xmit_size="60000"
+               use_mcast_xmit="false"
+               gc_lag="0"
+               retransmit_timeout="300,600,1200,2400,4800"
+               down_thread="false" up_thread="false"
+               discard_delivered_msgs="true"/&gt;
+            &lt;UNICAST timeout="300,600,1200,2400,3600"
+                     down_thread="false" up_thread="false"/&gt;
+            &lt;pbcast.STABLE stability_delay="1000" desired_avg_gossip="50000"
+                           down_thread="false" up_thread="false"
+                           max_bytes="400000"/&gt;
+            &lt;pbcast.GMS print_local_addr="true" join_timeout="3000"
+                        down_thread="false" up_thread="false"
+                        join_retry_timeout="2000" shun="false"
+                        view_bundling="true"
+                        view_ack_collection_timeout="5000"/&gt;
+            &lt;FC max_credits="2000000" down_thread="false" up_thread="false"
+                min_threshold="0.10"/&gt;
+            &lt;FRAG2 frag_size="60000" down_thread="false" up_thread="false"/&gt;         
+            
          &lt;/config&gt;
       &lt;/attribute&gt;
       
-      &lt;!-- JGroups stack configuration to use for the control channel -
-          used for bind/unbind requests amongst others --&gt;           
-                  
+      &lt;!-- JGroups stack configuration to use for the control channel - used for control messages --&gt;         
+              
       &lt;attribute name="ControlChannelConfig"&gt;
          &lt;config&gt;
             &lt;UDP
-                    mcast_recv_buf_size="500000"
-                    down_thread="false"
-                    ip_mcast="true"
-                    mcast_send_buf_size="32000"
-                    mcast_port="45568"
-                    ucast_recv_buf_size="500000"
-                    use_incoming_packet_handler="false"
-                    mcast_addr="228.8.8.8"
-                    use_outgoing_packet_handler="true"
-                    loopback="true"
-                    ucast_send_buf_size="32000"
-                    ip_ttl="32"/&gt;
-            &lt;AUTOCONF down_thread="false"
-                        up_thread="false"/&gt;
-                        &lt;PING timeout="2000"
-                        down_thread="false"
-                        num_initial_members="3"
-                        up_thread="false"/&gt;
-            &lt;MERGE2  max_interval="10000"
-                        down_thread="false"
-                        min_interval="5000"
-                        up_thread="false"/&gt;
-            ... (truncated)
-         &lt;/config&gt;
-      &lt;/attribute&gt;
+                 mcast_addr="228.8.8.8"
+                 mcast_port="45568"
+                 tos="8"
+                 ucast_recv_buf_size="20000000"
+                 ucast_send_buf_size="640000"
+                 mcast_recv_buf_size="25000000"
+                 mcast_send_buf_size="640000"
+                 loopback="false"
+                 discard_incompatible_packets="true"
+                 max_bundle_size="64000"
+                 max_bundle_timeout="30"
+                 use_incoming_packet_handler="true"
+                 use_outgoing_packet_handler="false"
+                 ip_ttl="2"
+                 down_thread="false" up_thread="false"
+                 enable_bundling="false"/&gt;
+            &lt;PING timeout="2000"
+                  down_thread="false" up_thread="false" num_initial_members="3"/&gt;
+            &lt;MERGE2 max_interval="100000"
+                    down_thread="false" up_thread="false" min_interval="20000"/&gt;
+            &lt;FD_SOCK down_thread="false" up_thread="false"/&gt;
+            &lt;FD timeout="10000" max_tries="5" down_thread="false" up_thread="false" shun="true"/&gt;
+            &lt;VERIFY_SUSPECT timeout="1500" down_thread="false" up_thread="false"/&gt;
+            &lt;pbcast.NAKACK max_xmit_size="60000"
+                           use_mcast_xmit="false" gc_lag="0"
+                           retransmit_timeout="300,600,1200,2400,4800"
+                           down_thread="false" up_thread="false"
+                           discard_delivered_msgs="true"/&gt;
+            &lt;UNICAST timeout="300,600,1200,2400,3600"
+                     down_thread="false" up_thread="false"/&gt;
+            &lt;pbcast.STABLE stability_delay="1000" desired_avg_gossip="50000"
+                           down_thread="false" up_thread="false"
+                           max_bytes="400000"/&gt;
+            &lt;pbcast.GMS print_local_addr="true" join_timeout="3000" use_flush="true" flush_timeout="3000"
+                        down_thread="false" up_thread="false"
+                        join_retry_timeout="2000" shun="false"
+                        view_bundling="true"/&gt;
+            &lt;FRAG2 frag_size="60000" down_thread="false" up_thread="false"/&gt;
+            &lt;pbcast.STATE_TRANSFER down_thread="false" up_thread="false" use_flush="true" flush_timeout="3000"/&gt;
+            &lt;pbcast.FLUSH down_thread="false" up_thread="false" timeout="20000" auto_flush_conf="false"/&gt;
+        &lt;/config&gt;
+     &lt;/attribute&gt;	    
+      
    &lt;/mbean&gt;
       </programlisting>
       <section id="conf.postoffice.attributes">
@@ -723,6 +732,12 @@
             <para>The default value is <literal>5000</literal>
             milliseconds.</para>
          </section>
+         <section id="conf.postoffice.attributes.maxconcurrentreplications">
+            <title>MaxConcurrentReplications</title>
+            <para>The maximum number of concurrent replication requests to make before blocking for replies to come back.
+                  This prevents us overwhelming JGroups. This is rarely a good reason to change this.</para>
+            <para>The default value is <literal>50</literal></para>
+         </section>
          <section id="conf.postoffice.attributes.controlchannelconfig">
             <title>ControlChannelConfig</title>
             <para>JBoss Messaging uses JGroups for all group management. This
@@ -738,13 +753,13 @@
             <ulink
             url="http://wiki.jboss.org/wiki/Wiki.jsp?page=JGroups">http://wiki.jboss.org/wiki/Wiki.jsp?page=JGroups</ulink>.</para>
          </section>
-         <section id="conf.postoffice.attributes.asyncchannelconfig">
+         <section id="conf.postoffice.attributes.datachannelconfig">
             <title>DataChannelConfig</title>
             <para>JBoss Messaging uses JGroups for all group management. This
             contains the JGroups stack configuration for the data
             channel.</para>
             <para>The data channel is used for sending sending/receiving
-            messages from other nodes in the cluster.</para>
+            messages from other nodes in the cluster and for replicating session data.</para>
             <para>The details of the JGroups configuration won't be discussed
             here since it is standard JGroups configuration. Detailed
             information on JGroups can be found in JGroups release
@@ -766,9 +781,8 @@
       to provide other implementations for persisting message data in non
       relational stores, file stores etc.</para>
       <para>The configuration of "persistent" services is grouped in a
-      <filename>xxx-persistence-service.xml</filename> file, where the actual
-      file prefix is usually inferred from its corresponding database JDBC
-      connection string. By default, Messaging ships with a
+      <filename>xxx-persistence-service.xml</filename> file, where xxx
+      corresponds to the database name. By default, Messaging ships with a
       <filename>hsqldb-persistence-service.xml</filename>, which configures
       the Messaging server to use the in-VM Hypersonic database instance that
       comes by default with any JBossAS instance.</para>
@@ -802,16 +816,13 @@
       <para>The default Hypersonic persistence configuration file is listed
       below:</para>
       <programlisting>
-	   
-	  &lt;mbean code="org.jboss.messaging.core.jmx.JDBCPersistenceManagerService"
+	 &lt;mbean code="org.jboss.messaging.core.jmx.JDBCPersistenceManagerService"
       name="jboss.messaging:service=PersistenceManager"
       xmbean-dd="xmdesc/JDBCPersistenceManager-xmbean.xml"&gt;
       
       &lt;depends&gt;jboss.jca:service=DataSourceBinding,name=DefaultDS&lt;/depends&gt;
       
-      &lt;depends optional-attribute-name="TransactionManager"&gt;
-           jboss:service=TransactionManager
-      &lt;/depends&gt;
+      &lt;depends optional-attribute-name="TransactionManager"&gt;jboss:service=TransactionManager&lt;/depends&gt;
       
       &lt;!-- The datasource to use for the persistence manager --&gt;
                     
@@ -826,40 +837,64 @@
       &lt;attribute name="UsingBatchUpdates"&gt;true&lt;/attribute&gt;
       
       &lt;attribute name="SqlProperties"&gt;&lt;![CDATA[
-           CREATE_MESSAGE=CREATE TABLE JBM_MSG (MESSAGE_ID BIGINT, RELIABLE CHAR(1),
-           EXPIRATION BIGINT, TIMESTAMP BIGINT, PRIORITY TINYINT, HEADERS MEDIUMBLOB,
-           PAYLOAD LONGBLOB, CHANNEL_COUNT INTEGER, TYPE TINYINT, PRIMARY KEY (MESSAGE_ID))
-           ENGINE = INNODB
-           CREATE_MESSAGE_REFERENCE=CREATE TABLE JBM_MSG_REF (CHANNEL_ID BIGINT,
-           MESSAGE_ID BIGINT REFERENCES JBM_MSG(MESSAGE_ID), TRANSACTION_ID BIGINT,
-           STATE CHAR(1), ORD BIGINT, PAGE_ORD BIGINT, DELIVERY_COUNT INTEGER,
-           SCHED_DELIVERY BIGINT, PRIMARY KEY(CHANNEL_ID, MESSAGE_ID)) ENGINE = INNODB
-           CREATE_IDX_MESSAGE_REF_TX=CREATE INDEX JBM_MSG_REF_TX ON JBM_MSG_REF (TRANSACTION_ID)
-           CREATE_IDX_MESSAGE_REF_ORD=CREATE INDEX JBM_MSG_REF_ORD ON JBM_MSG_REF (ORD)
-           CREATE_IDX_MESSAGE_REF_PAGE_ORD=CREATE INDEX JBM_MSG_REF_PAGE_ORD ON JBM_MSG_REF (PAGE_ORD)
-           CREATE_IDX_MESSAGE_REF_MESSAGE_ID=CREATE INDEX JBM_MSG_REF_MESSAGE_ID
-           ON JBM_MSG_REF (MESSAGE_ID)
-           CREATE_IDX_MESSAGE_REF_SCHED_DELIVERY=CREATE INDEX JBM_MSG_REF_SCHED_DELIVERY
-           ON JBM_MSG_REF (SCHED_DELIVERY)
-           CREATE_TRANSACTION=CREATE TABLE JBM_TX (NODE_ID INTEGER, TRANSACTION_ID BIGINT,
-           BRANCH_QUAL VARBINARY(254), FORMAT_ID INTEGER, GLOBAL_TXID VARBINARY(254),
-           PRIMARY KEY (TRANSACTION_ID)) ENGINE = INNODB
-           CREATE_COUNTER=CREATE TABLE JBM_COUNTER (NAME VARCHAR(255), NEXT_ID BIGINT,
-           PRIMARY KEY(NAME)) ENGINE = INNODB
-           INSERT_MESSAGE_REF=INSERT INTO JBM_MSG_REF (CHANNEL_ID, MESSAGE_ID, TRANSACTION_ID,
-           STATE, ORD, PAGE_ORD, DELIVERY_COUNT, SCHED_DELIVERY)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-           DELETE_MESSAGE_REF=DELETE FROM JBM_MSG_REF WHERE MESSAGE_ID=? AND CHANNEL_ID=? AND STATE='C'
-           UPDATE_MESSAGE_REF=UPDATE JBM_MSG_REF SET TRANSACTION_ID=?, STATE='-'
-           WHERE MESSAGE_ID=? AND CHANNEL_ID=? AND STATE='C'
-           UPDATE_PAGE_ORDER=UPDATE JBM_MSG_REF SET PAGE_ORD = ? WHERE MESSAGE_ID=? AND CHANNEL_ID=?
-           ... (truncated)
+   CREATE_DUAL=CREATE TABLE JBM_DUAL (DUMMY INTEGER, PRIMARY KEY (DUMMY)) ENGINE = INNODB
+   CREATE_MESSAGE_REFERENCE=CREATE TABLE JBM_MSG_REF (CHANNEL_ID BIGINT, MESSAGE_ID BIGINT, TRANSACTION_ID BIGINT, STATE CHAR(1), ORD BIGINT, PAGE_ORD BIGINT, DELIVERY_COUNT INTEGER, SCHED_DELIVERY BIGINT, PRIMARY KEY(CHANNEL_ID, MESSAGE_ID)) ENGINE = INNODB
+   CREATE_IDX_MESSAGE_REF_TX=CREATE INDEX JBM_MSG_REF_TX ON JBM_MSG_REF (TRANSACTION_ID)
+   CREATE_IDX_MESSAGE_REF_ORD=CREATE INDEX JBM_MSG_REF_ORD ON JBM_MSG_REF (ORD)
+   CREATE_IDX_MESSAGE_REF_PAGE_ORD=CREATE INDEX JBM_MSG_REF_PAGE_ORD ON JBM_MSG_REF (PAGE_ORD)
+   CREATE_IDX_MESSAGE_REF_MESSAGE_ID=CREATE INDEX JBM_MSG_REF_MESSAGE_ID ON JBM_MSG_REF (MESSAGE_ID)
+   CREATE_IDX_MESSAGE_REF_SCHED_DELIVERY=CREATE INDEX JBM_MSG_REF_SCHED_DELIVERY ON JBM_MSG_REF (SCHED_DELIVERY)
+   CREATE_MESSAGE=CREATE TABLE JBM_MSG (MESSAGE_ID BIGINT, RELIABLE CHAR(1), EXPIRATION BIGINT, TIMESTAMP BIGINT, PRIORITY TINYINT, TYPE TINYINT, INS_TIME BIGINT, HEADERS MEDIUMBLOB, PAYLOAD LONGBLOB, PRIMARY KEY (MESSAGE_ID)) ENGINE = INNODB
+   CREATE_IDX_MESSAGE_TIMESTAMP=CREATE INDEX JBM_MSG_REF_TIMESTAMP ON JBM_MSG (TIMESTAMP)
+   CREATE_TRANSACTION=CREATE TABLE JBM_TX (NODE_ID INTEGER, TRANSACTION_ID BIGINT, BRANCH_QUAL VARBINARY(254), FORMAT_ID INTEGER, GLOBAL_TXID VARBINARY(254), PRIMARY KEY (TRANSACTION_ID)) ENGINE = INNODB
+   CREATE_COUNTER=CREATE TABLE JBM_COUNTER (NAME VARCHAR(255), NEXT_ID BIGINT, PRIMARY KEY(NAME)) ENGINE = INNODB
+   INSERT_DUAL=INSERT INTO JBM_DUAL VALUES (1)
+   CHECK_DUAL=SELECT 1 FROM JBM_DUAL
+   INSERT_MESSAGE_REF=INSERT INTO JBM_MSG_REF (CHANNEL_ID, MESSAGE_ID, TRANSACTION_ID, STATE, ORD, PAGE_ORD, DELIVERY_COUNT, SCHED_DELIVERY) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+   DELETE_MESSAGE_REF=DELETE FROM JBM_MSG_REF WHERE MESSAGE_ID=? AND CHANNEL_ID=? AND STATE='C'
+   UPDATE_MESSAGE_REF=UPDATE JBM_MSG_REF SET TRANSACTION_ID=?, STATE='-' WHERE MESSAGE_ID=? AND CHANNEL_ID=? AND STATE='C'
+   UPDATE_PAGE_ORDER=UPDATE JBM_MSG_REF SET PAGE_ORD = ? WHERE MESSAGE_ID=? AND CHANNEL_ID=?
+   COMMIT_MESSAGE_REF1=UPDATE JBM_MSG_REF SET STATE='C', TRANSACTION_ID = NULL WHERE TRANSACTION_ID=? AND STATE='+'
+   COMMIT_MESSAGE_REF2=DELETE FROM JBM_MSG_REF WHERE TRANSACTION_ID=? AND STATE='-'
+   ROLLBACK_MESSAGE_REF1=DELETE FROM JBM_MSG_REF WHERE TRANSACTION_ID=? AND STATE='+'
+   ROLLBACK_MESSAGE_REF2=UPDATE JBM_MSG_REF SET STATE='C', TRANSACTION_ID = NULL WHERE TRANSACTION_ID=? AND STATE='-'
+   LOAD_PAGED_REFS=SELECT MESSAGE_ID, DELIVERY_COUNT, PAGE_ORD, SCHED_DELIVERY FROM JBM_MSG_REF WHERE CHANNEL_ID = ? AND PAGE_ORD BETWEEN ? AND ? ORDER BY PAGE_ORD
+   LOAD_UNPAGED_REFS=SELECT MESSAGE_ID, DELIVERY_COUNT, SCHED_DELIVERY FROM JBM_MSG_REF WHERE STATE = 'C' AND CHANNEL_ID = ? AND PAGE_ORD IS NULL ORDER BY ORD
+   LOAD_REFS=SELECT MESSAGE_ID, DELIVERY_COUNT, SCHED_DELIVERY FROM JBM_MSG_REF WHERE STATE = 'C' AND CHANNEL_ID = ? ORDER BY ORD     
+   UPDATE_REFS_NOT_PAGED=UPDATE JBM_MSG_REF SET PAGE_ORD = NULL WHERE PAGE_ORD BETWEEN ? AND ? AND CHANNEL_ID=?
+   SELECT_MIN_MAX_PAGE_ORD=SELECT MIN(PAGE_ORD), MAX(PAGE_ORD) FROM JBM_MSG_REF WHERE CHANNEL_ID = ?
+   SELECT_EXISTS_REF_MESSAGE_ID=SELECT MESSAGE_ID FROM JBM_MSG_REF WHERE MESSAGE_ID = ?
+   UPDATE_DELIVERY_COUNT=UPDATE JBM_MSG_REF SET DELIVERY_COUNT = ? WHERE CHANNEL_ID = ? AND MESSAGE_ID = ?
+   UPDATE_CHANNEL_ID=UPDATE JBM_MSG_REF SET CHANNEL_ID = ? WHERE CHANNEL_ID = ?
+   LOAD_MESSAGES=SELECT MESSAGE_ID, RELIABLE, EXPIRATION, TIMESTAMP, PRIORITY, HEADERS, PAYLOAD, TYPE FROM JBM_MSG
+   INSERT_MESSAGE=INSERT INTO JBM_MSG (MESSAGE_ID, RELIABLE, EXPIRATION, TIMESTAMP, PRIORITY, TYPE, INS_TIME, HEADERS, PAYLOAD) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+   INSERT_MESSAGE_CONDITIONAL=INSERT INTO JBM_MSG (MESSAGE_ID, RELIABLE, EXPIRATION, TIMESTAMP, PRIORITY, TYPE, INST_TIME) SELECT ?, ?, ?, ?, ?, ?, ? FROM JBM_DUAL WHERE NOT EXISTS (SELECT MESSAGE_ID FROM JBM_MSG WHERE MESSAGE_ID = ?)
+   UPDATE_MESSAGE_4CONDITIONAL=UPDATE JBM_MSG SET HEADERS=?, PAYLOAD=? WHERE MESSAGE_ID=?
+   INSERT_MESSAGE_CONDITIONAL_FULL=INSERT INTO JBM_MSG (MESSAGE_ID, RELIABLE, EXPIRATION, TIMESTAMP, PRIORITY, TYPE, INS_TIME, HEADERS, PAYLOAD) SELECT ?, ?, ?, ?, ?, ?, ?, ?, ? FROM JBM_DUAL WHERE NOT EXISTS (SELECT MESSAGE_ID FROM JBM_MSG WHERE MESSAGE_ID = ?)   
+   MESSAGE_ID_COLUMN=MESSAGE_ID
+   REAP_MESSAGES=DELETE FROM JBM_MSG WHERE INS_TIME &lt; ? AND NOT EXISTS (SELECT * FROM JBM_MSG_REF WHERE JBM_MSG_REF.MESSAGE_ID = JBM_MSG.MESSAGE_ID)
+   DELETE_MESSAGE=DELETE FROM JBM_MSG WHERE MESSAGE_ID = ? AND NOT EXISTS (SELECT * FROM JBM_MSG_REF WHERE JBM_MSG_REF.MESSAGE_ID = ?)      
+   INSERT_TRANSACTION=INSERT INTO JBM_TX (NODE_ID, TRANSACTION_ID, BRANCH_QUAL, FORMAT_ID, GLOBAL_TXID) VALUES(?, ?, ?, ?, ?)
+   DELETE_TRANSACTION=DELETE FROM JBM_TX WHERE NODE_ID = ? AND TRANSACTION_ID = ?
+   SELECT_PREPARED_TRANSACTIONS=SELECT TRANSACTION_ID, BRANCH_QUAL, FORMAT_ID, GLOBAL_TXID FROM JBM_TX WHERE NODE_ID = ?
+   SELECT_MESSAGE_ID_FOR_REF=SELECT MESSAGE_ID, CHANNEL_ID FROM JBM_MSG_REF WHERE TRANSACTION_ID = ? AND STATE = '+' ORDER BY ORD
+   SELECT_MESSAGE_ID_FOR_ACK=SELECT MESSAGE_ID, CHANNEL_ID FROM JBM_MSG_REF WHERE TRANSACTION_ID = ? AND STATE = '-' ORDER BY ORD
+   UPDATE_COUNTER=UPDATE JBM_COUNTER SET NEXT_ID = ? WHERE NAME=?
+   SELECT_COUNTER=SELECT NEXT_ID FROM JBM_COUNTER WHERE NAME=? FOR UPDATE
+   INSERT_COUNTER=INSERT INTO JBM_COUNTER (NAME, NEXT_ID) VALUES (?, ?)
+   SELECT_ALL_CHANNELS=SELECT DISTINCT(CHANNEL_ID) FROM JBM_MSG_REF
+   UPDATE_TX=UPDATE JBM_TX SET NODE_ID=? WHERE NODE_ID=?
       ]]&gt;&lt;/attribute&gt;
       
       &lt;!-- The maximum number of parameters to include in a prepared statement --&gt;
                   
       &lt;attribute name="MaxParams"&gt;500&lt;/attribute&gt;
+      
+      &lt;!-- The period between asynchronous reaps of unreferenced messages, or zero for synchronous reaping --&gt;
+      
+      &lt;attribute name="ReaperPeriod"&gt;0&lt;/attribute&gt;      
    &lt;/mbean&gt;
+	  
 	   </programlisting>
       <section id="conf.persistencemanager.attributes">
          <title>We now discuss the MBean attributes of the PersistenceManager
@@ -904,6 +939,22 @@
             known to be necessary for Sybase.</para>
             <para>By default the value of <literal>UsingTrailingByte</literal>
             attribute is set to <literal>false</literal></para>
+         </section>
+         <section id="conf.persistencemanager.attributes.supportsblobonselect">
+            <title>SupportsBlobOnSelect</title>
+            <para>Oracle (and possibly other databases) is known to not allow BLOBs to be inserted using
+            a INSERT INTO ... SELECT FROM statement, and requires a two stage conditional insert of messages.
+            If this value is false then such a two stage insert will be used.</para>
+            <para>By default the value of <literal>SupportsBlobOnSelect</literal>
+            attribute is set to <literal>true</literal></para>
+         </section>
+         <section id="conf.persistencemanager.attributes.reaperperiod">
+            <title>ReaperPeriod</title>
+            <para>This value determines how often the database message reaper removes unreferenced (deleted)
+            messages in milliseconds. If it's value is 0 (zero) then a reaper is not used and messages are deleted
+            synchronously on acknowledgement.</para>
+            <para>By default the value of <literal>ReaperPeriod</literal>
+            attribute is set to <literal>0</literal> which means synchronous removal of messages is used.</para>
          </section>
          <section id="conf.persistencemanager.attributes.sqlproperties">
             <title>SQLProperties</title>
@@ -1722,7 +1773,7 @@
          <section id="conf.connectionfactory.attributes.tckstrictbehavior">
             <title>StrictTck</title>
             <para>Set this to true if you want strict JMS behaviour as
-                  required by the TCK.</para>
+            required by the TCK.</para>
          </section>
          <section id="conf.connectionfactory.attributes.tempqueuepaging">
             <title>Temporary queue paging parameters</title>
@@ -1776,6 +1827,17 @@
             asynchronously. When a connection is caught, the client side code
             should lookup a new connection factory using HAJNDI and recreate
             the connection using that.</para>
+            <para>The default value is <literal>false</literal></para>
+         </section>
+         <section id="conf.connectionfactory.attributes.disableremotingchecks">
+            <title>DisableRemotingChecks</title>
+            <para>By default, when deploying a connection factory, JBoss Messaging checks that the
+            corresponding JBoss Remoting Connector has "sensible" values. JBoss Messaging
+            is very sensitive to the values and for many of them there's rarely a good reason to
+            change them. To disable such sanity checking set this to false.
+            <warning>There is rarely a good reason to disable checking. Only do so if you are absolutely
+            sure in what you are doing</warning>
+            </para>
             <para>The default value is <literal>false</literal></para>
          </section>
          <section id="conf.connectionfactory.attributes.loadbalancingfactory">

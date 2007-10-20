@@ -129,8 +129,8 @@
                connected by message bridges.</para>
                <para>
                   <warning>Each node must have a unique
-                  <literal>ServerPeerID</literal> for clustering to
-                  work!</warning>
+                  <literal>ServerPeerID</literal> irrespective of whether you
+                  are using clustering.</warning>
                </para>
             </listitem>
             <listitem>
@@ -150,41 +150,50 @@
                   <listitem>
                      <para>Look at
                      $JBOSS_HOME/docs/examples/binding-manager/sample-bindings.xml.
-                     On each port range, JBoss Remoting configuration should
-                     look like:</para>
+                     Here is an example:</para>
                      <programlisting>
       &lt;service-config name="jboss.messaging:service=Connector,transport=bisocket"
                       delegateClass="org.jboss.services.binding.AttributeMappingDelegate"&gt;
          &lt;delegate-config&gt;
             &lt;attribute name="Configuration"&gt;&lt;![CDATA[
-	   &lt;config&gt;
+	        &lt;config&gt;
             &lt;invoker transport="bisocket"&gt;
-               &lt;attribute name="marshaller" isParam="true"&gt;
-                  org.jboss.jms.wireformat.JMSWireFormat
-               &lt;/attribute&gt;
-               &lt;attribute name="unmarshaller" isParam="true"&gt;
-                  org.jboss.jms.wireformat.JMSWireFormat
-               &lt;/attribute&gt;
+            
+               &lt;!-- There should be no reason to change these parameters - warning!
+                    Changing them may stop JBoss Messaging working correctly --&gt;            
+               &lt;attribute name="marshaller" isParam="true"&gt;org.jboss.jms.wireformat.JMSWireFormat&lt;/attribute&gt;
+               &lt;attribute name="unmarshaller" isParam="true"&gt;org.jboss.jms.wireformat.JMSWireFormat&lt;/attribute&gt;
                &lt;attribute name="dataType" isParam="true"&gt;jms&lt;/attribute&gt;
                &lt;attribute name="socket.check_connection" isParam="true"&gt;false&lt;/attribute&gt;
                &lt;attribute name="timeout" isParam="true"&gt;0&lt;/attribute&gt;
                &lt;attribute name="serverBindAddress"&gt;${jboss.bind.address}&lt;/attribute&gt;
                &lt;attribute name="serverBindPort"&gt;4657&lt;/attribute&gt;
-               &lt;attribute name="leasePeriod"&gt;10000&lt;/attribute&gt;
-               &lt;attribute name="clientSocketClass" isParam="true"&gt;
-                  org.jboss.jms.client.remoting.ClientSocketWrapper
-               &lt;/attribute&gt;
-               &lt;attribute name="serverSocketClass"&gt;
-                  org.jboss.jms.server.remoting.ServerSocketWrapper
-               &lt;/attribute&gt;
-               &lt;attribute name="numberOfRetries" isParam="true"&gt;1&lt;/attribute&gt;
+               &lt;attribute name="clientSocketClass" isParam="true"&gt;org.jboss.jms.client.remoting.ClientSocketWrapper&lt;/attribute&gt;
+               &lt;attribute name="serverSocketClass" isParam="true"&gt;org.jboss.jms.server.remoting.ServerSocketWrapper&lt;/attribute&gt;
                &lt;attribute name="numberOfCallRetries" isParam="true"&gt;1&lt;/attribute&gt;
-               &lt;attribute name="clientMaxPoolSize" isParam="true"&gt;50&lt;/attribute&gt;
+               &lt;attribute name="pingFrequency" isParam="true"&gt;214748364&lt;/attribute&gt;
+               &lt;attribute name="pingWindowFactor" isParam="true"&gt;10&lt;/attribute&gt;
+               &lt;attribute name="onewayThreadPool"&gt;org.jboss.jms.server.remoting.DirectThreadPool&lt;/attribute&gt;
+               
+               &lt;!-- Periodicity of client pings. Server window by default is twice this figure --&gt;                               
+               &lt;attribute name="clientLeasePeriod" isParam="true"&gt;10000&lt;/attribute&gt;
+
+               &lt;!-- Number of seconds to wait for a connection in the client pool to become free --&gt;
+               &lt;attribute name="numberOfRetries" isParam="true"&gt;10&lt;/attribute&gt;
+
+               &lt;!-- Max Number of connections in client pool. This should be significantly higher than
+                    the max number of sessions/consumers you expect --&gt;
+               &lt;attribute name="clientMaxPoolSize" isParam="true"&gt;200&lt;/attribute&gt;
+               
+               &lt;!-- Use these parameters to specify values for binding and connecting control connections to 
+                    work with your firewall/NAT configuration
+               &lt;attribute name="secondaryBindPort"&gt;xyz&lt;/attribute&gt;                           
+               &lt;attribute name="secondaryConnectPort"&gt;abc&lt;/attribute&gt;               
+               --&gt;
+                              
             &lt;/invoker&gt;
             &lt;handlers&gt;
-               &lt;handler subsystem="JMS"&gt;
-                  org.jboss.jms.server.remoting.JMSServerInvocationHandler
-               &lt;/handler&gt;
+               &lt;handler subsystem="JMS"&gt;org.jboss.jms.server.remoting.JMSServerInvocationHandler&lt;/handler&gt;
             &lt;/handlers&gt;
          &lt;/config&gt;
             ]]&gt;&lt;/attribute&gt;
@@ -200,9 +209,11 @@
                      be different for each ports range. Please note that the
                      default JBoss Messaging service binding manager bindings
                      in <literal>sample-bindings.xml</literal> shipped with
-                     JBAS 4.2.0 is out of date and you will need to copy the
-                     config from
-                     <literal>remoting-bisocket-service.xml</literal></warning>
+                     JBAS 4.2.0 may be out of date and you will need to copy
+                     the config from <literal>remoting-bisocket-service.xml.
+                     DO NOT just copy and paste from the above example - copy
+                     it from the JBoss Messaging
+                     distribution.</literal></warning>
                      <para>You should ensure that each node is configured to
                      use a different ports range.</para>
                   </listitem>
@@ -361,7 +372,7 @@ guest=guest
                <para><warning>
                       Each node must have a unique 
                      <literal>ServerPeerID</literal>
-                      for clustering to work! 
+                      irrespective of whether you are using clustering.
                   </warning></para>
             </listitem>
             <listitem>
@@ -388,34 +399,44 @@ guest=guest
                       delegateClass="org.jboss.services.binding.AttributeMappingDelegate"&gt;
          &lt;delegate-config&gt;
             &lt;attribute name="Configuration"&gt;&lt;![CDATA[
-	   &lt;config&gt;
+	        &lt;config&gt;
             &lt;invoker transport="bisocket"&gt;
-               &lt;attribute name="marshaller" isParam="true"&gt;
-                  org.jboss.jms.wireformat.JMSWireFormat
-               &lt;/attribute&gt;
-               &lt;attribute name="unmarshaller" isParam="true"&gt;
-                  org.jboss.jms.wireformat.JMSWireFormat
-               &lt;/attribute&gt;
+            
+               &lt;!-- There should be no reason to change these parameters - warning!
+                    Changing them may stop JBoss Messaging working correctly --&gt;            
+               &lt;attribute name="marshaller" isParam="true"&gt;org.jboss.jms.wireformat.JMSWireFormat&lt;/attribute&gt;
+               &lt;attribute name="unmarshaller" isParam="true"&gt;org.jboss.jms.wireformat.JMSWireFormat&lt;/attribute&gt;
                &lt;attribute name="dataType" isParam="true"&gt;jms&lt;/attribute&gt;
                &lt;attribute name="socket.check_connection" isParam="true"&gt;false&lt;/attribute&gt;
                &lt;attribute name="timeout" isParam="true"&gt;0&lt;/attribute&gt;
                &lt;attribute name="serverBindAddress"&gt;${jboss.bind.address}&lt;/attribute&gt;
                &lt;attribute name="serverBindPort"&gt;4657&lt;/attribute&gt;
-               &lt;attribute name="leasePeriod"&gt;10000&lt;/attribute&gt;
-               &lt;attribute name="clientSocketClass" isParam="true"&gt;
-                  org.jboss.jms.client.remoting.ClientSocketWrapper
-               &lt;/attribute&gt;
-               &lt;attribute name="serverSocketClass"&gt;
-                  org.jboss.jms.server.remoting.ServerSocketWrapper
-               &lt;/attribute&gt;
-               &lt;attribute name="numberOfRetries" isParam="true"&gt;1&lt;/attribute&gt;
+               &lt;attribute name="clientSocketClass" isParam="true"&gt;org.jboss.jms.client.remoting.ClientSocketWrapper&lt;/attribute&gt;
+               &lt;attribute name="serverSocketClass" isParam="true"&gt;org.jboss.jms.server.remoting.ServerSocketWrapper&lt;/attribute&gt;
                &lt;attribute name="numberOfCallRetries" isParam="true"&gt;1&lt;/attribute&gt;
-               &lt;attribute name="clientMaxPoolSize" isParam="true"&gt;50&lt;/attribute&gt;
+               &lt;attribute name="pingFrequency" isParam="true"&gt;214748364&lt;/attribute&gt;
+               &lt;attribute name="pingWindowFactor" isParam="true"&gt;10&lt;/attribute&gt;
+               &lt;attribute name="onewayThreadPool"&gt;org.jboss.jms.server.remoting.DirectThreadPool&lt;/attribute&gt;
+               
+               &lt;!-- Periodicity of client pings. Server window by default is twice this figure --&gt;                               
+               &lt;attribute name="clientLeasePeriod" isParam="true"&gt;10000&lt;/attribute&gt;
+
+               &lt;!-- Number of seconds to wait for a connection in the client pool to become free --&gt;
+               &lt;attribute name="numberOfRetries" isParam="true"&gt;10&lt;/attribute&gt;
+
+               &lt;!-- Max Number of connections in client pool. This should be significantly higher than
+                    the max number of sessions/consumers you expect --&gt;
+               &lt;attribute name="clientMaxPoolSize" isParam="true"&gt;200&lt;/attribute&gt;
+               
+               &lt;!-- Use these parameters to specify values for binding and connecting control connections to 
+                    work with your firewall/NAT configuration
+               &lt;attribute name="secondaryBindPort"&gt;xyz&lt;/attribute&gt;                           
+               &lt;attribute name="secondaryConnectPort"&gt;abc&lt;/attribute&gt;               
+               --&gt;
+                              
             &lt;/invoker&gt;
             &lt;handlers&gt;
-               &lt;handler subsystem="JMS"&gt;
-                  org.jboss.jms.server.remoting.JMSServerInvocationHandler
-               &lt;/handler&gt;
+               &lt;handler subsystem="JMS"&gt;org.jboss.jms.server.remoting.JMSServerInvocationHandler&lt;/handler&gt;
             &lt;/handlers&gt;
          &lt;/config&gt;
             ]]&gt;&lt;/attribute&gt;
@@ -425,13 +446,21 @@ guest=guest
               
               </programlisting>
                      <warning>
-                         You must ensure that the config (like above) is identical to that in 
+                        You must ensure that the config (like above) is identical to that in 
                         <literal>remoting-bisocket-service.xml</literal>
                          With the exception of the actual serverBindPort which clearly must be different for each ports range. Please note that the default JBoss Messaging service binding manager bindings in 
                         <literal>sample-bindings.xml</literal>
-                         shipped with JBAS 4.2.0 is out of date and you will need to copy the config from 
-                        <literal>remoting-bisocket-service.xml</literal>
-                         
+                         shipped with JBAS 4.2.0 may be out of date and you will need to copy the config from 
+                        <literal>remoting-bisocket-service.xml. DO NOT just
+                        copy and paste from the above example - copy it from
+                        the JBoss Messaging distribution.</literal>
+                        
+                        <literal />
+                        
+                        <literal />
+                        
+                        <literal />
+                        
                      </warning>
                      <para>You should ensure that each node is configured to
                      use a different ports range.</para>
@@ -467,13 +496,14 @@ guest=guest
                   jboss-remoting.jar. This version is not available in the
                   JBoss AS 4.2.0 or JBoss AS 4.2.1 distributions. The patched
                   jar can be found <ulink
-                  url="http://repository.jboss.com/jboss/remoting/2.2.2.SP1-brew/lib/">here</ulink>.
-                  Please download it and copy it into the
-                  <literal>$JBOSS_HOME/server/&lt;your server name&gt;/lib
-                  directory</literal> of any server profiles that use JBoss
-                  Messaging 1.4.0. If you are using JBoss Messaging from a
-                  standalone client also make sure this jar is on your
-                  classpath *before* jbossall-client.jar.</note>
+                  url="http://repository.jboss.com/jboss/remoting/2.2.2.SP1-brew/lib/">here</ulink>The
+                  version is JBoss Remoting 2.2.2.SP1-brew. Please download it
+                  and copy it into the <literal>$JBOSS_HOME/server/&lt;your
+                  server name&gt;/lib directory</literal> of any server
+                  profiles that use JBoss Messaging 1.4.0. If you are using
+                  JBoss Messaging from a standalone client also make sure this
+                  jar is on your classpath *before*
+                  jbossall-client.jar.</note>
                </para>
             </listitem>
             <para>You should also make these changes on any configuration you
@@ -736,7 +766,7 @@ Total time: 5 seconds
       <itemizedlist>
          <listitem>
             <para><note>
-                   JBoss Messaging 1.4.0 requires a patched version of jboss-remoting.jar. This version is not available in the JBoss AS 4.2.0 or JBoss AS 4.2.1 distributions. The patched jar can be found 
+                   JBoss Messaging 1.4.0 requires a patched version of jboss-remoting.jar. The version is JBoss Remoting 2.2.2.SP1-brew. This version is not available in the JBoss AS 4.2.0 or JBoss AS 4.2.1 distributions. The patched jar can be found 
                   <ulink
                   url="http://repository.jboss.com/jboss/remoting/2.2.2.SP1-brew/lib/">here</ulink>
                    . Please download it and make sure this jar is on your classpath *before* jbossall-client.jar. 
