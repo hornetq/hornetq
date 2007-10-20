@@ -150,8 +150,7 @@ public class MergeQueueTest extends ClusteringTestBase
 
       try
       {
-
-         // Objects Server0
+      	//node 0
          conn0 = createConnectionOnServer(cf, 0);
 
          assertEquals(0, getServerId(conn0));
@@ -166,7 +165,8 @@ public class MergeQueueTest extends ClusteringTestBase
 
          MessageConsumer consumer0 = session0.createConsumer(queue[0]);
 
-         for (int i=0; i < 10; i++)
+         //Send messages 0 - 9 on node 0
+         for (int i= 0; i < 10; i++)
          {
             producer0.send(session0.createTextMessage("message " + i));
          }
@@ -175,6 +175,8 @@ public class MergeQueueTest extends ClusteringTestBase
 
          TextMessage msg;
 
+         
+         //Consume messages 0 - 4 on node node 0 transactionally
          for (int i = 0; i < 5; i++)
          {
             msg = (TextMessage)consumer0.receive(5000);
@@ -183,12 +185,13 @@ public class MergeQueueTest extends ClusteringTestBase
             assertEquals("message " + i, msg.getText());
          }
 
+         //commit the session
          session0.commit();
          consumer0.close();
 
-         log.info("** sent first five on node0");
-
-         // Objects Server1
+         log.info("Consumed messages 0 - 4 on node 0");
+         
+         // node 1
          conn1 = createConnectionOnServer(cf, 1);
 
          assertEquals(1, getServerId(conn1));
@@ -201,6 +204,7 @@ public class MergeQueueTest extends ClusteringTestBase
 
          producer1.setDeliveryMode(DeliveryMode.PERSISTENT);
 
+         //Send messages 10 - 19 on node 1
          for (int i = 10; i < 20; i++)
          {
             producer1.send(session0.createTextMessage("message " + i));
@@ -208,15 +212,21 @@ public class MergeQueueTest extends ClusteringTestBase
 
          session1.commit();
          
-         log.info("Sent next 15 on node 1");
+         log.info("Sent messages 10 - 19 on node 1");
+         
+         //At this point we should have messages 5 - 9 sitting in queue on node 0
+         //and messages 10 - 19 sitting in queue on node 1
 
-         // creates another consumer... before killing the server
+         //Create a consumer on node 1
+         
+         log.info("Creating consumer on node 1");
          
          // This will actually end up sucking messages from node 0
          MessageConsumer consumer1 = session1.createConsumer(queue[1]);
          
          //Give it enough time to suck
          
+         log.info("Waiting for suck");
          Thread.sleep(5000);
 
          log.info("Killing node1");
