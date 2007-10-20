@@ -64,11 +64,12 @@ public class IdManagerTest extends MessagingTestCase
 
       sc = new ServiceContainer("all");
       sc.start();                
-      
+                  
       pm =
          new JDBCPersistenceManager(sc.getDataSource(), sc.getTransactionManager(),
-                  sc.getPersistenceManagerSQLProperties(),
-                  true, true, true, false, 100, 5000, true);   
+                                    sc.getPersistenceManagerSQLProperties(),
+                                    true, true, true, false, 100, 5000,
+                                    !sc.getDatabaseName().equals("oracle"));   
       ((JDBCPersistenceManager)pm).injectNodeID(1);
       pm.start();
       

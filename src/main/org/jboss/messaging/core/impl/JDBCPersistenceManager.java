@@ -241,9 +241,12 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
    {
       super.stop();
       
-      reaperTimer.cancel();
-      
-      stopReaper();
+      if (reaper != null)
+      {      
+	      reaperTimer.cancel();
+	      
+	      stopReaper();
+      }
    }
    
    // Injection -------------------------------------------------

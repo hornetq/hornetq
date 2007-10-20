@@ -245,7 +245,7 @@ public class PostOfficeTestBase extends MessagingTestCase
       pm =
          new JDBCPersistenceManager(sc.getDataSource(), sc.getTransactionManager(),
                   sc.getPersistenceManagerSQLProperties(),
-                  true, true, true, false, 100, 5000, true);
+                  true, true, true, false, 100, 5000, !sc.getDatabaseName().equals("oracle"));
       ((JDBCPersistenceManager)pm).injectNodeID(1);
       pm.start();
 
