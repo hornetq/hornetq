@@ -734,8 +734,10 @@ LOAD_BINDINGS=SELECT QUEUE_NAME, COND, SELECTOR, CHANNEL_ID, CLUSTERED, ALL_NODE
          </section>
          <section id="conf.postoffice.attributes.maxconcurrentreplications">
             <title>MaxConcurrentReplications</title>
-            <para>The maximum number of concurrent replication requests to make before blocking for replies to come back.
-                  This prevents us overwhelming JGroups. This is rarely a good reason to change this.</para>
+            <para>The maximum number of concurrent replication requests to
+            make before blocking for replies to come back. This prevents us
+            overwhelming JGroups. This is rarely a good reason to change
+            this.</para>
             <para>The default value is <literal>50</literal></para>
          </section>
          <section id="conf.postoffice.attributes.controlchannelconfig">
@@ -759,7 +761,8 @@ LOAD_BINDINGS=SELECT QUEUE_NAME, COND, SELECTOR, CHANNEL_ID, CLUSTERED, ALL_NODE
             contains the JGroups stack configuration for the data
             channel.</para>
             <para>The data channel is used for sending sending/receiving
-            messages from other nodes in the cluster and for replicating session data.</para>
+            messages from other nodes in the cluster and for replicating
+            session data.</para>
             <para>The details of the JGroups configuration won't be discussed
             here since it is standard JGroups configuration. Detailed
             information on JGroups can be found in JGroups release
@@ -942,19 +945,24 @@ LOAD_BINDINGS=SELECT QUEUE_NAME, COND, SELECTOR, CHANNEL_ID, CLUSTERED, ALL_NODE
          </section>
          <section id="conf.persistencemanager.attributes.supportsblobonselect">
             <title>SupportsBlobOnSelect</title>
-            <para>Oracle (and possibly other databases) is known to not allow BLOBs to be inserted using
-            a INSERT INTO ... SELECT FROM statement, and requires a two stage conditional insert of messages.
-            If this value is false then such a two stage insert will be used.</para>
-            <para>By default the value of <literal>SupportsBlobOnSelect</literal>
-            attribute is set to <literal>true</literal></para>
+            <para>Oracle (and possibly other databases) is known to not allow
+            BLOBs to be inserted using a INSERT INTO ... SELECT FROM
+            statement, and requires a two stage conditional insert of
+            messages. If this value is false then such a two stage insert will
+            be used.</para>
+            <para>By default the value of
+            <literal>SupportsBlobOnSelect</literal> attribute is set to
+            <literal>true</literal></para>
          </section>
          <section id="conf.persistencemanager.attributes.reaperperiod">
             <title>ReaperPeriod</title>
-            <para>This value determines how often the database message reaper removes unreferenced (deleted)
-            messages in milliseconds. If it's value is 0 (zero) then a reaper is not used and messages are deleted
-            synchronously on acknowledgement.</para>
+            <para>This value determines how often the database message reaper
+            removes unreferenced (deleted) messages in milliseconds. If it's
+            value is 0 (zero) then a reaper is not used and messages are
+            deleted synchronously on acknowledgement.</para>
             <para>By default the value of <literal>ReaperPeriod</literal>
-            attribute is set to <literal>0</literal> which means synchronous removal of messages is used.</para>
+            attribute is set to <literal>0</literal> which means synchronous
+            removal of messages is used.</para>
          </section>
          <section id="conf.persistencemanager.attributes.sqlproperties">
             <title>SQLProperties</title>
@@ -1831,13 +1839,13 @@ LOAD_BINDINGS=SELECT QUEUE_NAME, COND, SELECTOR, CHANNEL_ID, CLUSTERED, ALL_NODE
          </section>
          <section id="conf.connectionfactory.attributes.disableremotingchecks">
             <title>DisableRemotingChecks</title>
-            <para>By default, when deploying a connection factory, JBoss Messaging checks that the
-            corresponding JBoss Remoting Connector has "sensible" values. JBoss Messaging
-            is very sensitive to the values and for many of them there's rarely a good reason to
-            change them. To disable such sanity checking set this to false.
-            <warning>There is rarely a good reason to disable checking. Only do so if you are absolutely
-            sure in what you are doing</warning>
-            </para>
+            <para>By default, when deploying a connection factory, JBoss
+            Messaging checks that the corresponding JBoss Remoting Connector
+            has "sensible" values. JBoss Messaging is very sensitive to the
+            values and for many of them there's rarely a good reason to change
+            them. To disable such sanity checking set this to false. <warning>
+                   There is rarely a good reason to disable checking. Only do so if you are absolutely sure in what you are doing 
+               </warning></para>
             <para>The default value is <literal>false</literal></para>
          </section>
          <section id="conf.connectionfactory.attributes.loadbalancingfactory">
@@ -1897,12 +1905,78 @@ LOAD_BINDINGS=SELECT QUEUE_NAME, COND, SELECTOR, CHANNEL_ID, CLUSTERED, ALL_NODE
       Messaging</para>
       <para>You can look at remoting configuration under:</para>
       <para>&lt;JBoss&gt;/server/&lt;YourMessagingServer&gt;/deploy/jboss-messaging.sar/remoting-bisocket-service.xml</para>
+      <para>Here is an example bisocket remoting configuration:
+      <programlisting>
+         &lt;config&gt;
+            &lt;invoker transport="bisocket"&gt;
+            
+               &lt;!-- There should be no reason to change these parameters - warning!
+                    Changing them may stop JBoss Messaging working correctly --&gt;            
+               &lt;attribute name="marshaller" isParam="true"&gt;org.jboss.jms.wireformat.JMSWireFormat&lt;/attribute&gt;
+               &lt;attribute name="unmarshaller" isParam="true"&gt;org.jboss.jms.wireformat.JMSWireFormat&lt;/attribute&gt;
+               &lt;attribute name="dataType" isParam="true"&gt;jms&lt;/attribute&gt;
+               &lt;attribute name="socket.check_connection" isParam="true"&gt;false&lt;/attribute&gt;
+               &lt;attribute name="timeout" isParam="true"&gt;0&lt;/attribute&gt;
+               &lt;attribute name="serverBindAddress"&gt;${jboss.bind.address}&lt;/attribute&gt;
+               &lt;attribute name="serverBindPort"&gt;4457&lt;/attribute&gt;
+               &lt;attribute name="clientSocketClass" isParam="true"&gt;org.jboss.jms.client.remoting.ClientSocketWrapper&lt;/attribute&gt;
+               &lt;attribute name="serverSocketClass" isParam="true"&gt;org.jboss.jms.server.remoting.ServerSocketWrapper&lt;/attribute&gt;
+               &lt;attribute name="numberOfCallRetries" isParam="true"&gt;1&lt;/attribute&gt;
+               &lt;attribute name="pingFrequency" isParam="true"&gt;214748364&lt;/attribute&gt;
+               &lt;attribute name="pingWindowFactor" isParam="true"&gt;10&lt;/attribute&gt;
+               &lt;attribute name="onewayThreadPool"&gt;org.jboss.jms.server.remoting.DirectThreadPool&lt;/attribute&gt;
+               
+               &lt;!-- Periodicity of client pings. Server window by default is twice this figure --&gt;                               
+               &lt;attribute name="clientLeasePeriod" isParam="true"&gt;10000&lt;/attribute&gt;
+
+               &lt;!-- Number of seconds to wait for a connection in the client pool to become free --&gt;
+               &lt;attribute name="numberOfRetries" isParam="true"&gt;10&lt;/attribute&gt;
+
+               &lt;!-- Max Number of connections in client pool. This should be significantly higher than
+                    the max number of sessions/consumers you expect --&gt;
+               &lt;attribute name="clientMaxPoolSize" isParam="true"&gt;200&lt;/attribute&gt;
+               
+               &lt;!-- Use these parameters to specify values for binding and connecting control connections to 
+                    work with your firewall/NAT configuration
+               &lt;attribute name="secondaryBindPort"&gt;xyz&lt;/attribute&gt;                           
+               &lt;attribute name="secondaryConnectPort"&gt;abc&lt;/attribute&gt;               
+               --&gt;
+                              
+            &lt;/invoker&gt;
+            &lt;handlers&gt;
+               &lt;handler subsystem="JMS"&gt;org.jboss.jms.server.remoting.JMSServerInvocationHandler&lt;/handler&gt;
+            &lt;/handlers&gt;
+         &lt;/config&gt;
+      </programlisting></para>
+      <para>Please note that some of the attributes should not be changed
+      unless you know exactly what you are doing. We will discuss the
+      attributes that you may have a good reason to change:</para>
+      <para><itemizedlist>
+            <listitem>
+                clientLeasePeriod - Clients periodically send heartbeats to the server to tell the server they are still alive. If the server does not receive a heartbeat after a certain time it will close down the connection and remove all resources on the server corresponding to the client's session. The clientLeasePeriod determines the period of heartbeats. The server will (by default) close a client if it does not receive a heartbeat in 2 * clientLeasePeriod ms. The actual factor gets automatically resized according to system load. The value is in milliseconds. The defaut value is 10000 ms.
+            </listitem>
+            <listitem>
+                numberOfRetries  - This effectively corresponds to the number of seconds JBoss Remoting will block on the client connection pool waiting for a connection to become free. If you have a very large number of sessions concurrently accessing the server from a client and you are experiencing issues due to not being able to obtain connections from the pool, you may want to consider increasing this value.
+            </listitem>
+            <listitem>
+                clientMaxPoolSize - JBoss Remoting maintains a client side pool of TCP connections on which to service requests.  If you have a very large number of sessions concurrently accessing the server from a client and you are experiencing issues due to not being able to obtain connections from the pool in a timely manner, you may want to consider increasing this value.
+            </listitem>
+            <listitem>
+                secondaryBindPort - The bisocket transport uses control connections to pass control messages between server and client. If you want to work behind a firewall you may want to specify a particular value for this according to your firewall configuration. This is the address the secondary ServerSocket binds to
+            </listitem>
+            <listitem>
+                secondaryConnectPort - This is the port the client uses to connect. You may want to specify this to allow clients to work with NAT routers.
+            </listitem>
+            <listitem>
+                maxPoolSize - This is the number of threads used on the server side to service requests.
+            </listitem>
+         </itemizedlist></para>
       <para>By default JBoss Messaging binds to ${jboss.bind.address} which
       can be defined by: ./run.sh -c &lt;yourconfig&gt; -b yourIP.</para>
       <para>You can change remoting-bisocket-service.xml if you want for
       example use a different communication port.</para>
       <warning>
-          Please be wary of changing other settings as they can have an adverse effect on the system 
+          There is rarely a good reason to change values in the the bisocket or sslbisocket connector configuration apart from clientLeasePeriod, clientMaxPoolSize, maxRetries, numberOfRetries, secondaryBindPort or secondaryConnectPort. Changing them can cause JBoss Messaging to stop functioning correctly. 
       </warning>
    </section>
    <!-- end conf.connector -->

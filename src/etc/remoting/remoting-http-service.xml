@@ -17,14 +17,17 @@
                <!-- There should be no reason to change these parameters - warning!
                     Changing them may stop JBoss Messaging working correctly -->
                <attribute name="marshaller" isParam="true">org.jboss.jms.wireformat.JMSWireFormat</attribute>
-               <attribute name="unmarshaller" isParam="true">org.jboss.jms.wireformat.JMSWireFormat</attribute>
+               <attribute name="unmarshaller" isParam="true">org.jboss.jms.wireformat.JMSWireFormat</attribute>               
                <attribute name="dataType" isParam="true">jms</attribute>
                <attribute name="serverBindAddress">${jboss.bind.address}</attribute>
-               <attribute name="serverBindPort">4458</attribute>
-               <attribute name="socket.check_connection" isParam="true">false</attribute>
-               <attribute name="callbackStore">org.jboss.remoting.callback.BlockingCallbackStore</attribute>
-               
+               <attribute name="serverBindPort">4458</attribute>               
+               <attribute name="callbackStore">org.jboss.remoting.callback.BlockingCallbackStore</attribute>    
+               <!-- End immutable parameters -->
+                                         
+               <!-- The period for polling for messages on the server -->
                <attribute name="callbackPollPeriod" isParam="true">102</attribute>
+               
+               <!-- The period of sending pings to the server -->
                <attribute name="clientLeasePeriod" isParam="true">10000</attribute>
             </invoker>
             <handlers>
