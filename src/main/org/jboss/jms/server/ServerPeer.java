@@ -1431,7 +1431,7 @@ public class ServerPeer extends ServiceMBeanSupport
       //    TODO - if I find a way not using UnifiedClassLoader3 directly, then get rid of
       //    <path refid="jboss.jmx.classpath"/> from jms/build.xml dependentmodule.classpath
       //    
-      
+   	
       String destType = isQueue ? "Queue" : "Topic";
       String className = "org.jboss.jms.server.destination." + destType + "Service";
       
@@ -1458,6 +1458,9 @@ public class ServerPeer extends ServiceMBeanSupport
                                             String jndiName, boolean params, int fullSize,
                                             int pageSize, int downCacheSize) throws Exception
    {
+   	log.trace("Deploying destination" + destinationMBeanConfig + " jndiName: " + jndiName +
+			       "fullSize: " + fullSize + " pageSize: " + pageSize + " downCacheSize: " + downCacheSize);
+     	
       MBeanServer mbeanServer = getServer();
 
       Element element = Util.stringToElement(destinationMBeanConfig);

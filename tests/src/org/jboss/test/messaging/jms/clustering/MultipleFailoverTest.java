@@ -350,8 +350,12 @@ public class MultipleFailoverTest extends ClusteringTestBase
             
             log.info("starting server 1");
             ServerManagement.start(1, "all", false);
+            log.info("server 1 started");
+            log.info("*** TRYING TO DEPLOY QUEUE");
             ServerManagement.deployQueue("testDistributedQueue", 1);
+            log.info("DEPLOYED QUEUE");
             ServerManagement.deployTopic("testDistributedTopic", 1);
+            log.info("Deployed destinations");
             
             Thread.sleep(5000);
             
@@ -362,8 +366,10 @@ public class MultipleFailoverTest extends ClusteringTestBase
             
             log.info("Starting server 2");
             ServerManagement.start(2, "all", false);
+            log.info("server 2 started");
             ServerManagement.deployQueue("testDistributedQueue", 2);
             ServerManagement.deployTopic("testDistributedTopic", 2);
+            log.info("Deployed destinations");            
             
             Thread.sleep(5000);
             
@@ -374,8 +380,11 @@ public class MultipleFailoverTest extends ClusteringTestBase
             
             log.info("Starting server 1");
             ServerManagement.start(1, "all", false);
+            log.info("server 1 started");
             ServerManagement.deployQueue("testDistributedQueue", 1);
             ServerManagement.deployTopic("testDistributedTopic", 1);
+            log.info("Deployed destinations");            
+            
             
             Thread.sleep(5000);
             
