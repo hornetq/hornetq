@@ -1953,22 +1953,22 @@ LOAD_BINDINGS=SELECT QUEUE_NAME, COND, SELECTOR, CHANNEL_ID, CLUSTERED, ALL_NODE
       attributes that you may have a good reason to change:</para>
       <para><itemizedlist>
             <listitem>
-                clientLeasePeriod - Clients periodically send heartbeats to the server to tell the server they are still alive. If the server does not receive a heartbeat after a certain time it will close down the connection and remove all resources on the server corresponding to the client's session. The clientLeasePeriod determines the period of heartbeats. The server will (by default) close a client if it does not receive a heartbeat in 2 * clientLeasePeriod ms. The actual factor gets automatically resized according to system load. The value is in milliseconds. The defaut value is 10000 ms.
+                clientLeasePeriod - Clients periodically send heartbeats to the server to tell the server they are still alive. If the server does not receive a heartbeat after a certain time it will close down the connection and remove all resources on the server corresponding to the client's session. The clientLeasePeriod determines the period of heartbeats. The server will (by default) close a client if it does not receive a heartbeat in 2 * clientLeasePeriod ms. The actual factor gets automatically resized according to system load. The value is in milliseconds. The defaut value is 10000 ms. 
             </listitem>
             <listitem>
-                numberOfRetries  - This effectively corresponds to the number of seconds JBoss Remoting will block on the client connection pool waiting for a connection to become free. If you have a very large number of sessions concurrently accessing the server from a client and you are experiencing issues due to not being able to obtain connections from the pool, you may want to consider increasing this value.
+                numberOfRetries - This effectively corresponds to the number of seconds JBoss Remoting will block on the client connection pool waiting for a connection to become free. If you have a very large number of sessions concurrently accessing the server from a client and you are experiencing issues due to not being able to obtain connections from the pool, you may want to consider increasing this value. 
             </listitem>
             <listitem>
-                clientMaxPoolSize - JBoss Remoting maintains a client side pool of TCP connections on which to service requests.  If you have a very large number of sessions concurrently accessing the server from a client and you are experiencing issues due to not being able to obtain connections from the pool in a timely manner, you may want to consider increasing this value.
+                clientMaxPoolSize - JBoss Remoting maintains a client side pool of TCP connections on which to service requests. If you have a very large number of sessions concurrently accessing the server from a client and you are experiencing issues due to not being able to obtain connections from the pool in a timely manner, you may want to consider increasing this value. 
             </listitem>
             <listitem>
-                secondaryBindPort - The bisocket transport uses control connections to pass control messages between server and client. If you want to work behind a firewall you may want to specify a particular value for this according to your firewall configuration. This is the address the secondary ServerSocket binds to
+                secondaryBindPort - The bisocket transport uses control connections to pass control messages between server and client. If you want to work behind a firewall you may want to specify a particular value for this according to your firewall configuration. This is the address the secondary ServerSocket binds to 
             </listitem>
             <listitem>
-                secondaryConnectPort - This is the port the client uses to connect. You may want to specify this to allow clients to work with NAT routers.
+                secondaryConnectPort - This is the port the client uses to connect. You may want to specify this to allow clients to work with NAT routers. 
             </listitem>
             <listitem>
-                maxPoolSize - This is the number of threads used on the server side to service requests.
+                maxPoolSize - This is the number of threads used on the server side to service requests. 
             </listitem>
          </itemizedlist></para>
       <para>By default JBoss Messaging binds to ${jboss.bind.address} which
@@ -1986,7 +1986,12 @@ LOAD_BINDINGS=SELECT QUEUE_NAME, COND, SELECTOR, CHANNEL_ID, CLUSTERED, ALL_NODE
       different servers with different port ranges, then you must make sure
       that the JBoss Messaging remoting configuration specified in the JBoss
       Messaging section of the ServiceBindingManager xml file exactly matches
-      that in remoting-bisocket-service.xml</para>
+      that in remoting-bisocket-service.xml.</para>
+      <para>If you are using a newer version of JBM in an older version of
+      JBAS then the example bindings in the AS distribution may well be out of
+      date. It is therefore imperative that the relevant sections are
+      overwritten with the remoting configuration from the JBM
+      distribution.</para>
       <para>See the chapter on installation for a description of how to set-up
       the service binding manager for JBoss Messaging</para>
    </section>
