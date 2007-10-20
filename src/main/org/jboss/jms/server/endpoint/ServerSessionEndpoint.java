@@ -1033,9 +1033,12 @@ public class ServerSessionEndpoint implements SessionEndpoint
 	   			{
 	   				if (!delivered)
 	   				{
-   	   				//We have to wait for another response to arrive first
-   	   				
-   	   				throw new IllegalStateException("Responses have come back our of order");
+   	   				// Resonpse has come back out of order - this can happen when the failover node is being changed
+	   					// E.g. failover node changes, replicates start getting sent to the new failover node,
+	   					// then the new node requests to collect the deliveries from this node, at which point we deliver
+	   					// all waiting deliveries. Then the responses to the original ones come back.
+	   					// So we can ignore them
+	   					break;
 	   				}
 	   				else
 	   				{

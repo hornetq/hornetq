@@ -466,13 +466,7 @@ public class MessagingQueue extends PagingChannelSupport implements Queue
    	if (trace) { log.trace("Adding all from recovery area for node " + nodeID +" set " + ids); }
    	
    	Integer nid = new Integer(nodeID);
-   	
-   	//Sanity check
-   	if (recoveryArea.get(nid) != null)
-   	{
-   		throw new IllegalStateException("There are already message ids for node " + nodeID);
-   	}
-   	   	
+   	   	   
    	if (!(ids instanceof ConcurrentHashMap))
    	{
    		ids = new ConcurrentHashMap(ids);

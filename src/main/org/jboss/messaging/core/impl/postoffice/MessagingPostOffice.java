@@ -75,9 +75,9 @@ import org.jboss.messaging.core.impl.MessagingQueue;
 import org.jboss.messaging.core.impl.tx.Transaction;
 import org.jboss.messaging.core.impl.tx.TransactionRepository;
 import org.jboss.messaging.core.impl.tx.TxCallback;
+import org.jboss.messaging.util.ClearableSemaphore;
 import org.jboss.messaging.util.ConcurrentHashSet;
 import org.jboss.messaging.util.StreamUtils;
-import org.jboss.messaging.util.Throttle;
 import org.jgroups.Address;
 import org.jgroups.View;
 
@@ -224,11 +224,9 @@ public class MessagingPostOffice extends JDBCSupport
    
    //We keep use a semaphore to limit the number of concurrent replication requests to avoid
    //overwhelming JGroups
-   //private Semaphore replicateSemaphore;
+   private ClearableSemaphore replicateSemaphore;
       
-   //private int maxConcurrentReplications;
-   
-   private Throttle throttle = new Throttle(5000, 5);
+   private int maxConcurrentReplications;
    
    // Constructors ---------------------------------------------------------------------------------
 
@@ -311,9 +309,7 @@ public class MessagingPostOffice extends JDBCSupport
       
       nbSupport = new NotificationBroadcasterSupport();
       
-    //  this.maxConcurrentReplications = maxConcurrentReplications;
-      
-      //replicateSemaphore = new Semaphore(maxConcurrentReplications, true);
+      replicateSemaphore = new ClearableSemaphore(maxConcurrentReplications);
    }
       
    // MessagingComponent overrides -----------------------------------------------------------------
@@ -459,9 +455,7 @@ public class MessagingPostOffice extends JDBCSupport
    	
    	return added;
    }
-   
-   
-          
+                
    public Binding removeBinding(String queueName, boolean allNodes) throws Throwable
    {
    	Binding binding = internalRemoveBinding(queueName, allNodes, true);
@@ -628,7 +622,8 @@ public class MessagingPostOffice extends JDBCSupport
    	
    	if (reply)
    	{
-   		//replicateSemaphore.acquire();
+   		//replicateSemaphore.tryAcquire(250, TimeUnit.MILLISECONDS);
+   		replicateSemaphore.acquire();
    	}
    	
    	try
@@ -656,8 +651,6 @@ public class MessagingPostOffice extends JDBCSupport
 		   	
 		   if (address != null)
 		   {	   
-		   	throttle.ping();
-		   	
 		   	groupMember.unicastData(request, address);
 		   }
    	}
@@ -665,7 +658,7 @@ public class MessagingPostOffice extends JDBCSupport
    	{
    		if (reply)
    		{
-   		//	replicateSemaphore.release();
+   			replicateSemaphore.release();
    		}
    		
    		throw e;
@@ -683,8 +676,6 @@ public class MessagingPostOffice extends JDBCSupport
 	   	
 	   if (address != null)
 	   {	   
-	   	throttle.ping();
-	   	
 	   	groupMember.unicastData(request, address);
 	   }
 	}
@@ -1290,7 +1281,8 @@ public class MessagingPostOffice extends JDBCSupport
    	
    	if (binding == null)
    	{
-   		throw new IllegalStateException("Cannot find queue with name " + queueName +" has it been deployed?");
+   		//This is ok - maybe new failover node but queue is not yet deployed
+   		return;
    	}
    	
    	Queue queue = binding.queue;
@@ -1306,7 +1298,7 @@ public class MessagingPostOffice extends JDBCSupport
    	//TODO - this does not belong here
    	ServerSessionEndpoint session = serverPeer.getSession(sessionID);
    	
-   //	replicateSemaphore.release();
+   	replicateSemaphore.release();
    	
    	if (session == null)
    	{
@@ -2788,6 +2780,8 @@ public class MessagingPostOffice extends JDBCSupport
    	//The failover node has changed - we need to move our replicated deliveries
    	
    	if (trace) { log.trace("Failover node has changed from " + oldFailoverNodeID + " to " + failoverNodeID); }
+   	
+   	replicateSemaphore.disable();
    	   	
    	if (!firstNode)
    	{	   	
@@ -2836,9 +2830,7 @@ public class MessagingPostOffice extends JDBCSupport
 						
 						session.deliverAnyWaitingDeliveries(null);
 						
-						session.collectDeliveries(deliveries, firstNode, null);
-						
-					//	releaseAndReplaceSemaphore();						
+						session.collectDeliveries(deliveries, firstNode, null);												
 					}   				  
 					
 					if (!firstNode)
@@ -2856,26 +2848,12 @@ public class MessagingPostOffice extends JDBCSupport
 			   		
 			   		if (trace) { log.trace("Sent AddAllReplicatedDeliveriesMessage"); }
 					}
+					
+					replicateSemaphore.enable();
 	   		}
 	   	}  	
-   	}
-   	
-   	//Now we replace the semaphore since some of the acks may not come back from the old failover node
-  // 	releaseAndReplaceSemaphore();
+   	}   	
    }
-   
-//   private void releaseAndReplaceSemaphore()
-//   {
-//   	if (replicateSemaphore != null)
-//   	{
-//   		Semaphore oldSem = replicateSemaphore;
-//
-//   		replicateSemaphore = new Semaphore(maxConcurrentReplications);
-//   		
-//   		oldSem.release(maxConcurrentReplications);   		
-//   	}
-//   }
-//   
 
    /**
     * This method fails over all the queues from node <failedNodeId> onto this node. It is triggered
@@ -3066,9 +3044,9 @@ public class MessagingPostOffice extends JDBCSupport
       				if (session.collectDeliveries(dels, firstNode, queueName))
       				{
       					gotSome = true;
-      				}
-      				
-      			//	releaseAndReplaceSemaphore();
+      				}      				
+      				//Release them all
+						replicateSemaphore.enable();
       			}   				  
       			
       			if (gotSome)
