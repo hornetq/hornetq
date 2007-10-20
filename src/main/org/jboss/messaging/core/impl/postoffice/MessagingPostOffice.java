@@ -37,7 +37,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.Vector;
-import java.util.concurrent.Semaphore;
 
 import javax.management.ListenerNotFoundException;
 import javax.management.MBeanNotificationInfo;

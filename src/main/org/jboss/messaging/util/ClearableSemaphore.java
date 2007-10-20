@@ -18,7 +18,7 @@ public class ClearableSemaphore
 	
 	private Semaphore semaphore;
 	
-	private boolean enabled;
+	private volatile boolean enabled;
 	
 	private int permits;
 	
@@ -36,19 +36,23 @@ public class ClearableSemaphore
 		createSemaphore();
 	}
 	
-	public synchronized void acquire() throws InterruptedException
+	public void acquire() throws InterruptedException
 	{
-		if (enabled)
+		Semaphore sem = semaphore;
+		
+		if (enabled && sem != null)
 		{
-			semaphore.acquire();
+			sem.acquire();
 		}
 	}
 	
-	public synchronized void release()
+	public void release()
 	{
-		if (enabled)
+		Semaphore sem = semaphore;
+		
+		if (enabled && sem != null)
 		{
-			semaphore.release();
+			sem.release();
 		}
 	}
 	
@@ -57,6 +61,8 @@ public class ClearableSemaphore
 		if (!enabled)
 		{
 			createSemaphore();
+			
+			enabled = true;
 		}
 	}
 	
