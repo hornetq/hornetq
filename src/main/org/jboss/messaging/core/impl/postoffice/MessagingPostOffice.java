@@ -1215,18 +1215,20 @@ public class MessagingPostOffice extends JDBCSupport
    	{
    		//This is ok - the queue might not have been deployed yet - when the queue is deployed it
    		//will request for deliveries to be sent to it in a batch
-   		return;
+   		//We still send back a response though to prevent the sender blocking waiting for a reply
    	}
-   	
-   	Queue queue = binding.queue;
-   	
-   	queue.addToRecoveryArea(nodeID, messageID, sessionID);   	
+   	else
+   	{   	
+	   	Queue queue = binding.queue;
+	   	
+	   	queue.addToRecoveryArea(nodeID, messageID, sessionID);   	
+   	}
    	
    	if (trace) { log.trace(this + " reply address is " + replyAddress); }
    	
    	if (replyAddress != null)
    	{   	
-	   	//Now we send back a response saying we have added it ok
+	   	//Now we send back a response
    		
    		if (trace) { log.trace("Sending back response"); }
 	   	
@@ -2778,7 +2780,7 @@ public class MessagingPostOffice extends JDBCSupport
    	
    	if (trace) { log.trace("Failover node has changed from " + oldFailoverNodeID + " to " + failoverNodeID); }   	  	
    	
-   	replicateSemaphore.disable();	 
+   	replicateSemaphore.reset();
    	
    	if (!firstNode)
    	{	   	
@@ -2845,8 +2847,6 @@ public class MessagingPostOffice extends JDBCSupport
 			   		
 			   		if (trace) { log.trace("Sent AddAllReplicatedDeliveriesMessage"); }
 					}
-					
-					replicateSemaphore.enable();
 	   		}
 	   	}  	
    	}   	
@@ -3045,8 +3045,6 @@ public class MessagingPostOffice extends JDBCSupport
       				{
       					gotSome = true;
       				}      				
-      				//Release them all
-						replicateSemaphore.enable();
       			}   				  
       			
       			if (gotSome)

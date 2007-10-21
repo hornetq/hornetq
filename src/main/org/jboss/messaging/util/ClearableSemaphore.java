@@ -52,24 +52,15 @@ public class ClearableSemaphore
 		}
 	}
 	
-	public synchronized void enable()
-	{
-		if (semaphore == null)
-		{
-			createSemaphore();
-		}
-	}
-	
-	// We need to be able to disable the semaphore since during failover requests may be sent but responses
-	// may not come back (node is dead or hasn't loaded it's queues yet)
-	// In which case we don't want to acquire a token since we might end up locking and using up all permits	
-	public synchronized void disable()
+	public synchronized void reset()
 	{
 		if (semaphore != null)
 		{
-			semaphore.release(permits);
+			Semaphore oldSem = semaphore;
 			
-			semaphore = null;
+			createSemaphore();
+			
+			oldSem.release(permits);
 		}
 	}
 }
