@@ -12,6 +12,7 @@ import org.jboss.aop.joinpoint.MethodInvocation;
 import org.jboss.jms.client.FailoverCommandCenter;
 import org.jboss.jms.client.FailoverValve2;
 import org.jboss.jms.client.FailureDetector;
+import org.jboss.jms.client.delegate.ClientConnectionDelegate;
 import org.jboss.jms.client.delegate.ClientSessionDelegate;
 import org.jboss.jms.client.delegate.DelegateSupport;
 import org.jboss.jms.client.remoting.JMSRemotingConnection;
@@ -119,8 +120,8 @@ public class FailoverValveInterceptor implements Interceptor, FailureDetector
          // Set retry flag as true on send() and sendTransaction()
          // more details at http://jira.jboss.org/jira/browse/JBMESSAGING-809
 
-         if (invocation.getTargetObject() instanceof ClientSessionDelegate &&
-            (methodName.equals("send") || methodName.equals("sendTransaction")))
+         if ((invocation.getTargetObject() instanceof ClientSessionDelegate && methodName.equals("send")) ||
+         	(invocation.getTargetObject() instanceof ClientConnectionDelegate && methodName.equals("sendTransaction")))
          {
             log.trace(this + " caught " + methodName + "() invocation, enabling check for duplicates");
 

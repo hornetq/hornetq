@@ -461,7 +461,12 @@ public class ClientConsumer
  
                   sessionDelegate.preDeliver(info);                  
                   
-                  sessionDelegate.postDeliver();                                    
+                  //If post deliver didn't succeed and acknowledgement mode is auto_ack
+                  //That means the ref wasn't acked since it couldn't be found.
+                  //In order to maintain at most once semantics we must therefore not return
+                  //the message
+                  
+                  ignore = !sessionDelegate.postDeliver();                                       
                }
                                              
                if (!ignore)

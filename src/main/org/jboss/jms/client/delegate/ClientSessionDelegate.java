@@ -161,11 +161,11 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
 
    // SessionDelegate implementation ---------------------------------------------------------------
 
-   public void acknowledgeDelivery(Ack ack) throws JMSException
+   public boolean acknowledgeDelivery(Ack ack) throws JMSException
    {
       RequestSupport req = new SessionAcknowledgeDeliveryRequest(id, version, ack);
 
-      doInvoke(client, req);
+      return ((Boolean)doInvoke(client, req)).booleanValue();
    }
 
    public void acknowledgeDeliveries(List acks) throws JMSException
@@ -347,7 +347,7 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
     * This invocation should either be handled by the client-side interceptor chain or by the
     * server-side endpoint.
     */
-   public void postDeliver() throws JMSException
+   public boolean postDeliver() throws JMSException
    {
       throw new IllegalStateException("This invocation should not be handled here!");
    }

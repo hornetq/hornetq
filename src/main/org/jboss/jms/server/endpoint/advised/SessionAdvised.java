@@ -115,9 +115,9 @@ public class SessionAdvised extends AdvisedSupport implements SessionInternalEnd
       endpoint.acknowledgeDeliveries(acks);
    }
    
-   public void acknowledgeDelivery(Ack ack) throws JMSException
+   public boolean acknowledgeDelivery(Ack ack) throws JMSException
    {
-      endpoint.acknowledgeDelivery(ack);
+      return endpoint.acknowledgeDelivery(ack);
    }
 
    public void addTemporaryDestination(JBossDestination destination) throws JMSException

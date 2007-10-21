@@ -188,7 +188,6 @@ public class JDBCPersistenceManagerService extends JDBCServiceSupport
    
    public void setSupportsBlobOnSelect(boolean b)
    {
-   	log.info("Calling set blob on select " + b);
    	this.supportsBlobOnSelect = b;
    }
       

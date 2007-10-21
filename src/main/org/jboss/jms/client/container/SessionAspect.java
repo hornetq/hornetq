@@ -305,6 +305,8 @@ public class SessionAspect
       int ackMode = state.getAcknowledgeMode();
       
       SessionDelegate sd = (SessionDelegate)mi.getTargetObject();
+      
+      boolean res = true;
 
       // if XA and there is no transaction enlisted on XA we will act as AutoAcknowledge
       // However if it's a MDB (if there is a DistinguishedListener) we should behaved as transacted
@@ -333,7 +335,7 @@ public class SessionAspect
             
             try
             {
-               ackDelivery(sd, delivery);
+               res = ackDelivery(sd, delivery);
             }
             finally
             {
@@ -375,11 +377,10 @@ public class SessionAspect
 
             state.setRecoverCalled(false);
          }
-         state.setAutoAckInfo(null);
-                  
+         state.setAutoAckInfo(null);                  
       }
 
-      return null;
+      return Boolean.valueOf(res);
    }
    
    /**
@@ -829,7 +830,7 @@ public class SessionAspect
       return (SessionState)((DelegateSupport)inv.getTargetObject()).getState();
    }
    
-   private void ackDelivery(SessionDelegate sess, DeliveryInfo delivery) throws Exception
+   private boolean ackDelivery(SessionDelegate sess, DeliveryInfo delivery) throws Exception
    {
    	if (delivery.isShouldAck())
    	{
@@ -840,7 +841,11 @@ public class SessionAspect
 	      
 	      SessionDelegate sessionToUse = connectionConsumerSession != null ? connectionConsumerSession : sess;
 	      
-	      sessionToUse.acknowledgeDelivery(delivery);
+	      return sessionToUse.acknowledgeDelivery(delivery);
+   	}
+   	else
+   	{
+   		return false;
    	}
    }
    

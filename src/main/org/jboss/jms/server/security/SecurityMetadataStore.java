@@ -310,7 +310,7 @@ public class SecurityMetadataStore implements SecurityStore
    	{
    		log.warn("WARNING! POTENTIAL SECURITY RISK. It has been detected that the MessageSucker component " +
    				   "which sucks messages from one node to another has not had its password changed from the installation default. " +
-   				   "Please see the JBoss Messaging userguide for instructions on how to do this.");
+   				   "Please see the JBoss Messaging user guide for instructions on how to do this.");
    	}
    }
 

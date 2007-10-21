@@ -73,7 +73,7 @@ public interface SessionEndpoint extends Closeable
     * Acknowledge a delivery
     * @throws JMSException
     */
-   void acknowledgeDelivery(Ack ack) throws JMSException;
+   boolean acknowledgeDelivery(Ack ack) throws JMSException;
    
    /**
     * Cancel a list of deliveries.

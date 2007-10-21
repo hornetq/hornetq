@@ -651,6 +651,16 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
    {
       if (trace) { log.trace(this + " sending message " + msg + (tx == null ? " non-transactionally" : " in " + tx)); }
 
+      if (checkForDuplicates && msg.isReliable())
+      {
+         // Message is already stored... so just ignoring the call
+         if (serverPeer.getPersistenceManagerInstance().referenceExists(msg.getMessageID()))
+         {
+         	if (trace) { log.trace("Duplicate of " + msg + " exists in database - probably sent before failover"); }
+            return;
+         }
+      }
+      
       JBossDestination dest = (JBossDestination)msg.getJMSDestination();
       
       // This allows the no-local consumers to filter out the messages that come from the same
@@ -659,14 +669,6 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
       // TODO Do we want to set this for ALL messages. Optimisation is possible here.
       msg.setConnectionID(id);
 
-      if (checkForDuplicates)
-      {
-         // Message is already stored... so just ignoring the call
-         if (serverPeer.getPersistenceManagerInstance().referenceExists(msg.getMessageID()))
-         {
-            return;
-         }
-      }
 
       // We must reference the message *before* we send it the destination to be handled. This is
       // so we can guarantee that the message doesn't disappear from the store before the
@@ -763,10 +765,6 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
    {
       if (trace) { log.trace(this + " processing transaction " + tx); }
 
-      // used on checkForDuplicates...
-      // we only check the first iteration
-      boolean firstIteration = true;
-        
       for (Iterator i = txState.getSessionStates().iterator(); i.hasNext(); )
       {
          SessionTxState sessionState = (SessionTxState)i.next();
@@ -776,19 +774,8 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
          for (Iterator j = sessionState.getMsgs().iterator(); j.hasNext(); )
          {
             JBossMessage message = (JBossMessage)j.next();
-            if (checkForDuplicates && firstIteration)
-            {
-               firstIteration = false;
-               if (serverPeer.getPersistenceManagerInstance().
-                  referenceExists(message.getMessageID()))
-               {
-                  // This means the transaction was previously completed...
-                  // we are done here then... no need to even check for ACKs or anything else
-                  log.trace("Transaction " + tx + " was previously completed, ignoring call");
-                  return;
-               }
-            }
-            sendMessage(message, tx, false);
+
+            sendMessage(message, tx, checkForDuplicates);
          }
 
          // send the acks

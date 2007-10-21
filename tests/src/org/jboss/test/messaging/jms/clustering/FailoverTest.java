@@ -1135,7 +1135,7 @@ public class FailoverTest extends ClusteringTestBase
             conn.close();
          }
       }
-   }
+ }
 
    public void testFailoverMessageOnServer() throws Exception
    {
@@ -1173,7 +1173,7 @@ public class FailoverTest extends ClusteringTestBase
             }
             if (event == null)
             {
-               fail("Did not get expected FAILOVER_COMPLETED event");
+               fail("Did not get expected FAILOVER_STARTED event");
             }
          }
 
@@ -1181,8 +1181,12 @@ public class FailoverTest extends ClusteringTestBase
          // test the client-side failover valve
 
          TextMessage tm = (TextMessage)cons.receive(60000);
+    
          assertNotNull(tm);
          assertEquals("blip", tm.getText());
+         
+         tm = (TextMessage)cons.receive(1000);
+         assertNull(tm);
       }
       finally
       {
@@ -1400,63 +1404,63 @@ public class FailoverTest extends ClusteringTestBase
       failureOnInvocation(PoisonInterceptor.FAIL_AFTER_SEND);
    }
 
-   // This test is commented out until http://jira.jboss.com/jira/browse/JBMESSAGING-604 is complete
-//   public void testFailureRightAfterSendTransaction() throws Exception
-//   {
-//      Connection conn = null;
-// 
-//      try
-//      {
-//         conn = this.createConnectionOnServer(cf, 1);
-//
-//         assertEquals(1, getServerId(conn));
-//
-//         // we "cripple" the remoting connection by removing ConnectionListener. This way, failures
-//         // cannot be "cleanly" detected by the client-side pinger, and we'll fail on an invocation
-//         JMSRemotingConnection rc = ((ClientConnectionDelegate)((JBossConnection)conn).
-//            getDelegate()).getRemotingConnection();
-//         rc.removeConnectionListener();
-//
-//         // poison the server
-//         ServerManagement.poisonTheServer(1, PoisonInterceptor.FAIL_AFTER_SENDTRANSACTION);
-//
-//         Session session = conn.createSession(true, Session.SESSION_TRANSACTED);
-//
-//         conn.start();
-//
-//         MessageProducer producer = session.createProducer(queue[0]);
-//
-//         producer.setDeliveryMode(DeliveryMode.PERSISTENT);
-//
-//         MessageConsumer consumer = session.createConsumer(queue[0]);
-//
-//         producer.send(session.createTextMessage("before-poison1"));
-//         producer.send(session.createTextMessage("before-poison2"));
-//         producer.send(session.createTextMessage("before-poison3"));
-//         session.commit();
-//
-//         Thread.sleep(2000);
-//
-//         for (int i = 1; i <= 3; i++)
-//         {
-//            TextMessage tm = (TextMessage) consumer.receive(5000);
-//
-//            assertNotNull(tm);
-//
-//            assertEquals("before-poison" + i, tm.getText());
-//         }         
-//
-//         assertNull(consumer.receive(3000));
-//
-//      }
-//      finally
-//      {
-//         if (conn != null)
-//         {
-//            conn.close();
-//         }
-//      }
-//   }
+   public void testFailureRightAfterSendTransaction() throws Exception
+   {
+      Connection conn = null;
+ 
+      try
+      {
+         conn = this.createConnectionOnServer(cf, 1);
+
+         assertEquals(1, getServerId(conn));
+
+         // we "cripple" the remoting connection by removing ConnectionListener. This way, failures
+         // cannot be "cleanly" detected by the client-side pinger, and we'll fail on an invocation
+         JMSRemotingConnection rc = ((ClientConnectionDelegate)((JBossConnection)conn).
+            getDelegate()).getRemotingConnection();
+         rc.removeConnectionListener();
+
+         // poison the server
+         ServerManagement.poisonTheServer(1, PoisonInterceptor.FAIL_AFTER_SENDTRANSACTION);
+
+         Session session = conn.createSession(true, Session.SESSION_TRANSACTED);
+
+         conn.start();
+
+         MessageProducer producer = session.createProducer(queue[0]);
+
+         producer.setDeliveryMode(DeliveryMode.PERSISTENT);
+
+         MessageConsumer consumer = session.createConsumer(queue[0]);
+
+         producer.send(session.createTextMessage("before-poison1"));
+         producer.send(session.createTextMessage("before-poison2"));
+         producer.send(session.createTextMessage("before-poison3"));
+         session.commit();
+
+         Thread.sleep(2000);
+
+         for (int i = 1; i <= 3; i++)
+         {
+            TextMessage tm = (TextMessage) consumer.receive(5000);
+
+            assertNotNull(tm);
+
+            assertEquals("before-poison" + i, tm.getText());
+         }         
+
+         assertNull(consumer.receive(3000));
+         
+         session.commit();
+      }
+      finally
+      {
+         if (conn != null)
+         {
+            conn.close();
+         }
+      }
+   }
 
    public void testCloseConsumer() throws Exception
    {
@@ -1831,9 +1835,17 @@ public class FailoverTest extends ClusteringTestBase
 
          TextMessage tm = (TextMessage)consumer.receive(5000);
 
-         assertNotNull(tm);
+         if(typeOfFailure == PoisonInterceptor.FAIL_AFTER_ACKNOWLEDGE_DELIVERY)
+         {
+         	//With auto_ack we won't the message - remember auto ack is "at most once"
+         	assertNull(tm);
+         }
+         else
+         {        
+            assertNotNull(tm);
 
-         assertEquals("before-poison", tm.getText());
+            assertEquals("before-poison", tm.getText());
+         }
 
          checkEmpty(queue[1], 0);
       }

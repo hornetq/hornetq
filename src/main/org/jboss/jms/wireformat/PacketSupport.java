@@ -156,6 +156,7 @@ public abstract class PacketSupport implements Streamable
    public static final int RESP_SESSION_CREATEBROWSERDELEGATE = 100301;   
    public static final int RESP_SESSION_CREATEQUEUE = 100302;   
    public static final int RESP_SESSION_CREATETOPIC = 100303;
+   public static final int RESP_SESSION_ACKNOWLEDGEDELIVERY = 100304;
    
    // Browser
    // -----------------------
@@ -344,6 +345,10 @@ public abstract class PacketSupport implements Streamable
          case RESP_SESSION_CREATETOPIC:
             packet = new SessionCreateTopicResponse();
             break; 
+         case RESP_SESSION_ACKNOWLEDGEDELIVERY:
+         	packet = new SessionAcknowledgeDeliveryResponse();
+         	break;
+         	
             
          // Browser
          case RESP_BROWSER_NEXTMESSAGE:

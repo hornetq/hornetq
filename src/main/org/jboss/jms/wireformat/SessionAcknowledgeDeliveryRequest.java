@@ -75,9 +75,9 @@ public class SessionAcknowledgeDeliveryRequest extends RequestSupport
          throw new IllegalStateException("Cannot find object in dispatcher with id " + objectId);
       }
       
-      endpoint.acknowledgeDelivery(ack);
+      boolean res = endpoint.acknowledgeDelivery(ack);
       
-      return null;
+      return new SessionAcknowledgeDeliveryResponse(res);
    }
 
    public void write(DataOutputStream os) throws Exception

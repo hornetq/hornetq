@@ -66,7 +66,7 @@ public interface SessionDelegate extends SessionEndpoint
 
    void preDeliver(DeliveryInfo deliveryInfo) throws JMSException;
 
-   void postDeliver() throws JMSException;
+   boolean postDeliver() throws JMSException;
 
    MessageListener getMessageListener() throws JMSException;
 

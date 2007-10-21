@@ -93,7 +93,6 @@ import org.jboss.remoting.callback.ServerInvokerCallbackHandler;
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
 import EDU.oswego.cs.dl.util.concurrent.LinkedQueue;
 import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
-import EDU.oswego.cs.dl.util.concurrent.SynchronizedInt;
 import EDU.oswego.cs.dl.util.concurrent.SynchronizedLong;
 
 /**
@@ -399,7 +398,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
 	      		{
 	      			do
 	      			{
-	      				connectionEndpoint.sendMessage(message, null, false); 
+	      				connectionEndpoint.sendMessage(message, null, checkForDuplicates); 
 	      				
 	         			expectedSequence++;
 	         			
@@ -428,11 +427,11 @@ public class ServerSessionEndpoint implements SessionEndpoint
       }
    }
    
-   public void acknowledgeDelivery(Ack ack) throws JMSException
+   public boolean acknowledgeDelivery(Ack ack) throws JMSException
    {
       try
       {
-         acknowledgeDeliveryInternal(ack);   
+         return acknowledgeDeliveryInternal(ack);   
       }
       catch (Throwable t)
       {
@@ -1740,16 +1739,17 @@ public class ServerSessionEndpoint implements SessionEndpoint
       }
    }
    
-   private void acknowledgeDeliveryInternal(Ack ack) throws Throwable
+   private boolean acknowledgeDeliveryInternal(Ack ack) throws Throwable
    {
       if (trace) { log.trace(this + " acknowledging delivery " + ack); }
-      
+
       DeliveryRecord rec = (DeliveryRecord)deliveries.remove(new Long(ack.getDeliveryID()));
       
       if (rec == null)
       {
+      	//This can happen if an ack comes in after failover
          log.debug("Cannot find " + ack + " to acknowledge, it was probably acknowledged before");
-         return;
+         return false;
       }
       
       rec.del.acknowledge(null);  
@@ -1762,6 +1762,8 @@ public class ServerSessionEndpoint implements SessionEndpoint
       }
       
       if (trace) { log.trace(this + " acknowledged delivery " + ack); }
+      
+      return true;
    }
    
    /* TODO We can combine this with createConsumerDelegateInternal once we move the distinction between queues and topics
