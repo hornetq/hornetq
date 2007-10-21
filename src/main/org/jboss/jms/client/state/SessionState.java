@@ -285,12 +285,12 @@ public class SessionState extends HierarchicalStateSupport
          // to AUTO_ACKNOWLEDGE)
 
          log.trace(this + " is not transacted (or XA with no transaction set), " +
-            "retrieving deliveries from session state");
+                   "retrieving deliveries from session state");
 
          // We remove any unacked non-persistent messages - this is because we don't want to ack
          // them since the server won't know about them and will get confused
 
-         if (getAcknowledgeMode() == Session.CLIENT_ACKNOWLEDGE)
+         if (acknowledgeMode == Session.CLIENT_ACKNOWLEDGE)
          {
             for(Iterator i = getClientAckList().iterator(); i.hasNext(); )
             {
@@ -352,7 +352,12 @@ public class SessionState extends HierarchicalStateSupport
       //like remove from recovery Area refs corresponding to messages in client consumer buffers
       
       log.trace(this + " sending delivery recovery " + recoveryInfos + " on failover");
-      newDelegate.recoverDeliveries(recoveryInfos, oldSessionID);
+      
+      //Note we only recover sessions that are transacted or client ack
+      if (transacted || xa || acknowledgeMode == Session.CLIENT_ACKNOWLEDGE)
+      {
+      	newDelegate.recoverDeliveries(recoveryInfos, oldSessionID);
+      }
    }
    
    // Public ---------------------------------------------------------------------------------------

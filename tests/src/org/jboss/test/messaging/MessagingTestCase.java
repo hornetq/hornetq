@@ -148,7 +148,21 @@ public class MessagingTestCase extends ProxyAssertSupport
    	
       Integer messageCount = (Integer)ServerManagement.getServer(server).getAttribute(destObjectName, "MessageCount");
       
-      assertEquals(0, messageCount.intValue());
+      if (messageCount.intValue() != 0)
+      {
+      	//Now delete it - prevents other tests from failing
+      	try
+      	{
+      		this.removeAllMessages(queue.getQueueName(), true, server);
+      	}
+      	catch (Exception e)
+      	{
+      		log.debug("Failed to remove all messages", e);
+      	}
+      	
+      	fail("Queue " + queue.getQueueName()  + " is not empty");
+      }
+
    }
    
    protected void checkEmpty(Topic topic) throws Exception

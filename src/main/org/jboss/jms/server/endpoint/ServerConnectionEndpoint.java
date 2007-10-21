@@ -33,6 +33,7 @@ import java.util.Set;
 import javax.jms.Destination;
 import javax.jms.IllegalStateException;
 import javax.jms.JMSException;
+import javax.jms.Session;
 
 import org.jboss.aop.AspectManager;
 import org.jboss.jms.client.delegate.ClientSessionDelegate;
@@ -239,7 +240,10 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
            
          // create the corresponding server-side session endpoint and register it with this
          // connection endpoint instance
-         ServerSessionEndpoint ep = new ServerSessionEndpoint(sessionID, this);
+         
+         //Note we only replicate transacted and client acknowledge sessions.
+         ServerSessionEndpoint ep = new ServerSessionEndpoint(sessionID, this,
+         		                     transacted || acknowledgmentMode == Session.CLIENT_ACKNOWLEDGE);
          
          synchronized (sessions)
          {

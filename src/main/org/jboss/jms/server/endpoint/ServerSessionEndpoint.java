@@ -162,6 +162,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
    private Queue defaultDLQ;
    private Queue defaultExpiryQueue;
    private boolean supportsFailover;
+   private boolean replicating;
    
    private Object deliveryLock = new Object();
       
@@ -181,11 +182,14 @@ public class ServerSessionEndpoint implements SessionEndpoint
    
    // Constructors ---------------------------------------------------------------------------------
 
-   ServerSessionEndpoint(String sessionID, ServerConnectionEndpoint connectionEndpoint) throws Exception
+   ServerSessionEndpoint(String sessionID, ServerConnectionEndpoint connectionEndpoint,
+   		                boolean replicating) throws Exception
    {
       this.id = sessionID;
 
       this.connectionEndpoint = connectionEndpoint;
+      
+      this.replicating = replicating;
       
       callbackHandler = connectionEndpoint.getCallbackHandler();
       
@@ -465,8 +469,11 @@ public class ServerSessionEndpoint implements SessionEndpoint
       {
          Delivery del = cancelDeliveryInternal(cancel);
          
-         //Prompt delivery
-         promptDelivery((Channel)del.getObserver());
+         if (del != null)
+         {         
+	         //Prompt delivery
+	         promptDelivery((Channel)del.getObserver());
+         }
       }
       catch (Throwable t)
       {
@@ -492,7 +499,10 @@ public class ServerSessionEndpoint implements SessionEndpoint
                         
             Delivery del = cancelDeliveryInternal(cancel);
             
-            channels.add(del.getObserver());
+            if (del != null)
+            {            	
+            	channels.add(del.getObserver());
+            }
          }
                  
          if (trace) { log.trace("Cancelled deliveries"); }
@@ -920,7 +930,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
    	
    	boolean gotSome = false;
    	   	
-   	if (!firstNode)
+   	if (!firstNode && replicating)
    	{	   	
 	   	if (trace) { log.trace("Now collecting"); }
 	   	   	
@@ -1348,7 +1358,9 @@ public class ServerSessionEndpoint implements SessionEndpoint
        
        Message message = delivery.getReference().getMessage();
        
-       if (!consumer.isReplicating())
+       //Note that we only replicate transacted or client acknowledge sessions
+       //There is no point in replicating AUTO_ACK or DUPS_OK
+       if (!consumer.isReplicating() || !replicating)
        {
       	 if (trace) { log.trace(this + " doing the delivery straight away"); }
       	 
@@ -1588,7 +1600,13 @@ public class ServerSessionEndpoint implements SessionEndpoint
       
       if (rec == null)
       {
-         throw new IllegalStateException("Cannot find delivery to cancel " + cancel.getDeliveryId());
+         //The delivery might not be found, if the session is not replicated (i.e. auto_ack or dups_ok)
+      	//and has failed over since recoverDeliveries won't have been called
+      	if (trace)
+      	{
+      		log.trace("Cannot find delivery to cancel, session probably failed over and is not replicated");
+      	}
+      	return null;
       }
                  
       //Note we check the flag *and* evaluate again, this is because the server and client clocks may
@@ -1730,7 +1748,10 @@ public class ServerSessionEndpoint implements SessionEndpoint
       
       if (rec == null)
       {
-         log.debug("Cannot find " + ack + " to acknowledge, it was probably acknowledged before ");
+         log.debug("Cannot find " + ack + " to acknowledge, it was probably acknowledged before");
+         
+         log.info("**** CANNOT FIND ACK TO ACKNOWLEDGED");
+         
          return;
       }
       
@@ -1738,7 +1759,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
       
       //Now replicate the ack
       
-      if (rec.replicating)
+      if (rec.replicating && replicating)
       {
       	postOffice.sendReplicateAckMessage(rec.queueName, rec.del.getReference().getMessage().getMessageID());
       }
