@@ -1749,9 +1749,6 @@ public class ServerSessionEndpoint implements SessionEndpoint
       if (rec == null)
       {
          log.debug("Cannot find " + ack + " to acknowledge, it was probably acknowledged before");
-         
-         log.info("**** CANNOT FIND ACK TO ACKNOWLEDGED");
-         
          return;
       }
       

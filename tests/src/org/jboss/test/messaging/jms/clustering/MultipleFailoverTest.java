@@ -260,6 +260,7 @@ public class MultipleFailoverTest extends ClusteringTestBase
          
          //We check that we received all the message
          //we allow for duplicates, see http://jira.jboss.org/jira/browse/JBMESSAGING-604
+         //We are using auto_ack with a listener so duplicates are ok
          
          if (!list.waitFor(count - 1))
          {
