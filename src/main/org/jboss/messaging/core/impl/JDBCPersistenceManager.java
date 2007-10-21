@@ -2206,8 +2206,8 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
       //Message
       map.put("CREATE_MESSAGE",
               "CREATE TABLE JBM_MSG (MESSAGE_ID BIGINT, RELIABLE CHAR(1), " +
-              "EXPIRATION BIGINT, TIMESTAMP BIGINT, PRIORITY TINYINT, HEADERS LONGVARBINARY, " +
-              "PAYLOAD LONGVARBINARY, TYPE TINYINT, INS_TIME BIGINT, " +
+              "EXPIRATION BIGINT, TIMESTAMP BIGINT, PRIORITY TINYINT, TYPE TINYINT, INS_TIME BIGINT, HEADERS LONGVARBINARY, " +
+              "PAYLOAD LONGVARBINARY, " +
               "PRIMARY KEY (MESSAGE_ID))"); 
       map.put("CREATE_IDX_MESSAGE_TIMESTAMP", "CREATE INDEX JBM_MSG_REF_TIMESTAMP ON JBM_MSG (TIMESTAMP)");
       //Transaction
@@ -2262,7 +2262,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
               "FROM JBM_MSG");
       map.put("INSERT_MESSAGE",
               "INSERT INTO JBM_MSG (MESSAGE_ID, RELIABLE, EXPIRATION, " +
-              "TIMESTAMP, PRIORITY, TYPE, HEADERS, INS_TIME, PAYLOAD) " +           
+              "TIMESTAMP, PRIORITY, TYPE, INS_TIME, HEADERS, PAYLOAD) " +           
               "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)" );
       map.put("INSERT_MESSAGE_CONDITIONAL",
       		  "INSERT INTO JBM_MSG (MESSAGE_ID, RELIABLE, EXPIRATION, " +
