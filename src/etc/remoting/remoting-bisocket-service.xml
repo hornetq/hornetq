@@ -28,7 +28,7 @@
                <attribute name="serverBindAddress">${jboss.bind.address}</attribute>
                <attribute name="serverBindPort">4457</attribute>
                <attribute name="clientSocketClass" isParam="true">org.jboss.jms.client.remoting.ClientSocketWrapper</attribute>
-               <attribute name="serverSocketClass" isParam="true">org.jboss.jms.server.remoting.ServerSocketWrapper</attribute>
+               <attribute name="serverSocketClass">org.jboss.jms.server.remoting.ServerSocketWrapper</attribute>
                <attribute name="numberOfCallRetries" isParam="true">1</attribute>
                <attribute name="pingFrequency" isParam="true">214748364</attribute>
                <attribute name="pingWindowFactor" isParam="true">10</attribute>

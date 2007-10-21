@@ -146,7 +146,6 @@ public class ConnectionFactory extends ServiceMBeanSupport
 		         checkParam(params, "dataType", "jms") &&
 		         checkParam(params, "timeout", "0") &&
 		         checkParam(params, "clientSocketClass", "org.jboss.jms.client.remoting.ClientSocketWrapper") &&
-		         checkParam(params, "serverSocketClass", "org.jboss.jms.server.remoting.ServerSocketWrapper") &&
 		         checkParam(params, "numberOfCallRetries", "1") &&
 		         checkParam(params, "pingFrequency", "214748364") &&
 		         checkParam(params, "pingWindowFactor", "10");
