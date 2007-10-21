@@ -114,7 +114,7 @@ public class FailoverCommandCenter
          
          // Note - failover doesn't occur until _after_ the above check - so the next comment
          // belongs here
-         log.debug(this + " starting client-side failover");
+         log.info("JBoss Messaging server failure detected - waiting for failover to complete...");
          
          // generate a FAILOVER_STARTED event. The event must be broadcasted AFTER valve closure,
          // to insure the client-side stack is in a deterministic state
@@ -161,7 +161,9 @@ public class FailoverCommandCenter
                log.trace("Started new connection");
             }
             
-            failoverSuccessful = true;                        
+            failoverSuccessful = true;      
+            
+            log.info("JBoss Messaging failover complete");
          }
          
          log.trace("failureDetected() complete");

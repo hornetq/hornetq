@@ -2933,7 +2933,10 @@ public class MessagingPostOffice extends JDBCSupport
             if (localNameMap != null)
             {
             	Binding b = (Binding)localNameMap.get(queue.getName());
-            	localQueue = b.queue;
+            	if (b != null)
+            	{
+            		localQueue = b.queue;
+            	}
             }
             	
             if (localQueue != null)
