@@ -225,8 +225,6 @@ public class MessagingPostOffice extends JDBCSupport
    //overwhelming JGroups
    private ClearableSemaphore replicateSemaphore;
       
-   private int maxConcurrentReplications;
-   
    // Constructors ---------------------------------------------------------------------------------
 
    /*
@@ -2778,10 +2776,10 @@ public class MessagingPostOffice extends JDBCSupport
    {   	   	
    	//The failover node has changed - we need to move our replicated deliveries
    	
-   	if (trace) { log.trace("Failover node has changed from " + oldFailoverNodeID + " to " + failoverNodeID); }
+   	if (trace) { log.trace("Failover node has changed from " + oldFailoverNodeID + " to " + failoverNodeID); }   	  	
    	
-   	replicateSemaphore.disable();
-   	   	
+   	replicateSemaphore.disable();	 
+   	
    	if (!firstNode)
    	{	   	
 	   	//If the old node still exists we need to send a message to remove any replicated deliveries
@@ -2797,7 +2795,7 @@ public class MessagingPostOffice extends JDBCSupport
 	   		groupMember.unicastData(request, info.getDataChannelAddress());
 	   		
 	   		if (trace) { log.trace("Sent AckAllReplicatedDeliveriesMessage"); }
-	   	}
+	   	}  	 
    	}
    	
    	//Now send the deliveries to the new node - we only do this if the new failover node came about by

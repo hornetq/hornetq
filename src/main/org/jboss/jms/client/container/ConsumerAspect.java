@@ -127,43 +127,30 @@ public class ConsumerAspect
    public Object handleClosing(Invocation invocation) throws Throwable
    {
       ConsumerState consumerState = getState(invocation);
-      try
-      {
+      
+      // We make sure closing is called on the ServerConsumerEndpoint.
+      // This returns us the last delivery id sent
 
-         // We make sure closing is called on the ServerConsumerEndpoint.
-         // This returns us the last delivery id sent
+      Long l  = (Long)invocation.invokeNext();
 
-         Long l  = (Long)invocation.invokeNext();
+      long lastDeliveryId = l.longValue();
 
-         long lastDeliveryId = l.longValue();
+      // First we call close on the ClientConsumer which waits for onMessage invocations
+      // to complete and the last delivery to arrive
+      consumerState.getClientConsumer().close(lastDeliveryId);
 
-         // First we call close on the ClientConsumer which waits for onMessage invocations
-         // to complete and the last delivery to arrive
-         consumerState.getClientConsumer().close(lastDeliveryId);
+      SessionState sessionState = (SessionState)consumerState.getParent();
+      ConnectionState connectionState = (ConnectionState)sessionState.getParent();
 
-         SessionState sessionState = (SessionState)consumerState.getParent();
-         ConnectionState connectionState = (ConnectionState)sessionState.getParent();
+      sessionState.removeCallbackHandler(consumerState.getClientConsumer());
 
-         sessionState.removeCallbackHandler(consumerState.getClientConsumer());
+      CallbackManager cm = connectionState.getRemotingConnection().getCallbackManager();
+      cm.unregisterHandler(consumerState.getConsumerID());
 
-         CallbackManager cm = connectionState.getRemotingConnection().getCallbackManager();
-         cm.unregisterHandler(consumerState.getConsumerID());
+      //And then we cancel any messages still in the message callback handler buffer
+      consumerState.getClientConsumer().cancelBuffer();
 
-         //And then we cancel any messages still in the message callback handler buffer
-         consumerState.getClientConsumer().cancelBuffer();
-
-         return l;
-      }
-      finally
-      {
-         // If this method fails before the call to clientConsumer.close,
-         // we need to ensure the method will close the consumer, otherwise the server
-         // would hang during a shutdown
-         if (!consumerState.getClientConsumer().isClosed())
-         {
-            consumerState.getClientConsumer().close(-1);
-         }
-      }
+      return l;
    }
    
    public Object handleReceive(Invocation invocation) throws Throwable
