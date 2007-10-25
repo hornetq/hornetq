@@ -453,12 +453,12 @@ public class ClientConsumer
                boolean ignore =
                   checkExpiredOrReachedMaxdeliveries(m, sessionDelegate, maxDeliveries, shouldAck);
                
+               log.info("*** IGNORE IS " + ignore);
+               
                if (!isConnectionConsumer && !ignore)
                {
                   DeliveryInfo info = new DeliveryInfo(m, consumerID, queueName, null, shouldAck);
                                                     
-                  m.incDeliveryCount();           
- 
                   sessionDelegate.preDeliver(info);                  
                   
                   //If post deliver didn't succeed and acknowledgement mode is auto_ack
@@ -466,7 +466,17 @@ public class ClientConsumer
                   //In order to maintain at most once semantics we must therefore not return
                   //the message
                   
-                  ignore = !sessionDelegate.postDeliver();                                       
+                  ignore = !sessionDelegate.postDeliver();  
+                  
+                  if (trace)
+                  {
+                  	log.trace("Post deliver returned " + !ignore);
+                  }
+                  
+                  if (!ignore)
+                  {
+                     m.incDeliveryCount();                                
+                  }
                }
                                              
                if (!ignore)
@@ -478,7 +488,7 @@ public class ClientConsumer
                
                if (trace)
                {
-                  log.trace(this + ": message expired or exceeded max deliveries, discarding");
+                  log.trace("Discarding message " + m);
                }
                
                // the message expired, so discard the message, adjust timeout and reenter the buffer

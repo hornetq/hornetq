@@ -89,32 +89,7 @@ public class SimpleConnectionManager implements ConnectionManager, ConnectionLis
 
    // ConnectionManager implementation -------------------------------------------------------------
 
-   private void dump()
-   {
-   	log.debug("***********Dumping conn map");
-   	for (Iterator iter = jmsClients.entrySet().iterator(); iter.hasNext(); )
-   	{
-   		Map.Entry entry = (Map.Entry)iter.next();
-   		
-   		String jmsClientVMID = (String)entry.getKey();
-   		
-   		Map endpoints = (Map)entry.getValue();
-   		
-   		log.debug(jmsClientVMID + "----->");
-   		
-   		for (Iterator iter2 = endpoints.entrySet().iterator(); iter2.hasNext(); )
-      	{
-   			Map.Entry entry2 = (Map.Entry)iter2.next();
-   			
-   			String sessionID = (String)entry2.getKey();
-   			
-   			ConnectionEndpoint endpoint = (ConnectionEndpoint)entry2.getValue();
-   			
-   			log.debug("            " + sessionID + "------>" + System.identityHashCode(endpoint));
-      	}
-   	}
-   	log.debug("*** Dumped conn map");
-   }
+   
    
    public synchronized void registerConnection(String jmsClientVMID,
                                                String remotingClientSessionID,
@@ -137,8 +112,6 @@ public class SimpleConnectionManager implements ConnectionManager, ConnectionLis
       
       log.debug("registered connection " + endpoint + " as " +
                 Util.guidToString(remotingClientSessionID));
-      
-      dump();
    }
 
    public synchronized ConnectionEndpoint unregisterConnection(String jmsClientVMId,
@@ -261,7 +234,6 @@ public class SimpleConnectionManager implements ConnectionManager, ConnectionLis
          log.trace("SimpleConnectionManager was notified about node leaving from node " +
                     notification.nodeID);
          
-         dump();
          try
 			{
 				//We remove any consumers with the same JVMID as the node that just failed
@@ -490,6 +462,33 @@ public class SimpleConnectionManager implements ConnectionManager, ConnectionLis
          return perVMList;
       }
 
+   }
+   
+   private void dump()
+   {
+   	log.debug("***********Dumping conn map");
+   	for (Iterator iter = jmsClients.entrySet().iterator(); iter.hasNext(); )
+   	{
+   		Map.Entry entry = (Map.Entry)iter.next();
+   		
+   		String jmsClientVMID = (String)entry.getKey();
+   		
+   		Map endpoints = (Map)entry.getValue();
+   		
+   		log.debug(jmsClientVMID + "----->");
+   		
+   		for (Iterator iter2 = endpoints.entrySet().iterator(); iter2.hasNext(); )
+      	{
+   			Map.Entry entry2 = (Map.Entry)iter2.next();
+   			
+   			String sessionID = (String)entry2.getKey();
+   			
+   			ConnectionEndpoint endpoint = (ConnectionEndpoint)entry2.getValue();
+   			
+   			log.debug("            " + sessionID + "------>" + System.identityHashCode(endpoint));
+      	}
+   	}
+   	log.debug("*** Dumped conn map");
    }
 
 }
