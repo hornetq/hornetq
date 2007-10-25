@@ -126,10 +126,12 @@ public class MultiplexerChannelFactory implements ChannelFactory
          new Object[]{controlStack, uniqueID + "-CTRL", Boolean.TRUE, uniqueID}, MUX_SIGNATURE);
    }
 
+   //Note that for the data channel we don't receive state immediately after connecting so third param
+   //must be false http://jira.jboss.com/jira/browse/JBMESSAGING-1120
    public Channel createDataChannel() throws Exception
    {
       return (Channel) server.invoke(this.channelFactory, MUX_OPERATION,
-         new Object[]{dataStack, uniqueID + "-DATA", Boolean.TRUE, uniqueID}, MUX_SIGNATURE);
+         new Object[]{dataStack, uniqueID + "-DATA", Boolean.FALSE, uniqueID}, MUX_SIGNATURE);
    }
 
    // Package protected ----------------------------------------------------------------------------
