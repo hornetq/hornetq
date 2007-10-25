@@ -651,14 +651,25 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
    {
       if (trace) { log.trace(this + " sending message " + msg + (tx == null ? " non-transactionally" : " in " + tx)); }
 
-      if (checkForDuplicates && msg.isReliable())
-      {
-         // Message is already stored... so just ignoring the call
-         if (serverPeer.getPersistenceManagerInstance().referenceExists(msg.getMessageID()))
+      if (checkForDuplicates)
+      {      	
+      	if (msg.isReliable())
          {
-         	if (trace) { log.trace("Duplicate of " + msg + " exists in database - probably sent before failover"); }
-            return;
-         }
+      		if (serverPeer.getPersistenceManagerInstance().referenceExists(msg.getMessageID()))
+      		{
+	      		// Message is already stored... so just ignoring the call
+	         	if (trace) { log.trace("Duplicate of " + msg + " exists in database - probably sent before failover"); }
+	         	
+	            return;
+      		}
+         }	      
+      	else
+      	{
+      		//NP messages get rejected http://jira.jboss.com/jira/browse/JBMESSAGING-1119
+      		if (trace) { log.trace("Rejecting NP message " + msg + " after failover"); }
+      		
+      		return;
+      	}
       }
       
       JBossDestination dest = (JBossDestination)msg.getJMSDestination();
