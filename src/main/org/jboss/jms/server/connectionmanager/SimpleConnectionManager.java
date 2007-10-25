@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -38,8 +39,8 @@ import org.jboss.logging.Logger;
 import org.jboss.messaging.core.contract.ClusterNotification;
 import org.jboss.messaging.core.contract.ClusterNotificationListener;
 import org.jboss.messaging.core.contract.Replicator;
-import org.jboss.messaging.util.Util;
 import org.jboss.messaging.util.ConcurrentHashSet;
+import org.jboss.messaging.util.Util;
 import org.jboss.remoting.Client;
 import org.jboss.remoting.ClientDisconnectedException;
 import org.jboss.remoting.ConnectionListener;
@@ -70,7 +71,7 @@ public class SimpleConnectionManager implements ConnectionManager, ConnectionLis
    private Map<String, String> remotingSessions;
 
    // Set<ConnectionEndpoint>
-   private Set activeConnectionEndpoints;
+   private Set<ConnectionEndpoint> activeConnectionEndpoints;
 
    private Map</** CFUniqueName*/ String, ConnectionFactoryCallbackInformation> cfCallbackInfo;
    
@@ -80,14 +81,41 @@ public class SimpleConnectionManager implements ConnectionManager, ConnectionLis
 
    public SimpleConnectionManager()
    {
-      jmsClients = new HashMap();
-      remotingSessions = new HashMap();
-      activeConnectionEndpoints = new HashSet();
+      jmsClients = new HashMap<String, Map<String, ConnectionEndpoint>>();
+      remotingSessions = new HashMap<String, String>();
+      activeConnectionEndpoints = new HashSet<ConnectionEndpoint>();
       cfCallbackInfo = new ConcurrentHashMap<String, ConnectionFactoryCallbackInformation>();
    }
 
    // ConnectionManager implementation -------------------------------------------------------------
 
+   private void dump()
+   {
+   	log.debug("***********Dumping conn map");
+   	for (Iterator iter = jmsClients.entrySet().iterator(); iter.hasNext(); )
+   	{
+   		Map.Entry entry = (Map.Entry)iter.next();
+   		
+   		String jmsClientVMID = (String)entry.getKey();
+   		
+   		Map endpoints = (Map)entry.getValue();
+   		
+   		log.debug(jmsClientVMID + "----->");
+   		
+   		for (Iterator iter2 = endpoints.entrySet().iterator(); iter2.hasNext(); )
+      	{
+   			Map.Entry entry2 = (Map.Entry)iter2.next();
+   			
+   			String sessionID = (String)entry2.getKey();
+   			
+   			ConnectionEndpoint endpoint = (ConnectionEndpoint)entry2.getValue();
+   			
+   			log.debug("            " + sessionID + "------>" + System.identityHashCode(endpoint));
+      	}
+   	}
+   	log.debug("*** Dumped conn map");
+   }
+   
    public synchronized void registerConnection(String jmsClientVMID,
                                                String remotingClientSessionID,
                                                ConnectionEndpoint endpoint)
@@ -96,7 +124,8 @@ public class SimpleConnectionManager implements ConnectionManager, ConnectionLis
       
       if (endpoints == null)
       {
-         endpoints = new HashMap();
+         endpoints = new HashMap<String, ConnectionEndpoint>();
+         
          jmsClients.put(jmsClientVMID, endpoints);
       }
       
@@ -108,6 +137,8 @@ public class SimpleConnectionManager implements ConnectionManager, ConnectionLis
       
       log.debug("registered connection " + endpoint + " as " +
                 Util.guidToString(remotingClientSessionID));
+      
+      dump();
    }
 
    public synchronized ConnectionEndpoint unregisterConnection(String jmsClientVMId,
@@ -143,7 +174,7 @@ public class SimpleConnectionManager implements ConnectionManager, ConnectionLis
    public synchronized List getActiveConnections()
    {
       // I will make a copy to avoid ConcurrentModification
-      ArrayList list = new ArrayList();
+      List<ConnectionEndpoint> list = new ArrayList<ConnectionEndpoint>();
       list.addAll(activeConnectionEndpoints);
       return list;
    }
@@ -229,6 +260,8 @@ public class SimpleConnectionManager implements ConnectionManager, ConnectionLis
 
          log.trace("SimpleConnectionManager was notified about node leaving from node " +
                     notification.nodeID);
+         
+         dump();
          try
 			{
 				//We remove any consumers with the same JVMID as the node that just failed
@@ -249,7 +282,7 @@ public class SimpleConnectionManager implements ConnectionManager, ConnectionLis
 				int failedNodeID = notification.nodeID;
 				
 				String clientVMID = (String)ids.get(new Integer(failedNodeID));
-				
+					
 				if (clientVMID == null)
 				{
                log.error("Cannot find ClientVMID for failed node " + failedNodeID);
@@ -342,9 +375,9 @@ public class SimpleConnectionManager implements ConnectionManager, ConnectionLis
 
       if (endpoints != null)
       {
-         List<ConnectionEndpoint> sces = new ArrayList();
+         List<ConnectionEndpoint> sces = new ArrayList<ConnectionEndpoint>();
 
-         for(Map.Entry<String, ConnectionEndpoint> entry: endpoints.entrySet())
+         for (Map.Entry<String, ConnectionEndpoint> entry: endpoints.entrySet())
          {
             ConnectionEndpoint sce = entry.getValue();
             sces.add(sce);

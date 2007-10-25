@@ -108,6 +108,8 @@ public class MessagingPostOffice extends JDBCSupport
    
    public static final String FAILOVER_COMPLETED_NOTIFICATION = "FAILOVER_COMPLETED";
    
+   private static final long SEMAPHORE_ACQUIRE_TIMEOUT = 10000;
+   
    //End only used in testing
 
    // Static ---------------------------------------------------------------------------------------
@@ -351,8 +353,10 @@ public class MessagingPostOffice extends JDBCSupport
 	      //calculate the failover map
 	      calculateFailoverMap();
 	      
+	      String clientVMId = JMSClientVMIdentifier.instance;
+	      
 	      //add our vm identifier to the replicator
-	      put(Replicator.JVM_ID_KEY, JMSClientVMIdentifier.instance);
+	      put(Replicator.JVM_ID_KEY, clientVMId);
 	      
 	      groupMember.multicastControl(new JoinClusterRequest(thisNodeID, info), true);
 	      
@@ -619,8 +623,15 @@ public class MessagingPostOffice extends JDBCSupport
    	
    	if (reply)
    	{
-   		//replicateSemaphore.tryAcquire(250, TimeUnit.MILLISECONDS);
-   		replicateSemaphore.acquire();
+   		//We timeout to avoid locking the system in event of failure
+   		boolean ok = replicateSemaphore.tryAcquire(SEMAPHORE_ACQUIRE_TIMEOUT);
+   		
+   		if (!ok)
+   		{
+   			log.warn("Timed out trying to acquire replication semaphore");
+   			
+   			return;
+   		}
    	}
    	
    	try
@@ -886,7 +897,7 @@ public class MessagingPostOffice extends JDBCSupport
    public void nodesLeft(List addresses) throws Throwable
    {
    	if (trace) { log.trace("Nodes left " + addresses.size()); }
-   	
+   	  	
    	checkStartReaper();
    	
    	Map oldFailoverMap = new HashMap(this.failoverMap);
@@ -898,6 +909,13 @@ public class MessagingPostOffice extends JDBCSupport
    	calculateFailoverMap();
    	
       if (trace) { log.trace("First node is now " + firstNode); }
+      
+      if (firstNode)
+      {
+      	//If we are now the first node in the cluster then any outstanding replication requests will not get responses
+      	//so we must release these and we have no more need of a semaphore until another node joins
+      	replicateSemaphore.disable();
+      }
             
    	Iterator iter = addresses.iterator();
    	
@@ -1090,6 +1108,12 @@ public class MessagingPostOffice extends JDBCSupport
    	boolean wasFirstNode = this.firstNode;
    	
    	calculateFailoverMap();
+   	
+   	if (wasFirstNode)
+   	{
+   		//If we were the first node but now another node has joined - we need to re-enable the semaphore
+   		replicateSemaphore.enable();
+   	}
    	
    	//Note - when a node joins, we DO NOT send it replicated data - this is because it won't have deployed it's queues
    	//the data is requested by the new node when it deploys its queues      
@@ -2779,8 +2803,6 @@ public class MessagingPostOffice extends JDBCSupport
    	//The failover node has changed - we need to move our replicated deliveries
    	
    	if (trace) { log.trace("Failover node has changed from " + oldFailoverNodeID + " to " + failoverNodeID); }   	  	
-   	
-   	replicateSemaphore.reset();
    	
    	if (!firstNode)
    	{	   	

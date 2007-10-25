@@ -1,6 +1,7 @@
 package org.jboss.messaging.util;
 
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
 
 import org.jboss.logging.Logger;
 
@@ -42,25 +43,47 @@ public class ClearableSemaphore
 		}
 	}
 	
+	public boolean tryAcquire(long timeout) throws InterruptedException
+	{
+		Semaphore sem = semaphore;
+		
+		if (sem != null)
+		{
+			return sem.tryAcquire(timeout, TimeUnit.MILLISECONDS);
+		}
+		else
+		{
+			return true;
+		}
+	}
+	
 	public void release()
 	{
 		Semaphore sem = semaphore;
 		
 		if (sem != null)
 		{
-			sem.release();
+			sem.release();			
 		}
 	}
 	
-	public synchronized void reset()
+	public synchronized void disable()
 	{
 		if (semaphore != null)
 		{
 			Semaphore oldSem = semaphore;
 			
-			createSemaphore();
+			semaphore = null;
 			
 			oldSem.release(permits);
+		}
+	}
+	
+	public synchronized void enable()
+	{
+		if (semaphore == null)
+		{
+			createSemaphore();
 		}
 	}
 }
