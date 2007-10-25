@@ -453,8 +453,6 @@ public class ClientConsumer
                boolean ignore =
                   checkExpiredOrReachedMaxdeliveries(m, sessionDelegate, maxDeliveries, shouldAck);
                
-               log.info("*** IGNORE IS " + ignore);
-               
                if (!isConnectionConsumer && !ignore)
                {
                   DeliveryInfo info = new DeliveryInfo(m, consumerID, queueName, null, shouldAck);
