@@ -144,22 +144,27 @@ public class FailoverCommandCenter
             log.trace("Synchronizing state");
             state.getDelegate().synchronizeWith(newDelegate);
             log.trace("Synchronized state");
+            
+            //Now restart the connection if appropriate
+            //Note! we mus start the connection while the valve is still closed
+            //Otherwise If a consumer closing is waiting on failover to complete
+            //Then on failover complete the valve will be opened and closing retried on a
+            //different thread
+            //but the next line will re-start the connection so there is a race between the two
+            //If the restart hits after closing then messages can get delivered after consumer
+            //is closed
+            
+            if (state.isStarted())
+            {
+               log.trace("Starting new connection");
+               newDelegate.startAfterFailover();
+               log.trace("Started new connection");
+            }
                            
             log.trace("Opening valve");
             valve.open();
             log.trace("Opened valve");
             valveOpened = true;
-            
-            //Now start the connection - note! this can't be done while the valve is closed
-            //or it will block itself
-            
-            // start the connection again on the serverEndpoint if necessary            
-            if (state.isStarted())
-            {
-            	log.trace("Starting new connection");
-               newDelegate.start();
-               log.trace("Started new connection");
-            }
             
             failoverSuccessful = true;      
             

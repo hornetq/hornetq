@@ -57,4 +57,8 @@ public interface ConnectionDelegate extends ConnectionEndpoint
    void registerFailoverListener(FailoverListener failoverListener);
    
    boolean unregisterFailoverListener(FailoverListener failoverListener);
+   
+   //Special start method that doesn't get intercepted to allow connection to be restarted
+   //after failover when the valve is still held
+   void startAfterFailover() throws JMSException;
 }

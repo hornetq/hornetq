@@ -243,6 +243,13 @@ public class ClientConnectionDelegate extends DelegateSupport implements Connect
 
       doInvoke(client, req);
    }
+   
+   public void startAfterFailover() throws JMSException
+   {
+      RequestSupport req = new ConnectionStartRequest(id, version);
+
+      doInvoke(client, req);
+   }
 
    public void stop() throws JMSException
    {

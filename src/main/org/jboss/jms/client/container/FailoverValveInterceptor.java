@@ -96,6 +96,12 @@ public class FailoverValveInterceptor implements Interceptor, FailureDetector
       
       JMSRemotingConnection remotingConnection = null;
       String methodName = ((MethodInvocation)invocation).getMethod().getName();
+      
+      if (methodName.equals("startAfterFailover"))
+      {
+         //We don't use the valve on this method
+         return invocation.invokeNext();
+      }
 
       boolean left = false;
       
