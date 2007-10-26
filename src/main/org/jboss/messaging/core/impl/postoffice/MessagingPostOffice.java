@@ -316,7 +316,7 @@ public class MessagingPostOffice extends JDBCSupport
       
       this.useJGroupsWorkaround = "true".equals(System.getProperty("jboss.messaging.usejgroupsworkaround"));
       
-      log.info("*** Using JGroups flow control workaround: " + this.useJGroupsWorkaround);
+      log.debug("Using JGroups flow control workaround: " + this.useJGroupsWorkaround);
    }
       
    // MessagingComponent overrides -----------------------------------------------------------------
