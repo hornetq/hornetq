@@ -226,6 +226,8 @@ public class MessagingPostOffice extends JDBCSupport
    //We keep use a semaphore to limit the number of concurrent replication requests to avoid
    //overwhelming JGroups
    private ClearableSemaphore replicateSemaphore;
+   
+   private boolean useJGroupsWorkaround;
       
    // Constructors ---------------------------------------------------------------------------------
 
@@ -309,6 +311,10 @@ public class MessagingPostOffice extends JDBCSupport
       nbSupport = new NotificationBroadcasterSupport();
       
       replicateSemaphore = new ClearableSemaphore(maxConcurrentReplications);
+      
+      this.useJGroupsWorkaround = "true".equals(System.getProperty("jboss.messaging.usejgroupsworkaround"));
+      
+      log.info("*** Using JGroups flow control workaround: " + this.useJGroupsWorkaround);
    }
       
    // MessagingComponent overrides -----------------------------------------------------------------
@@ -621,7 +627,7 @@ public class MessagingPostOffice extends JDBCSupport
    	//This is to prevent overwhelming JGroups
    	//See http://jira.jboss.com/jira/browse/JBMESSAGING-1112
    	
-   	if (reply)
+   	if (reply && this.useJGroupsWorkaround)
    	{
    		//We timeout to avoid locking the system in event of failure
    		boolean ok = replicateSemaphore.tryAcquire(SEMAPHORE_ACQUIRE_TIMEOUT);
@@ -910,7 +916,7 @@ public class MessagingPostOffice extends JDBCSupport
    	
       if (trace) { log.trace("First node is now " + firstNode); }
       
-      if (firstNode)
+      if (firstNode && this.useJGroupsWorkaround)
       {
       	//If we are now the first node in the cluster then any outstanding replication requests will not get responses
       	//so we must release these and we have no more need of a semaphore until another node joins
@@ -1109,7 +1115,7 @@ public class MessagingPostOffice extends JDBCSupport
    	
    	calculateFailoverMap();
    	
-   	if (wasFirstNode)
+   	if (wasFirstNode && useJGroupsWorkaround)
    	{
    		//If we were the first node but now another node has joined - we need to re-enable the semaphore
    		replicateSemaphore.enable();
@@ -1321,7 +1327,10 @@ public class MessagingPostOffice extends JDBCSupport
    	//TODO - this does not belong here
    	ServerSessionEndpoint session = serverPeer.getSession(sessionID);
    	
-   	replicateSemaphore.release();
+      if (this.useJGroupsWorkaround)
+      {
+         replicateSemaphore.release();
+      }
    	
    	if (session == null)
    	{
