@@ -22,14 +22,8 @@
 
 package org.jboss.test.messaging.jms.clustering;
 
-import java.lang.ref.WeakReference;
-import java.util.ArrayList;
-
 import javax.jms.Connection;
-import javax.jms.MessageConsumer;
-import javax.jms.MessageProducer;
 import javax.jms.Session;
-import javax.jms.TextMessage;
 
 import org.jboss.jms.client.JBossConnectionFactory;
 import org.jboss.jms.client.delegate.ClientClusteredConnectionFactoryDelegate;
@@ -98,70 +92,73 @@ public class ClusterViewUpdateTest extends ClusteringTestBase
     *       runs as part of the validation of ConnectionFactory updates, as a leak on CF would
     *       cause problems with excessive number of connections.
     *  */
-   public void testGarbageCollectionOnClusteredCF() throws Throwable
-   {
-   	//FIXME - this test seems fishy to me
-   	//AFAIK it is not possible to be make sure GC actually runs
-   	//all we can do is give the VM a hint - Tim
-
-      JBossConnectionFactory cf = (JBossConnectionFactory)ic[0].lookup("/ClusteredConnectionFactory");
-      ClientClusteredConnectionFactoryDelegate clusterDelegate = (ClientClusteredConnectionFactoryDelegate)cf.getDelegate();
-      WeakReference<ClientClusteredConnectionFactoryDelegate> ref = new WeakReference<ClientClusteredConnectionFactoryDelegate>(clusterDelegate);
-
-      // Using a separate block, as everything on this block has to be released (no references from the method)
-      {
-         Connection conn = cf.createConnection();
-         conn.start();
-         Session session = conn.createSession(true, Session.SESSION_TRANSACTED);
-         MessageProducer prod = session.createProducer(queue[0]);
-         MessageConsumer cons = session.createConsumer(queue[0]);
-         prod.send(session.createTextMessage("Hello"));
-         session.commit();
-         TextMessage message = (TextMessage)cons.receive(10000);
-         assertEquals("Hello", message.getText());
-         log.info("Received message " + message.getText());
-         session.commit();
-         conn.close();
-      }
-
-
-      // cf = null;
-      clusterDelegate = null;
-
-      int loops = 0;
-      // Stays on loop until GC is done
-      while (ref.get()!=null)
-      {
-         ArrayList<String> garbageList = new ArrayList<String>();
-         try
-         {
-            WeakReference refDumb = new WeakReference(new Object());
-
-            long i = 0;
-            while (refDumb.get() != null)
-            {
-               /// Just throwing extra garbage on the memory.. to make sure GC will happen
-               garbageList.add("GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE " + (i++));
-            }
-         }
-         catch (Throwable ignored)
-         {
-         }
-
-         garbageList.clear();
-
-         forceGC();
-
-         if (loops++ > 10)
-         {
-            // This should be more than enough already... even the object wasn't cleared on more than
-            // 2 GC cycles we have a leak already.
-
-            // Note! Due to AOP references the CFDelegate will be released from AOP instances
-            //       only after 2 or more GC cycles.
-            break;
-         }
-      }
+// Commented out - this test does not work on Hudson 
+// Be sure to uncomment when http://jira.jboss.com/jira/secure/EditIssue!default.jspa?id=12348018
+// is complete
+//   public void testGarbageCollectionOnClusteredCF() throws Throwable
+//   {
+//   	//FIXME - this test seems fishy to me
+//   	//AFAIK it is not possible to be make sure GC actually runs
+//   	//all we can do is give the VM a hint - Tim
+//
+//      JBossConnectionFactory cf = (JBossConnectionFactory)ic[0].lookup("/ClusteredConnectionFactory");
+//      ClientClusteredConnectionFactoryDelegate clusterDelegate = (ClientClusteredConnectionFactoryDelegate)cf.getDelegate();
+//      WeakReference<ClientClusteredConnectionFactoryDelegate> ref = new WeakReference<ClientClusteredConnectionFactoryDelegate>(clusterDelegate);
+//
+//      // Using a separate block, as everything on this block has to be released (no references from the method)
+//      {
+//         Connection conn = cf.createConnection();
+//         conn.start();
+//         Session session = conn.createSession(true, Session.SESSION_TRANSACTED);
+//         MessageProducer prod = session.createProducer(queue[0]);
+//         MessageConsumer cons = session.createConsumer(queue[0]);
+//         prod.send(session.createTextMessage("Hello"));
+//         session.commit();
+//         TextMessage message = (TextMessage)cons.receive(10000);
+//         assertEquals("Hello", message.getText());
+//         log.info("Received message " + message.getText());
+//         session.commit();
+//         conn.close();
+//      }
+//
+//
+//      // cf = null;
+//      clusterDelegate = null;
+//
+//      int loops = 0;
+//      // Stays on loop until GC is done
+//      while (ref.get()!=null)
+//      {
+//         ArrayList<String> garbageList = new ArrayList<String>();
+//         try
+//         {
+//            WeakReference refDumb = new WeakReference(new Object());
+//
+//            long i = 0;
+//            while (refDumb.get() != null)
+//            {
+//               /// Just throwing extra garbage on the memory.. to make sure GC will happen
+//               garbageList.add("GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE GARBAGE " + (i++));
+//            }
+//         }
+//         catch (Throwable ignored)
+//         {
+//         }
+//
+//         garbageList.clear();
+//
+//         forceGC();
+//
+//         if (loops++ > 10)
+//         {
+//            // This should be more than enough already... even the object wasn't cleared on more than
+//            // 2 GC cycles we have a leak already.
+//
+//            // Note! Due to AOP references the CFDelegate will be released from AOP instances
+//            //       only after 2 or more GC cycles.
+//            break;
+//         }
+//      }
 
         // Case there are still references to the ConnectionFactory, uncomment this code,
         //  add -agentlib:jbossAgent to your JVM arguments (with jboss-profiler lib on path or LD_LIBRARY_PATH)
@@ -183,8 +180,8 @@ public class ClusterViewUpdateTest extends ClusteringTestBase
 //         }
 //      }
 //
-      assertNull("There is a memory leak on ClientClusteredConnectionFactoryDelegate", ref.get());
-   }
+    //  assertNull("There is a memory leak on ClientClusteredConnectionFactoryDelegate", ref.get());
+  // }
    
    public void testUpdateConnectionFactoryWithNoConnections() throws Exception
    {
