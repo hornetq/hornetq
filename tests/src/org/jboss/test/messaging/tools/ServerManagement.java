@@ -435,6 +435,12 @@ public class ServerManagement
          sb.append("-Dtest.remoting=").append(remoting).append(' ');
       }
       
+      String groupName = System.getProperty("jboss.messaging.groupname");
+      if (groupName != null)
+      {
+         sb.append("-Djboss.messaging.groupname=").append(groupName).append(' ');
+      }
+      
       String testLogfileSuffix = System.getProperty("test.logfile.suffix");
 
       if (testLogfileSuffix == null)

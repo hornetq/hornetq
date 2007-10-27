@@ -724,6 +724,7 @@
          <sysproperty key="remote" value="true"/>
          <sysproperty key="module.output" value="${tests.output}"/>
          <sysproperty key="test.bind.address" value="${test.bind.address}"/>
+         <sysproperty key="jboss.messaging.groupname" value="${jboss.messaging.groupname}"/>
          <sysproperty key="jgroups.bind_addr" value="${test.bind.address}"/>
          <sysproperty key="test.database" value="${clustering.tests.database}"/>
          <sysproperty key="test.clustered" value="true"/>
