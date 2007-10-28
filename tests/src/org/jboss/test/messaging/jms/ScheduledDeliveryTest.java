@@ -349,7 +349,7 @@ public class ScheduledDeliveryTest extends JMSTestCase
             assertTrue(time - now >= delay);
 
             //Hudson can introduce a large degree of indeterminism
-            assertTrue((time - now)  + ">" + (delay + 500), time - now < delay + 1000);
+            assertTrue((time - now)  + ">" + (delay + 1000), time - now < delay + 1000);
          }         
       }
       finally
@@ -414,7 +414,9 @@ public class ScheduledDeliveryTest extends JMSTestCase
    			long time = System.currentTimeMillis();
 
    			assertTrue(time - now >= delay);
-            assertTrue((time - now)  + ">" + (delay + 500), time - now < delay + 500);
+            
+            //Hudson can introduce a large degree of indeterminism
+            assertTrue((time - now)  + ">" + (delay + 1000), time - now < delay + 1000);
          }
    		
    		sess2.commit();

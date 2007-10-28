@@ -325,6 +325,8 @@
          <sysproperty key="module.output" value="${tests.output}"/>
          <sysproperty key="test.bind.address" value="${test.bind.address}"/>
          <sysproperty key="jgroups.bind_addr" value="${test.bind.address}"/>
+         <sysproperty key="test.bind.address" value="${test.bind.address}"/>
+         <sysproperty key="jboss.messaging.groupname" value="${jboss.messaging.groupname}"/>
          <sysproperty key="test.database" value="${functional.tests.database}"/>
          <sysproperty key="test.logfile.suffix" value="invm"/>
          <sysproperty key="build.lib" value="${build.lib}"/>
