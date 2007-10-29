@@ -104,7 +104,7 @@ public class MessageCleanupTest extends JMSTestCase
       }
       
       //Give them time to arrive NP messages are sent one way
-      Thread.sleep(5000);
+      Thread.sleep(10000);
               
       //50 Should be paged onto disk
       
@@ -149,7 +149,7 @@ public class MessageCleanupTest extends JMSTestCase
       }
       
       //Give them time to arrive NP messages are sent one way
-      Thread.sleep(5000);
+      Thread.sleep(10000);
        
       assertEquals(100, getReferenceIds().size());
       
