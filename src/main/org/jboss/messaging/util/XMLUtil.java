@@ -50,12 +50,29 @@ public class XMLUtil
 
    public static Element readerToElement(Reader r) throws Exception
    {
+      //Read into string
+      StringBuffer buff = new StringBuffer();
+      int c;
+      while ((c = r.read()) != -1)            
+      {
+         buff.append((char)c);
+      }
+      
+      //Quick hardcoded replace, TODO this can be done better
+      String s = buff.toString();
+            
+      s = doReplace(s, "jboss.messaging.groupname", "MessagingPostOffice");
+      s = doReplace(s, "jboss.messaging.datachanneludpport", "45567");
+      s = doReplace(s, "jboss.messaging.controlchanneludpport", "45568");
+      
+      StringReader sreader = new StringReader(s);
+       
       DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
       DocumentBuilder parser = factory.newDocumentBuilder();
-      Document doc = parser.parse(new InputSource(r));
+      Document doc = parser.parse(new InputSource(sreader));
       return doc.getDocumentElement();
    }
-
+   
    public static String elementToString(Node n)
    {
 
@@ -362,6 +379,17 @@ public class XMLUtil
       }
       return nodes;
    }
+   
+   //Quick dirty replace - use a reg exp to use true default value
+   private static String doReplace(String s, String propertyName, String defaultValue)
+   {
+      String sysProp = System.getProperty(propertyName);
+      
+      s = s.replace("${" + propertyName + ":" + defaultValue + "}", sysProp == null ? defaultValue : sysProp);
+      
+      return s;
+   }
+
 
    // Inner classes --------------------------------------------------------------------------------
 }

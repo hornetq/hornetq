@@ -52,6 +52,9 @@
 
    <property name="build.tests.remote" value="false"/>
    <property name="test.bind.address" value="localhost"/>
+   <property name="jboss.messaging.groupname" value="MessagingPostOffice"/>
+   <property name="jboss.messaging.datachanneludpport" value="45567"/>
+   <property name="jboss.messaging.controlchanneludpport" value="45568"/>
 
    <!--
         Functional tests.

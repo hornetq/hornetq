@@ -436,18 +436,21 @@ public class ServerManagement
       }
       
       String groupName = System.getProperty("jboss.messaging.groupname");
+      log.info("******* GROUP NAME IS " + groupName);
       if (groupName != null)
       {
          sb.append("-Djboss.messaging.groupname=").append(groupName).append(' ');
       }
       
       String dataChannelUDPPort = System.getProperty("jboss.messaging.datachanneludpport");
+      log.info("*** data UDP port is " + dataChannelUDPPort);
       if (dataChannelUDPPort != null)
       {
          sb.append("-Djboss.messaging.datachanneludpport=").append(dataChannelUDPPort).append(' ');
       }
       
       String controlChannelUDPPort = System.getProperty("jboss.messaging.controlchanneludpport");
+      log.info("*** control UDP port is " + controlChannelUDPPort);
       if (controlChannelUDPPort != null)
       {
          sb.append("-Djboss.messaging.controlchanneludpport=").append(controlChannelUDPPort).append(' ');

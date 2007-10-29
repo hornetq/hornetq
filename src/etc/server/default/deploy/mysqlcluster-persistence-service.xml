@@ -134,8 +134,8 @@ LOAD_BINDINGS=SELECT QUEUE_NAME, COND, SELECTOR, CHANNEL_ID, CLUSTERED, ALL_NODE
 
       <!-- The JGroups group name that the post office will use -->
 
-      <attribute name="GroupName">MessagingPostOffice</attribute>
-
+      <attribute name="GroupName">${jboss.messaging.groupname:MessagingPostOffice}</attribute>
+     
       <!-- Max time to wait for state to arrive when the post office joins the cluster -->
 
       <attribute name="StateTimeout">5000</attribute>
