@@ -1007,7 +1007,15 @@ public class ServerSessionEndpoint implements SessionEndpoint
    	
    	if (rec == null)
    	{
-   		throw new java.lang.IllegalStateException("Cannot find delivery with id " + deliveryID);
+   		//This is ok - may happen at failover
+         
+   	   // This can happen when the failover node is being changed
+         // E.g. failover node changes, replicates start getting sent to the new failover node,
+         // then the new node requests to collect the deliveries from this node, at which point we deliver
+         // all waiting deliveries. Then the responses to the original ones come back.
+         // So we can ignore them
+         
+         return;
    	}
    	   	
    	boolean delivered = false;   	
@@ -1042,7 +1050,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
 	   			{
 	   				if (!delivered)
 	   				{
-   	   				// Resonpse has come back out of order - this can happen when the failover node is being changed
+   	   				// Response has come back out of order - this can happen when the failover node is being changed
 	   					// E.g. failover node changes, replicates start getting sent to the new failover node,
 	   					// then the new node requests to collect the deliveries from this node, at which point we deliver
 	   					// all waiting deliveries. Then the responses to the original ones come back.
