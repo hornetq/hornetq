@@ -77,11 +77,11 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
       
       try
       {         
-         office1 = createClusteredPostOffice(1, "testgroup");
+         office1 = createClusteredPostOffice(1);
 
-         office2 = createClusteredPostOffice(2, "testgroup");
+         office2 = createClusteredPostOffice(2);
                   
-         office3 = createClusteredPostOffice(3, "testgroup");
+         office3 = createClusteredPostOffice(3);
          
          Thread.sleep(1000);
          
@@ -137,11 +137,11 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
       
       try
       {         
-         office1 = createClusteredPostOffice(1, "testgroup");
+         office1 = createClusteredPostOffice(1);
 
-         office2 = createClusteredPostOffice(2, "testgroup");
+         office2 = createClusteredPostOffice(2);
                   
-         office3 = createClusteredPostOffice(3, "testgroup");
+         office3 = createClusteredPostOffice(3);
          
          Thread.sleep(1000);
          
@@ -194,7 +194,7 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
       {         
          // Start one office
          
-         office1 = createClusteredPostOffice(1, "testgroup");
+         office1 = createClusteredPostOffice(1);
           
          // Add a couple of queues
          
@@ -214,7 +214,7 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
                
          // Start another office - make sure it picks up the bindings from the first node
          
-         office2 = createClusteredPostOffice(2, "testgroup");
+         office2 = createClusteredPostOffice(2);
            
          // Should return all queues
          Collection queues = office2.getQueuesForCondition(condition1, false);
@@ -299,7 +299,7 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
          
          // Add a third office
                   
-         office3 = createClusteredPostOffice(3, "testgroup");
+         office3 = createClusteredPostOffice(3);
          
          // Maks sure it picks up the bindings
          
@@ -629,9 +629,9 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
       
       try
       {                          
-         office1 = createClusteredPostOffice(1, "testgroup");
-         office2 = createClusteredPostOffice(2, "testgroup");
-         office3 = createClusteredPostOffice(3, "testgroup");         
+         office1 = createClusteredPostOffice(1);
+         office2 = createClusteredPostOffice(2);
+         office3 = createClusteredPostOffice(3);         
                              
          //Durable
          Queue queue1 = new MessagingQueue(1, "sub1", channelIDManager.getID(), ms, pm, true, -1, null, true);
@@ -786,9 +786,9 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
       
       try
       {                          
-         office1 = createClusteredPostOffice(1, "testgroup");
-         office2 = createClusteredPostOffice(2, "testgroup");
-         office3 = createClusteredPostOffice(3, "testgroup");         
+         office1 = createClusteredPostOffice(1);
+         office2 = createClusteredPostOffice(2);
+         office3 = createClusteredPostOffice(3);         
                            
          //Durable
          Queue queue1 = new MessagingQueue(1, "sub1", channelIDManager.getID(), ms, pm, true, -1, null, true);
@@ -897,7 +897,7 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
       
       try
       {                          
-         office1 = createClusteredPostOffice(1, "testgroup");       
+         office1 = createClusteredPostOffice(1);       
                               
          //Durable
          Queue queue1 = new MessagingQueue(1, "sub1", channelIDManager.getID(), ms, pm, true, -1, null, true);
@@ -911,8 +911,8 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
          
          Thread.sleep(1000);
           
-         office2 = createClusteredPostOffice(2, "testgroup");       
-         office3 = createClusteredPostOffice(3, "testgroup");       
+         office2 = createClusteredPostOffice(2);       
+         office3 = createClusteredPostOffice(3);       
                   
          Thread.sleep(1000);
          
@@ -994,7 +994,7 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
       
       try
       {                          
-         office1 = createClusteredPostOffice(1, "testgroup");       
+         office1 = createClusteredPostOffice(1);       
                            
          //Durable
          Queue queue1 = new MessagingQueue(1, "sub1", channelIDManager.getID(), ms, pm, true, -1, null, true);
@@ -1012,8 +1012,8 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
          
          //office1 = createClusteredPostOffice(1, "testgroup"); 
          office1.start();
-         office2 = createClusteredPostOffice(2, "testgroup"); 
-         office3 = createClusteredPostOffice(3, "testgroup"); 
+         office2 = createClusteredPostOffice(2); 
+         office3 = createClusteredPostOffice(3); 
           
          Thread.sleep(1000);
          
@@ -1097,7 +1097,7 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
       
       try
       {                          
-         office1 = createClusteredPostOffice(1, "testgroup");
+         office1 = createClusteredPostOffice(1);
                                    
          //Durable
          Queue queue1 = new MessagingQueue(1, "sub1", channelIDManager.getID(), ms, pm, true, -1, null, true);
@@ -1113,8 +1113,8 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
          
          office1.stop();
          
-         office2 = createClusteredPostOffice(2, "testgroup");
-         office3 = createClusteredPostOffice(3, "testgroup");
+         office2 = createClusteredPostOffice(2);
+         office3 = createClusteredPostOffice(3);
          
          Collection bindings = office2.getAllBindings();         
          assertTrue(bindings.isEmpty());
@@ -1209,9 +1209,9 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
       
       try
       {                          
-         office1 = createClusteredPostOffice(1, "testgroup");
-         office2 = createClusteredPostOffice(2, "testgroup");
-         office3 = createClusteredPostOffice(3, "testgroup");         
+         office1 = createClusteredPostOffice(1);
+         office2 = createClusteredPostOffice(2);
+         office3 = createClusteredPostOffice(3);         
                            
          //Durable
          Queue queue1 = new MessagingQueue(1, "sub1", channelIDManager.getID(), ms, pm, false, -1, null, true);
@@ -1391,7 +1391,7 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
 
    	try
    	{   
-   		office1 = createClusteredPostOffice(1, "testgroup");
+   		office1 = createClusteredPostOffice(1);
 
    		Queue queue1 =  new MessagingQueue(1, "queue1", channelIDManager.getID(), ms, pm, true, -1, null, true);
    		queue1.activate();
@@ -1531,9 +1531,9 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
           
       try
       {   
-         office1 = createClusteredPostOffice(1, "testgroup");
+         office1 = createClusteredPostOffice(1);
          
-         office2 = createClusteredPostOffice(2, "testgroup");
+         office2 = createClusteredPostOffice(2);
          
          Queue queue1 = new MessagingQueue(1, "queue1", channelIDManager.getID(), ms, pm, false, -1, null, true);
          queue1.activate();
@@ -1611,8 +1611,8 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
       {   
          //Start two offices
          
-         office1 = createClusteredPostOffice(1, "testgroup");
-         office2 = createClusteredPostOffice(2, "testgroup");
+         office1 = createClusteredPostOffice(1);
+         office2 = createClusteredPostOffice(2);
      
          Queue[] queues = new Queue[16];
          
@@ -1955,8 +1955,8 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
 
    	try
    	{   
-   		office1 = createClusteredPostOffice(1, "testgroup");
-   		office2 = createClusteredPostOffice(2, "testgroup");
+   		office1 = createClusteredPostOffice(1);
+   		office2 = createClusteredPostOffice(2);
 
    		SimpleFilter filter1 = new SimpleFilter(2);
    		SimpleFilter filter2 = new SimpleFilter(3);
@@ -2067,10 +2067,10 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
 
    	try
    	{   
-   		office1 = createClusteredPostOffice(1, "testgroup");
-   		office2 = createClusteredPostOffice(2, "testgroup");
-   		office3 = createClusteredPostOffice(3, "testgroup");
-   		office4 = createClusteredPostOffice(4, "testgroup");
+   		office1 = createClusteredPostOffice(1);
+   		office2 = createClusteredPostOffice(2);
+   		office3 = createClusteredPostOffice(3);
+   		office4 = createClusteredPostOffice(4);
 
    		Queue queue1 =  new MessagingQueue(1, "queue1", channelIDManager.getID(), ms, pm, false, -1, null, true);
    		queue1.activate();
@@ -2224,8 +2224,8 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
 
    	try
    	{   
-   		office1 = createClusteredPostOffice(1, "testgroup");
-   		office2 = createClusteredPostOffice(2, "testgroup");
+   		office1 = createClusteredPostOffice(1);
+   		office2 = createClusteredPostOffice(2);
 
    		//A mixture of durable and non durable queues
 
@@ -2429,8 +2429,8 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
 
    	try
    	{   
-   		office1 = createClusteredPostOffice(1, "testgroup");
-   		office2 = createClusteredPostOffice(2, "testgroup");
+   		office1 = createClusteredPostOffice(1);
+   		office2 = createClusteredPostOffice(2);
 
    		Queue[] queues = new Queue[16];
 
@@ -2629,8 +2629,8 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
 
    	try
    	{   
-   		office1 = createClusteredPostOffice(1, "testgroup");
-   		office2 = createClusteredPostOffice(2, "testgroup");
+   		office1 = createClusteredPostOffice(1);
+   		office2 = createClusteredPostOffice(2);
 
    		//queue1
 
@@ -2775,8 +2775,8 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
 
    	try
    	{   
-   		office1 = createClusteredPostOffice(1, "testgroup");
-   		office2 = createClusteredPostOffice(2, "testgroup");
+   		office1 = createClusteredPostOffice(1);
+   		office2 = createClusteredPostOffice(2);
 
 
    		Queue queue0 = new MessagingQueue(1, "sub1", channelIDManager.getID(), ms, pm, false, -1, null, true);

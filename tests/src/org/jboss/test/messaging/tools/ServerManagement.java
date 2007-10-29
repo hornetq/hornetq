@@ -441,6 +441,18 @@ public class ServerManagement
          sb.append("-Djboss.messaging.groupname=").append(groupName).append(' ');
       }
       
+      String dataChannelUDPPort = System.getProperty("jboss.messaging.datachanneludpport");
+      if (dataChannelUDPPort != null)
+      {
+         sb.append("-Djboss.messaging.datachanneludpport=").append(dataChannelUDPPort).append(' ');
+      }
+      
+      String controlChannelUDPPort = System.getProperty("jboss.messaging.controlchanneludpport");
+      if (controlChannelUDPPort != null)
+      {
+         sb.append("-Djboss.messaging.controlchanneludpport=").append(controlChannelUDPPort).append(' ');
+      }
+      
       String testLogfileSuffix = System.getProperty("test.logfile.suffix");
 
       if (testLogfileSuffix == null)

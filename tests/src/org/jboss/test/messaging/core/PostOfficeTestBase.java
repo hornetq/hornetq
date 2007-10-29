@@ -24,11 +24,11 @@ package org.jboss.test.messaging.core;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.jboss.messaging.core.contract.ChannelFactory;
 import org.jboss.messaging.core.contract.ClusterNotifier;
 import org.jboss.messaging.core.contract.Condition;
 import org.jboss.messaging.core.contract.ConditionFactory;
 import org.jboss.messaging.core.contract.FilterFactory;
-import org.jboss.messaging.core.contract.ChannelFactory;
 import org.jboss.messaging.core.contract.Message;
 import org.jboss.messaging.core.contract.MessageReference;
 import org.jboss.messaging.core.contract.MessageStore;
@@ -90,7 +90,7 @@ public class PostOfficeTestBase extends MessagingTestCase
          new ClusteredPersistenceServiceConfigFileJChannelFactory(configFilePath,
                                                                   ignoreMultiplexer,
                                                                   sc.getMBeanServer());
-
+      
       MessagingPostOffice postOffice =
          new MessagingPostOffice(sc.getDataSource(), sc.getTransactionManager(),
                                  sc.getPostOfficeSQLProperties(), true, nodeID,
@@ -157,16 +157,14 @@ public class PostOfficeTestBase extends MessagingTestCase
 		return createNonClusteredPostOffice(sc, ms, tr, pm);
 	}
 	
-	protected PostOffice createClusteredPostOffice(int nodeID, String groupName,
-			                                         long stateTimeout, long castTimeout) throws Exception
-	{
-		return createClusteredPostOffice(nodeID, groupName, stateTimeout, castTimeout, sc, ms, tr, pm);
-	}
-	
-	protected PostOffice createClusteredPostOffice(int nodeID, String groupName) throws Exception
+	protected PostOffice createClusteredPostOffice(int nodeID) throws Exception
    {
+      //System property provides group name so we can run concurrently in QA lab
+      String groupName = System.getProperty("jboss.messaging.groupname");
+      
       log.info("Creating clusteredPostOffice node " + nodeID);
-      return createClusteredPostOffice(nodeID, groupName, 5000, 5000, sc, ms, tr, pm);
+      
+      return createClusteredPostOffice(nodeID, groupName == null ? "testgroup" : groupName, 5000, 5000, sc, ms, tr, pm);
    }
    
    protected List sendMessages(String conditionText, boolean persistent, PostOffice office, int num, Transaction tx) throws Exception

@@ -133,7 +133,7 @@ LOAD_BINDINGS=SELECT QUEUE_NAME, COND, SELECTOR, CHANNEL_ID, CLUSTERED, ALL_NODE
       
       <!-- The JGroups group name that the post office will use -->            
       
-      <attribute name="GroupName">MessagingPostOffice</attribute>
+      <attribute name="GroupName">${jboss.messaging.groupname:MessagingPostOffice}</attribute>
       
       <!-- Max time to wait for state to arrive when the post office joins the cluster -->            
                   
@@ -160,7 +160,7 @@ LOAD_BINDINGS=SELECT QUEUE_NAME, COND, SELECTOR, CHANNEL_ID, CLUSTERED, ALL_NODE
          <config>
             <UDP
                mcast_addr="228.8.8.8"
-               mcast_port="45567"
+               mcast_port="${jboss.messaging.datachanneludpport:45567}"
                tos="8"
                ucast_recv_buf_size="20000000"
                ucast_send_buf_size="640000"
@@ -210,7 +210,7 @@ LOAD_BINDINGS=SELECT QUEUE_NAME, COND, SELECTOR, CHANNEL_ID, CLUSTERED, ALL_NODE
          <config>
             <UDP
                  mcast_addr="228.8.8.8"
-                 mcast_port="45568"
+                 mcast_port="${jboss.messaging.controlchanneludpport:45568}"
                  tos="8"
                  ucast_recv_buf_size="20000000"
                  ucast_send_buf_size="640000"

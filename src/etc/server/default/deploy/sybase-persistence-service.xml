@@ -166,7 +166,7 @@ LOAD_BINDINGS=SELECT QUEUE_NAME, COND, SELECTOR, CHANNEL_ID, CLSTERED, ALL_NODES
          <config>
             <UDP
                mcast_addr="228.8.8.8"
-               mcast_port="45567"
+               mcast_port="${jboss.messaging.datachanneludpport:45567}"
                tos="8"
                ucast_recv_buf_size="20000000"
                ucast_send_buf_size="640000"
@@ -198,24 +198,25 @@ LOAD_BINDINGS=SELECT QUEUE_NAME, COND, SELECTOR, CHANNEL_ID, CLSTERED, ALL_NODES
             <pbcast.STABLE stability_delay="1000" desired_avg_gossip="50000"
                            down_thread="false" up_thread="false"
                            max_bytes="400000"/>
-            <pbcast.GMS print_local_addr="true" join_timeout="3000" use_flush="true" flush_timeout="3000"
+            <pbcast.GMS print_local_addr="true" join_timeout="3000"
                         down_thread="false" up_thread="false"
                         join_retry_timeout="2000" shun="false"
                         view_bundling="true"
                         view_ack_collection_timeout="5000"/>
             <FC max_credits="2000000" down_thread="false" up_thread="false"
                 min_threshold="0.10"/>
-            <FRAG2 frag_size="60000" down_thread="false" up_thread="false"/>      
+            <FRAG2 frag_size="60000" down_thread="false" up_thread="false"/>         
+            
          </config>
       </attribute>
       
       <!-- JGroups stack configuration to use for the control channel - used for control messages -->         
-       
+              
       <attribute name="ControlChannelConfig">
          <config>
             <UDP
                  mcast_addr="228.8.8.8"
-                 mcast_port="45568"
+                 mcast_port="${jboss.messaging.controlchanneludpport:45568}"
                  tos="8"
                  ucast_recv_buf_size="20000000"
                  ucast_send_buf_size="640000"
@@ -255,7 +256,7 @@ LOAD_BINDINGS=SELECT QUEUE_NAME, COND, SELECTOR, CHANNEL_ID, CLSTERED, ALL_NODES
             <pbcast.STATE_TRANSFER down_thread="false" up_thread="false" use_flush="true" flush_timeout="3000"/>
             <pbcast.FLUSH down_thread="false" up_thread="false" timeout="20000" auto_flush_conf="false"/>
         </config>
-      </attribute>
+     </attribute>	    
    </mbean>
    
    <!-- Messaging JMS User Manager MBean config

@@ -306,16 +306,6 @@ public class MessagingPostOffice extends JDBCSupport
      
       this.clustered = true;
       
-      //Group name can be overridden with a system property - useful for Hudson test runs
-      String s = System.getProperty("jboss.messaging.groupname");
-      
-      if (s != null)
-      {
-         log.debug("Group name overriden to use: " + s);
-         
-         groupName = s;
-      }
-      
       groupMember = new GroupMember(groupName, stateTimeout, castTimeout, jChannelFactory, this, this);
 
       this.supportsFailover = supportsFailover;
