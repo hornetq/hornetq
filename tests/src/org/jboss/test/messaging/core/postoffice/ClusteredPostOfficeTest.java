@@ -83,7 +83,7 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
                   
          office3 = createClusteredPostOffice(3);
          
-         Thread.sleep(1000);
+         Thread.sleep(3000);
          
          Set nodes = office1.nodeIDView();         
          assertTrue(nodes.contains(new Integer(1)));
@@ -143,7 +143,7 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
                   
          office3 = createClusteredPostOffice(3);
          
-         Thread.sleep(1000);
+         Thread.sleep(3000);
          
          Map failoverMap1 = office1.getFailoverMap();
          
@@ -390,7 +390,7 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
          // Need to sleep since it may take some time for the view changed request to reach the
          // members which causes the bindings to be removed.
          
-         Thread.sleep(1000);
+         Thread.sleep(3000);
          
          // All it's bindings should be removed from the other nodes, including durable
          
@@ -411,7 +411,7 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
          // Stop office 2
          office2.stop();
          
-         Thread.sleep(1000);
+         Thread.sleep(3000);
          
          queues = office3.getQueuesForCondition(condition1, false);
          assertNotNull(queues);
@@ -643,7 +643,7 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
          boolean added = office1.addBinding(new Binding(condition1, queue1, true), true);
          assertTrue(added);
          
-         Thread.sleep(1000);
+         Thread.sleep(3000);
           
          Collection bindings = office1.getAllBindings();         
          assertGotAll(1, bindings, queue1.getName());
@@ -659,7 +659,7 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
          Binding removed = office1.removeBinding(queue1.getName(), true);
          assertNotNull(removed);
          
-         Thread.sleep(1000);
+         Thread.sleep(3000);
          
          bindings = office1.getAllBindings();         
          assertTrue(bindings.isEmpty());
@@ -677,7 +677,7 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
          added = office2.addBinding(new Binding(condition1, queue2, true), true);
          assertTrue(added);
          
-         Thread.sleep(1000);
+         Thread.sleep(3000);
          
          bindings = office1.getAllBindings();         
          assertGotAll(1, bindings, queue2.getName());
@@ -706,7 +706,7 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
          office2.start();
          office3.start();
          
-         Thread.sleep(1000);
+         Thread.sleep(3000);
          
          //Verify the binding is there
          
@@ -724,7 +724,7 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
          removed = office3.removeBinding(queue2.getName(), true);
          assertNotNull(removed);
          
-         Thread.sleep(1000);
+         Thread.sleep(3000);
          
          bindings = office1.getAllBindings();         
          assertTrue(bindings.isEmpty());
@@ -800,7 +800,7 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
          boolean added = office1.addBinding(new Binding(condition1, queue1, true), true);
          assertTrue(added);
          
-         Thread.sleep(1000);
+         Thread.sleep(3000);
           
          Collection bindings = office1.getAllBindings();         
          assertGotAll(1, bindings, queue1.getName());
@@ -815,7 +815,7 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
          added = office1.addBinding(new Binding(condition1, queue1, true), true);
          assertFalse(added);
          
-         Thread.sleep(1000);
+         Thread.sleep(3000);
           
          bindings = office1.getAllBindings();         
          assertGotAll(1, bindings, queue1.getName());
@@ -834,7 +834,7 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
          removed = office1.removeBinding(queue1.getName(), true);
          assertNull(removed);
          
-         Thread.sleep(1000);
+         Thread.sleep(3000);
          
          bindings = office1.getAllBindings();         
          assertTrue(bindings.isEmpty());
@@ -909,12 +909,12 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
          boolean added = office1.addBinding(new Binding(condition1, queue1, true), true);
          assertTrue(added);
          
-         Thread.sleep(1000);
+         Thread.sleep(3000);
           
          office2 = createClusteredPostOffice(2);       
          office3 = createClusteredPostOffice(3);       
                   
-         Thread.sleep(1000);
+         Thread.sleep(3000);
          
          Collection bindings = office1.getAllBindings();         
          assertGotAll(1, bindings, queue1.getName());
@@ -930,7 +930,7 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
          Binding removed = office1.removeBinding(queue1.getName(), true);
          assertNotNull(removed);
          
-         Thread.sleep(1000);
+         Thread.sleep(3000);
          
          bindings = office1.getAllBindings();         
          assertTrue(bindings.isEmpty());
@@ -1006,7 +1006,7 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
          boolean added = office1.addBinding(new Binding(condition1, queue1, true), true);
          assertTrue(added);
          
-         Thread.sleep(1000);
+         Thread.sleep(3000);
          
          office1.stop();
          
@@ -1015,7 +1015,7 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
          office2 = createClusteredPostOffice(2); 
          office3 = createClusteredPostOffice(3); 
           
-         Thread.sleep(1000);
+         Thread.sleep(3000);
          
          Collection bindings = office1.getAllBindings();         
          assertGotAll(1, bindings, queue1.getName());
@@ -1031,7 +1031,7 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
          Binding removed = office1.removeBinding(queue1.getName(), true);
          assertNotNull(removed);
          
-         Thread.sleep(1000);
+         Thread.sleep(3000);
          
          bindings = office1.getAllBindings();         
          assertTrue(bindings.isEmpty());
@@ -1109,7 +1109,7 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
          boolean added = office1.addBinding(new Binding(condition1, queue1, true), true);
          assertTrue(added);
          
-         Thread.sleep(1000);
+         Thread.sleep(3000);
          
          office1.stop();
          
@@ -1124,7 +1124,7 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
              
          office1.start();
          
-         Thread.sleep(1000);
+         Thread.sleep(3000);
             
          bindings = office1.getAllBindings();         
          assertGotAll(1, bindings, queue1.getName());
@@ -1140,7 +1140,7 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
          Binding removed = office1.removeBinding(queue1.getName(), true);
          assertNotNull(removed);
 
-         Thread.sleep(1000);
+         Thread.sleep(3000);
          
          bindings = office1.getAllBindings();         
          assertTrue(bindings.isEmpty());
@@ -1223,7 +1223,7 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
          boolean added = office1.addBinding(new Binding(condition1, queue1, true), true);
          assertTrue(added);
          
-         Thread.sleep(1000);
+         Thread.sleep(3000);
           
          Collection bindings = office1.getAllBindings();         
          assertGotAll(1, bindings, queue1.getName());
@@ -1242,7 +1242,7 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
          office2.start();
          office3.start();
          
-         Thread.sleep(1000);
+         Thread.sleep(3000);
          
          bindings = office1.getAllBindings();         
          assertTrue(bindings.isEmpty());
@@ -1256,7 +1256,7 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
          added = office1.addBinding(new Binding(condition1, queue1, true), true);
          assertTrue(added);
          
-         Thread.sleep(1000);
+         Thread.sleep(3000);
          
          bindings = office1.getAllBindings();         
          assertGotAll(1, bindings, queue1.getName());
@@ -1269,14 +1269,14 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
          
          office3.stop();
 
-         Thread.sleep(1000);
+         Thread.sleep(3000);
           
          bindings = office1.getAllBindings();         
          assertEquals(2, bindings.size());
          
          office3.start();
 
-         Thread.sleep(1000);
+         Thread.sleep(3000);
          
          bindings = office1.getAllBindings();         
          assertGotAll(1, bindings, queue1.getName());
@@ -1440,7 +1440,7 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
    		routed = office1.route(ref3, new SimpleCondition("condition1"), null);      
    		assertTrue(routed);
 
-   		Thread.sleep(1000);
+   		Thread.sleep(3000);
    		
    		List msgs = receiver1.getMessages();
    		assertNotNull(msgs);
@@ -1739,7 +1739,7 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
          log.info("committed");
          
          //Messages are sent asych so may take some finite time to arrive
-         Thread.sleep(1000);
+         Thread.sleep(3000);
          
          for (int i = 0; i < 16; i++)
          {
@@ -1788,7 +1788,7 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
          assertTrue(routed);
          
          //Messages are sent asych so may take some finite time to arrive
-         Thread.sleep(1000);         
+         Thread.sleep(3000);         
          
          for (int i = 0; i < 16; i++)
          {
@@ -1841,7 +1841,7 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
          tx.commit();
          
          //Messages are sent asych so may take some finite time to arrive
-         Thread.sleep(1000);
+         Thread.sleep(3000);
          
          for (int i = 8; i < 16; i++)
          { 
@@ -2001,7 +2001,7 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
    		routed = office1.route(ref3, new SimpleCondition("condition1"), null);      
    		assertTrue(routed);
 
-   		Thread.sleep(1000);
+   		Thread.sleep(3000);
 
    		List msgs = receiver1.getMessages();
    		assertNotNull(msgs);
@@ -2119,7 +2119,7 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
    		routed = office1.route(ref3, new SimpleCondition("condition1"), null);      
    		assertTrue(routed);
 
-   		Thread.sleep(1000);
+   		Thread.sleep(3000);
    		
    		List msgs = receiver1.getMessages();
    		assertNotNull(msgs);
@@ -2341,7 +2341,7 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
    		assertTrue(routed);
 
    		//Messages are sent asych so may take some finite time to arrive
-   		Thread.sleep(1000);
+   		Thread.sleep(3000);
 
    		//Durable queues on remote node should never get the message
 
@@ -2367,7 +2367,7 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
    		routed = office2.route(ref, new SimpleCondition("condition2"), null);         
    		assertTrue(routed);
    		//Messages are sent asych so may take some finite time to arrive
-   		Thread.sleep(1000);
+   		Thread.sleep(3000);
 
    		for (int i = 0; i < 16; i++)
    		{
@@ -2534,7 +2534,7 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
    		assertTrue(routed);
 
    		//Messages are sent asych so may take some finite time to arrive
-   		Thread.sleep(1000);
+   		Thread.sleep(3000);
 
    		//Durable queues on remote node should never get the message - neither should non clustered ones
 
@@ -2560,7 +2560,7 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
    		routed = office2.route(ref, new SimpleCondition("condition2"), null);         
    		assertTrue(routed);
    		//Messages are sent asych so may take some finite time to arrive
-   		Thread.sleep(1000);
+   		Thread.sleep(3000);
 
    		for (int i = 0; i < 16; i++)
    		{
@@ -2679,7 +2679,7 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
    		assertTrue(routed);
 
    		//Messages are sent asych so may take some finite time to arrive
-   		Thread.sleep(1000);
+   		Thread.sleep(3000);
 
    		//Only queue0 should get the message
    		checkGetsMessage(queue0, receiver0, msg);
@@ -2699,7 +2699,7 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
    		assertTrue(routed);
 
    		//Messages are sent asych so may take some finite time to arrive
-   		Thread.sleep(1000);
+   		Thread.sleep(3000);
 
    		//Only queue1 should get the message
    		checkGetsMessage(queue1, receiver1, msg);
@@ -2719,7 +2719,7 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
    		routed = office1.route(ref, new SimpleCondition("myqueue2"), null);         
    		assertTrue(routed);
    		//Messages are sent asych so may take some finite time to arrive
-   		Thread.sleep(1000);
+   		Thread.sleep(3000);
 
    		// Only queue2 should get the message
    		checkGetsMessage(queue2, receiver2, msg);
@@ -2739,7 +2739,7 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
    		routed = office2.route(ref, new SimpleCondition("myqueue2"), null);         
    		assertTrue(routed);
    		//Messages are sent asych so may take some finite time to arrive
-   		Thread.sleep(1000);
+   		Thread.sleep(3000);
 
    		// Only queue3 should get the message
    		checkGetsMessage(queue3, receiver3, msg);
@@ -2822,7 +2822,7 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
    		assertTrue(routed);
 
    		//Messages are sent asych so may take some finite time to arrive
-   		Thread.sleep(1000);
+   		Thread.sleep(3000);
 
    		//Only queue0 should get the message
    		checkGetsMessage(queue0, receiver0, msg);
@@ -2842,7 +2842,7 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
    		assertTrue(routed);
 
    		//Messages are sent asych so may take some finite time to arrive
-   		Thread.sleep(1000);
+   		Thread.sleep(3000);
 
    		//Only queue1 should get the message
    		checkGetsMessage(queue1, receiver1, msg);
@@ -2862,7 +2862,7 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
    		routed = office1.route(ref, new SimpleCondition("myqueue2"), null);         
    		assertTrue(routed);
    		//Messages are sent asych so may take some finite time to arrive
-   		Thread.sleep(1000);
+   		Thread.sleep(3000);
 
    		// Only queue2 should get the message
    		checkGetsMessage(queue2, receiver2, msg);
@@ -2882,7 +2882,7 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
    		routed = office2.route(ref, new SimpleCondition("myqueue2"), null);         
    		assertTrue(routed);
    		//Messages are sent asych so may take some finite time to arrive
-   		Thread.sleep(1000);
+   		Thread.sleep(3000);
 
    		// Only queue3 should get the message
    		checkGetsMessage(queue3, receiver3, msg);
