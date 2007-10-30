@@ -701,8 +701,7 @@ public class ClientConsumer
          if (trace) { log.trace(this + " got Closer result"); }
       }
       catch (InterruptedException e)
-      {
-         log.warn("Thread interrupted", e);
+      {         
       }
    }
 
@@ -713,8 +712,7 @@ public class ClientConsumer
          this.sessionExecutor.execute(runner);
       }
       catch (InterruptedException e)
-      {
-         log.warn("Thread interrupted", e);
+      {         
       }
    }
    

@@ -112,7 +112,6 @@ public class CallbackManager implements InvokerCallbackHandler
       }
       else if (parameter instanceof ConnectionFactoryUpdate)
       {
-
          if (connectionfactoryCallbackHandler == null)
          {
             log.warn("ConnectionFactoryUpdate was received but there is no callbackHandler set");

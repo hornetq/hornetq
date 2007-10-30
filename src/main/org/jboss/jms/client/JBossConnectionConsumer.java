@@ -305,7 +305,7 @@ public class JBossConnectionConsumer implements ConnectionConsumer, Runnable
       }
       catch (Throwable t)
       {
-         log.warn("Connection consumer closing due to error in listening thread " + this, t);
+         log.debug("Connection consumer closing due to error in listening thread " + this, t);
          
          try
          {

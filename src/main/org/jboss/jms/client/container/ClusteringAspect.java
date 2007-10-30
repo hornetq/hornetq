@@ -191,9 +191,9 @@ public class ClusteringAspect
 
                   // In this case we should try back on the original server
 
-                  log.warn("Client attempted failover, but no failover attempt " +
-                           "has been detected on the server side. We will now try again on the original server " +
-                           "in case there was a temporary glitch on the client--server network");
+                  log.debug("Client attempted failover, but no failover attempt " +
+                            "has been detected on the server side. We will now try again on the original server " +
+                            "in case there was a temporary glitch on the client--server network");
 
                   delegate = getDelegateForNode(failedNodeID.intValue());
 

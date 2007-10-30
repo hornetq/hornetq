@@ -109,7 +109,7 @@ public class ClientClusteredConnectionFactoryDelegate extends DelegateSupport
          }
          catch (Throwable e)
          {
-            log.warn("Server communication to server[" + server + "] (" +
+            log.debug("Server communication to server[" + server + "] (" +
                delegates[server].getServerLocatorURI() + ") during establishCallback was broken, " +
                "trying the next one", e);
             if (remoting != null)
@@ -169,7 +169,7 @@ public class ClientClusteredConnectionFactoryDelegate extends DelegateSupport
          }
          catch (Throwable warn)
          {
-            log.warn(warn, warn);
+            log.debug(warn, warn);
          }
 
          try
@@ -243,7 +243,7 @@ public class ClientClusteredConnectionFactoryDelegate extends DelegateSupport
          }
          catch (MessagingNetworkFailureException e)
          {
-            log.warn("Server" + server + " was broken, loading AOP from next delegate", e);
+            log.debug("Server" + server + " was broken, loading AOP from next delegate", e);
          }
       }
 

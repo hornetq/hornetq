@@ -174,7 +174,7 @@ public class FailoverValve
 
          if (!acquired)
          {
-            log.warn(this + " could not close, trying again ...", new Exception());
+            log.debug(this + " could not close, trying again ...", new Exception());
             if (trace) { log.trace(debugValve()); }
          }
       }
