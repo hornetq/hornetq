@@ -28,8 +28,7 @@ import java.util.Map;
 
 import javax.management.MBeanServer;
 
-import org.jboss.jms.exception.MessagingJMSException;
-import org.jboss.jms.wireformat.ConnectionFactoryCreateConnectionDelegateRequest;
+import org.jboss.jms.exception.MessagingShutdownException;
 import org.jboss.jms.wireformat.RequestSupport;
 import org.jboss.jms.wireformat.CallbackRequestSupport;
 import org.jboss.logging.Logger;
@@ -131,7 +130,7 @@ public class JMSServerInvocationHandler implements ServerInvocationHandler
       {	              
          if (closed)
          {
-            throw new MessagingJMSException("Cannot handle invocation since messaging server is not active (it is either starting up or shutting down)");
+            throw new MessagingShutdownException("Cannot handle invocation since messaging server is not active (it is either starting up or shutting down)");
          }
            
          RequestSupport request = (RequestSupport)invocation.getParameter();
@@ -232,7 +231,7 @@ public class JMSServerInvocationHandler implements ServerInvocationHandler
       }
       if (callbackHandler != null)
       {
-         log.debug("found calllback handler for remoting session " + Util.guidToString(remotingSessionId));
+         log.debug("found calllback handler for remoting session " + Util.guidToString(remotingSessionId) + " UID=" + remotingSessionId);
 
          cReq.setCallbackHandler(callbackHandler);
       }

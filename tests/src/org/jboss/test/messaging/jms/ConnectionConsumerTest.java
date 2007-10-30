@@ -314,39 +314,38 @@ public class ConnectionConsumerTest extends JMSTestCase
       }
    }
 
-//   Commented out until http://jira.jboss.com/jira/browse/JBMESSAGING-1099 is complete   
-//   public void testStopWhileProcessing() throws Exception
-//   {
-//      if (ServerManagement.isRemote()) return;
-//
-//
-//      Connection connConsumer = null;
-//
-//      try
-//      {
-//         connConsumer = cf.createConnection();
-//
-//         connConsumer.start();
-//
-//         Session sessCons = connConsumer.createSession(false, Session.AUTO_ACKNOWLEDGE);
-//
-//         SimpleMessageListener listener = new SimpleMessageListener(0);
-//
-//         sessCons.setMessageListener(listener);
-//
-//         ServerSessionPool pool = new MockServerSessionPool(sessCons);
-//
-//         JBossConnectionConsumer cc = (JBossConnectionConsumer)connConsumer.createConnectionConsumer(queue1, null, pool, 1);
-//
-//         ServerManagement.stop();
-//         connConsumer.close();
-//         connConsumer = null;
-//      }
-//      finally
-//      {
-//         if (connConsumer != null) connConsumer.close();
-//      }
-//   }
+   public void testStopWhileProcessing() throws Exception
+   {
+      if (ServerManagement.isRemote()) return;
+
+
+      Connection connConsumer = null;
+
+      try
+      {
+         connConsumer = cf.createConnection();
+
+         connConsumer.start();
+
+         Session sessCons = connConsumer.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+         SimpleMessageListener listener = new SimpleMessageListener(0);
+
+         sessCons.setMessageListener(listener);
+
+         ServerSessionPool pool = new MockServerSessionPool(sessCons);
+
+         JBossConnectionConsumer cc = (JBossConnectionConsumer)connConsumer.createConnectionConsumer(queue1, null, pool, 1);
+
+         ServerManagement.stop();
+         connConsumer.close();
+         connConsumer = null;
+      }
+      finally
+      {
+         if (connConsumer != null) connConsumer.close();
+      }
+   }
 
 
    class SimpleMessageListener implements MessageListener

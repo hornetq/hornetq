@@ -21,8 +21,7 @@
   */
 package org.jboss.jms.client.container;
 
-import javax.jms.MessageListener;
-
+import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
 import org.jboss.aop.joinpoint.Invocation;
 import org.jboss.aop.joinpoint.MethodInvocation;
 import org.jboss.jms.client.delegate.DelegateSupport;
@@ -33,10 +32,11 @@ import org.jboss.jms.client.state.SessionState;
 import org.jboss.jms.delegate.ConnectionDelegate;
 import org.jboss.jms.delegate.ConsumerDelegate;
 import org.jboss.jms.delegate.SessionDelegate;
+import org.jboss.jms.exception.MessagingShutdownException;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.util.MessageQueueNameHelper;
 
-import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
+import javax.jms.MessageListener;
 
 /**
  * 
@@ -127,36 +127,58 @@ public class ConsumerAspect
 
       return consumerDelegate;
    }
-   
+
    public Object handleClosing(Invocation invocation) throws Throwable
    {
       ConsumerState consumerState = getState(invocation);
-      
-      // We make sure closing is called on the ServerConsumerEndpoint.
-      // This returns us the last delivery id sent
+      try
+      {
 
-      Long l  = (Long)invocation.invokeNext();
+         // We make sure closing is called on the ServerConsumerEndpoint.
+         // This returns us the last delivery id sent
 
-      long lastDeliveryId = l.longValue();
+         Long l = (Long) invocation.invokeNext();
 
-      // First we call close on the ClientConsumer which waits for onMessage invocations
-      // to complete and the last delivery to arrive
-      consumerState.getClientConsumer().close(lastDeliveryId);
+         long lastDeliveryId = l.longValue();
 
-      SessionState sessionState = (SessionState)consumerState.getParent();
-      ConnectionState connectionState = (ConnectionState)sessionState.getParent();
+         // First we call close on the ClientConsumer which waits for onMessage invocations
+         // to complete and the last delivery to arrive
+         consumerState.getClientConsumer().close(lastDeliveryId);
 
-      sessionState.removeCallbackHandler(consumerState.getClientConsumer());
+         SessionState sessionState = (SessionState) consumerState.getParent();
+         ConnectionState connectionState = (ConnectionState) sessionState.getParent();
 
-      CallbackManager cm = connectionState.getRemotingConnection().getCallbackManager();
-      cm.unregisterHandler(consumerState.getConsumerID());
+         sessionState.removeCallbackHandler(consumerState.getClientConsumer());
 
-      //And then we cancel any messages still in the message callback handler buffer
-      consumerState.getClientConsumer().cancelBuffer();
+         CallbackManager cm = connectionState.getRemotingConnection().getCallbackManager();
+         cm.unregisterHandler(consumerState.getConsumerID());
 
-      return l;
+         //And then we cancel any messages still in the message callback handler buffer
+         consumerState.getClientConsumer().cancelBuffer();
+
+         return l;
+
+      }
+      catch (Exception proxiedException)
+      {
+         ConnectionState connectionState = (ConnectionState) (consumerState.getParent().getParent());
+         // if ServerPeer is shutdown or
+         // if there is no failover in place... we just close the consumerState as well
+         if (proxiedException instanceof MessagingShutdownException ||
+                 (connectionState.getFailoverCommandCenter() == null))
+
+
+         {
+            if (!consumerState.getClientConsumer().isClosed())
+            {
+               consumerState.getClientConsumer().close(-1);
+            }
+         }
+         throw proxiedException;
+      }
+
    }
-   
+
    public Object handleReceive(Invocation invocation) throws Throwable
    {
       MethodInvocation mi = (MethodInvocation)invocation;
