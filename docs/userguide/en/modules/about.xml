@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <chapter id="about">
-   <title>About JBoss Messaging 1.4.0.GA</title>
+   <title>About JBoss Messaging 1.4.0.</title>
    <para>JBoss Messaging is the new enterprise messaging system from JBoss. It
    is a complete rewrite of JBossMQ, the legacy JBoss JMS provider.</para>
    <para>JBoss Messaging will be the default JMS provider in later versions of
@@ -19,7 +19,7 @@
    <para>Once JBoss Messaging becomes the default JMS provider in JBoss
    Application Server, there will be no need to do any manual
    installation.</para>
-   <para>From release 1.4.0.GA onwards JBoss Messaging is designed for JBoss
+   <para>From release 1.4.0. onwards JBoss Messaging is designed for JBoss
    4.2 only and is Java 5.</para>
    <para>The procedure of installing JBoss Messaging into JBoss Application
    Server is detailed in this guide.</para>
