@@ -85,13 +85,21 @@ public class QueueStressTest extends StressTestBase
       Session sess16 = conn1.createSession(true, Session.SESSION_TRANSACTED);
       
       XASession xaSess1 = ((XAConnection)conn1).createXASession();
+      tweakXASession(xaSess1);
       XASession xaSess2 = ((XAConnection)conn1).createXASession();
+      tweakXASession(xaSess2);
       XASession xaSess3 = ((XAConnection)conn1).createXASession();
+      tweakXASession(xaSess3);
       XASession xaSess4 = ((XAConnection)conn1).createXASession();
+      tweakXASession(xaSess4);
       XASession xaSess5 = ((XAConnection)conn1).createXASession();
+      tweakXASession(xaSess5);
       XASession xaSess6 = ((XAConnection)conn1).createXASession();
+      tweakXASession(xaSess6);
       XASession xaSess7 = ((XAConnection)conn1).createXASession();
+      tweakXASession(xaSess7);
       XASession xaSess8 = ((XAConnection)conn1).createXASession();
+      tweakXASession(xaSess8);
       
       Session sess17 = xaSess1.getSession();
       Session sess18 = xaSess2.getSession();

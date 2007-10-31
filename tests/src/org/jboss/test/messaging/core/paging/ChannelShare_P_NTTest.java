@@ -120,7 +120,7 @@ public class ChannelShare_P_NTTest extends PagingStateTestBase
             
       //Msgs
       
-      pm.reapUnreferencedMessages();
+      ;
       List msgIds = getMessageIds();
       assertEquals(50, msgIds.size()); 
       
@@ -173,7 +173,7 @@ public class ChannelShare_P_NTTest extends PagingStateTestBase
             
       //Msgs
       
-      pm.reapUnreferencedMessages();
+      ;
       msgIds = getMessageIds();
       assertEquals(75, msgIds.size());
       
@@ -228,7 +228,7 @@ public class ChannelShare_P_NTTest extends PagingStateTestBase
             
       //Msgs
       
-      pm.reapUnreferencedMessages();
+      ;
       msgIds = getMessageIds();
       assertEquals(100, msgIds.size());
       
@@ -282,7 +282,7 @@ public class ChannelShare_P_NTTest extends PagingStateTestBase
             
       //Msgs
         
-      pm.reapUnreferencedMessages();
+      ;
       msgIds = getMessageIds();
       assertEquals(150, msgIds.size());
       
@@ -325,7 +325,7 @@ public class ChannelShare_P_NTTest extends PagingStateTestBase
             
       //Msgs
       
-      pm.reapUnreferencedMessages();
+      ;
       msgIds = getMessageIds();
       assertEquals(0, msgIds.size());
       

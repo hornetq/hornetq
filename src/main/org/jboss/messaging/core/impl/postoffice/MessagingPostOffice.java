@@ -367,12 +367,6 @@ public class MessagingPostOffice extends JDBCSupport
 	      put(Replicator.JVM_ID_KEY, clientVMId);
 	      
 	      groupMember.multicastControl(new JoinClusterRequest(thisNodeID, info), true);
-	      
-	      checkStartReaper();
-      }
-      else
-      {
-      	pm.startReaper();
       }
    
       //Now load the bindings for this node
@@ -892,22 +886,10 @@ public class MessagingPostOffice extends JDBCSupport
       log.debug(this + ": " + address + " joined");      
    }
    
-   private void checkStartReaper()
-   {
-   	if (groupMember.getCurrentView().size() == 1)
-   	{
-   		//We are the only member in the group - start the message reaper
-   		
-   		pm.startReaper();
-   	}
-   }
-   
    public void nodesLeft(List addresses) throws Throwable
    {
    	if (trace) { log.trace("Nodes left " + addresses.size()); }
    	  	
-   	checkStartReaper();
-   	
    	Map oldFailoverMap = new HashMap(this.failoverMap);
    	
    	int oldFailoverNodeID = failoverNodeID;

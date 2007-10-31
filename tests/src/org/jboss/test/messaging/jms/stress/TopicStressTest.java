@@ -108,9 +108,13 @@ public class TopicStressTest extends StressTestBase
       
       //4 2pc transactional
       XASession rxaSess1 = ((XAConnection)conn2).createXASession();
+      tweakXASession(rxaSess1);
       XASession rxaSess2 = ((XAConnection)conn2).createXASession();
+      tweakXASession(rxaSess2);
       XASession rxaSess3 = ((XAConnection)conn2).createXASession();
+      tweakXASession(rxaSess3);
       XASession rxaSess4 = ((XAConnection)conn2).createXASession();
+      tweakXASession(rxaSess4);
          
       Session rsess17 = rxaSess1.getSession();
       Session rsess18 = rxaSess2.getSession();

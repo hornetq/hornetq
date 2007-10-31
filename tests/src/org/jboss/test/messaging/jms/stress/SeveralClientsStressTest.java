@@ -40,8 +40,6 @@ import javax.naming.InitialContext;
 import org.jboss.logging.Logger;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
-import org.jboss.test.messaging.tools.container.ServiceAttributeOverrides;
-import org.jboss.test.messaging.tools.container.ServiceContainer;
 
 import EDU.oswego.cs.dl.util.concurrent.LinkedQueue;
 import EDU.oswego.cs.dl.util.concurrent.SynchronizedInt;
@@ -227,20 +225,7 @@ public class SeveralClientsStressTest extends MessagingTestCase
 
       if (startServer)
       {
-         ServiceAttributeOverrides override = new ServiceAttributeOverrides();
-         override.put(ServiceContainer.REMOTING_OBJECT_NAME,
-            "clientMaxPoolSize", "600");
-
-         override.put(ServiceContainer.REMOTING_OBJECT_NAME,
-            "pingFrequency", "1000");
-
-         override.put(ServiceContainer.REMOTING_OBJECT_NAME,
-            "pingWindowFactor", "120");
-
-         /* override.put(ServiceContainer.REMOTING_OBJECT_NAME,
-            "leasePeriod", "60000"); */
-
-         ServerManagement.start(0, "all", override, true);
+         ServerManagement.start(0, "all", null, true);
          ServerManagement.deployQueue("testQueue");
       }
 

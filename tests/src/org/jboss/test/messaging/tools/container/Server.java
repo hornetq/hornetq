@@ -289,7 +289,5 @@ public interface Server extends Remote
    
    void resetAllSuckers() throws Exception;   
    
-   void reapMessages() throws Exception;
-
-    void deployConnectionFactory(String objectName, String[] jndiBindings, boolean strictTck) throws Exception;
+   void deployConnectionFactory(String objectName, String[] jndiBindings, boolean strictTck) throws Exception;
 }

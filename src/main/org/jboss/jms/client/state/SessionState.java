@@ -394,7 +394,8 @@ public class SessionState extends HierarchicalStateSupport
    {
       if (info != null && autoAckInfo != null)
       {
-         throw new IllegalStateException("There is already a delivery set for auto ack");
+         throw new IllegalStateException("There is already a delivery set for auto ack " + System.identityHashCode(this) +
+               " xa: " + this.xa);
       }
       autoAckInfo = info;
    }

@@ -93,7 +93,7 @@ public class PagingStateTestBase extends MessagingTestCase
       pm =
          new JDBCPersistenceManager(sc.getDataSource(), sc.getTransactionManager(),
                   sc.getPersistenceManagerSQLProperties(),
-                  true, true, true, false, 100, 5000, !sc.getDatabaseName().equals("oracle"));  
+                  true, true, true, false, 100, !sc.getDatabaseName().equals("oracle"));  
       ((JDBCPersistenceManager)pm).injectNodeID(1);
       pm.start();
  
@@ -112,7 +112,7 @@ public class PagingStateTestBase extends MessagingTestCase
    
    public void tearDown() throws Exception
    {
-   	pm.reapUnreferencedMessages(); 
+   	; 
    	if (checkNoMessageData())
    	{
    		fail("Message data still exists");

@@ -21,7 +21,8 @@
   */
 package org.jboss.jms.client.container;
 
-import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
+import javax.jms.MessageListener;
+
 import org.jboss.aop.joinpoint.Invocation;
 import org.jboss.aop.joinpoint.MethodInvocation;
 import org.jboss.jms.client.delegate.DelegateSupport;
@@ -36,7 +37,7 @@ import org.jboss.jms.exception.MessagingShutdownException;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.util.MessageQueueNameHelper;
 
-import javax.jms.MessageListener;
+import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
 
 /**
  * 

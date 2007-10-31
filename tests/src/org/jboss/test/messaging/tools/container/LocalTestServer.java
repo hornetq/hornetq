@@ -906,11 +906,6 @@ public class LocalTestServer implements Server
    	getServerPeer().resetAllSuckers();
    }
    
-   public void reapMessages() throws Exception
-   {
-   	getServerPeer().getPersistenceManagerInstance().reapUnreferencedMessages();
-   }
-   
    // Public ---------------------------------------------------------------------------------------
 
    // Package protected ----------------------------------------------------------------------------

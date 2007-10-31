@@ -34,6 +34,8 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -42,8 +44,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.Timer;
-import java.util.TimerTask;
 
 import javax.sql.DataSource;
 import javax.transaction.TransactionManager;
@@ -97,14 +97,6 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
    
    private boolean nodeIDSet;
    
-   private Timer reaperTimer;
-   
-   private Reaper reaper;
-   
-   private long reaperPeriod;
-   
-   private boolean reaperRunning;
-   
    // Some versions of the oracle driver don't support binding blobs on select clauses,
    // what would force us to use a two stage insert (insert and if successful, update)
    private boolean supportsBlobSelect;
@@ -114,7 +106,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
    public JDBCPersistenceManager(DataSource ds, TransactionManager tm, Properties sqlProperties,
                                  boolean createTablesOnStartup, boolean usingBatchUpdates,
                                  boolean usingBinaryStream, boolean usingTrailingByte, int maxParams,
-                                 long reaperPeriod, boolean supportsBlobSelect)
+                                 boolean supportsBlobSelect)
    {
       super(ds, tm, sqlProperties, createTablesOnStartup);
       
@@ -125,16 +117,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
       this.usingTrailingByte = usingTrailingByte;
       
       this.maxParams = maxParams;    
-      
-      this.reaperPeriod = reaperPeriod;
-      
-      if (reaperPeriod > 0)
-      {
-	      reaperTimer = new Timer(true);
-	      
-	      reaper = new Reaper();
-      }
-
+         
       this.supportsBlobSelect = supportsBlobSelect;
    }
    
@@ -167,7 +150,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
                "                         Using an isolation level more strict than READ_COMMITTED may lead to deadlock.\n";
             log.warn(warn);
          }
-
+         
          log.debug("Adding record on JBM_DUAL");
          
          //Now we need to insert a row in the DUAL table if it doesn't contain one already
@@ -235,18 +218,6 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
       log.debug(this + " started");
    }
    
-   public void stop() throws Exception
-   {
-      super.stop();
-      
-      if (reaper != null)
-      {      
-	      reaperTimer.cancel();
-	      
-	      stopReaper();
-      }
-   }
-   
    // Injection -------------------------------------------------
    
    // This is only known by server peer so we inject it after startup
@@ -259,42 +230,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
    }      
    
    // PersistenceManager implementation -------------------------
-   
-   public synchronized void startReaper()
-   {
-   	if (reaperRunning)
-   	{
-   		return;
-   	}
-   	
-   	if (reaper != null && reaperPeriod != -1)
-   	{
-   		reaperTimer.schedule(reaper, reaperPeriod, reaperPeriod);
-   		
-   		reaperRunning = true;
-   	}
-   }
-   
-   public synchronized void stopReaper()
-   {
-   	if (!reaperRunning)
-   	{
-   		return;
-   	}
-   	
-   	if (reaper != null)
-   	{
-	   	reaper.cancel();
-	   	
-	   	reaperRunning = false;
-   	}
-   }
-   
-   public void reapUnreferencedMessages() throws Exception
-   {
-   	reapUnreferencedMessages(System.currentTimeMillis());
-   }
-
+         
    // Related to XA Recovery
    // ======================
    
@@ -387,7 +323,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
          throw new IllegalArgumentException("block size must be > 0");
       }
       
-      class ReserveIDBlockRunner extends JDBCTxRunner<Long>
+      class ReserveIDBlockRunner extends JDBCTxRunner2<Long>
       {
       	public Long doTransaction() throws Exception
    		{
@@ -473,7 +409,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
    {
       if (trace) { log.trace("Getting batch of messages for " + messageIds); }
 
-      class GetMessageListTX extends JDBCTxRunner<List>
+      class GetMessageListTX extends JDBCTxRunner2<List>
       {
 
          public List<Message> doTransaction() throws Exception
@@ -600,7 +536,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
    {  
    	if (trace) { log.trace("Paging references in channel " + channelID + " refs " + references.size()); }
    	
-   	class PageReferencesRunner extends JDBCTxRunner
+   	class PageReferencesRunner extends JDBCTxRunner2
       {	
       	public Object doTransaction() throws Exception
    		{
@@ -671,22 +607,15 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
    {   	
       if (trace) { log.trace(this + " Removing depaged " + references.size() + " refs from channel " + channelID); }
       
-      class RemoveDepagedReferencesRunner extends JDBCTxRunner
+      class RemoveDepagedReferencesRunner extends JDBCTxRunner2
       {
       	public Object doTransaction() throws Exception
    		{
 		      PreparedStatement psDeleteReference = null; 
 		      
-		      PreparedStatement psDeleteMessage = null;
-		      
 		      try
 		      {	
 		         psDeleteReference = conn.prepareStatement(getSQLStatement("DELETE_MESSAGE_REF"));
-		         
-		         if (reaper == null)
-		         {
-		         	psDeleteMessage = conn.prepareStatement(getSQLStatement("DELETE_MESSAGE"));
-		         }
 		         
 		         Iterator iter = references.iterator();		         
 		
@@ -700,15 +629,6 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
 		            
 		            if (trace) { log.trace("Deleted " + rows + " references"); }
 		            
-		            if (reaper == null)
-		            {		            
-			            psDeleteMessage.setLong(1, ref.getMessage().getMessageID());
-			            psDeleteMessage.setLong(2, ref.getMessage().getMessageID());
-			            
-			            rows = psDeleteMessage.executeUpdate();
-			            
-			            if (trace) { log.trace("Deleted " + rows + " messages"); }
-		            }
 		         }         
 		         
 		         return null;
@@ -716,20 +636,21 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
 		      finally
 		      {
 		      	closeStatement(psDeleteReference);       
-		      	closeStatement(psDeleteMessage);
 		      }      
    		}
       }
+            
+      new RemoveDepagedReferencesRunner().executeWithRetry();
       
-      new RemoveDepagedReferencesRunner().executeWithRetry();    
-   }
-   
+      deleteMessages(references);
+   }   
+     
    // After loading paged refs this is used to update P messages to non paged
    public void updateReferencesNotPagedInRange(final long channelID, final long orderStart, final long orderEnd, final long num) throws Exception
    {
       if (trace) { log.trace("Updating paged references for channel " + channelID + " between " + orderStart + " and " + orderEnd); }
       
-      class UpdateReferencesNotPagedInRangeRunner extends JDBCTxRunner
+      class UpdateReferencesNotPagedInRangeRunner extends JDBCTxRunner2
       {
       	public Object doTransaction() throws Exception
    		{
@@ -772,7 +693,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
    {
       if (trace) { log.trace("Updating page order for channel:" + channelID); }
       
-      class UpdatePageOrderRunner extends JDBCTxRunner
+      class UpdatePageOrderRunner extends JDBCTxRunner2
       {
       	public Object doTransaction() throws Exception
    		{      
@@ -986,7 +907,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
       	throw new IllegalArgumentException("Cannot merge transactions - they have the same channel id!!");
       }
       
-      class MergeTransactionsRunner extends JDBCTxRunner
+      class MergeTransactionsRunner extends JDBCTxRunner2
       {
       	public Object doTransaction() throws Exception
    		{
@@ -1023,7 +944,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
       	throw new IllegalArgumentException("Cannot merge queues - they have the same channel id!!");
       }
 
-      class MergeAndLoadRunner extends JDBCTxRunner
+      class MergeAndLoadRunner extends JDBCTxRunner2
       {
       	public Object doTransaction() throws Exception
    		{      
@@ -1190,7 +1111,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
    
    public void addReference(final long channelID, final MessageReference ref, final Transaction tx) throws Exception
    {         	
-   	class AddReferenceRunner extends JDBCTxRunner
+   	class AddReferenceRunner extends JDBCTxRunner2
    	{
 			public Object doTransaction() throws Exception
 			{
@@ -1252,7 +1173,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
    
    public void updateDeliveryCount(final long channelID, final MessageReference ref) throws Exception
    {
-   	class UpdateDeliveryCountRunner extends JDBCTxRunner
+   	class UpdateDeliveryCountRunner extends JDBCTxRunner2
    	{   		
 			public Object doTransaction() throws Exception
 			{   	
@@ -1286,22 +1207,15 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
    
    public void removeReference(final long channelID, final MessageReference ref, final Transaction tx) throws Exception
    {      
-   	class RemoveReferenceRunner extends JDBCTxRunner
+   	class RemoveReferenceRunner extends JDBCTxRunner2
    	{
 			public Object doTransaction() throws Exception
 			{  
 				PreparedStatement psReference = null;
-				
-				PreparedStatement psMessage = null;
-
+				     
 	         try
 	         {
-	            psReference = conn.prepareStatement(getSQLStatement("DELETE_MESSAGE_REF"));
-	            
-	            if (reaper == null)
-	            {
-	            	psMessage = conn.prepareStatement(getSQLStatement("DELETE_MESSAGE"));
-	            }
+	            psReference = conn.prepareStatement(getSQLStatement("DELETE_MESSAGE_REF"));	           
 	            
 	            //Remove the message reference
 	            removeReference(channelID, ref, psReference);
@@ -1315,27 +1229,16 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
 	            }
 	            
 	            if (trace) { log.trace("Deleted " + rows + " references"); }
-	            
-	            if (reaper == null)
-	            {	           
-		            psMessage.setLong(1, ref.getMessage().getMessageID());
-		            psMessage.setLong(2, ref.getMessage().getMessageID());
-		            
-		            rows = psMessage.executeUpdate();
-		            
-		            if (trace) { log.trace("Deleted " + rows + " messages"); }
-	            }
-	            	            
+	                  	            
 	            return null;
 	         }
 	         finally
 	         {
 	         	closeStatement(psReference);
-	         	closeStatement(psMessage);
 	         }  
 			}
    	}
-   	   	
+           
       if (tx != null)
       {
          //In a tx so we just add the ref in the tx in memory for now
@@ -1347,10 +1250,13 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
       else
       {         
          //No tx so we remove the reference directly from the db
-      
-         new RemoveReferenceRunner().executeWithRetry();       
+
+         new RemoveReferenceRunner().executeWithRetry();
+
+         deleteMessage(ref.getMessage().getMessageID());
       }
    }
+   
    
    public boolean referenceExists(long messageID) throws Exception
    {
@@ -1419,7 +1325,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
    protected void handleBeforeCommit1PC(final List refsToAdd, final List refsToRemove, final Transaction tx)
       throws Exception
    {
-   	class HandleBeforeCommit1PCRunner extends JDBCTxRunner
+   	class HandleBeforeCommit1PCRunner extends JDBCTxRunner2
    	{
 			public Object doTransaction() throws Exception
 			{
@@ -1430,8 +1336,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
 		      PreparedStatement psReference = null;
 		      PreparedStatement psInsertMessage = null;
             PreparedStatement psDeleteReference = null;
-            PreparedStatement psDeleteMessage = null;
-		      
+      
 		      List<Message> messagesStored = new ArrayList<Message>();
 
 		      try
@@ -1495,20 +1400,6 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
 		            
 		            if (trace) { log.trace("Deleted " + rows + " references"); }
 		            
-		            if (reaper == null)
-		            {		            
-			            if (psDeleteMessage == null)
-			            {
-			            	psDeleteMessage = conn.prepareStatement(getSQLStatement("DELETE_MESSAGE"));
-			            }
-			            
-			            psDeleteMessage.setLong(1, pair.ref.getMessage().getMessageID());
-			            psDeleteMessage.setLong(2, pair.ref.getMessage().getMessageID());
-			            
-			            rows = psDeleteMessage.executeUpdate();
-			            
-			            if (trace) { log.trace("Deleted " + rows + " messages"); }
-		            }
 		         }
 		         
 		         return null;
@@ -1528,16 +1419,18 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
                closeStatement(psReference);
 		      	closeStatement(psDeleteReference);
 		      	closeStatement(psInsertMessage);
-		      	closeStatement(psDeleteMessage);
 		      }
 			}   		
    	}   	      
-   	new HandleBeforeCommit1PCRunner().executeWithRetry();     
+      
+      new HandleBeforeCommit1PCRunner().executeWithRetry();
+      
+      this.deleteMessages(refsToRemove);
    }
    
    protected void handleBeforeCommit2PC(final List refsToRemove, final Transaction tx) throws Exception
    {          
-   	class HandleBeforeCommit2PCRunner extends JDBCTxRunner
+   	class HandleBeforeCommit2PCRunner extends JDBCTxRunner2
    	{
    		public Object doTransaction() throws Exception
 			{				   	
@@ -1565,31 +1458,6 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
 		         
 		         if (trace) { log.trace(JDBCUtil.statementToString(getSQLStatement("COMMIT_MESSAGE_REF2"), new Long(tx.getId())) + " updated " + rows + " row(s)"); }
 		         
-		         ps.close();
-		         ps = null;
-		         
-		         if (reaper == null)
-		         {			         
-			         Iterator iter = refsToRemove.iterator();
-			         
-			         while (iter.hasNext())
-			         {
-			         	ChannelRefPair pair = (ChannelRefPair)iter.next();
-			         	
-			         	if (ps == null)
-			         	{
-			         		ps = conn.prepareStatement(getSQLStatement("DELETE_MESSAGE"));
-			         	}
-			         		
-		         		ps.setLong(1, pair.ref.getMessage().getMessageID());
-		         		ps.setLong(2, pair.ref.getMessage().getMessageID());
-		         		
-		         		rows = ps.executeUpdate();
-		         		
-		         		if (trace) { log.trace("Deleted " + rows + " messages"); }			         	           
-			         }
-		         }
-		         
 		         removeTXRecord(conn, tx);
 		         
 		         return null;
@@ -1601,12 +1469,14 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
 			}
    	}
    	
-   	new HandleBeforeCommit2PCRunner().executeWithRetry();
+      new HandleBeforeCommit2PCRunner().executeWithRetry();
+      
+      this.deleteMessages(refsToRemove);        	
    }
    
    protected void handleBeforePrepare(final List refsToAdd, final List refsToRemove, final Transaction tx) throws Exception
    {
-   	class HandleBeforePrepareRunner extends JDBCTxRunner
+   	class HandleBeforePrepareRunner extends JDBCTxRunner2
    	{
 			public Object doTransaction() throws Exception
 			{
@@ -1714,7 +1584,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
    
    protected void handleBeforeRollback(final List refsToAdd, final Transaction tx) throws Exception
    {
-   	class HandleBeforeRollbackRunner extends JDBCTxRunner
+   	class HandleBeforeRollbackRunner extends JDBCTxRunner2
    	{
 			public Object doTransaction() throws Exception
 			{
@@ -1747,31 +1617,6 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
 		                  + " row(s)");
 		         }
 		         
-		         ps.close();
-		         ps = null;
-		         
-		         if (reaper == null)
-		         {			         
-			         Iterator iter = refsToAdd.iterator();
-			         
-			         while (iter.hasNext())
-			         {
-			         	ChannelRefPair pair = (ChannelRefPair)iter.next();
-			         	
-			         	if (ps == null)
-			         	{
-			         		ps = conn.prepareStatement(getSQLStatement("DELETE_MESSAGE"));
-			         	}
-			         		
-		         		ps.setLong(1, pair.ref.getMessage().getMessageID());
-		         		ps.setLong(2, pair.ref.getMessage().getMessageID());
-		         		
-		         		rows = ps.executeUpdate();
-		         		
-		         		if (trace) { log.trace("Deleted " + rows + " messages"); }		         			           
-			         }
-		         }
-		         
 		         removeTXRecord(conn, tx);
 		         
 		         return null;
@@ -1783,7 +1628,9 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
 			}   	
    	}
    	
-   	new HandleBeforeRollbackRunner().executeWithRetry();
+      new HandleBeforeRollbackRunner().executeWithRetry();
+      
+      this.deleteMessages(refsToAdd);      	     
    }
    
    
@@ -2294,6 +2141,93 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
    
    // Private -------------------------------------------------------
    
+   private void deleteMessages(final List references) throws Exception
+   {
+      class DeleteMessagesRunner extends JDBCTxRunner2
+      {
+         public Object doTransaction() throws Exception
+         {  
+
+            PreparedStatement psMessage = null;
+
+            try
+            {
+               psMessage = conn.prepareStatement(getSQLStatement("DELETE_MESSAGE"));
+               
+               Iterator iter = references.iterator();
+               
+               while (iter.hasNext())
+               {
+                  Object obj = iter.next();
+
+                  MessageReference ref;
+                  if (obj instanceof MessageReference)
+                  {
+                     ref = (MessageReference)obj;
+                  }
+                  else
+                  {
+                     ref = ((ChannelRefPair)obj).ref;
+                  }                  
+
+                  psMessage.setLong(1, ref.getMessage().getMessageID());
+                  psMessage.setLong(2, ref.getMessage().getMessageID());
+   
+                  int rows = psMessage.executeUpdate();
+                  
+                  if (trace) { log.trace("Deleted " + rows + " messages"); }             
+
+               }
+               
+               return null;
+            }
+            finally
+            {
+               closeStatement(psMessage);
+            }  
+         }
+      }
+      
+      //Order to avoid deadlock
+      orderReferences(references);
+      
+      new DeleteMessagesRunner().executeWithRetry();
+   }
+   
+   
+   private void deleteMessage(final long messageID) throws Exception
+   {
+      class DeleteMessageRunner extends JDBCTxRunner2
+      {
+         public Object doTransaction() throws Exception
+         {  
+
+            PreparedStatement psMessage = null;
+
+            try
+            {
+               psMessage = conn.prepareStatement(getSQLStatement("DELETE_MESSAGE"));
+
+               psMessage.setLong(1, messageID);
+               psMessage.setLong(2, messageID);
+
+               int rows = psMessage.executeUpdate();
+
+               if (trace) { log.trace("Deleted " + rows + " messages"); }             
+
+               return null;
+            }
+            finally
+            {
+               closeStatement(psMessage);
+            }  
+         }
+      }
+      
+      new DeleteMessageRunner().executeWithRetry();
+   }
+   
+   
    private List getMessageChannelPair(String sqlQuery, long transactionId) throws Exception
    {
       if (trace) log.trace("loading message and channel ids for tx [" + transactionId + "]");
@@ -2433,76 +2367,9 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
       
       return order;
    }
-      
-   private void reapUnreferencedMessages(final long timestamp) throws Exception
-   {
-   	class ReaperRunner extends JDBCTxRunner
-   	{
-			public Object doTransaction() throws Exception
-			{
-				PreparedStatement ps = null;
-			   
-		       int rows = -1;
-		       		   	      
-		       try
-		       {
-		          ps = conn.prepareStatement(getSQLStatement("REAP_MESSAGES"));
-		          
-		          ps.setLong(1, timestamp);
-		          
-		          rows = ps.executeUpdate();
-		          
-		          return rows;
-		       }		       
-		       finally
-		       {
-		       	closeStatement(ps);		         		        
-		       }
-			}   		
-   	}
-   	
-   	long start = System.currentTimeMillis();
-	   
-   	int rows = (Integer)new ReaperRunner().executeWithRetry();
-   	 
-   	long end = System.currentTimeMillis();
-      
-      if (trace) { log.trace("Reaper reaped " + rows + " messages in " + (end - start) + " ms"); }
-   }
-     
+         
    // Inner classes -------------------------------------------------
             
-   private class Reaper extends TimerTask
-   {
-   	private boolean cancel;
-   	
-		public synchronized void run()
-		{
-			if (cancel)
-			{
-				cancel();
-				
-				return;
-			}
-			
-			try
-			{
-				reapUnreferencedMessages(System.currentTimeMillis() - reaperPeriod);
-			}
-			catch (Exception e)
-			{
-				log.error("Failed to reap", e);
-			}
-		}
-		
-		public synchronized void doCancel()
-		{
-			cancel = true;
-			
-			cancel();
-		}
-   }
-   
    private static class ChannelRefPair
    {
       private long channelID;
@@ -2585,6 +2452,38 @@ public class JDBCPersistenceManager extends JDBCSupport implements PersistenceMa
             handleBeforeRollback(refsToAdd, tx);
          }
       }
+   }
+   
+   private void orderReferences(List references)
+   {      
+      Collections.sort(references, MessageOrderComparator.instance);
+   }
+      
+   private static class MessageOrderComparator implements Comparator
+   {
+      static MessageOrderComparator instance = new MessageOrderComparator();
+      
+      public int compare(Object o1, Object o2)
+      {        
+         MessageReference ref1;
+         MessageReference ref2;
+         
+         if (o1 instanceof MessageReference)
+         {
+            ref1 = (MessageReference)o1;
+            ref2 = (MessageReference)o2;
+         }
+         else
+         {
+            ref1 = ((ChannelRefPair)o1).ref;
+            ref2 = ((ChannelRefPair)o2).ref;
+         }
+         
+         long id1 = ref1.getMessage().getMessageID();         
+         long id2 = ref2.getMessage().getMessageID(); 
+         
+         return (id1 < id2 ? -1 : (id1 == id2 ? 0 : 1));
+      }      
    }
    
 }

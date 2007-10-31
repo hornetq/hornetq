@@ -508,11 +508,6 @@ public class RMITestServer extends UnicastRemoteObject implements Server
    	server.resetAllSuckers();
    }   
    
-   public void reapMessages() throws Exception
-   {
-   	server.reapMessages();
-   }
-   
    // Public --------------------------------------------------------
 
    // Package protected ---------------------------------------------

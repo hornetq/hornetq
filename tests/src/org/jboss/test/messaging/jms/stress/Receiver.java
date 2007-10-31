@@ -215,6 +215,8 @@ public class Receiver extends Runner implements MessageListener
             
             prodName = m.getStringProperty("PROD_NAME");
             msgCount = new Integer(m.getIntProperty("MSG_NUMBER"));
+            
+            //log.info(this + " Got message " + prodName + ":" + msgCount + "M: " + m.getJMSMessageID());
            
             Integer prevCount = (Integer)counts.get(prodName);
             if (prevCount == null)

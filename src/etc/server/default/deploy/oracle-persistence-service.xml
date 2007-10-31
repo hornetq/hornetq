@@ -90,10 +90,7 @@
       <!-- The maximum number of parameters to include in a prepared statement -->
                   
       <attribute name="MaxParams">500</attribute>
-      
-      <!-- The period between asynchronous reaps of unreferenced messages, or zero for synchronous reaping -->
-      
-      <attribute name="ReaperPeriod">0</attribute>      
+       
    </mbean>
 
    <!-- Messaging Post Office MBean configuration

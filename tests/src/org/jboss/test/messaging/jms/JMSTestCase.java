@@ -109,7 +109,6 @@ public class JMSTestCase extends MessagingTestCase
 		
 		if (ServerManagement.isStarted(0))
 		{			
-			ServerManagement.getServer().reapMessages();
 			if (checkNoMessageData())
 			{
 				fail("Message Data exists");

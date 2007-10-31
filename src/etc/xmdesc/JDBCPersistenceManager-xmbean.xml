@@ -65,12 +65,6 @@
       <type>int</type>
    </attribute> 
    
-   <attribute access="read-write" getMethod="getReaperPeriod" setMethod="setReaperPeriod">
-      <description>The period in ms for the reaper to kick in and delete unreferenced messages from the database</description>
-      <name>ReaperPeriod</name>
-      <type>long</type>
-   </attribute>    
-   
    <attribute access="read-write" getMethod="isSupportsBlobOnSelect" setMethod="setSupportsBlobOnSelect">
       <description>Some databases don't support binding blobs on select clauses</description>
       <name>SupportsBlobOnSelect</name>

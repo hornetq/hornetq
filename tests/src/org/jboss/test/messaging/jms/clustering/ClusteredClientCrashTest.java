@@ -23,13 +23,16 @@
 package org.jboss.test.messaging.jms.clustering;
 
 import java.lang.ref.WeakReference;
+
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
+
 import org.jboss.jms.client.delegate.ClientClusteredConnectionFactoryDelegate;
 import org.jboss.logging.Logger;
 import org.jboss.test.messaging.tools.ServerManagement;
 import org.jboss.test.messaging.tools.container.Command;
 import org.jboss.test.messaging.tools.container.Server;
+import org.jboss.test.messaging.tools.container.ServiceContainer;
 
 /**
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
@@ -47,8 +50,6 @@ public class ClusteredClientCrashTest extends ClusteringTestBase
    // Attributes ----------------------------------------------------
 
    protected Server localServer;
-
-   //protected Server remoteServer;
 
    // Constructors --------------------------------------------------
 
@@ -76,46 +77,38 @@ public class ClusteredClientCrashTest extends ClusteringTestBase
     * cleaned-up.
     */
    public void testClientCrash() throws Exception
-   {
-//      Commented out until http://jira.jboss.com/jira/browse/JBMESSAGING-1099 is fixed
-      
-//      ServerManagement.create(2);
-//      Server remoteServer = ServerManagement.getServer(2);
-//
-//      // We need to make sure that any previously downloaded CF should be released
-//      WeakReference ref = new WeakReference(ic[0].lookup("/ClusteredConnectionFactory"));
-//      int count=0;
-//      while (ref.get() != null)
-//      {
-//         System.gc();
-//         Thread.sleep(1000);
-//         if ((count++>10) && ref.get() != null)
-//         {
-//            fail("Thre is a leak on ClusteredConnectionFactory");
-//         }
-//      }
-//
-//
-//      ClientClusteredConnectionFactoryDelegate cfDelegate =  (ClientClusteredConnectionFactoryDelegate)cf.getDelegate();
-//
-//      cfDelegate.closeCallback();
-//
-//      ClusterClientCrash command = new ClusterClientCrash(cf);
-//
-//      assertEquals("OK", remoteServer.executeCommand(command));
-//
-//      assertEquals(new Integer(1),ServerManagement.getServer(1).executeCommand(new VerifySizeOfCFClients(cfDelegate.getUniqueName())));
-//
-//      ServerManagement.kill(2);
-//      Thread.sleep(30000);
-//
-//      assertEquals(new Integer(0), ServerManagement.getServer(0).executeCommand(new VerifySizeOfCFClients(cfDelegate.getUniqueName())));
-//      assertEquals(new Integer(0), ServerManagement.getServer(1).executeCommand(new VerifySizeOfCFClients(cfDelegate.getUniqueName())));
-//
-//
-//      //localServer.setAttribute(ServiceContainer.REMOTING_OBJECT_NAME, "LeasePeriod", "2000");
-//
-//      //performCrash(8000, false);
+   {    
+      ServerManagement.create(2);
+      Server remoteServer = ServerManagement.getServer(2);
+
+      // We need to make sure that any previously downloaded CF should be released
+      WeakReference ref = new WeakReference(ic[0].lookup("/ClusteredConnectionFactory"));
+      int count=0;
+      while (ref.get() != null)
+      {
+         System.gc();
+         Thread.sleep(1000);
+         if ((count++>10) && ref.get() != null)
+         {
+            fail("Thre is a leak on ClusteredConnectionFactory");
+         }
+      }
+       
+      ClientClusteredConnectionFactoryDelegate cfDelegate =  (ClientClusteredConnectionFactoryDelegate)cf.getDelegate();
+
+      cfDelegate.closeCallback();
+
+      ClusterClientCrash command = new ClusterClientCrash(cf);
+
+      assertEquals("OK", remoteServer.executeCommand(command));
+
+      assertEquals(new Integer(1),ServerManagement.getServer(1).executeCommand(new VerifySizeOfCFClients(cfDelegate.getUniqueName())));
+
+      ServerManagement.kill(2);
+      Thread.sleep((long)(60000));
+
+      assertEquals(new Integer(0), ServerManagement.getServer(0).executeCommand(new VerifySizeOfCFClients(cfDelegate.getUniqueName())));
+      assertEquals(new Integer(0), ServerManagement.getServer(1).executeCommand(new VerifySizeOfCFClients(cfDelegate.getUniqueName())));
    }
 
 

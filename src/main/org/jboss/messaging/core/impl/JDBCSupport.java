@@ -23,8 +23,8 @@ package org.jboss.messaging.core.impl;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
-import java.sql.Statement;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -33,6 +33,7 @@ import java.util.Properties;
 
 import javax.sql.DataSource;
 import javax.transaction.Status;
+import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
 
 import org.jboss.logging.Logger;
@@ -391,8 +392,8 @@ public class JDBCSupport implements MessagingComponent
 	      }
 	      finally
 	      {
-	      	closeConnection(conn);
-	         wrap.end();
+            wrap.end();
+	      	closeConnection(conn);	         
 	      }
 		}
 
@@ -412,9 +413,9 @@ public class JDBCSupport implements MessagingComponent
 	            }
 	            return res;
 	         }
-	         catch (SQLException e)
+	         catch (SQLException  e)
 	         {
-	            log.warn("SQLException caught, SQLState " + e.getSQLState() + " code:" + e.getErrorCode() + "- assuming deadlock detected, try:" + (tries + 1), e);
+  	            log.warn("SQLException caught, SQLState " + e.getSQLState() + " code:" + e.getErrorCode() + "- assuming deadlock detected, try:" + (tries + 1), e);
 
 	            tries++;
 	            if (tries == MAX_TRIES)
@@ -430,6 +431,89 @@ public class JDBCSupport implements MessagingComponent
 		}
 
 		public abstract T doTransaction() throws Exception;
+   }
+   
+   
+   protected abstract class JDBCTxRunner2<T>
+   {
+      private static final int MAX_TRIES = 25;
+
+      protected Connection conn;
+
+      public T execute() throws Exception
+      {  
+         Transaction tx = tm.suspend();
+
+         try
+         {
+            conn = ds.getConnection();
+            
+            conn.setAutoCommit(false);
+
+            T res = doTransaction();
+            
+            conn.commit();
+            
+            return res;
+         }
+         catch (Exception e)
+         {
+            try
+            {
+               conn.rollback();
+            }
+            catch (Throwable t)
+            {
+               log.trace("Failed to rollback", t);
+            }
+            
+            throw e;
+         }
+         finally
+         {
+            closeConnection(conn);  
+            
+            if (tx != null)
+            {
+               tm.resume(tx);
+            }            
+         }
+      }
+
+      public T executeWithRetry() throws Exception
+      {
+         int tries = 0;
+
+         while (true)
+         {
+            try
+            {
+               T res = execute();
+
+               if (tries > 0)
+               {
+                  log.warn("Update worked after retry");
+               }
+               return res;
+            }
+            catch (SQLException  e)
+            {
+               log.warn("SQLException caught, SQLState " + e.getSQLState() + " code:" + e.getErrorCode() + "- assuming deadlock detected, try:" + (tries + 1), e);
+
+               tries++;
+               if (tries == MAX_TRIES)
+               {
+                  log.error("Retried " + tries + " times, now giving up");
+                  throw new IllegalStateException("Failed to excecute transaction");
+               }
+               log.warn("Trying again after a pause");
+               //Now we wait for a random amount of time to minimise risk of deadlock
+               Thread.sleep((long)(Math.random() * 500));
+            }
+         }
+      }
+
+      public abstract T doTransaction() throws Exception;
    }
 
 }

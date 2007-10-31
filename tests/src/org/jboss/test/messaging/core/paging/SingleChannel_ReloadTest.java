@@ -112,7 +112,7 @@ public class SingleChannel_ReloadTest extends PagingStateTestBase
       pm =
          new JDBCPersistenceManager(sc.getDataSource(), sc.getTransactionManager(),
                   sc.getPersistenceManagerSQLProperties(),
-                  true, true, true, false, 100, 5000, !sc.getDatabaseName().equals("oracle"));   
+                  true, true, true, false, 100, !sc.getDatabaseName().equals("oracle"));   
       ((JDBCPersistenceManager)pm).injectNodeID(1);
       pm.start();
       
@@ -204,7 +204,7 @@ public class SingleChannel_ReloadTest extends PagingStateTestBase
       pm =
          new JDBCPersistenceManager(sc.getDataSource(), sc.getTransactionManager(),
                   sc.getPersistenceManagerSQLProperties(),
-                  true, true, true, false, 100, 5000, !sc.getDatabaseName().equals("oracle")); 
+                  true, true, true, false, 100, !sc.getDatabaseName().equals("oracle")); 
       ((JDBCPersistenceManager)pm).injectNodeID(1);
       pm.start();
       
@@ -224,7 +224,7 @@ public class SingleChannel_ReloadTest extends PagingStateTestBase
       refIds = getReferenceIdsOrderedByPageOrd(queue2.getChannelID());
       assertEquals(0, refIds.size());
       
-      pm.reapUnreferencedMessages();
+      ;
       List msgIds = getMessageIds();
       assertEquals(0, msgIds.size());
                                                                   
@@ -288,7 +288,7 @@ public class SingleChannel_ReloadTest extends PagingStateTestBase
       refIds = getReferenceIdsOrderedByPageOrd(queue.getChannelID());
       assertEquals(0, refIds.size());
       
-      pm.reapUnreferencedMessages();
+      ;
       List msgIds = getMessageIds();
       assertEquals(0, msgIds.size());
                                                                   

@@ -39,13 +39,6 @@ import org.jboss.messaging.core.impl.tx.Transaction;
  */
 public interface PersistenceManager extends MessagingComponent
 {
-	void startReaper();
-	
-	void stopReaper();
-	
-	void reapUnreferencedMessages() throws Exception;
-	
-
    void addReference(long channelID, MessageReference ref, Transaction tx) throws Exception;
 
    void removeReference(long channelID, MessageReference ref, Transaction tx) throws Exception;

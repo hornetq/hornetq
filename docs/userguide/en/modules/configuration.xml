@@ -892,10 +892,7 @@ LOAD_BINDINGS=SELECT QUEUE_NAME, COND, SELECTOR, CHANNEL_ID, CLUSTERED, ALL_NODE
       &lt;!-- The maximum number of parameters to include in a prepared statement --&gt;
                   
       &lt;attribute name="MaxParams"&gt;500&lt;/attribute&gt;
-      
-      &lt;!-- The period between asynchronous reaps of unreferenced messages, or zero for synchronous reaping --&gt;
-      
-      &lt;attribute name="ReaperPeriod"&gt;0&lt;/attribute&gt;      
+         
    &lt;/mbean&gt;
 	  
 	   </programlisting>
@@ -953,16 +950,6 @@ LOAD_BINDINGS=SELECT QUEUE_NAME, COND, SELECTOR, CHANNEL_ID, CLUSTERED, ALL_NODE
             <para>By default the value of
             <literal>SupportsBlobOnSelect</literal> attribute is set to
             <literal>true</literal></para>
-         </section>
-         <section id="conf.persistencemanager.attributes.reaperperiod">
-            <title>ReaperPeriod</title>
-            <para>This value determines how often the database message reaper
-            removes unreferenced (deleted) messages in milliseconds. If it's
-            value is 0 (zero) then a reaper is not used and messages are
-            deleted synchronously on acknowledgement.</para>
-            <para>By default the value of <literal>ReaperPeriod</literal>
-            attribute is set to <literal>0</literal> which means synchronous
-            removal of messages is used.</para>
          </section>
          <section id="conf.persistencemanager.attributes.sqlproperties">
             <title>SQLProperties</title>

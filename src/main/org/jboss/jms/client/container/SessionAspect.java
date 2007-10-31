@@ -914,6 +914,15 @@ public class SessionAspect
     *    However when the Session is being used by ASF we should consider the case where
     *    we will convert LocalTX to GlobalTransactions.
     *    This function helper will ensure the condition that needs to be tested on this aspect
+    *    
+    *    There is a real conundrum here:
+    *    
+    *    An XA Session needs to act as transacted when not enlisted for consuming messages for an MDB so when it does
+    *    get enlisted we can transfer the work inside the tx
+    *    
+    *    But in needs to act as auto_acknowledge when not enlisted and not in an MDB (or bridge or stress test) to satisfy 
+    *    integration tests and TCK!!! Hence getTreatAsNonTransactedWhenNotEnlisted()
+    *    
     * */
    private boolean isXAAndConsideredNonTransacted(SessionState state)
    {

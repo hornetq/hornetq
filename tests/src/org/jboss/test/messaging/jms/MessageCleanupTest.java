@@ -118,8 +118,6 @@ public class MessageCleanupTest extends JMSTestCase
       
       assertEquals(0, getReferenceIds().size());
       
-      ServerManagement.getServer().reapMessages();
-      
       assertEquals(0, getMessageIds().size());
       
       conn.close();
@@ -168,12 +166,8 @@ public class MessageCleanupTest extends JMSTestCase
         
       assertEquals(0, getReferenceIds().size());
       
-      ServerManagement.getServer().reapMessages();
-      
-      
       assertEquals(0, getMessageIds().size());
-      
-      
+            
       conn.close();
    }
    
@@ -222,11 +216,7 @@ public class MessageCleanupTest extends JMSTestCase
       
       assertEquals(0, getReferenceIds().size());
       
-      ServerManagement.getServer().reapMessages();
-      
-      
-      assertEquals(0, getMessageIds().size());
-      
+      assertEquals(0, getMessageIds().size());      
    }
    
    /*
@@ -276,11 +266,7 @@ public class MessageCleanupTest extends JMSTestCase
         
       assertEquals(0, getReferenceIds().size());
       
-      ServerManagement.getServer().reapMessages();
-      
-      
-      assertEquals(0, getMessageIds().size());
-      
+      assertEquals(0, getMessageIds().size());      
    }
 
    // Public --------------------------------------------------------

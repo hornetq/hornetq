@@ -118,7 +118,6 @@ public class ChannelShare_NP_2PCTest extends PagingStateTestBase
            
       //Msgs
       
-      pm.reapUnreferencedMessages();
       List msgIds = getMessageIds();
       assertEquals(0, msgIds.size()); 
       
@@ -168,7 +167,6 @@ public class ChannelShare_NP_2PCTest extends PagingStateTestBase
             
       //Msgs
         
-      pm.reapUnreferencedMessages();
       msgIds = getMessageIds();
       assertEquals(25, msgIds.size());
        
@@ -217,7 +215,6 @@ public class ChannelShare_NP_2PCTest extends PagingStateTestBase
             
       //Msgs
 
-      pm.reapUnreferencedMessages();
       msgIds = getMessageIds();
       assertEquals(50, msgIds.size());
       
@@ -266,7 +263,6 @@ public class ChannelShare_NP_2PCTest extends PagingStateTestBase
                
       //Msgs
       
-      pm.reapUnreferencedMessages();
       msgIds = getMessageIds();
       assertEquals(100, msgIds.size());
              
@@ -309,7 +305,6 @@ public class ChannelShare_NP_2PCTest extends PagingStateTestBase
             
       //Msgs
       
-      pm.reapUnreferencedMessages();
       msgIds = getMessageIds();
       assertEquals(0, msgIds.size());
       

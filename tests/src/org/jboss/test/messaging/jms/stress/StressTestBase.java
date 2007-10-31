@@ -24,8 +24,12 @@ package org.jboss.test.messaging.jms.stress;
 import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
 import javax.jms.Topic;
+import javax.jms.XASession;
 import javax.naming.InitialContext;
 
+import org.jboss.jms.client.JBossSession;
+import org.jboss.jms.client.delegate.DelegateSupport;
+import org.jboss.jms.client.state.SessionState;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
 
@@ -107,8 +111,6 @@ public class StressTestBase extends MessagingTestCase
 
    public void tearDown() throws Exception
    {
-   	ServerManagement.getServer().reapMessages();
-   	
    	if (checkNoMessageData())
    	{
    		fail("Message data still exists");
@@ -151,5 +153,14 @@ public class StressTestBase extends MessagingTestCase
             log.error("runner failed");
          }
       } 
+   }
+   
+   protected void tweakXASession(XASession sess)
+   {
+      JBossSession jsess = (JBossSession)sess;
+      
+      SessionState sstate = (SessionState)((DelegateSupport)jsess.getDelegate()).getState();
+      
+      sstate.setTreatAsNonTransactedWhenNotEnlisted(false);
    }
 }
