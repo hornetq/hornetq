@@ -132,19 +132,19 @@ public class OpenCloseStressTest extends MessagingTestCase
 	      Subscriber[] subscribers = new Subscriber[5];
    			      
 	      conn4 = cf.createConnection();
-	      subscribers[0] = new Subscriber(conn4, 3 * MSGS_PER_PUBLISHER, 500, 1000 * 60 * 5, topic, false);
+	      subscribers[0] = new Subscriber(conn4, 3 * MSGS_PER_PUBLISHER, 500, 1000 * 60 * 15, topic, false);
 	      
 	      conn5 = cf.createConnection();
-	      subscribers[1] = new Subscriber(conn5, 3 * MSGS_PER_PUBLISHER, 2000, 1000 * 60 * 5, topic, false);
+	      subscribers[1] = new Subscriber(conn5, 3 * MSGS_PER_PUBLISHER, 2000, 1000 * 60 * 15, topic, false);
 	      
 	      conn6 = cf.createConnection();
-	      subscribers[2] = new Subscriber(conn6, 3 * MSGS_PER_PUBLISHER, 700, 1000 * 60 * 5, topic, false);
+	      subscribers[2] = new Subscriber(conn6, 3 * MSGS_PER_PUBLISHER, 700, 1000 * 60 * 15, topic, false);
 	      
 	      conn7 = cf.createConnection();
-	      subscribers[3] = new Subscriber(conn7, 3 * MSGS_PER_PUBLISHER, 1500, 1000 * 60 * 5, topic, true);
+	      subscribers[3] = new Subscriber(conn7, 3 * MSGS_PER_PUBLISHER, 1500, 1000 * 60 * 15, topic, true);
 	      
 	      conn8 = cf.createConnection();
-	      subscribers[4] = new Subscriber(conn8, 3 * MSGS_PER_PUBLISHER, 1200, 1000 * 60 * 5, topic, true);
+	      subscribers[4] = new Subscriber(conn8, 3 * MSGS_PER_PUBLISHER, 1200, 1000 * 60 * 15, topic, true);
 	      
 	      Thread[] threads = new Thread[8];
 	      

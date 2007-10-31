@@ -144,17 +144,6 @@ LOAD_BINDINGS=SELECT QUEUE_NAME, COND, SELECTOR, CHANNEL_ID, CLUSTERED, ALL_NODE
                   
       <attribute name="CastTimeout">5000</attribute>
       
-      <!-- Max number of concurrent replications -->
-      
-      <attribute name="MaxConcurrentReplications">50</attribute>            
-      
-      <!--
-      <attribute name="ChannelFactoryName">jgroups.mux:name=Multiplexer</attribute>      
-      <attribute name="ControlChannelName">udp-sync</attribute>
-      <attribute name="DataChannelName">udp</attribute>
-      <attribute name="ChannelPartitionName">${jboss.partition.name:DefaultPartition}-JMS</attribute>
-      -->
-      
       <!-- JGroups stack configuration for the data channel - used for sending data across the cluster -->               
       
       <!-- By default we use the TCP stack for data -->                  

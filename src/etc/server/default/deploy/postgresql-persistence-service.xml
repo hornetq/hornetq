@@ -121,7 +121,7 @@ DELETE_BINDING=DELETE FROM JBM_POSTOFFICE WHERE POSTOFFICE_NAME=? AND NODE_ID=? 
 LOAD_BINDINGS=SELECT QUEUE_NAME, COND, SELECTOR, CHANNEL_ID, CLUSTERED, ALL_NODES FROM JBM_POSTOFFICE WHERE POSTOFFICE_NAME=? AND NODE_ID=?
       ]]></attribute>
       
-	<!-- This post office is clustered. If you don't want a clustered post office then set to false -->
+	  <!-- This post office is clustered. If you don't want a clustered post office then set to false -->
       
       <attribute name="Clustered">true</attribute>
       
