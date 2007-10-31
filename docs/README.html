@@ -3,52 +3,53 @@
 <head>
   <meta content="text/html; charset=ISO-8859-1"
  http-equiv="content-type">
-  <title>JBoss Messaging 1.4.0.GA Release Notes</title>
+  <title>JBoss Messaging 1.4.0.SP1 Release Notes</title>
 </head>
 <body>
 
-<br>
-28th September 2007<br>
-<br>
-<br>
-JBoss Messaging is the new JBoss JMS 1.1-compliant JMS provider.
-An extensive overview of its features, as well as
-installation and configuration instructions are available in the "JBoss
-Messaging 1.4 User Guide". The guide is bundled with this release and
-is
-provided in <a href="./docs/userguide/html/index.html">HTML</a>, <a
- href="./docs/userguide/html_single/index.html">HTML-single</a>
-and <a href="./docs/userguide/pdf/JBossMessagingUsersGuide.pdf">PDF</a>
-formats.&nbsp; The guide is also available on-line at&nbsp; <a
- href="http://labs.jboss.com/portal/jbossmessaging/docs/index.html">http://labs.jboss.com/portal/jbossmessaging/docs/index.html</a><br>
+<h1>Release Notes - JBoss Messaging - Version 1.4.0.SP1</h1>
 
-<h1>
-Release Notes - JBoss Messaging - Version 1.4.0 GA
-</h1>
+<br>
 
-<hr/>
+<h2>31 August 2007</h2>
 
+
+<br><br>
+    
 <h2>Bug</h2>
 <ul>
 <li>[<a href='http://jira.jboss.com/jira/browse/JBMESSAGING-1079'>JBMESSAGING-1079</a>] - JBM should call BytesMessage.reset() before redelivery, or not redeliver the same message instance</li>
-<li>[<a href='http://jira.jboss.com/jira/browse/JBMESSAGING-1080'>JBMESSAGING-1080</a>] - examples use incompatible jboss remoting library</li>
-<li>[<a href='http://jira.jboss.com/jira/browse/JBMESSAGING-1082'>JBMESSAGING-1082</a>] - Privileged Block to pop Subject Context</li>
-<li>[<a href='http://jira.jboss.com/jira/browse/JBMESSAGING-1083'>JBMESSAGING-1083</a>] - Privileged Blocks to deal with MBean Server</li>
-<li>[<a href='http://jira.jboss.com/jira/browse/JBMESSAGING-1085'>JBMESSAGING-1085</a>] - DLQTest will hang forever eventually</li>
+<li>[<a href='http://jira.jboss.com/jira/browse/JBMESSAGING-1091'>JBMESSAGING-1091</a>] - Selector parser should use string literals for DeliveryMode in selector expressions</li>
+<li>[<a href='http://jira.jboss.com/jira/browse/JBMESSAGING-1095'>JBMESSAGING-1095</a>] - ServerPeer won't survive a stop/start of the service</li>
+<li>[<a href='http://jira.jboss.com/jira/browse/JBMESSAGING-1098'>JBMESSAGING-1098</a>] - Message headers not preserved on bridged message</li>
+<li>[<a href='http://jira.jboss.com/jira/browse/JBMESSAGING-1099'>JBMESSAGING-1099</a>] - Potential deadlock in shutting down server</li>
+<li>[<a href='http://jira.jboss.com/jira/browse/JBMESSAGING-1100'>JBMESSAGING-1100</a>] - Non durable topic subscribers with noLocal=true  result in message build up on server</li>
+<li>[<a href='http://jira.jboss.com/jira/browse/JBMESSAGING-1101'>JBMESSAGING-1101</a>] - Failure to deserialize BytesMessage contents</li>
+<li>[<a href='http://jira.jboss.com/jira/browse/JBMESSAGING-1109'>JBMESSAGING-1109</a>] - Client-side race condition while receiving concurrently</li>
+<li>[<a href='http://jira.jboss.com/jira/browse/JBMESSAGING-1110'>JBMESSAGING-1110</a>] - Client incorrectly initiates client-side fail over on high concurrency</li>
+<li>[<a href='http://jira.jboss.com/jira/browse/JBMESSAGING-1112'>JBMESSAGING-1112</a>] - Consumption with highly concurrent clients lock a JBM server node.</li>
+<li>[<a href='http://jira.jboss.com/jira/browse/JBMESSAGING-1113'>JBMESSAGING-1113</a>] - Post office and message updates at failover need to be transactional</li>
+<li>[<a href='http://jira.jboss.com/jira/browse/JBMESSAGING-1114'>JBMESSAGING-1114</a>] - JBoss Remoting fails under load</li>
+<li>[<a href='http://jira.jboss.com/jira/browse/JBMESSAGING-1115'>JBMESSAGING-1115</a>] - java.net.SocketException: Too many open files</li>
+<li>[<a href='http://jira.jboss.com/jira/browse/JBMESSAGING-1116'>JBMESSAGING-1116</a>] - Consuming client grinds to a halt if a node different from the "active" one fails</li>
+<li>[<a href='http://jira.jboss.com/jira/browse/JBMESSAGING-1118'>JBMESSAGING-1118</a>] - Sucker connection created back to itself doesn't need to be created</li>
+<li>[<a href='http://jira.jboss.com/jira/browse/JBMESSAGING-1120'>JBMESSAGING-1120</a>] - Data channel from MultiplexerChannelFactory prevents state transfers from other users of the shared channel</li>
 </ul>
-
+        
 <h2>Feature Request</h2>
 <ul>
-<li>[<a href='http://jira.jboss.com/jira/browse/JBMESSAGING-1078'>JBMESSAGING-1078</a>] - TCK strict behavior</li>
+<li>[<a href='http://jira.jboss.com/jira/browse/JBMESSAGING-1047'>JBMESSAGING-1047</a>] - ServerPeer.listMessageCountersAsHTML sorted by Name</li>
+<li>[<a href='http://jira.jboss.com/jira/browse/JBMESSAGING-1119'>JBMESSAGING-1119</a>] - We should ignore nonPersistentMessages on failover</li>
 </ul>
-
+                    
 <h2>Task</h2>
 <ul>
-<li>[<a href='http://jira.jboss.com/jira/browse/JBMESSAGING-1044'>JBMESSAGING-1044</a>] - Cleanup docs using xml editor</li>
+<li>[<a href='http://jira.jboss.com/jira/browse/JBMESSAGING-999'>JBMESSAGING-999</a>] - Bridge startup should retry if remote destinations are not available</li>
+<li>[<a href='http://jira.jboss.com/jira/browse/JBMESSAGING-1096'>JBMESSAGING-1096</a>] - Remove references from the old Callback Manager on the documentation</li>
+<li>[<a href='http://jira.jboss.com/jira/browse/JBMESSAGING-1129'>JBMESSAGING-1129</a>] - Change default data stack to TCP</li>
 </ul>
 
 
-
- </body>
+</body>
 </html>
 
