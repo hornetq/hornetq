@@ -13,6 +13,20 @@
 
 <h2>31 August 2007</h2>
 
+These are the release notes for JBoss Messaging 1.4.0 Service Pack 1 (SP1).<br><br>
+
+For full description of the contents please see the JBoss Messaging project JIRA.<br><br>
+
+This release contains several bug fixes; a few relating to some failover edge cases, an important fix in byte message handling, some sanity checking and configuration changes in JBoss Remoting and several smaller issues.<br><br>
+
+In this release we have also switched to using the TCP MPING JGroups stack by default for data traffic. This has shown to perform better for small cluster sizes. For large clusters its likely you'll want to use a UDP based stack.<br><br>
+
+When upgrading an existing installation be sure to update all the configuration files in server/<server name>/deploy/jboss-messaging.sar with the newer versions and replace jboss-messaging.jar in server/<server name>/lib and on the client classpath. You will also need to drop all tables and indexes in the database.<br><br>
+
+This release of JBoss Messaging, like 1.4.0.GA also requires a patched JBoss Remoting jar. The required version is 2.2.2.SP1, the same as that required by JBoss Messaging 1.4.0.GA. Be sure that server/<server name>/lib contains this jar and that it is also present as the first entry on the client classpath.<br><br>
+
+Enjoy!<br><br>
+
 
 <br><br>
     
