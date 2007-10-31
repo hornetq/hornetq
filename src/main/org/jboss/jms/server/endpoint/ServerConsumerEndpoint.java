@@ -109,6 +109,8 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
    
    private boolean slow;
    
+   private volatile boolean dead;
+   
    // Constructors ---------------------------------------------------------------------------------
 
    ServerConsumerEndpoint(String id, Queue messageQueue, String queueName,
@@ -458,7 +460,18 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
    
    void setStarted(boolean started)
    {
-   	this.started = started;
+      //No need to lock since caller already has the lock
+      this.started = started;      
+   }
+   
+   void setDead()
+   {
+      dead = true;
+   }
+   
+   boolean isDead()
+   {
+      return dead;
    }
    
    Queue getDLQ()

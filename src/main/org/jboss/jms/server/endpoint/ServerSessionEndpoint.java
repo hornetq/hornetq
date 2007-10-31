@@ -1254,7 +1254,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
       }
       
       rec.del.cancel();
-   }      
+   }         
    
    /*
     * When a consumer closes there may be deliveries where the replication messages has gone out to the backup
@@ -1439,6 +1439,12 @@ public class ServerSessionEndpoint implements SessionEndpoint
    		
    		return;
    	}
+      
+      if (consumer.isDead())
+      {
+         //Ignore any responses that come back after consumer has died
+         return;
+      }
    	
    	if (trace) { log.trace(this + " performing delivery for " + ref); }
    	   	
@@ -1500,11 +1506,13 @@ public class ServerSessionEndpoint implements SessionEndpoint
          //which will remove the consumer
          
          consumer.setStarted(false);
+         
+         consumer.setDead();
 
          //** IMPORTANT NOTE! We must return the delivery NOT null. **
          //This is because if we return NULL then message will remain in the queue, but later
          //the connection checker will cleanup and close this consumer which will cancel all the deliveries in it
-         //including this one, so the message will go back on the queue twice!
+         //including this one, so the message will go back on the queue twice!         
       }
    }
    
