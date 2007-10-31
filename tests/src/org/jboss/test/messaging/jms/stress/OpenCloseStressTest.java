@@ -114,19 +114,19 @@ public class OpenCloseStressTest extends MessagingTestCase
 	      conn1 = cf.createConnection();
 	      Session sess1 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
 	      MessageProducer prod1 = sess1.createProducer(topic);
-	      prod1.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+	      prod1.setDeliveryMode(DeliveryMode.PERSISTENT);
 	      publishers[0] = new Publisher(sess1, prod1, MSGS_PER_PUBLISHER, 2);
 	      
 	      conn2 = cf.createConnection();
 	      Session sess2 = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
 	      MessageProducer prod2 = sess2.createProducer(topic);
-	      prod2.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+	      prod2.setDeliveryMode(DeliveryMode.PERSISTENT);
 	      publishers[1] = new Publisher(sess2, prod2, MSGS_PER_PUBLISHER, 5);
 	      
 	      conn3 = cf.createConnection();
 	      Session sess3 = conn3.createSession(false, Session.AUTO_ACKNOWLEDGE);
 	      MessageProducer prod3 = sess3.createProducer(topic);
-	      prod3.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+	      prod3.setDeliveryMode(DeliveryMode.PERSISTENT);
 	      publishers[2] = new Publisher(sess3, prod3, MSGS_PER_PUBLISHER, 1);
 	      
 	      Subscriber[] subscribers = new Subscriber[5];
@@ -172,7 +172,7 @@ public class OpenCloseStressTest extends MessagingTestCase
 	      	threads[i].start();
 	      }
 	      
-	      // Pause before creating producers otherwise subscribers might not get all messages
+	      // Pause before creating producers otherwise subscribers to make sure they're all created
 	      
 	      Thread.sleep(5000);
 	      
@@ -199,16 +199,14 @@ public class OpenCloseStressTest extends MessagingTestCase
 		      	//there is a period of time after closing the previous session and starting the next one
 		      	//when messages are being sent and won't be received (since there is no consumer)
 	      	}
-	      		
-	      	
+	      			      	
 	      	assertFalse(subscribers[i].isFailed());
 	      }
 	      
 	      for (int i = 0; i < publishers.length; i++)
 	      {
 	      	assertFalse(publishers[i].isFailed());
-	      }
-	   	
+	      }	   	
    	}
    	finally
    	{

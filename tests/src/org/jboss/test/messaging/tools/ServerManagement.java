@@ -456,6 +456,20 @@ public class ServerManagement
          sb.append("-Djboss.messaging.controlchanneludpport=").append(controlChannelUDPPort).append(' ');
       }
       
+      String dataChannelUDPAddress = System.getProperty("jboss.messaging.datachanneludpaddress");
+      log.info("*** data UDP address is " + dataChannelUDPAddress);
+      if (dataChannelUDPAddress != null)
+      {
+         sb.append("-Djboss.messaging.datachanneludpaddress=").append(dataChannelUDPAddress).append(' ');
+      }
+      
+      String controlChannelUDPAddress = System.getProperty("jboss.messaging.controlchanneludpaddress");
+      log.info("*** control UDP address is " + controlChannelUDPAddress);
+      if (controlChannelUDPAddress != null)
+      {
+         sb.append("-Djboss.messaging.controlchanneludpaddress=").append(controlChannelUDPAddress).append(' ');
+      }
+      
       String testLogfileSuffix = System.getProperty("test.logfile.suffix");
 
       if (testLogfileSuffix == null)

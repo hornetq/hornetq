@@ -153,60 +153,56 @@ LOAD_BINDINGS=SELECT QUEUE_NAME, COND, SELECTOR, CHANNEL_ID, CLUSTERED, ALL_NODE
 
       <!-- JGroups stack configuration for the data channel - used for sending data across the cluster -->
 
-      <attribute name="DataChannelConfig">
+      <!-- By default we use the TCP stack for data -->                  
+      <attribute name="DataChannelConfig">      
          <config>
-            <UDP
-               mcast_addr="228.8.8.8"
-               mcast_port="${jboss.messaging.datachanneludpport:45567}"
-               tos="8"
-               ucast_recv_buf_size="20000000"
-               ucast_send_buf_size="640000"
-               mcast_recv_buf_size="25000000"
-               mcast_send_buf_size="640000"
-               loopback="false"
-               discard_incompatible_packets="true"
-               max_bundle_size="64000"
-               max_bundle_timeout="30"
-               use_incoming_packet_handler="true"
-               use_outgoing_packet_handler="false"
-               ip_ttl="2"
-               down_thread="false" up_thread="false"
-               enable_bundling="false"/>
-            <PING timeout="2000" down_thread="false" num_initial_members="3" up_thread="false"/>
-            <MERGE2 max_interval="100000" down_thread="false" min_interval="20000" up_thread="false"/>
-            <FD_SOCK down_thread="false" up_thread="false"/>
-            <FD timeout="10000" max_tries="5" down_thread="false" up_thread="false" shun="true"/>
+            <TCP start_port="7900"
+                 loopback="true"
+                 recv_buf_size="20000000"
+                 send_buf_size="640000"
+                 discard_incompatible_packets="true"
+                 max_bundle_size="64000"
+                 max_bundle_timeout="30"
+                 use_incoming_packet_handler="true"
+                 use_outgoing_packet_handler="false"
+                 down_thread="false" up_thread="false"
+                 enable_bundling="false"
+                 use_send_queues="false"
+                 sock_conn_timeout="300"
+                 skip_suspected_members="true"/>
+            <MPING timeout="4000"
+		         bind_to_all_interfaces="true"
+		         mcast_addr="${jboss.messaging.datachanneludpaddress:228.6.6.6}"
+		         mcast_port="${jboss.messaging.datachanneludpport:45567}"
+		         ip_ttl="8"
+		         num_initial_members="2"
+		         num_ping_requests="1"/>                     
+            <MERGE2 max_interval="100000"
+                    down_thread="false" up_thread="false" min_interval="20000"/>
+            <FD_SOCK down_thread="false" up_thread="false"/>            
             <VERIFY_SUSPECT timeout="1500" down_thread="false" up_thread="false"/>
-            <pbcast.NAKACK
-               max_xmit_size="60000"
-               use_mcast_xmit="false"
-               gc_lag="0"
-               retransmit_timeout="300,600,1200,2400,4800"
-               down_thread="false" up_thread="false"
-               discard_delivered_msgs="true"/>
-            <UNICAST timeout="300,600,1200,2400,3600"
-                     down_thread="false" up_thread="false"/>
+            <pbcast.NAKACK max_xmit_size="60000"
+                           use_mcast_xmit="false" gc_lag="0"
+                           retransmit_timeout="300,600,1200,2400,4800"
+                           down_thread="false" up_thread="false"
+                           discard_delivered_msgs="true"/>
             <pbcast.STABLE stability_delay="1000" desired_avg_gossip="50000"
                            down_thread="false" up_thread="false"
                            max_bytes="400000"/>
             <pbcast.GMS print_local_addr="true" join_timeout="3000"
                         down_thread="false" up_thread="false"
                         join_retry_timeout="2000" shun="false"
-                        view_bundling="true"
-                        view_ack_collection_timeout="5000"/>
-            <FC max_credits="2000000" down_thread="false" up_thread="false"
-                min_threshold="0.10"/>
-            <FRAG2 frag_size="60000" down_thread="false" up_thread="false"/>         
-            
-         </config>
+                        view_bundling="true"/>
+        </config>        
       </attribute>
       
       <!-- JGroups stack configuration to use for the control channel - used for control messages -->         
               
+      <!-- We use udp stack for the control channel -->
       <attribute name="ControlChannelConfig">
          <config>
             <UDP
-                 mcast_addr="228.8.8.8"
+                 mcast_addr="${jboss.messaging.controlchanneludpaddress:228.7.7.7}"
                  mcast_port="${jboss.messaging.controlchanneludpport:45568}"
                  tos="8"
                  ucast_recv_buf_size="20000000"
@@ -247,7 +243,7 @@ LOAD_BINDINGS=SELECT QUEUE_NAME, COND, SELECTOR, CHANNEL_ID, CLUSTERED, ALL_NODE
             <pbcast.STATE_TRANSFER down_thread="false" up_thread="false" use_flush="true" flush_timeout="3000"/>
             <pbcast.FLUSH down_thread="false" up_thread="false" timeout="20000" auto_flush_conf="false"/>
         </config>
-     </attribute>	    
+     </attribute>	
      
    </mbean>
 
