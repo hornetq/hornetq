@@ -239,8 +239,7 @@ public class JMSWireFormat implements Marshaller, UnMarshaller
          if (trace) { log.trace("Wrote packet"); }
       }
       catch (Exception e)
-      {
-         log.error("Failed to write packet", e);
+      {         
          IOException e2 = new IOException(e.getMessage());
          e2.setStackTrace(e.getStackTrace());
          throw e2;

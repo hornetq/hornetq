@@ -1458,7 +1458,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
          // connections meaning that later invocations can overtake earlier invocations, if there
          // are more than one user concurrently invoking on the same transport. We need someway
          // of pinning the client object to the underlying invocation. For now we just serialize
-         // all access so that only the first connection in the pool is ever used - bit this is
+         // all access so that only the first connection in the pool is ever used - but this is
          // far from ideal!!!
          // See http://jira.jboss.com/jira/browse/JBMESSAGING-789
 
