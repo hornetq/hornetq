@@ -548,7 +548,7 @@ LOAD_BINDINGS=SELECT QUEUE_NAME, COND, SELECTOR, CHANNEL_ID, CLUSTERED, ALL_NODE
       
       &lt;!-- The JGroups group name that the post office will use --&gt;            
       
-      &lt;attribute name="GroupName"&gt;MessagingPostOffice&lt;/attribute&gt;
+      &lt;attribute name="GroupName"&gt;${jboss.messaging.groupname:MessagingPostOffice}&lt;/attribute&gt;
       
       &lt;!-- Max time to wait for state to arrive when the post office joins the cluster --&gt;            
                   
@@ -558,74 +558,59 @@ LOAD_BINDINGS=SELECT QUEUE_NAME, COND, SELECTOR, CHANNEL_ID, CLUSTERED, ALL_NODE
                   
       &lt;attribute name="CastTimeout"&gt;50000&lt;/attribute&gt;
       
-      &lt;!-- Max number of concurrent replications --&gt;
-      
-      &lt;attribute name="MaxConcurrentReplications"&gt;50&lt;/attribute&gt;
-      
-      &lt;!-- 
-      &lt;attribute name="ChannelFactoryName"&gt;jgroups.mux:name=Multiplexer&lt;/attribute&gt;      
-      &lt;attribute name="ControlChannelName"&gt;udp-sync&lt;/attribute&gt;
-      &lt;attribute name="DataChannelName"&gt;udp&lt;/attribute&gt;
-      &lt;attribute name="ChannelPartitionName"&gt;${jboss.partition.name:DefaultPartition}-JMS&lt;/attribute&gt;
-      --&gt;
-      
       &lt;!-- JGroups stack configuration for the data channel - used for sending data across the cluster --&gt; 
-                        
-      &lt;attribute name="DataChannelConfig"&gt;
+                   
+      &lt;!-- By default we use the TCP stack for data --&gt;                  
+      &lt;attribute name="DataChannelConfig"&gt;      
          &lt;config&gt;
-            &lt;UDP
-               mcast_addr="228.8.8.8"
-               mcast_port="45567"
-               tos="8"
-               ucast_recv_buf_size="20000000"
-               ucast_send_buf_size="640000"
-               mcast_recv_buf_size="25000000"
-               mcast_send_buf_size="640000"
-               loopback="false"
-               discard_incompatible_packets="true"
-               max_bundle_size="64000"
-               max_bundle_timeout="30"
-               use_incoming_packet_handler="true"
-               use_outgoing_packet_handler="false"
-               ip_ttl="2"
-               down_thread="false" up_thread="false"
-               enable_bundling="false"/&gt;
-            &lt;PING timeout="2000" down_thread="false" num_initial_members="3" up_thread="false"/&gt;
-            &lt;MERGE2 max_interval="100000" down_thread="false" min_interval="20000" up_thread="false"/&gt;
-            &lt;FD_SOCK down_thread="false" up_thread="false"/&gt;
-            &lt;FD timeout="10000" max_tries="5" down_thread="false" up_thread="false" shun="true"/&gt;
+            &lt;TCP start_port="7900"
+                 loopback="true"
+                 recv_buf_size="20000000"
+                 send_buf_size="640000"
+                 discard_incompatible_packets="true"
+                 max_bundle_size="64000"
+                 max_bundle_timeout="30"
+                 use_incoming_packet_handler="true"
+                 use_outgoing_packet_handler="false"
+                 down_thread="false" up_thread="false"
+                 enable_bundling="false"
+                 use_send_queues="false"
+                 sock_conn_timeout="300"
+                 skip_suspected_members="true"/&gt;
+            &lt;MPING timeout="4000"
+		         bind_to_all_interfaces="true"
+		         mcast_addr="${jboss.messaging.datachanneludpaddress:228.6.6.6}"
+		         mcast_port="${jboss.messaging.datachanneludpport:45567}"
+		         ip_ttl="8"
+		         num_initial_members="2"
+		         num_ping_requests="1"/&gt;                     
+            &lt;MERGE2 max_interval="100000"
+                    down_thread="false" up_thread="false" min_interval="20000"/&gt;
+            &lt;FD_SOCK down_thread="false" up_thread="false"/&gt;            
             &lt;VERIFY_SUSPECT timeout="1500" down_thread="false" up_thread="false"/&gt;
-            &lt;pbcast.NAKACK
-               max_xmit_size="60000"
-               use_mcast_xmit="false"
-               gc_lag="0"
-               retransmit_timeout="300,600,1200,2400,4800"
-               down_thread="false" up_thread="false"
-               discard_delivered_msgs="true"/&gt;
-            &lt;UNICAST timeout="300,600,1200,2400,3600"
-                     down_thread="false" up_thread="false"/&gt;
+            &lt;pbcast.NAKACK max_xmit_size="60000"
+                           use_mcast_xmit="false" gc_lag="0"
+                           retransmit_timeout="300,600,1200,2400,4800"
+                           down_thread="false" up_thread="false"
+                           discard_delivered_msgs="true"/&gt;
             &lt;pbcast.STABLE stability_delay="1000" desired_avg_gossip="50000"
                            down_thread="false" up_thread="false"
                            max_bytes="400000"/&gt;
             &lt;pbcast.GMS print_local_addr="true" join_timeout="3000"
                         down_thread="false" up_thread="false"
                         join_retry_timeout="2000" shun="false"
-                        view_bundling="true"
-                        view_ack_collection_timeout="5000"/&gt;
-            &lt;FC max_credits="2000000" down_thread="false" up_thread="false"
-                min_threshold="0.10"/&gt;
-            &lt;FRAG2 frag_size="60000" down_thread="false" up_thread="false"/&gt;         
-            
-         &lt;/config&gt;
+                        view_bundling="true"/&gt;
+        &lt;/config&gt;        
       &lt;/attribute&gt;
       
       &lt;!-- JGroups stack configuration to use for the control channel - used for control messages --&gt;         
               
+      &lt;!-- We use udp stack for the control channel --&gt;
       &lt;attribute name="ControlChannelConfig"&gt;
          &lt;config&gt;
             &lt;UDP
-                 mcast_addr="228.8.8.8"
-                 mcast_port="45568"
+                 mcast_addr="${jboss.messaging.controlchanneludpaddress:228.7.7.7}"
+                 mcast_port="${jboss.messaging.controlchanneludpport:45568}"
                  tos="8"
                  ucast_recv_buf_size="20000000"
                  ucast_send_buf_size="640000"
@@ -665,7 +650,7 @@ LOAD_BINDINGS=SELECT QUEUE_NAME, COND, SELECTOR, CHANNEL_ID, CLUSTERED, ALL_NODE
             &lt;pbcast.STATE_TRANSFER down_thread="false" up_thread="false" use_flush="true" flush_timeout="3000"/&gt;
             &lt;pbcast.FLUSH down_thread="false" up_thread="false" timeout="20000" auto_flush_conf="false"/&gt;
         &lt;/config&gt;
-     &lt;/attribute&gt;	    
+     &lt;/attribute&gt;	   
       
    &lt;/mbean&gt;
       </programlisting>
