@@ -470,6 +470,13 @@ public class ServerManagement
          sb.append("-Djboss.messaging.controlchanneludpaddress=").append(controlChannelUDPAddress).append(' ');
       }
       
+      String ipttl = System.getProperty("jboss.messaging.ipttl");
+      log.info("*** ip_ttl is " + ipttl);
+      if (ipttl != null)
+      {
+         sb.append("-Djboss.messaging.ipttl=").append(ipttl).append(' ');
+      }
+      
       String testLogfileSuffix = System.getProperty("test.logfile.suffix");
 
       if (testLogfileSuffix == null)

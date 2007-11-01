@@ -55,6 +55,9 @@
    <property name="jboss.messaging.groupname" value="MessagingPostOffice"/>
    <property name="jboss.messaging.datachanneludpport" value="45567"/>
    <property name="jboss.messaging.controlchanneludpport" value="45568"/>
+   <property name="jboss.messaging.datachanneludpaddress" value="228.6.6.6"/>
+   <property name="jboss.messaging.controlchanneludpaddress" value="228.7.7.7"/>
+   <property name="jboss.messaging.ipttl" value="0"/>
 
    <!--
         Functional tests.
@@ -332,6 +335,9 @@
          <sysproperty key="jboss.messaging.groupname" value="${jboss.messaging.groupname}"/>
          <sysproperty key="jboss.messaging.datachanneludpport" value="${jboss.messaging.datachanneludpport}"/>
          <sysproperty key="jboss.messaging.controlchanneludpport" value="${jboss.messaging.controlchanneludpport}"/>
+         <sysproperty key="jboss.messaging.datachanneludpaddress" value="${jboss.messaging.datachanneludpaddress}"/>
+         <sysproperty key="jboss.messaging.controlchanneludpaddress" value="${jboss.messaging.controlchanneludpaddress}"/>
+         <sysproperty key="jboss.messaging.ipttl" value="${jboss.messaging.ipttl}"/>
          <sysproperty key="test.database" value="${functional.tests.database}"/>
          <sysproperty key="test.logfile.suffix" value="invm"/>
          <sysproperty key="build.lib" value="${build.lib}"/>
@@ -734,6 +740,9 @@
          <sysproperty key="jboss.messaging.groupname" value="${jboss.messaging.groupname}"/>
          <sysproperty key="jboss.messaging.datachanneludpport" value="${jboss.messaging.datachanneludpport}"/>
          <sysproperty key="jboss.messaging.controlchanneludpport" value="${jboss.messaging.controlchanneludpport}"/>
+         <sysproperty key="jboss.messaging.datachanneludpaddress" value="${jboss.messaging.datachanneludpaddress}"/>
+         <sysproperty key="jboss.messaging.controlchanneludpaddress" value="${jboss.messaging.controlchanneludpaddress}"/>
+         <sysproperty key="jboss.messaging.ipttl" value="${jboss.messaging.ipttl}"/>
          <sysproperty key="jgroups.bind_addr" value="${test.bind.address}"/>
          <sysproperty key="test.database" value="${clustering.tests.database}"/>
          <sysproperty key="test.clustered" value="true"/>

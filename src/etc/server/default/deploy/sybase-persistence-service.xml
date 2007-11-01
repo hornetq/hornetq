@@ -168,7 +168,7 @@ LOAD_BINDINGS=SELECT QUEUE_NAME, COND, SELECTOR, CHANNEL_ID, CLSTERED, ALL_NODES
 		         bind_to_all_interfaces="true"
 		         mcast_addr="${jboss.messaging.datachanneludpaddress:228.6.6.6}"
 		         mcast_port="${jboss.messaging.datachanneludpport:45567}"
-		         ip_ttl="8"
+		         ip_ttl="${jboss.messaging.ipttl:8}"
 		         num_initial_members="2"
 		         num_ping_requests="1"/>                     
             <MERGE2 max_interval="100000"
@@ -209,7 +209,7 @@ LOAD_BINDINGS=SELECT QUEUE_NAME, COND, SELECTOR, CHANNEL_ID, CLSTERED, ALL_NODES
                  max_bundle_timeout="30"
                  use_incoming_packet_handler="true"
                  use_outgoing_packet_handler="false"
-                 ip_ttl="2"
+                 ip_ttl="${jboss.messaging.ipttl:2}"
                  down_thread="false" up_thread="false"
                  enable_bundling="false"/>
             <PING timeout="2000"
@@ -237,7 +237,7 @@ LOAD_BINDINGS=SELECT QUEUE_NAME, COND, SELECTOR, CHANNEL_ID, CLSTERED, ALL_NODES
             <pbcast.STATE_TRANSFER down_thread="false" up_thread="false" use_flush="true" flush_timeout="3000"/>
             <pbcast.FLUSH down_thread="false" up_thread="false" timeout="20000" auto_flush_conf="false"/>
         </config>
-     </attribute>		
+     </attribute>	
    </mbean>
    
    <!-- Messaging JMS User Manager MBean config

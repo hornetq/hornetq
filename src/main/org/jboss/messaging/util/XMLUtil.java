@@ -65,6 +65,8 @@ public class XMLUtil
       s = doReplace(s, "jboss.messaging.controlchanneludpaddress", "228.7.7.7");
       s = doReplace(s, "jboss.messaging.datachanneludpport", "45567");
       s = doReplace(s, "jboss.messaging.controlchanneludpport", "45568");
+      s = doReplace(s, "jboss.messaging.ipttl", "2");
+      s = doReplace(s, "jboss.messaging.ipttl", "8");
       
       StringReader sreader = new StringReader(s);
        
