@@ -240,7 +240,7 @@ public class StreamUtils
       {
          out.write(LIST);
          writeList(out, (List)object);
-      }      
+      }
       else if (object instanceof Serializable)
       {
          out.writeByte(SERIALIZABLE);

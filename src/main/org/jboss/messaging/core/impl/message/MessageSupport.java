@@ -28,6 +28,7 @@ import java.io.DataOutputStream;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
+import java.io.IOException;
 
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.contract.Message;
@@ -212,7 +213,7 @@ public abstract class MessageSupport implements Message, Serializable
 			{
 				ByteArrayOutputStream bos = new ByteArrayOutputStream(BUFFER_SIZE);
 				DataOutputStream daos = new DataOutputStream(bos);
-				StreamUtils.writeObject(daos, payload, true, true);
+				doWriteObject(daos, payload);
 				daos.close();
 				payloadAsByteArray = bos.toByteArray();				
 				
@@ -230,7 +231,7 @@ public abstract class MessageSupport implements Message, Serializable
 		return payloadAsByteArray;
 	}
 
-	public synchronized Object getPayload()
+   public synchronized Object getPayload()
 	{		
 		if (payload != null)
 		{
@@ -389,6 +390,13 @@ public abstract class MessageSupport implements Message, Serializable
 	// Package protected ---------------------------------------------
 
 	// Protected -----------------------------------------------------
+
+   // Certain MessageTypes will need different behaviors. For example ObjectMessages won't use container types
+   protected void doWriteObject(DataOutputStream out, Object payload) throws IOException
+   {
+      StreamUtils.writeObject(out, payload, true, true);
+   }
+
 
 	// Private -------------------------------------------------------
 

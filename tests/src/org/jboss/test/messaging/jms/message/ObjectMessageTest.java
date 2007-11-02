@@ -111,6 +111,23 @@ public class ObjectMessageTest extends MessageTestBase
 
    }
 
+
+   public void testVecorOnObjectMessage() throws Exception
+   {
+      java.util.Vector vectorOnMessage = new java.util.Vector();
+      vectorOnMessage.add("world!");
+      ((ObjectMessage)message).setObject(vectorOnMessage);
+
+      queueProd.send(message);
+
+      ObjectMessage r = (ObjectMessage) queueCons.receive(5000);
+      assertNotNull(r);
+
+      java.util.Vector v2 = (java.util.Vector) r.getObject();
+
+      assertEquals(vectorOnMessage.get(0), v2.get(0));
+   }
+
    // Protected ------------------------------------------------------------------------------------
 
    protected void prepareMessage(Message m) throws JMSException

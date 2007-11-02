@@ -21,7 +21,11 @@
   */
 package org.jboss.jms.message;
 
+import org.jboss.messaging.util.StreamUtils;
+
 import java.io.Serializable;
+import java.io.DataOutputStream;
+import java.io.IOException;
 import java.util.Map;
 
 import javax.jms.JMSException;
@@ -131,6 +135,11 @@ public class JBossObjectMessage extends JBossMessage implements ObjectMessage
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
+
+   protected void doWriteObject(DataOutputStream out, Object payload) throws IOException
+   {
+      StreamUtils.writeObject(out, payload, false, true);
+   }
 
    // Private -------------------------------------------------------
 
