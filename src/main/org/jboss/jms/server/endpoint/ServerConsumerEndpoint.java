@@ -438,6 +438,11 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
 
    // Package protected ----------------------------------------------------------------------------
    
+   boolean isRemote()
+   {
+      return this.remote;
+   }       
+   
    boolean isReplicating()
    {
    	return replicating;

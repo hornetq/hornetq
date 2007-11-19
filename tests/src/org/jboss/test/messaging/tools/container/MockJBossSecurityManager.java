@@ -248,7 +248,9 @@ public class MockJBossSecurityManager implements AuthenticationManager, RealmMap
          }
          else if ("dilbert".equals(username))
          {
-            return containsRole("durpublisher", roles);
+            return containsRole("publisher", roles) ||
+               containsRole("durpublisher", roles) ||
+               containsRole("def", roles);
          }
          else
          {

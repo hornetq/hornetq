@@ -34,9 +34,6 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 
 import org.jboss.test.messaging.tools.ServerManagement;
-import org.jboss.jms.message.JBossMessage;
-import org.jboss.jms.message.TextMessageProxy;
-
 
 /**
  * 
@@ -48,7 +45,7 @@ import org.jboss.jms.message.TextMessageProxy;
  * $Id: DistributedDestinationsTest.java 2796 2007-06-25 22:24:41Z timfox $
  *
  */
-public abstract class DistributedQueueTestBase extends ClusteringTestBase
+public class DistributedQueueTest extends ClusteringTestBase
 {
 
    // Constants -----------------------------------------------------
@@ -59,7 +56,7 @@ public abstract class DistributedQueueTestBase extends ClusteringTestBase
 
    // Constructors --------------------------------------------------
 
-   public DistributedQueueTestBase(String name)
+   public DistributedQueueTest(String name)
    {
       super(name);
    }

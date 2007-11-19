@@ -113,6 +113,13 @@ public class SimpleChannel implements Channel
    {
       throw new NotYetImplementedException();
    }
+   
+
+   public void acknowledgeNoPersist(Delivery d) throws Throwable
+   {
+      throw new NotYetImplementedException();
+   }
+
 
    public void cancel(Delivery d) throws Exception
    {

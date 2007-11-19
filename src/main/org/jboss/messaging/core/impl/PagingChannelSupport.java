@@ -210,7 +210,8 @@ public abstract class PagingChannelSupport extends ChannelSupport
          
          doLoad(ili);
          
-         //Maybe we need to load some paged refs
+         //Maybe we need to load some paged refs too since we might not be full (fullSize might have been increased from last
+         //load)
          
          while (checkLoad()) {}
       }

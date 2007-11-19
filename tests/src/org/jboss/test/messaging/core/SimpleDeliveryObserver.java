@@ -56,6 +56,11 @@ public class SimpleDeliveryObserver implements DeliveryObserver
          notifyAll();
       }
    }
+   
+   public void acknowledgeNoPersist(Delivery d) throws Throwable
+   {
+      // TODO Auto-generated method stub      
+   }
 
    public synchronized void cancel(Delivery d)
    {

@@ -470,7 +470,25 @@ public class ClusterConnectionManager implements ClusterNotificationListener
 			
 			if (localQueue.isClustered())
 			{				
-				MessageSucker sucker = new MessageSucker(localQueue, info.connection, localInfo.connection, xa, preserveOrdering);
+			   //Find channel id for remote queue - we need this for doing shared DB optimisation
+			   Collection coll = this.postOffice.getAllBindingsForQueueName(queueName);
+			   Iterator iter = coll.iterator();
+			   long sourceChannelID = -1;
+			   while (iter.hasNext())
+			   {
+			      Binding b = (Binding)iter.next();
+			      if (b.queue.getNodeID() == nodeID)
+			      {
+			         sourceChannelID = b.queue.getChannelID();
+			      }
+			   }
+			   if (sourceChannelID == -1)
+			   {
+			      throw new IllegalArgumentException("Cannot find source channel id");
+			   }
+			   			   
+				MessageSucker sucker = new MessageSucker(localQueue, info.connection, localInfo.connection,
+				                                         xa, preserveOrdering, sourceChannelID);
 	
 				info.addSucker(sucker);
 				

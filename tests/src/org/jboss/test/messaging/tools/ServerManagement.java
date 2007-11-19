@@ -192,10 +192,10 @@ public class ServerManagement
     * When this method correctly completes, the server (local or remote) is started and fully
     * operational (the service container and the server peer are created and started).
     */
-   public static synchronized void start(int i, String config,
-                                         ServiceAttributeOverrides attrOverrides,
-                                         boolean clearDatabase,
-                                         boolean startMessagingServer) throws Exception
+   public static void start(int i, String config,
+                             ServiceAttributeOverrides attrOverrides,
+                             boolean clearDatabase,
+                             boolean startMessagingServer) throws Exception
    {
       log.info("Attempting to start server " + i);
    	
@@ -219,7 +219,7 @@ public class ServerManagement
       }
    }
 
-   public static synchronized void stop() throws Exception
+   public static void stop() throws Exception
    {
       stop(0);
    }
@@ -230,7 +230,7 @@ public class ServerManagement
     * @return true if the server was effectively stopped, or false if the server was alreayd stopped
     *         when the method was invoked.
     */
-   public static synchronized boolean stop(int i) throws Exception
+   public static boolean stop(int i) throws Exception
    {
       if (servers[i] == null)
       {

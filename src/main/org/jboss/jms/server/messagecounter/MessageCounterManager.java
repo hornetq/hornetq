@@ -66,9 +66,7 @@ public class MessageCounterManager implements MessagingComponent
    public synchronized void start()
    {
       if (started)
-      {
-         log.warn(this + " already started");
-         
+      {  
          return;
       }
       
@@ -83,11 +81,9 @@ public class MessageCounterManager implements MessagingComponent
    }
 
    public synchronized void stop()
-   {
+   { 
       if (!started)
       {
-         log.warn(this + " isn't started");
-         
          return;
       }
       

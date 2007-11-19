@@ -303,5 +303,68 @@ public class SingleChannel_ReloadTest extends PagingStateTestBase
       assertEquals(0, queue.getMessageCount());
    }
    
+   //http://jira.jboss.org/jira/browse/JBMESSAGING-1139
+   //If the downcache is not full when we stop the server, we need to test that when we start it again
+   //it loads ok (previously it wasn't)
+   
+   //First test with downcach never flushed
+   public void testRecoverableQueueRestartWithDownCache() throws Throwable
+   {
+      testRecoverableQueueRestartWithDownCache(110);
+   }
+   
+   //Then with down cache flushed once 
+   public void testRecoverableQueueRestartWithDownCacheAlreadyFlushed() throws Throwable
+   {
+      testRecoverableQueueRestartWithDownCache(130);
+   }
+   
+   private void testRecoverableQueueRestartWithDownCache(int num) throws Throwable
+   {
+      MessagingQueue queue =
+         new MessagingQueue(1, "queue1", 1, ms, pm, true, -1, null, 100, 20, 20, false, 300000);
+      queue.activate();
+      
+      Message[] msgs = new Message[num];
+      
+      MessageReference[] refs = new MessageReference[num];
+            
+      for (int i = 0; i < num; i++)
+      {
+         msgs[i] = CoreMessageFactory.createCoreMessage(i, true, null);
+         
+         refs[i] = msgs[i].createReference();
+                
+         queue.handle(null, refs[i], null); 
+      }
+      
+            
+      pm.stop();
+      tr.stop();
+      ms.stop();
+      
+      pm =
+         new JDBCPersistenceManager(sc.getDataSource(), sc.getTransactionManager(),
+                  sc.getPersistenceManagerSQLProperties(),
+                  true, true, true, false, 100, !sc.getDatabaseName().equals("oracle"));   
+      ((JDBCPersistenceManager)pm).injectNodeID(1);
+      pm.start();
+      
+      ms = new SimpleMessageStore();
+      ms.start();
+      
+      tr = new TransactionRepository(pm, ms, idm);
 
+      tr.start();
+         
+      MessagingQueue queue2 =
+         new MessagingQueue(1, "queue1", 1, ms, pm, true, -1, null, 100, 20, 20, false, 300000);
+    
+      queue2.load();
+      queue2.activate();
+                              
+      this.consume(queue2, 0, refs, num);            
+   }
+     
+  
 }

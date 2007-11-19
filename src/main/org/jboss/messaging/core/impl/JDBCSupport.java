@@ -38,6 +38,7 @@ import javax.transaction.TransactionManager;
 
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.contract.MessagingComponent;
+import org.jboss.util.NestedSQLException;
 
 /**
  * Common functionality for messaging components that need to access a database.
@@ -439,17 +440,28 @@ public class JDBCSupport implements MessagingComponent
       private static final int MAX_TRIES = 25;
 
       protected Connection conn;
+      
+      private boolean getConnectionFailed;
 
       public T execute() throws Exception
-      {  
+      {                    
          Transaction tx = tm.suspend();
 
          try
          {
-            conn = ds.getConnection();
+            try
+            {
+               conn = ds.getConnection();
             
-            conn.setAutoCommit(false);
-
+               conn.setAutoCommit(false);
+            }
+            catch (Exception e)
+            {
+               getConnectionFailed = true;
+               
+               throw e;
+            }
+            
             T res = doTransaction();
             
             conn.commit();
@@ -498,13 +510,19 @@ public class JDBCSupport implements MessagingComponent
             }
             catch (SQLException  e)
             {
+               if (getConnectionFailed)
+               {
+                  //Do not retry - just throw the exception up
+                  throw e;
+               }
+               
                log.warn("SQLException caught, SQLState " + e.getSQLState() + " code:" + e.getErrorCode() + "- assuming deadlock detected, try:" + (tries + 1), e);
 
                tries++;
                if (tries == MAX_TRIES)
                {
                   log.error("Retried " + tries + " times, now giving up");
-                  throw new IllegalStateException("Failed to excecute transaction");
+                  throw new IllegalStateException("Failed to execute transaction");
                }
                log.warn("Trying again after a pause");
                //Now we wait for a random amount of time to minimise risk of deadlock

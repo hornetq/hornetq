@@ -43,8 +43,15 @@ public interface Message extends Streamable
 	 * The header is checked when sucking messages and if order preservation is true then the message is not accepted.
 	 * This is a basic way of ensuring message order is preserved.
 	 */
-	public static final String CLUSTER_SUCKED = "CLUSTER_SUCKED";
+	public static final String CLUSTER_SUCKED = "SUCKED";
 	
+	/**
+	 * This header is set on a message when it is sucked from one node to another.
+	 * If the header exists on the destination node, and the message is persistent, the message
+	 * will be moved from one channel to the other by doing a simple database update
+	 */
+	public static final String SOURCE_CHANNEL_ID = "SCID";
+		
    /**    
     * @return The unique id of the message
     */

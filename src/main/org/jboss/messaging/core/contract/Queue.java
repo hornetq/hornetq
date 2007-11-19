@@ -91,4 +91,7 @@ public interface Queue extends Channel
    Map getRecoveryArea();
    
    int getRecoveryMapSize();
+   
+   //Optimisation for shared database
+   Delivery handleMove(MessageReference ref, long sourceChannelID);   
 }

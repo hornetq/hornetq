@@ -24,9 +24,11 @@ package org.jboss.test.messaging.jms;
 import java.util.Enumeration;
 
 import javax.jms.Connection;
+import javax.jms.DeliveryMode;
 import javax.jms.InvalidDestinationException;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
+import javax.jms.MessageFormatException;
 import javax.jms.MessageProducer;
 import javax.jms.QueueBrowser;
 import javax.jms.Session;
@@ -291,8 +293,8 @@ public class BrowserTest extends JMSTestCase
 			
 			removeAllMessages(queue1.getQueueName(), true, 0);
 		}
-   }
-
+   }   
+   
    // Package protected ----------------------------------------------------------------------------
 	
 	// Protected ------------------------------------------------------------------------------------

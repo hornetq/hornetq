@@ -47,7 +47,7 @@ public class InVMInitialContextFactory implements InitialContextFactory
 
    static
    {
-      initialContexts = new HashMap();
+      reset();
    }
 
    public static Hashtable getJNDIEnvironment()
@@ -119,6 +119,11 @@ public class InVMInitialContextFactory implements InitialContextFactory
 	
 	      return ic;
    	}
+   }
+   
+   public static void reset()
+   {
+       initialContexts = new HashMap();
    }
 
    // Package protected ---------------------------------------------

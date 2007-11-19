@@ -278,6 +278,119 @@ public class ClusterConnectionManagerTest extends ClusteringTestBase
    	deployCFLocal();
    	suck();
    }
+   
+   // http://jira.jboss.org/jira/browse/JBMESSAGING-1136
+   public void testCreateConsumerBeforeRemoteDeployment() throws Exception
+   {      
+      final int NUM_MESSAGES = 20;      
+      
+      deployCFLocal();      
+      deployLocal();
+      
+      //Send some messages
+      
+      Queue queue0 = (Queue)ic[0].lookup("/queue/suckQueue");
+      
+      Connection conn0 = null;
+      
+      try
+      {
+         conn0 = this.createConnectionOnServer(cf, 0);
+         
+         assertEquals(0, getServerId(conn0));
+         
+         //Send some messages on node 0
+         
+         Session sess0 = conn0.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         
+         MessageProducer prod = sess0.createProducer(queue0);
+         
+         for (int i = 0; i < NUM_MESSAGES; i++)
+         {
+            TextMessage tm = sess0.createTextMessage("message" + i);
+            
+            prod.send(tm);
+         }
+      }
+      finally
+      {
+         if (conn0 != null)
+         {
+            conn0.close();
+         }
+      }
+      
+      log.info("Sent messages");
+      
+      //Undeploy
+      this.undeployAll();
+      
+      log.info("Undeployed");
+      
+      deployCFRemote();
+      deployRemote();
+      
+      Queue queue1 = (Queue)ic[1].lookup("/queue/suckQueue");
+            
+      //Create the consumer - but the messages will be stranded on other node
+      //Until we deploy - we do this on another thread
+      
+      Thread t = new Thread(new Runnable() {
+         public void run()
+         {
+            try
+            {
+               Thread.sleep(5000);
+               deployCFLocal();
+               deployLocal();
+            }
+            catch (Exception e)
+            {
+               log.error("Failed to deploy", e);
+            }
+         }
+      });
+      
+      t.start();
+      
+      Connection conn1 = null;
+      
+      try
+      {         
+         //Consume them on node 1
+         
+         conn1 = this.createConnectionOnServer(cf, 1);
+         
+         assertEquals(1, getServerId(conn1));
+         
+         Session sess1 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         
+         MessageConsumer cons1 = sess1.createConsumer(queue1);
+         
+         conn1.start();
+         
+         for (int i = 0; i < NUM_MESSAGES; i++)
+         {
+            TextMessage tm = (TextMessage)cons1.receive(30000);
+            
+            assertNotNull(tm);
+            
+            log.info("Got message " + tm.getText());
+            
+            assertEquals("message" + i, tm.getText());
+         } 
+      }
+      finally
+      {
+         if (conn1 != null)
+         {
+            conn1.close();
+         }
+      }
+      
+      t.join();
+      
+   }
    // Package protected ----------------------------------------------------------------------------
 
    // Protected ------------------------------------------------------------------------------------
@@ -298,9 +411,21 @@ public class ClusterConnectionManagerTest extends ClusteringTestBase
 
    private void undeployAll() throws Exception
    {
-   	ServerManagement.undeployQueue("suckQueue", 0);
+      try
+      {
+         ServerManagement.undeployQueue("suckQueue", 0);
+      }
+      catch (Exception ignore)
+      {
+      }
 
-   	ServerManagement.undeployQueue("suckQueue", 1);
+      try
+      {
+         ServerManagement.undeployQueue("suckQueue", 1);
+      }
+      catch (Exception ignore)
+      {
+      }
    	
       String cfName =
    		(String)ServerManagement.getServer(1).getAttribute(ServerManagement.getServerPeerObjectName(), "ClusterPullConnectionFactoryName");
@@ -378,13 +503,6 @@ public class ClusterConnectionManagerTest extends ClusteringTestBase
       	Session sess0 = conn0.createSession(false, Session.AUTO_ACKNOWLEDGE);
       	
       	MessageProducer prod = sess0.createProducer(queue0);
-      	
-      	//Note! The message must be sent as non persistent for this test
-      	//Since we have not deployed suckQueue on all nodes of the cluster
-      	//this would cause persistent messages to not be delivered since they would
-      	//fail to replicate to their backup (since suckQueue is not deployed on it)
-      	
-      	prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
       	
       	for (int i = 0; i < NUM_MESSAGES; i++)
       	{

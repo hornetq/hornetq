@@ -57,6 +57,7 @@ import org.jboss.jms.wireformat.JMSWireFormat;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.contract.Binding;
 import org.jboss.messaging.core.contract.Delivery;
+import org.jboss.messaging.core.contract.Message;
 import org.jboss.messaging.core.contract.MessageReference;
 import org.jboss.messaging.core.contract.MessageStore;
 import org.jboss.messaging.core.contract.PostOffice;
@@ -698,7 +699,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
       if (dest.isDirect())
       {
       	//Route directly to queue - temp kludge for clustering
-      	
+         
       	Binding binding = postOffice.getBindingForQueueName(dest.getName());
       	
       	if (binding == null)
@@ -708,7 +709,9 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
       	
       	Queue queue = binding.queue;
       	
-      	Delivery del = queue.handle(null, ref, tx);
+         Long scid = (Long)ref.getMessage().removeHeader(Message.SOURCE_CHANNEL_ID);
+         
+         Delivery del = queue.handleMove(ref, scid.longValue());
       	
       	if (del == null)
       	{

@@ -104,6 +104,8 @@ public class RMINamingDelegate extends UnicastRemoteObject implements NamingDele
       public void reset()
       {
          ic = null;
+         
+         InVMInitialContextFactory.reset();
       }
    }
 }

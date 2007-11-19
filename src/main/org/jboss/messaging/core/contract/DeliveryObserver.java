@@ -32,6 +32,8 @@ import org.jboss.messaging.core.impl.tx.Transaction;
 public interface DeliveryObserver
 {
    void acknowledge(Delivery d, Transaction tx) throws Throwable;
+   
+   void acknowledgeNoPersist(Delivery d) throws Throwable;
 
    void cancel(Delivery d) throws Throwable;
 }

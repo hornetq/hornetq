@@ -181,13 +181,7 @@
       <name>ClusterPullConnectionFactoryName</name>
       <type>java.lang.String</type>
    </attribute> 
-   
-   <attribute access="read-write" getMethod="isUseXAForMessagePull" setMethod="setUseXAForMessagePull">
-      <description>When pulling persistent messages from a remote durable queue to a local one, should XA be used?</description>
-      <name>UseXAForMessagePull</name>
-      <type>boolean</type>
-   </attribute>  
-   
+
    <attribute access="read-write" getMethod="isDefaultPreserveOrdering" setMethod="setDefaultPreserveOrdering">
       <description>When pulling messages do we need to preserve the ordering of messages consumed from a particular producer, for a particular consumer?</description>
       <name>DefaultPreserveOrdering</name>

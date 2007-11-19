@@ -354,7 +354,7 @@ public class MessagingPostOffice extends JDBCSupport
 	      			"Are you sure you have given each node a unique node id during installation?");
 	      }
 	
-	      PostOfficeAddressInfo info = new PostOfficeAddressInfo(groupMember.getSyncAddress(), groupMember.getAsyncAddress());
+	      PostOfficeAddressInfo info = new PostOfficeAddressInfo(groupMember.getControlChannelAddress(), groupMember.getDataChannelAddress());
 	      
 	      nodeIDAddressMap.put(new Integer(thisNodeID), info);	     
 	      
@@ -1430,7 +1430,7 @@ public class MessagingPostOffice extends JDBCSupport
       {
          Map m = (Map)replicatedData.get(key);
 
-         return m == null ? Collections.EMPTY_MAP : Collections.unmodifiableMap(m);
+         return m == null ? Collections.EMPTY_MAP : new HashMap(m);
       }
    }
 
@@ -1933,7 +1933,7 @@ public class MessagingPostOffice extends JDBCSupport
 
       return removed;
    }
-
+   
    private synchronized void calculateFailoverMap()
    {
    	failoverMap.clear();
@@ -1941,55 +1941,63 @@ public class MessagingPostOffice extends JDBCSupport
    	View view = groupMember.getCurrentView();
    	
    	Vector members = view.getMembers();
-   	
+   		
    	for (int i = 0; i < members.size(); i++)
    	{
-   		Address address = (Address)members.get(i);
+   	   Address address = (Address)members.get(i);
+         
+         Integer theNodeID = findNodeIDForAddress(address);
+         
+         if (theNodeID == null)
+         {
+            continue;
+         }
+               
+         Integer fnodeID;
+         int fi = i;
+         do
+         {
+            fi++;
+            
+            if (fi == members.size())
+            {
+               fi = 0;
+            }
+         
+            Address failoverAddress = (Address)members.get(fi);
+            
+            fnodeID = findNodeIDForAddress(failoverAddress);
+         }
+         while (fnodeID == null);
    		
-   		Integer theNodeID = findNodeIDForAddress(address);
-   		
-   		if (theNodeID == null)
-   		{
-   			throw new IllegalStateException("Cannot find node id for address " + address);
-   		}
-   		
-   		int j;
-   		
-   		if (i != members.size() - 1)
-   		{
-   			j = i + 1;
-   		}
-   		else
-   		{
-   			j = 0;
-   		}
-   		
-   		Address failoverAddress = (Address)members.get(j);
-   		
-   		Integer failoverNodeID = this.findNodeIDForAddress(failoverAddress);
-   		
-   		if (failoverNodeID == null)
-   		{
-   			throw new IllegalStateException("Cannot find node id for address " + failoverAddress);
-   		}
-   		
-   		failoverMap.put(theNodeID, failoverNodeID);	   			   		   
+   		failoverMap.put(theNodeID, fnodeID);	   			   		   
    	}   	
    	
-   	int fid = ((Integer)failoverMap.get(new Integer(thisNodeID))).intValue();
+   	Integer i = (Integer)failoverMap.get(new Integer(thisNodeID));
    	
-   	//if we are the first node in the cluster we don't want to be our own failover node!
-   	
-   	if (fid == thisNodeID)
-   	{
-   		firstNode = true;
-   		failoverNodeID = -1;
+   	if (i != null)
+   	{      	
+      	int fid = i.intValue();
+      	
+      	//if we are the first node in the cluster we don't want to be our own failover node!
+      	
+      	if (fid == thisNodeID)
+      	{
+      		firstNode = true;
+      		failoverNodeID = -1;
+      	}
+      	else
+      	{
+      		failoverNodeID = fid;
+      		firstNode = false;	   		
+      	}	  
    	}
    	else
    	{
-   		failoverNodeID = fid;
-   		firstNode = false;	   		
-   	}	   	   	 
+   	   //This can occur if this node joins the group, then another node joins in quick succession before this node
+   	   //has had time to add its nodeid-address mapping.
+   	   //This is ok - it wil be shortly followed by another calculation of the map
+   	}
    	
       log.debug("Updated failover map:\n" + dumpFailoverMap(failoverMap));   	      
    }
@@ -2521,6 +2529,8 @@ public class MessagingPostOffice extends JDBCSupport
    {   	
       Iterator iter = loadedBindings.values().iterator();
       
+      log.trace("Loading bindings");
+      
       while (iter.hasNext())
       {
       	Binding binding = (Binding)iter.next();
@@ -2543,6 +2553,7 @@ public class MessagingPostOffice extends JDBCSupport
          	
             ClusterRequest request = new BindRequest(info, binding.allNodes);
 
+            log.trace("Multicasting bind all");
             groupMember.multicastControl(request, false);         
          }      	
          

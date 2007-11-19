@@ -138,6 +138,22 @@ public class QueueService extends DestinationServiceSupport implements QueueMBea
          
          started = true;         
          
+         //Now we need to trigger a delivery - this is because message suckers might have
+         //been create *before* the queue was deployed - this is because message suckers can be
+         //created when the clusterpullconnectionfactory deploy is detected which then causes
+         //the clusterconnectionmanager to inspect the bindings for queues to create suckers
+         //to - but these bindings will exist before the queue or topic is deployed and before
+         //it has had its messages loaded
+         //Therefore we need to trigger a delivery now so remote suckers get messages
+         //See http://jira.jboss.org/jira/browse/JBMESSAGING-1136
+         //For JBM we should remove the distinction between activation and deployment to
+         //remove these annoyances and edge cases.
+         //The post office should load(=deploy) all bindings on startup including loading their
+         //state before adding the binding - there should be no separate deployment stage
+         //If the queue can be undeployed there should be a separate flag for this on the
+         //binding
+         queue.deliver();
+         
          log.info(this + " started, fullSize=" + destination.getFullSize() +
                   ", pageSize=" + destination.getPageSize() + ", downCacheSize=" + destination.getDownCacheSize());
       }

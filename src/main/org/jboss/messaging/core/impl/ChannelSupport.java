@@ -35,8 +35,8 @@ import org.jboss.messaging.core.contract.Delivery;
 import org.jboss.messaging.core.contract.DeliveryObserver;
 import org.jboss.messaging.core.contract.Distributor;
 import org.jboss.messaging.core.contract.Filter;
+import org.jboss.messaging.core.contract.Message;
 import org.jboss.messaging.core.contract.MessageReference;
-import org.jboss.messaging.core.contract.MessageStore;
 import org.jboss.messaging.core.contract.PersistenceManager;
 import org.jboss.messaging.core.impl.tx.Transaction;
 import org.jboss.messaging.core.impl.tx.TransactionException;
@@ -129,7 +129,62 @@ public abstract class ChannelSupport implements Channel
    }
    
    // Receiver implementation ----------------------------------------------------------------------
+   
+   //Optimisation
+   public Delivery handleMove(MessageReference ref, long sourceChannelID)
+   {
+      if (!isActive())
+      {  
+         if (trace) { log.trace(this + " is not active, returning null delivery for " + ref); }
+         
+         return null;
+      }
 
+      checkClosed();
+           
+      if (trace) { log.trace(this + " moving ref " + ref + " from channel " + sourceChannelID); }
+      
+      if (maxSize != -1 && getMessageCount() >= maxSize)
+      {
+         //Have reached maximum size - will drop message
+         
+         log.warn(this + " has reached maximum size, " + ref + " will be dropped");
+         
+         return null;
+      }
+   
+      // Each channel has its own copy of the reference
+      ref = ref.copy();
+
+      try
+      {           
+         if (ref.getMessage().isReliable() && recoverable)
+         {
+            // Reliable message in a recoverable state - also add to db
+            if (trace) { log.trace(this + " adding " + ref + " to database non-transactionally"); }
+            
+            pm.moveReference(sourceChannelID, channelID, ref);        
+         }
+         
+         synchronized (lock)
+         {
+            addReferenceInMemory(ref);
+            
+            deliverInternal();
+         }
+            
+         messagesAdded.increment();
+      }
+      catch (Throwable t)
+      {
+         log.error("Failed to handle message", t);
+
+         return null;
+      }
+
+      return new SimpleDelivery(this, ref, true, false);  
+   }
+   
    public Delivery handle(DeliveryObserver sender, MessageReference ref, Transaction tx)
    {
       if (!isActive())
@@ -141,7 +196,78 @@ public abstract class ChannelSupport implements Channel
 
       checkClosed();
       
-      return handleInternal(sender, ref, tx, true);      
+      if (ref == null)
+      {
+         return null;
+      }
+
+      if (trace) { log.trace(this + " handles " + ref + (tx == null ? " non-transactionally" : " in transaction: " + tx)); }
+      
+      if (maxSize != -1 && getMessageCount() >= maxSize)
+      {
+         //Have reached maximum size - will drop message
+         
+         log.warn(this + " has reached maximum size, " + ref + " will be dropped");
+         
+         return null;
+      }
+   
+      // Each channel has its own copy of the reference
+      ref = ref.copy();
+
+      try
+      {           
+         if (tx == null)
+         {
+            if (ref.getMessage().isReliable() && recoverable)
+            {
+               // Reliable message in a recoverable state - also add to db
+               if (trace) { log.trace(this + " adding " + ref + " to database non-transactionally"); }
+               
+               pm.addReference(channelID, ref, null);        
+            }
+            
+            // If the ref has a scheduled delivery time then we don't add to the in memory queue
+            // instead we create a timeout, so when that time comes delivery will attempted directly
+            
+            if (!checkAndSchedule(ref))
+            {               
+               synchronized (lock)
+               {
+                  addReferenceInMemory(ref);
+                  
+                  deliverInternal();
+               }            
+            }
+         }
+         else
+         {
+            if (trace) { log.trace(this + " adding " + ref + " to state " + (tx == null ? "non-transactionally" : "in transaction: " + tx)); }
+
+            // add to post commit callback
+            getCallback(tx).addRef(ref);
+            
+            if (trace) { log.trace(this + " added transactionally " + ref + " in memory"); }
+            
+            if (ref.getMessage().isReliable() && recoverable)
+            {
+               // Reliable message in a recoverable state - also add to db
+               if (trace) { log.trace(this + " adding " + ref + (tx == null ? " to database non-transactionally" : " in transaction: " + tx)); }
+
+               pm.addReference(channelID, ref, tx);
+            }
+         }
+         
+         messagesAdded.increment();
+      }
+      catch (Throwable t)
+      {
+         log.error("Failed to handle message", t);
+
+         return null;
+      }
+
+      return new SimpleDelivery(this, ref, true, false);     
    }
 
    // DeliveryObserver implementation --------------------------------------------------------------
@@ -151,6 +277,11 @@ public abstract class ChannelSupport implements Channel
       if (trace) { log.trace("acknowledging " + d + (tx == null ? " non-transactionally" : " transactionally in " + tx)); }
 
       acknowledgeInternal(d, tx, true);
+   }
+   
+   public void acknowledgeNoPersist(Delivery d) throws Throwable
+   {
+      acknowledgeInternal(d, null, false);
    }
 
    public void cancel(Delivery del) throws Throwable
@@ -580,86 +711,7 @@ public abstract class ChannelSupport implements Channel
       
       return false;
    }
-      
-   protected Delivery handleInternal(DeliveryObserver sender, MessageReference ref,
-                                     Transaction tx, boolean persist)
-   {
-      if (ref == null)
-      {
-         return null;
-      }
-
-      if (trace) { log.trace(this + " handles " + ref + (tx == null ? " non-transactionally" : " in transaction: " + tx)); }
-      
-      if (maxSize != -1 && getMessageCount() >= maxSize)
-      {
-         //Have reached maximum size - will drop message
          
-         log.warn(this + " has reached maximum size, " + ref + " will be dropped");
-         
-         return null;
-      }
-   
-      // Each channel has its own copy of the reference
-      ref = ref.copy();
-
-      try
-      {        	
-         if (tx == null)
-         {
-            if (persist && ref.getMessage().isReliable() && recoverable)
-            {
-               // Reliable message in a recoverable state - also add to db
-               if (trace) { log.trace(this + " adding " + ref + " to database non-transactionally"); }
-               
-               // TODO - this db access could safely be done outside the event loop
-               pm.addReference(channelID, ref, null);        
-            }
-            
-            // If the ref has a scheduled delivery time then we don't add to the in memory queue
-            // instead we create a timeout, so when that time comes delivery will attempted directly
-            
-            if (!checkAndSchedule(ref))
-            {               
-               synchronized (lock)
-               {
-                  addReferenceInMemory(ref);
-                  
-                  deliverInternal();
-               }            
-            }
-         }
-         else
-         {
-            if (trace) { log.trace(this + " adding " + ref + " to state " + (tx == null ? "non-transactionally" : "in transaction: " + tx)); }
-
-            // add to post commit callback
-            getCallback(tx).addRef(ref);
-            
-            if (trace) { log.trace(this + " added transactionally " + ref + " in memory"); }
-            
-            if (persist && ref.getMessage().isReliable() && recoverable)
-            {
-               // Reliable message in a recoverable state - also add to db
-               if (trace) { log.trace(this + " adding " + ref + (tx == null ? " to database non-transactionally" : " in transaction: " + tx)); }
-
-               pm.addReference(channelID, ref, tx);
-            }
-         }
-         
-         messagesAdded.increment();
-      }
-      catch (Throwable t)
-      {
-         log.error("Failed to handle message", t);
-
-         return null;
-      }
-
-      return new SimpleDelivery(this, ref, true, false);
-   }
-
-   
    protected boolean checkAndSchedule(MessageReference ref)
    {
       if (ref.getScheduledDeliveryTime() > System.currentTimeMillis())

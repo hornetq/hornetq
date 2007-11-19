@@ -80,13 +80,15 @@ public class MessageSucker implements MessageListener
 	
 	private boolean preserveOrdering;
 	
+	private long sourceChannelID;
+	
 	public String toString()
 	{
 		return "MessageSucker:" + System.identityHashCode(this) + " queue:" + localQueue.getName();
 	}
 			
 	MessageSucker(Queue localQueue, JBossConnection sourceConnection, JBossConnection localConnection,
-			        boolean xa, boolean preserveOrdering)
+			        boolean xa, boolean preserveOrdering, long sourceChannelID)
 	{	
 		if (trace) { log.trace("Creating message sucker, localQueue:" + localQueue + " xa:" + xa + " preserveOrdering:" + preserveOrdering); }
 		
@@ -96,9 +98,15 @@ public class MessageSucker implements MessageListener
 		
 		this.localConnection = localConnection;
 		
-		this.xa = xa;
+		//this.xa = xa;
+		
+		//XA is currently disabled for message sucking - this is because JBM 1.4.0 uses shared database so XA is
+		//unnecesary - we can move the ref from one channel to another with a database update
+		this.xa = false;
 		
 		this.preserveOrdering = preserveOrdering;
+		
+		this.sourceChannelID = sourceChannelID;
 		
 		if (xa)
 		{
@@ -125,8 +133,7 @@ public class MessageSucker implements MessageListener
 			JBossSession sess = (JBossSession)sourceConnection.createSession(false, Session.CLIENT_ACKNOWLEDGE);
 		
 			sourceSession = (SessionDelegate)sess.getDelegate();
-			
-			
+						
 			sess = (JBossSession)localConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 			
 			localSession = (SessionDelegate)sess.getDelegate();
@@ -244,6 +251,9 @@ public class MessageSucker implements MessageListener
 		
 		try
 		{
+		   /*
+		   Commented out until JBM 2.0 
+		    
 			boolean startTx = xa && msg.getJMSDeliveryMode() == DeliveryMode.PERSISTENT;
 			
 			if (startTx)
@@ -263,12 +273,18 @@ public class MessageSucker implements MessageListener
 				if (trace) { log.trace("Started JTA transaction"); }
 			}
 			
+         org.jboss.messaging.core.contract.Message coreMessage = ((MessageProxy)msg).getMessage();
+         			
 			if (preserveOrdering)
 			{
 				//Add a header saying we have sucked the message
-				((MessageProxy)msg).getMessage().putHeader(org.jboss.messaging.core.contract.Message.CLUSTER_SUCKED, "x");
+				coreMessage.putHeader(org.jboss.messaging.core.contract.Message.CLUSTER_SUCKED, "x");
 			}
 			
+			//Add a header with the node id of the node we sucked from - this is used on the sending end to do
+			//the move optimisation
+			coreMessage.putHeader(org.jboss.messaging.core.contract.Message.SOURCE_CHANNEL_ID, sourceChannelID);
+
 			long timeToLive = msg.getJMSExpiration();
 			if (timeToLive != 0)
 			{
@@ -301,6 +317,39 @@ public class MessageSucker implements MessageListener
 				
 				if (trace) { log.trace("Acknowledged message"); }
 			}
+			*/
+
+         org.jboss.messaging.core.contract.Message coreMessage = ((MessageProxy)msg).getMessage();
+                  
+         if (preserveOrdering)
+         {
+            //Add a header saying we have sucked the message
+            coreMessage.putHeader(org.jboss.messaging.core.contract.Message.CLUSTER_SUCKED, "x");
+         }
+         
+         //Add a header with the node id of the node we sucked from - this is used on the sending end to do
+         //the move optimisation
+         coreMessage.putHeader(org.jboss.messaging.core.contract.Message.SOURCE_CHANNEL_ID, sourceChannelID);
+
+         long timeToLive = msg.getJMSExpiration();
+         if (timeToLive != 0)
+         {
+            timeToLive -=  System.currentTimeMillis();
+            if (timeToLive <= 0)
+            {
+               timeToLive = 1; //Should have already expired - set to 1 so it expires when it is consumed or delivered
+            }
+         }
+         
+         //First we ack it - this ack only occurs in memory even if it is a persistent message
+         msg.acknowledge();
+         
+         if (trace) { log.trace("Acknowledged message"); }     
+         
+         //Then we send - this causes the ref to be moved (SQL UPDATE) in the database        
+         producer.send(null, msg, msg.getJMSDeliveryMode(), msg.getJMSPriority(), timeToLive, true);
+         
+         if (trace) { log.trace(this + " forwarded message to queue"); }                      
 		}
 		catch (Exception e)
 		{

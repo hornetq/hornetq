@@ -25,6 +25,7 @@ import javax.jms.BytesMessage;
 import javax.jms.Destination;
 import javax.jms.MapMessage;
 import javax.jms.Message;
+import javax.jms.MessageFormatException;
 import javax.jms.ObjectMessage;
 import javax.jms.StreamMessage;
 import javax.jms.TextMessage;
@@ -88,9 +89,7 @@ public class ProducerAspect
       long timeToLive = ((Long)args[4]).longValue();
 
       boolean keepID = args.length>5? ((Boolean)args[5]).booleanValue() : false;
-
-      String keptId = null;
-
+      
       // configure the message for sending, using attributes stored as metadata
 
       ProducerState producerState = getProducerState(mi);
@@ -108,6 +107,11 @@ public class ProducerAspect
          // Use the priority of the producer
          priority = producerState.getPriority();
          if (trace) { log.trace("Using producer's default priority: " + priority); }
+      }
+      if (priority < 0 || priority > 9)
+      {
+         throw new MessageFormatException("Invalid message priority (" + priority + "). " +
+                                          "Valid priorities are 0-9");
       }
       m.setJMSPriority(priority);
 
@@ -169,7 +173,7 @@ public class ProducerAspect
       // Generate the message id
       ConnectionState connectionState = (ConnectionState)sessionState.getParent();
 
-      long id = 0;
+      long id = -1;
 
       JBossMessage messageToSend;
       boolean foreign = false;
@@ -223,13 +227,12 @@ public class ProducerAspect
          // get the actual message
          MessageProxy proxy = (MessageProxy)m;
 
+         m.setJMSDestination(destination);
+         
          if (keepID)
          {
-            keptId = m.getJMSMessageID();
+            id = proxy.getMessage().getMessageID();
          }
-
-
-         m.setJMSDestination(destination);
 
          //The following line executed on the proxy should cause a copy to occur
          //if it is necessary
@@ -243,15 +246,13 @@ public class ProducerAspect
 
       // Set the new id
 
-      id = connectionState.getIdGenerator().getId((ConnectionDelegate)connectionState.getDelegate());
-      messageToSend.setMessageId(id);
-
-      if (keptId != null)
+      if (!keepID)
       {
-         messageToSend.setJMSMessageID(keptId);
+         id = connectionState.getIdGenerator().getId((ConnectionDelegate)connectionState.getDelegate());
       }
-
-
+      
+      messageToSend.setMessageId(id);
+            
       // This only really used for BytesMessages and StreamMessages to reset their state
       messageToSend.doBeforeSend(); 
       

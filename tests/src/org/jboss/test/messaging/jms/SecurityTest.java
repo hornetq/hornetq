@@ -173,9 +173,9 @@ public class SecurityTest extends JMSTestCase
       Connection conn = null;
       try
       {
-         conn = cf.createConnection("dilbert", "dogbert");
+         conn = cf.createConnection("john", "needle");
          String clientID = conn.getClientID();
-         assertEquals("Invalid ClientID", "dilbert-id", clientID);
+         assertEquals("Invalid ClientID", "DurableSubscriberExample", clientID);
       }
       finally
       {
@@ -211,7 +211,7 @@ public class SecurityTest extends JMSTestCase
       Connection conn = null;
       try
       {
-         conn = cf.createConnection("dilbert", "dogbert");
+         conn = cf.createConnection("john", "needle");
          conn.setClientID("myID");
          fail();
       }
@@ -434,7 +434,7 @@ public class SecurityTest extends JMSTestCase
       Connection conn = null;
       try
       {
-         conn = cf.createConnection("dilbert", "dogbert");
+         conn = cf.createConnection("john", "needle");
          assertTrue(this.canCreateDurableSub(conn, topic1, "sub2"));
       }
       finally
@@ -453,7 +453,7 @@ public class SecurityTest extends JMSTestCase
       Connection conn = null;
       try
       {
-         conn = cf.createConnection("dilbert", "dogbert");
+         conn = cf.createConnection("john", "needle");
          assertFalse(this.canCreateDurableSub(conn, topic2, "sub3"));
       }
       finally
@@ -504,7 +504,7 @@ public class SecurityTest extends JMSTestCase
       Connection conn = null;
       try
       {
-         conn = cf.createConnection("john", "needle");
+         conn = cf.createConnection("dilbert", "dogbert");
          conn.setClientID("myID5");
          assertTrue(this.canReadDestination(conn, topic3));
          assertTrue(this.canWriteDestination(conn, topic3));

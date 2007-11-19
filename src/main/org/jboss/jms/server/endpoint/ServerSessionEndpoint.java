@@ -1768,8 +1768,18 @@ public class ServerSessionEndpoint implements SessionEndpoint
          return false;
       }
       
-      rec.del.acknowledge(null);  
+      ServerConsumerEndpoint consumer = rec.getConsumer();
       
+      if (consumer != null && consumer.isRemote())
+      {
+         //Optimisation for shared DB - we don't ack in DB - we move
+         rec.del.getObserver().acknowledgeNoPersist(rec.del);
+      }
+      else
+      {      
+         rec.del.acknowledge(null);
+      }
+           
       //Now replicate the ack
       
       if (rec.replicating && replicating)

@@ -40,6 +40,8 @@ import org.jboss.messaging.core.impl.tx.Transaction;
 public interface PersistenceManager extends MessagingComponent
 {
    void addReference(long channelID, MessageReference ref, Transaction tx) throws Exception;
+   
+   void moveReference(long sourceChannelID, long destChannelID, MessageReference ref) throws Exception;
 
    void removeReference(long channelID, MessageReference ref, Transaction tx) throws Exception;
    
