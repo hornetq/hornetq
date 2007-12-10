@@ -40,7 +40,7 @@ public class GroupManagementTest extends MessagingTestCase
    {
       try
       {
-         ServerManagement.start(0, "all", false);
+         //ServerManagement.start(0, "all");
 
          Set view = ServerManagement.getServer(0).getNodeIDView();
          assertEquals(1, view.size());
@@ -59,13 +59,13 @@ public class GroupManagementTest extends MessagingTestCase
 
       try
       {
-         ServerManagement.start(0, "all", false);
-         
+         //ServerManagement.start(0, "all");
+
          log.info("Started server 0");
 
          ServerManagement.addNotificationListener(0, postOfficeObjectName, listener);
 
-         ServerManagement.start(1, "all", false);
+         //ServerManagement.start(1, "all");
 
          log.info("Blocking to receive notification ...");
 
@@ -91,13 +91,13 @@ public class GroupManagementTest extends MessagingTestCase
    {
       try
       {
-         ServerManagement.start(0, "all", false);
+         //ServerManagement.start(0, "all");
 
          Set view = ServerManagement.getServer(0).getNodeIDView();
          assertEquals(1, view.size());
          assertTrue(view.contains(new Integer(0)));
 
-         ServerManagement.start(1, "all", false);
+         //ServerManagement.start(1, "all");
 
          view = ServerManagement.getServer(0).getNodeIDView();
          assertEquals(2, view.size());
@@ -121,13 +121,13 @@ public class GroupManagementTest extends MessagingTestCase
    {
       try
       {
-         ServerManagement.start(0, "all", false);
+         //ServerManagement.start(0, "all");
 
          Set view = ServerManagement.getServer(0).getNodeIDView();
          assertEquals(1, view.size());
          assertTrue(view.contains(new Integer(0)));
 
-         ServerManagement.start(1, "all", false);
+         //ServerManagement.start(1, "all");
 
          view = ServerManagement.getServer(0).getNodeIDView();
          assertEquals(2, view.size());
@@ -139,7 +139,7 @@ public class GroupManagementTest extends MessagingTestCase
          assertTrue(view.contains(new Integer(0)));
          assertTrue(view.contains(new Integer(1)));
 
-         ServerManagement.start(3, "all", false);
+         //ServerManagement.start(3, "all");
 
          view = ServerManagement.getServer(0).getNodeIDView();
          assertEquals(3, view.size());
@@ -172,9 +172,9 @@ public class GroupManagementTest extends MessagingTestCase
    {
       try
       {
-         ServerManagement.start(0, "all", false);
-         ServerManagement.start(1, "all", false);
-         ServerManagement.start(2, "all", false);
+         //ServerManagement.start(0, "all");
+         //ServerManagement.start(1, "all");
+         //ServerManagement.start(2, "all");
 
          Set view = ServerManagement.getServer(0).getNodeIDView();
          assertEquals(3, view.size());
@@ -201,7 +201,7 @@ public class GroupManagementTest extends MessagingTestCase
 
          // Reuse the "hollow" RMI server 0 to start another cluster node
 
-         ServerManagement.start(0, "all", false);
+         //ServerManagement.start(0, "all");
 
          view = ServerManagement.getServer(0).getNodeIDView();
          assertEquals(2, view.size());
@@ -211,7 +211,7 @@ public class GroupManagementTest extends MessagingTestCase
 
          // Reuse the "hollow" RMI server 2 to start another cluster node
 
-         ServerManagement.start(2, "all", false);
+         //ServerManagement.start(2, "all");
 
          view = ServerManagement.getServer(2).getNodeIDView();
          assertEquals(3, view.size());
@@ -237,8 +237,8 @@ public class GroupManagementTest extends MessagingTestCase
       {
          // Start with a 2 node cluster
 
-         ServerManagement.start(0, "all", false);
-         ServerManagement.start(1, "all", false);
+         //ServerManagement.start(0, "all");
+         //ServerManagement.start(1, "all");
 
          Set view = ServerManagement.getServer(0).getNodeIDView();
          assertEquals(2, view.size());
@@ -283,9 +283,9 @@ public class GroupManagementTest extends MessagingTestCase
       {
          // Start with a 3 node cluster
 
-         ServerManagement.start(0, "all", false);
-         ServerManagement.start(1, "all", false);
-         ServerManagement.start(2, "all", false);
+         //ServerManagement.start(0, "all");
+         //ServerManagement.start(1, "all");
+         //ServerManagement.start(2, "all");
 
          Set view = ServerManagement.getServer(0).getNodeIDView();
          assertEquals(3, view.size());
@@ -358,7 +358,7 @@ public class GroupManagementTest extends MessagingTestCase
       {
          // Start with a 1 node cluster
 
-         ServerManagement.start(0, "all", false);
+         //ServerManagement.start(0, "all");
 
          Set view = ServerManagement.getServer(0).getNodeIDView();
          assertEquals(1, view.size());
@@ -367,7 +367,7 @@ public class GroupManagementTest extends MessagingTestCase
          ServerManagement.addNotificationListener(0, postOfficeObjectName, clusterEvent);
 
          // start the ninth node, as there is no chance to be started by scripts
-         ServerManagement.start(9, "all", false);
+         //ServerManagement.start(9, "all");
 
          if (!clusterEvent.viewChanged(30000))
          {
@@ -385,83 +385,6 @@ public class GroupManagementTest extends MessagingTestCase
          ServerManagement.removeNotificationListener(0, postOfficeObjectName, clusterEvent);
          ServerManagement.stop(0);
          ServerManagement.kill(9);
-      }
-   }
-   
-   public void testStartServersSimultaneously() throws Exception
-   {
-      final int numServers = 5;
-      
-      try
-      {
-         class ServerStarter extends Thread
-         {
-            int nodeID;
-            boolean failed;
-            ServerStarter(int nodeID)
-            {
-               this.nodeID = nodeID;
-            }
-            
-            public void run()
-            {
-               try
-               {
-                  log.info("Starting " + nodeID);
-                  ServerManagement.start(nodeID, "all", false);
-                  
-                  ServerManagement.deployQueue("testDistributedQueue1", nodeID);
-                  ServerManagement.deployTopic("testDistributedTopic1", nodeID);
-                  
-                  ServerManagement.deployQueue("testDistributedQueue2", nodeID);
-                  ServerManagement.deployTopic("testDistributedTopic2", nodeID);
-                  
-                  ServerManagement.deployQueue("testDistributedQueue3", nodeID);
-                  ServerManagement.deployTopic("testDistributedTopic3", nodeID);
-                  log.info("Done start");
-               }
-               catch (Throwable t)
-               {
-                  log.error("Failed to start server", t);
-                  failed = true;
-               }
-            }
-         }
-         
-         ServerStarter[] starters = new ServerStarter[numServers];         
-         for (int i = 0; i < 5; i++)
-         {
-            starters[i] = new ServerStarter(i);
-            starters[i].start();
-         }
-         
-         boolean failed = false;
-         for (int i = 0; i < 5; i++)
-         {          
-            starters[i].join();
-            if (starters[i].failed)
-            {
-               failed = true;
-            }
-         }
-         
-         assertFalse(failed);
-
-         Set view = ServerManagement.getServer(0).getNodeIDView();
-         assertEquals(numServers, view.size());
-      }
-      finally
-      {
-         for (int i = numServers - 1; i >=0; i--)
-         {
-            try
-            {
-               ServerManagement.stop(i);
-            }
-            catch (Exception ignore)
-            {               
-            }
-         }
       }
    }
 

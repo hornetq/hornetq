@@ -22,14 +22,6 @@
 
 package org.jboss.messaging.core.impl.clusterconnection;
 
-import javax.jms.DeliveryMode;
-import javax.jms.Message;
-import javax.jms.MessageListener;
-import javax.jms.Session;
-import javax.transaction.Transaction;
-import javax.transaction.TransactionManager;
-import javax.transaction.xa.XAResource;
-
 import org.jboss.jms.client.JBossConnection;
 import org.jboss.jms.client.JBossSession;
 import org.jboss.jms.delegate.ConsumerDelegate;
@@ -41,6 +33,14 @@ import org.jboss.jms.message.MessageProxy;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.contract.Queue;
 import org.jboss.tm.TransactionManagerLocator;
+
+import javax.jms.DeliveryMode;
+import javax.jms.Message;
+import javax.jms.MessageListener;
+import javax.jms.Session;
+import javax.transaction.Transaction;
+import javax.transaction.TransactionManager;
+import javax.transaction.xa.XAResource;
 
 /**
  * 

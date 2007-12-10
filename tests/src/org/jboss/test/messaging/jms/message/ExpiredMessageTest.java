@@ -6,21 +6,17 @@
  */
 package org.jboss.test.messaging.jms.message;
 
-import javax.jms.Connection;
-import javax.jms.Message;
-import javax.jms.MessageConsumer;
-import javax.jms.MessageProducer;
-import javax.jms.Session;
-
 import org.jboss.logging.Logger;
-import org.jboss.test.messaging.jms.JMSTestCase;
+import org.jboss.test.messaging.JBMServerTestCase;
+
+import javax.jms.*;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  * $Id$
  */
-public class ExpiredMessageTest extends JMSTestCase
+public class ExpiredMessageTest extends JBMServerTestCase
 {
    // Constants ------------------------------------------------------------------------------------
 
@@ -41,7 +37,7 @@ public class ExpiredMessageTest extends JMSTestCase
 
    public void testSimpleExpiration() throws Exception
    {
-      Connection conn = cf.createConnection();
+      Connection conn = getConnectionFactory().createConnection();
 
       Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
@@ -67,7 +63,7 @@ public class ExpiredMessageTest extends JMSTestCase
    
    public void testManyExpiredMessagesAtOnce() throws Exception
    {
-      Connection conn = cf.createConnection();
+      Connection conn = getConnectionFactory().createConnection();
       
       Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
       

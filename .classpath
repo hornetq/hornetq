@@ -3,8 +3,6 @@
 	<classpathentry kind="src" path="docs/examples/queue-failover/src"/>
 	<classpathentry kind="src" path="docs/examples/bridge/src"/>
 	<classpathentry kind="src" path="docs/examples/stateless-clustered/src"/>
-	<classpathentry kind="src" path="docs/examples/web-service/src-client"/>
-	<classpathentry kind="src" path="docs/examples/web-service/src"/>
 	<classpathentry kind="src" path="docs/examples/mdb-failure/src"/>
 	<classpathentry kind="src" path="docs/examples/distributed-queue/src"/>
 	<classpathentry kind="src" path="output/gen-parsers"/>
@@ -31,8 +29,6 @@
 	<classpathentry kind="lib" path="thirdparty/apache-xerces/lib/xercesImpl.jar"/>
 	<classpathentry kind="lib" path="thirdparty/dom4j/lib/dom4j.jar"/>
 	<classpathentry kind="lib" path="thirdparty/javassist/lib/javassist.jar"/>
-	<classpathentry kind="lib" path="thirdparty/jboss/aop/lib/common-softvaluehashmap.jar"/>
-	<classpathentry kind="lib" path="thirdparty/jboss/aop/lib/jdk14-pluggable-instrumentor.jar"/>
 	<classpathentry kind="lib" path="thirdparty/jboss/aop/lib/jrockit-pluggable-instrumentor.jar"/>
 	<classpathentry kind="lib" path="thirdparty/jboss/aop/lib/pluggable-instrumentor.jar"/>
 	<classpathentry kind="lib" path="thirdparty/jboss/jbossxb/lib/jboss-xml-binding.jar"/>
@@ -42,23 +38,35 @@
 	<classpathentry kind="lib" path="thirdparty/trove/lib/trove.jar"/>
 	<classpathentry kind="lib" path="thirdparty/jboss/remoting/lib/jboss-remoting.jar"/>
 	<classpathentry kind="lib" path="thirdparty/jboss/jbossts14/lib/jbossjta.jar"/>
+	<classpathentry kind="lib" path="thirdparty/jboss/aop/lib/jboss-aop-jdk50.jar"/>
+	<classpathentry kind="lib" path="thirdparty/jboss/common-core/lib/jboss-common-core.jar"/>
+	<classpathentry kind="lib" path="thirdparty/jboss/jboss-security-spi/lib/jboss-security-spi.jar"/>
+	<classpathentry kind="lib" path="thirdparty/jboss/microcontainer/lib/jboss-deployers-client.jar"/>
+	<classpathentry kind="lib" path="thirdparty/jboss/microcontainer/lib/jboss-deployers-core.jar"/>
+	<classpathentry kind="lib" path="thirdparty/jboss/microcontainer/lib/jboss-deployers-impl.jar"/>
+	<classpathentry kind="lib" path="thirdparty/jboss/microcontainer/lib/jboss-deployers-spi.jar"/>
+	<classpathentry kind="lib" path="thirdparty/jboss/microcontainer/lib/jboss-deployers-vfs.jar"/>
+	<classpathentry kind="lib" path="thirdparty/jboss/microcontainer/lib/jboss-kernel.jar"/>
+	<classpathentry kind="lib" path="thirdparty/jboss/microcontainer/lib/jboss-managed.jar"/>
+	<classpathentry kind="lib" path="thirdparty/jboss/microcontainer/lib/jboss-metatype.jar"/>
+	<classpathentry kind="lib" path="thirdparty/jboss/microcontainer/lib/jboss-dependency.jar"/>
+	<classpathentry kind="lib" path="thirdparty/jboss/microcontainer/lib/jboss-aop-mc-int.jar"/>
+	<classpathentry kind="lib" path="thirdparty/jboss/microcontainer/lib/jboss-classloader.jar"/>
+	<classpathentry kind="lib" path="thirdparty/jboss/microcontainer/lib/jboss-container.jar"/>
+	<classpathentry kind="lib" path="thirdparty/jboss/microcontainer/lib/jboss-container-metadata.jar"/>
+	<classpathentry kind="lib" path="thirdparty/jboss/microcontainer/lib/jboss-container-metadata-spi.jar"/>
+	<classpathentry kind="lib" path="thirdparty/jboss/microcontainer/lib/jboss-deployers-core-spi.jar"/>
+	<classpathentry kind="lib" path="thirdparty/jboss/microcontainer/lib/jboss-deployers-structure-spi.jar"/>
+	<classpathentry kind="lib" path="thirdparty/jboss/microcontainer/lib/jboss-deployers-vfs-spi.jar"/>
+	<classpathentry kind="lib" path="thirdparty/jboss/jbossts14/lib/jbossts-common.jar"/>
+	<classpathentry kind="lib" path="thirdparty/jboss/integration/lib/jboss-transaction-spi.jar"/>
+	<classpathentry kind="lib" path="thirdparty/jboss/jboss-jaspi-api/lib/jboss-jaspi-api.jar"/>
 	<classpathentry kind="var" path="ANT_HOME/lib/ant.jar"/>
 	<classpathentry kind="var" path="ANT_HOME/lib/ant-junit.jar"/>
 	<classpathentry kind="lib" path="thirdparty/jboss/common/lib/jboss-common.jar"/>
-	<classpathentry kind="lib" path="thirdparty/jbossas/core-libs/lib/jboss-j2ee.jar"/>
-	<classpathentry kind="lib" path="thirdparty/jboss/aop/lib/jboss-aop.jar"/>
-	<classpathentry kind="lib" path="thirdparty/jbossas/core-libs/lib/jboss-system.jar"/>
-	<classpathentry kind="lib" path="thirdparty/jbossas/core-libs/lib/jboss-jmx.jar"/>
-	<classpathentry kind="lib" path="thirdparty/jbossas/core-libs/lib/jboss-transaction-client.jar"/>
-	<classpathentry kind="lib" path="thirdparty/jbossas/core-libs/lib/jbosssx-client.jar"/>
-	<classpathentry kind="lib" path="thirdparty/jbossas/core-libs/lib/jboss.jar"/>
-	<classpathentry kind="lib" path="thirdparty/jbossas/core-libs/lib/jms-ra.jar"/>
-	<classpathentry kind="lib" path="thirdparty/jbossas/core-libs/lib/jboss-common.jar"/>
-	<classpathentry kind="lib" path="thirdparty/jbossas/core-libs/lib/jboss-common-jdbc-wrapper.jar"/>
-	<classpathentry kind="lib" path="thirdparty/jbossas/core-libs/lib/jbosscx-client.jar"/>
-	<classpathentry kind="lib" path="thirdparty/jbossas/core-libs/lib/jboss-jca.jar"/>
-	<classpathentry kind="lib" path="thirdparty/jbossas/core-libs/lib/jboss-local-jdbc.jar"/>
-	<classpathentry kind="lib" path="thirdparty/jbossas/core-libs/lib/jboss-xml-binding.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="thirdparty/jboss/jbossts14/lib/jbossjta-integration.jar"/>
+	<classpathentry kind="lib" path="thirdparty/jboss/jboss-javaee/lib/jboss-javaee.jar"/>
+	<classpathentry kind="lib" path="thirdparty/jboss/jbosssx-client/lib/jbosssx-client.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

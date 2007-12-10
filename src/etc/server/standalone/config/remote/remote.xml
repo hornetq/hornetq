@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<deployment xmlns="urn:jboss:bean-deployer:2.0">
+
+   <bean name="Naming" class="org.jnp.server.NamingBeanImpl"/>
+
+   <bean name="Main" class="org.jnp.server.Main">
+      <property name="namingInfo"><inject bean="Naming"/> </property>
+      <property name="port">1099</property>
+      <property name="bindAddress">localhost</property>
+      <property name="rmiPort">1098</property>
+      <property name="rmiBindAddress">localhost</property>
+   </bean>
+
+   <bean name="InitialContextProperties" class="java.util.Hashtable">
+      <constructor>
+         <parameter class="java.util.Map">
+            <map keyClass="java.lang.String" valueClass="java.lang.String">
+               <entry>
+                  <key>java.naming.factory.initial</key>
+                  <value>org.jnp.interfaces.NamingContextFactory</value>
+               </entry>
+               <entry>
+                  <key>java.naming.factory.url.pkgs</key>
+                  <value>org.jboss.naming:org.jnp.interfaces</value>
+               </entry>
+            </map>
+         </parameter>
+      </constructor>
+   </bean>
+
+   <bean name="JaasBinding" class="org.jboss.jms.server.microcontainer.JndiBinder">
+      <property name="jndiProperties">
+         <inject bean="InitialContextProperties"/>
+      </property>
+      <property name="target">
+         <inject bean="Jaas"/>
+      </property>
+      <property name="bindTo">java:/jaas/messaging</property>
+   </bean>
+
+   <bean name="Jaas" class="org.jboss.jms.server.microcontainer.AuthenticationManager"/>
+
+   <bean name="jboss.jca:name=DefaultDS,service=DataSourceBinding" class="com.mysql.jdbc.jdbc2.optional.MysqlDataSource">
+      <property name="url">jdbc:mysql://localhost/messaging</property>
+      <property name="user">sa</property>
+   </bean>
+
+   <bean name="DSBinding" class="org.jboss.jms.server.microcontainer.JndiBinder">
+      <property name="jndiProperties">
+         <inject bean="InitialContextProperties"/>
+      </property>
+      <property name="target">
+         <inject bean="jboss.jca:name=DefaultDS,service=DataSourceBinding"/>
+      </property>
+      <property name="bindTo">java:/DefaultDS</property>
+   </bean>
+
+   <bean name="TMBinding" class="org.jboss.jms.server.microcontainer.JndiBinder">
+      <property name="jndiProperties">
+         <inject bean="InitialContextProperties"/>
+      </property>
+      <property name="target">
+         <inject bean="jboss:service=TransactionManager"/>
+      </property>
+      <property name="bindTo">java:/TransactionManager</property>
+   </bean>
+
+   <bean name="jboss:service=TransactionManager"
+         class="com.arjuna.ats.internal.jta.transaction.arjunacore.TransactionManagerImple"/>
+
+   <bean class="org.jgroups.JChannelFactory" name="JChannelFactory">
+      <!--mbean code="org.jgroups.JChannelFactory" name="jgroups.mux:name=Multiplexer" xmbean-dd="resource:META-INF/multiplexer-xmbean.xml" -->
+      <property name="domain">jgroups.mux</property>
+      <property name="multiplexerConfig">multiplexer-stacks.xml</property>
+      <property name="exposeChannels">false</property>
+      <property name="exposeProtocols">false</property>
+
+      <!-- The address used to determine the node name  -->
+      <!-- <attribute name="NodeAddress">${jboss.bind.address}</attribute> -->
+
+   </bean>
+
+</deployment>

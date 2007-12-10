@@ -22,24 +22,17 @@
 
 package org.jboss.test.messaging.jms.clustering;
 
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-
-import javax.jms.Connection;
-import javax.jms.Message;
-import javax.jms.MessageConsumer;
-import javax.jms.MessageProducer;
-import javax.jms.Queue;
-import javax.jms.Session;
-import javax.jms.TextMessage;
-
 import org.jboss.jms.client.FailoverEvent;
 import org.jboss.jms.client.JBossConnection;
 import org.jboss.jms.client.delegate.ClientClusteredConnectionFactoryDelegate;
 import org.jboss.messaging.util.MessageQueueNameHelper;
 import org.jboss.test.messaging.tools.ServerManagement;
 import org.jboss.test.messaging.tools.container.Server;
+
+import javax.jms.*;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 
 /**
@@ -161,9 +154,9 @@ public class RecoverDeliveriesTest extends ClusteringTestBase
       		}
       	}
       	
-      	ServerManagement.deployQueue("timeoutQueue", 0);
-      	ServerManagement.deployQueue("timeoutQueue", 1);
-      	ServerManagement.deployQueue("timeoutQueue", 2);
+      	deployQueue("timeoutQueue", 0);
+      	deployQueue("timeoutQueue", 1);
+      	deployQueue("timeoutQueue", 2);
       	
       	Queue timeoutQueue = (Queue)ic[1].lookup("/queue/timeoutQueue");
       	

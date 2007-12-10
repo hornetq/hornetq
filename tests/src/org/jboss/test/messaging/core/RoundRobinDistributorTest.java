@@ -21,13 +21,7 @@
 */
 package org.jboss.test.messaging.core;
 
-import org.jboss.messaging.core.contract.Delivery;
-import org.jboss.messaging.core.contract.DeliveryObserver;
-import org.jboss.messaging.core.contract.Distributor;
-import org.jboss.messaging.core.contract.Message;
-import org.jboss.messaging.core.contract.MessageReference;
-import org.jboss.messaging.core.contract.MessageStore;
-import org.jboss.messaging.core.contract.Receiver;
+import org.jboss.messaging.core.contract.*;
 import org.jboss.messaging.core.impl.RoundRobinDistributor;
 import org.jboss.messaging.core.impl.SimpleDelivery;
 import org.jboss.messaging.core.impl.message.SimpleMessageStore;

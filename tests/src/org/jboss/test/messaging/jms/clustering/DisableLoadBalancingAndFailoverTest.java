@@ -6,21 +6,12 @@
  */
 package org.jboss.test.messaging.jms.clustering;
 
-import javax.jms.Connection;
-import javax.jms.ConnectionFactory;
-import javax.jms.ExceptionListener;
-import javax.jms.JMSException;
-import javax.jms.MessageConsumer;
-import javax.jms.MessageProducer;
-import javax.jms.Session;
-import javax.jms.TextMessage;
-import javax.management.ObjectName;
-
+import EDU.oswego.cs.dl.util.concurrent.Latch;
 import org.jboss.jms.client.FailoverEvent;
 import org.jboss.jms.client.JBossConnection;
 import org.jboss.test.messaging.tools.ServerManagement;
 
-import EDU.oswego.cs.dl.util.concurrent.Latch;
+import javax.jms.*;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -421,7 +412,7 @@ public class DisableLoadBalancingAndFailoverTest extends ClusteringTestBase
    {
    	try
    	{
-   		ServerManagement.getServer(0).undeployConnectionFactory(new ObjectName("org.jboss.messaging:service=LBConnectionFactory"));
+   		undeployConnectionFactory("LBConnectionFactory");
    	}
    	catch (Exception ignore)
    	{   		
@@ -429,7 +420,7 @@ public class DisableLoadBalancingAndFailoverTest extends ClusteringTestBase
       
    	try
    	{
-         ServerManagement.getServer(1).undeployConnectionFactory(new ObjectName("org.jboss.messaging:service=LBConnectionFactory"));
+         undeployConnectionFactory("LBConnectionFactory");
    	}
    	catch (Exception ignore)
    	{   		
@@ -437,7 +428,7 @@ public class DisableLoadBalancingAndFailoverTest extends ClusteringTestBase
    	
    	try
    	{
-         ServerManagement.getServer(2).undeployConnectionFactory(new ObjectName("org.jboss.messaging:service=LBConnectionFactory"));
+         undeployConnectionFactory("LBConnectionFactory");
    	}
    	catch (Exception ignore)
    	{   		
@@ -445,7 +436,7 @@ public class DisableLoadBalancingAndFailoverTest extends ClusteringTestBase
    	
    	try
    	{
-   		ServerManagement.getServer(0).undeployConnectionFactory(new ObjectName("org.jboss.messaging:service=FOConnectionFactory"));
+   		undeployConnectionFactory("FOConnectionFactory");
    	}
    	catch (Exception ignore)
    	{   		
@@ -453,7 +444,7 @@ public class DisableLoadBalancingAndFailoverTest extends ClusteringTestBase
       
    	try
    	{
-         ServerManagement.getServer(1).undeployConnectionFactory(new ObjectName("org.jboss.messaging:service=FOConnectionFactory"));
+         undeployConnectionFactory("FOConnectionFactory");
    	}
    	catch (Exception ignore)
    	{   		
@@ -461,7 +452,7 @@ public class DisableLoadBalancingAndFailoverTest extends ClusteringTestBase
    	
    	try
    	{
-         ServerManagement.getServer(2).undeployConnectionFactory(new ObjectName("org.jboss.messaging:service=FOConnectionFactory"));
+         undeployConnectionFactory("org.jboss.messaging:service=FOConnectionFactory");
    	}
    	catch (Exception ignore)
    	{   		

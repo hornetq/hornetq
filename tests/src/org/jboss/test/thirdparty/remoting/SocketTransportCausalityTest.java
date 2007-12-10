@@ -6,8 +6,6 @@
  */
 package org.jboss.test.thirdparty.remoting;
 
-import java.io.Serializable;
-
 import org.jboss.logging.Logger;
 import org.jboss.remoting.Client;
 import org.jboss.remoting.InvokerLocator;
@@ -16,6 +14,8 @@ import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
 import org.jboss.test.messaging.tools.container.ServiceAttributeOverrides;
 import org.jboss.test.messaging.tools.container.ServiceContainer;
+
+import java.io.Serializable;
 
 /**
  * 

@@ -6,21 +6,11 @@
  */
 package org.jboss.test.messaging.jms.stress;
 
-import javax.jms.Connection;
-import javax.jms.ConnectionFactory;
-import javax.jms.DeliveryMode;
-import javax.jms.JMSException;
-import javax.jms.Message;
-import javax.jms.MessageConsumer;
-import javax.jms.MessageListener;
-import javax.jms.MessageProducer;
-import javax.jms.Session;
-import javax.jms.Topic;
-import javax.naming.InitialContext;
-
 import org.jboss.logging.Logger;
-import org.jboss.test.messaging.MessagingTestCase;
-import org.jboss.test.messaging.tools.ServerManagement;
+import org.jboss.test.messaging.JBMServerTestCase;
+
+import javax.jms.*;
+import javax.naming.InitialContext;
 
 /**
  * Send messages to a topic with selector1, consumer them with multiple consumers and relay them
@@ -32,7 +22,7 @@ import org.jboss.test.messaging.tools.ServerManagement;
  * $Id$
  *
  */
-public class RelayStressTest extends MessagingTestCase
+public class RelayStressTest extends JBMServerTestCase
 {
    // Constants -----------------------------------------------------
 
@@ -58,16 +48,16 @@ public class RelayStressTest extends MessagingTestCase
    {
       super.setUp();
 
-      ServerManagement.start("all");
-      ic = new InitialContext(ServerManagement.getJNDIEnvironment());
-      ServerManagement.deployTopic("StressTestTopic");
+      //ServerManagement.start("all");
+      ic = getInitialContext();
+      deployTopic("StressTestTopic");
 
       log.debug("setup done");
    }
 
    protected void tearDown() throws Exception
    {
-      ServerManagement.undeployTopic("StressTestTopic");
+      undeployTopic("StressTestTopic");
       ic.close();
       super.tearDown();
    }

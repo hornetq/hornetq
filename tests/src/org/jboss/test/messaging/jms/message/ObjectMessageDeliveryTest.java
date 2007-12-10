@@ -21,16 +21,10 @@
   */
 package org.jboss.test.messaging.jms.message;
 
+import org.jboss.test.messaging.JBMServerTestCase;
+
+import javax.jms.*;
 import java.io.Serializable;
-
-import javax.jms.ObjectMessage;
-import javax.jms.Session;
-import javax.jms.TopicConnection;
-import javax.jms.TopicPublisher;
-import javax.jms.TopicSession;
-import javax.jms.TopicSubscriber;
-
-import org.jboss.test.messaging.jms.JMSTestCase;
 
 
 /**
@@ -43,7 +37,7 @@ import org.jboss.test.messaging.jms.JMSTestCase;
  * $Id$
  *
  */
-public class ObjectMessageDeliveryTest extends JMSTestCase
+public class ObjectMessageDeliveryTest extends JBMServerTestCase
 {
    // Constants -----------------------------------------------------
    
@@ -71,7 +65,7 @@ public class ObjectMessageDeliveryTest extends JMSTestCase
     */
    public void testTopic() throws Exception
    {
-      TopicConnection conn = cf.createTopicConnection();
+      TopicConnection conn = getConnectionFactory().createTopicConnection();
 
       try
       {

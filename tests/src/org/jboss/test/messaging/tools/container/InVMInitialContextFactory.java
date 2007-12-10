@@ -21,13 +21,12 @@
 */
 package org.jboss.test.messaging.tools.container;
 
-import java.util.HashMap;
-import java.util.Hashtable;
-import java.util.Map;
-
 import javax.naming.Context;
 import javax.naming.NamingException;
 import javax.naming.spi.InitialContextFactory;
+import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.Map;
 
 /**
  * An in-VM JNDI InitialContextFactory. Lightweight JNDI implementation used for testing.
@@ -63,8 +62,8 @@ public class InVMInitialContextFactory implements InitialContextFactory
       Hashtable env = new Hashtable();
       env.put("java.naming.factory.initial",
               "org.jboss.test.messaging.tools.container.InVMInitialContextFactory");
-      env.put("java.naming.provider.url", "");
-      env.put("java.naming.factory.url.pkgs", "");
+      env.put("java.naming.provider.url", "org.jboss.naming:org.jnp.interface");
+      //env.put("java.naming.factory.url.pkgs", "");
       env.put(Constants.SERVER_INDEX_PROPERTY_NAME, Integer.toString(serverIndex));
       return env;
    }
@@ -87,7 +86,14 @@ public class InVMInitialContextFactory implements InitialContextFactory
 
          if (s == null)
          {
-            throw new NamingException("Cannot figure out server index!");
+            //try the thread name
+            String tName = Thread.currentThread().getName();
+            if(tName.contains("server"))
+            {
+               s = tName.substring(6);
+            }
+            if(s == null)
+               throw new NamingException("Cannot figure out server index!");
          }
       }
 
@@ -112,8 +118,8 @@ public class InVMInitialContextFactory implements InitialContextFactory
 	
 	      if (ic == null)
 	      {
-	         ic = new InVMContext();
-	         ic.bind("java:/", new InVMContext());
+	         ic = new InVMContext(s);
+	         ic.bind("java:/", new InVMContext(s));
 	         initialContexts.put(new Integer(serverIndex), ic);
 	      }
 	

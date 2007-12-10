@@ -21,17 +21,10 @@
 */
 package org.jboss.example.jms.distributedqueue;
 
-import javax.jms.Connection;
-import javax.jms.ConnectionFactory;
-import javax.jms.JMSException;
-import javax.jms.MessageConsumer;
-import javax.jms.MessageProducer;
-import javax.jms.Queue;
-import javax.jms.Session;
-import javax.jms.TextMessage;
-import javax.naming.InitialContext;
-
 import org.jboss.example.jms.common.ExampleSupport;
+
+import javax.jms.*;
+import javax.naming.InitialContext;
 
 /**
  * The example creates two connections to two distinct cluster nodes on which we have previously
@@ -80,6 +73,8 @@ public class DistributedQueueExample extends ExampleSupport
          connection1 = cf.createConnection();
 
          // Let's make sure that (this example is also a smoke test)
+         log("server 0 id=" + getServerID(connection0));
+         log("server 1 id=" + getServerID(connection1));
          assertNotEquals(getServerID(connection0), getServerID(connection1));
 
          // Create a session, and a producer on the first connection
@@ -106,7 +101,7 @@ public class DistributedQueueExample extends ExampleSupport
 
          log("The message was successfully sent to the distributed queue");
          
-         messageListener1.waitForMessage(3000);
+         messageListener1.waitForMessage(6000);
 
          message = (TextMessage)messageListener1.getMessage();
          log(messageListener1.getName() + " received message: " + message.getText());

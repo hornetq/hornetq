@@ -21,10 +21,10 @@
 */
 package org.jboss.test.messaging.tools.container;
 
-import java.rmi.Naming;
-
 import org.jboss.logging.Logger;
 import org.jboss.test.messaging.tools.ServerManagement;
+
+import java.rmi.Naming;
 
 /**
  * A utility to stop runaway rmi servers.

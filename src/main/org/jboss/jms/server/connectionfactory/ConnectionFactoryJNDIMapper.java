@@ -21,19 +21,6 @@
  */
 package org.jboss.jms.server.connectionfactory;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
-
 import org.jboss.aop.AspectManager;
 import org.jboss.jms.client.JBossConnectionFactory;
 import org.jboss.jms.client.delegate.ClientClusteredConnectionFactoryDelegate;
@@ -55,14 +42,16 @@ import org.jboss.messaging.util.JNDIUtil;
 import org.jboss.messaging.util.Version;
 import org.jboss.remoting.InvokerLocator;
 
-import EDU.oswego.cs.dl.util.concurrent.Executor;
-import EDU.oswego.cs.dl.util.concurrent.LinkedQueue;
-import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+import java.util.*;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
+ * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  * @version <tt>$Revision$</tt>
  *
  * $Id$
@@ -90,8 +79,6 @@ public class ConnectionFactoryJNDIMapper
    private Map delegates;
 
    private Replicator replicator;
-   
-   private QueuedExecutor notifyExecutor;
 
    // Constructors ---------------------------------------------------------------------------------
 
@@ -99,8 +86,7 @@ public class ConnectionFactoryJNDIMapper
    {
       this.serverPeer = serverPeer;
       endpoints = new HashMap();
-      delegates = new HashMap();          
-      notifyExecutor = new QueuedExecutor(new LinkedQueue());
+      delegates = new HashMap();
    }
 
    // ConnectionFactoryManager implementation ------------------------------------------------------
@@ -110,7 +96,7 @@ public class ConnectionFactoryJNDIMapper
     */
    public synchronized void registerConnectionFactory(String uniqueName,
                                                       String clientID,
-                                                      JNDIBindings jndiBindings,
+                                                      List<String> jndiBindings,
                                                       String locatorURI,
                                                       boolean clientPing,
                                                       int prefetchSize,
@@ -136,7 +122,7 @@ public class ConnectionFactoryJNDIMapper
 
       // See http://www.jboss.com/index.html?module=bb&op=viewtopic&p=4076040#4076040
       String id = uniqueName;
-      
+
       Version version = serverPeer.getVersion();
 
       ServerConnectionFactoryEndpoint endpoint =
@@ -170,12 +156,12 @@ public class ConnectionFactoryJNDIMapper
       }
 
       boolean creatingClustered = (supportsFailover || supportsLoadBalancing) && replicator != null;
-      
+
       //The server peer strict setting overrides the connection factory
-      boolean useStrict = serverPeer.isStrictTck() || strictTck;
+      boolean useStrict = serverPeer.getConfiguration().isStrictTck() || strictTck;
 
       ClientConnectionFactoryDelegate localDelegate =
-         new ClientConnectionFactoryDelegate(uniqueName, id, serverPeer.getServerPeerID(),
+         new ClientConnectionFactoryDelegate(uniqueName, id, serverPeer.getConfiguration().getServerPeerID(),
                                              locatorURI, version, clientPing, useStrict);
 
       log.debug(this + " created local delegate " + localDelegate);
@@ -239,7 +225,7 @@ public class ConnectionFactoryJNDIMapper
 
       if (replicator != null) replicator.put(Replicator.CF_PREFIX + uniqueName, localDelegate);
    }
-   
+
    public synchronized void unregisterConnectionFactory(String uniqueName, boolean supportsFailover, boolean supportsLoadBalancing)
       throws Exception
    {
@@ -252,12 +238,11 @@ public class ConnectionFactoryJNDIMapper
          throw new IllegalArgumentException("Cannot find endpoint with name " + uniqueName);
       }
 
-      JNDIBindings jndiBindings = endpoint.getJNDIBindings();
+      List<String> jndiBindings = endpoint.getJNDIBindings();
 
       if (jndiBindings != null)
       {
-         List jndiNames = jndiBindings.getNames();
-         for(Iterator i = jndiNames.iterator(); i.hasNext(); )
+         for(Iterator i = jndiBindings.iterator(); i.hasNext(); )
          {
             String jndiName = (String)i.next();
             initialContext.unbind(jndiName);
@@ -265,7 +250,7 @@ public class ConnectionFactoryJNDIMapper
          }
       }
 
-      if (trace) { log.trace("Removing delegate from delegates list with key=" + uniqueName + " at serverPeerID=" + this.serverPeer.getServerPeerID()); }
+      if (trace) { log.trace("Removing delegate from delegates list with key=" + uniqueName + " at serverPeerID=" + serverPeer.getConfiguration().getServerPeerID()); }
 
       ConnectionFactoryDelegate delegate = (ConnectionFactoryDelegate)delegates.remove(uniqueName);
 
@@ -298,139 +283,114 @@ public class ConnectionFactoryJNDIMapper
    public void stop() throws Exception
    {
       initialContext.close();
-      
-      notifyExecutor.shutdownNow();
 
       log.debug("stopped");
    }
 
    // ReplicationListener interface ----------------------------------------------------------------
 
-   public void notify(final ClusterNotification notification)
+   public synchronized void notify(ClusterNotification notification)
    {
       log.debug(this + " received notification from node " + notification.nodeID );
 
-      class NotifyRunner implements Runnable
+      try
       {
-         public void run()
-         {
-            try
+      	if (notification.type == ClusterNotification.TYPE_NODE_JOIN || notification.type == ClusterNotification.TYPE_NODE_LEAVE)
+      	{
+            // We respond to changes in the node-address mapping. This will be replicated whan a
+            // node joins / leaves the group. When this happens we need to rebind all connection factories with the new mapping.
+
+            Map failoverMap = serverPeer.getPostOffice().getFailoverMap();
+
+            // Rebind
+
+            for(Iterator i = endpoints.entrySet().iterator(); i.hasNext(); )
             {
-               if (notification.type == ClusterNotification.TYPE_NODE_JOIN || notification.type == ClusterNotification.TYPE_NODE_LEAVE)
+               Map.Entry entry = (Map.Entry)i.next();
+               String uniqueName = (String)entry.getKey();
+
+               Object del = delegates.get(uniqueName);
+
+               if (del == null)
                {
-                  // We respond to changes in the node-address mapping. This will be replicated whan a
-                  // node joins / leaves the group. When this happens we need to rebind all connection factories with the new mapping.
-
-                  Map failoverMap = serverPeer.getPostOfficeInstance().getFailoverMap();
-
-                  // Rebind
-
-                  for(Iterator i = endpoints.entrySet().iterator(); i.hasNext(); )
-                  {
-                     Map.Entry entry = (Map.Entry)i.next();
-                     String uniqueName = (String)entry.getKey();
-
-                     Object del = delegates.get(uniqueName);
-
-                     if (del == null)
-                     {
-                        throw new IllegalStateException(
-                           "Cannot find connection factory with name " + uniqueName);
-                     }
-
-                     if (del instanceof ClientClusteredConnectionFactoryDelegate)
-                     {
-                        ((ClientClusteredConnectionFactoryDelegate)del).setFailoverMap(failoverMap);
-                     }
-                  }                  
-                                 
-                  //Note we don't rebind at this point - we just update the maps.
-                  //When a node joins or leaves, we first get the join/leave notification
-                  //Then we'll get a subsequent connection factory deploy/undeploy
-                  //Even when a node crashes we'll get this since the postoffice ensures replication removes 
-                  //are called in this event                  
+                  throw new IllegalStateException(
+                     "Cannot find connection factory with name " + uniqueName);
                }
-               else if ((notification.type == ClusterNotification.TYPE_REPLICATOR_PUT || notification.type == ClusterNotification.TYPE_REPLICATOR_REMOVE) &&
-                        (notification.data instanceof String) && ((String)notification.data).startsWith(Replicator.CF_PREFIX))
+
+               if (del instanceof ClientClusteredConnectionFactoryDelegate)
                {
-
-                  log.debug("Updating CF information for " + notification.data);
-                  // A connection factory has been deployed / undeployed
-
-                  // NOTE! All connection factories MUST be deployed on all nodes!
-                  // Otherwise the server might failover onto a node which doesn't have that connection factory deployed
-                  // so the connection won't be able to recconnect.
-
-                  String key = (String)notification.data;
-
-                  String uniqueName = key.substring(Replicator.CF_PREFIX.length());
-
-                  log.debug(this + " received '" + uniqueName +  "' connection factory deploy / undeploy");
-
-                  ConnectionFactoryDelegate cfd = (ConnectionFactoryDelegate)delegates.get(uniqueName);
-
-                  if (cfd == null)
-                  {
-                     //This is ok - connection factory a might be deployed on node A before being deployed on node B so
-                     //node B might get the notification before it has deployed a itself
-                  }
-                  else
-                  {
-                     if (cfd instanceof ClientConnectionFactoryDelegate)
-                     {
-                        //Non clustered - ignore
-
-                        //We still replicate non clustered connection factories since the ClusterPullConnectionFactory
-                        //is non clustered but needs to be available across the cluster
-                     }
-                     else
-                     {
-                        ClientClusteredConnectionFactoryDelegate del = (ClientClusteredConnectionFactoryDelegate)cfd;
-
-                        Map updatedReplicantMap = replicator.get(key);
-
-                        List newDels = sortDelegatesOnServerID(updatedReplicantMap.values());
-
-                        ClientConnectionFactoryDelegate[] delArr =
-                           (ClientConnectionFactoryDelegate[])newDels.
-                              toArray(new ClientConnectionFactoryDelegate[newDels.size()]);
-
-                        Map failoverMap = serverPeer.getPostOfficeInstance().getFailoverMap();
-
-                        del.setDelegates(delArr);
-                        del.setFailoverMap(failoverMap);
-
-                        ServerConnectionFactoryEndpoint endpoint =
-                           (ServerConnectionFactoryEndpoint)endpoints.get(uniqueName);
-
-                        if (endpoint == null)
-                        {
-                           throw new IllegalStateException("Cannot find endpoint with name " + uniqueName);
-                        }
-
-                        rebindConnectionFactory(initialContext, endpoint.getJNDIBindings(), del);
-
-                        endpoint.updateClusteredClients(delArr, failoverMap);
-                     }
-                  }
+                  ((ClientClusteredConnectionFactoryDelegate)del).setFailoverMap(failoverMap);
                }
             }
-            catch (Exception e)
+         }
+         else if ((notification.type == ClusterNotification.TYPE_REPLICATOR_PUT || notification.type == ClusterNotification.TYPE_REPLICATOR_REMOVE) &&
+         		   (notification.data instanceof String) && ((String)notification.data).startsWith(Replicator.CF_PREFIX))
+         {
+
+            log.debug("Updating CF information for " + notification.data);
+            // A connection factory has been deployed / undeployed
+
+         	// NOTE! All connection factories MUST be deployed on all nodes!
+         	// Otherwise the server might failover onto a node which doesn't have that connection factory deployed
+            // so the connection won't be able to recconnect.
+
+         	String key = (String)notification.data;
+
+            String uniqueName = key.substring(Replicator.CF_PREFIX.length());
+
+            log.debug(this + " received '" + uniqueName +  "' connection factory deploy / undeploy");
+
+            ConnectionFactoryDelegate cfd = (ConnectionFactoryDelegate)delegates.get(uniqueName);
+
+            if (cfd == null)
             {
-               log.error("Failed to rebind connection factory", e);
+               //This is ok - connection factory a might be deployed on node A before being deployed on node B so
+            	//node B might get the notification before it has deployed a itself
+            }
+            else
+            {
+               if (cfd instanceof ClientConnectionFactoryDelegate)
+               {
+                  //Non clustered - ignore
+
+               	//We still replicate non clustered connection factories since the ClusterPullConnectionFactory
+               	//is non clustered but needs to be available across the cluster
+               }
+               else
+               {
+               	ClientClusteredConnectionFactoryDelegate del = (ClientClusteredConnectionFactoryDelegate)cfd;
+
+	            	Map updatedReplicantMap = replicator.get(key);
+
+		            List newDels = sortDelegatesOnServerID(updatedReplicantMap.values());
+
+		            ClientConnectionFactoryDelegate[] delArr =
+		               (ClientConnectionFactoryDelegate[])newDels.
+		                  toArray(new ClientConnectionFactoryDelegate[newDels.size()]);
+
+                  Map failoverMap = serverPeer.getPostOffice().getFailoverMap();
+
+		            del.setDelegates(delArr);
+                  del.setFailoverMap(failoverMap);
+
+		            ServerConnectionFactoryEndpoint endpoint =
+		               (ServerConnectionFactoryEndpoint)endpoints.get(uniqueName);
+
+		            if (endpoint == null)
+		            {
+		               throw new IllegalStateException("Cannot find endpoint with name " + uniqueName);
+		            }
+
+		            rebindConnectionFactory(initialContext, endpoint.getJNDIBindings(), del);
+
+		            endpoint.updateClusteredClients(delArr, failoverMap);
+               }
             }
          }
       }
-      
-      //Run on a different thread to prevent distributed deadlock when multiple nodes are starting together
-      //and deploying connection factories concurrently
-      try
+      catch (Exception e)
       {
-         notifyExecutor.execute(new NotifyRunner());
-      }
-      catch (InterruptedException e)
-      {
-         //Ignore
+         log.error("Failed to rebind connection factory", e);
       }
    }
 
@@ -443,7 +403,7 @@ public class ConnectionFactoryJNDIMapper
 
    public String toString()
    {
-      return "Server[" + serverPeer.getServerPeerID() + "].ConnFactoryJNDIMapper";
+      return "Server[" + serverPeer.getConfiguration().getServerPeerID() + "].ConnFactoryJNDIMapper";
    }
 
    // Package protected ----------------------------------------------------------------------------
@@ -454,7 +414,7 @@ public class ConnectionFactoryJNDIMapper
 
    private void setupReplicator() throws Exception
    {
-      serverPeer.getPostOfficeInstance();
+      serverPeer.getPostOffice();
    }
 
    /**
@@ -474,7 +434,7 @@ public class ConnectionFactoryJNDIMapper
          (ClientConnectionFactoryDelegate[])sortedLocalDelegates.
             toArray(new ClientConnectionFactoryDelegate[sortedLocalDelegates.size()]);
 
-      Map failoverMap = serverPeer.getPostOfficeInstance().getFailoverMap();
+      Map failoverMap = serverPeer.getPostOffice().getFailoverMap();
 
       LoadBalancingPolicy lbp = loadBalancingFactory.createLoadBalancingPolicy(delegates);
 
@@ -483,7 +443,7 @@ public class ConnectionFactoryJNDIMapper
       return new ClientClusteredConnectionFactoryDelegate(uniqueName, delegates, failoverMap, lbp, supportsFailover);
    }
 
-   private void rebindConnectionFactory(Context ic, JNDIBindings jndiBindings,
+   private void rebindConnectionFactory(Context ic, List<String> jndiBindings,
                                         ConnectionFactoryDelegate delegate)
       throws NamingException
    {
@@ -491,8 +451,7 @@ public class ConnectionFactoryJNDIMapper
 
       if (jndiBindings != null)
       {
-         List jndiNames = jndiBindings.getNames();
-         for(Iterator i = jndiNames.iterator(); i.hasNext(); )
+         for(Iterator i = jndiBindings.iterator(); i.hasNext(); )
          {
             String jndiName = (String)i.next();
             log.debug(this + " rebinding " + cf + " as " + jndiName);

@@ -21,33 +21,19 @@
   */
 package org.jboss.jms.message;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.Serializable;
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Map;
-
-import javax.jms.BytesMessage;
-import javax.jms.DeliveryMode;
-import javax.jms.Destination;
-import javax.jms.JMSException;
-import javax.jms.MapMessage;
-import javax.jms.Message;
-import javax.jms.MessageFormatException;
-import javax.jms.ObjectMessage;
-import javax.jms.StreamMessage;
-import javax.jms.TextMessage;
-
 import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.exception.MessagingJMSException;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.impl.message.MessageSupport;
 import org.jboss.util.Primitives;
 import org.jboss.util.Strings;
+
+import javax.jms.*;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.Serializable;
+import java.lang.IllegalStateException;
+import java.util.*;
 
 /**
  * 

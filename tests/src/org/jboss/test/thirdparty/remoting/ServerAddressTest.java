@@ -37,8 +37,8 @@ public class ServerAddressTest extends MessagingTestCase
 
    public void testEquals() throws Throwable
    {
-      ServerAddress sa = new ServerAddress("127.0.0.1", 5678, false, 0);
-      ServerAddress sa2 = new ServerAddress("127.0.0.1", 5678, false, 1);
+      ServerAddress sa = new ServerAddress("127.0.0.1", 5678, false, 0, 0);
+      ServerAddress sa2 = new ServerAddress("127.0.0.1", 5678, false, 1, 0);
 
       assertFalse(sa.equals(sa2));
    }

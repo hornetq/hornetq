@@ -21,28 +21,14 @@
   */
 package org.jboss.test.messaging.jms;
 
-import javax.jms.Connection;
-import javax.jms.DeliveryMode;
-import javax.jms.JMSException;
-import javax.jms.Message;
-import javax.jms.MessageConsumer;
-import javax.jms.MessageProducer;
-import javax.jms.Queue;
-import javax.jms.QueueConnection;
-import javax.jms.QueueSession;
-import javax.jms.Session;
-import javax.jms.TextMessage;
-import javax.jms.Topic;
-import javax.jms.TopicConnection;
-import javax.jms.TopicSession;
-import javax.jms.XAConnection;
-import javax.jms.XASession;
-
 import org.jboss.jms.client.JBossSession;
 import org.jboss.jms.client.delegate.ClientSessionDelegate;
 import org.jboss.jms.client.state.ConnectionState;
 import org.jboss.jms.client.state.SessionState;
 import org.jboss.jms.tx.ResourceManagerFactory;
+import org.jboss.test.messaging.JBMServerTestCase;
+
+import javax.jms.*;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -51,7 +37,7 @@ import org.jboss.jms.tx.ResourceManagerFactory;
  *
  * $Id$
  */
-public class SessionTest extends JMSTestCase
+public class SessionTest extends JBMServerTestCase
 {
    // Constants -----------------------------------------------------
    
@@ -70,7 +56,7 @@ public class SessionTest extends JMSTestCase
    
    public void testNoTransactionAfterClose() throws Exception
    {
-      Connection conn = cf.createConnection();      
+      Connection conn = getConnectionFactory().createConnection();
       conn.start();
       Session sess = conn.createSession(true, Session.SESSION_TRANSACTED);
       MessageProducer prod = sess.createProducer(queue1);
@@ -104,7 +90,7 @@ public class SessionTest extends JMSTestCase
 
    public void testCreateProducer() throws Exception
    {
-      Connection conn = cf.createConnection();      
+      Connection conn = getConnectionFactory().createConnection();
       Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);          
       sess.createProducer(topic1);
       conn.close();
@@ -112,7 +98,7 @@ public class SessionTest extends JMSTestCase
 
    public void testCreateProducerOnNullQueue() throws Exception
    {
-      Connection conn = cf.createConnection();
+      Connection conn = getConnectionFactory().createConnection();
       Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
       Message m = sess.createTextMessage("something");
 
@@ -133,7 +119,7 @@ public class SessionTest extends JMSTestCase
    
    public void testCreateConsumer() throws Exception
    {
-      Connection conn = cf.createConnection();      
+      Connection conn = getConnectionFactory().createConnection();
       Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
       
       sess.createConsumer(topic1);
@@ -142,7 +128,7 @@ public class SessionTest extends JMSTestCase
 
    public void testGetSession1() throws Exception
    {
-      Connection conn = cf.createConnection();      
+      Connection conn = getConnectionFactory().createConnection();
       Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
       
       try
@@ -157,7 +143,7 @@ public class SessionTest extends JMSTestCase
    
    public void testGetSession2() throws Exception
    {
-      XAConnection conn = cf.createXAConnection();      
+      XAConnection conn = getConnectionFactory().createXAConnection();
       XASession sess = conn.createXASession();
       
       sess.getSession();
@@ -171,7 +157,7 @@ public class SessionTest extends JMSTestCase
    
    public void testCreateNonExistentQueue() throws Exception
    {
-      Connection conn = cf.createConnection();
+      Connection conn = getConnectionFactory().createConnection();
       Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
       try
       {
@@ -185,7 +171,7 @@ public class SessionTest extends JMSTestCase
    
    public void testCreateQueueOnATopicSession() throws Exception
    {
-      TopicConnection c = (TopicConnection)cf.createConnection();
+      TopicConnection c = (TopicConnection)getConnectionFactory().createConnection();
       TopicSession s = c.createTopicSession(false, Session.AUTO_ACKNOWLEDGE);
       
       try
@@ -202,7 +188,7 @@ public class SessionTest extends JMSTestCase
    
    public void testCreateQueueWhileTopicWithSameNameExists() throws Exception
    {
-      Connection conn = cf.createConnection();
+      Connection conn = getConnectionFactory().createConnection();
       Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
       try
       {
@@ -218,7 +204,7 @@ public class SessionTest extends JMSTestCase
    
    public void testCreateQueue() throws Exception
    {
-      Connection conn = cf.createConnection();
+      Connection conn = getConnectionFactory().createConnection();
       Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
       Queue queue = sess.createQueue("Queue1");
       
@@ -237,7 +223,7 @@ public class SessionTest extends JMSTestCase
    
    public void testCreateNonExistentTopic() throws Exception
    {
-      Connection conn = cf.createConnection();
+      Connection conn = getConnectionFactory().createConnection();
       Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
       try
       {
@@ -253,7 +239,7 @@ public class SessionTest extends JMSTestCase
    
    public void testCreateTopicOnAQueueSession() throws Exception
    {
-      QueueConnection c = (QueueConnection)cf.createConnection();
+      QueueConnection c = (QueueConnection)getConnectionFactory().createConnection();
       QueueSession s = c.createQueueSession(false, Session.AUTO_ACKNOWLEDGE);
       
       try
@@ -270,7 +256,7 @@ public class SessionTest extends JMSTestCase
    
    public void testCreateTopicWhileQueueWithSameNameExists() throws Exception
    {
-      Connection conn = cf.createConnection();
+      Connection conn = getConnectionFactory().createConnection();
       Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
       try
       {
@@ -286,7 +272,7 @@ public class SessionTest extends JMSTestCase
    
    public void testCreateTopic() throws Exception
    {
-      Connection conn = cf.createConnection();      
+      Connection conn = getConnectionFactory().createConnection();
       Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
       
       Topic topic = sess.createTopic("Topic1");
@@ -338,7 +324,7 @@ public class SessionTest extends JMSTestCase
 
    public void testGetXAResource() throws Exception
    {
-      Connection conn = cf.createConnection();
+      Connection conn = getConnectionFactory().createConnection();
       Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
       ((XASession)sess).getXAResource();
@@ -348,7 +334,7 @@ public class SessionTest extends JMSTestCase
 
    public void testGetXAResource2() throws Exception
    {
-      XAConnection conn = cf.createXAConnection();
+      XAConnection conn = getConnectionFactory().createXAConnection();
       XASession sess = conn.createXASession();
 
       sess.getXAResource();
@@ -360,7 +346,7 @@ public class SessionTest extends JMSTestCase
    {
       //IllegalStateException should be thrown if commit or rollback
       //is invoked on a non transacted session
-      Connection conn = cf.createConnection();      
+      Connection conn = getConnectionFactory().createConnection();
       Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
       
       MessageProducer prod = sess.createProducer(queue1);
@@ -396,7 +382,7 @@ public class SessionTest extends JMSTestCase
 
    public void testCreateTwoSessions() throws Exception
    {
-      Connection conn = cf.createConnection();
+      Connection conn = getConnectionFactory().createConnection();
       Session sessionOne = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
       assertFalse(sessionOne.getTransacted());
       Session sessionTwo = conn.createSession(true, -1);
@@ -411,7 +397,7 @@ public class SessionTest extends JMSTestCase
 
    public void testCloseAndCreateSession() throws Exception
    {
-      Connection c = cf.createConnection();
+      Connection c = getConnectionFactory().createConnection();
       Session s = c.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
       s.close();
@@ -428,12 +414,12 @@ public class SessionTest extends JMSTestCase
    {
       // send a message to the queue
 
-      Connection conn = cf.createConnection();
+      Connection conn = getConnectionFactory().createConnection();
       Session s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
       s.createProducer(queue1).send(s.createTextMessage("wont_ack"));
       conn.close();
 
-      conn = cf.createConnection();
+      conn = getConnectionFactory().createConnection();
       s = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
       conn.start();
 
@@ -458,12 +444,12 @@ public class SessionTest extends JMSTestCase
    {
       // send a message to the queue
 
-      Connection conn = cf.createConnection();
+      Connection conn = getConnectionFactory().createConnection();
       Session s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
       s.createProducer(queue1).send(s.createTextMessage("bex"));
       conn.close();
 
-      conn = cf.createConnection();
+      conn = getConnectionFactory().createConnection();
       Session session = conn.createSession(true, -1);
       conn.start();
 
@@ -485,7 +471,7 @@ public class SessionTest extends JMSTestCase
 
       // make sure I can still get the right message
 
-      conn = cf.createConnection();
+      conn = getConnectionFactory().createConnection();
       s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
       conn.start();
       TextMessage rm = (TextMessage)s.createConsumer(queue1).receive(1000);

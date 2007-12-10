@@ -21,14 +21,10 @@
   */
 package org.jboss.jms.delegate;
 
-import javax.jms.ConnectionMetaData;
-import javax.jms.Destination;
-import javax.jms.ExceptionListener;
-import javax.jms.JMSException;
-import javax.jms.ServerSessionPool;
-
 import org.jboss.jms.client.FailoverListener;
 import org.jboss.jms.client.JBossConnectionConsumer;
+
+import javax.jms.*;
 
 /**
  * Represents the minimal set of operations to provide connection functionality.

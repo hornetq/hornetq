@@ -21,14 +21,14 @@
   */
 package org.jboss.test.messaging.core.paging;
 
-import java.util.List;
-
 import org.jboss.messaging.core.contract.Message;
 import org.jboss.messaging.core.contract.MessageReference;
 import org.jboss.messaging.core.impl.MessagingQueue;
 import org.jboss.messaging.core.impl.SimpleDelivery;
 import org.jboss.messaging.core.impl.tx.Transaction;
 import org.jboss.test.messaging.util.CoreMessageFactory;
+
+import java.util.List;
 
 /**
  * 
@@ -63,7 +63,7 @@ public class SingleChannel_P_TTest extends PagingStateTestBase
    
    public void test1() throws Throwable
    {
-      MessagingQueue queue = new MessagingQueue(1, "queue1", 1, ms, pm, true, -1, null, 100, 20, 10, false, 300000);
+      MessagingQueue queue = new MessagingQueue(1, "queue1", 1, ms, getPersistenceManager(), true, -1, null, 100, 20, 10, false, 300000);
       queue.activate();  
       
       Message[] msgs = new Message[241];

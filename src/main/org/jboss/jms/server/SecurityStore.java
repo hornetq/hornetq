@@ -21,14 +21,14 @@
   */
 package org.jboss.jms.server;
 
-import java.util.Set;
+import org.jboss.jms.server.security.CheckType;
+import org.jboss.jms.server.security.Role;
+import org.jboss.jms.server.security.SecurityMetadata;
 
 import javax.jms.JMSSecurityException;
 import javax.security.auth.Subject;
-
-import org.jboss.jms.server.security.CheckType;
-import org.jboss.jms.server.security.SecurityMetadata;
-import org.w3c.dom.Element;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
@@ -43,7 +43,7 @@ public interface SecurityStore
     */
    SecurityMetadata getSecurityMetadata(boolean isQueue, String destName);
 
-   void setSecurityConfig(boolean isQueue, String destName, Element conf) throws Exception;
+   void setSecurityConfig(boolean isQueue, String destName, HashSet<Role> conf) throws Exception;
    
    void clearSecurityConfig(boolean isQueue, String name) throws Exception;
 

@@ -22,14 +22,7 @@
 
 package org.jboss.test.messaging.jms.clustering;
 
-import java.util.Iterator;
-import java.util.Map;
-
-import javax.jms.Connection;
-import javax.jms.Queue;
-import javax.jms.Topic;
-import javax.naming.InitialContext;
-
+import EDU.oswego.cs.dl.util.concurrent.LinkedQueue;
 import org.jboss.jms.client.FailoverEvent;
 import org.jboss.jms.client.FailoverListener;
 import org.jboss.jms.client.JBossConnection;
@@ -38,11 +31,17 @@ import org.jboss.jms.client.delegate.ClientClusteredConnectionFactoryDelegate;
 import org.jboss.jms.client.delegate.DelegateSupport;
 import org.jboss.jms.client.state.ConnectionState;
 import org.jboss.jms.tx.ResourceManagerFactory;
-import org.jboss.test.messaging.MessagingTestCase;
+import org.jboss.test.messaging.JBMServerTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
 import org.jboss.test.messaging.tools.container.ServiceAttributeOverrides;
 
-import EDU.oswego.cs.dl.util.concurrent.LinkedQueue;
+import javax.jms.Connection;
+import javax.jms.Queue;
+import javax.jms.Topic;
+import javax.naming.InitialContext;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.org">Tim Fox</a>
@@ -51,7 +50,7 @@ import EDU.oswego.cs.dl.util.concurrent.LinkedQueue;
  * @version <tt>$Revision: 2928 $</tt>
  * $Id: ClusteringTestBase.java 2928 2007-07-27 00:33:55Z timfox $
  */
-public class ClusteringTestBase extends MessagingTestCase
+public class ClusteringTestBase extends JBMServerTestCase
 {
    // Constants ------------------------------------------------------------------------------------
 
@@ -81,7 +80,24 @@ public class ClusteringTestBase extends MessagingTestCase
    {
       super(name);
    }
-   
+
+   public int getServerCount()
+   {
+      return nodeCount;
+   }
+
+   protected HashMap<String, Object> getConfiguration()
+   {
+
+      HashMap<String, Object> configuration = new HashMap<String, Object>();
+      configuration.put("setClustered", Boolean.TRUE);
+      configuration.put("setGroupName", "MessagingPostOffice");
+      configuration.put("setControlChannelName", "tcp");
+      configuration.put("setDataChannelName", "tcp-sync");
+      configuration.put("setChannelPartitionName", "default");
+      return configuration;
+
+   }
    // Public ---------------------------------------------------------------------------------------
 
    // Package protected ----------------------------------------------------------------------------
@@ -183,11 +199,9 @@ public class ClusteringTestBase extends MessagingTestCase
       
       for (int i = 0; i < nodeCount; i++)
       {
-	      if (!ServerManagement.isStarted(i))
-	      {
-	      	log.info("Server " + i + " is not started - starting it");
+	      	//log.info("Server " + i + " is not started - starting it");
 
-            startDefaultServer(i, overrides, ic == null);
+            //startDefaultServer(i, overrides, ic == null);
 	         
             if (ic == null)
             {
@@ -196,14 +210,13 @@ public class ClusteringTestBase extends MessagingTestCase
                topic = new Topic[nodeCount];
             }
 
-	         ic[i] = new InitialContext(ServerManagement.getJNDIEnvironment(i));
+	         ic[i] = getInitialContext(i);
 	          
 	         queue[i] = (Queue)ic[i].lookup("queue/testDistributedQueue");
 	         topic[i] = (Topic)ic[i].lookup("topic/testDistributedTopic");
 	         
 	         changed = true;
 
-	      }
 	      
 	      checkEmpty(queue[i], i);
 	      
@@ -211,7 +224,7 @@ public class ClusteringTestBase extends MessagingTestCase
 	            
 	      checkNoSubscriptions(topic[i], i);	
 	      
-	      ServerManagement.getServer(i).resetAllSuckers();
+	      resetAllSuckers(i);
       }
       
       if (changed)
@@ -230,11 +243,12 @@ public class ClusteringTestBase extends MessagingTestCase
    protected void startDefaultServer(int serverNumber, ServiceAttributeOverrides attributes, boolean cleanDatabase)
       throws Exception
    {
+      ServerManagement.create(serverNumber);
       ServerManagement.start(serverNumber, config, attributes, cleanDatabase);
 
       log.info("deploying queue on node " + serverNumber);
-      ServerManagement.deployQueue("testDistributedQueue", serverNumber);
-      ServerManagement.deployTopic("testDistributedTopic", serverNumber);
+      //ServerManagement.deployQueue("testDistributedQueue", serverNumber);
+      //ServerManagement.deployTopic("testDistributedTopic", serverNumber);
    }
 
    private boolean overridesChanged(ServiceAttributeOverrides sao1, ServiceAttributeOverrides sao2)
@@ -277,7 +291,10 @@ public class ClusteringTestBase extends MessagingTestCase
    protected void tearDown() throws Exception
    {
       super.tearDown();
-                 
+       for (int i = 0; i < nodeCount; i++)
+      {
+         ServerManagement.stop(i);
+      }
       if (ResourceManagerFactory.instance.size() != 0)
       {
       	ResourceManagerFactory.instance.dump();

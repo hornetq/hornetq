@@ -21,20 +21,12 @@
 */
 package org.jboss.jms.server.recovery;
 
-import javax.jms.ExceptionListener;
-import javax.jms.JMSException;
-import javax.jms.XAConnection;
-import javax.jms.XAConnectionFactory;
-import javax.jms.XASession;
-import javax.naming.Context;
-import javax.naming.InitialContext;
+import org.jboss.logging.Logger;
+
+import javax.jms.*;
 import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
-
-import org.jboss.jms.jndi.JMSProviderAdapter;
-import org.jboss.logging.Logger;
-import org.jboss.util.naming.Util;
 
 /**
  * XAResourceWrapper.
@@ -336,7 +328,7 @@ public class MessagingXAResourceWrapper implements XAResource, ExceptionListener
    protected XAConnectionFactory getConnectionFactory() throws Exception
    {
       // Get the JMS Provider Adapter
-      if (providerName == null)
+      /*if (providerName == null)
          throw new IllegalArgumentException("Null provider name");
       Context ctx = new InitialContext();
       
@@ -356,7 +348,7 @@ public class MessagingXAResourceWrapper implements XAResource, ExceptionListener
       finally
       {
          ctx.close();
-      }
+      }*/                             return null;
    }
    
    /**

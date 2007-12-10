@@ -21,14 +21,9 @@
   */
 package org.jboss.test.messaging.jms.message;
 
-import javax.jms.Connection;
-import javax.jms.DeliveryMode;
-import javax.jms.MessageConsumer;
-import javax.jms.MessageProducer;
-import javax.jms.Session;
-import javax.jms.TextMessage;
+import org.jboss.test.messaging.JBMServerTestCase;
 
-import org.jboss.test.messaging.jms.JMSTestCase;
+import javax.jms.*;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -36,7 +31,7 @@ import org.jboss.test.messaging.jms.JMSTestCase;
  *
  * $Id$
  */
-public class JMSPriorityHeaderTest extends JMSTestCase
+public class JMSPriorityHeaderTest extends JBMServerTestCase
 {
    // Constants -----------------------------------------------------
 
@@ -61,7 +56,7 @@ public class JMSPriorityHeaderTest extends JMSTestCase
     */
    public void testMessageOrder() throws Exception
    {
-      Connection conn = cf.createConnection();
+      Connection conn = getConnectionFactory().createConnection();
       
       conn.start();
       
@@ -240,7 +235,7 @@ public class JMSPriorityHeaderTest extends JMSTestCase
     */
    public void testMessageOrderWithConsumerBuffering() throws Exception
    {
-      Connection conn = cf.createConnection();
+      Connection conn = getConnectionFactory().createConnection();
       
       conn.start();
       
@@ -413,7 +408,7 @@ public class JMSPriorityHeaderTest extends JMSTestCase
    
    public void testSimple() throws Exception
    {
-      Connection conn = cf.createConnection();
+      Connection conn = getConnectionFactory().createConnection();
       
       conn.start();
       

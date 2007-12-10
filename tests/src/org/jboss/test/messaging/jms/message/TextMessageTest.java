@@ -39,7 +39,7 @@ public class TextMessageTest extends MessageTestBase
    // Constants -----------------------------------------------------
 
    // Static --------------------------------------------------------
-   
+
    // Attributes ----------------------------------------------------
 
    // Constructors --------------------------------------------------
@@ -74,7 +74,7 @@ public class TextMessageTest extends MessageTestBase
 
       assertEquals("something", rm.getText());
    }
-   
+
    // Protected -----------------------------------------------------
 
    protected void prepareMessage(Message m) throws JMSException

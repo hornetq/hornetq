@@ -21,20 +21,14 @@
   */
 package org.jboss.test.messaging.jms;
 
-import javax.jms.Connection;
-import javax.jms.Message;
-import javax.jms.MessageConsumer;
-import javax.jms.MessageProducer;
-import javax.jms.Session;
-import javax.jms.TextMessage;
-import javax.management.ObjectName;
-
 import org.jboss.jms.client.JBossConnection;
 import org.jboss.jms.client.delegate.ClientConnectionDelegate;
 import org.jboss.jms.client.state.ConnectionState;
 import org.jboss.jms.tx.ResourceManager;
 import org.jboss.jms.tx.ResourceManagerFactory;
-import org.jboss.test.messaging.tools.ServerManagement;
+
+import javax.jms.*;
+import javax.management.ObjectName;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -44,53 +38,53 @@ import org.jboss.test.messaging.tools.ServerManagement;
 public class TransactedSessionTest extends JMSTestCase
 {
    // Constants -----------------------------------------------------
-   
+
    // Static --------------------------------------------------------
-   
+
    // Attributes ----------------------------------------------------
-   
+
    // Constructors --------------------------------------------------
-   
+
 	public TransactedSessionTest(String name)
    {
       super(name);
    }
-   
+
    // Public --------------------------------------------------------
 
    public void testResourceManagerMemoryLeakOnCommit() throws Exception
    {
       Connection conn = null;
-      
+
       try
       {
          conn = cf.createConnection();
-         
+
          JBossConnection jbConn = (JBossConnection)conn;
-         
+
          ClientConnectionDelegate del = (ClientConnectionDelegate)jbConn.getDelegate();
-         
+
          ConnectionState state = (ConnectionState)del.getState();
-         
+
          ResourceManager rm = state.getResourceManager();
-         
+
          Session session = conn.createSession(true, Session.SESSION_TRANSACTED);
-                  
+
          for (int i = 0; i < 100; i++)
          {
             assertEquals(1, rm.size());
-            
+
             session.commit();
-            
+
             assertEquals(1, rm.size());
-         }                  
-         
+         }
+
          assertEquals(1, rm.size());
-         
+
          conn.close();
-         
+
          conn = null;
-         
+
          assertEquals(0, rm.size());
       }
       finally
@@ -101,40 +95,40 @@ public class TransactedSessionTest extends JMSTestCase
          }
       }
    }
-   
+
    public void testResourceManagerMemoryLeakOnRollback() throws Exception
    {
       Connection conn = null;
-      
+
       try
       {
          conn = cf.createConnection();
-         
+
          JBossConnection jbConn = (JBossConnection)conn;
-         
+
          ClientConnectionDelegate del = (ClientConnectionDelegate)jbConn.getDelegate();
-         
+
          ConnectionState state = (ConnectionState)del.getState();
-         
+
          ResourceManager rm = state.getResourceManager();
-         
+
          Session session = conn.createSession(true, Session.SESSION_TRANSACTED);
-                  
+
          for (int i = 0; i < 100; i++)
          {
             assertEquals(1, rm.size());
-            
+
             session.commit();
-            
+
             assertEquals(1, rm.size());
-         }                  
-         
+         }
+
          assertEquals(1, rm.size());
-         
+
          conn.close();
-         
+
          conn = null;
-         
+
          assertEquals(0, rm.size());
       }
       finally
@@ -145,43 +139,43 @@ public class TransactedSessionTest extends JMSTestCase
          }
       }
    }
-   
+
 
    public void testSimpleRollback() throws Exception
    {
       // send a message
       Connection conn = null;
-      
+
       try
-      {      
+      {
 	      conn = cf.createConnection();
 	      Session s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 	      s.createProducer(queue1).send(s.createTextMessage("one"));
-	
+
 	      s.close();
-	
+
 	      s = conn.createSession(true, Session.SESSION_TRANSACTED);
 	      MessageConsumer c = s.createConsumer(queue1);
 	      conn.start();
 	      Message m = c.receive();
-	
+
 	      assertEquals("one", ((TextMessage)m).getText());
 	      assertFalse(m.getJMSRedelivered());
 	      assertEquals(1, m.getIntProperty("JMSXDeliveryCount"));
-	
+
 	      s.rollback();
-	
+
 	      // get the message again
 	      m = c.receive();
 	      assertTrue(m.getJMSRedelivered());
 	      assertEquals(2, m.getIntProperty("JMSXDeliveryCount"));
-	
+
 	      conn.close();
-	      
+
 	      ObjectName on = new ObjectName("jboss.messaging.destination:service=Queue,name=Queue1");
-	      Integer i = (Integer)ServerManagement.getAttribute(on, "MessageCount");
-	
-	      assertEquals(1, i.intValue());
+	      Integer i = getMessageCountForQueue("Queue1");
+
+         assertEquals(1, i.intValue());
       }
       finally
       {
@@ -192,73 +186,73 @@ public class TransactedSessionTest extends JMSTestCase
       	removeAllMessages(queue1.getQueueName(), true, 0);
       }
    }
-   
+
    public void testRedeliveredFlagTopic() throws Exception
    {
       Connection conn = null;
-      
+
       try
       {
          conn = cf.createConnection();
-         
+
          Session sessSend = conn.createSession(true, Session.SESSION_TRANSACTED);
-         Session sess1 = conn.createSession(true, Session.SESSION_TRANSACTED);         
+         Session sess1 = conn.createSession(true, Session.SESSION_TRANSACTED);
          MessageConsumer consumer1 = sess1.createConsumer(topic1);
-         
+
          MessageProducer producer = sessSend.createProducer(topic1);
          Message mSent = sessSend.createTextMessage("igloo");
-         producer.send(mSent);      
+         producer.send(mSent);
          sessSend.commit();
-               
+
          conn.start();
-              
+
          TextMessage mRec1 = (TextMessage)consumer1.receive(2000);
          assertEquals("igloo", mRec1.getText());
          assertFalse(mRec1.getJMSRedelivered());
-         
+
          sess1.rollback(); //causes redelivery for session
 
          mRec1 = (TextMessage)consumer1.receive(2000);
          assertEquals("igloo", mRec1.getText());
          assertTrue(mRec1.getJMSRedelivered());
-                           
+
          sess1.commit();
       }
       finally
-      {      
+      {
          if (conn != null)
          {
             conn.close();
          }
-      }      
+      }
    }
-   
-   
+
+
    /** Test redelivery works ok for Topic */
    public void testRedeliveredTopic() throws Exception
    {
       Connection conn = null;
-      
+
       try
       {
          conn = cf.createConnection();
-   
+
          Session sess = conn.createSession(true, Session.SESSION_TRANSACTED);
          MessageProducer producer = sess.createProducer(topic1);
-         
+
          MessageConsumer consumer = sess.createConsumer(topic1);
          conn.start();
-            
+
          Message mSent = sess.createTextMessage("igloo");
          producer.send(mSent);
-         
+
          sess.commit();
-         
+
          TextMessage mRec = (TextMessage)consumer.receive(2000);
 
          assertEquals("igloo", mRec.getText());
          assertFalse(mRec.getJMSRedelivered());
-         
+
          sess.rollback();
 
          mRec = (TextMessage)consumer.receive(2000);
@@ -266,67 +260,67 @@ public class TransactedSessionTest extends JMSTestCase
          assertNotNull(mRec);
          assertEquals("igloo", mRec.getText());
          assertTrue(mRec.getJMSRedelivered());
-         
+
          sess.commit();
       }
       finally
-      {      
+      {
          if (conn != null)
          {
             conn.close();
          }
       }
    }
-   
+
    public void testReceivedRollbackTopic() throws Exception
    {
       Connection conn = null;
-      
+
       try
-      {      
+      {
          conn = cf.createConnection();
-   
+
          Session sess = conn.createSession(true, Session.SESSION_TRANSACTED);
          MessageProducer producer = sess.createProducer(topic1);
-         
+
          MessageConsumer consumer = sess.createConsumer(topic1);
          conn.start();
-            
+
          TextMessage mSent = sess.createTextMessage("igloo");
          producer.send(mSent);
-         
+
          sess.commit();
-         
+
          TextMessage mRec = (TextMessage)consumer.receive(2000);
          assertEquals("igloo", mRec.getText());
-         
+
          sess.commit();
-         
+
          mSent.setText("rollback");
          producer.send(mSent);
-         
+
          sess.commit();
-         
+
          mRec = (TextMessage)consumer.receive(2000);
          sess.rollback();
-         
+
          TextMessage mRec2 = (TextMessage)consumer.receive(2000);
-         
+
          sess.commit();
-         
+
          assertNotNull(mRec2);
-         
+
          assertEquals(mRec.getText(), mRec2.getText());
       }
       finally
-      {      
+      {
          if (conn != null)
          {
             conn.close();
          }
       }
    }
-   
+
    /**
     * Send some messages in transacted session. Don't commit.
     * Verify message are not received by consumer.
@@ -334,39 +328,39 @@ public class TransactedSessionTest extends JMSTestCase
    public void testSendNoCommitTopic() throws Exception
    {
       Connection conn = null;
-      
+
       try
       {
          conn = cf.createConnection();
-   
+
          Session producerSess = conn.createSession(true, Session.SESSION_TRANSACTED);
          MessageProducer producer = producerSess.createProducer(topic1);
-   
+
          Session consumerSess = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
          MessageConsumer consumer = consumerSess.createConsumer(topic1);
          conn.start();
-   
+
          final int NUM_MESSAGES = 10;
-   
+
          //Send some messages
          for (int i = 0; i < NUM_MESSAGES; i++)
          {
             Message m = producerSess.createMessage();
             producer.send(m);
          }
-   
+
          Message m = consumer.receive(500);
          assertNull(m);
       }
       finally
-      {      
+      {
          if (conn != null)
          {
             conn.close();
          }
-      }   
+      }
    }
-   
+
    /**
     * Send some messages in transacted session. Commit.
     * Verify message are received by consumer.
@@ -374,29 +368,29 @@ public class TransactedSessionTest extends JMSTestCase
    public void testSendCommitTopic() throws Exception
    {
       Connection conn = null;
-      
+
       try
-      {      
+      {
          conn = cf.createConnection();
-         
+
          Session producerSess = conn.createSession(true, Session.SESSION_TRANSACTED);
          MessageProducer producer = producerSess.createProducer(topic1);
-         
+
          Session consumerSess = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
          MessageConsumer consumer = consumerSess.createConsumer(topic1);
          conn.start();
-         
+
          final int NUM_MESSAGES = 10;
-         
+
          //Send some messages
          for (int i = 0; i < NUM_MESSAGES; i++)
          {
             Message m = producerSess.createMessage();
             producer.send(m);
          }
-         
+
          producerSess.commit();
-           
+
          int count = 0;
          while (true)
          {
@@ -404,18 +398,18 @@ public class TransactedSessionTest extends JMSTestCase
             if (m == null) break;
             count++;
          }
-         
+
          assertEquals(NUM_MESSAGES, count);
       }
       finally
-      {      
+      {
          if (conn != null)
          {
             conn.close();
          }
       }
    }
-   
+
    /**
     * Send some messages.
     * Receive them in a transacted session.
@@ -426,20 +420,20 @@ public class TransactedSessionTest extends JMSTestCase
    public void testAckCommitTopic() throws Exception
    {
       Connection conn = null;
-      
+
       try
-      {      
+      {
          conn = cf.createConnection();
-   
+
          Session producerSess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
          MessageProducer producer = producerSess.createProducer(topic1);
-   
+
          Session consumerSess = conn.createSession(true, Session.SESSION_TRANSACTED);
          MessageConsumer consumer = consumerSess.createConsumer(topic1);
          conn.start();
-   
+
          final int NUM_MESSAGES = 10;
-   
+
          //Send some messages
          for (int i = 0; i < NUM_MESSAGES; i++)
          {
@@ -455,26 +449,26 @@ public class TransactedSessionTest extends JMSTestCase
          }
 
          assertEquals(NUM_MESSAGES, count);
-   
+
          consumerSess.commit();
-         
+
          conn.stop();
          consumer.close();
-   
+
          conn.close();
-   
+
          conn = cf.createConnection();
-   
+
          consumerSess = conn.createSession(true, Session.CLIENT_ACKNOWLEDGE);
          consumer = consumerSess.createConsumer(queue1);
          conn.start();
-   
+
          Message m = consumer.receive(500);
-         
+
          assertNull(m);
       }
       finally
-      {      
+      {
          if (conn != null)
          {
             conn.close();
@@ -493,35 +487,35 @@ public class TransactedSessionTest extends JMSTestCase
    public void testSendRollbackTopic() throws Exception
    {
       Connection conn = null;
-      
+
       try
-      {      
+      {
          conn = cf.createConnection();
-   
+
          Session producerSess = conn.createSession(true, Session.SESSION_TRANSACTED);
          MessageProducer producer = producerSess.createProducer(topic1);
-   
+
          Session consumerSess = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
          MessageConsumer consumer = consumerSess.createConsumer(topic1);
          conn.start();
-   
+
          final int NUM_MESSAGES = 10;
-   
+
          //Send some messages
          for (int i = 0; i < NUM_MESSAGES; i++)
          {
             Message m = producerSess.createMessage();
             producer.send(m);
          }
-   
+
          producerSess.rollback();
-   
+
          Message m = consumer.receive(500);
-   
+
          assertNull(m);
       }
       finally
-      {      
+      {
          if (conn != null)
          {
             conn.close();
@@ -535,35 +529,35 @@ public class TransactedSessionTest extends JMSTestCase
    public void testRedeliveredQueue() throws Exception
    {
       Connection conn = null;
-      
+
       try
       {
          conn = cf.createConnection();
-         
+
          Session sess = conn.createSession(true, Session.SESSION_TRANSACTED);
          MessageProducer producer = sess.createProducer(queue1);
-         
+
          MessageConsumer consumer = sess.createConsumer(queue1);
-         conn.start();   
-         
+         conn.start();
+
          Message mSent = sess.createTextMessage("igloo");
          producer.send(mSent);
-         
+
          sess.commit();
-         
+
          TextMessage mRec = (TextMessage)consumer.receive(2000);
          assertEquals("igloo", mRec.getText());
          assertFalse(mRec.getJMSRedelivered());
-         
+
          sess.rollback();
          mRec = (TextMessage)consumer.receive(2000);
          assertEquals("igloo", mRec.getText());
          assertTrue(mRec.getJMSRedelivered());
-         
+
          sess.commit();
       }
       finally
-      {      
+      {
          if (conn != null)
          {
             conn.close();
@@ -602,7 +596,7 @@ public class TransactedSessionTest extends JMSTestCase
          TextMessage tm = (TextMessage)cons.receive();
 
          assertEquals("a message", tm.getText());
-         
+
          assertFalse(tm.getJMSRedelivered());
          assertEquals(1, tm.getIntProperty("JMSXDeliveryCount"));
 
@@ -616,7 +610,7 @@ public class TransactedSessionTest extends JMSTestCase
          tm = (TextMessage)cons.receive();
 
          assertEquals("a message", tm.getText());
- 
+
          assertEquals(2, tm.getIntProperty("JMSXDeliveryCount"));
 
          assertTrue(tm.getJMSRedelivered());
@@ -636,48 +630,48 @@ public class TransactedSessionTest extends JMSTestCase
 
       Session sess = conn.createSession(true, Session.SESSION_TRANSACTED);
       MessageProducer producer = sess.createProducer(queue1);
-      
+
       MessageConsumer consumer = sess.createConsumer(queue1);
       conn.start();
 
-      
+
       TextMessage mSent = sess.createTextMessage("igloo");
       producer.send(mSent);
       log.trace("sent1");
-      
+
       sess.commit();
-      
+
       TextMessage mRec = (TextMessage)consumer.receive();
       log.trace("Got 1");
       assertNotNull(mRec);
       assertEquals("igloo", mRec.getText());
-      
+
       sess.commit();
-      
+
       mSent.setText("rollback");
       producer.send(mSent);
-      
+
       sess.commit();
-      
+
       log.trace("Receiving 2");
       mRec = (TextMessage)consumer.receive();
       log.trace("Received 2");
       assertNotNull(mRec);
       assertEquals("rollback", mRec.getText());
-            
+
       sess.rollback();
-      
+
       TextMessage mRec2 = (TextMessage)consumer.receive();
       assertNotNull(mRec2);
       assertEquals("rollback", mRec2.getText());
-      
+
       sess.commit();
-      
+
       assertEquals(mRec.getText(), mRec2.getText());
-      
+
       conn.close();
    }
-   
+
    /**
     * Send some messages in transacted session. Don't commit.
     * Verify message are not received by consumer.
@@ -685,33 +679,33 @@ public class TransactedSessionTest extends JMSTestCase
    public void testSendNoCommitQueue() throws Exception
    {
       Connection conn = null;
-      
+
       try
       {
          conn = cf.createConnection();
-   
+
          Session producerSess = conn.createSession(true, Session.CLIENT_ACKNOWLEDGE);
          MessageProducer producer = producerSess.createProducer(queue1);
-   
+
          Session consumerSess = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
          MessageConsumer consumer = consumerSess.createConsumer(queue1);
          conn.start();
-   
+
          final int NUM_MESSAGES = 10;
-   
+
          //Send some messages
          for (int i = 0; i < NUM_MESSAGES; i++)
          {
             Message m = producerSess.createMessage();
             producer.send(m);
          }
-   
+
          log.trace("Sent messages");
-   
+
          checkEmpty(queue1);
       }
       finally
-      {      
+      {
          if (conn != null)
          {
             conn.close();
@@ -719,10 +713,10 @@ public class TransactedSessionTest extends JMSTestCase
       }
 
    }
-   
-   
 
-   
+
+
+
    /**
     * Send some messages in transacted session. Commit.
     * Verify message are received by consumer.
@@ -730,29 +724,29 @@ public class TransactedSessionTest extends JMSTestCase
    public void testSendCommitQueue() throws Exception
    {
       Connection conn = null;
-      
+
       try
-      {         
+      {
          conn = cf.createConnection();
-         
+
          Session producerSess = conn.createSession(true, Session.CLIENT_ACKNOWLEDGE);
          MessageProducer producer = producerSess.createProducer(queue1);
-         
+
          Session consumerSess = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
          MessageConsumer consumer = consumerSess.createConsumer(queue1);
          conn.start();
-         
+
          final int NUM_MESSAGES = 10;
-         
+
          //Send some messages
          for (int i = 0; i < NUM_MESSAGES; i++)
          {
             Message m = producerSess.createMessage();
             producer.send(m);
          }
-         
+
          producerSess.commit();
-         
+
          int count = 0;
          while (true)
          {
@@ -760,34 +754,34 @@ public class TransactedSessionTest extends JMSTestCase
             if (m == null) break;
             count++;
          }
-         
+
          assertEquals(NUM_MESSAGES, count);
       }
       finally
-      {      
+      {
          if (conn != null)
          {
             conn.close();
          }
          removeAllMessages(queue1.getQueueName(), true, 0);
       }
-      
+
    }
-   
-   
+
+
    /**
     * Test IllegateStateException is thrown if commit is called on a non-transacted session
     */
    public void testCommitIllegalState() throws Exception
    {
       Connection conn = null;
-      
+
       try
-      {      
+      {
          conn = cf.createConnection();
-   
+
          Session producerSess = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
-   
+
          boolean thrown = false;
          try
          {
@@ -797,11 +791,11 @@ public class TransactedSessionTest extends JMSTestCase
          {
             thrown = true;
          }
-   
+
          assertTrue(thrown);
       }
       finally
-      {      
+      {
          if (conn != null)
          {
             conn.close();
@@ -821,28 +815,28 @@ public class TransactedSessionTest extends JMSTestCase
    public void testAckNoCommitQueue() throws Exception
    {
       Connection conn = null;
-      
+
       try
       {
-      
+
          conn = cf.createConnection();
-   
+
          Session producerSess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
          MessageProducer producer = producerSess.createProducer(queue1);
-   
+
          Session consumerSess = conn.createSession(true, Session.CLIENT_ACKNOWLEDGE);
          MessageConsumer consumer = consumerSess.createConsumer(queue1);
          conn.start();
-   
+
          final int NUM_MESSAGES = 10;
-   
+
          //Send some messages
          for (int i = 0; i < NUM_MESSAGES; i++)
          {
             Message m = producerSess.createMessage();
             producer.send(m);
          }
-   
+
          int count = 0;
          while (true)
          {
@@ -850,20 +844,20 @@ public class TransactedSessionTest extends JMSTestCase
             if (m == null) break;
             count++;
          }
-   
+
          assertEquals(NUM_MESSAGES, count);
-   
+
          conn.stop();
          consumer.close();
-   
+
          conn.close();
-   
+
          conn = cf.createConnection();
-   
+
          consumerSess = conn.createSession(true, Session.CLIENT_ACKNOWLEDGE);
          consumer = consumerSess.createConsumer(queue1);
          conn.start();
-   
+
          count = 0;
          while (true)
          {
@@ -871,11 +865,11 @@ public class TransactedSessionTest extends JMSTestCase
             if (m == null) break;
             count++;
          }
-   
+
          assertEquals(NUM_MESSAGES, count);
       }
       finally
-      {      
+      {
          if (conn != null)
          {
             conn.close();
@@ -897,27 +891,27 @@ public class TransactedSessionTest extends JMSTestCase
    public void testAckCommitQueue() throws Exception
    {
       Connection conn = null;
-      
-      try     
-      {         
+
+      try
+      {
          conn = cf.createConnection();
-         
+
          Session producerSess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
          MessageProducer producer = producerSess.createProducer(queue1);
-   
+
          Session consumerSess = conn.createSession(true, Session.CLIENT_ACKNOWLEDGE);
          MessageConsumer consumer = consumerSess.createConsumer(queue1);
          conn.start();
-   
+
          final int NUM_MESSAGES = 10;
-   
+
          //Send some messages
          for (int i = 0; i < NUM_MESSAGES; i++)
          {
             Message m = producerSess.createMessage();
             producer.send(m);
          }
-   
+
          int count = 0;
          while (true)
          {
@@ -925,28 +919,28 @@ public class TransactedSessionTest extends JMSTestCase
             if (m == null) break;
             count++;
          }
-         
+
          assertEquals(NUM_MESSAGES, count);
-   
+
          consumerSess.commit();
-         
+
          conn.stop();
          consumer.close();
-   
+
          conn.close();
-   
+
          conn = cf.createConnection();
-   
+
          consumerSess = conn.createSession(true, Session.CLIENT_ACKNOWLEDGE);
          consumer = consumerSess.createConsumer(queue1);
          conn.start();
-   
+
          Message m = consumer.receive(500);
-         
+
          assertNull(m);
       }
       finally
-      {      
+      {
          if (conn != null)
          {
             conn.close();
@@ -965,35 +959,35 @@ public class TransactedSessionTest extends JMSTestCase
    public void testSendRollbackQueue() throws Exception
    {
       Connection conn = null;
-      
+
       try
-      {      
+      {
          conn = cf.createConnection();
-   
+
          Session producerSess = conn.createSession(true, Session.AUTO_ACKNOWLEDGE);
          MessageProducer producer = producerSess.createProducer(queue1);
-   
+
          Session consumerSess = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
          MessageConsumer consumer = consumerSess.createConsumer(queue1);
          conn.start();
-   
+
          final int NUM_MESSAGES = 10;
-   
+
          //Send some messages
          for (int i = 0; i < NUM_MESSAGES; i++)
          {
             Message m = producerSess.createMessage();
             producer.send(m);
          }
-   
+
          producerSess.rollback();
-   
+
          Message m = consumer.receive(500);
-   
+
          assertNull(m);
       }
       finally
-      {      
+      {
          if (conn != null)
          {
             conn.close();
@@ -1011,13 +1005,13 @@ public class TransactedSessionTest extends JMSTestCase
    public void testRollbackIllegalState() throws Exception
    {
       Connection conn = null;
-      
+
       try
-      {         
+      {
          conn = cf.createConnection();
-   
+
          Session producerSess = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
-   
+
          boolean thrown = false;
          try
          {
@@ -1027,11 +1021,11 @@ public class TransactedSessionTest extends JMSTestCase
          {
             thrown = true;
          }
-   
+
          assertTrue(thrown);
       }
       finally
-      {      
+      {
          if (conn != null)
          {
             conn.close();
@@ -1052,20 +1046,20 @@ public class TransactedSessionTest extends JMSTestCase
    public void testAckRollbackQueue() throws Exception
    {
       Connection conn = null;
-      
+
       try
-      {         
+      {
          conn = cf.createConnection();
-   
+
          Session producerSess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
          MessageProducer producer = producerSess.createProducer(queue1);
-   
+
          Session consumerSess = conn.createSession(true, Session.CLIENT_ACKNOWLEDGE);
          MessageConsumer consumer = consumerSess.createConsumer(queue1);
          conn.start();
-   
+
          final int NUM_MESSAGES = 10;
-   
+
          //Send some messages
          for (int i = 0; i < NUM_MESSAGES; i++)
          {
@@ -1080,22 +1074,22 @@ public class TransactedSessionTest extends JMSTestCase
             if (m == null) break;
             count++;
          }
-   
+
          assertEquals(NUM_MESSAGES, count);
-   
+
          consumerSess.rollback();
-   
+
          conn.stop();
          consumer.close();
-   
+
          conn.close();
-   
+
          conn = cf.createConnection();
-   
+
          consumerSess = conn.createSession(true, Session.CLIENT_ACKNOWLEDGE);
          consumer = consumerSess.createConsumer(queue1);
          conn.start();
-   
+
          count = 0;
          while (true)
          {
@@ -1103,12 +1097,12 @@ public class TransactedSessionTest extends JMSTestCase
             if (m == null) break;
             count++;
          }
-   
+
          assertEquals(NUM_MESSAGES, count);
-         
+
       }
       finally
-      {      
+      {
          if (conn != null)
          {
             conn.close();
@@ -1125,34 +1119,34 @@ public class TransactedSessionTest extends JMSTestCase
    public void testSendMultipleQueue() throws Exception
    {
       Connection conn = null;
-      
+
       try
-      {         
+      {
          conn = cf.createConnection();
-   
+
          Session producerSess = conn.createSession(true, Session.AUTO_ACKNOWLEDGE);
          MessageProducer producer = producerSess.createProducer(queue1);
-   
+
          Session consumerSess = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
          MessageConsumer consumer = consumerSess.createConsumer(queue1);
          conn.start();
-   
+
          final int NUM_MESSAGES = 10;
          final int NUM_TX = 10;
-   
+
          //Send some messages
-   
+
          for (int j = 0; j < NUM_TX; j++)
-         {   
+         {
             for (int i = 0; i < NUM_MESSAGES; i++)
             {
                Message m = producerSess.createMessage();
                producer.send(m);
             }
-   
+
             producerSess.commit();
          }
-   
+
          int count = 0;
          while (true)
          {
@@ -1161,33 +1155,33 @@ public class TransactedSessionTest extends JMSTestCase
             count++;
             m.acknowledge();
          }
-   
+
          assertEquals(NUM_MESSAGES * NUM_TX, count);
       }
       finally
-      {      
+      {
          if (conn != null)
          {
             conn.close();
          }
       }
    }
-   
+
    // Package protected ---------------------------------------------
-   
+
    // Protected -----------------------------------------------------
-   
+
    protected void setUp() throws Exception
 	{
 		super.setUp();
-		
+
 		ResourceManagerFactory.instance.clear();
 	}
 
-   
+
    // Private -------------------------------------------------------
-   
-   // Inner classes -------------------------------------------------   
+
+   // Inner classes -------------------------------------------------
 }
 
 

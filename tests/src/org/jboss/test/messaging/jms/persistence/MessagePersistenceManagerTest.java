@@ -21,10 +21,6 @@
 */
 package org.jboss.test.messaging.jms.persistence;
 
-import java.util.HashMap;
-
-import javax.jms.JMSException;
-
 import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.destination.JBossQueue;
 import org.jboss.jms.destination.JBossTopic;
@@ -32,8 +28,10 @@ import org.jboss.jms.message.JBossMessage;
 import org.jboss.messaging.core.contract.Message;
 import org.jboss.messaging.core.impl.JDBCPersistenceManager;
 import org.jboss.test.messaging.core.JDBCPersistenceManagerTest;
-import org.jboss.test.messaging.tools.ServerManagement;
 import org.jboss.util.id.GUID;
+
+import javax.jms.JMSException;
+import java.util.HashMap;
 
 
 /**
@@ -55,10 +53,10 @@ public class MessagePersistenceManagerTest extends JDBCPersistenceManagerTest
 
    public void setUp() throws Exception
    {
-      if (ServerManagement.isRemote())
+      /*if (ServerManagement.isRemote())
       {
          fail("This test must not be ran in remote mode!");
-      }
+      }*/
       
       super.setUp();              
    }
@@ -70,13 +68,13 @@ public class MessagePersistenceManagerTest extends JDBCPersistenceManagerTest
        
    protected JDBCPersistenceManager createPM(boolean batch, int maxParams) throws Throwable
    {      
-      JDBCPersistenceManager p =
+      /*JDBCPersistenceManager p =
          new JDBCPersistenceManager(sc.getDataSource(), sc.getTransactionManager(),
                   sc.getPersistenceManagerSQLProperties(),
                   true, batch, true, false, maxParams, !sc.getDatabaseName().equals("oracle"));      
       ((JDBCPersistenceManager)pm).injectNodeID(1);
       p.start();
-      return p;
+      return p;*/              return null;
    }
    
   

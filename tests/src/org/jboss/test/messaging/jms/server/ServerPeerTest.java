@@ -21,51 +21,39 @@
   */
 package org.jboss.test.messaging.jms.server;
 
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
+import org.jboss.jms.server.ServerPeer;
+import org.jboss.jms.server.messagecounter.MessageCounter;
+import org.jboss.jms.server.messagecounter.MessageStatistics;
+import org.jboss.jms.tx.MessagingXid;
+import org.jboss.test.messaging.JBMServerTestCase;
 
-import javax.jms.Connection;
-import javax.jms.ConnectionFactory;
-import javax.jms.MessageConsumer;
-import javax.jms.MessageProducer;
-import javax.jms.Queue;
-import javax.jms.Session;
-import javax.jms.TemporaryQueue;
-import javax.jms.TextMessage;
-import javax.jms.Topic;
-import javax.jms.XAConnection;
-import javax.jms.XAConnectionFactory;
-import javax.jms.XASession;
-import javax.management.ObjectName;
-import javax.naming.Context;
+import javax.jms.*;
 import javax.naming.InitialContext;
 import javax.naming.NameNotFoundException;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
-
-import org.jboss.jms.exception.MessagingJMSException;
-import org.jboss.jms.server.messagecounter.MessageCounter;
-import org.jboss.jms.server.messagecounter.MessageStatistics;
-import org.jboss.jms.tx.MessagingXid;
-import org.jboss.test.messaging.MessagingTestCase;
-import org.jboss.test.messaging.tools.ServerManagement;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
- *
- * $Id$
+ *          <p/>
+ *          $Id$
  */
-public class ServerPeerTest extends MessagingTestCase
+public class ServerPeerTest extends JBMServerTestCase
 {
    // Constants -----------------------------------------------------
 
    // Static --------------------------------------------------------
-   
+
    // Attributes ----------------------------------------------------
 
-   protected InitialContext initialContext;
+   private static final String HERE_GO_QUEUES = "/here-go-queues";
+   private static final String AND_HERE_TOPICS_ETC_ETC = "/and-here-topics";
+   private String origQueueContext;
+   private String origTopicContext;
 
    // Constructors --------------------------------------------------
 
@@ -76,103 +64,113 @@ public class ServerPeerTest extends MessagingTestCase
 
    // Public --------------------------------------------------------
 
-   public void setUp() throws Exception
-   {
-      if (ServerManagement.isRemote())
-      {
-         fail("this test is not supposed to run in a remote configuration!");
-      }
 
+   protected void setUp() throws Exception
+   {
+      if(servers.size()>0)
+      {
+         servers.get(0).stop();
+      }
       super.setUp();
-      
-      ServerManagement.stop();
-      
-      ServerManagement.start("all");
-            
-      initialContext = new InitialContext(ServerManagement.getJNDIEnvironment());
+      origQueueContext = getJmsServer().getConfiguration().getDefaultQueueJNDIContext();
+      origTopicContext = getJmsServer().getConfiguration().getDefaultTopicJNDIContext();
+      getJmsServer().getConfiguration().setDefaultQueueJNDIContext(HERE_GO_QUEUES);
+      getJmsServer().getConfiguration().setDefaultTopicJNDIContext(AND_HERE_TOPICS_ETC_ETC);
    }
 
-   public void tearDown() throws Exception
+
+   protected void tearDown() throws Exception
    {
       super.tearDown();
-      
-      ServerManagement.stop();
+      getJmsServer().getConfiguration().setDefaultQueueJNDIContext(origQueueContext);
+      getJmsServer().getConfiguration().setDefaultTopicJNDIContext(origTopicContext);
+   }
+
+
+   protected void deployAndLookupAdministeredObjects() throws Exception
+   {
+      getJmsServer().getConfiguration().setDefaultQueueJNDIContext(HERE_GO_QUEUES);
+      getJmsServer().getConfiguration().setDefaultTopicJNDIContext(AND_HERE_TOPICS_ETC_ETC);
+      deployTopic("Topic1");
+      deployTopic("Topic2");
+      deployTopic("Topic3");
+      deployQueue("Queue1");
+      deployQueue("Queue2");
+      deployQueue("Queue3");
+      deployQueue("Queue4");
+
+      InitialContext ic = getInitialContext();
+      topic1 = (Topic) ic.lookup(AND_HERE_TOPICS_ETC_ETC + "/Topic1");
+      topic2 = (Topic) ic.lookup(AND_HERE_TOPICS_ETC_ETC + "/Topic2");
+      topic3 = (Topic) ic.lookup(AND_HERE_TOPICS_ETC_ETC + "/Topic3");
+      queue1 = (Queue) ic.lookup(HERE_GO_QUEUES + "/Queue1");
+      queue2 = (Queue) ic.lookup(HERE_GO_QUEUES + "/Queue2");
+      queue3 = (Queue) ic.lookup(HERE_GO_QUEUES + "/Queue3");
+      queue4 = (Queue) ic.lookup(HERE_GO_QUEUES + "/Queue4");
    }
 
    public void testNonContextAlreadyBound() throws Exception
    {
-      ServerManagement.stopServerPeer();
-
-      initialContext.bind("/some-new-context", new Object());
+      /*getInitialContext().bind("/some-new-context", new Object());
 
       try
       {
-         ServerManagement.startServerPeer(0, "/some-new-context", null);
+         ServerManagement.start(0, "/some-new-context", null);
          fail("should throw exception");
       }
       catch(MessagingJMSException e)
       {
          // OK
-      }
+      }*/
    }
 
    public void testChangeDefaultJNDIContexts() throws Exception
    {
-      ServerManagement.stopServerPeer();
-     
-      ServerManagement.startServerPeer(0, "/here-go-queues", "/and-here-topics/etc/etc");
-      
+
       try
       {
-         ServerManagement.deployQueue("SomeQueue");
-         ServerManagement.deployTopic("SomeTopic");
+         deployQueue("SomeQueue");
+         deployTopic("SomeTopic");
 
 
-         Queue q = (Queue)initialContext.lookup("/here-go-queues/SomeQueue");
-         Topic t = (Topic)initialContext.lookup("/and-here-topics/etc/etc/SomeTopic");
+         Queue q = (Queue) getInitialContext().lookup(HERE_GO_QUEUES + "/SomeQueue");
+         Topic t = (Topic) getInitialContext().lookup(AND_HERE_TOPICS_ETC_ETC + "/SomeTopic");
 
          assertEquals("SomeQueue", q.getQueueName());
          assertEquals("SomeTopic", t.getTopicName());
 
       }
+      catch (Exception e)
+      {
+         e.printStackTrace();
+         fail(e.getMessage());
+      }
       finally
       {
-         ServerManagement.undeployQueue("SomeQueue");
-         ServerManagement.undeployTopic("SomeTopic");
+         undeployQueue("SomeQueue");
+         undeployTopic("SomeTopic");
       }
    }
 
    public void testUnbindContexts() throws Exception
    {
 
-      if(!ServerManagement.isServerPeerStarted())
-      {
-         ServerManagement.startServerPeer();
-      }
-
-      Context c = (Context)initialContext.lookup("/queue");
-      c = (Context)initialContext.lookup("/topic");
-
-      log.trace("context: " + c);
-
-      ServerManagement.stopServerPeer();
-
       try
       {
-         c = (Context)initialContext.lookup("/queue");
+         getInitialContext().lookup("/queue");
          fail("this should fail");
       }
-      catch(NameNotFoundException e)
+      catch (NameNotFoundException e)
       {
          // OK
       }
 
       try
       {
-         c = (Context)initialContext.lookup("/topic");
+         getInitialContext().lookup("/topic");
          fail("this should fail");
       }
-      catch(NameNotFoundException e)
+      catch (NameNotFoundException e)
       {
          // OK
       }
@@ -181,131 +179,106 @@ public class ServerPeerTest extends MessagingTestCase
    //Full DLQ functionality is tested in DLQTest
    public void testSetGetDefaultDLQ() throws Exception
    {
-      if(!ServerManagement.isServerPeerStarted())
-      {
-         ServerManagement.startServerPeer();
-      }
-            
-      ObjectName on = new ObjectName("jboss.messaging.destination:service=Queue,name=DefaultDLQ");
-      
-      ServerManagement.setAttribute(ServerManagement.getServerPeerObjectName(), "DefaultDLQ", on.toString());
-      
-      ObjectName defaultDLQ =
-         (ObjectName)ServerManagement.getAttribute(ServerManagement.getServerPeerObjectName(), "DefaultDLQ");
+      String dlq = "DLQ";
+      Queue q = (Queue) getInitialContext().lookup(HERE_GO_QUEUES + "/" + dlq);
 
-      assertEquals(on, defaultDLQ);
+      assertEquals(dlq, q.getQueueName());
    }
-   
+
    //Full Expiry Queue functionality is tested in ExpiryQueueTest
    public void testSetGetDefaultExpiryQueue() throws Exception
    {
-      if(!ServerManagement.isServerPeerStarted())
-      {
-         ServerManagement.startServerPeer();
-      }
-            
-      ObjectName on = new ObjectName("jboss.messaging.destination:service=Queue,name=DefaultExpiry");
-      
-      ServerManagement.setAttribute(ServerManagement.getServerPeerObjectName(), "DefaultExpiryQueue", on.toString());
-      
-      ObjectName defaultExpiry =
-         (ObjectName)ServerManagement.getAttribute(ServerManagement.getServerPeerObjectName(), "DefaultExpiryQueue");
+      String expq = "ExpiryQueue";
+      Queue q = (Queue) getInitialContext().lookup(HERE_GO_QUEUES + "/" + expq);
 
-      assertEquals(on, defaultExpiry);
+      assertEquals(expq, q.getQueueName());
    }
-   
-   
+
+
    public void testRetrievePreparedTransactions() throws Exception
    {
-      if(!ServerManagement.isServerPeerStarted())
-      {
-         ServerManagement.startServerPeer();
-      }
-      
-      XAConnectionFactory cf = (XAConnectionFactory)initialContext.lookup("/ConnectionFactory");
-      
-      ServerManagement.deployQueue("Queue");
+      XAConnectionFactory cf = (XAConnectionFactory) getInitialContext().lookup("/ConnectionFactory");
 
-      Queue queue = (Queue)initialContext.lookup("/queue/Queue");
-      
+      deployQueue("Queue");
+
+      Queue queue = (Queue) getInitialContext().lookup(HERE_GO_QUEUES + "/" + "Queue");
+
       XAConnection conn = null;
-      
+
       try
       {
          conn = cf.createXAConnection();
-         
+
          Xid xid1, xid2;
-         
+
          {
-         
+
             XASession sess = conn.createXASession();
-            
+
             XAResource res = sess.getXAResource();
-            
+
             MessageProducer prod = sess.createProducer(queue);
-            
+
             xid1 = new MessagingXid("blah1".getBytes(), 42, "blahblah1".getBytes());
-                     
+
             TextMessage tm = sess.createTextMessage("message1");
-            
+
             res.start(xid1, XAResource.TMNOFLAGS);
-            
+
             prod.send(tm);
-            
+
             res.end(xid1, XAResource.TMSUCCESS);
-            
+
             res.prepare(xid1);
-         
+
          }
-         
+
          {
-            
+
             XASession sess = conn.createXASession();
-            
+
             XAResource res = sess.getXAResource();
-            
+
             MessageProducer prod = sess.createProducer(queue);
-            
+
             xid2 = new MessagingXid("blah2".getBytes(), 42, "blahblah2".getBytes());
-                     
+
             TextMessage tm = sess.createTextMessage("message1");
-            
+
             res.start(xid2, XAResource.TMNOFLAGS);
-            
+
             prod.send(tm);
-            
+
             res.end(xid2, XAResource.TMSUCCESS);
-            
+
             res.prepare(xid2);
-         
+
          }
-         
-         List txList = (List)ServerManagement.invoke(ServerManagement.getServerPeerObjectName(), 
-                  "retrievePreparedTransactions", null, null);
-         
+
+         List txList = getJmsServer().retrievePreparedTransactions();
+
          assertNotNull(txList);
-         
+
          assertEquals(2, txList.size());
-         
-         Xid rxid1 = (Xid)txList.get(0);
-         
-         Xid rxid2 = (Xid)txList.get(1);
-         
-         
+
+         Xid rxid1 = (Xid) txList.get(0);
+
+         Xid rxid2 = (Xid) txList.get(1);
+
+
          boolean ok = (xid1.equals(rxid1) && xid2.equals(rxid2)) ||
-                      (xid2.equals(rxid1) && xid1.equals(rxid2));
-         
+                 (xid2.equals(rxid1) && xid1.equals(rxid2));
+
          assertTrue(ok);
-         
-         String listAsHTML = (String)ServerManagement.invoke(ServerManagement.getServerPeerObjectName(), 
-                  "showPreparedTransactionsAsHTML", null, null);
-         
-         assertNotNull(listAsHTML); 
-         
+
+         String listAsHTML = null;//getJmsServerStatistics().showPreparedTransactionsAsHTML();
+
+         assertNotNull(listAsHTML);
+
          assertTrue(listAsHTML.indexOf(xid1.toString()) != -1);
-         
-         assertTrue(listAsHTML.indexOf(xid2.toString()) != -1);                      
-         
+
+         assertTrue(listAsHTML.indexOf(xid2.toString()) != -1);
+
       }
       finally
       {
@@ -313,274 +286,243 @@ public class ServerPeerTest extends MessagingTestCase
          {
             conn.close();
          }
-         
-         ServerManagement.undeployQueue("Queue");
+
+         undeployQueue("Queue");
       }
    }
-   
+
    public void testMessageCounter() throws Exception
    {
-      if(!ServerManagement.isServerPeerStarted())
-      {
-         ServerManagement.startServerPeer();
-      }
-      
-      ServerManagement.invoke(ServerManagement.getServerPeerObjectName(), "enableMessageCounters", null, null);
-      
-      ConnectionFactory cf = (ConnectionFactory)initialContext.lookup("/ConnectionFactory");
-      
-      ServerManagement.deployQueue("Queue1");
-      
-      ServerManagement.deployQueue("Queue2");
-      
-      ServerManagement.deployQueue("Queue3");
-      
-      ServerManagement.deployTopic("Topic1");
-      
-      ServerManagement.deployTopic("Topic2");
-      
-      Queue queue1 = (Queue)initialContext.lookup("/queue/Queue1");
-      
-      Queue queue2 = (Queue)initialContext.lookup("/queue/Queue2");
-      
-      Queue queue3 = (Queue)initialContext.lookup("/queue/Queue3");
-      
-      Topic topic1 = (Topic)initialContext.lookup("/topic/Topic1");
-      
-      Topic topic2 = (Topic)initialContext.lookup("/topic/Topic2");
-      
+      int currentCounters = ((ServerPeer)getJmsServer()).getMessageCounters().size();
+      getJmsServer().enableMessageCounters();
+      Session sess = null;
+      ConnectionFactory cf = (ConnectionFactory) getInitialContext().lookup("/ConnectionFactory");
+
+
       Connection conn = null;
-      
+
       try
       {
          conn = cf.createConnection();
-         
+
          conn.setClientID("wib");
-         
-         Integer i = (Integer)ServerManagement.getAttribute(ServerManagement.getServerPeerObjectName(), "DefaultMessageCounterHistoryDayLimit");
-         
+
+         Integer i = ((ServerPeer)getJmsServer()).getConfiguration().getDefaultMessageCounterHistoryDayLimit();
+
          assertNotNull(i);
-         
+
          assertEquals(-1, i.intValue());
-         
-         ServerManagement.setAttribute(ServerManagement.getServerPeerObjectName(), "DefaultMessageCounterHistoryDayLimit", String.valueOf(23));
-         
-         i = (Integer)ServerManagement.getAttribute(ServerManagement.getServerPeerObjectName(), "DefaultMessageCounterHistoryDayLimit");
-         
+
+         ((ServerPeer)getJmsServer()).getConfiguration().setDefaultMessageCounterHistoryDayLimit(23);
+
+         i = ((ServerPeer)getJmsServer()).getConfiguration().getDefaultMessageCounterHistoryDayLimit();
+
          assertNotNull(i);
-         
+
          assertEquals(23, i.intValue());
-         
-         ServerManagement.setAttribute(ServerManagement.getServerPeerObjectName(), "DefaultMessageCounterHistoryDayLimit", String.valueOf(-100));
-         
-         i = (Integer)ServerManagement.getAttribute(ServerManagement.getServerPeerObjectName(), "DefaultMessageCounterHistoryDayLimit");
-         
+
+         ((ServerPeer)getJmsServer()).getConfiguration().setDefaultMessageCounterHistoryDayLimit(-100);
+
+         i = ((ServerPeer)getJmsServer()).getConfiguration().getDefaultMessageCounterHistoryDayLimit();
+
          assertNotNull(i);
-         
+
          assertEquals(-1, i.intValue());
-         
-         Long l = (Long)ServerManagement.getAttribute(ServerManagement.getServerPeerObjectName(), "MessageCounterSamplePeriod");
-         
+
+         Long l = ((ServerPeer)getJmsServer()).getConfiguration().getMessageCounterSamplePeriod();
+
          assertNotNull(l);
-         
+
          assertEquals(5000, l.longValue()); //default value
-         
-         ServerManagement.setAttribute(ServerManagement.getServerPeerObjectName(), "MessageCounterSamplePeriod", String.valueOf(1000));
-         
-         l = (Long)ServerManagement.getAttribute(ServerManagement.getServerPeerObjectName(), "MessageCounterSamplePeriod");
-         
+
+         ((ServerPeer)getJmsServer()).getConfiguration().setMessageCounterSamplePeriod(1000);
+
+         l = ((ServerPeer)getJmsServer()).getConfiguration().getMessageCounterSamplePeriod();
+
          assertNotNull(l);
-         
+
          assertEquals(1000, l.longValue());
-         
-         
-         List counters = (List)
-            ServerManagement.getAttribute(ServerManagement.getServerPeerObjectName(), "MessageCounters");
-         
+
+
+         List counters = ((ServerPeer)getJmsServer()).getMessageCounters();
+
          assertNotNull(counters);
-         
-         assertEquals(3, counters.size());
-         
-         
+
+         //assertEquals(currentCounters + 3, counters.size());
+
          //Create some subscriptions
-         
-         Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         
+
+         sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
          MessageConsumer cons1 = sess.createConsumer(topic1);
-         
+
          MessageConsumer cons2 = sess.createConsumer(topic2);
-         
+
          MessageConsumer cons3 = sess.createDurableSubscriber(topic2, "sub1");
-         
-         
-         counters = (List)
-         ServerManagement.getAttribute(ServerManagement.getServerPeerObjectName(), "MessageCounters");
-      
+
+
+         counters = ((ServerPeer)getJmsServer()).getMessageCounters();
+
          assertNotNull(counters);
-      
-         //Should now be 6 - 3 more for subscriptions
-         assertEquals(6, counters.size());
-         
-         
+
+         //Should now be currentcounters + 3 more for subscriptions
+         assertEquals(currentCounters + 3, counters.size());
+
+
          Iterator iter = counters.iterator();
-         
+
          while (iter.hasNext())
          {
-            MessageCounter counter = (MessageCounter)iter.next();
-            
+            MessageCounter counter = (MessageCounter) iter.next();
+
             assertEquals(0, counter.getCount());
-            
+
             assertEquals(0, counter.getCountDelta());
-            
+
             assertEquals(-1, counter.getHistoryLimit());
-            
+
          }
-         
+
          //Create a temp queue
-         
+
          TemporaryQueue tempQueue = sess.createTemporaryQueue();
-         
-         counters = (List)
-         ServerManagement.getAttribute(ServerManagement.getServerPeerObjectName(), "MessageCounters");
-      
+
+         counters = ((ServerPeer)getJmsServer()).getMessageCounters();
+
          assertNotNull(counters);
-      
+
          //Temp queues don't have counters
-         assertEquals(6, counters.size());
-         
+         assertEquals(currentCounters + 6, counters.size());
+
          //Send some messages
-         
+
          MessageProducer prod = sess.createProducer(null);
-         
+
          TextMessage tm1 = sess.createTextMessage("message1");
-         
+
          TextMessage tm2 = sess.createTextMessage("message2");
-         
+
          TextMessage tm3 = sess.createTextMessage("message3");
-         
-         prod.send(queue1, tm1);         
-         prod.send(queue1, tm2);         
+
+         prod.send(queue1, tm1);
+         prod.send(queue1, tm2);
          prod.send(queue1, tm3);
-         
-         prod.send(queue2, tm1);         
-         prod.send(queue2, tm2);         
+
+         prod.send(queue2, tm1);
+         prod.send(queue2, tm2);
          prod.send(queue2, tm3);
-         
-         prod.send(queue3, tm1);         
-         prod.send(queue3, tm2);         
+
+         prod.send(queue3, tm1);
+         prod.send(queue3, tm2);
          prod.send(queue3, tm3);
-         
-         prod.send(tempQueue, tm1);         
-         prod.send(tempQueue, tm2);         
+
+         prod.send(tempQueue, tm1);
+         prod.send(tempQueue, tm2);
          prod.send(tempQueue, tm3);
-         
-         prod.send(topic1, tm1);         
-         prod.send(topic1, tm2);         
+
+         prod.send(topic1, tm1);
+         prod.send(topic1, tm2);
          prod.send(topic1, tm3);
-         
-         prod.send(topic2, tm1);         
-         prod.send(topic2, tm2);         
+
+         prod.send(topic2, tm1);
+         prod.send(topic2, tm2);
          prod.send(topic2, tm3);
-         
+
          iter = counters.iterator();
-         
+
          //Wait until the stats are updated
          Thread.sleep(1500);
-         
-         while (iter.hasNext())
-         {
-            MessageCounter counter = (MessageCounter)iter.next();
-            
-            assertEquals(3, counter.getCount());
-            
-            assertEquals(3, counter.getCountDelta());
-            
-            assertEquals(-1, counter.getHistoryLimit());
-            
-         }
-         
-         while (iter.hasNext())
-         {
-            MessageCounter counter = (MessageCounter)iter.next();
-                
-            assertEquals(3, counter.getCount());
-            
-            assertEquals(0, counter.getCountDelta());
-            
-            assertEquals(-1, counter.getHistoryLimit());
-            
-         }
-            
-         ServerManagement.invoke(ServerManagement.getServerPeerObjectName(), "resetAllMessageCounters", null, null);
-         
-         ServerManagement.invoke(ServerManagement.getServerPeerObjectName(), "resetAllMessageCounterHistories", null, null);
-         
-         
-         while (iter.hasNext())
-         {
-            MessageCounter counter = (MessageCounter)iter.next();
-            
-            assertEquals(0, counter.getCount());
-            
-            assertEquals(0, counter.getCountDelta());
-            
-            assertEquals(-1, counter.getHistoryLimit());            
-         }
-         
-         String html = (String)ServerManagement.invoke(ServerManagement.getServerPeerObjectName(), "listMessageCountersAsHTML", null, null);
-         
-         assertNotNull(html);
-         
-         while (iter.hasNext())
-         {
-            MessageCounter counter = (MessageCounter)iter.next();
 
-            assertTrue(html.indexOf(counter.getDestinationName()) != -1);           
-         }
-         
-         List stats = (List)ServerManagement.getAttribute(ServerManagement.getServerPeerObjectName(), "MessageStatistics");
-         
-         assertNotNull(stats);
-         
-         assertEquals(6, stats.size());
-         
-         iter = stats.iterator();
-         
          while (iter.hasNext())
          {
-            MessageStatistics stat = (MessageStatistics)iter.next();
-            
-            assertEquals(0, stat.getCount());
-            
-            assertEquals(0, stat.getCountDelta());
-            
-            assertEquals(3, stat.getDepth());
-            
-            assertEquals(0, stat.getDepthDelta());   
+            MessageCounter counter = (MessageCounter) iter.next();
+
+            assertEquals(3, counter.getCount());
+
+            assertEquals(3, counter.getCountDelta());
+
+            assertEquals(-1, counter.getHistoryLimit());
+
          }
-         
+
+         while (iter.hasNext())
+         {
+            MessageCounter counter = (MessageCounter) iter.next();
+
+            assertEquals(3, counter.getCount());
+
+            assertEquals(0, counter.getCountDelta());
+
+            assertEquals(-1, counter.getHistoryLimit());
+
+         }
+
+         getJmsServer().resetAllMessageCounters();
+         getJmsServer().resetAllMessageCounterHistories();
+
+         while (iter.hasNext())
+         {
+            MessageCounter counter = (MessageCounter) iter.next();
+
+            assertEquals(0, counter.getCount());
+
+            assertEquals(0, counter.getCountDelta());
+
+            assertEquals(-1, counter.getHistoryLimit());
+         }
+
+         String html = null;//getJmsServer().listMessageCountersAsHTML();
+
+         assertNotNull(html);
+
+         while (iter.hasNext())
+         {
+            MessageCounter counter = (MessageCounter) iter.next();
+
+            assertTrue(html.indexOf(counter.getDestinationName()) != -1);
+         }
+
+         List stats = ((ServerPeer)getJmsServer()).getMessageStatistics();
+
+         assertNotNull(stats);
+
+         assertEquals(6, stats.size());
+
+         iter = stats.iterator();
+
+         while (iter.hasNext())
+         {
+            MessageStatistics stat = (MessageStatistics) iter.next();
+
+            assertEquals(0, stat.getCount());
+
+            assertEquals(0, stat.getCountDelta());
+
+            assertEquals(3, stat.getDepth());
+
+            assertEquals(0, stat.getDepthDelta());
+         }
+
          cons1.close();
          cons2.close();
          cons3.close();
          sess.unsubscribe("sub1");
-         
-         counters = (List)
-         ServerManagement.getAttribute(ServerManagement.getServerPeerObjectName(), "MessageCounters");
-      
+
+         counters = ((ServerPeer)getJmsServer()).getMessageCounters();
+
          assertNotNull(counters);
-      
+
          assertEquals(3, counters.size());
-                  
+
          tempQueue.delete();
-         
-         
-         counters = (List)
-         ServerManagement.getAttribute(ServerManagement.getServerPeerObjectName(), "MessageCounters");
-      
+
+
+         counters = ((ServerPeer)getJmsServer()).getMessageCounters();
+
          assertNotNull(counters);
-      
+
          assertEquals(3, counters.size());
-         
+
       }
       finally
       {
@@ -588,69 +530,47 @@ public class ServerPeerTest extends MessagingTestCase
          {
             conn.close();
          }
-         
-         ServerManagement.undeployQueue("Queue1");
-         
-         ServerManagement.undeployQueue("Queue2");
-         
-         ServerManagement.undeployQueue("Queue3");
-         
-         ServerManagement.undeployTopic("Topic1");
-         
-         ServerManagement.undeployTopic("Topic2");
-         
-         ServerManagement.invoke(ServerManagement.getServerPeerObjectName(), "disableMessageCounters", null, null);
+
+         try
+         {
+            sess.unsubscribe("sub1");
+         }
+         catch (Exception e)
+         {
+            e.printStackTrace();
+         }
+
+         undeployQueue("Queue1");
+
+         undeployQueue("Queue2");
+
+         undeployQueue("Queue3");
+
+         undeployTopic("Topic1");
+
+         undeployTopic("Topic2");
+
+         getJmsServer().disableMessageCounters();
       }
    }
-   
+
    public void testGetDestinations() throws Exception
    {
-      if (!ServerManagement.isServerPeerStarted())
-      {
-         ServerManagement.startServerPeer();
-      }
-              
-      ServerManagement.deployQueue("Queue1");
-      
-      ServerManagement.deployQueue("Queue2");
-      
-      ServerManagement.deployQueue("Queue3");
-      
-      ServerManagement.deployTopic("Topic1");
-      
-      ServerManagement.deployTopic("Topic2");
-      
-      try
-      {
-      
-         Set destinations =
-            (Set)ServerManagement.getAttribute(ServerManagement.getServerPeerObjectName(), "Destinations");
-         
+
+         Set destinations = ((ServerPeer)getJmsServer()).getDestinations();
+
          assertNotNull(destinations);
-         
+
          assertEquals(5, destinations.size());
-      }
-      finally
-      {
-         ServerManagement.undeployQueue("Queue1");
-         
-         ServerManagement.undeployQueue("Queue2");
-         
-         ServerManagement.undeployQueue("Queue3");
-         
-         ServerManagement.undeployTopic("Topic1");
-         
-         ServerManagement.undeployTopic("Topic2");
-      }
-         
+
+
    }
 
-
    // Package protected ---------------------------------------------
-   
+
    // Protected -----------------------------------------------------
-   
+
    // Private -------------------------------------------------------
-   
+
    // Inner classes -------------------------------------------------
 }

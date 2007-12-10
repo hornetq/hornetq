@@ -22,27 +22,17 @@
 
 package org.jboss.test.messaging.jms.stress;
 
+import EDU.oswego.cs.dl.util.concurrent.LinkedQueue;
+import EDU.oswego.cs.dl.util.concurrent.SynchronizedInt;
+import org.jboss.logging.Logger;
+import org.jboss.test.messaging.JBMServerTestCase;
+import org.jboss.test.messaging.tools.ServerManagement;
+
+import javax.jms.*;
+import javax.naming.Context;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Random;
-
-import javax.jms.Connection;
-import javax.jms.ConnectionFactory;
-import javax.jms.DeliveryMode;
-import javax.jms.Message;
-import javax.jms.MessageConsumer;
-import javax.jms.MessageProducer;
-import javax.jms.Queue;
-import javax.jms.Session;
-import javax.naming.Context;
-import javax.naming.InitialContext;
-
-import org.jboss.logging.Logger;
-import org.jboss.test.messaging.MessagingTestCase;
-import org.jboss.test.messaging.tools.ServerManagement;
-
-import EDU.oswego.cs.dl.util.concurrent.LinkedQueue;
-import EDU.oswego.cs.dl.util.concurrent.SynchronizedInt;
 
 /**
  * In order for this test to run, you will need to edit /etc/security/limits.conf and change your max sockets to something bigger than 1024
@@ -61,7 +51,7 @@ clebert        hard    nofile          10240
  * @version <tt>$Revision$</tt>
  *          $Id$
  */
-public class SeveralClientsStressTest extends MessagingTestCase
+public class SeveralClientsStressTest extends JBMServerTestCase
 {
 
    // Constants ------------------------------------------------------------------------------------
@@ -88,7 +78,7 @@ public class SeveralClientsStressTest extends MessagingTestCase
 
    protected Context createContext() throws Exception
    {
-      return new InitialContext(ServerManagement.getJNDIEnvironment());
+      return getInitialContext();
    }
 
    // Constructors ---------------------------------------------------------------------------------
@@ -226,7 +216,7 @@ public class SeveralClientsStressTest extends MessagingTestCase
       if (startServer)
       {
          ServerManagement.start(0, "all", null, true);
-         ServerManagement.deployQueue("testQueue");
+         deployQueue("testQueue");
       }
 
       clearMessages();

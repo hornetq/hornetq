@@ -6,16 +6,16 @@
  */
 package org.jboss.jms.client;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-
 import org.jboss.jms.client.delegate.ClientConnectionDelegate;
 import org.jboss.jms.client.remoting.JMSRemotingConnection;
 import org.jboss.jms.client.state.ConnectionState;
 import org.jboss.jms.delegate.ConnectionFactoryDelegate;
 import org.jboss.jms.delegate.CreateConnectionResult;
 import org.jboss.logging.Logger;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * The class in charge with performing the failover.
@@ -150,7 +150,7 @@ public class FailoverCommandCenter
             //Otherwise If a consumer closing is waiting on failover to complete
             //Then on failover complete the valve will be opened and closing retried on a
             //different thread
-            //but the next line will re-start the connection so there is a race between the two
+            //but the next line will re-startthe connection so there is a race between the two
             //If the restart hits after closing then messages can get delivered after consumer
             //is closed
             

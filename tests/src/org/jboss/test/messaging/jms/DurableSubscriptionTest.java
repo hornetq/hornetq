@@ -21,26 +21,12 @@
   */
 package org.jboss.test.messaging.jms;
 
-import java.util.List;
-
-import javax.jms.Connection;
-import javax.jms.DeliveryMode;
-import javax.jms.IllegalStateException;
-import javax.jms.InvalidDestinationException;
-import javax.jms.InvalidSelectorException;
-import javax.jms.JMSException;
-import javax.jms.Message;
-import javax.jms.MessageConsumer;
-import javax.jms.MessageProducer;
-import javax.jms.Session;
-import javax.jms.TextMessage;
-import javax.jms.Topic;
-import javax.jms.TopicSubscriber;
-import javax.management.ObjectName;
-import javax.naming.NamingException;
-
 import org.jboss.jms.server.destination.SubscriptionInfo;
-import org.jboss.test.messaging.tools.ServerManagement;
+
+import javax.jms.*;
+import javax.jms.IllegalStateException;
+import javax.naming.NamingException;
+import java.util.List;
 
 
 /**
@@ -84,10 +70,8 @@ public class DurableSubscriptionTest extends JMSTestCase
 	      prod.setDeliveryMode(DeliveryMode.PERSISTENT);
 	
 	      s.createDurableSubscriber(topic1, "monicabelucci");
-	
-	      ObjectName destObjectName =
-	         new ObjectName("jboss.messaging.destination:service=Topic,name=Topic1");
-	      List subs = (List)ServerManagement.invoke(destObjectName, "listAllSubscriptions", null, null);
+
+	      List subs = listAllSubscriptionsForTopic("Topic1");
 	      
 	      assertNotNull(subs);
 	      
@@ -101,7 +85,7 @@ public class DurableSubscriptionTest extends JMSTestCase
 	
 	      conn.close();
 	
-	      subs = (List)ServerManagement.invoke(destObjectName, "listAllSubscriptions", null, null);
+	      subs = listAllSubscriptionsForTopic("Topic1");
 	
 	      assertEquals(1, subs.size());
 	      
@@ -138,7 +122,7 @@ public class DurableSubscriptionTest extends JMSTestCase
       	}
       }
    }
-      
+
 
    /**
     * JMS 1.1 6.11.1: A client can change an existing durable subscription by creating a durable
@@ -324,7 +308,7 @@ public class DurableSubscriptionTest extends JMSTestCase
          // OK
       }
 
-      ServerManagement.deployTopic("TopicToBeRedeployed");
+      deployTopic("TopicToBeRedeployed");
 
       Topic topic = (Topic)ic.lookup("/topic/TopicToBeRedeployed");
 
@@ -349,7 +333,7 @@ public class DurableSubscriptionTest extends JMSTestCase
 	      assertEquals("one", tm.getText());
 	      conn.close();
 	
-	      ServerManagement.undeployTopic("TopicToBeRedeployed");
+	      undeployTopic("TopicToBeRedeployed");
 	      log.debug("topic undeployed");
 	
 	      try
@@ -377,7 +361,7 @@ public class DurableSubscriptionTest extends JMSTestCase
 	         // OK
 	      }
 	
-	      ServerManagement.deployTopic("TopicToBeRedeployed");
+	      deployTopic("TopicToBeRedeployed");
 	      log.debug("topic redeployed");
 	
 	      // since redeployment has an activation semantic, I expect to find the messages there
@@ -399,7 +383,7 @@ public class DurableSubscriptionTest extends JMSTestCase
       	{
       		conn.close();
       	}
-      	ServerManagement.undeployTopic("TopicToBeRedeployed");
+      	undeployTopic("TopicToBeRedeployed");
       }
    }
 
@@ -559,8 +543,8 @@ public class DurableSubscriptionTest extends JMSTestCase
 	
 	      TopicSubscriber subscriber = s.createDurableSubscriber(topic1, ".subscription.name.with.periods.");
 	      
-	      ServerManagement.undeployTopic("Topic1");
-	      ServerManagement.deployTopic("Topic1");
+	      undeployTopic("Topic1");
+	      deployTopic("Topic1");
 	      
 	      topic1 = (Topic)ic.lookup("/topic/Topic1");
 	      s.createProducer(topic1).send(s.createTextMessage("Subscription test"));

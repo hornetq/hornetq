@@ -21,49 +21,30 @@
   */
 package org.jboss.test.messaging.jms;
 
-import java.util.ArrayList;
+import com.arjuna.ats.internal.jta.transaction.arjunacore.TransactionManagerImple;
+import org.jboss.jms.client.JBossConnection;
+import org.jboss.jms.client.JBossConnectionFactory;
+import org.jboss.jms.client.JBossSession;
+import org.jboss.jms.client.delegate.ClientConnectionDelegate;
+import org.jboss.jms.client.delegate.DelegateSupport;
+import org.jboss.jms.client.state.ConnectionState;
+import org.jboss.jms.client.state.SessionState;
+import org.jboss.jms.tx.*;
+import org.jboss.logging.Logger;
+import org.jboss.test.messaging.JBMServerTestCase;
+import org.jboss.test.messaging.tools.ServerManagement;
+import org.jboss.test.messaging.tools.container.ServiceContainer;
+import org.jboss.tm.TransactionManagerLocator;
+import org.jboss.tm.TxUtils;
 
-import javax.jms.Connection;
-import javax.jms.DeliveryMode;
-import javax.jms.JMSException;
-import javax.jms.Message;
-import javax.jms.MessageConsumer;
-import javax.jms.MessageListener;
-import javax.jms.MessageProducer;
-import javax.jms.ServerSession;
-import javax.jms.ServerSessionPool;
-import javax.jms.Session;
-import javax.jms.TextMessage;
-import javax.jms.XAConnection;
-import javax.jms.XAConnectionFactory;
-import javax.jms.XASession;
-import javax.management.ObjectName;
+import javax.jms.*;
 import javax.naming.InitialContext;
 import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
 import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
-
-import org.jboss.jms.client.JBossConnection;
-import org.jboss.jms.client.JBossSession;
-import org.jboss.jms.client.delegate.ClientConnectionDelegate;
-import org.jboss.jms.client.delegate.DelegateSupport;
-import org.jboss.jms.client.state.ConnectionState;
-import org.jboss.jms.client.state.SessionState;
-import org.jboss.jms.tx.LocalTx;
-import org.jboss.jms.tx.MessagingXAResource;
-import org.jboss.jms.tx.MessagingXid;
-import org.jboss.jms.tx.ResourceManager;
-import org.jboss.jms.tx.ResourceManagerFactory;
-import org.jboss.logging.Logger;
-import org.jboss.test.messaging.tools.ServerManagement;
-import org.jboss.test.messaging.tools.container.InVMInitialContextFactory;
-import org.jboss.test.messaging.tools.container.ServiceContainer;
-import org.jboss.tm.TransactionManagerLocator;
-import org.jboss.tm.TxUtils;
-
-import com.arjuna.ats.internal.jta.transaction.arjunacore.TransactionManagerImple;
+import java.util.ArrayList;
 
 /**
  *
@@ -76,7 +57,7 @@ import com.arjuna.ats.internal.jta.transaction.arjunacore.TransactionManagerImpl
  * $Id$
  *
  */
-public class XATest extends JMSTestCase
+public class XATest extends JBMServerTestCase
 {
    // Constants -----------------------------------------------------
 
@@ -88,7 +69,7 @@ public class XATest extends JMSTestCase
 
    protected Transaction suspendedTx;
 
-   protected ServiceContainer sc;
+   protected JBossConnectionFactory cf;
 
    // Constructors --------------------------------------------------
 
@@ -103,21 +84,21 @@ public class XATest extends JMSTestCase
    public void setUp() throws Exception
    { 
       super.setUp();
-      
+      cf = getConnectionFactory();
       ResourceManagerFactory.instance.clear();      
 
       //Also need a local tx mgr if test is running remote
       if (ServerManagement.isRemote())
       {
-         sc = new ServiceContainer("transaction");         
+         tm = new TransactionManagerImple();
+      }
+      else
+      {
+         InitialContext localIc = getInitialContext();
 
-         //Don't drop the tables again!
-         sc.start(false);
+         tm = (TransactionManager)localIc.lookup(ServiceContainer.TRANSACTION_MANAGER_JNDI_NAME);
       }
 
-      InitialContext localIc = new InitialContext(InVMInitialContextFactory.getJNDIEnvironment());
-
-      tm = (TransactionManager)localIc.lookup(ServiceContainer.TRANSACTION_MANAGER_JNDI_NAME);
 
       assertTrue(tm instanceof TransactionManagerImple);
      
@@ -152,11 +133,6 @@ public class XATest extends JMSTestCase
       {
          tm.resume(suspendedTx);
       }
-
-      if (ServerManagement.isRemote())
-      {
-         sc.stop();
-      }
       
       super.tearDown();
    }
@@ -177,7 +153,7 @@ public class XATest extends JMSTestCase
       {
          // make sure there's no active JTA transaction
 
-         suspended = TransactionManagerLocator.getInstance().locate().suspend();
+         suspended = tm.suspend();
 
          // send a message to the queue using an XASession that's not enlisted in a global tx
 
@@ -257,8 +233,7 @@ public class XATest extends JMSTestCase
       XAConnection xaconn = null;
       try
       {
-         ObjectName queueMBean = new ObjectName("jboss.messaging.destination:service=Queue,name=Queue1");
-         Integer count = (Integer) ServerManagement.getAttribute(queueMBean, "MessageCount");
+         Integer count = getMessageCountForQueue("Queue1");
          assertEquals(1, count.intValue());
 
          // using XA with a ConnectionConsumer (testing the transaction behavior under MDBs)
@@ -278,7 +253,7 @@ public class XATest extends JMSTestCase
          assertEquals(1, listener.messages.size());
 
          // Message should still be on server
-         count = (Integer) ServerManagement.getAttribute(queueMBean, "MessageCount");
+         count = getMessageCountForQueue("Queue1");
          assertEquals(1, count.intValue());
 
          XAResource resource = xasession.getXAResource();
@@ -306,7 +281,7 @@ public class XATest extends JMSTestCase
          trans.commit();
 
          // After commit the message should be consumed
-         count = (Integer) ServerManagement.getAttribute(queueMBean, "MessageCount");
+         count = getMessageCountForQueue("Queue1");
          assertEquals(0, count.intValue());
       }
       finally
@@ -360,12 +335,11 @@ public class XATest extends JMSTestCase
 
       // make sure there's no active JTA transaction
 
-      Transaction suspended = TransactionManagerLocator.getInstance().locate().suspend();
+      Transaction suspended = tm.suspend();
 
       try
       {
-         ObjectName queueMBean = new ObjectName("jboss.messaging.destination:service=Queue,name=Queue1");
-         Integer count = (Integer)ServerManagement.getAttribute(queueMBean, "MessageCount");
+         Integer count = getMessageCountForQueue("Queue1");
          assertEquals(1, count.intValue());
 
          XAConnectionFactory xcf = (XAConnectionFactory)cf;
@@ -384,7 +358,7 @@ public class XATest extends JMSTestCase
          assertEquals("one", rm.getText());
          
          // messages should be acked
-         count = (Integer)ServerManagement.getAttribute(queueMBean, "MessageCount");
+         count = getMessageCountForQueue("Queue1");
          assertEquals(0, count.intValue());
          
          xconn.close();
@@ -439,8 +413,7 @@ public class XATest extends JMSTestCase
          p.send(m);
          conn.close();
 
-         ObjectName queueMBean = new ObjectName("jboss.messaging.destination:service=Queue,name=Queue1");
-         Integer count = (Integer)ServerManagement.getAttribute(queueMBean, "MessageCount");
+         Integer count = getMessageCountForQueue("Queue1");
          assertEquals(1, count.intValue());
 
          tm.begin();
@@ -469,7 +442,7 @@ public class XATest extends JMSTestCase
 
          assertNull(consumer.receive(1000));
 
-         count = (Integer)ServerManagement.getAttribute(queueMBean, "MessageCount");
+         count = getMessageCountForQueue("Queue1");
 
          assertEquals(1, count.intValue());
 
@@ -487,12 +460,12 @@ public class XATest extends JMSTestCase
 
          assertEquals("one", messageReceived.getText());
 
-         count = (Integer)ServerManagement.getAttribute(queueMBean, "MessageCount");
+         count = getMessageCountForQueue("Queue1");
          assertEquals(1, count.intValue());
 
          trans.commit();
 
-         count = (Integer)ServerManagement.getAttribute(queueMBean, "MessageCount");
+         count = getMessageCountForQueue("Queue1");
          assertEquals(0, count.intValue());
 
       }
@@ -537,8 +510,7 @@ public class XATest extends JMSTestCase
          p.send(m);
          conn.close();
 
-         ObjectName queueMBean = new ObjectName("jboss.messaging.destination:service=Queue,name=Queue1");
-         Integer count = (Integer)ServerManagement.getAttribute(queueMBean, "MessageCount");
+         Integer count = getMessageCountForQueue("Queue1");
          assertEquals(2, count.intValue());
 
          XAConnectionFactory xacf = (XAConnectionFactory)cf;
@@ -569,7 +541,7 @@ public class XATest extends JMSTestCase
          // So.. keep this close commented!
          //xasession.close();
 
-         count = (Integer)ServerManagement.getAttribute(queueMBean, "MessageCount");
+         count = getMessageCountForQueue("Queue1");
          assertEquals(0, count.intValue());
       }
       finally
@@ -717,8 +689,7 @@ public class XATest extends JMSTestCase
 
          //First send some messages to a queue
 
-         ObjectName queueMBean = new ObjectName("jboss.messaging.destination:service=Queue,name=Queue1");
-         Integer count = (Integer) ServerManagement.getAttribute(queueMBean, "MessageCount");
+         Integer count = getMessageCountForQueue("Queue1");
          assertEquals(0, count.intValue());
 
          conn = cf.createConnection();
@@ -735,7 +706,7 @@ public class XATest extends JMSTestCase
 
          prod.send(tm2);
 
-         count = (Integer) ServerManagement.getAttribute(queueMBean, "MessageCount");
+         count = getMessageCountForQueue("Queue1");
          assertEquals(2, count.intValue());
 
          xaConn = cf.createXAConnection();
@@ -759,7 +730,7 @@ public class XATest extends JMSTestCase
          assertEquals("message1", ((TextMessage)(listener.messages.get(0))).getText());
          assertEquals("message2", ((TextMessage)(listener.messages.get(1))).getText());
 
-         count = (Integer) ServerManagement.getAttribute(queueMBean, "MessageCount");
+         count = getMessageCountForQueue("Queue1");
          assertEquals(2, count.intValue());
 
          listener.messages.clear();
@@ -791,7 +762,7 @@ public class XATest extends JMSTestCase
          //Now rollback the tx - this should cause redelivery of the two messages
          tm.rollback();
 
-         count = (Integer) ServerManagement.getAttribute(queueMBean, "MessageCount");
+         count = getMessageCountForQueue("Queue1");
          assertEquals(2, count.intValue());
 
          Thread.sleep(1000);
@@ -811,7 +782,7 @@ public class XATest extends JMSTestCase
 
          assertEquals(0, listener.messages.size());
 
-         count = (Integer) ServerManagement.getAttribute(queueMBean, "MessageCount");
+         count = getMessageCountForQueue("Queue1");
          assertEquals(0, count.intValue());
 
          assertNull(tm.getTransaction());
@@ -1103,9 +1074,9 @@ public class XATest extends JMSTestCase
 
          //Now "crash" the server
 
-         ServerManagement.stopServerPeer();
+         stopServerPeer();
 
-         ServerManagement.startServerPeer();
+         startServerPeer();
 
          deployAndLookupAdministeredObjects();
          

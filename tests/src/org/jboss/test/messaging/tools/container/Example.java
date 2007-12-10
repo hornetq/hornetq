@@ -21,12 +21,11 @@
 */
 package org.jboss.test.messaging.tools.container;
 
-import java.sql.Connection;
-import java.sql.ResultSet;
-
 import javax.naming.InitialContext;
 import javax.sql.DataSource;
 import javax.transaction.TransactionManager;
+import java.sql.Connection;
+import java.sql.ResultSet;
 
 /**
  * An example how to use ServiceContainer to get access to an in-memory database.
@@ -44,8 +43,8 @@ public class Example
 
    public static void main(String[] args) throws Exception
    {
-      ServiceContainer sc = new ServiceContainer("transaction, jca, database");
-      sc.start();
+      /*ServiceContainer sc = new ServiceContainer("transaction, jca, database");
+      sc.start();*/
 
       InitialContext ic = new InitialContext();
 
@@ -84,7 +83,7 @@ public class Example
 
 
       c.close();
-      sc.stop();
+      //sc.stop();
    }
 
    // Attributes ----------------------------------------------------

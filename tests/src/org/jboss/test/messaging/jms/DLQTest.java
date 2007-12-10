@@ -21,34 +21,23 @@
  */
 package org.jboss.test.messaging.jms;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import javax.jms.Connection;
-import javax.jms.DeliveryMode;
-import javax.jms.Destination;
-import javax.jms.Message;
-import javax.jms.MessageConsumer;
-import javax.jms.MessageListener;
-import javax.jms.MessageProducer;
-import javax.jms.Session;
-import javax.jms.TextMessage;
-import javax.jms.Topic;
-import javax.management.ObjectName;
-import javax.naming.NameNotFoundException;
-
 import org.jboss.jms.destination.JBossQueue;
 import org.jboss.jms.message.JBossMessage;
+import org.jboss.jms.server.ServerPeer;
 import org.jboss.test.messaging.tools.ServerManagement;
+
+import javax.jms.*;
+import javax.management.ObjectName;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * A DLQTest
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
- *
- * $Id$
- *
+ *          <p/>
+ *          $Id$
  */
 public class DLQTest extends JMSTestCase
 {
@@ -73,209 +62,165 @@ public class DLQTest extends JMSTestCase
       {
          return;
       }
-      
-      try
-      {
-      	ServerManagement.deployQueue("DLQ");
-         
-         ObjectName serverPeerObjectName = ServerManagement.getServerPeerObjectName();
-         
-         ObjectName dlqObjectName = (ObjectName)ServerManagement.getAttribute(serverPeerObjectName, "DefaultDLQ");
-         
-         assertNotNull(dlqObjectName);
-               
-         String name = (String)ServerManagement.getAttribute(dlqObjectName, "Name");
-         
-         assertNotNull(name);
-         
-         assertEquals("DLQ", name);
 
-         String jndiName = (String)ServerManagement.getAttribute(dlqObjectName, "JNDIName");
-         
-         assertNotNull(jndiName);
-         
-         assertEquals("/queue/DLQ", jndiName);
-         
-         org.jboss.messaging.core.contract.Queue dlq = ServerManagement.getServer().getServerPeer().getDefaultDLQInstance();
 
-         assertNotNull(dlq);
+      assertNotNull(((ServerPeer)getJmsServer()).getDefaultDLQInstance());
 
-         JBossQueue q = (JBossQueue)ic.lookup("/queue/DLQ");
+      String name = getJmsServer().getConfiguration().getDefaultDLQ();
 
-         assertNotNull(q);
+      assertNotNull(name);
 
-         assertEquals("DLQ", q.getName());
-      }
-      finally
-      {
-         ServerManagement.undeployQueue("DLQ");
-      }
+      assertEquals("DLQ", name);
+
+      JBossQueue q = (JBossQueue) ic.lookup("/queue/DLQ");
+
+      assertNotNull(q);
+
+      assertEquals("DLQ", q.getName());
    }
 
-   public void testDLQNotAlreadyDeployed() throws Exception
-   {
-      if (ServerManagement.isRemote())
-      {
-         return;
-      }
-      
-      org.jboss.messaging.core.contract.Queue dlq = ServerManagement.getServer().getServerPeer().getDefaultDLQInstance();
 
-      assertNull(dlq);
-
-      try
-      {
-         ic.lookup("/queue/DLQ");
-
-         fail();
-      }
-      catch (NameNotFoundException e)
-      {
-         //Ok
-      }
-   }
-   
    public void testDefaultAndOverrideDLQ() throws Exception
    {
       if (ServerManagement.isRemote())
       {
          return;
       }
-      
+
       final int NUM_MESSAGES = 5;
-      
+
       final int MAX_DELIVERIES = 8;
-      
-      ObjectName serverPeerObjectName = ServerManagement.getServerPeerObjectName();	    
-      
-      String testQueueObjectName = "jboss.messaging.destination:service=Queue,name=Queue1";      
-      
-      Connection conn = null;      
-      
+
+      ObjectName serverPeerObjectName = ServerManagement.getServerPeerObjectName();
+
+      String testQueueObjectName = "jboss.messaging.destination:service=Queue,name=Queue1";
+
+      Connection conn = null;
+
       try
-      { 	      
-	      String defaultDLQObjectName = "jboss.messaging.destination:service=Queue,name=Queue2";
-	      
-	      String overrideDLQObjectName = "jboss.messaging.destination:service=Queue,name=Queue3";
-	      
-	      ServerManagement.setAttribute(serverPeerObjectName, "DefaultMaxDeliveryAttempts", String.valueOf(MAX_DELIVERIES));
-	            
-	      ServerManagement.setAttribute(serverPeerObjectName, "DefaultDLQ", defaultDLQObjectName);
-	      
-	      ServerManagement.setAttribute(new ObjectName(testQueueObjectName), "DLQ", "");
-	      
+      {
+         String defaultDLQObjectName = "jboss.messaging.destination:service=Queue,name=Queue2";
+
+         String overrideDLQObjectName = "jboss.messaging.destination:service=Queue,name=Queue3";
+
+         ServerManagement.setAttribute(serverPeerObjectName, "DefaultMaxDeliveryAttempts", String.valueOf(MAX_DELIVERIES));
+
+         ServerManagement.setAttribute(serverPeerObjectName, "DefaultDLQ", defaultDLQObjectName);
+
+         ServerManagement.setAttribute(new ObjectName(testQueueObjectName), "DLQ", "");
+
          conn = cf.createConnection();
-         
-         {         
+
+         {
             Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-   
+
             MessageProducer prod = sess.createProducer(queue1);
-   
+
             for (int i = 0; i < NUM_MESSAGES; i++)
             {
                TextMessage tm = sess.createTextMessage("Message:" + i);
-   
+
                prod.send(tm);
             }
-   
+
             Session sess2 = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
-            
+
             MessageConsumer cons = sess2.createConsumer(queue1);
-            
+
             conn.start();
-   
-            for (int i = 0; i < MAX_DELIVERIES; i++) 
+
+            for (int i = 0; i < MAX_DELIVERIES; i++)
             {
                for (int j = 0; j < NUM_MESSAGES; j++)
                {
-                  TextMessage tm = (TextMessage)cons.receive(1000);
-   
+                  TextMessage tm = (TextMessage) cons.receive(1000);
+
                   assertNotNull(tm);
-   
+
                   assertEquals("Message:" + j, tm.getText());
                }
-   
+
                sess2.recover();
             }
-            
+
             //Prompt them to go to DLQ
             cons.receive(100);
-            
+
             //At this point all the messages have been delivered exactly MAX_DELIVERIES times 
-            
+
             checkEmpty(queue1);
-            
+
             //Now should be in default dlq
-            
+
             MessageConsumer cons3 = sess.createConsumer(queue2);
-            
+
             for (int i = 0; i < NUM_MESSAGES; i++)
             {
-               TextMessage tm = (TextMessage)cons3.receive(1000);
-   
+               TextMessage tm = (TextMessage) cons3.receive(1000);
+
                assertNotNull(tm);
-   
+
                assertEquals("Message:" + i, tm.getText());
             }
-            
+
             conn.close();
          }
-         
-         
+
+
          {
             //Now try with overriding the default dlq
-            
+
             conn = cf.createConnection();
-            
+
             ServerManagement.setAttribute(new ObjectName(testQueueObjectName), "DLQ", overrideDLQObjectName);
-            
+
             Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-   
+
             MessageProducer prod = sess.createProducer(queue1);
-   
+
             for (int i = 0; i < NUM_MESSAGES; i++)
             {
                TextMessage tm = sess.createTextMessage("Message:" + i);
-   
+
                prod.send(tm);
             }
-   
+
             Session sess2 = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
-            
+
             MessageConsumer cons = sess2.createConsumer(queue1);
-            
+
             conn.start();
-   
-            for (int i = 0; i < MAX_DELIVERIES; i++) 
+
+            for (int i = 0; i < MAX_DELIVERIES; i++)
             {
                for (int j = 0; j < NUM_MESSAGES; j++)
                {
-                  TextMessage tm = (TextMessage)cons.receive(1000);
-   
+                  TextMessage tm = (TextMessage) cons.receive(1000);
+
                   assertNotNull(tm);
-   
+
                   assertEquals("Message:" + j, tm.getText());
                }
-   
+
                sess2.recover();
             }
-            
+
             cons.receive(100);
-            
+
             //At this point all the messages have been delivered exactly MAX_DELIVERIES times 
-            
+
             checkEmpty(queue1);
-            
+
             //Now should be in override dlq
-            
+
             MessageConsumer cons3 = sess.createConsumer(queue3);
-            
+
             for (int i = 0; i < NUM_MESSAGES; i++)
             {
-               TextMessage tm = (TextMessage)cons3.receive(1000);
-   
+               TextMessage tm = (TextMessage) cons3.receive(1000);
+
                assertNotNull(tm);
-   
+
                assertEquals("Message:" + i, tm.getText());
             }
          }
@@ -283,16 +228,16 @@ public class DLQTest extends JMSTestCase
       finally
       {
          ServerManagement.setAttribute(serverPeerObjectName, "DefaultDLQ", "jboss.messaging.destination:service=Queue,name=DLQ");
-         
-         ServerManagement.setAttribute(new ObjectName(testQueueObjectName), "DLQ", "");	      
-               
+
+         ServerManagement.setAttribute(new ObjectName(testQueueObjectName), "DLQ", "");
+
          if (conn != null)
          {
             conn.close();
          }
       }
    }
-            
+
 
    public void testWithMessageListenerPersistent() throws Exception
    {
@@ -313,7 +258,7 @@ public class DLQTest extends JMSTestCase
    {
       testWithReceiveClientAck(false);
    }
-   
+
    public void testWithReceiveTransactionalPersistent() throws Exception
    {
       this.testWithReceiveTransactional(true);
@@ -322,43 +267,43 @@ public class DLQTest extends JMSTestCase
    public void testWithReceiveTransactionalNonPersistent() throws Exception
    {
       testWithReceiveTransactional(false);
-   }   
-   
+   }
+
    public void testHeadersSet() throws Exception
    {
       Connection conn = null;
-      
-      try
-      {	  
-	      ObjectName serverPeerObjectName = ServerManagement.getServerPeerObjectName();
-	      
-      	ServerManagement.setAttribute(serverPeerObjectName, "DefaultDLQ", "jboss.messaging.destination:service=Queue,name=Queue2");               	
 
-	      final int MAX_DELIVERIES = 16;
-	      
-	      final int NUM_MESSAGES = 5;      
-	        
-	      ServerManagement.setAttribute(serverPeerObjectName, "DefaultMaxDeliveryAttempts", String.valueOf(MAX_DELIVERIES));
-	      
-	      int maxRedeliveryAttempts =
-	         ((Integer)ServerManagement.getAttribute(serverPeerObjectName, "DefaultMaxDeliveryAttempts")).intValue();
-	      
-	      assertEquals(MAX_DELIVERIES, maxRedeliveryAttempts);
+      try
+      {
+         ObjectName serverPeerObjectName = ServerManagement.getServerPeerObjectName();
+
+         ServerManagement.setAttribute(serverPeerObjectName, "DefaultDLQ", "jboss.messaging.destination:service=Queue,name=Queue2");
+
+         final int MAX_DELIVERIES = 16;
+
+         final int NUM_MESSAGES = 5;
+
+         ServerManagement.setAttribute(serverPeerObjectName, "DefaultMaxDeliveryAttempts", String.valueOf(MAX_DELIVERIES));
+
+         int maxRedeliveryAttempts =
+                 ((Integer) ServerManagement.getAttribute(serverPeerObjectName, "DefaultMaxDeliveryAttempts")).intValue();
+
+         assertEquals(MAX_DELIVERIES, maxRedeliveryAttempts);
 
          conn = cf.createConnection();
 
          Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
          MessageProducer prod = sess.createProducer(queue1);
-         
-         Map origIds = new HashMap();         
+
+         Map origIds = new HashMap();
 
          for (int i = 0; i < NUM_MESSAGES; i++)
          {
             TextMessage tm = sess.createTextMessage("Message:" + i);
 
             prod.send(tm);
-            
+
             origIds.put(tm.getText(), tm.getJMSMessageID());
          }
 
@@ -368,11 +313,11 @@ public class DLQTest extends JMSTestCase
 
          conn.start();
 
-         for (int i = 0; i < MAX_DELIVERIES; i++) 
+         for (int i = 0; i < MAX_DELIVERIES; i++)
          {
             for (int j = 0; j < NUM_MESSAGES; j++)
             {
-               TextMessage tm = (TextMessage)cons.receive(1000);
+               TextMessage tm = (TextMessage) cons.receive(1000);
 
                assertNotNull(tm);
 
@@ -381,41 +326,41 @@ public class DLQTest extends JMSTestCase
 
             sess2.rollback();
          }
-         
+
          //At this point all the messages have been delivered exactly MAX_DELIVERIES times - this is ok
          //they haven't exceeded max delivery attempts so shouldn't be in the DLQ - let's check
-         
+
          checkEmpty(queue2);
-         
+
          // So let's try and consume them - this should cause them to go to the DLQ - since they
          // will then exceed max delivery attempts
          Message m = cons.receive(100);
-         
+
          assertNull(m);
-         
+
          //All the messages should now be in the DLQ
-         
-         MessageConsumer cons3 = sess.createConsumer(queue2);         
-         
+
+         MessageConsumer cons3 = sess.createConsumer(queue2);
+
          for (int i = 0; i < NUM_MESSAGES; i++)
          {
-            TextMessage tm = (TextMessage)cons3.receive(1000);
-            
+            TextMessage tm = (TextMessage) cons3.receive(1000);
+
             assertNotNull(tm);
 
             assertEquals("Message:" + i, tm.getText());
-            
+
             // Check the headers
             String origDest =
-               tm.getStringProperty(JBossMessage.JBOSS_MESSAGING_ORIG_DESTINATION);
-            
+                    tm.getStringProperty(JBossMessage.JBOSS_MESSAGING_ORIG_DESTINATION);
+
             String origMessageId =
-               tm.getStringProperty(JBossMessage.JBOSS_MESSAGING_ORIG_MESSAGE_ID);
-            
+                    tm.getStringProperty(JBossMessage.JBOSS_MESSAGING_ORIG_MESSAGE_ID);
+
             assertEquals(queue1.toString(), origDest);
-            
-            String origId = (String)origIds.get(tm.getText());
-            
+
+            String origId = (String) origIds.get(tm.getText());
+
             assertEquals(origId, origMessageId);
          }
       }
@@ -426,88 +371,88 @@ public class DLQTest extends JMSTestCase
    }
 
    public void testOverrideDefaultMaxDeliveryAttemptsForQueue() throws Exception
-   {      
-   	int md = getDefaultMaxDeliveryAttempts();
-   	try
-   	{
-	      int maxDeliveryAttempts = md - 5;
-	      setMaxDeliveryAttempts(
-	            new ObjectName("jboss.messaging.destination:service=Queue,name=Queue1"),
-	            maxDeliveryAttempts);
-	      testMaxDeliveryAttempts(queue1, maxDeliveryAttempts, true);
-   	}
-   	finally
-   	{
-   		setMaxDeliveryAttempts(
-	            new ObjectName("jboss.messaging.destination:service=Queue,name=Queue1"),
-	            md);
-   	}
+   {
+      int md = getDefaultMaxDeliveryAttempts();
+      try
+      {
+         int maxDeliveryAttempts = md - 5;
+         setMaxDeliveryAttempts(
+                 new ObjectName("jboss.messaging.destination:service=Queue,name=Queue1"),
+                 maxDeliveryAttempts);
+         testMaxDeliveryAttempts(queue1, maxDeliveryAttempts, true);
+      }
+      finally
+      {
+         setMaxDeliveryAttempts(
+                 new ObjectName("jboss.messaging.destination:service=Queue,name=Queue1"),
+                 md);
+      }
    }
 
    public void testOverrideDefaultMaxDeliveryAttemptsForTopic() throws Exception
    {
-   	int md = getDefaultMaxDeliveryAttempts();
-   	try
-   	{
-	      int maxDeliveryAttempts = md - 5;
-	      setMaxDeliveryAttempts(
-	            new ObjectName("jboss.messaging.destination:service=Topic,name=Topic1"),
-	            maxDeliveryAttempts);
-	
-	      testMaxDeliveryAttempts(topic1, maxDeliveryAttempts, false);
-   	}
-   	finally
-   	{
-   		setMaxDeliveryAttempts(
-	            new ObjectName("jboss.messaging.destination:service=Queue,name=Queue1"),
-	            md);
-   	}
+      int md = getDefaultMaxDeliveryAttempts();
+      try
+      {
+         int maxDeliveryAttempts = md - 5;
+         setMaxDeliveryAttempts(
+                 new ObjectName("jboss.messaging.destination:service=Topic,name=Topic1"),
+                 maxDeliveryAttempts);
+
+         testMaxDeliveryAttempts(topic1, maxDeliveryAttempts, false);
+      }
+      finally
+      {
+         setMaxDeliveryAttempts(
+                 new ObjectName("jboss.messaging.destination:service=Queue,name=Queue1"),
+                 md);
+      }
    }
-      
+
    public void testUseDefaultMaxDeliveryAttemptsForQueue() throws Exception
    {
-   	int md = getDefaultMaxDeliveryAttempts();
-   	try
-   	{
-	      setMaxDeliveryAttempts(
-	            new ObjectName("jboss.messaging.destination:service=Queue,name=Queue1"),
-	            -1);
-	
-	      // Check that defaultMaxDeliveryAttempts takes effect
-	      testMaxDeliveryAttempts(queue1, getDefaultMaxDeliveryAttempts(), true);
-   	}
-   	finally
-   	{
-   		setMaxDeliveryAttempts(
-	            new ObjectName("jboss.messaging.destination:service=Queue,name=Queue1"),
-	            md);
-   	}
+      int md = getDefaultMaxDeliveryAttempts();
+      try
+      {
+         setMaxDeliveryAttempts(
+                 new ObjectName("jboss.messaging.destination:service=Queue,name=Queue1"),
+                 -1);
+
+         // Check that defaultMaxDeliveryAttempts takes effect
+         testMaxDeliveryAttempts(queue1, getDefaultMaxDeliveryAttempts(), true);
+      }
+      finally
+      {
+         setMaxDeliveryAttempts(
+                 new ObjectName("jboss.messaging.destination:service=Queue,name=Queue1"),
+                 md);
+      }
    }
 
    public void testUseDefaultMaxDeliveryAttemptsForTopic() throws Exception
    {
-   	int md = getDefaultMaxDeliveryAttempts();
-   	try
-   	{
-	      setMaxDeliveryAttempts(
-	            new ObjectName("jboss.messaging.destination:service=Topic,name=Topic1"),
-	            -1);
-	
-	      // Check that defaultMaxDeliveryAttempts takes effect
-	      testMaxDeliveryAttempts(topic1, getDefaultMaxDeliveryAttempts(), false);
-   	}
-   	finally
-   	{
-   		setMaxDeliveryAttempts(
-	            new ObjectName("jboss.messaging.destination:service=Queue,name=Queue1"),
-	            md);
-   	}
+      int md = getDefaultMaxDeliveryAttempts();
+      try
+      {
+         setMaxDeliveryAttempts(
+                 new ObjectName("jboss.messaging.destination:service=Topic,name=Topic1"),
+                 -1);
+
+         // Check that defaultMaxDeliveryAttempts takes effect
+         testMaxDeliveryAttempts(topic1, getDefaultMaxDeliveryAttempts(), false);
+      }
+      finally
+      {
+         setMaxDeliveryAttempts(
+                 new ObjectName("jboss.messaging.destination:service=Queue,name=Queue1"),
+                 md);
+      }
    }
-      
+
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
-   
+
    protected void testWithMessageListener(boolean persistent) throws Exception
    {
       Connection conn = null;
@@ -515,22 +460,22 @@ public class DLQTest extends JMSTestCase
       try
       {
          ObjectName serverPeerObjectName = ServerManagement.getServerPeerObjectName();
-         
+
          final int MAX_DELIVERIES = 16;
-         
+
          final int NUM_MESSAGES = 5;
-         
+
          ServerManagement.setAttribute(serverPeerObjectName, "DefaultMaxDeliveryAttempts", String.valueOf(MAX_DELIVERIES));
-         
-         String defaultDLQObjectName = "jboss.messaging.destination:service=Queue,name=Queue2";            
-         
+
+         String defaultDLQObjectName = "jboss.messaging.destination:service=Queue,name=Queue2";
+
          ServerManagement.setAttribute(serverPeerObjectName, "DefaultDLQ", defaultDLQObjectName);
-         
+
          int maxRedeliveryAttempts =
-            ((Integer)ServerManagement.getAttribute(serverPeerObjectName, "DefaultMaxDeliveryAttempts")).intValue();
-         
+                 ((Integer) ServerManagement.getAttribute(serverPeerObjectName, "DefaultMaxDeliveryAttempts")).intValue();
+
          assertEquals(MAX_DELIVERIES, maxRedeliveryAttempts);
-         
+
          conn = cf.createConnection();
 
          Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -538,7 +483,7 @@ public class DLQTest extends JMSTestCase
          MessageProducer prod = sess.createProducer(queue1);
 
          prod.setDeliveryMode(persistent ? DeliveryMode.PERSISTENT : DeliveryMode.NON_PERSISTENT);
-         
+
          for (int i = 0; i < NUM_MESSAGES; i++)
          {
             TextMessage tm = sess.createTextMessage("Message:" + i);
@@ -547,8 +492,8 @@ public class DLQTest extends JMSTestCase
          }
 
          MessageConsumer cons = sess.createConsumer(queue1);
-         
-         FailingMessageListener listener  = new FailingMessageListener(MAX_DELIVERIES * NUM_MESSAGES);
+
+         FailingMessageListener listener = new FailingMessageListener(MAX_DELIVERIES * NUM_MESSAGES);
 
          cons.setMessageListener(listener);
 
@@ -557,30 +502,30 @@ public class DLQTest extends JMSTestCase
          listener.waitForMessages();
 
          assertEquals(MAX_DELIVERIES * NUM_MESSAGES, listener.deliveryCount);
-            
+
          //Message should all be in the dlq - let's check
 
          MessageConsumer cons2 = sess.createConsumer(queue2);
 
          for (int i = 0; i < NUM_MESSAGES; i++)
          {
-            TextMessage tm = (TextMessage)cons2.receive(1000);
+            TextMessage tm = (TextMessage) cons2.receive(1000);
 
             assertNotNull(tm);
-            
+
             log.info("Got mnessage" + tm);
 
             assertEquals("Message:" + i, tm.getText());
          }
-         
-         checkEmpty(queue1);         
+
+         checkEmpty(queue1);
       }
       finally
       {
          if (conn != null) conn.close();
       }
    }
-   
+
 
    protected void testWithReceiveClientAck(boolean persistent) throws Exception
    {
@@ -589,22 +534,22 @@ public class DLQTest extends JMSTestCase
       try
       {
          ObjectName serverPeerObjectName = ServerManagement.getServerPeerObjectName();
-         
+
          final int MAX_DELIVERIES = 16;
-         
-         final int NUM_MESSAGES = 5;      
-         
-         String defaultDLQObjectName = "jboss.messaging.destination:service=Queue,name=Queue2";            
-         
-         ServerManagement.setAttribute(serverPeerObjectName, "DefaultDLQ", defaultDLQObjectName);         
-            
+
+         final int NUM_MESSAGES = 5;
+
+         String defaultDLQObjectName = "jboss.messaging.destination:service=Queue,name=Queue2";
+
+         ServerManagement.setAttribute(serverPeerObjectName, "DefaultDLQ", defaultDLQObjectName);
+
          ServerManagement.setAttribute(serverPeerObjectName, "DefaultMaxDeliveryAttempts", String.valueOf(MAX_DELIVERIES));
-         
+
          int maxRedeliveryAttempts =
-            ((Integer)ServerManagement.getAttribute(serverPeerObjectName, "DefaultMaxDeliveryAttempts")).intValue();
-         
+                 ((Integer) ServerManagement.getAttribute(serverPeerObjectName, "DefaultMaxDeliveryAttempts")).intValue();
+
          assertEquals(MAX_DELIVERIES, maxRedeliveryAttempts);
-      	
+
          conn = cf.createConnection();
 
          Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -612,7 +557,7 @@ public class DLQTest extends JMSTestCase
          MessageProducer prod = sess.createProducer(queue1);
 
          prod.setDeliveryMode(persistent ? DeliveryMode.PERSISTENT : DeliveryMode.NON_PERSISTENT);
-    
+
          for (int i = 0; i < NUM_MESSAGES; i++)
          {
             TextMessage tm = sess.createTextMessage("Message:" + i);
@@ -626,11 +571,11 @@ public class DLQTest extends JMSTestCase
 
          conn.start();
 
-         for (int i = 0; i < MAX_DELIVERIES; i++) 
+         for (int i = 0; i < MAX_DELIVERIES; i++)
          {
             for (int j = 0; j < NUM_MESSAGES; j++)
             {
-               TextMessage tm = (TextMessage)cons.receive(1000);
+               TextMessage tm = (TextMessage) cons.receive(1000);
 
                assertNotNull(tm);
 
@@ -639,46 +584,46 @@ public class DLQTest extends JMSTestCase
 
             sess2.recover();
          }
-         
+
          //At this point all the messages have been delivered exactly MAX_DELIVERIES times - this is ok
          //they haven't exceeded max delivery attempts so shouldn't be in the DLQ - let's check
-         
+
          checkEmpty(queue2);
-         
+
          //So let's try and consume them - this should cause them to go to the DLQ - since they will then exceed max
          //delivery attempts
-         
+
          Message m = cons.receive(100);
-         
+
          assertNull(m);
-         
+
          //Now, all the messages should now be in the DLQ
-         
+
          MessageConsumer cons3 = sess.createConsumer(queue2);
-         
+
          for (int i = 0; i < NUM_MESSAGES; i++)
          {
-            TextMessage tm = (TextMessage)cons3.receive(1000);
-            
+            TextMessage tm = (TextMessage) cons3.receive(1000);
+
             assertNotNull(tm);
 
             assertEquals("Message:" + i, tm.getText());
          }
 
          //No more should be available
-                           
+
          cons.close();
-         
+
          checkEmpty(queue1);
       }
       finally
       {
-         ServerManagement.undeployQueue("DLQ");
+         undeployQueue("DLQ");
 
          if (conn != null) conn.close();
       }
    }
-   
+
    protected void testWithReceiveTransactional(boolean persistent) throws Exception
    {
       Connection conn = null;
@@ -686,22 +631,22 @@ public class DLQTest extends JMSTestCase
       try
       {
          ObjectName serverPeerObjectName = ServerManagement.getServerPeerObjectName();
-         
+
          final int MAX_DELIVERIES = 16;
-         
-         final int NUM_MESSAGES = 5;      
-           
+
+         final int NUM_MESSAGES = 5;
+
          ServerManagement.setAttribute(serverPeerObjectName, "DefaultMaxDeliveryAttempts", String.valueOf(MAX_DELIVERIES));
-         
-         String defaultDLQObjectName = "jboss.messaging.destination:service=Queue,name=Queue2";            
-         
-         ServerManagement.setAttribute(serverPeerObjectName, "DefaultDLQ", defaultDLQObjectName);                    
-         
+
+         String defaultDLQObjectName = "jboss.messaging.destination:service=Queue,name=Queue2";
+
+         ServerManagement.setAttribute(serverPeerObjectName, "DefaultDLQ", defaultDLQObjectName);
+
          int maxRedeliveryAttempts =
-            ((Integer)ServerManagement.getAttribute(serverPeerObjectName, "DefaultMaxDeliveryAttempts")).intValue();
-         
+                 ((Integer) ServerManagement.getAttribute(serverPeerObjectName, "DefaultMaxDeliveryAttempts")).intValue();
+
          assertEquals(MAX_DELIVERIES, maxRedeliveryAttempts);
-      	
+
          conn = cf.createConnection();
 
          Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -709,7 +654,7 @@ public class DLQTest extends JMSTestCase
          MessageProducer prod = sess.createProducer(queue1);
 
          prod.setDeliveryMode(persistent ? DeliveryMode.PERSISTENT : DeliveryMode.NON_PERSISTENT);
-    
+
          for (int i = 0; i < NUM_MESSAGES; i++)
          {
             TextMessage tm = sess.createTextMessage("Message:" + i);
@@ -723,11 +668,11 @@ public class DLQTest extends JMSTestCase
 
          conn.start();
 
-         for (int i = 0; i < MAX_DELIVERIES; i++) 
+         for (int i = 0; i < MAX_DELIVERIES; i++)
          {
             for (int j = 0; j < NUM_MESSAGES; j++)
             {
-               TextMessage tm = (TextMessage)cons.receive(1000);
+               TextMessage tm = (TextMessage) cons.receive(1000);
 
                assertNotNull(tm);
 
@@ -736,86 +681,86 @@ public class DLQTest extends JMSTestCase
 
             sess2.rollback();
          }
-         
+
          //At this point all the messages have been delivered exactly MAX_DELIVERIES times - this is ok
          //they haven't exceeded max delivery attempts so shouldn't be in the DLQ - let's check
-         
+
          checkEmpty(queue2);
-         
+
          //So let's try and consume them - this should cause them to go to the DLQ - since they will then exceed max
          //delivery attempts
          Message m = cons.receive(100);
-         
+
          assertNull(m);
-         
+
          //All the messages should now be in the DLQ
-         
-         MessageConsumer cons3 = sess.createConsumer(queue2);         
-         
+
+         MessageConsumer cons3 = sess.createConsumer(queue2);
+
          for (int i = 0; i < NUM_MESSAGES; i++)
          {
-            TextMessage tm = (TextMessage)cons3.receive(1000);
-            
+            TextMessage tm = (TextMessage) cons3.receive(1000);
+
             assertNotNull(tm);
 
             assertEquals("Message:" + i, tm.getText());
          }
 
          //No more should be available
-         
+
          checkEmpty(queue1);
       }
       finally
       {
-         ServerManagement.undeployQueue("DLQ");
+         undeployQueue("DLQ");
 
          if (conn != null) conn.close();
       }
    }
-   
+
    protected int getDefaultMaxDeliveryAttempts() throws Exception
    {
       return ((Integer) ServerManagement.getAttribute(
-            ServerManagement.getServerPeerObjectName(),
-            "DefaultMaxDeliveryAttempts"))
-            .intValue();
+              ServerManagement.getServerPeerObjectName(),
+              "DefaultMaxDeliveryAttempts"))
+              .intValue();
    }
 
    protected void setMaxDeliveryAttempts(ObjectName dest, int maxDeliveryAttempts) throws Exception
    {
       ServerManagement.setAttribute(dest, "MaxDeliveryAttempts",
-            Integer.toString(maxDeliveryAttempts));
+              Integer.toString(maxDeliveryAttempts));
    }
-   
+
    protected void testMaxDeliveryAttempts(Destination destination, int destMaxDeliveryAttempts, boolean queue) throws Exception
    {
       Connection conn = cf.createConnection();
-      
+
       if (!queue)
       {
-      	conn.setClientID("wib123");
+         conn.setClientID("wib123");
       }
-      
+
       try
       {
-      	ServerManagement.setAttribute(ServerManagement.getServerPeerObjectName(),
-      			"DefaultDLQ", "jboss.messaging.destination:service=Queue,name=Queue2");               	
-      	
+         ServerManagement.setAttribute(ServerManagement.getServerPeerObjectName(),
+                 "DefaultDLQ", "jboss.messaging.destination:service=Queue,name=Queue2");
+
          // Create the consumer before the producer so that the message we send doesn't
          // get lost if the destination is a Topic.
-         Session consumingSession = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);         
+         Session consumingSession = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
          MessageConsumer destinationConsumer;
-         
+
          if (queue)
          {
             destinationConsumer = consumingSession.createConsumer(destination);
          }
          else
          {
-         	//For topics we only keep a delivery record on the server side for durable subs         	
-         	destinationConsumer = consumingSession.createDurableSubscriber((Topic)destination, "testsub1");
+            //For topics we only keep a delivery record on the server side for durable subs
+            destinationConsumer = consumingSession.createDurableSubscriber((Topic) destination, "testsub1");
          }
-         
+
          {
             Session producingSession = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
             MessageProducer prod = producingSession.createProducer(destination);
@@ -827,8 +772,8 @@ public class DLQTest extends JMSTestCase
 
          // Make delivery attempts up to the maximum. The message should not end up in the DLQ.
          for (int i = 0; i < destMaxDeliveryAttempts; i++)
-         {         	         
-            TextMessage tm = (TextMessage)destinationConsumer.receive(1000);
+         {
+            TextMessage tm = (TextMessage) destinationConsumer.receive(1000);
             assertNotNull("No message received on delivery attempt number " + (i + 1), tm);
             assertEquals("Message", tm.getText());
             consumingSession.recover();
@@ -836,26 +781,26 @@ public class DLQTest extends JMSTestCase
 
          // At this point the message should not yet be in the DLQ
          checkEmpty(queue2);
-         
+
          // Now we try to consume the message again from the destination, which causes it
          // to go to the DLQ instead.
          Message m = destinationConsumer.receive(100);
          assertNull(m);
-         
+
          // The message should be in the DLQ now
          MessageConsumer dlqConsumer = consumingSession.createConsumer(queue2);
          m = dlqConsumer.receive(1000);
          assertNotNull(m);
          assertTrue(m instanceof TextMessage);
          assertEquals("Message", ((TextMessage) m).getText());
-         
+
          m.acknowledge();
-         
+
          if (!queue)
          {
-         	destinationConsumer.close();
-         	
-         	consumingSession.unsubscribe("testsub1");
+            destinationConsumer.close();
+
+            consumingSession.unsubscribe("testsub1");
          }
       }
       finally
@@ -870,35 +815,35 @@ public class DLQTest extends JMSTestCase
    // Private -------------------------------------------------------
 
    // Inner classes -------------------------------------------------
-   
+
    class FailingMessageListener implements MessageListener
    {
       volatile int deliveryCount;
-      
+
       int numMessages;
-      
+
       FailingMessageListener(int numMessages)
       {
-      	this.numMessages = numMessages;
+         this.numMessages = numMessages;
       }
-      
+
       synchronized void waitForMessages() throws Exception
       {
-      	while (deliveryCount != numMessages)
+         while (deliveryCount != numMessages)
          {
-      		this.wait();
+            this.wait();
          }
       }
-      
+
       public synchronized void onMessage(Message msg)
       {
          deliveryCount++;
-         
+
          this.notify();
-         
+
          throw new RuntimeException("Your mum!");
       }
-      
+
    }
 
 }

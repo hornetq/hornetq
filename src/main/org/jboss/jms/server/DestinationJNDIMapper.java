@@ -21,26 +21,17 @@
   */
 package org.jboss.jms.server;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
+import org.jboss.jms.destination.*;
+import org.jboss.jms.exception.MessagingJMSException;
+import org.jboss.jms.server.destination.ManagedDestination;
+import org.jboss.logging.Logger;
+import org.jboss.messaging.util.JNDIUtil;
 
 import javax.jms.InvalidDestinationException;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NameNotFoundException;
-
-import org.jboss.jms.destination.JBossDestination;
-import org.jboss.jms.destination.JBossQueue;
-import org.jboss.jms.destination.JBossTemporaryQueue;
-import org.jboss.jms.destination.JBossTemporaryTopic;
-import org.jboss.jms.destination.JBossTopic;
-import org.jboss.jms.exception.MessagingJMSException;
-import org.jboss.jms.server.destination.ManagedDestination;
-import org.jboss.logging.Logger;
-import org.jboss.messaging.util.JNDIUtil;
+import java.util.*;
 
 /**
  * Keeps track of destinations - including temporary destinations
@@ -94,7 +85,7 @@ class DestinationJNDIMapper implements DestinationManager
          if (jndiName == null)
          {
             parentContext = destination.isQueue() ?
-               serverPeer.getDefaultQueueJNDIContext() : serverPeer.getDefaultTopicJNDIContext();
+               serverPeer.getConfiguration().getDefaultQueueJNDIContext() : serverPeer.getConfiguration().getDefaultTopicJNDIContext();
    
             jndiNameInContext = destination.getName();
             jndiName = parentContext + "/" + jndiNameInContext;
@@ -240,8 +231,8 @@ class DestinationJNDIMapper implements DestinationManager
       initialContext = new InitialContext();
 
       // see if the default queue/topic contexts are there, and if they're not, create them
-      createContext(serverPeer.getDefaultQueueJNDIContext());
-      createContext(serverPeer.getDefaultTopicJNDIContext());
+      createContext(serverPeer.getConfiguration().getDefaultQueueJNDIContext());
+      createContext(serverPeer.getConfiguration().getDefaultTopicJNDIContext());
    }
 
    public void stop() throws Exception
@@ -261,8 +252,8 @@ class DestinationJNDIMapper implements DestinationManager
          unregisterDestination((ManagedDestination)i.next());
       }
 
-      initialContext.unbind(serverPeer.getDefaultQueueJNDIContext());
-      initialContext.unbind(serverPeer.getDefaultTopicJNDIContext());
+      initialContext.unbind(serverPeer.getConfiguration().getDefaultQueueJNDIContext());
+      initialContext.unbind(serverPeer.getConfiguration().getDefaultTopicJNDIContext());
 
       initialContext.close();
    }

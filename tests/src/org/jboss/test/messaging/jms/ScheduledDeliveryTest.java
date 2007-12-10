@@ -21,15 +21,9 @@
  */
 package org.jboss.test.messaging.jms;
 
-import javax.jms.Connection;
-import javax.jms.MessageConsumer;
-import javax.jms.MessageProducer;
-import javax.jms.Session;
-import javax.jms.TextMessage;
-import javax.management.ObjectName;
-
 import org.jboss.jms.message.JBossMessage;
-import org.jboss.test.messaging.tools.ServerManagement;
+
+import javax.jms.*;
 
 /**
  * 
@@ -77,7 +71,7 @@ public class ScheduledDeliveryTest extends JMSTestCase
          conn = cf.createConnection();
          
          Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         
+         Queue queue1 = (Queue) getInitialContext().lookup("/queue/testQueue");
          MessageProducer prod = sess.createProducer(queue1);
          
          //Send one scheduled
@@ -128,9 +122,9 @@ public class ScheduledDeliveryTest extends JMSTestCase
          
          conn.close();
 
-         ServerManagement.stopServerPeer();
+         stop();
          
-         ServerManagement.startServerPeer();
+         start();
          
          // Messaging server restart implies new ConnectionFactory lookup
          deployAndLookupAdministeredObjects();
@@ -219,44 +213,38 @@ public class ScheduledDeliveryTest extends JMSTestCase
    }
    
    public void testDelayedRedeliveryDefault() throws Exception
-   {   
-      ObjectName serverPeerObjectName = ServerManagement.getServerPeerObjectName();
+   {
   	 
    	try
-   	{     
-	      ObjectName queueObjectName = new ObjectName("jboss.messaging.destination:service=Queue,name=Queue1");            
-	      
-	      ServerManagement.setAttribute(queueObjectName, "RedeliveryDelay", "-1");
-	            
-	      long delay = 3000;
-	      
-	      ServerManagement.setAttribute(serverPeerObjectName, "DefaultRedeliveryDelay", String.valueOf(delay));
-	      
+   	{
+
+         setRedeliveryDelayOnDestination("Queue1", true, -1);
+
+         long delay = 3000;
+
+	      setDefaultRedeliveryDelay(delay);
 	      this.delayedRedeliveryDefaultOnClose(delay);
 	      
 	      this.delayedRedeliveryDefaultOnRollback(delay);            
    	}
    	finally
    	{
-   		ServerManagement.setAttribute(serverPeerObjectName, "DefaultRedeliveryDelay", "0");	
+   		setDefaultRedeliveryDelay(0);
    		
    		removeAllMessages(queue1.getQueueName(), true, 0);
    	}
    }
-   
+
    public void testDelayedRedeliveryOverride() throws Exception
-   {   
-   	ObjectName serverPeerObjectName = ServerManagement.getServerPeerObjectName();
-   	
-	   ObjectName queueObjectName = new ObjectName("jboss.messaging.destination:service=Queue,name=Queue1");            	   
+   {              	   
     	 
    	try
    	{     
 		   long delay = 6000;
 		         
-		   ServerManagement.setAttribute(queueObjectName, "RedeliveryDelay", String.valueOf(delay));
+		   setRedeliveryDelayOnDestination("Queue1", true, delay);
 		         
-		   ServerManagement.setAttribute(serverPeerObjectName, "DefaultRedeliveryDelay", "3000");
+		   setDefaultRedeliveryDelay(3000);
 		   
 		   this.delayedRedeliveryDefaultOnClose(delay);
 		   
@@ -264,9 +252,9 @@ public class ScheduledDeliveryTest extends JMSTestCase
    	}
    	finally
    	{
-   		ServerManagement.setAttribute(serverPeerObjectName, "DefaultRedeliveryDelay", "0");	      
+   		setDefaultRedeliveryDelay(0);
    		
-   		ServerManagement.setAttribute(queueObjectName, "RedeliveryDelay", "-1");
+   		setRedeliveryDelayOnDestination("Queue1", true, -1);
    		
    		removeAllMessages(queue1.getQueueName(), true, 0);
    	}
@@ -283,8 +271,7 @@ public class ScheduledDeliveryTest extends JMSTestCase
 
       // Some tests here are changing this attribute.. what would affect tests later
       // Instead of restart the ServerPeer I'm just restoring the default
-      ServerManagement.setAttribute(ServerManagement.getServerPeerObjectName(),
-         "DefaultRedeliveryDelay", "0");
+      setDefaultRedeliveryDelay(0);
    }
 
    // Private -------------------------------------------------------

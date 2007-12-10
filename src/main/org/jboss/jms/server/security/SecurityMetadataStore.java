@@ -21,23 +21,25 @@
   */
 package org.jboss.jms.server.security;
 
-import java.security.Principal;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-
-import javax.jms.JMSSecurityException;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
-import javax.security.auth.Subject;
-
 import org.jboss.jms.server.SecurityStore;
+import org.jboss.jms.server.ServerPeer;
 import org.jboss.logging.Logger;
 import org.jboss.security.AuthenticationManager;
 import org.jboss.security.RealmMapping;
 import org.jboss.security.SimplePrincipal;
 import org.jboss.security.SubjectSecurityManager;
-import org.w3c.dom.Element;
+
+import javax.jms.JMSSecurityException;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+import javax.security.auth.Subject;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.security.Principal;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * A security metadate store for JMS. Stores security information for destinations and delegates
@@ -47,6 +49,7 @@ import org.w3c.dom.Element;
  * @author <a href="mailto:Scott.Stark@jboss.org">Scott Stark</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
+ * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  * @version $Revision$
  *
  * $Id$
@@ -56,7 +59,7 @@ public class SecurityMetadataStore implements SecurityStore
    // Constants -----------------------------------------------------
    
    private static final Logger log = Logger.getLogger(SecurityMetadataStore.class);
-   
+
    public static final String SUCKER_USER = "JBM.SUCKER";
    
    public static final String DEFAULT_SUCKER_USER_PASSWORD = "CHANGE ME!!";
@@ -65,65 +68,93 @@ public class SecurityMetadataStore implements SecurityStore
    
    private boolean trace = log.isTraceEnabled();
    
-   private Map queueSecurityConf;
-   private Map topicSecurityConf;
+   private Map<String, SecurityMetadata> queueSecurityConf;
+   private Map<String, SecurityMetadata> topicSecurityConf;
 
    private AuthenticationManager authenticationManager;
    private RealmMapping realmMapping;
-   
-   private Element defaultSecurityConfig;
-   private String securityDomain;
-      
+
    private String suckerPassword;
+
+   private ServerPeer serverPeer;
 
    // Static --------------------------------------------------------
    
    // Constructors --------------------------------------------------
 
-   public SecurityMetadataStore()
+   public SecurityMetadataStore(ServerPeer serverPeer)
    {
-      queueSecurityConf = new HashMap();
-      topicSecurityConf = new HashMap();
+      this.serverPeer = serverPeer;
+      queueSecurityConf = new HashMap<String, SecurityMetadata>();
+      topicSecurityConf = new HashMap<String, SecurityMetadata>();
+      //add a property change listener then we can update the default security config
+      serverPeer.getConfiguration().addPropertyChangeListener(new PropertyChangeListener()
+         {
+            public void propertyChange(PropertyChangeEvent evt)
+            {
+               if(evt.getPropertyName().equals("securityConfig"))
+               {
+                  HashSet<Role> roles = (HashSet<Role>) evt.getNewValue();
+                  for (String key : queueSecurityConf.keySet())
+                  {
+                     if(evt.getNewValue() != null)
+                        queueSecurityConf.put(key, new SecurityMetadata(roles));
+                     else
+                        queueSecurityConf.put(key, new SecurityMetadata());
+                  }
+                  for (String key : topicSecurityConf.keySet())
+                  {
+                     if(evt.getNewValue() != null)
+                        topicSecurityConf.put(key, new SecurityMetadata(roles));
+                     else
+                        topicSecurityConf.put(key, new SecurityMetadata());
+                  }
+               }
+            }
+         });
    }
 
    // SecurityManager implementation --------------------------------
 
    public SecurityMetadata getSecurityMetadata(boolean isQueue, String destName)
    {
-      SecurityMetadata m = (SecurityMetadata)
-         (isQueue ? queueSecurityConf.get(destName) : topicSecurityConf.get(destName));
+      SecurityMetadata m = (isQueue ? queueSecurityConf.get(destName) : topicSecurityConf.get(destName));
 
       if (m == null)
       {
          // No SecurityMetadata was configured for the destination, apply the default
-         if (defaultSecurityConfig != null)
-         {
-            log.debug("No SecurityMetadadata was available for " + destName + ", using default security config");
-            try
-            {
-               m = new SecurityMetadata(defaultSecurityConfig);
-            }
-            catch (Exception e)
-            {
-               log.warn("Unable to apply default security for destName, using guest " + destName, e);
-               m = new SecurityMetadata();
-            }
-         }
-         else
-         {
-            // default to guest
-            log.warn("No SecurityMetadadata was available for " + destName + ", adding guest");
-            m = new SecurityMetadata();
-         }
+         m = getDefaultSecurityConfig(destName);
 
-         // don't cache it! this way the callers will be able to take advantage of default security
-         // configuration updates
-         // securityConf.put(destName, m);
       }
       return m;
    }
 
-   public void setSecurityConfig(boolean isQueue, String destName, Element conf) throws Exception
+   private SecurityMetadata getDefaultSecurityConfig(String destName)
+   {
+      SecurityMetadata m;
+      if (serverPeer.getConfiguration().getSecurityConfig() != null)
+      {
+         log.debug("No SecurityMetadadata was available for " + destName + ", using default security config");
+         try
+         {
+            m = new SecurityMetadata(serverPeer.getConfiguration().getSecurityConfig());
+         }
+         catch (Exception e)
+         {
+            log.warn("Unable to apply default security for destName, using guest " + destName, e);
+            m = new SecurityMetadata();
+         }
+      }
+      else
+      {
+         // default to guest
+         log.warn("No SecurityMetadadata was available for " + destName + ", adding guest");
+         m = new SecurityMetadata();
+      }
+      return m;
+   }
+
+   public void setSecurityConfig(boolean isQueue, String destName, HashSet<Role> conf) throws Exception
    {
       if (trace) { log.trace("adding security configuration for " + (isQueue ? "queue " : "topic ") + destName); }
       
@@ -241,7 +272,7 @@ public class SecurityMetadataStore implements SecurityStore
 
       try
       {
-         Object mgr = ic.lookup(securityDomain);
+         Object mgr = ic.lookup(serverPeer.getConfiguration().getSecurityDomain());
 
          log.debug("JaasSecurityManager is " + mgr);
 
@@ -253,12 +284,12 @@ public class SecurityMetadataStore implements SecurityStore
       catch (NamingException e)
       {
          // Apparently there is no security context, try adding java:/jaas
-         log.warn("Failed to lookup securityDomain " + securityDomain, e);
+         log.warn("Failed to lookup securityDomain " + serverPeer.getConfiguration().getSecurityDomain(), e);
 
-         if (!securityDomain.startsWith("java:/jaas/"))
+         if (!serverPeer.getConfiguration().getSecurityDomain().startsWith("java:/jaas/"))
          {
             authenticationManager =
-               (SubjectSecurityManager)ic.lookup("java:/jaas/" + securityDomain);
+               (SubjectSecurityManager)ic.lookup("java:/jaas/" + serverPeer.getConfiguration().getSecurityDomain());
          }
          else
          {
@@ -275,27 +306,7 @@ public class SecurityMetadataStore implements SecurityStore
    {
    }
 
-   public String getSecurityDomain()
-   {
-      return this.securityDomain;
-   }
 
-   public void setSecurityDomain(String securityDomain)
-   {
-      this.securityDomain = securityDomain;
-   }
-
-   public Element getDefaultSecurityConfig()
-   {
-      return this.defaultSecurityConfig;
-   }
-
-   public void setDefaultSecurityConfig(Element conf) throws Exception
-   {
-      // Force a parse
-      new SecurityMetadata(conf);
-      defaultSecurityConfig = conf;
-   }
 
    // Protected -----------------------------------------------------
 

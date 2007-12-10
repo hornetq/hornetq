@@ -21,17 +21,16 @@
   */
 package org.jboss.test.messaging.jms.stress;
 
+import org.jboss.jms.client.JBossSession;
+import org.jboss.jms.client.delegate.DelegateSupport;
+import org.jboss.jms.client.state.SessionState;
+import org.jboss.test.messaging.JBMServerTestCase;
+
 import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
 import javax.jms.Topic;
 import javax.jms.XASession;
 import javax.naming.InitialContext;
-
-import org.jboss.jms.client.JBossSession;
-import org.jboss.jms.client.delegate.DelegateSupport;
-import org.jboss.jms.client.state.SessionState;
-import org.jboss.test.messaging.MessagingTestCase;
-import org.jboss.test.messaging.tools.ServerManagement;
 
 /**
  * 
@@ -42,7 +41,7 @@ import org.jboss.test.messaging.tools.ServerManagement;
  *
  * $Id$
 */
-public class StressTestBase extends MessagingTestCase
+public class StressTestBase extends JBMServerTestCase
 {
    protected static final int NUM_PERSISTENT_MESSAGES = 4000;
    
@@ -75,8 +74,6 @@ public class StressTestBase extends MessagingTestCase
    {
       super.setUp();
       
-      ServerManagement.start("all");            
-      
       //We test with small values for paging params to really stress it
       
       final int fullSize = 2000;
@@ -85,17 +82,17 @@ public class StressTestBase extends MessagingTestCase
       
       final int downCacheSize = 300;
       
-      ServerManagement.deployQueue("Queue1", fullSize, pageSize, downCacheSize);
-      ServerManagement.deployQueue("Queue2", fullSize, pageSize, downCacheSize);
-      ServerManagement.deployQueue("Queue3", fullSize, pageSize, downCacheSize);
-      ServerManagement.deployQueue("Queue4", fullSize, pageSize, downCacheSize);
+      deployQueue("Queue1", fullSize, pageSize, downCacheSize);
+      deployQueue("Queue2", fullSize, pageSize, downCacheSize);
+      deployQueue("Queue3", fullSize, pageSize, downCacheSize);
+      deployQueue("Queue4", fullSize, pageSize, downCacheSize);
       
-      ServerManagement.deployTopic("Topic1", fullSize, pageSize, downCacheSize);
-      ServerManagement.deployTopic("Topic2", fullSize, pageSize, downCacheSize);
-      ServerManagement.deployTopic("Topic3", fullSize, pageSize, downCacheSize);
-      ServerManagement.deployTopic("Topic4", fullSize, pageSize, downCacheSize);
+      deployTopic("Topic1", fullSize, pageSize, downCacheSize);
+      deployTopic("Topic2", fullSize, pageSize, downCacheSize);
+      deployTopic("Topic3", fullSize, pageSize, downCacheSize);
+      deployTopic("Topic4", fullSize, pageSize, downCacheSize);
             
-      InitialContext ic = new InitialContext(ServerManagement.getJNDIEnvironment());
+      InitialContext ic = getInitialContext();
       cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
       
       queue1 = (Destination)ic.lookup("/queue/Queue1");
@@ -116,17 +113,15 @@ public class StressTestBase extends MessagingTestCase
    		fail("Message data still exists");
    	}
    	
-      ServerManagement.undeployQueue("Queue1");
-      ServerManagement.undeployQueue("Queue2");
-      ServerManagement.undeployQueue("Queue3");
-      ServerManagement.undeployQueue("Queue4");
+      undeployQueue("Queue1");
+      undeployQueue("Queue2");
+      undeployQueue("Queue3");
+      undeployQueue("Queue4");
 
-      ServerManagement.undeployTopic("Topic1");
-      ServerManagement.undeployTopic("Topic2");
-      ServerManagement.undeployTopic("Topic3");
-      ServerManagement.undeployTopic("Topic4");
-      
-      ServerManagement.stop();
+      undeployTopic("Topic1");
+      undeployTopic("Topic2");
+      undeployTopic("Topic3");
+      undeployTopic("Topic4");
       
       super.tearDown();            
    }

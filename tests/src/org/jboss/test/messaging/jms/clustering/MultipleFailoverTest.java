@@ -21,21 +21,13 @@
 */
 package org.jboss.test.messaging.jms.clustering;
 
+import org.jboss.jms.client.JBossConnection;
+import org.jboss.test.messaging.tools.ServerManagement;
+
+import javax.jms.*;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.TreeSet;
-
-import javax.jms.Connection;
-import javax.jms.DeliveryMode;
-import javax.jms.Message;
-import javax.jms.MessageConsumer;
-import javax.jms.MessageListener;
-import javax.jms.MessageProducer;
-import javax.jms.Session;
-import javax.jms.TextMessage;
-
-import org.jboss.jms.client.JBossConnection;
-import org.jboss.test.messaging.tools.ServerManagement;
 
 /**
  * A test where we kill multiple nodes and make sure the failover works correctly in these condtions
@@ -103,8 +95,8 @@ public class MultipleFailoverTest extends ClusteringTestBase
          log.info("########");
 
          ServerManagement.start(3, "all", false);
-         ServerManagement.deployQueue("testDistributedQueue", 3);
-         ServerManagement.deployTopic("testDistributedTopic", 3);
+         deployQueue("testDistributedQueue", 3);
+         deployTopic("testDistributedTopic", 3);
 
          // send/receive message
          prod.send(s.createTextMessage("step3"));
@@ -132,8 +124,8 @@ public class MultipleFailoverTest extends ClusteringTestBase
 
          ServerManagement.start(4, "all", false);
          log.info("deploying queue on4");
-         ServerManagement.deployQueue("testDistributedQueue", 4);
-         ServerManagement.deployTopic("testDistributedTopic", 4);
+         deployQueue("testDistributedQueue", 4);
+         deployTopic("testDistributedTopic", 4);
          log.info("deployed it");
 
          // send/receive message
@@ -161,8 +153,8 @@ public class MultipleFailoverTest extends ClusteringTestBase
          log.info("########");
 
          ServerManagement.start(1, "all", false);
-         ServerManagement.deployQueue("testDistributedQueue", 1);
-         ServerManagement.deployTopic("testDistributedTopic", 1);
+         deployQueue("testDistributedQueue", 1);
+         deployTopic("testDistributedTopic", 1);
 
          // send/receive message
          prod.send(s.createTextMessage("step7"));
@@ -353,9 +345,9 @@ public class MultipleFailoverTest extends ClusteringTestBase
             ServerManagement.start(1, "all", false);
             log.info("server 1 started");
             log.info("*** TRYING TO DEPLOY QUEUE");
-            ServerManagement.deployQueue("testDistributedQueue", 1);
+            deployQueue("testDistributedQueue", 1);
             log.info("DEPLOYED QUEUE");
-            ServerManagement.deployTopic("testDistributedTopic", 1);
+            deployTopic("testDistributedTopic", 1);
             log.info("Deployed destinations");
             
             Thread.sleep(5000);
@@ -368,8 +360,8 @@ public class MultipleFailoverTest extends ClusteringTestBase
             log.info("Starting server 2");
             ServerManagement.start(2, "all", false);
             log.info("server 2 started");
-            ServerManagement.deployQueue("testDistributedQueue", 2);
-            ServerManagement.deployTopic("testDistributedTopic", 2);
+            deployQueue("testDistributedQueue", 2);
+            deployTopic("testDistributedTopic", 2);
             log.info("Deployed destinations");            
             
             Thread.sleep(5000);
@@ -382,8 +374,8 @@ public class MultipleFailoverTest extends ClusteringTestBase
             log.info("Starting server 1");
             ServerManagement.start(1, "all", false);
             log.info("server 1 started");
-            ServerManagement.deployQueue("testDistributedQueue", 1);
-            ServerManagement.deployTopic("testDistributedTopic", 1);
+            deployQueue("testDistributedQueue", 1);
+            deployTopic("testDistributedTopic", 1);
             log.info("Deployed destinations");            
             
             
@@ -396,8 +388,8 @@ public class MultipleFailoverTest extends ClusteringTestBase
             
             log.info("Starting server 2");
             ServerManagement.start(2, "all", false);
-            ServerManagement.deployQueue("testDistributedQueue", 2);
-            ServerManagement.deployTopic("testDistributedTopic", 2);
+            deployQueue("testDistributedQueue", 2);
+            deployTopic("testDistributedTopic", 2);
             
             Thread.sleep(5000);
             
@@ -408,8 +400,8 @@ public class MultipleFailoverTest extends ClusteringTestBase
             
             log.info("Starting server 1");
             ServerManagement.start(1, "all", false);
-            ServerManagement.deployQueue("testDistributedQueue", 1);
-            ServerManagement.deployTopic("testDistributedTopic", 1);
+            deployQueue("testDistributedQueue", 1);
+            deployTopic("testDistributedTopic", 1);
             
             Thread.sleep(10000);
             

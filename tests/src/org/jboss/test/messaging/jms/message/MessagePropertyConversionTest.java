@@ -21,14 +21,9 @@
   */
 package org.jboss.test.messaging.jms.message;
 
-import javax.jms.Connection;
-import javax.jms.Message;
-import javax.jms.MessageConsumer;
-import javax.jms.MessageFormatException;
-import javax.jms.MessageProducer;
-import javax.jms.Session;
+import org.jboss.test.messaging.JBMServerTestCase;
 
-import org.jboss.test.messaging.jms.JMSTestCase;
+import javax.jms.*;
 
 /**
  * 
@@ -40,7 +35,7 @@ import org.jboss.test.messaging.jms.JMSTestCase;
  *
  * $Id$
  */
-public class MessagePropertyConversionTest extends JMSTestCase
+public class MessagePropertyConversionTest extends JBMServerTestCase
 {
    // Attributes ----------------------------------------------------
 
@@ -62,8 +57,8 @@ public class MessagePropertyConversionTest extends JMSTestCase
    {
       super.setUp();
 
-      producerConnection = cf.createConnection();
-      consumerConnection = cf.createConnection();
+      producerConnection = getConnectionFactory().createConnection();
+      consumerConnection = getConnectionFactory().createConnection();
 
       queueProducerSession = producerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
       queueConsumerSession = consumerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);

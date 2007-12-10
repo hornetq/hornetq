@@ -23,8 +23,8 @@ package org.jboss.test.messaging.tools.container;
 
 import java.io.Serializable;
 
-import org.jboss.invocation.Invocation;
-import org.jboss.invocation.Invoker;
+//import org.jboss.invocation.Invocation;
+//import org.jboss.invocation.Invoker;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
@@ -32,7 +32,7 @@ import org.jboss.invocation.Invoker;
  *
  * $Id$
  */
-class NoopInvoker implements Serializable, Invoker
+class NoopInvoker implements Serializable//, Invoker
 {
    // Constants -----------------------------------------------------
 	
@@ -51,10 +51,10 @@ class NoopInvoker implements Serializable, Invoker
       return "localhost";
    }
 
-   public Object invoke(Invocation invocation) throws Exception
+   /*public Object invoke(Invocation invocation) throws Exception
    {
       return null;
-   }
+   }*/
 
    // Public --------------------------------------------------------
 

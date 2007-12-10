@@ -22,19 +22,14 @@
 
 package org.jboss.test.messaging.jms.clustering;
 
-import java.util.Iterator;
-import java.util.Map;
-
-import javax.jms.Connection;
-import javax.jms.MessageConsumer;
-import javax.jms.MessageProducer;
-import javax.jms.Session;
-import javax.jms.TextMessage;
-
 import org.jboss.jms.client.FailoverEvent;
 import org.jboss.jms.client.JBossConnection;
 import org.jboss.jms.client.JBossConnectionFactory;
 import org.jboss.test.messaging.tools.ServerManagement;
+
+import javax.jms.*;
+import java.util.Iterator;
+import java.util.Map;
 
 /**
  * 
@@ -242,7 +237,7 @@ public class ChangeFailoverNodeTest extends ClusteringTestBase
 
          ServerManagement.start(4, "all", false);
 
-         ServerManagement.deployQueue("testDistributedQueue", 4);
+         deployQueue("testDistributedQueue", 4);
 
          Thread.sleep(8000);
 
@@ -409,7 +404,7 @@ public class ChangeFailoverNodeTest extends ClusteringTestBase
 
          ServerManagement.start(4, "all", false);
 
-         ServerManagement.deployQueue("testDistributedQueue", 4);
+         deployQueue("testDistributedQueue", 4);
 
          Thread.sleep(8000);
 

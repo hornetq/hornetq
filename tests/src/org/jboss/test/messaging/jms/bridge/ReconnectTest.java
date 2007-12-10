@@ -110,7 +110,7 @@ public class ReconnectTest extends BridgeTestBase
          assertTrue(bridge.isFailed());
 
          ServerManagement.start(1, "all", false);
-         ServerManagement.deployQueue("targetQueue", 1);         
+         deployQueue("targetQueue", 1);
          setUpAdministeredObjects();
          
          Thread.sleep(3000);
@@ -179,7 +179,7 @@ public class ReconnectTest extends BridgeTestBase
          
          ServerManagement.start(1, "all", false);
          
-         ServerManagement.deployQueue("targetQueue", 1);
+         deployQueue("targetQueue", 1);
          
          setUpAdministeredObjects();
          
@@ -256,7 +256,7 @@ public class ReconnectTest extends BridgeTestBase
          
          ServerManagement.start(1, "all", false);
          
-         ServerManagement.deployQueue("targetQueue", 1);
+         deployQueue("targetQueue", 1);
          
          setUpAdministeredObjects();
          

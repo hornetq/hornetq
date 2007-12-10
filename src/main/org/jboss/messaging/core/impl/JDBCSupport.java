@@ -21,29 +21,24 @@
  */
 package org.jboss.messaging.core.impl;
 
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Properties;
+import org.jboss.logging.Logger;
+import org.jboss.messaging.core.contract.MessagingComponent;
 
 import javax.sql.DataSource;
 import javax.transaction.Status;
 import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
-
-import org.jboss.logging.Logger;
-import org.jboss.messaging.core.contract.MessagingComponent;
-import org.jboss.util.NestedSQLException;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.*;
 
 /**
  * Common functionality for messaging components that need to access a database.
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  * @version <tt>$Revision: 2726 $</tt>
  *
  * $Id: JDBCSupport.java 2726 2007-05-24 19:25:06Z timfox $
@@ -52,53 +47,36 @@ import org.jboss.util.NestedSQLException;
 public class JDBCSupport implements MessagingComponent
 {
    private static final Logger log = Logger.getLogger(JDBCSupport.class);
-   
+
    private static boolean trace = log.isTraceEnabled();
-      
+
    protected DataSource ds;
-   
+
    private TransactionManager tm;
-      
+
    protected Properties sqlProperties;
-         
+
    private Map defaultDMLStatements;
-   
+
    private Map defaultDDLStatements;
-       
+
    private boolean createTablesOnStartup = true;
-      
+
    public JDBCSupport()
    {
       defaultDMLStatements = new LinkedHashMap();
-      
+
       defaultDDLStatements = new LinkedHashMap();
-      
+
       sqlProperties = new Properties();
    }
-   
-   public JDBCSupport(DataSource ds, TransactionManager tm, Properties sqlProperties,
-                      boolean createTablesOnStartup)
-   {
-      this();
-      
-      this.ds = ds;
-      
-      this.tm = tm;
-      
-      if (sqlProperties != null)
-      {
-         this.sqlProperties = sqlProperties;
-      }
-      
-      this.createTablesOnStartup = createTablesOnStartup;
-   }
-      
+
    // MessagingComponent overrides ---------------------------------
-   
+
    public void start() throws Exception
    {
       defaultDMLStatements.putAll(getDefaultDMLStatements());
-      
+
       defaultDDLStatements.putAll(getDefaultDDLStatements());
 
       // Make a copy without startup statements
@@ -131,68 +109,68 @@ public class JDBCSupport implements MessagingComponent
       if (!sqlPropertiesCopy.isEmpty())
       {
          iter = defaultDMLStatements.keySet().iterator();
-         
+
          while (iter.hasNext())
          {
             String statementName = (String)iter.next();
-            
+
             if (sqlProperties.get(statementName) == null)
             {
                throw new IllegalStateException("SQL statement " + statementName + " is not specified in the SQL properties");
             }
          }
-         
+
          iter = defaultDDLStatements.keySet().iterator();
-         
+
          while (iter.hasNext())
          {
             String statementName = (String)iter.next();
-            
+
             if (sqlPropertiesCopy.get(statementName) == null)
             {
                throw new IllegalStateException("SQL statement " + statementName + " is not specified in the SQL properties");
             }
          }
       }
-      
+
       if (createTablesOnStartup)
       {
          createSchema();
-      }     
+      }
       else
       {
         log.debug("Schema is not being created as createTablesOnStartup=" + createTablesOnStartup);
       }
    }
-   
+
    public void stop() throws Exception
    {
    }
-   
-   // Protected ----------------------------------------------------------     
-   
+
+   // Protected ----------------------------------------------------------
+
    protected String getSQLStatement(String statementName)
    {
       String defaultStatement = (String)defaultDMLStatements.get(statementName);
-      
+
       if (defaultStatement == null)
       {
          defaultStatement = (String)defaultDDLStatements.get(statementName);
       }
-      
+
       if (defaultStatement == null)
       {
          throw new IllegalArgumentException("No such SQL statement: " + statementName);
       }
-      
+
       return sqlProperties.getProperty(statementName, defaultStatement);
    }
-   
+
    protected Map getDefaultDMLStatements()
-   {                
+   {
       return Collections.EMPTY_MAP;
    }
-   
+
    protected Map getDefaultDDLStatements()
    {
       return Collections.EMPTY_MAP;
@@ -204,7 +182,7 @@ public class JDBCSupport implements MessagingComponent
    {
       return false;
    }
-   
+
    protected void closeResultSet(ResultSet rs)
    {
    	if (rs != null)
@@ -222,7 +200,7 @@ public class JDBCSupport implements MessagingComponent
          }
       }
    }
-   
+
    protected void closeStatement(Statement st)
    {
    	if (st != null)
@@ -240,7 +218,7 @@ public class JDBCSupport implements MessagingComponent
          }
       }
    }
-   
+
    protected void closeConnection(Connection conn)
    {
    	if (conn != null)
@@ -259,46 +237,46 @@ public class JDBCSupport implements MessagingComponent
       }
    }
    // Private ----------------------------------------------------------------
-              
+
    private void createSchema() throws Exception
-   {      
+   {
       // Postgresql will not process any further commands in a transaction after a create table
       // fails: org.postgresql.util.PSQLException: ERROR: current transaction is aborted, commands
       // ignored until end of transaction block. Therefore we need to ensure each CREATE is executed
       // in its own transaction
-                              
+
       for (Iterator i = defaultDDLStatements.keySet().iterator(); i.hasNext(); )
       {
-         Connection conn = null;      
-         
+         Connection conn = null;
+
          Statement st = null;
-                  
+
          TransactionWrapper tx = new TransactionWrapper();
-                  
+
          try
-         {                        
+         {
             conn = ds.getConnection();
-                        
+
             String statementName = (String)i.next();
-             
+
             String statement = getSQLStatement(statementName);
-            
+
             if (!"IGNORE".equals(statement))
-            {               
+            {
                try
                {
                   if (log.isTraceEnabled()) { log.trace("Executing: " + statement); }
-                      
+
                   st = conn.createStatement();
-                  
+
                   st.executeUpdate(statement);
                }
-               catch (Exception e) 
+               catch (Exception e)
                {
                   log.debug("Failed to execute: " + statement, e);
-                  
+
                   tx.exceptionOccurred();
-               }  
+               }
             }
             else
             {
@@ -308,29 +286,29 @@ public class JDBCSupport implements MessagingComponent
          finally
          {
          	closeStatement(st);
-         	
+
             closeConnection(conn);
-            
+
             tx.end();
-         } 
-      }                 
-   }      
-   
+         }
+      }
+   }
+
    // Innner classes ---------------------------------------------------------
-   
+
    protected class TransactionWrapper
    {
       private javax.transaction.Transaction oldTx;
-      
+
       private boolean failed;
-      
+
       public TransactionWrapper() throws Exception
       {
          oldTx = tm.suspend();
-         
+
          tm.begin();
       }
-      
+
       public void end() throws Exception
       {
          try
@@ -339,7 +317,7 @@ public class JDBCSupport implements MessagingComponent
             {
                failed = true;
                if (trace) { log.trace("Rolling back tx"); }
-               tm.rollback();               
+               tm.rollback();
             }
             else
             {
@@ -355,13 +333,13 @@ public class JDBCSupport implements MessagingComponent
                tm.resume(oldTx);
             }
          }
-      }      
-      
+      }
+
       public void exceptionOccurred() throws Exception
       {
          tm.setRollbackOnly();
       }
-      
+
       public boolean isFailed()
       {
          return failed;
@@ -394,7 +372,7 @@ public class JDBCSupport implements MessagingComponent
 	      finally
 	      {
             wrap.end();
-	      	closeConnection(conn);	         
+	      	closeConnection(conn);
 	      }
 		}
 
@@ -433,39 +411,28 @@ public class JDBCSupport implements MessagingComponent
 
 		public abstract T doTransaction() throws Exception;
    }
-   
-   
+
+
    protected abstract class JDBCTxRunner2<T>
    {
       private static final int MAX_TRIES = 25;
 
       protected Connection conn;
-      
-      private boolean getConnectionFailed;
 
       public T execute() throws Exception
-      {                    
+      {
          Transaction tx = tm.suspend();
 
          try
          {
-            try
-            {
-               conn = ds.getConnection();
-            
-               conn.setAutoCommit(false);
-            }
-            catch (Exception e)
-            {
-               getConnectionFailed = true;
-               
-               throw e;
-            }
-            
+            conn = ds.getConnection();
+
+            conn.setAutoCommit(false);
+
             T res = doTransaction();
-            
+
             conn.commit();
-            
+
             return res;
          }
          catch (Exception e)
@@ -478,17 +445,17 @@ public class JDBCSupport implements MessagingComponent
             {
                log.trace("Failed to rollback", t);
             }
-            
+
             throw e;
          }
          finally
          {
-            closeConnection(conn);  
-            
+            closeConnection(conn);
+
             if (tx != null)
             {
                tm.resume(tx);
-            }            
+            }
          }
       }
 
@@ -510,19 +477,13 @@ public class JDBCSupport implements MessagingComponent
             }
             catch (SQLException  e)
             {
-               if (getConnectionFailed)
-               {
-                  //Do not retry - just throw the exception up
-                  throw e;
-               }
-               
                log.warn("SQLException caught, SQLState " + e.getSQLState() + " code:" + e.getErrorCode() + "- assuming deadlock detected, try:" + (tries + 1), e);
 
                tries++;
                if (tries == MAX_TRIES)
                {
                   log.error("Retried " + tries + " times, now giving up");
-                  throw new IllegalStateException("Failed to execute transaction");
+                  throw new IllegalStateException("Failed to excecute transaction", e);
                }
                log.warn("Trying again after a pause");
                //Now we wait for a random amount of time to minimise risk of deadlock
@@ -534,4 +495,44 @@ public class JDBCSupport implements MessagingComponent
       public abstract T doTransaction() throws Exception;
    }
 
+   public TransactionManager getTm()
+    {
+        return tm;
+    }
+
+    public void setTm(TransactionManager tm)
+    {
+        this.tm = tm;
+    }
+
+    public Properties getSqlProperties()
+    {
+        return sqlProperties;
+    }
+
+    public void setSqlProperties(Properties sqlProperties)
+    {
+        this.sqlProperties = sqlProperties;
+    }
+
+    public boolean isCreateTablesOnStartup()
+    {
+        return createTablesOnStartup;
+    }
+
+    public void setCreateTablesOnStartup(boolean createTablesOnStartup)
+    {
+        this.createTablesOnStartup = createTablesOnStartup;
+    }
+
+
+    public DataSource getDs()
+    {
+        return ds;
+    }
+
+    public void setDs(DataSource ds)
+    {
+        this.ds = ds;
+    }
 }

@@ -21,11 +21,6 @@
   */
 package org.jboss.jms.client.remoting;
 
-import java.security.AccessController;
-import java.security.PrivilegedExceptionAction;
-import java.util.HashMap;
-import java.util.Map;
-
 import org.jboss.jms.server.ServerPeer;
 import org.jboss.jms.wireformat.JMSWireFormat;
 import org.jboss.logging.Logger;
@@ -41,6 +36,10 @@ import org.jboss.remoting.transport.socket.MicroSocketClientInvoker;
 import org.jboss.remoting.transport.socket.SocketServerInvoker;
 import org.jboss.util.id.GUID;
 
+import java.security.AccessController;
+import java.security.PrivilegedExceptionAction;
+import java.util.HashMap;
+import java.util.Map;
 
 
 /**

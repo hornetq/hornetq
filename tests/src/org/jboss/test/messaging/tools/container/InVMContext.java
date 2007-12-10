@@ -21,29 +21,13 @@
 */
 package org.jboss.test.messaging.tools.container;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-
-import javax.naming.Binding;
-import javax.naming.Context;
-import javax.naming.Name;
-import javax.naming.NameAlreadyBoundException;
-import javax.naming.NameNotFoundException;
-import javax.naming.NameParser;
-import javax.naming.NamingEnumeration;
-import javax.naming.NamingException;
-import javax.naming.RefAddr;
-import javax.naming.Reference;
-
+import org.jboss.jms.server.microcontainer.NonSerializableFactory;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.util.NotYetImplementedException;
-import org.jboss.util.naming.NonSerializableFactory;
+
+import javax.naming.*;
+import java.io.Serializable;
+import java.util.*;
 
 
 /**
@@ -67,6 +51,7 @@ public class InVMContext implements Context, Serializable
 
    protected Map map;
    protected NameParser parser = new InVMNameParser();
+   private String nameInNamespace = "";
 
    // Constructors --------------------------------------------------
 
@@ -75,6 +60,11 @@ public class InVMContext implements Context, Serializable
       map = Collections.synchronizedMap(new HashMap());
    }
 
+   public InVMContext(String nameInNamespace)
+   {
+      this();
+      this.nameInNamespace = nameInNamespace;
+   }
    // Context implementation ----------------------------------------
    
    public Object lookup(Name name) throws NamingException
@@ -133,7 +123,7 @@ public class InVMContext implements Context, Serializable
 
    public void unbind(Name name) throws NamingException
    {
-      throw new NotYetImplementedException();
+      unbind(name.toString());
    }
 
    public void unbind(String name) throws NamingException
@@ -209,7 +199,7 @@ public class InVMContext implements Context, Serializable
 
    public void destroySubcontext(Name name) throws NamingException
    {
-      throw new NotYetImplementedException();
+      destroySubcontext(name.toString());
    }
 
    public void destroySubcontext(String name) throws NamingException
@@ -229,7 +219,7 @@ public class InVMContext implements Context, Serializable
       {
          throw new NameAlreadyBoundException(name);
       }
-      InVMContext c = new InVMContext();
+      InVMContext c = new InVMContext(getNameInNamespace());
       map.put(name, c);
       return c;
    }
@@ -276,7 +266,11 @@ public class InVMContext implements Context, Serializable
 
    public Hashtable getEnvironment() throws NamingException
    {
-      throw new NotYetImplementedException();
+      Hashtable env = new Hashtable();
+      env.put("java.naming.factory.initial",
+              "org.jboss.test.messaging.tools.container.InVMInitialContextFactory");
+      env.put("java.naming.provider.url", "org.jboss.naming:org.jnp.interface");
+      return env;
    }
 
    public void close() throws NamingException
@@ -285,7 +279,7 @@ public class InVMContext implements Context, Serializable
 
    public String getNameInNamespace() throws NamingException
    {
-      throw new NotYetImplementedException();
+      return nameInNamespace;
    }
 
    // Public --------------------------------------------------------
@@ -322,7 +316,7 @@ public class InVMContext implements Context, Serializable
 
    private void internalBind(String name, Object obj, boolean rebind) throws NamingException
    {
-   	log.info("Binding " + name + " obj " + obj + " rebind " + rebind);
+   	log.debug("Binding " + name + " obj " + obj + " rebind " + rebind);
       name = trimSlashes(name);
       int i = name.lastIndexOf("/");
       InVMContext c = this;

@@ -21,26 +21,19 @@
 */
 package org.jboss.test.messaging.core;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-
-import org.jboss.messaging.core.contract.Delivery;
-import org.jboss.messaging.core.contract.Message;
-import org.jboss.messaging.core.contract.MessageReference;
-import org.jboss.messaging.core.contract.MessageStore;
-import org.jboss.messaging.core.contract.PersistenceManager;
-import org.jboss.messaging.core.contract.Receiver;
+import org.jboss.messaging.core.contract.*;
 import org.jboss.messaging.core.impl.IDManager;
-import org.jboss.messaging.core.impl.JDBCPersistenceManager;
 import org.jboss.messaging.core.impl.MessagingQueue;
 import org.jboss.messaging.core.impl.message.SimpleMessageStore;
 import org.jboss.messaging.core.impl.tx.Transaction;
 import org.jboss.messaging.core.impl.tx.TransactionRepository;
-import org.jboss.test.messaging.MessagingTestCase;
-import org.jboss.test.messaging.tools.container.ServiceContainer;
+import org.jboss.test.messaging.JBMServerTestCase;
 import org.jboss.test.messaging.util.CoreMessageFactory;
+
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * The QueueTest test strategy is to try as many combination as it makes sense of the following
@@ -68,7 +61,7 @@ import org.jboss.test.messaging.util.CoreMessageFactory;
  *
  * $Id: ChannelTestBase.java 1019 2006-07-17 17:15:04Z timfox $
  */
-public abstract class MessagingQueueTestBase extends MessagingTestCase
+public abstract class MessagingQueueTestBase extends JBMServerTestCase
 {
    // Constants -----------------------------------------------------
 
@@ -78,13 +71,10 @@ public abstract class MessagingQueueTestBase extends MessagingTestCase
    
    // Attributes ----------------------------------------------------
 
-   protected PersistenceManager pm;
-   
    protected TransactionRepository tr;
    
    protected MessageStore ms;
-   
-   protected ServiceContainer sc;
+
 
    protected MessagingQueue queue;
    
@@ -103,37 +93,25 @@ public abstract class MessagingQueueTestBase extends MessagingTestCase
    {
       super.setUp();
       
-      sc = new ServiceContainer("all,-remoting,-security");
-      sc.start();
-
-      pm = new JDBCPersistenceManager(sc.getDataSource(), sc.getTransactionManager(),
-                                      sc.getPersistenceManagerSQLProperties(),
-                                      true, true, true, false, 100, !sc.getDatabaseName().equals("oracle"));
-      ((JDBCPersistenceManager)pm).injectNodeID(1);
-      pm.start();
-      
-      idm = new IDManager("TRANSACTION_ID", 10, pm);
+      idm = new IDManager("TRANSACTION_ID", 10, getPersistenceManager());
       idm.start();
       
       ms = new SimpleMessageStore();
       ms.start();
       
-      tr = new TransactionRepository(pm, ms, idm);
+      tr = new TransactionRepository(getPersistenceManager(), ms, idm);
       tr.start();
       
    }
 
    public void tearDown() throws Exception
    {
-      sc.stop();
       
-      pm.stop();
+      getPersistenceManager().stop();
       idm.stop();
       tr.stop();
       ms.stop();
       
-      sc = null;   
-      pm = null;
       idm = null;
       ms = null;
       tr = null;

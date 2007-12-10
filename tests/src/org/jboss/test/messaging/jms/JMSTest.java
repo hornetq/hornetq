@@ -21,17 +21,10 @@
   */
 package org.jboss.test.messaging.jms;
 
-import javax.jms.Connection;
-import javax.jms.DeliveryMode;
-import javax.jms.Message;
-import javax.jms.MessageConsumer;
-import javax.jms.MessageListener;
-import javax.jms.MessageProducer;
-import javax.jms.Session;
-import javax.jms.TextMessage;
-import javax.naming.InitialContext;
-
 import EDU.oswego.cs.dl.util.concurrent.Slot;
+
+import javax.jms.*;
+import javax.naming.InitialContext;
 
 /**
  * The most comprehensive, yet simple, unit test.
@@ -60,7 +53,7 @@ public class JMSTest extends JMSTestCase
    }
 
    // Public --------------------------------------------------------
-   
+
    public void testNoop() throws Exception
    {
       log.info("noop");
@@ -69,32 +62,32 @@ public class JMSTest extends JMSTestCase
    public void test_NonPersistent_NonTransactional() throws Exception
    {
       Connection conn = null;
-      
+
       try
-      {	      
+      {
 	      conn = cf.createConnection();
-	
+
 	      Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-	
+
 	      MessageProducer prod = session.createProducer(queue1);
 	      prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
-	
+
 	      TextMessage m = session.createTextMessage("message one");
-	
+
 	      prod.send(m);
-	
+
 	      conn.close();
-	
+
 	      conn = cf.createConnection();
-	
+
 	      session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-	
+
 	      MessageConsumer cons = session.createConsumer(queue1);
-	
+
 	      conn.start();
-	
+
 	      TextMessage rm = (TextMessage)cons.receive();
-	
+
 	      assertEquals("message one", rm.getText());
       }
       finally
@@ -107,36 +100,36 @@ public class JMSTest extends JMSTestCase
    }
 
    public void test_CreateTextMessageNull() throws Exception
-   {      
+   {
       Connection conn = null;
-      
+
       try
-      {      
+      {
 	      conn = cf.createConnection();
-	
+
 	      Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-	
+
 	      MessageProducer prod = session.createProducer(queue1);
 	      prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
-	
+
 	      TextMessage m = session.createTextMessage();
-	
+
 	      m.setText("message one");
-	
+
 	      prod.send(m);
-	
+
 	      conn.close();
-	
+
 	      conn = cf.createConnection();
-	
+
 	      session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-	
+
 	      MessageConsumer cons = session.createConsumer(queue1);
-	
+
 	      conn.start();
-	
+
 	      TextMessage rm = (TextMessage)cons.receive();
-	
+
 	      assertEquals("message one", rm.getText());
       }
       finally
@@ -151,33 +144,33 @@ public class JMSTest extends JMSTestCase
    public void test_Persistent_NonTransactional() throws Exception
    {
       Connection conn = null;
-      
+
       try
-      {      
+      {
 	      conn = cf.createConnection();
-	
+
 	      Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-	
+
 	      MessageProducer prod = session.createProducer(queue1);
 	      prod.setDeliveryMode(DeliveryMode.PERSISTENT);
-	
+
 	      TextMessage m = session.createTextMessage("message one");
-	
+
 	      prod.send(m);
-	
+
 	      conn.close();
-	
+
 	      conn = cf.createConnection();
-	
+
 	      session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-	
+
 	      MessageConsumer cons = session.createConsumer(queue1);
-	
+
 	      conn.start();
-	
+
 	      TextMessage rm = (TextMessage)cons.receive();
-	
-	      assertEquals("message one", rm.getText());	
+
+	      assertEquals("message one", rm.getText());
 	   }
 	   finally
 	   {
@@ -191,33 +184,33 @@ public class JMSTest extends JMSTestCase
    public void test_NonPersistent_Transactional_Send() throws Exception
    {
       Connection conn = null;
-      
+
       try
-      {      
+      {
 	      conn = cf.createConnection();
-	
+
 	      Session session = conn.createSession(true, Session.SESSION_TRANSACTED);
-	
+
 	      MessageProducer prod = session.createProducer(queue1);
 	      prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
-	
+
 	      TextMessage m = session.createTextMessage("message one");
 	      prod.send(m);
 	      m = session.createTextMessage("message two");
 	      prod.send(m);
-	
+
 	      session.commit();
-	
+
 	      conn.close();
-	
+
 	      conn = cf.createConnection();
-	
+
 	      session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-	
+
 	      MessageConsumer cons = session.createConsumer(queue1);
-	
+
 	      conn.start();
-	
+
 	      TextMessage rm = (TextMessage)cons.receive();
 	      assertEquals("message one", rm.getText());
 	      rm = (TextMessage)cons.receive();
@@ -233,35 +226,35 @@ public class JMSTest extends JMSTestCase
    }
 
    public void test_Persistent_Transactional_Send() throws Exception
-   {      
+   {
       Connection conn = null;
-      
+
       try
-      {      
+      {
 	      conn = cf.createConnection();
-	
+
 	      Session session = conn.createSession(true, Session.SESSION_TRANSACTED);
-	
+
 	      MessageProducer prod = session.createProducer(queue1);
 	      prod.setDeliveryMode(DeliveryMode.PERSISTENT);
-	
+
 	      TextMessage m = session.createTextMessage("message one");
 	      prod.send(m);
 	      m = session.createTextMessage("message two");
 	      prod.send(m);
-	
+
 	      session.commit();
-	
+
 	      conn.close();
-	
+
 	      conn = cf.createConnection();
-	
+
 	      session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-	
+
 	      MessageConsumer cons = session.createConsumer(queue1);
-	
+
 	      conn.start();
-	
+
 	      TextMessage rm = (TextMessage)cons.receive();
 	      assertEquals("message one", rm.getText());
 	      rm = (TextMessage)cons.receive();
@@ -278,33 +271,33 @@ public class JMSTest extends JMSTestCase
 
 
    public void test_NonPersistent_Transactional_Acknowledgment() throws Exception
-   {      
+   {
       Connection conn = null;
-      
+
       try
-      {      
+      {
 	      conn = cf.createConnection();
-	
+
 	      Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-	
+
 	      MessageProducer prod = session.createProducer(queue1);
 	      prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
 	      TextMessage m = session.createTextMessage("one");
 	      prod.send(m);
-	
+
 	      conn.close();
-	
+
 	      conn = cf.createConnection();
-	
+
 	      session = conn.createSession(true, Session.SESSION_TRANSACTED);
-	
+
 	      MessageConsumer cons = session.createConsumer(queue1);
-	
+
 	      conn.start();
-	
+
 	      TextMessage rm = (TextMessage)cons.receive();
 	      assertEquals("one", rm.getText());
-	
+
 	      session.commit();
       }
 	   finally
@@ -319,19 +312,19 @@ public class JMSTest extends JMSTestCase
    public void test_Asynchronous_to_Client() throws Exception
    {
       Connection conn = null;
-      
+
       try
-      {      
+      {
 	      conn = cf.createConnection();
-	
+
 	      Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-	
+
 	      final MessageConsumer cons = session.createConsumer(queue1);
-	
+
 	      conn.start();
-	
+
 	      final Slot slot = new Slot();
-	
+
 	      new Thread(new Runnable()
 	      {
 	         public void run()
@@ -348,19 +341,19 @@ public class JMSTest extends JMSTestCase
 	            {
 	               log.error("receive failed", e);
 	            }
-	
+
 	         }
 	      }, "Receiving Thread").start();
-	
+
 	      MessageProducer prod = session.createProducer(queue1);
 	      prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
-	
+
 	      TextMessage m = session.createTextMessage("message one");
-	
+
 	      prod.send(m);
-	
+
 	      TextMessage rm = (TextMessage)slot.poll(5000);
-	
+
 	      assertEquals("message one", rm.getText());
       }
 	   finally
@@ -373,19 +366,19 @@ public class JMSTest extends JMSTestCase
    }
 
    public void test_MessageListener() throws Exception
-   {      
+   {
       Connection conn = null;
-      
+
       try
-      {      
+      {
 	      conn = cf.createConnection();
-	
+
 	      Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-	
+
 	      MessageConsumer cons = session.createConsumer(queue1);
-	
+
 	      final Slot slot = new Slot();
-	
+
 	      cons.setMessageListener(new MessageListener()
 	      {
 	         public void onMessage(Message m)
@@ -400,16 +393,16 @@ public class JMSTest extends JMSTestCase
 	            }
 	         }
 	      });
-	
+
 	      conn.start();
-	
+
 	      MessageProducer prod = session.createProducer(queue1);
 	      prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
 	      TextMessage m = session.createTextMessage("one");
 	      prod.send(m);
-	
+
 	      TextMessage rm = (TextMessage)slot.poll(5000);
-	
+
 	      assertEquals("one", rm.getText());
       }
 	   finally
@@ -424,28 +417,28 @@ public class JMSTest extends JMSTestCase
    public void test_ClientAcknowledge() throws Exception
    {
       Connection conn = null;
-      
+
       try
-      {      
+      {
 	      conn = cf.createConnection();
-	
+
 	      Session session = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
 	      MessageProducer p = session.createProducer(queue1);
 	      p.send(session.createTextMessage("CLACK"));
-	
+
 	      MessageConsumer cons = session.createConsumer(queue1);
-	
+
 	      conn.start();
-	
+
 	      TextMessage m = (TextMessage)cons.receive(1000);
-	
+
 	      assertEquals("CLACK", m.getText());
-	
+
 	      // make sure the message is still in "delivering" state
 	      assertRemainingMessages(1);
-	
+
 	      m.acknowledge();
-	
+
 	      assertRemainingMessages(0);
       }
 	   finally

@@ -21,20 +21,14 @@
   */
 package org.jboss.test.messaging.jms.server.connectionfactory;
 
-import javax.jms.Connection;
-import javax.jms.ConnectionFactory;
-import javax.jms.QueueConnectionFactory;
-import javax.jms.Session;
-import javax.jms.TopicConnectionFactory;
-import javax.jms.XAConnectionFactory;
-import javax.management.ObjectName;
-import javax.naming.NameNotFoundException;
-
 import org.jboss.jms.client.JBossMessageConsumer;
 import org.jboss.jms.client.delegate.ClientConsumerDelegate;
 import org.jboss.jms.client.state.ConsumerState;
-import org.jboss.test.messaging.jms.JMSTestCase;
-import org.jboss.test.messaging.tools.ServerManagement;
+import org.jboss.test.messaging.JBMServerTestCase;
+
+import javax.jms.*;
+import javax.naming.InitialContext;
+import javax.naming.NameNotFoundException;
 
 /**
  * Tests a deployed ConnectionFactory service.
@@ -44,7 +38,7 @@ import org.jboss.test.messaging.tools.ServerManagement;
  *
  * $Id$
  */
-public class ConnectionFactoryTest extends JMSTestCase
+public class ConnectionFactoryTest extends JBMServerTestCase
 {
    // Constants -----------------------------------------------------
 
@@ -53,10 +47,16 @@ public class ConnectionFactoryTest extends JMSTestCase
    // Attributes ----------------------------------------------------
 
    // Constructors --------------------------------------------------
-
+   InitialContext ic;
    public ConnectionFactoryTest(String name)
    {
       super(name);
+   }
+
+   protected void setUp() throws Exception
+   {
+      super.setUp();
+      ic = getInitialContext();
    }
 
    // Public --------------------------------------------------------
@@ -92,10 +92,10 @@ public class ConnectionFactoryTest extends JMSTestCase
 
    public void testDeployment() throws Exception
    {
-      String objectName = "somedomain:service=SomeConnectionFactory";
+      String objectName = "SomeConnectionFactory";
       String[] jndiBindings = new String[] { "/SomeConnectionFactory" };
 
-      ServerManagement.deployConnectionFactory(objectName, jndiBindings);
+      deployConnectionFactory(objectName, jndiBindings);
 
       ConnectionFactory cf = (ConnectionFactory)ic.lookup("/SomeConnectionFactory");
 
@@ -103,7 +103,7 @@ public class ConnectionFactoryTest extends JMSTestCase
       assertTrue(cf instanceof QueueConnectionFactory);
       assertTrue(cf instanceof TopicConnectionFactory);
 
-      ServerManagement.undeployConnectionFactory(new ObjectName(objectName));
+      undeployConnectionFactory(objectName);
 
       try
       {
@@ -118,12 +118,12 @@ public class ConnectionFactoryTest extends JMSTestCase
    
    public void testDeploymentWithPrefetch() throws Exception
    {
-      String objectName = "somedomain:service=SomeConnectionFactory";
+      String objectName = "SomeConnectionFactory";
       String[] jndiBindings = new String[] { "/SomeConnectionFactory" };
 
       final int prefetchSize = 777777;
       
-      ServerManagement.deployConnectionFactory(objectName, jndiBindings, prefetchSize);
+      deployConnectionFactory(objectName, jndiBindings, prefetchSize);
 
       ConnectionFactory cf = (ConnectionFactory)ic.lookup("/SomeConnectionFactory");
 
@@ -150,9 +150,9 @@ public class ConnectionFactoryTest extends JMSTestCase
 	      
 	      assertEquals(prefetchSize, size);
 	
-	      ServerManagement.undeployConnectionFactory(new ObjectName(objectName));
+	      undeployConnectionFactory(objectName);
 	      
-	      ServerManagement.undeployQueue("testQueue");
+	      undeployQueue("testQueue");
 	
 	      try
 	      {
@@ -177,7 +177,7 @@ public class ConnectionFactoryTest extends JMSTestCase
    {
       String objectName = "somedomain:service=SomeConnectionFactory";
       String[] jndiBindings = new String[] { "/name1", "/name2", "/name3" };
-      ServerManagement.deployConnectionFactory(objectName, jndiBindings);
+      deployConnectionFactory(objectName, jndiBindings);
 
       ConnectionFactory cf = (ConnectionFactory)ic.lookup("/name1");
       assertNotNull(cf);
@@ -188,7 +188,7 @@ public class ConnectionFactoryTest extends JMSTestCase
       cf = (ConnectionFactory)ic.lookup("/name2");
       assertNotNull(cf);
 
-      ServerManagement.undeployConnectionFactory(new ObjectName(objectName));
+      undeployConnectionFactory(objectName);
 
       try
       {
@@ -225,12 +225,12 @@ public class ConnectionFactoryTest extends JMSTestCase
    {
       String objectName = "somedomain:service=SomeConnectionFactory";
       String[] jndiBindings = new String[] { "/a/compound/jndi/name" };
-      ServerManagement.deployConnectionFactory(objectName, jndiBindings);
+      deployConnectionFactory(objectName, jndiBindings);
 
       ConnectionFactory cf = (ConnectionFactory)ic.lookup("/a/compound/jndi/name");
       assertNotNull(cf);
 
-      ServerManagement.undeployConnectionFactory(new ObjectName(objectName));
+      undeployConnectionFactory(objectName);
    }
 
    // Package protected ---------------------------------------------

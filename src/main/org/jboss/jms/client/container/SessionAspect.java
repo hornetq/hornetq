@@ -21,19 +21,6 @@
   */
 package org.jboss.jms.client.container;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-
-import javax.jms.IllegalStateException;
-import javax.jms.Message;
-import javax.jms.MessageListener;
-import javax.jms.ServerSessionPool;
-import javax.jms.Session;
-import javax.jms.TransactionInProgressException;
-
 import org.jboss.aop.joinpoint.Invocation;
 import org.jboss.aop.joinpoint.MethodInvocation;
 import org.jboss.jms.client.JBossConnectionConsumer;
@@ -46,21 +33,18 @@ import org.jboss.jms.delegate.DefaultCancel;
 import org.jboss.jms.delegate.DeliveryInfo;
 import org.jboss.jms.delegate.SessionDelegate;
 import org.jboss.jms.destination.JBossDestination;
-import org.jboss.jms.message.BytesMessageProxy;
-import org.jboss.jms.message.JBossBytesMessage;
-import org.jboss.jms.message.JBossMapMessage;
-import org.jboss.jms.message.JBossMessage;
-import org.jboss.jms.message.JBossObjectMessage;
-import org.jboss.jms.message.JBossStreamMessage;
-import org.jboss.jms.message.JBossTextMessage;
-import org.jboss.jms.message.MapMessageProxy;
-import org.jboss.jms.message.MessageProxy;
-import org.jboss.jms.message.ObjectMessageProxy;
-import org.jboss.jms.message.StreamMessageProxy;
-import org.jboss.jms.message.TextMessageProxy;
+import org.jboss.jms.message.*;
 import org.jboss.jms.tx.LocalTx;
 import org.jboss.jms.tx.ResourceManager;
 import org.jboss.logging.Logger;
+
+import javax.jms.IllegalStateException;
+import javax.jms.*;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * This aspect handles JMS session related logic
@@ -591,7 +575,7 @@ public class SessionAspect
       }
       finally
       {
-         // start new local tx
+         // startnew local tx
          Object xid = rm.createLocalTx();
          state.setCurrentTxId(xid);
       }

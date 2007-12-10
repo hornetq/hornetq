@@ -21,20 +21,8 @@
   */
 package org.jboss.jms.client.container;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-
-import javax.jms.IllegalStateException;
-import javax.jms.JMSException;
-import javax.jms.MessageListener;
-import javax.jms.Session;
-
-import org.jboss.jms.delegate.Cancel;
-import org.jboss.jms.delegate.ConsumerDelegate;
-import org.jboss.jms.delegate.DefaultCancel;
-import org.jboss.jms.delegate.DeliveryInfo;
-import org.jboss.jms.delegate.SessionDelegate;
+import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
+import org.jboss.jms.delegate.*;
 import org.jboss.jms.message.MessageProxy;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.contract.Message;
@@ -42,7 +30,13 @@ import org.jboss.messaging.util.Future;
 import org.jboss.messaging.util.prioritylinkedlist.BasicPriorityLinkedList;
 import org.jboss.messaging.util.prioritylinkedlist.PriorityLinkedList;
 
-import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
+import javax.jms.IllegalStateException;
+import javax.jms.JMSException;
+import javax.jms.MessageListener;
+import javax.jms.Session;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>

@@ -1,0 +1,12 @@
+Manifest-Version: 1.0
+Created-By: @JAVA_VM_VERSION@ (@JAVA_VM_VENDOR@)
+Specification-Title: @MODULE_NAME@
+Specification-Version: @MODULE_VERSION@
+Specification-Vendor: @MODULE_VENDOR@
+Implementation-Title: @MODULE_NAME@
+Implementation-URL: @MODULE_URL@
+Implementation-Version: @MODULE_IMPLEMENTATION_VERSION@
+Implementation-Vendor: @MODULE_VENDOR@
+Implementation-Vendor-Id: @MODULE_URL@
+Main-Class: org.jboss.jms.server.microcontainer.JBMBootstrapServer
+Class-Path: jboss-kernel.jar jboss-javaee.jar jboss-common.jar jboss-xml-binding.jar jboss-common-core.jar jboss-container.jar jboss-dependency.jar concurrent.jar jnp-client.jar jnpserver.jar xercesImpl.jar jgroups.jar jboss-remoting.jar commons-logging.jar hsqldb.jar jbossjta.jar jbossjta-integration.jar jbossts-common.jar jbosssx-client.jar jboss-system.jar jboss-jmx.jar jboss-aop-jdk50.jar trove.jar javassist.jar log4j.jar jboss-common-logging-spi.jar jboss-xml-binding.jar jboss-transaction-spi.jar jboss-security-spi.jar jboss-jaspi-api.jar jnpserver.jar

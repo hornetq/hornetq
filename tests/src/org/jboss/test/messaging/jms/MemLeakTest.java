@@ -21,37 +21,21 @@
   */
 package org.jboss.test.messaging.jms;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Map;
-
-import javax.jms.Connection;
-import javax.jms.ConnectionFactory;
-import javax.jms.DeliveryMode;
-import javax.jms.JMSException;
-import javax.jms.MessageConsumer;
-import javax.jms.MessageProducer;
-import javax.jms.ObjectMessage;
-import javax.jms.Queue;
-import javax.jms.Session;
-import javax.jms.TextMessage;
-import javax.management.MBeanServer;
-import javax.naming.InitialContext;
-
 import org.jboss.jms.client.JBossConnectionFactory;
 import org.jboss.logging.Logger;
 import org.jboss.profiler.jvmti.InventoryDataPoint;
 import org.jboss.profiler.jvmti.JVMTIInterface;
-import org.jboss.remoting.Client;
-import org.jboss.remoting.ConnectionListener;
-import org.jboss.remoting.InvocationRequest;
-import org.jboss.remoting.InvokerLocator;
-import org.jboss.remoting.ServerInvocationHandler;
-import org.jboss.remoting.ServerInvoker;
+import org.jboss.remoting.*;
 import org.jboss.remoting.callback.InvokerCallbackHandler;
 import org.jboss.remoting.transport.Connector;
-import org.jboss.test.messaging.MessagingTestCase;
-import org.jboss.test.messaging.tools.ServerManagement;
+import org.jboss.test.messaging.JBMServerTestCase;
+
+import javax.jms.*;
+import javax.management.MBeanServer;
+import javax.naming.InitialContext;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Map;
 
 /**
  * 
@@ -64,7 +48,7 @@ import org.jboss.test.messaging.tools.ServerManagement;
  *
  * $Id$
  */
-public class MemLeakTest extends MessagingTestCase
+public class MemLeakTest extends JBMServerTestCase
 {
    // Constants -----------------------------------------------------
 
@@ -100,24 +84,6 @@ public class MemLeakTest extends MessagingTestCase
 
    // TestCase overrides -------------------------------------------
 
-   public void setUp() throws Exception
-   {
-      super.setUp();
-
-      log.info("Setting up");
-
-      log.info("starting sc");
-      ServerManagement.start("all");
-      log.info("started serviceconatiner");      
-
-      log.debug("setup done");
-   }
-
-   public void tearDown() throws Exception {
-      super.tearDown();
-      ServerManagement.stop();
-
-   }
    
    /** @todo I can't execute this test if executed with testExpressionParginMessages. That's why I renamed it. */
    public void renamedtestNonTxSendReceiveNP() throws Exception
@@ -125,10 +91,10 @@ public class MemLeakTest extends MessagingTestCase
       log.info("testNonTxSendReceiveNP");
       //Thread.sleep(10000);
       
-      InitialContext initialContext = new InitialContext(ServerManagement.getJNDIEnvironment());
+      InitialContext initialContext = getInitialContext();
       ConnectionFactory cf = (JBossConnectionFactory)initialContext.lookup("/ConnectionFactory");
 
-      ServerManagement.deployQueue("Queue", 10000, 1000, 1000);
+      deployQueue("Queue", 10000, 1000, 1000);
       
       Queue queue = (Queue)initialContext.lookup("/queue/Queue");
       
@@ -204,10 +170,10 @@ public class MemLeakTest extends MessagingTestCase
       log.info("testExpressionParsingMessages");
       //Thread.sleep(10000);
       
-      InitialContext initialContext = new InitialContext(ServerManagement.getJNDIEnvironment());
+      InitialContext initialContext = getInitialContext();
       ConnectionFactory cf = (JBossConnectionFactory)initialContext.lookup("/ConnectionFactory");
 
-      ServerManagement.deployQueue("Queue", 10000, 1000, 1000);
+      deployQueue("Queue", 10000, 1000, 1000);
       
       Queue queue = (Queue)initialContext.lookup("/queue/Queue");
       

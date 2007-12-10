@@ -21,16 +21,11 @@
  */
 package org.jboss.test.messaging.jms;
 
-import java.net.SocketPermission;
-
-import javax.jms.Connection;
-import javax.jms.MessageConsumer;
-import javax.jms.MessageProducer;
-import javax.jms.Session;
-import javax.jms.TextMessage;
-
 import org.jboss.test.messaging.tools.ServerManagement;
 import org.jboss.test.messaging.tools.misc.ConfigurableSecurityManager;
+
+import javax.jms.*;
+import java.net.SocketPermission;
 
 /**
  * This test runs the JMS client in a restricted security environments.

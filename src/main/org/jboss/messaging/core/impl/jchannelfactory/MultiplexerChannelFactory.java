@@ -22,16 +22,15 @@
 
 package org.jboss.messaging.core.impl.jchannelfactory;
 
-import javax.management.MBeanServer;
-import javax.management.ObjectName;
-
 import org.jboss.messaging.core.contract.ChannelFactory;
 import org.jgroups.Channel;
+import org.jgroups.JChannelFactory;
 
 /**
  * A ChannelFactory that will use the MBean ChannelFactory interface
  *
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
+ * @author <a href="mailto:ataylor@redhat.com">Andy Taylor</a>
  * @version <tt>$Revision$</tt>
  * $Id$
  */
@@ -40,29 +39,23 @@ public class MultiplexerChannelFactory implements ChannelFactory
 
    // Constants ------------------------------------------------------------------------------------
 
-   private static final String[] MUX_SIGNATURE = new String[]{"java.lang.String",
-      "java.lang.String", "boolean", "java.lang.String"};
 
    // Attributes -----------------------------------------------------------------------------------
-   MBeanServer server;
-   ObjectName channelFactory;
+   JChannelFactory jChannelFactory;
    String dataStack;
    String controlStack;
    String uniqueID;
-   private static final String MUX_OPERATION = "createMultiplexerChannel";
 
    // Static ---------------------------------------------------------------------------------------
 
    // Constructors ---------------------------------------------------------------------------------
 
-   public MultiplexerChannelFactory(MBeanServer server,
-                                    ObjectName channelFactory,
+   public MultiplexerChannelFactory(JChannelFactory jChannelFactory,
                                     String uniqueID,
                                     String controlStack,
                                     String dataStack)
    {
-      this.server = server;
-      this.channelFactory = channelFactory;
+      this.jChannelFactory = jChannelFactory;
       this.uniqueID = uniqueID;
       this.dataStack = dataStack;
       this.controlStack = controlStack;
@@ -70,25 +63,6 @@ public class MultiplexerChannelFactory implements ChannelFactory
 
    // Public ---------------------------------------------------------------------------------------
 
-   public MBeanServer getServer()
-   {
-      return server;
-   }
-
-   public void setServer(MBeanServer server)
-   {
-      this.server = server;
-   }
-
-   public ObjectName getChannelFactory()
-   {
-      return channelFactory;
-   }
-
-   public void setChannelFactory(ObjectName channelFactory)
-   {
-      this.channelFactory = channelFactory;
-   }
 
    public String getDataStack()
    {
@@ -122,16 +96,12 @@ public class MultiplexerChannelFactory implements ChannelFactory
 
    public Channel createControlChannel() throws Exception
    {
-      return (Channel) server.invoke(this.channelFactory, MUX_OPERATION,
-         new Object[]{controlStack, uniqueID + "-CTRL", Boolean.TRUE, uniqueID}, MUX_SIGNATURE);
+      return jChannelFactory.createMultiplexerChannel(controlStack, uniqueID + "-CTRL", Boolean.TRUE, uniqueID);
    }
 
-   //Note that for the data channel we don't receive state immediately after connecting so third param
-   //must be false http://jira.jboss.com/jira/browse/JBMESSAGING-1120
    public Channel createDataChannel() throws Exception
    {
-      return (Channel) server.invoke(this.channelFactory, MUX_OPERATION,
-         new Object[]{dataStack, uniqueID + "-DATA", Boolean.FALSE, uniqueID}, MUX_SIGNATURE);
+      return jChannelFactory.createMultiplexerChannel(dataStack, uniqueID + "-DATA", Boolean.TRUE, uniqueID);
    }
 
    // Package protected ----------------------------------------------------------------------------

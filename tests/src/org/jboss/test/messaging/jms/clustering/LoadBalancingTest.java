@@ -6,10 +6,6 @@
  */
 package org.jboss.test.messaging.jms.clustering;
 
-import javax.jms.Connection;
-import javax.jms.ConnectionFactory;
-import javax.naming.InitialContext;
-
 import org.jboss.jms.client.JBossConnection;
 import org.jboss.jms.client.JBossConnectionFactory;
 import org.jboss.jms.client.delegate.ClientClusteredConnectionFactoryDelegate;
@@ -17,7 +13,10 @@ import org.jboss.jms.client.delegate.DelegateSupport;
 import org.jboss.jms.client.plugin.RoundRobinLoadBalancingPolicy;
 import org.jboss.jms.client.state.ConnectionState;
 import org.jboss.jms.tx.ResourceManagerFactory;
-import org.jboss.test.messaging.tools.ServerManagement;
+
+import javax.jms.Connection;
+import javax.jms.ConnectionFactory;
+import javax.naming.InitialContext;
 
 /**
  * This test DOESN'T extend ClusteringTestBase because I want to have control over first invocations
@@ -125,7 +124,7 @@ public class LoadBalancingTest extends ClusteringTestBase
       
       for (int i = 0; i < 10; i++)
       {
-         InitialContext ic = new InitialContext(ServerManagement.getJNDIEnvironment(0));
+         InitialContext ic = getInitialContext();
          ConnectionFactory cf = (ConnectionFactory)ic.lookup("/ClusteredConnectionFactory");
          Connection firstConnection = cf.createConnection();
          int serverPeerID = getServerId(firstConnection);

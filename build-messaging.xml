@@ -45,11 +45,11 @@
         Module name(s) & version.
    -->
 
-   <property name="messaging.version.major" value="1"/>
-   <property name="messaging.version.minor" value="4"/>
+   <property name="messaging.version.major" value="2"/>
+   <property name="messaging.version.minor" value="0"/>
    <property name="messaging.version.revision" value="0"/>
-   <property name="messaging.version.incrementing" value="19"/>
-   <property name="messaging.version.tag" value="SP1"/>
+   <property name="messaging.version.incrementing" value="0"/>
+   <property name="messaging.version.tag" value="alpha1"/>
    <property name="messaging.version.name" value="Stilton"/>
    <property name="messaging.version.cvstag" value="JBossMessaging_1_4_0_SP1"/>
    <property name="module.name" value="messaging"/>
@@ -110,6 +110,7 @@
    <property name="build.todo" value="${project.output}/todo"/>
    <property name="build.jar" value="${project.output}/jar"/>
    <property name="build.sar" value="${project.output}/sar"/>
+   <property name="build.embedded" value="${project.output}/embedded"/>
    <property name="project.thirdparty" value="${project.root}/thirdparty"/>
    <property name="release.output" value="${project.root}/release/jboss-messaging-${module.version}"/>
 
@@ -160,9 +161,15 @@
       <path refid="jboss.aop.classpath"/>
       <path refid="jboss.remoting.classpath"/>
       <path refid="jboss.jbossts14.classpath"/>
-      <path refid="jbossas.core.libs.classpath"/>
+      <!--<path refid="jbossas.core.libs.classpath"/>-->
       <!-- some components at JBoss use JBossSerialization (JCA for instance) -->
       <path refid="jboss.serialization.classpath"/>
+      <path refid="jboss.microcontainer.classpath"/>
+      <path refid="jboss.jboss.security.spi.classpath"/>
+      <path refid="jboss.jboss.jaspi.api.classpath"/>
+      <path refid="jboss.integration.classpath"/>
+      <path refid="jboss.jbosssx.client.classpath"/>
+      <path refid="jboss.jboss.javaee.classpath"/>
    </path>
 
    <!--
@@ -309,6 +316,18 @@
       </javadoc>
    </target>
 
+   <property name="jboss.home" value="${ENV.JBOSS_HOME}"/>
+    <property name="jboss.config" value="messaging"/>
+    <target name="deploy" depends="jar, sar">
+        <copy file="${build.lib}/jboss-${module.name}.jar"
+            todir="${jboss.home}/server/${jboss.config}/lib"/>
+       <!--<copy file="${build.lib}/jboss-${module.name}.sar"
+            todir="${jboss.home}/server/${jboss.config}/deploy"/>-->
+       <copy
+            todir="${jboss.home}/server/${jboss.config}/deploy/messaging.sar">
+          <fileset dir="${build.sar}"/>
+            </copy>
+    </target>
    <!-- ======================================================================================== -->
    <!-- Archival Tasks                                                                           -->
    <!-- ======================================================================================== -->
@@ -342,28 +361,122 @@
       </jar>
    </target>
 
+   <target name="embedded" depends="compile, jar, embedded-structure"/>
+   
    <target name="jar-structure">
 
       <mkdir dir="${build.jar}/META-INF"/>
       <mkdir dir="${build.jar}/xmdesc"/>
-      <copy todir="${build.jar}" file="${source.etc}/server/default/deploy/messaging-service.xml"/>
-      <copy todir="${build.jar}" file="${source.etc}/server/default/deploy/connection-factories-service.xml"/>
-      <copy todir="${build.jar}" file="${source.etc}/server/default/deploy/destinations-service.xml"/>
-      <copy todir="${build.jar}" file="${source.etc}/server/default/deploy/hsqldb-persistence-service.xml"/>
-      <copy todir="${build.jar}" file="${source.etc}/remoting/remoting-bisocket-service.xml"/>
       <copy file="${build.etc}/VERSION" toFile="${build.jar}/VERSION"/>
-      <copy todir="${build.jar}/xmdesc">
-         <fileset dir="${source.etc}/xmdesc" includes="*.xml"/>
-      </copy>
       <copy todir="${build.jar}" file="${source.etc}/aop-messaging-server.xml"/>
       <copy todir="${build.jar}" file="${source.etc}/aop-messaging-client.xml"/>
    </target>
 
    <target name="sar-structure" depends="jar-structure">
-      <copy todir="${build.sar}/META-INF" file="${source.etc}/server/default/deploy/jboss-service.xml"/>
+      <copy todir="${build.sar}/META-INF" file="${source.etc}/server/default/deploy/jbm-beans.xml"/>
+      <copy todir="${build.sar}" file="${source.etc}/server/default/deploy/jbm-configuration.xml"/>
    </target>
 
-   <target name="artifacts" depends="jar, sar, client-jar"/>
+   <target name="embedded-structure" depends="jar-structure">
+      <mkdir dir="${build.embedded}"/>
+      <mkdir dir="${build.embedded}/lib"/>
+      <copy todir="${build.embedded}">
+         <fileset dir="${source.etc}/server/standalone/">
+            <include name="**/*"/>
+         </fileset>
+      </copy>
+      <copy todir="${build.embedded}/config" file="${source.etc}/server/default/deploy/jbm-beans.xml"/>
+      <copy todir="${build.embedded}/config" file="${source.etc}/server/default/deploy/multiplexer-stacks.xml"/>
+      <copy todir="${build.embedded}/config" file="${source.etc}/server/default/deploy/jbm-configuration.xml"/>
+      <chmod file="${build.embedded}/run.sh" perm="755"/>
+      <jar jarfile="${build.embedded}/lib/jboss-${module.name}.jar" manifest="${build.etc}/embedded.mf">
+         <fileset dir="${build.classes}" includes="**"/>
+         <fileset dir="${build.jar}">
+            <exclude name="*-service.xml"/>
+            <exclude name="*-ds.xml"/>
+            <exclude name="messaging-*.properties"/>
+         </fileset>
+      </jar>
+      <copy todir="${build.embedded}/lib">
+         <fileset dir="${jboss.microcontainer.lib}">
+            <include name="jboss-container.jar"/>
+            <include name="jboss-kernel.jar"/>
+            <include name="jboss-dependency.jar"/>
+         </fileset>
+         <fileset dir="${jboss.jboss.javaee.lib}">
+            <include name="jboss-javaee.jar"/>
+         </fileset>
+         <fileset dir="${jboss.jboss.common.logging.spi.lib}">
+            <include name="jboss-common-logging-spi.jar"/>
+         </fileset>
+         <fileset dir="${jboss.jbossxb.lib}">
+            <include name="jboss-xml-binding.jar"/>
+         </fileset>
+         <fileset dir="${jboss.integration.lib}">
+            <include name="jboss-transaction-spi.jar"/>
+         </fileset>
+         <fileset dir="${jboss.jboss.security.spi.lib}">
+            <include name="jboss-security-spi.jar"/>
+         </fileset>
+         <fileset dir="${jboss.jboss.jaspi.api.lib}">
+            <include name="jboss-jaspi-api.jar"/>
+         </fileset>
+         <fileset dir="${jboss.jbosssx.client.lib}">
+            <include name="jbosssx-client.jar"/>
+         </fileset>
+         <!--<fileset dir="${jbossas.core.libs.lib}">
+            <include name="jboss-j2ee.jar"/>
+            <include name="jboss-common.jar"/>
+            <include name="jboss-xml-binding.jar"/>
+            <include name="jbosssx-client.jar"/>
+            <include name="jboss-system.jar"/>
+            <include name="jboss-jmx.jar"/>
+         </fileset>-->
+         <fileset dir="${jboss.common.core.lib}">
+            <include name="jboss-common-core.jar"/>
+         </fileset>
+         <fileset dir="${oswego.concurrent.lib}">
+            <include name="concurrent.jar"/>
+         </fileset>
+         <fileset dir="${apache.xerces.lib}">
+            <include name="xercesImpl.jar"/>
+         </fileset>
+         <fileset dir="${jgroups.jgroups.lib}">
+            <include name="jgroups.jar"/>
+         </fileset>
+         <fileset dir="${jboss.remoting.lib}">
+            <include name="jboss-remoting.jar"/>
+         </fileset>
+         <fileset dir="${apache.logging.lib}">
+            <include name="commons-logging.jar"/>
+         </fileset>
+         <fileset dir="${apache.log4j.lib}">
+            <include name="log4j.jar"/>
+         </fileset>
+         <fileset dir="${hsqldb.hsqldb.lib}">
+            <include name="hsqldb.jar"/>
+         </fileset>
+         <fileset dir="${jboss.jbossts14.lib}">
+            <include name="jbossjta.jar"/>
+            <include name="jbossts-common.jar"/>
+            <include name="jbossjta-integration.jar"/>
+         </fileset>
+         <fileset dir="${jboss.aop.lib}">
+            <include name="jboss-aop-jdk50.jar"/>
+         </fileset>
+         <fileset dir="${trove.lib}">
+            <include name="trove.jar"/>
+         </fileset>
+         <fileset dir="${javassist.lib}">
+            <include name="javassist.jar"/>
+         </fileset>
+         <fileset dir="${jboss.jnpserver.lib}">
+            <include name="jnpserver.jar"/>
+         </fileset>
+      </copy>
+   </target>
+
+   <target name="artifacts" depends="jar, sar, embedded, client-jar"/>
 
    <target name="client-jar" depends="compile">
       <mkdir dir="${build.lib}"/>
@@ -443,6 +556,10 @@
       <copy todir="${release.output}" file="${build.lib}/jboss-${module.name}-client.jar"/>
       <copy todir="${release.output}" file="./docs/README.html"/>
       <copy todir="${release.output}" file="./JBossORG-EULA.txt"/>
+      <mkdir dir="${release.output}/jboss-${module.name}"/>
+      <copy todir="${release.output}/jboss-${module.name}">
+         <fileset dir="${build.embedded}" includes="**/*"/>
+      </copy>
       <copy todir="${release.output}/api">
          <fileset dir="${build.api}" includes="**"/>
       </copy>

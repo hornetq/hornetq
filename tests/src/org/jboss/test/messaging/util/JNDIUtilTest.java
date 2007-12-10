@@ -21,19 +21,18 @@
 */
 package org.jboss.test.messaging.util;
 
+import org.jboss.messaging.util.JNDIUtil;
+import org.jboss.test.messaging.JBMServerTestCase;
+
 import javax.naming.InitialContext;
 import javax.naming.NameNotFoundException;
-
-import org.jboss.messaging.util.JNDIUtil;
-import org.jboss.test.messaging.MessagingTestCase;
-import org.jboss.test.messaging.tools.ServerManagement;
 
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  */
-public class JNDIUtilTest extends MessagingTestCase
+public class JNDIUtilTest extends JBMServerTestCase
 {
    // Constants -----------------------------------------------------
 
@@ -117,21 +116,13 @@ public class JNDIUtilTest extends MessagingTestCase
    {
       super.setUp();
 
-      ServerManagement.start("none");
+      //ServerManagement.start("none");
 
-      ic = new InitialContext(ServerManagement.getJNDIEnvironment());
+      ic = getInitialContext();
 
       log.debug("setup done");
    }
 
-   public void tearDown() throws Exception
-   {
-      super.tearDown();
-
-      ic.close();
-
-      ServerManagement.stop();
-   }
 
    // Private -------------------------------------------------------
 

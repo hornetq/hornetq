@@ -22,12 +22,14 @@
 package org.jboss.jms.server;
 
 import org.jboss.jms.client.plugin.LoadBalancingFactory;
-import org.jboss.jms.server.connectionfactory.JNDIBindings;
 import org.jboss.messaging.core.contract.MessagingComponent;
+
+import java.util.List;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  * @version <tt>$Revision$</tt>
  *          <p/>
  *          $Id$
@@ -38,7 +40,7 @@ public interface ConnectionFactoryManager extends MessagingComponent
     * @param jndiBindings - if null, the connection factory will be created and registered with the
     *        AOP subsystem, but not bound in JNDI.
     */
-   void registerConnectionFactory(String uniqueName, String clientID, JNDIBindings jndiBindings,
+   void registerConnectionFactory(String uniqueName, String clientID,  List<String> jndiBindings,
                                  String locatorURI, boolean clientPing,
                                  int prefetchSize,
                                  boolean slowConsumers,

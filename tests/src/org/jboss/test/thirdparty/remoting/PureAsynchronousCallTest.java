@@ -6,8 +6,8 @@
  */
 package org.jboss.test.thirdparty.remoting;
 
-import javax.management.ObjectName;
-
+import EDU.oswego.cs.dl.util.concurrent.Channel;
+import EDU.oswego.cs.dl.util.concurrent.LinkedQueue;
 import org.jboss.logging.Logger;
 import org.jboss.remoting.Client;
 import org.jboss.remoting.InvocationRequest;
@@ -23,8 +23,7 @@ import org.jboss.test.messaging.tools.container.ServiceContainer;
 import org.jboss.test.thirdparty.remoting.util.OnewayCallbackTrigger;
 import org.jboss.test.thirdparty.remoting.util.RemotingTestSubsystemService;
 
-import EDU.oswego.cs.dl.util.concurrent.Channel;
-import EDU.oswego.cs.dl.util.concurrent.LinkedQueue;
+import javax.management.ObjectName;
 
 /**
  * A test case in which we play with "pure" remoting asynchronous calls.

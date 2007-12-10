@@ -21,13 +21,13 @@
  */
 package org.jboss.test.thirdparty.remoting;
 
+import org.jboss.test.messaging.JBMServerTestCase;
+import org.jboss.test.messaging.tools.ServerManagement;
+
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.Queue;
 import javax.naming.InitialContext;
-
-import org.jboss.test.messaging.MessagingTestCase;
-import org.jboss.test.messaging.tools.ServerManagement;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -36,7 +36,7 @@ import org.jboss.test.messaging.tools.ServerManagement;
  * $Id$
  *
  */
-public class InvokerReferenceCountTest extends MessagingTestCase
+public class InvokerReferenceCountTest extends JBMServerTestCase
 {
    public InvokerReferenceCountTest(String name)
    {
@@ -49,9 +49,9 @@ public class InvokerReferenceCountTest extends MessagingTestCase
    {
       super.setUp();
       
-      ServerManagement.start("all");
+      //ServerManagement.start("all");
       
-      ServerManagement.deployQueue("testQueue");
+      deployQueue("testQueue");
       
       InitialContext ic = new InitialContext(ServerManagement.getJNDIEnvironment());
       
@@ -66,7 +66,7 @@ public class InvokerReferenceCountTest extends MessagingTestCase
    {
       super.tearDown();
       
-      ServerManagement.undeployQueue("testQueue");
+      undeployQueue("testQueue");
       
       ServerManagement.stop();
    }

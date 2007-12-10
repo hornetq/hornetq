@@ -21,6 +21,15 @@
  */
 package org.jboss.messaging.core.impl.postoffice;
 
+import org.jboss.logging.Logger;
+import org.jboss.messaging.core.contract.ChannelFactory;
+import org.jgroups.*;
+import org.jgroups.blocks.GroupRequest;
+import org.jgroups.blocks.MessageDispatcher;
+import org.jgroups.blocks.RequestHandler;
+import org.jgroups.util.Rsp;
+import org.jgroups.util.RspList;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
@@ -32,21 +41,6 @@ import java.util.Vector;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-
-import org.jboss.logging.Logger;
-import org.jboss.messaging.core.contract.ChannelFactory;
-import org.jgroups.Address;
-import org.jgroups.Channel;
-import org.jgroups.MembershipListener;
-import org.jgroups.Message;
-import org.jgroups.MessageListener;
-import org.jgroups.Receiver;
-import org.jgroups.View;
-import org.jgroups.blocks.GroupRequest;
-import org.jgroups.blocks.MessageDispatcher;
-import org.jgroups.blocks.RequestHandler;
-import org.jgroups.util.Rsp;
-import org.jgroups.util.RspList;
 
 /**
  * 

@@ -21,34 +21,26 @@
   */
 package org.jboss.test.messaging.core.paging;
 
+import org.jboss.jms.tx.MessagingXid;
+import org.jboss.messaging.core.contract.*;
+import org.jboss.messaging.core.impl.IDManager;
+import org.jboss.messaging.core.impl.SimpleDelivery;
+import org.jboss.messaging.core.impl.message.SimpleMessageStore;
+import org.jboss.messaging.core.impl.tx.Transaction;
+import org.jboss.messaging.core.impl.tx.TransactionRepository;
+import org.jboss.test.messaging.JBMServerTestCase;
+import org.jboss.tm.TransactionManagerLocator;
+import org.jboss.util.id.GUID;
+
+import javax.naming.InitialContext;
+import javax.sql.DataSource;
+import javax.transaction.TransactionManager;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-
-import javax.naming.InitialContext;
-import javax.sql.DataSource;
-import javax.transaction.TransactionManager;
-
-import org.jboss.jms.tx.MessagingXid;
-import org.jboss.messaging.core.contract.Delivery;
-import org.jboss.messaging.core.contract.DeliveryObserver;
-import org.jboss.messaging.core.contract.MessageReference;
-import org.jboss.messaging.core.contract.PersistenceManager;
-import org.jboss.messaging.core.contract.Queue;
-import org.jboss.messaging.core.contract.Receiver;
-import org.jboss.messaging.core.impl.IDManager;
-import org.jboss.messaging.core.impl.JDBCPersistenceManager;
-import org.jboss.messaging.core.impl.SimpleDelivery;
-import org.jboss.messaging.core.impl.message.SimpleMessageStore;
-import org.jboss.messaging.core.impl.tx.Transaction;
-import org.jboss.messaging.core.impl.tx.TransactionRepository;
-import org.jboss.test.messaging.MessagingTestCase;
-import org.jboss.test.messaging.tools.container.ServiceContainer;
-import org.jboss.tm.TransactionManagerService;
-import org.jboss.util.id.GUID;
 
 /**
  * 
@@ -59,7 +51,7 @@ import org.jboss.util.id.GUID;
  *
  * $Id$
  */
-public class PagingStateTestBase extends MessagingTestCase
+public class PagingStateTestBase extends JBMServerTestCase
 {
    // Constants -----------------------------------------------------
 
@@ -67,8 +59,6 @@ public class PagingStateTestBase extends MessagingTestCase
          
    // Attributes ----------------------------------------------------
 
-   protected ServiceContainer sc;
-   protected PersistenceManager pm;
    protected SimpleMessageStore ms;
    protected TransactionRepository tr;
    protected IDManager idm;
@@ -87,23 +77,19 @@ public class PagingStateTestBase extends MessagingTestCase
    {
       super.setUp();
 
-      sc = new ServiceContainer("all,-remoting,-security");
-      sc.start();
-
-      pm =
+      /*pm =
          new JDBCPersistenceManager(sc.getDataSource(), sc.getTransactionManager(),
                   sc.getPersistenceManagerSQLProperties(),
                   true, true, true, false, 100, !sc.getDatabaseName().equals("oracle"));  
-      ((JDBCPersistenceManager)pm).injectNodeID(1);
-      pm.start();
+      ((JDBCPersistenceManager)pm).injectNodeID(1);*/
  
-      idm = new IDManager("TRANSACTION_ID", 10, pm);
+      idm = new IDManager("TRANSACTION_ID", 10, getPersistenceManager());
       idm.start();
       
       ms = new SimpleMessageStore();
       ms.start();
       
-      tr = new TransactionRepository(pm, ms, idm);
+      tr = new TransactionRepository(getPersistenceManager(), ms, idm);
       tr.start();          
       
       ms.clear();
@@ -112,15 +98,12 @@ public class PagingStateTestBase extends MessagingTestCase
    
    public void tearDown() throws Exception
    {
-   	; 
    	if (checkNoMessageData())
    	{
    		fail("Message data still exists");
-   	}  	
-      pm.stop();
+   	}
       tr.stop();
       ms.stop();
-      sc.stop();     
       super.tearDown();
    }
    
@@ -412,9 +395,9 @@ public class PagingStateTestBase extends MessagingTestCase
    
    protected List getReferenceIdsOrderedByOrd(long queueId) throws Exception
    {
-      InitialContext ctx = new InitialContext();
+      InitialContext ctx = getInitialContext();
 
-      TransactionManager mgr = (TransactionManager)ctx.lookup(TransactionManagerService.JNDI_NAME);
+      TransactionManager mgr = TransactionManagerLocator.locateTransactionManager();
       DataSource ds = (DataSource)ctx.lookup("java:/DefaultDS");
       
       javax.transaction.Transaction txOld = mgr.suspend();
@@ -454,9 +437,9 @@ public class PagingStateTestBase extends MessagingTestCase
    
    protected List getReferenceIdsOrderedByPageOrd(long queueId) throws Exception
    {
-      InitialContext ctx = new InitialContext();
+      InitialContext ctx = getInitialContext();
 
-      TransactionManager mgr = (TransactionManager)ctx.lookup(TransactionManagerService.JNDI_NAME);
+      TransactionManager mgr = TransactionManagerLocator.locateTransactionManager();
       DataSource ds = (DataSource)ctx.lookup("java:/DefaultDS");
       
       javax.transaction.Transaction txOld = mgr.suspend();
@@ -496,9 +479,9 @@ public class PagingStateTestBase extends MessagingTestCase
    
    protected List getPagedReferenceIds(long queueId) throws Exception
    {
-      InitialContext ctx = new InitialContext();
+      InitialContext ctx = getInitialContext();
 
-      TransactionManager mgr = (TransactionManager)ctx.lookup(TransactionManagerService.JNDI_NAME);
+      TransactionManager mgr = TransactionManagerLocator.locateTransactionManager();
       DataSource ds = (DataSource)ctx.lookup("java:/DefaultDS");
       
       javax.transaction.Transaction txOld = mgr.suspend();
@@ -537,9 +520,9 @@ public class PagingStateTestBase extends MessagingTestCase
    
    protected List getMessageIds() throws Exception
    {
-      InitialContext ctx = new InitialContext();
+      InitialContext ctx = getInitialContext();
 
-      TransactionManager mgr = (TransactionManager)ctx.lookup(TransactionManagerService.JNDI_NAME);
+      TransactionManager mgr = TransactionManagerLocator.locateTransactionManager();
       DataSource ds = (DataSource)ctx.lookup("java:/DefaultDS");
       
       javax.transaction.Transaction txOld = mgr.suspend();

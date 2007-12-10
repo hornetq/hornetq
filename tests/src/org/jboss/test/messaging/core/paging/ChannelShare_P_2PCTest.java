@@ -21,13 +21,13 @@
   */
 package org.jboss.test.messaging.core.paging;
 
-import java.util.List;
-
 import org.jboss.messaging.core.contract.Message;
 import org.jboss.messaging.core.contract.MessageReference;
 import org.jboss.messaging.core.impl.MessagingQueue;
 import org.jboss.messaging.core.impl.tx.Transaction;
 import org.jboss.test.messaging.util.CoreMessageFactory;
+
+import java.util.List;
 
 
 /**
@@ -56,10 +56,10 @@ public class ChannelShare_P_2PCTest extends PagingStateTestBase
    
    public void test1() throws Throwable
    {
-      MessagingQueue queue1 = new MessagingQueue(1, "queue1", 1, ms, pm, true, -1, null, 100, 20, 10, false, 300000);
+      MessagingQueue queue1 = new MessagingQueue(1, "queue1", 1, ms, getPersistenceManager(), true, -1, null, 100, 20, 10, false, 300000);
       queue1.activate();
       
-      MessagingQueue queue2 = new MessagingQueue(1, "queue2", 2, ms, pm, true, -1, null, 50, 10, 5, false, 300000);
+      MessagingQueue queue2 = new MessagingQueue(1, "queue2", 2, ms, getPersistenceManager(), true, -1, null, 50, 10, 5, false, 300000);
       queue2.activate();                  
       
       Message[] msgs = new Message[150];

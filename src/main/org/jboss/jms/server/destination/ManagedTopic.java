@@ -21,11 +21,6 @@
  */
 package org.jboss.jms.server.destination;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-
 import org.jboss.jms.server.JMSCondition;
 import org.jboss.jms.server.messagecounter.MessageCounter;
 import org.jboss.jms.server.selector.Selector;
@@ -34,6 +29,11 @@ import org.jboss.messaging.core.contract.Binding;
 import org.jboss.messaging.core.contract.Message;
 import org.jboss.messaging.core.contract.Queue;
 import org.jboss.messaging.util.MessageQueueNameHelper;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * A ManagedTopic
@@ -61,7 +61,7 @@ public class ManagedTopic extends ManagedDestination
 
    public void removeAllMessages() throws Throwable
    {
-      Collection queues = serverPeer.getPostOfficeInstance().getQueuesForCondition(new JMSCondition(false, name), true);
+      Collection queues = serverPeer.getPostOffice().getQueuesForCondition(new JMSCondition(false, name), true);
    	
       //XXX How to lock down all subscriptions?
       Iterator iter = queues.iterator();
@@ -89,7 +89,7 @@ public class ManagedTopic extends ManagedDestination
    
    public int getAllSubscriptionsCount() throws Exception
    {
-      Collection queues = serverPeer.getPostOfficeInstance().getQueuesForCondition(new JMSCondition(false, name), true);
+      Collection queues = serverPeer.getPostOffice().getQueuesForCondition(new JMSCondition(false, name), true);
    	
       return queues.size();         
    }
@@ -156,7 +156,7 @@ public class ManagedTopic extends ManagedDestination
       List counters = new ArrayList();
       
       // We deploy any queues corresponding to pre-existing durable subscriptions
-      Collection queues = serverPeer.getPostOfficeInstance().getQueuesForCondition(new JMSCondition(false, name), true);
+      Collection queues = serverPeer.getPostOffice().getQueuesForCondition(new JMSCondition(false, name), true);
    	
       Iterator iter = queues.iterator();
       
@@ -164,7 +164,7 @@ public class ManagedTopic extends ManagedDestination
       {
          Queue queue = (Queue)iter.next();
          
-         String counterName = TopicService.SUBSCRIPTION_MESSAGECOUNTER_PREFIX + queue.getName();
+         String counterName = SUBSCRIPTION_MESSAGECOUNTER_PREFIX + queue.getName();
          
          MessageCounter counter = serverPeer.getMessageCounterManager().getMessageCounter(counterName);
          
@@ -211,7 +211,7 @@ public class ManagedTopic extends ManagedDestination
          return msgs;
       }
       
-      Binding binding = serverPeer.getPostOfficeInstance().getBindingForQueueName(subId);
+      Binding binding = serverPeer.getPostOffice().getBindingForQueueName(subId);
       
       if (binding == null || !binding.queue.isActive())
       {
@@ -251,7 +251,7 @@ public class ManagedTopic extends ManagedDestination
    {      
       List subs = new ArrayList();
    
-      Collection queues = serverPeer.getPostOfficeInstance().getQueuesForCondition(new JMSCondition(false, name), true);
+      Collection queues = serverPeer.getPostOffice().getQueuesForCondition(new JMSCondition(false, name), true);
    	
       Iterator iter = queues.iterator();
       
@@ -283,7 +283,7 @@ public class ManagedTopic extends ManagedDestination
    
    private int getMessageCount(int type) throws Exception
    {
-      Collection queues = serverPeer.getPostOfficeInstance().getQueuesForCondition(new JMSCondition(false, name), true);
+      Collection queues = serverPeer.getPostOffice().getQueuesForCondition(new JMSCondition(false, name), true);
    	
       Iterator iter = queues.iterator();
       
@@ -305,7 +305,7 @@ public class ManagedTopic extends ManagedDestination
    
    private int getSubscriptionsCount(boolean durable) throws Exception
    {
-      Collection queues = serverPeer.getPostOfficeInstance().getQueuesForCondition(new JMSCondition(false, name), true);
+      Collection queues = serverPeer.getPostOffice().getQueuesForCondition(new JMSCondition(false, name), true);
    	
       Iterator iter = queues.iterator();
       
@@ -327,7 +327,7 @@ public class ManagedTopic extends ManagedDestination
    
    private String listSubscriptionsAsHTML(int type) throws Exception
    {
-      Collection queues = serverPeer.getPostOfficeInstance().getQueuesForCondition(new JMSCondition(false, name), true);
+      Collection queues = serverPeer.getPostOffice().getQueuesForCondition(new JMSCondition(false, name), true);
    	  
       StringBuffer sb = new StringBuffer();
       

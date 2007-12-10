@@ -21,32 +21,14 @@
   */
 package org.jboss.jms.server.endpoint;
 
-import java.lang.ref.WeakReference;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import javax.jms.IllegalStateException;
-import javax.jms.InvalidDestinationException;
-import javax.jms.JMSException;
-
+import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
+import EDU.oswego.cs.dl.util.concurrent.LinkedQueue;
+import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
+import EDU.oswego.cs.dl.util.concurrent.SynchronizedLong;
 import org.jboss.aop.AspectManager;
 import org.jboss.jms.client.delegate.ClientBrowserDelegate;
 import org.jboss.jms.client.delegate.ClientConsumerDelegate;
-import org.jboss.jms.delegate.Ack;
-import org.jboss.jms.delegate.BrowserDelegate;
-import org.jboss.jms.delegate.Cancel;
-import org.jboss.jms.delegate.ConsumerDelegate;
-import org.jboss.jms.delegate.DeliveryInfo;
-import org.jboss.jms.delegate.DeliveryRecovery;
-import org.jboss.jms.delegate.SessionEndpoint;
+import org.jboss.jms.delegate.*;
 import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.destination.JBossQueue;
 import org.jboss.jms.destination.JBossTopic;
@@ -57,7 +39,6 @@ import org.jboss.jms.server.ServerPeer;
 import org.jboss.jms.server.destination.ManagedDestination;
 import org.jboss.jms.server.destination.ManagedQueue;
 import org.jboss.jms.server.destination.ManagedTopic;
-import org.jboss.jms.server.destination.TopicService;
 import org.jboss.jms.server.endpoint.advised.BrowserAdvised;
 import org.jboss.jms.server.endpoint.advised.ConsumerAdvised;
 import org.jboss.jms.server.messagecounter.MessageCounter;
@@ -65,18 +46,8 @@ import org.jboss.jms.server.selector.Selector;
 import org.jboss.jms.wireformat.ClientDelivery;
 import org.jboss.jms.wireformat.Dispatcher;
 import org.jboss.logging.Logger;
-import org.jboss.messaging.core.contract.Binding;
-import org.jboss.messaging.core.contract.Channel;
-import org.jboss.messaging.core.contract.Condition;
-import org.jboss.messaging.core.contract.Delivery;
-import org.jboss.messaging.core.contract.DeliveryObserver;
-import org.jboss.messaging.core.contract.Message;
-import org.jboss.messaging.core.contract.MessageReference;
-import org.jboss.messaging.core.contract.MessageStore;
-import org.jboss.messaging.core.contract.PersistenceManager;
-import org.jboss.messaging.core.contract.PostOffice;
+import org.jboss.messaging.core.contract.*;
 import org.jboss.messaging.core.contract.Queue;
-import org.jboss.messaging.core.contract.Replicator;
 import org.jboss.messaging.core.impl.IDManager;
 import org.jboss.messaging.core.impl.MessagingQueue;
 import org.jboss.messaging.core.impl.tx.Transaction;
@@ -90,10 +61,11 @@ import org.jboss.remoting.Client;
 import org.jboss.remoting.callback.Callback;
 import org.jboss.remoting.callback.ServerInvokerCallbackHandler;
 
-import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
-import EDU.oswego.cs.dl.util.concurrent.LinkedQueue;
-import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
-import EDU.oswego.cs.dl.util.concurrent.SynchronizedLong;
+import javax.jms.IllegalStateException;
+import javax.jms.InvalidDestinationException;
+import javax.jms.JMSException;
+import java.lang.ref.WeakReference;
+import java.util.*;
 
 /**
  * The server side representation of a JMS session.
@@ -200,13 +172,13 @@ public class ServerSessionEndpoint implements SessionEndpoint
       
       dm = sp.getDestinationManager();
       
-      postOffice = sp.getPostOfficeInstance(); 
+      postOffice = sp.getPostOffice(); 
       
-      supportsFailover = connectionEndpoint.getConnectionFactoryEndpoint().isSupportsFailover() && postOffice.isClustered();
+      supportsFailover = connectionEndpoint.getConnectionFactoryEndpoint().isSupportsFailover() && sp.getConfiguration().isClustered();
       
       idm = sp.getChannelIDManager();
       
-      nodeId = sp.getServerPeerID();
+      nodeId = sp.getConfiguration().getServerPeerID();
       
       tr = sp.getTxRepository();
       
@@ -220,9 +192,9 @@ public class ServerSessionEndpoint implements SessionEndpoint
       
       tr = sp.getTxRepository();
       
-      defaultMaxDeliveryAttempts = sp.getDefaultMaxDeliveryAttempts();
+      defaultMaxDeliveryAttempts = sp.getConfiguration().getDefaultMaxDeliveryAttempts();
       
-      defaultRedeliveryDelay = sp.getDefaultRedeliveryDelay();
+      defaultRedeliveryDelay = sp.getConfiguration().getDefaultRedeliveryDelay();
       
       deliveries = new ConcurrentHashMap();
       
@@ -522,7 +494,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
 
       try
       {
-         if (!postOffice.isClustered())
+         if (!sp.getConfiguration().isClustered())
          {
             throw new IllegalStateException("Recovering deliveries but post office is not clustered!");
          }
@@ -681,11 +653,11 @@ public class ServerSessionEndpoint implements SessionEndpoint
 
          if (dest.isTopic())
          {
-            mDest = new ManagedTopic(dest.getName(), fullSize, pageSize, downCacheSize, postOffice.isClustered());
+            mDest = new ManagedTopic(dest.getName(), fullSize, pageSize, downCacheSize, sp.getConfiguration().isClustered());
          }
          else
          {
-            mDest = new ManagedQueue(dest.getName(), fullSize, pageSize, downCacheSize, postOffice.isClustered());
+            mDest = new ManagedQueue(dest.getName(), fullSize, pageSize, downCacheSize, sp.getConfiguration().isClustered());
          }
          
          mDest.setTemporary(true);
@@ -696,8 +668,8 @@ public class ServerSessionEndpoint implements SessionEndpoint
          {            
             Queue coreQueue = new MessagingQueue(nodeId, dest.getName(),
             												 idm.getID(), ms, pm, false, -1, null,
-										                   fullSize, pageSize, downCacheSize, postOffice.isClustered(),
-										                   sp.getRecoverDeliveriesTimeout());
+										                   fullSize, pageSize, downCacheSize, sp.getConfiguration().isClustered(),
+										                   sp.getConfiguration().getRecoverDeliveriesTimeout());
 
         
             Condition cond = new JMSCondition(true, dest.getName());
@@ -705,7 +677,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
          	// make a binding for this temporary queue
             
             // temporary queues need to bound on ALL nodes of the cluster
-            postOffice.addBinding(new Binding(cond, coreQueue, true), postOffice.isClustered());   
+            postOffice.addBinding(new Binding(cond, coreQueue, true), sp.getConfiguration().isClustered());
             
             coreQueue.activate();
          }         
@@ -754,7 +726,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
          	
          	// temporary queues must be unbound on ALL nodes of the cluster
          	
-            postOffice.removeBinding(dest.getName(), postOffice.isClustered());         	        
+            postOffice.removeBinding(dest.getName(), sp.getConfiguration().isClustered());
          }
          else
          {
@@ -827,8 +799,8 @@ public class ServerSessionEndpoint implements SessionEndpoint
          }
          
          //Also if it is clustered we must disallow unsubscribing if it has active consumers on other nodes
-         
-         if (sub.isClustered() && postOffice.isClustered())
+
+         if (sub.isClustered() && sp.getConfiguration().isClustered())
          {
          	Replicator rep = (Replicator)postOffice;
          	
@@ -841,9 +813,9 @@ public class ServerSessionEndpoint implements SessionEndpoint
          	}
          }
          
-         postOffice.removeBinding(sub.getName(), sub.isClustered() && postOffice.isClustered());         
+         postOffice.removeBinding(sub.getName(), sub.isClustered() && sp.getConfiguration().isClustered());
          
-         String counterName = TopicService.SUBSCRIPTION_MESSAGECOUNTER_PREFIX + sub.getName();
+         String counterName = ManagedDestination.SUBSCRIPTION_MESSAGECOUNTER_PREFIX + sub.getName();
          
          MessageCounter counter = sp.getMessageCounterManager().unregisterMessageCounter(counterName);
          
@@ -1502,7 +1474,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
 
          log.trace(this + " failed to handle callback", t);
          
-         //We stop the consumer - some time later the lease will expire and the connection will be closed        
+         //We stop the consumer - some time later the lease will expire and the connection will be closed
          //which will remove the consumer
          
          consumer.setStarted(false);
@@ -1829,7 +1801,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
       //We don't care about redelivery delays and number of attempts for a direct consumer
       
       ServerConsumerEndpoint ep =
-         new ServerConsumerEndpoint(consumerID, binding.queue,
+         new ServerConsumerEndpoint(sp, consumerID, binding.queue,
                                     binding.queue.getName(), this, selectorString, false,
                                     dest, null, null, 0, -1, true, false);
       
@@ -1928,7 +1900,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
 							                  mDest.getPageSize(),
 							                  mDest.getDownCacheSize(),
 							                  mDest.isClustered(),
-							                  sp.getRecoverDeliveriesTimeout());
+							                  sp.getConfiguration().getRecoverDeliveriesTimeout());
             
             JMSCondition topicCond = new JMSCondition(false, jmsDestination.getName());
                         
@@ -1936,13 +1908,13 @@ public class ServerSessionEndpoint implements SessionEndpoint
             
             queue.activate();
 
-            String counterName = TopicService.SUBSCRIPTION_MESSAGECOUNTER_PREFIX + queue.getName();
+            String counterName = ManagedDestination.SUBSCRIPTION_MESSAGECOUNTER_PREFIX + queue.getName();
   
             int dayLimitToUse = mDest.getMessageCounterHistoryDayLimit();
             if (dayLimitToUse == -1)
             {
                //Use override on server peer
-               dayLimitToUse = sp.getDefaultMessageCounterHistoryDayLimit();
+               dayLimitToUse = sp.getConfiguration().getDefaultMessageCounterHistoryDayLimit();
             }
             
             //We don't create message counters on temp topics
@@ -1986,19 +1958,19 @@ public class ServerSessionEndpoint implements SessionEndpoint
                                           mDest.getPageSize(),
                                           mDest.getDownCacheSize(),
                                           mDest.isClustered(),
-                                          sp.getRecoverDeliveriesTimeout());
+                                          sp.getConfiguration().getRecoverDeliveriesTimeout());
                
                // Durable subs must be bound on ALL nodes of the cluster (if clustered)
                
                postOffice.addBinding(new Binding(new JMSCondition(false, jmsDestination.getName()), queue, true),
-                                     postOffice.isClustered() && mDest.isClustered());
+                                     sp.getConfiguration().isClustered() && mDest.isClustered());
                
                queue.activate();
                   
                //We don't create message counters on temp topics
                if (!mDest.isTemporary())
                {	               
-	               String counterName = TopicService.SUBSCRIPTION_MESSAGECOUNTER_PREFIX + queue.getName();
+	               String counterName = ManagedDestination.SUBSCRIPTION_MESSAGECOUNTER_PREFIX + queue.getName();
 	                       
 	               MessageCounter counter =
 	                  new MessageCounter(counterName, subscriptionName, queue, true, true,
@@ -2026,7 +1998,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
                // If the durable sub exists because it is clustered and was created on this node due to a bind on another node
                // then it will have no message counter
                
-               String counterName = TopicService.SUBSCRIPTION_MESSAGECOUNTER_PREFIX + queue.getName();    
+               String counterName = ManagedDestination.SUBSCRIPTION_MESSAGECOUNTER_PREFIX + queue.getName();
                
                boolean createCounter = false;
                
@@ -2065,7 +2037,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
                   
                   // Durable subs must be unbound on ALL nodes of the cluster
                   
-                  postOffice.removeBinding(queue.getName(), postOffice.isClustered() && mDest.isClustered());                  
+                  postOffice.removeBinding(queue.getName(), sp.getConfiguration().isClustered() && mDest.isClustered());
                   
                   // create a fresh new subscription
                                     
@@ -2075,12 +2047,12 @@ public class ServerSessionEndpoint implements SessionEndpoint
 					                              mDest.getPageSize(),
 					                              mDest.getDownCacheSize(),
 					                              mDest.isClustered(),
-					                              sp.getRecoverDeliveriesTimeout());
+					                              sp.getConfiguration().getRecoverDeliveriesTimeout());
                   
                   // Durable subs must be bound on ALL nodes of the cluster
                   
                   postOffice.addBinding(new Binding(new JMSCondition(false, jmsDestination.getName()), queue, true),
-                  		                postOffice.isClustered() && mDest.isClustered());
+                  		                sp.getConfiguration().isClustered() && mDest.isClustered());
   
                   queue.activate();                  
                   
@@ -2130,12 +2102,12 @@ public class ServerSessionEndpoint implements SessionEndpoint
       boolean replicating = supportsFailover && queue.isClustered() && !(jmsDestination.isTopic() && !queue.isRecoverable());
       
       ServerConsumerEndpoint ep =
-         new ServerConsumerEndpoint(consumerID, queue,
+         new ServerConsumerEndpoint(sp, consumerID, queue,
                                     queue.getName(), this, selectorString, noLocal,
                                     jmsDestination, dlqToUse, expiryQueueToUse, redeliveryDelayToUse,
                                     maxDeliveryAttemptsToUse, false, replicating);
       
-      if (queue.isClustered() && postOffice.isClustered() && jmsDestination.isTopic() && subscriptionName != null)
+      if (queue.isClustered() && sp.getConfiguration().isClustered() && jmsDestination.isTopic() && subscriptionName != null)
       {
       	//Clustered durable sub consumer created - we need to add this info in the replicator - it is needed by other nodes
       	

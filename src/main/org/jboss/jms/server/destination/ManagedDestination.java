@@ -21,22 +21,19 @@
  */
 package org.jboss.jms.server.destination;
 
-import java.util.Collection;
-import java.util.Iterator;
-
-import org.jboss.jms.server.JMSCondition;
 import org.jboss.jms.server.ServerPeer;
+import org.jboss.jms.server.security.Role;
 import org.jboss.messaging.core.contract.Binding;
-import org.jboss.messaging.core.contract.Condition;
 import org.jboss.messaging.core.contract.MessagingComponent;
-import org.jboss.messaging.core.contract.PostOffice;
 import org.jboss.messaging.core.contract.Queue;
-import org.w3c.dom.Element;
+
+import java.util.HashSet;
 
 /**
  * A Destination
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  * @version <tt>$Revision$</tt>
  *
  * $Id$
@@ -45,27 +42,27 @@ import org.w3c.dom.Element;
 public abstract class ManagedDestination implements MessagingComponent
 {
    protected static final int ALL = 0;
-   
+
    protected static final int DURABLE = 1;
-   
+
    protected static final int NON_DURABLE = 2;
-   
-      
+
+
    private static final int DEFAULT_FULL_SIZE = 200000;
-   
+
    private static final int DEFAULT_PAGE_SIZE = 2000;
-   
+
    private static final int DEFAULT_DOWN_CACHE_SIZE = 2000;
-      
-   
+
+
    protected String name;
-   
+
    protected String jndiName;
-   
+
    protected boolean clustered;
 
    protected boolean temporary;
-   
+
    // Default in memory message number limit
    protected int fullSize = DEFAULT_FULL_SIZE;
 
@@ -74,27 +71,29 @@ public abstract class ManagedDestination implements MessagingComponent
 
    // Default down-cache size
    protected int downCacheSize = DEFAULT_DOWN_CACHE_SIZE;
-   
-   protected Element securityConfig;
-   
+
+   protected HashSet<Role> securityConfig;
+
    protected ServerPeer serverPeer;
-   
-   protected ManagedQueue dlq;
-   
-   protected ManagedQueue expiryQueue;
-   
+
+   protected String dlq;
+
+   protected String expiryQueue;
+
    protected long redeliveryDelay = -1;
-   
+
    protected int maxSize = -1;
-   
+
    protected int messageCounterHistoryDayLimit = -1;
-   
+
    protected int maxDeliveryAttempts = -1;
-    
+   public static final String SUBSCRIPTION_MESSAGECOUNTER_PREFIX = "Subscription.";
+
+
    public ManagedDestination()
-   {      
+   {
    }
-   
+
    /*
     * Constructor for temporary destinations
     */
@@ -167,16 +166,16 @@ public abstract class ManagedDestination implements MessagingComponent
       this.pageSize = pageSize;
    }
 
-   public Element getSecurityConfig()
+   public HashSet<Role> getSecurityConfig()
    {
       return securityConfig;
    }
 
-   public void setSecurityConfig(Element securityConfig)
+   public void setSecurityConfig(HashSet<Role> securityConfig)
    {
       this.securityConfig = securityConfig;
    }
-   
+
    public ServerPeer getServerPeer()
    {
       return serverPeer;
@@ -196,117 +195,117 @@ public abstract class ManagedDestination implements MessagingComponent
    {
       this.temporary = temporary;
    }
-   
+
    //Need to get lazily because of crappy dependencies
    public Queue getDLQ() throws Exception
    {
       Queue theQueue = null;
-      
+
       if (dlq != null)
-      {            
-         Binding binding = serverPeer.getPostOfficeInstance().getBindingForQueueName(dlq.getName());
-         
+      {
+         Binding binding = serverPeer.getPostOffice().getBindingForQueueName(dlq);
+
          if (binding == null)
          {
-         	throw new IllegalStateException("Cannot find binding for queue " + dlq.getName());
+         	throw new IllegalStateException("Cannot find binding for queue " + dlq);
          }
-         
+
          Queue queue = binding.queue;
-         
+
          if (queue.isActive())
          {
          	theQueue = queue;
          }
       }
-      
+
       return theQueue;
    }
-   
-   public void setDLQ(ManagedQueue dlq)
+
+   public void setDLQ(String dlq)
    {
       this.dlq = dlq;
    }
-   
+
    //Need to get lazily because of crappy dependencies
    public Queue getExpiryQueue() throws Exception
    {
       Queue theQueue = null;
-      
+
       if (expiryQueue != null)
-      {            
-      	Binding binding = serverPeer.getPostOfficeInstance().getBindingForQueueName(expiryQueue.getName());
-      	
+      {
+      	Binding binding = serverPeer.getPostOffice().getBindingForQueueName(expiryQueue);
+
          if (binding == null)
          {
-         	throw new IllegalStateException("Cannot find binding for queue " + expiryQueue.getName());
+         	throw new IllegalStateException("Cannot find binding for queue " + expiryQueue);
          }
-         
+
          Queue queue = binding.queue;
-         
-      	
+
+
       	if (queue.isActive())
       	{
       		theQueue = queue;
       	}
       }
-      
+
       return theQueue;
    }
-   
-   public void setExpiryQueue(ManagedQueue expiryQueue)
+
+   public void setExpiryQueue(String expiryQueue)
    {
       this.expiryQueue = expiryQueue;
    }
-   
+
    public long getRedeliveryDelay()
    {
       return redeliveryDelay;
    }
-   
+
    public void setRedeliveryDelay(long delay)
    {
       this.redeliveryDelay = delay;
    }
-   
+
    public int getMaxSize()
    {
       return maxSize;
    }
-   
+
    /**
     * Sets the max size for the destination.  This will only set the MaxSize field.  Processing must be
-    * done to enable this for the queues.  
+    * done to enable this for the queues.
     * http://jira.jboss.com/jira/browse/JBMESSAGING-1075
     * @param maxSize
     * @throws Exception
     */
    public void setMaxSize(int maxSize) throws Exception
    {
-      //took out processing for max size and moved it into the DestinationServiceSupport 
+      //took out processing for max size and moved it into the DestinationServiceSupport
 	  //http://jira.jboss.com/jira/browse/JBMESSAGING-1075
       this.maxSize = maxSize;
    }
-   
+
    public int getMessageCounterHistoryDayLimit()
    {
       return this.messageCounterHistoryDayLimit;
    }
-   
+
    public void setMessageCounterHistoryDayLimit(int limit) throws Exception
    {
       this.messageCounterHistoryDayLimit = limit;
    }
-   
+
    public int getMaxDeliveryAttempts()
    {
       return this.maxDeliveryAttempts;
    }
-   
+
    public void setMaxDeliveryAttempts(int maxDeliveryAttempts)
    {
       this.maxDeliveryAttempts = maxDeliveryAttempts;
    }
-     
+
    public abstract boolean isQueue();
 
    public void start() throws Exception
@@ -315,7 +314,8 @@ public abstract class ManagedDestination implements MessagingComponent
    }
 
    public void stop() throws Exception
-   {   
+   {
       //NOOP
    }
+
 }

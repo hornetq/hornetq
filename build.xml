@@ -80,10 +80,22 @@
       <ant antfile="build-messaging.xml" target="fat-client-jar"/>
    </target>
 
+   <target name="deploy" depends="jar">
+      <ant antfile="build-messaging.xml" target="deploy"/>
+   </target>
+
+    <target name="bootstrap">
+        <ant antfile="build-messaging.xml" target="bootstrap"/>
+    </target>
+   
    <target name="jar" depends="createthirdparty">
       <ant antfile="build-messaging.xml" target="jar"/>
    </target>
 
+   <target name="embedded" depends="createthirdparty">
+      <ant antfile="build-messaging.xml" target="embedded"/>
+   </target>
+   
    <target name="artifacts" depends="createthirdparty">
       <ant antfile="build-messaging.xml" target="artifacts"/>
    </target>

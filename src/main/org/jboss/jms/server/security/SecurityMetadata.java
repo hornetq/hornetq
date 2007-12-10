@@ -21,150 +21,105 @@
   */
 package org.jboss.jms.server.security;
 
-import java.io.StringReader;
-import java.util.HashMap;
+import org.jboss.logging.Logger;
+import org.jboss.security.SimplePrincipal;
+
 import java.util.HashSet;
 import java.util.Set;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-
-import org.jboss.logging.Logger;
-import org.jboss.security.SimplePrincipal;
-import org.w3c.dom.Attr;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
 /**
  * SecurityMetadata.java
- *
- *
+ * <p/>
+ * <p/>
  * Created: Tue Feb 26 15:02:29 2002
  *
  * @author Peter
- * @version
+ * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  */
 
-public class SecurityMetadata  {
-   static Role DEFAULT_ROLE = new Role("guest", true, true, true);
+public class SecurityMetadata
+{
+    static Role DEFAULT_ROLE = new Role("guest", true, true, true);
 
-   static class Role {
-      String name;
-      boolean read= false;
-      boolean write = false;
-      boolean create = false;
-      public Role(String name, boolean read, boolean write, boolean create) {
-         this.name = name;
-         this.read = read;
-         this.write = write;
-         this.create = create;
-      }
-      public String toString() {
-         return "Role {name="+name+";read="+read+";write="+write+";create="+create+"}";
-      }
+    HashSet<Role> roles = new HashSet<Role>();
+    HashSet<SimplePrincipal> read = new HashSet<SimplePrincipal>();
+    HashSet<SimplePrincipal> write = new HashSet<SimplePrincipal>();
+    HashSet<SimplePrincipal> create = new HashSet<SimplePrincipal>();
+    static Logger log = Logger.getLogger(SecurityMetadata.class);
 
-   }
+    /**
+     * create with default roles
+     */
+    public SecurityMetadata()
+    {
+        addRole(DEFAULT_ROLE);
+    }
 
-   HashMap roles = new HashMap();
-   HashSet read = new HashSet();
-   HashSet write = new HashSet();
-   HashSet create = new HashSet();
-   static Logger log = Logger.getLogger(SecurityMetadata.class);
+    /**
+     * create with roles provided
+     * @param roles
+     * @throws Exception
+     */
+    public SecurityMetadata(HashSet<Role> roles)
+    {
+        setRoles(roles);
+    }
 
-   public SecurityMetadata() {
-      addRole(DEFAULT_ROLE);
-   }
-   /**
-    * Create with given xml @see configure.
-    *
-    * If the configure script is null, a default role named guest will be
-    * created with read and write access, but no create access.
-    */
-   public SecurityMetadata(String conf)throws Exception {
-      configure(conf);
-   }
-   public SecurityMetadata(Element conf)throws Exception {
-      configure(conf);
-   }
-   /**
-    * Configure with an xml string.
-    *
-    * The format of the string is:
-    * <security>
-    *  <role name="nameOfRole" read="true" write="true" create="false"/>
-    * </security>
-    *
-    * There may be one or more role elements.
-    */
-   public void configure(String conf) throws Exception {
-      Element sec = null;
-      if (conf != null) {
-         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-         DocumentBuilder parser = factory.newDocumentBuilder();
-         Document doc = parser.parse(new InputSource(new StringReader(conf)));
-         sec = doc.getDocumentElement();
+    public void addRole(String name, boolean read, boolean write, boolean create)
+    {
+        Role r = new Role(name, read, write, create);
+        addRole(r);
+    }
 
-      }
-      configure(sec);
-   }
+    public void addRole(Role r)
+    {
+        if (log.isTraceEnabled())
+            log.trace("Adding role: " + r.toString());
 
-   public void configure(Element sec) throws Exception {
+        roles.add(r);
+        SimplePrincipal p = new SimplePrincipal(r.name);
+        if (r.isRead())
+            read.add(p);
+        if (r.isWrite())
+            write.add(p);
+        if (r.isCreate())
+            create.add(p);
+    }
 
-      if (sec == null) {
-         addRole(DEFAULT_ROLE);
-      }else {
+    public Set<SimplePrincipal> getReadPrincipals()
+    {
+        return read;
+    }
 
-         if (!sec.getTagName().equals("security"))
-            throw new SAXException("Configuration document not valid: root element must be security, not " + sec.getTagName());
+    public Set<SimplePrincipal> getWritePrincipals()
+    {
+        return write;
+    }
 
-         // Parse
-         NodeList list = sec.getElementsByTagName("role");
-         int l = list.getLength();
-         for(int i = 0; i<l;i++) {
-            Element role = (Element)list.item(i);
-            Attr na = role.getAttributeNode("name");
-            if (na == null)
-               throw new SAXException("There must exist a name attribute of role");
-            String n = na.getValue();
-            boolean r = role.getAttributeNode("read") != null ? Boolean.valueOf( role.getAttributeNode("read").getValue() ).booleanValue() : false;
-            boolean w = role.getAttributeNode("write") != null ? Boolean.valueOf( role.getAttributeNode("write").getValue() ).booleanValue() : false;
-            boolean c = role.getAttributeNode("create") != null ? Boolean.valueOf( role.getAttributeNode("create").getValue() ).booleanValue() : false;
-            addRole(n,r,w,c);
+    public Set<SimplePrincipal> getCreatePrincipals()
+    {
+        return create;
+    }
 
-         }
-      }
-   }
 
-   public void addRole(String name,  boolean read, boolean write, boolean create) {
-      Role r = new Role(name,read,write,create);
-      addRole(r);
-   }
+    public HashSet<Role> getRoles()
+    {
+        return roles;
+    }
 
-   public void addRole(Role r) {
-      if (log.isTraceEnabled())
-         log.trace("Adding role: " + r.toString());
+    public void setRoles(HashSet< Role> roles)
+    {
+        this.roles = roles;
+        for (Role role : roles)
+        {
+            SimplePrincipal p = new SimplePrincipal(role.name);
+            if (role.isRead())
+                read.add(p);
+            if (role.isWrite())
+                write.add(p);
+            if (role.isCreate())
+                create.add(p);
+        }
+    }
 
-      roles.put(r.name,r);
-      SimplePrincipal p = new SimplePrincipal(r.name);
-      if(r.read == true)
-         read.add(p);
-      if(r.write == true)
-         write.add(p);
-      if (r.create == true)
-         create.add(p);
-   }
-
-   public Set getReadPrincipals() {
-      return read;
-   }
-
-   public Set getWritePrincipals() {
-      return write;
-   }
-
-   public Set getCreatePrincipals() {
-      return create;
-   }
 } // SecurityMetadata

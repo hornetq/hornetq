@@ -34,11 +34,11 @@ import javax.management.ObjectName;
 import org.jboss.test.messaging.tools.ServerManagement;
 
 /**
- * 
+ *
  * We test every combination of the order of deployment of connection factory, local and remote queue
- * 
+ *
  * and verify message sucking still works
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision: $</tt>2 Jul 2007
  *
@@ -62,9 +62,9 @@ public class ClusterConnectionManagerTest extends ClusteringTestBase
    }
 
    // Public ---------------------------------------------------------------------------------------
-   
+
    public void test1() throws Exception
-   {   
+   {
    	deployCFLocal();
    	deployCFRemote();
    	deployLocal();
@@ -73,7 +73,7 @@ public class ClusterConnectionManagerTest extends ClusteringTestBase
    }
 
    public void test2() throws Exception
-   {   
+   {
    	deployCFLocal();
    	deployCFRemote();
    	deployRemote();
@@ -82,7 +82,7 @@ public class ClusterConnectionManagerTest extends ClusteringTestBase
    }
 
    public void test3() throws Exception
-   {   
+   {
    	deployCFLocal();
    	deployLocal();
    	deployCFRemote();
@@ -91,7 +91,7 @@ public class ClusterConnectionManagerTest extends ClusteringTestBase
    }
 
    public void test4() throws Exception
-   {   
+   {
    	deployCFLocal();
    	deployLocal();
    	deployRemote();
@@ -100,7 +100,7 @@ public class ClusterConnectionManagerTest extends ClusteringTestBase
    }
 
    public void test5() throws Exception
-   {   
+   {
    	deployCFLocal();
    	deployRemote();
    	deployCFRemote();
@@ -109,7 +109,7 @@ public class ClusterConnectionManagerTest extends ClusteringTestBase
    }
 
    public void test6() throws Exception
-   {   
+   {
    	deployCFLocal();
    	deployRemote();
    	deployLocal();
@@ -118,7 +118,7 @@ public class ClusterConnectionManagerTest extends ClusteringTestBase
    }
 
    public void test7() throws Exception
-   {   
+   {
    	deployCFRemote();
    	deployCFLocal();
    	deployLocal();
@@ -127,7 +127,7 @@ public class ClusterConnectionManagerTest extends ClusteringTestBase
    }
 
    public void test8() throws Exception
-   {   
+   {
    	deployCFRemote();
    	deployCFLocal();
    	deployRemote();
@@ -136,7 +136,7 @@ public class ClusterConnectionManagerTest extends ClusteringTestBase
    }
 
    public void test9() throws Exception
-   {   
+   {
    	deployCFRemote();
    	deployLocal();
    	deployCFLocal();
@@ -145,7 +145,7 @@ public class ClusterConnectionManagerTest extends ClusteringTestBase
    }
 
    public void test10() throws Exception
-   {   
+   {
    	deployCFRemote();
    	deployLocal();
    	deployRemote();
@@ -154,7 +154,7 @@ public class ClusterConnectionManagerTest extends ClusteringTestBase
    }
 
    public void test11() throws Exception
-   {   
+   {
    	deployCFRemote();
    	deployRemote();
    	deployCFLocal();
@@ -163,7 +163,7 @@ public class ClusterConnectionManagerTest extends ClusteringTestBase
    }
 
    public void test12() throws Exception
-   {   
+   {
    	deployCFRemote();
    	deployRemote();
    	deployLocal();
@@ -172,7 +172,7 @@ public class ClusterConnectionManagerTest extends ClusteringTestBase
    }
 
    public void test13() throws Exception
-   {   
+   {
    	deployLocal();
    	deployCFLocal();
    	deployCFRemote();
@@ -181,7 +181,7 @@ public class ClusterConnectionManagerTest extends ClusteringTestBase
    }
 
    public void test14() throws Exception
-   {   
+   {
    	deployLocal();
    	deployCFLocal();
    	deployRemote();
@@ -190,7 +190,7 @@ public class ClusterConnectionManagerTest extends ClusteringTestBase
    }
 
    public void test15() throws Exception
-   {   
+   {
    	deployLocal();
    	deployCFRemote();
    	deployCFLocal();
@@ -199,7 +199,7 @@ public class ClusterConnectionManagerTest extends ClusteringTestBase
    }
 
    public void test16() throws Exception
-   {   
+   {
    	deployLocal();
    	deployCFRemote();
    	deployRemote();
@@ -208,7 +208,7 @@ public class ClusterConnectionManagerTest extends ClusteringTestBase
    }
 
    public void test17() throws Exception
-   {   
+   {
    	deployLocal();
    	deployRemote();
    	deployCFLocal();
@@ -217,7 +217,7 @@ public class ClusterConnectionManagerTest extends ClusteringTestBase
    }
 
    public void test18() throws Exception
-   {   
+   {
    	deployLocal();
    	deployRemote();
    	deployCFRemote();
@@ -226,7 +226,7 @@ public class ClusterConnectionManagerTest extends ClusteringTestBase
    }
 
    public void test19() throws Exception
-   {   
+   {
    	deployRemote();
    	deployCFLocal();
    	deployCFRemote();
@@ -235,7 +235,7 @@ public class ClusterConnectionManagerTest extends ClusteringTestBase
    }
 
    public void test20() throws Exception
-   {   
+   {
    	deployRemote();
    	deployCFLocal();
    	deployLocal();
@@ -244,7 +244,7 @@ public class ClusterConnectionManagerTest extends ClusteringTestBase
    }
 
    public void test21() throws Exception
-   {   
+   {
    	deployRemote();
    	deployCFRemote();
    	deployCFLocal();
@@ -253,7 +253,7 @@ public class ClusterConnectionManagerTest extends ClusteringTestBase
    }
 
    public void test22() throws Exception
-   {   
+   {
    	deployRemote();
    	deployCFRemote();
    	deployLocal();
@@ -262,7 +262,7 @@ public class ClusterConnectionManagerTest extends ClusteringTestBase
    }
 
    public void test23() throws Exception
-   {   
+   {
    	deployRemote();
    	deployLocal();
    	deployCFLocal();
@@ -271,44 +271,44 @@ public class ClusterConnectionManagerTest extends ClusteringTestBase
    }
 
    public void test24() throws Exception
-   {   
+   {
    	deployRemote();
    	deployLocal();
    	deployCFRemote();
    	deployCFLocal();
    	suck();
    }
-   
+
    // http://jira.jboss.org/jira/browse/JBMESSAGING-1136
    public void testCreateConsumerBeforeRemoteDeployment() throws Exception
-   {      
-      final int NUM_MESSAGES = 20;      
-      
-      deployCFLocal();      
+   {
+      final int NUM_MESSAGES = 20;
+
+      deployCFLocal();
       deployLocal();
-      
+
       //Send some messages
-      
+
       Queue queue0 = (Queue)ic[0].lookup("/queue/suckQueue");
-      
+
       Connection conn0 = null;
-      
+
       try
       {
          conn0 = this.createConnectionOnServer(cf, 0);
-         
+
          assertEquals(0, getServerId(conn0));
-         
+
          //Send some messages on node 0
-         
+
          Session sess0 = conn0.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         
+
          MessageProducer prod = sess0.createProducer(queue0);
-         
+
          for (int i = 0; i < NUM_MESSAGES; i++)
          {
             TextMessage tm = sess0.createTextMessage("message" + i);
-            
+
             prod.send(tm);
          }
       }
@@ -319,22 +319,22 @@ public class ClusterConnectionManagerTest extends ClusteringTestBase
             conn0.close();
          }
       }
-      
+
       log.info("Sent messages");
-      
+
       //Undeploy
       this.undeployAll();
-      
+
       log.info("Undeployed");
-      
+
       deployCFRemote();
       deployRemote();
-      
+
       Queue queue1 = (Queue)ic[1].lookup("/queue/suckQueue");
-            
+
       //Create the consumer - but the messages will be stranded on other node
       //Until we deploy - we do this on another thread
-      
+
       Thread t = new Thread(new Runnable() {
          public void run()
          {
@@ -350,35 +350,35 @@ public class ClusterConnectionManagerTest extends ClusteringTestBase
             }
          }
       });
-      
+
       t.start();
-      
+
       Connection conn1 = null;
-      
+
       try
-      {         
+      {
          //Consume them on node 1
-         
+
          conn1 = this.createConnectionOnServer(cf, 1);
-         
+
          assertEquals(1, getServerId(conn1));
-         
+
          Session sess1 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         
+
          MessageConsumer cons1 = sess1.createConsumer(queue1);
-         
+
          conn1.start();
-         
+
          for (int i = 0; i < NUM_MESSAGES; i++)
          {
             TextMessage tm = (TextMessage)cons1.receive(30000);
-            
+
             assertNotNull(tm);
-            
+
             log.info("Got message " + tm.getText());
-            
+
             assertEquals("message" + i, tm.getText());
-         } 
+         }
       }
       finally
       {
@@ -387,9 +387,9 @@ public class ClusterConnectionManagerTest extends ClusteringTestBase
             conn1.close();
          }
       }
-      
+
       t.join();
-      
+
    }
    // Package protected ----------------------------------------------------------------------------
 
@@ -401,108 +401,101 @@ public class ClusterConnectionManagerTest extends ClusteringTestBase
 
       undeployAll();
    }
-   
+
    protected void tearDown() throws Exception
    {
    	super.tearDown();
-   	
+
    	undeployAll();
    }
 
    private void undeployAll() throws Exception
    {
-      try
-      {
-         ServerManagement.undeployQueue("suckQueue", 0);
-      }
-      catch (Exception ignore)
-      {
-      }
+   	undeployQueue("suckQueue", 0);
 
-      try
-      {
-         ServerManagement.undeployQueue("suckQueue", 1);
-      }
-      catch (Exception ignore)
-      {
-      }
-   	
-      String cfName =
-   		(String)ServerManagement.getServer(1).getAttribute(ServerManagement.getServerPeerObjectName(), "ClusterPullConnectionFactoryName");
+   	undeployQueue("suckQueue", 1);
+   	String cfName = getJmsServer().getConfiguration().getClusterPullConnectionFactoryName();
 
       log.info("CF name is " + cfName);
-      
-      
-   	//undeploy cf on node 0  	
+
+
+   	//undeploy cf on node 0
       try
       {
-      	ServerManagement.getServer(0).undeployConnectionFactory(new ObjectName(cfName));
+      	undeployConnectionFactory(0,cfName);
       }
       catch (Exception ignore)
-      {}
-   	
-   	//undeploy cf on node 0  
+      {
+         //ignore.printStackTrace();
+      }
+
+   	//undeploy cf on node 0
       try
       {
-      	ServerManagement.getServer(1).undeployConnectionFactory(new ObjectName(cfName));
+      	undeployConnectionFactory(1, cfName);
       }
       catch (Exception ignore)
-      {}
+      {
+         //ignore.printStackTrace();
+      }
    }
-   
+
    // Private --------------------------------------------------------------------------------------
-      
+
    private void deployCFRemote() throws Exception
    {
-   	String cfName =
-   		(String)ServerManagement.getServer(1).getAttribute(ServerManagement.getServerPeerObjectName(), "ClusterPullConnectionFactoryName");
-
-   	//Deploy cf on node 1   	
-   	ServerManagement.getServer(1).deployConnectionFactory(cfName, null, 150);
+   	String cfName = getJmsServer().getConfiguration().getClusterPullConnectionFactoryName();
+   	//Deploy cf on node 1
+   	deployConnectionFactory(1, cfName, null, 150);
    }
-   
+
    private void deployCFLocal() throws Exception
    {
-   	String cfName =
-   		(String)ServerManagement.getServer(0).getAttribute(ServerManagement.getServerPeerObjectName(), "ClusterPullConnectionFactoryName");
-
-   	//Deploy cf on node 0  	
-   	ServerManagement.getServer(0).deployConnectionFactory(cfName, null, 150);
+   	String cfName = getJmsServer().getConfiguration().getClusterPullConnectionFactoryName();
+   	//Deploy cf on node 0
+   	deployConnectionFactory(0,cfName, null, 150);
    }
-   
+
    private void deployLocal() throws Exception
    {
-   	 ServerManagement.deployQueue("suckQueue", 0);
+   	 deployQueue("suckQueue", 0);
    }
-   
+
    private void deployRemote() throws Exception
    {
-   	 ServerManagement.deployQueue("suckQueue", 1);   	 
+   	 deployQueue("suckQueue", 1);
    }
-   
+
    private void suck() throws Exception
-   {      
+   {
       Queue queue0 = (Queue)ic[0].lookup("/queue/suckQueue");
-      
+
       Queue queue1 = (Queue)ic[1].lookup("/queue/suckQueue");
-      
+
       Connection conn0 = null;
-      
+
       Connection conn1 = null;
-      
+
       try
       {
       	conn0 = this.createConnectionOnServer(cf, 0);
-      	
+
       	assertEquals(0, getServerId(conn0));
-      	
+
       	//Send some messages on node 0
-      	
+
       	final int NUM_MESSAGES = 20;
-      	
+
       	Session sess0 = conn0.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      	
+
       	MessageProducer prod = sess0.createProducer(queue0);
+
+      	//Note! The message must be sent as non persistent for this test
+      	//Since we have not deployed suckQueue on all nodes of the cluster
+      	//this would cause persistent messages to not be delivered since they would
+      	//fail to replicate to their backup (since suckQueue is not deployed on it)
+
+      	prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
       	
       	for (int i = 0; i < NUM_MESSAGES; i++)
       	{

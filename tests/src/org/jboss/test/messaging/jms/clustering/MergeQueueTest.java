@@ -6,18 +6,11 @@
  */
 package org.jboss.test.messaging.jms.clustering;
 
+import org.jboss.test.messaging.tools.ServerManagement;
+
+import javax.jms.*;
 import java.util.HashSet;
 import java.util.Set;
-
-import javax.jms.Connection;
-import javax.jms.DeliveryMode;
-import javax.jms.MessageConsumer;
-import javax.jms.MessageProducer;
-import javax.jms.Queue;
-import javax.jms.Session;
-import javax.jms.TextMessage;
-
-import org.jboss.test.messaging.tools.ServerManagement;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -487,9 +480,9 @@ public class MergeQueueTest extends ClusteringTestBase
       {
          //Deploy queue with fullSize of 10
          
-         ServerManagement.deployQueue("constrainedQueue", "queue/constrainedQueue",full0, 2, 2, 0, true);
+         deployQueue("constrainedQueue", "queue/constrainedQueue",full0, 2, 2, 0, true);
          
-         ServerManagement.deployQueue("constrainedQueue", "queue/constrainedQueue",full1, 2, 2, 1, true);
+         deployQueue("constrainedQueue", "queue/constrainedQueue",full1, 2, 2, 1, true);
          
          Queue queue0 = (Queue)ic[0].lookup("queue/constrainedQueue");
          
@@ -598,7 +591,7 @@ public class MergeQueueTest extends ClusteringTestBase
       {
          try
          {
-            ServerManagement.undeployQueue("constrainedQueue", 0);
+            undeployQueue("constrainedQueue", 0);
          }
          catch (Exception ignore)
          {            
@@ -606,7 +599,7 @@ public class MergeQueueTest extends ClusteringTestBase
          
          try
          {
-            ServerManagement.undeployQueue("constrainedQueue", 1);
+            undeployQueue("constrainedQueue", 1);
          }
          catch (Exception ignore)
          {            

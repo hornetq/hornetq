@@ -21,31 +21,18 @@
   */
 package org.jboss.test.messaging.core;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.jboss.messaging.core.contract.ChannelFactory;
-import org.jboss.messaging.core.contract.ClusterNotifier;
-import org.jboss.messaging.core.contract.Condition;
-import org.jboss.messaging.core.contract.ConditionFactory;
-import org.jboss.messaging.core.contract.FilterFactory;
-import org.jboss.messaging.core.contract.Message;
-import org.jboss.messaging.core.contract.MessageReference;
-import org.jboss.messaging.core.contract.MessageStore;
-import org.jboss.messaging.core.contract.PersistenceManager;
-import org.jboss.messaging.core.contract.PostOffice;
-import org.jboss.messaging.core.contract.Queue;
+import org.jboss.messaging.core.contract.*;
 import org.jboss.messaging.core.impl.DefaultClusterNotifier;
 import org.jboss.messaging.core.impl.IDManager;
-import org.jboss.messaging.core.impl.JDBCPersistenceManager;
 import org.jboss.messaging.core.impl.message.SimpleMessageStore;
-import org.jboss.messaging.core.impl.postoffice.MessagingPostOffice;
 import org.jboss.messaging.core.impl.tx.Transaction;
 import org.jboss.messaging.core.impl.tx.TransactionRepository;
-import org.jboss.test.messaging.MessagingTestCase;
-import org.jboss.test.messaging.core.postoffice.ClusteredPersistenceServiceConfigFileJChannelFactory;
+import org.jboss.test.messaging.JBMServerTestCase;
 import org.jboss.test.messaging.tools.container.ServiceContainer;
 import org.jboss.test.messaging.util.CoreMessageFactory;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 
@@ -58,7 +45,7 @@ import org.jboss.test.messaging.util.CoreMessageFactory;
  * $Id$
  *
  */
-public class PostOfficeTestBase extends MessagingTestCase
+public class PostOfficeTestBase extends JBMServerTestCase
 {
    // Constants ------------------------------------------------------------------------------------
 
@@ -82,16 +69,16 @@ public class PostOfficeTestBase extends MessagingTestCase
 
       // we're testing with JGroups stack configurations we're shipping with the release
 
-      String configFilePath = sc.getPersistenceConfigFile(true);
+      /*String configFilePath = sc.getPersistenceConfigFile(true);
 
       // TODO (ovidiu) we're temporarily ignoring the multiplex option, it doesn't work well
       boolean ignoreMultiplexer = true;
       ChannelFactory jChannelFactory =
          new ClusteredPersistenceServiceConfigFileJChannelFactory(configFilePath,
                                                                   ignoreMultiplexer,
-                                                                  sc.getMBeanServer());
+                                                                  sc.getMBeanServer());*/
       
-      MessagingPostOffice postOffice =
+      /*MessagingPostOffice postOffice =
          new MessagingPostOffice(sc.getDataSource(), sc.getTransactionManager(),
                                  sc.getPostOfficeSQLProperties(), true, nodeID,
                                  "Clustered", ms, pm, tr, ff, cf, idm, cn,
@@ -99,8 +86,8 @@ public class PostOfficeTestBase extends MessagingTestCase
                                  stateTimeout, castTimeout, true, 100);
       
       postOffice.start();
-
-      return postOffice;
+*/
+      return null;//postOffice;
    }
    
    protected static PostOffice createNonClusteredPostOffice(ServiceContainer sc, MessageStore ms, TransactionRepository tr,
@@ -112,14 +99,14 @@ public class PostOfficeTestBase extends MessagingTestCase
       IDManager idm = new IDManager("channel_id", 10, pm);
       ClusterNotifier cn = new DefaultClusterNotifier();
 
-   	MessagingPostOffice postOffice =
+   	/*MessagingPostOffice postOffice =
    		new MessagingPostOffice(sc.getDataSource(), sc.getTransactionManager(),
    				                  sc.getPostOfficeSQLProperties(),
    									   true, 1, "NonClustered", ms, pm, tr, ff, cf, idm, cn);
 
    	postOffice.start();
 
-   	return postOffice;
+   	return postOffice;*/            return null;
    }   
 
    // Attributes -----------------------------------------------------------------------------------
@@ -129,8 +116,7 @@ public class PostOfficeTestBase extends MessagingTestCase
    protected IDManager channelIDManager;
    
    protected IDManager transactionIDManager;
-   
-   protected PersistenceManager pm;
+
       
    protected MessageStore ms;
    
@@ -154,7 +140,7 @@ public class PostOfficeTestBase extends MessagingTestCase
    
 	protected PostOffice createNonClusteredPostOffice() throws Exception
 	{
-		return createNonClusteredPostOffice(sc, ms, tr, pm);
+		return createNonClusteredPostOffice(sc, ms, tr, getPersistenceManager());
 	}
 	
 	protected PostOffice createClusteredPostOffice(int nodeID) throws Exception
@@ -164,7 +150,7 @@ public class PostOfficeTestBase extends MessagingTestCase
       
       log.info("Creating clusteredPostOffice node " + nodeID);
       
-      return createClusteredPostOffice(nodeID, groupName == null ? "testgroup" : groupName, 5000, 5000, sc, ms, tr, pm);
+      return createClusteredPostOffice(nodeID, groupName == null ? "testgroup" : groupName, 5000, 5000, sc, ms, tr, getPersistenceManager());
    }
    
    protected List sendMessages(String conditionText, boolean persistent, PostOffice office, int num, Transaction tx) throws Exception
@@ -236,27 +222,23 @@ public class PostOfficeTestBase extends MessagingTestCase
    {
       super.setUp();
 
-      sc = new ServiceContainer("all");
 
-      sc.start();
-
-      pm =
+      /*pm =
          new JDBCPersistenceManager(sc.getDataSource(), sc.getTransactionManager(),
                   sc.getPersistenceManagerSQLProperties(),
                   true, true, true, false, 100, !sc.getDatabaseName().equals("oracle"));
-      ((JDBCPersistenceManager)pm).injectNodeID(1);
-      pm.start();
+      ((JDBCPersistenceManager)pm).injectNodeID(1);*/
 
-      transactionIDManager = new IDManager("TRANSACTION_ID", 10, pm);
+      transactionIDManager = new IDManager("TRANSACTION_ID", 10, getPersistenceManager());
       transactionIDManager.start();
 
       ms = new SimpleMessageStore();
       ms.start();
 
-      tr = new TransactionRepository(pm, ms, transactionIDManager);
+      tr = new TransactionRepository(getPersistenceManager(), ms, transactionIDManager);
       tr.start();
 
-      channelIDManager = new IDManager("CHANNEL_ID", 10, pm);
+      channelIDManager = new IDManager("CHANNEL_ID", 10, getPersistenceManager());
       channelIDManager.start();
 
       conditionFactory = new SimpleConditionFactory();
@@ -282,11 +264,6 @@ public class PostOfficeTestBase extends MessagingTestCase
        }
        finally
        {
-          sc.stop();
-          sc = null;
-
-
-          pm.stop();
           tr.stop();
           ms.stop();
           transactionIDManager.stop();

@@ -6,8 +6,8 @@
  */
 package org.jboss.test.thirdparty.remoting;
 
-import javax.management.ObjectName;
-
+import EDU.oswego.cs.dl.util.concurrent.Channel;
+import EDU.oswego.cs.dl.util.concurrent.LinkedQueue;
 import org.jboss.jms.client.remoting.JMSRemotingConnection;
 import org.jboss.jms.wireformat.JMSWireFormat;
 import org.jboss.logging.Logger;
@@ -25,8 +25,7 @@ import org.jboss.test.messaging.tools.container.ServiceContainer;
 import org.jboss.test.thirdparty.remoting.util.OnewayCallbackTrigger;
 import org.jboss.test.thirdparty.remoting.util.RemotingTestSubsystemService;
 
-import EDU.oswego.cs.dl.util.concurrent.Channel;
-import EDU.oswego.cs.dl.util.concurrent.LinkedQueue;
+import javax.management.ObjectName;
 
 /**
  * An extra test for the same root problem that causes

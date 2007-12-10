@@ -6,9 +6,6 @@
  */
 package org.jboss.test.messaging.tools.aop;
 
-import java.rmi.registry.LocateRegistry;
-import java.rmi.registry.Registry;
-
 import org.jboss.aop.advice.Interceptor;
 import org.jboss.aop.joinpoint.Invocation;
 import org.jboss.aop.joinpoint.MethodInvocation;
@@ -22,6 +19,9 @@ import org.jboss.jms.server.endpoint.advised.SessionAdvised;
 import org.jboss.jms.tx.TransactionRequest;
 import org.jboss.logging.Logger;
 import org.jboss.test.messaging.tools.container.RMITestServer;
+
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
 
 /**
  * Used to force a "poisoned" server to do all sorts of bad things. Used for testing.
@@ -251,7 +251,7 @@ public class PoisonInterceptor implements Interceptor
    {
       try
       {
-         int serverId = getServerPeer(target).getServerPeerID();
+         int serverId = getServerPeer(target).getConfiguration().getServerPeerID();
 
          //First unregister from the RMI registry
          Registry registry = LocateRegistry.getRegistry(RMITestServer.DEFAULT_REGISTRY_PORT);

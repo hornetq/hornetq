@@ -22,11 +22,6 @@
 
 package org.jboss.test.messaging.jms.manual;
 
-import java.util.Properties;
-
-import javax.naming.Context;
-import javax.naming.InitialContext;
-
 import org.jboss.test.messaging.jms.stress.SeveralClientsStressTest;
 
 /**
@@ -43,17 +38,6 @@ public class ManualQueueSoakTest extends SeveralClientsStressTest
 
 
    // Static ---------------------------------------------------------------------------------------
-
-   protected Context createContext() throws Exception
-   {
-      Properties props = new Properties();
-
-      props.put(Context.INITIAL_CONTEXT_FACTORY, "org.jnp.interfaces.NamingContextFactory");
-      props.put(Context.PROVIDER_URL, "jnp://localhost:1099");
-      props.put(Context.URL_PKG_PREFIXES, "org.jnp.interfaces");
-
-      return new InitialContext(props);
-   }
 
    // Constructors ---------------------------------------------------------------------------------
 

@@ -21,12 +21,10 @@
  */
 package org.jboss.jms.server.bridge;
 
-import java.util.Properties;
+import org.jboss.logging.Logger;
+import org.jboss.messaging.core.contract.MessagingComponent;
 
 import javax.management.ObjectName;
-
-import org.jboss.messaging.core.contract.MessagingComponent;
-import org.jboss.system.ServiceMBeanSupport;
 
 /**
  * A BridgeService
@@ -37,8 +35,9 @@ import org.jboss.system.ServiceMBeanSupport;
  * $Id$
  *
  */
-public class BridgeService extends ServiceMBeanSupport implements BridgeMBean
+public class BridgeService implements BridgeMBean
 {
+   private static final Logger log = Logger.getLogger(BridgeService.class);
    private Bridge bridge;
    
    private String sourceDestinationLookup;
@@ -285,7 +284,7 @@ public class BridgeService extends ServiceMBeanSupport implements BridgeMBean
    {
       if (log.isTraceEnabled()) { log.trace("Starting bridge"); }
       
-      super.startService();
+      //super.startService();
       
       if (this.sourceProviderLoader == null)
       {
@@ -309,18 +308,18 @@ public class BridgeService extends ServiceMBeanSupport implements BridgeMBean
       
       boolean sameSourceAndTarget = sourceProviderLoader.equals(targetProviderLoader);
       
-      Properties sourceProps = (Properties)server.getAttribute(sourceProviderLoader, "Properties");
+     // Properties sourceProps = (Properties)server.getAttribute(sourceProviderLoader, "Properties");
       
-      Properties targetProps = (Properties)server.getAttribute(targetProviderLoader, "Properties");
+     // Properties targetProps = (Properties)server.getAttribute(targetProviderLoader, "Properties");
       
-      String sourceCFRef = (String)server.getAttribute(sourceProviderLoader, "FactoryRef");
+      //String sourceCFRef = (String)server.getAttribute(sourceProviderLoader, "FactoryRef");
       
-      String targetCFRef = (String)server.getAttribute(targetProviderLoader, "FactoryRef");
+      //String targetCFRef = (String)server.getAttribute(targetProviderLoader, "FactoryRef");
       
-      ConnectionFactoryFactory sourceCff =
-         new JNDIConnectionFactoryFactory(sourceProps, sourceCFRef);
+      //ConnectionFactoryFactory sourceCff =
+      //   new JNDIConnectionFactoryFactory(sourceProps, sourceCFRef);
       
-      ConnectionFactoryFactory destCff;
+     /* ConnectionFactoryFactory destCff;
       
       if (sameSourceAndTarget)
       {
@@ -343,9 +342,9 @@ public class BridgeService extends ServiceMBeanSupport implements BridgeMBean
       
       bridge.setTargetDestinationFactory(targetDestinationFactory);
 
-      bridge.start();      
+      bridge.start();
       
-      log.info("Started bridge " + this.getName() + ". Source: " + sourceDestinationLookup + " Target: " + targetDestinationLookup);
+      log.info("Started bridge " + this.getName() + ". Source: " + sourceDestinationLookup + " Target: " + targetDestinationLookup);*/
    }
    
 
@@ -355,7 +354,7 @@ public class BridgeService extends ServiceMBeanSupport implements BridgeMBean
       
       bridge.stop();
       
-      log.info("Stopped bridge " + this.getName());
+      //log.info("Stopped bridge " + this.getName());
    }
    
    // Private ---------------------------------------------------------------------------------

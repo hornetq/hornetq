@@ -21,20 +21,11 @@
   */
 package org.jboss.test.messaging.jms;
 
-import javax.jms.Connection;
-import javax.jms.JMSException;
-import javax.jms.Message;
-import javax.jms.MessageListener;
-import javax.jms.MessageProducer;
-import javax.jms.ServerSession;
-import javax.jms.ServerSessionPool;
-import javax.jms.Session;
-import javax.jms.TextMessage;
-
+import EDU.oswego.cs.dl.util.concurrent.Latch;
 import org.jboss.jms.client.JBossConnectionConsumer;
 import org.jboss.test.messaging.tools.ServerManagement;
 
-import EDU.oswego.cs.dl.util.concurrent.Latch;
+import javax.jms.*;
 
 
 /**
@@ -337,8 +328,9 @@ public class ConnectionConsumerTest extends JMSTestCase
 
          JBossConnectionConsumer cc = (JBossConnectionConsumer)connConsumer.createConnectionConsumer(queue1, null, pool, 1);
 
-         ServerManagement.stop();
+         stopServerPeer();
          connConsumer.close();
+         startServerPeer();
          connConsumer = null;
       }
       finally

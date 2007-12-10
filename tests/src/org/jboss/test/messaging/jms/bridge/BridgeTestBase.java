@@ -21,31 +21,17 @@
  */
 package org.jboss.test.messaging.jms.bridge;
 
+import org.jboss.jms.server.bridge.*;
+import org.jboss.logging.Logger;
+import org.jboss.test.messaging.JBMServerTestCase;
+import org.jboss.test.messaging.tools.ServerManagement;
+import org.jboss.test.messaging.tools.container.ServiceContainer;
+
+import javax.jms.*;
+import javax.naming.InitialContext;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Set;
-
-import javax.jms.Connection;
-import javax.jms.ConnectionFactory;
-import javax.jms.DeliveryMode;
-import javax.jms.Destination;
-import javax.jms.MessageConsumer;
-import javax.jms.MessageProducer;
-import javax.jms.Queue;
-import javax.jms.Session;
-import javax.jms.TextMessage;
-import javax.jms.Topic;
-import javax.naming.InitialContext;
-
-import org.jboss.jms.server.bridge.Bridge;
-import org.jboss.jms.server.bridge.ConnectionFactoryFactory;
-import org.jboss.jms.server.bridge.DestinationFactory;
-import org.jboss.jms.server.bridge.JNDIConnectionFactoryFactory;
-import org.jboss.jms.server.bridge.JNDIDestinationFactory;
-import org.jboss.logging.Logger;
-import org.jboss.test.messaging.MessagingTestCase;
-import org.jboss.test.messaging.tools.ServerManagement;
-import org.jboss.test.messaging.tools.container.ServiceContainer;
 
 /**
  * 
@@ -57,7 +43,7 @@ import org.jboss.test.messaging.tools.container.ServiceContainer;
  * $Id$
  *
  */
-public class BridgeTestBase extends MessagingTestCase
+public class BridgeTestBase extends JBMServerTestCase
 {
    private static final Logger log = Logger.getLogger(BridgeTestBase.class);
    
@@ -88,26 +74,24 @@ public class BridgeTestBase extends MessagingTestCase
       {
       	//Start the servers
       	
-      	ServerManagement.start(0, "all", true);
+      	//ServerManagement.start(0, "all", true);
 
-      	ServerManagement.start(1, "all", false);
+      	//ServerManagement.start(1, "all", false);
 
-      	ServerManagement.deployQueue("sourceQueue", 0);
+      	deployQueue("sourceQueue", 0);
 
-      	ServerManagement.deployTopic("sourceTopic", 0);  
+      	deployTopic("sourceTopic", 0);
 
-      	ServerManagement.deployQueue("localTargetQueue", 0);
+      	deployQueue("localTargetQueue", 0);
 
-      	ServerManagement.deployQueue("targetQueue", 1);     
+      	deployQueue("targetQueue", 1);
       	
       	setUpAdministeredObjects();
       	
       	//We need a local transaction and recovery manager
          //We must start this after the remote servers have been created or it won't
          //have deleted the database and the recovery manager may attempt to recover transactions
-         sc = new ServiceContainer("transaction");   
-         
-         sc.start(false);   
+
       	
       	firstTime = false;
       }          
@@ -141,9 +125,9 @@ public class BridgeTestBase extends MessagingTestCase
          
          cff1 = new JNDIConnectionFactoryFactory(props1, "/ConnectionFactory");
                
-         ic0 = new InitialContext(props0);
+         ic0 = getInitialContext(0);
          
-         ic1 = new InitialContext(props1);
+         ic1 = getInitialContext(1);
          
          cf0 = (ConnectionFactory)ic0.lookup("/ConnectionFactory");
          

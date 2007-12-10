@@ -21,20 +21,21 @@
 */
 package org.jboss.test.messaging.tools.container;
 
-import java.rmi.Remote;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import javax.management.NotificationListener;
-import javax.management.ObjectName;
-import javax.transaction.UserTransaction;
-
 import org.jboss.jms.server.DestinationManager;
+import org.jboss.jms.server.JmsServer;
+import org.jboss.jms.server.JmsServerStatistics;
 import org.jboss.jms.server.ServerPeer;
+import org.jboss.jms.server.security.Role;
 import org.jboss.messaging.core.contract.MessageStore;
 import org.jboss.messaging.core.contract.PersistenceManager;
 import org.jboss.remoting.ServerInvocationHandler;
+
+import javax.management.NotificationListener;
+import javax.management.ObjectName;
+import javax.naming.InitialContext;
+import javax.transaction.UserTransaction;
+import java.rmi.Remote;
+import java.util.*;
 
 /**
  * The remote interface exposed by TestServer.
@@ -48,16 +49,13 @@ public interface Server extends Remote
 {
    int getServerID() throws Exception;
 
-   void start(String containerConfig, boolean clearDatabase) throws Exception;
-
    /**
     * @param attrOverrides - service attribute overrides that will take precedence over values
     *        read from configuration files.
     */
-   void start(String containerConfig,
-              ServiceAttributeOverrides attrOverrides,
-              boolean clearDatabase,
-              boolean startMessgingServer) throws Exception;
+   void start(String[] containerConfig,
+              HashMap<String, Object> configuration,
+              boolean clearDatabase) throws Exception;
 
    /**
     * @return true if the server was stopped indeed, or false if the server was stopped already
@@ -100,16 +98,6 @@ public interface Server extends Remote
    void removeNotificationListener(ObjectName on, NotificationListener listener) throws Exception;
 
    /**
-    * Returns a set of ObjectNames corresponding to installed services.
-    */
-   Set query(ObjectName pattern) throws Exception;
-
-   /**
-    * @return one of "socket", "http", ...
-    */
-   String getRemotingTransport() throws Exception;
-
-   /**
     * Only for remote use!
     */
    void log(int level, String text) throws Exception;
@@ -126,6 +114,10 @@ public interface Server extends Remote
                         boolean clustered) throws Exception;
 
    void stopServerPeer() throws Exception;
+
+   public void stopDestinationManager() throws Exception;
+
+   public void startDestinationManager() throws Exception;
 
    boolean isServerPeerStarted() throws Exception;
 
@@ -212,6 +204,18 @@ public interface Server extends Remote
     */
    boolean undeployDestinationProgrammatically(boolean isQueue, String name) throws Exception;
 
+   public void deployConnectionFactory(String clientId,
+                                        String objectName,
+                                        String[] jndiBindings,
+                                        int prefetchSize,
+                                        int defaultTempQueueFullSize,
+                                        int defaultTempQueuePageSize,
+                                        int defaultTempQueueDownCacheSize,
+                                        boolean supportsFailover,
+                                        boolean supportsLoadBalancing,
+                                        boolean strictTck,
+                                        int dupsOkBatchSize) throws Exception;
+
    void deployConnectionFactory(String objectName,
                                 String[] jndiBindings,
                                 int prefetchSize,
@@ -226,6 +230,10 @@ public interface Server extends Remote
 								         boolean supportsLoadBalancing       
 								         ) throws Exception;
 
+   void deployConnectionFactory(String clientID,
+                                String objectName,
+                                String[] jndiBindings) throws Exception;
+
    void deployConnectionFactory(String objectName,
                                 String[] jndiBindings,
                                 int prefetchSize) throws Exception;
@@ -233,13 +241,13 @@ public interface Server extends Remote
    void deployConnectionFactory(String objectName,
                                 String[] jndiBindings) throws Exception;
 
-   void undeployConnectionFactory(ObjectName objectName) throws Exception;
+   void undeployConnectionFactory(String objectName) throws Exception;
 
    /**
     * @param config - sending 'config' as a String and not as an org.w3c.dom.Element to avoid
     *        NotSerializableExceptions that show up when running tests on JDK 1.4.
     */
-   void configureSecurityForDestination(String destName, String config) throws Exception;
+   void configureSecurityForDestination(String destName, boolean isQueue, HashSet<Role> roles) throws Exception;
 
    /**
     * @param config - sending 'config' as a String and not as an org.w3c.dom.Element to avoid
@@ -290,4 +298,32 @@ public interface Server extends Remote
    void resetAllSuckers() throws Exception;   
    
    void deployConnectionFactory(String objectName, String[] jndiBindings, boolean strictTck) throws Exception;
+
+   JmsServer getJmsServer() throws Exception;
+
+   JmsServerStatistics getJmsServerStatistics() throws Exception;
+
+   InitialContext getInitialContext() throws Exception;
+
+   void removeAllMessagesForQueue(String destName) throws Exception;
+
+   void removeAllMessagesForTopic(String destName) throws Exception;
+
+   Integer getMessageCountForQueue(String queueName) throws Exception;
+
+   List listAllSubscriptionsForTopic(String s) throws Exception;
+
+   HashSet<Role> getSecurityConfig() throws Exception;
+
+   void setSecurityConfig(HashSet<Role> defConfig) throws Exception;
+
+   void setSecurityConfigOnManager(boolean b, String s, HashSet<Role> lockedConf) throws Exception;
+
+   void setRedeliveryDelayOnDestination(String dest, boolean queue, long delay) throws Exception;
+
+   void setDefaultRedeliveryDelay(long delay) throws Exception;
+
+   void clear() throws Exception;
+
+   int getResourceManagerFactorySize() throws Exception;
 }

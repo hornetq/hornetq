@@ -21,33 +21,17 @@
   */
 package org.jboss.test.thirdparty.remoting;
 
-import java.util.HashMap;
-
-import javax.jms.Connection;
-import javax.jms.ConnectionFactory;
-import javax.jms.Destination;
-import javax.jms.Message;
-import javax.jms.MessageConsumer;
-import javax.jms.MessageListener;
-import javax.jms.MessageProducer;
-import javax.jms.Session;
-import javax.jms.TextMessage;
-import javax.management.MBeanServer;
-import javax.naming.InitialContext;
-
+import EDU.oswego.cs.dl.util.concurrent.Slot;
 import org.jboss.logging.Logger;
-import org.jboss.remoting.Client;
-import org.jboss.remoting.ConnectionListener;
-import org.jboss.remoting.InvocationRequest;
-import org.jboss.remoting.InvokerLocator;
-import org.jboss.remoting.ServerInvocationHandler;
-import org.jboss.remoting.ServerInvoker;
+import org.jboss.remoting.*;
 import org.jboss.remoting.callback.InvokerCallbackHandler;
 import org.jboss.remoting.transport.Connector;
-import org.jboss.test.messaging.MessagingTestCase;
-import org.jboss.test.messaging.tools.ServerManagement;
+import org.jboss.test.messaging.JBMServerTestCase;
 
-import EDU.oswego.cs.dl.util.concurrent.Slot;
+import javax.jms.*;
+import javax.management.MBeanServer;
+import javax.naming.InitialContext;
+import java.util.HashMap;
 
 /**
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
@@ -57,7 +41,7 @@ import EDU.oswego.cs.dl.util.concurrent.Slot;
  *
  * $Id: RemotingTest.java 1935 2007-01-09 23:29:20Z clebert.suconic@jboss.com $
  */
-public class RemotingTest extends MessagingTestCase
+public class RemotingTest extends JBMServerTestCase
 {
    // Constants ------------------------------------------------------------------------------------
 
@@ -263,11 +247,11 @@ public class RemotingTest extends MessagingTestCase
    {
       super.setUp();
 
-      ServerManagement.start("all");
+      //ServerManagement.start("all");
 
-      ic = new InitialContext(ServerManagement.getJNDIEnvironment());
+      ic = getInitialContext();
 
-      ServerManagement.deployTopic("ATopic");
+      deployTopic("ATopic");
 
       log.debug("setup done");
 
@@ -275,7 +259,7 @@ public class RemotingTest extends MessagingTestCase
 
    protected void tearDown() throws Exception
    {
-      ServerManagement.undeployTopic("ATopic");
+      undeployTopic("ATopic");
 
       ic.close();
 

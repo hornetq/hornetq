@@ -22,23 +22,15 @@
 
 package org.jboss.test.messaging.jms.stress;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-
-import javax.jms.Connection;
-import javax.jms.Destination;
-import javax.jms.MessageConsumer;
-import javax.jms.MessageProducer;
-import javax.jms.Queue;
-import javax.jms.Session;
-import javax.jms.TextMessage;
-import javax.naming.InitialContext;
-
 import org.jboss.jms.client.JBossConnectionFactory;
 import org.jboss.logging.Logger;
-import org.jboss.test.messaging.MessagingTestCase;
+import org.jboss.test.messaging.JBMServerTestCase;
 import org.jboss.test.messaging.jms.ConnectionTest;
-import org.jboss.test.messaging.tools.ServerManagement;
+
+import javax.jms.*;
+import javax.naming.InitialContext;
+import java.util.ArrayList;
+import java.util.Iterator;
 
 /**
  * This test was added to test regression on http://jira.jboss.com/jira/browse/JBMESSAGING-660
@@ -46,7 +38,7 @@ import org.jboss.test.messaging.tools.ServerManagement;
  * @version <tt>$Revision$</tt>
  * $Id$
  */
-public class ConcurrentCloseStressTest extends MessagingTestCase
+public class ConcurrentCloseStressTest extends JBMServerTestCase
 {
    private static final Logger log = Logger.getLogger(ConnectionTest.class);
 
@@ -63,14 +55,14 @@ public class ConcurrentCloseStressTest extends MessagingTestCase
    {
       super.setUp();
 
-      ServerManagement.start("all");
+      //ServerManagement.start("all");
 
 
-      ic = new InitialContext(ServerManagement.getJNDIEnvironment());
+      ic = getInitialContext();
       cf = (JBossConnectionFactory)ic.lookup("/ConnectionFactory");
 
-      ServerManagement.undeployQueue("TestQueue");
-      ServerManagement.deployQueue("TestQueue");
+      undeployQueue("TestQueue");
+      deployQueue("TestQueue");
 
       queue = (Queue) ic.lookup("queue/TestQueue");
 
@@ -79,7 +71,7 @@ public class ConcurrentCloseStressTest extends MessagingTestCase
 
    public void tearDown() throws Exception
    {
-      ServerManagement.undeployQueue("TestQueue");
+      undeployQueue("TestQueue");
 
       super.tearDown();
 

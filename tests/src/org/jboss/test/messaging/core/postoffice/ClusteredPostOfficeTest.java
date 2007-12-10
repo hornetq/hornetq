@@ -21,17 +21,7 @@
   */
 package org.jboss.test.messaging.core.postoffice;
 
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import org.jboss.messaging.core.contract.Binding;
-import org.jboss.messaging.core.contract.Condition;
-import org.jboss.messaging.core.contract.Message;
-import org.jboss.messaging.core.contract.MessageReference;
-import org.jboss.messaging.core.contract.PostOffice;
+import org.jboss.messaging.core.contract.*;
 import org.jboss.messaging.core.contract.Queue;
 import org.jboss.messaging.core.impl.MessagingQueue;
 import org.jboss.messaging.core.impl.tx.Transaction;
@@ -40,6 +30,8 @@ import org.jboss.test.messaging.core.SimpleCondition;
 import org.jboss.test.messaging.core.SimpleFilter;
 import org.jboss.test.messaging.core.SimpleReceiver;
 import org.jboss.test.messaging.util.CoreMessageFactory;
+
+import java.util.*;
 
 /**
  * 
@@ -198,7 +190,7 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
           
          // Add a couple of queues
          
-         Queue queue1 = new MessagingQueue(1, "sub1", channelIDManager.getID(), ms, pm, false, -1, null, true);
+         Queue queue1 = new MessagingQueue(1, "sub1", channelIDManager.getID(), ms, getPersistenceManager(), false, -1, null, true);
          queue1.activate();
 
          Condition condition1 = new SimpleCondition("condition1");
@@ -206,7 +198,7 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
          boolean added = office1.addBinding(new Binding(condition1, queue1, false), false);
          assertTrue(added);
                
-         Queue queue2 = new MessagingQueue(1, "sub2", channelIDManager.getID(), ms, pm, false, -1, null, true);
+         Queue queue2 = new MessagingQueue(1, "sub2", channelIDManager.getID(), ms, getPersistenceManager(), false, -1, null, true);
          queue2.activate();
 
          added = office1.addBinding(new Binding(condition1, queue2, false), false);
@@ -226,7 +218,7 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
          
          // Add another queue on node 2
          
-         Queue queue3 = new MessagingQueue(2, "sub3", channelIDManager.getID(), ms, pm, false, -1, null, true);
+         Queue queue3 = new MessagingQueue(2, "sub3", channelIDManager.getID(), ms, getPersistenceManager(), false, -1, null, true);
          queue3.activate();
 
          added = office2.addBinding(new Binding(condition1, queue3, false), false);
@@ -251,7 +243,7 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
 
          // Add another binding on node 2
          
-         Queue queue4 = new MessagingQueue(2, "sub4", channelIDManager.getID(), ms, pm, false, -1, null, true);
+         Queue queue4 = new MessagingQueue(2, "sub4", channelIDManager.getID(), ms, getPersistenceManager(), false, -1, null, true);
          queue4.activate();
 
          added = office2.addBinding(new Binding(condition1, queue4, false), false);
@@ -311,7 +303,7 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
          
          // Add another binding on node 3
                   
-         Queue queue5 = new MessagingQueue(3, "sub5", channelIDManager.getID(), ms, pm, false, -1, null, true);
+         Queue queue5 = new MessagingQueue(3, "sub5", channelIDManager.getID(), ms, getPersistenceManager(), false, -1, null, true);
          queue5.activate();
          
          added = office3.addBinding(new Binding(condition1, queue5, false), false);
@@ -342,13 +334,13 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
          
          // Add a durable and a non durable binding on node 1
          
-         Queue queue6 = new MessagingQueue(1, "sub6", channelIDManager.getID(), ms, pm, true, -1, null, true);
+         Queue queue6 = new MessagingQueue(1, "sub6", channelIDManager.getID(), ms, getPersistenceManager(), true, -1, null, true);
          queue6.activate();
          
          added = office1.addBinding(new Binding(condition1, queue6, false), false);
          assertTrue(added);
          
-         Queue queue7 = new MessagingQueue(1, "sub7", channelIDManager.getID(), ms, pm, false, -1, null, true);
+         Queue queue7 = new MessagingQueue(1, "sub7", channelIDManager.getID(), ms, getPersistenceManager(), false, -1, null, true);
          queue7.activate();
          
          added = office1.addBinding(new Binding(condition1, queue7, false), false);
@@ -490,13 +482,13 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
          
          //Bind another few more clustered
                            
-         Queue queue8 = new MessagingQueue(1, "sub8", channelIDManager.getID(), ms, pm, false, -1, null, true);
+         Queue queue8 = new MessagingQueue(1, "sub8", channelIDManager.getID(), ms, getPersistenceManager(), false, -1, null, true);
          queue8.activate();
          
-         Queue queue9 = new MessagingQueue(2, "sub9", channelIDManager.getID(), ms, pm, false, -1, null, true);
+         Queue queue9 = new MessagingQueue(2, "sub9", channelIDManager.getID(), ms, getPersistenceManager(), false, -1, null, true);
          queue9.activate();
          
-         Queue queue10 = new MessagingQueue(2, "sub10", channelIDManager.getID(), ms, pm, false, -1, null, true);
+         Queue queue10 = new MessagingQueue(2, "sub10", channelIDManager.getID(), ms, getPersistenceManager(), false, -1, null, true);
          queue10.activate();
          
          //Bind on different conditions
@@ -532,10 +524,10 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
          
          //Now a couple of non clustered queues
          
-         Queue queue11 = new MessagingQueue(1, "sub11", channelIDManager.getID(), ms, pm, false, -1, null, false);
+         Queue queue11 = new MessagingQueue(1, "sub11", channelIDManager.getID(), ms, getPersistenceManager(), false, -1, null, false);
          queue11.activate();
          
-         Queue queue12 = new MessagingQueue(2, "sub12", channelIDManager.getID(), ms, pm, false, -1, null, false);
+         Queue queue12 = new MessagingQueue(2, "sub12", channelIDManager.getID(), ms, getPersistenceManager(), false, -1, null, false);
          queue12.activate();
          
          added = office1.addBinding(new Binding(condition1, queue11, false), false);
@@ -634,7 +626,7 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
          office3 = createClusteredPostOffice(3);         
                              
          //Durable
-         Queue queue1 = new MessagingQueue(1, "sub1", channelIDManager.getID(), ms, pm, true, -1, null, true);
+         Queue queue1 = new MessagingQueue(1, "sub1", channelIDManager.getID(), ms, getPersistenceManager(), true, -1, null, true);
          queue1.activate();
 
          Condition condition1 = new SimpleCondition("condition1");
@@ -671,7 +663,7 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
          assertTrue(bindings.isEmpty());
          
          //Bind again different node
-         Queue queue2 = new MessagingQueue(2, "sub2", channelIDManager.getID(), ms, pm, true, -1, null, true);
+         Queue queue2 = new MessagingQueue(2, "sub2", channelIDManager.getID(), ms, getPersistenceManager(), true, -1, null, true);
          queue2.activate();
          
          added = office2.addBinding(new Binding(condition1, queue2, true), true);
@@ -791,7 +783,7 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
          office3 = createClusteredPostOffice(3);         
                            
          //Durable
-         Queue queue1 = new MessagingQueue(1, "sub1", channelIDManager.getID(), ms, pm, true, -1, null, true);
+         Queue queue1 = new MessagingQueue(1, "sub1", channelIDManager.getID(), ms, getPersistenceManager(), true, -1, null, true);
          queue1.activate();
 
          Condition condition1 = new SimpleCondition("condition1");
@@ -900,7 +892,7 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
          office1 = createClusteredPostOffice(1);       
                               
          //Durable
-         Queue queue1 = new MessagingQueue(1, "sub1", channelIDManager.getID(), ms, pm, true, -1, null, true);
+         Queue queue1 = new MessagingQueue(1, "sub1", channelIDManager.getID(), ms, getPersistenceManager(), true, -1, null, true);
          queue1.activate();
 
          Condition condition1 = new SimpleCondition("condition1");
@@ -997,7 +989,7 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
          office1 = createClusteredPostOffice(1);       
                            
          //Durable
-         Queue queue1 = new MessagingQueue(1, "sub1", channelIDManager.getID(), ms, pm, true, -1, null, true);
+         Queue queue1 = new MessagingQueue(1, "sub1", channelIDManager.getID(), ms, getPersistenceManager(), true, -1, null, true);
          queue1.activate();
 
          Condition condition1 = new SimpleCondition("condition1");
@@ -1100,7 +1092,7 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
          office1 = createClusteredPostOffice(1);
                                    
          //Durable
-         Queue queue1 = new MessagingQueue(1, "sub1", channelIDManager.getID(), ms, pm, true, -1, null, true);
+         Queue queue1 = new MessagingQueue(1, "sub1", channelIDManager.getID(), ms, getPersistenceManager(), true, -1, null, true);
          queue1.activate();
 
          Condition condition1 = new SimpleCondition("condition1");
@@ -1214,7 +1206,7 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
          office3 = createClusteredPostOffice(3);         
                            
          //Durable
-         Queue queue1 = new MessagingQueue(1, "sub1", channelIDManager.getID(), ms, pm, false, -1, null, true);
+         Queue queue1 = new MessagingQueue(1, "sub1", channelIDManager.getID(), ms, getPersistenceManager(), false, -1, null, true);
          queue1.activate();
 
          Condition condition1 = new SimpleCondition("condition1");
@@ -1393,22 +1385,22 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
    	{   
    		office1 = createClusteredPostOffice(1);
 
-   		Queue queue1 =  new MessagingQueue(1, "queue1", channelIDManager.getID(), ms, pm, true, -1, null, true);
+   		Queue queue1 =  new MessagingQueue(1, "queue1", channelIDManager.getID(), ms, getPersistenceManager(), true, -1, null, true);
    		queue1.activate();
    		boolean added = office1.addBinding(new Binding(new SimpleCondition("condition1"), queue1, false), false);
    		assertTrue(added);
    		
-   		Queue queue2 =  new MessagingQueue(1, "queue2", channelIDManager.getID(), ms, pm, true, -1, null, true);
+   		Queue queue2 =  new MessagingQueue(1, "queue2", channelIDManager.getID(), ms, getPersistenceManager(), true, -1, null, true);
    		queue2.activate();
    		added = office1.addBinding(new Binding(new SimpleCondition("condition1"), queue2, false), false);
    		assertTrue(added);
    		
-   		Queue queue3 =  new MessagingQueue(1, "queue3", channelIDManager.getID(), ms, pm, true, -1, null, true);
+   		Queue queue3 =  new MessagingQueue(1, "queue3", channelIDManager.getID(), ms, getPersistenceManager(), true, -1, null, true);
    		queue3.activate();
    		added = office1.addBinding(new Binding(new SimpleCondition("condition1"), queue3, false), false);
    		assertTrue(added);
    		
-   		Queue queue4 =  new MessagingQueue(1, "queue4", channelIDManager.getID(), ms, pm, true, -1, null, true);
+   		Queue queue4 =  new MessagingQueue(1, "queue4", channelIDManager.getID(), ms, getPersistenceManager(), true, -1, null, true);
    		queue4.activate();
    		added = office1.addBinding(new Binding(new SimpleCondition("condition1"), queue4, false), false);
    		assertTrue(added);
@@ -1535,7 +1527,7 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
          
          office2 = createClusteredPostOffice(2);
          
-         Queue queue1 = new MessagingQueue(1, "queue1", channelIDManager.getID(), ms, pm, false, -1, null, true);
+         Queue queue1 = new MessagingQueue(1, "queue1", channelIDManager.getID(), ms, getPersistenceManager(), false, -1, null, true);
          queue1.activate();
          
          Condition condition1 = new SimpleCondition("queue1");
@@ -1543,19 +1535,19 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
          boolean added = office1.addBinding(new Binding(condition1, queue1, false), false);
          assertTrue(added);
 
-         Queue queue2 = new MessagingQueue(2, "queue1", channelIDManager.getID(), ms, pm, false, -1, null, true);
+         Queue queue2 = new MessagingQueue(2, "queue1", channelIDManager.getID(), ms, getPersistenceManager(), false, -1, null, true);
          queue2.activate();
 
          added = office2.addBinding(new Binding(condition1, queue2, false), false);
          assertTrue(added);
 
-         Queue queue3 = new MessagingQueue(1, "queue1", channelIDManager.getID(), ms, pm, false, -1, null, true);
+         Queue queue3 = new MessagingQueue(1, "queue1", channelIDManager.getID(), ms, getPersistenceManager(), false, -1, null, true);
          queue3.activate();
          
          added = office1.addBinding(new Binding(condition1, queue3, false), false);         
          assertFalse(added);
 
-         Queue queue4 =  new MessagingQueue(2, "queue1", channelIDManager.getID(), ms, pm, false, -1, null, true);
+         Queue queue4 =  new MessagingQueue(2, "queue1", channelIDManager.getID(), ms, getPersistenceManager(), false, -1, null, true);
          queue4.activate();
          
          added = office2.addBinding(new Binding(condition1, queue4, false), false);
@@ -1618,84 +1610,84 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
          
          //condition1
 
-         queues[0] = new MessagingQueue(1, "sub1", channelIDManager.getID(), ms, pm, false, -1, null, true);
+         queues[0] = new MessagingQueue(1, "sub1", channelIDManager.getID(), ms, getPersistenceManager(), false, -1, null, true);
          queues[0].activate();
          boolean added = office1.addBinding(new Binding(new SimpleCondition("condition1"), queues[0], false), false);
          assertTrue(added);
          
-         queues[1] = new MessagingQueue(1, "sub2", channelIDManager.getID(), ms, pm, false, -1, null, true);
+         queues[1] = new MessagingQueue(1, "sub2", channelIDManager.getID(), ms, getPersistenceManager(), false, -1, null, true);
          queues[1].activate();
          added = office1.addBinding(new Binding(new SimpleCondition("condition1"), queues[1], false), false);
          assertTrue(added);
          
-         queues[2] = new MessagingQueue(2, "sub3", channelIDManager.getID(), ms, pm, false, -1, null, true);
+         queues[2] = new MessagingQueue(2, "sub3", channelIDManager.getID(), ms, getPersistenceManager(), false, -1, null, true);
          queues[2].activate();
          added = office2.addBinding(new Binding(new SimpleCondition("condition1"), queues[2], false), false);
          assertTrue(added);
          
-         queues[3] = new MessagingQueue(2, "sub4", channelIDManager.getID(), ms, pm, false, -1, null, true);
+         queues[3] = new MessagingQueue(2, "sub4", channelIDManager.getID(), ms, getPersistenceManager(), false, -1, null, true);
          queues[3].activate();
          added = office2.addBinding(new Binding(new SimpleCondition("condition1"), queues[3], false), false);
          assertTrue(added);
          
-         queues[4] = new MessagingQueue(2, "sub5", channelIDManager.getID(), ms, pm, true, -1, null, true);
+         queues[4] = new MessagingQueue(2, "sub5", channelIDManager.getID(), ms, getPersistenceManager(), true, -1, null, true);
          queues[4].activate();
          added = office2.addBinding(new Binding(new SimpleCondition("condition1"), queues[4], false), false);
          assertTrue(added);
          
-         queues[5] = new MessagingQueue(1, "sub6", channelIDManager.getID(), ms, pm, false, -1, null, true);
+         queues[5] = new MessagingQueue(1, "sub6", channelIDManager.getID(), ms, getPersistenceManager(), false, -1, null, true);
          queues[5].activate();
          added = office1.addBinding(new Binding(new SimpleCondition("condition1"), queues[5], false), false);
          assertTrue(added);
          
-         queues[6] = new MessagingQueue(1, "sub7", channelIDManager.getID(), ms, pm, true, -1, null, true);
+         queues[6] = new MessagingQueue(1, "sub7", channelIDManager.getID(), ms, getPersistenceManager(), true, -1, null, true);
          queues[6].activate();
          added = office1.addBinding(new Binding(new SimpleCondition("condition1"), queues[6], false), false);
          assertTrue(added);
          
-         queues[7] = new MessagingQueue(1, "sub8", channelIDManager.getID(), ms, pm, true, -1, null, true);
+         queues[7] = new MessagingQueue(1, "sub8", channelIDManager.getID(), ms, getPersistenceManager(), true, -1, null, true);
          queues[7].activate();
          added = office1.addBinding(new Binding(new SimpleCondition("condition1"), queues[7], false), false);
          assertTrue(added);
          
          //condition2
          
-         queues[8] = new MessagingQueue(1, "sub9", channelIDManager.getID(), ms, pm, false, -1, null, true);
+         queues[8] = new MessagingQueue(1, "sub9", channelIDManager.getID(), ms, getPersistenceManager(), false, -1, null, true);
          queues[8].activate();
          added= office1.addBinding(new Binding(new SimpleCondition("condition2"), queues[8], false), false);
          assertTrue(added);
          
-         queues[9] = new MessagingQueue(1, "sub10", channelIDManager.getID(), ms, pm, false, -1, null, true);
+         queues[9] = new MessagingQueue(1, "sub10", channelIDManager.getID(), ms, getPersistenceManager(), false, -1, null, true);
          queues[9].activate();
          added = office1.addBinding(new Binding(new SimpleCondition("condition2"), queues[9], false), false);
          assertTrue(added);
          
-         queues[10] = new MessagingQueue(2, "sub11", channelIDManager.getID(), ms, pm, false, -1, null, true);
+         queues[10] = new MessagingQueue(2, "sub11", channelIDManager.getID(), ms, getPersistenceManager(), false, -1, null, true);
          queues[10].activate();
          added = office2.addBinding(new Binding(new SimpleCondition("condition2"), queues[10], false), false);
          assertTrue(added);
          
-         queues[11] = new MessagingQueue(2, "sub12", channelIDManager.getID(), ms, pm, false, -1, null, true);
+         queues[11] = new MessagingQueue(2, "sub12", channelIDManager.getID(), ms, getPersistenceManager(), false, -1, null, true);
          queues[11].activate();
          added = office2.addBinding(new Binding(new SimpleCondition("condition2"), queues[11], false), false);
          assertTrue(added);
          
-         queues[12] = new MessagingQueue(2, "sub13", channelIDManager.getID(), ms, pm, true, -1, null, true);
+         queues[12] = new MessagingQueue(2, "sub13", channelIDManager.getID(), ms, getPersistenceManager(), true, -1, null, true);
          queues[12].activate();
          added = office2.addBinding(new Binding(new SimpleCondition("condition2"), queues[12], false), false);
          assertTrue(added);
          
-         queues[13] = new MessagingQueue(1, "sub14", channelIDManager.getID(), ms, pm, false, -1, null, true);
+         queues[13] = new MessagingQueue(1, "sub14", channelIDManager.getID(), ms, getPersistenceManager(), false, -1, null, true);
          queues[13].activate();
          added = office1.addBinding(new Binding(new SimpleCondition("condition2"), queues[13], false), false);
          assertTrue(added);
          
-         queues[14] = new MessagingQueue(1, "sub15", channelIDManager.getID(), ms, pm, true, -1, null, true);
+         queues[14] = new MessagingQueue(1, "sub15", channelIDManager.getID(), ms, getPersistenceManager(), true, -1, null, true);
          queues[14].activate();
          added = office1.addBinding(new Binding(new SimpleCondition("condition2"), queues[14], false), false);
          assertTrue(added);
          
-         queues[15] = new MessagingQueue(1, "sub16", channelIDManager.getID(), ms, pm, true, -1, null, true);
+         queues[15] = new MessagingQueue(1, "sub16", channelIDManager.getID(), ms, getPersistenceManager(), true, -1, null, true);
          queues[15].activate();
          added = office1.addBinding(new Binding(new SimpleCondition("condition2"), queues[15], false), false);
          assertTrue(added);
@@ -1961,17 +1953,17 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
    		SimpleFilter filter1 = new SimpleFilter(2);
    		SimpleFilter filter2 = new SimpleFilter(3);
 
-   		Queue queue1 =  new MessagingQueue(1, "queue1", channelIDManager.getID(), ms, pm, false, -1, filter1, true);
+   		Queue queue1 =  new MessagingQueue(1, "queue1", channelIDManager.getID(), ms, getPersistenceManager(), false, -1, filter1, true);
    		queue1.activate();
    		boolean added = office1.addBinding(new Binding(new SimpleCondition("condition1"), queue1, false), false);
    		assertTrue(added);
 
-   		Queue queue2 = new MessagingQueue(2, "queue2", channelIDManager.getID(), ms, pm, false, -1, filter2, true);
+   		Queue queue2 = new MessagingQueue(2, "queue2", channelIDManager.getID(), ms, getPersistenceManager(), false, -1, filter2, true);
    		queue2.activate();
    		added = office2.addBinding(new Binding(new SimpleCondition("condition1"), queue2, false), false);
    		assertTrue(added);
 
-   		Queue queue3 = new MessagingQueue(2, "queue3", channelIDManager.getID(), ms, pm, false, -1, null, true);
+   		Queue queue3 = new MessagingQueue(2, "queue3", channelIDManager.getID(), ms, getPersistenceManager(), false, -1, null, true);
    		queue3.activate();
    		added = office2.addBinding(new Binding(new SimpleCondition("condition1"), queue3, false), false);
    		assertTrue(added);
@@ -2072,22 +2064,22 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
    		office3 = createClusteredPostOffice(3);
    		office4 = createClusteredPostOffice(4);
 
-   		Queue queue1 =  new MessagingQueue(1, "queue1", channelIDManager.getID(), ms, pm, false, -1, null, true);
+   		Queue queue1 =  new MessagingQueue(1, "queue1", channelIDManager.getID(), ms, getPersistenceManager(), false, -1, null, true);
    		queue1.activate();
    		boolean added = office1.addBinding(new Binding(new SimpleCondition("condition1"), queue1, false), false);
    		assertTrue(added);
    		
-   		Queue queue2 =  new MessagingQueue(2, "queue2", channelIDManager.getID(), ms, pm, false, -1, null, true);
+   		Queue queue2 =  new MessagingQueue(2, "queue2", channelIDManager.getID(), ms, getPersistenceManager(), false, -1, null, true);
    		queue2.activate();
    		added = office2.addBinding(new Binding(new SimpleCondition("condition1"), queue2, false), false);
    		assertTrue(added);
    		
-   		Queue queue3 =  new MessagingQueue(3, "queue3", channelIDManager.getID(), ms, pm, false, -1, null, true);
+   		Queue queue3 =  new MessagingQueue(3, "queue3", channelIDManager.getID(), ms, getPersistenceManager(), false, -1, null, true);
    		queue3.activate();
    		added = office3.addBinding(new Binding(new SimpleCondition("condition1"), queue3, false), false);
    		assertTrue(added);
    		
-   		Queue queue4 =  new MessagingQueue(4, "queue4", channelIDManager.getID(), ms, pm, false, -1, null, true);
+   		Queue queue4 =  new MessagingQueue(4, "queue4", channelIDManager.getID(), ms, getPersistenceManager(), false, -1, null, true);
    		queue4.activate();
    		added = office4.addBinding(new Binding(new SimpleCondition("condition1"), queue4, false), false);
    		assertTrue(added);
@@ -2233,48 +2225,48 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
 
    		//condition1
 
-   		queues[0] = new MessagingQueue(1, "sub1", channelIDManager.getID(), ms, pm, false, -1, null, true);
+   		queues[0] = new MessagingQueue(1, "sub1", channelIDManager.getID(), ms, getPersistenceManager(), false, -1, null, true);
    		queues[0].activate();
    		boolean added = office1.addBinding(new Binding(new SimpleCondition("condition1"), queues[0], false), false);
    		assertTrue(added);
 
-   		queues[1] = new MessagingQueue(1, "sub2", channelIDManager.getID(), ms, pm, false, -1, null, true);
+   		queues[1] = new MessagingQueue(1, "sub2", channelIDManager.getID(), ms, getPersistenceManager(), false, -1, null, true);
    		queues[1].activate();
    		added = office1.addBinding(new Binding(new SimpleCondition("condition1"), queues[1], false), false);
    		assertTrue(added);
 
-   		queues[2] = new MessagingQueue(2, "sub3", channelIDManager.getID(), ms, pm, false, -1, null, true);
+   		queues[2] = new MessagingQueue(2, "sub3", channelIDManager.getID(), ms, getPersistenceManager(), false, -1, null, true);
    		queues[2].activate();
    		added = office2.addBinding(new Binding(new SimpleCondition("condition1"), queues[2], false), false);
    		assertTrue(added);
 
-   		queues[3] = new MessagingQueue(2, "sub4", channelIDManager.getID(), ms, pm, false, -1, null, true);
+   		queues[3] = new MessagingQueue(2, "sub4", channelIDManager.getID(), ms, getPersistenceManager(), false, -1, null, true);
    		queues[3].activate();
    		added = office2.addBinding(new Binding(new SimpleCondition("condition1"), queues[3], false), false);
    		assertTrue(added);
 
    		//durable
 
-   		queues[4] = new MessagingQueue(2, "sub5", channelIDManager.getID(), ms, pm, true, -1, null, true);
+   		queues[4] = new MessagingQueue(2, "sub5", channelIDManager.getID(), ms, getPersistenceManager(), true, -1, null, true);
    		queues[4].activate();
    		added = office2.addBinding(new Binding(new SimpleCondition("condition1"), queues[4], false), false);
    		assertTrue(added);
 
-   		queues[5] = new MessagingQueue(1, "sub6", channelIDManager.getID(), ms, pm, false, -1, null, true);
+   		queues[5] = new MessagingQueue(1, "sub6", channelIDManager.getID(), ms, getPersistenceManager(), false, -1, null, true);
    		queues[5].activate();
    		added = office1.addBinding(new Binding(new SimpleCondition("condition1"), queues[5], false), false);
    		assertTrue(added);
 
    		//durable
 
-   		queues[6] = new MessagingQueue(1, "sub7", channelIDManager.getID(), ms, pm, true, -1, null, true);
+   		queues[6] = new MessagingQueue(1, "sub7", channelIDManager.getID(), ms, getPersistenceManager(), true, -1, null, true);
    		queues[6].activate();
    		added = office1.addBinding(new Binding(new SimpleCondition("condition1"), queues[6], false), false);
    		assertTrue(added);
 
    		//durable
 
-   		queues[7] = new MessagingQueue(1, "sub8", channelIDManager.getID(), ms, pm, true, -1, null, true);
+   		queues[7] = new MessagingQueue(1, "sub8", channelIDManager.getID(), ms, getPersistenceManager(), true, -1, null, true);
    		queues[7].activate();
    		added = office1.addBinding(new Binding(new SimpleCondition("condition1"), queues[7], false), false);
    		assertTrue(added);
@@ -2282,46 +2274,46 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
    		//condition2
 
 
-   		queues[8] = new MessagingQueue(1, "sub9", channelIDManager.getID(), ms, pm, false, -1, null, true);
+   		queues[8] = new MessagingQueue(1, "sub9", channelIDManager.getID(), ms, getPersistenceManager(), false, -1, null, true);
    		queues[8].activate();
    		added = office1.addBinding(new Binding(new SimpleCondition("condition2"), queues[8], false), false);
    		assertTrue(added);
 
-   		queues[9] = new MessagingQueue(1, "sub10", channelIDManager.getID(), ms, pm, false, -1, null, true);
+   		queues[9] = new MessagingQueue(1, "sub10", channelIDManager.getID(), ms, getPersistenceManager(), false, -1, null, true);
    		queues[9].activate();
    		added = office1.addBinding(new Binding(new SimpleCondition("condition2"), queues[9], false), false);
    		assertTrue(added);
 
-   		queues[10] = new MessagingQueue(2, "sub11", channelIDManager.getID(), ms, pm, false, -1, null, true);
+   		queues[10] = new MessagingQueue(2, "sub11", channelIDManager.getID(), ms, getPersistenceManager(), false, -1, null, true);
    		queues[10].activate();
    		added = office2.addBinding(new Binding(new SimpleCondition("condition2"), queues[10], false), false);
    		assertTrue(added);
 
-   		queues[11] = new MessagingQueue(2, "sub12", channelIDManager.getID(), ms, pm, false, -1, null, true);
+   		queues[11] = new MessagingQueue(2, "sub12", channelIDManager.getID(), ms, getPersistenceManager(), false, -1, null, true);
    		queues[11].activate();
    		added = office2.addBinding(new Binding(new SimpleCondition("condition2"), queues[11], false), false);
    		assertTrue(added);
 
    		//durable
 
-   		queues[12] = new MessagingQueue(2, "sub13", channelIDManager.getID(), ms, pm, true, -1, null, true);
+   		queues[12] = new MessagingQueue(2, "sub13", channelIDManager.getID(), ms, getPersistenceManager(), true, -1, null, true);
    		queues[12].activate();
    		added = office2.addBinding(new Binding(new SimpleCondition("condition2"), queues[12], false), false);
    		assertTrue(added);
 
-   		queues[13] = new MessagingQueue(1, "sub14", channelIDManager.getID(), ms, pm, false, -1, null, true);
+   		queues[13] = new MessagingQueue(1, "sub14", channelIDManager.getID(), ms, getPersistenceManager(), false, -1, null, true);
    		queues[13].activate();
    		added = office1.addBinding(new Binding(new SimpleCondition("condition2"), queues[13], false), false);
    		assertTrue(added);
 
    		//durable
 
-   		queues[14] = new MessagingQueue(1, "sub15", channelIDManager.getID(), ms, pm, true, -1, null, true);
+   		queues[14] = new MessagingQueue(1, "sub15", channelIDManager.getID(), ms, getPersistenceManager(), true, -1, null, true);
    		queues[14].activate();
    		added = office1.addBinding(new Binding(new SimpleCondition("condition2"), queues[14], false), false);
    		assertTrue(added);
 
-   		queues[15] = new MessagingQueue(1, "sub16", channelIDManager.getID(), ms, pm, true, -1, null, true);
+   		queues[15] = new MessagingQueue(1, "sub16", channelIDManager.getID(), ms, getPersistenceManager(), true, -1, null, true);
    		queues[15].activate();
    		added = office1.addBinding(new Binding(new SimpleCondition("condition2"), queues[15], false), false);
    		assertTrue(added);
@@ -2436,42 +2428,42 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
 
    		//condition1
 
-   		queues[0] = new MessagingQueue(1, "sub1", channelIDManager.getID(), ms, pm, false, -1, null, false);
+   		queues[0] = new MessagingQueue(1, "sub1", channelIDManager.getID(), ms, getPersistenceManager(), false, -1, null, false);
    		queues[0].activate();
    		boolean added = office1.addBinding(new Binding(new SimpleCondition("condition1"), queues[0], false), false);
    		assertTrue(added);
 
-   		queues[1] = new MessagingQueue(1, "sub2", channelIDManager.getID(), ms, pm, false, -1, null, true);
+   		queues[1] = new MessagingQueue(1, "sub2", channelIDManager.getID(), ms, getPersistenceManager(), false, -1, null, true);
    		queues[1].activate();
    		added = office1.addBinding(new Binding(new SimpleCondition("condition1"), queues[1], false), false);
    		assertTrue(added);
 
-   		queues[2] = new MessagingQueue(2, "sub3", channelIDManager.getID(), ms, pm, false, -1, null, false);
+   		queues[2] = new MessagingQueue(2, "sub3", channelIDManager.getID(), ms, getPersistenceManager(), false, -1, null, false);
    		queues[2].activate();
    		added = office2.addBinding(new Binding(new SimpleCondition("condition1"), queues[2], false), false);
    		assertTrue(added);
 
-   		queues[3] = new MessagingQueue(2, "sub4", channelIDManager.getID(), ms, pm, false, -1, null, true);
+   		queues[3] = new MessagingQueue(2, "sub4", channelIDManager.getID(), ms, getPersistenceManager(), false, -1, null, true);
    		queues[3].activate();
    		added = office2.addBinding(new Binding(new SimpleCondition("condition1"), queues[3], false), false);
    		assertTrue(added);
 
-   		queues[4] = new MessagingQueue(2, "sub5", channelIDManager.getID(), ms, pm, true, -1, null, false);
+   		queues[4] = new MessagingQueue(2, "sub5", channelIDManager.getID(), ms, getPersistenceManager(), true, -1, null, false);
    		queues[4].activate();
    		added = office2.addBinding(new Binding(new SimpleCondition("condition1"), queues[4], false), false);
    		assertTrue(added);
 
-   		queues[5] = new MessagingQueue(1, "sub6", channelIDManager.getID(), ms, pm, false, -1, null, true);
+   		queues[5] = new MessagingQueue(1, "sub6", channelIDManager.getID(), ms, getPersistenceManager(), false, -1, null, true);
    		queues[5].activate();
    		added = office1.addBinding(new Binding(new SimpleCondition("condition1"), queues[5], false), false);
    		assertTrue(added);
 
-   		queues[6] = new MessagingQueue(1, "sub7", channelIDManager.getID(), ms, pm, true, -1, null, false);
+   		queues[6] = new MessagingQueue(1, "sub7", channelIDManager.getID(), ms, getPersistenceManager(), true, -1, null, false);
    		queues[6].activate();
    		added = office1.addBinding(new Binding(new SimpleCondition("condition1"), queues[6], false), false);
    		assertTrue(added);
 
-   		queues[7] = new MessagingQueue(1, "sub8", channelIDManager.getID(), ms, pm, true, -1, null, true);
+   		queues[7] = new MessagingQueue(1, "sub8", channelIDManager.getID(), ms, getPersistenceManager(), true, -1, null, true);
    		queues[7].activate();
    		added = office1.addBinding(new Binding(new SimpleCondition("condition1"), queues[7], false), false);
    		assertTrue(added);
@@ -2479,42 +2471,42 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
    		//condition2
 
 
-   		queues[8] = new MessagingQueue(1, "sub9", channelIDManager.getID(), ms, pm, false, -1, null, false);
+   		queues[8] = new MessagingQueue(1, "sub9", channelIDManager.getID(), ms, getPersistenceManager(), false, -1, null, false);
    		queues[8].activate();
    		added = office1.addBinding(new Binding(new SimpleCondition("condition2"), queues[8], false), false);
    		assertTrue(added);
 
-   		queues[9] = new MessagingQueue(1, "sub10", channelIDManager.getID(), ms, pm, false, -1, null, true);
+   		queues[9] = new MessagingQueue(1, "sub10", channelIDManager.getID(), ms, getPersistenceManager(), false, -1, null, true);
    		queues[9].activate();
    		added = office1.addBinding(new Binding(new SimpleCondition("condition2"), queues[9], false), false);
    		assertTrue(added);
 
-   		queues[10] = new MessagingQueue(2, "sub11", channelIDManager.getID(), ms, pm, false, -1, null, false);
+   		queues[10] = new MessagingQueue(2, "sub11", channelIDManager.getID(), ms, getPersistenceManager(), false, -1, null, false);
    		queues[10].activate();
    		added = office2.addBinding(new Binding(new SimpleCondition("condition2"), queues[10], false), false);
    		assertTrue(added);
 
-   		queues[11] = new MessagingQueue(2, "sub12", channelIDManager.getID(), ms, pm, false, -1, null, true);
+   		queues[11] = new MessagingQueue(2, "sub12", channelIDManager.getID(), ms, getPersistenceManager(), false, -1, null, true);
    		queues[11].activate();
    		added = office2.addBinding(new Binding(new SimpleCondition("condition2"), queues[11], false), false);
    		assertTrue(added);
 
-   		queues[12] = new MessagingQueue(2, "sub13", channelIDManager.getID(), ms, pm, true, -1, null, false);
+   		queues[12] = new MessagingQueue(2, "sub13", channelIDManager.getID(), ms, getPersistenceManager(), true, -1, null, false);
    		queues[12].activate();
    		added = office2.addBinding(new Binding(new SimpleCondition("condition2"), queues[12], false), false);
    		assertTrue(added);
 
-   		queues[13] = new MessagingQueue(1, "sub14", channelIDManager.getID(), ms, pm, false, -1, null, true);
+   		queues[13] = new MessagingQueue(1, "sub14", channelIDManager.getID(), ms, getPersistenceManager(), false, -1, null, true);
    		queues[13].activate();
    		added = office1.addBinding(new Binding(new SimpleCondition("condition2"), queues[13], false), false);
    		assertTrue(added);
 
-   		queues[14] = new MessagingQueue(1, "sub15", channelIDManager.getID(), ms, pm, true, -1, null, false);
+   		queues[14] = new MessagingQueue(1, "sub15", channelIDManager.getID(), ms, getPersistenceManager(), true, -1, null, false);
    		queues[14].activate();
    		added = office1.addBinding(new Binding(new SimpleCondition("condition2"), queues[14], false), false);
    		assertTrue(added);
 
-   		queues[15] = new MessagingQueue(1, "sub16", channelIDManager.getID(), ms, pm, true, -1, null, true);
+   		queues[15] = new MessagingQueue(1, "sub16", channelIDManager.getID(), ms, getPersistenceManager(), true, -1, null, true);
    		queues[15].activate();
    		added = office1.addBinding(new Binding(new SimpleCondition("condition2"), queues[15], false), false);
    		assertTrue(added);
@@ -2634,12 +2626,12 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
 
    		//queue1
 
-   		Queue queue0 = new MessagingQueue(1, "myqueue1", channelIDManager.getID(), ms, pm, false, -1, null, true);
+   		Queue queue0 = new MessagingQueue(1, "myqueue1", channelIDManager.getID(), ms, getPersistenceManager(), false, -1, null, true);
    		queue0.activate();
    		boolean added = office1.addBinding(new Binding(new SimpleCondition("myqueue1"), queue0, false), false);
    		assertTrue(added);
 
-   		Queue queue1 = new MessagingQueue(2, "myqueue1", channelIDManager.getID(), ms, pm, false, -1, null, true);
+   		Queue queue1 = new MessagingQueue(2, "myqueue1", channelIDManager.getID(), ms, getPersistenceManager(), false, -1, null, true);
    		queue1.activate();
    		added = office2.addBinding(new Binding(new SimpleCondition("myqueue1"), queue1, false), false);
    		assertTrue(added);
@@ -2647,12 +2639,12 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
 
    		//queue2
 
-   		Queue queue2 = new MessagingQueue(1, "myqueue2", channelIDManager.getID(), ms, pm, false, -1, null, true);
+   		Queue queue2 = new MessagingQueue(1, "myqueue2", channelIDManager.getID(), ms, getPersistenceManager(), false, -1, null, true);
    		queue2.activate();
    		added = office1.addBinding(new Binding(new SimpleCondition("myqueue2"), queue2, false), false);
    		assertTrue(added);
 
-   		Queue queue3 = new MessagingQueue(2, "myqueue2", channelIDManager.getID(), ms, pm, false, -1, null, true);
+   		Queue queue3 = new MessagingQueue(2, "myqueue2", channelIDManager.getID(), ms, getPersistenceManager(), false, -1, null, true);
    		queue3.activate();
    		added = office2.addBinding(new Binding(new SimpleCondition("myqueue2"), queue3, false), false);
    		assertTrue(added);
@@ -2779,23 +2771,23 @@ public class ClusteredPostOfficeTest extends PostOfficeTestBase
    		office2 = createClusteredPostOffice(2);
 
 
-   		Queue queue0 = new MessagingQueue(1, "sub1", channelIDManager.getID(), ms, pm, false, -1, null, true);
+   		Queue queue0 = new MessagingQueue(1, "sub1", channelIDManager.getID(), ms, getPersistenceManager(), false, -1, null, true);
    		queue0.activate();
    		boolean added = office1.addBinding(new Binding(new SimpleCondition("condition1"), queue0, false), false);
    		assertTrue(added);
 
-   		Queue queue1 = new MessagingQueue(2, "sub2", channelIDManager.getID(), ms, pm, false, -1, null, true);
+   		Queue queue1 = new MessagingQueue(2, "sub2", channelIDManager.getID(), ms, getPersistenceManager(), false, -1, null, true);
    		queue1.activate();
    		added = office2.addBinding(new Binding(new SimpleCondition("condition1"), queue1, false), false);
    		assertTrue(added);
 
 
-   		Queue queue2 = new MessagingQueue(1, "sub3", channelIDManager.getID(), ms, pm, false, -1, null, true);
+   		Queue queue2 = new MessagingQueue(1, "sub3", channelIDManager.getID(), ms, getPersistenceManager(), false, -1, null, true);
    		queue2.activate();
    		added = office1.addBinding(new Binding(new SimpleCondition("condition2"), queue2, false), false);
    		assertTrue(added);
 
-   		Queue queue3 = new MessagingQueue(2, "sub4", channelIDManager.getID(), ms, pm, false, -1, null, true);
+   		Queue queue3 = new MessagingQueue(2, "sub4", channelIDManager.getID(), ms, getPersistenceManager(), false, -1, null, true);
    		queue3.activate();
    		added = office2.addBinding(new Binding(new SimpleCondition("condition2"), queue3, false), false);
    		assertTrue(added);

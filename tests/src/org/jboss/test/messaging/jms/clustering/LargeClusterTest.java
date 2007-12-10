@@ -6,21 +6,15 @@
  */
 package org.jboss.test.messaging.jms.clustering;
 
-import java.util.Set;
-
-import javax.jms.Connection;
-import javax.jms.Message;
-import javax.jms.MessageListener;
-import javax.jms.Session;
-import javax.jms.TextMessage;
-import javax.management.ObjectName;
-
+import EDU.oswego.cs.dl.util.concurrent.Slot;
 import org.jboss.jms.client.JBossConnection;
 import org.jboss.jms.client.delegate.ClientConnectionDelegate;
 import org.jboss.jms.tx.ResourceManagerFactory;
 import org.jboss.test.messaging.tools.ServerManagement;
 
-import EDU.oswego.cs.dl.util.concurrent.Slot;
+import javax.jms.*;
+import javax.management.ObjectName;
+import java.util.Set;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
@@ -258,8 +252,8 @@ public class LargeClusterTest extends ClusteringTestBase
       // We get the first node to re-join
 
       ServerManagement.start(0, "all", false);
-      ServerManagement.deployQueue("testDistributedQueue", 0);
-      ServerManagement.deployTopic("testDistributedTopic", 0);
+      deployQueue("testDistributedQueue", 0);
+      deployTopic("testDistributedTopic", 0);
 
       if (!clusterEvent.viewChanged(30000))
       {

@@ -979,11 +979,11 @@ public class DistributedQueueTest extends ClusteringTestBase
           
       try
       {
-         ServerManagement.deployQueue("nonClusteredQueue", "nonClusteredQueue", 200000, 2000, 2000, 0, false);
+         deployQueue("nonClusteredQueue", "nonClusteredQueue", 200000, 2000, 2000, 0, false);
          
-         ServerManagement.deployQueue("nonClusteredQueue", "nonClusteredQueue", 200000, 2000, 2000, 1, false);
+         deployQueue("nonClusteredQueue", "nonClusteredQueue", 200000, 2000, 2000, 1, false);
          
-         ServerManagement.deployQueue("nonClusteredQueue", "nonClusteredQueue", 200000, 2000, 2000, 2, false);
+         deployQueue("nonClusteredQueue", "nonClusteredQueue", 200000, 2000, 2000, 2, false);
          
          Queue queue0 = (Queue)ic[0].lookup("/nonClusteredQueue");
          Queue queue1 = (Queue)ic[1].lookup("/nonClusteredQueue");
@@ -1184,11 +1184,11 @@ public class DistributedQueueTest extends ClusteringTestBase
             conn2.close();
          }
          
-         ServerManagement.undeployQueue("nonClusteredQueue", 0);
+         undeployQueue("nonClusteredQueue", 0);
          
-         ServerManagement.undeployQueue("nonClusteredQueue", 1);
+         undeployQueue("nonClusteredQueue", 1);
          
-         ServerManagement.undeployQueue("nonClusteredQueue", 2);
+         undeployQueue("nonClusteredQueue", 2);
       }
    }
 

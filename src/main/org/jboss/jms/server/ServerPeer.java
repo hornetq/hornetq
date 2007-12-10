@@ -21,33 +21,16 @@
   */
 package org.jboss.jms.server;
 
-import java.io.ByteArrayOutputStream;
-import java.io.CharArrayWriter;
-import java.io.InputStream;
-import java.io.PrintWriter;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.StringTokenizer;
-
-import javax.management.Attribute;
-import javax.management.InstanceNotFoundException;
-import javax.management.MBeanServer;
-import javax.management.ObjectName;
-import javax.transaction.xa.Xid;
-
+import EDU.oswego.cs.dl.util.concurrent.ConcurrentReaderHashMap;
 import org.jboss.aop.AspectXmlLoader;
+import org.jboss.aop.microcontainer.aspects.jmx.JMX;
+import org.jboss.jms.server.connectionfactory.ConnectionFactoryDeployer;
 import org.jboss.jms.server.connectionfactory.ConnectionFactoryJNDIMapper;
 import org.jboss.jms.server.connectionmanager.SimpleConnectionManager;
 import org.jboss.jms.server.connectormanager.SimpleConnectorManager;
+import org.jboss.jms.server.destination.DestinationDeployer;
 import org.jboss.jms.server.destination.ManagedQueue;
-import org.jboss.jms.server.endpoint.ServerConnectionEndpoint;
+import org.jboss.jms.server.destination.ManagedTopic;
 import org.jboss.jms.server.endpoint.ServerSessionEndpoint;
 import org.jboss.jms.server.messagecounter.MessageCounter;
 import org.jboss.jms.server.messagecounter.MessageCounterManager;
@@ -56,35 +39,26 @@ import org.jboss.jms.server.remoting.JMSServerInvocationHandler;
 import org.jboss.jms.server.security.SecurityMetadataStore;
 import org.jboss.jms.wireformat.JMSWireFormat;
 import org.jboss.logging.Logger;
-import org.jboss.messaging.core.contract.Binding;
-import org.jboss.messaging.core.contract.ClusterNotifier;
-import org.jboss.messaging.core.contract.MemoryManager;
-import org.jboss.messaging.core.contract.MessageStore;
-import org.jboss.messaging.core.contract.PersistenceManager;
-import org.jboss.messaging.core.contract.PostOffice;
+import org.jboss.messaging.core.contract.*;
 import org.jboss.messaging.core.contract.Queue;
-import org.jboss.messaging.core.contract.Replicator;
-import org.jboss.messaging.core.impl.DefaultClusterNotifier;
 import org.jboss.messaging.core.impl.FailoverWaiter;
 import org.jboss.messaging.core.impl.IDManager;
 import org.jboss.messaging.core.impl.JDBCPersistenceManager;
 import org.jboss.messaging.core.impl.clusterconnection.ClusterConnectionManager;
 import org.jboss.messaging.core.impl.memory.SimpleMemoryManager;
-import org.jboss.messaging.core.impl.message.SimpleMessageStore;
 import org.jboss.messaging.core.impl.postoffice.MessagingPostOffice;
 import org.jboss.messaging.core.impl.tx.TransactionRepository;
 import org.jboss.messaging.util.ExceptionUtil;
-import org.jboss.messaging.util.JMXAccessor;
-import org.jboss.messaging.util.Util;
 import org.jboss.messaging.util.Version;
-import org.jboss.mx.loading.UnifiedClassLoader3;
 import org.jboss.remoting.marshal.MarshalFactory;
-import org.jboss.system.ServiceCreator;
-import org.jboss.system.ServiceMBeanSupport;
-import org.jboss.util.JBossStringBuilder;
-import org.w3c.dom.Element;
+import org.jboss.remoting.transport.Connector;
 
-import EDU.oswego.cs.dl.util.concurrent.ConcurrentReaderHashMap;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.net.URL;
+import java.util.*;
 
 /**
  * A JMS server peer.
@@ -93,12 +67,13 @@ import EDU.oswego.cs.dl.util.concurrent.ConcurrentReaderHashMap;
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:juha@jboss.org">Juha Lindfors</a>
  * @author <a href="mailto:aslak@conduct.no">Aslak Knutsen</a>
- * 
+ * @author <a href="mailto:ataylor@redhat.com>Andy Taylor</a>
  * @version <tt>$Revision$</tt>
- *
- * $Id$
+ *          <p/>
+ *          $Id$
  */
-public class ServerPeer extends ServiceMBeanSupport
+@JMX(name = "jboss.messaging:service=ServerPeer", exposedInterface = JmsServer.class)
+public class ServerPeer implements JmsServer
 {
    // Constants ------------------------------------------------------------------------------------
 
@@ -112,51 +87,20 @@ public class ServerPeer extends ServiceMBeanSupport
 
    // Attributes -----------------------------------------------------------------------------------
 
-   private int serverPeerID = -1;
    private byte[] clientAOPStack;
    private Version version;
 
-   private String defaultQueueJNDIContext = "";
-   private String defaultTopicJNDIContext = "";
 
    private boolean started;
 
    private boolean supportsFailover = true;
 
-   // The default maximum number of delivery attempts before sending to DLQ - can be overridden on
-   // the destination
-   private int defaultMaxDeliveryAttempts = 10;
-
-   // Default is 1 minute
-   private long failoverStartTimeout = 60 * 1000;
-   
-   // Default is 5 minutes
-   private long failoverCompleteTimeout = 5 * 60 * 1000;
-   
    private Map sessions;
-   
-   private long defaultRedeliveryDelay;
-   
-   private long messageCounterSamplePeriod = 10000;
-   
-   private int defaultMessageCounterHistoryDayLimit;
-   
-   private String clusterPullConnectionFactoryName;
-   
-   private boolean useXAForMessagePull;
-   
-   private boolean defaultPreserveOrdering;
-   
-   private long recoverDeliveriesTimeout = 5 * 60 * 1000;
-   
-   private String suckerPassword;
-   
-   //Global override for strict behaviour
-   private boolean strictTck;
-   
-   //From a system property - this overrides
-   private boolean strictTckProperty;
-      
+
+
+
+
+
    // wired components
 
    private DestinationJNDIMapper destinationJNDIMapper;
@@ -168,46 +112,46 @@ public class ServerPeer extends ServiceMBeanSupport
    private IDManager messageIDManager;
    private IDManager channelIDManager;
    private IDManager transactionIDManager;
-   private MemoryManager memoryManager;  
-   private MessageStore messageStore;
+   private MemoryManager memoryManager;
    private MessageCounterManager messageCounterManager;
    private ClusterConnectionManager clusterConnectionManager;
    private ClusterNotifier clusterNotifier;
-   private FailoverWaiter failoverWaiter;   
+   private FailoverWaiter failoverWaiter;
 
    // plugins
 
-   protected ObjectName persistenceManagerObjectName;
    protected PersistenceManager persistenceManager;
 
-   protected ObjectName postOfficeObjectName;
    protected PostOffice postOffice;
 
-   protected ObjectName jmsUserManagerObjectName;
    protected JMSUserManager jmsUserManager;
-   
-   protected ObjectName defaultDLQObjectName;
-   protected Queue defaultDLQ;
-   
-   protected ObjectName defaultExpiryQueueObjectName;
-   protected Queue defaultExpiryQueue;
+
+
+   private DestinationDeployer destinationDeployer;
+
+   private ConnectionFactoryDeployer connectionFactoryDeployer;
+
+   private Connector connector;
+
+   private Configuration configuration;
+   private static boolean aopLoaded =false;
+
 
    // Constructors ---------------------------------------------------------------------------------
    public ServerPeer() throws Exception
    {
       // Some wired components need to be started here
-      securityStore = new SecurityMetadataStore();
 
       version = Version.instance();
-      
+
       sessions = new ConcurrentReaderHashMap();
 
       started = false;
    }
 
-   // ServiceMBeanSupport overrides ----------------------------------------------------------------
+   // lifecycle methods ----------------------------------------------------------------
 
-   public synchronized void startService() throws Exception
+   public synchronized void start() throws Exception
    {
       try
       {
@@ -217,66 +161,70 @@ public class ServerPeer extends ServiceMBeanSupport
          {
             return;
          }
-         
-         if (serverPeerID < 0)
+
+         if (configuration.getServerPeerID() < 0)
          {
             throw new IllegalStateException("ServerPeerID not set");
          }
 
          log.debug(this + " starting");
 
-         loadClientAOPConfig();
+         if(!aopLoaded)
+         {
+            loadClientAOPConfig();
+            loadServerAOPConfig();
+            aopLoaded = true;
+         }
 
-         loadServerAOPConfig();
+         ((JDBCPersistenceManager) persistenceManager).injectNodeID(configuration.getServerPeerID());
 
-         MBeanServer mbeanServer = getServer();
-
-         // Acquire references to plugins. Each plug-in will be accessed directly via a reference
-         // circumventing the MBeanServer. However, they are installed as services to take advantage
-         // of their automatically-creating management interface.
-
-         persistenceManager = (PersistenceManager)JMXAccessor.getJMXAttributeOverSecurity(mbeanServer, persistenceManagerObjectName, "Instance");
-         ((JDBCPersistenceManager)persistenceManager).injectNodeID(serverPeerID);
-
-         jmsUserManager = (JMSUserManager)JMXAccessor.getJMXAttributeOverSecurity(mbeanServer, jmsUserManagerObjectName, "Instance");
-
-         strictTckProperty = "true".equalsIgnoreCase(System.getProperty("jboss.messaging.stricttck"));
-         
          // We get references to some plugins lazily to avoid problems with circular MBean
          // dependencies
 
          // Create the wired components
+
+         securityStore = new SecurityMetadataStore(this);
          messageIDManager = new IDManager("MESSAGE_ID", 4096, persistenceManager);
          channelIDManager = new IDManager("CHANNEL_ID", 10, persistenceManager);
          transactionIDManager = new IDManager("TRANSACTION_ID", 1024, persistenceManager);
          destinationJNDIMapper = new DestinationJNDIMapper(this);
          connFactoryJNDIMapper = new ConnectionFactoryJNDIMapper(this);
-         connectionManager = new SimpleConnectionManager();         
+         connectionManager = new SimpleConnectionManager();
          connectorManager = new SimpleConnectorManager();
          memoryManager = new SimpleMemoryManager();
-         messageStore = new SimpleMessageStore();
+         destinationDeployer = new DestinationDeployer(this);
+         connectionFactoryDeployer = new ConnectionFactoryDeployer(this, connector);
          txRepository =
-            new TransactionRepository(persistenceManager, messageStore, transactionIDManager);
-         messageCounterManager = new MessageCounterManager(messageCounterSamplePeriod);
-                
-         clusterNotifier = new DefaultClusterNotifier();      
+                 new TransactionRepository(persistenceManager, getPostOffice().getMessageStore(), transactionIDManager);
+         messageCounterManager = new MessageCounterManager(configuration.getMessageCounterSamplePeriod());
+         configuration.addPropertyChangeListener(new PropertyChangeListener()
+         {
+            public void propertyChange(PropertyChangeEvent evt)
+            {
+               if(evt.getPropertyName().equals("messageCounterSamplePeriod"))
+                  messageCounterManager.reschedule(configuration.getMessageCounterSamplePeriod());
+            }
+         });
+         //inverted dependancy, post office will now inject this
+         //clusterNotifier = new DefaultClusterNotifier();
+
          clusterNotifier.registerListener(connectionManager);
          clusterNotifier.registerListener(connFactoryJNDIMapper);
-         failoverWaiter = new FailoverWaiter(serverPeerID, failoverStartTimeout, failoverCompleteTimeout, txRepository);
-         clusterNotifier.registerListener(failoverWaiter);         
-         
-         if (suckerPassword == null)
-      	{
-         	suckerPassword = SecurityMetadataStore.DEFAULT_SUCKER_USER_PASSWORD;
-      	}   
-         if (clusterPullConnectionFactoryName != null)
-         {         
-	         clusterConnectionManager = new ClusterConnectionManager(useXAForMessagePull, serverPeerID,
-	         		                                                  clusterPullConnectionFactoryName, defaultPreserveOrdering,
-	         		                                                  SecurityMetadataStore.SUCKER_USER, suckerPassword);
-	         clusterNotifier.registerListener(clusterConnectionManager);
+         failoverWaiter = new FailoverWaiter(configuration.getServerPeerID(), configuration.getFailoverStartTimeout(), configuration.getFailoverCompleteTimeout(), txRepository);
+         clusterNotifier.registerListener(failoverWaiter);
+
+         if (configuration.getSuckerPassword() == null)
+         {
+            configuration.setSuckerPassword(SecurityMetadataStore.DEFAULT_SUCKER_USER_PASSWORD);
          }
-         
+         if (configuration.getClusterPullConnectionFactoryName() != null)
+         {
+            clusterConnectionManager = new ClusterConnectionManager(configuration.isUseXAForMessagePull(), configuration.getServerPeerID(),
+                    configuration.getClusterPullConnectionFactoryName(), configuration.isDefaultPreserveOrdering(),
+                    SecurityMetadataStore.SUCKER_USER, configuration.getSuckerPassword());
+            clusterNotifier.registerListener(clusterConnectionManager);
+         }
+
          // Start the wired components
 
          messageIDManager.start();
@@ -287,30 +235,54 @@ public class ServerPeer extends ServiceMBeanSupport
          connectionManager.start();
          connectorManager.start();
          memoryManager.start();
-         messageStore.start();               
-         securityStore.setSuckerPassword(suckerPassword);
+         securityStore.setSuckerPassword(configuration.getSuckerPassword());
          securityStore.start();
          txRepository.start();
          clusterConnectionManager.start();
-         
+
          // Note we do not start the message counter manager by default. This must be done
          // explicitly by the user by calling enableMessageCounters(). This is because message
          // counter history takes up growing memory to store the stats and could theoretically
          // eventually cause the server to run out of RAM
-         
+
          txRepository.loadPreparedTransactions();
-         
-         JMSWireFormat wf = new JMSWireFormat();         
-         MarshalFactory.addMarshaller("jms", wf, wf);      
-         
+
+         JMSWireFormat wf = new JMSWireFormat();
+         MarshalFactory.addMarshaller("jms", wf, wf);
+
          //Now everything is started we can tell the invocation handler to start handling invocations
          //We do this right at the end otherwise it can start handling invocations before we are properly started
          JMSServerInvocationHandler.setClosed(false);
 
-         started = true;
+         if (configuration.isClustered())
+         {
+            Replicator rep = (Replicator) postOffice;
+
+            connFactoryJNDIMapper.injectReplicator(rep);
+
+            // Also inject into the cluster connection manager
+
+            this.clusterConnectionManager.injectPostOffice(postOffice);
+
+            this.clusterConnectionManager.injectReplicator((Replicator) postOffice);
+
+            this.connectionManager.injectReplicator((Replicator) postOffice);
+
+
+         }
+         //we inject the server peer because the post office needs it for clustering and the tx repository.
+         // This is crap and needs changing
+         ((MessagingPostOffice) postOffice).injectServerPeer(this);
+         // Also need to inject into txRepository
+         txRepository.injectPostOffice(postOffice);
+
+
+         connectionFactoryDeployer.start();
+         destinationDeployer.start();
          
+         started = true;
          log.info("JBoss Messaging " + getVersion().getProviderVersion() + " server [" +
-            getServerPeerID()+ "] started");
+                 configuration.getServerPeerID() + "] started");
       }
       catch (Throwable t)
       {
@@ -318,7 +290,7 @@ public class ServerPeer extends ServiceMBeanSupport
       }
    }
 
-   public synchronized void stopService() throws Exception
+   public synchronized void stop() throws Exception
    {
       try
       {
@@ -328,16 +300,19 @@ public class ServerPeer extends ServiceMBeanSupport
          }
 
          log.info(this + " is Stopping. NOTE! Stopping the server peer cleanly will NOT cause failover to occur");
-         
+
          started = false;
-         
+
          //Tell the invocation handler we are closed - this is so we don't attempt to handle
          //any invocations when we are in a partial closing down state - which can give strange
          //"object not found with id" exceptions and stuff like that
          JMSServerInvocationHandler.setClosed(true);
 
          // Stop the wired components
-
+         destinationDeployer.stop();
+         destinationDeployer = null;
+         connectionFactoryDeployer.stop();
+         connectionFactoryDeployer = null;
          messageIDManager.stop();
          messageIDManager = null;
          channelIDManager.stop();
@@ -354,8 +329,6 @@ public class ServerPeer extends ServiceMBeanSupport
          connectorManager = null;
          memoryManager.stop();
          memoryManager = null;
-         messageStore.stop();
-         messageStore = null;
          securityStore.stop();
          //securityStore = null; - if securitySTore is set to null, The ServerPeer won't survive a restart of the service (stop/start)
          txRepository.stop();
@@ -364,8 +337,8 @@ public class ServerPeer extends ServiceMBeanSupport
          messageCounterManager = null;
          clusterConnectionManager.stop();
          clusterConnectionManager = null;
-         postOffice = null;
-         
+         //postOffice = null;
+
          unloadServerAOPConfig();
 
          // TODO unloadClientAOPConfig();
@@ -382,80 +355,6 @@ public class ServerPeer extends ServiceMBeanSupport
 
    // JMX Attributes -------------------------------------------------------------------------------
 
-   // Plugins
-   
-   public synchronized ObjectName getPersistenceManager()
-   {
-      return persistenceManagerObjectName;
-   }
-
-   public synchronized void setPersistenceManager(ObjectName on)
-   {
-      if (started)
-      {
-         log.warn("Cannot set persistence manager on server peer when server peer is started");
-         return;         
-      }
-      persistenceManagerObjectName = on;
-   }
-
-   public synchronized ObjectName getPostOffice()
-   {
-      return postOfficeObjectName;
-   }
-
-   public synchronized void setPostOffice(ObjectName on)
-   {
-      if (started)
-      {
-         log.warn("Cannot set post office on server peer when server peer is started");
-         return;         
-      }
-      postOfficeObjectName = on;
-   }
-
-   public synchronized ObjectName getJmsUserManager()
-   {
-      return jmsUserManagerObjectName;
-   }
-
-   public synchronized void setJMSUserManager(ObjectName on)
-   {
-      if (started)
-      {
-         log.warn("Cannot set jms user manager on server peer when server peer is started");
-         return;         
-      }
-      jmsUserManagerObjectName = on;
-   }
-   
-   public synchronized ObjectName getDefaultDLQ()
-   {
-      return defaultDLQObjectName;
-   }
-
-   public synchronized void setDefaultDLQ(ObjectName on)
-   {
-      defaultDLQObjectName = on;
-   }
-   
-   public synchronized ObjectName getDefaultExpiryQueue()
-   {
-      return defaultExpiryQueueObjectName;
-   }
-
-   public synchronized void setDefaultExpiryQueue(ObjectName on)
-   {
-      this.defaultExpiryQueueObjectName = on;
-   }     
-      
-   // Instance access
-
-   public Object getInstance()
-   {
-      return this;
-   }
-   
    //read only JMX attributes
 
    public String getJMSVersion()
@@ -492,348 +391,76 @@ public class ServerPeer extends ServiceMBeanSupport
    {
       return version.getProviderMinorVersion();
    }
-   
+
    //Read - write attributes
 
-   public synchronized void setSecurityDomain(String securityDomain) throws Exception
-   {
-      try
-      {
-         securityStore.setSecurityDomain(securityDomain);
-      }
-      catch (Throwable t)
-      {
-         throw ExceptionUtil.handleJMXInvocation(t, this + " setSecurityDomain");
-      }
-   }
-
-   public synchronized String getSecurityDomain()
-   {
-      return securityStore.getSecurityDomain();
-   }
-
-   public synchronized void setDefaultSecurityConfig(Element conf) throws Exception
-   {
-      securityStore.setDefaultSecurityConfig(conf);
-   }
-
-   public synchronized Element getDefaultSecurityConfig()
-   {
-      return securityStore.getDefaultSecurityConfig();
-   }
-        
-   public synchronized long getFailoverStartTimeout()
-   {
-      return this.failoverStartTimeout;
-   }
-   
-   public synchronized void setFailoverStartTimeout(long timeout)
-   {
-      this.failoverStartTimeout = timeout;
-   }
-   
-   public synchronized long getFailoverCompleteTimeout()
-   {
-      return this.failoverCompleteTimeout;
-   }
-   
-   public synchronized void setFailoverCompleteTimeout(long timeout)
-   {
-      this.failoverCompleteTimeout = timeout;
-   }
-   
-   public synchronized int getDefaultMaxDeliveryAttempts()
-   {
-      return defaultMaxDeliveryAttempts;
-   }
-
-   public synchronized void setDefaultMaxDeliveryAttempts(int attempts)
-   {
-      this.defaultMaxDeliveryAttempts = attempts;
-   }
-   
-   public synchronized long getMessageCounterSamplePeriod()
-   {
-      return messageCounterSamplePeriod;
-   }
-
-   public synchronized void setMessageCounterSamplePeriod(long newPeriod)
-   {
-      if (newPeriod < 1000)
-      {
-         throw new IllegalArgumentException("Cannot set MessageCounterSamplePeriod < 1000 ms");
-      }
-      
-      if (messageCounterManager != null && newPeriod != messageCounterSamplePeriod)
-      {
-         messageCounterManager.reschedule(newPeriod);
-      }            
-      
-      this.messageCounterSamplePeriod = newPeriod;
-   }
-   
-   public synchronized long getDefaultRedeliveryDelay()
-   {
-      return defaultRedeliveryDelay;
-   }
-   
-   public synchronized void setDefaultRedeliveryDelay(long delay)
-   {
-      this.defaultRedeliveryDelay = delay;
-   }
-   
-   public synchronized int getDefaultMessageCounterHistoryDayLimit()
-   {
-      return defaultMessageCounterHistoryDayLimit;
-   }
-   
-   public void setDefaultMessageCounterHistoryDayLimit(int limit)
-   {
-      if (limit < -1)
-      {
-         limit = -1;
-      }
-      
-      this.defaultMessageCounterHistoryDayLimit = limit;
-   }
-   
-   public String getClusterPullConnectionFactoryName()
-   {
-   	return clusterPullConnectionFactoryName;
-   }
-   
-   public void setClusterPullConnectionFactoryName(String name)
-   {
-      if (started)
-      {
-         throw new IllegalStateException("Cannot set ClusterPullConnectionFactoryName while the service is running");
-      }
-   	this.clusterPullConnectionFactoryName = name;
-   }
-   
-   public boolean isUseXAForMessagePull()
-   {
-   	return useXAForMessagePull;
-   }
-   
-   public void setUseXAForMessagePull(boolean useXA) throws Exception
-   {
-      if (started)
-      {
-         throw new IllegalStateException("Cannot set UseXAForMessagePull while the service is running");
-      }
-      
-   	this.useXAForMessagePull = useXA;   	
-   }
-   
-   public boolean isDefaultPreserveOrdering()
-   {
-   	return defaultPreserveOrdering;
-   }
-   
-   public void setDefaultPreserveOrdering(boolean preserve) throws Exception
-   {
-      if (started)
-      {
-         throw new IllegalStateException("Cannot set DefaultPreserveOrdering while the service is running");
-      }
-      
-   	this.defaultPreserveOrdering = preserve;
-   }
-   
-   public long getRecoverDeliveriesTimeout()
-   {
-   	return this.recoverDeliveriesTimeout;
-   }
-   
-   public void setRecoverDeliveriesTimeout(long timeout)
-   {
-   	this.recoverDeliveriesTimeout = timeout;
-   }
-   
-   public synchronized void setServerPeerID(int serverPeerID)
-   {
-      if (started)
-      {
-         throw new IllegalStateException("Cannot set ServerPeerID while the service is running");
-      }
-      if (serverPeerID < 0)
-      {
-         throw new IllegalArgumentException("Attempt to set negative ServerPeerID: " + serverPeerID);
-      }
-      this.serverPeerID = serverPeerID;
-   }
-
-   public int getServerPeerID()
-   {
-      return serverPeerID;
-   }
-
-   public String getDefaultQueueJNDIContext()
-   {
-      return defaultQueueJNDIContext;
-   }
-   
-   public synchronized void setDefaultQueueJNDIContext(String defaultQueueJNDIContext)
-   {
-      if (started)
-      {
-         throw new IllegalStateException("Cannot set DefaultQueueJNDIContext while the service is running");
-      }
-
-      this.defaultQueueJNDIContext = defaultQueueJNDIContext;
-   }
-
-   public String getDefaultTopicJNDIContext()
-   {
-      return defaultTopicJNDIContext;
-   }
-
-   public synchronized void setDefaultTopicJNDIContext(String defaultTopicJNDIContext)
-   {
-      if (started)
-      {
-         throw new IllegalStateException("Cannot set DefaultTopicJNDIContext while the service is running");
-      }
-
-      this.defaultTopicJNDIContext = defaultTopicJNDIContext;
-   }
-   
-   public synchronized void setSuckerPassword(String password)
-   {
-   	if (started)
-      {
-         throw new IllegalStateException("Cannot set SuckerPassword while the service is running");
-      }
-   	
-   	if (password == null)
-   	{
-   		throw new IllegalArgumentException("SuckerPassword cannot be null");
-   	}
-   	
-   	this.suckerPassword = password;
-   }
-   
-   public void setStrictTck(boolean strictTck)
-   {
-   	this.strictTck = strictTck || strictTckProperty;
-   }
-   
-   public boolean isStrictTck()
-   {
-   	return strictTck || strictTckProperty;
-   }
-   
    public void enableMessageCounters()
-   {      
+   {
       messageCounterManager.start();
    }
-   
+
    public void disableMessageCounters()
    {
       messageCounterManager.stop();
-      
+
       messageCounterManager.resetAllCounters();
-      
+
       messageCounterManager.resetAllCounterHistories();
    }
-   
+
    // JMX Operations -------------------------------------------------------------------------------
 
    public String deployQueue(String name, String jndiName) throws Exception
    {
-      try
-      {
-         return deployDestinationDefault(true, name, jndiName);
-      }
-      catch (Throwable t)
-      {
-         throw ExceptionUtil.handleJMXInvocation(t, this + " createQueue");
-      }
+      return destinationDeployer.deployQueue(name, jndiName);
    }
 
    public String deployQueue(String name, String jndiName, int fullSize, int pageSize, int downCacheSize) throws Exception
    {
-      try
-      {
-         return deployDestination(true, name, jndiName, fullSize, pageSize, downCacheSize);
-      }
-      catch (Throwable t)
-      {
-         throw ExceptionUtil.handleJMXInvocation(t, this + " createQueue(2)");
-      }
+      return destinationDeployer.deployQueue(name, jndiName, fullSize, pageSize, downCacheSize);
    }
-
    public boolean destroyQueue(String name) throws Exception
    {
       try
       {
-         return destroyDestination(true, name);        
+         return destinationDeployer.destroyQueue(name);
       }
-      catch (Throwable t)
+      catch (Throwable throwable)
       {
-         throw ExceptionUtil.handleJMXInvocation(t, this + " destroyQueue");
+         throw new Exception(throwable);
       }
    }
-   
+
    public boolean undeployQueue(String name) throws Exception
    {
-      try
-      {
-         return undeployDestination(true, name);
-      }
-      catch (Throwable t)
-      {
-         throw ExceptionUtil.handleJMXInvocation(t, this + " destroyQueue");
-      }
+      return destinationDeployer.undeployQueue(name);
    }
 
    public String deployTopic(String name, String jndiName) throws Exception
    {
-      try
-      {
-         return deployDestinationDefault(false, name, jndiName);
-      }
-      catch (Throwable t)
-      {
-         throw ExceptionUtil.handleJMXInvocation(t, this + " createTopic");
-      }
+      return destinationDeployer.deployTopic(name, jndiName);
    }
 
    public String deployTopic(String name, String jndiName, int fullSize, int pageSize, int downCacheSize) throws Exception
    {
-      try
-      {
-         return deployDestination(false, name, jndiName, fullSize, pageSize, downCacheSize);
-      }
-      catch (Throwable t)
-      {
-         throw ExceptionUtil.handleJMXInvocation(t, this + " createTopic(2)");
-      }
+      return destinationDeployer.deployTopic(name, jndiName, fullSize, pageSize, downCacheSize);
    }
 
    public boolean destroyTopic(String name) throws Exception
    {
       try
       {
-         return destroyDestination(false, name);
+         return destinationDeployer.destroyTopic(name);
       }
-      catch (Throwable t)
+      catch (Throwable throwable)
       {
-         throw ExceptionUtil.handleJMXInvocation(t, this + " destroyTopic");
+         throw new Exception(throwable);
       }
    }
-   
+
    public boolean undeployTopic(String name) throws Exception
    {
-      try
-      {
-         return undeployDestination(false, name);
-      }
-      catch (Throwable t)
-      {
-         throw ExceptionUtil.handleJMXInvocation(t, this + " destroyTopic");
-      }
+      return destinationDeployer.undeployTopic(name);
    }
 
    public Set getDestinations() throws Exception
@@ -847,11 +474,11 @@ public class ServerPeer extends ServiceMBeanSupport
          throw ExceptionUtil.handleJMXInvocation(t, this + " getDestinations");
       }
    }
-   
+
    public List getMessageCounters() throws Exception
    {
       Collection counters = messageCounterManager.getMessageCounters();
-      
+
       return new ArrayList(counters);
    }
 
@@ -860,257 +487,62 @@ public class ServerPeer extends ServiceMBeanSupport
       return MessageCounter.getMessageStatistics(getMessageCounters());
    }
 
-   public String listMessageCountersAsHTML() throws Exception
-   {
-      List counters = getMessageCounters();
-
-      Collections.sort(counters, new Comparator() {
-      	public int compare(Object o1, Object o2) {
-      		MessageCounter m1 = (MessageCounter)o1;
-      		MessageCounter m2 = (MessageCounter)o2;
-      		return m1.getDestinationName().compareTo(m2.getDestinationName());
-      	}
-      });
-
-      String ret =
-         "<table width=\"100%\" border=\"1\" cellpadding=\"1\" cellspacing=\"1\">"
-            + "<tr>"
-            + "<th>Type</th>"
-            + "<th>Name</th>"
-            + "<th>Subscription</th>"
-            + "<th>Durable</th>"
-            + "<th>Count</th>"
-            + "<th>CountDelta</th>"
-            + "<th>Depth</th>"
-            + "<th>DepthDelta</th>"
-            + "<th>Last Add</th>"
-            + "</tr>";
-
-      String strNameLast = null;
-      String strTypeLast = null;
-      String strDestLast = null;
-
-      String destData = "";
-      int destCount = 0;
-
-      int countTotal = 0;
-      int countDeltaTotal = 0;
-      int depthTotal = 0;
-      int depthDeltaTotal = 0;
-
-      int i = 0; // define outside of for statement, so variable
-      // still exists after for loop, because it is
-      // needed during output of last module data string
-
-      Iterator iter = counters.iterator();
-      
-      while (iter.hasNext())
-      {
-         MessageCounter counter = (MessageCounter)iter.next();
-         
-         // get counter data
-         StringTokenizer tokens = new StringTokenizer(counter.getCounterAsString(), ",");
-
-         String strType = tokens.nextToken();
-         String strName = tokens.nextToken();
-         String strSub = tokens.nextToken();
-         String strDurable = tokens.nextToken();
-
-         String strDest = strType + "-" + strName;
-
-         String strCount = tokens.nextToken();
-         String strCountDelta = tokens.nextToken();
-         String strDepth = tokens.nextToken();
-         String strDepthDelta = tokens.nextToken();
-         String strDate = tokens.nextToken();
-
-         // update total count / depth values
-         countTotal += Integer.parseInt(strCount);
-         depthTotal += Integer.parseInt(strDepth);
-
-         countDeltaTotal += Integer.parseInt(strCountDelta);
-         depthDeltaTotal += Integer.parseInt(strDepthDelta);
-
-         if (strCountDelta.equalsIgnoreCase("0"))
-            strCountDelta = "-"; // looks better
-
-         if (strDepthDelta.equalsIgnoreCase("0"))
-            strDepthDelta = "-"; // looks better
-
-         // output destination counter data as HTML table row
-         // ( for topics with multiple subscriptions output
-         //   type + name field as rowspans, looks better )
-         if (strDestLast != null && strDestLast.equals(strDest))
-         {
-            // still same destination -> append destination subscription data
-            destData += "<tr bgcolor=\"#" + ((i % 2) == 0 ? "FFFFFF" : "F0F0F0") + "\">";
-            destCount += 1;
-         }
-         else
-         {
-            // start new destination data
-            if (strDestLast != null)
-            {
-               // store last destination data string
-               ret += "<tr bgcolor=\"#"
-                  + ((i % 2) == 0 ? "FFFFFF" : "F0F0F0")
-                  + "\"><td rowspan=\""
-                  + destCount
-                  + "\">"
-                  + strTypeLast
-                  + "</td><td rowspan=\""
-                  + destCount
-                  + "\">"
-                  + strNameLast
-                  + "</td>"
-                  + destData;
-
-               destData = "";
-            }
-
-            destCount = 1;
-         }
-
-         // counter data row
-         destData += "<td>"
-            + strSub
-            + "</td>"
-            + "<td>"
-            + strDurable
-            + "</td>"
-            + "<td>"
-            + strCount
-            + "</td>"
-            + "<td>"
-            + strCountDelta
-            + "</td>"
-            + "<td>"
-            + strDepth
-            + "</td>"
-            + "<td>"
-            + strDepthDelta
-            + "</td>"
-            + "<td>"
-            + strDate
-            + "</td>";
-
-         // store current destination data for change detection
-         strTypeLast = strType;
-         strNameLast = strName;
-         strDestLast = strDest;
-      }
-
-      if (strDestLast != null)
-      {
-         // store last module data string
-         ret += "<tr bgcolor=\"#"
-            + ((i % 2) == 0 ? "FFFFFF" : "F0F0F0")
-            + "\"><td rowspan=\""
-            + destCount
-            + "\">"
-            + strTypeLast
-            + "</td><td rowspan=\""
-            + destCount
-            + "\">"
-            + strNameLast
-            + "</td>"
-            + destData;
-      }
-
-      // append summation info
-      ret += "<tr>"
-         + "<td><![CDATA[ ]]></td><td><![CDATA[ ]]></td>"
-         + "<td><![CDATA[ ]]></td><td><![CDATA[ ]]></td><td>"
-         + countTotal
-         + "</td><td>"
-         + (countDeltaTotal == 0 ? "-" : Integer.toString(countDeltaTotal))
-         + "</td><td>"
-         + depthTotal
-         + "</td><td>"
-         + (depthDeltaTotal == 0 ? "-" : Integer.toString(depthDeltaTotal))
-         + "</td><td>Total</td></tr></table>";
-
-      return ret;
-   }
-
    public void resetAllMessageCounters()
    {
       messageCounterManager.resetAllCounters();
    }
-   
+
    public void resetAllMessageCounterHistories()
    {
       messageCounterManager.resetAllCounterHistories();
    }
-   
+
    public List retrievePreparedTransactions()
    {
       return txRepository.getPreparedTransactions();
    }
 
-   public String showPreparedTransactionsAsHTML()
+   public void removeAllMessagesForQueue(String queueName) throws Exception
    {
-      List txs = txRepository.getPreparedTransactions();
-      JBossStringBuilder buffer = new JBossStringBuilder();
-      buffer.append("<table width=\"100%\" border=\"1\" cellpadding=\"1\" cellspacing=\"1\">");
-      buffer.append("<tr><th>Xid</th></tr>");
-      for (Iterator i = txs.iterator(); i.hasNext();)
+      try
       {
-         Xid xid = (Xid)i.next();
-         if (xid != null)
-         {
-            buffer.append("<tr><td>");
-            buffer.append(xid);
-            buffer.append("</td></tr>");
-         }
+         ((ManagedQueue)getDestinationManager().getDestination(queueName, true)).removeAllMessages();
       }
-      buffer.append("</table>");
-      return buffer.toString();
+      catch (Throwable throwable)
+      {
+         throw new Exception(throwable);
+      }
    }
 
-   public String showActiveClientsAsHTML() throws Exception
+   public void removeAllMessagesForTopic(String queueName) throws Exception
    {
-      CharArrayWriter charArray = new CharArrayWriter();
-      PrintWriter out = new PrintWriter(charArray);
-
-      List endpoints = connectionManager.getActiveConnections();
-
-      out.println("<table><tr><td>ID</td><td>Host</td><td>User</td><td>#Sessions</td></tr>");
-      for (Iterator iter = endpoints.iterator(); iter.hasNext();)
+      try
       {
-         ServerConnectionEndpoint endpoint = (ServerConnectionEndpoint) iter.next();
-
-         out.println("<tr>");
-         out.println("<td>" + endpoint.toString() + "</td>");
-         out.println("<td>" + endpoint.getCallbackHandler().getCallbackClient().getInvoker().getLocator().getHost() + "</td>");
-         out.println("<td>" + endpoint.getUsername() + "</td>");
-         out.println("<td>" + endpoint.getSessions().size() + "</td>");
-         out.println("</tr>");
+         ((ManagedTopic)getDestinationManager().getDestination(queueName, false)).removeAllMessages();
       }
-
-      out.println("</table>");
-
-
-      return charArray.toString();
+      catch (Throwable throwable)
+      {
+         throw new Exception(throwable);
+      }
    }
 
    // Public ---------------------------------------------------------------------------------------
-   
+
    public void resetAllSuckers()
    {
-   	clusterConnectionManager.resetAllSuckers();
+      clusterConnectionManager.resetAllSuckers();
    }
-     
+
    public byte[] getClientAOPStack()
    {
       return clientAOPStack;
    }
-   
+
    public MessageCounterManager getMessageCounterManager()
    {
       return messageCounterManager;
    }
-   
+
    public IDManager getMessageIDManager()
    {
       return messageIDManager;
@@ -1120,22 +552,22 @@ public class ServerPeer extends ServiceMBeanSupport
    {
       return channelIDManager;
    }
-   
+
    public ServerSessionEndpoint getSession(String sessionID)
    {
-      return (ServerSessionEndpoint)sessions.get(sessionID);
+      return (ServerSessionEndpoint) sessions.get(sessionID);
    }
-   
+
    public Collection getSessions()
    {
-   	return sessions.values();
+      return sessions.values();
    }
-   
+
    public void addSession(String id, ServerSessionEndpoint session)
    {
-      sessions.put(id, session);      
+      sessions.put(id, session);
    }
-   
+
    public void removeSession(String id)
    {
       if (sessions.remove(id) == null)
@@ -1147,74 +579,56 @@ public class ServerPeer extends ServiceMBeanSupport
    public synchronized Queue getDefaultDLQInstance() throws Exception
    {
       Queue dlq = null;
-      
-      if (defaultDLQObjectName != null)
-      { 
-         ManagedQueue dest = null;
 
-         // This can be null... JMXAccessor will return null if InstanceNotFoundException is caught
-         dest = (ManagedQueue) JMXAccessor.getJMXAttributeOverSecurity(getServer(), defaultDLQObjectName, "Instance");
+      if (configuration.getDefaultDLQ() != null)
+      {
 
-         if (dest != null && dest.getName() != null)
-         {            
-            Binding binding = postOffice.getBindingForQueueName(dest.getName());
-            
-            if (binding == null)
-            {
-            	throw new IllegalStateException("Cannot find binding for queue " + dest.getName());
-            }
-            
-            Queue queue = binding.queue;
-            
-            if (queue.isActive())
-            {
-            	dlq = queue;
-            }
+         Binding binding = postOffice.getBindingForQueueName(configuration.getDefaultDLQ());
+
+         if (binding == null)
+         {
+            throw new IllegalStateException("Cannot find binding for queue " + configuration.getDefaultDLQ());
+         }
+
+         Queue queue = binding.queue;
+
+         if (queue.isActive())
+         {
+            dlq = queue;
          }
       }
-      
+
       return dlq;
    }
-   
+
    public synchronized Queue getDefaultExpiryQueueInstance() throws Exception
    {
       Queue expiryQueue = null;
-      
-      if (defaultExpiryQueueObjectName != null)
+
+      if (configuration.getDefaultExpiryQueue() != null)
       {
-         ManagedQueue dest = null;
-         
-         try
-         {
 
-            dest = (ManagedQueue)JMXAccessor.getJMXAttributeOverSecurity(getServer(), defaultExpiryQueueObjectName, "Instance");
-         }
-         catch (InstanceNotFoundException e)
+         if (configuration.getDefaultDLQ() != null)
          {
-            //Ok
-         }
+            Binding binding = postOffice.getBindingForQueueName(configuration.getDefaultExpiryQueue());
 
-         if (dest != null && dest.getName() != null)
-         {            
-         	Binding binding = postOffice.getBindingForQueueName(dest.getName());
-            
             if (binding == null)
             {
-            	throw new IllegalStateException("Cannot find binding for queue " + dest.getName());
+               throw new IllegalStateException("Cannot find binding for queue " + configuration.getDefaultExpiryQueue());
             }
-            
-            Queue queue = binding.queue;            
-         	
+
+            Queue queue = binding.queue;
+
             if (queue.isActive())
             {
-            	expiryQueue = queue;
+               expiryQueue = queue;
             }
          }
       }
-      
+
       return expiryQueue;
    }
-      
+
    public TransactionRepository getTxRepository()
    {
       return txRepository;
@@ -1259,7 +673,7 @@ public class ServerPeer extends ServiceMBeanSupport
 
    public MessageStore getMessageStore()
    {
-      return messageStore;
+      return getPostOffice().getMessageStore();
    }
 
    public MemoryManager getMemoryManager()
@@ -1274,52 +688,45 @@ public class ServerPeer extends ServiceMBeanSupport
       return persistenceManager;
    }
 
+   public void setPersistenceManager(PersistenceManager persistenceManager)
+   {
+      this.persistenceManager = persistenceManager;
+   }
+
    public JMSUserManager getJmsUserManagerInstance()
    {
       return jmsUserManager;
    }
 
-   public PostOffice getPostOfficeInstance() throws Exception
-   {
-      // We get the reference lazily to avoid problems with MBean circular dependencies
-      if (postOffice == null)
-      {
-         postOffice = (PostOffice)JMXAccessor.getJMXAttributeOverSecurity(getServer(), postOfficeObjectName, "Instance");
-         // We also inject the replicator dependency into the ConnectionFactoryJNDIMapper. This is
-         // a bit messy but we have a circular dependency POJOContainer should be able to help us
-         // here. Yes, this is nasty.
 
-         if (postOffice.isClustered())
-         {
-            Replicator rep = (Replicator)postOffice;
-            
-            connFactoryJNDIMapper.injectReplicator(rep);          
-            
-            // Also inject into the cluster connection manager
-            
-            this.clusterConnectionManager.injectPostOffice(postOffice);
-            
-            this.clusterConnectionManager.injectReplicator((Replicator)postOffice);
-            
-            this.connectionManager.injectReplicator((Replicator)postOffice);
-            
-            ((MessagingPostOffice)postOffice).injectServerPeer(this);
-         }
-         
-         // Also need to inject into txRepository
-         txRepository.injectPostOffice(postOffice);                          
-      }
+   public void setJmsUserManager(JMSUserManager jmsUserManager)
+   {
+      this.jmsUserManager = jmsUserManager;
+   }
+
+   public PostOffice getPostOffice()
+   {
       return postOffice;
+   }
+
+   public void setPostOffice(PostOffice postOffice)
+   {
+      this.postOffice = postOffice;
    }
 
    public ClusterNotifier getClusterNotifier()
    {
-   	return clusterNotifier;
+      return clusterNotifier;
    }
-   
+
+   public void setClusterNotifier(ClusterNotifier clusterNotifier)
+   {
+      this.clusterNotifier = clusterNotifier;
+   }
+
    public FailoverWaiter getFailoverWaiter()
    {
-   	return failoverWaiter;
+      return failoverWaiter;
    }
 
    public boolean isSupportsFailover()
@@ -1332,14 +739,14 @@ public class ServerPeer extends ServiceMBeanSupport
       if (started)
       {
          throw new IllegalAccessException("supportsFailover can only be changed when " +
-                                          "server peer is stopped");
+                 "server peer is stopped");
       }
       this.supportsFailover = supportsFailover;
    }
 
    public String toString()
    {
-      return "ServerPeer[" + getServerPeerID() + "]";
+      return "ServerPeer[" + configuration.getServerPeerID() + "]";
    }
 
    // Package protected ----------------------------------------------------------------------------
@@ -1347,7 +754,7 @@ public class ServerPeer extends ServiceMBeanSupport
    // Protected ------------------------------------------------------------------------------------
 
    // Private --------------------------------------------------------------------------------------
-     
+
    private void loadServerAOPConfig() throws Exception
    {
       URL url = this.getClass().getClassLoader().getResource("aop-messaging-server.xml");
@@ -1393,189 +800,29 @@ public class ServerPeer extends ServiceMBeanSupport
       }
    }
 
-   private String deployDestinationDefault(boolean isQueue, String name, String jndiName)
-      throws Exception
+   public List listAllMessages(String queueName) throws Exception
    {
-      //
-      // TODO - THIS IS A TEMPORARY IMPLEMENTATION; WILL BE REPLACED WITH INTEGRATION-CONSISTENT ONE
-      // TODO - if I find a way not using UnifiedClassLoader3 directly, then get rid of
-      //        <path refid="jboss.jmx.classpath"/> from jms/build.xml dependentmodule.classpath
-      //
-
-      //TODO - Yes this is super-ugly - there must be an easier way of doing it
-      //also in LocalTestServer is doing the same thing in a slightly different way
-      //this should be combined
-
-      String destType = isQueue ? "Queue" : "Topic";
-      String className = "org.jboss.jms.server.destination." + destType + "Service";
-      String ons ="jboss.messaging.destination:service="+ destType + ",name=" + name;
-      ObjectName on = new ObjectName(ons);
-
-      String destinationMBeanConfig =
-         "<mbean code=\"" + className + "\" " +
-         "       name=\"" + ons + "\" " +
-         "       xmbean-dd=\"xmdesc/" + destType + "-xmbean.xml\">\n" +
-         "    <constructor>" +
-         "        <arg type=\"boolean\" value=\"true\"/>" +
-         "    </constructor>" +
-         "</mbean>";
-
-      return deployDestinationInternal(destinationMBeanConfig, on, jndiName, false, -1, -1, -1);
-   }
-   
-   private String deployDestination(boolean isQueue, String name, String jndiName, int fullSize,
-            int pageSize, int downCacheSize) throws Exception
-   {
-      //    
-      //    TODO - THIS IS A TEMPORARY IMPLEMENTATION; WILL BE REPLACED WITH INTEGRATION-CONSISTENT ONE
-      //    TODO - if I find a way not using UnifiedClassLoader3 directly, then get rid of
-      //    <path refid="jboss.jmx.classpath"/> from jms/build.xml dependentmodule.classpath
-      //    
-   	
-      String destType = isQueue ? "Queue" : "Topic";
-      String className = "org.jboss.jms.server.destination." + destType + "Service";
-      
-      String ons ="jboss.messaging.destination:service="+ destType + ",name=" + name;
-      ObjectName on = new ObjectName(ons);
-      
-      String destinationMBeanConfig =
-         "<mbean code=\"" + className + "\" " +
-         "       name=\"" + ons + "\" " +
-         "       xmbean-dd=\"xmdesc/" + destType + "-xmbean.xml\">\n" +
-         "    <constructor>" +
-         "        <arg type=\"boolean\" value=\"true\"/>" +
-         "    </constructor>" +
-         "    <attribute name=\"FullSize\">" + fullSize + "</attribute>" +
-         "    <attribute name=\"PageSize\">" + pageSize + "</attribute>" +
-         "    <attribute name=\"DownCacheSize\">" + downCacheSize + "</attribute>" +
-         "</mbean>";
-      
-      return deployDestinationInternal(destinationMBeanConfig, on, jndiName, true, fullSize,
-               pageSize, downCacheSize);
+      return ((ManagedQueue) getDestinationManager().getDestination(queueName, true)).listAllMessages(null);
    }
 
-   private String deployDestinationInternal(String destinationMBeanConfig, ObjectName on,
-                                            String jndiName, boolean params, int fullSize,
-                                            int pageSize, int downCacheSize) throws Exception
+
+   public Configuration getConfiguration()
    {
-   	log.trace("Deploying destination" + destinationMBeanConfig + " jndiName: " + jndiName +
-			       "fullSize: " + fullSize + " pageSize: " + pageSize + " downCacheSize: " + downCacheSize);
-     	
-      MBeanServer mbeanServer = getServer();
-
-      Element element = Util.stringToElement(destinationMBeanConfig);
-
-      ServiceCreator sc = new ServiceCreator(mbeanServer);
-
-      ClassLoader cl = this.getClass().getClassLoader();
-      ObjectName loaderObjectName = null;
-      if (cl instanceof UnifiedClassLoader3)
-      {
-         loaderObjectName = ((UnifiedClassLoader3)cl).getObjectName();
-      }
-
-      sc.install(on, loaderObjectName, element);
-
-      // inject dependencies
-      mbeanServer.setAttribute(on, new Attribute("ServerPeer", getServiceName()));
-      mbeanServer.setAttribute(on, new Attribute("JNDIName", jndiName));
-      if (params)
-      {
-         mbeanServer.setAttribute(on, new Attribute("FullSize", new Integer(fullSize)));
-         mbeanServer.setAttribute(on, new Attribute("PageSize", new Integer(pageSize)));
-         mbeanServer.setAttribute(on, new Attribute("DownCacheSize", new Integer(downCacheSize)));
-      }
-      mbeanServer.invoke(on, "create", new Object[0], new String[0]);
-      mbeanServer.invoke(on, "start", new Object[0], new String[0]);
-
-      return (String)JMXAccessor.getJMXAttributeOverSecurity(mbeanServer, on, "JNDIName");
+      return configuration;
    }
 
-   
-
-   /*
-    * Undeploy the MBean but don't delete the underlying data
-    */
-   private boolean undeployDestination(boolean isQueue, String name) throws Exception
+   public void setConfiguration(Configuration configuration)
    {
-      String destType = isQueue ? "Queue" : "Topic";
-      String ons ="jboss.messaging.destination:service=" + destType + ",name=" + name;
-      ObjectName on = new ObjectName(ons);
-
-      MBeanServer mbeanServer = getServer();
-
-      // we can only undeploy destinations that exist AND that have been created programatically
-      if (!mbeanServer.isRegistered(on))
-      {
-         return false;
-      }
-      Boolean b = (Boolean)JMXAccessor.getJMXAttributeOverSecurity(mbeanServer, on, "CreatedProgrammatically");
-      if (!b.booleanValue())
-      {
-         log.warn("Cannot undeploy a destination that has not been created programatically");
-         return false;
-      }
-      mbeanServer.invoke(on, "stop", new Object[0], new String[0]);
-      mbeanServer.invoke(on, "destroy", new Object[0], new String[0]);
-      mbeanServer.unregisterMBean(on);
-      return true;
+      this.configuration = configuration;
    }
-   
-   /*
-    * Undeploy the MBean and delete the underlying data
-    */
-   private boolean destroyDestination(boolean isQueue, String name) throws Throwable
+
+   public Connector getConnector()
    {
-      String destType = isQueue ? "Queue" : "Topic";
-      String ons ="jboss.messaging.destination:service=" + destType + ",name=" + name;
-      ObjectName on = new ObjectName(ons);
-
-      MBeanServer mbeanServer = getServer();
-
-      // we can only destroy destinations that exist AND that have been created programatically
-      if (!mbeanServer.isRegistered(on))
-      {
-         return false;
-      }
-      
-      JMSCondition condition = new JMSCondition(isQueue, name);  
-      
-      Collection queues = postOffice.getQueuesForCondition(condition, true);
-      
-      Iterator iter = queues.iterator();
-      
-      while (iter.hasNext())            
-      {
-         Queue queue = (Queue)iter.next();
-         
-         queue.removeAllReferences();
-      }
-                       
-      //undeploy the mbean
-      if (!undeployDestination(isQueue, name))
-      {
-         return false;
-      }
-            
-      //Unbind the destination's queues
-      
-      while (iter.hasNext())            
-      {
-         Queue queue = (Queue)iter.next();
-         
-         queue.removeAllReferences();
-         
-         //Durable subs need to be removed on all nodes
-         boolean all = !isQueue && queue.isRecoverable();
-         
-         postOffice.removeBinding(queue.getName(), all);
-      }
-      
-      return true;
+      return connector;
    }
-   
 
-   // Inner classes --------------------------------------------------------------------------------
-   
-  
+   public void setConnector(Connector connector)
+   {
+      this.connector = connector;
+   }
 }

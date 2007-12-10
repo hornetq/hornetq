@@ -21,26 +21,7 @@
   */
 package org.jboss.test.messaging.jms;
 
-import javax.jms.Connection;
-import javax.jms.ConnectionFactory;
-import javax.jms.JMSException;
-import javax.jms.Message;
-import javax.jms.MessageConsumer;
-import javax.jms.MessageListener;
-import javax.jms.MessageProducer;
-import javax.jms.QueueConnection;
-import javax.jms.QueueConnectionFactory;
-import javax.jms.Session;
-import javax.jms.TextMessage;
-import javax.jms.Topic;
-import javax.jms.TopicConnection;
-import javax.jms.TopicConnectionFactory;
-import javax.management.ObjectName;
-
-import org.jboss.jms.client.JBossConnectionFactory;
-import org.jboss.jms.client.delegate.ClientConnectionFactoryDelegate;
-import org.jboss.test.messaging.tools.ServerManagement;
-import org.jboss.test.messaging.tools.container.ServiceContainer;
+import javax.jms.*;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
@@ -62,6 +43,11 @@ public class ConnectionFactoryTest extends JMSTestCase
    public ConnectionFactoryTest(String name)
    {
       super(name);
+   }
+
+   protected void setUp() throws Exception
+   {
+      super.setUp();    //To change body of overridden methods use File | Settings | File Templates.
    }
 
    // Public --------------------------------------------------------
@@ -94,25 +80,7 @@ public class ConnectionFactoryTest extends JMSTestCase
    {
       // deploy a connection factory that has an administatively configured clientID
 
-      String mbeanConfig =
-         "<mbean code=\"org.jboss.jms.server.connectionfactory.ConnectionFactory\"\n" +
-         "       name=\"jboss.messaging.connectionfactory:service=TestConnectionFactory\"\n" +
-         "       xmbean-dd=\"xmdesc/ConnectionFactory-xmbean.xml\">\n" +
-         "       <constructor>\n" +
-         "           <arg type=\"java.lang.String\" value=\"sofiavergara\"/>\n" +
-         "       </constructor>\n" +
-         "       <depends optional-attribute-name=\"ServerPeer\">jboss.messaging:service=ServerPeer</depends>\n" +
-         "       <depends optional-attribute-name=\"Connector\">jboss.messaging:service=Connector,transport=bisocket</depends>\n" +
-         "       <attribute name=\"JNDIBindings\">\n" +
-         "          <bindings>\n" +
-         "            <binding>/TestConnectionFactory</binding>\n" +
-         "          </bindings>\n" +
-         "       </attribute>\n" +
-         " </mbean>";
-
-      ObjectName on = ServerManagement.deploy(mbeanConfig);
-      ServerManagement.invoke(on, "create", new Object[0], new String[0]);
-      ServerManagement.invoke(on, "start", new Object[0], new String[0]);
+      deployConnectionFactory("sofiavergara", "TestConnectionFactory", new String[]{"TestConnectionFactory"} );
 
       ConnectionFactory cf = (ConnectionFactory)ic.lookup("/TestConnectionFactory");
       Connection c = cf.createConnection();
@@ -129,113 +97,8 @@ public class ConnectionFactoryTest extends JMSTestCase
       {
          // OK
       }
-      
-      //Now try and deploy another one with the same client id
-      
-      mbeanConfig =
-         "<mbean code=\"org.jboss.jms.server.connectionfactory.ConnectionFactory\"\n" +
-         "       name=\"jboss.messaging.connectionfactory:service=TestConnectionFactory2\"\n" +
-         "       xmbean-dd=\"xmdesc/ConnectionFactory-xmbean.xml\">\n" +
-         "       <constructor>\n" +
-         "           <arg type=\"java.lang.String\" value=\"sofiavergara\"/>\n" +
-         "       </constructor>\n" +
-         "       <depends optional-attribute-name=\"ServerPeer\">jboss.messaging:service=ServerPeer</depends>\n" +
-         "       <depends optional-attribute-name=\"Connector\">jboss.messaging:service=Connector,transport=bisocket</depends>\n" +
-         "       <attribute name=\"JNDIBindings\">\n" +
-         "          <bindings>\n" +
-         "            <binding>/TestConnectionFactory2</binding>\n" +
-         "          </bindings>\n" +
-         "       </attribute>\n" +
-         " </mbean>";
-      
-      ObjectName on2 = ServerManagement.deploy(mbeanConfig);
-      ServerManagement.invoke(on2, "create", new Object[0], new String[0]);      
-      ServerManagement.invoke(on2, "start", new Object[0], new String[0]);
-      
-      
-      ServerManagement.invoke(on2, "stop", new Object[0], new String[0]);
-      ServerManagement.invoke(on2, "destroy", new Object[0], new String[0]);
-      ServerManagement.undeploy(on2);
-      
-      cf = (ConnectionFactory)ic.lookup("/TestConnectionFactory");
-      Connection c2 = null;
-      try
-      {
-         c2 = cf.createConnection();
-      }
-      catch (JMSException e)
-      {
-         //Ok
-      }
-      
-      if (c2 != null) c2.close();
-      
       c.close();
-
-      ServerManagement.invoke(on, "stop", new Object[0], new String[0]);
-      ServerManagement.invoke(on, "destroy", new Object[0], new String[0]);
-      ServerManagement.undeploy(on);
-   }
-         
-   public void testAdministrativelyConfiguredConnectors() throws Exception
-   {
-      //Deploy a few connectors
-      String name1 = "jboss.messaging:service=Connector1,transport=bisocket";
-      
-      String name2 = "jboss.messaging:service=Connector2,transport=bisocket";
-      
-      String name3 = "jboss.messaging:service=Connector3,transport=bisocket";
-      
-      ObjectName c1 = deployConnector(1234, name1);
-      ObjectName c2 = deployConnector(1235, name2);
-      ObjectName c3 = deployConnector(1236, name3);
-      
-      ObjectName cf1 = deployConnectionFactory("jboss.messaging.destination:service=TestConnectionFactory1", name1, "/TestConnectionFactory1", "clientid1", false);
-      ObjectName cf2 = deployConnectionFactory("jboss.messaging.destination:service=TestConnectionFactory2", name2, "/TestConnectionFactory2", "clientid2", false);
-      ObjectName cf3 = deployConnectionFactory("jboss.messaging.destination:service=TestConnectionFactory3", name3, "/TestConnectionFactory3", "clientid3", false);
-      //Last one shares the same connector
-      ObjectName cf4 = deployConnectionFactory("jboss.messaging.destination:service=TestConnectionFactory4", name3, "/TestConnectionFactory4", "clientid4", false);
-      
-      
-      JBossConnectionFactory f1 = (JBossConnectionFactory)ic.lookup("/TestConnectionFactory1");            
-      ClientConnectionFactoryDelegate del1 = (ClientConnectionFactoryDelegate)f1.getDelegate();      
-      
-      assertTrue(del1.getServerLocatorURI().startsWith("bisocket://localhost:1234"));
-      
-      JBossConnectionFactory f2 = (JBossConnectionFactory)ic.lookup("/TestConnectionFactory2");            
-      ClientConnectionFactoryDelegate del2 = (ClientConnectionFactoryDelegate)f2.getDelegate();      
-      assertTrue(del2.getServerLocatorURI().startsWith("bisocket://localhost:1235"));
-      
-      JBossConnectionFactory f3 = (JBossConnectionFactory)ic.lookup("/TestConnectionFactory3");            
-      ClientConnectionFactoryDelegate del3 = (ClientConnectionFactoryDelegate)f3.getDelegate();      
-      assertTrue(del3.getServerLocatorURI().startsWith("bisocket://localhost:1236"));
-      
-      JBossConnectionFactory f4 = (JBossConnectionFactory)ic.lookup("/TestConnectionFactory4");            
-      ClientConnectionFactoryDelegate del4 = (ClientConnectionFactoryDelegate)f4.getDelegate();      
-      assertTrue(del4.getServerLocatorURI().startsWith("bisocket://localhost:1236"));
-      
-      Connection con1 = f1.createConnection();
-      Connection con2 = f2.createConnection();
-      Connection con3 = f3.createConnection();
-      Connection con4 = f4.createConnection();
-      con1.close();
-      con2.close();
-      con3.close();
-      con4.close();
-      
-      stopService(cf1);
-      stopService(cf2);
-      stopService(cf3);
-      
-      //Check f4 is still ok
-      Connection conn5 = f4.createConnection();
-      conn5.close();
-      
-      stopService(cf4);
-      
-      stopService(c1);
-      stopService(c2);
-      stopService(c3);
+      undeployConnectionFactory("TestConnectionFactory");
    }
    
    public void testNoClientIDConfigured_1() throws Exception
@@ -270,9 +133,9 @@ public class ConnectionFactoryTest extends JMSTestCase
    // Added for http://jira.jboss.org/jira/browse/JBMESSAGING-939
    public void testDurableSubscriptionOnPreConfiguredConnectionFactory() throws Exception
    {
-      ObjectName cf1 = deployConnectionFactory("jboss.messaging.destination:service=TestConnectionFactory1", ServiceContainer.REMOTING_OBJECT_NAME.getCanonicalName(), "/TestDurableCF", "cfTest", false);
+      deployConnectionFactory("TestConnectionFactory1","cfTest", new String[]{"/TestDurableCF"});
 
-      ServerManagement.deployTopic("TestSubscriber");
+      deployTopic("TestSubscriber");
 
       Connection conn = null;
 
@@ -309,16 +172,7 @@ public class ConnectionFactoryTest extends JMSTestCase
 
          try
          {
-            stopService(cf1);
-         }
-         catch (Exception e)
-         {
-            log.warn(e.toString(), e);
-         }
-
-         try
-         {
-            ServerManagement.destroyTopic("TestSubscriber");
+            destroyTopic("TestSubscriber");
          }
          catch (Exception e)
          {
@@ -329,11 +183,11 @@ public class ConnectionFactoryTest extends JMSTestCase
 
    }
 
-   
-   public void testSlowConsumers() throws Exception
+   /*public void testSlowConsumers() throws Exception
    {
-      ObjectName cf1 = deployConnectionFactory("jboss.messaging.destination:service=TestConnectionFactorySlowConsumers",
-      		                                   ServiceContainer.REMOTING_OBJECT_NAME.getCanonicalName(), "/TestSlowConsumersCF", null, true);
+     // ObjectName cf1 = deployConnectionFactory("jboss.messaging.destination:service=TestConnectionFactorySlowConsumers",
+      		                                   //ServiceContainer.REMOTING_OBJECT_NAME.getCanonicalName(), "/TestSlowConsumersCF", null, true);
+      deployConnectionFactory(null, "TestSlowConsumersCF", new String[]{"TestSlowConsumersCF"});
 
       Connection conn = null;
 
@@ -474,7 +328,7 @@ public class ConnectionFactoryTest extends JMSTestCase
 
          try
          {
-            stopService(cf1);
+            undeployConnectionFactory("TestSlowConsumersCF");
          }
          catch (Exception e)
          {
@@ -483,7 +337,7 @@ public class ConnectionFactoryTest extends JMSTestCase
 
       }
 
-   }
+   }*/
    
    
    // Package protected ---------------------------------------------
@@ -491,89 +345,7 @@ public class ConnectionFactoryTest extends JMSTestCase
    // Protected -----------------------------------------------------
 
    // Private -------------------------------------------------------
-   
-   private ObjectName deployConnector(int port, String name) throws Exception
-   {
-      String mbeanConfig =
-         "<mbean code=\"org.jboss.remoting.transport.Connector\"\n" +
-         " name=\"" +name + "\"\n" +
-         " display-name=\"BiSocket transport Connector\">\n"  +        
-     "</mbean>";
-      
-      String config =
-         "<attribute name=\"Configuration\">\n" +         
-	         "<config>" +
-			      "<invoker transport=\"bisocket\">" +
-			                
-			         "<attribute name=\"marshaller\" isParam=\"true\">org.jboss.jms.wireformat.JMSWireFormat</attribute>" +
-			         "<attribute name=\"unmarshaller\" isParam=\"true\">org.jboss.jms.wireformat.JMSWireFormat</attribute>" +
-			         "<attribute name=\"dataType\" isParam=\"true\">jms</attribute>" +
-			         "<attribute name=\"socket.check_connection\" isParam=\"true\">false</attribute>" +
-			         "<attribute name=\"timeout\" isParam=\"true\">0</attribute>" +
-			         "<attribute name=\"serverBindAddress\">localhost</attribute>" +
-			         "<attribute name=\"serverBindPort\">" + port + "</attribute>" +
-			         "<attribute name=\"clientSocketClass\" isParam=\"true\">org.jboss.jms.client.remoting.ClientSocketWrapper</attribute>"+
-			         "<attribute name=\"serverSocketClass\" isParam=\"true\">org.jboss.jms.server.remoting.ServerSocketWrapper</attribute>" +
-			         "<attribute name=\"numberOfCallRetries\" isParam=\"true\">1</attribute>" +
-			         "<attribute name=\"pingFrequency\" isParam=\"true\">214748364</attribute>" +
-			         "<attribute name=\"pingWindowFactor\" isParam=\"true\">10</attribute>" +
-			         "<attribute name=\"onewayThreadPool\">org.jboss.jms.server.remoting.DirectThreadPool</attribute>" +
-			                                     
-			         "<attribute name=\"clientLeasePeriod\" isParam=\"true\">10000</attribute>" +
-			
-			         "<attribute name=\"numberOfRetries\" isParam=\"true\">10</attribute>" +
-			         "<attribute name=\"clientMaxPoolSize\" isParam=\"true\">200</attribute>" +        
-			                        
-			      "</invoker>" +
-			      "<handlers>" +
-			         "<handler subsystem=\"JMS\">org.jboss.jms.server.remoting.JMSServerInvocationHandler</handler>" +
-			      "</handlers>" +
-			   "</config>" +
-        "</attribute>\n";
-      
-      ObjectName on = ServerManagement.deploy(mbeanConfig);
-      
-      ServerManagement.setAttribute(on, "Configuration", config);
-            
-      ServerManagement.invoke(on, "create", new Object[0], new String[0]);
-      
-      ServerManagement.invoke(on, "start", new Object[0], new String[0]);
-      
-      return on;
-   }
-   
-   private ObjectName deployConnectionFactory(String name, String connectorName, String binding, String clientID, boolean slowConsumers) throws Exception
-   {
-      String mbeanConfig =
-            "<mbean code=\"org.jboss.jms.server.connectionfactory.ConnectionFactory\"\n" +
-            "       name=\"" + name + "\"\n" +
-            "       xmbean-dd=\"xmdesc/ConnectionFactory-xmbean.xml\">\n" +
-            "       <constructor>\n" +
-            "           <arg type=\"java.lang.String\" value=\"" + clientID + "\"/>\n" +
-            "       </constructor>\n" +
-            "       <depends optional-attribute-name=\"ServerPeer\">jboss.messaging:service=ServerPeer</depends>\n" +
-            "       <depends optional-attribute-name=\"Connector\">" + connectorName + "</depends>\n" +
-            "       <attribute name=\"JNDIBindings\">\n" +
-            "          <bindings>\n" +
-            "            <binding>" + binding + " </binding>\n" +
-            "          </bindings>\n" +
-            "       </attribute>\n" +
-            "       <attribute name=\"SlowConsumers\">" + slowConsumers + "</attribute>\n" +            
-            " </mbean>";
 
-      ObjectName on = ServerManagement.deploy(mbeanConfig);
-      ServerManagement.invoke(on, "create", new Object[0], new String[0]);
-      ServerManagement.invoke(on, "start", new Object[0], new String[0]);
-      
-      return on;
-   }
-   
-   private void stopService(ObjectName on) throws Exception
-   {
-      ServerManagement.invoke(on, "stop", new Object[0], new String[0]);
-      ServerManagement.invoke(on, "destroy", new Object[0], new String[0]);
-      ServerManagement.undeploy(on);
-   }
    
    // Inner classes -------------------------------------------------
 

@@ -21,10 +21,10 @@
   */
 package org.jboss.test.messaging.jms.server.connectormanager;
 
-import javax.naming.InitialContext;
-
 import org.jboss.jms.server.connectormanager.SimpleConnectorManager;
-import org.jboss.test.messaging.MessagingTestCase;
+import org.jboss.test.messaging.JBMBaseTestCase;
+
+import javax.naming.InitialContext;
 
 /**
  * 
@@ -36,7 +36,7 @@ import org.jboss.test.messaging.MessagingTestCase;
  * $Id$
  *
  */
-public class SimpleConnectorManagerTest extends MessagingTestCase
+public class SimpleConnectorManagerTest extends JBMBaseTestCase
 {
    // Constants -----------------------------------------------------
 

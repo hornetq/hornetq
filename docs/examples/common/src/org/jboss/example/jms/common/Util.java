@@ -74,7 +74,7 @@ public class Util
 
       String queueName = jndiName.substring(jndiName.lastIndexOf('/') + 1);
 
-      mBeanServer.invoke(serverObjectName, "createQueue",
+      mBeanServer.invoke(serverObjectName, "deployQueue",
                          new Object[] {queueName, jndiName},
                          new String[] {"java.lang.String", "java.lang.String"});
 
@@ -90,7 +90,7 @@ public class Util
    {
       MBeanServerConnection mBeanServer = lookupMBeanServerProxy(ic);
 
-      ObjectName serverObjectName = new ObjectName("jboss.messaging:service=ServerPeer");
+      ObjectName serverObjectName = new ObjectName("jboss.messaging:service=Server");
 
       String queueName = jndiName.substring(jndiName.lastIndexOf('/') + 1);
 

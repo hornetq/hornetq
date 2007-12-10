@@ -21,11 +21,11 @@
  */
 package org.jboss.messaging.core.contract;
 
+import org.jboss.messaging.core.impl.tx.Transaction;
+
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
-
-import org.jboss.messaging.core.impl.tx.Transaction;
 
 /**
  * 
@@ -47,14 +47,7 @@ import org.jboss.messaging.core.impl.tx.Transaction;
  *
  */
 public interface PostOffice extends MessagingComponent
-{
-	/**
-	 * Get the name of the post office
-	 * 
-	 * @return The name of this post office
-	 */
-   String getOfficeName();
-   
+{   
    /**
     * Add a binding to the post office
     * @param binding The binding to add
@@ -120,14 +113,7 @@ public interface PostOffice extends MessagingComponent
     * @return
     * @throws Exception
     */
-   Collection getAllBindings() throws Exception;
-   
-   /**
-    * Is this post office clustered?
-    * 
-    * @return true If the post office is clustered
-    */
-   boolean isClustered();   
+   Collection getAllBindings() throws Exception; 
 
    /**
     * Get the failover map
@@ -155,5 +141,9 @@ public interface PostOffice extends MessagingComponent
 	Map getRecoveryArea(String queueName);
    
    int getRecoveryMapSize(String queueName);
+
+   void setClusterNotifier(ClusterNotifier clusterNotifier);
+
+   MessageStore getMessageStore();
 }
 

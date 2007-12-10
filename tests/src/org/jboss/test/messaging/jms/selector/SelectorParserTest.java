@@ -21,14 +21,14 @@
   */
 package org.jboss.test.messaging.jms.selector;
 
-import java.io.ByteArrayInputStream;
-import java.util.HashMap;
-
 import org.jboss.jms.server.selector.ISelectorParser;
 import org.jboss.jms.server.selector.Identifier;
 import org.jboss.jms.server.selector.Operator;
 import org.jboss.jms.server.selector.SelectorParser;
-import org.jboss.test.messaging.MessagingTestCase;
+import org.jboss.test.messaging.JBMBaseTestCase;
+
+import java.io.ByteArrayInputStream;
+import java.util.HashMap;
 
 
 /** Tests of the JavaCC LL(1) parser.
@@ -43,7 +43,7 @@ import org.jboss.test.messaging.MessagingTestCase;
  * (david jencks)  Used constructor of SelectorParser taking a stream
  * to avoid reInit npe in all tests.  Changed to JBossTestCase and logging.
  */
-public class SelectorParserTest extends MessagingTestCase
+public class SelectorParserTest extends JBMBaseTestCase
 {
    static HashMap identifierMap = new HashMap();
    static ISelectorParser parser;

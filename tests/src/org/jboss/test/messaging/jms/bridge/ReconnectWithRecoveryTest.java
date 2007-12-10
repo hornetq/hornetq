@@ -21,14 +21,12 @@
  */
 package org.jboss.test.messaging.jms.bridge;
 
-import java.util.Properties;
-
-import org.jboss.jms.jndi.JMSProviderAdapter;
 import org.jboss.jms.server.bridge.Bridge;
 import org.jboss.logging.Logger;
 import org.jboss.test.messaging.tools.ServerManagement;
-import org.jboss.test.messaging.tools.TestJMSProviderAdaptor;
 import org.jboss.test.messaging.tools.aop.PoisonInterceptor;
+
+import java.util.Properties;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -55,21 +53,21 @@ public class ReconnectWithRecoveryTest extends BridgeTestBase
       Properties props1 = new Properties();
       props1.putAll(ServerManagement.getJNDIEnvironment(1));
         
-      JMSProviderAdapter targetAdaptor =
+      /*JMSProviderAdapter targetAdaptor =
          new TestJMSProviderAdaptor(props1, "/XAConnectionFactory", "adaptor1");
       
       sc.installJMSProviderAdaptor("adaptor1", targetAdaptor);
       
-      sc.startRecoveryManager();      
+      sc.startRecoveryManager();*/
    }
 
    protected void tearDown() throws Exception
    {  
       super.tearDown();
 
-      sc.stopRecoveryManager();
+      /*sc.stopRecoveryManager();
       
-      sc.uninstallJMSProviderAdaptor("adaptor1");
+      sc.uninstallJMSProviderAdaptor("adaptor1");*/
 
       log.debug(this + " torn down");
    }
@@ -123,7 +121,7 @@ public class ReconnectWithRecoveryTest extends BridgeTestBase
          
          log.info("Restarted server");    
          
-         ServerManagement.deployQueue("targetQueue", 1);
+         deployQueue("targetQueue", 1);
                   
          this.setUpAdministeredObjects();
                         

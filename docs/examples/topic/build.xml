@@ -21,7 +21,7 @@
    <property name="example.topic.name" value="testTopic"/>
 
    <path id="common.compilation.classpath">
-      <fileset file="${jboss.home}/client/jboss-j2ee.jar"/>
+      <fileset file="${jboss.home}/client/jboss-javaee.jar"/>
       <fileset file="${messaging.client.jar.path}/${messaging.client.jar.name}"/>
    </path>
 
@@ -38,9 +38,10 @@
       <fileset file="${jboss.home}/server/${jboss.configuration}/lib/jboss-remoting.jar"/>
       <fileset file="${jboss.home}/client/jbossall-client.jar"/>
       <fileset file="${jboss.home}/server/${jboss.configuration}/lib/log4j.jar"/>
-      <fileset file="${jboss.home}/server/${jboss.configuration}/lib/javassist.jar"/>
-      <fileset file="${jboss.home}/server/${jboss.configuration}/deploy/jboss-aop-jdk50.deployer/jboss-aop-jdk50.jar"/>
-      <fileset file="${jboss.home}/server/${jboss.configuration}/deploy/jboss-aop-jdk50.deployer/trove.jar"/>
+      <fileset file="${jboss.home}/lib/javassist.jar"/>
+      <fileset file="${jboss.home}/lib/jboss-aop-jdk50.jar"/>
+      <fileset file="${jboss.home}/lib/trove.jar"/>
+      <fileset file="${jboss.home}/lib/jboss-container.jar"/>
    </path>
 
    <target name="identify">
@@ -49,6 +50,7 @@
       <echo message="###########################################################################"/>
       <echo message="The topic:      ${example.topic.name}"/>
       <echo message="The client jar: ${messaging.client.jar.path}/${messaging.client.jar.name}"/>
+      <echo message="JBOSS_HOME is: ${jboss.home}"/>
    </target>
 
    <target name="sanity-check" depends="identify">

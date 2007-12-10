@@ -21,25 +21,24 @@
   */
 package org.jboss.test.messaging.tools.container;
 
-import java.rmi.registry.LocateRegistry;
-import java.rmi.registry.Registry;
-import java.rmi.server.UnicastRemoteObject;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import javax.management.NotificationListener;
-import javax.management.ObjectName;
-import javax.transaction.UserTransaction;
-
 import org.jboss.jms.server.DestinationManager;
+import org.jboss.jms.server.JmsServer;
+import org.jboss.jms.server.JmsServerStatistics;
 import org.jboss.jms.server.ServerPeer;
+import org.jboss.jms.server.security.Role;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.contract.MessageStore;
 import org.jboss.messaging.core.contract.PersistenceManager;
 import org.jboss.remoting.ServerInvocationHandler;
+
+import javax.management.NotificationListener;
+import javax.management.ObjectName;
+import javax.naming.InitialContext;
+import javax.transaction.UserTransaction;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
+import java.rmi.server.UnicastRemoteObject;
+import java.util.*;
 
 /**
  * An RMI wrapper to access the ServiceContainer from a different address space.
@@ -139,16 +138,13 @@ public class RMITestServer extends UnicastRemoteObject implements Server
       return server.getServerID();
    }
 
-   public void start(String containerConfig, boolean clearDatabase) throws Exception
+
+   public void start(String[] containerConfig, HashMap<String, Object> configuration, boolean clearDatabase) throws Exception
    {
-      start(containerConfig, null, clearDatabase, true);
+      server.start(containerConfig, configuration, clearDatabase);
    }
 
-   public void start(String containerConfig, ServiceAttributeOverrides attrOverrides,
-                     boolean clearDatabase, boolean startMessagingServer) throws Exception
-   {
-      server.start(containerConfig, attrOverrides, clearDatabase, startMessagingServer);
-   }
+
 
    public boolean stop() throws Exception
    {
@@ -252,15 +248,6 @@ public class RMITestServer extends UnicastRemoteObject implements Server
       server.removeNotificationListener(on, pl);
    }
 
-   public Set query(ObjectName pattern) throws Exception
-   {
-      return server.query(pattern);
-   }
-
-   public String getRemotingTransport()
-   {
-      return server.getRemotingTransport();
-   }
 
    public void log(int level, String text) throws Exception
    {
@@ -287,6 +274,16 @@ public class RMITestServer extends UnicastRemoteObject implements Server
    public void stopServerPeer() throws Exception
    {
       server.stopServerPeer();
+   }
+
+   public void stopDestinationManager() throws Exception
+   {
+      //To change body of implemented methods use File | Settings | File Templates.
+   }
+
+   public void startDestinationManager() throws Exception
+   {
+      //To change body of implemented methods use File | Settings | File Templates.
    }
 
    public boolean isServerPeerStarted() throws Exception
@@ -330,7 +327,7 @@ public class RMITestServer extends UnicastRemoteObject implements Server
       return server.getDestinationManager();
    }
 
-   public PersistenceManager getPersistenceManager() throws Exception
+   public PersistenceManager getPersistenceManager()
    {
       return server.getPersistenceManager();
    }
@@ -396,6 +393,11 @@ public class RMITestServer extends UnicastRemoteObject implements Server
       server.deployConnectionFactory(objectName, jndiBindings);
    }
 
+   public void deployConnectionFactory(String clientID, String objectName, String[] jndiBindings) throws Exception
+   {
+      server.deployConnectionFactory(clientID, objectName, jndiBindings);
+   }
+
    public void deployConnectionFactory(String objectName, String[] jndiBindings, int prefetchSize)
       throws Exception
    {
@@ -409,6 +411,21 @@ public class RMITestServer extends UnicastRemoteObject implements Server
 
     }
 
+   public void deployConnectionFactory(String clientId,
+                                        String objectName,
+                                        String[] jndiBindings,
+                                        int prefetchSize,
+                                        int defaultTempQueueFullSize,
+                                        int defaultTempQueuePageSize,
+                                        int defaultTempQueueDownCacheSize,
+                                        boolean supportsFailover,
+                                        boolean supportsLoadBalancing,
+                                        boolean strictTck,
+                                        int dupsOkBatchSize) throws Exception
+   {
+      server.deployConnectionFactory(clientId, objectName, jndiBindings, prefetchSize, defaultTempQueueFullSize, defaultTempQueuePageSize, defaultTempQueueDownCacheSize,
+              supportsFailover, supportsLoadBalancing, strictTck, dupsOkBatchSize);  
+   }
     public void deployConnectionFactory(String objectName,
                                        String[] jndiBindings,
                                        int prefetchSize,
@@ -426,14 +443,14 @@ public class RMITestServer extends UnicastRemoteObject implements Server
    	server.deployConnectionFactory(objectName, jndiBindings, supportsFailover, supportsLoadBalancing);
    }
 
-   public void undeployConnectionFactory(ObjectName objectName) throws Exception
+   public void undeployConnectionFactory(String objectName) throws Exception
    {
       server.undeployConnectionFactory(objectName);
    }
 
-   public void configureSecurityForDestination(String destName, String config) throws Exception
+   public void configureSecurityForDestination(String destName, boolean isQueue, HashSet<Role> roles) throws Exception
    {
-      server.configureSecurityForDestination(destName, config);
+      server.configureSecurityForDestination(destName, isQueue, roles);
    }
 
    public void setDefaultSecurityConfig(String config) throws Exception
@@ -520,6 +537,94 @@ public class RMITestServer extends UnicastRemoteObject implements Server
    {
       return namingDelegate;
    }
+
+   public JmsServer getJmsServer() throws Exception
+   {
+      return server.getJmsServer();
+   }
+
+
+   public JmsServerStatistics getJmsServerStatistics() throws Exception
+   {
+      return server.getJmsServerStatistics();
+   }
+
+
+   public void removeAllMessagesForQueue(String destName) throws Exception
+   {
+      getJmsServer().removeAllMessagesForQueue(destName);
+   }
+
+   public void removeAllMessagesForTopic(String destName) throws Exception
+   {
+      getJmsServer().removeAllMessagesForTopic(destName);
+   }
+
+
+   public Integer getMessageCountForQueue(String queueName) throws Exception
+   {
+      return getJmsServerStatistics().getMessageCountForQueue(queueName);
+   }
+
+
+   public List listAllSubscriptionsForTopic(String s) throws Exception
+   {
+      return server.listAllSubscriptionsForTopic(s);
+   }
+
+
+   public HashSet<Role> getSecurityConfig() throws Exception
+   {
+      return server.getSecurityConfig();
+   }
+
+   public void setSecurityConfig(HashSet<Role> defConfig) throws Exception
+   {
+      server.setSecurityConfig(defConfig);
+   }
+
+
+   public void setSecurityConfigOnManager(boolean b, String s, HashSet<Role> conf) throws Exception
+   {
+      server.setSecurityConfigOnManager(b, s, conf);
+   }
+
+
+   public void setRedeliveryDelayOnDestination(String dest, boolean queue, long delay) throws Exception
+   {
+      server.setRedeliveryDelayOnDestination(dest, queue, delay);
+   }
+
+
+   public void setDefaultRedeliveryDelay(long delay) throws Exception
+   {
+      server.setDefaultRedeliveryDelay(delay);
+   }
+
+
+   public void clear() throws Exception
+   {
+      server.clear();
+   }
+
+
+   public int getResourceManagerFactorySize()
+   {
+      return server.getResourceManagerFactorySize();
+   }
+
+   public InitialContext getInitialContext() throws Exception
+   {
+      Hashtable env = new Hashtable();
+      env.put("java.naming.factory.initial",
+              "org.jboss.test.messaging.tools.container.RemoteInitialContextFactory");
+      env.put("java.naming.provider.url", "");
+      env.put("java.naming.factory.url.pkgs", "");
+      env.put(Constants.SERVER_INDEX_PROPERTY_NAME, ""+getServerID());
+
+      return new InitialContext(env);
+   }
+
 
    // Inner classes -------------------------------------------------
 }

@@ -24,9 +24,7 @@ package org.jboss.test.messaging.core;
 import org.jboss.jms.delegate.IDBlock;
 import org.jboss.messaging.core.contract.PersistenceManager;
 import org.jboss.messaging.core.impl.IDManager;
-import org.jboss.messaging.core.impl.JDBCPersistenceManager;
-import org.jboss.test.messaging.MessagingTestCase;
-import org.jboss.test.messaging.tools.container.ServiceContainer;
+import org.jboss.test.messaging.JBMServerTestCase;
 
 /**
  * 
@@ -37,7 +35,7 @@ import org.jboss.test.messaging.tools.container.ServiceContainer;
  *
  * $Id$
  */
-public class IdManagerTest extends MessagingTestCase
+public class IdManagerTest extends JBMServerTestCase
 {
    // Constants -----------------------------------------------------
 
@@ -45,7 +43,6 @@ public class IdManagerTest extends MessagingTestCase
    
    // Attributes ----------------------------------------------------
 
-   protected ServiceContainer sc;
 
    protected PersistenceManager pm;
    
@@ -61,31 +58,12 @@ public class IdManagerTest extends MessagingTestCase
    public void setUp() throws Exception
    {
       super.setUp();
-
-      sc = new ServiceContainer("all");
-      sc.start();                
                   
-      pm =
-         new JDBCPersistenceManager(sc.getDataSource(), sc.getTransactionManager(),
-                                    sc.getPersistenceManagerSQLProperties(),
-                                    true, true, true, false, 100,
-                                    !sc.getDatabaseName().equals("oracle"));   
-      ((JDBCPersistenceManager)pm).injectNodeID(1);
-      pm.start();
-      
-      pm.start();
+      pm = getPersistenceManager();
             
       log.debug("setup done");
    }
 
-   public void tearDown() throws Exception
-   {      
-      sc.stop();
-      sc = null;
-      
-      pm.stop();
-      super.tearDown();
-   }
    
    public void test1() throws Exception
    {

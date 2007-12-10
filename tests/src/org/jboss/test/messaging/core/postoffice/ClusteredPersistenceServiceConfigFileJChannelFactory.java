@@ -6,18 +6,17 @@
  */
 package org.jboss.test.messaging.core.postoffice;
 
-import javax.management.MBeanServer;
-import javax.management.ObjectName;
-
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.contract.ChannelFactory;
-import org.jboss.messaging.core.impl.jchannelfactory.MultiplexerChannelFactory;
 import org.jboss.messaging.util.XMLUtil;
 import org.jboss.test.messaging.tools.container.ServiceConfigHelper;
 import org.jboss.test.messaging.tools.jboss.MBeanConfigurationElement;
 import org.jgroups.Channel;
 import org.jgroups.JChannel;
 import org.w3c.dom.Element;
+
+import javax.management.MBeanServer;
+import javax.management.ObjectName;
 
 /**
  * A JChannelFactory that reads the configuration of its synchronous/asynchronous JChannels from a
@@ -152,10 +151,10 @@ public class ClusteredPersistenceServiceConfigFileJChannelFactory implements Cha
          {
             if(mbeanServer.getMBeanInfo(channelFactoryName) != null)
             {
-               multiplexorDelegate =
+               /*multiplexorDelegate =
                   new MultiplexerChannelFactory(mbeanServer, channelFactoryName,
                                                  channelPartitionName, controlChannelName,
-                                                 dataChannelName);
+                                                 dataChannelName);*/
 
                // initialization ends here, we've found what we were looking for
                return;

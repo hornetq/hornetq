@@ -21,26 +21,18 @@
   */
 package org.jboss.test.messaging.jms.message;
 
-import javax.jms.Connection;
-import javax.jms.DeliveryMode;
-import javax.jms.Message;
-import javax.jms.MessageConsumer;
-import javax.jms.MessageProducer;
-import javax.jms.Session;
-import javax.jms.TextMessage;
-import javax.jms.XAConnection;
-import javax.jms.XAConnectionFactory;
-import javax.jms.XASession;
+import com.arjuna.ats.internal.jta.transaction.arjunacore.TransactionManagerImple;
+import org.jboss.test.messaging.JBMServerTestCase;
+import org.jboss.test.messaging.tools.ServerManagement;
+import org.jboss.test.messaging.tools.container.ServiceContainer;
+
+import javax.jms.*;
+import javax.naming.InitialContext;
 import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
 import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
-
-import org.jboss.test.messaging.jms.JMSTestCase;
-import org.jboss.test.messaging.tools.ServerManagement;
-import org.jboss.test.messaging.tools.container.ServiceContainer;
-import org.jboss.tm.TransactionManagerLocator;
 
 /**
  * 
@@ -52,15 +44,14 @@ import org.jboss.tm.TransactionManagerLocator;
  * $Id$
  *
  */
-public class JMSXDeliveryCountTest extends JMSTestCase
+public class JMSXDeliveryCountTest extends JBMServerTestCase
 {
    // Constants ------------------------------------------------------------------------------------
 
    // Static ---------------------------------------------------------------------------------------
    
    // Attributes -----------------------------------------------------------------------------------
-   
-   protected ServiceContainer sc;
+
 
    // Constructors ---------------------------------------------------------------------------------
 
@@ -71,29 +62,6 @@ public class JMSXDeliveryCountTest extends JMSTestCase
 
    // Public ---------------------------------------------------------------------------------------
 
-   public void setUp() throws Exception
-   {
-      super.setUp();
-            
-      if (ServerManagement.isRemote())
-      {
-         // We need to start a service container otherwise transaction manager jndi lookup
-         // will fail
-         sc = new ServiceContainer("transaction");
-         
-         sc.start(false);
-      }
-   }
-
-   public void tearDown() throws Exception
-   {
-      super.tearDown();
-      
-      if (ServerManagement.isRemote())
-      {
-         sc.stop();
-      }
-   }
 
    public void testSimpleJMSXDeliveryCount() throws Exception
    {
@@ -101,7 +69,7 @@ public class JMSXDeliveryCountTest extends JMSTestCase
       
       try
       {	      
-	      conn = cf.createConnection();
+	      conn = getConnectionFactory().createConnection();
 	      Session s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 	      MessageProducer p = s.createProducer(queue1);
 	      p.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
@@ -150,7 +118,7 @@ public class JMSXDeliveryCountTest extends JMSTestCase
       
       try
       {      
-	      conn = cf.createConnection();
+	      conn = getConnectionFactory().createConnection();
 	      
 	      Session sess1 = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 	      
@@ -212,7 +180,7 @@ public class JMSXDeliveryCountTest extends JMSTestCase
       
       try
       {      
-	      conn = cf.createConnection();
+	      conn = getConnectionFactory().createConnection();
 	      
 	      conn.setClientID("myclientid");
 	      
@@ -279,7 +247,7 @@ public class JMSXDeliveryCountTest extends JMSTestCase
       
       try
       {         
-         conn = cf.createConnection();
+         conn = getConnectionFactory().createConnection();
    
          Session producerSess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
          MessageProducer producer = producerSess.createProducer(queue1);
@@ -365,7 +333,7 @@ public class JMSXDeliveryCountTest extends JMSTestCase
       
       try
       {         
-         conn = cf.createConnection();
+         conn = getConnectionFactory().createConnection();
    
          Session producerSess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
          MessageProducer producer = producerSess.createProducer(queue1);
@@ -446,9 +414,18 @@ public class JMSXDeliveryCountTest extends JMSTestCase
       XAConnection xaConn = null;
       
       Connection conn = null;
+      TransactionManager mgr;
+      if (ServerManagement.isRemote())
+      {
+         mgr = new TransactionManagerImple();
+      }
+      else
+      {
+         InitialContext localIc = getInitialContext();
+
+         mgr = (TransactionManager)localIc.lookup(ServiceContainer.TRANSACTION_MANAGER_JNDI_NAME);
+      }
       
-      TransactionManager mgr = TransactionManagerLocator.getInstance().locate();
-                  
       Transaction toResume = null;
       
       Transaction tx = null;
@@ -457,7 +434,7 @@ public class JMSXDeliveryCountTest extends JMSTestCase
       {         
          toResume = mgr.suspend();
          
-         conn = cf.createConnection();
+         conn = getConnectionFactory().createConnection();
          
          //Send a message
          
@@ -468,7 +445,7 @@ public class JMSXDeliveryCountTest extends JMSTestCase
          
          producer.send(tm);
                            
-         xaConn = ((XAConnectionFactory)cf).createXAConnection();
+         xaConn = ((XAConnectionFactory)getConnectionFactory()).createXAConnection();
          
          XASession consumerSess = xaConn.createXASession();
          MessageConsumer consumer = consumerSess.createConsumer(queue1);

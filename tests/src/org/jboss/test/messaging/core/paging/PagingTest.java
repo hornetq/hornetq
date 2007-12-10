@@ -22,13 +22,10 @@
 package org.jboss.test.messaging.core.paging;
 
 import org.jboss.messaging.core.contract.MessageStore;
-import org.jboss.messaging.core.contract.PersistenceManager;
-import org.jboss.messaging.core.impl.JDBCPersistenceManager;
 import org.jboss.messaging.core.impl.MessagingQueue;
 import org.jboss.messaging.core.impl.message.CoreMessage;
 import org.jboss.messaging.core.impl.message.SimpleMessageStore;
-import org.jboss.test.messaging.MessagingTestCase;
-import org.jboss.test.messaging.tools.container.ServiceContainer;
+import org.jboss.test.messaging.JBMServerTestCase;
 import org.jboss.test.messaging.util.CoreMessageFactory;
 
 
@@ -38,7 +35,7 @@ import org.jboss.test.messaging.util.CoreMessageFactory;
  *
  * $Id$
  */
-public class PagingTest extends MessagingTestCase
+public class PagingTest extends JBMServerTestCase
 {
    // Constants -----------------------------------------------------
 
@@ -46,8 +43,6 @@ public class PagingTest extends MessagingTestCase
 
    // Attributes ----------------------------------------------------
 
-   protected ServiceContainer sc;
-   protected PersistenceManager pm;
    protected MessageStore ms;
 
    // Constructors --------------------------------------------------
@@ -61,7 +56,7 @@ public class PagingTest extends MessagingTestCase
 
    public void testPaging() throws Exception
    {
-      MessagingQueue p = new MessagingQueue(1, "queue0", 1, ms, pm, true, -1, null, 100, 20, 10, false, 300000);
+      MessagingQueue p = new MessagingQueue(1, "queue0", 1, ms, getPersistenceManager(), true, -1, null, 100, 20, 10, false, 300000);
       p.activate();
            
       CoreMessage m = null;
@@ -81,15 +76,12 @@ public class PagingTest extends MessagingTestCase
    public void setUp() throws Exception
    {
       super.setUp();
-      sc = new ServiceContainer("all,-remoting,-security");
-      sc.start();
 
-      pm =
+     /* getPersistenceManager() =
          new JDBCPersistenceManager(sc.getDataSource(), sc.getTransactionManager(),
                   sc.getPersistenceManagerSQLProperties(),
                   true, true, true, false, 100, !sc.getDatabaseName().equals("oracle"));   
-      ((JDBCPersistenceManager)pm).injectNodeID(1);
-      pm.start();
+      ((JDBCPersistenceManager)getPersistenceManager()).injectNodeID(1);*/
             
       ms = new SimpleMessageStore();
       ms.start();
@@ -97,10 +89,7 @@ public class PagingTest extends MessagingTestCase
 
    public void tearDown() throws Exception
    {
-      pm.stop();
       ms.stop();
-      sc.stop();
-
       super.tearDown();
    }
 

@@ -35,8 +35,8 @@ import org.jboss.messaging.core.contract.Delivery;
 import org.jboss.messaging.core.contract.DeliveryObserver;
 import org.jboss.messaging.core.contract.Distributor;
 import org.jboss.messaging.core.contract.Filter;
-import org.jboss.messaging.core.contract.Message;
 import org.jboss.messaging.core.contract.MessageReference;
+import org.jboss.messaging.core.contract.MessageStore;
 import org.jboss.messaging.core.contract.PersistenceManager;
 import org.jboss.messaging.core.impl.tx.Transaction;
 import org.jboss.messaging.core.impl.tx.TransactionException;
@@ -49,11 +49,11 @@ import org.jboss.util.timeout.TimeoutTarget;
 import EDU.oswego.cs.dl.util.concurrent.SynchronizedInt;
 
 /**
- * 
+ *
  * This class provides much of the functionality needed to implement a channel.
- * 
+ *
  * This partial implementation supports atomicity, isolation and recoverability for reliable messages.
- * 
+ *
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt> $Id: ChannelSupport.java,v 1.65
@@ -86,22 +86,22 @@ public abstract class ChannelSupport implements Channel
    protected Object lock;
 
    protected volatile boolean active;
-   
+
    //TODO - I would like to get rid of this - the only reason we still keep a count of
    //refs being delivered is because many tests require this
    //Having to keep this count requires synchronization between delivery thread and acknowledgement
    //thread which will hamper concurrency
    //Suggest that we have a flag that disables this for production systems
    protected SynchronizedInt deliveringCount;
-    
+
    protected Set scheduledDeliveries;
-   
+
    //The maximum number of refs this queue can hold, or -1 if no limit
    //If any more refs are added after this point they are dropped
    protected int maxSize;
-  
+
    protected SynchronizedInt messagesAdded;
-    
+
    // Constructors ---------------------------------------------------------------------------------
 
    protected ChannelSupport(long channelID, PersistenceManager pm,
@@ -118,61 +118,61 @@ public abstract class ChannelSupport implements Channel
       messageRefs = new BasicPriorityLinkedList(10);
 
       lock = new Object();
-      
+
       deliveringCount = new SynchronizedInt(0);
-      
+
       scheduledDeliveries = new HashSet();
-      
+
       this.maxSize = maxSize;
-      
+
       messagesAdded = new SynchronizedInt(0);
    }
-   
+
    // Receiver implementation ----------------------------------------------------------------------
-   
+
    //Optimisation
    public Delivery handleMove(MessageReference ref, long sourceChannelID)
    {
       if (!isActive())
-      {  
+      {
          if (trace) { log.trace(this + " is not active, returning null delivery for " + ref); }
-         
+
          return null;
       }
 
       checkClosed();
-           
+
       if (trace) { log.trace(this + " moving ref " + ref + " from channel " + sourceChannelID); }
-      
+
       if (maxSize != -1 && getMessageCount() >= maxSize)
       {
          //Have reached maximum size - will drop message
-         
+
          log.warn(this + " has reached maximum size, " + ref + " will be dropped");
-         
+
          return null;
       }
-   
+
       // Each channel has its own copy of the reference
       ref = ref.copy();
 
       try
-      {           
+      {
          if (ref.getMessage().isReliable() && recoverable)
          {
             // Reliable message in a recoverable state - also add to db
             if (trace) { log.trace(this + " adding " + ref + " to database non-transactionally"); }
-            
-            pm.moveReference(sourceChannelID, channelID, ref);        
+
+            pm.moveReference(sourceChannelID, channelID, ref);
          }
-         
+
          synchronized (lock)
          {
             addReferenceInMemory(ref);
-            
+
             deliverInternal();
          }
-            
+
          messagesAdded.increment();
       }
       catch (Throwable t)
@@ -182,62 +182,62 @@ public abstract class ChannelSupport implements Channel
          return null;
       }
 
-      return new SimpleDelivery(this, ref, true, false);  
+      return new SimpleDelivery(this, ref, true, false);
    }
-   
+
    public Delivery handle(DeliveryObserver sender, MessageReference ref, Transaction tx)
    {
       if (!isActive())
-      {	
+      {
       	if (trace) { log.trace(this + " is not active, returning null delivery for " + ref); }
-      	
+
          return null;
       }
 
       checkClosed();
-      
+
       if (ref == null)
       {
          return null;
       }
 
       if (trace) { log.trace(this + " handles " + ref + (tx == null ? " non-transactionally" : " in transaction: " + tx)); }
-      
+
       if (maxSize != -1 && getMessageCount() >= maxSize)
       {
          //Have reached maximum size - will drop message
-         
+
          log.warn(this + " has reached maximum size, " + ref + " will be dropped");
-         
+
          return null;
       }
-   
+
       // Each channel has its own copy of the reference
       ref = ref.copy();
 
       try
-      {           
+      {
          if (tx == null)
          {
             if (ref.getMessage().isReliable() && recoverable)
             {
                // Reliable message in a recoverable state - also add to db
                if (trace) { log.trace(this + " adding " + ref + " to database non-transactionally"); }
-               
-               pm.addReference(channelID, ref, null);        
+
+               pm.addReference(channelID, ref, null);
             }
-            
+
             // If the ref has a scheduled delivery time then we don't add to the in memory queue
             // instead we create a timeout, so when that time comes delivery will attempted directly
-            
+
             if (!checkAndSchedule(ref))
-            {               
+            {
                synchronized (lock)
                {
                   addReferenceInMemory(ref);
-                  
+
                   deliverInternal();
-               }            
+               }
             }
          }
          else
@@ -246,9 +246,9 @@ public abstract class ChannelSupport implements Channel
 
             // add to post commit callback
             getCallback(tx).addRef(ref);
-            
+
             if (trace) { log.trace(this + " added transactionally " + ref + " in memory"); }
-            
+
             if (ref.getMessage().isReliable() && recoverable)
             {
                // Reliable message in a recoverable state - also add to db
@@ -257,7 +257,7 @@ public abstract class ChannelSupport implements Channel
                pm.addReference(channelID, ref, tx);
             }
          }
-         
+
          messagesAdded.increment();
       }
       catch (Throwable t)
@@ -267,7 +267,7 @@ public abstract class ChannelSupport implements Channel
          return null;
       }
 
-      return new SimpleDelivery(this, ref, true, false);     
+      return new SimpleDelivery(this, ref, true, false);
    }
 
    // DeliveryObserver implementation --------------------------------------------------------------
@@ -278,7 +278,7 @@ public abstract class ChannelSupport implements Channel
 
       acknowledgeInternal(d, tx, true);
    }
-   
+
    public void acknowledgeNoPersist(Delivery d) throws Throwable
    {
       acknowledgeInternal(d, null, false);
@@ -287,25 +287,25 @@ public abstract class ChannelSupport implements Channel
    public void cancel(Delivery del) throws Throwable
    {
       //We may need to update the delivery count in the database
-      
+
       MessageReference ref = del.getReference();
-      
+
       if (ref.getMessage().isReliable())
       {
          pm.updateDeliveryCount(this.channelID, ref);
       }
-            
+
       if (!del.isRecovered())
       {
       	deliveringCount.decrement();
       }
-      
+
       if (!checkAndSchedule(ref))
       {
          cancelInternal(ref);
       }
-   }      
-        
+   }
+
    // Channel implementation -----------------------------------------------------------------------
 
    public long getChannelID()
@@ -341,23 +341,23 @@ public abstract class ChannelSupport implements Channel
             messages.add(ref.getMessage());
          }
          return messages;
-      }      
+      }
    }
- 
+
    public void deliver()
    {
       checkClosed();
-      
+
       synchronized (lock)
-      {      
+      {
 	      if (distributor != null && distributor.getNumberOfReceivers() > 0)
-	      {         
+	      {
 	         setReceiversReady(true);
-	            
-	         deliverInternal();                  
+
+	         deliverInternal();
 	      }
-      }     
-   }      
+      }
+   }
 
    public void close()
    {
@@ -366,12 +366,12 @@ public abstract class ChannelSupport implements Channel
 	      if (distributor != null)
 	      {
 	         distributor.clear();
-	         
+
 	         distributor = null;
 	      }
-	      
+
 	      clearAllScheduledDeliveries();
-   	}
+      }
    }
 
    /*
@@ -383,7 +383,7 @@ public abstract class ChannelSupport implements Channel
     *
     */
    public void removeAllReferences() throws Throwable
-   { 
+   {
       synchronized (lock)
       {
          if (deliveringCount.get() > 0)
@@ -391,9 +391,9 @@ public abstract class ChannelSupport implements Channel
             throw new IllegalStateException("Cannot remove references while deliveries are in progress, there are " +
             		                           deliveringCount.get());
          }
-         
-         log.trace(this + " removing all references, there are " + this.messageRefs.size());       
-         
+
+         log.trace(this + " removing all references, there are " + this.messageRefs.size());
+
          //Now we consume the rest of the messages
          //This may take a while if we have a lot of messages including perhaps millions
          //paged in the database - but there's no obvious other way to do it.
@@ -408,18 +408,18 @@ public abstract class ChannelSupport implements Channel
          while ((ref = removeFirstInMemory()) != null)
          {
          	log.trace("Removing ref " + ref);
-         	
+
             SimpleDelivery del = new SimpleDelivery(this, ref);
 
             del.acknowledge(null);
          }
-         
+
          deliveringCount.set(0);
-         
+
          log.trace(this + " done removing all references, there are " + this.messageRefs.size());
       }
-      
-      clearAllScheduledDeliveries();            
+
+      clearAllScheduledDeliveries();
    }
 
    public List undelivered(Filter filter)
@@ -458,18 +458,18 @@ public abstract class ChannelSupport implements Channel
    public int getMessageCount()
    {
       synchronized (lock)
-      {      
+      {
       	if (trace) { log.trace("Getting message count mr: "+  messageRefs.size() + " dc " + getDeliveringCount() + " sc " + getScheduledCount()); }
-      	
+
          return messageRefs.size() + getDeliveringCount() + getScheduledCount();
       }
    }
-   
+
    public int getDeliveringCount()
    {
       return deliveringCount.get();
    }
-   
+
    public int getScheduledCount()
    {
       synchronized (scheduledDeliveries)
@@ -480,19 +480,19 @@ public abstract class ChannelSupport implements Channel
 
    public void activate()
    {
-      active = true;               
+      active = true;
    }
 
    public void deactivate()
    {
-      active = false;               
+      active = false;
    }
 
    public boolean isActive()
    {
-      return active;               
-   }   
-   
+      return active;
+   }
+
    public int getMaxSize()
    {
       synchronized (lock)
@@ -500,13 +500,13 @@ public abstract class ChannelSupport implements Channel
          return maxSize;
       }
    }
-   
+
    public void setMaxSize(int newSize)
    {
       synchronized (lock)
       {
          int count = getMessageCount();
-         
+
          if (newSize != -1 && count > newSize)
          {
             log.warn("Cannot set maxSize to " + newSize + " since there are already " + count + " refs");
@@ -517,7 +517,7 @@ public abstract class ChannelSupport implements Channel
          }
       }
    }
-   
+
    public int getMessagesAdded()
    {
       return messagesAdded.get();
@@ -535,24 +535,24 @@ public abstract class ChannelSupport implements Channel
    }
 
    // Package protected ----------------------------------------------------------------------------
-   
+
    // Protected ------------------------------------------------------------------------------------
-   
+
    protected void clearAllScheduledDeliveries()
    {
       synchronized (scheduledDeliveries)
       {
          Set clone = new HashSet(scheduledDeliveries);
-         
+
          Iterator iter = clone.iterator();
-         
+
          while (iter.hasNext())
          {
             Timeout timeout = (Timeout)iter.next();
-            
+
             timeout.cancel();
          }
-         
+
          scheduledDeliveries.clear();
       }
    }
@@ -565,10 +565,10 @@ public abstract class ChannelSupport implements Channel
       {
          messageRefs.addFirst(ref, ref.getMessage().getPriority());
       }
-                  
+
       if (trace) { log.trace(this + " added " + ref + " back into state"); }
    }
-   
+
    /**
     * This methods delivers as many messages as possible to the distributor until no more deliveries are
     * returned. This method should never be called at the same time as handle.
@@ -578,41 +578,41 @@ public abstract class ChannelSupport implements Channel
    protected void deliverInternal()
    {
       if (trace) { log.trace(this + " was prompted delivery"); }
-  
+
       try
       {
          // The iterator is used to iterate through the refs in the channel in the case that they
          // don't match the selectors of any receivers.
          ListIterator iter = null;
-         
+
          MessageReference ref = null;
-         
+
          if (!getReceiversReady())
          {
          	if (trace) { log.trace(this + " receivers not ready so not delivering"); }
-         	
+
             return;
          }
-         
+
          while (true)
-         {           
-            ref = nextReference(iter);               
-                     
+         {
+            ref = nextReference(iter);
+
             if (ref != null)
             {
                // Attempt to push the ref to a receiver
-               
-               if (trace) { log.trace(this + " pushing " + ref); }   
-               
+
+               if (trace) { log.trace(this + " pushing " + ref); }
+
                Delivery del = distributor.handle(this, ref, null);
-               
+
                setReceiversReady(del != null);
-               
+
                if (del == null)
                {
                   // No receiver, broken receiver or full receiver so we stop delivering
                   if (trace) { log.trace(this + " got no delivery for " + ref + " so no receiver got the message. Stopping delivery."); }
-                               
+
                   break;
                }
                else if (!del.isSelectorAccepted())
@@ -620,98 +620,98 @@ public abstract class ChannelSupport implements Channel
                   // No receiver accepted the message because no selectors matched, so we create
                   // an iterator (if we haven't already created it) to iterate through the refs
                   // in the channel. No delivery was really performed
-                  
+
                   if (iter == null)
                   {
                      iter = messageRefs.iterator();
-                     
+
                      //We just tried the first one, so we don't want to try it again
                      iter.next();
-                  }                     
+                  }
                }
                else
                {
                   if (trace) { log.trace(this + ": " + del + " returned for message " + ref); }
-                  
+
                   // Receiver accepted the reference
 
                   synchronized (lock)
                   {
                      if (iter == null)
                      {
-                        if (trace) { log.trace(this + " removing first ref in memory"); } 
-                        
+                        if (trace) { log.trace(this + " removing first ref in memory"); }
+
                         removeFirstInMemory();
                      }
                      else
                      {
-                        if (trace) { log.trace(this + " removed current message from iterator"); }                           
-                                    
-                        iter.remove();                                
+                        if (trace) { log.trace(this + " removed current message from iterator"); }
+
+                        iter.remove();
                      }
                   }
-                                  
-                  deliveringCount.increment();                     
-               }               
+
+                  deliveringCount.increment();
+               }
             }
             else
             {
                // No more refs in channel or only ones that don't match any selectors
                if (trace) { log.trace(this + " no more refs to deliver "); }
-               
+
                break;
-            }            
-         }         
-      }
-      catch (Throwable t)
-      {
-         log.error(this + " Failed to deliver", t);
-      }
-   }
-   
-   protected boolean deliverScheduled(MessageReference ref)
-   {
-      try
-      {      
-         // We synchonize on the ref lock to prevent scheduled deivery kicking in before
-         // load has finished
-         synchronized (lock)
-         {
-            // Attempt to push the ref to a receiver
-            
-            if (trace) { log.trace(this + " pushing " + ref); }                                  
-   
-            Delivery del = distributor.handle(this, ref, null);
-   
-            setReceiversReady(del != null);
-            
-            if (del == null)
-            {
-               // No receiver, broken receiver or full receiver so we stop delivering
-               if (trace) { log.trace(this + ": no delivery returned for message" + ref + " so no receiver got the message. Delivery is now complete"); }
-   
-               return false;
             }
-            else if (del.isSelectorAccepted())
-            {
-               if (trace) { log.trace(this + ": " + del + " returned for message:" + ref); }
-               
-               // Receiver accepted the reference
-               
-               deliveringCount.increment();                   
-               
-               return true;
-            }                
          }
       }
       catch (Throwable t)
       {
          log.error(this + " Failed to deliver", t);
       }
-      
+   }
+
+   protected boolean deliverScheduled(MessageReference ref)
+   {
+      try
+      {
+         // We synchonize on the ref lock to prevent scheduled deivery kicking in before
+         // load has finished
+         synchronized (lock)
+         {
+            // Attempt to push the ref to a receiver
+
+            if (trace) { log.trace(this + " pushing " + ref); }
+
+            Delivery del = distributor.handle(this, ref, null);
+
+            setReceiversReady(del != null);
+
+            if (del == null)
+            {
+               // No receiver, broken receiver or full receiver so we stop delivering
+               if (trace) { log.trace(this + ": no delivery returned for message" + ref + " so no receiver got the message. Delivery is now complete"); }
+
+               return false;
+            }
+            else if (del.isSelectorAccepted())
+            {
+               if (trace) { log.trace(this + ": " + del + " returned for message:" + ref); }
+
+               // Receiver accepted the reference
+
+               deliveringCount.increment();
+
+               return true;
+            }
+         }
+      }
+      catch (Throwable t)
+      {
+         log.error(this + " Failed to deliver", t);
+      }
+
       return false;
    }
-         
+
    protected boolean checkAndSchedule(MessageReference ref)
    {
       if (ref.getScheduledDeliveryTime() > System.currentTimeMillis())

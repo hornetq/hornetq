@@ -22,16 +22,7 @@
 
 package org.jboss.test.messaging.jms.clustering;
 
-import javax.jms.Connection;
-import javax.jms.ConnectionFactory;
-import javax.jms.ExceptionListener;
-import javax.jms.JMSException;
-import javax.jms.MessageConsumer;
-import javax.jms.MessageProducer;
-import javax.jms.Session;
-import javax.jms.TextMessage;
-import javax.naming.InitialContext;
-
+import EDU.oswego.cs.dl.util.concurrent.Latch;
 import org.jboss.jms.client.JBossConnectionFactory;
 import org.jboss.jms.client.delegate.ClientClusteredConnectionFactoryDelegate;
 import org.jboss.jms.tx.ResourceManagerFactory;
@@ -39,7 +30,8 @@ import org.jboss.test.messaging.tools.ServerManagement;
 import org.jboss.test.messaging.tools.container.ServiceAttributeOverrides;
 import org.jboss.test.messaging.tools.container.ServiceContainer;
 
-import EDU.oswego.cs.dl.util.concurrent.Latch;
+import javax.jms.*;
+import javax.naming.InitialContext;
 
 /**
  * Test situations where supports failover is marked false
@@ -143,9 +135,9 @@ public class NoFailoverTest extends ClusteringTestBase
 
          // Restarting the server
          ServerManagement.start(1, "all", false);
-         ServerManagement.deployQueue("testDistributedQueue", 1);
-         ServerManagement.deployTopic("testDistributedTopic", 1);
-         InitialContext ic = new InitialContext(ServerManagement.getJNDIEnvironment(1));
+         deployQueue("testDistributedQueue", 1);
+         deployTopic("testDistributedTopic", 1);
+         InitialContext ic = getInitialContext();
          ConnectionFactory cf = (ConnectionFactory)ic.lookup("/ClusteredConnectionFactory");
 
          conn = createConnectionOnServer(cf, 1);

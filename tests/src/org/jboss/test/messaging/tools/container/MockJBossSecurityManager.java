@@ -21,22 +21,17 @@
 */
 package org.jboss.test.messaging.tools.container;
 
+import org.jboss.logging.Logger;
+import org.jboss.security.*;
+
+import javax.security.auth.Subject;
+import javax.security.auth.message.MessageInfo;
 import java.security.Principal;
 import java.security.acl.Group;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
-
-import javax.security.auth.Subject;
-
-import org.jboss.logging.Logger;
-import org.jboss.security.AnybodyPrincipal;
-import org.jboss.security.AuthenticationManager;
-import org.jboss.security.NobodyPrincipal;
-import org.jboss.security.RealmMapping;
-import org.jboss.security.SecurityAssociation;
-import org.jboss.security.SimpleGroup;
-import org.jboss.security.SimplePrincipal;
 
 
 /**
@@ -262,6 +257,17 @@ public class MockJBossSecurityManager implements AuthenticationManager, RealmMap
    public Set getUserRoles(Principal principal)
    {
       throw new UnsupportedOperationException();
+   }
+
+
+   public boolean isValid(MessageInfo messageInfo, Subject subject, String string)
+   {
+      return false;  //To change body of implemented methods use File | Settings | File Templates.
+   }
+
+   public Principal getTargetPrincipal(Principal principal, Map<String, Object> map)
+   {
+      return null;  //To change body of implemented methods use File | Settings | File Templates.
    }
 
    public void setSimulateJBossJaasSecurityManager(boolean b)

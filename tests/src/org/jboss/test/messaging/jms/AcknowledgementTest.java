@@ -21,26 +21,11 @@
   */
 package org.jboss.test.messaging.jms;
 
-import javax.jms.Connection;
-import javax.jms.ConnectionFactory;
-import javax.jms.DeliveryMode;
-import javax.jms.Message;
-import javax.jms.MessageConsumer;
-import javax.jms.MessageListener;
-import javax.jms.MessageProducer;
-import javax.jms.Session;
-import javax.jms.TextMessage;
-import javax.jms.TopicConnection;
-import javax.jms.TopicPublisher;
-import javax.jms.TopicSession;
-import javax.jms.TopicSubscriber;
-import javax.management.ObjectName;
-
+import EDU.oswego.cs.dl.util.concurrent.Latch;
 import org.jboss.jms.client.JBossSession;
 import org.jboss.jms.client.delegate.ClientSessionDelegate;
-import org.jboss.test.messaging.tools.ServerManagement;
 
-import EDU.oswego.cs.dl.util.concurrent.Latch;
+import javax.jms.*;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -706,25 +691,8 @@ public class AcknowledgementTest extends JMSTestCase
    public void testDupsOKAcknowledgeQueue() throws Exception
    {       
       final int BATCH_SIZE = 10;
-      
-      String mbeanConfig =
-         "<mbean code=\"org.jboss.jms.server.connectionfactory.ConnectionFactory\"\n" +
-         "       name=\"jboss.messaging.destination:service=MyConnectionFactory\"\n" +
-         "       xmbean-dd=\"xmdesc/ConnectionFactory-xmbean.xml\">\n" +
-         "       <depends optional-attribute-name=\"ServerPeer\">jboss.messaging:service=ServerPeer</depends>\n" +
-         "       <depends optional-attribute-name=\"Connector\">jboss.messaging:service=Connector,transport=bisocket</depends>\n" +
-         "       <attribute name=\"JNDIBindings\">\n" +
-         "          <bindings>\n" +
-         "            <binding>/mycf</binding>\n" +
-         "          </bindings>\n" +
-         "       </attribute>\n" +
-         "       <attribute name=\"DupsOKBatchSize\">" + BATCH_SIZE  + "</attribute>" +
-         " </mbean>";
 
-      ObjectName on = ServerManagement.deploy(mbeanConfig);
-      ServerManagement.invoke(on, "create", new Object[0], new String[0]);
-      ServerManagement.invoke(on, "start", new Object[0], new String[0]);
-      
+      deployConnectionFactory(null,"mycf", new String[]{"mycf"}, -1, -1, -1, -1, false, false, false, BATCH_SIZE);
       Connection conn = null;
       
       try
@@ -791,9 +759,7 @@ public class AcknowledgementTest extends JMSTestCase
       	{
       		conn.close();
       	}
-      	
-      	ServerManagement.invoke(on, "stop", new Object[0], new String[0]);
-         ServerManagement.invoke(on, "destroy", new Object[0], new String[0]);
+         undeployConnectionFactory("mycf");
       }
       
 
@@ -803,25 +769,8 @@ public class AcknowledgementTest extends JMSTestCase
    public void testDupsOKAcknowledgeTopic() throws Exception
    {       
       final int BATCH_SIZE = 10;
-      
-      String mbeanConfig =
-         "<mbean code=\"org.jboss.jms.server.connectionfactory.ConnectionFactory\"\n" +
-         "       name=\"jboss.messaging.destination:service=MyConnectionFactory2\"\n" +
-         "       xmbean-dd=\"xmdesc/ConnectionFactory-xmbean.xml\">\n" +
-         "       <depends optional-attribute-name=\"ServerPeer\">jboss.messaging:service=ServerPeer</depends>\n" +
-         "       <depends optional-attribute-name=\"Connector\">jboss.messaging:service=Connector,transport=bisocket</depends>\n" +
-         "       <attribute name=\"JNDIBindings\">\n" +
-         "          <bindings>\n" +
-         "            <binding>/mycf</binding>\n" +
-         "          </bindings>\n" +
-         "       </attribute>\n" +
-         "       <attribute name=\"DupsOKBatchSize\">" + BATCH_SIZE  + "</attribute>" +
-         " </mbean>";
 
-      ObjectName on = ServerManagement.deploy(mbeanConfig);
-      ServerManagement.invoke(on, "create", new Object[0], new String[0]);
-      ServerManagement.invoke(on, "start", new Object[0], new String[0]);
-      
+      deployConnectionFactory(null,"mycf", new String[]{"mycf"}, -1, -1, -1, -1, false, false, false, BATCH_SIZE);
       Connection conn = null;
       
       try
@@ -865,8 +814,7 @@ public class AcknowledgementTest extends JMSTestCase
       		conn.close();
       	}
       	
-      	ServerManagement.invoke(on, "stop", new Object[0], new String[0]);
-         ServerManagement.invoke(on, "destroy", new Object[0], new String[0]);
+      	undeployConnectionFactory("mycf");
       }
       
 
@@ -1069,7 +1017,7 @@ public class AcknowledgementTest extends JMSTestCase
          {
             conn.close();
          }
-         ServerManagement.undeployQueue("MyQueue2");
+         undeployQueue("MyQueue2");
       }
    }
 

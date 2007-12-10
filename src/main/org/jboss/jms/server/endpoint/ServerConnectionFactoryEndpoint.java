@@ -21,10 +21,6 @@
   */
 package org.jboss.jms.server.endpoint;
 
-import java.util.Map;
-
-import javax.jms.JMSException;
-
 import org.jboss.aop.AspectManager;
 import org.jboss.jms.client.delegate.ClientConnectionDelegate;
 import org.jboss.jms.client.delegate.ClientConnectionFactoryDelegate;
@@ -32,14 +28,17 @@ import org.jboss.jms.delegate.ConnectionFactoryEndpoint;
 import org.jboss.jms.delegate.CreateConnectionResult;
 import org.jboss.jms.delegate.TopologyResult;
 import org.jboss.jms.server.ServerPeer;
-import org.jboss.jms.server.connectionfactory.JNDIBindings;
 import org.jboss.jms.server.endpoint.advised.ConnectionAdvised;
 import org.jboss.jms.wireformat.ConnectionFactoryUpdate;
 import org.jboss.jms.wireformat.Dispatcher;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.util.ExceptionUtil;
 import org.jboss.remoting.callback.Callback;
-import org.jboss.remoting.callback.ServerInvokerCallbackHandler; 
+import org.jboss.remoting.callback.ServerInvokerCallbackHandler;
+
+import javax.jms.JMSException;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Concrete implementation of ConnectionFactoryEndpoint
@@ -68,7 +67,7 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
 
    private String id;
 
-   private JNDIBindings jndiBindings;
+   private List<String> jndiBindings;
 
    private int prefetchSize;
 
@@ -102,7 +101,7 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
     */
    public ServerConnectionFactoryEndpoint(String uniqueName, String id, ServerPeer serverPeer,
                                           String defaultClientID,
-                                          JNDIBindings jndiBindings,
+                                          List<String> jndiBindings,
                                           int preFetchSize,
                                           boolean slowConsumers,
                                           int defaultTempQueueFullSize,
@@ -173,8 +172,8 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
 
             // Wait for server side failover to complete
             int failoverNodeID = serverPeer.getFailoverWaiter().waitForFailover(failedNodeID);
-            
-            if (failoverNodeID == -1 || failoverNodeID != serverPeer.getServerPeerID())
+
+            if (failoverNodeID == -1 || failoverNodeID != serverPeer.getConfiguration().getServerPeerID())
             {
                log.trace(this + " realized that we are on the wrong node or no failover has occured");
                return new CreateConnectionResult(failoverNodeID);
@@ -266,7 +265,7 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
       // See http://jira.jboss.com/jira/browse/JBMESSAGING-797
       synchronized (AspectManager.instance())
       {         
-         return new ClientConnectionDelegate(connectionID, serverPeer.getServerPeerID());
+         return new ClientConnectionDelegate(connectionID, serverPeer.getConfiguration().getServerPeerID());
       }
    }
       
@@ -308,7 +307,7 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
       return id;
    }
 
-   public JNDIBindings getJNDIBindings()
+   public List<String> getJNDIBindings()
    {
       return jndiBindings;
    }

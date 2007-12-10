@@ -21,30 +21,20 @@
 */
 package org.jboss.test.messaging.core;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-
-import javax.transaction.xa.Xid;
-
-import org.jboss.messaging.core.contract.Channel;
-import org.jboss.messaging.core.contract.Message;
-import org.jboss.messaging.core.contract.MessageReference;
-import org.jboss.messaging.core.contract.MessageStore;
-import org.jboss.messaging.core.contract.PersistenceManager;
+import org.jboss.messaging.core.contract.*;
 import org.jboss.messaging.core.impl.IDManager;
 import org.jboss.messaging.core.impl.JDBCPersistenceManager;
 import org.jboss.messaging.core.impl.message.SimpleMessageStore;
 import org.jboss.messaging.core.impl.tx.Transaction;
 import org.jboss.messaging.core.impl.tx.TransactionRepository;
-import org.jboss.test.messaging.MessagingTestCase;
+import org.jboss.test.messaging.JBMServerTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
-import org.jboss.test.messaging.tools.container.ServiceContainer;
 import org.jboss.test.messaging.util.CoreMessageFactory;
 import org.jboss.util.id.GUID;
+
+import javax.transaction.xa.Xid;
+import java.io.Serializable;
+import java.util.*;
 
 
 /**
@@ -53,13 +43,13 @@ import org.jboss.util.id.GUID;
  *
  * JDBCPersistenceManagerTest.java,v 1.1 2006/02/22 17:33:44 timfox Exp
  */
-public class JDBCPersistenceManagerTest extends MessagingTestCase
+public class JDBCPersistenceManagerTest extends JBMServerTestCase
 {
    // Attributes ----------------------------------------------------
 
-   protected ServiceContainer sc;
+   //protected ServiceContainer sc;
    
-   protected JDBCPersistenceManager pm;
+   //protected JDBCPersistenceManager pm;
    
    protected MessageStore ms;
    
@@ -79,38 +69,25 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       }
 
       super.setUp();
-      
-      ServerManagement.stop();
 
-      sc = new ServiceContainer("all");
-      sc.start();                      
    }
    
    protected void doSetup(boolean batch, boolean useBinaryStream,
                           boolean trailingByte, int maxParams) throws Throwable
    {
-      pm = createPM(batch, useBinaryStream, trailingByte, maxParams);         
+      //pm = createPM(batch, useBinaryStream, trailingByte, maxParams);
       ms = new SimpleMessageStore();      
    }
    
    protected JDBCPersistenceManager createPM(boolean batch, boolean useBinaryStream,
                                              boolean trailingByte, int maxParams) throws Throwable
    {      
-      JDBCPersistenceManager p =
-         new JDBCPersistenceManager(sc.getDataSource(), sc.getTransactionManager(),
-                  sc.getPersistenceManagerSQLProperties(),
-                  true, batch, useBinaryStream, trailingByte, maxParams, !sc.getDatabaseName().equals("oracle"));
-      ((JDBCPersistenceManager)p).injectNodeID(1);
-      p.start();
-      return p;
+      return (JDBCPersistenceManager) getPersistenceManager();
    }
+
 
    public void tearDown() throws Exception
    {
-      sc.stop();
-      sc = null;
-      
-      pm.stop();
       ms.stop();
       super.tearDown();
    }
@@ -145,11 +122,11 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
          MessageReference ref2_1 = ms.reference(m2);
          MessageReference ref2_2 = ms.reference(m2);
                   
-         pm.addReference(channel1.getChannelID(), ref1_1, null);
-         pm.addReference(channel1.getChannelID(), ref2_1, null);         
+         getPersistenceManager().addReference(channel1.getChannelID(), ref1_1, null);
+         getPersistenceManager().addReference(channel1.getChannelID(), ref2_1, null);
          
-         pm.addReference(channel2.getChannelID(), ref1_2, null);
-         pm.addReference(channel2.getChannelID(), ref2_2, null);
+         getPersistenceManager().addReference(channel2.getChannelID(), ref1_2, null);
+         getPersistenceManager().addReference(channel2.getChannelID(), ref2_2, null);
       
          List refs = getReferenceIds(channel1.getChannelID());
          
@@ -171,7 +148,7 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
          assertTrue(msgs.contains(new Long(m1.getMessageID())));
          assertTrue(msgs.contains(new Long(m2.getMessageID())));
                   
-         pm.removeReference(channel1.getChannelID(), ref1_1, null);
+         getPersistenceManager().removeReference(channel1.getChannelID(), ref1_1, null);
                   
          refs = getReferenceIds(channel1.getChannelID());
          assertNotNull(refs);
@@ -190,7 +167,7 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
          assertTrue(msgs.contains(new Long(m1.getMessageID())));
          assertTrue(msgs.contains(new Long(m2.getMessageID())));
          
-         pm.removeReference(channel2.getChannelID(), ref1_2, null);
+         getPersistenceManager().removeReference(channel2.getChannelID(), ref1_2, null);
          
          refs = getReferenceIds(channel1.getChannelID());
          assertNotNull(refs);
@@ -207,7 +184,7 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
          assertEquals(1, msgs.size()); 
          assertTrue(msgs.contains(new Long(m2.getMessageID())));
          
-         pm.removeReference(channel1.getChannelID(), ref2_1, null);
+         getPersistenceManager().removeReference(channel1.getChannelID(), ref2_1, null);
          
          refs = getReferenceIds(channel1.getChannelID());
          assertNotNull(refs);
@@ -223,7 +200,7 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
          assertEquals(1, msgs.size());
          assertTrue(msgs.contains(new Long(m2.getMessageID())));
          
-         pm.removeReference(channel2.getChannelID(), ref2_2, null);
+         getPersistenceManager().removeReference(channel2.getChannelID(), ref2_2, null);
          
          refs = getReferenceIds(channel1.getChannelID());
          assertNotNull(refs);
@@ -477,7 +454,7 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       refs.add(ref9);
       refs.add(ref10);
       
-      pm.pageReferences(channel1.getChannelID(), refs, false);
+      getPersistenceManager().pageReferences(channel1.getChannelID(), refs, false);
       
       refs = new ArrayList();
       refs.add(ref11);
@@ -486,7 +463,7 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       refs.add(ref14);
       refs.add(ref15);
     
-      pm.pageReferences(channel2.getChannelID(), refs, false);
+      getPersistenceManager().pageReferences(channel2.getChannelID(), refs, false);
                   
       List refIds = getReferenceIds(channel1.getChannelID());
       assertNotNull(refIds);
@@ -532,7 +509,7 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       msgIds.add(new Long(ref9.getMessage().getMessageID()));
       msgIds.add(new Long(ref1.getMessage().getMessageID()));
       
-      List ms = pm.getMessages(msgIds);
+      List ms = getPersistenceManager().getMessages(msgIds);
       assertNotNull(ms);
       assertEquals(5, ms.size());
       assertTrue(containsMessage(ms, ref3.getMessage().getMessageID()));
@@ -546,7 +523,7 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       refs.add(ref13);
       refs.add(ref14);
       refs.add(ref15);
-      pm.removeDepagedReferences(channel2.getChannelID(), refs);
+      getPersistenceManager().removeDepagedReferences(channel2.getChannelID(), refs);
       
       refIds = getReferenceIds(channel2.getChannelID());
       assertNotNull(refIds);
@@ -574,7 +551,7 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       refs.add(ref1);
       refs.add(ref2);
       refs.add(ref3);
-      pm.removeDepagedReferences(channel1.getChannelID(), refs);
+      getPersistenceManager().removeDepagedReferences(channel1.getChannelID(), refs);
       
       refIds = getReferenceIds(channel1.getChannelID());
       assertNotNull(refIds);
@@ -603,7 +580,7 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       
       refs = new ArrayList();
       refs.add(ref11);
-      pm.removeDepagedReferences(channel2.getChannelID(), refs);
+      getPersistenceManager().removeDepagedReferences(channel2.getChannelID(), refs);
       
       refs = new ArrayList();
       refs.add(ref4);
@@ -613,7 +590,7 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       refs.add(ref8);
       refs.add(ref9);
       refs.add(ref10);
-      pm.removeDepagedReferences(channel1.getChannelID(), refs);
+      getPersistenceManager().removeDepagedReferences(channel1.getChannelID(), refs);
       
       ms = getMessageIds();
       assertNotNull(ms);
@@ -652,7 +629,7 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       refs.add(ref9);
       refs.add(ref10);
       
-      pm.pageReferences(channel.getChannelID(), refs, false); 
+      getPersistenceManager().pageReferences(channel.getChannelID(), refs, false);
       
       ref1.setPagingOrder(0);
       ref2.setPagingOrder(1);
@@ -665,9 +642,9 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       ref9.setPagingOrder(8);
       ref10.setPagingOrder(9);
       
-      pm.updatePageOrder(channel.getChannelID(), refs);
+      getPersistenceManager().updatePageOrder(channel.getChannelID(), refs);
       
-      List refInfos = pm.getPagedReferenceInfos(channel.getChannelID(), 0, 10);
+      List refInfos = getPersistenceManager().getPagedReferenceInfos(channel.getChannelID(), 0, 10);
       
       assertNotNull(refInfos);
       
@@ -684,7 +661,7 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       assertEquals(ref9.getMessage().getMessageID(), ((PersistenceManager.ReferenceInfo)refInfos.get(8)).getMessageId());
       assertEquals(ref10.getMessage().getMessageID(), ((PersistenceManager.ReferenceInfo)refInfos.get(9)).getMessageId());
       
-      refInfos = pm.getPagedReferenceInfos(channel.getChannelID(), 3, 5);
+      refInfos = getPersistenceManager().getPagedReferenceInfos(channel.getChannelID(), 3, 5);
       
       assertNotNull(refInfos);
       
@@ -696,9 +673,9 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       assertEquals(ref7.getMessage().getMessageID(), ((PersistenceManager.ReferenceInfo)refInfos.get(3)).getMessageId());
       assertEquals(ref8.getMessage().getMessageID(), ((PersistenceManager.ReferenceInfo)refInfos.get(4)).getMessageId());
     
-      pm.updateReferencesNotPagedInRange(channel.getChannelID(), 0, 3, 4);
+      getPersistenceManager().updateReferencesNotPagedInRange(channel.getChannelID(), 0, 3, 4);
       
-      refInfos = pm.getPagedReferenceInfos(channel.getChannelID(), 5, 5);
+      refInfos = getPersistenceManager().getPagedReferenceInfos(channel.getChannelID(), 5, 5);
       
       assertNotNull(refInfos);
       
@@ -730,16 +707,16 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       MessageReference ref9 = ms.reference(m[8]);
       MessageReference ref10 = ms.reference(m[9]);
       
-      pm.addReference(channel.getChannelID(), ref1, null);
-      pm.addReference(channel.getChannelID(), ref2, null);
-      pm.addReference(channel.getChannelID(), ref3, null);
-      pm.addReference(channel.getChannelID(), ref4, null);
-      pm.addReference(channel.getChannelID(), ref5, null);
-      pm.addReference(channel.getChannelID(), ref6, null);
-      pm.addReference(channel.getChannelID(), ref7, null);
-      pm.addReference(channel.getChannelID(), ref8, null);
-      pm.addReference(channel.getChannelID(), ref9, null);
-      pm.addReference(channel.getChannelID(), ref10, null);
+      getPersistenceManager().addReference(channel.getChannelID(), ref1, null);
+      getPersistenceManager().addReference(channel.getChannelID(), ref2, null);
+      getPersistenceManager().addReference(channel.getChannelID(), ref3, null);
+      getPersistenceManager().addReference(channel.getChannelID(), ref4, null);
+      getPersistenceManager().addReference(channel.getChannelID(), ref5, null);
+      getPersistenceManager().addReference(channel.getChannelID(), ref6, null);
+      getPersistenceManager().addReference(channel.getChannelID(), ref7, null);
+      getPersistenceManager().addReference(channel.getChannelID(), ref8, null);
+      getPersistenceManager().addReference(channel.getChannelID(), ref9, null);
+      getPersistenceManager().addReference(channel.getChannelID(), ref10, null);
       
       List refIds = getReferenceIds(channel.getChannelID());
       assertNotNull(refIds);
@@ -776,7 +753,7 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       msgIds.add(new Long(ref9.getMessage().getMessageID()));
       msgIds.add(new Long(ref1.getMessage().getMessageID()));
       
-      List ms = pm.getMessages(msgIds);
+      List ms = getPersistenceManager().getMessages(msgIds);
       assertNotNull(ms);
       assertEquals(5, ms.size());
         
@@ -820,10 +797,10 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       refs.add(ref9);
       refs.add(ref10);
       
-      pm.pageReferences(channel.getChannelID(), refs, false); 
+      getPersistenceManager().pageReferences(channel.getChannelID(), refs, false);
       
       //First load exactly 10
-      PersistenceManager.InitialLoadInfo info = pm.loadFromStart(channel.getChannelID(), 10);
+      PersistenceManager.InitialLoadInfo info = getPersistenceManager().loadFromStart(channel.getChannelID(), 10);
       
       assertNull(info.getMinPageOrdering());
       assertNull(info.getMaxPageOrdering());
@@ -879,16 +856,16 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       MessageReference ref9 = ms.reference(m[8]);
       MessageReference ref10 = ms.reference(m[9]);
       
-      pm.addReference(channel.getChannelID(), ref1, null);
-      pm.addReference(channel.getChannelID(), ref2, null);
-      pm.addReference(channel.getChannelID(), ref3, null);
-      pm.addReference(channel.getChannelID(), ref4, null);
-      pm.addReference(channel.getChannelID(), ref5, null);
-      pm.addReference(channel.getChannelID(), ref6, null);
-      pm.addReference(channel.getChannelID(), ref7, null);
-      pm.addReference(channel.getChannelID(), ref8, null);
-      pm.addReference(channel.getChannelID(), ref9, null);
-      pm.addReference(channel.getChannelID(), ref10, null);
+      getPersistenceManager().addReference(channel.getChannelID(), ref1, null);
+      getPersistenceManager().addReference(channel.getChannelID(), ref2, null);
+      getPersistenceManager().addReference(channel.getChannelID(), ref3, null);
+      getPersistenceManager().addReference(channel.getChannelID(), ref4, null);
+      getPersistenceManager().addReference(channel.getChannelID(), ref5, null);
+      getPersistenceManager().addReference(channel.getChannelID(), ref6, null);
+      getPersistenceManager().addReference(channel.getChannelID(), ref7, null);
+      getPersistenceManager().addReference(channel.getChannelID(), ref8, null);
+      getPersistenceManager().addReference(channel.getChannelID(), ref9, null);
+      getPersistenceManager().addReference(channel.getChannelID(), ref10, null);
       
       List refIds = getReferenceIds(channel.getChannelID());
       assertNotNull(refIds);
@@ -925,7 +902,7 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       msgIds.add(new Long(ref9.getMessage().getMessageID()));
       msgIds.add(new Long(ref1.getMessage().getMessageID()));
       
-      List ms = pm.getMessages(msgIds);
+      List ms = getPersistenceManager().getMessages(msgIds);
       assertNotNull(ms);
       assertEquals(5, ms.size());
       assertTrue(containsMessage(ms, ref3.getMessage().getMessageID()));
@@ -1255,10 +1232,10 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
 
       Channel channel = new SimpleChannel(0, ms);
       
-      IDManager idm = new IDManager("TRANSACTION_ID", 10, pm);
+      IDManager idm = new IDManager("TRANSACTION_ID", 10, getPersistenceManager());
       idm.start();
       
-      TransactionRepository txRep = new TransactionRepository(pm, ms, idm);
+      TransactionRepository txRep = new TransactionRepository(getPersistenceManager(), ms, idm);
       txRep.start();
 
       log.debug("transaction log started");
@@ -1299,8 +1276,8 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       log.debug("adding references non-transactionally");
 
       // Add first two refs non transactionally
-      pm.addReference(channel.getChannelID(), ref1, null);
-      pm.addReference(channel.getChannelID(), ref2, null);
+      getPersistenceManager().addReference(channel.getChannelID(), ref1, null);
+      getPersistenceManager().addReference(channel.getChannelID(), ref2, null);
       
       //check they're there
       List refs = getReferenceIds(channel.getChannelID());
@@ -1318,13 +1295,13 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       log.debug("ref1 and ref2 are there");
 
       //Add the next 3 refs transactionally
-      pm.addReference(channel.getChannelID(), ref3, tx);
-      pm.addReference(channel.getChannelID(), ref4, tx);
-      pm.addReference(channel.getChannelID(), ref5, tx);
+      getPersistenceManager().addReference(channel.getChannelID(), ref3, tx);
+      getPersistenceManager().addReference(channel.getChannelID(), ref4, tx);
+      getPersistenceManager().addReference(channel.getChannelID(), ref5, tx);
       
       //Remove the other 2 transactionally
-      pm.removeReference(channel.getChannelID(), ref1, tx);
-      pm.removeReference(channel.getChannelID(), ref2, tx);
+      getPersistenceManager().removeReference(channel.getChannelID(), ref1, tx);
+      getPersistenceManager().removeReference(channel.getChannelID(), ref2, tx);
       
       //Check the changes aren't visible
       refs = getReferenceIds(channel.getChannelID());
@@ -1366,10 +1343,10 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
 
       Channel channel = new SimpleChannel(0, ms);
       
-      IDManager idm = new IDManager("TRANSACTION_ID", 10, pm);
+      IDManager idm = new IDManager("TRANSACTION_ID", 10, getPersistenceManager());
       idm.start();
       
-      TransactionRepository txRep = new TransactionRepository(pm, ms, idm);
+      TransactionRepository txRep = new TransactionRepository(getPersistenceManager(), ms, idm);
       txRep.start();
  
       Message[] messages = createMessages(10);     
@@ -1398,8 +1375,8 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       MessageReference ref5 = ms.reference(m5);  
 
       //Add first two refs non transactionally
-      pm.addReference(channel.getChannelID(), ref1, null);
-      pm.addReference(channel.getChannelID(), ref2, null);
+      getPersistenceManager().addReference(channel.getChannelID(), ref1, null);
+      getPersistenceManager().addReference(channel.getChannelID(), ref2, null);
       
       //check they're there
       List refs = getReferenceIds(channel.getChannelID());
@@ -1416,13 +1393,13 @@ public class JDBCPersistenceManagerTest extends MessagingTestCase
       
            
       //Add the next 3 refs transactionally
-      pm.addReference(channel.getChannelID(), ref3, tx);
-      pm.addReference(channel.getChannelID(), ref4, tx);
-      pm.addReference(channel.getChannelID(), ref5, tx);
+      getPersistenceManager().addReference(channel.getChannelID(), ref3, tx);
+      getPersistenceManager().addReference(channel.getChannelID(), ref4, tx);
+      getPersistenceManager().addReference(channel.getChannelID(), ref5, tx);
       
       //Remove the other 2 transactionally
-      pm.removeReference(channel.getChannelID(), ref1, tx);
-      pm.removeReference(channel.getChannelID(), ref2, tx);
+      getPersistenceManager().removeReference(channel.getChannelID(), ref1, tx);
+      getPersistenceManager().removeReference(channel.getChannelID(), ref2, tx);
       
       //Check the changes aren't visible
       refs = getReferenceIds(channel.getChannelID());

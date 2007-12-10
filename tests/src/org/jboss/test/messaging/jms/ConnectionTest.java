@@ -21,18 +21,6 @@
   */
 package org.jboss.test.messaging.jms;
 
-import javax.jms.Connection;
-import javax.jms.ConnectionMetaData;
-import javax.jms.ExceptionListener;
-import javax.jms.JMSException;
-import javax.jms.QueueConnection;
-import javax.jms.QueueConnectionFactory;
-import javax.jms.ServerSessionPool;
-import javax.jms.Session;
-import javax.jms.Topic;
-import javax.jms.TopicConnection;
-import javax.jms.TopicConnectionFactory;
-
 import org.jboss.jms.client.JBossConnection;
 import org.jboss.jms.client.delegate.ClientConnectionDelegate;
 import org.jboss.jms.client.state.ConnectionState;
@@ -41,6 +29,8 @@ import org.jboss.jms.message.MessageIdGeneratorFactory;
 import org.jboss.jms.tx.ResourceManager;
 import org.jboss.jms.tx.ResourceManagerFactory;
 import org.jboss.logging.Logger;
+
+import javax.jms.*;
 
 
 /**
@@ -237,7 +227,7 @@ public class ConnectionTest extends JMSTestCase
       {
          connection = cf.createConnection();
 
-         //we start the connection
+         //we startthe connection
          connection.start();
 
          // an attempt to set the client ID now should throw a IllegalStateException

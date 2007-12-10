@@ -21,15 +21,9 @@
   */
 package org.jboss.test.messaging.jms.message;
 
-import javax.jms.Connection;
-import javax.jms.DeliveryMode;
-import javax.jms.JMSException;
-import javax.jms.Message;
-import javax.jms.MessageConsumer;
-import javax.jms.MessageProducer;
-import javax.jms.Session;
+import org.jboss.test.messaging.JBMServerTestCase;
 
-import org.jboss.test.messaging.jms.JMSTestCase;
+import javax.jms.*;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
@@ -37,18 +31,18 @@ import org.jboss.test.messaging.jms.JMSTestCase;
  *
  * $Id$
  */
-public class MessageTestBase extends JMSTestCase
+public class MessageTestBase extends JBMServerTestCase
 {
    // Constants -----------------------------------------------------
 
    // Static --------------------------------------------------------
-   
+
    // Attributes ----------------------------------------------------
 
    protected Message message;
-   
+
    protected Connection conn;
-   
+
    protected Session session;
 
    protected MessageProducer queueProd;
@@ -67,8 +61,8 @@ public class MessageTestBase extends JMSTestCase
    public void setUp() throws Exception
    {
       super.setUp();
-      
-      conn = cf.createConnection();
+
+      conn = getConnectionFactory().createConnection();
       session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
       queueProd = session.createProducer(queue1);
@@ -79,9 +73,9 @@ public class MessageTestBase extends JMSTestCase
 
    public void tearDown() throws Exception
    {
-      conn.close();   
-      
-      super.tearDown();      
+      conn.close();
+
+      super.tearDown();
    }
 
    public void testNonPersistentSend() throws Exception
@@ -90,11 +84,11 @@ public class MessageTestBase extends JMSTestCase
 
       queueProd.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
       queueProd.send(message);
-      
+
       log.debug("Message sent");
 
       Message r = queueCons.receive();
-      
+
       log.debug("Message received");
 
       assertEquals(DeliveryMode.NON_PERSISTENT, r.getJMSDeliveryMode());
@@ -150,11 +144,11 @@ public class MessageTestBase extends JMSTestCase
 
       assertNull(queueCons.receive(100));
 
-      
+
    }
 
    // Package protected ---------------------------------------------
-   
+
    // Protected -----------------------------------------------------
 
    protected void prepareMessage(Message m) throws JMSException
@@ -173,7 +167,7 @@ public class MessageTestBase extends JMSTestCase
       m.setJMSType("someArbitraryType");
    }
 
-   
+
    private void assertEquivalent(Message m, int mode) throws JMSException
    {
       assertEquivalent(m, mode, false);

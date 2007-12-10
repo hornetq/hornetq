@@ -21,13 +21,12 @@
   */
 package org.jboss.test.messaging.jms.message;
 
-import javax.jms.DeliveryMode;
-import javax.jms.Message;
-
+import EDU.oswego.cs.dl.util.concurrent.Latch;
 import org.jboss.jms.message.JBossMessage;
 import org.jboss.jms.message.MessageProxy;
 
-import EDU.oswego.cs.dl.util.concurrent.Latch;
+import javax.jms.DeliveryMode;
+import javax.jms.Message;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>

@@ -21,18 +21,9 @@
   */
 package org.jboss.test.messaging.jms;
 
-import javax.jms.Connection;
-import javax.jms.ConnectionFactory;
-import javax.jms.DeliveryMode;
-import javax.jms.MessageConsumer;
-import javax.jms.MessageProducer;
-import javax.jms.Session;
-import javax.jms.TemporaryQueue;
-import javax.jms.TemporaryTopic;
-import javax.jms.Topic;
-
-import org.jboss.messaging.core.impl.message.SimpleMessageStore;
 import org.jboss.test.messaging.tools.ServerManagement;
+
+import javax.jms.*;
 
 /**
  * 
@@ -67,7 +58,7 @@ public class MessageCleanupTest extends JMSTestCase
    {
       super.setUp();                  
       
-      ServerManagement.deployTopic("TestTopic", 100, 10, 10);
+      deployTopic("TestTopic", 100, 10, 10);
       
       ourTopic = (Topic)ic.lookup("/topic/TestTopic");
    }
@@ -76,7 +67,7 @@ public class MessageCleanupTest extends JMSTestCase
    {
       super.tearDown();
       
-      ServerManagement.undeployTopic("TestTopic");      
+      undeployTopic("TestTopic");
    }
    
    /*
@@ -86,7 +77,7 @@ public class MessageCleanupTest extends JMSTestCase
    {
       if (ServerManagement.isRemote()) return;
       
-      SimpleMessageStore ms = (SimpleMessageStore)ServerManagement.getMessageStore();      
+      //SimpleMessageStore ms = (SimpleMessageStore)ServerManagement.getMessageStore();
         
       Connection conn = cf.createConnection();
       
@@ -183,7 +174,7 @@ public class MessageCleanupTest extends JMSTestCase
       String objectName = "somedomain:service=TempQueueConnectionFactory";
       String[] jndiBindings = new String[] { "/TempQueueConnectionFactory" };
 
-      ServerManagement.deployConnectionFactory(objectName, jndiBindings, 150, 100, 10, 10);
+      deployConnectionFactory(objectName, jndiBindings, 150, 100, 10, 10);
 
       ConnectionFactory cf2 = (ConnectionFactory)ic.lookup("/TempQueueConnectionFactory");
       
@@ -204,7 +195,7 @@ public class MessageCleanupTest extends JMSTestCase
          prod.send(sess.createMessage());
       }
       
-      SimpleMessageStore ms = (SimpleMessageStore)ServerManagement.getMessageStore();
+      //SimpleMessageStore ms = (SimpleMessageStore)ServerManagement.getMessageStore();
       
       assertEquals(50, getReferenceIds().size());
       
@@ -229,7 +220,7 @@ public class MessageCleanupTest extends JMSTestCase
       String objectName = "somedomain:service=TempTopicConnectionFactory";
       String[] jndiBindings = new String[] { "/TempTopicConnectionFactory" };
 
-      ServerManagement.deployConnectionFactory(objectName, jndiBindings, 150, 100, 10, 10);
+      deployConnectionFactory(objectName, jndiBindings, 150, 100, 10, 10);
 
       ConnectionFactory cf2 = (ConnectionFactory)ic.lookup("/TempTopicConnectionFactory");
       
@@ -254,7 +245,7 @@ public class MessageCleanupTest extends JMSTestCase
          prod.send(sess.createMessage());
       }
       
-      SimpleMessageStore ms = (SimpleMessageStore)ServerManagement.getMessageStore();
+      //SimpleMessageStore ms = (SimpleMessageStore)ServerManagement.getMessageStore();
 
       assertEquals(100, getReferenceIds().size());
       

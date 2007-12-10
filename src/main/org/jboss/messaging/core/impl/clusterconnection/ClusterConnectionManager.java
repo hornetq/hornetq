@@ -22,28 +22,17 @@
 
 package org.jboss.messaging.core.impl.clusterconnection;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-
-import javax.jms.JMSException;
-
+import EDU.oswego.cs.dl.util.concurrent.Callable;
+import EDU.oswego.cs.dl.util.concurrent.TimedCallable;
 import org.jboss.jms.client.JBossConnection;
 import org.jboss.jms.client.JBossConnectionFactory;
 import org.jboss.jms.client.delegate.ClientConnectionFactoryDelegate;
 import org.jboss.logging.Logger;
-import org.jboss.messaging.core.contract.Binding;
-import org.jboss.messaging.core.contract.ClusterNotification;
-import org.jboss.messaging.core.contract.ClusterNotificationListener;
-import org.jboss.messaging.core.contract.PostOffice;
+import org.jboss.messaging.core.contract.*;
 import org.jboss.messaging.core.contract.Queue;
-import org.jboss.messaging.core.contract.Replicator;
 
-import EDU.oswego.cs.dl.util.concurrent.Callable;
-import EDU.oswego.cs.dl.util.concurrent.TimedCallable;
+import javax.jms.JMSException;
+import java.util.*;
 
 /**
  * 

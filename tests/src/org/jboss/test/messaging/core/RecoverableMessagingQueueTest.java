@@ -51,7 +51,7 @@ public class RecoverableMessagingQueueTest extends MessagingQueueTestBase
    {
       super.setUp();
       
-      queue = new MessagingQueue(1, "queue1", 1, ms, pm, true, -1, null, false);
+      queue = new MessagingQueue(1, "queue1", 1, ms, getPersistenceManager(), true, -1, null, false);
       queue.activate();
    }
 

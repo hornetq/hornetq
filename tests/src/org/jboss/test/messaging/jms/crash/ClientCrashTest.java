@@ -21,20 +21,19 @@
   */
 package org.jboss.test.messaging.jms.crash;
 
+import org.jboss.jms.server.ConnectionManager;
+import org.jboss.jms.server.connectionmanager.SimpleConnectionManager;
+import org.jboss.logging.Logger;
+import org.jboss.test.messaging.JBMServerTestCase;
+import org.jboss.test.messaging.tools.ServerManagement;
+import org.jboss.test.messaging.tools.container.LocalTestServer;
+import org.jboss.test.messaging.tools.container.Server;
+import org.jboss.test.messaging.tools.container.ServiceContainer;
+
 import javax.jms.ConnectionFactory;
 import javax.jms.Queue;
 import javax.jms.Topic;
 import javax.naming.InitialContext;
-
-import org.jboss.jms.server.ConnectionManager;
-import org.jboss.jms.server.connectionmanager.SimpleConnectionManager;
-import org.jboss.logging.Logger;
-import org.jboss.test.messaging.MessagingTestCase;
-import org.jboss.test.messaging.tools.ServerManagement;
-import org.jboss.test.messaging.tools.container.InVMInitialContextFactory;
-import org.jboss.test.messaging.tools.container.LocalTestServer;
-import org.jboss.test.messaging.tools.container.Server;
-import org.jboss.test.messaging.tools.container.ServiceContainer;
 
 /**
  * 
@@ -45,7 +44,7 @@ import org.jboss.test.messaging.tools.container.ServiceContainer;
  *
  * $Id$
  */
-public class ClientCrashTest extends MessagingTestCase
+public class ClientCrashTest extends JBMServerTestCase
 {
    // Constants -----------------------------------------------------
 
@@ -71,15 +70,16 @@ public class ClientCrashTest extends MessagingTestCase
    public void setUp() throws Exception
    {
    	//Server might have been left around by other tests
-   	ServerManagement.kill(1);
+   	kill(1);
    	
-      ServerManagement.stop();
+      //stop();
       
       // Start the local server
-      localServer = new LocalTestServer();
+      localServer = new LocalTestServer(1);
+      localServer.start(getContainerConfig(), getConfiguration(), false);
       
       // Start all the services locally
-      localServer.start("all", true);
+      //localServer.start("all", true);
 
       // This crash test is relying on a precise value of LeaseInterval, so we don't rely on
       // the default, whatever that is ...      
@@ -90,9 +90,9 @@ public class ClientCrashTest extends MessagingTestCase
        
       // Connect to the remote server, but don't start a servicecontainer on it. We are only using
       // the remote server to open a client connection to the local server.
-      ServerManagement.create();
+      //ServerManagement.create();
           
-      remoteServer = ServerManagement.getServer();
+      remoteServer = servers.get(0);
 
       super.setUp();
       
@@ -107,7 +107,7 @@ public class ClientCrashTest extends MessagingTestCase
    
    private void performCrash(long wait, boolean contains) throws Exception
    {
-   	InitialContext theIC = new InitialContext(InVMInitialContextFactory.getJNDIEnvironment());
+   	InitialContext theIC = getInitialContext();
       
       ConnectionFactory cf = (ConnectionFactory)theIC.lookup("/ConnectionFactory");
       
@@ -174,7 +174,7 @@ public class ClientCrashTest extends MessagingTestCase
    {
       localServer.setAttribute(ServiceContainer.REMOTING_OBJECT_NAME, "LeasePeriod", "2000");      
    	
-      InitialContext ic = new InitialContext(InVMInitialContextFactory.getJNDIEnvironment());
+      InitialContext ic = getInitialContext();
       Topic topic = (Topic)ic.lookup("/topic/Topic");
       
       ConnectionFactory cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");

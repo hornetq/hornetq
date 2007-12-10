@@ -22,24 +22,15 @@
 
 package org.jboss.test.messaging.jms.clustering;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-
-import javax.jms.Connection;
-import javax.jms.DeliveryMode;
-import javax.jms.Destination;
-import javax.jms.Message;
-import javax.jms.MessageConsumer;
-import javax.jms.MessageProducer;
-import javax.jms.Session;
-import javax.jms.TextMessage;
-
 import org.jboss.jms.client.JBossConnection;
-import org.jboss.jms.client.remoting.JMSRemotingConnection;
 import org.jboss.jms.client.delegate.ClientConnectionDelegate;
 import org.jboss.logging.Logger;
 import org.jboss.test.messaging.tools.ServerManagement;
-import org.jboss.test.messaging.tools.aop.PoisonInterceptor;
+
+import javax.jms.*;
+import java.lang.IllegalStateException;
+import java.util.ArrayList;
+import java.util.Iterator;
 
 /**
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>

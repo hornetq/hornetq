@@ -21,18 +21,10 @@
   */
 package org.jboss.test.messaging.jms;
 
-import javax.jms.BytesMessage;
-import javax.jms.Connection;
-import javax.jms.DeliveryMode;
-import javax.jms.MessageConsumer;
-import javax.jms.MessageProducer;
-import javax.jms.Session;
-import javax.jms.TextMessage;
-
-import org.jboss.test.messaging.tools.ServerManagement;
+import javax.jms.*;
 
 /**
- * 
+ *
  * A PersistenceTest
 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -46,11 +38,11 @@ public class PersistenceTest extends JMSTestCase
    // Constants -----------------------------------------------------
 
    // Static --------------------------------------------------------
-   
+
    // Attributes ----------------------------------------------------
 
    // Constructors --------------------------------------------------
-
+   private Queue queue1;
    public PersistenceTest(String name)
    {
       super(name);
@@ -58,38 +50,44 @@ public class PersistenceTest extends JMSTestCase
 
    // TestCase overrides -------------------------------------------
 
+   protected void setUp() throws Exception
+   {
+      super.setUp();
+      queue1 = (Queue) getInitialContext().lookup("/queue/testQueue");
+   }
+
    // Public --------------------------------------------------------
 
    /**
     * Test that the messages in a persistent queue survive starting and stopping and server,
-    * 
+    *
     */
    public void testQueuePersistence() throws Exception
    {
       Connection conn = null;
-      
+
       try
-      {      
+      {
 	      conn = cf.createConnection();
 	      Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 	      MessageProducer prod = sess.createProducer(queue1);
 	      prod.setDeliveryMode(DeliveryMode.PERSISTENT);
-	      
+
 	      for (int i = 0; i < 10; i++)
 	      {
 	         TextMessage tm = sess.createTextMessage("message" + i);
 	         prod.send(tm);
 	      }
-	      
+
 	      conn.close();
-	      
-	      ServerManagement.stopServerPeer();
-	      
-	      ServerManagement.startServerPeer();
-	      
+
+	      stop();
+
+	      start();
+
 	      // Messaging server restart implies new ConnectionFactory lookup
 	      deployAndLookupAdministeredObjects();
-	      
+
 	      conn = cf.createConnection();
 	      sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 	      conn.start();
@@ -113,72 +111,72 @@ public class PersistenceTest extends JMSTestCase
       	}
       }
    }
-   
+
    /**
     * Test that the JMSRedelivered and delivery count survives a restart
-    * 
+    *
     */
    public void testJMSRedeliveredRestart() throws Exception
    {
       Connection conn = null;
-      
+
       try
-      {      
+      {
 	      conn = cf.createConnection();
 	      Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 	      MessageProducer prod = sess.createProducer(queue1);
 	      prod.setDeliveryMode(DeliveryMode.PERSISTENT);
-	      
+
 	      for (int i = 0; i < 10; i++)
 	      {
 	         TextMessage tm = sess.createTextMessage("message" + i);
 	         prod.send(tm);
 	      }
-	      
+
 	      Session sess2 = conn.createSession(true, Session.SESSION_TRANSACTED);
-	      
+
 	      MessageConsumer cons = sess2.createConsumer(queue1);
-	      
+
 	      conn.start();
-	      
+
 	      for (int i = 0; i < 10; i++)
 	      {
 	         TextMessage tm = (TextMessage)cons.receive(1000);
-	         
+
 	         assertNotNull(tm);
-	         
+
 	         assertEquals("message" + i, tm.getText());
-	         
+
 	         assertFalse(tm.getJMSRedelivered());
-	         
+
 	         assertEquals(1, tm.getIntProperty("JMSXDeliveryCount"));
 	      }
-	      
+
 	      //rollback
 	      sess2.rollback();
-	      
+
 	      for (int i = 0; i < 10; i++)
 	      {
 	         TextMessage tm = (TextMessage)cons.receive(1000);
-	         
+
 	         assertNotNull(tm);
-	         
+
 	         assertEquals("message" + i, tm.getText());
-	         
+
 	         assertTrue(tm.getJMSRedelivered());
-	         
+
 	         assertEquals(2, tm.getIntProperty("JMSXDeliveryCount"));
 	      }
-	      
+
 	      conn.close();
-	      	            	      
-	      ServerManagement.stopServerPeer();
-	      
-	      ServerManagement.startServerPeer();
-	      
+
+	      stop();
+
+	      start();
+
 	      // Messaging server restart implies new ConnectionFactory lookup
 	      deployAndLookupAdministeredObjects();
-	      
+
 	      conn = cf.createConnection();
 	      sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 	      conn.start();
@@ -186,13 +184,13 @@ public class PersistenceTest extends JMSTestCase
 	      for (int i = 0; i < 10; i++)
 	      {
 	         TextMessage tm = (TextMessage)cons.receive(3000);
-	         
+
 	         assertNotNull(tm);
-	         
+
 	         assertEquals("message" + i, tm.getText());
-	         
+
 	         assertTrue(tm.getJMSRedelivered());
-	         
+
 	         assertEquals(3, tm.getIntProperty("JMSXDeliveryCount"));
 	      }
       }
@@ -204,21 +202,21 @@ public class PersistenceTest extends JMSTestCase
       	}
       }
    }
-   
-   
+
+
    /**
-    * First test that message order survives a restart 
+    * First test that message order survives a restart
     */
    public void testMessageOrderPersistence_1() throws Exception
    {
       Connection conn = null;
-      
+
       try
-      {      
+      {
 	      conn = cf.createConnection();
 	      Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 	      MessageProducer prod = sessSend.createProducer(queue1);
-	      
+
 	      TextMessage m0 = sessSend.createTextMessage("a");
 	      TextMessage m1 = sessSend.createTextMessage("b");
 	      TextMessage m2 = sessSend.createTextMessage("c");
@@ -228,8 +226,8 @@ public class PersistenceTest extends JMSTestCase
 	      TextMessage m6 = sessSend.createTextMessage("g");
 	      TextMessage m7 = sessSend.createTextMessage("h");
 	      TextMessage m8 = sessSend.createTextMessage("i");
-	      TextMessage m9 = sessSend.createTextMessage("j"); 
-	      
+	      TextMessage m9 = sessSend.createTextMessage("j");
+
 	      prod.send(m0, DeliveryMode.PERSISTENT, 0, 0);
 	      prod.send(m1, DeliveryMode.PERSISTENT, 1, 0);
 	      prod.send(m2, DeliveryMode.PERSISTENT, 2, 0);
@@ -240,21 +238,21 @@ public class PersistenceTest extends JMSTestCase
 	      prod.send(m7, DeliveryMode.PERSISTENT, 7, 0);
 	      prod.send(m8, DeliveryMode.PERSISTENT, 8, 0);
 	      prod.send(m9, DeliveryMode.PERSISTENT, 9, 0);
-	      
+
 	      conn.close();
-	      
-	      ServerManagement.stopServerPeer();
-	
-	      ServerManagement.startServerPeer();
-	
+
+	      stop();
+
+	      start();
+
 	      // Messaging server restart implies new ConnectionFactory lookup
 	      deployAndLookupAdministeredObjects();
-	      
+
 	      conn = cf.createConnection();
 	      Session sessReceive = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 	      conn.start();
 	      MessageConsumer cons = sessReceive.createConsumer(queue1);
-	     
+
 	      {
 	         TextMessage t = (TextMessage)cons.receive(1000);
 	         assertNotNull(t);
@@ -319,20 +317,20 @@ public class PersistenceTest extends JMSTestCase
       }
    }
 
-   
+
    /**
-    * Second test that message order survives a restart 
+    * Second test that message order survives a restart
     */
    public void testMessageOrderPersistence_2() throws Exception
    {
       Connection conn = null;
-      
+
       try
-      {      
+      {
 	      conn = cf.createConnection();
 	      Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 	      MessageProducer prod = sessSend.createProducer(queue1);
-	      
+
 	      TextMessage m0 = sessSend.createTextMessage("a");
 	      TextMessage m1 = sessSend.createTextMessage("b");
 	      TextMessage m2 = sessSend.createTextMessage("c");
@@ -343,8 +341,8 @@ public class PersistenceTest extends JMSTestCase
 	      TextMessage m7 = sessSend.createTextMessage("h");
 	      TextMessage m8 = sessSend.createTextMessage("i");
 	      TextMessage m9 = sessSend.createTextMessage("j");
-	
-	      
+
+
 	      prod.send(m0, DeliveryMode.PERSISTENT, 0, 0);
 	      prod.send(m1, DeliveryMode.PERSISTENT, 0, 0);
 	      prod.send(m2, DeliveryMode.PERSISTENT, 0, 0);
@@ -355,20 +353,20 @@ public class PersistenceTest extends JMSTestCase
 	      prod.send(m7, DeliveryMode.PERSISTENT, 5, 0);
 	      prod.send(m8, DeliveryMode.PERSISTENT, 5, 0);
 	      prod.send(m9, DeliveryMode.PERSISTENT, 6, 0);
-	      
+
 	      conn.close();
-	      
-	      ServerManagement.stopServerPeer();
-	      
-	      ServerManagement.startServerPeer();
-	      
+
+	      stop();
+
+	      start();
+
 	      deployAndLookupAdministeredObjects();
-	
+
 	      conn = cf.createConnection();
 	      Session sessReceive = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 	      conn.start();
 	      MessageConsumer cons = sessReceive.createConsumer(queue1);
-	     
+
 	      {
 	         TextMessage t = (TextMessage)cons.receive(1000);
 	         assertNotNull(t);
@@ -439,45 +437,45 @@ public class PersistenceTest extends JMSTestCase
    public void testDurableSubscriptionPersistence_1() throws Exception
    {
       Connection conn = null;
-      
+
       try
-      {      
+      {
 	      conn = cf.createConnection();
 	      conn.setClientID("five");
-	
+
 	      Session s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-	
+
 	      MessageConsumer ds = s.createDurableSubscriber(topic1, "sub", null, false);
-	
+
 	      MessageProducer p = s.createProducer(topic1);
 	      p.setDeliveryMode(DeliveryMode.PERSISTENT);
 	      TextMessage tm = s.createTextMessage("thebody");
-	      
+
 	      p.send(tm);
 	      log.debug("message sent");
-	
+
 	      conn.close();
-	
-	      ServerManagement.stopServerPeer();
-	
-	      ServerManagement.startServerPeer();
+
+	      stop();
+
+	      start();
 
 	      deployAndLookupAdministeredObjects();
-	
+
 	      conn = cf.createConnection();
 	      conn.setClientID("five");
-	
+
 	      s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 	      conn.start();
-	
+
 	      ds = s.createDurableSubscriber(topic1, "sub", null, false);
-	
+
 	      TextMessage rm = (TextMessage)ds.receive(3000);
 	      assertNotNull(rm);
 	      assertEquals("thebody", rm.getText());
-	      
+
 	      ds.close();
-	      
+
 	      s.unsubscribe("sub");
       }
       finally
@@ -495,48 +493,48 @@ public class PersistenceTest extends JMSTestCase
    public void testDurableSubscriptionPersistence_2() throws Exception
    {
       Connection conn = null;
-      
+
       try
-      {      
+      {
 	      conn = cf.createConnection();
 	      conn.setClientID("Sausages");
-	      
+
 	      Session sessConsume = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-	      
+
 	      MessageConsumer sub1 = sessConsume.createDurableSubscriber(topic1, "sub1", null, false);
 	      MessageConsumer sub2 = sessConsume.createDurableSubscriber(topic1, "sub2", null, false);
 	      MessageConsumer sub3 = sessConsume.createDurableSubscriber(topic1, "sub3", null, false);
-	      
-	      
+
+
 	      Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 	      MessageProducer prod = sessSend.createProducer(topic1);
 	      prod.setDeliveryMode(DeliveryMode.PERSISTENT);
-	      
+
 	      for (int i = 0; i < 10; i++)
 	      {
 	         TextMessage tm = sessSend.createTextMessage("message" + i);
 	         prod.send(tm);
 	      }
-	      
+
 	      conn.close();
-	      
-	      ServerManagement.stopServerPeer();
-	
-	      ServerManagement.startServerPeer();
-	
-	      // Messaging server restart implies new ConnectionFactory lookup
+
+	      stop();
+
+	      start();
+
+         // Messaging server restart implies new ConnectionFactory lookup
 	      deployAndLookupAdministeredObjects();
-	      
+
 	      conn = cf.createConnection();
 	      conn.setClientID("Sausages");
-	      
+
 	      sessConsume = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 	      conn.start();
-	      
+
 	      sub1 = sessConsume.createDurableSubscriber(topic1, "sub1", null, false);
 	      sub2 = sessConsume.createDurableSubscriber(topic1, "sub2", null, false);
 	      sub3 = sessConsume.createDurableSubscriber(topic1, "sub3", null, false);
-	                  
+
 	      for (int i = 0; i < 10; i++)
 	      {
 	         TextMessage tm1 = (TextMessage)sub1.receive(3000);
@@ -546,7 +544,7 @@ public class PersistenceTest extends JMSTestCase
 	            break;
 	         }
 	         assertEquals("message" + i, tm1.getText());
-	         
+
 	         TextMessage tm2 = (TextMessage)sub2.receive(3000);
 	         assertNotNull(tm2);
 	         if (tm2 == null)
@@ -554,7 +552,7 @@ public class PersistenceTest extends JMSTestCase
 	            break;
 	         }
 	         assertEquals("message" + i, tm2.getText());
-	         
+
 	         TextMessage tm3 = (TextMessage)sub3.receive(3000);
 	         assertNotNull(tm3);
 	         if (tm3 == null)
@@ -563,11 +561,11 @@ public class PersistenceTest extends JMSTestCase
 	         }
 	         assertEquals("message" + i, tm3.getText());
 	      }
-	      
+
 	      sub1.close();
 	      sub2.close();
 	      sub3.close();
-	      
+
 	      sessConsume.unsubscribe("sub1");
 	      sessConsume.unsubscribe("sub2");
 	      sessConsume.unsubscribe("sub3");
@@ -580,14 +578,14 @@ public class PersistenceTest extends JMSTestCase
       	}
       }
    }
-   
+
 
    // Package protected ---------------------------------------------
-   
+
    // Protected -----------------------------------------------------
-   
+
    // Private -------------------------------------------------------
-   
+
    // Inner classes -------------------------------------------------
 
 }

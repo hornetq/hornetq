@@ -21,21 +21,13 @@
   */
 package org.jboss.test.messaging.jms.selector;
 
+import EDU.oswego.cs.dl.util.concurrent.Latch;
+import org.jboss.test.messaging.JBMServerTestCase;
+
+import javax.jms.*;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-
-import javax.jms.Connection;
-import javax.jms.DeliveryMode;
-import javax.jms.Message;
-import javax.jms.MessageConsumer;
-import javax.jms.MessageProducer;
-import javax.jms.Session;
-import javax.jms.TextMessage;
-
-import org.jboss.test.messaging.jms.JMSTestCase;
-
-import EDU.oswego.cs.dl.util.concurrent.Latch;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
@@ -43,7 +35,7 @@ import EDU.oswego.cs.dl.util.concurrent.Latch;
  *
  * $Id$
  */
-public class SelectorTest extends JMSTestCase
+public class SelectorTest extends JBMServerTestCase
 {
    // Constants -----------------------------------------------------
 
@@ -71,41 +63,41 @@ public class SelectorTest extends JMSTestCase
    public void testSelectiveClosingConsumer() throws Exception
    {
       Connection conn = null;
-      
+
       try
-      {      
-	      conn = cf.createConnection();
+      {
+	      conn = getConnectionFactory().createConnection();
 	      conn.start();
-	
+
 	      Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 	      MessageProducer prod = session.createProducer(queue1);
 	      prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
-	
+
 	      String selector = "color = 'red'";
 	      MessageConsumer redConsumer = session.createConsumer(queue1, selector);
 	      conn.start();
-	
+
 	      Message redMessage = session.createMessage();
 	      redMessage.setStringProperty("color", "red");
-	
+
 	      Message blueMessage = session.createMessage();
 	      blueMessage.setStringProperty("color", "blue");
-	
+
 	      prod.send(redMessage);
 	      prod.send(blueMessage);
-	
+
 	      Message rec = redConsumer.receive();
 	      assertEquals(redMessage.getJMSMessageID(), rec.getJMSMessageID());
 	      assertEquals("red", rec.getStringProperty("color"));
-	
+
 	      assertNull(redConsumer.receive(3000));
-	
+
 	      redConsumer.close();
-	
+
 	      MessageConsumer universalConsumer = session.createConsumer(queue1);
-	
+
 	      rec = universalConsumer.receive();
-	
+
 	      assertEquals(rec.getJMSMessageID(), blueMessage.getJMSMessageID());
 	      assertEquals("blue", rec.getStringProperty("color"));
       }
@@ -123,44 +115,44 @@ public class SelectorTest extends JMSTestCase
       String selector1 = "beatle = 'john'";
 
       Connection conn = null;
-      
+
       try
-      {      
-	      conn = cf.createConnection();
+      {
+	      conn = getConnectionFactory().createConnection();
 	      conn.start();
-	
+
 	      Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-	
+
 	      MessageConsumer cons1 = sess.createConsumer(topic1, selector1);
-	
+
 	      MessageProducer prod = sess.createProducer(topic1);
-	
+
 	      for (int j = 0; j < 100; j++)
 	      {
 	         Message m = sess.createMessage();
-	
+
 	         m.setStringProperty("beatle", "john");
-	
+
 	         prod.send(m);
-	
+
 	         m = sess.createMessage();
-	
+
 	         m.setStringProperty("beatle", "kermit the frog");
-	
+
 	         prod.send(m);
 	      }
-	
+
 	      for (int j = 0; j < 100; j++)
 	      {
 	         Message m = cons1.receive(1000);
-	
+
 	         assertNotNull(m);
 	      }
-	
+
 	      Thread.sleep(500);
-	
+
 	      Message m = cons1.receiveNoWait();
-	
+
 	      assertNull(m);
       }
       finally
@@ -177,61 +169,61 @@ public class SelectorTest extends JMSTestCase
       String selector1 = "beatle = 'john'";
 
       Connection conn = null;
-      
+
       try
-      {      
-	      conn = cf.createConnection();
+      {
+	      conn = getConnectionFactory().createConnection();
 	      conn.start();
-	
+
 	      Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-	
+
 	      MessageConsumer cons1 = sess.createConsumer(queue1, selector1);
-	
+
 	      MessageProducer prod = sess.createProducer(queue1);
-	
+
 	      for (int j = 0; j < 100; j++)
 	      {
 	         Message m = sess.createMessage();
-	
+
 	         m.setStringProperty("beatle", "john");
-	
+
 	         prod.send(m);
-	         
+
 	         m = sess.createMessage();
-	
+
 	         m.setStringProperty("beatle", "kermit the frog");
-	
+
 	         prod.send(m);
 	      }
-	
+
 	      for (int j = 0; j < 100; j++)
 	      {
 	         Message m = cons1.receive(1000);
-	         
+
 	         assertNotNull(m);
-	         
+
 	         assertEquals("john", m.getStringProperty("beatle"));
 	      }
-	
+
 	      Message m = cons1.receiveNoWait();
-	
+
 	      assertNull(m);
-	      
+
 	      String selector2 = "beatle = 'kermit the frog'";
-	      
+
 	      MessageConsumer cons2 = sess.createConsumer(queue1, selector2);
-	      
+
 	      for (int j = 0; j < 100; j++)
 	      {
 	         m = cons2.receive(1000);
-	         
+
 	         assertNotNull(m);
-	         
+
 	         assertEquals("kermit the frog", m.getStringProperty("beatle"));
 	      }
-	      
+
 	      m = cons2.receiveNoWait();
-	
+
 	      assertNull(m);
       }
       finally
@@ -251,85 +243,85 @@ public class SelectorTest extends JMSTestCase
       String selector1 = "beatle = 'john'";
 
       Connection conn = null;
-      
+
       try
-      {      
-	      conn = cf.createConnection();
+      {
+	      conn = getConnectionFactory().createConnection();
 	      conn.start();
-	
+
 	      Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-	
+
 	      int NUM_MESSAGES = 2;
-	
+
 	      MessageProducer prod = sess.createProducer(queue1);
-	
+
 	      for (int j = 0; j < NUM_MESSAGES; j++)
 	      {
 	         Message m = sess.createMessage();
-	
+
 	         m.setStringProperty("beatle", "john");
-	
+
 	         prod.setTimeToLive(0);
-	
+
 	         prod.send(m);
-	
+
 	         m = sess.createMessage();
-	
+
 	         m.setStringProperty("beatle", "john");
-	
+
 	         prod.setTimeToLive(1);
-	
+
 	         prod.send(m);
-	
+
 	         m = sess.createMessage();
-	
+
 	         m.setStringProperty("beatle", "kermit the frog");
-	
+
 	         prod.setTimeToLive(0);
-	
+
 	         prod.send(m);
-	
+
 	         m = sess.createMessage();
-	
+
 	         m.setStringProperty("beatle", "kermit the frog");
-	
+
 	         m.setJMSExpiration(System.currentTimeMillis());
-	
+
 	         prod.setTimeToLive(1);
-	
+
 	         prod.send(m);
 	      }
-	
+
 	      MessageConsumer cons1 = sess.createConsumer(queue1, selector1);
-	
+
 	      for (int j = 0; j < NUM_MESSAGES; j++)
 	      {
 	         Message m = cons1.receive(1000);
-	
+
 	         assertNotNull(m);
-	
+
 	         assertEquals("john", m.getStringProperty("beatle"));
 	      }
-	
+
 	      Message m = cons1.receiveNoWait();
-	      
+
 	      assertNull(m);
-	
+
 	      String selector2 = "beatle = 'kermit the frog'";
-	
+
 	      MessageConsumer cons2 = sess.createConsumer(queue1, selector2);
-	
+
 	      for (int j = 0; j < NUM_MESSAGES; j++)
 	      {
 	         m = cons2.receive(1000);
-	
+
 	         assertNotNull(m);
-	
+
 	         assertEquals("kermit the frog", m.getStringProperty("beatle"));
 	      }
-	
+
 	      m = cons1.receiveNoWait();
-	
+
 	      assertNull(m);
       }
       finally
@@ -346,46 +338,46 @@ public class SelectorTest extends JMSTestCase
       String selector1 = "beatle = 'john'";
 
       Connection conn = null;
-      
+
       try
-      {      
-	      conn = cf.createConnection();
+      {
+	      conn = getConnectionFactory().createConnection();
 	      conn.start();
-	
+
 	      for (int i = 0; i < 5; i++)
 	      {
 	         Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-	
+
 	         MessageConsumer cons1 = sess.createConsumer(topic1, selector1);
-	
+
 	         MessageProducer prod = sess.createProducer(topic1);
-	
+
 	         for (int j = 0; j < 10; j++)
 	         {
 	            Message m = sess.createMessage();
-	
+
 	            m.setStringProperty("beatle", "john");
-	
+
 	            prod.send(m);
-	
+
 	            m = sess.createMessage();
-	
+
 	            m.setStringProperty("beatle", "kermit the frog");
-	
+
 	            prod.send(m);
 	         }
-	
+
 	         for (int j = 0; j < 10; j++)
 	         {
 	            Message m = cons1.receive(1000);
-	
+
 	            assertNotNull(m);
 	         }
-	
+
 	         Message m = cons1.receiveNoWait();
-	
+
 	         assertNull(m);
-	         
+
 	         sess.close();
 	      }
       }
@@ -403,47 +395,47 @@ public class SelectorTest extends JMSTestCase
       String selector1 = "beatle = 'john'";
 
       Connection conn = null;
-       
+
       try
       {
-         conn = cf.createConnection();
-               	
+         conn = getConnectionFactory().createConnection();
+
 	      conn.start();
-	
+
 	      for (int i = 0; i < 5; i++)
 	      {
 	         Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-	
+
 	         MessageConsumer cons1 = sess.createConsumer(queue1, selector1);
-	
+
 	         MessageProducer prod = sess.createProducer(queue1);
-	
+
 	         for (int j = 0; j < 10; j++)
 	         {
 	            Message m = sess.createMessage();
-	
+
 	            m.setStringProperty("beatle", "john");
-	
+
 	            prod.send(m);
-	
+
 	            m = sess.createMessage();
-	
+
 	            m.setStringProperty("beatle", "kermit the frog");
-	
+
 	            prod.send(m);
 	         }
-	
+
 	         for (int j = 0; j < 10; j++)
 	         {
 	            Message m = cons1.receive(1000);
-	            
+
 	            assertNotNull(m);
 	         }
-	
+
 	         Message m = cons1.receiveNoWait();
-	
+
 	         assertNull(m);
-	         
+
 	         sess.close();
 	      }
       }
@@ -453,7 +445,7 @@ public class SelectorTest extends JMSTestCase
       	{
       		conn.close();
       	}
-      	
+
       	removeAllMessages(queue1.getQueueName(), true, 0);
       }
    }
@@ -467,10 +459,10 @@ public class SelectorTest extends JMSTestCase
       String selector5 = "beatle = 'jesus'";
 
       Connection conn = null;
-      
+
       try
-      {	      
-	      conn = cf.createConnection();
+      {
+	      conn = getConnectionFactory().createConnection();
 	      conn.start();
 	      Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 	      MessageConsumer cons1 = sess.createConsumer(topic1, selector1);
@@ -478,55 +470,55 @@ public class SelectorTest extends JMSTestCase
 	      MessageConsumer cons3 = sess.createConsumer(topic1, selector3);
 	      MessageConsumer cons4 = sess.createConsumer(topic1, selector4);
 	      MessageConsumer cons5 = sess.createConsumer(topic1, selector5);
-	
+
 	      Message m1 = sess.createMessage();
 	      m1.setStringProperty("beatle", "john");
-	
+
 	      Message m2 = sess.createMessage();
 	      m2.setStringProperty("beatle", "paul");
-	
+
 	      Message m3 = sess.createMessage();
 	      m3.setStringProperty("beatle", "george");
-	
+
 	      Message m4 = sess.createMessage();
 	      m4.setStringProperty("beatle", "ringo");
-	
+
 	      Message m5 = sess.createMessage();
 	      m5.setStringProperty("beatle", "jesus");
-	
+
 	      MessageProducer prod = sess.createProducer(topic1);
-	
+
 	      prod.send(m1);
 	      prod.send(m2);
 	      prod.send(m3);
 	      prod.send(m4);
 	      prod.send(m5);
-	
+
 	      Message r1 = cons1.receive(500);
 	      assertNotNull(r1);
 	      Message n = cons1.receive(500);
 	      assertNull(n);
-	
+
 	      Message r2 = cons2.receive(500);
 	      assertNotNull(r2);
 	      n = cons2.receive(500);
 	      assertNull(n);
-	
+
 	      Message r3 = cons3.receive(500);
 	      assertNotNull(r3);
 	      n = cons3.receive(500);
 	      assertNull(n);
-	
+
 	      Message r4 = cons4.receive(500);
 	      assertNotNull(r4);
 	      n = cons4.receive(500);
 	      assertNull(n);
-	
+
 	      Message r5 = cons5.receive(500);
 	      assertNotNull(r5);
 	      n = cons5.receive(500);
 	      assertNull(n);
-	
+
 	      assertEquals("john", r1.getStringProperty("beatle"));
 	      assertEquals("paul", r2.getStringProperty("beatle"));
 	      assertEquals("george", r3.getStringProperty("beatle"));
@@ -545,33 +537,33 @@ public class SelectorTest extends JMSTestCase
    public void testManyConsumersWithDifferentSelectors() throws Exception
    {
       Connection conn = null;
-      
+
       try
-      {      
-	      conn = cf.createConnection();
+      {
+	      conn = getConnectionFactory().createConnection();
 	      Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 	      MessageProducer p = sess.createProducer(queue1);
-	
+
 	      Session cs = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 	      final MessageConsumer c = cs.createConsumer(queue1, "weight = 1");
-	
+
 	      Session cs2 = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 	      final MessageConsumer c2 = cs2.createConsumer(queue1, "weight = 2");
-	
+
 	      for(int i = 0; i < 10; i++)
 	      {
 	         Message m = sess.createTextMessage("message" + i);
 	         m.setIntProperty("weight", i % 2 + 1);
 	         p.send(m);
 	      }
-	
+
 	      conn.start();
-	
+
 	      final List received = new ArrayList();
 	      final List received2 = new ArrayList();
 	      final Latch latch = new Latch();
 	      final Latch latch2 = new Latch();
-	
+
 	      new Thread(new Runnable()
 	      {
 	         public void run()
@@ -598,7 +590,7 @@ public class SelectorTest extends JMSTestCase
 	            }
 	         }
 	      }, "consumer thread 1").start();
-	
+
 	      new Thread(new Runnable()
 	      {
 	         public void run()
@@ -625,10 +617,10 @@ public class SelectorTest extends JMSTestCase
 	            }
 	         }
 	      }, "consumer thread 2").start();
-	
+
 	      latch.acquire();
 	      latch2.acquire();
-	
+
 	      assertEquals(5, received.size());
 	      for(Iterator i = received.iterator(); i.hasNext(); )
 	      {
@@ -636,7 +628,7 @@ public class SelectorTest extends JMSTestCase
 	         int value = m.getIntProperty("weight");
 	         assertEquals(value, 1);
 	      }
-	
+
 	      assertEquals(5, received2.size());
 	      for(Iterator i = received2.iterator(); i.hasNext(); )
 	      {
@@ -660,7 +652,7 @@ public class SelectorTest extends JMSTestCase
 
       try
       {
-	      conn = cf.createConnection();
+	      conn = getConnectionFactory().createConnection();
 	      conn.start();
 
 	      Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -712,5 +704,5 @@ public class SelectorTest extends JMSTestCase
 
    // Private -------------------------------------------------------
 
-   // Inner classes -------------------------------------------------   
+   // Inner classes -------------------------------------------------
 }

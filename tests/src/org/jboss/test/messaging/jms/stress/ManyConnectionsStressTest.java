@@ -6,24 +6,13 @@
  */
 package org.jboss.test.messaging.jms.stress;
 
+import org.jboss.logging.Logger;
+import org.jboss.test.messaging.JBMServerTestCase;
+
+import javax.jms.*;
+import javax.naming.InitialContext;
 import java.util.HashSet;
 import java.util.Set;
-
-import javax.jms.Connection;
-import javax.jms.ConnectionFactory;
-import javax.jms.JMSException;
-import javax.jms.Message;
-import javax.jms.MessageConsumer;
-import javax.jms.MessageListener;
-import javax.jms.MessageProducer;
-import javax.jms.Session;
-import javax.jms.TextMessage;
-import javax.jms.Topic;
-import javax.naming.InitialContext;
-
-import org.jboss.logging.Logger;
-import org.jboss.test.messaging.MessagingTestCase;
-import org.jboss.test.messaging.tools.ServerManagement;
 
 
 /**
@@ -36,7 +25,7 @@ import org.jboss.test.messaging.tools.ServerManagement;
  * $Id: $
  *
  */
-public class ManyConnectionsStressTest extends MessagingTestCase
+public class ManyConnectionsStressTest extends JBMServerTestCase
 {
    // Constants -----------------------------------------------------
 
@@ -71,18 +60,18 @@ public class ManyConnectionsStressTest extends MessagingTestCase
    {
       super.setUp();
 
-      ServerManagement.start("all");
+      //ServerManagement.start("all");
       
-      ic = new InitialContext(ServerManagement.getJNDIEnvironment());
+      ic = getInitialContext();
       
-      ServerManagement.deployTopic("StressTestTopic");
+      deployTopic("StressTestTopic");
 
       log.debug("setup done");
    }
 
    protected void tearDown() throws Exception
    {
-      ServerManagement.undeployTopic("StressTestTopic");
+      undeployTopic("StressTestTopic");
       
       ic.close();
       

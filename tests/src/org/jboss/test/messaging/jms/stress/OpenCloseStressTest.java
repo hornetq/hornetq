@@ -21,23 +21,12 @@
   */
 package org.jboss.test.messaging.jms.stress;
 
-import javax.jms.Connection;
-import javax.jms.DeliveryMode;
-import javax.jms.Destination;
-import javax.jms.JMSException;
-import javax.jms.Message;
-import javax.jms.MessageConsumer;
-import javax.jms.MessageListener;
-import javax.jms.MessageProducer;
-import javax.jms.Session;
-import javax.jms.TextMessage;
-import javax.jms.Topic;
-import javax.naming.InitialContext;
-
 import org.jboss.jms.client.JBossConnectionFactory;
-import org.jboss.test.messaging.MessagingTestCase;
-import org.jboss.test.messaging.tools.ServerManagement;
+import org.jboss.test.messaging.JBMServerTestCase;
 import org.jboss.util.id.GUID;
+
+import javax.jms.*;
+import javax.naming.InitialContext;
 
 /**
  * 
@@ -56,7 +45,7 @@ import org.jboss.util.id.GUID;
  *
  * $Id: StressTest.java 2349 2007-02-19 14:15:53Z timfox $
  */
-public class OpenCloseStressTest extends MessagingTestCase
+public class OpenCloseStressTest extends JBMServerTestCase
 {
    public OpenCloseStressTest(String name)
    {
@@ -71,13 +60,13 @@ public class OpenCloseStressTest extends MessagingTestCase
    {
       super.setUp();
 
-      ServerManagement.start("all");
+      //ServerManagement.start("all");
 
-      ic = new InitialContext(ServerManagement.getJNDIEnvironment());
+      ic = getInitialContext();
       cf = (JBossConnectionFactory)ic.lookup("/ConnectionFactory");
 
-      ServerManagement.undeployTopic("TestTopic");
-      ServerManagement.deployTopic("TestTopic");
+      undeployTopic("TestTopic");
+      deployTopic("TestTopic");
 
       topic = (Topic) ic.lookup("topic/TestTopic");
 
@@ -86,7 +75,7 @@ public class OpenCloseStressTest extends MessagingTestCase
 
    public void tearDown() throws Exception
    {
-      ServerManagement.undeployQueue("TestQueue");
+      undeployQueue("TestQueue");
 
       super.tearDown();
 

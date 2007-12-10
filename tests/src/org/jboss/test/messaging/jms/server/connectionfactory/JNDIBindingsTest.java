@@ -21,14 +21,13 @@
   */
 package org.jboss.test.messaging.jms.server.connectionfactory;
 
-import java.util.List;
-
-import javax.naming.InitialContext;
-
 import org.jboss.jms.server.connectionfactory.JNDIBindings;
 import org.jboss.messaging.util.XMLUtil;
-import org.jboss.test.messaging.MessagingTestCase;
+import org.jboss.test.messaging.JBMBaseTestCase;
 import org.w3c.dom.Element;
+
+import javax.naming.InitialContext;
+import java.util.List;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
@@ -36,7 +35,7 @@ import org.w3c.dom.Element;
  *
  * $Id$
  */
-public class JNDIBindingsTest extends MessagingTestCase
+public class JNDIBindingsTest extends JBMBaseTestCase
 {
    // Constants -----------------------------------------------------
 

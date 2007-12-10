@@ -21,17 +21,7 @@
   */
 package org.jboss.test.messaging.jms;
 
-import javax.jms.Connection;
-import javax.jms.DeliveryMode;
-import javax.jms.Message;
-import javax.jms.MessageConsumer;
-import javax.jms.MessageProducer;
-import javax.jms.Session;
-import javax.jms.TextMessage;
-import javax.jms.TopicConnection;
-import javax.jms.TopicConnectionFactory;
-import javax.jms.TopicSession;
-import javax.jms.TopicSubscriber;
+import javax.jms.*;
 
 
 /**
@@ -106,7 +96,7 @@ public class ConnectionClosedTest extends JMSTestCase
       int count = 0;
       while (true)
       {
-         TextMessage tm = (TextMessage)sub1.receive(1000);
+         TextMessage tm = (TextMessage)sub1.receive(10000);
          if (tm == null)
          {
             break;
@@ -125,7 +115,7 @@ public class ConnectionClosedTest extends JMSTestCase
       count = 0;
       while (true)
       {
-         TextMessage tm = (TextMessage)sub2.receive(200);
+         TextMessage tm = (TextMessage)sub2.receive(10000);
          if (tm == null)
          {
             break;

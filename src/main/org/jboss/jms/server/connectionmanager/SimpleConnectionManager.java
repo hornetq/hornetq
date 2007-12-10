@@ -21,18 +21,6 @@
   */
 package org.jboss.jms.server.connectionmanager;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-
-import javax.jms.JMSException;
-
 import org.jboss.jms.delegate.ConnectionEndpoint;
 import org.jboss.jms.server.ConnectionManager;
 import org.jboss.logging.Logger;
@@ -45,6 +33,10 @@ import org.jboss.remoting.Client;
 import org.jboss.remoting.ClientDisconnectedException;
 import org.jboss.remoting.ConnectionListener;
 import org.jboss.remoting.callback.ServerInvokerCallbackHandler;
+
+import javax.jms.JMSException;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>

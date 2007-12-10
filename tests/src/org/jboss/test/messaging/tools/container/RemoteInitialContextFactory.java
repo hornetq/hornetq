@@ -21,13 +21,12 @@
 */
 package org.jboss.test.messaging.tools.container;
 
-import java.util.Hashtable;
+import org.jboss.logging.Logger;
 
 import javax.naming.Context;
 import javax.naming.NamingException;
 import javax.naming.spi.InitialContextFactory;
-
-import org.jboss.logging.Logger;
+import java.util.Hashtable;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
@@ -52,7 +51,7 @@ public class RemoteInitialContextFactory implements InitialContextFactory
       env.put("java.naming.factory.initial",
               "org.jboss.test.messaging.tools.container.RemoteInitialContextFactory");
       env.put("java.naming.provider.url", "");
-      env.put("java.naming.factory.url.pkgs", "");
+      //env.put("java.naming.factory.url.pkgs", "");
       env.put(Constants.SERVER_INDEX_PROPERTY_NAME, Integer.toString(serverIndex));
       return env;
    }

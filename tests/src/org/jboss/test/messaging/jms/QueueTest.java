@@ -21,18 +21,9 @@
   */
 package org.jboss.test.messaging.jms;
 
+import javax.jms.*;
 import java.util.HashSet;
 import java.util.Set;
-
-import javax.jms.BytesMessage;
-import javax.jms.Connection;
-import javax.jms.DeliveryMode;
-import javax.jms.MessageConsumer;
-import javax.jms.MessageProducer;
-import javax.jms.Session;
-import javax.jms.TextMessage;
-
-import org.jboss.test.messaging.tools.ServerManagement;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
@@ -99,7 +90,8 @@ public class QueueTest extends JMSTestCase
       {      
 	      conn = cf.createConnection();
 	      Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-	      MessageProducer prod = sess.createProducer(queue1);
+         Queue queue1 = (Queue) getInitialContext().lookup("/queue/testQueue");
+         MessageProducer prod = sess.createProducer(queue1);
 	      prod.setDeliveryMode(DeliveryMode.PERSISTENT);
 	      
 	      for (int i = 0; i < 1; i++)
@@ -113,9 +105,9 @@ public class QueueTest extends JMSTestCase
 	      
 	      conn.close();
 	      
-	      ServerManagement.stopServerPeer();
+	      stop();
 	      
-	      ServerManagement.startServerPeer();
+	      start();
 	      
 	      // Messaging server restart implies new ConnectionFactory lookup
 	      deployAndLookupAdministeredObjects();
@@ -236,6 +228,7 @@ public class QueueTest extends JMSTestCase
          conn = cf.createConnection();
 
          Session s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         Queue queue1 = (Queue) getInitialContext().lookup("/queue/testQueue");
          MessageProducer p = s.createProducer(queue1);
          MessageConsumer c = s.createConsumer(queue1);
          conn.start();
@@ -247,9 +240,9 @@ public class QueueTest extends JMSTestCase
 
          conn.close();
 
-         ServerManagement.stop(0);
+         stop();
 
-         ServerManagement.start(0, "all", false);
+         start();
 
          deployAndLookupAdministeredObjects();
 

@@ -21,27 +21,17 @@
   */
 package org.jboss.messaging.core.impl.tx;
 
+import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
+import org.jboss.logging.Logger;
+import org.jboss.messaging.core.contract.*;
+import org.jboss.messaging.core.impl.IDManager;
+import org.jboss.messaging.core.impl.SimpleDelivery;
+
+import javax.transaction.xa.Xid;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-
-import javax.transaction.xa.Xid;
-
-import org.jboss.logging.Logger;
-import org.jboss.messaging.core.contract.Binding;
-import org.jboss.messaging.core.contract.Delivery;
-import org.jboss.messaging.core.contract.Message;
-import org.jboss.messaging.core.contract.MessageReference;
-import org.jboss.messaging.core.contract.MessageStore;
-import org.jboss.messaging.core.contract.MessagingComponent;
-import org.jboss.messaging.core.contract.PersistenceManager;
-import org.jboss.messaging.core.contract.PostOffice;
-import org.jboss.messaging.core.contract.Queue;
-import org.jboss.messaging.core.impl.IDManager;
-import org.jboss.messaging.core.impl.SimpleDelivery;
-
-import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
 
 /**
  * This class maintains JMS Server local transactions.
@@ -110,7 +100,7 @@ public class TransactionRepository implements MessagingComponent
       
    public void stop() throws Exception
    {
-      //NOOP
+      map.clear();
    }
    
    // Public --------------------------------------------------------   

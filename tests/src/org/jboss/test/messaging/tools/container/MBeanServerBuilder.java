@@ -6,10 +6,9 @@
  */
 package org.jboss.test.messaging.tools.container;
 
-import javax.management.MBeanServer;
 import javax.management.MBeanServerDelegate;
 
-import org.jboss.mx.server.MBeanServerImpl;
+//import org.jboss.mx.server.MBeanServerImpl;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
@@ -33,13 +32,13 @@ public class MBeanServerBuilder extends javax.management.MBeanServerBuilder
 
    // MBeanServerBuilder overrides ----------------------------------
 
-   public MBeanServer newMBeanServer(String defaultDomain,
+   /*public MBeanServer newMBeanServer(String defaultDomain,
                                      MBeanServer outer,
                                      MBeanServerDelegate delegate)
    {
       return new MBeanServerImpl("jboss", outer, delegate);
    }
-
+*/
    public MBeanServerDelegate	newMBeanServerDelegate()
    {
       return new MBeanServerDelegate();

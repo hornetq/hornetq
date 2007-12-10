@@ -21,22 +21,15 @@
  */
 package org.jboss.test.messaging.jms.bridge;
 
-import java.io.ByteArrayOutputStream;
-import java.util.Properties;
-
-import javax.jms.Connection;
-import javax.jms.ConnectionFactory;
-import javax.jms.Destination;
-import javax.jms.MessageConsumer;
-import javax.jms.MessageProducer;
-import javax.jms.Session;
-import javax.jms.TextMessage;
-import javax.management.ObjectName;
-import javax.naming.InitialContext;
-
 import org.jboss.jms.server.bridge.Bridge;
 import org.jboss.logging.Logger;
 import org.jboss.test.messaging.tools.ServerManagement;
+
+import javax.jms.*;
+import javax.management.ObjectName;
+import javax.naming.InitialContext;
+import java.io.ByteArrayOutputStream;
+import java.util.Properties;
 
 /**
  * A BridgeMBeanTest
@@ -422,7 +415,7 @@ public class BridgeMBeanTest extends BridgeTestBase
          
          ServerManagement.getServer(0).invoke(on, "start", new Object[0], new String[0]);
          
-         //Should not be able to change attributes when bridge is started - need to stop first         
+         //Should not be able to change attributes when bridge is started - need to stop first
          
          {
             ObjectName sourceProviderLoader2 = (ObjectName)ServerManagement.getAttribute(on, "SourceProviderLoader");
@@ -557,8 +550,8 @@ public class BridgeMBeanTest extends BridgeTestBase
 	      props1.putAll(ServerManagement.getJNDIEnvironment(0));	      
 	      Properties props2 = new Properties();
 	      props2.putAll(ServerManagement.getJNDIEnvironment(1));
-         InitialContext icSource = new InitialContext(props1);
-         InitialContext icTarget = new InitialContext(props2);
+         InitialContext icSource = getInitialContext(0);
+         InitialContext icTarget = getInitialContext(1);
          
          log.trace("Checking bridged bridge");
          

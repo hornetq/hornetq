@@ -6,12 +6,11 @@
  */
 package org.jboss.test.messaging.jms;
 
+import org.jboss.test.messaging.JBMServerTestCase;
+
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.naming.InitialContext;
-
-import org.jboss.test.messaging.MessagingTestCase;
-import org.jboss.test.messaging.tools.ServerManagement;
 
 /**
  * Tests the very first server invocation, when the client-side AOP stack is initialized.
@@ -21,7 +20,7 @@ import org.jboss.test.messaging.tools.ServerManagement;
  *
  * $Id: JMSTest.java 1843 2006-12-21 23:41:19Z timfox $
  */
-public class AOPStackInitializationTest extends MessagingTestCase
+public class AOPStackInitializationTest extends JBMServerTestCase
 {
    // Constants -----------------------------------------------------
 
@@ -57,9 +56,7 @@ public class AOPStackInitializationTest extends MessagingTestCase
    {
       super.setUp();
 
-      ServerManagement.start("all");
-
-      ic = new InitialContext(ServerManagement.getJNDIEnvironment());
+      ic = getInitialContext();
 
       log.debug("setup done");
    }
@@ -68,7 +65,6 @@ public class AOPStackInitializationTest extends MessagingTestCase
    {
       ic.close();
 
-      ServerManagement.stop();
 
       super.tearDown();
    }

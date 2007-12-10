@@ -21,23 +21,14 @@
 */
 package org.jboss.test.messaging.jms;
 
+import org.jboss.logging.Logger;
+import org.jboss.test.messaging.JBMServerTestCase;
+
+import javax.jms.*;
+import javax.naming.InitialContext;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.ObjectOutputStream;
-
-import javax.jms.Connection;
-import javax.jms.ConnectionFactory;
-import javax.jms.MessageConsumer;
-import javax.jms.Queue;
-import javax.jms.Session;
-import javax.jms.TextMessage;
-import javax.naming.InitialContext;
-
-import org.jboss.logging.Logger;
-import org.jboss.test.messaging.MessagingTestCase;
-import org.jboss.test.messaging.tools.ServerManagement;
-import org.jboss.test.messaging.tools.container.LocalTestServer;
-import org.jboss.test.messaging.tools.container.Server;
 
 /**
  * A test that makes sure that a Messaging client gracefully exists after the last connection is
@@ -51,7 +42,7 @@ import org.jboss.test.messaging.tools.container.Server;
  *
  * $Id$
  */
-public class ClientExitTest extends MessagingTestCase
+public class ClientExitTest extends JBMServerTestCase
 {
    // Constants ------------------------------------------------------------------------------------
 
@@ -75,22 +66,20 @@ public class ClientExitTest extends MessagingTestCase
 
    public void testGracefulClientExit() throws Exception
    {
-      Server localServer = null;
       File serialized = null;
       
       Connection conn = null;
 
       try
       {
-         localServer = new LocalTestServer();
 
-         localServer.start("all", true);
-         localServer.deployQueue("Queue", null, false);
+         //localServer.start("all", true);
+         deployQueue("Queue", null);
 
          // lookup the connection factory and the queue which we'll send to the client VM via a
          // serialized instances saved in file
 
-         InitialContext ic = new InitialContext(ServerManagement.getJNDIEnvironment());
+         InitialContext ic = getInitialContext();
          ConnectionFactory cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
          Queue queue = (Queue)ic.lookup("/queue/Queue");
 
@@ -131,9 +120,6 @@ public class ClientExitTest extends MessagingTestCase
                serialized.delete();
             }
 
-            localServer.undeployDestination(true, "Queue");
-            localServer.stopServerPeer();
-            localServer.stop();
          }
          catch (Throwable ignored)
          {
@@ -146,17 +132,7 @@ public class ClientExitTest extends MessagingTestCase
 
    // Protected ------------------------------------------------------------------------------------
 
-   protected void setUp() throws Exception
-   {
-      super.setUp();
-      
-      ServerManagement.stop();
-   }
 
-   protected void tearDown() throws Exception
-   {
-      super.tearDown();
-   }
 
    // Private --------------------------------------------------------------------------------------
 

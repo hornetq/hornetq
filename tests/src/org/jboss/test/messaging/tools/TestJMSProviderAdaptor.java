@@ -21,13 +21,12 @@
  */
 package org.jboss.test.messaging.tools;
 
-import java.util.Properties;
-
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
+import java.util.Properties;
 
-import org.jboss.jms.jndi.JMSProviderAdapter;
+//import org.jboss.jms.jndi.JMSProviderAdapter;
 
 /**
  * A TestJMSProviderAdaptor
@@ -38,7 +37,7 @@ import org.jboss.jms.jndi.JMSProviderAdapter;
  * $Id$
  *
  */
-public class TestJMSProviderAdaptor implements JMSProviderAdapter
+public class TestJMSProviderAdaptor //implements JMSProviderAdapter
 {
    private static final long serialVersionUID = 8064613007110300720L;
 

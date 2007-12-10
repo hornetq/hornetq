@@ -6,12 +6,6 @@
  */
 package org.jboss.jms.client.container;
 
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.Map;
-
-import javax.jms.JMSException;
-
 import org.jboss.aop.joinpoint.Invocation;
 import org.jboss.aop.joinpoint.MethodInvocation;
 import org.jboss.jms.client.FailoverCommandCenter;
@@ -24,6 +18,11 @@ import org.jboss.jms.client.state.ConnectionState;
 import org.jboss.jms.delegate.CreateConnectionResult;
 import org.jboss.jms.exception.MessagingNetworkFailureException;
 import org.jboss.logging.Logger;
+
+import javax.jms.JMSException;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.Map;
 
 /**
  * This aspect is part of a clustered ConnectionFactory aspect stack.
@@ -70,7 +69,7 @@ public class ClusteringAspect
 
    // Public ---------------------------------------------------------------------------------------
 
-   public CreateConnectionResult handleCreateConnectionDelegate(Invocation invocation)
+   public Object handleCreateConnectionDelegate(Invocation invocation)
       throws Throwable
    {
       if (trace)

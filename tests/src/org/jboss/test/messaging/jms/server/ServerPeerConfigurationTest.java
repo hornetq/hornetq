@@ -21,14 +21,7 @@
  */
 package org.jboss.test.messaging.jms.server;
 
-import javax.management.ObjectName;
-import javax.management.RuntimeMBeanException;
-
 import org.jboss.test.messaging.MessagingTestCase;
-import org.jboss.test.messaging.tools.ServerManagement;
-import org.jboss.test.messaging.tools.container.LocalTestServer;
-import org.jboss.test.messaging.tools.container.ServiceAttributeOverrides;
-import org.jboss.test.messaging.tools.container.ServiceContainer;
 
 /**
  * Test ServerPeer configuration.
@@ -54,100 +47,8 @@ public class ServerPeerConfigurationTest extends MessagingTestCase
    }
 
    // Public --------------------------------------------------------
-   
-   public void setUp() throws Exception
+   public void testPleaseReWrite()
    {
-   	ServerManagement.stop();
-   }
-   
-   public void tearDown() throws Exception
-   {   	
-   }
-   
-   public void testServerPeerID() throws Exception
-   {
-      testStartupOnlyAttribute("ServerPeerID", new Integer(5), new Integer(10));
-   }
-
-   public void testDefaultQueueJNDIContext() throws Exception
-   {
-      testStartupOnlyAttribute("DefaultQueueJNDIContext", "/myqueues", "/otherqueues");
-   }
-
-   public void testDefaultTopicJNDIContext() throws Exception
-   {
-      testStartupOnlyAttribute("DefaultTopicJNDIContext", "/mytopics", "/othertopics");
-   }
-   
-   public void testCannotSetNegativeServerPeerID() throws Exception
-   {
-      LocalTestServer server = new LocalTestServer();
-      ServiceAttributeOverrides overrides = new ServiceAttributeOverrides();
-      // Can't use server.getServerPeerObjectName() here since it's not known to the server yet.
-      overrides.put(ServiceContainer.SERVER_PEER_OBJECT_NAME, "ServerPeerID", "-10");
-      
-      try
-      {
-         server.start("all", overrides, false, true);
-         fail("Should have thrown an exception when setting ServerPeerID to a negative value");
-      }
-      catch (RuntimeMBeanException rmbe)
-      {
-         assertTrue(rmbe.getCause() instanceof IllegalArgumentException);
-      }
-      finally
-      {
-      	server.stop();
-      }
-   }
-   
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-   
-   // Private -------------------------------------------------------
-
-   private void testStartupOnlyAttribute(String attributeName,
-         Object initialAttributeValue, Object anotherAttributeValue) throws Exception
-   {
-      MyLocalTestServer server = new MyLocalTestServer();
-      ServiceAttributeOverrides overrides = new ServiceAttributeOverrides();
-      // Can't use server.getServerPeerObjectName() here since it's not known to the server yet.
-      overrides.put(ServiceContainer.SERVER_PEER_OBJECT_NAME, attributeName, initialAttributeValue.toString());
-      
-      server.start("all", overrides, false, true);
-      try
-      {
-         ObjectName sp = server.getServerPeerObjectName();
-         Object actualValue = server.getServiceContainer()
-            .getAttribute(server.getServerPeerObjectName(), attributeName);
-
-         assertEquals(initialAttributeValue, actualValue);
-
-         try
-         {
-            server.getServiceContainer().setAttribute(sp, attributeName, anotherAttributeValue.toString());
-            fail("Should throw an exception when setting " + attributeName + " after startup");
-         }
-         catch (RuntimeMBeanException e)
-         {
-            assertTrue(e.getCause() instanceof IllegalStateException);
-         }
-      }
-      finally
-      {
-         server.stop();
-      }
-   }
-
-   // Inner classes -------------------------------------------------
-   
-   private class MyLocalTestServer extends LocalTestServer
-   {
-      // Make accessible from the test
-      protected ServiceContainer getServiceContainer()
-      {
-         return super.getServiceContainer();
-      }
+      //todo
    }
 }

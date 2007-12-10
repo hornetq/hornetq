@@ -21,48 +21,52 @@
 */
 package org.jboss.test.messaging.tools.container;
 
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import javax.jms.Destination;
-import javax.jms.Queue;
-import javax.jms.Topic;
-import javax.management.NotificationListener;
-import javax.management.ObjectName;
-import javax.transaction.UserTransaction;
-
 import org.jboss.aop.AspectXmlLoader;
+import org.jboss.jms.message.MessageIdGeneratorFactory;
 import org.jboss.jms.server.DestinationManager;
+import org.jboss.jms.server.JmsServer;
+import org.jboss.jms.server.JmsServerStatistics;
 import org.jboss.jms.server.ServerPeer;
+import org.jboss.jms.server.connectionfactory.ConnectionFactory;
+import org.jboss.jms.server.microcontainer.JBMBootstrapServer;
+import org.jboss.jms.server.security.Role;
+import org.jboss.jms.tx.ResourceManagerFactory;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.contract.MessageStore;
 import org.jboss.messaging.core.contract.PersistenceManager;
-import org.jboss.messaging.core.contract.PostOffice;
-import org.jboss.messaging.util.XMLUtil;
 import org.jboss.remoting.ServerInvocationHandler;
+import org.jboss.test.messaging.tools.ConfigurationHelper;
 import org.jboss.test.messaging.tools.ServerManagement;
 import org.jboss.test.messaging.tools.aop.PoisonInterceptor;
 import org.jboss.test.messaging.tools.jboss.MBeanConfigurationElement;
-import org.jboss.test.messaging.tools.jboss.ServiceDeploymentDescriptor;
-import org.w3c.dom.Element;
+import org.jboss.tm.TransactionManagerLocator;
+
+import javax.management.NotificationListener;
+import javax.management.ObjectName;
+import javax.naming.InitialContext;
+import javax.sql.DataSource;
+import javax.transaction.TransactionManager;
+import javax.transaction.UserTransaction;
+import java.net.URL;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.util.*;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>1.1</tt>
- *
- * LocalTestServer.java,v 1.1 2006/02/21 08:25:32 timfox Exp
+ *          <p/>
+ *          LocalTestServer.java,v 1.1 2006/02/21 08:25:32 timfox Exp
  */
-public class LocalTestServer implements Server
+public class LocalTestServer implements Server, Runnable
 {
    // Constants ------------------------------------------------------------------------------------
 
    private static final Logger log = Logger.getLogger(LocalTestServer.class);
-
+   private boolean started = false;
+   private Map<String, ConnectionFactory> factories = new HashMap<String, ConnectionFactory>();
    // Static ---------------------------------------------------------------------------------------
 
    public static void setEnvironmentServerIndex(int serverIndex)
@@ -89,6 +93,8 @@ public class LocalTestServer implements Server
 
    private int serverIndex;
 
+   JBMBootstrapServer bootstrap;
+
    // Constructors ---------------------------------------------------------------------------------
 
    public LocalTestServer()
@@ -110,142 +116,173 @@ public class LocalTestServer implements Server
       return serverIndex;
    }
 
-   public void start(String containerConfig,
-                     boolean clearDatabase) throws Exception
-   {
-      start(containerConfig, null, clearDatabase, true);
-   }
 
-   public synchronized void start(String containerConfig,
-                                  ServiceAttributeOverrides attrOverrides,
-                                  boolean clearDatabase,
-                                  boolean startMessagingServer) throws Exception
+   public synchronized void start(String[] containerConfig,
+                                  HashMap<String, Object> configuration,
+                                  boolean clearDatabase) throws Exception
    {
       if (isStarted())
       {
          return;
       }
+      ConfigurationHelper.addServerConfig(getServerID(), configuration);
 
-      log.debug("starting service container");
+      JBMPropertyKernelConfig propertyKernelConfig = new JBMPropertyKernelConfig(System.getProperties());
+      propertyKernelConfig.setServerID(getServerID());
+      bootstrap = new JBMBootstrapServer(containerConfig, propertyKernelConfig);
+      System.setProperty(Constants.SERVER_INDEX_PROPERTY_NAME, ""+getServerID());
+      bootstrap.run();
+      started = true;
+
+   }
+
+   protected void deleteAllData() throws Exception
+   {
+      log.info("DELETING ALL DATA FROM DATABASE!");
+
+      InitialContext ctx = getInitialContext();
+
+      // We need to execute each drop in its own transaction otherwise postgresql will not execute
+      // further commands after one fails
+
+      TransactionManager mgr = TransactionManagerLocator.locateTransactionManager();
+      DataSource ds = (DataSource) ctx.lookup("java:/DefaultDS");
+
+      javax.transaction.Transaction txOld = mgr.suspend();
+
+      executeStatement(mgr, ds, "DELETE FROM JBM_POSTOFFICE");
+
+      executeStatement(mgr, ds, "DELETE FROM JBM_MSG_REF");
+
+      executeStatement(mgr, ds, "DELETE FROM JBM_MSG");
+
+      executeStatement(mgr, ds, "DELETE FROM JBM_TX");
+
+      executeStatement(mgr, ds, "DELETE FROM JBM_COUNTER");
+
+      executeStatement(mgr, ds, "DELETE FROM JBM_USER");
+
+      executeStatement(mgr, ds, "DELETE FROM JBM_ROLE");
+
+      if (txOld != null)
+      {
+         mgr.resume(txOld);
+      }
+
+      log.debug("done with the deleting data");
+   }
+
+   private void executeStatement(TransactionManager mgr, DataSource ds, String statement) throws Exception
+   {
+      Connection conn = null;
+      boolean exception = false;
 
       try
       {
-         setEnvironmentServerIndex(serverIndex);
-
-         sc = new ServiceContainer(containerConfig, null, serverIndex);
-         sc.start(clearDatabase, attrOverrides);
-
-         if (sc.getDatabaseName().equals("hsqldb") && sc.isClustered())
+         try
          {
-            throw new IllegalStateException("The test server cannot be started in clustered mode with hsqldb as a database - must use a shared database");
-         }
+            mgr.begin();
 
-         if ("none".equals(containerConfig))
+            conn = ds.getConnection();
+
+            log.debug("executing " + statement);
+
+            PreparedStatement ps = conn.prepareStatement(statement);
+
+            ps.executeUpdate();
+
+            log.debug(statement + " executed");
+
+            ps.close();
+         }
+         catch (SQLException e)
          {
-            return;
+            // Ignore
+            log.debug("Failed to execute statement", e);
+            exception = true;
          }
-
-         if (startMessagingServer)
-         {
-            startServerPeer(serverIndex, null, null, attrOverrides, sc.isClustered());
-         }
-
-         log.info("Server " + serverIndex + " started");
       }
       finally
       {
-         clearEnvironmentServerIndex();
+         if (conn != null)
+         {
+            conn.close();
+         }
+
+         if (exception)
+         {
+            mgr.rollback();
+         }
+         else
+         {
+            mgr.commit();
+         }
       }
+
+
    }
 
    public synchronized boolean stop() throws Exception
    {
-      if (!isStarted())
-      {
-         return false;
-      }
-
-      try
-      {
-         setEnvironmentServerIndex(serverIndex);
-
-         stopServerPeer();
-
-         log.debug("stopping service container");
-
-         sc.stop();
-         sc = null;
-
-         log.info("server stopped");
-      }
-      finally
-      {
-         clearEnvironmentServerIndex();
-      }
-
+      bootstrap.shutDown();
+      started=false;
       return true;
    }
 
 
    public void ping() throws Exception
    {
-      // noop... do nothing
+      if (!isStarted())
+      {
+         throw new RuntimeException("ok");
+      }
    }
 
    public synchronized void kill() throws Exception
    {
-      throw new IllegalStateException("Cannot KILL a local server. Consider using stop() instead.");
+      stop();
    }
 
    public ObjectName deploy(String mbeanConfiguration) throws Exception
    {
-      Element mbeanElement = XMLUtil.stringToElement(mbeanConfiguration);
-      MBeanConfigurationElement mbc = new MBeanConfigurationElement(mbeanElement);
-      return sc.registerAndConfigureService(mbc);
+      /*Element mbeanElement = XMLUtil.stringToElement(mbeanConfiguration);
+      MBeanConfigurationElement mbc = new MBeanConfigurationElement(mbeanElement);*/
+      return null;// sc.registerAndConfigureService(mbc);
    }
 
    public void undeploy(ObjectName on) throws Exception
    {
-      sc.unregisterService(on);
+      //sc.unregisterService(on);
    }
 
    public Object getAttribute(ObjectName on, String attribute) throws Exception
    {
-      return sc.getAttribute(on, attribute);
+      return null;// sc.getAttribute(on, attribute);
    }
 
    public void setAttribute(ObjectName on, String name, String valueAsString) throws Exception
    {
-      sc.setAttribute(on, name, valueAsString);
+      //sc.setAttribute(on, name, valueAsString);
    }
 
    public Object invoke(ObjectName on, String operationName, Object[] params, String[] signature)
-      throws Exception
+           throws Exception
    {
-      return sc.invoke(on, operationName, params, signature);
+      return null;//sc.invoke(on, operationName, params, signature);
    }
 
    public void addNotificationListener(ObjectName on, NotificationListener listener)
-      throws Exception
+           throws Exception
    {
-      sc.addNotificationListener(on, listener);
+      // sc.addNotificationListener(on, listener);
    }
 
    public void removeNotificationListener(ObjectName on, NotificationListener listener)
-      throws Exception
+           throws Exception
    {
-      sc.removeNotificationListener(on, listener);
+      //sc.removeNotificationListener(on, listener);
    }
 
-   public Set query(ObjectName pattern) throws Exception
-   {
-      return sc.query(pattern);
-   }
-
-   public String getRemotingTransport()
-   {
-      return sc.getRemotingTransport();
-   }
 
    public void log(int level, String text)
    {
@@ -282,247 +319,40 @@ public class LocalTestServer implements Server
 
    public synchronized boolean isStarted() throws Exception
    {
-      return sc != null;
+      return started;
    }
 
-   public void startServerPeer(int serverPeerID,
+   public synchronized void startServerPeer(int serverPeerID,
                                String defaultQueueJNDIContext,
                                String defaultTopicJNDIContext,
                                ServiceAttributeOverrides attrOverrides,
                                boolean clustered) throws Exception
    {
-   	List toStop = new ArrayList();
-      try
-      {
-         log.debug("creating ServerPeer instance");
-
-         // we are using the "default" service deployment descriptors available in
-         // src/etc/server/default/deploy. This will allow to test the default parameters we ship.
-
-         String mainConfigFile = "server/default/deploy/messaging-service.xml";
-         
-         String persistenceConfigFile = sc.getPersistenceConfigFile(clustered);
-
-         log.info(" Persistence config file .. " + persistenceConfigFile);
-
-         ServiceDeploymentDescriptor mdd = ServiceConfigHelper.loadConfigFile(mainConfigFile);
-         
-         ServiceDeploymentDescriptor pdd = ServiceConfigHelper.loadConfigFile(persistenceConfigFile);
-
-         MBeanConfigurationElement persistenceManagerConfig =
-            ServiceConfigHelper.getServiceConfiguration(pdd, "PersistenceManager");
-         persistenceManagerObjectName = sc.registerAndConfigureService(persistenceManagerConfig);
-         overrideAttributes(persistenceManagerObjectName, attrOverrides);
-         toStop.add(persistenceManagerObjectName);
-         sc.invoke(persistenceManagerObjectName, "create", new Object[0], new String[0]);
-         sc.invoke(persistenceManagerObjectName, "start", new Object[0], new String[0]);         
-
-         MBeanConfigurationElement jmsUserManagerConfig =
-            ServiceConfigHelper.getServiceConfiguration(pdd, "JMSUserManager");
-         jmsUserManagerObjectName = sc.registerAndConfigureService(jmsUserManagerConfig);
-         overrideAttributes(jmsUserManagerObjectName, attrOverrides);         
-         toStop.add(jmsUserManagerObjectName);
-         sc.invoke(jmsUserManagerObjectName, "create", new Object[0], new String[0]);
-         sc.invoke(jmsUserManagerObjectName, "start", new Object[0], new String[0]);
-
-         // register server peer as a service, dependencies are injected automatically
-         MBeanConfigurationElement serverPeerConfig =
-            ServiceConfigHelper.getServiceConfiguration(mdd, "ServerPeer");
-
-         // overwrite the file configuration, if needed
-         overrideServerPeerConfiguration(serverPeerConfig, serverPeerID, defaultQueueJNDIContext,
-               defaultTopicJNDIContext);
-
-         serverPeerObjectName = sc.registerAndConfigureService(serverPeerConfig);
-
-         overrideAttributes(serverPeerObjectName, attrOverrides);
-
-         // overwrite the config file security domain
-         sc.setAttribute(serverPeerObjectName, "SecurityDomain",
-                         MockJBossSecurityManager.TEST_SECURITY_DOMAIN);
-
-         log.debug("starting JMS server");
-
-         toStop.add(serverPeerObjectName);
-         sc.invoke(serverPeerObjectName, "create", new Object[0], new String[0]);
-         sc.invoke(serverPeerObjectName, "start", new Object[0], new String[0]);
-         
-
-         MBeanConfigurationElement postOfficeConfig =
-            ServiceConfigHelper.getServiceConfiguration(pdd, "PostOffice");
-
-         postOfficeObjectName = sc.registerAndConfigureService(postOfficeConfig);         
-         sc.setAttribute(postOfficeObjectName, "Clustered", clustered ? "true" : "false"); 
-             
-         overrideAttributes(postOfficeObjectName, attrOverrides);
-         toStop.add(postOfficeObjectName);
-
-         sc.invoke(postOfficeObjectName, "create", new Object[0], new String[0]);
-         sc.invoke(postOfficeObjectName, "start", new Object[0], new String[0]);         
-         log.debug("deploying connection factories");
-
-         sc.startConnectionFactories(attrOverrides);
-      }
-      catch (Exception e)
-      {
-         log.error("Failed to start", e);
-         
-         //Now we need to shutdown any services we did start
-         for (int i = toStop.size() - 1; i >= 0; i--)
-         {
-         	ObjectName on = (ObjectName)toStop.get(i);
-         	log.info("stopping: " + on);
-         	try
-         	{
-         		sc.unregisterService(on);
-         	}
-         	catch (Exception ignore)
-         	{         		
-         	}
-         }
-         
-         throw e;
-      }
+      System.setProperty(Constants.SERVER_INDEX_PROPERTY_NAME, "" + getServerID());
+      ((ServerPeer) getJmsServer()).start();
    }
 
-   public void stopServerPeer() throws Exception
+   public synchronized void stopServerPeer() throws Exception
    {
-      if (!isServerPeerStarted())
-      {
-         log.debug("messaging server was not started, so there is no stopping");
-         return;
-      }
+      System.setProperty(Constants.SERVER_INDEX_PROPERTY_NAME, "" + getServerID());
+      ((ServerPeer) getJmsServer()).stop();
+   }
 
-      try
-      {
-         // if we don't find a ServerPeer instance registered under the serverPeerObjectName
-         // ObjectName, we assume that the server was already stopped and we silently exit
-         if (sc.query(serverPeerObjectName).isEmpty())
-         {
-            log.warn("ServerPeer already stopped");
-            return;
-         }
+   public synchronized void stopDestinationManager() throws Exception
+   {
+      System.setProperty(Constants.SERVER_INDEX_PROPERTY_NAME, "" + getServerID());
+      ((ServerPeer) getJmsServer()).getDestinationManager().stop();
+   }
 
-         // unbind the JCA ConnectionFactory; nothing happens if no connection factory is bound
-         sc.unbindJCAJMSConnectionFactory();
-         sc.unbindDefaultJMSProvider();
-
-         log.debug("stopping connection factories");
-
-         sc.stopConnectionFactories();
-
-         log.debug("stopping all destinations");
-
-         try
-         {
-         	Set destinations = (Set)sc.getAttribute(serverPeerObjectName, "Destinations");
-                 
-	         for(Iterator i = destinations.iterator(); i.hasNext(); )
-	         {
-	            String name;
-	            boolean isQueue = true;
-	            Destination d = (Destination)i.next();
-	            if (d instanceof Queue)
-	            {
-	               name = ((Queue)d).getQueueName();
-	            }
-	            else
-	            {
-	               isQueue = false;
-	               name = ((Topic)d).getTopicName();
-	            }
-	
-	            try
-	            {
-	            	undeployDestination(isQueue, name);
-	            }
-	            catch (Exception e)
-	            {
-	            	//needs to be resilient
-	            }
-	         }
-         }
-         catch (Exception ignore)
-         {
-         	//Needs to be resilient on close
-         }
-
-         log.debug("stopping JMS server");
-
-         try
-         {
-            sc.invoke(serverPeerObjectName, "stop", new Object[0], new String[0]);
-            sc.invoke(serverPeerObjectName, "destroy", new Object[0], new String[0]);
-            sc.unregisterService(serverPeerObjectName);
-         }
-         catch (Exception ignore)
-         {
-            //If the serverpeer failed when starting up previously, then only some of the
-            //services may be started. The ones that didn't start will fail when attempting to shut
-            //them down.
-            //Hence we must catch and ignore or we won't shut everything down
-         }
-
-         log.debug("stopping ServerPeer's plug-in dependencies");
-
-         try
-         {
-            sc.invoke(jmsUserManagerObjectName, "stop", new Object[0], new String[0]);
-            sc.invoke(jmsUserManagerObjectName, "destroy", new Object[0], new String[0]);
-            sc.unregisterService(jmsUserManagerObjectName);
-         }
-         catch (Exception ignore)
-         {
-            //If the serverpeer failed when starting up previously, then only some of the
-            //services may be started. The ones that didn't start will fail when attempting to shut
-            //them down.
-            //Hence we must catch and ignore or we won't shut everything down
-         }
-
-         try
-         {
-            sc.invoke(postOfficeObjectName, "stop", new Object[0], new String[0]);
-            sc.invoke(postOfficeObjectName, "destroy", new Object[0], new String[0]);
-            sc.unregisterService(postOfficeObjectName);
-         }
-         catch (Exception ignore)
-         {
-            //If the serverpeer failed when starting up previously, then only some of the
-            //services may be started. The ones that didn't start will fail when attempting to shut
-            //them down.
-            //Hence we must catch and ignore or we won't shut everything down
-         }
-
-         try
-         {
-            sc.invoke(persistenceManagerObjectName, "stop", new Object[0], new String[0]);
-            sc.invoke(persistenceManagerObjectName, "destroy", new Object[0], new String[0]);
-            sc.unregisterService(persistenceManagerObjectName);
-         }
-         catch (Exception ignore)
-         {
-            //If the serverpeer failed when starting up previously, then only some of the
-            //services may be started. The ones that didn't start will fail when attempting to shut
-            //them down.
-            //Hence we must catch and ignore or we won't shut everything down
-         }
-      }
-      catch (Exception e)
-      {
-         log.error("Failed to stop server peer", e);
-         throw e;
-      }
+   public synchronized void startDestinationManager() throws Exception
+   {
+      System.setProperty(Constants.SERVER_INDEX_PROPERTY_NAME, "" + getServerID());
+      ((ServerPeer) getJmsServer()).getDestinationManager().start();
    }
 
    public boolean isServerPeerStarted() throws Exception
    {
-      if (sc.query(serverPeerObjectName).isEmpty())
-      {
-         return false;
-      }
-      ServerPeer sp = (ServerPeer)sc.getAttribute(serverPeerObjectName, "Instance");
-      sp.getVersion();
-      return true;
+      return getServerPeer().isStarted();
    }
 
    public ObjectName getServerPeerObjectName()
@@ -532,27 +362,28 @@ public class LocalTestServer implements Server
 
    public Set getConnectorSubsystems() throws Exception
    {
-      RemotingJMXWrapper remoting =
+      /*RemotingJMXWrapper remoting =
          (RemotingJMXWrapper)sc.getService(ServiceContainer.REMOTING_OBJECT_NAME);
 
-      return remoting.getConnectorSubsystems();
+      return remoting.getConnectorSubsystems();*/
+      return null;
    }
 
    public void addServerInvocationHandler(String subsystem, ServerInvocationHandler handler)
-      throws Exception
+           throws Exception
    {
-      RemotingJMXWrapper remoting =
+      /*RemotingJMXWrapper remoting =
          (RemotingJMXWrapper)sc.getService(ServiceContainer.REMOTING_OBJECT_NAME);
 
-      remoting.addInvocationHandler(subsystem, handler);
+      remoting.addInvocationHandler(subsystem, handler);*/
    }
 
    public void removeServerInvocationHandler(String subsystem) throws Exception
    {
-      RemotingJMXWrapper remoting =
+      /*RemotingJMXWrapper remoting =
          (RemotingJMXWrapper)sc.getService(ServiceContainer.REMOTING_OBJECT_NAME);
 
-      remoting.removeInvocationHandler(subsystem);
+      remoting.removeInvocationHandler(subsystem);*/
    }
 
    /**
@@ -560,29 +391,25 @@ public class LocalTestServer implements Server
     */
    public MessageStore getMessageStore() throws Exception
    {
-      ServerPeer serverPeer = (ServerPeer)sc.getAttribute(serverPeerObjectName, "Instance");
-      return serverPeer.getMessageStore();
+      return getServerPeer().getMessageStore();
    }
 
    public DestinationManager getDestinationManager() throws Exception
    {
-      ServerPeer serverPeer = (ServerPeer)sc.getAttribute(serverPeerObjectName, "Instance");
-      return serverPeer.getDestinationManager();
+      return getServerPeer().getDestinationManager();
    }
 
-   public PersistenceManager getPersistenceManager() throws Exception
+   public PersistenceManager getPersistenceManager()
    {
-      ServerPeer serverPeer = (ServerPeer)sc.getAttribute(serverPeerObjectName, "Instance");
-      return serverPeer.getPersistenceManagerInstance();
+      return getServerPeer().getPersistenceManagerInstance();
    }
 
    /**
     * Only for in-VM use!
     */
-   public ServerPeer getServerPeer() throws Exception
+   public ServerPeer getServerPeer()
    {
-      return (ServerPeer)sc.
-         getAttribute(serverPeerObjectName, "Instance");
+      return (ServerPeer) getJmsServer();
    }
 
    public void deployTopic(String name, String jndiName, boolean clustered) throws Exception
@@ -598,9 +425,7 @@ public class LocalTestServer implements Server
 
    public void deployTopicProgrammatically(String name, String jndiName) throws Exception
    {
-      sc.invoke(serverPeerObjectName, "deployTopic",
-                new Object[] { name, jndiName },
-                new String[] { "java.lang.String", "java.lang.String"} );
+      deployTopic(name, jndiName, false);
    }
 
    public void deployQueue(String name, String jndiName, boolean clustered) throws Exception
@@ -616,27 +441,15 @@ public class LocalTestServer implements Server
 
    public void deployQueueProgrammatically(String name, String jndiName) throws Exception
    {
-      sc.invoke(serverPeerObjectName, "deployQueue",
-                new Object[] { name, jndiName },
-                new String[] { "java.lang.String", "java.lang.String"} );
+      deployQueue(name, jndiName, false);
    }
 
    public void deployDestination(boolean isQueue, String name, String jndiName, boolean clustered) throws Exception
    {
-      String config =
-         "<mbean code=\"org.jboss.jms.server.destination." + (isQueue ? "QueueService" : "TopicService") + "\"" +
-         "       name=\"jboss.messaging.destination:service=" + (isQueue ? "Queue" : "Topic") + ",name=" + name + "\"" +
-         "       xmbean-dd=\"xmdesc/" + (isQueue ? "Queue" : "Topic" ) + "-xmbean.xml\">" +
-         (jndiName != null ? "    <attribute name=\"JNDIName\">" + jndiName + "</attribute>" : "") +
-         "       <depends optional-attribute-name=\"ServerPeer\">jboss.messaging:service=ServerPeer</depends>" +
-         "       <attribute name=\"Clustered\">" + String.valueOf(clustered) + "</attribute>" +
-         "</mbean>";
-
-      MBeanConfigurationElement mbean =
-         new MBeanConfigurationElement(XMLUtil.stringToElement(config));
-      ObjectName deston = sc.registerAndConfigureService(mbean);
-      sc.invoke(deston, "create", new Object[0], new String[0]);
-      sc.invoke(deston, "start", new Object[0], new String[0]);
+      if (isQueue)
+         getJmsServer().deployQueue(name, jndiName);
+      else
+         getJmsServer().deployTopic(name, jndiName);
    }
 
    public void deployDestination(boolean isQueue,
@@ -647,103 +460,76 @@ public class LocalTestServer implements Server
                                  int downCacheSize,
                                  boolean clustered) throws Exception
    {
-      log.info("deploying queue, fullsize:" + fullSize + ", ps:" + pageSize + " dc size:" + downCacheSize);
-
-      String config =
-         "<mbean code=\"org.jboss.jms.server.destination." + (isQueue ? "QueueService" : "TopicService") + "\"" +
-         "       name=\"jboss.messaging.destination:service=" + (isQueue ? "Queue" : "Topic") + ",name=" + name + "\"" +
-         "       xmbean-dd=\"xmdesc/" + (isQueue ? "Queue" : "Topic" ) + "-xmbean.xml\">" +
-         (jndiName != null ? "    <attribute name=\"JNDIName\">" + jndiName + "</attribute>" : "") +
-         "       <depends optional-attribute-name=\"ServerPeer\">jboss.messaging:service=ServerPeer</depends>" +
-         "    <attribute name=\"FullSize\">" + fullSize + "</attribute>" +
-         "    <attribute name=\"PageSize\">" + pageSize + "</attribute>" +
-         "    <attribute name=\"DownCacheSize\">" + downCacheSize + "</attribute>" +
-         "    <attribute name=\"Clustered\">" + String.valueOf(clustered) + "</attribute>" +
-         "</mbean>";
-
-      MBeanConfigurationElement mbean =
-         new MBeanConfigurationElement(XMLUtil.stringToElement(config));
-      ObjectName deston = sc.registerAndConfigureService(mbean);
-      sc.invoke(deston, "create", new Object[0], new String[0]);
-      sc.invoke(deston, "start", new Object[0], new String[0]);
+      if (isQueue)
+         getJmsServer().deployQueue(name, jndiName, fullSize, pageSize, downCacheSize);
+      else
+         getJmsServer().deployTopic(name, jndiName, fullSize, pageSize, downCacheSize);
    }
 
    public void undeployDestination(boolean isQueue, String name) throws Exception
    {
-      ObjectName pattern =
-         new ObjectName("*:service=" + (isQueue ? "Queue" : "Topic") + ",name=" + name);
-      Set s = sc.query(pattern);
-      int size = s.size();
-      if (size == 0)
-      {
-         log.debug("No such " + (isQueue ? "queue" : "topic") + " to undeploy: " + name);
-         return;
-      }
-      if (size > 1)
-      {
-         throw new Exception("Too many destination with the same name: " + name);
-      }
-      ObjectName destinationObjectName = (ObjectName)s.iterator().next();
-      sc.invoke(destinationObjectName, "stop", new Object[0], new String[0]);
-      sc.invoke(destinationObjectName, "destroy", new Object[0], new String[0]);
-      sc.unregisterService(destinationObjectName);
+      if (isQueue)
+         getJmsServer().undeployQueue(name);
+      else
+         getJmsServer().undeployTopic(name);
    }
 
    public boolean undeployDestinationProgrammatically(boolean isQueue, String name) throws Exception
    {
       if (isQueue)
-      {
-         return  ((Boolean)sc.invoke(serverPeerObjectName, "undeployQueue",
-                                    new Object[] { name },
-                                    new String[] { "java.lang.String"})).booleanValue();
-      }
+         return getJmsServer().undeployQueue(name);
       else
-      {
-         return  ((Boolean)sc.invoke(serverPeerObjectName, "undeployTopic",
-                                    new Object[] { name },
-                                    new String[] { "java.lang.String"})).booleanValue();
-      }
+         return getJmsServer().undeployTopic(name);
+   }
+
+
+   public void deployConnectionFactory(String clientId, String objectName,
+                                       String[] jndiBindings) throws Exception
+   {
+      deployConnectionFactory(clientId, objectName, jndiBindings, -1, -1, -1, -1, false, false, false, -1);
    }
 
    public void deployConnectionFactory(String objectName,
                                        String[] jndiBindings,
                                        int prefetchSize) throws Exception
    {
-      deployConnectionFactory(objectName, jndiBindings, prefetchSize, -1, -1, -1, false, false, false);
+      deployConnectionFactory(null, objectName, jndiBindings, prefetchSize, -1, -1, -1, false, false, false, -1);
    }
+
 
    public void deployConnectionFactory(String objectName,
                                        String[] jndiBindings) throws Exception
    {
-      deployConnectionFactory(objectName, jndiBindings, -1, -1, -1, -1, false, false, false);
+      deployConnectionFactory(null, objectName, jndiBindings, -1, -1, -1, -1, false, false, false, -1);
    }
 
 
-    public void deployConnectionFactory(String objectName, String[] jndiBindings, boolean strictTck)  throws Exception
-    {
-        deployConnectionFactory(objectName, jndiBindings, -1, -1, -1, -1, false, false, strictTck);
-    }
-
-    public void deployConnectionFactory(String objectName,
-         String[] jndiBindings,
-         int prefetchSize,
-         int defaultTempQueueFullSize,
-         int defaultTempQueuePageSize,
-         int defaultTempQueueDownCacheSize) throws Exception
+   public void deployConnectionFactory(String objectName, String[] jndiBindings, boolean strictTck) throws Exception
    {
-   	this.deployConnectionFactory(objectName, jndiBindings, prefetchSize, defaultTempQueueFullSize,
-   			defaultTempQueuePageSize, defaultTempQueueDownCacheSize, false, false, false);
+      deployConnectionFactory(null, objectName, jndiBindings, -1, -1, -1, -1, false, false, strictTck, -1);
    }
-   
+
    public void deployConnectionFactory(String objectName,
-         String[] jndiBindings,
-         boolean supportsFailover, boolean supportsLoadBalancing) throws Exception
+                                       String[] jndiBindings,
+                                       int prefetchSize,
+                                       int defaultTempQueueFullSize,
+                                       int defaultTempQueuePageSize,
+                                       int defaultTempQueueDownCacheSize) throws Exception
    {
-   	this.deployConnectionFactory(objectName, jndiBindings, -1, -1,
-   			-1, -1, supportsFailover, supportsLoadBalancing, false);
+      this.deployConnectionFactory(null, objectName, jndiBindings, prefetchSize, defaultTempQueueFullSize,
+              defaultTempQueuePageSize, defaultTempQueueDownCacheSize, false, false, false, -1);
    }
 
-   private void deployConnectionFactory(String objectName,
+   public void deployConnectionFactory(String objectName,
+                                       String[] jndiBindings,
+                                       boolean supportsFailover, boolean supportsLoadBalancing) throws Exception
+   {
+      this.deployConnectionFactory(null, objectName, jndiBindings, -1, -1,
+              -1, -1, supportsFailover, supportsLoadBalancing, false, -1);
+   }
+
+   public void deployConnectionFactory(String clientId,
+                                       String objectName,
                                        String[] jndiBindings,
                                        int prefetchSize,
                                        int defaultTempQueueFullSize,
@@ -751,95 +537,61 @@ public class LocalTestServer implements Server
                                        int defaultTempQueueDownCacheSize,
                                        boolean supportsFailover,
                                        boolean supportsLoadBalancing,
-                                       boolean strictTck) throws Exception
+                                       boolean strictTck,
+                                       int dupsOkBatchSize) throws Exception
    {
       log.trace("deploying connection factory with name: " + objectName);
-      
-      String config =
-         "<mbean code=\"org.jboss.jms.server.connectionfactory.ConnectionFactory\"\n" +
-                "name=\"" + objectName + "\"\n" +
-                "xmbean-dd=\"xmdesc/ConnectionFactory-xmbean.xml\">\n" +
-         "<depends optional-attribute-name=\"ServerPeer\">jboss.messaging:service=ServerPeer</depends>\n" +
-         "<depends optional-attribute-name=\"Connector\">" + ServiceContainer.REMOTING_OBJECT_NAME +
-         "</depends>\n";
-
-      if (defaultTempQueueFullSize != -1)
-      {
-         config += "<attribute name=\"DefaultTempQueueFullSize\">" + defaultTempQueueFullSize + "</attribute>\n";
-      }
-
-      if (defaultTempQueuePageSize != -1)
-      {
-         config += "<attribute name=\"DefaultTempQueuePageSize\">" + defaultTempQueuePageSize + "</attribute>\n";
-      }
-
-      if (defaultTempQueueDownCacheSize != -1)
-      {
-         config += "<attribute name=\"DefaultTempQueueDownCacheSize\">" + defaultTempQueueDownCacheSize + "</attribute>\n";
-      }
-
-      if (prefetchSize != -1)
-      {
-         config += "<attribute name=\"PrefetchSize\">" + prefetchSize + "</attribute>";
-      }
-      
-      config += "<attribute name=\"SupportsFailover\">" + supportsFailover + "</attribute>";
-      config += "<attribute name=\"SupportsLoadBalancing\">" + supportsLoadBalancing + "</attribute>";
-      config += "<attribute name=\"StrictTck\">" + strictTck + "</attribute>";
+      ConnectionFactory connectionFactory = new ConnectionFactory(clientId);
+      connectionFactory.setName(objectName);
+      List<String> bindings = new ArrayList<String>();
       if (jndiBindings != null)
       {
-	      config += "<attribute name=\"JNDIBindings\"><bindings>";
-	
-	      for (int i = 0; i < jndiBindings.length; i++)
-	      {
-	         config += "<binding>" + jndiBindings[i] + "</binding>\n";
-	      }
-	      config += "</bindings></attribute>";
+         for (String jndiBinding : jndiBindings)
+         {
+            bindings.add(jndiBinding);
+         }
       }
-      config += "</mbean>";
-
-      MBeanConfigurationElement mc = new MBeanConfigurationElement(XMLUtil.stringToElement(config));
-      ObjectName on = sc.registerAndConfigureService(mc);
-      
-      log.trace("Object name is now: " + on);
-      
-      sc.invoke(on, "create", new Object[0], new String[0]);
-      sc.invoke(on, "start", new Object[0], new String[0]);
+      connectionFactory.setJNDIBindings(bindings);
+      if (prefetchSize > 0)
+         connectionFactory.setPrefetchSize(prefetchSize);
+      if (defaultTempQueueFullSize > 0)
+         connectionFactory.setDefaultTempQueueFullSize(defaultTempQueueFullSize);
+      if (defaultTempQueuePageSize > 0)
+         connectionFactory.setDefaultTempQueuePageSize(defaultTempQueuePageSize);
+      if (defaultTempQueueDownCacheSize > 0)
+         connectionFactory.setDefaultTempQueueDownCacheSize(defaultTempQueueDownCacheSize);
+      if (dupsOkBatchSize > 0)
+         connectionFactory.setDupsOKBatchSize(dupsOkBatchSize);
+      connectionFactory.setSupportsFailover(supportsFailover);
+      connectionFactory.setSupportsLoadBalancing(supportsLoadBalancing);
+      connectionFactory.setStrictTck(strictTck);
+      connectionFactory.setServerPeer((ServerPeer) getJmsServer());
+      connectionFactory.setConnector(((ServerPeer) getJmsServer()).getConnector());
+      factories.put(objectName, connectionFactory);
+      connectionFactory.start();
    }
 
-   public void undeployConnectionFactory(ObjectName objectName) throws Exception
+   public void undeployConnectionFactory(String objectName) throws Exception
    {
-      sc.invoke(objectName, "stop", new Object[0], new String[0]);
-      sc.invoke(objectName, "destroy", new Object[0], new String[0]);
-      sc.unregisterService(objectName);
+      ((ServerPeer) getJmsServer()).getConnectionFactoryManager().unregisterConnectionFactory(objectName, true, true);
+      ((ServerPeer) getJmsServer()).getConnectorManager().unregisterConnector(objectName);
+
    }
 
-   public void configureSecurityForDestination(String destName, String config) throws Exception
+   public void configureSecurityForDestination(String destName, boolean isQueue, HashSet<Role> roles) throws Exception
    {
-      Set s = sc.query(new ObjectName("*:service=Queue,name=" + destName));
-      for(Iterator i = s.iterator(); i.hasNext();)
-      {
-         ObjectName on = (ObjectName)i.next();
-         sc.setAttribute(on, "SecurityConfig", config);
-      }
-
-      s = sc.query(new ObjectName("*:service=Topic,name=" + destName));
-      for(Iterator i = s.iterator(); i.hasNext();)
-      {
-         ObjectName on = (ObjectName)i.next();
-         sc.setAttribute(on, "SecurityConfig", config);
-      }
+      ((ServerPeer) getJmsServer()).getSecurityManager().setSecurityConfig(isQueue, destName, roles);
    }
 
    public void setDefaultSecurityConfig(String config) throws Exception
    {
-      sc.setAttribute(serverPeerObjectName, "DefaultSecurityConfig", config);
+      //todo
    }
 
    public String getDefaultSecurityConfig() throws Exception
    {
-      Element element = (Element)sc.getAttribute(serverPeerObjectName, "DefaultSecurityConfig");
-      return XMLUtil.elementToString(element);
+      //todo
+      return "";
    }
 
    public Object executeCommand(Command command) throws Exception
@@ -849,41 +601,34 @@ public class LocalTestServer implements Server
 
    public UserTransaction getUserTransaction() throws Exception
    {
-      return sc.getUserTransaction();
+      //return sc.getUserTransaction();
+      return null;
    }
 
    public Set getNodeIDView() throws Exception
    {
-   	PostOffice postOffice = (PostOffice)sc.getAttribute(postOfficeObjectName, "Instance");
-   	
-   	return postOffice.nodeIDView();
+      return getServerPeer().getPostOffice().nodeIDView();
    }
-   
+
    public Map getFailoverMap() throws Exception
    {
-   	PostOffice postOffice = (PostOffice)sc.getAttribute(postOfficeObjectName, "Instance");
-   	
-   	return postOffice.getFailoverMap();
+      return getServerPeer().getPostOffice().getFailoverMap();
    }
-   
+
    public Map getRecoveryArea(String queueName) throws Exception
    {
-   	PostOffice postOffice = (PostOffice)sc.getAttribute(postOfficeObjectName, "Instance");
-   	
-   	return postOffice.getRecoveryArea(queueName);
+      return getServerPeer().getPostOffice().getRecoveryArea(queueName);
    }
-   
+
    public int getRecoveryMapSize(String queueName) throws Exception
    {
-   	PostOffice postOffice = (PostOffice)sc.getAttribute(postOfficeObjectName, "Instance");
-   	
-   	return postOffice.getRecoveryMapSize(queueName);
+      return getServerPeer().getPostOffice().getRecoveryMapSize(queueName);
    }
 
    public List pollNotificationListener(long listenerID) throws Exception
    {
       throw new IllegalStateException("Poll doesn't make sense on a local server. " +
-                                      "Register listeners directly instead.");
+              "Register listeners directly instead.");
    }
 
    public void poisonTheServer(int type) throws Exception
@@ -894,18 +639,18 @@ public class LocalTestServer implements Server
       log.debug(url + " deployed");
 
       PoisonInterceptor.setType(type);
-   }   
-   
+   }
+
    public void flushManagedConnectionPool()
    {
-   	sc.flushManagedConnectionPool();
+      //sc.flushManagedConnectionPool();
    }
-   
+
    public void resetAllSuckers() throws Exception
    {
-   	getServerPeer().resetAllSuckers();
+      getServerPeer().resetAllSuckers();
    }
-   
+
    // Public ---------------------------------------------------------------------------------------
 
    // Package protected ----------------------------------------------------------------------------
@@ -918,37 +663,125 @@ public class LocalTestServer implements Server
    }
 
    protected void overrideServerPeerConfiguration(MBeanConfigurationElement config,
-         int serverPeerID, String defaultQueueJNDIContext, String defaultTopicJNDIContext)
-      throws Exception
+                                                  int serverPeerID, String defaultQueueJNDIContext, String defaultTopicJNDIContext)
+           throws Exception
    {
       config.setAttribute("ServerPeerID", Integer.toString(serverPeerID));
       config.setAttribute("DefaultQueueJNDIContext",
-            defaultQueueJNDIContext == null ? "/queue" : defaultQueueJNDIContext);
+              defaultQueueJNDIContext == null ? "/queue" : defaultQueueJNDIContext);
       config.setAttribute("DefaultTopicJNDIContext",
-            defaultTopicJNDIContext == null? "/topic" : defaultTopicJNDIContext);
+              defaultTopicJNDIContext == null ? "/topic" : defaultTopicJNDIContext);
    }
 
    // Private --------------------------------------------------------------------------------------
 
-   private void overrideAttributes(ObjectName on, ServiceAttributeOverrides attrOverrides)
-      throws Exception
+
+   public JmsServer getJmsServer()
    {
-      if (attrOverrides == null)
-      {
-         return;
-      }
-
-      Map sao = attrOverrides.get(on);
-
-      for(Iterator i = sao.entrySet().iterator(); i.hasNext();)
-      {
-         Map.Entry entry = (Map.Entry)i.next();
-         String attrName = (String)entry.getKey();
-         Object attrValue = entry.getValue();
-         sc.setAttribute(on, attrName, attrValue.toString());
-
-      }
+      return (JmsServer) bootstrap.getKernel().getRegistry().getEntry("ServerPeer").getTarget();
    }
+
+   public JmsServerStatistics getJmsServerStatistics()
+   {
+      return (JmsServerStatistics) bootstrap.getKernel().getRegistry().getEntry("ServerPeerStatistics").getTarget();
+   }
+
+   public InitialContext getInitialContext() throws Exception
+   {
+      Properties props = new Properties();
+      props.setProperty("java.naming.factory.initial", "org.jboss.test.messaging.tools.container.InVMInitialContextFactory");
+      props.setProperty(Constants.SERVER_INDEX_PROPERTY_NAME, "" + getServerID());
+      //props.setProperty("java.naming.factory.url.pkgs", "org.jboss.naming:org.jnp.interfaces");
+      return new InitialContext(props);
+   }
+
+   public void run()
+   {
+      bootstrap.run();
+
+      started = true;
+
+      synchronized (this)
+      {
+         notify();
+         try
+         {
+            wait();
+         }
+         catch (InterruptedException e)
+         {
+            //e.printStackTrace();
+         }
+      }
+
+   }
+
+
+   public Integer getMessageCountForQueue(String queueName) throws Exception
+   {
+      return getJmsServerStatistics().getMessageCountForQueue(queueName);
+   }
+
+   public void removeAllMessagesForQueue(String destName) throws Exception
+   {
+      getJmsServer().removeAllMessagesForQueue(destName);
+   }
+
+   public void removeAllMessagesForTopic(String destName) throws Exception
+   {
+      getJmsServer().removeAllMessagesForTopic(destName);
+   }
+
+
+   public List listAllSubscriptionsForTopic(String s) throws Exception
+   {
+      return getJmsServerStatistics().listAllSubscriptionsForTopic(s);
+   }
+
+
+   public HashSet<Role> getSecurityConfig() throws Exception
+   {
+      return getJmsServer().getConfiguration().getSecurityConfig();
+   }
+
+   public void setSecurityConfig(HashSet<Role> defConfig) throws Exception
+   {
+      getJmsServer().getConfiguration().setSecurityConfig(defConfig);
+   }
+
+
+   public void setSecurityConfigOnManager(boolean b, String s, HashSet<Role> conf) throws Exception
+   {
+      ((ServerPeer)getJmsServer()).getSecurityManager().setSecurityConfig(b, s, conf);
+   }
+
+
+   public void setRedeliveryDelayOnDestination(String dest, boolean queue, long delay) throws Exception
+   {
+      ((ServerPeer)getJmsServer()).getDestinationManager().getDestination(dest, queue).setRedeliveryDelay(delay);
+   }
+
+
+   public void setDefaultRedeliveryDelay(long delay) throws Exception
+   {
+      getJmsServer().getConfiguration().setDefaultRedeliveryDelay(delay);
+   }
+
+
+   public void clear() throws Exception
+   {
+      ResourceManagerFactory.instance.clear();
+      MessageIdGeneratorFactory.instance.clear();
+      ((ServerPeer) getJmsServer()).getTxRepository().stop();
+      ((ServerPeer) getJmsServer()).getTxRepository().start();
+   }
+
+
+   public int getResourceManagerFactorySize()
+   {
+      return ResourceManagerFactory.instance.size();
+   }
+
 
    // Inner classes --------------------------------------------------------------------------------
 

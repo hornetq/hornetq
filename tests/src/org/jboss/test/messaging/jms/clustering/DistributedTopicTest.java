@@ -21,17 +21,7 @@
  */
 package org.jboss.test.messaging.jms.clustering;
 
-import javax.jms.Connection;
-import javax.jms.DeliveryMode;
-import javax.jms.InvalidDestinationException;
-import javax.jms.Message;
-import javax.jms.MessageConsumer;
-import javax.jms.MessageProducer;
-import javax.jms.Session;
-import javax.jms.TextMessage;
-import javax.jms.Topic;
-
-import org.jboss.test.messaging.tools.ServerManagement;
+import javax.jms.*;
 import java.util.ArrayList;
 
 
@@ -257,11 +247,11 @@ public class DistributedTopicTest extends ClusteringTestBase
 
       super.setUp();
 
-      ServerManagement.deployTopic("nonClusteredTopic", "nonClusteredTopic", 300000, 3000, 3000, 0, false);
+      deployTopic("nonClusteredTopic", "nonClusteredTopic", 300000, 3000, 3000, 0, false);
       
-      ServerManagement.deployTopic("nonClusteredTopic", "nonClusteredTopic", 300000, 3000, 3000, 1, false);
+      deployTopic("nonClusteredTopic", "nonClusteredTopic", 300000, 3000, 3000, 1, false);
       
-      ServerManagement.deployTopic("nonClusteredTopic", "nonClusteredTopic", 300000, 3000, 3000, 2, false);
+      deployTopic("nonClusteredTopic", "nonClusteredTopic", 300000, 3000, 3000, 2, false);
    }
 
    protected void tearDown() throws Exception
@@ -270,7 +260,7 @@ public class DistributedTopicTest extends ClusteringTestBase
       
       try
       {
-      	ServerManagement.undeployTopic("nonClusteredTopic",  0);
+      	undeployTopic("nonClusteredTopic",  0);
       }
       catch (Exception ignore)
       {      	
@@ -278,7 +268,7 @@ public class DistributedTopicTest extends ClusteringTestBase
       
       try
       {
-      	ServerManagement.undeployTopic("nonClusteredTopic",  1);
+      	undeployTopic("nonClusteredTopic",  1);
       }
       catch (Exception ignore)
       {      	
@@ -286,7 +276,7 @@ public class DistributedTopicTest extends ClusteringTestBase
       
       try
       {
-      	ServerManagement.undeployTopic("nonClusteredTopic",  2);
+      	undeployTopic("nonClusteredTopic",  2);
 	   }
 	   catch (Exception ignore)
 	   {      	
@@ -1437,11 +1427,11 @@ public class DistributedTopicTest extends ClusteringTestBase
             conn2.close();
          }
          
-         ServerManagement.undeployQueue("nonClusteredTopic", 0);
+         undeployQueue("nonClusteredTopic", 0);
          
-         ServerManagement.undeployQueue("nonClusteredTopic", 1);
+         undeployQueue("nonClusteredTopic", 1);
          
-         ServerManagement.undeployQueue("nonClusteredTopic", 2);
+         undeployQueue("nonClusteredTopic", 2);
       }
    }
    
@@ -1672,11 +1662,11 @@ public class DistributedTopicTest extends ClusteringTestBase
             conn2.close();
          }
          
-         ServerManagement.undeployQueue("nonClusteredTopic", 0);
+         undeployQueue("nonClusteredTopic", 0);
          
-         ServerManagement.undeployQueue("nonClusteredTopic", 1);
+         undeployQueue("nonClusteredTopic", 1);
          
-         ServerManagement.undeployQueue("nonClusteredTopic", 2);
+         undeployQueue("nonClusteredTopic", 2);
       }
    }
 

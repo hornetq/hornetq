@@ -21,34 +21,6 @@
  */
 package org.jboss.messaging.core.impl;
 
-import java.io.BufferedInputStream;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.InputStream;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.sql.Types;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-
-import javax.sql.DataSource;
-import javax.transaction.TransactionManager;
-import javax.transaction.xa.Xid;
-
 import org.jboss.jms.tx.MessagingXid;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.contract.Message;
@@ -63,16 +35,22 @@ import org.jboss.messaging.util.JDBCUtil;
 import org.jboss.messaging.util.StreamUtils;
 import org.jboss.messaging.util.Util;
 
+import javax.transaction.xa.Xid;
+import java.io.*;
+import java.sql.*;
+import java.util.*;
+
 /**
  * JDBC implementation of PersistenceManager
- * 
+ *
  * @author <a href="mailto:ovidiu@jboss.org">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:adrian@jboss.org">Adrian Brock</a>
  * @author <a href="mailto:juha@jboss.org">Juha Lindfors</a>
- * 
+ * @author <a href="ataylor@redhat.com">Andy Taylor</a>
+ *
  * @version <tt>1.1</tt>
- * 
+ *
  * JDBCPersistenceManager.java,v 1.1 2006/02/22 17:33:41 timfox Exp
  */
 public class JDBCPersistenceManager extends JDBCSupport implements
@@ -91,7 +69,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements
 
    private boolean usingTrailingByte = false;
 
-   private int maxParams;
+   private int maxParams = 100;
 
    private short orderCount;
 
@@ -99,32 +77,11 @@ public class JDBCPersistenceManager extends JDBCSupport implements
 
    private boolean nodeIDSet;
 
-   // Some versions of the oracle driver don't support binding blobs on select
-   // clauses,
-   // what would force us to use a two stage insert (insert and if successful,
-   // update)
-   private boolean supportsBlobSelect;
+   // Some versions of the oracle driver don't support binding blobs on select clauses,
+   // what would force us to use a two stage insert (insert and if successful, update)
+   private boolean supportsBlobSelect = true;
 
    // Constructors --------------------------------------------------
-
-   public JDBCPersistenceManager(DataSource ds, TransactionManager tm,
-         Properties sqlProperties, boolean createTablesOnStartup,
-         boolean usingBatchUpdates, boolean usingBinaryStream,
-         boolean usingTrailingByte, int maxParams, boolean supportsBlobSelect)
-   {
-      super(ds, tm, sqlProperties, createTablesOnStartup);
-
-      // usingBatchUpdates is currently ignored due to sketchy support from
-      // databases
-
-      this.usingBinaryStream = usingBinaryStream;
-
-      this.usingTrailingByte = usingTrailingByte;
-
-      this.maxParams = maxParams;
-
-      this.supportsBlobSelect = supportsBlobSelect;
-   }
 
    // MessagingComponent overrides ---------------------------------
 
@@ -406,26 +363,26 @@ public class JDBCPersistenceManager extends JDBCSupport implements
                else
                {
                   long nextId = rs.getLong(1);
-   
+
                   rs.close();
                   ps.close();
-   
+
                   String updateCounterSQL = getSQLStatement("UPDATE_COUNTER");
-   
+
                   ps = conn.prepareStatement(updateCounterSQL);
-   
+
                   ps.setLong(1, nextId + size);
                   ps.setString(2, counterName);
-   
+
                   int rows = ps.executeUpdate();
-   
+
                   if (trace)
                   {
                      log.trace(JDBCUtil.statementToString(updateCounterSQL,
                            new Long(nextId + size), counterName)
                            + " updated " + rows + " rows");
                   }
-   
+
                   return nextId;
                }
             }
@@ -1108,55 +1065,55 @@ public class JDBCPersistenceManager extends JDBCSupport implements
             {
                /*
                 * If channel is paging and has full size f
-                * 
+                *
                 * then we don't need to load any refs but we need to:
-                * 
+                *
                 * make sure the page ord is correct across the old paged and new
                 * refs
-                * 
+                *
                 * we know the max page ord (from the channel) for the old refs
                 * so we just need to:
-                * 
+                *
                 * 1) Iterate through the failed channel and update page_ord =
                 * max + 1, max + 2 etc
-                * 
+                *
                 * 2) update channel id
-                * 
-                * 
+                *
+                *
                 * If channel is not paging and the total refs before and after
                 * <=f
-                * 
+                *
                 * 1) Load all refs from failed channel
-                * 
+                *
                 * 2) Update channel id
-                * 
+                *
                 * return those refs
-                * 
-                * 
+                *
+                *
                 * If channel is not paging but total new refs > f
-                * 
+                *
                 * 1) Iterate through failed channel refs and take the first x to
                 * make the channel full
-                * 
+                *
                 * 2) Update the others with page_ord starting at zero
-                * 
+                *
                 * 3) Update channel id
-                * 
+                *
                 * In general:
-                * 
+                *
                 * We have number to load n, max page size p
-                * 
+                *
                 * 1) Iterate through failed channel refs in page_ord order
-                * 
+                *
                 * 2) Put the first n in a List.
-                * 
+                *
                 * 3) Initialise page_ord_count to be p or 0 depending on whether
                 * it was specified
-                * 
+                *
                 * 4) Update the page_ord of the remaining refs accordiningly
-                * 
+                *
                 * 5) Update the channel id
-                * 
+                *
                 */
 
                // First load the refs from the failed channel
@@ -1283,7 +1240,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements
          final Transaction tx) throws Exception
    {
       if (trace) { log.trace("Adding reference " + ref + " in channel " + channelID + " tx " + tx); }
-      
+
       class AddReferenceRunner extends JDBCTxRunner2
       {
          public Object doTransaction() throws Exception
@@ -1317,24 +1274,19 @@ public class JDBCPersistenceManager extends JDBCSupport implements
                   storeMessage(m, psInsertMessage, true);
                   rows = psInsertMessage.executeUpdate();
 
-                  if (trace)
-                  {
-                     log.trace("Inserted/updated " + rows + " rows");
-                  }
+		            if (trace) { log.trace("Inserted/updated " + rows + " rows"); }
 
-                  log.trace("message Inserted/updated " + rows + " rows");
+		            log.trace("message Inserted/updated " + rows + " rows");
 
-                  // Needs to be at the end - in case an exception is thrown in
-                  // which case retry will be attempted and we want to insert it
-                  // again
-                  m.setPersisted(true);
-               }
+		            //Needs to be at the end - in case an exception is thrown in which case retry will be attempted and we want to insert it again
+	               m.setPersisted(true);
+	            }
 
-               return null;
-            }
-            finally
-            {
-               closeStatement(psReference);
+	            return null;
+	         }
+	         finally
+	         {
+	         	closeStatement(psReference);
                closeStatement(psInsertMessage);
             }
          }
@@ -1353,22 +1305,22 @@ public class JDBCPersistenceManager extends JDBCSupport implements
          new AddReferenceRunner().executeWithRetry();
       }
    }
-   
+
    public void moveReference(final long sourceChannelID, final long destChannelID, final MessageReference ref)
       throws Exception
    {
       if (trace) { log.trace("Moving reference " + ref + " from " + sourceChannelID + " to " + destChannelID); }
-      
+
       class MoveReferenceRunner extends JDBCTxRunner2
       {
          public Object doTransaction() throws Exception
          {
             PreparedStatement psReference = null;
-            
+
             try
             {
                psReference = conn.prepareStatement(getSQLStatement("MOVE_REFERENCE"));
-               
+
                psReference.setLong(1, destChannelID);
                psReference.setLong(2, sourceChannelID);
                psReference.setLong(3, ref.getMessage().getMessageID());
@@ -1389,7 +1341,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements
          }
       }
 
-      new MoveReferenceRunner().executeWithRetry();      
+      new MoveReferenceRunner().executeWithRetry();
    }
 
    public void updateDeliveryCount(final long channelID,
@@ -1435,7 +1387,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements
          final MessageReference ref, final Transaction tx) throws Exception
    {
       if (trace) { log.trace("Removing reference " + ref + " in channel " + channelID + " tx " + tx); }
-      
+
       class RemoveReferenceRunner extends JDBCTxRunner2
       {
          public Object doTransaction() throws Exception
@@ -1895,7 +1847,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements
                }
 
                ps.close();
- 
+
                ps = conn
                      .prepareStatement(getSQLStatement("ROLLBACK_MESSAGE_REF2"));
                ps.setLong(1, tx.getId());
@@ -2138,11 +2090,11 @@ public class JDBCPersistenceManager extends JDBCSupport implements
       ps.setLong(3, m.getExpiration());
       ps.setLong(4, m.getTimestamp());
       ps.setByte(5, m.getPriority());
-      ps.setByte(6, m.getType());     
+      ps.setByte(6, m.getType());
 
       if (bindBlobs)
       {
-         bindBlobs(m, ps, 7, 8);
+         bindBlobs(m, ps, 7,8);
       }
    }
 
@@ -2845,4 +2797,73 @@ public class JDBCPersistenceManager extends JDBCSupport implements
       }
    }
 
+   public boolean isUsingBinaryStream()
+   {
+      return usingBinaryStream;
+   }
+
+   public void setUsingBinaryStream(boolean usingBinaryStream)
+   {
+      this.usingBinaryStream = usingBinaryStream;
+   }
+
+   public boolean isUsingTrailingByte()
+   {
+      return usingTrailingByte;
+   }
+
+   public void setUsingTrailingByte(boolean usingTrailingByte)
+   {
+      this.usingTrailingByte = usingTrailingByte;
+   }
+
+   public int getMaxParams()
+   {
+      return maxParams;
+   }
+
+   public void setMaxParams(int maxParams)
+   {
+      this.maxParams = maxParams;
+   }
+
+   public short getOrderCount()
+   {
+      return orderCount;
+   }
+
+   public void setOrderCount(short orderCount)
+   {
+      this.orderCount = orderCount;
+   }
+
+   public int getNodeID()
+   {
+      return nodeID;
+   }
+
+   public void setNodeID(int nodeID)
+   {
+      this.nodeID = nodeID;
+   }
+
+   public boolean isNodeIDSet()
+   {
+      return nodeIDSet;
+   }
+
+   public void setNodeIDSet(boolean nodeIDSet)
+   {
+      this.nodeIDSet = nodeIDSet;
+   }
+
+   public boolean isSupportsBlobSelect()
+   {
+      return supportsBlobSelect;
+   }
+
+   public void setSupportsBlobSelect(boolean supportsBlobSelect)
+   {
+      this.supportsBlobSelect = supportsBlobSelect;
+   }
 }

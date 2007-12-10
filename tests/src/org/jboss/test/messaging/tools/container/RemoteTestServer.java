@@ -68,10 +68,11 @@ public class RemoteTestServer extends LocalTestServer
    /**
     * Only for in-VM use!
     */
-   public PersistenceManager getPersistenceManager() throws Exception
+   public PersistenceManager getPersistenceManager()
    {
       throw new UnsupportedOperationException("This method shouldn't be invoked on a remote server");
    }
+
 
    // Public ---------------------------------------------------------------------------------------
 

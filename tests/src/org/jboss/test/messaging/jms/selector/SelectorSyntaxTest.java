@@ -23,7 +23,7 @@ package org.jboss.test.messaging.jms.selector;
 
 import org.jboss.jms.message.JBossMessage;
 import org.jboss.jms.server.selector.Selector;
-import org.jboss.test.messaging.MessagingTestCase;
+import org.jboss.test.messaging.JBMBaseTestCase;
 
 /**
  * Tests the complinace with the JMS Selector syntax.
@@ -35,7 +35,7 @@ import org.jboss.test.messaging.MessagingTestCase;
  * @version $Revision$
  */
 public class SelectorSyntaxTest
-   extends MessagingTestCase
+   extends JBMBaseTestCase
 {
    private Selector selector;
    private JBossMessage message;

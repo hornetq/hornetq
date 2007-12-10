@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<deployment xmlns="urn:jboss:bean-deployer:2.0">
+   <!--<bean name="jboss.jca:name=DefaultDS,service=DataSourceBinding" class="org.hsqldb.jdbc.jdbcDataSource">
+      <property name="database">jdbc:hsqldb:file:myHSQLDBInstance</property>
+      <property name="user">sa</property>
+   </bean>-->
+   <bean name="jboss.jca:name=DefaultDS,service=DataSourceBinding" class="com.mysql.jdbc.jdbc2.optional.MysqlDataSource">
+      <property name="url">jdbc:mysql://localhost/messaging</property>
+      <property name="user">andy</property>
+   </bean>
+</deployment>

@@ -25,7 +25,7 @@ import javax.jms.Message;
 import javax.jms.TemporaryQueue;
 
 /**
- * 
+ *
  * A JMSReplyToHeaderTest
 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -39,7 +39,7 @@ public class JMSReplyToHeaderTest extends MessageHeaderTestBase
    // Constants -----------------------------------------------------
 
    // Static --------------------------------------------------------
-   
+
    // Attributes ----------------------------------------------------
 
    // Constructors --------------------------------------------------
@@ -57,28 +57,28 @@ public class JMSReplyToHeaderTest extends MessageHeaderTestBase
       Message m = queueProducerSession.createMessage();
       TemporaryQueue tempQ = queueProducerSession.createTemporaryQueue();
       m.setJMSReplyTo(tempQ);
-      
+
       queueProducer.send(m);
       queueConsumer.receive();
       assertEquals(tempQ, m.getJMSReplyTo());
    }
-   
+
    public void testJMSDestinationNull() throws Exception
    {
       Message m = queueProducerSession.createMessage();
       m.setJMSReplyTo(null);
-      
+
       queueProducer.send(m);
       queueConsumer.receive();
       assertNull(m.getJMSReplyTo());
    }
-   
+
    // Package protected ---------------------------------------------
-   
+
    // Protected -----------------------------------------------------
-   
+
    // Private -------------------------------------------------------
-   
+
    // Inner classes -------------------------------------------------
 
 }

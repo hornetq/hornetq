@@ -21,31 +21,23 @@
  */
 package org.jboss.jms.server.endpoint;
 
-import javax.jms.IllegalStateException;
-import javax.jms.InvalidSelectorException;
-import javax.jms.JMSException;
-
 import org.jboss.jms.delegate.ConsumerEndpoint;
 import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.message.JBossMessage;
 import org.jboss.jms.server.ServerPeer;
 import org.jboss.jms.server.destination.ManagedDestination;
-import org.jboss.jms.server.destination.TopicService;
 import org.jboss.jms.server.messagecounter.MessageCounter;
 import org.jboss.jms.server.selector.Selector;
 import org.jboss.jms.wireformat.Dispatcher;
 import org.jboss.logging.Logger;
-import org.jboss.messaging.core.contract.Delivery;
-import org.jboss.messaging.core.contract.DeliveryObserver;
-import org.jboss.messaging.core.contract.Message;
-import org.jboss.messaging.core.contract.MessageReference;
-import org.jboss.messaging.core.contract.PostOffice;
-import org.jboss.messaging.core.contract.Queue;
-import org.jboss.messaging.core.contract.Receiver;
-import org.jboss.messaging.core.contract.Replicator;
+import org.jboss.messaging.core.contract.*;
 import org.jboss.messaging.core.impl.SimpleDelivery;
 import org.jboss.messaging.core.impl.tx.Transaction;
 import org.jboss.messaging.util.ExceptionUtil;
+
+import javax.jms.IllegalStateException;
+import javax.jms.InvalidSelectorException;
+import javax.jms.JMSException;
 
 /**
  * Concrete implementation of ConsumerEndpoint. Lives on the boundary between Messaging Core and the
@@ -110,10 +102,12 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
    private boolean slow;
    
    private volatile boolean dead;
+
+   private ServerPeer sp;
    
    // Constructors ---------------------------------------------------------------------------------
 
-   ServerConsumerEndpoint(String id, Queue messageQueue, String queueName,
+   ServerConsumerEndpoint(ServerPeer sp,String id, Queue messageQueue, String queueName,
 					           ServerSessionEndpoint sessionEndpoint, String selector,
 					           boolean noLocal, JBossDestination dest, Queue dlq,
 					           Queue expiryQueue, long redeliveryDelay, int maxDeliveryAttempts,
@@ -123,7 +117,7 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
       {
          log.trace("constructing consumer endpoint " + id);
       }
-
+      this.sp = sp;
       this.id = id;
 
       this.messageQueue = messageQueue;
@@ -151,7 +145,7 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
 
       this.startStopLock = new Object();
 
-      this.preserveOrdering = sessionEndpoint.getConnectionEndpoint().getServerPeer().isDefaultPreserveOrdering();
+      this.preserveOrdering = sp.getConfiguration().isDefaultPreserveOrdering();
       
       this.replicating = replicating;
       
@@ -524,7 +518,7 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
 
       if (destination.isTopic())
       {
-         PostOffice postOffice = sessionEndpoint.getConnectionEndpoint().getServerPeer().getPostOfficeInstance();
+         PostOffice postOffice = sessionEndpoint.getConnectionEndpoint().getServerPeer().getPostOffice();
                   
          ServerPeer sp = sessionEndpoint.getConnectionEndpoint().getServerPeer();
          
@@ -538,7 +532,7 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
 
             if (!mDest.isTemporary())
             {
-	            String counterName = TopicService.SUBSCRIPTION_MESSAGECOUNTER_PREFIX + queueName;
+	            String counterName = ManagedDestination.SUBSCRIPTION_MESSAGECOUNTER_PREFIX + queueName;
 	
 	            MessageCounter counter = sp.getMessageCounterManager().unregisterMessageCounter(counterName);
 	
@@ -552,7 +546,7 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
          {
          	//Durable sub consumer
          	
-         	if (queue.isClustered() && postOffice.isClustered())
+         	if (queue.isClustered() && sp.getConfiguration().isClustered())
             {
             	//Clustered durable sub consumer created - we need to remove this info from the replicator
             	

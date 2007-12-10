@@ -21,8 +21,7 @@
   */
 package org.jboss.jms.client.container;
 
-import javax.jms.MessageListener;
-
+import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
 import org.jboss.aop.joinpoint.Invocation;
 import org.jboss.aop.joinpoint.MethodInvocation;
 import org.jboss.jms.client.delegate.DelegateSupport;
@@ -37,7 +36,7 @@ import org.jboss.jms.exception.MessagingShutdownException;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.util.MessageQueueNameHelper;
 
-import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
+import javax.jms.MessageListener;
 
 /**
  * 
@@ -58,7 +57,7 @@ public class ConsumerAspect
    private static final Logger log = Logger.getLogger(ConsumerAspect.class);
 
    
-   // Static ---------------------------------------------------------------------------------------
+   // Static ----------------------------------------------------------------------------------------
 
    // Attributes -----------------------------------------------------------------------------------
 
@@ -205,7 +204,7 @@ public class ConsumerAspect
       return null;
    }
    
-   public MessageListener handleGetMessageListener(Invocation invocation) throws Throwable
+   public Object handleGetMessageListener(Invocation invocation) throws Throwable
    {       
       return getClientConsumer(invocation).getMessageListener();
    }

@@ -21,31 +21,14 @@
  */
 package org.jboss.test.messaging.jms;
 
-import javax.jms.BytesMessage;
-import javax.jms.Connection;
-import javax.jms.DeliveryMode;
-import javax.jms.InvalidSelectorException;
-import javax.jms.Message;
-import javax.jms.MessageConsumer;
-import javax.jms.MessageProducer;
-import javax.jms.QueueConnection;
-import javax.jms.QueueReceiver;
-import javax.jms.QueueSender;
-import javax.jms.QueueSession;
-import javax.jms.Session;
-import javax.jms.TextMessage;
-import javax.jms.TopicConnection;
-import javax.jms.TopicSession;
-import javax.naming.InitialContext;
-import javax.management.ObjectName;
-
+import org.jboss.jms.client.JBossConnectionFactory;
+import org.jboss.test.messaging.JBMServerTestCase;
 import org.jboss.test.messaging.jms.message.SimpleJMSBytesMessage;
 import org.jboss.test.messaging.jms.message.SimpleJMSMessage;
 import org.jboss.test.messaging.jms.message.SimpleJMSTextMessage;
 import org.jboss.test.messaging.tools.container.ServiceAttributeOverrides;
-import org.jboss.test.messaging.tools.container.ServiceContainer;
-import org.jboss.test.messaging.tools.ServerManagement;
-import org.jboss.jms.client.JBossConnectionFactory;
+
+import javax.jms.*;
 
 /**
  * Safeguards for previously detected TCK failures.
@@ -56,7 +39,7 @@ import org.jboss.jms.client.JBossConnectionFactory;
  *
  * $Id$
  */
-public class CTSMiscellaneousTest extends JMSTestCase
+public class CTSMiscellaneousTest extends JBMServerTestCase
 {
 	// Constants -----------------------------------------------------
 
@@ -65,7 +48,7 @@ public class CTSMiscellaneousTest extends JMSTestCase
 	// Attributes ----------------------------------------------------
 	protected static JBossConnectionFactory cf;
 	protected ServiceAttributeOverrides overrides;
-	private static final String ORG_JBOSS_MESSAGING_SERVICE_LBCONNECTION_FACTORY = "org.jboss.messaging:service=StrictTckConnectionFactory";
+	private static final String ORG_JBOSS_MESSAGING_SERVICE_LBCONNECTION_FACTORY = "StrictTCKConnectionFactory";
 
 	// Constructors --------------------------------------------------
 
@@ -80,9 +63,8 @@ public class CTSMiscellaneousTest extends JMSTestCase
 		{
 			super.setUp();
 			//Deploy a connection factory with load balancing but no failover on node0
-			ServerManagement.getServer(0).deployConnectionFactory(ORG_JBOSS_MESSAGING_SERVICE_LBCONNECTION_FACTORY,
-					new String[] { "/StrictTCKConnectionFactory" }, true);
-			cf = (JBossConnectionFactory) ic.lookup("/StrictTCKConnectionFactory");
+         deployConnectionFactory("StrictTCKConnectionFactory", new String[]{"StrictTCKConnectionFactory"}, true);
+         cf = (JBossConnectionFactory) getInitialContext().lookup("/StrictTCKConnectionFactory");
 		}
 		catch (Exception e)
 		{
@@ -337,7 +319,7 @@ public class CTSMiscellaneousTest extends JMSTestCase
 	protected void tearDown() throws Exception
 	{
 		super.tearDown();
-		ServerManagement.undeployConnectionFactory(new ObjectName(ORG_JBOSS_MESSAGING_SERVICE_LBCONNECTION_FACTORY));
+		undeployConnectionFactory(ORG_JBOSS_MESSAGING_SERVICE_LBCONNECTION_FACTORY);
 	}
 
 	// Package protected ---------------------------------------------

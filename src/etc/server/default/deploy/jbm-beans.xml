@@ -1,0 +1,448 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<deployment xmlns="urn:jboss:bean-deployer:2.0">
+
+   <bean name="Configuration" class="org.jboss.jms.server.Configuration"/>
+
+   <bean name="ServiceLocator" class="org.jboss.jms.server.microcontainer.ServiceLocator">
+      <demand>jboss.jca:name=DefaultDS,service=DataSourceBinding</demand>
+      <depends>jboss:service=TransactionManager</depends>
+      <!-- <depends>jboss.jca:service=DataSourceBinding,name=DefaultDS</depends>-->
+   </bean>
+
+   <bean name="ServerPeerStatistics" class="org.jboss.jms.server.ServerPeerStatistics">
+      <property name="serverPeer">
+         <inject bean="ServerPeer"/>
+      </property>
+   </bean>
+
+   <bean name="ServerPeer" class="org.jboss.jms.server.ServerPeer">
+      <depends>Remoting</depends>
+      <property name="persistenceManager">
+         <inject bean="PersistenceManager"/>
+      </property>
+      <property name="postOffice">
+         <inject bean="PostOffice"/>
+      </property>
+      <property name="clusterNotifier">
+         <inject bean="ClusterNotifier"/>
+      </property>
+      <property name="jmsUserManager">
+         <inject bean="JMSUserManager"/>
+      </property>
+      <property name="connector">
+         <inject bean="Remoting"/>
+      </property>
+      <property name="configuration">
+         <inject bean="Configuration"/>
+      </property>
+   </bean>
+
+
+   <bean name="PersistenceManager" class="org.jboss.messaging.core.impl.JDBCPersistenceManager">
+      <property name="tm">
+         <inject bean="ServiceLocator" property="transactionManager"/>
+      </property>
+      <property name="ds">
+         <inject bean="ServiceLocator" property="dataSource"/>
+      </property>
+      <property name="createTablesOnStartup">true</property>
+      <property name="maxParams">500</property>
+      <property name="sqlProperties">
+         <map class="java.util.Properties" keyClass="java.lang.String" valueClass="java.lang.String">
+            <entry>
+               <key>CREATE_DUAL</key>
+               <value>CREATE TABLE JBM_DUAL (DUMMY INTEGER, PRIMARY KEY (DUMMY)) ENGINE = INNODB</value>
+            </entry>
+            <entry>
+               <key>CREATE_MESSAGE_REFERENCE</key>
+               <value>CREATE TABLE JBM_MSG_REF (CHANNEL_ID BIGINT, MESSAGE_ID BIGINT, TRANSACTION_ID BIGINT, STATE
+                  CHAR(1), ORD BIGINT, PAGE_ORD BIGINT, DELIVERY_COUNT INTEGER, SCHED_DELIVERY BIGINT, PRIMARY
+                  KEY(CHANNEL_ID, MESSAGE_ID)) ENGINE = INNODB
+               </value>
+            </entry>
+            <entry>
+               <key>CREATE_IDX_MESSAGE_REF_TX</key>
+               <value>CREATE INDEX JBM_MSG_REF_TX ON JBM_MSG_REF (TRANSACTION_ID)</value>
+            </entry>
+            <entry>
+               <key>CREATE_IDX_MESSAGE_REF_ORD</key>
+               <value>CREATE INDEX JBM_MSG_REF_ORD ON JBM_MSG_REF (ORD)</value>
+            </entry>
+            <entry>
+               <key>CREATE_IDX_MESSAGE_REF_PAGE_ORD</key>
+               <value>CREATE INDEX JBM_MSG_REF_PAGE_ORD ON JBM_MSG_REF (PAGE_ORD)</value>
+            </entry>
+            <entry>
+               <key>CREATE_IDX_MESSAGE_REF_MESSAGE_ID</key>
+               <value>CREATE INDEX JBM_MSG_REF_MESSAGE_ID ON JBM_MSG_REF (MESSAGE_ID)</value>
+            </entry>
+            <entry>
+               <key>CREATE_IDX_MESSAGE_REF_SCHED_DELIVERY</key>
+               <value>CREATE INDEX JBM_MSG_REF_SCHED_DELIVERY ON JBM_MSG_REF (SCHED_DELIVERY)</value>
+            </entry>
+            <entry>
+               <key>CREATE_MESSAGE</key>
+               <value>CREATE TABLE JBM_MSG (MESSAGE_ID BIGINT, RELIABLE CHAR(1), EXPIRATION BIGINT, TIMESTAMP BIGINT,
+                  PRIORITY TINYINT, TYPE TINYINT, HEADERS MEDIUMBLOB, PAYLOAD LONGBLOB, PRIMARY KEY (MESSAGE_ID)) ENGINE
+                  = INNODB
+               </value>
+            </entry>
+            <entry>
+               <key>CREATE_TRANSACTION</key>
+               <value>CREATE TABLE JBM_TX (NODE_ID INTEGER, TRANSACTION_ID BIGINT, BRANCH_QUAL VARBINARY(254), FORMAT_ID
+                  INTEGER, GLOBAL_TXID VARBINARY(254), PRIMARY KEY (TRANSACTION_ID)) ENGINE = INNODB
+               </value>
+            </entry>
+            <entry>
+               <key>CREATE_COUNTER</key>
+               <value>CREATE TABLE JBM_COUNTER (NAME VARCHAR(255), NEXT_ID BIGINT, PRIMARY KEY(NAME)) ENGINE = INNODB
+               </value>
+            </entry>
+            <entry>
+               <key>INSERT_DUAL</key>
+               <value>INSERT INTO JBM_DUAL VALUES (1)</value>
+            </entry>
+            <entry>
+               <key>CHECK_DUAL</key>
+               <value>SELECT 1 FROM JBM_DUAL</value>
+            </entry>
+            <entry>
+               <key>INSERT_MESSAGE_REF</key>
+               <value>INSERT INTO JBM_MSG_REF (CHANNEL_ID, MESSAGE_ID, TRANSACTION_ID, STATE, ORD, PAGE_ORD,
+                  DELIVERY_COUNT, SCHED_DELIVERY) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+               </value>
+            </entry>
+            <entry>
+               <key>DELETE_MESSAGE_REF</key>
+               <value>DELETE FROM JBM_MSG_REF WHERE MESSAGE_ID=? AND CHANNEL_ID=? AND STATE='C'</value>
+            </entry>
+            <entry>
+               <key>UPDATE_MESSAGE_REF</key>
+               <value>UPDATE JBM_MSG_REF SET TRANSACTION_ID=?, STATE='-' WHERE MESSAGE_ID=? AND CHANNEL_ID=? AND
+                  STATE='C'
+               </value>
+            </entry>
+            <entry>
+               <key>UPDATE_PAGE_ORDER</key>
+               <value>UPDATE JBM_MSG_REF SET PAGE_ORD = ? WHERE MESSAGE_ID=? AND CHANNEL_ID=?</value>
+            </entry>
+            <entry>
+               <key>COMMIT_MESSAGE_REF1</key>
+               <value>UPDATE JBM_MSG_REF SET STATE='C', TRANSACTION_ID = NULL WHERE TRANSACTION_ID=? AND STATE='+'
+               </value>
+            </entry>
+            <entry>
+               <key>COMMIT_MESSAGE_REF2</key>
+               <value>DELETE FROM JBM_MSG_REF WHERE TRANSACTION_ID=? AND STATE='-'</value>
+            </entry>
+            <entry>
+               <key>ROLLBACK_MESSAGE_REF1</key>
+               <value>DELETE FROM JBM_MSG_REF WHERE TRANSACTION_ID=? AND STATE='+'</value>
+            </entry>
+            <entry>
+               <key>ROLLBACK_MESSAGE_REF2</key>
+               <value>UPDATE JBM_MSG_REF SET STATE='C', TRANSACTION_ID = NULL WHERE TRANSACTION_ID=? AND STATE='-'
+               </value>
+            </entry>
+            <entry>
+               <key>LOAD_PAGED_REFS</key>
+               <value>SELECT MESSAGE_ID, DELIVERY_COUNT, PAGE_ORD, SCHED_DELIVERY FROM JBM_MSG_REF WHERE CHANNEL_ID = ?
+                  AND PAGE_ORD BETWEEN ? AND ? ORDER BY PAGE_ORD
+               </value>
+            </entry>
+            <entry>
+               <key>LOAD_UNPAGED_REFS</key>
+               <value>SELECT MESSAGE_ID, DELIVERY_COUNT, SCHED_DELIVERY FROM JBM_MSG_REF WHERE STATE = 'C' AND
+                  CHANNEL_ID = ? AND PAGE_ORD IS NULL ORDER BY ORD
+               </value>
+            </entry>
+            <entry>
+               <key>LOAD_REFS</key>
+               <value>SELECT MESSAGE_ID, DELIVERY_COUNT, SCHED_DELIVERY FROM JBM_MSG_REF WHERE STATE = 'C' AND
+                  CHANNEL_ID = ? ORDER BY ORD
+               </value>
+            </entry>
+            <entry>
+               <key>UPDATE_REFS_NOT_PAGED</key>
+               <value>UPDATE JBM_MSG_REF SET PAGE_ORD = NULL WHERE PAGE_ORD BETWEEN ? AND ? AND CHANNEL_ID=?</value>
+            </entry>
+            <entry>
+               <key>SELECT_MIN_MAX_PAGE_ORD</key>
+               <value>SELECT MIN(PAGE_ORD), MAX(PAGE_ORD) FROM JBM_MSG_REF WHERE CHANNEL_ID = ?</value>
+            </entry>
+            <entry>
+               <key>SELECT_EXISTS_REF_MESSAGE_ID</key>
+               <value>SELECT MESSAGE_ID FROM JBM_MSG_REF WHERE MESSAGE_ID = ?</value>
+            </entry>
+            <entry>
+               <key>UPDATE_DELIVERY_COUNT</key>
+               <value>UPDATE JBM_MSG_REF SET DELIVERY_COUNT = ? WHERE CHANNEL_ID = ? AND MESSAGE_ID = ?</value>
+            </entry>
+            <entry>
+               <key>UPDATE_CHANNEL_ID</key>
+               <value>UPDATE JBM_MSG_REF SET CHANNEL_ID = ? WHERE CHANNEL_ID = ?</value>
+            </entry>
+            <entry>
+               <key>MOVE_REFERENCE</key>
+               <value>UPDATE JBM_MSG_REF SET CHANNEL_ID = ? WHERE CHANNEL_ID = ? AND MESSAGE_ID = ?</value>
+            </entry>
+            <entry>
+               <key>LOAD_MESSAGES</key>
+               <value>SELECT MESSAGE_ID, RELIABLE, EXPIRATION, TIMESTAMP, PRIORITY, HEADERS, PAYLOAD, TYPE FROM JBM_MSG
+               </value>
+            </entry>
+            <entry>
+               <key>INSERT_MESSAGE</key>
+               <value>INSERT INTO JBM_MSG (MESSAGE_ID, RELIABLE, EXPIRATION, TIMESTAMP, PRIORITY, TYPE, HEADERS,
+                  PAYLOAD) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+               </value>
+            </entry>
+            <entry>
+               <key>INSERT_MESSAGE_CONDITIONAL</key>
+               <value>INSERT INTO JBM_MSG (MESSAGE_ID, RELIABLE, EXPIRATION, TIMESTAMP, PRIORITY, TYPE) SELECT ?, ?, ?,
+                  ?, ?, ? FROM JBM_DUAL WHERE NOT EXISTS (SELECT MESSAGE_ID FROM JBM_MSG WHERE MESSAGE_ID = ?)
+               </value>
+            </entry>
+            <entry>
+               <key>UPDATE_MESSAGE_4CONDITIONAL</key>
+               <value>UPDATE JBM_MSG SET HEADERS=?, PAYLOAD=? WHERE MESSAGE_ID=?</value>
+            </entry>
+            <entry>
+               <key>INSERT_MESSAGE_CONDITIONAL_FULL</key>
+               <value>INSERT INTO JBM_MSG (MESSAGE_ID, RELIABLE, EXPIRATION, TIMESTAMP, PRIORITY, TYPE, HEADERS,
+                  PAYLOAD) SELECT ?, ?, ?, ?, ?, ?, ?, ? FROM JBM_DUAL WHERE NOT EXISTS (SELECT MESSAGE_ID FROM JBM_MSG
+                  WHERE MESSAGE_ID = ?)
+               </value>
+            </entry>
+            <entry>
+               <key>MESSAGE_ID_COLUMN</key>
+               <value>
+                  MESSAGE_ID
+               </value>
+            </entry>
+            <entry>
+               <key>DELETE_MESSAGE</key>
+               <value>DELETE FROM JBM_MSG WHERE MESSAGE_ID = ? AND NOT EXISTS (SELECT * FROM JBM_MSG_REF WHERE
+                  JBM_MSG_REF.MESSAGE_ID = ?)
+               </value>
+            </entry>
+            <entry>
+               <key>INSERT_TRANSACTION</key>
+               <value>INSERT INTO JBM_TX (NODE_ID, TRANSACTION_ID, BRANCH_QUAL, FORMAT_ID, GLOBAL_TXID) VALUES(?, ?, ?,
+                  ?, ?)
+               </value>
+            </entry>
+            <entry>
+               <key>DELETE_TRANSACTION</key>
+               <value>DELETE FROM JBM_TX WHERE NODE_ID = ? AND TRANSACTION_ID = ?</value>
+            </entry>
+            <entry>
+               <key>SELECT_PREPARED_TRANSACTIONS</key>
+               <value>SELECT TRANSACTION_ID, BRANCH_QUAL, FORMAT_ID, GLOBAL_TXID FROM JBM_TX WHERE NODE_ID = ?</value>
+            </entry>
+            <entry>
+               <key>SELECT_MESSAGE_ID_FOR_REF</key>
+               <value>SELECT MESSAGE_ID, CHANNEL_ID FROM JBM_MSG_REF WHERE TRANSACTION_ID = ? AND STATE = '+' ORDER BY
+                  ORD
+               </value>
+            </entry>
+            <entry>
+               <key>SELECT_MESSAGE_ID_FOR_ACK</key>
+               <value>SELECT MESSAGE_ID, CHANNEL_ID FROM JBM_MSG_REF WHERE TRANSACTION_ID = ? AND STATE = '-' ORDER BY
+                  ORD
+               </value>
+            </entry>
+            <entry>
+               <key>UPDATE_COUNTER</key>
+               <value>UPDATE JBM_COUNTER SET NEXT_ID = ? WHERE NAME=?</value>
+            </entry>
+            <entry>
+               <key>SELECT_COUNTER</key>
+               <value>SELECT NEXT_ID FROM JBM_COUNTER WHERE NAME=? FOR UPDATE</value>
+            </entry>
+            <entry>
+               <key>INSERT_COUNTER</key>
+               <value>INSERT INTO JBM_COUNTER (NAME, NEXT_ID) VALUES (?, ?)</value>
+            </entry>
+            <entry>
+               <key>SELECT_ALL_CHANNELS</key>
+               <value>SELECT DISTINCT(CHANNEL_ID) FROM JBM_MSG_REF</value>
+            </entry>
+            <entry>
+               <key>UPDATE_TX</key>
+               <value>UPDATE JBM_TX SET NODE_ID=? WHERE NODE_ID=?</value>
+            </entry>
+         </map>
+      </property>
+   </bean>
+
+   <bean name="JMSUserManager" class="org.jboss.jms.server.plugin.JDBCJMSUserManager">
+      <property name="createTablesOnStartup">true</property>
+      <property name="ds">
+         <inject bean="ServiceLocator" property="dataSource"/>
+      </property>
+      <property name="tm">
+         <inject bean="ServiceLocator" property="transactionManager"/>
+      </property>
+      <property name="sqlProperties">
+         <map class="java.util.Properties" keyClass="java.lang.String" valueClass="java.lang.String">
+            <entry>
+               <key>POPULATE.TABLES.1</key>
+               <value>INSERT INTO JBM_USER (USER_ID,PASSWD,CLIENTID) VALUES ('dilbert','dogbert','dilbert-id')
+               </value>
+            </entry>
+         </map>
+      </property>
+   </bean>
+
+   <bean name="PostOffice" class="org.jboss.messaging.core.impl.postoffice.MessagingPostOffice">
+      <property name="tm">
+         <inject bean="ServiceLocator" property="transactionManager"/>
+      </property>
+      <property name="ds">
+         <inject bean="ServiceLocator" property="dataSource"/>
+      </property>
+      <property name="pm">
+         <inject bean="PersistenceManager"/>
+      </property>
+      <property name="clusterNotifier">
+         <inject bean="ClusterNotifier"/>
+      </property>
+      <property name="configuration">
+         <inject bean="Configuration"/>
+      </property>
+      <property name="channelFactory">
+         <inject bean="JChannelFactory"/>
+      </property>
+
+      <property name="createTablesOnStartup">true</property>
+      <property name="sqlProperties">
+         <map class="java.util.Properties" keyClass="java.lang.String" valueClass="java.lang.String">
+            <entry>
+               <key>CREATE_POSTOFFICE_TABLE</key>
+               <value>CREATE TABLE JBM_POSTOFFICE (POSTOFFICE_NAME VARCHAR(255), NODE_ID INTEGER, QUEUE_NAME
+                  VARCHAR(255), COND VARCHAR(1023), SELECTOR VARCHAR(1023), CHANNEL_ID BIGINT, CLUSTERED CHAR(1),
+                  ALL_NODES CHAR(1), PRIMARY KEY(POSTOFFICE_NAME, NODE_ID, QUEUE_NAME)) ENGINE = INNODB
+               </value>
+            </entry>
+            <entry>
+               <key>INSERT_BINDING</key>
+               <value>INSERT INTO JBM_POSTOFFICE (POSTOFFICE_NAME, NODE_ID, QUEUE_NAME, COND, SELECTOR, CHANNEL_ID,
+                  CLUSTERED, ALL_NODES) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+               </value>
+            </entry>
+            <entry>
+               <key>DELETE_BINDING</key>
+               <value>DELETE FROM JBM_POSTOFFICE WHERE POSTOFFICE_NAME=? AND NODE_ID=? AND QUEUE_NAME=?</value>
+            </entry>
+            <entry>
+               <key>LOAD_BINDINGS</key>
+               <value>SELECT QUEUE_NAME, COND, SELECTOR, CHANNEL_ID, CLUSTERED, ALL_NODES FROM JBM_POSTOFFICE WHERE
+                  POSTOFFICE_NAME=? AND NODE_ID=?
+               </value>
+            </entry>
+         </map>
+      </property>
+
+   </bean>
+
+   <bean name="Remoting" class="org.jboss.jms.server.microcontainer.factory.Connector">
+      <constructor>
+         <parameter>
+            <inject bean="InvokerLocator" property="locatorURI"/>
+         </parameter>
+         <!--<parameter>
+            <inject bean="RemotingConfig"/>
+         </parameter>-->
+      </constructor>
+      <property name="invocationHandler">
+         <inject bean="InvocationHandler"/>
+      </property>
+   </bean>
+
+   <bean name="InvokerLocator" class="org.jboss.remoting.InvokerLocator">
+      <constructor>
+         <parameter>bisocket</parameter>
+         <parameter>localhost</parameter>
+         <parameter>
+            <inject bean="Configuration" property="remotingBindAddress"/>
+         </parameter>
+         <parameter>
+            <null/>
+         </parameter>
+         <parameter class="java.util.Map">
+            <inject bean="RemotingConfig"/>
+         </parameter>
+         <!--<parameter>bisocket://localhost:5400/?marshaller=org.jboss.jms.wireformat.JMSWireFormat&amp;unmarshaller=org.jboss.jms.wireformat.JMSWireFormat&amp;dataType=jms
+         </parameter>-->
+      </constructor>
+   </bean>
+
+   <bean name="InvocationHandler" class="org.jboss.jms.server.remoting.JMSServerInvocationHandler"/>
+
+   <bean name="RemotingConfig" class="java.util.HashMap">
+      <constructor>
+         <parameter class="java.util.Map">
+            <map keyClass="java.lang.String" valueClass="java.lang.String">
+               <entry>
+                  <key>marshaller</key>
+                  <value>org.jboss.jms.wireformat.JMSWireFormat</value>
+               </entry>
+               <entry>
+                  <key>unmarshaller</key>
+                  <value>org.jboss.jms.wireformat.JMSWireFormat</value>
+               </entry>
+               <entry>
+                  <key>dataType</key>
+                  <value>jms</value>
+               </entry>
+               <entry>
+                  <key>socket.check_connection</key>
+                  <value>false</value>
+               </entry>
+               <entry>
+                  <key>timeout</key>
+                  <value>0</value>
+               </entry>
+               <entry>
+                  <key>leasePeriod</key>
+                  <value>10000</value>
+               </entry>
+               <entry>
+                  <key>clientSocketClass</key>
+                  <value>org.jboss.jms.client.remoting.ClientSocketWrapper</value>
+               </entry>
+               <entry>
+                  <key>serverSocketClass</key>
+                  <value>org.jboss.jms.server.remoting.ServerSocketWrapper</value>
+               </entry>
+               <entry>
+                  <key>numberOfRetries</key>
+                  <value>1</value>
+               </entry>
+               <entry>
+                  <key>numberOfCallRetries</key>
+                  <value>1</value>
+               </entry>
+               <entry>
+                  <key>clientMaxPoolSize</key>
+                  <value>50</value>
+               </entry>
+               <entry>
+                  <key>pingFrequency</key>
+                  <value>214748364</value>
+               </entry>
+               <entry>
+                  <key>pingWindowFactor</key>
+                  <value>10</value>
+               </entry>
+            </map>
+         </parameter>
+      </constructor>
+   </bean>
+
+   <bean name="ClusterNotifier" class="org.jboss.messaging.core.impl.DefaultClusterNotifier"/>
+   <bean name="topic" class="org.jboss.jms.server.destination.ManagedTopic"/>
+
+</deployment>

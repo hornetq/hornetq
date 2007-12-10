@@ -6,30 +6,20 @@
  */
 package org.jboss.test.messaging.jms.clustering;
 
-import java.util.HashSet;
+import org.jboss.jms.client.FailoverEvent;
+import org.jboss.jms.client.JBossConnection;
+import org.jboss.test.messaging.tools.ServerManagement;
+import org.jboss.test.messaging.tools.aop.PoisonInterceptor;
+import org.jboss.test.messaging.tools.container.ServiceContainer;
 
-import javax.jms.Connection;
-import javax.jms.Message;
-import javax.jms.MessageConsumer;
-import javax.jms.MessageProducer;
-import javax.jms.Session;
-import javax.jms.TextMessage;
-import javax.jms.XAConnection;
-import javax.jms.XAConnectionFactory;
-import javax.jms.XASession;
+import javax.jms.*;
 import javax.naming.InitialContext;
 import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
 import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
-
-import org.jboss.jms.client.FailoverEvent;
-import org.jboss.jms.client.JBossConnection;
-import org.jboss.test.messaging.tools.ServerManagement;
-import org.jboss.test.messaging.tools.aop.PoisonInterceptor;
-import org.jboss.test.messaging.tools.container.InVMInitialContextFactory;
-import org.jboss.test.messaging.tools.container.ServiceContainer;
+import java.util.HashSet;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -67,12 +57,8 @@ public class XAFailoverTest extends ClusteringTestBase
 
       super.setUp();
 
-      sc = new ServiceContainer("transaction");
-      
-      //Don't drop the tables again!
-      sc.start(false);
    
-      InitialContext localIc = new InitialContext(InVMInitialContextFactory.getJNDIEnvironment());
+      InitialContext localIc = getInitialContext();
            
       tm = (TransactionManager)localIc.lookup(ServiceContainer.TRANSACTION_MANAGER_JNDI_NAME);
       
@@ -84,8 +70,7 @@ public class XAFailoverTest extends ClusteringTestBase
    protected void tearDown() throws Exception
    {
       super.tearDown();
-      
-      sc.stop();
+
       
       if (suspended != null)
       {

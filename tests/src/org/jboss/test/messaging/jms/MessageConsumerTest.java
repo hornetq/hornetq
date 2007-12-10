@@ -21,33 +21,14 @@
   */
 package org.jboss.test.messaging.jms;
 
+import EDU.oswego.cs.dl.util.concurrent.Latch;
+import org.jboss.jms.destination.JBossTopic;
+
+import javax.jms.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-
-import javax.jms.BytesMessage;
-import javax.jms.Connection;
-import javax.jms.DeliveryMode;
-import javax.jms.InvalidDestinationException;
-import javax.jms.JMSException;
-import javax.jms.MapMessage;
-import javax.jms.Message;
-import javax.jms.MessageConsumer;
-import javax.jms.MessageListener;
-import javax.jms.MessageProducer;
-import javax.jms.ObjectMessage;
-import javax.jms.Queue;
-import javax.jms.QueueReceiver;
-import javax.jms.Session;
-import javax.jms.StreamMessage;
-import javax.jms.TextMessage;
-import javax.jms.Topic;
-import javax.jms.TopicSubscriber;
-
-import org.jboss.jms.destination.JBossTopic;
-
-import EDU.oswego.cs.dl.util.concurrent.Latch;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
@@ -2517,7 +2498,7 @@ public class MessageConsumerTest extends JMSTestCase
 //      assertEquals("Should have received all messages after restarting", MESSAGE_COUNT, messagesReceived.get());
 //   }
    
-   // Test that stop doesn't in any way break subsequent close 
+   // Test that stop doesn't in any way break subsequent close
    public void testCloseAfterStop() throws Exception
    {
    	Connection producerConnection = null;

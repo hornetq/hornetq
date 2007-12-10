@@ -6,20 +6,19 @@
  */
 package org.jboss.jms.server.connectionfactory;
 
-import java.util.Map;
-
-import javax.management.ObjectName;
-
 import org.jboss.jms.client.plugin.LoadBalancingFactory;
 import org.jboss.jms.server.ConnectionFactoryManager;
 import org.jboss.jms.server.ConnectionManager;
 import org.jboss.jms.server.ConnectorManager;
 import org.jboss.jms.server.ServerPeer;
+import org.jboss.logging.Logger;
 import org.jboss.messaging.util.ExceptionUtil;
-import org.jboss.messaging.util.JMXAccessor;
+import org.jboss.remoting.ConnectionListener;
 import org.jboss.remoting.InvokerLocator;
-import org.jboss.system.ServiceMBeanSupport;
-import org.w3c.dom.Element;
+import org.jboss.remoting.transport.Connector;
+
+import java.util.List;
+import java.util.Map;
 
 /**
  * A deployable JBoss Messaging connection factory.
@@ -30,21 +29,22 @@ import org.w3c.dom.Element;
  *
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @author <a href="mailto:ataylor@redhat.com">Andy Taylor</a>
  * @version <tt>$Revision$</tt>
  *
  * $Id$
  */
-public class ConnectionFactory extends ServiceMBeanSupport
+public class ConnectionFactory
 {
    // Constants ------------------------------------------------------------------------------------
 
    // Static ---------------------------------------------------------------------------------------
-   
+   private static final Logger log = Logger.getLogger(ConnectionFactory.class);
    // Attributes -----------------------------------------------------------------------------------
 
    private String clientID;
    
-   private JNDIBindings jndiBindings;
+   private List<String> jndiBindings;
    
    private int prefetchSize = 150;
    
@@ -64,7 +64,7 @@ public class ConnectionFactory extends ServiceMBeanSupport
    
    private int dupsOKBatchSize = 1000;
 
-   private ObjectName serverPeerObjectName;
+   private ServerPeer serverPeer;
    
    private ConnectionFactoryManager connectionFactoryManager;
    
@@ -72,7 +72,7 @@ public class ConnectionFactory extends ServiceMBeanSupport
    
    private ConnectionManager connectionManager;
       
-   private ObjectName connectorObjectName;
+   private Connector connector;
 
    private boolean started;
 
@@ -80,6 +80,7 @@ public class ConnectionFactory extends ServiceMBeanSupport
    
    private boolean disableRemotingChecks;
 
+   private String name;
    // Constructors ---------------------------------------------------------------------------------
 
    public ConnectionFactory()
@@ -97,7 +98,7 @@ public class ConnectionFactory extends ServiceMBeanSupport
 
    // ServiceMBeanSupport overrides ----------------------------------------------------------------
 
-   public synchronized void startService() throws Exception
+   public synchronized void start() throws Exception
    {
       try
       {
@@ -105,21 +106,19 @@ public class ConnectionFactory extends ServiceMBeanSupport
 
          started = true;
          
-         if (connectorObjectName == null)
+         if (connector == null)
          {
             throw new IllegalArgumentException("A Connector must be specified for " +
                                                "each Connection Factory");
          }
          
-         if (serverPeerObjectName == null)
+         if (serverPeer == null)
          {
             throw new IllegalArgumentException("ServerPeer must be specified for " +
                                                "each Connection Factory");
          }
       
-         String locatorURI = (String)JMXAccessor.getJMXAttributeOverSecurity(server, connectorObjectName, "InvokerLocator");
-
-         ServerPeer serverPeer = (ServerPeer)JMXAccessor.getJMXAttributeOverSecurity(server, serverPeerObjectName, "Instance");
+         String locatorURI = connector.getInvokerLocator();
 
          if (!serverPeer.isSupportsFailover())
          {
@@ -180,10 +179,9 @@ public class ConnectionFactory extends ServiceMBeanSupport
          connectorManager = serverPeer.getConnectorManager();
          connectionManager = serverPeer.getConnectionManager();
 
-         int refCount = connectorManager.registerConnector(connectorObjectName.getCanonicalName());
+          int refCount = connectorManager.registerConnector(getName());
 
-         long leasePeriod = (Long)JMXAccessor.getJMXAttributeOverSecurity(server, connectorObjectName, "LeasePeriod");
-
+         long leasePeriod = connector.getLeasePeriod();
          // if leasePeriod <= 0, disable pinging altogether
 
          boolean enablePing = leasePeriod > 0;
@@ -195,15 +193,13 @@ public class ConnectionFactory extends ServiceMBeanSupport
             // calback fails
 
             // install the connection listener that listens for failed connections            
-            server.invoke(connectorObjectName, "addConnectionListener",
-                  new Object[] {connectionManager},
-                  new String[] {"org.jboss.remoting.ConnectionListener"});
+            connector.addConnectionListener((ConnectionListener) connectionManager);
          }
          
          // We use the MBean service name to uniquely identify the connection factory
          
          connectionFactoryManager.
-            registerConnectionFactory(getServiceName().getCanonicalName(), clientID, jndiBindings,
+            registerConnectionFactory(getName(), clientID, jndiBindings,
                                       locatorURI, enablePing, prefetchSize, slowConsumers,
                                       defaultTempQueueFullSize, defaultTempQueuePageSize,                                      
                                       defaultTempQueueDownCacheSize, dupsOKBatchSize, supportsFailover, supportsLoadBalancing,
@@ -230,15 +226,15 @@ public class ConnectionFactory extends ServiceMBeanSupport
       } 
    }
    
-   public synchronized void stopService() throws Exception
+   public synchronized void stop() throws Exception
    {
       try
       {
          started = false;
          
          connectionFactoryManager.
-            unregisterConnectionFactory(getServiceName().getCanonicalName(), supportsFailover, supportsLoadBalancing);
-         connectorManager.unregisterConnector(connectorObjectName.getCanonicalName());
+            unregisterConnectionFactory(getName(), supportsFailover, supportsLoadBalancing);
+         connectorManager.unregisterConnector(getName());
          
          log.info(this + " undeployed");
       }
@@ -305,55 +301,41 @@ public class ConnectionFactory extends ServiceMBeanSupport
       return clientID;
    }
 
-   public void setJNDIBindings(Element e) throws Exception
+   public void setJNDIBindings(List<String> bindings) throws Exception
    {
-      jndiBindings = new JNDIBindings(e);
+      jndiBindings = bindings;
    }
 
-   public Element getJNDIBindings()
+   public List<String> getJNDIBindings()
    {
       if (jndiBindings == null)
       {
          return null;
       }
-      return jndiBindings.getDelegate();
+      return jndiBindings;
    }
 
-   public void setServerPeer(ObjectName on)
-   {
-      if (started)
-      {
-         log.warn("Cannot change the value of associated " +
-                  "server ObjectName after initialization!");
-         return;
-      }
+   public ServerPeer getServerPeer()
+    {
+        return serverPeer;
+    }
 
-      serverPeerObjectName = on;
-   }
+    public void setServerPeer(ServerPeer serverPeer)
+    {
+        this.serverPeer = serverPeer;
+    }
 
-   public ObjectName getServerPeer()
-   {
-      return serverPeerObjectName;
-   }
-   
-   public void setConnector(ObjectName on)
-   {
-      if (started)
-      {
-         log.warn("Cannot change the value of associated " +
-                  "connector ObjectName after initialization!");
-         return;
-      }
+    public Connector getConnector()
+    {
+        return connector;
+    }
 
-      connectorObjectName = on;
-   }
+    public void setConnector(Connector connector)
+    {
+        this.connector = connector;
+    }
 
-   public ObjectName getConnector()
-   {
-      return connectorObjectName;
-   }
-   
-   public boolean isSupportsFailover()
+    public boolean isSupportsFailover()
    {
       return supportsFailover;
    }
@@ -449,6 +431,16 @@ public class ConnectionFactory extends ServiceMBeanSupport
       
    	this.disableRemotingChecks = disable;
    }
+
+   public String getName()
+    {
+        return name;
+    }
+
+    public void setName(String name)
+    {
+        this.name = name;
+    }
 
    // JMX managed operations -----------------------------------------------------------------------
 

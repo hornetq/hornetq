@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<deployment xmlns="urn:jboss:bean-deployer:2.0">
+   <bean name="DatabaseClearer" class="org.jboss.test.messaging.tools.container.DatabaseClearer">
+      <property name="dataSource"><inject bean="jboss.jca:name=DefaultDS,service=DataSourceBinding"/></property>
+      <property name="transactionManager"><inject bean="jboss:service=TransactionManager"/></property>
+   </bean>
+</deployment>

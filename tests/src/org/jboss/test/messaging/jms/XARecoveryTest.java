@@ -21,25 +21,14 @@
   */
 package org.jboss.test.messaging.jms;
 
-import javax.jms.Connection;
-import javax.jms.Message;
-import javax.jms.MessageConsumer;
-import javax.jms.MessageProducer;
-import javax.jms.Session;
-import javax.jms.TextMessage;
-import javax.jms.Topic;
-import javax.jms.XAConnection;
-import javax.jms.XASession;
-import javax.transaction.xa.XAResource;
-import javax.transaction.xa.Xid;
-
-import org.jboss.jms.tx.MessagingXid;
-import org.jboss.jms.tx.ResourceManagerFactory;
-import org.jboss.test.messaging.tools.ServerManagement;
-import org.jboss.test.messaging.tools.container.ServiceContainer;
-
 import com.arjuna.ats.arjuna.common.Uid;
 import com.arjuna.ats.jta.xa.XidImple;
+import org.jboss.jms.tx.MessagingXid;
+import org.jboss.jms.tx.ResourceManagerFactory;
+
+import javax.jms.*;
+import javax.transaction.xa.XAResource;
+import javax.transaction.xa.Xid;
 
 /**
  * 
@@ -73,7 +62,7 @@ public class XARecoveryTest extends JMSTestCase
    protected void setUp() throws Exception
    {
       // if this is not set testMockCoordinatorRecoveryWithJBossTSXids will create an invalid ObjectStore
-      ServiceContainer.setupObjectStoreDir();
+      //ServiceContainer.setupObjectStoreDir();
       super.setUp();
    }
 
@@ -712,9 +701,9 @@ public class XARecoveryTest extends JMSTestCase
          
          // Now "crash" the server
 
-         ServerManagement.stopServerPeer();
+         stopServerPeer();
 
-         ServerManagement.startServerPeer();
+         startServerPeer();
          
          log.info("Restarted the server");
          
@@ -979,9 +968,9 @@ public class XARecoveryTest extends JMSTestCase
          
          // Now "crash" the server
 
-         ServerManagement.stopServerPeer();
+         stopServerPeer();
 
-         ServerManagement.startServerPeer();
+         startServerPeer();
          
          deployAndLookupAdministeredObjects();
          
@@ -1527,9 +1516,9 @@ public class XARecoveryTest extends JMSTestCase
          
          // Now "crash" the server
 
-         ServerManagement.stopServerPeer();
+         stopServerPeer();
 
-         ServerManagement.startServerPeer();
+         startServerPeer();
          
          deployAndLookupAdministeredObjects();
          
@@ -1826,9 +1815,9 @@ public class XARecoveryTest extends JMSTestCase
          
          // Now "crash" the server
 
-         ServerManagement.stopServerPeer();
+         stopServerPeer();
 
-         ServerManagement.startServerPeer();
+         startServerPeer();
          
          deployAndLookupAdministeredObjects();  
          
@@ -2305,9 +2294,9 @@ public class XARecoveryTest extends JMSTestCase
          
          // Now "crash" the server
 
-         ServerManagement.stopServerPeer();
+         stopServerPeer();
 
-         ServerManagement.startServerPeer();
+         startServerPeer();
          
          deployAndLookupAdministeredObjects();
                            
@@ -2529,9 +2518,9 @@ public class XARecoveryTest extends JMSTestCase
          
          conn2 = null;
    
-         ServerManagement.stopServerPeer();
+         stopServerPeer();
    
-         ServerManagement.startServerPeer();
+         startServerPeer();
    
          deployAndLookupAdministeredObjects();       
          
@@ -2712,9 +2701,9 @@ public class XARecoveryTest extends JMSTestCase
                      
          //Now "crash" the server
    
-         ServerManagement.stopServerPeer();
+         stopServerPeer();
    
-         ServerManagement.startServerPeer();
+         startServerPeer();
    
          deployAndLookupAdministeredObjects();         
          
@@ -2872,9 +2861,9 @@ public class XARecoveryTest extends JMSTestCase
    
          //Now "crash" the server
    
-         ServerManagement.stopServerPeer();
+         stopServerPeer();
    
-         ServerManagement.startServerPeer();
+         startServerPeer();
    
          deployAndLookupAdministeredObjects();  
          
@@ -3014,9 +3003,9 @@ public class XARecoveryTest extends JMSTestCase
    
          //Now "crash" the server
    
-         ServerManagement.stopServerPeer();
+         stopServerPeer();
    
-         ServerManagement.startServerPeer();
+         startServerPeer();
    
          deployAndLookupAdministeredObjects();      
          
@@ -3158,9 +3147,9 @@ public class XARecoveryTest extends JMSTestCase
    
          //Now "crash" the server
    
-         ServerManagement.stopServerPeer();
+         stopServerPeer();
    
-         ServerManagement.startServerPeer();
+         startServerPeer();
    
          deployAndLookupAdministeredObjects();
          

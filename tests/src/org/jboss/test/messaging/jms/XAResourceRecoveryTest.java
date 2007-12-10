@@ -21,35 +21,20 @@
  */
 package org.jboss.test.messaging.jms;
 
-import java.util.Hashtable;
-import java.util.Properties;
+import com.arjuna.ats.internal.jta.transaction.arjunacore.TransactionManagerImple;
+import org.jboss.jms.client.JBossConnectionFactory;
+import org.jboss.jms.tx.ResourceManagerFactory;
+import org.jboss.test.messaging.JBMServerTestCase;
+import org.jboss.test.messaging.tools.ServerManagement;
+import org.jboss.test.messaging.tools.aop.PoisonInterceptor;
+import org.jboss.test.messaging.tools.container.ServiceContainer;
+import org.jboss.tm.TxUtils;
 
-import javax.jms.Connection;
-import javax.jms.ConnectionFactory;
-import javax.jms.MessageConsumer;
-import javax.jms.MessageProducer;
-import javax.jms.Queue;
-import javax.jms.Session;
-import javax.jms.TextMessage;
-import javax.jms.XAConnection;
-import javax.jms.XASession;
-import javax.management.ObjectName;
+import javax.jms.*;
 import javax.naming.InitialContext;
 import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
 import javax.transaction.xa.XAResource;
-
-import org.jboss.jms.client.JBossConnectionFactory;
-import org.jboss.jms.jndi.JMSProviderAdapter;
-import org.jboss.jms.tx.ResourceManagerFactory;
-import org.jboss.test.messaging.tools.ServerManagement;
-import org.jboss.test.messaging.tools.TestJMSProviderAdaptor;
-import org.jboss.test.messaging.tools.aop.PoisonInterceptor;
-import org.jboss.test.messaging.tools.container.InVMInitialContextFactory;
-import org.jboss.test.messaging.tools.container.ServiceContainer;
-import org.jboss.tm.TxUtils;
-
-import com.arjuna.ats.internal.jta.transaction.arjunacore.TransactionManagerImple;
 
 /**
  * 
@@ -61,7 +46,7 @@ import com.arjuna.ats.internal.jta.transaction.arjunacore.TransactionManagerImpl
  * $Id$
  * 
  */
-public class XAResourceRecoveryTest extends JMSTestCase
+public class XAResourceRecoveryTest extends JBMServerTestCase
 {
 	protected ServiceContainer sc;
 
@@ -78,12 +63,18 @@ public class XAResourceRecoveryTest extends JMSTestCase
 		super(name);
 	}
 
-	protected void setUp() throws Exception
+
+   public int getServerCount()
+   {
+      return 2;
+   }
+
+   protected void setUp() throws Exception
 	{
 		super.setUp();
 
 		// Now start another remote server
-		ServerManagement.start(1, "all", false);
+		//ServerManagement.start(1, "all", false);
 
 		ResourceManagerFactory.instance.clear();
 
@@ -92,25 +83,25 @@ public class XAResourceRecoveryTest extends JMSTestCase
 		// won't
 		// have deleted the database and the recovery manager may attempt to
 		// recover transactions
-		sc = new ServiceContainer("all");
 
-		// Don't drop the tables again!
+		if (ServerManagement.isRemote())
+      {
+         tm = new TransactionManagerImple();
+      }
+      else
+      {
+         InitialContext localIc = getInitialContext();
 
-		sc.start(false);
-
-		InitialContext localIc = new InitialContext(InVMInitialContextFactory
-				.getJNDIEnvironment());
-
-		tm = (TransactionManager) localIc
-				.lookup(ServiceContainer.TRANSACTION_MANAGER_JNDI_NAME);
+         tm = (TransactionManager)localIc.lookup(ServiceContainer.TRANSACTION_MANAGER_JNDI_NAME);
+      }
 
 		assertTrue(tm instanceof TransactionManagerImple);
 
-		ServerManagement.deployQueue("OtherQueue", 1);
+		deployQueue("OtherQueue", 1);
 
-		Hashtable props1 = ServerManagement.getJNDIEnvironment(1);
+		//Hashtable props1 = ServerManagement.getJNDIEnvironment(1);
 
-		InitialContext ic1 = new InitialContext(props1);
+		InitialContext ic1 = getInitialContext(1);
 
 		cf1 = (JBossConnectionFactory) ic1.lookup("/XAConnectionFactory");
 
@@ -120,15 +111,15 @@ public class XAResourceRecoveryTest extends JMSTestCase
 
 		// Now install local JMSProviderAdaptor classes
 
-		Properties p1 = new Properties();
-		p1.putAll(ServerManagement.getJNDIEnvironment(1));
+		//Properties p1 = new Properties();
+		//p1.putAll(ServerManagement.getJNDIEnvironment(1));
 
-		JMSProviderAdapter targetAdaptor = new TestJMSProviderAdaptor(p1,
+		/*JMSProviderAdapter targetAdaptor = new TestJMSProviderAdaptor(p1,
 				"/XAConnectionFactory", "adaptor1");
 
 		sc.installJMSProviderAdaptor("adaptor1", targetAdaptor);
-
-		sc.startRecoveryManager();
+*/
+		//sc.startRecoveryManager();
 
 		suspendedTx = tm.suspend();
 	}
@@ -137,7 +128,7 @@ public class XAResourceRecoveryTest extends JMSTestCase
 	{
 		try
 		{
-			ServerManagement.undeployQueue("OtherQueue", 1);
+			undeployQueue("OtherQueue", 1);
 		} catch (Exception ignore)
 		{
 		}
@@ -167,12 +158,6 @@ public class XAResourceRecoveryTest extends JMSTestCase
 			tm.resume(suspendedTx);
 		}
 
-		sc.uninstallJMSProviderAdaptor("adaptor1");
-
-		sc.stopRecoveryManager();
-
-		sc.stop();
-
 		// We explicitly clear the resource manager factory since the recovery
 		// manager will keep a connection open, and
 		// otherewise it will fail
@@ -194,7 +179,7 @@ public class XAResourceRecoveryTest extends JMSTestCase
 
 		try
 		{
-			conn0 = cf.createXAConnection();
+			conn0 = getConnectionFactory().createXAConnection();
 
 			XASession sess0 = conn0.createXASession();
 
@@ -232,7 +217,7 @@ public class XAResourceRecoveryTest extends JMSTestCase
 			// but the branch on dest won't be - it will remain prepared
 			// This corresponds to a HeuristicMixedException
 
-			ServerManagement.poisonTheServer(1, PoisonInterceptor.TYPE_2PC_COMMIT);
+			poisonTheServer(1, PoisonInterceptor.TYPE_2PC_COMMIT);
 
 			tx.delistResource(res0, XAResource.TMSUCCESS);
 
@@ -246,19 +231,19 @@ public class XAResourceRecoveryTest extends JMSTestCase
 
 			// Now restart the server
 
-			ServerManagement.start(1, "all", false);
+			//ServerManagement.start(1, "all", false);
 
-			ServerManagement.deployQueue("OtherQueue", 1);
+			deployQueue("OtherQueue", 1);
 
-			Hashtable props1 = ServerManagement.getJNDIEnvironment(1);
+			//Hashtable props1 = ServerManagement.getJNDIEnvironment(1);
 
-			InitialContext ic1 = new InitialContext(props1);
+			InitialContext ic1 = getInitialContext();
 
 			cf1 = (JBossConnectionFactory) ic1.lookup("/XAConnectionFactory");
 
 			otherQueue = (Queue) ic1.lookup("/queue/OtherQueue");
 
-			conn2 = cf.createConnection();
+			conn2 = getConnectionFactory().createConnection();
 
 			Session sess2 = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
@@ -315,7 +300,7 @@ public class XAResourceRecoveryTest extends JMSTestCase
 		}
 	}
 
-	public void testRecoveryOnAck() throws Exception
+   public void testRecoveryOnAck() throws Exception
 	{
 		XAConnection conn0 = null;
 
@@ -327,7 +312,7 @@ public class XAResourceRecoveryTest extends JMSTestCase
 
 		try
 		{
-			conn0 = cf.createXAConnection();
+			conn0 = getConnectionFactory().createXAConnection();
 
 			XASession sess0 = conn0.createXASession();
 
@@ -403,19 +388,19 @@ public class XAResourceRecoveryTest extends JMSTestCase
 
 			// Now restart the server
 
-			ServerManagement.start(1, "all", false);
+			//ServerManagement.start(1, "all", false);
 
-			ServerManagement.deployQueue("OtherQueue", 1);
+			deployQueue("OtherQueue");
 
-			Hashtable props1 = ServerManagement.getJNDIEnvironment(1);
+			//Hashtable props1 = getInitialContext();
 
-			InitialContext ic1 = new InitialContext(props1);
+			InitialContext ic1 = getInitialContext();
 
 			cf1 = (JBossConnectionFactory) ic1.lookup("/XAConnectionFactory");
 
 			otherQueue = (Queue) ic1.lookup("/queue/OtherQueue");
 
-			conn2 = cf.createConnection();
+			conn2 = getConnectionFactory().createConnection();
 
 			sess2 = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
@@ -476,11 +461,8 @@ public class XAResourceRecoveryTest extends JMSTestCase
 
 	private void checkOtherQueueEmpty() throws Exception
 	{
-		ObjectName destObjectName = new ObjectName(
-				"jboss.messaging.destination:service=Queue,name=OtherQueue");
 
-		Integer messageCount = (Integer) ServerManagement.getServer(1)
-				.getAttribute(destObjectName, "MessageCount");
+		Integer messageCount = getMessageCountForQueue("OtherQueue", 1);
 
 		assertEquals(0, messageCount.intValue());
 	}
