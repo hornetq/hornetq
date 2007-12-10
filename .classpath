@@ -68,5 +68,7 @@
 	<classpathentry kind="lib" path="thirdparty/jboss/jbossts14/lib/jbossjta-integration.jar"/>
 	<classpathentry kind="lib" path="thirdparty/jboss/jboss-javaee/lib/jboss-javaee.jar"/>
 	<classpathentry kind="lib" path="thirdparty/jboss/jbosssx-client/lib/jbosssx-client.jar"/>
+	<classpathentry kind="lib" path="lib/je-3.2.44.jar"/>
+	<classpathentry kind="lib" path="tests/lib/easymock.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

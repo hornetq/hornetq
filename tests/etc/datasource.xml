@@ -7,6 +7,6 @@
    </bean>-->
    <bean name="jboss.jca:name=DefaultDS,service=DataSourceBinding" class="com.mysql.jdbc.jdbc2.optional.MysqlDataSource">
       <property name="url">jdbc:mysql://localhost/messaging</property>
-      <property name="user">andy</property>
+      <property name="user">sa</property>
    </bean>
 </deployment>
