@@ -135,6 +135,8 @@
    <property name="javac.include.ant.runtime" value="false"/>
    <property name="javac.include.java.runtime" value="true"/>
    <property name="javac.fail.onerror" value="true"/>
+   
+  
 
    <!--
         Non-JBoss dependencies.
@@ -147,6 +149,7 @@
       <path refid="jgroups.jgroups.classpath"/>
       <path refid="trove.trove.classpath"/>
       <path refid="apache.logging.classpath"/>
+      <!-- <pathelement path="${build.lib}/je-3.2.44.jar"/> -->
    </path>
 
    <!--
@@ -249,6 +252,7 @@
 
    <target name="compile-classes">
 
+   <echo message="CLASSPATH: ${compilation.classpath}"/>
       <mkdir dir="${build.classes}"/>
       <!--<display-path path="compilation.classpath"/>-->
       <javac destdir="${build.classes}"
@@ -264,6 +268,8 @@
              failonerror="${javac.fail.onerror}">
          <src path="${source.java}"/>
          <include name="**/*.java"/>
+	 <exclude name="**/test/**"/>
+	 <exclude name="**/newcore/**"/>
          <classpath refid="compilation.classpath"/>
       </javac>
       
