@@ -251,8 +251,6 @@
    </target>
 
    <target name="compile-classes">
-
-   <echo message="CLASSPATH: ${compilation.classpath}"/>
       <mkdir dir="${build.classes}"/>
       <!--<display-path path="compilation.classpath"/>-->
       <javac destdir="${build.classes}"
