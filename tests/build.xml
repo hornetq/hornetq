@@ -154,6 +154,8 @@
       <path refid="jboss.profiler.jvmti.classpath"/>
       <path refid="jboss.test14.classpath"/>
       <path refid="jboss.jboss.retro.classpath"/>
+      <pathelement location="${project.root}/lib/je-3.2.44.jar"/>
+      <pathelement location="${tests.root}/lib/easymock.jar"/>
    </path>
 
    <!--
@@ -166,6 +168,8 @@
       <pathelement location="${project.root}/src/etc"/> <!-- server's configuration files -->
       <pathelement location="${project.root}/src/etc/server/default/deploy"/>
       <pathelement location="${project.thirdparty}/naming/jnp-client.jar"/>
+      <pathelement location="${project.root}/lib/je-3.2.44.jar"/>
+      <pathelement location="${tests.root}/lib/easymock.jar"/>
       <path refid="test.compilation.classpath"/>
       <path refid="dom4j.dom4j.classpath"/>
       <path refid="apache.log4j.classpath"/>
@@ -220,6 +224,21 @@
          <src path="${source.tests.java}"/>
          <classpath refid="test.compilation.classpath"/>
          <include name="**/*.java"/>
+      </javac>
+      
+      <javac destdir="${build.tests.classes}"
+	     optimize="${javac.optimize}"
+	     target="1.5"
+	     source="1.5"
+	     debug="${javac.debug}"
+	     depend="${javac.depend}"
+	     verbose="${javac.verbose}"
+	     deprecation="${javac.deprecation}"
+	     includeJavaRuntime="${javac.include.java.runtime}"
+	     failonerror="${javac.fail.onerror}">
+	      <src path="${tests.root}/../src/main/"/>
+	      <classpath refid="test.compilation.classpath"/>
+	      <include name="**/test/**/*.java"/>
       </javac>
 
       <!--
@@ -308,6 +327,14 @@
       <antcall target="invm-tests"/>
 
       <antcall target="remote-tests"/>
+      
+      <antcall target="unit-tests"/>
+      
+      <antcall target="integration-tests"/>
+      
+      <antcall target="concurrent-tests"/>
+      
+      <antcall target="timing-tests"/>
 
    </target>
 
@@ -323,6 +350,93 @@
       <antcall target="remote-tests">
          <param name="test.remoting" value="http"/>
       </antcall>
+   </target>
+   
+   <target name="unit-tests" depends="tests-jar, prepare-testdirs, clear-test-logs"
+	   description="Runs unit tests">
+	   
+	   <echo message=""/>
+	   <echo message="Running unit tests"/>
+	   <echo message=""/>
+	   
+	   <junit printsummary="yes" haltonfailure="yes" haltonerror="yes">		   
+		   <sysproperty key="test.logfile.suffix" value="unit"/>
+		   <sysproperty key="module.output" value="${tests.output}"/>
+		   <classpath refid="test.execution.classpath"/>
+		   <formatter type="xml" usefile="${junit.formatter.usefile}"/>
+		   <batchtest todir="${junit.batchtest.todir}">			     
+			   <formatter type="plain" usefile="${junit.formatter.usefile}"/>
+			   <fileset dir="${build.tests.classes}">
+				   <include name="**/test/unit/**/${test-mask}.class"/>				   
+				   <exclude name="**/integration/test/unit/**/${test-mask}.class"/>
+				   
+				   
+			   </fileset>
+		   </batchtest>
+	   </junit>
+   </target>
+   
+   <target name="integration-tests" depends="tests-jar, prepare-testdirs, clear-test-logs"
+	   description="Runs integration tests">
+	   
+	   <echo message=""/>
+	   <echo message="Running unit tests"/>
+	   <echo message=""/>
+	   
+	   <junit printsummary="yes" haltonfailure="yes" haltonerror="yes">		   
+		   <sysproperty key="test.logfile.suffix" value="unit"/>
+		   <sysproperty key="module.output" value="${tests.output}"/>
+		   <classpath refid="test.execution.classpath"/>
+		   <formatter type="xml" usefile="${junit.formatter.usefile}"/>
+		   <batchtest todir="${junit.batchtest.todir}">			     
+			   <formatter type="plain" usefile="${junit.formatter.usefile}"/>
+			   <fileset dir="${build.tests.classes}">
+				   <include name="**/integration/test/unit/**/${test-mask}.class"/>				   
+			   </fileset>
+		   </batchtest>
+	   </junit>
+   </target>  
+   
+   <target name="concurrent-tests" depends="tests-jar, prepare-testdirs, clear-test-logs"
+	   description="Runs concurrent tests">
+	   
+	   <echo message=""/>
+	   <echo message="Running concurrent tests"/>
+	   <echo message=""/>
+	   
+	   <junit printsummary="yes" haltonfailure="yes" haltonerror="yes">		   
+		   <sysproperty key="test.logfile.suffix" value="unit"/>
+		   <sysproperty key="module.output" value="${tests.output}"/>
+		   <classpath refid="test.execution.classpath"/>
+		   <formatter type="xml" usefile="${junit.formatter.usefile}"/>
+		   <batchtest todir="${junit.batchtest.todir}">			     
+			   <formatter type="plain" usefile="${junit.formatter.usefile}"/>
+			   <fileset dir="${build.tests.classes}">				
+				   <include name="**/test/concurrent/**/${test-mask}.class"/>
+			   </fileset>
+		   </batchtest>
+	   </junit>
+   </target>   
+   
+   <target name="timing-tests" depends="tests-jar, prepare-testdirs, clear-test-logs"
+	   description="Runs timing sensitive tests">
+	   
+	   <echo message=""/>
+	   <echo message="Running timing sensitive tests"/>
+	   <echo message=""/>
+	   
+	   <junit printsummary="yes" haltonfailure="yes" haltonerror="yes">		   
+		   <sysproperty key="test.logfile.suffix" value="unit"/>
+		   <sysproperty key="module.output" value="${tests.output}"/>
+		   <classpath refid="test.execution.classpath"/>
+		   <formatter type="xml" usefile="${junit.formatter.usefile}"/>
+		   <batchtest todir="${junit.batchtest.todir}">			     
+			   <formatter type="plain" usefile="${junit.formatter.usefile}"/>
+			   <fileset dir="${build.tests.classes}">	
+				   <include name="**/test/timing/**/${test-mask}.class"/>
+			   </fileset>
+		   </batchtest>
+	   </junit>
    </target>
 
    <target name="invm-tests" depends="tests-jar, prepare-testdirs, clear-test-logs"

@@ -218,9 +218,11 @@ public class UnitTestCase extends TestCase
    
    protected Xid generateXid()
    {      
-      String id = java.util.UUID.randomUUID().toString();
+      String id1 = java.util.UUID.randomUUID().toString();
       
-      Xid xid = new MessagingXid("blah".getBytes(), 123, id.getBytes());
+      String id2 = java.util.UUID.randomUUID().toString();
+      
+      Xid xid = new MessagingXid(id1.getBytes(), 123, id2.getBytes());
       
       return xid;
    }

@@ -195,7 +195,7 @@ public class MessageTest extends UnitTestCase
       assertEquals(val1, message.removeHeader(key1));
       assertFalse(message.containsHeader(key2));
       assertEquals(1, message.getHeaders().size());
-      assertEquals(val3, message.removeHeader(key3));
+      assertEquals(val4, message.removeHeader(key3));
       assertFalse(message.containsHeader(key3));
       assertTrue(message.getHeaders().isEmpty());
    }

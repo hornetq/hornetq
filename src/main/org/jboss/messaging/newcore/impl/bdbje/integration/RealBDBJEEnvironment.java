@@ -93,6 +93,9 @@ public class RealBDBJEEnvironment implements BDBJEEnvironment
     * Used for debug only to ensure the XA operations are called in the right order
     */
    private Map<Thread, ThreadTXStatus> threadTXStatuses;
+   
+   private Map<Xid, ThreadTXStatus> transactions;
+   
 
    public RealBDBJEEnvironment(boolean debug)
    {
@@ -101,6 +104,8 @@ public class RealBDBJEEnvironment implements BDBJEEnvironment
       if (debug)
       {
          threadTXStatuses = new ConcurrentHashMap<Thread, ThreadTXStatus>();
+         
+         transactions = new ConcurrentHashMap<Xid, ThreadTXStatus>();
       }
    }
 
@@ -263,9 +268,7 @@ public class RealBDBJEEnvironment implements BDBJEEnvironment
    {
       if (debug)
       {
-         checkNoStatus();
-
-         threadTXStatuses.put(Thread.currentThread(), new ThreadTXStatus(xid));
+         checkStartWork(xid);   
       }
 
       environment.start(xid, XAResource.TMNOFLAGS);
@@ -275,21 +278,17 @@ public class RealBDBJEEnvironment implements BDBJEEnvironment
    {
       if (debug)
       {
-         checkXAState(xid, XAState.IN_WORK);
-
-         setXAState(XAState.DONE_WORK);
+         checkEndWork(xid);                  
       }
 
       environment.end(xid, failed ? XAResource.TMFAIL : XAResource.TMSUCCESS);
    }
-     
+   
    public void prepare(Xid xid) throws Exception
    {
       if (debug)
       {
-         checkXAState(xid, XAState.DONE_WORK);
-
-         setXAState(XAState.PREPARE_CALLED);
+         checkPrepare(xid);
       }
 
       environment.prepare(xid);
@@ -299,9 +298,7 @@ public class RealBDBJEEnvironment implements BDBJEEnvironment
    {
       if (debug)
       {
-         checkXAState(xid, XAState.PREPARE_CALLED);
-
-         threadTXStatuses.remove(Thread.currentThread());
+         checkCommitRollback(xid);
       }
 
       environment.commit(xid, false);       
@@ -311,9 +308,7 @@ public class RealBDBJEEnvironment implements BDBJEEnvironment
    {
       if (debug)
       {
-         checkXAState(xid, XAState.PREPARE_CALLED);
-
-         threadTXStatuses.remove(Thread.currentThread());
+         checkCommitRollback(xid);
       }
 
       environment.rollback(xid);
@@ -324,54 +319,82 @@ public class RealBDBJEEnvironment implements BDBJEEnvironment
    /*
     * Used for debug only
     */
-   private ThreadTXStatus getTxStatus()
+   
+   private void checkStartWork(Xid xid)
    {
-      return threadTXStatuses.get(Thread.currentThread());
+      if (threadTXStatuses.get(Thread.currentThread()) != null)
+      {
+         throw new IllegalStateException("Already implicit transaction");
+      }
+      
+      if (transactions.get(xid) != null)
+      {
+         throw new IllegalStateException("Already tx for xid");
+      }            
+      
+      threadTXStatuses.put(Thread.currentThread(), new ThreadTXStatus(xid));
    }
    
-   private void checkXAState(Xid xid, XAState state)
+   private void checkEndWork(Xid xid)
    {
-      ThreadTXStatus status = getTxStatus();
-
+      ThreadTXStatus status = threadTXStatuses.get(Thread.currentThread());
+      
       if (status == null)
       {
-         throw new IllegalStateException("Not started any xa work");
-      }
+         throw new IllegalStateException("No implicit transaction");
+      }            
       
-      if (!state.equals(status.state))
-      {
-         throw new IllegalStateException("Invalid XAState expected " + state + " got " + status.state);
-      }
-      
-      if (xid != status.implicitXid)
+      if (!status.implicitXid.equals(xid))
       {
          throw new IllegalStateException("Wrong xid");
       }
+      
+      threadTXStatuses.remove(Thread.currentThread());
+      
+      transactions.put(xid, status);
    }
    
-   private void checkNoStatus()
+   private void checkPrepare(Xid xid)
    {
-      ThreadTXStatus status = getTxStatus();
-
-      if (status != null)
+      ThreadTXStatus status = this.transactions.get(xid);
+      
+      if (status == null)
       {
-         throw new IllegalStateException("XA status should not exist");
+         throw new IllegalStateException("Cannot find tx for xid");
       }
+      
+      if (this.threadTXStatuses.get(Thread.currentThread()) != null)
+      {
+         throw new IllegalStateException("Implicit transaction exists");
+      }
+      
+      status.prepared = true;
    }
-   
-   private void setXAState(XAState state)
+      
+   private void checkCommitRollback(Xid xid)
    {
-      threadTXStatuses.get(Thread.currentThread()).state = state;
+      ThreadTXStatus status = this.transactions.get(xid);
+      
+      if (status == null)
+      {
+         throw new IllegalStateException("Cannot find tx for xid");
+      }
+      
+      if (!status.prepared)
+      {
+         throw new IllegalStateException("Tx not prepared");
+      }
+      
+      if (this.threadTXStatuses.get(Thread.currentThread()) != null)
+      {
+         throw new IllegalStateException("Implicit transaction exists");
+      }
+      
+      transactions.remove(xid);
    }
    
-
    // Inner classes --------------------------------------------------------------------
 
-   private enum XAState
-   {
-      NOT_STARTED, IN_WORK, DONE_WORK, PREPARE_CALLED
-   }
-   
    /*
     * Used for debug only
     */
@@ -384,7 +407,9 @@ public class RealBDBJEEnvironment implements BDBJEEnvironment
 
       Xid implicitXid;
 
-      XAState state = XAState.IN_WORK;
+      //XAState state = XAState.IN_WORK;
+      
+      boolean prepared;
    }
 
 }

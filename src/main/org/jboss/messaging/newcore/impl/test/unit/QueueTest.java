@@ -670,7 +670,7 @@ public class QueueTest extends UnitTestCase
          
          refs.add(ref);
          
-         assertEquals(HandleStatus.BUSY, queue.addLast(ref));
+         assertEquals(HandleStatus.HANDLED, queue.addLast(ref));
       }
       
       assertEquals(maxSize, queue.getMessageCount());   

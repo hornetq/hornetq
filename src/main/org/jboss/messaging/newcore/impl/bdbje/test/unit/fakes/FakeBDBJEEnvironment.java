@@ -173,24 +173,56 @@ public class FakeBDBJEEnvironment implements BDBJEEnvironment
    
    public void startWork(Xid xid) throws Exception
    {
-      if (implicitTXs.get(Thread.currentThread()) != null)
-      {
-         throw new IllegalStateException("Already implicit transaction");
-      }
+      checkStartWork(xid);
       
-      implicitTXs.put(Thread.currentThread(), createTransactionInternal(xid));
+      implicitTXs.put(Thread.currentThread(), createTransactionInternal(xid));            
    }
    
    public void endWork(Xid xid, boolean fail) throws Exception
    {
-      FakeBDBJETransaction removed = implicitTXs.remove(Thread.currentThread());
+      checkEndWork(xid);
       
-      if (removed == null)
-      {
-         throw new IllegalStateException("No implicit tx");
-      }
+      implicitTXs.remove(Thread.currentThread());
+   }
+   
+   public void prepare(Xid xid) throws Exception
+   {
+      FakeBDBJETransaction tx = findTXForXid(xid);
+      
+      checkPrepare(tx);
+      
+      tx.prepare();
+   }
+   
+   public void commit(Xid xid) throws Exception
+   {      
+      FakeBDBJETransaction tx = findTXForXid(xid);
+      
+      checkCommitRollback(tx);
+            
+      tx.commit();
    }
 
+   public void rollback(Xid xid) throws Exception
+   {
+      FakeBDBJETransaction tx = findTXForXid(xid);
+      
+      checkCommitRollback(tx);
+                  
+      tx.rollback();   
+   }
+         
+   // Private -----------------------------------------------------------------------
+   
+   private FakeBDBJETransaction createTransactionInternal(Xid xid) throws Exception
+   {
+      FakeBDBJETransaction tx = new FakeBDBJETransaction(xid);
+      
+      transactions.put(tx.id, tx);
+      
+      return tx;
+   }      
+   
    private FakeBDBJETransaction findTXForXid(Xid xid)
    {
       for (FakeBDBJETransaction tx: transactions.values())
@@ -203,67 +235,67 @@ public class FakeBDBJEEnvironment implements BDBJEEnvironment
       return null;
    }
    
-   public void prepare(Xid xid) throws Exception
+   private void checkStartWork(Xid xid)
    {
-      FakeBDBJETransaction tx = findTXForXid(xid);
-      
-      if (tx == null)
+      if (implicitTXs.get(Thread.currentThread()) != null)
       {
-         throw new IllegalStateException("Cannot find tx for xid " + xid);
+         throw new IllegalStateException("Already implicit transaction");
       }
       
-      if (implicitTXs.containsKey(Thread.currentThread()))
+      if (findTXForXid(xid) != null)
       {
-         throw new IllegalStateException("Work not ended");
-      }
-      
-      tx.prepare();
+         throw new IllegalStateException("Already tx for xid");
+      }            
    }
    
-   public void commit(Xid xid) throws Exception
+   private void checkEndWork(Xid xid)
    {
-      FakeBDBJETransaction tx = findTXForXid(xid);
+      FakeBDBJETransaction tx = implicitTXs.get(Thread.currentThread());
       
       if (tx == null)
       {
-         throw new IllegalStateException("Cannot find tx for xid " + xid);
-      }
+         throw new IllegalStateException("No implicit tx");
+      }            
       
-      if (implicitTXs.containsKey(Thread.currentThread()))
+      if (!tx.xid.equals(xid))
       {
-         throw new IllegalStateException("Work not ended");
+         throw new IllegalStateException("Wrong xid");
       }
-      
-      tx.commit();
    }
 
-   public void rollback(Xid xid) throws Exception
+   
+   private void checkPrepare(FakeBDBJETransaction tx)
    {
-      FakeBDBJETransaction tx = findTXForXid(xid);
-      
       if (tx == null)
       {
-         throw new IllegalStateException("Cannot find tx for xid " + xid);
+         throw new IllegalStateException("Cannot find tx for xid");
       }
       
       if (implicitTXs.containsKey(Thread.currentThread()))
       {
          throw new IllegalStateException("Work not ended");
       }
-      
-      tx.rollback();   
    }
    
-   // Private -----------------------------------------------------------------------
    
-   private FakeBDBJETransaction createTransactionInternal(Xid xid) throws Exception
+   private void checkCommitRollback(FakeBDBJETransaction tx)
    {
-      FakeBDBJETransaction tx = new FakeBDBJETransaction(xid);
+      if (tx == null)
+      {
+         throw new IllegalStateException("Cannot find tx for xid");
+      }
       
-      transactions.put(tx.id, tx);
+      if (!tx.prepared)
+      {
+         throw new IllegalStateException("Tx not prepared");
+      }
       
-      return tx;
-   }      
+      if (implicitTXs.containsKey(Thread.currentThread()))
+      {
+         throw new IllegalStateException("Work not ended");
+      }
+   }
+   
    
    // Inner classes ------------------------------------------------------------------
    

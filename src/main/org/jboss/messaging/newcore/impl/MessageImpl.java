@@ -94,19 +94,19 @@ public class MessageImpl implements Message
     */
    public MessageImpl()
    {
+      this.headers = new HashMap<String, Object>();
    }
 
    public MessageImpl(long messageID, int type, boolean reliable, long expiration,
                       long timestamp, byte priority)
    {
+      this();
       this.messageID = messageID;
       this.type = type;
       this.reliable = reliable;
       this.expiration = expiration;
       this.timestamp = timestamp;
-      this.priority = priority;
-      
-      this.headers = new HashMap<String, Object>();
+      this.priority = priority;            
    }
 
    /*
