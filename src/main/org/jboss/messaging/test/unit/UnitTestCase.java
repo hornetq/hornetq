@@ -21,7 +21,13 @@
  */
 package org.jboss.messaging.test.unit;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -98,6 +104,57 @@ public class UnitTestCase extends TestCase
       }
 
       return directory.delete();
+   }
+   
+   protected void copyRecursive(File from , File to) throws Exception
+   {     
+       if (from.isDirectory())
+       {
+           if (!to.exists())
+           {
+               to.mkdir();
+           }
+           
+           String[] subs = from.list();
+           
+           for (int i = 0; i < subs.length; i++)
+           {
+               copyRecursive(new File(from, subs[i]),
+                             new File(to, subs[i]));
+           }
+       }
+       else
+       {           
+           InputStream in = null;
+           
+           OutputStream out = null;
+                      
+           try
+           {           
+              in = new BufferedInputStream(new FileInputStream(from));              
+              
+              out = new BufferedOutputStream(new FileOutputStream(to));
+              
+              int b;
+              
+              while ((b = in.read()) != -1)
+              {
+                  out.write(b);
+              }
+           }
+           finally
+           {   
+              if (in != null)
+              {
+                 in.close();
+              }
+              
+              if (out != null)
+              {
+                 out.close();
+              }
+           }
+       }
    }
    
    protected void assertRefListsIdenticalRefs(List<MessageReference> l1, List<MessageReference> l2)

@@ -21,6 +21,7 @@
  */
 package org.jboss.messaging.newcore.impl.bdbje.test.unit;
 
+import java.io.File;
 import java.util.List;
 
 import javax.transaction.xa.Xid;
@@ -43,7 +44,9 @@ public abstract class BDBJEEnvironmentTestBase extends UnitTestCase
    
    protected BDBJEDatabase database;
    
-   protected static final String ENV_DIR = "test-bdb-environment";
+   protected static final String ENV_DIR = "/home/tim/test-bdb-environment";
+   
+   protected static final String ENV_COPY_DIR = "/home/tim/test-bdb-environment-copy";
    
    protected static final String DB_NAME = "test-db";
    
@@ -74,6 +77,10 @@ public abstract class BDBJEEnvironmentTestBase extends UnitTestCase
    
    protected abstract BDBJEEnvironment createEnvironment() throws Exception;
    
+   protected abstract void copyEnvironment() throws Exception;
+
+   protected abstract void copyBackEnvironment() throws Exception;
+
    // The tests ----------------------------------------------------------------
       
    public void testGetInDoubtXidsCompleteWithCommit() throws Exception
@@ -176,7 +183,7 @@ public abstract class BDBJEEnvironmentTestBase extends UnitTestCase
      
    }
    
-// Commented out until http://jira.jboss.org/jira/browse/JBMESSAGING-1192 is complete   
+   // Commented out until http://jira.jboss.org/jira/browse/JBMESSAGING-1192 is complete   
 //   public void testGetInDoubtXidsMultipleWithRestart() throws Exception
 //   {
 //      List<Xid> xids = env.getInDoubtXids();
@@ -214,12 +221,21 @@ public abstract class BDBJEEnvironmentTestBase extends UnitTestCase
 //      assertTrue(xids.contains(xid2));
 //      assertTrue(xids.contains(xid3));
 //      
+//      //Now to simulate a crash we copy the environment directory from under BDB, then close
+//      //BDB. Then start it again with the copied config.
+//      //We can't just stop the environment and restart it since on stopping cleanly BDB will abort any open
+//      //transactions
+//      
+//      copyEnvironment();
+//      
 //      database.close();
 //      
 //      env.stop();
 //      
-//      env.start();
+//      copyBackEnvironment();
 //      
+//      env.start();
+//                 
 //      database = env.getDatabase(DB_NAME);
 //      
 //      xids = env.getInDoubtXids();      
@@ -235,6 +251,7 @@ public abstract class BDBJEEnvironmentTestBase extends UnitTestCase
 //      
 //      assertTrue(xids.isEmpty());     
 //   }
+      
       
    public void testPutAndRemoveNonTransactional() throws Exception
    {
@@ -356,8 +373,9 @@ public abstract class BDBJEEnvironmentTestBase extends UnitTestCase
       
       database.close();
       
+      //This will abort the transaction
       env.stop();
-      
+
       env.start();
       
       database = env.getDatabase(DB_NAME);

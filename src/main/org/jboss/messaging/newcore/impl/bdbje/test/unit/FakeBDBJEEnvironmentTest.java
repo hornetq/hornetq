@@ -22,4 +22,12 @@ public class FakeBDBJEEnvironmentTest extends BDBJEEnvironmentTestBase
    protected void createDir(String path)
    {      
    }
+   
+   protected void copyEnvironment()
+   {      
+   }
+   
+   protected void copyBackEnvironment()
+   {      
+   }    
 }

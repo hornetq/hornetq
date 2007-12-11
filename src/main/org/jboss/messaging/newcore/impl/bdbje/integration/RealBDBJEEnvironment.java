@@ -257,10 +257,10 @@ public class RealBDBJEEnvironment implements BDBJEEnvironment
 
    public List<Xid> getInDoubtXids() throws Exception
    {
-      Xid[] xids = environment.recover(XAResource.TMSTARTRSCAN);
+      Xid[] xids = environment.recover(XAResource.TMSTARTRSCAN & XAResource.TMENDRSCAN);
 
       List<Xid> list = Arrays.asList(xids);
-
+      
       return list;
    }
 

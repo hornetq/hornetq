@@ -40,7 +40,6 @@ public class RealBDBJEDatabase implements BDBJEDatabase
 
       if (offset != 0 || bytes.length != length)
       {
-         System.out.println("Partial, offset=" + offset);
          value.setPartial(offset, length, true);
       }
 

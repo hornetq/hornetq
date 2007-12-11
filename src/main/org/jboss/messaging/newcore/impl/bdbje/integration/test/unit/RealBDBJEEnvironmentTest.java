@@ -17,8 +17,6 @@ public class RealBDBJEEnvironmentTest extends BDBJEEnvironmentTestBase
 {
    protected void setUp() throws Exception
    {   
-      System.out.println("Creating env dir");
-      
       createDir(ENV_DIR);
       
       env = createEnvironment();
@@ -43,10 +41,30 @@ public class RealBDBJEEnvironmentTest extends BDBJEEnvironmentTestBase
    {  
       File file = new File(path);
       
-      boolean deleted = deleteDirectory(file);
-      
-      System.out.println("Deleted: " + deleted);
+      deleteDirectory(file);
       
       file.mkdir();
    }
+   
+   protected void copyEnvironment() throws Exception
+   {
+      File envCopyDir = new File(ENV_COPY_DIR);
+      
+      deleteDirectory(envCopyDir);
+      
+      copyRecursive(new File(ENV_DIR), envCopyDir);
+   }
+   
+   protected void copyBackEnvironment() throws Exception
+   {
+      File envDir = new File(ENV_DIR);
+      
+      File envCopyDir = new File(ENV_COPY_DIR);
+      
+      deleteDirectory(envDir);
+      
+      copyRecursive(envCopyDir, envDir);
+      
+      deleteDirectory(envCopyDir);
+   }    
 }
