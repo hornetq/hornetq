@@ -21,11 +21,11 @@
  */
 package org.jboss.jms.client.delegate;
 
+import static org.jboss.messaging.core.remoting.TransportType.TCP;
+
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Map;
 
 import javax.jms.JMSException;
 
@@ -35,20 +35,20 @@ import org.jboss.jms.delegate.ConnectionFactoryDelegate;
 import org.jboss.jms.delegate.CreateConnectionResult;
 import org.jboss.jms.delegate.TopologyResult;
 import org.jboss.jms.exception.MessagingNetworkFailureException;
-import org.jboss.jms.server.ServerPeer;
-import org.jboss.jms.wireformat.ConnectionFactoryCreateConnectionDelegateRequest;
-import org.jboss.jms.wireformat.ConnectionFactoryGetClientAOPStackRequest;
-import org.jboss.jms.wireformat.JMSWireFormat;
-import org.jboss.jms.wireformat.ResponseSupport;
+import org.jboss.messaging.core.remoting.Client;
+import org.jboss.messaging.core.remoting.integration.MinaConnector;
+import org.jboss.messaging.core.remoting.wireformat.CreateConnectionRequest;
+import org.jboss.messaging.core.remoting.wireformat.CreateConnectionResponse;
+import org.jboss.messaging.core.remoting.wireformat.GetClientAOPStackRequest;
+import org.jboss.messaging.core.remoting.wireformat.GetClientAOPStackResponse;
 import org.jboss.messaging.util.Version;
-import org.jboss.remoting.Client;
-import org.jboss.remoting.InvokerLocator;
 
 /**
  * The client-side ConnectionFactory delegate class.
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
+ * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  *
  * @version <tt>$Revision$</tt>
  *
@@ -67,7 +67,9 @@ public class ClientConnectionFactoryDelegate
 
    private String uniqueName;
 
-   private String serverLocatorURI;
+   private String serverHost;
+
+   private int serverPort;
 
    private Version serverVersion;
  
@@ -105,14 +107,15 @@ public class ClientConnectionFactoryDelegate
 
    // Constructors ---------------------------------------------------------------------------------
 
-   public ClientConnectionFactoryDelegate(String uniqueName, String objectID, int serverID, String serverLocatorURI,
-                                          Version serverVersion, boolean clientPing, boolean strictTck)
+   public ClientConnectionFactoryDelegate(String uniqueName, String objectID, int serverID, String host,
+                                          int port, Version serverVersion, boolean clientPing, boolean strictTck)
    {
       super(objectID);
 
       this.uniqueName = uniqueName;
       this.serverID = serverID;
-      this.serverLocatorURI = serverLocatorURI;
+      this.serverHost = host;
+      this.serverPort = port;
       this.serverVersion = serverVersion;
       this.clientPing = clientPing;
       this.strictTck = strictTck;
@@ -148,31 +151,19 @@ public class ClientConnectionFactoryDelegate
       CreateConnectionResult res;
       
       try
-      {         
-         remotingConnection = new JMSRemotingConnection(serverLocatorURI, clientPing, strictTck);
-         
-         remotingConnection.start();
-   
-         Client client = remotingConnection.getRemotingClient();
-         
-         String remotingSessionId = client.getSessionId();
-         
-         String clientVMId = JMSClientVMIdentifier.instance;
-            
-         ConnectionFactoryCreateConnectionDelegateRequest req = 
-            new ConnectionFactoryCreateConnectionDelegateRequest(id, v,
-                                                                 remotingSessionId, clientVMId,
-                                                                 username, password, failedNodeID);
-           
-         ResponseSupport rs = (ResponseSupport)client.invoke(req, null);
-         
-         res = (CreateConnectionResult)rs.getResponse();
-      }
-      catch (Throwable t)
       {
-         //If we were invoking createConnectionDelegate and failure occurs then we need to clear
-         // up the JMSRemotingConnection
-
+         remotingConnection = new JMSRemotingConnection(serverHost, serverPort, strictTck);
+       
+         remotingConnection.start();
+         client = remotingConnection.getRemotingClient();
+         String sessionID = client.getSessionID();
+         
+         CreateConnectionRequest request = new CreateConnectionRequest(v, sessionID, JMSClientVMIdentifier.instance, failedNodeID, username, password);
+         CreateConnectionResponse response = (CreateConnectionResponse) sendBlocking(request);
+         ClientConnectionDelegate connectionDelegate = new ClientConnectionDelegate(response.getConnectionID(), response.getServerID());
+         res = new CreateConnectionResult(connectionDelegate);
+      } catch (Throwable t)
+      {
          if (remotingConnection != null)
          {
             try
@@ -183,7 +174,6 @@ public class ClientConnectionFactoryDelegate
             {
             }
          }
-         
          throw handleThrowable(t);
       }
          
@@ -217,20 +207,19 @@ public class ClientConnectionFactoryDelegate
       
       byte v = version.getProviderIncrementingVersion();
       
-      // Create a client - make sure pinging is off
+      Client client = createClient();
 
-      Map configuration = new HashMap();
+      GetClientAOPStackResponse response = (GetClientAOPStackResponse) sendBlocking(client, id, v, new GetClientAOPStackRequest());
 
-      configuration.put(Client.ENABLE_LEASE, String.valueOf(false));
+      try
+      {
+         client.disconnect();
+      } catch (Throwable t)
+      {
+         throw handleThrowable(t);
+      }
 
-      //We execute this on its own client
-      
-      Client theClient = createClient();
-      
-      ConnectionFactoryGetClientAOPStackRequest req =
-         new ConnectionFactoryGetClientAOPStackRequest(id, v);
-      
-      return (byte[])doInvoke(theClient, req); 
+      return response.getStack();
    }
 
    public TopologyResult getTopology() throws JMSException
@@ -245,11 +234,22 @@ public class ClientConnectionFactoryDelegate
       return "ConnectionFactoryDelegate[" + id + ", SID=" + serverID + "]";
    }
    
+   public String getServerHost()
+   {
+      return serverHost;
+   }
+   
+   public int getServerPort()
+   {
+      return serverPort;
+   }
+   
    public String getServerLocatorURI()
    {
-      return serverLocatorURI;
+      return "tcp://" + serverHost + ":" + serverPort;
    }
 
+   
    public int getServerID()
    {
       return serverID;
@@ -284,28 +284,18 @@ public class ClientConnectionFactoryDelegate
    
    private Client createClient() throws JMSException
    {
-      // Create a client - make sure pinging is off
-
-      Map configuration = new HashMap();
-
-      configuration.put(Client.ENABLE_LEASE, String.valueOf(false));
-
       //We execute this on it's own client
       Client client;
       
       try
       {
-         client = new Client(new InvokerLocator(serverLocatorURI), configuration);
-         client.setSubsystem(ServerPeer.REMOTING_JMS_SUBSYSTEM);
-         client.connect();
+         client = new Client(new MinaConnector());
+         client.connect(serverHost, serverPort, TCP);
       }
       catch (Exception e)
       {
          throw new MessagingNetworkFailureException("Failed to connect client", e);
       }
-
-      client.setMarshaller(new JMSWireFormat());
-      client.setUnMarshaller(new JMSWireFormat());
       
       return client;
    }
@@ -316,7 +306,9 @@ public class ClientConnectionFactoryDelegate
    {      
       super.read(in);
       
-      serverLocatorURI = in.readUTF();
+      serverHost = in.readUTF();
+
+      serverPort = in.readInt();
       
       serverVersion = new Version();
       
@@ -333,7 +325,9 @@ public class ClientConnectionFactoryDelegate
    {
       super.write(out);
       
-      out.writeUTF(serverLocatorURI);
+      out.writeUTF(serverHost);
+
+      out.writeInt(serverPort);
       
       serverVersion.write(out);
       

@@ -51,23 +51,26 @@ import org.jboss.jms.message.MessageProxy;
 import org.jboss.jms.message.ObjectMessageProxy;
 import org.jboss.jms.message.StreamMessageProxy;
 import org.jboss.jms.message.TextMessageProxy;
-import org.jboss.jms.wireformat.CloseRequest;
-import org.jboss.jms.wireformat.ClosingRequest;
-import org.jboss.jms.wireformat.RequestSupport;
-import org.jboss.jms.wireformat.SessionAcknowledgeDeliveriesRequest;
-import org.jboss.jms.wireformat.SessionAcknowledgeDeliveryRequest;
-import org.jboss.jms.wireformat.SessionAddTemporaryDestinationRequest;
-import org.jboss.jms.wireformat.SessionCancelDeliveriesRequest;
-import org.jboss.jms.wireformat.SessionCancelDeliveryRequest;
-import org.jboss.jms.wireformat.SessionCreateBrowserDelegateRequest;
-import org.jboss.jms.wireformat.SessionCreateConsumerDelegateRequest;
-import org.jboss.jms.wireformat.SessionCreateQueueRequest;
-import org.jboss.jms.wireformat.SessionCreateTopicRequest;
-import org.jboss.jms.wireformat.SessionDeleteTemporaryDestinationRequest;
-import org.jboss.jms.wireformat.SessionRecoverDeliveriesRequest;
-import org.jboss.jms.wireformat.SessionSendRequest;
-import org.jboss.jms.wireformat.SessionUnsubscribeRequest;
 import org.jboss.logging.Logger;
+import org.jboss.messaging.core.remoting.wireformat.AcknowledgeDeliveriesMessage;
+import org.jboss.messaging.core.remoting.wireformat.AcknowledgeDeliveryRequest;
+import org.jboss.messaging.core.remoting.wireformat.AcknowledgeDeliveryResponse;
+import org.jboss.messaging.core.remoting.wireformat.AddTemporaryDestinationMessage;
+import org.jboss.messaging.core.remoting.wireformat.CancelDeliveriesMessage;
+import org.jboss.messaging.core.remoting.wireformat.CancelDeliveryMessage;
+import org.jboss.messaging.core.remoting.wireformat.CloseMessage;
+import org.jboss.messaging.core.remoting.wireformat.ClosingRequest;
+import org.jboss.messaging.core.remoting.wireformat.ClosingResponse;
+import org.jboss.messaging.core.remoting.wireformat.CreateBrowserRequest;
+import org.jboss.messaging.core.remoting.wireformat.CreateBrowserResponse;
+import org.jboss.messaging.core.remoting.wireformat.CreateConsumerRequest;
+import org.jboss.messaging.core.remoting.wireformat.CreateConsumerResponse;
+import org.jboss.messaging.core.remoting.wireformat.CreateDestinationRequest;
+import org.jboss.messaging.core.remoting.wireformat.CreateDestinationResponse;
+import org.jboss.messaging.core.remoting.wireformat.DeleteTemporaryDestinationMessage;
+import org.jboss.messaging.core.remoting.wireformat.RecoverDeliveriesMessage;
+import org.jboss.messaging.core.remoting.wireformat.SendMessage;
+import org.jboss.messaging.core.remoting.wireformat.UnsubscribeMessage;
 
 /**
  * The client-side Session delegate class.
@@ -75,6 +78,7 @@ import org.jboss.logging.Logger;
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
+ * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  *
  * @version <tt>$Revision$</tt>
  *
@@ -104,6 +108,14 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
 
       this.dupsOKBatchSize = dupsOKBatchSize;
    }
+   
+   public ClientSessionDelegate(String objectID, int dupsOKBatchSize, boolean strictTCK)
+   {
+      super(objectID);
+
+      this.dupsOKBatchSize = dupsOKBatchSize;
+      this.strictTck = strictTCK;
+   }
 
    public ClientSessionDelegate()
    {
@@ -117,7 +129,7 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
 
       super.synchronizeWith(nd);
 
-      ClientSessionDelegate newDelegate = (ClientSessionDelegate)nd;
+      DelegateSupport newDelegate = (DelegateSupport)nd;
 
       // synchronize server endpoint state
 
@@ -126,7 +138,7 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
       state.synchronizeWith(newDelegate.getState());
       
       JMSRemotingConnection conn = ((ConnectionState)state.getParent()).getRemotingConnection();
-
+      
       client = conn.getRemotingClient();
       
       strictTck = conn.isStrictTck();
@@ -137,7 +149,7 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
       super.setState(state);
       
       JMSRemotingConnection conn = ((ConnectionState)state.getParent()).getRemotingConnection();
-
+      
       client = conn.getRemotingClient();
       
       strictTck = conn.isStrictTck();
@@ -147,32 +159,29 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
 
    public void close() throws JMSException
    {
-      RequestSupport req = new CloseRequest(id, version);
-
-      doInvoke(client, req);
+      sendBlocking(new CloseMessage());
    }
 
    public long closing(long sequence) throws JMSException
-   {   	   	
-      RequestSupport req = new ClosingRequest(((SessionState)state).getNPSendSequence(), id, version);
-
-      return ((Long)doInvoke(client, req)).longValue();
+   {   	   
+      long seq = ((SessionState)state).getNPSendSequence();
+      ClosingRequest request = new ClosingRequest(seq);
+      ClosingResponse response = (ClosingResponse) sendBlocking(request);
+      return response.getID();
    }
 
    // SessionDelegate implementation ---------------------------------------------------------------
 
    public boolean acknowledgeDelivery(Ack ack) throws JMSException
    {
-      RequestSupport req = new SessionAcknowledgeDeliveryRequest(id, version, ack);
-
-      return ((Boolean)doInvoke(client, req)).booleanValue();
+      AcknowledgeDeliveryRequest request = new AcknowledgeDeliveryRequest(ack.getDeliveryID());
+         AcknowledgeDeliveryResponse  response = (AcknowledgeDeliveryResponse) sendBlocking(request);
+         return response.isAcknowledged();
    }
 
    public void acknowledgeDeliveries(List acks) throws JMSException
    {
-      RequestSupport req = new SessionAcknowledgeDeliveriesRequest(id, version, acks);
-
-      doInvoke(client, req);
+      sendBlocking(new AcknowledgeDeliveriesMessage(acks));
    }
 
    /**
@@ -186,9 +195,7 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
 
    public void addTemporaryDestination(JBossDestination destination) throws JMSException
    {
-      RequestSupport req = new SessionAddTemporaryDestinationRequest(id, version, destination);
-
-      doInvoke(client, req);
+      sendBlocking(new AddTemporaryDestinationMessage(destination));
    }
 
    /**
@@ -212,12 +219,9 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
    public BrowserDelegate createBrowserDelegate(JBossDestination queue, String messageSelector)
       throws JMSException
    {
-      RequestSupport req = new SessionCreateBrowserDelegateRequest(id, version, queue,
-                                                                   messageSelector);
-
-      Object res = doInvoke(client, req);
-
-      return (BrowserDelegate)res;
+      CreateBrowserRequest request = new CreateBrowserRequest(queue, messageSelector);
+      CreateBrowserResponse response = (CreateBrowserResponse) sendBlocking(request);
+      return new ClientBrowserDelegate(response.getBrowserID());      
    }
 
    /**
@@ -234,11 +238,11 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
                                                   boolean noLocal, String subscriptionName,
                                                   boolean connectionConsumer, boolean started) throws JMSException
    {
-      RequestSupport req = new SessionCreateConsumerDelegateRequest(id, version, destination,
-                                                                    selector, noLocal, subscriptionName,
-                                                                    connectionConsumer, started);
+      CreateConsumerRequest request = new CreateConsumerRequest(destination, selector, noLocal, subscriptionName, connectionConsumer, started);
+      CreateConsumerResponse response = (CreateConsumerResponse) sendBlocking(request);
 
-      return (ConsumerDelegate)doInvoke(client, req);
+      ClientConsumerDelegate delegate = new ClientConsumerDelegate(response.getConsumerID(), response.getBufferSize(), response.getMaxDeliveries(), response.getRedeliveryDelay());
+      return delegate;
    }
 
    /**
@@ -288,11 +292,11 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
 
    public JBossQueue createQueue(String queueName) throws JMSException
    {
-      RequestSupport req = new SessionCreateQueueRequest(id, version, queueName);
-
-      return (JBossQueue)doInvoke(client, req);
+      CreateDestinationRequest request = new CreateDestinationRequest(queueName, true);      
+      CreateDestinationResponse response = (CreateDestinationResponse) sendBlocking(request);
+      return (JBossQueue) response.getDestination();
    }
-
+   
    /**
     * This invocation should either be handled by the client-side interceptor chain or by the
     * server-side endpoint.
@@ -322,16 +326,14 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
 
    public JBossTopic createTopic(String topicName) throws JMSException
    {
-      RequestSupport req = new SessionCreateTopicRequest(id, version, topicName);
-
-      return (JBossTopic)doInvoke(client, req);
+      CreateDestinationRequest request = new CreateDestinationRequest(topicName, false);      
+      CreateDestinationResponse response = (CreateDestinationResponse) sendBlocking(request);
+      return (JBossTopic) response.getDestination();
    }
 
    public void deleteTemporaryDestination(JBossDestination destination) throws JMSException
    {
-      RequestSupport req = new SessionDeleteTemporaryDestinationRequest(id, version, destination);
-
-      doInvoke(client, req);
+      sendBlocking(new DeleteTemporaryDestinationMessage(destination));
    }
 
    /**
@@ -408,9 +410,7 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
 
    public void unsubscribe(String subscriptionName) throws JMSException
    {
-      RequestSupport req = new SessionUnsubscribeRequest(id, version, subscriptionName);
-
-      doInvoke(client, req);
+      sendBlocking(new UnsubscribeMessage(subscriptionName));
    }
 
    /**
@@ -467,37 +467,35 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
    		sstate.incNpSendSequence();
    	}
    	
-      RequestSupport req = new SessionSendRequest(id, version, m, checkForDuplicates, seq);
-
-      if (seq == -1)
-      {      
-      	doInvoke(client, req);
-      }
-      else
-      {
-      	doInvokeOneway(client, req);
-      }
+   	SendMessage message = new SendMessage(m, checkForDuplicates, seq);
+   	sendBlocking(message);
+   	
+   	
+//      RequestSupport req = new SessionSendRequest(id, version, m, checkForDuplicates, seq);
+//
+//      if (seq == -1)
+//      {      
+//      	doInvoke(client, req);
+//      }
+//      else
+//      {
+//      	doInvokeOneway(client, req);
+//      }
    }
 
    public void cancelDeliveries(List cancels) throws JMSException
    {
-      RequestSupport req = new SessionCancelDeliveriesRequest(id, version, cancels);
-
-      doInvoke(client, req);
+      sendBlocking(new CancelDeliveriesMessage(cancels));
    }
 
    public void cancelDelivery(Cancel cancel) throws JMSException
    {
-      RequestSupport req = new SessionCancelDeliveryRequest(id, version, cancel);
-
-      doInvoke(client, req);
+      sendBlocking(new CancelDeliveryMessage(cancel));
    }
 
-   public void recoverDeliveries(List acks, String sessionID) throws JMSException
+   public void recoverDeliveries(List deliveries, String sessionID) throws JMSException
    {
-      RequestSupport req = new SessionRecoverDeliveriesRequest(id, version, acks, sessionID);
-
-      doInvoke(client, req);
+      sendBlocking(new RecoverDeliveriesMessage(deliveries, sessionID));
    }
 
    // Streamable overrides -------------------------------------------------------------------------
@@ -521,6 +519,11 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
    public int getDupsOKBatchSize()
    {
       return dupsOKBatchSize;
+   }
+
+   public boolean isStrictTck()
+   {
+      return strictTck;
    }
 
    public String toString()

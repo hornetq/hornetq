@@ -1,25 +1,31 @@
 /*
-  * JBoss, Home of Professional Open Source
-  * Copyright 2005, JBoss Inc., and individual contributors as indicated
-  * by the @authors tag. See the copyright.txt in the distribution for a
-  * full listing of individual contributors.
-  *
-  * This is free software; you can redistribute it and/or modify it
-  * under the terms of the GNU Lesser General Public License as
-  * published by the Free Software Foundation; either version 2.1 of
-  * the License, or (at your option) any later version.
-  *
-  * This software is distributed in the hope that it will be useful,
-  * but WITHOUT ANY WARRANTY; without even the implied warranty of
-  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-  * Lesser General Public License for more details.
-  *
-  * You should have received a copy of the GNU Lesser General Public
-  * License along with this software; if not, write to the Free
-  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
-  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
-  */
+ * JBoss, Home of Professional Open Source
+ * Copyright 2005, JBoss Inc., and individual contributors as indicated
+ * by the @authors tag. See the copyright.txt in the distribution for a
+ * full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
 package org.jboss.jms.server.endpoint;
+
+import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_BROWSER_RESET;
+import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_CLOSE;
+import static org.jboss.messaging.core.remoting.wireformat.PacketType.REQ_BROWSER_HASNEXTMESSAGE;
+import static org.jboss.messaging.core.remoting.wireformat.PacketType.REQ_BROWSER_NEXTMESSAGE;
+import static org.jboss.messaging.core.remoting.wireformat.PacketType.REQ_CLOSING;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -29,12 +35,23 @@ import javax.jms.JMSException;
 import javax.jms.Message;
 
 import org.jboss.jms.delegate.BrowserEndpoint;
+import org.jboss.jms.exception.MessagingJMSException;
 import org.jboss.jms.message.JBossMessage;
 import org.jboss.jms.server.selector.Selector;
-import org.jboss.jms.wireformat.Dispatcher;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.contract.Channel;
 import org.jboss.messaging.core.contract.Filter;
+import org.jboss.messaging.core.remoting.PacketDispatcher;
+import org.jboss.messaging.core.remoting.PacketHandler;
+import org.jboss.messaging.core.remoting.PacketSender;
+import org.jboss.messaging.core.remoting.wireformat.AbstractPacket;
+import org.jboss.messaging.core.remoting.wireformat.BrowserHasNextMessageResponse;
+import org.jboss.messaging.core.remoting.wireformat.BrowserNextMessageResponse;
+import org.jboss.messaging.core.remoting.wireformat.ClosingRequest;
+import org.jboss.messaging.core.remoting.wireformat.ClosingResponse;
+import org.jboss.messaging.core.remoting.wireformat.JMSExceptionMessage;
+import org.jboss.messaging.core.remoting.wireformat.NullPacket;
+import org.jboss.messaging.core.remoting.wireformat.PacketType;
 import org.jboss.messaging.util.ExceptionUtil;
 
 /**
@@ -43,7 +60,7 @@ import org.jboss.messaging.util.ExceptionUtil;
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
- *
+ * 
  * $Id$
  */
 public class ServerBrowserEndpoint implements BrowserEndpoint
@@ -231,7 +248,7 @@ public class ServerBrowserEndpoint implements BrowserEndpoint
       
       iterator = null;
       
-      Dispatcher.instance.unregisterTarget(id, this);
+      PacketDispatcher.server.unregister(id);
       
       closed = true;
    }
@@ -246,5 +263,69 @@ public class ServerBrowserEndpoint implements BrowserEndpoint
    }
 
    // Inner classes --------------------------------------------------------------------------------
+   
+   class ServerBrowserEndpointHandler implements PacketHandler {
 
+      public String getID()
+      {
+         return id;
+      }
+      
+      public void handle(AbstractPacket packet, PacketSender sender)
+      {
+         try
+         {
+            AbstractPacket response = null;
+
+            PacketType type = packet.getType();
+            if (type == REQ_BROWSER_HASNEXTMESSAGE)
+            {
+               response = new BrowserHasNextMessageResponse(hasNextMessage());
+            } else if (type == REQ_BROWSER_NEXTMESSAGE)
+            {
+               JBossMessage message = nextMessage();
+               response = new BrowserNextMessageResponse(message);
+            } else if (type == MSG_BROWSER_RESET)
+            {
+               reset();
+
+               response = new NullPacket();
+            } else if (type == REQ_CLOSING)
+            {
+               ClosingRequest request = (ClosingRequest) packet;
+               long id = closing(request.getSequence());
+
+               response = new ClosingResponse(id);
+            } else if (type == MSG_CLOSE)
+            {
+               close();
+
+               response = new NullPacket();
+            } else
+            {
+               response = new JMSExceptionMessage(new MessagingJMSException(
+                     "Unsupported packet for browser: " + packet));
+            }
+
+            // reply if necessary
+            if (response != null)
+            {
+               response.normalize(packet);
+               sender.send(response);
+            }
+
+         } catch (JMSException e)
+         {
+            JMSExceptionMessage message = new JMSExceptionMessage(e);
+            message.normalize(packet);
+            sender.send(message);
+         }
+      }
+
+      @Override
+      public String toString()
+      {
+         return "ServerBrowserEndpointHandler[id=" + id + "]";
+      }
+   }
 }

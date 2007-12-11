@@ -21,6 +21,19 @@
  */
 package org.jboss.jms.server.connectionfactory;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+
 import org.jboss.aop.AspectManager;
 import org.jboss.jms.client.JBossConnectionFactory;
 import org.jboss.jms.client.delegate.ClientClusteredConnectionFactoryDelegate;
@@ -33,25 +46,20 @@ import org.jboss.jms.server.ConnectionFactoryManager;
 import org.jboss.jms.server.ServerPeer;
 import org.jboss.jms.server.endpoint.ServerConnectionFactoryEndpoint;
 import org.jboss.jms.server.endpoint.advised.ConnectionFactoryAdvised;
-import org.jboss.jms.wireformat.Dispatcher;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.contract.ClusterNotification;
 import org.jboss.messaging.core.contract.ClusterNotificationListener;
 import org.jboss.messaging.core.contract.Replicator;
+import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.util.JNDIUtil;
 import org.jboss.messaging.util.Version;
-import org.jboss.remoting.InvokerLocator;
-
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
-import java.util.*;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
+ * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  * @version <tt>$Revision$</tt>
  *
  * $Id$
@@ -97,7 +105,8 @@ public class ConnectionFactoryJNDIMapper
    public synchronized void registerConnectionFactory(String uniqueName,
                                                       String clientID,
                                                       List<String> jndiBindings,
-                                                      String locatorURI,
+                                                      String host,
+                                                      int port,
                                                       boolean clientPing,
                                                       int prefetchSize,
                                                       boolean slowConsumers,
@@ -121,7 +130,7 @@ public class ConnectionFactoryJNDIMapper
       }
 
       // See http://www.jboss.com/index.html?module=bb&op=viewtopic&p=4076040#4076040
-      String id = uniqueName;
+     final String id = uniqueName;
 
       Version version = serverPeer.getVersion();
 
@@ -162,7 +171,7 @@ public class ConnectionFactoryJNDIMapper
 
       ClientConnectionFactoryDelegate localDelegate =
          new ClientConnectionFactoryDelegate(uniqueName, id, serverPeer.getConfiguration().getServerPeerID(),
-                                             locatorURI, version, clientPing, useStrict);
+                                             host, port, version, clientPing, useStrict);
 
       log.debug(this + " created local delegate " + localDelegate);
 
@@ -208,7 +217,7 @@ public class ConnectionFactoryJNDIMapper
       // Now bind it in JNDI
       rebindConnectionFactory(initialContext, jndiBindings, delegate);
 
-      ConnectionFactoryAdvised advised;
+      final ConnectionFactoryAdvised advised;
 
       // Need to synchronized to prevent a deadlock
       // See http://jira.jboss.com/jira/browse/JBMESSAGING-797
@@ -219,8 +228,8 @@ public class ConnectionFactoryJNDIMapper
 
       // Registering with the dispatcher should always be the last thing otherwise a client could
       // use a partially initialised object
-      Dispatcher.instance.registerTarget(id, advised);
-
+      PacketDispatcher.server.register(advised.new ConnectionFactoryAdvisedPacketHandler(id));
+      
       // Replicate the change - we will ignore this locally
 
       if (replicator != null) replicator.put(Replicator.CF_PREFIX + uniqueName, localDelegate);
@@ -268,7 +277,7 @@ public class ConnectionFactoryJNDIMapper
          }
       }
 
-      Dispatcher.instance.unregisterTarget(endpoint.getID(), endpoint);
+      PacketDispatcher.server.unregister(endpoint.getID());
    }
 
    // MessagingComponent implementation ------------------------------------------------------------
@@ -480,52 +489,52 @@ public class ConnectionFactoryJNDIMapper
    
    private boolean sanityCheckFactories(Collection factories) throws Exception
    {
-   	Iterator iter = factories.iterator();
-   	InvokerLocator prevLocator = null;
-   	while (iter.hasNext())
-   	{
-   		ClientConnectionFactoryDelegate fact = (ClientConnectionFactoryDelegate)iter.next();
-   		
-   		//Sanity check - the locator protocol and params MUST be the same on each node
-   		String locatorString = fact.getServerLocatorURI();
-   		
-   		InvokerLocator locator = new InvokerLocator(locatorString);
-   		
-   		if (prevLocator != null)
-   		{
-   			//Do checks
-   			
-   			if (!locator.getProtocol().equals(prevLocator.getProtocol()))
-   			{
-   				log.error("Protocol to be used for connection factory does not match protocol specified at other nodes in the cluster " +
-   						    locator.getProtocol() + ", " + prevLocator.getProtocol());
-   				return false;
-   			}
-   			Map prevParams = prevLocator.getParameters();
-   			Map params = locator.getParameters();
-   			if (prevParams.size() != params.size())
-   			{
-   				log.error("Locator for connection factory has different number of parameters");
-   				return false;
-   			}
-   			Iterator iter2 = prevParams.entrySet().iterator();
-   			while (iter2.hasNext())
-   			{
-   				Map.Entry entry = (Map.Entry)iter2.next();
-   				
-   				String prevKey = (String)entry.getKey();
-   				String prevValue = (String)entry.getValue();
-   				String value = (String)params.get(prevKey);
-   				if (value == null || !prevValue.equals(value))
-   				{
-   					log.error("Locator param does not exist or has wrong value");
-   					return false;
-   				}   				
-   			}
-   		}
-   		
-   		prevLocator = locator;   		
-   	}
+//   	Iterator iter = factories.iterator();
+//   	InvokerLocator prevLocator = null;
+//   	while (iter.hasNext())
+//   	{
+//   		ClientConnectionFactoryDelegate fact = (ClientConnectionFactoryDelegate)iter.next();
+//   		
+//   		//Sanity check - the locator protocol and params MUST be the same on each node
+//   		String locatorString = fact.getServerLocatorURI();
+//   		
+//   		InvokerLocator locator = new InvokerLocator(locatorString);
+//   		
+//   		if (prevLocator != null)
+//   		{
+//   			//Do checks
+//   			
+//   			if (!locator.getProtocol().equals(prevLocator.getProtocol()))
+//   			{
+//   				log.error("Protocol to be used for connection factory does not match protocol specified at other nodes in the cluster " +
+//   						    locator.getProtocol() + ", " + prevLocator.getProtocol());
+//   				return false;
+//   			}
+//   			Map prevParams = prevLocator.getParameters();
+//   			Map params = locator.getParameters();
+//   			if (prevParams.size() != params.size())
+//   			{
+//   				log.error("Locator for connection factory has different number of parameters");
+//   				return false;
+//   			}
+//   			Iterator iter2 = prevParams.entrySet().iterator();
+//   			while (iter2.hasNext())
+//   			{
+//   				Map.Entry entry = (Map.Entry)iter2.next();
+//   				
+//   				String prevKey = (String)entry.getKey();
+//   				String prevValue = (String)entry.getValue();
+//   				String value = (String)params.get(prevKey);
+//   				if (value == null || !prevValue.equals(value))
+//   				{
+//   					log.error("Locator param does not exist or has wrong value");
+//   					return false;
+//   				}   				
+//   			}
+//   		}
+//   		
+//   		prevLocator = locator;   		
+//   	}
    	return true;
    }
 

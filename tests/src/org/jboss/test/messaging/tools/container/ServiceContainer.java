@@ -140,6 +140,5 @@ public class ServiceContainer
 
    private ServiceContainerConfiguration config;
 
-
    // Inner classes --------------------------------------------------------------------------------
 }

@@ -12,8 +12,6 @@ import javax.jms.JMSException;
 import org.jboss.jms.client.container.ConnectionFailureListener;
 import org.jboss.jms.client.state.ConnectionState;
 import org.jboss.logging.Logger;
-import org.jboss.remoting.Client;
-import org.jboss.remoting.ConnectionListener;
 
 /**
  * The ONLY remoting connection listener for a JMS connection's underlying remoting connection.
@@ -27,7 +25,7 @@ import org.jboss.remoting.ConnectionListener;
  *
  * $Id$
  */
-public class ConsolidatedRemotingConnectionListener implements ConnectionListener
+public class ConsolidatedRemotingConnectionListener
 {
    // Constants ------------------------------------------------------------------------------------
 
@@ -51,7 +49,7 @@ public class ConsolidatedRemotingConnectionListener implements ConnectionListene
 
    // ConnectionListener implementation ------------------------------------------------------------
 
-   public void handleConnectionException(Throwable throwable, Client client)
+   public void handleConnectionException(Throwable throwable)
    {
       // forward the exception to delegate listener and JMS ExceptionListeners; synchronize
       // to avoid race conditions
@@ -78,7 +76,7 @@ public class ConsolidatedRemotingConnectionListener implements ConnectionListene
             //We only forward to the JMS listener if failover did not successfully handle the exception
             //If failover handled the exception transparently then there is effectively no problem
             //with the logical connection that the client needs to be aware of
-            forwardToJMSListener = !remotingListenerCopy.handleConnectionException(throwable, client);
+            forwardToJMSListener = !remotingListenerCopy.handleConnectionException(throwable);
          }
          catch(Exception e)
          {

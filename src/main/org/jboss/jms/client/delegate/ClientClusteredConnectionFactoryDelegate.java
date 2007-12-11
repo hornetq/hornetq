@@ -21,27 +21,32 @@
  */
 package org.jboss.jms.client.delegate;
 
+import static org.jboss.messaging.core.remoting.wireformat.PacketType.RESP_GETTOPOLOGY;
+
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
-import java.util.Collections;
 
 import javax.jms.JMSException;
 
+import org.jboss.jms.client.container.JMSClientVMIdentifier;
 import org.jboss.jms.client.plugin.LoadBalancingPolicy;
 import org.jboss.jms.client.remoting.JMSRemotingConnection;
-import org.jboss.jms.client.remoting.ConnectionFactoryCallbackHandler;
-import org.jboss.jms.client.container.JMSClientVMIdentifier;
 import org.jboss.jms.delegate.ConnectionFactoryDelegate;
 import org.jboss.jms.delegate.CreateConnectionResult;
 import org.jboss.jms.delegate.IDBlock;
 import org.jboss.jms.delegate.TopologyResult;
 import org.jboss.jms.exception.MessagingNetworkFailureException;
-import org.jboss.jms.wireformat.ConnectionFactoryAddCallbackRequest;
-import org.jboss.jms.wireformat.ConnectionFactoryGetTopologyRequest;
-import org.jboss.jms.wireformat.ConnectionFactoryGetTopologyResponse;
-import org.jboss.jms.wireformat.ConnectionFactoryRemoveCallbackRequest;
 import org.jboss.logging.Logger;
+import org.jboss.messaging.core.remoting.PacketDispatcher;
+import org.jboss.messaging.core.remoting.PacketHandler;
+import org.jboss.messaging.core.remoting.PacketSender;
+import org.jboss.messaging.core.remoting.wireformat.AbstractPacket;
+import org.jboss.messaging.core.remoting.wireformat.GetTopologyRequest;
+import org.jboss.messaging.core.remoting.wireformat.GetTopologyResponse;
+import org.jboss.messaging.core.remoting.wireformat.PacketType;
+import org.jboss.messaging.core.remoting.wireformat.UpdateCallbackMessage;
 import org.jboss.messaging.util.Version;
 import org.jboss.messaging.util.WeakHashSet;
 
@@ -91,11 +96,14 @@ public class ClientClusteredConnectionFactoryDelegate extends DelegateSupport
       {
          if (trace) log.trace("Closing current callback");
          closeCallback();
-
+         
          if (trace) log.trace("Trying communication on server(" + server + ")=" + delegates[server].getServerLocatorURI());
          try
          {
-            remoting = new JMSRemotingConnection(delegates[server].getServerLocatorURI(), true, delegates[server].getStrictTck());
+            String serverHost = delegates[server].getServerHost();
+            int serverPort = delegates[server].getServerPort();
+            
+            remoting = new JMSRemotingConnection(serverHost, serverPort, delegates[server].getStrictTck());
             remoting.start();
             currentDelegate = delegates[server];
             if (trace) log.trace("Adding callback");
@@ -122,18 +130,32 @@ public class ClientClusteredConnectionFactoryDelegate extends DelegateSupport
       }
    }
 
-   private void addCallback(ClientConnectionFactoryDelegate delegate) throws Throwable
+   private void addCallback(final ClientConnectionFactoryDelegate delegate) throws Throwable
    {
-      remoting.getCallbackManager().setConnectionfactoryCallbackHandler(new ConnectionFactoryCallbackHandler(this, remoting));
+      PacketDispatcher.client.register(new PacketHandler() {
 
-      ConnectionFactoryAddCallbackRequest request =
-         new ConnectionFactoryAddCallbackRequest (JMSClientVMIdentifier.instance,
-               remoting.getRemotingClient().getSessionId(),
-               delegate.getID(),
-               Version.instance().getProviderIncrementingVersion());
+         public String getID()
+         {
+            return delegate.getID();
+         }
 
-      remoting.getRemotingClient().invoke(request, null);
-
+         public void handle(AbstractPacket packet, PacketSender sender)
+         {
+            PacketType type = packet.getType();
+            if (type == RESP_GETTOPOLOGY)
+            {
+               GetTopologyResponse response = (GetTopologyResponse) packet;
+               TopologyResult topology = response.getTopology();
+               updateFailoverInfo(topology.getDelegates(), topology.getFailoverMap());               
+            } else 
+            {
+               log.error("Unhandled packet " + packet + " by " + this);
+            }
+         }        
+      });
+      
+      UpdateCallbackMessage message = new UpdateCallbackMessage(remoting.getRemotingClient().getSessionID(), JMSClientVMIdentifier.instance, true);
+      sendOneWay(remoting.getRemotingClient(), delegate.getID(), Version.instance().getProviderIncrementingVersion(), message);
    }
 
    private void addShutdownHook()
@@ -143,13 +165,10 @@ public class ClientClusteredConnectionFactoryDelegate extends DelegateSupport
 
    private void removeCallback() throws Throwable
    {
-      ConnectionFactoryRemoveCallbackRequest request =
-         new ConnectionFactoryRemoveCallbackRequest (JMSClientVMIdentifier.instance,
-               remoting.getRemotingClient().getSessionId(),
-               currentDelegate.getID(),
-               Version.instance().getProviderIncrementingVersion());
-
-      remoting.getRemotingClient().invoke(request, null);
+      PacketDispatcher.client.unregister(currentDelegate.getID());
+      
+      UpdateCallbackMessage message = new UpdateCallbackMessage(remoting.getRemotingClient().getSessionID(), JMSClientVMIdentifier.instance, false);
+      sendOneWay(remoting.getRemotingClient(), currentDelegate.getID(), Version.instance().getProviderIncrementingVersion(), message);
    }
 
    protected void finalize() throws Throwable
@@ -309,26 +328,15 @@ public class ClientClusteredConnectionFactoryDelegate extends DelegateSupport
 
 
    public TopologyResult getTopology() throws JMSException
-   {
+   {      
+      byte version = Version.instance().getProviderIncrementingVersion();
 
-      try
-      {
-         ConnectionFactoryGetTopologyRequest request =
-            new ConnectionFactoryGetTopologyRequest(currentDelegate.getID());
+      GetTopologyResponse response = (GetTopologyResponse) sendBlocking(remoting.getRemotingClient(), currentDelegate.getID(), version, new GetTopologyRequest());
+      TopologyResult topology = response.getTopology();
 
-         ConnectionFactoryGetTopologyResponse response = (ConnectionFactoryGetTopologyResponse)remoting.getRemotingClient().invoke(request, null);
+      updateFailoverInfo(topology.getDelegates(), topology.getFailoverMap());
 
-
-         TopologyResult topology = (TopologyResult)response.getResponse();
-
-         updateFailoverInfo(topology.getDelegates(), topology.getFailoverMap());
-
-         return topology;
-      }
-      catch (Throwable e)
-      {
-         throw handleThrowable(e);
-      }
+      return topology;
    }
 
    //Only used in testing

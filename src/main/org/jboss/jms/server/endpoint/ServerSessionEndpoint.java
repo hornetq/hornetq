@@ -21,14 +21,32 @@
   */
 package org.jboss.jms.server.endpoint;
 
-import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
-import EDU.oswego.cs.dl.util.concurrent.LinkedQueue;
-import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
-import EDU.oswego.cs.dl.util.concurrent.SynchronizedLong;
+import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import javax.jms.IllegalStateException;
+import javax.jms.InvalidDestinationException;
+import javax.jms.JMSException;
+
 import org.jboss.aop.AspectManager;
 import org.jboss.jms.client.delegate.ClientBrowserDelegate;
 import org.jboss.jms.client.delegate.ClientConsumerDelegate;
-import org.jboss.jms.delegate.*;
+import org.jboss.jms.delegate.Ack;
+import org.jboss.jms.delegate.BrowserDelegate;
+import org.jboss.jms.delegate.Cancel;
+import org.jboss.jms.delegate.ConsumerDelegate;
+import org.jboss.jms.delegate.DeliveryInfo;
+import org.jboss.jms.delegate.DeliveryRecovery;
+import org.jboss.jms.delegate.SessionEndpoint;
 import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.destination.JBossQueue;
 import org.jboss.jms.destination.JBossTopic;
@@ -43,29 +61,35 @@ import org.jboss.jms.server.endpoint.advised.BrowserAdvised;
 import org.jboss.jms.server.endpoint.advised.ConsumerAdvised;
 import org.jboss.jms.server.messagecounter.MessageCounter;
 import org.jboss.jms.server.selector.Selector;
-import org.jboss.jms.wireformat.ClientDelivery;
-import org.jboss.jms.wireformat.Dispatcher;
 import org.jboss.logging.Logger;
-import org.jboss.messaging.core.contract.*;
+import org.jboss.messaging.core.contract.Binding;
+import org.jboss.messaging.core.contract.Channel;
+import org.jboss.messaging.core.contract.Condition;
+import org.jboss.messaging.core.contract.Delivery;
+import org.jboss.messaging.core.contract.DeliveryObserver;
+import org.jboss.messaging.core.contract.Message;
+import org.jboss.messaging.core.contract.MessageReference;
+import org.jboss.messaging.core.contract.MessageStore;
+import org.jboss.messaging.core.contract.PersistenceManager;
+import org.jboss.messaging.core.contract.PostOffice;
 import org.jboss.messaging.core.contract.Queue;
+import org.jboss.messaging.core.contract.Replicator;
 import org.jboss.messaging.core.impl.IDManager;
 import org.jboss.messaging.core.impl.MessagingQueue;
 import org.jboss.messaging.core.impl.tx.Transaction;
 import org.jboss.messaging.core.impl.tx.TransactionException;
 import org.jboss.messaging.core.impl.tx.TransactionRepository;
 import org.jboss.messaging.core.impl.tx.TxCallback;
+import org.jboss.messaging.core.remoting.PacketDispatcher;
+import org.jboss.messaging.core.remoting.wireformat.DeliverMessage;
 import org.jboss.messaging.util.ExceptionUtil;
 import org.jboss.messaging.util.GUIDGenerator;
 import org.jboss.messaging.util.MessageQueueNameHelper;
-import org.jboss.remoting.Client;
-import org.jboss.remoting.callback.Callback;
-import org.jboss.remoting.callback.ServerInvokerCallbackHandler;
 
-import javax.jms.IllegalStateException;
-import javax.jms.InvalidDestinationException;
-import javax.jms.JMSException;
-import java.lang.ref.WeakReference;
-import java.util.*;
+import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
+import EDU.oswego.cs.dl.util.concurrent.LinkedQueue;
+import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
+import EDU.oswego.cs.dl.util.concurrent.SynchronizedLong;
 
 /**
  * The server side representation of a JMS session.
@@ -84,6 +108,7 @@ import java.util.*;
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
+ * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  * @version <tt>$Revision$</tt>
  *
  * $Id$
@@ -113,7 +138,6 @@ public class ServerSessionEndpoint implements SessionEndpoint
    private volatile boolean closed;
 
    private ServerConnectionEndpoint connectionEndpoint;
-   private ServerInvokerCallbackHandler callbackHandler;
    
    private ServerPeer sp;
 
@@ -161,8 +185,6 @@ public class ServerSessionEndpoint implements SessionEndpoint
       this.connectionEndpoint = connectionEndpoint;
       
       this.replicating = replicating;
-      
-      callbackHandler = connectionEndpoint.getCallbackHandler();
       
       sp = connectionEndpoint.getServerPeer();
 
@@ -1211,8 +1233,8 @@ public class ServerSessionEndpoint implements SessionEndpoint
       
       sp.removeSession(id);
             
-      Dispatcher.instance.unregisterTarget(id, this);
-      
+      PacketDispatcher.server.unregister(id);
+
       closed = true;
    }            
    
@@ -1423,69 +1445,73 @@ public class ServerSessionEndpoint implements SessionEndpoint
       // We send the message to the client on the current thread. The message is written onto the
       // transport and then the thread returns immediately without waiting for a response.
 
-      Client callbackClient = callbackHandler.getCallbackClient();
+   	DeliverMessage m = new DeliverMessage(ref.getMessage(), consumer.getID(), deliveryID, ref.getDeliveryCount());
+   	m.setVersion(getConnectionEndpoint().getUsingVersion());
+   	consumer.deliver(m);
 
-      ClientDelivery del = new ClientDelivery(ref.getMessage(), consumer.getID(), deliveryID, ref.getDeliveryCount());
-
-      Callback callback = new Callback(del);
-
-      try
-      {
-         // FIXME - due a design (flaw??) in the socket based transports, they use a pool of TCP
-         // connections, so subsequent invocations can end up using different underlying
-         // connections meaning that later invocations can overtake earlier invocations, if there
-         // are more than one user concurrently invoking on the same transport. We need someway
-         // of pinning the client object to the underlying invocation. For now we just serialize
-         // all access so that only the first connection in the pool is ever used - but this is
-         // far from ideal!!!
-         // See http://jira.jboss.com/jira/browse/JBMESSAGING-789
-
-         Object invoker = null;
-
-         if (callbackClient != null)
-         {
-            invoker = callbackClient.getInvoker();                              
-         }
-         else
-         {
-            // TODO: dummy synchronization object, in case there's no clientInvoker. This will
-            // happen during the first invocation anyway. It's a kludge, I know, but this whole
-            // synchronization thing is a huge kludge. Needs to be reviewed.
-            invoker = new Object();
-         }
-         
-         synchronized (invoker)
-         {
-            // one way invocation, no acknowledgment sent back by the client
-            if (trace) { log.trace(this + " submitting message " + ref.getMessage() + " to the remoting layer to be sent asynchronously"); }
-            
-            callbackHandler.handleCallbackOneway(callback);
-                                    
-            //We store the delivery id so we know to wait for any deliveries in transit on close
-            consumer.setLastDeliveryID(deliveryID);
-         }
-      }
-      catch (Throwable t)
-      {
-         // it's an oneway callback, so exception could only have happened on the server, while
-         // trying to send the callback. This is a good reason to smack the whole connection.
-         // I trust remoting to have already done its own cleanup via a CallbackErrorHandler,
-         // I need to do my own cleanup at ConnectionManager level.
-
-         log.trace(this + " failed to handle callback", t);
-         
-         //We stop the consumer - some time later the lease will expire and the connection will be closed
-         //which will remove the consumer
-         
-         consumer.setStarted(false);
-         
-         consumer.setDead();
-
-         //** IMPORTANT NOTE! We must return the delivery NOT null. **
-         //This is because if we return NULL then message will remain in the queue, but later
-         //the connection checker will cleanup and close this consumer which will cancel all the deliveries in it
-         //including this one, so the message will go back on the queue twice!         
-      }
+//      ClientDelivery del = new ClientDelivery(ref.getMessage(), consumer.getID(), deliveryID, ref.getDeliveryCount());
+//
+//      Client callbackClient = callbackHandler.getCallbackClient();
+//
+//      Callback callback = new Callback(del);
+//
+//      try
+//      {
+//         // FIXME - due a design (flaw??) in the socket based transports, they use a pool of TCP
+//         // connections, so subsequent invocations can end up using different underlying
+//         // connections meaning that later invocations can overtake earlier invocations, if there
+//         // are more than one user concurrently invoking on the same transport. We need someway
+//         // of pinning the client object to the underlying invocation. For now we just serialize
+//         // all access so that only the first connection in the pool is ever used - but this is
+//         // far from ideal!!!
+//         // See http://jira.jboss.com/jira/browse/JBMESSAGING-789
+//
+//         Object invoker = null;
+//
+//         if (callbackClient != null)
+//         {
+//            invoker = callbackClient.getInvoker();                              
+//         }
+//         else
+//         {
+//            // TODO: dummy synchronization object, in case there's no clientInvoker. This will
+//            // happen during the first invocation anyway. It's a kludge, I know, but this whole
+//            // synchronization thing is a huge kludge. Needs to be reviewed.
+//            invoker = new Object();
+//         }
+//         
+//         synchronized (invoker)
+//         {
+//            // one way invocation, no acknowledgment sent back by the client
+//            if (trace) { log.trace(this + " submitting message " + ref.getMessage() + " to the remoting layer to be sent asynchronously"); }
+//            
+//            callbackHandler.handleCallbackOneway(callback);
+//                                    
+//            //We store the delivery id so we know to wait for any deliveries in transit on close
+//            consumer.setLastDeliveryID(deliveryID);
+//         }
+//      }
+//      catch (Throwable t)
+//      {
+//         // it's an oneway callback, so exception could only have happened on the server, while
+//         // trying to send the callback. This is a good reason to smack the whole connection.
+//         // I trust remoting to have already done its own cleanup via a CallbackErrorHandler,
+//         // I need to do my own cleanup at ConnectionManager level.
+//
+//         log.trace(this + " failed to handle callback", t);
+//         
+//         //We stop the consumer - some time later the lease will expire and the connection will be closed        
+//         //which will remove the consumer
+//         
+//         consumer.setStarted(false);
+//         
+//         consumer.setDead();
+//
+//         //** IMPORTANT NOTE! We must return the delivery NOT null. **
+//         //This is because if we return NULL then message will remain in the queue, but later
+//         //the connection checker will cleanup and close this consumer which will cancel all the deliveries in it
+//         //including this one, so the message will go back on the queue twice!         
+//      }
    }
    
    void acknowledgeTransactionally(List acks, Transaction tx) throws Throwable
@@ -1814,7 +1840,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
          advised = new ConsumerAdvised(ep);
       }
       
-      Dispatcher.instance.registerTarget(consumerID, advised);
+      PacketDispatcher.server.register(ep.new ServerConsumerEndpointPacketHandler());
       
       ClientConsumerDelegate stub =
          new ClientConsumerDelegate(consumerID, prefetchSize, -1, 0);
@@ -2130,8 +2156,8 @@ public class ServerSessionEndpoint implements SessionEndpoint
          advised = new ConsumerAdvised(ep);
       }
       
-      Dispatcher.instance.registerTarget(consumerID, advised);
-      
+      PacketDispatcher.server.register(ep.new ServerConsumerEndpointPacketHandler());
+
       ClientConsumerDelegate stub =
          new ClientConsumerDelegate(consumerID, prefetchSize, maxDeliveryAttemptsToUse, redeliveryDelayToUse);
       
@@ -2197,8 +2223,8 @@ public class ServerSessionEndpoint implements SessionEndpoint
          advised = new BrowserAdvised(ep);
       }
       
-      Dispatcher.instance.registerTarget(browserID, advised);
-
+      PacketDispatcher.server.register(ep.new ServerBrowserEndpointHandler());
+      
       ClientBrowserDelegate stub = new ClientBrowserDelegate(browserID);
 
       log.trace(this + " created and registered " + ep);

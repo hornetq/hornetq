@@ -21,6 +21,17 @@
    */
 package org.jboss.jms.server;
 
+import java.io.CharArrayWriter;
+import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Iterator;
+import java.util.List;
+import java.util.StringTokenizer;
+
+import javax.transaction.xa.Xid;
+
 import org.jboss.aop.microcontainer.aspects.jmx.JMX;
 import org.jboss.jms.server.destination.ManagedQueue;
 import org.jboss.jms.server.destination.ManagedTopic;
@@ -28,11 +39,6 @@ import org.jboss.jms.server.endpoint.ServerConnectionEndpoint;
 import org.jboss.jms.server.messagecounter.MessageCounter;
 import org.jboss.jms.server.messagecounter.MessageStatistics;
 import org.jboss.util.JBossStringBuilder;
-
-import javax.transaction.xa.Xid;
-import java.io.CharArrayWriter;
-import java.io.PrintWriter;
-import java.util.*;
 
 /**
  * exposed via jmx to show a cleaner sepration. most of these methods delegate to the serverpeer
@@ -248,7 +254,7 @@ public class ServerPeerStatistics implements JmsServerStatistics
 
          out.println("<tr>");
          out.println("<td>" + endpoint.toString() + "</td>");
-         out.println("<td>" + endpoint.getCallbackHandler().getCallbackClient().getInvoker().getLocator().getHost() + "</td>");
+         // FIXME display URI of client
          out.println("<td>" + endpoint.getUsername() + "</td>");
          out.println("<td>" + endpoint.getSessions().size() + "</td>");
          out.println("</tr>");

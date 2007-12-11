@@ -28,7 +28,6 @@ import org.jboss.jms.server.ServerPeer;
 import org.jboss.jms.server.security.Role;
 import org.jboss.messaging.core.contract.MessageStore;
 import org.jboss.messaging.core.contract.PersistenceManager;
-import org.jboss.remoting.ServerInvocationHandler;
 
 import javax.management.NotificationListener;
 import javax.management.ObjectName;
@@ -124,25 +123,6 @@ public interface Server extends Remote
    ObjectName getServerPeerObjectName() throws Exception;
 
    boolean isStarted() throws Exception;
-
-   /**
-    * @return a Set<String> with the subsystems currently registered with the Connector. It is
-    *         supposed to work locally as well as remotely.
-    */
-   Set getConnectorSubsystems() throws Exception;
-
-   /**
-    * Add a ServerInvocationHandler to the remoting Connector. This method is supposed to work
-    * locally as well as remotely.
-    */
-   void addServerInvocationHandler(String subsystem, ServerInvocationHandler handler)
-      throws Exception;
-
-   /**
-    * Remove a ServerInvocationHandler from the remoting Connector. This method is supposed to work
-    * locally as well as remotely.
-    */
-   void removeServerInvocationHandler(String subsystem) throws Exception;
 
    /**
     * Only for in-VM use!

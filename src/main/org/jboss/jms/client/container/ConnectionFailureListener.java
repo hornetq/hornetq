@@ -10,7 +10,6 @@ import org.jboss.jms.client.FailoverCommandCenter;
 import org.jboss.jms.client.FailureDetector;
 import org.jboss.jms.client.remoting.JMSRemotingConnection;
 import org.jboss.logging.Logger;
-import org.jboss.remoting.Client;
 
 /**
  * The listener that detects a connection failure and initiates the failover process. Each physical
@@ -53,7 +52,7 @@ public class ConnectionFailureListener implements FailureDetector
     * Returns false if failover was unable to handle the exception and it should be passed
     * on to any JMS exception listener
     */
-   public boolean handleConnectionException(Throwable throwable, Client client)
+   public boolean handleConnectionException(Throwable throwable)
    {
       try
       {

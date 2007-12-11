@@ -21,6 +21,11 @@
   */
 package org.jboss.jms.server.endpoint;
 
+import java.util.List;
+import java.util.Map;
+
+import javax.jms.JMSException;
+
 import org.jboss.aop.AspectManager;
 import org.jboss.jms.client.delegate.ClientConnectionDelegate;
 import org.jboss.jms.client.delegate.ClientConnectionFactoryDelegate;
@@ -29,22 +34,19 @@ import org.jboss.jms.delegate.CreateConnectionResult;
 import org.jboss.jms.delegate.TopologyResult;
 import org.jboss.jms.server.ServerPeer;
 import org.jboss.jms.server.endpoint.advised.ConnectionAdvised;
-import org.jboss.jms.wireformat.ConnectionFactoryUpdate;
-import org.jboss.jms.wireformat.Dispatcher;
 import org.jboss.logging.Logger;
+import org.jboss.messaging.core.remoting.PacketDispatcher;
+import org.jboss.messaging.core.remoting.PacketSender;
+import org.jboss.messaging.core.remoting.wireformat.GetTopologyResponse;
 import org.jboss.messaging.util.ExceptionUtil;
-import org.jboss.remoting.callback.Callback;
-import org.jboss.remoting.callback.ServerInvokerCallbackHandler;
-
-import javax.jms.JMSException;
-import java.util.List;
-import java.util.Map;
+import org.jboss.messaging.util.Version;
 
 /**
  * Concrete implementation of ConnectionFactoryEndpoint
  *
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  * @version <tt>$Revision$</tt>
  *
  * $Id$
@@ -149,8 +151,7 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
                                                           int failedNodeID,
                                                           String remotingSessionID,
                                                           String clientVMID,
-                                                          byte versionToUse,
-                                                          ServerInvokerCallbackHandler callbackHandler)
+                                                          byte versionToUse)
       throws JMSException      
    {
       try
@@ -161,8 +162,7 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
             ClientConnectionDelegate cd =
                createConnectionDelegateInternal(username, password, failedNodeID,
                                                 remotingSessionID, clientVMID,
-                                                versionToUse,
-                                                callbackHandler);
+                                                versionToUse);
             return new CreateConnectionResult(cd);
          }
          else
@@ -185,8 +185,7 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
                ClientConnectionDelegate cd =
                   createConnectionDelegateInternal(username, password, failedNodeID,
                                                    remotingSessionID, clientVMID,
-                                                   versionToUse,
-                                                   callbackHandler);
+                                                   versionToUse);
                return new CreateConnectionResult(cd);
             }
          }
@@ -207,8 +206,7 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
                                        String password,
                                        int failedNodeID,
                                        String remotingSessionID, String clientVMID,
-                                       byte versionToUse,
-                                       ServerInvokerCallbackHandler callbackHandler)
+                                       byte versionToUse)
       throws Exception
    {
       log.trace("creating a new connection for user " + username);
@@ -239,14 +237,14 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
 
       // create the corresponding "server-side" connection endpoint and register it with the
       // server peer's ClientManager
-      ServerConnectionEndpoint endpoint =
+      final ServerConnectionEndpoint endpoint =
          new ServerConnectionEndpoint(serverPeer, clientIDUsed, username, password, prefetchSize,
                                       defaultTempQueueFullSize, defaultTempQueuePageSize,
                                       defaultTempQueueDownCacheSize, failedNodeID, this,
                                       remotingSessionID, clientVMID, versionToUse,
-                                      callbackHandler, dupsOKBatchSize);
+                                      dupsOKBatchSize);
 
-      String connectionID = endpoint.getConnectionID();
+      final String connectionID = endpoint.getConnectionID();
 
       ConnectionAdvised connAdvised;
       
@@ -257,7 +255,7 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
          connAdvised = new ConnectionAdvised(endpoint);
       }
       
-      Dispatcher.instance.registerTarget(connectionID, connAdvised);
+      PacketDispatcher.server.register(connAdvised.new ConnectionAdvisedPacketHandler(connectionID));
 
       log.trace("created and registered " + endpoint);
 
@@ -280,19 +278,19 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
          throw ExceptionUtil.handleJMSInvocation(t, this + " getClientAOPStack");
       }
    }
-
-   public void addCallback(String VMID, String remotingSessionID,
-                           ServerInvokerCallbackHandler callbackHandler) throws JMSException
+   
+   public void addSender(String VMID, String remotingSessionID,
+         PacketSender sender) throws JMSException
    {
-      log.debug("Adding callbackHandler on ConnectionFactory");
-      serverPeer.getConnectionManager().addConnectionFactoryCallback(this.uniqueName, VMID, remotingSessionID, callbackHandler);
+      log.debug("Adding PacketSender on ConnectionFactory");
+      serverPeer.getConnectionManager().addConnectionFactoryCallback(this.uniqueName, VMID, remotingSessionID, sender);
    }
-
-   public void removeCallback(String VMID, String remotingSessionID,
-                           ServerInvokerCallbackHandler callbackHandler) throws JMSException
+   
+   public void removeSender(String VMID, String remotingSessionID,
+         PacketSender sender) throws JMSException
    {
-      log.debug("Removing callbackHandler on ConnectionFactory");
-      serverPeer.getConnectionManager().removeConnectionFactoryCallback(this.uniqueName, VMID, callbackHandler);
+      log.debug("Removing PacketSender on ConnectionFactory");
+      serverPeer.getConnectionManager().removeConnectionFactoryCallback(this.uniqueName, VMID, sender);
    }
 
    public TopologyResult getTopology() throws JMSException
@@ -328,19 +326,28 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
    {
       updateTopology(delegates, failoverMap);
 
-      ServerInvokerCallbackHandler[] clientFactoriesToUpdate = serverPeer.getConnectionManager().getConnectionFactoryCallback(this.uniqueName);
-      log.debug("updateClusteredClients being called!!! clientFactoriesToUpdate.size = " + clientFactoriesToUpdate.length);
+      PacketSender[] senders = serverPeer.getConnectionManager().getConnectionFactorySenders(uniqueName);
+      log.debug("updateClusteredClients being called!!! clientFactoriesToUpdate.size = " + senders.length);
 
-      ConnectionFactoryUpdate message =
-         new ConnectionFactoryUpdate(uniqueName, delegates, failoverMap);
-
-      Callback callback = new Callback(message);
-
-      for (ServerInvokerCallbackHandler o: clientFactoriesToUpdate)
+      GetTopologyResponse packet = new GetTopologyResponse(getTopology());
+      packet.setVersion(Version.instance().getProviderIncrementingVersion());
+      packet.setTargetID(id);
+      
+      for (PacketSender sender : senders)
       {
-         log.debug("Updating CF on callback " + o);
-         o.handleCallbackOneway(callback);
+         sender.send(packet);
       }
+      
+//      ConnectionFactoryUpdate message =
+//         new ConnectionFactoryUpdate(uniqueName, delegates, failoverMap);
+//
+//      Callback callback = new Callback(message);
+//
+//      for (ServerInvokerCallbackHandler o: clientFactoriesToUpdate)
+//      {
+//         log.debug("Updating CF on callback " + o);
+//         o.handleCallbackOneway(callback);
+//      }
    }
 
    public void updateTopology(ClientConnectionFactoryDelegate[] delegates, Map failoverMap)
@@ -365,10 +372,10 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
    {
    	return supportsFailover;
    }
-   
+
    // Protected ------------------------------------------------------------------------------------
-   
+
    // Private --------------------------------------------------------------------------------------
-   
+
    // Inner classes --------------------------------------------------------------------------------
 }

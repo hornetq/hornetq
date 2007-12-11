@@ -24,6 +24,7 @@ package org.jboss.jms.client.container;
 import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
 import org.jboss.aop.joinpoint.Invocation;
 import org.jboss.aop.joinpoint.MethodInvocation;
+import org.jboss.jms.client.delegate.ClientConsumerPacketHandler;
 import org.jboss.jms.client.delegate.DelegateSupport;
 import org.jboss.jms.client.remoting.CallbackManager;
 import org.jboss.jms.client.state.ConnectionState;
@@ -34,6 +35,7 @@ import org.jboss.jms.delegate.ConsumerDelegate;
 import org.jboss.jms.delegate.SessionDelegate;
 import org.jboss.jms.exception.MessagingShutdownException;
 import org.jboss.logging.Logger;
+import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.util.MessageQueueNameHelper;
 
 import javax.jms.MessageListener;
@@ -46,6 +48,7 @@ import javax.jms.MessageListener;
  * 
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  * @version <tt>$Revision$</tt>
  *
  * $Id$
@@ -56,7 +59,6 @@ public class ConsumerAspect
    
    private static final Logger log = Logger.getLogger(ConsumerAspect.class);
 
-   
    // Static ----------------------------------------------------------------------------------------
 
    // Attributes -----------------------------------------------------------------------------------
@@ -79,7 +81,7 @@ public class ConsumerAspect
       ConnectionState connectionState = (ConnectionState)sessionState.getParent();
       SessionDelegate sessionDelegate = (SessionDelegate)invocation.getTargetObject();
       ConsumerState consumerState = (ConsumerState)((DelegateSupport)consumerDelegate).getState();
-      String consumerID = consumerState.getConsumerID();
+      final String consumerID = consumerState.getConsumerID();
       int prefetchSize = consumerState.getBufferSize();
       QueuedExecutor sessionExecutor = sessionState.getExecutor();
       int maxDeliveries = consumerState.getMaxDeliveries();
@@ -105,14 +107,16 @@ public class ConsumerAspect
       
       boolean autoFlowControl = ((Boolean)mi.getArguments()[5]).booleanValue();
       
-      ClientConsumer messageHandler =
+      final ClientConsumer messageHandler =
          new ClientConsumer(isCC, sessionState.getAcknowledgeMode(),
                             sessionDelegate, consumerDelegate, consumerID, queueName,
                             prefetchSize, sessionExecutor, maxDeliveries, consumerState.isShouldAck(),
                             autoFlowControl, redeliveryDelay);
       
       sessionState.addCallbackHandler(messageHandler);
-      
+
+      PacketDispatcher.client.register(new ClientConsumerPacketHandler(messageHandler, consumerID));
+
       CallbackManager cm = connectionState.getRemotingConnection().getCallbackManager();
       cm.registerHandler(consumerID, messageHandler);
          
@@ -153,6 +157,8 @@ public class ConsumerAspect
          CallbackManager cm = connectionState.getRemotingConnection().getCallbackManager();
          cm.unregisterHandler(consumerState.getConsumerID());
 
+         PacketDispatcher.client.unregister(consumerState.getConsumerID());
+         
          //And then we cancel any messages still in the message callback handler buffer
          consumerState.getClientConsumer().cancelBuffer();
 

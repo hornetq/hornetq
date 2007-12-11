@@ -25,10 +25,12 @@ import java.util.Collections;
 
 import org.jboss.jms.client.container.ClientConsumer;
 import org.jboss.jms.client.delegate.ClientConnectionDelegate;
+import org.jboss.jms.client.delegate.ClientConsumerPacketHandler;
 import org.jboss.jms.client.delegate.DelegateSupport;
 import org.jboss.jms.client.remoting.CallbackManager;
 import org.jboss.jms.delegate.ConsumerDelegate;
 import org.jboss.jms.destination.JBossDestination;
+import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.util.Version;
 
 
@@ -141,9 +143,12 @@ public class ConsumerState extends HierarchicalStateSupport
 
       ClientConsumer handler = oldCallbackManager.unregisterHandler(oldConsumerID);
       ClientConsumer newHandler = newCallbackManager.unregisterHandler(consumerID);
-   
+      
+      PacketDispatcher.client.unregister(oldConsumerID);
+      
       handler.synchronizeWith(newHandler);
       newCallbackManager.registerHandler(consumerID, handler);
+      PacketDispatcher.client.register(new ClientConsumerPacketHandler(handler, consumerID));
    }
 
    // Public ---------------------------------------------------------------------------------------

@@ -32,17 +32,18 @@ import org.jboss.jms.client.state.ConnectionState;
 import org.jboss.jms.client.state.HierarchicalState;
 import org.jboss.jms.delegate.ConsumerDelegate;
 import org.jboss.jms.destination.JBossDestination;
-import org.jboss.jms.wireformat.CloseRequest;
-import org.jboss.jms.wireformat.ClosingRequest;
-import org.jboss.jms.wireformat.ConsumerChangeRateRequest;
-import org.jboss.jms.wireformat.RequestSupport;
 import org.jboss.logging.Logger;
+import org.jboss.messaging.core.remoting.wireformat.ChangeRateMessage;
+import org.jboss.messaging.core.remoting.wireformat.CloseMessage;
+import org.jboss.messaging.core.remoting.wireformat.ClosingRequest;
+import org.jboss.messaging.core.remoting.wireformat.ClosingResponse;
 
 /**
  * The client-side Consumer delegate class.
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
+ * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  *
  * @version <tt>$Revision$</tt>
  *
@@ -90,7 +91,7 @@ public class ClientConsumerDelegate extends DelegateSupport implements ConsumerD
 
       // The client needs to be set first
       client = ((ConnectionState)state.getParent().getParent()).getRemotingConnection().
-         getRemotingClient();
+      getRemotingClient();
 
       // synchronize server endpoint state
 
@@ -110,32 +111,28 @@ public class ClientConsumerDelegate extends DelegateSupport implements ConsumerD
       super.setState(state);
 
       client = ((ConnectionState)state.getParent().getParent()).getRemotingConnection().
-                  getRemotingClient();
+      getRemotingClient();
    }
 
    // Closeable implementation ---------------------------------------------------------------------
 
    public void close() throws JMSException
    {
-      RequestSupport req = new CloseRequest(id, version);
-
-      doInvoke(client, req);
+      sendBlocking(new CloseMessage());
    }
 
    public long closing(long sequence) throws JMSException
    {
-      RequestSupport req = new ClosingRequest(sequence, id, version);
-
-      return ((Long)doInvoke(client, req)).longValue();
+      ClosingRequest request = new ClosingRequest(sequence);
+      ClosingResponse response = (ClosingResponse) sendBlocking(request);
+      return response.getID();
    }
 
    // ConsumerDelegate implementation --------------------------------------------------------------
 
    public void changeRate(float newRate) throws JMSException
    {
-      RequestSupport req = new ConsumerChangeRateRequest(id, version, newRate);
-
-      doInvoke(client, req);
+      sendOneWay(new ChangeRateMessage(newRate));
    }
 
    /**
@@ -245,4 +242,5 @@ public class ClientConsumerDelegate extends DelegateSupport implements ConsumerD
    // Private --------------------------------------------------------------------------------------
 
    // Inner Classes --------------------------------------------------------------------------------
+
 }

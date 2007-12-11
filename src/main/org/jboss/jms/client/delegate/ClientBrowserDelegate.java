@@ -30,13 +30,15 @@ import org.jboss.jms.client.state.ConnectionState;
 import org.jboss.jms.client.state.HierarchicalState;
 import org.jboss.jms.delegate.BrowserDelegate;
 import org.jboss.jms.message.JBossMessage;
-import org.jboss.jms.wireformat.BrowserHasNextMessageRequest;
-import org.jboss.jms.wireformat.BrowserNextMessageBlockRequest;
-import org.jboss.jms.wireformat.BrowserNextMessageRequest;
-import org.jboss.jms.wireformat.BrowserResetRequest;
-import org.jboss.jms.wireformat.CloseRequest;
-import org.jboss.jms.wireformat.ClosingRequest;
-import org.jboss.jms.wireformat.RequestSupport;
+import org.jboss.messaging.core.remoting.wireformat.BrowserHasNextMessageRequest;
+import org.jboss.messaging.core.remoting.wireformat.BrowserHasNextMessageResponse;
+import org.jboss.messaging.core.remoting.wireformat.BrowserNextMessageBlockRequest;
+import org.jboss.messaging.core.remoting.wireformat.BrowserNextMessageBlockResponse;
+import org.jboss.messaging.core.remoting.wireformat.BrowserNextMessageResponse;
+import org.jboss.messaging.core.remoting.wireformat.BrowserResetMessage;
+import org.jboss.messaging.core.remoting.wireformat.CloseMessage;
+import org.jboss.messaging.core.remoting.wireformat.ClosingRequest;
+import org.jboss.messaging.core.remoting.wireformat.ClosingResponse;
 
 /**
  * The client-side Browser delegate class.
@@ -100,45 +102,39 @@ public class ClientBrowserDelegate extends DelegateSupport implements BrowserDel
 
    public void close() throws JMSException
    {
-      RequestSupport req = new CloseRequest(id, version);
-
-      doInvoke(client, req);
+      sendBlocking(new CloseMessage());
    }
 
    public long closing(long sequence) throws JMSException
    {
-      RequestSupport req = new ClosingRequest(sequence, id, version);
-
-      return ((Long)doInvoke(client, req)).longValue();
+      ClosingResponse response = (ClosingResponse) sendBlocking(new ClosingRequest(sequence));
+      return response.getID();
    }
 
    // BrowserDelegate implementation ---------------------------------------------------------------
 
    public void reset() throws JMSException
    {
-      RequestSupport req = new BrowserResetRequest(id, version);
-      doInvoke(client, req);
+      sendBlocking(new BrowserResetMessage());
    }
 
    public boolean hasNextMessage() throws JMSException
    {
-      RequestSupport req = new BrowserHasNextMessageRequest(id, version);
-
-      return ((Boolean)doInvoke(client, req)).booleanValue();
+      BrowserHasNextMessageResponse response = (BrowserHasNextMessageResponse) sendBlocking(new BrowserHasNextMessageRequest());
+      return response.hasNext();
    }
 
    public JBossMessage nextMessage() throws JMSException
    {
-      RequestSupport req = new BrowserNextMessageRequest(id, version);
-
-      return (JBossMessage)doInvoke(client, req);
+      BrowserNextMessageResponse response = (BrowserNextMessageResponse) sendBlocking(new org.jboss.messaging.core.remoting.wireformat.BrowserNextMessageRequest());
+      return response.getMessage();
    }
 
    public JBossMessage[] nextMessageBlock(int maxMessages) throws JMSException
    {
-      RequestSupport req = new BrowserNextMessageBlockRequest(id, version, maxMessages);
 
-      return (JBossMessage[])doInvoke(client, req);
+      BrowserNextMessageBlockResponse response = (BrowserNextMessageBlockResponse) sendBlocking(new BrowserNextMessageBlockRequest(maxMessages));
+      return response.getMessages();
    }
 
    // Streamable implementation ----------------------------------------------------------

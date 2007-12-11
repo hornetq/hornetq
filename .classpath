@@ -8,7 +8,6 @@
 	<classpathentry kind="src" path="output/gen-parsers"/>
 	<classpathentry kind="src" path="docs/examples/common/src"/>
 	<classpathentry kind="src" path="docs/examples/distributed-topic/src"/>
-	<classpathentry kind="src" path="docs/examples/ejb3mdb/src"/>
 	<classpathentry kind="src" path="docs/examples/http/src"/>
 	<classpathentry kind="src" path="docs/examples/mdb/src"/>
 	<classpathentry kind="src" path="docs/examples/queue/src"/>
@@ -36,7 +35,6 @@
 	<classpathentry kind="lib" path="thirdparty/retrotranslator/lib/retrotranslator-runtime.jar"/>
 	<classpathentry kind="lib" path="thirdparty/retrotranslator/lib/retrotranslator-transformer.jar"/>
 	<classpathentry kind="lib" path="thirdparty/trove/lib/trove.jar"/>
-	<classpathentry kind="lib" path="thirdparty/jboss/remoting/lib/jboss-remoting.jar"/>
 	<classpathentry kind="lib" path="thirdparty/jboss/jbossts14/lib/jbossjta.jar"/>
 	<classpathentry kind="lib" path="thirdparty/jboss/aop/lib/jboss-aop-jdk50.jar"/>
 	<classpathentry kind="lib" path="thirdparty/jboss/common-core/lib/jboss-common-core.jar"/>
@@ -61,6 +59,8 @@
 	<classpathentry kind="lib" path="thirdparty/jboss/jbossts14/lib/jbossts-common.jar"/>
 	<classpathentry kind="lib" path="thirdparty/jboss/integration/lib/jboss-transaction-spi.jar"/>
 	<classpathentry kind="lib" path="thirdparty/jboss/jboss-jaspi-api/lib/jboss-jaspi-api.jar"/>
+	<classpathentry kind="lib" path="thirdparty/slf4j/api/lib/slf4j-api-1.4.3.jar"/>
+	<classpathentry kind="lib" path="thirdparty/jboss/remoting/lib/jboss-remoting.jar"/>
 	<classpathentry kind="var" path="ANT_HOME/lib/ant.jar"/>
 	<classpathentry kind="var" path="ANT_HOME/lib/ant-junit.jar"/>
 	<classpathentry kind="lib" path="thirdparty/jboss/common/lib/jboss-common.jar"/>
@@ -70,5 +70,7 @@
 	<classpathentry kind="lib" path="thirdparty/jboss/jbosssx-client/lib/jbosssx-client.jar"/>
 	<classpathentry kind="lib" path="lib/je-3.2.44.jar"/>
 	<classpathentry kind="lib" path="tests/lib/easymock.jar"/>
+	<classpathentry kind="lib" path="thirdparty/apache-mina/lib/mina-core.jar"/>
+	<classpathentry kind="lib" path="thirdparty/slf4j/log4j/lib/slf4j-log4j12.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

@@ -21,21 +21,64 @@
   */
 package org.jboss.jms.server.endpoint.advised;
 
+import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_ACKDELIVERIES;
+import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_ADDTEMPORARYDESTINATION;
+import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_CANCELDELIVERIES;
+import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_CANCELDELIVERY;
+import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_CLOSE;
+import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_DELETETEMPORARYDESTINATION;
+import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_RECOVERDELIVERIES;
+import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_SENDMESSAGE;
+import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_UNSUBSCRIBE;
+import static org.jboss.messaging.core.remoting.wireformat.PacketType.REQ_ACKDELIVERY;
+import static org.jboss.messaging.core.remoting.wireformat.PacketType.REQ_CLOSING;
+import static org.jboss.messaging.core.remoting.wireformat.PacketType.REQ_CREATEBROWSER;
+import static org.jboss.messaging.core.remoting.wireformat.PacketType.REQ_CREATECONSUMER;
+import static org.jboss.messaging.core.remoting.wireformat.PacketType.REQ_CREATEDESTINATION;
+
 import java.util.List;
 
 import javax.jms.JMSException;
 
+import org.jboss.jms.client.delegate.ClientBrowserDelegate;
+import org.jboss.jms.client.delegate.ClientConsumerDelegate;
 import org.jboss.jms.delegate.Ack;
 import org.jboss.jms.delegate.BrowserDelegate;
 import org.jboss.jms.delegate.Cancel;
 import org.jboss.jms.delegate.ConsumerDelegate;
+import org.jboss.jms.delegate.DefaultAck;
 import org.jboss.jms.delegate.SessionEndpoint;
 import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.destination.JBossQueue;
 import org.jboss.jms.destination.JBossTopic;
+import org.jboss.jms.exception.MessagingJMSException;
 import org.jboss.jms.message.JBossMessage;
 import org.jboss.jms.server.endpoint.ServerSessionEndpoint;
 import org.jboss.jms.server.endpoint.SessionInternalEndpoint;
+import org.jboss.messaging.core.remoting.PacketHandler;
+import org.jboss.messaging.core.remoting.PacketSender;
+import org.jboss.messaging.core.remoting.wireformat.AbstractPacket;
+import org.jboss.messaging.core.remoting.wireformat.AcknowledgeDeliveriesMessage;
+import org.jboss.messaging.core.remoting.wireformat.AcknowledgeDeliveryRequest;
+import org.jboss.messaging.core.remoting.wireformat.AcknowledgeDeliveryResponse;
+import org.jboss.messaging.core.remoting.wireformat.AddTemporaryDestinationMessage;
+import org.jboss.messaging.core.remoting.wireformat.CancelDeliveriesMessage;
+import org.jboss.messaging.core.remoting.wireformat.CancelDeliveryMessage;
+import org.jboss.messaging.core.remoting.wireformat.ClosingRequest;
+import org.jboss.messaging.core.remoting.wireformat.ClosingResponse;
+import org.jboss.messaging.core.remoting.wireformat.CreateBrowserRequest;
+import org.jboss.messaging.core.remoting.wireformat.CreateBrowserResponse;
+import org.jboss.messaging.core.remoting.wireformat.CreateConsumerRequest;
+import org.jboss.messaging.core.remoting.wireformat.CreateConsumerResponse;
+import org.jboss.messaging.core.remoting.wireformat.CreateDestinationRequest;
+import org.jboss.messaging.core.remoting.wireformat.CreateDestinationResponse;
+import org.jboss.messaging.core.remoting.wireformat.DeleteTemporaryDestinationMessage;
+import org.jboss.messaging.core.remoting.wireformat.JMSExceptionMessage;
+import org.jboss.messaging.core.remoting.wireformat.NullPacket;
+import org.jboss.messaging.core.remoting.wireformat.PacketType;
+import org.jboss.messaging.core.remoting.wireformat.RecoverDeliveriesMessage;
+import org.jboss.messaging.core.remoting.wireformat.SendMessage;
+import org.jboss.messaging.core.remoting.wireformat.UnsubscribeMessage;
 
 /**
  * The server-side advised instance corresponding to a Session. It is bound to the AOP
@@ -48,7 +91,8 @@ import org.jboss.jms.server.endpoint.SessionInternalEndpoint;
  *
  * $Id$
  */
-public class SessionAdvised extends AdvisedSupport implements SessionInternalEndpoint
+public class SessionAdvised extends AdvisedSupport implements
+      SessionInternalEndpoint
 {
    // Constants -----------------------------------------------------
 	
@@ -77,7 +121,8 @@ public class SessionAdvised extends AdvisedSupport implements SessionInternalEnd
       return endpoint.closing(sequence);
    }
 
-   public void send(JBossMessage msg, boolean checkForDuplicates) throws JMSException
+   public void send(JBossMessage msg, boolean checkForDuplicates)
+         throws JMSException
    {
       throw new IllegalStateException("Invocation should not be handle here");
    }
@@ -139,7 +184,7 @@ public class SessionAdvised extends AdvisedSupport implements SessionInternalEnd
    {
       endpoint.cancelDeliveries(ackInfos);
    }
-   
+
    public void cancelDelivery(Cancel cancel) throws JMSException
    {
       endpoint.cancelDelivery(cancel);
@@ -172,4 +217,151 @@ public class SessionAdvised extends AdvisedSupport implements SessionInternalEnd
 
    // Inner Classes -------------------------------------------------
 
+   public class SessionAdvisedPacketHandler implements PacketHandler {
+
+      private String id;
+
+      public SessionAdvisedPacketHandler(String id)
+      {
+         this.id = id;
+      }
+
+      public String getID()
+      {
+         return id;
+      }
+
+      public void handle(AbstractPacket packet, PacketSender sender)
+      {
+         try
+         {
+            AbstractPacket response = null;
+
+            PacketType type = packet.getType();
+            if (type == MSG_SENDMESSAGE)
+            {
+               SendMessage message = (SendMessage) packet;
+               send(message.getMessage(), message.checkForDuplicates(), message
+                     .getSequence());
+
+               response = new NullPacket();
+            } else if (type == REQ_CREATECONSUMER)
+            {
+               CreateConsumerRequest request = (CreateConsumerRequest) packet;
+               ClientConsumerDelegate consumer = (ClientConsumerDelegate) createConsumerDelegate(
+                     request.getDestination(), request.getSelector(), request
+                           .isNoLocal(), request.getSubscriptionName(), request
+                           .isConnectionConsumer(), request.isAutoFlowControl());
+
+               response = new CreateConsumerResponse(consumer.getID(), consumer
+                     .getBufferSize(), consumer.getMaxDeliveries(), consumer
+                     .getRedeliveryDelay());
+            } else if (type == REQ_CREATEDESTINATION)
+            {
+               CreateDestinationRequest request = (CreateDestinationRequest) packet;
+               JBossDestination destination;
+               if (request.isQueue())
+               {
+                  destination = createQueue(request.getName());
+               } else
+               {
+                  destination = createTopic(request.getName());
+               }
+
+               response = new CreateDestinationResponse(destination);
+            } else if (type == REQ_CREATEBROWSER)
+            {
+               CreateBrowserRequest request = (CreateBrowserRequest) packet;
+               ClientBrowserDelegate browser = (ClientBrowserDelegate) createBrowserDelegate(
+                     request.getDestination(), request.getSelector());
+
+               response = new CreateBrowserResponse(browser.getID());
+            } else if (type == REQ_ACKDELIVERY)
+            {
+               AcknowledgeDeliveryRequest request = (AcknowledgeDeliveryRequest) packet;
+               boolean acknowledged = acknowledgeDelivery(new DefaultAck(
+                     request.getDeliveryID()));
+
+               response = new AcknowledgeDeliveryResponse(acknowledged);
+            } else if (type == MSG_ACKDELIVERIES)
+            {
+               AcknowledgeDeliveriesMessage message = (AcknowledgeDeliveriesMessage) packet;
+               acknowledgeDeliveries(message.getAcks());
+
+               response = new NullPacket();
+            } else if (type == MSG_RECOVERDELIVERIES)
+            {
+               RecoverDeliveriesMessage message = (RecoverDeliveriesMessage) packet;
+               recoverDeliveries(message.getDeliveries(), message
+                     .getSessionID());
+
+               response = new NullPacket();
+            } else if (type == MSG_CANCELDELIVERY)
+            {
+               CancelDeliveryMessage message = (CancelDeliveryMessage) packet;
+               cancelDelivery(message.getCancel());
+
+               response = new NullPacket();
+            } else if (type == MSG_CANCELDELIVERIES)
+            {
+               CancelDeliveriesMessage message = (CancelDeliveriesMessage) packet;
+               cancelDeliveries(message.getCancels());
+
+               response = new NullPacket();
+            } else if (type == REQ_CLOSING)
+            {
+               ClosingRequest request = (ClosingRequest) packet;
+               long id = closing(request.getSequence());
+
+               response = new ClosingResponse(id);
+            } else if (type == MSG_CLOSE)
+            {
+               close();
+
+               response = new NullPacket();
+            } else if (type == MSG_UNSUBSCRIBE)
+            {
+               UnsubscribeMessage message = (UnsubscribeMessage) packet;
+               unsubscribe(message.getSubscriptionName());
+
+               response = new NullPacket();
+            } else if (type == MSG_ADDTEMPORARYDESTINATION)
+            {
+               AddTemporaryDestinationMessage message = (AddTemporaryDestinationMessage) packet;
+               addTemporaryDestination(message.getDestination());
+
+               response = new NullPacket();
+            } else if (type == MSG_DELETETEMPORARYDESTINATION)
+            {
+               DeleteTemporaryDestinationMessage message = (DeleteTemporaryDestinationMessage) packet;
+               deleteTemporaryDestination(message.getDestination());
+
+               response = new NullPacket();
+            } else
+            {
+               response = new JMSExceptionMessage(new MessagingJMSException(
+                     "Unsupported packet for browser: " + packet));
+            }
+
+            // reply if necessary
+            if (response != null)
+            {
+               response.normalize(packet);
+               sender.send(response);
+            }
+
+         } catch (JMSException e)
+         {
+            JMSExceptionMessage message = new JMSExceptionMessage(e);
+            message.normalize(packet);
+            sender.send(message);
+         }
+      }
+
+      @Override
+      public String toString()
+      {
+         return "SessionAdvisedPacketHandler[id=" + id + "]";
+      }
+   }
 }

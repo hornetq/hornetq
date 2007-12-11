@@ -306,7 +306,7 @@ public class ClusteringTestBase extends JBMServerTestCase
    protected String getLocatorURL(Connection conn)
    {
       return getConnectionState(conn).getRemotingConnection().
-         getRemotingClient().getInvoker().getLocator().getLocatorURI();
+         getRemotingClient().getURI();
    }
 
    protected String getObjectId(Connection conn)

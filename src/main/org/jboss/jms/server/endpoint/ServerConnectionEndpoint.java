@@ -21,9 +21,22 @@
   */
 package org.jboss.jms.server.endpoint;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import javax.jms.Destination;
+import javax.jms.IllegalStateException;
+import javax.jms.JMSException;
+import javax.jms.Session;
+
 import org.jboss.aop.AspectManager;
 import org.jboss.jms.client.delegate.ClientSessionDelegate;
-import org.jboss.jms.client.remoting.CallbackManager;
 import org.jboss.jms.delegate.ConnectionEndpoint;
 import org.jboss.jms.delegate.IDBlock;
 import org.jboss.jms.delegate.SessionDelegate;
@@ -35,33 +48,29 @@ import org.jboss.jms.server.SecurityStore;
 import org.jboss.jms.server.ServerPeer;
 import org.jboss.jms.server.endpoint.advised.SessionAdvised;
 import org.jboss.jms.tx.ClientTransaction;
-import org.jboss.jms.tx.ClientTransaction.SessionTxState;
 import org.jboss.jms.tx.MessagingXid;
 import org.jboss.jms.tx.TransactionRequest;
-import org.jboss.jms.wireformat.Dispatcher;
-import org.jboss.jms.wireformat.JMSWireFormat;
+import org.jboss.jms.tx.ClientTransaction.SessionTxState;
 import org.jboss.logging.Logger;
-import org.jboss.messaging.core.contract.*;
+import org.jboss.messaging.core.contract.Binding;
+import org.jboss.messaging.core.contract.Delivery;
+import org.jboss.messaging.core.contract.MessageReference;
+import org.jboss.messaging.core.contract.MessageStore;
+import org.jboss.messaging.core.contract.PostOffice;
 import org.jboss.messaging.core.contract.Queue;
 import org.jboss.messaging.core.impl.tx.Transaction;
 import org.jboss.messaging.core.impl.tx.TransactionRepository;
+import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.util.ExceptionUtil;
 import org.jboss.messaging.util.GUIDGenerator;
 import org.jboss.messaging.util.Util;
-import org.jboss.remoting.Client;
-import org.jboss.remoting.callback.ServerInvokerCallbackHandler;
-
-import javax.jms.Destination;
-import javax.jms.IllegalStateException;
-import javax.jms.JMSException;
-import javax.jms.Session;
-import java.util.*;
 
 /**
  * Concrete implementation of ConnectionEndpoint.
  *
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  * @version <tt>$Revision$</tt>
  *
  * $Id$
@@ -99,7 +108,6 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
    private ConnectionManager cm;
    private TransactionRepository tr;
    private MessageStore ms;
-   private ServerInvokerCallbackHandler callbackHandler;
 
    // Map<sessionID - ServerSessionEndpoint>
    private Map sessions;
@@ -136,7 +144,6 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
                                    String remotingSessionID,
                                    String clientVMID,
                                    byte versionToUse,
-                                   ServerInvokerCallbackHandler callbackHandler,
                                    int dupsOKBatchSize) throws Exception
    {
       this.serverPeer = serverPeer;
@@ -179,31 +186,6 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
 
       this.serverPeer.getConnectionManager().
          registerConnection(jmsClientVMID, remotingClientSessionID, this);
-
-      this.callbackHandler = callbackHandler;
-
-      Client callbackClient = callbackHandler.getCallbackClient();
-
-      if (callbackClient != null)
-      {
-         // TODO not sure if this is the best way to do this, but the callbackClient needs to have
-         //      its "subsystem" set, otherwise remoting cannot find the associated
-         //      ServerInvocationHandler on the callback server
-         callbackClient.setSubsystem(CallbackManager.JMS_CALLBACK_SUBSYSTEM);
-
-         // We explictly set the Marshaller since otherwise remoting tries to resolve the marshaller
-         // every time which is very slow - see org.jboss.remoting.transport.socket.ProcessInvocation
-         // This can make a massive difference on performance. We also do this in
-         // JMSRemotingConnection.setupConnection
-
-         callbackClient.setMarshaller(new JMSWireFormat());
-         callbackClient.setUnMarshaller(new JMSWireFormat());
-      }
-      else
-      {
-         log.trace("ServerInvokerCallbackHandler callback Client is not available: " +
-                   "must be using pull callbacks");
-      }
    }
 
    // ConnectionDelegate implementation ------------------------------------------------------------
@@ -251,8 +233,8 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
 
          serverPeer.addSession(sessionID, ep);
 
-         Dispatcher.instance.registerTarget(sessionID, sessionAdvised);
-
+         PacketDispatcher.server.register(advised.new SessionAdvisedPacketHandler(sessionID));
+         
          log.trace("created and registered " + ep);
 
          ClientSessionDelegate d = new ClientSessionDelegate(sessionID, dupsOKBatchSize);
@@ -407,7 +389,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
 
          cm.unregisterConnection(jmsClientVMID, remotingClientSessionID);
 
-         Dispatcher.instance.unregisterTarget(id, this);
+         PacketDispatcher.server.unregister(id);
 
          closed = true;
       }
@@ -526,11 +508,6 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
    public SecurityStore getSecurityManager()
    {
       return sm;
-   }
-
-   public ServerInvokerCallbackHandler getCallbackHandler()
-   {
-      return callbackHandler;
    }
 
    public ServerPeer getServerPeer()
@@ -796,7 +773,9 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
       }
             
       if (trace) { log.trace(this + " processed transaction " + tx); }
-   }   
+   }
+
 
    // Inner classes --------------------------------------------------------------------------------
+
 }

@@ -41,18 +41,22 @@ import org.jboss.jms.delegate.SessionDelegate;
 import org.jboss.jms.tx.MessagingXid;
 import org.jboss.jms.tx.ResourceManagerFactory;
 import org.jboss.jms.tx.TransactionRequest;
-import org.jboss.jms.wireformat.CloseRequest;
-import org.jboss.jms.wireformat.ClosingRequest;
-import org.jboss.jms.wireformat.ConnectionCreateSessionDelegateRequest;
-import org.jboss.jms.wireformat.ConnectionGetClientIDRequest;
-import org.jboss.jms.wireformat.ConnectionGetIDBlockRequest;
-import org.jboss.jms.wireformat.ConnectionGetPreparedTransactionsRequest;
-import org.jboss.jms.wireformat.ConnectionSendTransactionRequest;
-import org.jboss.jms.wireformat.ConnectionSetClientIDRequest;
-import org.jboss.jms.wireformat.ConnectionStartRequest;
-import org.jboss.jms.wireformat.ConnectionStopRequest;
-import org.jboss.jms.wireformat.RequestSupport;
 import org.jboss.logging.Logger;
+import org.jboss.messaging.core.remoting.wireformat.CloseMessage;
+import org.jboss.messaging.core.remoting.wireformat.ClosingRequest;
+import org.jboss.messaging.core.remoting.wireformat.ClosingResponse;
+import org.jboss.messaging.core.remoting.wireformat.CreateSessionRequest;
+import org.jboss.messaging.core.remoting.wireformat.CreateSessionResponse;
+import org.jboss.messaging.core.remoting.wireformat.GetClientIDRequest;
+import org.jboss.messaging.core.remoting.wireformat.GetClientIDResponse;
+import org.jboss.messaging.core.remoting.wireformat.GetPreparedTransactionsRequest;
+import org.jboss.messaging.core.remoting.wireformat.GetPreparedTransactionsResponse;
+import org.jboss.messaging.core.remoting.wireformat.IDBlockRequest;
+import org.jboss.messaging.core.remoting.wireformat.IDBlockResponse;
+import org.jboss.messaging.core.remoting.wireformat.SendTransactionMessage;
+import org.jboss.messaging.core.remoting.wireformat.SetClientIDMessage;
+import org.jboss.messaging.core.remoting.wireformat.StartConnectionMessage;
+import org.jboss.messaging.core.remoting.wireformat.StopConnectionMessage;
 import org.jboss.messaging.util.Version;
 
 /**
@@ -61,6 +65,7 @@ import org.jboss.messaging.util.Version;
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
+ * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  *
  * @version <tt>$Revision$</tt>
  *
@@ -132,7 +137,7 @@ public class ClientConnectionDelegate extends DelegateSupport implements Connect
       // There is one RM per server, so we need to merge the rms if necessary
       ResourceManagerFactory.instance.handleFailover(serverID, newDelegate.getServerID());
 
-      client = thisState.getRemotingConnection().getRemotingClient();
+      client = remotingConnection.getRemotingClient();
 
       serverID = newDelegate.getServerID();
    }
@@ -148,16 +153,13 @@ public class ClientConnectionDelegate extends DelegateSupport implements Connect
 
    public void close() throws JMSException
    {
-      RequestSupport req = new CloseRequest(id, version);
-
-      doInvoke(client, req);
+      sendBlocking(new CloseMessage());
    }
 
    public long closing(long sequence) throws JMSException
    {
-      RequestSupport req = new ClosingRequest(sequence, id, version);
-
-      return ((Long)doInvoke(client, req)).longValue();
+      ClosingResponse response = (ClosingResponse) sendBlocking(new ClosingRequest(sequence));
+      return response.getID();
    }
 
    // ConnectionDelegate implementation ------------------------------------------------------------
@@ -179,19 +181,17 @@ public class ClientConnectionDelegate extends DelegateSupport implements Connect
                                                 int acknowledgmentMode,
                                                 boolean isXA) throws JMSException
    {
-      RequestSupport req =
-         new ConnectionCreateSessionDelegateRequest(id, version, transacted,
-                                                    acknowledgmentMode, isXA);
-
-      return (SessionDelegate)doInvoke(client, req);
+      CreateSessionRequest request = new CreateSessionRequest(transacted, acknowledgmentMode, isXA);
+      CreateSessionResponse response = (CreateSessionResponse) sendBlocking(request);         
+      ClientSessionDelegate delegate = new ClientSessionDelegate(response.getSessionID(), response.getDupsOKBatchSize(), response.isStrictTCK());
+      return delegate;
    }
 
 
    public String getClientID() throws JMSException
    {
-      RequestSupport req = new ConnectionGetClientIDRequest(id, version);
-
-      return (String)doInvoke(client, req);
+      GetClientIDResponse response = (GetClientIDResponse) sendBlocking(new GetClientIDRequest());
+      return response.getClientID();
    }
 
    /**
@@ -212,20 +212,15 @@ public class ClientConnectionDelegate extends DelegateSupport implements Connect
       throw new IllegalStateException("This invocation should not be handled here!");
    }
 
-   public void sendTransaction(TransactionRequest request,
+   public void sendTransaction(TransactionRequest tr,
                                boolean checkForDuplicates) throws JMSException
    {
-      RequestSupport req =
-         new ConnectionSendTransactionRequest(id, version, request, checkForDuplicates);
-
-      doInvoke(client, req);
+      sendBlocking(new SendTransactionMessage(tr, checkForDuplicates));
    }
 
    public void setClientID(String clientID) throws JMSException
    {
-      RequestSupport req = new ConnectionSetClientIDRequest(id, version, clientID);
-
-      doInvoke(client, req);
+      sendBlocking(new SetClientIDMessage(clientID));
    }
 
    /**
@@ -239,30 +234,24 @@ public class ClientConnectionDelegate extends DelegateSupport implements Connect
 
    public void start() throws JMSException
    {
-      RequestSupport req = new ConnectionStartRequest(id, version);
-
-      doInvoke(client, req);
+      sendOneWay(new StartConnectionMessage());
    }
    
    public void startAfterFailover() throws JMSException
    {
-      RequestSupport req = new ConnectionStartRequest(id, version);
-
-      doInvoke(client, req);
+      sendOneWay(new StartConnectionMessage());
    }
 
    public void stop() throws JMSException
    {
-      RequestSupport req = new ConnectionStopRequest(id, version);
-
-      doInvoke(client, req);
+      sendBlocking(new StopConnectionMessage());
    }
 
    public MessagingXid[] getPreparedTransactions() throws JMSException
    {
-      RequestSupport req = new ConnectionGetPreparedTransactionsRequest(id, version);
-
-      return (MessagingXid[])doInvoke(client, req);
+      GetPreparedTransactionsResponse response = (GetPreparedTransactionsResponse) sendBlocking(new GetPreparedTransactionsRequest());
+      
+      return response.getXids();
    }
 
    /**
@@ -283,9 +272,9 @@ public class ClientConnectionDelegate extends DelegateSupport implements Connect
    
    public IDBlock getIdBlock(int size) throws JMSException
    {
-      RequestSupport req = new ConnectionGetIDBlockRequest(id, version, size);
-
-      return (IDBlock)doInvoke(client, req);
+      IDBlockRequest request = new IDBlockRequest(size);
+      IDBlockResponse response = (IDBlockResponse) sendBlocking(request);
+      return new IDBlock(response.getLow(), response.getHigh());
    }
 
    // Public ---------------------------------------------------------------------------------------

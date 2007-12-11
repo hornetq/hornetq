@@ -32,7 +32,6 @@ import org.jboss.logging.Logger;
 import org.jboss.test.messaging.tools.ServerManagement;
 import org.jboss.test.messaging.tools.container.Command;
 import org.jboss.test.messaging.tools.container.Server;
-import org.jboss.test.messaging.tools.container.ServiceContainer;
 
 /**
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
@@ -153,7 +152,7 @@ public class ClusteredClientCrashTest extends ClusteringTestBase
       public Object execute(Server server) throws Exception
       {
 
-         int size = server.getServerPeer().getConnectionManager().getConnectionFactoryCallback(uniqueName).length;
+         int size = server.getServerPeer().getConnectionManager().getConnectionFactorySenders(uniqueName).length;
 
          return new Integer(size);
       }

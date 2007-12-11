@@ -21,6 +21,25 @@
 */
 package org.jboss.test.messaging.tools.container;
 
+import java.net.URL;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+
+import javax.management.NotificationListener;
+import javax.management.ObjectName;
+import javax.naming.InitialContext;
+import javax.sql.DataSource;
+import javax.transaction.TransactionManager;
+import javax.transaction.UserTransaction;
+
 import org.jboss.aop.AspectXmlLoader;
 import org.jboss.jms.message.MessageIdGeneratorFactory;
 import org.jboss.jms.server.DestinationManager;
@@ -34,24 +53,11 @@ import org.jboss.jms.tx.ResourceManagerFactory;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.contract.MessageStore;
 import org.jboss.messaging.core.contract.PersistenceManager;
-import org.jboss.remoting.ServerInvocationHandler;
 import org.jboss.test.messaging.tools.ConfigurationHelper;
 import org.jboss.test.messaging.tools.ServerManagement;
 import org.jboss.test.messaging.tools.aop.PoisonInterceptor;
 import org.jboss.test.messaging.tools.jboss.MBeanConfigurationElement;
 import org.jboss.tm.TransactionManagerLocator;
-
-import javax.management.NotificationListener;
-import javax.management.ObjectName;
-import javax.naming.InitialContext;
-import javax.sql.DataSource;
-import javax.transaction.TransactionManager;
-import javax.transaction.UserTransaction;
-import java.net.URL;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.util.*;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
@@ -360,32 +366,6 @@ public class LocalTestServer implements Server, Runnable
       return serverPeerObjectName;
    }
 
-   public Set getConnectorSubsystems() throws Exception
-   {
-      /*RemotingJMXWrapper remoting =
-         (RemotingJMXWrapper)sc.getService(ServiceContainer.REMOTING_OBJECT_NAME);
-
-      return remoting.getConnectorSubsystems();*/
-      return null;
-   }
-
-   public void addServerInvocationHandler(String subsystem, ServerInvocationHandler handler)
-           throws Exception
-   {
-      /*RemotingJMXWrapper remoting =
-         (RemotingJMXWrapper)sc.getService(ServiceContainer.REMOTING_OBJECT_NAME);
-
-      remoting.addInvocationHandler(subsystem, handler);*/
-   }
-
-   public void removeServerInvocationHandler(String subsystem) throws Exception
-   {
-      /*RemotingJMXWrapper remoting =
-         (RemotingJMXWrapper)sc.getService(ServiceContainer.REMOTING_OBJECT_NAME);
-
-      remoting.removeInvocationHandler(subsystem);*/
-   }
-
    /**
     * Only for in-VM use!
     */
@@ -566,7 +546,7 @@ public class LocalTestServer implements Server, Runnable
       connectionFactory.setSupportsLoadBalancing(supportsLoadBalancing);
       connectionFactory.setStrictTck(strictTck);
       connectionFactory.setServerPeer((ServerPeer) getJmsServer());
-      connectionFactory.setConnector(((ServerPeer) getJmsServer()).getConnector());
+      connectionFactory.setMinaService(((ServerPeer) getJmsServer()).getMinaService());
       factories.put(objectName, connectionFactory);
       connectionFactory.start();
    }

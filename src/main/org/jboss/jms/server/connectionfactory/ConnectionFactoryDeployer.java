@@ -21,15 +21,15 @@
    */
 package org.jboss.jms.server.connectionfactory;
 
-import org.jboss.jms.server.ServerPeer;
-import org.jboss.messaging.util.XMLUtil;
-import org.jboss.remoting.transport.Connector;
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
-
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+
+import org.jboss.jms.server.ServerPeer;
+import org.jboss.messaging.core.remoting.integration.MinaService;
+import org.jboss.messaging.util.XMLUtil;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
 
 /**
  * This class will deploy any Connection Factories configured in the jbm-configuration.xml file.
@@ -57,13 +57,14 @@ public class ConnectionFactoryDeployer
 
    private List<ConnectionFactory> connectionFactories = new ArrayList<ConnectionFactory>();
    private ServerPeer serverPeer;
-   private Connector connector;
+   private MinaService minaService;
+//   private Connector connector;
 
 
-   public ConnectionFactoryDeployer(ServerPeer serverPeer, Connector connector)
+   public ConnectionFactoryDeployer(ServerPeer serverPeer, MinaService minaService)
    {
       this.serverPeer = serverPeer;
-      this.connector = connector;
+      this.minaService = minaService;
    }
 
    /**
@@ -138,7 +139,7 @@ public class ConnectionFactoryDeployer
 
          }
          connectionFactory.setServerPeer(serverPeer);
-         connectionFactory.setConnector(connector);
+         connectionFactory.setMinaService(minaService);
          connectionFactory.start();
       }
    }

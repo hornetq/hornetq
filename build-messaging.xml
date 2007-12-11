@@ -149,6 +149,9 @@
       <path refid="jgroups.jgroups.classpath"/>
       <path refid="trove.trove.classpath"/>
       <path refid="apache.logging.classpath"/>
+      <path refid="apache.mina.classpath"/>
+      <path refid="slf4j.api.classpath"/>
+      <path refid="slf4j.log4j.classpath"/>
       <!-- <pathelement path="${build.lib}/je-3.2.44.jar"/> -->
    </path>
 
@@ -243,7 +246,7 @@
       <echo message="NOTE: aopc incremental compilation might fail, if so do an ant clean first (see JBMESSAGING-271)"/>
       <aopc compilerclasspathref="aopc.classpath"
             classpathref="aopc.classpath"
-            verbose="false">
+            optimized="false">
          <classpath refid="aopc.classpath"/>
          <src path="${build.classes}/org/jboss/jms"/>
          <aoppath path="src/etc/prepare-aop.xml"/>

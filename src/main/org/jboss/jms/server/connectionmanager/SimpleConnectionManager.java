@@ -27,12 +27,9 @@ import org.jboss.logging.Logger;
 import org.jboss.messaging.core.contract.ClusterNotification;
 import org.jboss.messaging.core.contract.ClusterNotificationListener;
 import org.jboss.messaging.core.contract.Replicator;
+import org.jboss.messaging.core.remoting.PacketSender;
 import org.jboss.messaging.util.ConcurrentHashSet;
 import org.jboss.messaging.util.Util;
-import org.jboss.remoting.Client;
-import org.jboss.remoting.ClientDisconnectedException;
-import org.jboss.remoting.ConnectionListener;
-import org.jboss.remoting.callback.ServerInvokerCallbackHandler;
 
 import javax.jms.JMSException;
 import java.util.*;
@@ -45,7 +42,7 @@ import java.util.concurrent.ConcurrentHashMap;
  *
  * $Id$
  */
-public class SimpleConnectionManager implements ConnectionManager, ConnectionListener, ClusterNotificationListener
+public class SimpleConnectionManager implements ConnectionManager, ClusterNotificationListener
 {
    // Constants ------------------------------------------------------------------------------------
 
@@ -164,51 +161,24 @@ public class SimpleConnectionManager implements ConnectionManager, ConnectionLis
       closeConsumersForClientVMID(jmsClientID);
    }
    
-   // ConnectionListener implementation ------------------------------------------------------------
-
-   /**
-    * Be aware that ConnectionNotifier uses to call this method with null Throwables.
-    *
-    * @param t - plan for it to be null!
-    */
-   public void handleConnectionException(Throwable t, Client client)
-   {  
-      if (t instanceof ClientDisconnectedException)
-      {
-         // This is OK
-         if (trace) { log.trace(this + " notified that client " + client + " has disconnected"); }
-         return;
-      }
-      else
-      {
-         if (trace) { log.trace(this + " detected failure on client " + client, t); }
-      }
-
-      String remotingSessionID = client.getSessionId();
-      
-      if (remotingSessionID != null)
-      {
-         handleClientFailure(remotingSessionID, true);
-      }
-   }
-
    /** Synchronized is not really needed.. just to be safe as this is not supposed to be highly contended */
-   public synchronized void addConnectionFactoryCallback(String uniqueName, String JVMID, String remotingSessionID, ServerInvokerCallbackHandler handler)
+   public void addConnectionFactoryCallback(String uniqueName, String vmID,
+         String remotingSessionID, PacketSender sender)
    {
-      remotingSessions.put(remotingSessionID, JVMID);
-      getCFInfo(uniqueName).addClient(JVMID, handler);
+      remotingSessions.put(remotingSessionID, vmID);
+      getCFInfo(uniqueName).addClient(vmID, sender);      
    }
-
    /** Synchronized is not really needed.. just to be safe as this is not supposed to be highly contended */
-   public synchronized void removeConnectionFactoryCallback(String uniqueName, String JVMID, ServerInvokerCallbackHandler handler)
+   public synchronized void removeConnectionFactoryCallback(String uniqueName, String vmid,
+         PacketSender sender)
    {
-      getCFInfo(uniqueName).removeHandler(JVMID, handler);
+      getCFInfo(uniqueName).removeSender(vmid, sender);   
    }
-
+   
    /** Synchronized is not really needed.. just to be safe as this is not supposed to be highly contended */
-   public synchronized ServerInvokerCallbackHandler[] getConnectionFactoryCallback(String uniqueName)
+   public synchronized PacketSender[] getConnectionFactorySenders(String uniqueName)
    {
-      return getCFInfo(uniqueName).getAllHandlers();
+      return getCFInfo(uniqueName).getAllSenders();
    }
 
    // ClusterNotificationListener implementation ---------------------------------------------------
@@ -366,31 +336,13 @@ public class SimpleConnectionManager implements ConnectionManager, ConnectionLis
             }          
          }
       }
-
+      
       for (ConnectionFactoryCallbackInformation cfInfo: cfCallbackInfo.values())
       {
-         ServerInvokerCallbackHandler[] handlers = cfInfo.getAllHandlers(jmsClientID);
-         for (ServerInvokerCallbackHandler handler: handlers)
+         PacketSender[] senders = cfInfo.getAllSenders(jmsClientID);
+         for (PacketSender sender: senders)
          {
-            try
-            {
-               handler.getCallbackClient().disconnect();
-            }
-            catch (Throwable e)
-            {
-               log.warn (e, e);
-            }
-
-            try
-            {
-               handler.destroy();
-            }
-            catch (Throwable e)
-            {
-               log.warn (e, e);
-            }
-
-            cfInfo.removeHandler(jmsClientID, handler);
+            cfInfo.removeSender(jmsClientID, sender);
          }
 
       }
@@ -406,54 +358,51 @@ public class SimpleConnectionManager implements ConnectionManager, ConnectionLis
       // We keep two lists, one containing all clients a CF will have to maintain and another
       //   organized by JVMId as we will need that organization when cleaning up dead clients
       String uniqueName;
-      Map</**VMID */ String , /** Active clients*/ConcurrentHashSet<ServerInvokerCallbackHandler>> clientHandlersByVM;
-      ConcurrentHashSet<ServerInvokerCallbackHandler> clientHandlers;
+      Map</**VMID */ String , /** Active clients*/ConcurrentHashSet<PacketSender>> clientSendersByVM;
+      ConcurrentHashSet<PacketSender> clientSenders;
 
 
       public ConnectionFactoryCallbackInformation(String uniqueName)
       {
          this.uniqueName = uniqueName;
-         this.clientHandlersByVM = new ConcurrentHashMap<String, ConcurrentHashSet<ServerInvokerCallbackHandler>>();
-         this.clientHandlers = new ConcurrentHashSet<ServerInvokerCallbackHandler>();
+         this.clientSendersByVM = new ConcurrentHashMap<String, ConcurrentHashSet<PacketSender>>();
+         this.clientSenders = new ConcurrentHashSet<PacketSender>();
       }
 
-      public void addClient(String vmID, ServerInvokerCallbackHandler handler)
+      public void addClient(String vmID, PacketSender sender)
       {
-         clientHandlers.add(handler);
-         getHandlersList(vmID).add(handler);
+         clientSenders.add(sender);
+         getSendersList(vmID).add(sender);
+      }
+      
+      public PacketSender[] getAllSenders(String vmID)
+      {
+         Set<PacketSender> list = getSendersList(vmID);
+         return (PacketSender[]) list.toArray(new PacketSender[list.size()]);
       }
 
-      public ServerInvokerCallbackHandler[] getAllHandlers(String vmID)
+      public PacketSender[] getAllSenders()
       {
-         Set<ServerInvokerCallbackHandler> list = getHandlersList(vmID);
-         ServerInvokerCallbackHandler[] array = new ServerInvokerCallbackHandler[list.size()];
-         return (ServerInvokerCallbackHandler[])list.toArray(array);
+         return (PacketSender[]) clientSenders.toArray(new PacketSender[clientSenders.size()]);
       }
 
-      public ServerInvokerCallbackHandler[] getAllHandlers()
+      public void removeSender(String vmID, PacketSender sender)
       {
-         ServerInvokerCallbackHandler[] array = new ServerInvokerCallbackHandler[clientHandlers.size()];
-         return (ServerInvokerCallbackHandler[])clientHandlers.toArray(array);
+         clientSenders.remove(sender);
+         getSendersList(vmID).remove(sender);
       }
-
-      public void removeHandler(String vmID, ServerInvokerCallbackHandler handler)
+      
+      private ConcurrentHashSet<PacketSender> getSendersList(String vmID)
       {
-         clientHandlers.remove(handler);
-         getHandlersList(vmID).remove(handler);
-      }
-
-      private ConcurrentHashSet<ServerInvokerCallbackHandler> getHandlersList(String vmID)
-      {
-         ConcurrentHashSet<ServerInvokerCallbackHandler> perVMList = clientHandlersByVM.get(vmID);
+         ConcurrentHashSet<PacketSender> perVMList = clientSendersByVM.get(vmID);
          if (perVMList == null)
          {
-            perVMList = new ConcurrentHashSet<ServerInvokerCallbackHandler>();
-            clientHandlersByVM.put(vmID, perVMList);
-            perVMList = clientHandlersByVM.get(vmID);
+            perVMList = new ConcurrentHashSet<PacketSender>();
+            clientSendersByVM.put(vmID, perVMList);
+            perVMList = clientSendersByVM.get(vmID);
          }
          return perVMList;
       }
-
    }
    
    private void dump()

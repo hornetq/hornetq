@@ -17,7 +17,6 @@
    </bean>
 
    <bean name="ServerPeer" class="org.jboss.jms.server.ServerPeer">
-      <depends>Remoting</depends>
       <property name="persistenceManager">
          <inject bean="PersistenceManager"/>
       </property>
@@ -30,9 +29,9 @@
       <property name="jmsUserManager">
          <inject bean="JMSUserManager"/>
       </property>
-      <property name="connector">
-         <inject bean="Remoting"/>
-      </property>
+      <property name="minaService">
+         <inject bean="MinaService"/>
+      </property> 
       <property name="configuration">
          <inject bean="Configuration"/>
       </property>
@@ -347,101 +346,15 @@
 
    </bean>
 
-   <bean name="Remoting" class="org.jboss.jms.server.microcontainer.factory.Connector">
+   <bean name="MinaService" class="org.jboss.messaging.core.remoting.integration.MinaService">
       <constructor>
-         <parameter>
-            <inject bean="InvokerLocator" property="locatorURI"/>
-         </parameter>
-         <!--<parameter>
-            <inject bean="RemotingConfig"/>
-         </parameter>-->
-      </constructor>
-      <property name="invocationHandler">
-         <inject bean="InvocationHandler"/>
-      </property>
-   </bean>
-
-   <bean name="InvokerLocator" class="org.jboss.remoting.InvokerLocator">
-      <constructor>
-         <parameter>bisocket</parameter>
-         <parameter>localhost</parameter>
+         <parameter>localhost</parameter>      
          <parameter>
             <inject bean="Configuration" property="remotingBindAddress"/>
          </parameter>
-         <parameter>
-            <null/>
-         </parameter>
-         <parameter class="java.util.Map">
-            <inject bean="RemotingConfig"/>
-         </parameter>
-         <!--<parameter>bisocket://localhost:5400/?marshaller=org.jboss.jms.wireformat.JMSWireFormat&amp;unmarshaller=org.jboss.jms.wireformat.JMSWireFormat&amp;dataType=jms
-         </parameter>-->
       </constructor>
    </bean>
-
-   <bean name="InvocationHandler" class="org.jboss.jms.server.remoting.JMSServerInvocationHandler"/>
-
-   <bean name="RemotingConfig" class="java.util.HashMap">
-      <constructor>
-         <parameter class="java.util.Map">
-            <map keyClass="java.lang.String" valueClass="java.lang.String">
-               <entry>
-                  <key>marshaller</key>
-                  <value>org.jboss.jms.wireformat.JMSWireFormat</value>
-               </entry>
-               <entry>
-                  <key>unmarshaller</key>
-                  <value>org.jboss.jms.wireformat.JMSWireFormat</value>
-               </entry>
-               <entry>
-                  <key>dataType</key>
-                  <value>jms</value>
-               </entry>
-               <entry>
-                  <key>socket.check_connection</key>
-                  <value>false</value>
-               </entry>
-               <entry>
-                  <key>timeout</key>
-                  <value>0</value>
-               </entry>
-               <entry>
-                  <key>leasePeriod</key>
-                  <value>10000</value>
-               </entry>
-               <entry>
-                  <key>clientSocketClass</key>
-                  <value>org.jboss.jms.client.remoting.ClientSocketWrapper</value>
-               </entry>
-               <entry>
-                  <key>serverSocketClass</key>
-                  <value>org.jboss.jms.server.remoting.ServerSocketWrapper</value>
-               </entry>
-               <entry>
-                  <key>numberOfRetries</key>
-                  <value>1</value>
-               </entry>
-               <entry>
-                  <key>numberOfCallRetries</key>
-                  <value>1</value>
-               </entry>
-               <entry>
-                  <key>clientMaxPoolSize</key>
-                  <value>50</value>
-               </entry>
-               <entry>
-                  <key>pingFrequency</key>
-                  <value>214748364</value>
-               </entry>
-               <entry>
-                  <key>pingWindowFactor</key>
-                  <value>10</value>
-               </entry>
-            </map>
-         </parameter>
-      </constructor>
-   </bean>
-
+      
    <bean name="ClusterNotifier" class="org.jboss.messaging.core.impl.DefaultClusterNotifier"/>
    <bean name="topic" class="org.jboss.jms.server.destination.ManagedTopic"/>
 

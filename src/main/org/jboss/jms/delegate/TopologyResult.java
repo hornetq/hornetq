@@ -22,14 +22,14 @@
 
 package org.jboss.jms.delegate;
 
-import org.jboss.jms.client.delegate.ClientConnectionFactoryDelegate;
-import org.jboss.jms.wireformat.PacketSupport;
-import org.jboss.messaging.util.Streamable;
-import java.util.Map;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.io.DataOutputStream;
-import java.io.DataInputStream;
+import java.util.Map;
+
+import org.jboss.jms.client.delegate.ClientConnectionFactoryDelegate;
+import org.jboss.messaging.util.Streamable;
 
 /**
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>

@@ -21,7 +21,17 @@
   */
 package org.jboss.jms.server;
 
-import EDU.oswego.cs.dl.util.concurrent.ConcurrentReaderHashMap;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import org.jboss.aop.AspectXmlLoader;
 import org.jboss.aop.microcontainer.aspects.jmx.JMX;
 import org.jboss.jms.server.connectionfactory.ConnectionFactoryDeployer;
@@ -35,12 +45,16 @@ import org.jboss.jms.server.endpoint.ServerSessionEndpoint;
 import org.jboss.jms.server.messagecounter.MessageCounter;
 import org.jboss.jms.server.messagecounter.MessageCounterManager;
 import org.jboss.jms.server.plugin.contract.JMSUserManager;
-import org.jboss.jms.server.remoting.JMSServerInvocationHandler;
 import org.jboss.jms.server.security.SecurityMetadataStore;
-import org.jboss.jms.wireformat.JMSWireFormat;
 import org.jboss.logging.Logger;
-import org.jboss.messaging.core.contract.*;
+import org.jboss.messaging.core.contract.Binding;
+import org.jboss.messaging.core.contract.ClusterNotifier;
+import org.jboss.messaging.core.contract.MemoryManager;
+import org.jboss.messaging.core.contract.MessageStore;
+import org.jboss.messaging.core.contract.PersistenceManager;
+import org.jboss.messaging.core.contract.PostOffice;
 import org.jboss.messaging.core.contract.Queue;
+import org.jboss.messaging.core.contract.Replicator;
 import org.jboss.messaging.core.impl.FailoverWaiter;
 import org.jboss.messaging.core.impl.IDManager;
 import org.jboss.messaging.core.impl.JDBCPersistenceManager;
@@ -48,17 +62,11 @@ import org.jboss.messaging.core.impl.clusterconnection.ClusterConnectionManager;
 import org.jboss.messaging.core.impl.memory.SimpleMemoryManager;
 import org.jboss.messaging.core.impl.postoffice.MessagingPostOffice;
 import org.jboss.messaging.core.impl.tx.TransactionRepository;
+import org.jboss.messaging.core.remoting.integration.MinaService;
 import org.jboss.messaging.util.ExceptionUtil;
 import org.jboss.messaging.util.Version;
-import org.jboss.remoting.marshal.MarshalFactory;
-import org.jboss.remoting.transport.Connector;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
-import java.net.URL;
-import java.util.*;
+import EDU.oswego.cs.dl.util.concurrent.ConcurrentReaderHashMap;
 
 /**
  * A JMS server peer.
@@ -131,8 +139,8 @@ public class ServerPeer implements JmsServer
 
    private ConnectionFactoryDeployer connectionFactoryDeployer;
 
-   private Connector connector;
-
+   private MinaService minaService;
+   
    private Configuration configuration;
    private static boolean aopLoaded =false;
 
@@ -193,7 +201,7 @@ public class ServerPeer implements JmsServer
          connectorManager = new SimpleConnectorManager();
          memoryManager = new SimpleMemoryManager();
          destinationDeployer = new DestinationDeployer(this);
-         connectionFactoryDeployer = new ConnectionFactoryDeployer(this, connector);
+         connectionFactoryDeployer = new ConnectionFactoryDeployer(this, minaService);
          txRepository =
                  new TransactionRepository(persistenceManager, getPostOffice().getMessageStore(), transactionIDManager);
          messageCounterManager = new MessageCounterManager(configuration.getMessageCounterSamplePeriod());
@@ -247,13 +255,6 @@ public class ServerPeer implements JmsServer
 
          txRepository.loadPreparedTransactions();
 
-         JMSWireFormat wf = new JMSWireFormat();
-         MarshalFactory.addMarshaller("jms", wf, wf);
-
-         //Now everything is started we can tell the invocation handler to start handling invocations
-         //We do this right at the end otherwise it can start handling invocations before we are properly started
-         JMSServerInvocationHandler.setClosed(false);
-
          if (configuration.isClustered())
          {
             Replicator rep = (Replicator) postOffice;
@@ -302,11 +303,6 @@ public class ServerPeer implements JmsServer
          log.info(this + " is Stopping. NOTE! Stopping the server peer cleanly will NOT cause failover to occur");
 
          started = false;
-
-         //Tell the invocation handler we are closed - this is so we don't attempt to handle
-         //any invocations when we are in a partial closing down state - which can give strange
-         //"object not found with id" exceptions and stuff like that
-         JMSServerInvocationHandler.setClosed(true);
 
          // Stop the wired components
          destinationDeployer.stop();
@@ -815,14 +811,14 @@ public class ServerPeer implements JmsServer
    {
       this.configuration = configuration;
    }
-
-   public Connector getConnector()
+   
+   public void setMinaService(MinaService minaService)
    {
-      return connector;
+      this.minaService = minaService;
    }
-
-   public void setConnector(Connector connector)
+   
+   public MinaService getMinaService()
    {
-      this.connector = connector;
+      return minaService;
    }
 }

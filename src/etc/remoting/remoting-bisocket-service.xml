@@ -36,8 +36,10 @@
                <!-- End immutable parameters -->
                
                <!-- Periodicity of client pings. Server window by default is twice this figure -->                               
+               <!-- 
                <attribute name="clientLeasePeriod" isParam="true">10000</attribute>
-
+               -->
+               
                <!-- Number of seconds to wait for a connection in the client pool to become free -->
                <attribute name="numberOfRetries" isParam="true">10</attribute>
 

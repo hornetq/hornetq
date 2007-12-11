@@ -24,16 +24,7 @@ package org.jboss.jms.client.remoting;
 import java.util.Map;
 
 import org.jboss.jms.client.container.ClientConsumer;
-import org.jboss.jms.client.delegate.ClientConnectionDelegate;
-import org.jboss.jms.message.JBossMessage;
-import org.jboss.jms.message.MessageProxy;
-import org.jboss.jms.wireformat.ClientDelivery;
-import org.jboss.jms.wireformat.ConnectionFactoryUpdate;
 import org.jboss.logging.Logger;
-import org.jboss.messaging.core.contract.Message;
-import org.jboss.remoting.callback.Callback;
-import org.jboss.remoting.callback.HandleCallbackException;
-import org.jboss.remoting.callback.InvokerCallbackHandler;
 
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentReaderHashMap;
 
@@ -44,13 +35,16 @@ import EDU.oswego.cs.dl.util.concurrent.ConcurrentReaderHashMap;
  * There is one instance of this class per remoting connection - which is to a unique server -
  * therefore there is no need to add the server id to the key when doing look ups.
  * 
+ * TODO this class should be merged with use of PacketDispatcher.client instance and 
+ * ClientConsumerPacketHandler should wrap ClientConsumer class
+ * 
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  *
  * $Id$
  */
-public class CallbackManager implements InvokerCallbackHandler
+public class CallbackManager
 {
    // Constants ------------------------------------------------------------------------------------
 
@@ -65,70 +59,12 @@ public class CallbackManager implements InvokerCallbackHandler
    // Attributes -----------------------------------------------------------------------------------
 
    protected Map<String, ClientConsumer> callbackHandlers;
-   protected ConnectionFactoryCallbackHandler connectionfactoryCallbackHandler;
 
    // Constructors ---------------------------------------------------------------------------------
 
    public CallbackManager()
    {
       callbackHandlers = new ConcurrentReaderHashMap();
-   }
-
-   // InvokerCallbackHandler implementation --------------------------------------------------------
-
-   public void handleCallback(Callback callback) throws HandleCallbackException
-   {
-      Object parameter = callback.getParameter();
-
-      if (parameter instanceof ClientDelivery)
-      {
-         ClientDelivery dr = (ClientDelivery)parameter;
-          
-         Message msg = dr.getMessage();
-         
-         MessageProxy proxy = JBossMessage.
-            createThinDelegate(dr.getDeliveryId(), (JBossMessage)msg, dr.getDeliveryCount());
-
-         ClientConsumer handler =
-            (ClientConsumer)callbackHandlers.get(dr.getConsumerId());
-
-         if (handler == null)
-         {
-            // This should never happen since we wait for all deliveries to arrive before closing
-            // the consumer
-
-            throw new IllegalStateException(this + " callback handler not found, message arrived after consumer is closed.");
-         }
-
-         try
-         {
-            handler.handleMessage(proxy);
-         }
-         catch (Exception e)
-         {
-            log.error("Failed to handle message", e);
-            throw new HandleCallbackException(e.getMessage(), e);
-         }
-      }
-      else if (parameter instanceof ConnectionFactoryUpdate)
-      {
-         if (connectionfactoryCallbackHandler == null)
-         {
-            log.warn("ConnectionFactoryUpdate was received but there is no callbackHandler set");
-         }
-         else
-         {
-            ConnectionFactoryUpdate viewChange = (ConnectionFactoryUpdate)parameter;
-
-            if (trace) { log.trace(this + " receiving cluster view change " + viewChange); }
-
-            connectionfactoryCallbackHandler.handleMessage(viewChange);
-         }
-      }
-      else
-      {
-         throw new HandleCallbackException("Unknow callback type: " + callback);
-      }
    }
 
    // Public ---------------------------------------------------------------------------------------
@@ -140,18 +76,7 @@ public class CallbackManager implements InvokerCallbackHandler
 
    public ClientConsumer unregisterHandler(String consumerID)
    { 
-      return (ClientConsumer)callbackHandlers.remove(consumerID);
-   }
-
-
-   public ConnectionFactoryCallbackHandler getConnectionfactoryCallbackHandler()
-   {
-      return connectionfactoryCallbackHandler;
-   }
-
-   public void setConnectionfactoryCallbackHandler(ConnectionFactoryCallbackHandler connectionfactoryCallbackHandler)
-   {
-      this.connectionfactoryCallbackHandler = connectionfactoryCallbackHandler;
+      return callbackHandlers.remove(consumerID);
    }
 
    public String toString()

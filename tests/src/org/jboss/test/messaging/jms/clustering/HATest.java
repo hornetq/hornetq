@@ -38,8 +38,8 @@ import javax.jms.Topic;
 
 import org.jboss.jms.client.FailoverEvent;
 import org.jboss.jms.client.JBossConnection;
-import org.jboss.jms.client.JBossSession;
 import org.jboss.jms.client.JBossConnectionFactory;
+import org.jboss.jms.client.JBossSession;
 import org.jboss.jms.client.delegate.ClientClusteredConnectionFactoryDelegate;
 import org.jboss.jms.client.delegate.ClientConnectionDelegate;
 import org.jboss.jms.client.delegate.ClientConnectionFactoryDelegate;
@@ -183,14 +183,14 @@ public class HATest extends ClusteringTestBase
       conn1.close();
 
       assertNotNull(state2.getRemotingConnection());
-      assertNotNull(state2.getRemotingConnection().getRemotingClient().getInvoker());
-      assertTrue(state2.getRemotingConnection().getRemotingClient().getInvoker().isConnected());
+      assertNotNull(state2.getRemotingConnection().getRemotingClient());
+      assertTrue(state2.getRemotingConnection().getRemotingClient().isConnected());
 
       conn2.close();
 
       assertNotNull(state3.getRemotingConnection());
-      assertNotNull(state3.getRemotingConnection().getRemotingClient().getInvoker());
-      assertTrue(state3.getRemotingConnection().getRemotingClient().getInvoker().isConnected());
+      assertNotNull(state3.getRemotingConnection().getRemotingClient());
+      assertTrue(state3.getRemotingConnection().getRemotingClient().isConnected());
 
       // When I created the testcase this was failing, throwing exceptions. This was basically why
       // I created this testcase

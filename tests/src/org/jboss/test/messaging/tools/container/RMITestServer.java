@@ -29,7 +29,6 @@ import org.jboss.jms.server.security.Role;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.contract.MessageStore;
 import org.jboss.messaging.core.contract.PersistenceManager;
-import org.jboss.remoting.ServerInvocationHandler;
 
 import javax.management.NotificationListener;
 import javax.management.ObjectName;
@@ -299,22 +298,6 @@ public class RMITestServer extends UnicastRemoteObject implements Server
    public boolean isStarted() throws Exception
    {
       return server.isStarted();
-   }
-
-   public Set getConnectorSubsystems() throws Exception
-   {
-      return server.getConnectorSubsystems();
-   }
-
-   public void addServerInvocationHandler(String subsystem, ServerInvocationHandler handler)
-      throws Exception
-   {
-      server.addServerInvocationHandler(subsystem, handler);
-   }
-
-   public void removeServerInvocationHandler(String subsystem) throws Exception
-   {
-      server.removeServerInvocationHandler(subsystem);
    }
 
    public MessageStore getMessageStore() throws Exception

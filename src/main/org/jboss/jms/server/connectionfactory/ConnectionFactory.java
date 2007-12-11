@@ -6,19 +6,17 @@
  */
 package org.jboss.jms.server.connectionfactory;
 
+import java.util.List;
+import java.util.Map;
+
 import org.jboss.jms.client.plugin.LoadBalancingFactory;
 import org.jboss.jms.server.ConnectionFactoryManager;
 import org.jboss.jms.server.ConnectionManager;
 import org.jboss.jms.server.ConnectorManager;
 import org.jboss.jms.server.ServerPeer;
 import org.jboss.logging.Logger;
+import org.jboss.messaging.core.remoting.integration.MinaService;
 import org.jboss.messaging.util.ExceptionUtil;
-import org.jboss.remoting.ConnectionListener;
-import org.jboss.remoting.InvokerLocator;
-import org.jboss.remoting.transport.Connector;
-
-import java.util.List;
-import java.util.Map;
 
 /**
  * A deployable JBoss Messaging connection factory.
@@ -72,7 +70,7 @@ public class ConnectionFactory
    
    private ConnectionManager connectionManager;
       
-   private Connector connector;
+   private MinaService minaService;
 
    private boolean started;
 
@@ -106,9 +104,9 @@ public class ConnectionFactory
 
          started = true;
          
-         if (connector == null)
+         if (minaService == null)
          {
-            throw new IllegalArgumentException("A Connector must be specified for " +
+            throw new IllegalArgumentException("A MinaService must be specified for " +
                                                "each Connection Factory");
          }
          
@@ -118,104 +116,31 @@ public class ConnectionFactory
                                                "each Connection Factory");
          }
       
-         String locatorURI = connector.getInvokerLocator();
+         String host = minaService.getHost();
+         int port = minaService.getPort();
 
          if (!serverPeer.isSupportsFailover())
          {
             this.supportsFailover = false;
          }
          
-         InvokerLocator locator = new InvokerLocator(locatorURI);
-         
-         String protocol = locator.getProtocol();
-         
-         if (!disableRemotingChecks && (protocol.equals("bisocket") || protocol.equals("sslbisocket")))
-         {         
-	         //Sanity check - If users are using the AS Service Binding Manager to provide the remoting connector
-	         //configuration, it is quite easy for them to end up using an old version depending on what version on 
-	         //the AS they are running in - e.g. if they have forgotten to update it.
-	         //This can lead to subtle errors - therefore we do a sanity check by checking the existence of some properties
-	         //which should always be there
-	         Map params = locator.getParameters();	         
-	         
-	         //The "compulsory" parameters
-	         boolean cont =
-	         	checkParam(params, "marshaller", "org.jboss.jms.wireformat.JMSWireFormat") &&	         		
-		         checkParam(params, "unmarshaller", "org.jboss.jms.wireformat.JMSWireFormat") &&
-		         checkParam(params, "dataType", "jms") &&
-		         checkParam(params, "timeout", "0") &&
-		         checkParam(params, "clientSocketClass", "org.jboss.jms.client.remoting.ClientSocketWrapper") &&
-		         checkParam(params, "numberOfCallRetries", "1") &&
-		         checkParam(params, "pingFrequency", "214748364") &&
-		         checkParam(params, "pingWindowFactor", "10");
-	         
-	         if (!cont)
-	         {
-	         	throw new IllegalArgumentException("Failed to deploy connection factory since remoting configuration seems incorrect.");	         			                            
-	         }
-
-	         String val = (String)params.get("clientLeasePeriod");	  
-	         if (val != null)
-	         {
-		         int i = Integer.parseInt(val);
-		         if (i < 5000)
-		         {
-		         	log.warn("Value of clientLeasePeriod at " + i + " seems low. Normal values are >= 5000");
-		         }
-	         }
-	         
-	         val = (String)params.get("clientMaxPoolSize");	
-	         if (val != null)
-	         {
-		         int i = Integer.parseInt(val);
-		         if (i < 50)
-		         {
-		         	log.warn("Value of clientMaxPoolSize at " + i + " seems low. Normal values are >= 50");
-		         }
-	         }
-         }
-
          connectionFactoryManager = serverPeer.getConnectionFactoryManager();
          connectorManager = serverPeer.getConnectorManager();
          connectionManager = serverPeer.getConnectionManager();
 
-          int refCount = connectorManager.registerConnector(getName());
-
-         long leasePeriod = connector.getLeasePeriod();
-         // if leasePeriod <= 0, disable pinging altogether
-
-         boolean enablePing = leasePeriod > 0;
-         
-         if (refCount == 1 && enablePing)
-         {
-            // TODO Something is not quite right here, we can detect failure even if pinging is not
-            // enabled, for example if we try to send a callback to the client and sending the
-            // calback fails
-
-            // install the connection listener that listens for failed connections            
-            connector.addConnectionListener((ConnectionListener) connectionManager);
-         }
-         
          // We use the MBean service name to uniquely identify the connection factory
          
          connectionFactoryManager.
             registerConnectionFactory(getName(), clientID, jndiBindings,
-                                      locatorURI, enablePing, prefetchSize, slowConsumers,
+                                      host, port, false, prefetchSize, slowConsumers,
                                       defaultTempQueueFullSize, defaultTempQueuePageSize,                                      
                                       defaultTempQueueDownCacheSize, dupsOKBatchSize, supportsFailover, supportsLoadBalancing,
                                       loadBalancingFactory, strictTck);               
-         
-         String info = "Connector " + locator.getProtocol() + "://" +
-            locator.getHost() + ":" + locator.getPort();
+         connectorManager.registerConnector(getName());
+         String info = "Connector "  + "mina://" +
+            host + ":" + port;
                  
-         if (enablePing)
-         {
-            info += " has leasing enabled, lease period " + leasePeriod + " milliseconds";
-         }
-         else
-         {
-            info += " has lease disabled";
-         }
+         info += " has lease disabled";
       
          log.info(info);
          log.info(this + " started");
@@ -324,15 +249,10 @@ public class ConnectionFactory
     {
         this.serverPeer = serverPeer;
     }
-
-    public Connector getConnector()
+    
+    public void setMinaService(MinaService service)
     {
-        return connector;
-    }
-
-    public void setConnector(Connector connector)
-    {
-        this.connector = connector;
+       this.minaService = service;
     }
 
     public boolean isSupportsFailover()

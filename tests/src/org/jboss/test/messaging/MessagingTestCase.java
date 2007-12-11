@@ -172,7 +172,7 @@ public class MessagingTestCase extends ProxyAssertSupport
    {
       Integer messageCount = getNoSubscriptions(topic);
 
-      assertEquals(0, messageCount.intValue());
+      assertEquals("Topic " + topic + " has still subscriptions", 0, messageCount.intValue());
    }
 
 
@@ -180,7 +180,9 @@ public class MessagingTestCase extends ProxyAssertSupport
    {
       /*Integer messageCount = getNoSubscriptions(topic, server);
       
-      assertEquals(0, messageCount.intValue());*/      
+      assertEquals("Topic " + topic + " on server " + server + " has still subscriptions",
+            0, messageCount.intValue());
+      */
    }
 
    protected int getNoSubscriptions(Topic topic)

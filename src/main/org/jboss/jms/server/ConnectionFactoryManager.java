@@ -41,7 +41,7 @@ public interface ConnectionFactoryManager extends MessagingComponent
     *        AOP subsystem, but not bound in JNDI.
     */
    void registerConnectionFactory(String uniqueName, String clientID,  List<String> jndiBindings,
-                                 String locatorURI, boolean clientPing,
+                                 String host, int port, boolean clientPing,
                                  int prefetchSize,
                                  boolean slowConsumers,
                                  int defaultTempQueueFullSize,

@@ -21,24 +21,24 @@
   */
 package org.jboss.jms.client.delegate;
 
+import static org.jboss.messaging.core.remoting.Assert.assertValidID;
+
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.Serializable;
-import java.net.SocketException;
 
 import javax.jms.JMSException;
 
 import org.jboss.jms.client.state.HierarchicalState;
 import org.jboss.jms.exception.MessagingJMSException;
 import org.jboss.jms.exception.MessagingNetworkFailureException;
-import org.jboss.jms.wireformat.RequestSupport;
-import org.jboss.jms.wireformat.ResponseSupport;
 import org.jboss.logging.Logger;
+import org.jboss.messaging.core.remoting.Client;
+import org.jboss.messaging.core.remoting.wireformat.AbstractPacket;
+import org.jboss.messaging.core.remoting.wireformat.JMSExceptionMessage;
 import org.jboss.messaging.util.Streamable;
-import org.jboss.remoting.CannotConnectException;
-import org.jboss.remoting.Client;
-import org.jboss.remoting.ConnectionFailedException;
+import org.jgroups.persistence.CannotConnectException;
 
 /**
  * Base class for all client-side delegate classes.
@@ -54,6 +54,7 @@ import org.jboss.remoting.ConnectionFailedException;
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
+ * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  *
  * @version <tt>$Revision$</tt>
  *
@@ -153,58 +154,55 @@ public abstract class DelegateSupport implements Streamable, Serializable
 
    // Protected ------------------------------------------------------------------------------------     
    
-   protected Object doInvoke(Client client, RequestSupport req) throws JMSException
-   {      
-      return doInvoke(client, req, false);
+   protected void sendOneWay(AbstractPacket packet) throws JMSException 
+   {
+      sendOneWay(client, id, version, packet);
    }
    
-   protected Object doInvokeOneway(Client client, RequestSupport req) throws JMSException
+   protected static void sendOneWay(Client client, String targetID, byte version, AbstractPacket packet) throws JMSException
    {
-      return doInvoke(client, req, true);
+      assert client != null;
+      assertValidID(targetID);
+      assert packet != null;
+      
+      packet.setVersion(version);
+      packet.setTargetID(targetID);
+      
+      client.sendOneWay(packet);      
    }
-
-   // Private --------------------------------------------------------------------------------------
-
-   private Object doInvoke(Client client, RequestSupport req, boolean oneWay) throws JMSException
+   
+   protected AbstractPacket sendBlocking(AbstractPacket request) throws JMSException
    {
+      return sendBlocking(client, id, version, request);
+   }
+   
+   protected static AbstractPacket sendBlocking(Client client, String targetID, byte version, AbstractPacket request) throws JMSException
+   {
+      assert client != null;
+      assertValidID(targetID);
+      assert request != null;
+
+      request.setVersion(version);
+      request.setTargetID(targetID);
       try
       {
-         Object resp = null;
-         
-         if (oneWay)
+         AbstractPacket response = (AbstractPacket) client.sendBlocking(request);
+         if (response instanceof JMSExceptionMessage)
          {
-            if (trace) { log.trace(this + " invoking " + req + " asynchronously on server using " + client); }
-
-            client.invokeOneway(req);
-
-            if (trace) { log.trace(this + " asynchronously invoked " + req + " on server, no response expected"); }
+            JMSExceptionMessage message = (JMSExceptionMessage) response;
+            throw message.getException();
+         } else {
+            return response;
          }
-         else
-         {
-
-            if (trace) { log.trace(this + " invoking " + req + " synchronously on server using " + client); }
-
-            resp = client.invoke(req);
-
-            if (trace) { log.trace(this + " got server response for " + req + ": " + resp); }
-         }
-           
-         Object res = null;
-         
-         if (resp instanceof ResponseSupport)
-         {
-            res = ((ResponseSupport)resp).getResponse();
-         }
-         
-         return res;     
-      }
-      catch (Throwable t)
+      } catch (Throwable t)
       {
          throw handleThrowable(t);
       }
    }
+
+   // Private --------------------------------------------------------------------------------------
    
-   public JMSException handleThrowable(Throwable t)
+   public static JMSException handleThrowable(Throwable t)
    {
       // ConnectionFailedException could happen during ConnectionFactory.createConnection.
       // IOException could happen during an interrupted exception.
@@ -215,30 +213,7 @@ public abstract class DelegateSupport implements Streamable, Serializable
       {
          return (JMSException)t;
       }
-      else if (t instanceof CannotConnectException)
-      {
-      	boolean failover = true;
-      	CannotConnectException cc = (CannotConnectException)t;
-      	Throwable underlying = cc.getCause();
-      	if (underlying != null && underlying instanceof SocketException)
-      	{
-      		//If remoting fails to find a connection because the client pool is full
-      		//then it throws a SocketException! - in this case we DO NOT want to failover
-      		//See http://jira.jboss.com/jira/browse/JBMESSAGING-1114
-      		if (underlying.getMessage() != null &&
-      			 underlying.getMessage().startsWith("Can not obtain client socket connection from pool"))
-      		{
-      			log.warn("Timed out getting a connection from the pool. Try increasing clientMaxPoolSize and/or numberOfRetries " +
-      					   "attributes in remoting-xxx-service.xml");
-      			failover = false;
-      		}
-      	}
-      	if (failover)
-      	{
-      		return new MessagingNetworkFailureException(cc);
-      	}      	      	      	      	      	
-      }
-      else if ((t instanceof IOException) || (t instanceof ConnectionFailedException))
+      else if ((t instanceof IOException))
       {
          return new MessagingNetworkFailureException((Exception)t);
       }
@@ -255,8 +230,7 @@ public abstract class DelegateSupport implements Streamable, Serializable
             do
             {
                if ((initCause instanceof CannotConnectException) ||
-                        (initCause instanceof IOException) ||
-                        (initCause instanceof ConnectionFailedException))
+                        (initCause instanceof IOException))
                {
                   return new MessagingNetworkFailureException((Exception)initCause);
                }
@@ -267,11 +241,6 @@ public abstract class DelegateSupport implements Streamable, Serializable
       }
          
       return new MessagingJMSException("Failed to invoke", t);      
-   }
-
-   public Client getClient()
-   {
-      return client;
    }
    
    // Inner classes --------------------------------------------------------------------------------

@@ -26,7 +26,6 @@ import org.jboss.jms.server.JmsServer;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.contract.MessageStore;
 import org.jboss.messaging.core.contract.PersistenceManager;
-import org.jboss.remoting.ServerInvocationHandler;
 import org.jboss.test.messaging.tools.container.*;
 
 import javax.management.Notification;
@@ -285,7 +284,6 @@ public class ServerManagement
       String remoteDebugIndex = "";//System.getProperty("test.remote.debug.index");
       if (remoteDebugIndex != null)                             
       {
-
          //sb.append("-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5006 ");
       }
 
@@ -715,38 +713,6 @@ public class ServerManagement
    {
 
       return servers.get(0).getServerPeerObjectName();
-   }
-
-   /**
-    * @return a Set<String> with the subsystems currently registered with the Connector.
-    *         This method is supposed to work locally as well as remotely.
-    */
-   public static Set getConnectorSubsystems() throws Exception
-   {
-
-      return servers.get(0).getConnectorSubsystems();
-   }
-
-   /**
-    * Add a ServerInvocationHandler to the remoting Connector. This method is supposed to work
-    * locally as well as remotely.
-    */
-   public static void addServerInvocationHandler(String subsystem,
-                                                 ServerInvocationHandler handler) throws Exception
-   {
-
-      servers.get(0).addServerInvocationHandler(subsystem, handler);
-   }
-
-   /**
-    * Remove a ServerInvocationHandler from the remoting Connector. This method is supposed to work
-    * locally as well as remotely.
-    */
-   public static void removeServerInvocationHandler(String subsystem)
-           throws Exception
-   {
-
-      servers.get(0).removeServerInvocationHandler(subsystem);
    }
 
    public static MessageStore getMessageStore() throws Exception

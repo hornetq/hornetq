@@ -100,6 +100,8 @@
       <componentref name="jboss/jbosssx-client" version="2.0.1.GA"/>
       <componentref name="jboss/jboss-javaee" version="5.0.0.Beta3"/>
       <componentref name="jboss/jboss-common-logging-spi" version="2.0.4.GA"/>
+      <componentref name="apache-mina" version="snapshot"/>
+      <componentref name="slf4j/log4j" version="1.4.3"/>
 
 
       <!--

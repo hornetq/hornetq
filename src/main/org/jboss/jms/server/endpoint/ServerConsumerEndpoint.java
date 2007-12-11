@@ -21,23 +21,45 @@
  */
 package org.jboss.jms.server.endpoint;
 
+import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_CHANGERATE;
+import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_CLOSE;
+import static org.jboss.messaging.core.remoting.wireformat.PacketType.REQ_CLOSING;
+
+import javax.jms.IllegalStateException;
+import javax.jms.InvalidSelectorException;
+import javax.jms.JMSException;
+
 import org.jboss.jms.delegate.ConsumerEndpoint;
 import org.jboss.jms.destination.JBossDestination;
+import org.jboss.jms.exception.MessagingJMSException;
 import org.jboss.jms.message.JBossMessage;
 import org.jboss.jms.server.ServerPeer;
 import org.jboss.jms.server.destination.ManagedDestination;
 import org.jboss.jms.server.messagecounter.MessageCounter;
 import org.jboss.jms.server.selector.Selector;
-import org.jboss.jms.wireformat.Dispatcher;
 import org.jboss.logging.Logger;
-import org.jboss.messaging.core.contract.*;
+import org.jboss.messaging.core.contract.Delivery;
+import org.jboss.messaging.core.contract.DeliveryObserver;
+import org.jboss.messaging.core.contract.Message;
+import org.jboss.messaging.core.contract.MessageReference;
+import org.jboss.messaging.core.contract.PostOffice;
+import org.jboss.messaging.core.contract.Queue;
+import org.jboss.messaging.core.contract.Receiver;
+import org.jboss.messaging.core.contract.Replicator;
 import org.jboss.messaging.core.impl.SimpleDelivery;
 import org.jboss.messaging.core.impl.tx.Transaction;
+import org.jboss.messaging.core.remoting.PacketDispatcher;
+import org.jboss.messaging.core.remoting.PacketHandler;
+import org.jboss.messaging.core.remoting.PacketSender;
+import org.jboss.messaging.core.remoting.wireformat.AbstractPacket;
+import org.jboss.messaging.core.remoting.wireformat.ChangeRateMessage;
+import org.jboss.messaging.core.remoting.wireformat.ClosingRequest;
+import org.jboss.messaging.core.remoting.wireformat.ClosingResponse;
+import org.jboss.messaging.core.remoting.wireformat.DeliverMessage;
+import org.jboss.messaging.core.remoting.wireformat.JMSExceptionMessage;
+import org.jboss.messaging.core.remoting.wireformat.NullPacket;
+import org.jboss.messaging.core.remoting.wireformat.PacketType;
 import org.jboss.messaging.util.ExceptionUtil;
-
-import javax.jms.IllegalStateException;
-import javax.jms.InvalidSelectorException;
-import javax.jms.JMSException;
 
 /**
  * Concrete implementation of ConsumerEndpoint. Lives on the boundary between Messaging Core and the
@@ -45,6 +67,7 @@ import javax.jms.JMSException;
  * 
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  * @version <tt>$Revision$</tt> $Id$
  */
 public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
@@ -511,8 +534,8 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
       	messageQueue.getLocalDistributor().remove(this);
       }
 
-      Dispatcher.instance.unregisterTarget(id, this);
-
+      PacketDispatcher.server.unregister(id);
+      
       // If this is a consumer of a non durable subscription then we want to unbind the
       // subscription and delete all its data.
 
@@ -630,6 +653,83 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
       sessionEndpoint.promptDelivery(messageQueue);
    }
 
-   // Inner classes --------------------------------------------------------------------------------
+   private PacketSender replier;
 
+   private void setReplier(PacketSender replier)
+   {
+      this.replier = replier;
+   }
+
+   public void deliver(DeliverMessage message)
+   {
+      if (replier != null)
+      {
+         message.setTargetID(id);
+         replier.send(message);
+      } else
+      {
+         log.error("No replier to deliver message to consumer");
+      }
+   }
+
+   // Inner classes --------------------------------------------------------------------------------
+   
+   public class ServerConsumerEndpointPacketHandler implements PacketHandler {
+
+      public String getID()
+      {
+         return id;
+      }
+
+      public void handle(AbstractPacket packet, PacketSender sender)
+      {
+         try
+         {
+            AbstractPacket response = null;
+
+            PacketType type = packet.getType();
+            if (type == MSG_CHANGERATE)
+            {
+               setReplier(sender);
+
+               ChangeRateMessage message = (ChangeRateMessage) packet;
+               changeRate(message.getRate());
+            } else if (type == REQ_CLOSING)
+            {
+               ClosingRequest request = (ClosingRequest) packet;
+               long id = closing(request.getSequence());
+               
+               response = new ClosingResponse(id);
+            } else if (type == MSG_CLOSE)
+            {
+               close();
+               setReplier(null);
+               
+               response = new NullPacket();
+            } else
+            {
+               response = new JMSExceptionMessage(new MessagingJMSException(
+                     "Unsupported packet for browser: " + packet));
+            }
+
+            // reply if necessary
+            if (response != null)
+            {
+               response.normalize(packet);
+               sender.send(response);
+            }
+         } catch (JMSException e)
+         {
+            JMSExceptionMessage message = new JMSExceptionMessage(e);
+            message.normalize(packet);
+            sender.send(message);
+         }
+      }
+
+      @Override
+      public String toString()
+      {
+         return "ServerConsumerEndpointPacketHandler[id=" + id + "]";
+      }
+   }
 }

@@ -21,20 +21,32 @@
   */
 package org.jboss.test.messaging.jms.server;
 
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+
+import javax.jms.Connection;
+import javax.jms.ConnectionFactory;
+import javax.jms.MessageConsumer;
+import javax.jms.MessageProducer;
+import javax.jms.Queue;
+import javax.jms.Session;
+import javax.jms.TemporaryQueue;
+import javax.jms.TextMessage;
+import javax.jms.Topic;
+import javax.jms.XAConnection;
+import javax.jms.XAConnectionFactory;
+import javax.jms.XASession;
+import javax.naming.InitialContext;
+import javax.naming.NameNotFoundException;
+import javax.transaction.xa.XAResource;
+import javax.transaction.xa.Xid;
+
 import org.jboss.jms.server.ServerPeer;
 import org.jboss.jms.server.messagecounter.MessageCounter;
 import org.jboss.jms.server.messagecounter.MessageStatistics;
 import org.jboss.jms.tx.MessagingXid;
 import org.jboss.test.messaging.JBMServerTestCase;
-
-import javax.jms.*;
-import javax.naming.InitialContext;
-import javax.naming.NameNotFoundException;
-import javax.transaction.xa.XAResource;
-import javax.transaction.xa.Xid;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
@@ -271,7 +283,7 @@ public class ServerPeerTest extends JBMServerTestCase
 
          assertTrue(ok);
 
-         String listAsHTML = null;//getJmsServerStatistics().showPreparedTransactionsAsHTML();
+         String listAsHTML = getJmsServerStatistics().showPreparedTransactionsAsHTML();
 
          assertNotNull(listAsHTML);
 

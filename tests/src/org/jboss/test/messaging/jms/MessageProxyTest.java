@@ -439,13 +439,25 @@ public class MessageProxyTest extends JMSTestCase
    
    private void checkSameBody(JBossMessage m1, JBossMessage m2, boolean same)
    {
-      if (same && (m1.getPayload() != m2.getPayload()))
+      // JIRA http://jira.jboss.org/jira/browse/JBMESSAGING-1195
+      // comparison is done based on equality instead of identity until in-vm 
+      // optimization task is done.
+      
+      // if (same && (m1.getPayload() != m2.getPayload()))
+      // {
+      //    fail("Body not same");
+      // }
+      // else if (!same && (m1.getPayload() == m2.getPayload()))
+      // {
+      //    fail("Body same");
+      //  }
+      if (same && (!m1.getPayload().equals(m2.getPayload())))
       {
-      	fail("Body not same");
+         fail("Body not same");
       }
-      else if (!same && (m1.getPayload() == m2.getPayload()))
+      else if (!same && (m1.getPayload().equals(m2.getPayload())))
       {
-      	fail("Body same");
+         fail("Body same");
       }
    }
       

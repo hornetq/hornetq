@@ -25,7 +25,6 @@ import javax.jms.JMSException;
 
 import org.jboss.jms.delegate.ConnectionFactoryEndpoint;
 import org.jboss.jms.delegate.CreateConnectionResult;
-import org.jboss.remoting.callback.ServerInvokerCallbackHandler;
 
 /**
  * The interface only exists so the connection factory requests can call through the AOP stack
@@ -43,7 +42,6 @@ public interface ConnectionFactoryInternalEndpoint extends ConnectionFactoryEndp
                                                    int failedNodeID,
                                                    String remotingSessionID,
                                                    String clientVMID,
-                                                   byte versionToUse,
-                                                   ServerInvokerCallbackHandler callbackHandler)
+                                                   byte versionToUse)
                                        throws JMSException;
 }

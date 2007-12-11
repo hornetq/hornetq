@@ -25,7 +25,7 @@ import java.util.List;
 
 import org.jboss.jms.delegate.ConnectionEndpoint;
 import org.jboss.messaging.core.contract.MessagingComponent;
-import org.jboss.remoting.callback.ServerInvokerCallbackHandler;
+import org.jboss.messaging.core.remoting.PacketSender;
 
 
 /**
@@ -60,11 +60,12 @@ public interface ConnectionManager extends MessagingComponent
     */
    List getActiveConnections();
 
-   void addConnectionFactoryCallback(String uniqueName, String JVMID, String remotingSessionID, ServerInvokerCallbackHandler handler);
+   void addConnectionFactoryCallback(String uniqueName, String VMID,
+         String remotingSessionID, PacketSender sender);
 
-   void removeConnectionFactoryCallback(String uniqueName, String JVMID, ServerInvokerCallbackHandler handler);
-   
-   ServerInvokerCallbackHandler[] getConnectionFactoryCallback(String uniqueName);
+   void removeConnectionFactoryCallback(String uniqueName, String vmid, PacketSender sender);
+
+   PacketSender[] getConnectionFactorySenders(String uniqueName);
 
    /**
     * @param clientToServer - true if the failure has been detected on a direct connection from
