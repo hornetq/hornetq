@@ -8,6 +8,7 @@ package org.jboss.messaging.core.remoting.wireformat.test.unit;
 
 import static org.jboss.messaging.core.remoting.codec.AbstractPacketCodec.LONG_LENGTH;
 import static org.jboss.messaging.core.remoting.codec.AbstractPacketCodec.sizeof;
+import static org.jboss.messaging.core.remoting.wireformat.AbstractPacket.NO_ID_SET;
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_ACKDELIVERIES;
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_ADDTEMPORARYDESTINATION;
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_BROWSER_RESET;
@@ -239,12 +240,27 @@ public class PacketTypeTest extends TestCase
       assertEquals(buffer.get(), packet.getType().byteValue());
       assertEquals(buffer.get(), packet.getVersion());
 
-      int headerLength = LONG_LENGTH + sizeof(packet.getTargetID())
-            + sizeof(packet.getCallbackID());
+      String targetID = packet.getTargetID();
+      if (NO_ID_SET.equals(packet.getTargetID()))
+            targetID = null;
+      String callbackID = packet.getCallbackID();
+      if (NO_ID_SET.equals(packet.getCallbackID()))
+         callbackID = null;
+           
+      int headerLength = LONG_LENGTH + sizeof(targetID)
+            + sizeof(callbackID);
       assertEquals(buffer.getInt(), headerLength);
       assertEquals(buffer.getLong(), packet.getCorrelationID());
-      assertEquals(buffer.getNullableString(), packet.getTargetID());
-      assertEquals(buffer.getNullableString(), packet.getCallbackID());
+      
+      String bufferTargetID = buffer.getNullableString();
+      if (bufferTargetID == null)
+         bufferTargetID = NO_ID_SET;
+      String bufferCallbackID = buffer.getNullableString();
+      if (bufferCallbackID == null)
+         bufferCallbackID = NO_ID_SET;
+      
+      assertEquals(bufferTargetID, packet.getTargetID());
+      assertEquals(bufferCallbackID, packet.getCallbackID());
    }
 
    private static void assertEqualsAcks(List<Ack> expected, List<Ack> actual)

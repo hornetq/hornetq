@@ -11,6 +11,7 @@ import static org.jboss.jms.destination.JBossDestination.writeDestination;
 import static org.jboss.messaging.core.remoting.codec.DecoderStatus.NEED_DATA;
 import static org.jboss.messaging.core.remoting.codec.DecoderStatus.NOT_OK;
 import static org.jboss.messaging.core.remoting.codec.DecoderStatus.OK;
+import static org.jboss.messaging.core.remoting.wireformat.AbstractPacket.NO_ID_SET;
 import static org.jboss.messaging.core.remoting.wireformat.AbstractPacket.NO_VERSION_SET;
 
 import java.io.ByteArrayInputStream;
@@ -39,11 +40,14 @@ public abstract class AbstractPacketCodec<P extends AbstractPacket>
 
    public static final int LONG_LENGTH = 8;
 
-   private static final Logger log = Logger.getLogger(AbstractPacketCodec.class);
+   private static final Logger log = Logger
+         .getLogger(AbstractPacketCodec.class);
 
    // Attributes ----------------------------------------------------
 
    private PacketType type;
+
+   // Constructors --------------------------------------------------
 
    protected AbstractPacketCodec(PacketType type)
    {
@@ -54,22 +58,31 @@ public abstract class AbstractPacketCodec<P extends AbstractPacket>
 
    // Public --------------------------------------------------------
 
-   public void encode(P packet, RemotingBuffer buf)
-   throws Exception
+   public void encode(P packet, RemotingBuffer buf) throws Exception
    {
       assert packet != null;
       assert buf != null;
-      
+
       byte version = packet.getVersion();
       if (version == NO_VERSION_SET)
       {
          throw new IllegalStateException("packet must be versioned: " + packet);
       }
-      
-      long correlationID = packet.getCorrelationID();
-      String targetID = packet.getTargetID();
-      String callbackID = packet.getCallbackID();
 
+      long correlationID = packet.getCorrelationID();
+      // to optimize the size of the packets, if the targetID
+      // or the callbackID are not set, they are encoded as null
+      // Strings and will be correctly reset in decode(RemotingBuffer) method
+      String targetID = packet.getTargetID();
+      if (NO_ID_SET.equals(targetID))
+      {
+         targetID = null;
+      }
+      String callbackID = packet.getCallbackID();
+      if (NO_ID_SET.equals(callbackID))
+      {
+         callbackID = null;
+      }
       int headerLength = LONG_LENGTH + sizeof(targetID) + sizeof(callbackID);
 
       buf.put(packet.getType().byteValue());
@@ -80,6 +93,18 @@ public abstract class AbstractPacketCodec<P extends AbstractPacket>
       buf.putNullableString(callbackID);
 
       encodeBody(packet, buf);
+   }
+
+   public static int sizeof(String nullableString)
+   {
+      if (nullableString == null)
+      {
+         return 1; // NULL_STRING byte
+      } else
+      {
+         return nullableString.getBytes().length + 2;// NOT_NULL_STRING +
+         // NULL_BYTE
+      }
    }
 
    // MessageDecoder implementation ---------------------------------
@@ -164,32 +189,26 @@ public abstract class AbstractPacketCodec<P extends AbstractPacket>
          return null;
       }
       packet.setVersion(version);
+      if (targetID == null)
+         targetID = NO_ID_SET;
       packet.setTargetID(targetID);
       packet.setCorrelationID(correlationID);
+      if (callbackID == null)
+         callbackID = NO_ID_SET;
       packet.setCallbackID(callbackID);
-      
+
       return packet;
    }
-   
+
+   // Protected -----------------------------------------------------
+
    protected abstract void encodeBody(P packet, RemotingBuffer buf)
-   throws Exception;
+         throws Exception;
 
-   protected abstract P decodeBody(RemotingBuffer buffer)
-   throws Exception;
+   protected abstract P decodeBody(RemotingBuffer buffer) throws Exception;
 
-   public static int sizeof(String nullableString)
-   {
-      if (nullableString == null)
-      {
-         return 1; // NULL_STRING byte
-      } else
-      {
-         return nullableString.getBytes().length + 2;// NOT_NULL_STRING +
-         // NULL_BYTE
-      }
-   }
-
-   protected static byte[] encode(JBossDestination destination) throws Exception
+   protected static byte[] encode(JBossDestination destination)
+         throws Exception
    {
       ByteArrayOutputStream baos = new ByteArrayOutputStream();
       writeDestination(new DataOutputStream(baos), destination);
@@ -202,7 +221,7 @@ public abstract class AbstractPacketCodec<P extends AbstractPacket>
       ByteArrayInputStream bais = new ByteArrayInputStream(b);
       return readDestination(new DataInputStream(bais));
    }
-   
+
    protected static byte[] encode(Message message) throws Exception
    {
       ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -218,7 +237,7 @@ public abstract class AbstractPacketCodec<P extends AbstractPacket>
       msg.read(new DataInputStream(bais));
       return msg;
    }
-   
+
    // Private -------------------------------------------------------
 
    // Inner classes -------------------------------------------------
