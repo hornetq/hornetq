@@ -6,12 +6,13 @@
  */
 package org.jboss.messaging.core.remoting.integration;
 
+import static org.jboss.messaging.core.remoting.integration.FilterChainSupport.addCodecFilter;
 import static org.jboss.messaging.core.remoting.integration.FilterChainSupport.addLoggingFilter;
+import static org.jboss.messaging.core.remoting.integration.FilterChainSupport.addMDCFilter;
 
 import java.net.InetSocketAddress;
 
-import org.apache.mina.filter.codec.ProtocolCodecFilter;
-import org.apache.mina.filter.logging.MdcInjectionFilter;
+import org.apache.mina.common.DefaultIoFilterChainBuilder;
 import org.apache.mina.transport.socket.nio.NioSocketAcceptor;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
@@ -67,13 +68,10 @@ public class MinaService
       if (acceptor == null)
       {
          acceptor = new NioSocketAcceptor();
-
-         // Prepare the configuration
-         MdcInjectionFilter mdcInjectionFilter = new MdcInjectionFilter();
-         acceptor.getFilterChain().addLast("mdc", mdcInjectionFilter);
-         acceptor.getFilterChain().addLast("codec",
-               new ProtocolCodecFilter(new PacketCodecFactory()));
-
+         DefaultIoFilterChainBuilder filterChain = acceptor.getFilterChain();
+         
+         addMDCFilter(filterChain);
+         addCodecFilter(filterChain);
          addLoggingFilter(acceptor.getFilterChain());
 
          // Bind

@@ -6,13 +6,15 @@
  */
 package org.jboss.messaging.core.remoting.integration;
 
+import static org.jboss.messaging.core.remoting.integration.FilterChainSupport.addBlockingRequestResponseFilter;
+import static org.jboss.messaging.core.remoting.integration.FilterChainSupport.addCodecFilter;
 import static org.jboss.messaging.core.remoting.integration.FilterChainSupport.addLoggingFilter;
+import static org.jboss.messaging.core.remoting.integration.FilterChainSupport.addMDCFilter;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
 import org.apache.mina.common.CloseFuture;
@@ -22,9 +24,6 @@ import org.apache.mina.common.IdleStatus;
 import org.apache.mina.common.IoService;
 import org.apache.mina.common.IoServiceListener;
 import org.apache.mina.common.IoSession;
-import org.apache.mina.filter.codec.ProtocolCodecFilter;
-import org.apache.mina.filter.logging.MdcInjectionFilter;
-import org.apache.mina.filter.reqres.RequestResponseFilter;
 import org.apache.mina.transport.socket.nio.NioSocketConnector;
 import org.jboss.jms.client.remoting.ConsolidatedRemotingConnectionListener;
 import org.jboss.logging.Logger;
@@ -64,21 +63,21 @@ public class MinaConnector implements NIOConnector
    public MinaConnector() throws Exception
    {
       this.connector = new NioSocketConnector();
+      DefaultIoFilterChainBuilder filterChain = connector.getFilterChain();
       
-      MdcInjectionFilter mdcInjectionFilter = new MdcInjectionFilter();
-      connector.getFilterChain().addLast("mdc", mdcInjectionFilter);
+      addMDCFilter(filterChain);
 
-      connector.getFilterChain().addLast("codec",
-            new ProtocolCodecFilter(new PacketCodecFactory()));
+      addCodecFilter(filterChain);
 
-      addBlockingRequestResponseFilter(connector.getFilterChain());
+      blockingScheduler = addBlockingRequestResponseFilter(filterChain);
 
-      addLoggingFilter(connector.getFilterChain());
+      addLoggingFilter(filterChain);
 
       connector.setHandler(new MinaHandler(PacketDispatcher.client));
       connector.getSessionConfig().setKeepAlive(true);
       connector.getSessionConfig().setReuseAddress(true);
    }
+
 
    // NIOConnector implementation -----------------------------------
    
@@ -166,15 +165,6 @@ public class MinaConnector implements NIOConnector
    // Protected -----------------------------------------------------
 
    // Private -------------------------------------------------------
-
-   private void addBlockingRequestResponseFilter(
-         DefaultIoFilterChainBuilder chain)
-   {
-      blockingScheduler = Executors.newScheduledThreadPool(1);
-      RequestResponseFilter filter = new RequestResponseFilter(
-            new MinaInspector(), blockingScheduler);
-      chain.addLast("reqres", filter);
-   }
 
    // Inner classes -------------------------------------------------
 
