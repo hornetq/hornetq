@@ -4,7 +4,7 @@
  * Distributable under LGPL license.
  * See terms of license at gnu.org.
  */
-package org.jboss.test.messaging.core.remoting;
+package org.jboss.messaging.core.remoting.test.unit;
 
 import java.util.ArrayList;
 import java.util.List;

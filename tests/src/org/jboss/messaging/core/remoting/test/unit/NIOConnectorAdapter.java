@@ -4,11 +4,14 @@
  * Distributable under LGPL license.
  * See terms of license at gnu.org.
  */
-package org.jboss.test.messaging.core.remoting;
+package org.jboss.messaging.core.remoting.test.unit;
 
-import java.util.concurrent.TimeUnit;
+import java.io.IOException;
 
+import org.jboss.jms.client.remoting.ConsolidatedRemotingConnectionListener;
+import org.jboss.messaging.core.remoting.NIOConnector;
 import org.jboss.messaging.core.remoting.NIOSession;
+import org.jboss.messaging.core.remoting.TransportType;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -16,8 +19,8 @@ import org.jboss.messaging.core.remoting.NIOSession;
  * @version <tt>$Revision$</tt>
  *
  */
-public class NIOSessionAdapter implements NIOSession
-{    
+public class NIOConnectorAdapter implements NIOConnector
+{
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
@@ -28,26 +31,32 @@ public class NIOSessionAdapter implements NIOSession
 
    // Public --------------------------------------------------------
 
-   // NIOSession implementation -------------------------------------
- 
-   public long getID()
+   // NIOConnector implementation -----------------------------------
+   
+   public void addConnectionListener(
+         ConsolidatedRemotingConnectionListener listener)
    {
-      return 0;
    }
 
-   public boolean isConnected()
+   public NIOSession connect(String host, int port, TransportType transport)
+         throws IOException
+   {
+      return null;
+   }
+
+   public boolean disconnect()
    {
       return false;
    }
 
-   public void write(Object object)
-   {
-   }
-   
-   public Object writeAndBlock(long requestID, Object object, long timeout,
-         TimeUnit timeUnit) throws Throwable
+   public String getServerURI()
    {
       return null;
+   }
+
+   public void removeConnectionListener(
+         ConsolidatedRemotingConnectionListener listener)
+   {
    }
 
    // Package protected ---------------------------------------------

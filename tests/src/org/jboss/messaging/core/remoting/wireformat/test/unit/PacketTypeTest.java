@@ -4,7 +4,7 @@
  * Distributable under LGPL license.
  * See terms of license at gnu.org.
  */
-package org.jboss.test.messaging.core.remoting.wireformat;
+package org.jboss.messaging.core.remoting.wireformat.test.unit;
 
 import static org.jboss.messaging.core.remoting.codec.AbstractPacketCodec.LONG_LENGTH;
 import static org.jboss.messaging.core.remoting.codec.AbstractPacketCodec.sizeof;

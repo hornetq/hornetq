@@ -4,7 +4,7 @@
  * Distributable under LGPL license.
  * See terms of license at gnu.org.
  */
-package org.jboss.test.messaging.core.remoting.integration;
+package org.jboss.messaging.core.remoting.integration.test;
 
 import static java.util.UUID.randomUUID;
 import junit.framework.TestCase;

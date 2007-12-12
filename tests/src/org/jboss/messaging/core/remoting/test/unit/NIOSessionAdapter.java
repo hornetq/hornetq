@@ -4,14 +4,11 @@
  * Distributable under LGPL license.
  * See terms of license at gnu.org.
  */
-package org.jboss.test.messaging.core.remoting;
+package org.jboss.messaging.core.remoting.test.unit;
 
-import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 
-import org.jboss.jms.client.remoting.ConsolidatedRemotingConnectionListener;
-import org.jboss.messaging.core.remoting.NIOConnector;
 import org.jboss.messaging.core.remoting.NIOSession;
-import org.jboss.messaging.core.remoting.TransportType;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -19,8 +16,8 @@ import org.jboss.messaging.core.remoting.TransportType;
  * @version <tt>$Revision$</tt>
  *
  */
-public class NIOConnectorAdapter implements NIOConnector
-{
+public class NIOSessionAdapter implements NIOSession
+{    
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
@@ -31,32 +28,26 @@ public class NIOConnectorAdapter implements NIOConnector
 
    // Public --------------------------------------------------------
 
-   // NIOConnector implementation -----------------------------------
-   
-   public void addConnectionListener(
-         ConsolidatedRemotingConnectionListener listener)
+   // NIOSession implementation -------------------------------------
+ 
+   public long getID()
    {
+      return 0;
    }
 
-   public NIOSession connect(String host, int port, TransportType transport)
-         throws IOException
-   {
-      return null;
-   }
-
-   public boolean disconnect()
+   public boolean isConnected()
    {
       return false;
    }
 
-   public String getServerURI()
+   public void write(Object object)
+   {
+   }
+   
+   public Object writeAndBlock(long requestID, Object object, long timeout,
+         TimeUnit timeUnit) throws Throwable
    {
       return null;
-   }
-
-   public void removeConnectionListener(
-         ConsolidatedRemotingConnectionListener listener)
-   {
    }
 
    // Package protected ---------------------------------------------

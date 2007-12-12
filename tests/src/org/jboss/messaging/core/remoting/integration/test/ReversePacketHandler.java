@@ -4,21 +4,21 @@
  * Distributable under LGPL license.
  * See terms of license at gnu.org.
  */
-package org.jboss.test.messaging.core.remoting.integration;
+package org.jboss.messaging.core.remoting.integration.test;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static junit.framework.Assert.fail;
+import static org.jboss.messaging.core.remoting.integration.test.TestSupport.reverse;
 import static org.jboss.messaging.core.remoting.wireformat.AbstractPacket.NO_ID_SET;
-import static org.jboss.test.messaging.core.remoting.integration.TestSupport.reverse;
 
 import java.util.concurrent.TimeUnit;
 
 import junit.framework.Assert;
 
 import org.jboss.messaging.core.remoting.PacketSender;
+import org.jboss.messaging.core.remoting.test.unit.TestPacketHandler;
 import org.jboss.messaging.core.remoting.wireformat.AbstractPacket;
 import org.jboss.messaging.core.remoting.wireformat.TextPacket;
-import org.jboss.test.messaging.core.remoting.TestPacketHandler;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -74,7 +74,7 @@ public class ReversePacketHandler extends TestPacketHandler
       }
       
       TextPacket message = (TextPacket) packet;
-      if (message.isRequest() || message.getCallbackID() != NO_ID_SET)
+      if (message.isRequest() || !NO_ID_SET.equals(message.getCallbackID()))
       {
          TextPacket response = new TextPacket(reverse(message.getText()));
          response.normalize(message);

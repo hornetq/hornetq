@@ -4,10 +4,10 @@
  * Distributable under LGPL license.
  * See terms of license at gnu.org.
  */
-package org.jboss.test.messaging.core.remoting;
+package org.jboss.messaging.core.remoting.test.unit;
 
 import static org.jboss.messaging.core.remoting.TransportType.TCP;
-import static org.jboss.test.messaging.core.remoting.integration.TestSupport.PORT;
+import static org.jboss.messaging.core.remoting.integration.test.TestSupport.PORT;
 
 import java.io.IOException;
 
@@ -18,8 +18,8 @@ import junit.framework.TestCase;
 import org.jboss.messaging.core.remoting.Client;
 import org.jboss.messaging.core.remoting.NIOSession;
 import org.jboss.messaging.core.remoting.TransportType;
+import org.jboss.messaging.core.remoting.integration.test.TestSupport;
 import org.jboss.messaging.core.remoting.wireformat.NullPacket;
-import org.jboss.test.messaging.core.remoting.integration.TestSupport;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>.

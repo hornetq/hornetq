@@ -4,14 +4,14 @@
  * Distributable under LGPL license.
  * See terms of license at gnu.org.
  */
-package org.jboss.test.messaging.core.remoting.integration;
+package org.jboss.messaging.core.remoting.integration.test;
 
 import junit.framework.TestCase;
 
 import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.integration.MinaHandler;
+import org.jboss.messaging.core.remoting.test.unit.TestPacketHandler;
 import org.jboss.messaging.core.remoting.wireformat.TextPacket;
-import org.jboss.test.messaging.core.remoting.TestPacketHandler;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>

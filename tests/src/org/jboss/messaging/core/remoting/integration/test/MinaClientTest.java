@@ -4,7 +4,7 @@
  * Distributable under LGPL license.
  * See terms of license at gnu.org.
  */
-package org.jboss.test.messaging.core.remoting.integration;
+package org.jboss.messaging.core.remoting.integration.test;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
@@ -16,9 +16,9 @@ import java.util.List;
 import org.jboss.messaging.core.remoting.Client;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.integration.MinaConnector;
+import org.jboss.messaging.core.remoting.test.unit.TestPacketHandler;
 import org.jboss.messaging.core.remoting.wireformat.AbstractPacket;
 import org.jboss.messaging.core.remoting.wireformat.TextPacket;
-import org.jboss.test.messaging.core.remoting.TestPacketHandler;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>.
@@ -135,6 +135,8 @@ public class MinaClientTest extends TestSupport
       serverPacketHandler.setSleepTime(1000, MILLISECONDS);
 
       AbstractPacket packet = new TextPacket("testSendBlockingWithTimeout");
+      packet.setTargetID(serverPacketHandler.getID());
+      
       packet.setVersion((byte) 1);
 
       try

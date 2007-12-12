@@ -369,8 +369,6 @@
 			   <fileset dir="${build.tests.classes}">
 				   <include name="**/test/unit/**/${test-mask}.class"/>				   
 				   <exclude name="**/integration/test/unit/**/${test-mask}.class"/>
-				   
-				   
 			   </fileset>
 		   </batchtest>
 	   </junit>
@@ -380,7 +378,7 @@
 	   description="Runs integration tests">
 	   
 	   <echo message=""/>
-	   <echo message="Running unit tests"/>
+	   <echo message="Running integration tests"/>
 	   <echo message=""/>
 	   
 	   <junit printsummary="yes" haltonfailure="yes" haltonerror="yes">		   
@@ -392,6 +390,7 @@
 			   <formatter type="plain" usefile="${junit.formatter.usefile}"/>
 			   <fileset dir="${build.tests.classes}">
 				   <include name="**/integration/test/unit/**/${test-mask}.class"/>				   
+				   <include name="**/integration/test/**/${test-mask}.class"/>				   
 			   </fileset>
 		   </batchtest>
 	   </junit>
