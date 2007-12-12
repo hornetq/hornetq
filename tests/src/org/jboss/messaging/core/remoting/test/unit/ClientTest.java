@@ -6,6 +6,10 @@
  */
 package org.jboss.messaging.core.remoting.test.unit;
 
+import static org.easymock.EasyMock.createStrictMock;
+import static org.easymock.EasyMock.expect;
+import static org.easymock.EasyMock.replay;
+import static org.easymock.EasyMock.verify;
 import static org.jboss.messaging.core.remoting.TransportType.TCP;
 import static org.jboss.messaging.core.remoting.integration.test.TestSupport.PORT;
 
@@ -16,9 +20,8 @@ import javax.jms.IllegalStateException;
 import junit.framework.TestCase;
 
 import org.jboss.messaging.core.remoting.Client;
+import org.jboss.messaging.core.remoting.NIOConnector;
 import org.jboss.messaging.core.remoting.NIOSession;
-import org.jboss.messaging.core.remoting.TransportType;
-import org.jboss.messaging.core.remoting.integration.test.TestSupport;
 import org.jboss.messaging.core.remoting.wireformat.NullPacket;
 
 /**
@@ -40,56 +43,45 @@ public class ClientTest extends TestCase
 
    public void testConnected() throws Exception
    {
-      Client client = new Client(new NIOConnectorAdapter()
-      {
-         private boolean connected = false;
+      NIOConnector connector = createStrictMock(NIOConnector.class);
+      NIOSession session1 = createStrictMock(NIOSession.class);
+      NIOSession session2 = createStrictMock(NIOSession.class);
+      
+      expect(connector.connect("localhost", PORT, TCP)).andReturn(session1);
+      expect(connector.disconnect()).andReturn(true);
+      
+      expect(connector.connect("localhost", PORT, TCP)).andReturn(session2);
+      expect(session2.isConnected()).andReturn(true);
+      
+      expect(connector.disconnect()).andReturn(true);
+      expect(connector.disconnect()).andReturn(false);
 
-         @Override
-         public NIOSession connect(String host, int port,
-               TransportType transport) throws IOException
-         {
-            connected = true;
-            return new NIOSessionAdapter()
-            {
-               @Override
-               public boolean isConnected()
-               {
-                  return connected;
-               }
-            };
-         }
+      replay(connector, session1, session2);
 
-         @Override
-         public boolean disconnect()
-         {
-            boolean wasConnected = connected;
-            connected = false;
-            return wasConnected;
-         }
-      });
-
+      Client client = new Client(connector);
+      connector.connect("localhost", PORT, TCP);
+      assertTrue(client.disconnect());
       assertFalse(client.isConnected());
 
-      client.connect("localhost", TestSupport.PORT, TCP);
+      client.connect("localhost", PORT, TCP);
       assertTrue(client.isConnected());
 
       assertTrue(client.disconnect());
       assertFalse(client.isConnected());
       assertFalse(client.disconnect());
+      
+      verify(connector, session1, session2);
    }
 
    public void testConnectionFailure() throws Exception
    {
-      Client client = new Client(new NIOConnectorAdapter()
-      {
-         @Override
-         public NIOSession connect(String host, int port,
-               TransportType transport) throws IOException
-         {
-            throw new IOException("connection exception");
-         }
-      });
+      NIOConnector connector = createStrictMock(NIOConnector.class);
+      expect(connector.connect("localhost", PORT, TCP)).andThrow(new IOException("connection exception"));
 
+      replay(connector);
+
+      Client client = new Client(connector);
+      
       try
       {
          client.connect("localhost", PORT, TCP);
@@ -97,88 +89,72 @@ public class ClientTest extends TestCase
       } catch (IOException e)
       {
       }
+      
+      verify(connector);
    }
 
    public void testSessionID() throws Exception
    {
-      Client client = new Client(new NIOConnectorAdapter()
-      {
-         @Override
-         public NIOSession connect(String host, int port,
-               TransportType transport) throws IOException
-         {
-            return new NIOSessionAdapter()
-            {
-               @Override
-               public long getID()
-               {
-                  return System.currentTimeMillis();
-               }
+      long sessionID = System.currentTimeMillis();
+      
+      NIOConnector connector = createStrictMock(NIOConnector.class);
+      NIOSession session = createStrictMock(NIOSession.class);
+      
+      expect(connector.connect("localhost", PORT, TCP)).andReturn(session);
+      expect(session.isConnected()).andReturn(true);
+      expect(session.getID()).andReturn(sessionID);
+      expect(connector.disconnect()).andReturn(true);
+      
+      replay(connector, session);
+      
+      Client client = new Client(connector);
 
-               @Override
-               public boolean isConnected()
-               {
-                  return true;
-               }
-            };
-         }
-      });
       assertNull(client.getSessionID());
       client.connect("localhost", PORT, TCP);
-      assertNotNull(client.getSessionID());
+
+      String actualSessionID = client.getSessionID();
+      
+      assertNotNull(actualSessionID);
+      assertEquals(Long.toString(sessionID), actualSessionID);
       client.disconnect();
       assertNull(client.getSessionID());
+      
+      verify(connector, session);
    }
 
    public void testURI() throws Exception
    {
-      Client client = new Client(new NIOConnectorAdapter()
-      {
-         private boolean connected = false;
-
-         @Override
-         public NIOSession connect(String host, int port,
-               TransportType transport) throws IOException
-         {
-            connected = true;
-            return super.connect(host, port, transport);
-         }
-
-         @Override
-         public boolean disconnect()
-         {
-            connected = false;
-            return true;
-         }
-
-         @Override
-         public String getServerURI()
-         {
-            if (!connected)
-               return null;
-            else
-               return "tcp://localhost:" + PORT;
-         }
-      });
+      NIOConnector connector = createStrictMock(NIOConnector.class);
+      NIOSession session = createStrictMock(NIOSession.class);
+      
+      expect(connector.getServerURI()).andReturn(null);
+      expect(connector.connect("localhost", PORT, TCP)).andReturn(session);
+      expect(connector.getServerURI()).andReturn("tcp://localhost:" + PORT);
+      expect(connector.disconnect()).andReturn(true);
+      expect(connector.getServerURI()).andReturn(null);
+      // no expectation for the session
+      
+      replay(connector, session);
+      
+      Client client = new Client(connector);
+      
       assertNull(client.getURI());
       client.connect("localhost", PORT, TCP);
       assertNotNull(client.getURI());
       client.disconnect();
       assertNull(client.getURI());
+
+      verify(connector, session);
    }
 
    public void testCanNotSendPacketIfNotConnected() throws Exception
    {
-      Client client = new Client(new NIOConnectorAdapter()
-      {
-         @Override
-         public NIOSession connect(String host, int port,
-               TransportType transport) throws IOException
-         {
-            return null;
-         }
-      });
-
+      NIOConnector connector = createStrictMock(NIOConnector.class);
+      
+      // connector is not expected to be called at all;
+      replay(connector);
+      
+      Client client = new Client(connector);
       try
       {
          client.sendOneWay(new NullPacket());
@@ -187,5 +163,7 @@ public class ClientTest extends TestCase
       {
 
       }
+      
+      verify(connector);
    }
 }
