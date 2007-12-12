@@ -7,6 +7,7 @@
 package org.jboss.messaging.core.remoting;
 
 import static org.jboss.messaging.core.remoting.Assert.assertValidID;
+import static org.jboss.messaging.core.remoting.wireformat.AbstractPacket.NO_ID_SET;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -78,6 +79,11 @@ public class PacketDispatcher
    public void dispatch(AbstractPacket packet, PacketSender sender)
    {
       String targetID = packet.getTargetID();
+      if (NO_ID_SET.equals(targetID))
+      {
+         log.error("Packet is not handled, it has no targetID: " + packet);
+         return;
+      }
       PacketHandler handler = getHandler(targetID);
       if (handler != null)
       {
@@ -87,7 +93,7 @@ public class PacketDispatcher
          handler.handle(packet, sender);
       } else
       {
-         log.warn("Unhandled packet " + packet);
+         log.error("Unhandled packet " + packet);
       }
    }
 
