@@ -6,6 +6,8 @@
  */
 package org.jboss.messaging.core.remoting.integration;
 
+import static org.jboss.messaging.core.remoting.integration.FilterChainSupport.addLoggingFilter;
+
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.HashMap;
@@ -21,7 +23,6 @@ import org.apache.mina.common.IoService;
 import org.apache.mina.common.IoServiceListener;
 import org.apache.mina.common.IoSession;
 import org.apache.mina.filter.codec.ProtocolCodecFilter;
-import org.apache.mina.filter.logging.LoggingFilter;
 import org.apache.mina.filter.logging.MdcInjectionFilter;
 import org.apache.mina.filter.reqres.RequestResponseFilter;
 import org.apache.mina.transport.socket.nio.NioSocketConnector;
@@ -72,16 +73,15 @@ public class MinaConnector implements NIOConnector
 
       addBlockingRequestResponseFilter(connector.getFilterChain());
 
-      connector.getFilterChain().addLast("logger", new LoggingFilter());
+      addLoggingFilter(connector.getFilterChain());
 
       connector.setHandler(new MinaHandler(PacketDispatcher.client));
       connector.getSessionConfig().setKeepAlive(true);
       connector.getSessionConfig().setReuseAddress(true);
-}
+   }
+
+   // NIOConnector implementation -----------------------------------
    
-   /* (non-Javadoc)
-    * @see org.jboss.messaging.core.remoting.integration.NIOConnector#connect(java.lang.String, int, org.jboss.messaging.core.remoting.TransportType)
-    */
    public NIOSession connect(String host, int port, TransportType transport) throws IOException {
       assert host != null;
       assert port > 0;
@@ -100,9 +100,6 @@ public class MinaConnector implements NIOConnector
       return new MinaSession(session);
    }
    
-   /* (non-Javadoc)
-    * @see org.jboss.messaging.core.remoting.integration.NIOConnector#disconnect()
-    */
    public boolean disconnect()
    {
       if (session == null)
@@ -123,9 +120,6 @@ public class MinaConnector implements NIOConnector
       return closed;
    }
    
-   /* (non-Javadoc)
-    * @see org.jboss.messaging.core.remoting.integration.NIOConnector#addConnectionListener(org.jboss.jms.client.remoting.ConsolidatedRemotingConnectionListener)
-    */
    public void addConnectionListener(
          final ConsolidatedRemotingConnectionListener listener)
    {
@@ -140,9 +134,6 @@ public class MinaConnector implements NIOConnector
          log.trace("added listener " + listener + " to " + this);
    }
    
-   /* (non-Javadoc)
-    * @see org.jboss.messaging.core.remoting.integration.NIOConnector#removeConnectionListener(org.jboss.jms.client.remoting.ConsolidatedRemotingConnectionListener)
-    */
    public void removeConnectionListener(ConsolidatedRemotingConnectionListener listener)
    {
       assert listener != null;
@@ -155,9 +146,6 @@ public class MinaConnector implements NIOConnector
          log.trace("removed listener " + listener + " from " + this);
    }
    
-   /* (non-Javadoc)
-    * @see org.jboss.messaging.core.remoting.integration.NIOConnector#getServerURI()
-    */
    public String getServerURI()
    {
       if (connector == null)

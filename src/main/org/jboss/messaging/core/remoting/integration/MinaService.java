@@ -6,11 +6,11 @@
  */
 package org.jboss.messaging.core.remoting.integration;
 
+import static org.jboss.messaging.core.remoting.integration.FilterChainSupport.addLoggingFilter;
+
 import java.net.InetSocketAddress;
-import java.util.Formatter;
 
 import org.apache.mina.filter.codec.ProtocolCodecFilter;
-import org.apache.mina.filter.logging.LoggingFilter;
 import org.apache.mina.filter.logging.MdcInjectionFilter;
 import org.apache.mina.transport.socket.nio.NioSocketAcceptor;
 import org.jboss.logging.Logger;
@@ -66,8 +66,6 @@ public class MinaService
    {
       if (acceptor == null)
       {
-         info("Starting MINA on " + host + ":" + port);
-
          acceptor = new NioSocketAcceptor();
 
          // Prepare the configuration
@@ -75,7 +73,8 @@ public class MinaService
          acceptor.getFilterChain().addLast("mdc", mdcInjectionFilter);
          acceptor.getFilterChain().addLast("codec",
                new ProtocolCodecFilter(new PacketCodecFactory()));
-         acceptor.getFilterChain().addLast("logger", new LoggingFilter());
+
+         addLoggingFilter(acceptor.getFilterChain());
 
          // Bind
          acceptor.setLocalAddress(new InetSocketAddress(host, port));
@@ -86,11 +85,8 @@ public class MinaService
 
          acceptor.setHandler(new MinaHandler(PacketDispatcher.server));
          acceptor.bind();
-
-         info("MINA started");
       } 
    }
-   
 
    public void stop()
    {
@@ -99,8 +95,6 @@ public class MinaService
          acceptor.unbind();
          acceptor.dispose();
          acceptor = null;
-         
-         info("Stopped MINA ");
       }    
    }
    
@@ -110,11 +104,5 @@ public class MinaService
 
    // Private -------------------------------------------------------
 
-   
-   private void info(String s)
-   {
-      log.info(new Formatter().format("### %-30s ###", s).toString());
-   }
-   
    // Inner classes -------------------------------------------------
 }
