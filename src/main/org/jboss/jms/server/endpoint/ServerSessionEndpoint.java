@@ -323,6 +323,8 @@ public class ServerSessionEndpoint implements SessionEndpoint
          localClose();
          
          connectionEndpoint.removeSession(id);
+         
+         PacketDispatcher.server.unregister(id);
       }
       catch (Throwable t)
       {
@@ -1233,8 +1235,6 @@ public class ServerSessionEndpoint implements SessionEndpoint
       
       sp.removeSession(id);
             
-      PacketDispatcher.server.unregister(id);
-
       closed = true;
    }            
    
