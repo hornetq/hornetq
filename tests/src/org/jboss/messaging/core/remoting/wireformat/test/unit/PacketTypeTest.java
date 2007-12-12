@@ -204,7 +204,8 @@ public class PacketTypeTest extends TestCase
 
    private static void addVersion(AbstractPacket packet)
    {
-      packet.setVersion(randomByte());
+      byte version = (byte)19;
+      packet.setVersion(version);
    }
 
    private static String randomString()
