@@ -346,7 +346,7 @@
 
    </bean>
 
-   <bean name="MinaService" class="org.jboss.messaging.core.remoting.integration.MinaService">
+   <bean name="MinaService" class="org.jboss.messaging.core.remoting.impl.mina.MinaService">
       <constructor>
          <parameter>localhost</parameter>      
          <parameter>
