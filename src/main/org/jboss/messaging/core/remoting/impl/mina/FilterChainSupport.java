@@ -4,7 +4,7 @@
  * Distributable under LGPL license.
  * See terms of license at gnu.org.
  */
-package org.jboss.messaging.core.remoting.integration;
+package org.jboss.messaging.core.remoting.impl.mina;
 
 import static org.apache.mina.filter.logging.LogLevel.TRACE;
 import static org.apache.mina.filter.logging.LogLevel.WARN;

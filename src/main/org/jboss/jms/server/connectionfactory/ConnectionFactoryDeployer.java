@@ -26,7 +26,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.jboss.jms.server.ServerPeer;
-import org.jboss.messaging.core.remoting.integration.MinaService;
+import org.jboss.messaging.core.remoting.impl.mina.MinaService;
 import org.jboss.messaging.util.XMLUtil;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;

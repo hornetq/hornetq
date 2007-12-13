@@ -4,11 +4,11 @@
  * Distributable under LGPL license.
  * See terms of license at gnu.org.
  */
-package org.jboss.messaging.core.remoting.integration;
+package org.jboss.messaging.core.remoting.impl.mina;
 
-import static org.jboss.messaging.core.remoting.integration.FilterChainSupport.addCodecFilter;
-import static org.jboss.messaging.core.remoting.integration.FilterChainSupport.addLoggingFilter;
-import static org.jboss.messaging.core.remoting.integration.FilterChainSupport.addMDCFilter;
+import static org.jboss.messaging.core.remoting.impl.mina.FilterChainSupport.addCodecFilter;
+import static org.jboss.messaging.core.remoting.impl.mina.FilterChainSupport.addLoggingFilter;
+import static org.jboss.messaging.core.remoting.impl.mina.FilterChainSupport.addMDCFilter;
 
 import java.net.InetSocketAddress;
 

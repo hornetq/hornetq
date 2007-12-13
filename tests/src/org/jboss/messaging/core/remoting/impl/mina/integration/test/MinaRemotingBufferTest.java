@@ -11,7 +11,7 @@ import junit.framework.TestCase;
 
 import org.apache.mina.common.IoBuffer;
 import org.jboss.messaging.core.remoting.codec.RemotingBuffer;
-import org.jboss.messaging.core.remoting.integration.MinaPacketCodec;
+import org.jboss.messaging.core.remoting.impl.mina.MinaPacketCodec;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>.

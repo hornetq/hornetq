@@ -62,7 +62,7 @@ import org.jboss.messaging.core.impl.clusterconnection.ClusterConnectionManager;
 import org.jboss.messaging.core.impl.memory.SimpleMemoryManager;
 import org.jboss.messaging.core.impl.postoffice.MessagingPostOffice;
 import org.jboss.messaging.core.impl.tx.TransactionRepository;
-import org.jboss.messaging.core.remoting.integration.MinaService;
+import org.jboss.messaging.core.remoting.impl.mina.MinaService;
 import org.jboss.messaging.util.ExceptionUtil;
 import org.jboss.messaging.util.Version;
 

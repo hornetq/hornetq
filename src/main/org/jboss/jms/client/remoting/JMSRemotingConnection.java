@@ -24,7 +24,7 @@ package org.jboss.jms.client.remoting;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.remoting.Client;
 import org.jboss.messaging.core.remoting.TransportType;
-import org.jboss.messaging.core.remoting.integration.MinaConnector;
+import org.jboss.messaging.core.remoting.impl.mina.MinaConnector;
 
 /**
  * Encapsulates the state and behaviour from MINA needed for a JMS connection.

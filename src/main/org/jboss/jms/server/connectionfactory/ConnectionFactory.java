@@ -15,7 +15,7 @@ import org.jboss.jms.server.ConnectionManager;
 import org.jboss.jms.server.ConnectorManager;
 import org.jboss.jms.server.ServerPeer;
 import org.jboss.logging.Logger;
-import org.jboss.messaging.core.remoting.integration.MinaService;
+import org.jboss.messaging.core.remoting.impl.mina.MinaService;
 import org.jboss.messaging.util.ExceptionUtil;
 
 /**

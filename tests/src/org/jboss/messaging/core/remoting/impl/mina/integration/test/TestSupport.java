@@ -11,8 +11,8 @@ import junit.framework.TestCase;
 
 import org.jboss.messaging.core.remoting.Client;
 import org.jboss.messaging.core.remoting.TransportType;
-import org.jboss.messaging.core.remoting.integration.MinaConnector;
-import org.jboss.messaging.core.remoting.integration.MinaService;
+import org.jboss.messaging.core.remoting.impl.mina.MinaConnector;
+import org.jboss.messaging.core.remoting.impl.mina.MinaService;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>.
@@ -33,7 +33,7 @@ public abstract class TestSupport extends TestCase
 
    // Attributes ----------------------------------------------------
 
-   Client client;
+   protected Client client;
 
    private MinaService service;
 
@@ -64,29 +64,29 @@ public abstract class TestSupport extends TestCase
 
    // Public --------------------------------------------------------
 
-   void startServer(int port, TransportType transport) throws Exception
+   protected void startServer(int port, TransportType transport) throws Exception
    {
       startServer(port, transport, false);
    }
 
-   void startServer(int port, TransportType transport, boolean useSSL)
+   protected void startServer(int port, TransportType transport, boolean useSSL)
          throws Exception
    {
       service = new MinaService("localhost", port);
       service.start();
    }
    
-   void stopServer()
+   protected void stopServer()
    {
       service.stop();
    }
 
-   void startClient(int port, TransportType transport) throws Exception
+   protected void startClient(int port, TransportType transport) throws Exception
    {
       startClient(port, transport, false);
    }
 
-   void startClient(int port, TransportType transport, boolean useSSL)
+   protected void startClient(int port, TransportType transport, boolean useSSL)
          throws Exception
    {
       client = new Client(new MinaConnector());

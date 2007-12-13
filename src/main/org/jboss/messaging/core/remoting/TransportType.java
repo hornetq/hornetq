@@ -15,5 +15,5 @@ package org.jboss.messaging.core.remoting;
  */
 public enum TransportType
 {
-   TCP, HTTP;
+   TCP, HTTP, INVM;
 }

@@ -12,7 +12,7 @@ import java.util.UUID;
 
 import junit.framework.TestCase;
 
-import org.jboss.messaging.core.remoting.integration.MinaInspector;
+import org.jboss.messaging.core.remoting.impl.mina.MinaInspector;
 import org.jboss.messaging.core.remoting.wireformat.AbstractPacket;
 import org.jboss.messaging.core.remoting.wireformat.NullPacket;
 

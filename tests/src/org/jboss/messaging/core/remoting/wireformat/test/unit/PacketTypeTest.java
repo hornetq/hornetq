@@ -133,7 +133,7 @@ import org.jboss.messaging.core.remoting.codec.SetClientIDMessageCodec;
 import org.jboss.messaging.core.remoting.codec.TextPacketCodec;
 import org.jboss.messaging.core.remoting.codec.UnsubscribeMessageCodec;
 import org.jboss.messaging.core.remoting.codec.UpdateCallbackMessageCodec;
-import org.jboss.messaging.core.remoting.integration.PacketCodecFactory;
+import org.jboss.messaging.core.remoting.impl.mina.PacketCodecFactory;
 import org.jboss.messaging.core.remoting.wireformat.AbstractPacket;
 import org.jboss.messaging.core.remoting.wireformat.AcknowledgeDeliveriesMessage;
 import org.jboss.messaging.core.remoting.wireformat.AcknowledgeDeliveryRequest;
