@@ -4,7 +4,7 @@
  * Distributable under LGPL license.
  * See terms of license at gnu.org.
  */
-package org.jboss.messaging.core.remoting.integration.test;
+package org.jboss.messaging.core.remoting.impl.mina.integration.test;
 
 import static org.jboss.messaging.core.remoting.TransportType.TCP;
 import junit.framework.TestCase;
@@ -49,7 +49,7 @@ public abstract class TestSupport extends TestCase
       info("Default transport is " + TRANSPORT);
    }
 
-   static String reverse(String text)
+   public static String reverse(String text)
    {
       // Reverse text
       StringBuffer buf = new StringBuffer(text.length());

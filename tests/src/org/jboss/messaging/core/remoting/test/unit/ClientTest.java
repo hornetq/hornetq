@@ -11,7 +11,7 @@ import static org.easymock.EasyMock.expect;
 import static org.easymock.EasyMock.replay;
 import static org.easymock.EasyMock.verify;
 import static org.jboss.messaging.core.remoting.TransportType.TCP;
-import static org.jboss.messaging.core.remoting.integration.test.TestSupport.PORT;
+import static org.jboss.messaging.core.remoting.impl.mina.integration.test.TestSupport.PORT;
 
 import java.io.IOException;
 

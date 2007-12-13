@@ -4,7 +4,7 @@
  * Distributable under LGPL license.
  * See terms of license at gnu.org.
  */
-package org.jboss.messaging.core.remoting.integration.test;
+package org.jboss.messaging.core.remoting.impl.mina.integration.test;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
@@ -15,6 +15,8 @@ import java.util.List;
 
 import org.jboss.messaging.core.remoting.Client;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
+import org.jboss.messaging.core.remoting.impl.mina.integration.test.ReversePacketHandler;
+import org.jboss.messaging.core.remoting.impl.mina.integration.test.TestSupport;
 import org.jboss.messaging.core.remoting.integration.MinaConnector;
 import org.jboss.messaging.core.remoting.test.unit.TestPacketHandler;
 import org.jboss.messaging.core.remoting.wireformat.AbstractPacket;

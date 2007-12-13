@@ -4,11 +4,11 @@
  * Distributable under LGPL license.
  * See terms of license at gnu.org.
  */
-package org.jboss.messaging.core.remoting.integration.test;
+package org.jboss.messaging.core.remoting.impl.mina.integration.test;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static junit.framework.Assert.fail;
-import static org.jboss.messaging.core.remoting.integration.test.TestSupport.reverse;
+import static org.jboss.messaging.core.remoting.impl.mina.integration.test.TestSupport.reverse;
 import static org.jboss.messaging.core.remoting.wireformat.AbstractPacket.NO_ID_SET;
 
 import java.util.concurrent.TimeUnit;
