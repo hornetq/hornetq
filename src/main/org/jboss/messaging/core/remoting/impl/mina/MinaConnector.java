@@ -6,6 +6,7 @@
  */
 package org.jboss.messaging.core.remoting.impl.mina;
 
+import static org.jboss.messaging.core.remoting.TransportType.TCP;
 import static org.jboss.messaging.core.remoting.impl.mina.FilterChainSupport.addBlockingRequestResponseFilter;
 import static org.jboss.messaging.core.remoting.impl.mina.FilterChainSupport.addCodecFilter;
 import static org.jboss.messaging.core.remoting.impl.mina.FilterChainSupport.addLoggingFilter;
@@ -46,6 +47,10 @@ public class MinaConnector implements NIOConnector
 
    // Attributes ----------------------------------------------------
 
+   private String host;
+
+   private int port;
+   
    private NioSocketConnector connector;
 
    private ScheduledExecutorService blockingScheduler;
@@ -54,14 +59,22 @@ public class MinaConnector implements NIOConnector
 
    private Map<ConsolidatedRemotingConnectionListener, IoServiceListener> listeners = new HashMap<ConsolidatedRemotingConnectionListener, IoServiceListener>();
 
+
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
    // Public --------------------------------------------------------
 
-   public MinaConnector() throws Exception
+   public MinaConnector(TransportType transport, String host, int port)
    {
+      assert transport == TCP;
+      assert host != null;
+      assert port > 0;
+      
+      this.host = host;
+      this.port = port;
+      
       this.connector = new NioSocketConnector();
       DefaultIoFilterChainBuilder filterChain = connector.getFilterChain();
       
@@ -81,11 +94,8 @@ public class MinaConnector implements NIOConnector
 
    // NIOConnector implementation -----------------------------------
    
-   public NIOSession connect(String host, int port, TransportType transport) throws IOException {
-      assert host != null;
-      assert port > 0;
-      assert transport != null;
-
+   public NIOSession connect() throws IOException {
+   
       InetSocketAddress address = new InetSocketAddress(host, port);
       ConnectFuture future = connector.connect(address);
       connector.setDefaultRemoteAddress(address);
@@ -149,14 +159,14 @@ public class MinaConnector implements NIOConnector
    {
       if (connector == null)
       {
-         return null;
+         return TCP + "://" + host + ":" + port;
       }
       InetSocketAddress address = connector.getDefaultRemoteAddress();
       if (address != null)
       {
-         return address.toString();
+         return TCP + "://" + address.toString();
       } else {
-         return null;
+         return TCP + "://" + host + ":" + port;
       }
    }
 

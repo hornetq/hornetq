@@ -9,7 +9,6 @@ package org.jboss.messaging.core.remoting.impl;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.jboss.messaging.core.remoting.impl.mina.integration.test.TestSupport.MANY_MESSAGES;
-import static org.jboss.messaging.core.remoting.impl.mina.integration.test.TestSupport.PORT;
 import static org.jboss.messaging.core.remoting.impl.mina.integration.test.TestSupport.reverse;
 
 import java.io.IOException;
@@ -18,9 +17,10 @@ import java.util.List;
 import junit.framework.TestCase;
 
 import org.jboss.messaging.core.remoting.Client;
+import org.jboss.messaging.core.remoting.NIOConnector;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.PacketSender;
-import org.jboss.messaging.core.remoting.TransportType;
+import org.jboss.messaging.core.remoting.ServerLocator;
 import org.jboss.messaging.core.remoting.impl.mina.integration.test.ReversePacketHandler;
 import org.jboss.messaging.core.remoting.test.unit.TestPacketHandler;
 import org.jboss.messaging.core.remoting.wireformat.AbstractPacket;
@@ -49,11 +49,11 @@ public abstract class ClientTestBase extends TestCase
 
    public void testConnected() throws Exception
    {
-      Client client = createClient();
+      Client client = new Client(createNIOConnector(), createServerLocator());
       
       assertFalse(client.isConnected());
 
-      client.connect("localhost", PORT, getTransport());
+      client.connect();
       assertTrue(client.isConnected());
 
       assertTrue(client.disconnect());
@@ -197,8 +197,10 @@ public abstract class ClientTestBase extends TestCase
    {
       startServer();
       
-      client = createClient();
-      client.connect("localhost", PORT, getTransport());
+      ServerLocator serverLocator = createServerLocator();
+      NIOConnector connector = createNIOConnector();
+      client = new Client(connector, serverLocator);
+      client.connect();
       
       serverPacketHandler = new ReversePacketHandler();
       PacketDispatcher.server.register(serverPacketHandler);
@@ -215,10 +217,10 @@ public abstract class ClientTestBase extends TestCase
       client = null;
    }
    
-   protected abstract Client createClient() throws Exception;
+   protected abstract ServerLocator createServerLocator();
    
-   protected abstract TransportType getTransport();
-   
+   protected abstract NIOConnector createNIOConnector();
+
    protected abstract void startServer() throws Exception;
    
    protected abstract void stopServer();

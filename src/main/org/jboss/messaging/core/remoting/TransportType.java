@@ -16,4 +16,10 @@ package org.jboss.messaging.core.remoting;
 public enum TransportType
 {
    TCP, HTTP, INVM;
+   
+   @Override
+   public String toString()
+   {
+      return super.toString().toLowerCase();
+   }
 }

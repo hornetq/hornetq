@@ -542,9 +542,9 @@ public class PacketTypeTest extends TestCase
       // FIXME should use mock objects with a correct interface
       ClientConnectionFactoryDelegate[] delegates = new ClientConnectionFactoryDelegate[] {
             new ClientConnectionFactoryDelegate(randomString(), randomString(),
-                  23, randomString(), randomInt(), Version.instance(), false, true),
+                  23, randomString(), Version.instance(), false, true),
             new ClientConnectionFactoryDelegate(randomString(), randomString(),
-                  33, randomString(), randomInt(), Version.instance(), true, false) };
+                  33, randomString(), Version.instance(), true, false) };
       TopologyResult topology = new TopologyResult(randomString(), delegates,
             new HashMap());
       GetTopologyResponse response = new GetTopologyResponse(topology);

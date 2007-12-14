@@ -22,6 +22,7 @@ import junit.framework.TestCase;
 import org.jboss.messaging.core.remoting.Client;
 import org.jboss.messaging.core.remoting.NIOConnector;
 import org.jboss.messaging.core.remoting.NIOSession;
+import org.jboss.messaging.core.remoting.ServerLocator;
 import org.jboss.messaging.core.remoting.wireformat.NullPacket;
 
 /**
@@ -41,16 +42,18 @@ public class ClientTest extends TestCase
 
    // Public --------------------------------------------------------
 
+   private ServerLocator serverLocator;
+
    public void testConnected() throws Exception
    {
       NIOConnector connector = createStrictMock(NIOConnector.class);
       NIOSession session1 = createStrictMock(NIOSession.class);
       NIOSession session2 = createStrictMock(NIOSession.class);
       
-      expect(connector.connect("localhost", PORT, TCP)).andReturn(session1);
+      expect(connector.connect()).andReturn(session1);
       expect(connector.disconnect()).andReturn(true);
       
-      expect(connector.connect("localhost", PORT, TCP)).andReturn(session2);
+      expect(connector.connect()).andReturn(session2);
       expect(session2.isConnected()).andReturn(true);
       
       expect(connector.disconnect()).andReturn(true);
@@ -58,12 +61,12 @@ public class ClientTest extends TestCase
 
       replay(connector, session1, session2);
 
-      Client client = new Client(connector);
-      connector.connect("localhost", PORT, TCP);
+      Client client = new Client(connector, serverLocator);
+      client.connect();
       assertTrue(client.disconnect());
       assertFalse(client.isConnected());
 
-      client.connect("localhost", PORT, TCP);
+      client.connect();
       assertTrue(client.isConnected());
 
       assertTrue(client.disconnect());
@@ -76,15 +79,15 @@ public class ClientTest extends TestCase
    public void testConnectionFailure() throws Exception
    {
       NIOConnector connector = createStrictMock(NIOConnector.class);
-      expect(connector.connect("localhost", PORT, TCP)).andThrow(new IOException("connection exception"));
+      expect(connector.connect()).andThrow(new IOException("connection exception"));
 
       replay(connector);
 
-      Client client = new Client(connector);
+      Client client = new Client(connector, serverLocator);
       
       try
       {
-         client.connect("localhost", PORT, TCP);
+         client.connect();
          fail("connection must fail");
       } catch (IOException e)
       {
@@ -100,17 +103,17 @@ public class ClientTest extends TestCase
       NIOConnector connector = createStrictMock(NIOConnector.class);
       NIOSession session = createStrictMock(NIOSession.class);
       
-      expect(connector.connect("localhost", PORT, TCP)).andReturn(session);
+      expect(connector.connect()).andReturn(session);
       expect(session.isConnected()).andReturn(true);
       expect(session.getID()).andReturn(sessionID);
       expect(connector.disconnect()).andReturn(true);
       
       replay(connector, session);
       
-      Client client = new Client(connector);
-
+      Client client = new Client(connector, serverLocator);
+      
       assertNull(client.getSessionID());
-      client.connect("localhost", PORT, TCP);
+      client.connect();
 
       String actualSessionID = client.getSessionID();
       
@@ -128,7 +131,7 @@ public class ClientTest extends TestCase
       NIOSession session = createStrictMock(NIOSession.class);
       
       expect(connector.getServerURI()).andReturn(null);
-      expect(connector.connect("localhost", PORT, TCP)).andReturn(session);
+      expect(connector.connect()).andReturn(session);
       expect(connector.getServerURI()).andReturn("tcp://localhost:" + PORT);
       expect(connector.disconnect()).andReturn(true);
       expect(connector.getServerURI()).andReturn(null);
@@ -136,10 +139,10 @@ public class ClientTest extends TestCase
       
       replay(connector, session);
       
-      Client client = new Client(connector);
+      Client client = new Client(connector, serverLocator);
       
       assertNull(client.getURI());
-      client.connect("localhost", PORT, TCP);
+      client.connect();
       assertNotNull(client.getURI());
       client.disconnect();
       assertNull(client.getURI());
@@ -154,7 +157,7 @@ public class ClientTest extends TestCase
       // connector is not expected to be called at all;
       replay(connector);
       
-      Client client = new Client(connector);
+      Client client = new Client(connector, serverLocator);
       try
       {
          client.sendOneWay(new NullPacket());
@@ -165,5 +168,21 @@ public class ClientTest extends TestCase
       }
       
       verify(connector);
+   }
+   
+   @Override
+   protected void setUp() throws Exception
+   {
+      super.setUp();
+      
+      this.serverLocator = new ServerLocator(TCP, "localhost", PORT);
+   }
+   
+   @Override
+   protected void tearDown() throws Exception
+   {
+      serverLocator = null;
+
+      super.tearDown();
    }
 }

@@ -19,8 +19,7 @@ import org.jboss.jms.client.remoting.ConsolidatedRemotingConnectionListener;
 public interface NIOConnector
 {
 
-   public abstract NIOSession connect(String host, int port,
-         TransportType transport) throws IOException;
+   public abstract NIOSession connect() throws IOException;
 
    public abstract boolean disconnect();
 

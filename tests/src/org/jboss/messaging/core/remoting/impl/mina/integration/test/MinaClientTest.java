@@ -9,8 +9,8 @@ package org.jboss.messaging.core.remoting.impl.mina.integration.test;
 import static org.jboss.messaging.core.remoting.TransportType.TCP;
 import static org.jboss.messaging.core.remoting.impl.mina.integration.test.TestSupport.PORT;
 
-import org.jboss.messaging.core.remoting.Client;
-import org.jboss.messaging.core.remoting.TransportType;
+import org.jboss.messaging.core.remoting.NIOConnector;
+import org.jboss.messaging.core.remoting.ServerLocator;
 import org.jboss.messaging.core.remoting.impl.ClientTestBase;
 import org.jboss.messaging.core.remoting.impl.mina.MinaConnector;
 import org.jboss.messaging.core.remoting.impl.mina.MinaService;
@@ -39,21 +39,21 @@ public class MinaClientTest extends ClientTestBase
    // ClientTestBase overrides --------------------------------------
    
    @Override
-   protected Client createClient() throws Exception
+   protected NIOConnector createNIOConnector()
    {
-      return new Client(new MinaConnector());
+      return new MinaConnector(TCP, "localhost", PORT);
    }
-
+   
    @Override
-   protected TransportType getTransport()
+   protected ServerLocator createServerLocator()
    {
-      return TCP;
+      return new ServerLocator(TCP, "localhost", PORT);
    }
 
    @Override
    protected void startServer() throws Exception
    {
-      service = new MinaService("localhost", PORT);
+      service = new MinaService(TCP, "localhost", PORT);
       service.start();
    }
 

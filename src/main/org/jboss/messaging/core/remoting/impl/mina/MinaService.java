@@ -15,7 +15,10 @@ import java.net.InetSocketAddress;
 import org.apache.mina.common.DefaultIoFilterChainBuilder;
 import org.apache.mina.transport.socket.nio.NioSocketAcceptor;
 import org.jboss.logging.Logger;
+import org.jboss.messaging.core.remoting.ConnectorRegistry;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
+import org.jboss.messaging.core.remoting.ServerLocator;
+import org.jboss.messaging.core.remoting.TransportType;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -37,30 +40,33 @@ public class MinaService
    
    private NioSocketAcceptor acceptor;
 
+   private TransportType transport;
+
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-
-   public MinaService(String host, int port)
+   public MinaService(String transport, String host, int port)
    {
+      this(TransportType.valueOf(transport.toUpperCase()), host, port);
+   }
+   
+   public MinaService(TransportType transport, String host, int port)
+   {
+      assert transport != null;
       assert host !=  null;
       assert port > 0;
       
+      this.transport = transport;
       this.host = host;
       this.port = port;
    }
 
    // Public --------------------------------------------------------
-   
-   public int getPort()
+
+   public ServerLocator getLocator()
    {
-      return port;
-   }
-      
-   public String getHost()
-   {
-     return host;
+      return new ServerLocator(transport, host, port);
    }
    
    public void start() throws Exception
@@ -83,6 +89,8 @@ public class MinaService
 
          acceptor.setHandler(new MinaHandler(PacketDispatcher.server));
          acceptor.bind();
+         
+         ConnectorRegistry.register(getLocator());
       } 
    }
 
@@ -93,6 +101,8 @@ public class MinaService
          acceptor.unbind();
          acceptor.dispose();
          acceptor = null;
+         
+         ConnectorRegistry.unregister(getLocator());
       }    
    }
    

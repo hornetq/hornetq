@@ -21,8 +21,6 @@
  */
 package org.jboss.jms.client.delegate;
 
-import static org.jboss.messaging.core.remoting.TransportType.TCP;
-
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.Serializable;
@@ -36,7 +34,9 @@ import org.jboss.jms.delegate.CreateConnectionResult;
 import org.jboss.jms.delegate.TopologyResult;
 import org.jboss.jms.exception.MessagingNetworkFailureException;
 import org.jboss.messaging.core.remoting.Client;
-import org.jboss.messaging.core.remoting.impl.mina.MinaConnector;
+import org.jboss.messaging.core.remoting.ConnectorRegistry;
+import org.jboss.messaging.core.remoting.NIOConnector;
+import org.jboss.messaging.core.remoting.ServerLocator;
 import org.jboss.messaging.core.remoting.wireformat.CreateConnectionRequest;
 import org.jboss.messaging.core.remoting.wireformat.CreateConnectionResponse;
 import org.jboss.messaging.core.remoting.wireformat.GetClientAOPStackRequest;
@@ -67,9 +67,7 @@ public class ClientConnectionFactoryDelegate
 
    private String uniqueName;
 
-   private String serverHost;
-
-   private int serverPort;
+   private String serverLocatorURI;
 
    private Version serverVersion;
  
@@ -107,15 +105,14 @@ public class ClientConnectionFactoryDelegate
 
    // Constructors ---------------------------------------------------------------------------------
 
-   public ClientConnectionFactoryDelegate(String uniqueName, String objectID, int serverID, String host,
-                                          int port, Version serverVersion, boolean clientPing, boolean strictTck)
+   public ClientConnectionFactoryDelegate(String uniqueName, String objectID, int serverID, 
+         String serverLocatorURI, Version serverVersion, boolean clientPing, boolean strictTck)
    {
       super(objectID);
 
       this.uniqueName = uniqueName;
       this.serverID = serverID;
-      this.serverHost = host;
-      this.serverPort = port;
+      this.serverLocatorURI = serverLocatorURI;
       this.serverVersion = serverVersion;
       this.clientPing = clientPing;
       this.strictTck = strictTck;
@@ -152,7 +149,7 @@ public class ClientConnectionFactoryDelegate
       
       try
       {
-         remotingConnection = new JMSRemotingConnection(serverHost, serverPort, strictTck);
+         remotingConnection = new JMSRemotingConnection(serverLocatorURI, strictTck);
        
          remotingConnection.start();
          client = remotingConnection.getRemotingClient();
@@ -234,19 +231,9 @@ public class ClientConnectionFactoryDelegate
       return "ConnectionFactoryDelegate[" + id + ", SID=" + serverID + "]";
    }
    
-   public String getServerHost()
-   {
-      return serverHost;
-   }
-   
-   public int getServerPort()
-   {
-      return serverPort;
-   }
-   
    public String getServerLocatorURI()
    {
-      return "tcp://" + serverHost + ":" + serverPort;
+      return serverLocatorURI;
    }
 
    
@@ -289,8 +276,10 @@ public class ClientConnectionFactoryDelegate
       
       try
       {
-         client = new Client(new MinaConnector());
-         client.connect(serverHost, serverPort, TCP);
+         ServerLocator locator = new ServerLocator(serverLocatorURI);
+         NIOConnector connector = ConnectorRegistry.get(locator);
+         client = new Client(connector, locator);
+         client.connect();
       }
       catch (Exception e)
       {
@@ -306,9 +295,7 @@ public class ClientConnectionFactoryDelegate
    {      
       super.read(in);
       
-      serverHost = in.readUTF();
-
-      serverPort = in.readInt();
+      serverLocatorURI = in.readUTF();
       
       serverVersion = new Version();
       
@@ -325,9 +312,7 @@ public class ClientConnectionFactoryDelegate
    {
       super.write(out);
       
-      out.writeUTF(serverHost);
-
-      out.writeInt(serverPort);
+      out.writeUTF(serverLocatorURI);
       
       serverVersion.write(out);
       

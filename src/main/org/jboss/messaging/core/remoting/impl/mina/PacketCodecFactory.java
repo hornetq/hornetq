@@ -9,6 +9,7 @@ package org.jboss.messaging.core.remoting.impl.mina;
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.NULL;
 
 import org.apache.mina.filter.codec.demux.DemuxingProtocolCodecFactory;
+import org.jboss.logging.Logger;
 import org.jboss.messaging.core.remoting.codec.AbstractPacketCodec;
 import org.jboss.messaging.core.remoting.codec.AcknowledgeDeliveriesRequestCodec;
 import org.jboss.messaging.core.remoting.codec.AcknowledgeDeliveryRequestCodec;
@@ -110,6 +111,8 @@ public class PacketCodecFactory extends DemuxingProtocolCodecFactory
 {
    // Constants -----------------------------------------------------
 
+   private final Logger log = Logger.getLogger(PacketCodecFactory.class);
+
    // Attributes ----------------------------------------------------
 
    // Static --------------------------------------------------------
@@ -117,7 +120,7 @@ public class PacketCodecFactory extends DemuxingProtocolCodecFactory
    // Constructors --------------------------------------------------
 
    // FIXME: split encoder/decoder required only on client and/or server sides
-   public PacketCodecFactory() throws Exception
+   public PacketCodecFactory()
    {
       addCodecForEmptyPacket(NULL, NullPacket.class);
 
@@ -258,13 +261,18 @@ public class PacketCodecFactory extends DemuxingProtocolCodecFactory
    // FIXME generics definition should be in term of <P>...
    private void addCodec(
          Class<? extends AbstractPacket> packetClass,
-         Class<? extends AbstractPacketCodec<? extends AbstractPacket>> codecClass) throws Exception
+         Class<? extends AbstractPacketCodec<? extends AbstractPacket>> codecClass)
    {
-      AbstractPacketCodec<? extends AbstractPacket> codec = codecClass
-            .newInstance();
-      MinaPacketCodec<AbstractPacket> minaCodec = new MinaPacketCodec(codec);
-      super.addMessageDecoder(minaCodec);
-      super.addMessageEncoder(packetClass, minaCodec);
+      try
+      {
+         AbstractPacketCodec<? extends AbstractPacket> codec = codecClass.newInstance();
+         MinaPacketCodec<AbstractPacket> minaCodec = new MinaPacketCodec(codec);
+         super.addMessageDecoder(minaCodec);
+         super.addMessageEncoder(packetClass, minaCodec);
+      } catch (Exception e)
+      {
+         log.error("Unable to add codec for packet class " + packetClass.getName(), e);
+      }
    }
 
    private void addCodecForEmptyPacket(PacketType type,

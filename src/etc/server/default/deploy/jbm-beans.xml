@@ -348,6 +348,7 @@
 
    <bean name="MinaService" class="org.jboss.messaging.core.remoting.impl.mina.MinaService">
       <constructor>
+         <parameter>tcp</parameter>      
          <parameter>localhost</parameter>      
          <parameter>
             <inject bean="Configuration" property="remotingBindAddress"/>

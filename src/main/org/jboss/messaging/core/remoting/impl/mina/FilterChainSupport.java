@@ -39,7 +39,6 @@ public class FilterChainSupport
    // Package protected ---------------------------------------------
 
    static void addCodecFilter(DefaultIoFilterChainBuilder filterChain)
-         throws Exception
    {
       assert filterChain != null;
 
@@ -48,7 +47,6 @@ public class FilterChainSupport
    }
 
    static void addMDCFilter(DefaultIoFilterChainBuilder filterChain)
-         throws Exception
    {
       assert filterChain != null;
 

@@ -23,8 +23,9 @@ package org.jboss.jms.client.remoting;
 
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.remoting.Client;
-import org.jboss.messaging.core.remoting.TransportType;
-import org.jboss.messaging.core.remoting.impl.mina.MinaConnector;
+import org.jboss.messaging.core.remoting.ConnectorRegistry;
+import org.jboss.messaging.core.remoting.NIOConnector;
+import org.jboss.messaging.core.remoting.ServerLocator;
 
 /**
  * Encapsulates the state and behaviour from MINA needed for a JMS connection.
@@ -47,9 +48,7 @@ public class JMSRemotingConnection
 
    // Attributes -----------------------------------------------------------------------------------
 
-   private String serverHost;
-
-   private int serverPort;
+   private ServerLocator serverLocator;
 
    private Client client;
 
@@ -63,13 +62,11 @@ public class JMSRemotingConnection
    // explicitly remove it from the remoting client
    private ConsolidatedRemotingConnectionListener remotingConnectionListener;
 
-
    // Constructors ---------------------------------------------------------------------------------
 
-   public JMSRemotingConnection(String serverHost, int serverPort, boolean strictTck) throws Exception
+   public JMSRemotingConnection(String serverLocatorURI, boolean strictTck) throws Exception
    {
-      this.serverHost = serverHost;
-      this.serverPort = serverPort;
+      this.serverLocator = new ServerLocator(serverLocatorURI);
       this.strictTck = strictTck;
 
       log.trace(this + " created");
@@ -83,8 +80,12 @@ public class JMSRemotingConnection
 
       callbackManager = new CallbackManager();
 
-      client = new Client(new MinaConnector());
-      client.connect(serverHost, serverPort, TransportType.TCP);
+      NIOConnector connector = ConnectorRegistry.get(serverLocator);
+      client = new Client(connector, serverLocator);
+      client.connect();
+
+      if (log.isDebugEnabled())
+         log.debug("Using " + connector.getServerURI() + " to connect to " + serverLocator);
 
       log.trace(this + " started");
    }
@@ -181,7 +182,7 @@ public class JMSRemotingConnection
 
    public String toString()
    {
-      return "JMSRemotingConnection[" + serverHost + ":" + serverPort + "]";
+      return "JMSRemotingConnection[" + serverLocator.getURI() + "]";
    }
 
    // Package protected ----------------------------------------------------------------------------

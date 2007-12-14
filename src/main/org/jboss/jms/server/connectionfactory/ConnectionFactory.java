@@ -15,6 +15,7 @@ import org.jboss.jms.server.ConnectionManager;
 import org.jboss.jms.server.ConnectorManager;
 import org.jboss.jms.server.ServerPeer;
 import org.jboss.logging.Logger;
+import org.jboss.messaging.core.remoting.ServerLocator;
 import org.jboss.messaging.core.remoting.impl.mina.MinaService;
 import org.jboss.messaging.util.ExceptionUtil;
 
@@ -116,8 +117,7 @@ public class ConnectionFactory
                                                "each Connection Factory");
          }
       
-         String host = minaService.getHost();
-         int port = minaService.getPort();
+         ServerLocator serverLocator = minaService.getLocator();
 
          if (!serverPeer.isSupportsFailover())
          {
@@ -132,17 +132,13 @@ public class ConnectionFactory
          
          connectionFactoryManager.
             registerConnectionFactory(getName(), clientID, jndiBindings,
-                                      host, port, false, prefetchSize, slowConsumers,
+                                      serverLocator.getURI(), false, prefetchSize, slowConsumers,
                                       defaultTempQueueFullSize, defaultTempQueuePageSize,                                      
                                       defaultTempQueueDownCacheSize, dupsOKBatchSize, supportsFailover, supportsLoadBalancing,
                                       loadBalancingFactory, strictTck);               
          connectorManager.registerConnector(getName());
-         String info = "Connector "  + "mina://" +
-            host + ":" + port;
-                 
-         info += " has lease disabled";
       
-         log.info(info);
+         log.info(serverLocator + " has lease disabled");
          log.info(this + " started");
       }
       catch (Throwable t)

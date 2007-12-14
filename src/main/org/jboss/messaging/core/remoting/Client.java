@@ -32,6 +32,8 @@ public class Client
 
    // Attributes ----------------------------------------------------
 
+   private ServerLocator serverLocator;
+
    private final NIOConnector connector;
 
    private NIOSession session;
@@ -44,29 +46,20 @@ public class Client
 
    // Constructors --------------------------------------------------
 
-   public Client(NIOConnector connector)
+   public Client(NIOConnector connector, ServerLocator locator)
    {
       assert connector != null;
-
+      assert locator != null;
+      
       this.connector = connector;
+      this.serverLocator = locator;
    }
 
    // Public --------------------------------------------------------
 
-   public void connect(String host, int port, TransportType transport)
-         throws Exception
+   public void connect() throws Exception
    {
-      connect(host, port, transport, false);
-   }
-
-   public void connect(String host, int port, TransportType transport,
-         boolean useSSL) throws Exception
-   {
-      assert host != null;
-      assert port > 0;
-      assert transport != null;
-
-      this.session = connector.connect(host, port, transport);
+      this.session = connector.connect();
    }
 
    public boolean disconnect() throws Exception

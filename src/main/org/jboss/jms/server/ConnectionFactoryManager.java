@@ -31,8 +31,8 @@ import java.util.List;
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  * @version <tt>$Revision$</tt>
- *          <p/>
- *          $Id$
+ * 
+ * $Id$
  */
 public interface ConnectionFactoryManager extends MessagingComponent
 {
@@ -41,7 +41,7 @@ public interface ConnectionFactoryManager extends MessagingComponent
     *        AOP subsystem, but not bound in JNDI.
     */
    void registerConnectionFactory(String uniqueName, String clientID,  List<String> jndiBindings,
-                                 String host, int port, boolean clientPing,
+                                 String serverURI, boolean clientPing,
                                  int prefetchSize,
                                  boolean slowConsumers,
                                  int defaultTempQueueFullSize,

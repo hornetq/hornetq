@@ -7,9 +7,10 @@
 package org.jboss.messaging.core.remoting.impl.invm.test.unit;
 
 import static org.jboss.messaging.core.remoting.TransportType.INVM;
+import static org.jboss.messaging.core.remoting.impl.mina.integration.test.TestSupport.PORT;
 
-import org.jboss.messaging.core.remoting.Client;
-import org.jboss.messaging.core.remoting.TransportType;
+import org.jboss.messaging.core.remoting.NIOConnector;
+import org.jboss.messaging.core.remoting.ServerLocator;
 import org.jboss.messaging.core.remoting.impl.ClientTestBase;
 import org.jboss.messaging.core.remoting.impl.invm.INVMConnector;
 
@@ -34,15 +35,15 @@ public class INVMClientTest extends ClientTestBase
    // ClientTestBase overrides --------------------------------------
    
    @Override
-   protected Client createClient() throws Exception
+   protected NIOConnector createNIOConnector()
    {
-      return new Client(new INVMConnector());
+      return new INVMConnector("localhost", PORT);
    }
    
    @Override
-   protected TransportType getTransport()
+   protected ServerLocator createServerLocator()
    {
-      return INVM;
+      return new ServerLocator(INVM, "localhost", PORT);
    }
    
    @Override

@@ -105,8 +105,7 @@ public class ConnectionFactoryJNDIMapper
    public synchronized void registerConnectionFactory(String uniqueName,
                                                       String clientID,
                                                       List<String> jndiBindings,
-                                                      String host,
-                                                      int port,
+                                                      String serverLocatorURI,
                                                       boolean clientPing,
                                                       int prefetchSize,
                                                       boolean slowConsumers,
@@ -171,7 +170,7 @@ public class ConnectionFactoryJNDIMapper
 
       ClientConnectionFactoryDelegate localDelegate =
          new ClientConnectionFactoryDelegate(uniqueName, id, serverPeer.getConfiguration().getServerPeerID(),
-                                             host, port, version, clientPing, useStrict);
+                                             serverLocatorURI, version, clientPing, useStrict);
 
       log.debug(this + " created local delegate " + localDelegate);
 
