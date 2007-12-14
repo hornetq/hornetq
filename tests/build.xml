@@ -1044,6 +1044,24 @@
       </junit>
    </target>
 
+   <target name="ide-remoting-tests" depends="tests-jar, prepare-testdirs, clear-test-logs"
+	       description="Runs all tests related to remoting from an IDE">
+      <junit printsummary="true"
+             fork="on"
+             forkMode="once"
+             includeantruntime="true"
+             haltonerror="true"
+             haltonfailure="true"
+             showoutput="false">
+         <classpath refid="test.execution.classpath"/>
+         <batchtest>
+            <fileset dir="${build.tests.classes}">
+		       <include name="**/messaging/core/remoting/**/${test-mask}.class"/>
+            </fileset>
+         </batchtest>
+      </junit>
+   </target>
+
    <target name="drop-tables" depends="tests-jar, prepare-testdirs, clear-test-logs"
            description="Drops all tables">
 
