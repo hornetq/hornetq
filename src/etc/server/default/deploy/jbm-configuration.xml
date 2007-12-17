@@ -13,7 +13,7 @@
          <role name="guest" read="true" write="true" create="true"/>
       </default-security-config>
       <!-- The default Dead Letter Queue (DLQ) to use for destinations. This can be overridden on a per destinatin basis -->
-      <defaul-dlq>DLQ</defaul-dlq>
+      <default-dlq>DLQ</default-dlq>
       <!-- The default maximum number of times to attempt delivery of a message before sending to the DLQ (if configured).
 This can be overridden on a per destinatin basis -->
       <default-max-delivery-attempts>10</default-max-delivery-attempts>
@@ -47,7 +47,7 @@ by a particular consumer from a particular producer? -->
 
       <!-- The password used by the message sucker connections to create connections.
            THIS SHOULD ALWAYS BE CHANGED AT INSTALL TIME TO SECURE SYSTEM
-      <suckerPassword></suckerPassword>
+      <sucker-password></sucker-password>
       -->
       <strict-tck>false</strict-tck>
       <post-office-name>JMS post office</post-office-name>

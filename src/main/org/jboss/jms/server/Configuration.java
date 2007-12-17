@@ -107,6 +107,9 @@ public class Configuration implements Serializable
 
    private Integer _remotingBindAddress;
 
+   //default confog file location
+   private String configurationUrl = "jbm-configuration.xml";
+
    public void start() throws Exception
    {
       propertyChangeSupport = new PropertyChangeSupport(this);
@@ -114,7 +117,7 @@ public class Configuration implements Serializable
       _strictTckProperty = "true".equalsIgnoreCase(System.getProperty("jboss.messaging.stricttck"));
       _useJGroupsWorkaround = "true".equals(System.getProperty("jboss.messaging.usejgroupsworkaround"));
 
-      URL url = getClass().getClassLoader().getResource("jbm-configuration.xml");
+      URL url = getClass().getClassLoader().getResource(configurationUrl);
       Element e = XMLUtil.urlToElement(url);
       _serverPeerID = getInteger(e, "server-peer-id", _serverPeerID);
       _defaultQueueJNDIContext = getString(e, "default-queue-jndi-context", _defaultQueueJNDIContext);
@@ -551,5 +554,16 @@ public class Configuration implements Serializable
    public void setRemotingBindAddress(Integer remotingBindAddress)
    {
       this._remotingBindAddress = remotingBindAddress;
+   }
+
+
+   public String getConfigurationUrl()
+   {
+      return configurationUrl;
+   }
+
+   public void setConfigurationUrl(String configurationUrl)
+   {
+      this.configurationUrl = configurationUrl;
    }
 }
