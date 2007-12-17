@@ -239,10 +239,16 @@ public class SessionAdvised extends AdvisedSupport implements SessionInternalEnd
             if (type == MSG_SENDMESSAGE)
             {
                SendMessage message = (SendMessage) packet;
-               send(message.getMessage(), message.checkForDuplicates(), message
-                     .getSequence());
+           
+               long sequence = message.getSequence(); 
+               send(message.getMessage(), message.checkForDuplicates(), sequence);
 
-               response = new NullPacket();
+               // a response is required only if seq == -1 -> reliable message or strict TCK
+               if (sequence == -1)
+               {               
+                  response = new NullPacket();
+               }
+               
             } else if (type == REQ_CREATECONSUMER)
             {
                CreateConsumerRequest request = (CreateConsumerRequest) packet;
