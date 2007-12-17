@@ -1046,6 +1046,8 @@
 
    <target name="ide-remoting-tests" depends="tests-jar, prepare-testdirs, clear-test-logs"
 	       description="Runs all tests related to remoting from an IDE">
+      <!-- required to test on an jar up to date -->
+      <ant dir=".." inheritall="false" target="jar" />
       <junit printsummary="true"
              fork="on"
              forkMode="once"
