@@ -1,0 +1,40 @@
+<deployment>
+   <configuration>
+      <server-peer-id>10</server-peer-id>
+      <default-queue-jndi-context>/queuetest</default-queue-jndi-context>
+      <default-topic-jndi-context>/topictest</default-topic-jndi-context>
+      <security-domain>java:/jaas/messagingtest</security-domain>
+      <default-security-config>
+         <role name="guest1" read="true" write="true" create="true"/>
+         <role name="guest2" read="true" write="true" create="false"/>
+         <role name="guest3" read="true" write="false" create="false"/>
+         <role name="guest4" read="false" write="false" create="false"/>
+      </default-security-config>
+      <default-dlq>DLQtest</default-dlq>
+      <default-max-delivery-attempts>100</default-max-delivery-attempts>
+      <default-expiry-queue>ExpiryQueuetest</default-expiry-queue>
+      <default-redelivery-delay>10</default-redelivery-delay>
+      <message-counter-sample-period>50000</message-counter-sample-period>
+      <failover-start-timeout>600000</failover-start-timeout>
+      <failover-complete-timeout>900000</failover-complete-timeout>
+      <default-message-counter-history-day-limit>21</default-message-counter-history-day-limit>
+      <cluster-pull-connection-factory-name>jboss.messaging.connectionfactory:service=ClusterPullConnectionFactorytest
+      </cluster-pull-connection-factory-name>
+      <use-xa-for-message-pull>false</use-xa-for-message-pull>
+      <default-preserve-ordering>true</default-preserve-ordering>
+      <recover-deliveries-timeout>600000</recover-deliveries-timeout>
+      <sucker-password>suckaaa</sucker-password>
+      <strict-tck>true</strict-tck>
+      <post-office-name>JMS post office</post-office-name>
+      <clustered>true</clustered>
+      <group-name>MessagingPostOfficetest</group-name>
+      <state-timeout>10000</state-timeout>
+       <cast-timeout>10000</cast-timeout>
+      <control-channel-name>udp-synctest</control-channel-name>
+      <data-channel-name>udptest</data-channel-name>
+      <channel-partition-name>JMStest</channel-partition-name>
+      <remoting-bind-address>10000</remoting-bind-address>
+
+   </configuration>
+
+</deployment>
