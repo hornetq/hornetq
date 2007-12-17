@@ -31,15 +31,15 @@ import java.util.List;
 import java.util.Map;
 
 import org.jboss.logging.Logger;
-import org.jboss.messaging.newcore.intf.Message;
-import org.jboss.messaging.newcore.intf.MessageReference;
-import org.jboss.messaging.newcore.intf.Queue;
+import org.jboss.messaging.newcore.Message;
+import org.jboss.messaging.newcore.MessageReference;
+import org.jboss.messaging.newcore.Queue;
 import org.jboss.messaging.util.StreamUtils;
 
 /**
  * A concrete implementation of a message
  * 
- * All messages handled by JBM servers are of this type
+ * All messages handled by JBM core are of this type
  * 
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -74,18 +74,19 @@ public class MessageImpl implements Message
    private long timestamp;
 
    private Map<String, Object> headers;
-
+   
    private byte priority;
 
    //The payload of MessageImpl instances is opaque
    private byte[] payload;
    
    //We keep track of the persisted references for this message
-   private transient List<MessageReference> references = new ArrayList<MessageReference>();
-   
-   private String destination;
+   private List<MessageReference> references = new ArrayList<MessageReference>();
    
    private String connectionID;
+   
+   //FIXME - does scheduledDeliveryTime belong on message? surely on SendMessage
+  // private long scheduledDeliveryTime;
          
    // Constructors --------------------------------------------------
 
@@ -117,6 +118,7 @@ public class MessageImpl implements Message
       throws Exception
    {
       this.messageID = messageID;
+      this.type = type;
       this.reliable = reliable;
       this.expiration = expiration;
       this.timestamp = timestamp;
@@ -148,6 +150,7 @@ public class MessageImpl implements Message
    public MessageImpl(MessageImpl other)
    {
       this.messageID = other.messageID;
+      this.type = other.type;
       this.reliable = other.reliable;
       this.expiration = other.expiration;
       this.timestamp = other.timestamp;
@@ -166,16 +169,6 @@ public class MessageImpl implements Message
    public void setMessageID(long id)
    {
       this.messageID = id;
-   }
-   
-   public String getDestination()
-   {
-      return destination;
-   }
-   
-   public void setDestination(String destination)
-   {
-      this.destination = destination;
    }
    
    public int getType()
@@ -249,7 +242,7 @@ public class MessageImpl implements Message
    }
 
    // TODO - combine with getPayloadAsByteArray to get one big blob
-   public byte[] getHeadersAsByteArray() throws Exception
+   public byte[] getHeaderBytes() throws Exception
    {
       ByteArrayOutputStream bos = new ByteArrayOutputStream(1024);
 
@@ -261,7 +254,7 @@ public class MessageImpl implements Message
 
       return bos.toByteArray();
    }
-
+         
    public byte[] getPayload()
    {     
       return payload;
@@ -316,7 +309,7 @@ public class MessageImpl implements Message
    {
       return new MessageImpl(this);
    }
-   
+         
    // Public --------------------------------------------------------
 
    public boolean equals(Object o)
@@ -352,8 +345,6 @@ public class MessageImpl implements Message
    {
       out.writeLong(messageID);
       
-      out.writeUTF(destination);
-      
       out.writeInt(type);
 
       out.writeBoolean(reliable);
@@ -381,8 +372,6 @@ public class MessageImpl implements Message
    public void read(DataInputStream in) throws Exception
    {
       messageID = in.readLong();
-      
-      destination = in.readUTF();
       
       type = in.readInt();
 
@@ -418,4 +407,28 @@ public class MessageImpl implements Message
    // Private -------------------------------------------------------
 
    // Inner classes -------------------------------------------------
+   
+   
+   // ___-------------------------------------------
+   // Remove These when refactoring is complete
+   
+   private volatile boolean persisted;
+   
+   public boolean isPersisted()
+   {
+      return persisted;
+   }
+
+   public void setPersisted(boolean persisted)
+   {
+      this.persisted = persisted;
+   }
+   
+   public MessageReference createReference()
+   {
+      MessageReference ref =  new MessageReferenceImpl(this, null);
+      
+      return ref;
+        
+  }
 }

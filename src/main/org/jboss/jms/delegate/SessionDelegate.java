@@ -29,12 +29,12 @@ import javax.jms.MessageListener;
 import javax.transaction.xa.XAResource;
 
 import org.jboss.jms.destination.JBossDestination;
-import org.jboss.jms.message.BytesMessageProxy;
-import org.jboss.jms.message.MapMessageProxy;
-import org.jboss.jms.message.MessageProxy;
-import org.jboss.jms.message.ObjectMessageProxy;
-import org.jboss.jms.message.StreamMessageProxy;
-import org.jboss.jms.message.TextMessageProxy;
+import org.jboss.jms.message.JBossBytesMessage;
+import org.jboss.jms.message.JBossMapMessage;
+import org.jboss.jms.message.JBossMessage;
+import org.jboss.jms.message.JBossObjectMessage;
+import org.jboss.jms.message.JBossStreamMessage;
+import org.jboss.jms.message.JBossTextMessage;
 
 /**
  * Represents the minimal set of operations to provide session functionality.
@@ -48,21 +48,21 @@ import org.jboss.jms.message.TextMessageProxy;
  */
 public interface SessionDelegate extends SessionEndpoint
 {
-   MessageProxy createMessage() throws JMSException;
+   JBossMessage createMessage() throws JMSException;
 
-   BytesMessageProxy createBytesMessage() throws JMSException;
+   JBossBytesMessage createBytesMessage() throws JMSException;
 
-   MapMessageProxy createMapMessage() throws JMSException;
+   JBossMapMessage createMapMessage() throws JMSException;
 
-   ObjectMessageProxy createObjectMessage() throws JMSException;
+   JBossObjectMessage createObjectMessage() throws JMSException;
 
-   ObjectMessageProxy createObjectMessage(Serializable object) throws JMSException;
+   JBossObjectMessage createObjectMessage(Serializable object) throws JMSException;
 
-   StreamMessageProxy createStreamMessage() throws JMSException;
+   JBossStreamMessage createStreamMessage() throws JMSException;
 
-   TextMessageProxy createTextMessage() throws JMSException;
+   JBossTextMessage createTextMessage() throws JMSException;
 
-   TextMessageProxy createTextMessage(String text) throws JMSException;
+   JBossTextMessage createTextMessage(String text) throws JMSException;
 
    void preDeliver(DeliveryInfo deliveryInfo) throws JMSException;
 
@@ -76,7 +76,7 @@ public interface SessionDelegate extends SessionEndpoint
 
    XAResource getXAResource();
 
-   void addAsfMessage(MessageProxy m, String consumerID, String queueName,
+   void addAsfMessage(JBossMessage m, String consumerID, String queueName,
                       int maxDeliveries, SessionDelegate connectionConsumerDelegate,
                       boolean shouldAck);
 

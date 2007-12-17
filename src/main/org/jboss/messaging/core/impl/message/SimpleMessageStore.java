@@ -25,8 +25,8 @@ import java.util.Map;
 import java.util.WeakHashMap;
 
 import org.jboss.logging.Logger;
-import org.jboss.messaging.core.contract.Message;
-import org.jboss.messaging.core.contract.MessageReference;
+import org.jboss.messaging.newcore.Message;
+import org.jboss.messaging.newcore.MessageReference;
 import org.jboss.messaging.core.contract.MessageStore;
 
 /**

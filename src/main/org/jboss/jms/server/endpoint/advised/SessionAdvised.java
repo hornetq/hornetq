@@ -52,7 +52,6 @@ import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.destination.JBossQueue;
 import org.jboss.jms.destination.JBossTopic;
 import org.jboss.jms.exception.MessagingJMSException;
-import org.jboss.jms.message.JBossMessage;
 import org.jboss.jms.server.endpoint.ServerSessionEndpoint;
 import org.jboss.jms.server.endpoint.SessionInternalEndpoint;
 import org.jboss.messaging.core.remoting.PacketHandler;
@@ -79,6 +78,7 @@ import org.jboss.messaging.core.remoting.wireformat.PacketType;
 import org.jboss.messaging.core.remoting.wireformat.RecoverDeliveriesMessage;
 import org.jboss.messaging.core.remoting.wireformat.SendMessage;
 import org.jboss.messaging.core.remoting.wireformat.UnsubscribeMessage;
+import org.jboss.messaging.newcore.Message;
 
 /**
  * The server-side advised instance corresponding to a Session. It is bound to the AOP
@@ -91,8 +91,7 @@ import org.jboss.messaging.core.remoting.wireformat.UnsubscribeMessage;
  *
  * $Id$
  */
-public class SessionAdvised extends AdvisedSupport implements
-      SessionInternalEndpoint
+public class SessionAdvised extends AdvisedSupport implements SessionInternalEndpoint
 {
    // Constants -----------------------------------------------------
 	
@@ -121,13 +120,12 @@ public class SessionAdvised extends AdvisedSupport implements
       return endpoint.closing(sequence);
    }
 
-   public void send(JBossMessage msg, boolean checkForDuplicates)
-         throws JMSException
+   public void send(Message msg, boolean checkForDuplicates) throws JMSException
    {
       throw new IllegalStateException("Invocation should not be handle here");
    }
    
-   public void send(JBossMessage msg, boolean checkForDuplicates, long seq) throws JMSException
+   public void send(Message msg, boolean checkForDuplicates, long seq) throws JMSException
    {
       ((ServerSessionEndpoint)endpoint).send(msg, checkForDuplicates, seq);
    }

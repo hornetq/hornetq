@@ -21,22 +21,28 @@
   */
 package org.jboss.jms.client.container;
 
-import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
-import org.jboss.jms.delegate.*;
-import org.jboss.jms.message.MessageProxy;
-import org.jboss.logging.Logger;
-import org.jboss.messaging.core.contract.Message;
-import org.jboss.messaging.util.Future;
-import org.jboss.messaging.util.prioritylinkedlist.BasicPriorityLinkedList;
-import org.jboss.messaging.util.prioritylinkedlist.PriorityLinkedList;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 import javax.jms.IllegalStateException;
 import javax.jms.JMSException;
 import javax.jms.MessageListener;
 import javax.jms.Session;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+
+import org.jboss.jms.delegate.Cancel;
+import org.jboss.jms.delegate.ConsumerDelegate;
+import org.jboss.jms.delegate.DefaultCancel;
+import org.jboss.jms.delegate.DeliveryInfo;
+import org.jboss.jms.delegate.SessionDelegate;
+import org.jboss.jms.message.JBossMessage;
+import org.jboss.logging.Logger;
+import org.jboss.messaging.newcore.Message;
+import org.jboss.messaging.util.Future;
+import org.jboss.messaging.util.prioritylinkedlist.BasicPriorityLinkedList;
+import org.jboss.messaging.util.prioritylinkedlist.PriorityLinkedList;
+
+import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
@@ -64,15 +70,15 @@ public class ClientConsumer
       trace = log.isTraceEnabled();
    }
    
-   private static boolean checkExpiredOrReachedMaxdeliveries(MessageProxy proxy,
+   private static boolean checkExpiredOrReachedMaxdeliveries(JBossMessage jbm,
                                                              SessionDelegate del,
                                                              int maxDeliveries, boolean shouldCancel)
    {
-      Message msg = proxy.getMessage();
+      Message msg = jbm.getCoreMessage();
       
       boolean expired = msg.isExpired();
       
-      boolean reachedMaxDeliveries = proxy.getDeliveryCount() == maxDeliveries;
+      boolean reachedMaxDeliveries = jbm.getDeliveryCount() == maxDeliveries;
       
       if (expired || reachedMaxDeliveries)
       {
@@ -80,17 +86,17 @@ public class ClientConsumer
          {
             if (expired)
             {
-               log.trace(proxy.getMessage() + " has expired, cancelling to server");
+               log.trace(msg + " has expired, cancelling to server");
             }
             else
             {
-               log.trace(proxy.getMessage() + " has reached maximum delivery number " + maxDeliveries +", cancelling to server");
+               log.trace(msg + " has reached maximum delivery number " + maxDeliveries +", cancelling to server");
             }
          }
          
          if (shouldCancel)
          {	         
-	         final Cancel cancel = new DefaultCancel(proxy.getDeliveryId(), proxy.getDeliveryCount(),
+	         final Cancel cancel = new DefaultCancel(jbm.getDeliveryId(), jbm.getDeliveryCount(),
 	                                                 expired, reachedMaxDeliveries);	         
 	         try
 	         {
@@ -116,7 +122,7 @@ public class ClientConsumer
                                     String consumerID,
                                     String queueName,
                                     boolean isConnectionConsumer,
-                                    MessageProxy m,
+                                    JBossMessage m,
                                     int ackMode,
                                     int maxDeliveries,
                                     SessionDelegate connectionConsumerSession,
@@ -154,9 +160,7 @@ public class ClientConsumer
       }
       catch (RuntimeException e)
       {
-         long id = m.getMessage().getMessageID();
-
-         log.error("RuntimeException was thrown from onMessage, " + id + " will be redelivered", e);
+         log.error("RuntimeException was thrown from onMessage, " + m.getJMSMessageID() + " will be redelivered", e);
          
          // See JMS 1.1 spec 4.5.2
 
@@ -255,7 +259,7 @@ public class ClientConsumer
     *
     * @param message The message
     */
-   public void handleMessage(final Object message) throws Exception
+   public void handleMessage(final JBossMessage message) throws Exception
    {
       //TODO - we temporarily need to execute on a different thread to avoid a deadlock situation in
       //       failover where a message is sent then the valve is locked, and the message send cause
@@ -312,7 +316,7 @@ public class ClientConsumer
    
             for(Iterator i = buffer.iterator(); i.hasNext();)
             {
-               MessageProxy mp = (MessageProxy)i.next();
+               JBossMessage mp = (JBossMessage)i.next();
                
                DefaultCancel cancel =
                   new DefaultCancel(mp.getDeliveryId(), mp.getDeliveryCount(), false, false);
@@ -374,9 +378,9 @@ public class ClientConsumer
     *        or null if one is not immediately available. Returns null if the consumer is
     *        concurrently closed.
     */
-   public MessageProxy receive(long timeout) throws JMSException
+   public JBossMessage receive(long timeout) throws JMSException
    {                
-      MessageProxy m = null;      
+      JBossMessage m = null;      
       
       synchronized (mainLock)
       {        
@@ -534,7 +538,7 @@ public class ClientConsumer
        this.consumerID = consumerId;
    }
    
-   public void addToFrontOfBuffer(MessageProxy proxy) throws Exception
+   public void addToFrontOfBuffer(JBossMessage proxy) throws Exception
    {
       synchronized (mainLock)
       {
@@ -771,7 +775,7 @@ public class ClientConsumer
       }     
    }
         
-   private MessageProxy getMessage(long timeout)
+   private JBossMessage getMessage(long timeout)
    {
       if (timeout == -1)
       {
@@ -815,11 +819,11 @@ public class ClientConsumer
          } 
       }
 
-      MessageProxy m = null;
+      JBossMessage m = null;
              
       if (!closed && !buffer.isEmpty())
       {
-         m = (MessageProxy)buffer.removeFirst();
+         m = (JBossMessage)buffer.removeFirst();
       }
 
       return m;
@@ -854,9 +858,9 @@ public class ClientConsumer
    {
    	private int token;
    	
-   	private Object message;
+   	private JBossMessage message;
    	
-   	HandleMessageRunnable(int token, Object message)
+   	HandleMessageRunnable(int token, JBossMessage message)
    	{
    		this.token = token;
    		
@@ -867,9 +871,7 @@ public class ClientConsumer
       {
          try
          {
-         	 MessageProxy proxy = (MessageProxy) message;
-
-             if (trace) { log.trace(this + " receiving message " + proxy + " from the remoting layer"); }
+             if (trace) { log.trace(this + " receiving message " + message + " from the remoting layer"); }
 
              synchronized (mainLock)
              {
@@ -887,14 +889,14 @@ public class ClientConsumer
                	 return;
                 }
                 
-                proxy.setSessionDelegate(sessionDelegate, isConnectionConsumer);
+                message.setSessionDelegate(sessionDelegate, isConnectionConsumer);
 
-                proxy.getMessage().doBeforeReceive();
+                message.doBeforeReceive();
 
                 //Add it to the buffer
-                buffer.addLast(proxy, proxy.getJMSPriority());
+                buffer.addLast(message, message.getJMSPriority());
 
-                lastDeliveryId = proxy.getDeliveryId();
+                lastDeliveryId = message.getDeliveryId();
                 
                 if (trace) { log.trace(this + " added message(s) to the buffer are now " + buffer.size() + " messages"); }
 
@@ -920,7 +922,7 @@ public class ClientConsumer
    {
       public void run()
       {         
-         MessageProxy mp = null;
+         JBossMessage msg = null;
          
          MessageListener theListener = null;
          
@@ -939,7 +941,7 @@ public class ClientConsumer
             
             // remove a message from the buffer
 
-            mp = (MessageProxy)buffer.removeFirst();                                       
+            msg = (JBossMessage)buffer.removeFirst();                                       
          }
          
          /*
@@ -952,12 +954,12 @@ public class ClientConsumer
           * Solution - don't use a session executor - have a sesion thread instead much nicer
           */
                                 
-         if (mp != null)
+         if (msg != null)
          {
             try
             {
                callOnMessage(sessionDelegate, theListener, consumerID, queueName,
-                             false, mp, ackMode, maxDeliveries, null, shouldAck);
+                             false, msg, ackMode, maxDeliveries, null, shouldAck);
                
                if (trace) { log.trace("Called callonMessage"); }
             }

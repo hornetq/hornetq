@@ -24,7 +24,7 @@ package org.jboss.jms.delegate;
 import javax.jms.JMSException;
 
 import org.jboss.jms.client.Closeable;
-import org.jboss.jms.message.JBossMessage;
+import org.jboss.messaging.newcore.Message;
 
 /**
  * Represents the set of methods from the BrowserDelegate that are handled on the server. The rest
@@ -45,9 +45,9 @@ public interface BrowserEndpoint extends Closeable
     */
    void reset() throws JMSException;
 
-   JBossMessage nextMessage() throws JMSException;
+   Message nextMessage() throws JMSException;
    
    boolean hasNextMessage() throws JMSException;
       
-   JBossMessage[] nextMessageBlock(int maxMessages) throws JMSException;
+   Message[] nextMessageBlock(int maxMessages) throws JMSException;
 }

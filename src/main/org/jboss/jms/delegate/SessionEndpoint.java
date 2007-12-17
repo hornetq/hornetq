@@ -30,7 +30,7 @@ import org.jboss.jms.client.Closeable;
 import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.destination.JBossQueue;
 import org.jboss.jms.destination.JBossTopic;
-import org.jboss.jms.message.JBossMessage;
+import org.jboss.messaging.newcore.Message;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -111,7 +111,7 @@ public interface SessionEndpoint extends Closeable
     * @param message The message to send
     * @throws JMSException
     */
-   void send(JBossMessage message, boolean checkForDuplicates) throws JMSException;
+   void send(Message message, boolean checkForDuplicates) throws JMSException;
    
    /**
     * Send delivery info to the server so the delivery lists can be repopulated. Used only in

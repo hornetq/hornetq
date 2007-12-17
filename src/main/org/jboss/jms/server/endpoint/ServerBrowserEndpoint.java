@@ -29,18 +29,16 @@ import static org.jboss.messaging.core.remoting.wireformat.PacketType.REQ_CLOSIN
 
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 import javax.jms.IllegalStateException;
 import javax.jms.JMSException;
-import javax.jms.Message;
 
 import org.jboss.jms.delegate.BrowserEndpoint;
 import org.jboss.jms.exception.MessagingJMSException;
-import org.jboss.jms.message.JBossMessage;
 import org.jboss.jms.server.selector.Selector;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.contract.Channel;
-import org.jboss.messaging.core.contract.Filter;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.PacketHandler;
 import org.jboss.messaging.core.remoting.PacketSender;
@@ -52,6 +50,8 @@ import org.jboss.messaging.core.remoting.wireformat.ClosingResponse;
 import org.jboss.messaging.core.remoting.wireformat.JMSExceptionMessage;
 import org.jboss.messaging.core.remoting.wireformat.NullPacket;
 import org.jboss.messaging.core.remoting.wireformat.PacketType;
+import org.jboss.messaging.newcore.Filter;
+import org.jboss.messaging.newcore.Message;
 import org.jboss.messaging.util.ExceptionUtil;
 
 /**
@@ -142,7 +142,7 @@ public class ServerBrowserEndpoint implements BrowserEndpoint
       }
    }
    
-   public JBossMessage nextMessage() throws JMSException
+   public Message nextMessage() throws JMSException
    {
       try
       {
@@ -156,7 +156,7 @@ public class ServerBrowserEndpoint implements BrowserEndpoint
             iterator = createIterator();
          }
 
-         JBossMessage r = (JBossMessage)iterator.next();
+         Message r = (Message)iterator.next();
    
          if (trace) { log.trace(this + " returning " + r); }
          
@@ -164,11 +164,12 @@ public class ServerBrowserEndpoint implements BrowserEndpoint
       }   
       catch (Throwable t)
       {
+         t.printStackTrace();
          throw ExceptionUtil.handleJMSInvocation(t, this + " nextMessage");
       }
    }
 
-   public JBossMessage[] nextMessageBlock(int maxMessages) throws JMSException
+   public Message[] nextMessageBlock(int maxMessages) throws JMSException
    {
 
       if (trace) { log.trace(this + " returning next message block of " + maxMessages); }
@@ -202,7 +203,7 @@ public class ServerBrowserEndpoint implements BrowserEndpoint
             }
             else break;
          }		
-   		return (JBossMessage[])messages.toArray(new JBossMessage[messages.size()]);	
+   		return (Message[])messages.toArray(new Message[messages.size()]);	
       }   
       catch (Throwable t)
       {
@@ -259,7 +260,9 @@ public class ServerBrowserEndpoint implements BrowserEndpoint
 
    private Iterator createIterator()
    {
-      return destination.browse(filter).iterator();
+      List<Message> msgs = destination.browse(filter);
+      
+      return msgs.iterator();
    }
 
    // Inner classes --------------------------------------------------------------------------------
@@ -283,7 +286,7 @@ public class ServerBrowserEndpoint implements BrowserEndpoint
                response = new BrowserHasNextMessageResponse(hasNextMessage());
             } else if (type == REQ_BROWSER_NEXTMESSAGE)
             {
-               JBossMessage message = nextMessage();
+               Message message = nextMessage();
                response = new BrowserNextMessageResponse(message);
             } else if (type == MSG_BROWSER_RESET)
             {

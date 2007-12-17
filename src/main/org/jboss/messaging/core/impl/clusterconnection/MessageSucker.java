@@ -22,6 +22,12 @@
 
 package org.jboss.messaging.core.impl.clusterconnection;
 
+import javax.jms.Message;
+import javax.jms.MessageListener;
+import javax.jms.Session;
+import javax.transaction.Transaction;
+import javax.transaction.TransactionManager;
+
 import org.jboss.jms.client.JBossConnection;
 import org.jboss.jms.client.JBossSession;
 import org.jboss.jms.delegate.ConsumerDelegate;
@@ -29,18 +35,10 @@ import org.jboss.jms.delegate.ProducerDelegate;
 import org.jboss.jms.delegate.SessionDelegate;
 import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.destination.JBossQueue;
-import org.jboss.jms.message.MessageProxy;
+import org.jboss.jms.message.JBossMessage;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.contract.Queue;
 import org.jboss.tm.TransactionManagerLocator;
-
-import javax.jms.DeliveryMode;
-import javax.jms.Message;
-import javax.jms.MessageListener;
-import javax.jms.Session;
-import javax.transaction.Transaction;
-import javax.transaction.TransactionManager;
-import javax.transaction.xa.XAResource;
 
 /**
  * 
@@ -319,17 +317,17 @@ public class MessageSucker implements MessageListener
 			}
 			*/
 
-         org.jboss.messaging.core.contract.Message coreMessage = ((MessageProxy)msg).getMessage();
+         org.jboss.messaging.newcore.Message coreMessage = ((JBossMessage)msg).getCoreMessage();
                   
          if (preserveOrdering)
          {
             //Add a header saying we have sucked the message
-            coreMessage.putHeader(org.jboss.messaging.core.contract.Message.CLUSTER_SUCKED, "x");
+            coreMessage.putHeader(org.jboss.messaging.newcore.Message.CLUSTER_SUCKED, "x");
          }
          
          //Add a header with the node id of the node we sucked from - this is used on the sending end to do
          //the move optimisation
-         coreMessage.putHeader(org.jboss.messaging.core.contract.Message.SOURCE_CHANNEL_ID, sourceChannelID);
+         coreMessage.putHeader(org.jboss.messaging.newcore.Message.SOURCE_CHANNEL_ID, sourceChannelID);
 
          long timeToLive = msg.getJMSExpiration();
          if (timeToLive != 0)

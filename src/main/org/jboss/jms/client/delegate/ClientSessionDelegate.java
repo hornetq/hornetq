@@ -44,13 +44,12 @@ import org.jboss.jms.delegate.SessionDelegate;
 import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.destination.JBossQueue;
 import org.jboss.jms.destination.JBossTopic;
-import org.jboss.jms.message.BytesMessageProxy;
+import org.jboss.jms.message.JBossBytesMessage;
+import org.jboss.jms.message.JBossMapMessage;
 import org.jboss.jms.message.JBossMessage;
-import org.jboss.jms.message.MapMessageProxy;
-import org.jboss.jms.message.MessageProxy;
-import org.jboss.jms.message.ObjectMessageProxy;
-import org.jboss.jms.message.StreamMessageProxy;
-import org.jboss.jms.message.TextMessageProxy;
+import org.jboss.jms.message.JBossObjectMessage;
+import org.jboss.jms.message.JBossStreamMessage;
+import org.jboss.jms.message.JBossTextMessage;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.remoting.wireformat.AcknowledgeDeliveriesMessage;
 import org.jboss.messaging.core.remoting.wireformat.AcknowledgeDeliveryRequest;
@@ -71,6 +70,7 @@ import org.jboss.messaging.core.remoting.wireformat.DeleteTemporaryDestinationMe
 import org.jboss.messaging.core.remoting.wireformat.RecoverDeliveriesMessage;
 import org.jboss.messaging.core.remoting.wireformat.SendMessage;
 import org.jboss.messaging.core.remoting.wireformat.UnsubscribeMessage;
+import org.jboss.messaging.newcore.Message;
 
 /**
  * The client-side Session delegate class.
@@ -228,7 +228,7 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
     * This invocation should either be handled by the client-side interceptor chain or by the
     * server-side endpoint.
     */
-   public BytesMessageProxy createBytesMessage() throws JMSException
+   public JBossBytesMessage createBytesMessage() throws JMSException
    {
       throw new IllegalStateException("This invocation should not be handled here!");
    }
@@ -249,7 +249,7 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
     * This invocation should either be handled by the client-side interceptor chain or by the
     * server-side endpoint.
     */
-   public MapMessageProxy createMapMessage() throws JMSException
+   public JBossMapMessage createMapMessage() throws JMSException
    {
       throw new IllegalStateException("This invocation should not be handled here!");
    }
@@ -258,7 +258,7 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
     * This invocation should either be handled by the client-side interceptor chain or by the
     * server-side endpoint.
     */
-   public MessageProxy createMessage() throws JMSException
+   public JBossMessage createMessage() throws JMSException
    {
       throw new IllegalStateException("This invocation should not be handled here!");
    }
@@ -267,7 +267,7 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
     * This invocation should either be handled by the client-side interceptor chain or by the
     * server-side endpoint.
     */
-   public ObjectMessageProxy createObjectMessage() throws JMSException
+   public JBossObjectMessage createObjectMessage() throws JMSException
    {
       throw new IllegalStateException("This invocation should not be handled here!");
    }
@@ -276,7 +276,7 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
     * This invocation should either be handled by the client-side interceptor chain or by the
     * server-side endpoint.
     */
-   public ObjectMessageProxy createObjectMessage(Serializable object) throws JMSException
+   public JBossObjectMessage createObjectMessage(Serializable object) throws JMSException
    {
       throw new IllegalStateException("This invocation should not be handled here!");
    }
@@ -301,7 +301,7 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
     * This invocation should either be handled by the client-side interceptor chain or by the
     * server-side endpoint.
     */
-   public StreamMessageProxy createStreamMessage() throws JMSException
+   public JBossStreamMessage createStreamMessage() throws JMSException
    {
       throw new IllegalStateException("This invocation should not be handled here!");
    }
@@ -310,7 +310,7 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
     * This invocation should either be handled by the client-side interceptor chain or by the
     * server-side endpoint.
     */
-   public TextMessageProxy createTextMessage() throws JMSException
+   public JBossTextMessage createTextMessage() throws JMSException
    {
       throw new IllegalStateException("This invocation should not be handled here!");
    }
@@ -319,7 +319,7 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
     * This invocation should either be handled by the client-side interceptor chain or by the
     * server-side endpoint.
     */
-   public TextMessageProxy createTextMessage(String text) throws JMSException
+   public JBossTextMessage createTextMessage(String text) throws JMSException
    {
       throw new IllegalStateException("This invocation should not be handled here!");
    }
@@ -444,13 +444,13 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
     * This invocation should either be handled by the client-side interceptor chain or by the
     * server-side endpoint.
     */
-   public void addAsfMessage(MessageProxy m, String consumerID, String queueName, int maxDeliveries,
+   public void addAsfMessage(JBossMessage m, String consumerID, String queueName, int maxDeliveries,
                              SessionDelegate connectionConsumerSession, boolean shouldAck)
    {
       throw new IllegalStateException("This invocation should not be handled here!");
    }
    
-   public void send(JBossMessage m, boolean checkForDuplicates) throws JMSException
+   public void send(Message m, boolean checkForDuplicates) throws JMSException
    {   	
    	long seq;
    	
@@ -468,19 +468,15 @@ public class ClientSessionDelegate extends DelegateSupport implements SessionDel
    	}
    	
    	SendMessage message = new SendMessage(m, checkForDuplicates, seq);
-   	sendBlocking(message);
    	
-   	
-//      RequestSupport req = new SessionSendRequest(id, version, m, checkForDuplicates, seq);
-//
-//      if (seq == -1)
-//      {      
-//      	doInvoke(client, req);
-//      }
-//      else
-//      {
-//      	doInvokeOneway(client, req);
-//      }
+   	if (seq == -1)
+   	{
+   	   sendBlocking(message);
+   	}
+   	else
+   	{
+   	   sendOneWay(message);
+   	}
    }
 
    public void cancelDeliveries(List cancels) throws JMSException

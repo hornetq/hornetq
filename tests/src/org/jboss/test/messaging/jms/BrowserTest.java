@@ -137,10 +137,8 @@ public class BrowserTest extends JMSTestCase
 				producer.send(m);
 			}
 
-			log.trace("Sent messages");
-
 			QueueBrowser browser = session.createBrowser(queue1);
-
+			
 			assertEquals(browser.getQueue(), queue1);
 
 			assertNull(browser.getMessageSelector());
@@ -153,7 +151,7 @@ public class BrowserTest extends JMSTestCase
 				en.nextElement();
 				count++;
 			}
-
+			
 			assertEquals(numMessages, count);
 
 			MessageConsumer mc = session.createConsumer(queue1);

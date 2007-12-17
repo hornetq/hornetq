@@ -48,7 +48,7 @@ public class SelectorSyntaxTest
    protected void setUp() throws Exception
    {
       super.setUp();
-      message = new JBossMessage(0);
+      message = new JBossMessage();
    }
    
    public void testBooleanTrue() throws Exception
@@ -66,10 +66,10 @@ public class SelectorSyntaxTest
    private void testBoolean(String name, boolean flag) throws Exception
    {
       message.setBooleanProperty(name, flag);
-      assertTrue(selector.accept(message));
+      assertTrue(selector.match(message.getCoreMessage()));
       
       message.setBooleanProperty(name, !flag);
-      assertTrue(!selector.accept(message));
+      assertTrue(!selector.match(message.getCoreMessage()));
    }
    
    public void testStringEquals() throws Exception
@@ -78,19 +78,19 @@ public class SelectorSyntaxTest
       selector = new Selector("MyString='astring'");
       
       message.setStringProperty("MyString", "astring");
-      assertTrue(selector.accept(message));
+      assertTrue(selector.match(message.getCoreMessage()));
       
       message.setStringProperty("MyString", "NOTastring");
-      assertTrue(!selector.accept(message));
+      assertTrue(!selector.match(message.getCoreMessage()));
       
       // test empty string
       selector = new Selector("MyString=''");
       
       message.setStringProperty("MyString", "");
-      assertTrue("test 1", selector.accept(message));
+      assertTrue("test 1", selector.match(message.getCoreMessage()));
       
       message.setStringProperty("MyString", "NOTastring");
-      assertTrue("test 2", !selector.accept(message));
+      assertTrue("test 2", !selector.match(message.getCoreMessage()));
       
       // test literal apostrophes (which are escaped using two apostrophes
       // in selectors)
@@ -99,10 +99,10 @@ public class SelectorSyntaxTest
       // note: apostrophes are not escaped in string properties
       message.setStringProperty("MyString", "test JBoss's selector");
       // this test fails -- bug 530120
-      //assertTrue("test 3", selector.accept(message));
+      //assertTrue("test 3", selector.match(message.getCoreMessage()));
       
       message.setStringProperty("MyString", "NOTastring");
-      assertTrue("test 4", !selector.accept(message));
+      assertTrue("test 4", !selector.match(message.getCoreMessage()));
       
    }
    
@@ -113,44 +113,44 @@ public class SelectorSyntaxTest
       
       // test where LIKE operand matches
       message.setStringProperty("MyString", "astring");
-      assertTrue(selector.accept(message));
+      assertTrue(selector.match(message.getCoreMessage()));
       
       // test one character string
       selector = new Selector("MyString LIKE 'a'");
       message.setStringProperty("MyString","a");
-      assertTrue(selector.accept(message));
+      assertTrue(selector.match(message.getCoreMessage()));
       
       // test empty string
       selector = new Selector("MyString LIKE ''");
       message.setStringProperty("MyString", "");
-      assertTrue(selector.accept(message));
+      assertTrue(selector.match(message.getCoreMessage()));
       
       // tests where operand does not match
       selector = new Selector("MyString LIKE 'astring'");
       
       // test with extra characters at beginning
       message.setStringProperty("MyString", "NOTastring");
-      assertTrue(!selector.accept(message));
+      assertTrue(!selector.match(message.getCoreMessage()));
       
       // test with extra characters at end
       message.setStringProperty("MyString", "astringNOT");
-      assertTrue(!selector.accept(message));
+      assertTrue(!selector.match(message.getCoreMessage()));
       
       // test with extra characters in the middle
       message.setStringProperty("MyString", "astNOTring");
-      assertTrue(!selector.accept(message));
+      assertTrue(!selector.match(message.getCoreMessage()));
       
       // test where operand is entirely different
       message.setStringProperty("MyString", "totally different");
-      assertTrue(!selector.accept(message));
+      assertTrue(!selector.match(message.getCoreMessage()));
       
       // test case sensitivity
       message.setStringProperty("MyString", "ASTRING");
-      assertTrue(!selector.accept(message));
+      assertTrue(!selector.match(message.getCoreMessage()));
       
       // test empty string
       message.setStringProperty("MyString", "");
-      assertTrue(!selector.accept(message));
+      assertTrue(!selector.match(message.getCoreMessage()));
       
       
       // test lower-case 'like' operator?
@@ -166,15 +166,15 @@ public class SelectorSyntaxTest
       
       // test match against single character
       message.setStringProperty("MyString", "a");
-      assertTrue(selector.accept(message));
+      assertTrue(selector.match(message.getCoreMessage()));
       
       // test match failure against multiple characters
       message.setStringProperty("MyString", "aaaaa");
-      assertTrue(!selector.accept(message));
+      assertTrue(!selector.match(message.getCoreMessage()));
       
       // test match failure against the empty string
       message.setStringProperty("MyString", "");
-      assertTrue(!selector.accept(message));
+      assertTrue(!selector.match(message.getCoreMessage()));
       
       
       // next, tests with wildcard at the beginning of the string
@@ -182,70 +182,70 @@ public class SelectorSyntaxTest
       
       // test match at beginning of string
       message.setStringProperty("MyString", "abcdf");
-      assertTrue(selector.accept(message));
+      assertTrue(selector.match(message.getCoreMessage()));
       
       // match failure in first character after wildcard
       message.setStringProperty("MyString", "aXcdf");
-      assertTrue(!selector.accept(message));
+      assertTrue(!selector.match(message.getCoreMessage()));
       
       // match failure in middle character
       message.setStringProperty("MyString", "abXdf");
-      assertTrue(!selector.accept(message));
+      assertTrue(!selector.match(message.getCoreMessage()));
       
       // match failure in last character
       message.setStringProperty("MyString", "abcdX");
-      assertTrue(!selector.accept(message));
+      assertTrue(!selector.match(message.getCoreMessage()));
       
       // match failure with empty string
       message.setStringProperty("MyString", "");
-      assertTrue(!selector.accept(message));
+      assertTrue(!selector.match(message.getCoreMessage()));
       
       // match failure due to extra characters at beginning
       message.setStringProperty("MyString", "XXXabcdf");
-      assertTrue(!selector.accept(message));
+      assertTrue(!selector.match(message.getCoreMessage()));
       
       // match failure due to extra characters at the end
       message.setStringProperty("MyString", "abcdfXXX");
-      assertTrue(!selector.accept(message));
+      assertTrue(!selector.match(message.getCoreMessage()));
       
       // test that the _ wildcard does not match the 'empty' character
       message.setStringProperty("MyString", "bcdf");
-      assertTrue(!selector.accept(message));
+      assertTrue(!selector.match(message.getCoreMessage()));
       
       // next, tests with wildcard at the end of the string
       selector = new Selector("MyString LIKE 'abcd_'");
       
       // test match at end of string
       message.setStringProperty("MyString", "abcdf");
-      assertTrue(selector.accept(message));
+      assertTrue(selector.match(message.getCoreMessage()));
       
       // match failure in first character before wildcard
       message.setStringProperty("MyString", "abcXf");
-      assertTrue(!selector.accept(message));
+      assertTrue(!selector.match(message.getCoreMessage()));
       
       // match failure in middle character
       message.setStringProperty("MyString", "abXdf");
-      assertTrue(!selector.accept(message));
+      assertTrue(!selector.match(message.getCoreMessage()));
       
       // match failure in first character
       message.setStringProperty("MyString", "Xbcdf");
-      assertTrue(!selector.accept(message));
+      assertTrue(!selector.match(message.getCoreMessage()));
       
       // match failure with empty string
       message.setStringProperty("MyString", "");
-      assertTrue(!selector.accept(message));
+      assertTrue(!selector.match(message.getCoreMessage()));
       
       // match failure due to extra characters at beginning
       message.setStringProperty("MyString", "XXXabcdf");
-      assertTrue(!selector.accept(message));
+      assertTrue(!selector.match(message.getCoreMessage()));
       
       // match failure due to extra characters at the end
       message.setStringProperty("MyString", "abcdfXXX");
-      assertTrue(!selector.accept(message));
+      assertTrue(!selector.match(message.getCoreMessage()));
       
       // test that the _ wildcard does not match the 'empty' character
       message.setStringProperty("MyString", "abcd");
-      assertTrue(!selector.accept(message));
+      assertTrue(!selector.match(message.getCoreMessage()));
       
       // test match in middle of string
       
@@ -254,35 +254,35 @@ public class SelectorSyntaxTest
       
       // test match in the middle of string
       message.setStringProperty("MyString", "abcdf");
-      assertTrue(selector.accept(message));
+      assertTrue(selector.match(message.getCoreMessage()));
       
       // match failure in first character before wildcard
       message.setStringProperty("MyString", "aXcdf");
-      assertTrue(!selector.accept(message));
+      assertTrue(!selector.match(message.getCoreMessage()));
       
       // match failure in first character after wildcard
       message.setStringProperty("MyString", "abcXf");
-      assertTrue(!selector.accept(message));
+      assertTrue(!selector.match(message.getCoreMessage()));
       
       // match failure in last character
       message.setStringProperty("MyString", "abcdX");
-      assertTrue(!selector.accept(message));
+      assertTrue(!selector.match(message.getCoreMessage()));
       
       // match failure with empty string
       message.setStringProperty("MyString", "");
-      assertTrue(!selector.accept(message));
+      assertTrue(!selector.match(message.getCoreMessage()));
       
       // match failure due to extra characters at beginning
       message.setStringProperty("MyString", "XXXabcdf");
-      assertTrue(!selector.accept(message));
+      assertTrue(!selector.match(message.getCoreMessage()));
       
       // match failure due to extra characters at the end
       message.setStringProperty("MyString", "abcdfXXX");
-      assertTrue(!selector.accept(message));
+      assertTrue(!selector.match(message.getCoreMessage()));
       
       // test that the _ wildcard does not match the 'empty' character
       message.setStringProperty("MyString", "abdf");
-      assertTrue(!selector.accept(message));
+      assertTrue(!selector.match(message.getCoreMessage()));
       
       // test match failures
    }
@@ -299,18 +299,18 @@ public class SelectorSyntaxTest
       
       // test match against single character
       message.setStringProperty("MyString", "a");
-      assertTrue(selector.accept(message));
+      assertTrue(selector.match(message.getCoreMessage()));
       
       // test match against multiple characters
       message.setStringProperty("MyString", "aaaaa");
-      assertTrue(selector.accept(message));
+      assertTrue(selector.match(message.getCoreMessage()));
       
       message.setStringProperty("MyString", "abcdf");
-      assertTrue(selector.accept(message));
+      assertTrue(selector.match(message.getCoreMessage()));
       
       // test match against the empty string
       message.setStringProperty("MyString", "");
-      assertTrue(selector.accept(message));
+      assertTrue(selector.match(message.getCoreMessage()));
       
       
       // next, tests with wildcard at the beginning of the string
@@ -318,105 +318,105 @@ public class SelectorSyntaxTest
       
       // test match with single character at beginning of string
       message.setStringProperty("MyString", "Xbcdf");
-      assertTrue(selector.accept(message));
+      assertTrue(selector.match(message.getCoreMessage()));
       
       // match with multiple characters at beginning
       message.setStringProperty("MyString", "XXbcdf");
-      assertTrue(selector.accept(message));
+      assertTrue(selector.match(message.getCoreMessage()));
       
       // match failure in middle character
       message.setStringProperty("MyString", "abXdf");
-      assertTrue(!selector.accept(message));
+      assertTrue(!selector.match(message.getCoreMessage()));
       
       // match failure in last character
       message.setStringProperty("MyString", "abcdX");
-      assertTrue(!selector.accept(message));
+      assertTrue(!selector.match(message.getCoreMessage()));
       
       // match failure with empty string
       message.setStringProperty("MyString", "");
-      assertTrue(!selector.accept(message));
+      assertTrue(!selector.match(message.getCoreMessage()));
       
       // match failure due to extra characters at the end
       message.setStringProperty("MyString", "abcdfXXX");
-      assertTrue(!selector.accept(message));
+      assertTrue(!selector.match(message.getCoreMessage()));
       
       // test that the % wildcard matches the empty string
       message.setStringProperty("MyString", "bcdf");
-      assertTrue(selector.accept(message));
+      assertTrue(selector.match(message.getCoreMessage()));
       
       // next, tests with wildcard at the end of the string
       selector = new Selector("MyString LIKE 'abcd%'");
       
       // test match of single character at end of string
       message.setStringProperty("MyString", "abcdf");
-      assertTrue(selector.accept(message));
+      assertTrue(selector.match(message.getCoreMessage()));
       
       // test match of multiple characters at end of string
       message.setStringProperty("MyString", "abcdfgh");
-      assertTrue(selector.accept(message));
+      assertTrue(selector.match(message.getCoreMessage()));
       
       // match failure in first character before wildcard
       message.setStringProperty("MyString", "abcXf");
-      assertTrue(!selector.accept(message));
+      assertTrue(!selector.match(message.getCoreMessage()));
       
       // match failure in middle character
       message.setStringProperty("MyString", "abXdf");
-      assertTrue(!selector.accept(message));
+      assertTrue(!selector.match(message.getCoreMessage()));
       
       // match failure in first character
       message.setStringProperty("MyString", "Xbcdf");
-      assertTrue(!selector.accept(message));
+      assertTrue(!selector.match(message.getCoreMessage()));
       
       // match failure with empty string
       message.setStringProperty("MyString", "");
-      assertTrue(!selector.accept(message));
+      assertTrue(!selector.match(message.getCoreMessage()));
       
       // match failure due to extra characters at beginning
       message.setStringProperty("MyString", "XXXabcdf");
-      assertTrue(!selector.accept(message));
+      assertTrue(!selector.match(message.getCoreMessage()));
       
       // test that the % wildcard matches the empty string
       message.setStringProperty("MyString", "abcd");
-      assertTrue(selector.accept(message));
+      assertTrue(selector.match(message.getCoreMessage()));
       
       // next, tests with wildcard in the middle of the string
       selector = new Selector("MyString LIKE 'ab%df'");
       
       // test match with single character in the middle of string
       message.setStringProperty("MyString", "abXdf");
-      assertTrue(selector.accept(message));
+      assertTrue(selector.match(message.getCoreMessage()));
       
       // test match with multiple characters in the middle of string
       message.setStringProperty("MyString", "abXXXdf");
-      assertTrue(selector.accept(message));
+      assertTrue(selector.match(message.getCoreMessage()));
       
       // match failure in first character before wildcard
       message.setStringProperty("MyString", "aXcdf");
-      assertTrue(!selector.accept(message));
+      assertTrue(!selector.match(message.getCoreMessage()));
       
       // match failure in first character after wildcard
       message.setStringProperty("MyString", "abcXf");
-      assertTrue(!selector.accept(message));
+      assertTrue(!selector.match(message.getCoreMessage()));
       
       // match failure in last character
       message.setStringProperty("MyString", "abcdX");
-      assertTrue(!selector.accept(message));
+      assertTrue(!selector.match(message.getCoreMessage()));
       
       // match failure with empty string
       message.setStringProperty("MyString", "");
-      assertTrue(!selector.accept(message));
+      assertTrue(!selector.match(message.getCoreMessage()));
       
       // match failure due to extra characters at beginning
       message.setStringProperty("MyString", "XXXabcdf");
-      assertTrue(!selector.accept(message));
+      assertTrue(!selector.match(message.getCoreMessage()));
       
       // match failure due to extra characters at the end
       message.setStringProperty("MyString", "abcdfXXX");
-      assertTrue(!selector.accept(message));
+      assertTrue(!selector.match(message.getCoreMessage()));
       
       // test that the % wildcard matches the empty string
       message.setStringProperty("MyString", "abdf");
-      assertTrue(selector.accept(message));
+      assertTrue(selector.match(message.getCoreMessage()));
       
    }
    
@@ -434,72 +434,72 @@ public class SelectorSyntaxTest
       
       selector = new Selector("MyString LIKE 'a^$b'");
       message.setStringProperty("MyString", "a^$b");
-      assertTrue(selector.accept(message));
+      assertTrue(selector.match(message.getCoreMessage()));
       
       // this one has a double backslash since backslash
       // is interpreted specially by Java
       selector = new Selector("MyString LIKE 'a\\dc'");
       message.setStringProperty("MyString", "a\\dc");
-      assertTrue(selector.accept(message));
+      assertTrue(selector.match(message.getCoreMessage()));
       
       selector = new Selector("MyString LIKE 'a.c'");
       message.setStringProperty("MyString", "abc");
-      assertTrue(!selector.accept(message));
+      assertTrue(!selector.match(message.getCoreMessage()));
       
       selector = new Selector("MyString LIKE '[abc]'");
       message.setStringProperty("MyString", "[abc]");
-      assertTrue(selector.accept(message));
+      assertTrue(selector.match(message.getCoreMessage()));
       
       selector = new Selector("MyString LIKE '[^abc]'");
       message.setStringProperty("MyString", "[^abc]");
-      assertTrue(selector.accept(message));
+      assertTrue(selector.match(message.getCoreMessage()));
       
       selector = new Selector("MyString LIKE '[a-c]'");
       message.setStringProperty("MyString", "[a-c]");
-      assertTrue(selector.accept(message));
+      assertTrue(selector.match(message.getCoreMessage()));
       
       selector = new Selector("MyString LIKE '[:alpha]'");
       message.setStringProperty("MyString", "[:alpha]");
-      assertTrue(selector.accept(message));
+      assertTrue(selector.match(message.getCoreMessage()));
       
       selector = new Selector("MyString LIKE '(abc)'");
       message.setStringProperty("MyString", "(abc)");
-      assertTrue(selector.accept(message));
+      assertTrue(selector.match(message.getCoreMessage()));
       
       selector = new Selector("MyString LIKE 'a|bc'");
       message.setStringProperty("MyString", "a|bc");
-      assertTrue(selector.accept(message));
+      assertTrue(selector.match(message.getCoreMessage()));
       
       selector = new Selector("MyString LIKE '(abc)?'");
       message.setStringProperty("MyString", "(abc)?");
-      assertTrue(selector.accept(message));
+      assertTrue(selector.match(message.getCoreMessage()));
       
       selector = new Selector("MyString LIKE '(abc)*'");
       message.setStringProperty("MyString", "(abc)*");
-      assertTrue(selector.accept(message));
+      assertTrue(selector.match(message.getCoreMessage()));
       
       selector = new Selector("MyString LIKE '(abc)+'");
       message.setStringProperty("MyString", "(abc)+");
-      assertTrue(selector.accept(message));
+      assertTrue(selector.match(message.getCoreMessage()));
       
       selector = new Selector("MyString LIKE '(abc){3}'");
       message.setStringProperty("MyString", "(abc){3}");
-      assertTrue(selector.accept(message));
+      assertTrue(selector.match(message.getCoreMessage()));
       
       selector = new Selector("MyString LIKE '(abc){3,5}'");
       message.setStringProperty("MyString", "(abc){3,5}");
-      assertTrue(selector.accept(message));
+      assertTrue(selector.match(message.getCoreMessage()));
       
       selector = new Selector("MyString LIKE '(abc){3,}'");
       message.setStringProperty("MyString", "(abc){3,}");
-      assertTrue(selector.accept(message));
+      assertTrue(selector.match(message.getCoreMessage()));
       
       selector = new Selector("MyString LIKE '(?=abc)'");
       message.setStringProperty("MyString", "(?=abc)");
-      assertTrue(selector.accept(message));
+      assertTrue(selector.match(message.getCoreMessage()));
       
       selector = new Selector("MyString LIKE '(?!abc)'");
       message.setStringProperty("MyString", "(?!abc)");
-      assertTrue(selector.accept(message));
+      assertTrue(selector.match(message.getCoreMessage()));
    }
 }

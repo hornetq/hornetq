@@ -40,9 +40,9 @@ import org.jboss.jms.delegate.SessionDelegate;
 import org.jboss.jms.exception.MessagingTransactionRolledBackException;
 import org.jboss.jms.exception.MessagingXAException;
 import org.jboss.jms.message.JBossMessage;
-import org.jboss.jms.message.MessageProxy;
 import org.jboss.jms.tx.ClientTransaction.SessionTxState;
 import org.jboss.logging.Logger;
+import org.jboss.messaging.newcore.Message;
 
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
 
@@ -127,7 +127,7 @@ public class ResourceManager
     * @param xid - The id of the transaction to add the message to
     * @param m The message
     */
-   public void addMessage(Object xid, String sessionId, JBossMessage m)
+   public void addMessage(Object xid, String sessionId, Message m)
    {
       if (trace) { log.trace("addding message " + m + " for xid " + xid); }
       
@@ -615,7 +615,7 @@ public class ResourceManager
          {
             DeliveryInfo info = (DeliveryInfo)acks.get(0);
             
-            MessageProxy mp = info.getMessageProxy();
+            JBossMessage mp = info.getMessage();
             
             SessionDelegate del = mp.getSessionDelegate();
             

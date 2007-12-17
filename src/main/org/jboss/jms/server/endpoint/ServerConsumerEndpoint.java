@@ -32,7 +32,6 @@ import javax.jms.JMSException;
 import org.jboss.jms.delegate.ConsumerEndpoint;
 import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.exception.MessagingJMSException;
-import org.jboss.jms.message.JBossMessage;
 import org.jboss.jms.server.ServerPeer;
 import org.jboss.jms.server.destination.ManagedDestination;
 import org.jboss.jms.server.messagecounter.MessageCounter;
@@ -40,8 +39,8 @@ import org.jboss.jms.server.selector.Selector;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.contract.Delivery;
 import org.jboss.messaging.core.contract.DeliveryObserver;
-import org.jboss.messaging.core.contract.Message;
-import org.jboss.messaging.core.contract.MessageReference;
+import org.jboss.messaging.newcore.Message;
+import org.jboss.messaging.newcore.MessageReference;
 import org.jboss.messaging.core.contract.PostOffice;
 import org.jboss.messaging.core.contract.Queue;
 import org.jboss.messaging.core.contract.Receiver;
@@ -285,7 +284,7 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
          
          if (noLocal)
          {
-            String conId = ((JBossMessage) message).getConnectionID();
+            String conId = message.getConnectionID();
 
             if (trace) { log.trace("message connection id: " + conId + " current connection connection id: " + sessionEndpoint.getConnectionEndpoint().getConnectionID()); }
 
@@ -346,7 +345,7 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
          // to do the check twice
          if (messageSelector != null)
          {
-            accept = messageSelector.accept(msg);
+            accept = messageSelector.match(msg);
 
             if (trace) { log.trace("message selector " + (accept ? "accepts " : "DOES NOT accept ") + "the message"); }
          }

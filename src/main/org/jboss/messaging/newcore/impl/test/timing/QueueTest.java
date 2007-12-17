@@ -24,10 +24,10 @@ package org.jboss.messaging.newcore.impl.test.timing;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.jboss.messaging.newcore.MessageReference;
+import org.jboss.messaging.newcore.Queue;
 import org.jboss.messaging.newcore.impl.QueueImpl;
 import org.jboss.messaging.newcore.impl.test.unit.fakes.FakeConsumer;
-import org.jboss.messaging.newcore.intf.MessageReference;
-import org.jboss.messaging.newcore.intf.Queue;
 import org.jboss.messaging.test.unit.UnitTestCase;
 
 /**

@@ -34,12 +34,11 @@ import javax.jms.Session;
 
 import org.jboss.jms.client.delegate.DelegateSupport;
 import org.jboss.jms.client.state.ConsumerState;
-import org.jboss.jms.client.state.SessionState;
 import org.jboss.jms.delegate.ConnectionDelegate;
 import org.jboss.jms.delegate.ConsumerDelegate;
 import org.jboss.jms.delegate.SessionDelegate;
 import org.jboss.jms.destination.JBossDestination;
-import org.jboss.jms.message.MessageProxy;
+import org.jboss.jms.message.JBossMessage;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.util.MessageQueueNameHelper;
 
@@ -287,7 +286,7 @@ public class JBossConnectionConsumer implements ConnectionConsumer, Runnable
 
                for (int i = 0; i < mesList.size(); i++)
                {
-                  MessageProxy m = (MessageProxy)mesList.get(i);
+                  JBossMessage m = (JBossMessage)mesList.get(i);
                   session.addAsfMessage(m, consumerID, queueName, maxDeliveries, sess, shouldAck);
                   if (trace) { log.trace("added " + m + " to session"); }
                }

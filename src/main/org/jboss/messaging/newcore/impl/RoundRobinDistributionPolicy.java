@@ -23,8 +23,8 @@ package org.jboss.messaging.newcore.impl;
 
 import java.util.List;
 
-import org.jboss.messaging.newcore.intf.Consumer;
-import org.jboss.messaging.newcore.intf.DistributionPolicy;
+import org.jboss.messaging.newcore.Consumer;
+import org.jboss.messaging.newcore.DistributionPolicy;
 
 /**
  * 

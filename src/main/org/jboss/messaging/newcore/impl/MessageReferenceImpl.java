@@ -22,9 +22,9 @@
 package org.jboss.messaging.newcore.impl;
 
 import org.jboss.logging.Logger;
-import org.jboss.messaging.newcore.intf.Message;
-import org.jboss.messaging.newcore.intf.MessageReference;
-import org.jboss.messaging.newcore.intf.Queue;
+import org.jboss.messaging.newcore.Message;
+import org.jboss.messaging.newcore.MessageReference;
+import org.jboss.messaging.newcore.Queue;
 
 /**
  * Implementation of a MessageReference
@@ -129,4 +129,24 @@ public class MessageReferenceImpl implements MessageReference
    // Private -------------------------------------------------------
 
    // Inner classes -------------------------------------------------
+   
+   
+   //----------------------------------------------------------------------------
+   // TODO remove these once refactoring is complete
+   private volatile long pagingOrder;
+   
+   public long getPagingOrder()
+   {
+      return pagingOrder;
+   }
+   
+   public void setPagingOrder(long order)
+   {
+      this.pagingOrder = order;
+   }
+   
+   public MessageReference copy()
+   {
+      return new MessageReferenceImpl(this, null);
+   }
 }

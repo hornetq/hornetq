@@ -54,13 +54,14 @@ import org.jboss.jms.tx.ClientTransaction.SessionTxState;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.contract.Binding;
 import org.jboss.messaging.core.contract.Delivery;
-import org.jboss.messaging.core.contract.MessageReference;
 import org.jboss.messaging.core.contract.MessageStore;
 import org.jboss.messaging.core.contract.PostOffice;
 import org.jboss.messaging.core.contract.Queue;
 import org.jboss.messaging.core.impl.tx.Transaction;
 import org.jboss.messaging.core.impl.tx.TransactionRepository;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
+import org.jboss.messaging.newcore.Message;
+import org.jboss.messaging.newcore.MessageReference;
 import org.jboss.messaging.util.ExceptionUtil;
 import org.jboss.messaging.util.GUIDGenerator;
 import org.jboss.messaging.util.Util;
@@ -612,7 +613,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
       return remotingClientSessionID;
    }
 
-   void sendMessage(JBossMessage msg, Transaction tx, boolean checkForDuplicates) throws Exception
+   void sendMessage(Message msg, Transaction tx, boolean checkForDuplicates) throws Exception
    {
       if (trace) { log.trace(this + " sending message " + msg + (tx == null ? " non-transactionally" : " in " + tx)); }
 
@@ -637,14 +638,15 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
       	}
       }
 
-      JBossDestination dest = (JBossDestination)msg.getJMSDestination();
+      org.jboss.messaging.newcore.Destination dest =
+         (org.jboss.messaging.newcore.Destination)msg.getHeader(org.jboss.messaging.newcore.Message.TEMP_DEST_HEADER_NAME);
+
 
       // This allows the no-local consumers to filter out the messages that come from the same
       // connection.
 
       // TODO Do we want to set this for ALL messages. Optimisation is possible here.
       msg.setConnectionID(id);
-
 
       // We must reference the message *before* we send it the destination to be handled. This is
       // so we can guarantee that the message doesn't disappear from the store before the
@@ -653,14 +655,18 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
 
       MessageReference ref = msg.createReference();
 
-      long schedDeliveryTime = msg.getScheduledDeliveryTime();
-
-      if (schedDeliveryTime > 0)
-      {
-         ref.setScheduledDeliveryTime(schedDeliveryTime);
-      }
-
-      if (dest.isDirect())
+      //FIXME http://jira.jboss.org/jira/browse/JBMESSAGING-1203
+//      long schedDeliveryTime = msg.getScheduledDeliveryTime();
+//
+//      if (schedDeliveryTime > 0)
+//      {
+//         ref.setScheduledDeliveryTime(schedDeliveryTime);
+//      }
+      
+      //FIXME -temp hack for refactoring - eventually the core will only deal with queues so this
+      //will be unnecessary
+      
+      if ("Direct".equals(dest.getType()))
       {
       	//Route directly to queue - temp kludge for clustering
 
@@ -680,7 +686,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
       		throw new JMSException("Failed to route " + ref + " to " + dest.getName());
       	}
       }
-      else if (dest.isQueue())
+      else if ("Queue".equals(dest.getType()))
       {
          if (!postOffice.route(ref, new JMSCondition(true, dest.getName()), tx))
          {
@@ -749,8 +755,9 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
 
          for (Iterator j = sessionState.getMsgs().iterator(); j.hasNext(); )
          {
-            JBossMessage message = (JBossMessage)j.next();
-
+            Message message = (Message)j.next();
+            
+            //FIXME - removed ref to JBossMessage in SessionTxState
             sendMessage(message, tx, checkForDuplicates);
          }
 

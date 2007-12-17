@@ -22,10 +22,10 @@ import java.nio.charset.CharacterCodingException;
 
 import org.jboss.jms.destination.JBossDestination;
 import org.jboss.logging.Logger;
-import org.jboss.messaging.core.contract.Message;
-import org.jboss.messaging.core.impl.message.MessageFactory;
 import org.jboss.messaging.core.remoting.wireformat.AbstractPacket;
 import org.jboss.messaging.core.remoting.wireformat.PacketType;
+import org.jboss.messaging.newcore.Message;
+import org.jboss.messaging.newcore.impl.MessageImpl;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>.
@@ -222,7 +222,7 @@ public abstract class AbstractPacketCodec<P extends AbstractPacket>
       return readDestination(new DataInputStream(bais));
    }
 
-   protected static byte[] encode(Message message) throws Exception
+   protected static byte[] encodeMessage(Message message) throws Exception
    {
       ByteArrayOutputStream baos = new ByteArrayOutputStream();
       message.write(new DataOutputStream(baos));
@@ -230,10 +230,10 @@ public abstract class AbstractPacketCodec<P extends AbstractPacket>
       return baos.toByteArray();
    }
 
-   protected static Message decode(byte type, byte[] b) throws Exception
-   {
-      Message msg = MessageFactory.createMessage(type);
+   protected static Message decodeMessage(byte[] b) throws Exception
+   {     
       ByteArrayInputStream bais = new ByteArrayInputStream(b);
+      Message msg = new MessageImpl();
       msg.read(new DataInputStream(bais));
       return msg;
    }

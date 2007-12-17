@@ -295,7 +295,7 @@ public class SessionState extends HierarchicalStateSupport
             for(Iterator i = getClientAckList().iterator(); i.hasNext(); )
             {
                DeliveryInfo info = (DeliveryInfo)i.next();
-               if (!info.getMessageProxy().getMessage().isReliable())
+               if (!info.getMessage().getCoreMessage().isReliable())
                {
                   i.remove();
                   log.trace("removed non persistent delivery " + info);
@@ -309,7 +309,7 @@ public class SessionState extends HierarchicalStateSupport
             DeliveryInfo autoAck = getAutoAckInfo();
             if (autoAck != null)
             {
-               if (!autoAck.getMessageProxy().getMessage().isReliable())
+               if (!autoAck.getMessage().getCoreMessage().isReliable())
                {
                   // unreliable, discard
                   setAutoAckInfo(null);
@@ -340,8 +340,8 @@ public class SessionState extends HierarchicalStateSupport
          {
             DeliveryInfo del = (DeliveryInfo)i.next();
             DeliveryRecovery recInfo =
-               new DeliveryRecovery(del.getMessageProxy().getDeliveryId(),
-                                    del.getMessageProxy().getMessage().getMessageID(),
+               new DeliveryRecovery(del.getMessage().getDeliveryId(),
+                                    del.getMessage().getCoreMessage().getMessageID(),
                                     del.getQueueName());
 
             recoveryInfos.add(recInfo);

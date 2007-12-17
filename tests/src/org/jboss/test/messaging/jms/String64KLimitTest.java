@@ -108,9 +108,7 @@ public class String64KLimitTest extends JMSTestCase
       
       DataOutputStream dos = new DataOutputStream(bos);
       
-      SafeUTF su = new SafeUTF(chunkSize);
-      
-      su.safeWriteUTF(dos, s);
+      SafeUTF.safeWriteUTF(dos, s);
       
       dos.close();
       
@@ -120,7 +118,7 @@ public class String64KLimitTest extends JMSTestCase
       
       DataInputStream dis = new DataInputStream(bis);
       
-      String s2 = su.safeReadUTF(dis);
+      String s2 = SafeUTF.safeReadUTF(dis);
       
       assertEquals(s, s2);   
    }
@@ -133,9 +131,7 @@ public class String64KLimitTest extends JMSTestCase
       
       String s = "abcdefghijklmnopqrstuvwxyz";
       
-      SafeUTF su = new SafeUTF(30);
-      
-      su.safeWriteUTF(dos, s);
+      SafeUTF.safeWriteUTF(dos, s);
       
       dos.close();
       
@@ -145,13 +141,9 @@ public class String64KLimitTest extends JMSTestCase
       
       DataInputStream dis = new DataInputStream(bis);
       
-      String s2 = su.safeReadUTF(dis);
+      String s2 = SafeUTF.safeReadUTF(dis);
       
-      assertEquals(s, s2);
-      
-      int lastReadBufferSize = su.getLastReadBufferSize();
-      
-      assertEquals(28, lastReadBufferSize);      
+      assertEquals(s, s2); 
    }
          
    protected String genString(int len)

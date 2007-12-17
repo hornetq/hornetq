@@ -38,7 +38,7 @@ import org.jboss.messaging.core.impl.clusterconnection.MessageSucker;
  */
 public interface Queue extends Channel
 {
-   Filter getFilter();
+   org.jboss.messaging.newcore.Filter getFilter();
    
    /**
     * Merge the contents of one queue with another - this happens at failover when a queue is failed
@@ -93,5 +93,5 @@ public interface Queue extends Channel
    int getRecoveryMapSize();
    
    //Optimisation for shared database
-   Delivery handleMove(MessageReference ref, long sourceChannelID);   
+   Delivery handleMove(org.jboss.messaging.newcore.MessageReference ref, long sourceChannelID);   
 }

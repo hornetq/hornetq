@@ -20,9 +20,9 @@ package org.jboss.messaging.core.contract;
  */
 public interface MessageStore extends MessagingComponent
 {
-	 MessageReference reference(long messageID);
-	 
-	 MessageReference reference(Message message);
-	 
-	 void clear();
+   org.jboss.messaging.newcore.MessageReference reference(long messageID);
+
+   org.jboss.messaging.newcore.MessageReference reference(org.jboss.messaging.newcore.Message message);
+
+   void clear();
 }

@@ -21,6 +21,19 @@
   */
 package org.jboss.jms.client.container;
 
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+
+import javax.jms.IllegalStateException;
+import javax.jms.Message;
+import javax.jms.MessageListener;
+import javax.jms.ServerSessionPool;
+import javax.jms.Session;
+import javax.jms.TransactionInProgressException;
+
 import org.jboss.aop.joinpoint.Invocation;
 import org.jboss.aop.joinpoint.MethodInvocation;
 import org.jboss.jms.client.JBossConnectionConsumer;
@@ -33,18 +46,15 @@ import org.jboss.jms.delegate.DefaultCancel;
 import org.jboss.jms.delegate.DeliveryInfo;
 import org.jboss.jms.delegate.SessionDelegate;
 import org.jboss.jms.destination.JBossDestination;
-import org.jboss.jms.message.*;
+import org.jboss.jms.message.JBossBytesMessage;
+import org.jboss.jms.message.JBossMapMessage;
+import org.jboss.jms.message.JBossMessage;
+import org.jboss.jms.message.JBossObjectMessage;
+import org.jboss.jms.message.JBossStreamMessage;
+import org.jboss.jms.message.JBossTextMessage;
 import org.jboss.jms.tx.LocalTx;
 import org.jboss.jms.tx.ResourceManager;
 import org.jboss.logging.Logger;
-
-import javax.jms.IllegalStateException;
-import javax.jms.*;
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
 
 /**
  * This aspect handles JMS session related logic
@@ -492,7 +502,7 @@ public class SessionAspect
       for (int i = toRedeliver.size() - 1; i >= 0; i--)
       {
          DeliveryInfo info = (DeliveryInfo)toRedeliver.get(i);
-         MessageProxy proxy = info.getMessageProxy();        
+         JBossMessage msg = info.getMessage();        
          
          ClientConsumer handler = state.getCallbackHandler(info.getConsumerId());
          
@@ -512,7 +522,7 @@ public class SessionAspect
          {
             if (trace) { log.trace("Adding proxy back to front of buffer"); }
             
-            handler.addToFrontOfBuffer(proxy);
+            handler.addToFrontOfBuffer(msg);
          }                                    
       }
               
@@ -601,11 +611,11 @@ public class SessionAspect
 
          ConnectionState connState = (ConnectionState)state.getParent();
          MethodInvocation mi = (MethodInvocation)invocation;
-         Message m = (Message)mi.getArguments()[0];
+         org.jboss.messaging.newcore.Message m = (org.jboss.messaging.newcore.Message)mi.getArguments()[0];
 
          if (trace) { log.trace("sending message " + m + " transactionally, queueing on resource manager txID=" + txID + " sessionID= " + state.getSessionID()); }
 
-         connState.getResourceManager().addMessage(txID, state.getSessionID(), (JBossMessage)m);
+         connState.getResourceManager().addMessage(txID, state.getSessionID(), m);
 
          // ... and we don't invoke any further interceptors in the stack
          return null;
@@ -633,28 +643,28 @@ public class SessionAspect
    
    public Object handleCreateMessage(Invocation invocation) throws Throwable
    {
-      JBossMessage jbm = new JBossMessage(0);
+      JBossMessage jbm = new JBossMessage();
        
-      return new MessageProxy(jbm);
+      return jbm;
    }
    
    public Object handleCreateBytesMessage(Invocation invocation) throws Throwable
    {
-      JBossBytesMessage jbm = new JBossBytesMessage(0);
+      JBossBytesMessage jbm = new JBossBytesMessage();
          
-      return new BytesMessageProxy(jbm);
+      return jbm;
    }
    
    public Object handleCreateMapMessage(Invocation invocation) throws Throwable
    {
-      JBossMapMessage jbm = new JBossMapMessage(0);
+      JBossMapMessage jbm = new JBossMapMessage();
        
-      return new MapMessageProxy(jbm);      
+      return jbm;  
    }
    
    public Object handleCreateObjectMessage(Invocation invocation) throws Throwable
    {
-      JBossObjectMessage jbm = new JBossObjectMessage(0);
+      JBossObjectMessage jbm = new JBossObjectMessage();
        
       MethodInvocation mi = (MethodInvocation)invocation;
       
@@ -663,19 +673,19 @@ public class SessionAspect
          jbm.setObject((Serializable)mi.getArguments()[0]);
       }
       
-      return new ObjectMessageProxy(jbm);
+      return jbm;
    }
    
    public Object handleCreateStreamMessage(Invocation invocation) throws Throwable
    {
-      JBossStreamMessage jbm = new JBossStreamMessage(0);
+      JBossStreamMessage jbm = new JBossStreamMessage();
       
-      return new StreamMessageProxy(jbm);
+      return jbm;
    }
    
    public Object handleCreateTextMessage(Invocation invocation) throws Throwable
    {  
-      JBossTextMessage jbm = new JBossTextMessage(0);
+      JBossTextMessage jbm = new JBossTextMessage();
       
       MethodInvocation mi = (MethodInvocation)invocation;
 
@@ -684,7 +694,7 @@ public class SessionAspect
          jbm.setText((String)mi.getArguments()[0]);
       }
       
-      return new TextMessageProxy(jbm);
+      return jbm;
    }      
       
    public Object handleSetMessageListener(Invocation invocation) throws Throwable
@@ -737,7 +747,7 @@ public class SessionAspect
       
       // Load the session with a message to be processed during a subsequent call to run()
 
-      MessageProxy m = (MessageProxy)mi.getArguments()[0];
+      JBossMessage m = (JBossMessage)mi.getArguments()[0];
       String theConsumerID = (String)mi.getArguments()[1];
       String queueName = (String)mi.getArguments()[2];
       int maxDeliveries = ((Integer)mi.getArguments()[3]).intValue();
@@ -845,7 +855,7 @@ public class SessionAspect
 	      SessionDelegate sessionToUse = connectionConsumerSession != null ? connectionConsumerSession : sess;
 	      
 	      sessionToUse.cancelDelivery(new DefaultCancel(delivery.getDeliveryID(),
-	                                  delivery.getMessageProxy().getDeliveryCount(), false, false));      
+	                                  delivery.getMessage().getDeliveryCount(), false, false));      
    	}
    }
    
@@ -859,8 +869,8 @@ public class SessionAspect
          
          if (ack.isShouldAck())
          {         
-	         DefaultCancel cancel = new DefaultCancel(ack.getMessageProxy().getDeliveryId(),
-	                                                  ack.getMessageProxy().getDeliveryCount(),
+	         DefaultCancel cancel = new DefaultCancel(ack.getMessage().getDeliveryId(),
+	                                                  ack.getMessage().getDeliveryCount(),
 	                                                  false, false);
 	         
 	         cancels.add(cancel);
@@ -918,7 +928,7 @@ public class SessionAspect
    
    private static class AsfMessageHolder
    {
-      private MessageProxy msg;
+      private JBossMessage msg;
       private String consumerID;
       private String queueName;
       private int maxDeliveries;

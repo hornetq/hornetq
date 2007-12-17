@@ -37,5 +37,5 @@ package org.jboss.messaging.core.contract;
  */
 public interface FilterFactory
 {
-   Filter createFilter(String filterString) throws Exception;
+   org.jboss.messaging.newcore.Filter createFilter(String filterString) throws Exception;
 }

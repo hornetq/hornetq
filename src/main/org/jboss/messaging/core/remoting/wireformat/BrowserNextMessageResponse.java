@@ -6,7 +6,7 @@
  */
 package org.jboss.messaging.core.remoting.wireformat;
 
-import org.jboss.jms.message.JBossMessage;
+import org.jboss.messaging.newcore.Message;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -20,13 +20,13 @@ public class BrowserNextMessageResponse extends AbstractPacket
 
    // Attributes ----------------------------------------------------
 
-   private final JBossMessage message;
+   private final Message message;
 
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public BrowserNextMessageResponse(JBossMessage message)
+   public BrowserNextMessageResponse(Message message)
    {
       super(PacketType.RESP_BROWSER_NEXTMESSAGE);
 
@@ -37,7 +37,7 @@ public class BrowserNextMessageResponse extends AbstractPacket
 
    // Public --------------------------------------------------------
 
-   public JBossMessage getMessage()
+   public Message getMessage()
    {
       return message;
    }

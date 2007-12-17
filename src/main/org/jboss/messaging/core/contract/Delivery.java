@@ -34,7 +34,7 @@ import org.jboss.messaging.core.impl.tx.Transaction;
  */
 public interface Delivery
 {
-   MessageReference getReference();
+   org.jboss.messaging.newcore.MessageReference getReference();
 
    DeliveryObserver getObserver();
 

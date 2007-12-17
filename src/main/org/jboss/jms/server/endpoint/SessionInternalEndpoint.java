@@ -24,7 +24,7 @@ package org.jboss.jms.server.endpoint;
 import javax.jms.JMSException;
 
 import org.jboss.jms.delegate.SessionEndpoint;
-import org.jboss.jms.message.JBossMessage;
+import org.jboss.messaging.newcore.Message;
 
 /**
  * 
@@ -36,5 +36,5 @@ import org.jboss.jms.message.JBossMessage;
  */
 public interface SessionInternalEndpoint extends SessionEndpoint
 {
-	void send(JBossMessage msg, boolean checkForDuplicates, long seq) throws JMSException;   
+	void send(Message msg, boolean checkForDuplicates, long seq) throws JMSException;   
 }

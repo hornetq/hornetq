@@ -2,7 +2,6 @@ package org.jboss.jms.client.delegate;
 
 import org.jboss.jms.client.container.ClientConsumer;
 import org.jboss.jms.message.JBossMessage;
-import org.jboss.jms.message.MessageProxy;
 import org.jboss.messaging.core.remoting.PacketHandler;
 import org.jboss.messaging.core.remoting.PacketSender;
 import org.jboss.messaging.core.remoting.wireformat.AbstractPacket;
@@ -50,10 +49,12 @@ public class ClientConsumerPacketHandler implements PacketHandler
          if (type == PacketType.MSG_DELIVERMESSAGE)
          {
             DeliverMessage message = (DeliverMessage) packet;
-            // FIXME Classcast exception...
-            MessageProxy proxy = JBossMessage.
-            createThinDelegate(message.getDeliveryID(), (JBossMessage)message.getMessage(), message.getDeliveryCount());
-            messageHandler.handleMessage(proxy);
+            
+            JBossMessage msg = JBossMessage.createMessage(message.getMessage(), message.getDeliveryID(), message.getDeliveryCount());
+            
+            msg.doBeforeReceive();
+            
+            messageHandler.handleMessage(msg);
          }
       } catch (Exception e)
       {

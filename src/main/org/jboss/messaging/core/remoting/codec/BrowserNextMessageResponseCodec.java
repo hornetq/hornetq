@@ -10,6 +10,7 @@ import static org.jboss.messaging.core.remoting.wireformat.PacketType.RESP_BROWS
 
 import org.jboss.jms.message.JBossMessage;
 import org.jboss.messaging.core.remoting.wireformat.BrowserNextMessageResponse;
+import org.jboss.messaging.newcore.Message;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>.
@@ -35,14 +36,12 @@ public class BrowserNextMessageResponseCodec extends AbstractPacketCodec<Browser
 
    @Override
    protected void encodeBody(BrowserNextMessageResponse response, RemotingBuffer out) throws Exception
-   {
-      JBossMessage message = response.getMessage();
-      byte[] encodedMsg = encode(response.getMessage());
+   {      
+      byte[] encodedMsg = encodeMessage(response.getMessage());
 
-      int bodyLength = 1 + INT_LENGTH + encodedMsg.length;
+      int bodyLength = INT_LENGTH + encodedMsg.length;
 
-      out.putInt(bodyLength);
-      out.put(message.getType());
+      out.putInt(bodyLength);      
       out.putInt(encodedMsg.length);
       out.put(encodedMsg);
    }
@@ -57,11 +56,10 @@ public class BrowserNextMessageResponseCodec extends AbstractPacketCodec<Browser
          return null;
       }
 
-      byte type = in.get();
       int msgLength = in.getInt();
       byte[] encodedMsg = new byte[msgLength];
       in.get(encodedMsg);
-      JBossMessage message = (JBossMessage) decode(type, encodedMsg);
+      Message message = decodeMessage(encodedMsg);
 
       return new BrowserNextMessageResponse(message);
    }

@@ -29,7 +29,6 @@ import javax.jms.JMSException;
 import org.jboss.jms.client.state.ConnectionState;
 import org.jboss.jms.client.state.HierarchicalState;
 import org.jboss.jms.delegate.BrowserDelegate;
-import org.jboss.jms.message.JBossMessage;
 import org.jboss.messaging.core.remoting.wireformat.BrowserHasNextMessageRequest;
 import org.jboss.messaging.core.remoting.wireformat.BrowserHasNextMessageResponse;
 import org.jboss.messaging.core.remoting.wireformat.BrowserNextMessageBlockRequest;
@@ -39,6 +38,7 @@ import org.jboss.messaging.core.remoting.wireformat.BrowserResetMessage;
 import org.jboss.messaging.core.remoting.wireformat.CloseMessage;
 import org.jboss.messaging.core.remoting.wireformat.ClosingRequest;
 import org.jboss.messaging.core.remoting.wireformat.ClosingResponse;
+import org.jboss.messaging.newcore.Message;
 
 /**
  * The client-side Browser delegate class.
@@ -124,13 +124,13 @@ public class ClientBrowserDelegate extends DelegateSupport implements BrowserDel
       return response.hasNext();
    }
 
-   public JBossMessage nextMessage() throws JMSException
+   public Message nextMessage() throws JMSException
    {
       BrowserNextMessageResponse response = (BrowserNextMessageResponse) sendBlocking(new org.jboss.messaging.core.remoting.wireformat.BrowserNextMessageRequest());
       return response.getMessage();
    }
 
-   public JBossMessage[] nextMessageBlock(int maxMessages) throws JMSException
+   public Message[] nextMessageBlock(int maxMessages) throws JMSException
    {
 
       BrowserNextMessageBlockResponse response = (BrowserNextMessageBlockResponse) sendBlocking(new BrowserNextMessageBlockRequest(maxMessages));

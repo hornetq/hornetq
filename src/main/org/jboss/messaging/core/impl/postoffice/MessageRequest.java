@@ -27,8 +27,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
-import org.jboss.messaging.core.contract.Message;
-import org.jboss.messaging.core.impl.message.MessageFactory;
+import org.jboss.messaging.newcore.Message;
+import org.jboss.messaging.newcore.impl.MessageImpl;
 
 /**
  * A MessageRequest
@@ -78,9 +78,9 @@ class MessageRequest extends ClusterRequest
    {
       routingConditionText = in.readUTF();
       
-      byte type = in.readByte();
+      //byte type = in.readByte();
       
-      message = MessageFactory.createMessage(type);
+      message = new MessageImpl();
       
       message.read(in);  
       
@@ -105,7 +105,7 @@ class MessageRequest extends ClusterRequest
    {
       out.writeUTF(routingConditionText);
       
-      out.writeByte(message.getType());      
+      //out.writeByte(message.getType());      
       
       message.write(out);
       

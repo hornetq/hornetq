@@ -73,7 +73,7 @@ public interface PostOffice extends MessagingComponent
     *
     * @return true if reference was accepted by at least one queue.
     */
-   boolean route(MessageReference ref, Condition condition, Transaction tx) throws Exception; 
+   boolean route(org.jboss.messaging.newcore.MessageReference ref, Condition condition, Transaction tx) throws Exception; 
    
    /**
     * Get all queues that match the condition

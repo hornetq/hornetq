@@ -22,10 +22,14 @@
 package org.jboss.jms.client.container;
 
 import javax.jms.JMSException;
-import javax.jms.Message;
 
 import org.jboss.aop.joinpoint.Invocation;
 import org.jboss.jms.delegate.BrowserDelegate;
+import org.jboss.jms.server.endpoint.ServerBrowserEndpoint;
+import org.jboss.logging.Logger;
+import org.jboss.messaging.newcore.Message;
+
+
 
 /**
  * 
@@ -41,6 +45,9 @@ import org.jboss.jms.delegate.BrowserDelegate;
 public class BrowserAspect
 {
    // Constants -----------------------------------------------------
+   
+   private static final Logger log = Logger.getLogger(BrowserAspect.class);
+
    
    //TODO - these need to be configurable by the user - should be configured from jboss-aop.xml
    

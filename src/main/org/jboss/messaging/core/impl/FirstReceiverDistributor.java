@@ -29,7 +29,7 @@ import org.jboss.logging.Logger;
 import org.jboss.messaging.core.contract.Delivery;
 import org.jboss.messaging.core.contract.DeliveryObserver;
 import org.jboss.messaging.core.contract.Distributor;
-import org.jboss.messaging.core.contract.MessageReference;
+import org.jboss.messaging.newcore.MessageReference;
 import org.jboss.messaging.core.contract.Receiver;
 import org.jboss.messaging.core.impl.tx.Transaction;
 

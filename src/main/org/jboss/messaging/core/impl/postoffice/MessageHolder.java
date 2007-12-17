@@ -25,8 +25,8 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.util.Map;
 
-import org.jboss.messaging.core.contract.Message;
-import org.jboss.messaging.core.impl.message.MessageFactory;
+import org.jboss.messaging.newcore.Message;
+import org.jboss.messaging.newcore.impl.MessageImpl;
 import org.jboss.messaging.util.StreamUtils;
 import org.jboss.messaging.util.Streamable;
 
@@ -79,9 +79,9 @@ class MessageHolder implements Streamable
    {
       routingKeyText = in.readUTF();
       
-      byte type = in.readByte();
+      //byte type = in.readByte();
         
-      message = MessageFactory.createMessage(type);
+      message = new MessageImpl();
       message.read(in);
       
       queueNameToNodeIdMap = (Map)StreamUtils.readObject(in, false);      
@@ -91,7 +91,7 @@ class MessageHolder implements Streamable
    {
       out.writeUTF(routingKeyText);
       
-      out.writeByte(message.getType());      
+      //out.writeByte(message.getType());      
       message.write(out);
 
       StreamUtils.writeObject(out, queueNameToNodeIdMap, true, false);

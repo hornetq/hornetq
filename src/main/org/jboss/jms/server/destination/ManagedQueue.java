@@ -28,8 +28,8 @@ import java.util.List;
 import org.jboss.jms.server.messagecounter.MessageCounter;
 import org.jboss.jms.server.selector.Selector;
 import org.jboss.logging.Logger;
-import org.jboss.messaging.core.contract.Message;
 import org.jboss.messaging.core.contract.Queue;
+import org.jboss.messaging.newcore.Message;
 
 /**
  * A ManagedQueue

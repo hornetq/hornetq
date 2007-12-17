@@ -24,11 +24,11 @@ package org.jboss.messaging.newcore.impl.test.unit;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.jboss.messaging.newcore.Message;
+import org.jboss.messaging.newcore.MessageReference;
+import org.jboss.messaging.newcore.Queue;
 import org.jboss.messaging.newcore.impl.MessageImpl;
 import org.jboss.messaging.newcore.impl.QueueImpl;
-import org.jboss.messaging.newcore.intf.Message;
-import org.jboss.messaging.newcore.intf.MessageReference;
-import org.jboss.messaging.newcore.intf.Queue;
 import org.jboss.messaging.test.unit.UnitTestCase;
 
 /**
@@ -42,7 +42,7 @@ import org.jboss.messaging.test.unit.UnitTestCase;
  */
 public class MessageTest extends UnitTestCase
 {
-   public void testCreateMessage1()
+   public void testCreateMessage()
    {
       long id = 56465;
       int type = 655;
@@ -70,6 +70,47 @@ public class MessageTest extends UnitTestCase
       assertEquals(priority, message.getPriority());
    }
    
+   public void testCreateMessageFromStorage() throws Exception
+   {
+      long id = 56465;
+      int type = 655;
+      boolean reliable = true;
+      long expiration = 6712671;
+      long timestamp = 82798172;
+      byte priority = 32;
+      
+      byte[] bytes = "blah blah blah".getBytes();
+ 
+      Message message = new MessageImpl(id, type, reliable, expiration, timestamp, priority,
+            null, bytes);
+      
+      assertEquals(id, message.getMessageID());
+      assertEquals(type, message.getType());
+      assertEquals(reliable, message.isReliable());
+      assertEquals(timestamp, message.getTimestamp());
+      assertEquals(priority, message.getPriority());     
+      
+      assertByteArraysEquivalent(bytes, message.getPayload());   
+      
+      //TODO - headers - they should really be combined into single blob
+   }
+   
+   public void testCopy()
+   {
+      long id = 56465;
+      int type = 655;
+      boolean reliable = true;
+      long expiration = 6712671;
+      long timestamp = 82798172;
+      byte priority = 32;
+      
+      Message message = new MessageImpl(id, type, reliable, expiration, timestamp, priority);
+      
+      Message message2 = message.copy();
+      
+      assertEquivalent(message, message2);
+   }
+   
    public void testSetAndGetMessageID()
    {
       Message message = new MessageImpl();
@@ -77,16 +118,6 @@ public class MessageTest extends UnitTestCase
       long id = 765432;
       message.setMessageID(id);
       assertEquals(id, message.getMessageID());
-   }
-   
-   public void testSetAndGetDestination()
-   {
-      Message message = new MessageImpl();
-      
-      assertNull(message.getDestination());
-      String dest = "myDest";
-      message.setDestination(dest);
-      assertEquals(dest, message.getDestination());
    }
    
    public void testSetAndGetReliable()

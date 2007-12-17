@@ -43,7 +43,6 @@ import org.jboss.jms.message.JBossMessage;
 import org.jboss.jms.message.JBossObjectMessage;
 import org.jboss.jms.message.JBossStreamMessage;
 import org.jboss.jms.message.JBossTextMessage;
-import org.jboss.jms.message.MessageProxy;
 
 /**
  *
@@ -665,11 +664,11 @@ public class MessageHeaderTest extends MessageHeaderTestBase
 
    public void testCopyOnJBossMessage() throws JMSException
    {
-      JBossMessage jbossMessage = ((MessageProxy)queueProducerSession.createMessage()).getMessage();
+      JBossMessage jbossMessage = new JBossMessage();
 
       configureMessage(jbossMessage);
 
-      JBossMessage copy = new JBossMessage(jbossMessage, 0);
+      JBossMessage copy = new JBossMessage(jbossMessage);
 
       ensureEquivalent(jbossMessage, copy);
    }
@@ -679,32 +678,11 @@ public class MessageHeaderTest extends MessageHeaderTestBase
    {
       Message foreignMessage = new SimpleJMSMessage();
 
-      JBossMessage copy = new JBossMessage(foreignMessage, 0);
+      JBossMessage copy = new JBossMessage(foreignMessage);
 
       ensureEquivalent(foreignMessage, copy);
    }
    
-
-   public void testCopyOnJBossBytesMessage() throws JMSException
-   {
-      JBossBytesMessage jbossBytesMessage = (JBossBytesMessage)(((MessageProxy)queueProducerSession.
-         createBytesMessage()).getMessage());
-
-      for(int i = 0; i < 20; i++)
-      {
-         jbossBytesMessage.writeByte((byte)i);
-      }
-
-      
-      jbossBytesMessage.reset();
-      JBossBytesMessage copy = new JBossBytesMessage(jbossBytesMessage);
-
-      copy.reset();
-
-      ensureEquivalent(jbossBytesMessage, copy);
-   }
-
-
    public void testCopyOnForeignBytesMessage() throws JMSException
    {
       BytesMessage foreignBytesMessage = new SimpleJMSBytesMessage();
@@ -713,48 +691,23 @@ public class MessageHeaderTest extends MessageHeaderTestBase
          foreignBytesMessage.writeByte((byte)i);
       }
 
-      JBossBytesMessage copy = new JBossBytesMessage(foreignBytesMessage, 0);
+      JBossBytesMessage copy = new JBossBytesMessage(foreignBytesMessage);
 
       foreignBytesMessage.reset();
       copy.reset();
 
       ensureEquivalent(foreignBytesMessage, copy);
    }
-
-   public void testCopyOnJBossMapMessage() throws JMSException
-   {
-      JBossMapMessage jbossMapMessage = (JBossMapMessage)(((MessageProxy)queueProducerSession.
-         createMapMessage()).getMessage());
-      
-      jbossMapMessage.setInt("int", 1);
-      jbossMapMessage.setString("string", "test");
-
-      JBossMapMessage copy = new JBossMapMessage((JBossMapMessage)jbossMapMessage);
-
-      ensureEquivalent(jbossMapMessage, copy);
-   }
-
-
+  
    public void testCopyOnForeignMapMessage() throws JMSException
    {
       MapMessage foreignMapMessage = new SimpleJMSMapMessage();
       foreignMapMessage.setInt("int", 1);
       foreignMapMessage.setString("string", "test");
 
-      JBossMapMessage copy = new JBossMapMessage(foreignMapMessage, 0);
+      JBossMapMessage copy = new JBossMapMessage(foreignMapMessage);
 
       ensureEquivalent(foreignMapMessage, copy);
-   }
-
-
-   public void testCopyOnJBossObjectMessage() throws JMSException
-   {
-      JBossObjectMessage jbossObjectMessage = (JBossObjectMessage)
-         (((MessageProxy)queueProducerSession.createObjectMessage()).getMessage());
-      
-      JBossObjectMessage copy = new JBossObjectMessage(jbossObjectMessage);
-
-      ensureEquivalent(jbossObjectMessage, copy);
    }
 
 
@@ -762,24 +715,9 @@ public class MessageHeaderTest extends MessageHeaderTestBase
    {
       ObjectMessage foreignObjectMessage = new SimpleJMSObjectMessage();
 
-      JBossObjectMessage copy = new JBossObjectMessage(foreignObjectMessage, 0);
+      JBossObjectMessage copy = new JBossObjectMessage(foreignObjectMessage);
 
       ensureEquivalent(foreignObjectMessage, copy);
-   }
-
-
-   public void testCopyOnJBossStreamMessage() throws JMSException
-   {
-      JBossStreamMessage jbossStreamMessage = (JBossStreamMessage)
-         (((MessageProxy)queueProducerSession.createStreamMessage()).getMessage());
-      
-      jbossStreamMessage.writeByte((byte)1);
-      jbossStreamMessage.writeByte((byte)2);
-      jbossStreamMessage.writeByte((byte)3);
-
-      JBossStreamMessage copy = new JBossStreamMessage((JBossStreamMessage)jbossStreamMessage);
-
-      ensureEquivalent(jbossStreamMessage, copy);
    }
 
 
@@ -790,20 +728,9 @@ public class MessageHeaderTest extends MessageHeaderTestBase
       foreignStreamMessage.writeByte((byte)2);
       foreignStreamMessage.writeByte((byte)3);
 
-      JBossStreamMessage copy = new JBossStreamMessage(foreignStreamMessage, 0);
+      JBossStreamMessage copy = new JBossStreamMessage(foreignStreamMessage);
 
       ensureEquivalent(foreignStreamMessage, copy);
-   }
-
-
-   public void testCopyOnJBossTextMessage() throws JMSException
-   {
-      JBossTextMessage jbossTextMessage = (JBossTextMessage)
-         (((MessageProxy)queueProducerSession.createTextMessage()).getMessage());
-      
-      JBossTextMessage copy = new JBossTextMessage(jbossTextMessage);
-
-      ensureEquivalent(jbossTextMessage, copy);
    }
 
 
@@ -811,7 +738,7 @@ public class MessageHeaderTest extends MessageHeaderTestBase
    {
       TextMessage foreignTextMessage = new SimpleJMSTextMessage();
 
-      JBossTextMessage copy = new JBossTextMessage(foreignTextMessage, 0);
+      JBossTextMessage copy = new JBossTextMessage(foreignTextMessage);
 
       ensureEquivalent(foreignTextMessage, copy);
    }
@@ -832,14 +759,14 @@ public class MessageHeaderTest extends MessageHeaderTestBase
       
       Message receivedMessage = queueConsumer.receive(2000);
       
-      ensureEquivalent(receivedMessage, ((MessageProxy) message).getMessage());
+      ensureEquivalent(receivedMessage, (JBossMessage)message);
    }
    
    public void testForeignJMSReplyTo() throws JMSException
    {
    	Message msg = queueProducerSession.createTextMessage();
    	
-      JBossMessage jbossMessage = ((MessageProxy) msg).getMessage();
+      JBossMessage jbossMessage = (JBossMessage)msg;
       
       Destination foreignDestination = new ForeignDestination();
       
@@ -858,7 +785,7 @@ public class MessageHeaderTest extends MessageHeaderTestBase
       foreignMessage.setJMSDestination(new ForeignDestination());
       foreignMessage.setJMSReplyTo(new ForeignDestination());
 
-      JBossMessage copy = new JBossMessage(foreignMessage, 0);
+      JBossMessage copy = new JBossMessage(foreignMessage);
 
       ensureEquivalent(foreignMessage, copy);
    }

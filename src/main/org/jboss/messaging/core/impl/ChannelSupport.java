@@ -34,13 +34,12 @@ import org.jboss.messaging.core.contract.Channel;
 import org.jboss.messaging.core.contract.Delivery;
 import org.jboss.messaging.core.contract.DeliveryObserver;
 import org.jboss.messaging.core.contract.Distributor;
-import org.jboss.messaging.core.contract.Filter;
-import org.jboss.messaging.core.contract.MessageReference;
-import org.jboss.messaging.core.contract.MessageStore;
 import org.jboss.messaging.core.contract.PersistenceManager;
 import org.jboss.messaging.core.impl.tx.Transaction;
 import org.jboss.messaging.core.impl.tx.TransactionException;
 import org.jboss.messaging.core.impl.tx.TxCallback;
+import org.jboss.messaging.newcore.Filter;
+import org.jboss.messaging.newcore.MessageReference;
 import org.jboss.messaging.util.prioritylinkedlist.BasicPriorityLinkedList;
 import org.jboss.messaging.util.prioritylinkedlist.PriorityLinkedList;
 import org.jboss.util.timeout.Timeout;
@@ -437,7 +436,7 @@ public abstract class ChannelSupport implements Channel
             // TODO: I need to dereference the message each time I apply the
             // filter. Refactor so the message reference will also contain JMS
             // properties
-            if (filter == null || filter.accept(r.getMessage()))
+            if (filter == null || filter.match(r.getMessage()))
             {
                undelivered.add(r);
             }

@@ -21,19 +21,19 @@
  */
 package org.jboss.jms.server.destination;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+
 import org.jboss.jms.server.JMSCondition;
 import org.jboss.jms.server.messagecounter.MessageCounter;
 import org.jboss.jms.server.selector.Selector;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.contract.Binding;
-import org.jboss.messaging.core.contract.Message;
 import org.jboss.messaging.core.contract.Queue;
+import org.jboss.messaging.newcore.Message;
 import org.jboss.messaging.util.MessageQueueNameHelper;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
 
 /**
  * A ManagedTopic

@@ -50,7 +50,6 @@ import org.jboss.jms.delegate.SessionEndpoint;
 import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.destination.JBossQueue;
 import org.jboss.jms.destination.JBossTopic;
-import org.jboss.jms.message.JBossMessage;
 import org.jboss.jms.server.DestinationManager;
 import org.jboss.jms.server.JMSCondition;
 import org.jboss.jms.server.ServerPeer;
@@ -67,8 +66,8 @@ import org.jboss.messaging.core.contract.Channel;
 import org.jboss.messaging.core.contract.Condition;
 import org.jboss.messaging.core.contract.Delivery;
 import org.jboss.messaging.core.contract.DeliveryObserver;
-import org.jboss.messaging.core.contract.Message;
-import org.jboss.messaging.core.contract.MessageReference;
+import org.jboss.messaging.newcore.Message;
+import org.jboss.messaging.newcore.MessageReference;
 import org.jboss.messaging.core.contract.MessageStore;
 import org.jboss.messaging.core.contract.PersistenceManager;
 import org.jboss.messaging.core.contract.PostOffice;
@@ -369,14 +368,12 @@ public class ServerSessionEndpoint implements SessionEndpoint
  
    private volatile long expectedSequence = 0;
    
-   private Map<Long, JBossMessage> heldBack = new HashMap<Long, JBossMessage>();
-   
-   public void send(JBossMessage message, boolean checkForDuplicates) throws JMSException
+   public void send(Message message, boolean checkForDuplicates) throws JMSException
    {
    	throw new IllegalStateException("Should not be handled on the server");
    }
    
-   public void send(JBossMessage message, boolean checkForDuplicates, long thisSequence) throws JMSException
+   public void send(Message message, boolean checkForDuplicates, long thisSequence) throws JMSException
    {
       try
       {                
@@ -390,25 +387,10 @@ public class ServerSessionEndpoint implements SessionEndpoint
       		
       		synchronized (waitLock)
       		{	      		      	        
-	      		if (thisSequence == expectedSequence)
-	      		{
-	      			do
-	      			{
-	      				connectionEndpoint.sendMessage(message, null, checkForDuplicates); 
-	      				
-	         			expectedSequence++;
-	         			
-	         			message = (JBossMessage)heldBack.remove(expectedSequence);
-	      				
-	      			} while (message != null);	      			
-	      		}
-	      		else
-	      		{
-	      			//Not the expected one - add it to the map
-	      			
-	      			heldBack.put(thisSequence, message);      			
-	      		}
-	      		
+   				connectionEndpoint.sendMessage(message, null, checkForDuplicates); 
+   				
+      			expectedSequence++;
+     			
 	      		waitLock.notify();
       		}
       	}
@@ -1107,7 +1089,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
       {
          if (trace) { log.trace(this + " sending expired message to expiry queue " + expiryQueue); }
          
-         JBossMessage copy = makeCopyForDLQOrExpiry(true, del);
+         Message copy = makeCopyForDLQOrExpiry(true, del);
          
          moveInTransaction(copy, del, expiryQueue, true);
       }
@@ -1657,7 +1639,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
          {
             //Sent to expiry queue
             
-            JBossMessage copy = makeCopyForDLQOrExpiry(true, del);
+            Message copy = makeCopyForDLQOrExpiry(true, del);
             
             moveInTransaction(copy, del, rec.expiryQueue, false);
          }
@@ -1665,7 +1647,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
          {
             //Send to DLQ
          	
-            JBossMessage copy = makeCopyForDLQOrExpiry(false, del);
+            Message copy = makeCopyForDLQOrExpiry(false, del);
             
             moveInTransaction(copy, del, rec.dlq, true);
          }
@@ -1677,7 +1659,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
       return rec.del;
    }      
    
-   private JBossMessage makeCopyForDLQOrExpiry(boolean expiry, Delivery del) throws Exception
+   private Message makeCopyForDLQOrExpiry(boolean expiry, Delivery del) throws Exception
    {
       //We copy the message and send that to the dlq/expiry queue - this is because
       //otherwise we may end up with a ref with the same message id in the queue more than once
@@ -1687,36 +1669,39 @@ public class ServerSessionEndpoint implements SessionEndpoint
       
    	if (trace) { log.trace("Making copy of message for DLQ or expiry " + del); }
    	
-      JBossMessage msg = ((JBossMessage)del.getReference().getMessage());
+      Message msg = del.getReference().getMessage();
       
-      JBossMessage copy = msg.doCopy();
+      Message copy = msg.copy();
       
       long newMessageId = sp.getMessageIDManager().getID();
       
-      copy.setMessageId(newMessageId);
+      copy.setMessageID(newMessageId);
       
       //reset expiry
       copy.setExpiration(0);
       
-      String origMessageId = msg.getJMSMessageID();
       
-      String origDest = msg.getJMSDestination().toString();
-            
-      copy.setStringProperty(JBossMessage.JBOSS_MESSAGING_ORIG_MESSAGE_ID, origMessageId);
-      
-      copy.setStringProperty(JBossMessage.JBOSS_MESSAGING_ORIG_DESTINATION, origDest);
-      
-      if (expiry)
-      {
-         long actualExpiryTime = System.currentTimeMillis();
-         
-         copy.setLongProperty(JBossMessage.JBOSS_MESSAGING_ACTUAL_EXPIRY_TIME, actualExpiryTime);
-      }
+      //TODO 
+// http://jira.jboss.org/jira/browse/JBMESSAGING-1202      
+//      String origMessageId = msg.getJMSMessageID();
+//      
+//      String origDest = msg.getJMSDestination().toString();
+//            
+//      copy.setStringProperty(JBossMessage.JBOSS_MESSAGING_ORIG_MESSAGE_ID, origMessageId);
+//      
+//      copy.setStringProperty(JBossMessage.JBOSS_MESSAGING_ORIG_DESTINATION, origDest);
+//      
+//      if (expiry)
+//      {
+//         long actualExpiryTime = System.currentTimeMillis();
+//         
+//         copy.setLongProperty(JBossMessage.JBOSS_MESSAGING_ACTUAL_EXPIRY_TIME, actualExpiryTime);
+//      }
       
       return copy;
    }
    
-   private void moveInTransaction(JBossMessage msg, Delivery del, Queue queue, boolean dlq) throws Throwable
+   private void moveInTransaction(Message msg, Delivery del, Queue queue, boolean dlq) throws Throwable
    {
       Transaction tx = tr.createTransaction();
       

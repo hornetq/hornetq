@@ -1107,12 +1107,9 @@ public class MessageBodyTest extends JBMServerTestCase
 
 		m3.setObject(obj);
 		
-		// This basically tests that after setting the object - changing the objects fields doesn't
-		// change the set object - the object is carried in serialized form
-
-		obj.str = "xyz123";
-
 		queueProducer.send(queue1, m3);
+		
+	   obj.str = "xyz123";
 
 		ObjectMessage m4 = (ObjectMessage) queueConsumer.receive(2000);
 

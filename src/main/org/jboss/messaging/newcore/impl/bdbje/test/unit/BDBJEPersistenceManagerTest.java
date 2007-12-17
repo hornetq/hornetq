@@ -29,15 +29,15 @@ import java.util.Map;
 
 import javax.transaction.xa.Xid;
 
+import org.jboss.messaging.newcore.Message;
+import org.jboss.messaging.newcore.MessageReference;
+import org.jboss.messaging.newcore.Queue;
 import org.jboss.messaging.newcore.impl.MessageImpl;
 import org.jboss.messaging.newcore.impl.QueueImpl;
 import org.jboss.messaging.newcore.impl.bdbje.BDBJEDatabase;
 import org.jboss.messaging.newcore.impl.bdbje.BDBJEEnvironment;
 import org.jboss.messaging.newcore.impl.bdbje.BDBJEPersistenceManager;
 import org.jboss.messaging.newcore.impl.bdbje.test.unit.fakes.FakeBDBJEEnvironment;
-import org.jboss.messaging.newcore.intf.Message;
-import org.jboss.messaging.newcore.intf.MessageReference;
-import org.jboss.messaging.newcore.intf.Queue;
 import org.jboss.messaging.test.unit.UnitTestCase;
 
 /**
@@ -83,7 +83,18 @@ public class BDBJEPersistenceManagerTest extends UnitTestCase
       
       pm.addMessage(m);
       
-      assertMessageInStore(m, queue);   
+      assertMessageInStore(m, queue); 
+      
+      try
+      {
+         pm.addMessage(null);
+         
+         fail("Should throw exception");
+      }
+      catch (NullPointerException ok)
+      {
+         //ok
+      }
    }
          
    public void testDeleteReference() throws Exception
@@ -136,6 +147,17 @@ public class BDBJEPersistenceManagerTest extends UnitTestCase
       assertMessageNotInStore(m);         
       
       assertStoreEmpty();
+      
+      try
+      {
+         pm.deleteReference(null);
+         
+         fail("Should throw exception");
+      }
+      catch (NullPointerException ok)
+      {
+         //ok
+      }
    }
    
    public void testCommitTransaction() throws Exception

@@ -27,7 +27,7 @@ public class BrowserNextMessageRequest extends AbstractPacket
 
    public BrowserNextMessageRequest()
    {
-    super(REQ_BROWSER_NEXTMESSAGE);
+      super(REQ_BROWSER_NEXTMESSAGE);
    }
 
    // Public --------------------------------------------------------

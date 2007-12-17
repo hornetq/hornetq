@@ -21,7 +21,29 @@
  */
 package org.jboss.messaging.core.impl.postoffice;
 
-import EDU.oswego.cs.dl.util.concurrent.*;
+import java.io.Serializable;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.Types;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.Vector;
+
+import javax.management.ListenerNotFoundException;
+import javax.management.MBeanNotificationInfo;
+import javax.management.Notification;
+import javax.management.NotificationBroadcasterSupport;
+import javax.management.NotificationFilter;
+import javax.management.NotificationListener;
+
 import org.jboss.jms.client.container.JMSClientVMIdentifier;
 import org.jboss.jms.server.Configuration;
 import org.jboss.jms.server.JMSConditionFactory;
@@ -29,8 +51,21 @@ import org.jboss.jms.server.ServerPeer;
 import org.jboss.jms.server.endpoint.ServerSessionEndpoint;
 import org.jboss.jms.server.selector.SelectorFactory;
 import org.jboss.logging.Logger;
-import org.jboss.messaging.core.contract.*;
+import org.jboss.messaging.core.contract.Binding;
+import org.jboss.messaging.core.contract.ChannelFactory;
+import org.jboss.messaging.core.contract.ClusterNotification;
+import org.jboss.messaging.core.contract.ClusterNotifier;
+import org.jboss.messaging.core.contract.Condition;
+import org.jboss.messaging.core.contract.ConditionFactory;
+import org.jboss.messaging.core.contract.Delivery;
+import org.jboss.messaging.core.contract.FilterFactory;
+import org.jboss.messaging.newcore.Message;
+import org.jboss.messaging.newcore.MessageReference;
+import org.jboss.messaging.core.contract.MessageStore;
+import org.jboss.messaging.core.contract.PersistenceManager;
+import org.jboss.messaging.core.contract.PostOffice;
 import org.jboss.messaging.core.contract.Queue;
+import org.jboss.messaging.core.contract.Replicator;
 import org.jboss.messaging.core.impl.IDManager;
 import org.jboss.messaging.core.impl.JDBCSupport;
 import org.jboss.messaging.core.impl.MessagingQueue;
@@ -38,6 +73,7 @@ import org.jboss.messaging.core.impl.jchannelfactory.MultiplexerChannelFactory;
 import org.jboss.messaging.core.impl.message.SimpleMessageStore;
 import org.jboss.messaging.core.impl.tx.Transaction;
 import org.jboss.messaging.core.impl.tx.TxCallback;
+import org.jboss.messaging.newcore.Filter;
 import org.jboss.messaging.util.ClearableSemaphore;
 import org.jboss.messaging.util.ConcurrentHashSet;
 import org.jboss.messaging.util.StreamUtils;
@@ -45,12 +81,11 @@ import org.jgroups.Address;
 import org.jgroups.JChannelFactory;
 import org.jgroups.View;
 
-import javax.management.*;
-import java.io.Serializable;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.Types;
-import java.util.*;
+import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
+import EDU.oswego.cs.dl.util.concurrent.LinkedQueue;
+import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
+import EDU.oswego.cs.dl.util.concurrent.ReadWriteLock;
+import EDU.oswego.cs.dl.util.concurrent.ReentrantWriterPreferenceReadWriteLock;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -2018,7 +2053,7 @@ public class MessagingPostOffice extends JDBCSupport
 
 	         			Filter filter = queue.getFilter();
 
-	         			if (filter == null || filter.accept(ref.getMessage()))
+	         			if (filter == null || filter.match(ref.getMessage()))
 	         			{
 	         				if (trace) { log.trace(this + " Added queue " + queue + " to list of targets"); }
 
@@ -2043,7 +2078,7 @@ public class MessagingPostOffice extends JDBCSupport
 
 	         			Filter filter = queue.getFilter();
 
-	         			if (filter == null || filter.accept(ref.getMessage()))
+	         			if (filter == null || filter.match(ref.getMessage()))
 	         			{
 	         				if (remoteSet == null)
 	         				{

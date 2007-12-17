@@ -49,6 +49,6 @@ public interface Receiver
     * @see org.jboss.messaging.core.contract.Delivery
     * @see org.jboss.messaging.core.contract.DeliveryObserver
     */
-   Delivery handle(DeliveryObserver observer, MessageReference reference, Transaction tx);
+   Delivery handle(DeliveryObserver observer, org.jboss.messaging.newcore.MessageReference reference, Transaction tx);
      
 }

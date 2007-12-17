@@ -291,11 +291,11 @@ public class TransactionRepository implements MessagingComponent
       {
          PersistenceManager.MessageChannelPair pair = (PersistenceManager.MessageChannelPair)iter.next();
          
-         Message msg = pair.getMessage();
+         org.jboss.messaging.newcore.Message msg = pair.getMessage();
          
          long channelID = pair.getChannelId();
          
-         MessageReference ref = messageStore.reference(msg);  
+         org.jboss.messaging.newcore.MessageReference ref = messageStore.reference(msg);  
          
          ref.getMessage().setPersisted(true);
 
@@ -348,11 +348,11 @@ public class TransactionRepository implements MessagingComponent
       {
          PersistenceManager.MessageChannelPair pair = (PersistenceManager.MessageChannelPair)iter.next();
          
-         Message msg = pair.getMessage();
+         org.jboss.messaging.newcore.Message msg = pair.getMessage();
          
          long channelID = pair.getChannelId();
          
-         MessageReference ref = null;
+         org.jboss.messaging.newcore.MessageReference ref = null;
          
          ref = messageStore.reference(msg);    
          

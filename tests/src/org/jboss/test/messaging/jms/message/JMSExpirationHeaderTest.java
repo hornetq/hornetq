@@ -21,12 +21,12 @@
   */
 package org.jboss.test.messaging.jms.message;
 
-import EDU.oswego.cs.dl.util.concurrent.Latch;
-import org.jboss.jms.message.JBossMessage;
-import org.jboss.jms.message.MessageProxy;
-
 import javax.jms.DeliveryMode;
 import javax.jms.Message;
+
+import org.jboss.jms.message.JBossMessage;
+
+import EDU.oswego.cs.dl.util.concurrent.Latch;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
@@ -191,9 +191,9 @@ public class JMSExpirationHeaderTest extends MessageHeaderTestBase
                Message m = queueProducerSession.createMessage();
                queueProducer.send(m, DeliveryMode.NON_PERSISTENT, 4, -1);
 
-               JBossMessage jbm = ((MessageProxy)m).getMessage();
+               JBossMessage jbm = (JBossMessage)m;
                
-               if (!jbm.isExpired())
+               if (!jbm.getCoreMessage().isExpired())
                {
                   log.error("The message " + m + " should have expired");
                   testFailed = true;
@@ -247,7 +247,7 @@ public class JMSExpirationHeaderTest extends MessageHeaderTestBase
 
    public void testExpirationOnReceive() throws Exception
    {
-      expectedMessage = new JBossMessage(123456);
+      expectedMessage = new JBossMessage();
 
       queueProducer.send(queueProducerSession.createMessage(), DeliveryMode.NON_PERSISTENT, 4, 2000);
 

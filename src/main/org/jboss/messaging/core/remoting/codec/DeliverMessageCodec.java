@@ -8,7 +8,7 @@ package org.jboss.messaging.core.remoting.codec;
 
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_DELIVERMESSAGE;
 
-import org.jboss.messaging.core.contract.Message;
+import org.jboss.messaging.newcore.Message;
 import org.jboss.messaging.core.remoting.wireformat.DeliverMessage;
 
 /**
@@ -36,17 +36,15 @@ public class DeliverMessageCodec extends AbstractPacketCodec<DeliverMessage>
    @Override
    protected void encodeBody(DeliverMessage message, RemotingBuffer out) throws Exception
    {
-      Message msg = message.getMessage();
-      byte[] encodedMsg = encode(message.getMessage());
+      byte[] encodedMsg = encodeMessage(message.getMessage());
       String consumerID = message.getConsumerID();
       long deliveryID = message.getDeliveryID();
       int deliveryCount = message.getDeliveryCount();
 
-      int bodyLength = 1 + INT_LENGTH + encodedMsg.length + sizeof(consumerID)
+      int bodyLength = INT_LENGTH + encodedMsg.length + sizeof(consumerID)
             + LONG_LENGTH + INT_LENGTH;
       out.putInt(bodyLength);
 
-      out.put(msg.getType());
       out.putInt(encodedMsg.length);
       out.put(encodedMsg);
       out.putNullableString(consumerID);
@@ -64,11 +62,10 @@ public class DeliverMessageCodec extends AbstractPacketCodec<DeliverMessage>
          return null;
       }
 
-      byte type = in.get();
       int msgLength = in.getInt();
       byte[] encodedMsg = new byte[msgLength];
       in.get(encodedMsg);
-      Message msg = decode(type, encodedMsg);
+      Message msg = decodeMessage(encodedMsg);
       String consumerID = in.getNullableString();
       long deliveryID = in.getLong();
       int deliveryCount = in.getInt();

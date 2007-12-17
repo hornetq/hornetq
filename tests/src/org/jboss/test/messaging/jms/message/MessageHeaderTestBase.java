@@ -48,8 +48,7 @@ public class MessageHeaderTestBase extends JBMServerTestCase
     */
    public static void configureMessage(JBossMessage m) throws JMSException
    {
-      //m.setJMSMessageID("messageID777");
-      m.setMessageId(123456);
+      m.setJMSMessageID("ID:messageID777");
       m.setJMSTimestamp(123456789l);
       m.setJMSCorrelationID("correlationID777");
       m.setJMSReplyTo(new JBossQueue("ReplyToQueue"));

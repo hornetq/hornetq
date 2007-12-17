@@ -23,12 +23,13 @@ package org.jboss.jms.server.selector;
 
 import java.util.HashMap;
 import java.util.Iterator;
-import javax.jms.DeliveryMode;
+
 import javax.jms.InvalidSelectorException;
 import javax.jms.JMSException;
-import javax.jms.Message;
+
 import org.jboss.logging.Logger;
-import org.jboss.messaging.core.contract.Filter;
+import org.jboss.messaging.newcore.Filter;
+import org.jboss.messaging.newcore.Message;
 
 
 /**
@@ -40,6 +41,8 @@ import org.jboss.messaging.core.contract.Filter;
  * @author     <a href="mailto:Scott.Stark@jboss.org">Scott Stark</a>
  * @author	   <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version    $Revision$
+ *
+ * FIXME - we need to abstract out a core filter that doesn't depend on JMS
  *
  * $Id$
  */
@@ -113,11 +116,11 @@ public class Selector implements Filter
       return selector;
    }
 	
-	public synchronized boolean accept(org.jboss.messaging.core.contract.Message message)
+	public synchronized boolean match(Message message)
    {
       try
       {			         
-         //Only accept JMS messages
+         //Only accept core messages
          if (!(message instanceof Message))
          {
             return false;
@@ -132,7 +135,11 @@ public class Selector implements Filter
          {
             Identifier id = (Identifier) i.next();
 
-            Object find = mess.getObjectProperty(id.name);
+            //FIXME - optimise this - abstract a core selector - this
+            //Shouldn't rely on JMS
+                        
+            
+            Object find = mess.getHeader("P" + id.name);
 
             if (find == null)
                find = getHeaderFieldReferences(mess, id.name);
@@ -195,18 +202,18 @@ public class Selector implements Filter
       //
       if (idName.equals("JMSDeliveryMode"))
       {
-         return mess.getJMSDeliveryMode()==DeliveryMode.PERSISTENT ? "PERSISTENT" : "NON_PERSISTENT";
+         return mess.isReliable() ? "PERSISTENT" : "NON_PERSISTENT";
       }
       else if (idName.equals("JMSPriority"))
-         return new Integer(mess.getJMSPriority());
+         return new Integer(mess.getPriority());
       else if (idName.equals("JMSMessageID"))
-         return mess.getJMSMessageID();
+         return "ID:JBM-" + mess.getMessageID();
       else if (idName.equals("JMSTimestamp"))
-         return new Long(mess.getJMSTimestamp());
+         return new Long(mess.getTimestamp());
       else if (idName.equals("JMSCorrelationID"))
-         return mess.getJMSCorrelationID();
+         return mess.getHeader("H.CORRELATIONID");
       else if (idName.equals("JMSType"))
-         return mess.getJMSType();
+         return mess.getHeader("H.TYPE");
       else
          return null;
    }

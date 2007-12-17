@@ -29,14 +29,13 @@ import java.util.Set;
 
 import org.jboss.jms.server.MessagingTimeoutFactory;
 import org.jboss.logging.Logger;
-import org.jboss.messaging.newcore.intf.Consumer;
-import org.jboss.messaging.newcore.intf.DistributionPolicy;
-import org.jboss.messaging.newcore.intf.Filter;
-import org.jboss.messaging.newcore.intf.HandleStatus;
-import org.jboss.messaging.newcore.intf.MessageReference;
-import org.jboss.messaging.newcore.intf.Queue;
-import org.jboss.messaging.util.newprioritylinkedlist.PriorityLinkedList;
-import org.jboss.messaging.util.newprioritylinkedlist.PriorityLinkedListImpl;
+import org.jboss.messaging.newcore.Consumer;
+import org.jboss.messaging.newcore.DistributionPolicy;
+import org.jboss.messaging.newcore.Filter;
+import org.jboss.messaging.newcore.HandleStatus;
+import org.jboss.messaging.newcore.MessageReference;
+import org.jboss.messaging.newcore.PriorityLinkedList;
+import org.jboss.messaging.newcore.Queue;
 import org.jboss.util.timeout.Timeout;
 import org.jboss.util.timeout.TimeoutTarget;
 

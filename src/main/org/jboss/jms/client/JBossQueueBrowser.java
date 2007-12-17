@@ -28,7 +28,11 @@ import javax.jms.JMSException;
 import javax.jms.Queue;
 import javax.jms.QueueBrowser;
 
+import org.jboss.jms.client.container.BrowserAspect;
 import org.jboss.jms.delegate.BrowserDelegate;
+import org.jboss.jms.message.JBossMessage;
+import org.jboss.logging.Logger;
+import org.jboss.messaging.newcore.Message;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -39,6 +43,9 @@ public class JBossQueueBrowser implements QueueBrowser, Serializable
 {
    // Constants ------------------------------------------------------------------------------------
 
+   private static final Logger log = Logger.getLogger(JBossQueueBrowser.class);
+
+   
    private static final long serialVersionUID = 4245650830082712281L;
 
    // Static ---------------------------------------------------------------------------------------
@@ -108,6 +115,7 @@ public class JBossQueueBrowser implements QueueBrowser, Serializable
       {
          try
          {
+            
             return delegate.hasNextMessage();
          }
          catch (JMSException e)
@@ -120,10 +128,17 @@ public class JBossQueueBrowser implements QueueBrowser, Serializable
       {
          try
          {
-            return delegate.nextMessage();
+            Message message = delegate.nextMessage();
+
+            JBossMessage jbm = JBossMessage.createMessage(message, 0, 0);
+            
+            jbm.doBeforeReceive();                        
+            
+            return jbm;
          }
-         catch (JMSException e)
+         catch (Exception e)
          {
+            e.printStackTrace();
             throw new IllegalStateException(e.getMessage());
          }
       }

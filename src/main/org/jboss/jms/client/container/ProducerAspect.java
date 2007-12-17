@@ -38,14 +38,15 @@ import org.jboss.jms.client.state.ProducerState;
 import org.jboss.jms.client.state.SessionState;
 import org.jboss.jms.delegate.ConnectionDelegate;
 import org.jboss.jms.delegate.SessionDelegate;
+import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.message.JBossBytesMessage;
 import org.jboss.jms.message.JBossMapMessage;
 import org.jboss.jms.message.JBossMessage;
 import org.jboss.jms.message.JBossObjectMessage;
 import org.jboss.jms.message.JBossStreamMessage;
 import org.jboss.jms.message.JBossTextMessage;
-import org.jboss.jms.message.MessageProxy;
 import org.jboss.logging.Logger;
+import org.jboss.messaging.newcore.impl.DestinationImpl;
 
 /**
  * Handles sending of messages plus handles get and set methods for Producer returning state from
@@ -173,98 +174,94 @@ public class ProducerAspect
       // Generate the message id
       ConnectionState connectionState = (ConnectionState)sessionState.getParent();
 
-      long id = -1;
-
-      JBossMessage messageToSend;
+      JBossMessage jbm;
+      
       boolean foreign = false;
-
-      if (!(m instanceof MessageProxy))
+      
+      //First convert from foreign message if appropriate
+      if (!(m instanceof JBossMessage))
       {
          // it's a foreign message
 
-         foreign = true;
-
          // JMS 1.1 Sect. 3.11.4: A provider must be prepared to accept, from a client,
          // a message whose implementation is not one of its own.
-
+         
          // create a matching JBossMessage Type from JMS Type
-         if(m instanceof BytesMessage)
+         if (m instanceof BytesMessage)
          {
-            messageToSend = new JBossBytesMessage((BytesMessage)m,0);
+            jbm = new JBossBytesMessage((BytesMessage)m);
          }
-         else if(m instanceof MapMessage)
+         else if (m instanceof MapMessage)
          {
-            messageToSend = new JBossMapMessage((MapMessage)m,0);
+            jbm = new JBossMapMessage((MapMessage)m);
          }
-         else if(m instanceof ObjectMessage)
+         else if (m instanceof ObjectMessage)
          {
-            messageToSend = new JBossObjectMessage((ObjectMessage)m,0);
+            jbm = new JBossObjectMessage((ObjectMessage)m);
          }
-         else if(m instanceof StreamMessage)
+         else if (m instanceof StreamMessage)
          {
-            messageToSend = new JBossStreamMessage((StreamMessage)m,0);
+            jbm = new JBossStreamMessage((StreamMessage)m);
          }
-         else if(m instanceof TextMessage)
+         else if (m instanceof TextMessage)
          {
-            messageToSend = new JBossTextMessage((TextMessage)m,0);
+            jbm = new JBossTextMessage((TextMessage)m);
          }
          else
          {
-            messageToSend = new JBossMessage(m, 0);
+            jbm = new JBossMessage(m);
          }
 
-         messageToSend.setJMSMessageID(null);
-
-         //We must set the destination *after* converting from foreign message
-         messageToSend.setJMSDestination(destination);
-         if(connectionState.getRemotingConnection().isStrictTck())
-         {
-            m.setJMSDestination(destination);
-         }
+         //Set the destination on the original message
+         m.setJMSDestination(destination);  
+         
+         foreign = true;
       }
       else
       {
-         // get the actual message
-         MessageProxy proxy = (MessageProxy)m;
-
-         m.setJMSDestination(destination);
-         
-         if (keepID)
-         {
-            id = proxy.getMessage().getMessageID();
-         }
-
-         //The following line executed on the proxy should cause a copy to occur
-         //if it is necessary
-         proxy.setJMSMessageID(null);
-
-         //Get the underlying message
-         messageToSend = proxy.getMessage();
-
-         proxy.beforeSend();
+         jbm = (JBossMessage)m;
       }
-
-      // Set the new id
-
+         
       if (!keepID)
       {
-         id = connectionState.getIdGenerator().getId((ConnectionDelegate)connectionState.getDelegate());
-      }
+         // Generate a new id            
+         long id = connectionState.getIdGenerator().getId((ConnectionDelegate)connectionState.getDelegate());
+         
+         jbm.getCoreMessage().setMessageID(id);     
+         
+         //Set to null - this will cause the next call to getJMSMessageID() on the jbm to recalculate
+         //it - need to do this to prevent any old cached value being retained
+         
+         jbm.setJMSMessageID(null);
+      } 
       
-      messageToSend.setMessageId(id);
-            
-      // This only really used for BytesMessages and StreamMessages to reset their state
-      messageToSend.doBeforeSend(); 
-      
-      // now that we know the messageID, set it also on the foreign message, if is the case
       if (foreign)
       {
-         m.setJMSMessageID(messageToSend.getJMSMessageID());
+         m.setJMSMessageID(jbm.getJMSMessageID());
       }
+                      
+      jbm.setJMSDestination(destination);
             
+      jbm.doBeforeSend();
+      
+      JBossDestination dest = (JBossDestination)destination;
+      
+      //Set the destination on the core message - TODO temp for refactoring
+      org.jboss.messaging.newcore.Destination coreDest =
+         new DestinationImpl(dest.isQueue() ? "Queue" : "Topic", dest.getName(), dest.isTemporary());
+      
+      //FIXME - temp - for now we set destination as a header - should really be an attribute of the 
+      //send packet - along with scheduleddelivery time
+      
+      jbm.getCoreMessage().putHeader(org.jboss.messaging.newcore.Message.TEMP_DEST_HEADER_NAME, coreDest);
+
       // we now invoke the send(Message) method on the session, which will eventually be fielded
       // by connection endpoint
-      ((SessionDelegate)sessionState.getDelegate()).send(messageToSend, false);
+      ((SessionDelegate)sessionState.getDelegate()).send(jbm.getCoreMessage(), false);
+      
+      //TODO for now we always copy - for INVM we can optimise (like we did in 1.4) by doing lazy copying
+      //of message, header and properties
+      jbm.copyMessage();
       
       return null;
    }

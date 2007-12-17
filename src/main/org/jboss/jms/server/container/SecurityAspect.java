@@ -27,12 +27,14 @@ import java.util.Set;
 
 import javax.jms.Destination;
 import javax.jms.JMSSecurityException;
-import javax.jms.Message;
 
 import org.jboss.aop.joinpoint.Invocation;
 import org.jboss.aop.joinpoint.MethodInvocation;
 import org.jboss.jms.destination.JBossDestination;
-import org.jboss.jms.message.JBossMessage;
+import org.jboss.jms.destination.JBossQueue;
+import org.jboss.jms.destination.JBossTemporaryQueue;
+import org.jboss.jms.destination.JBossTemporaryTopic;
+import org.jboss.jms.destination.JBossTopic;
 import org.jboss.jms.server.SecurityStore;
 import org.jboss.jms.server.endpoint.ServerConnectionEndpoint;
 import org.jboss.jms.server.endpoint.ServerConsumerEndpoint;
@@ -44,7 +46,8 @@ import org.jboss.jms.server.security.CheckType;
 import org.jboss.jms.server.security.SecurityMetadata;
 import org.jboss.jms.tx.ClientTransaction;
 import org.jboss.jms.tx.TransactionRequest;
-import org.jboss.logging.Logger; 
+import org.jboss.logging.Logger;
+import org.jboss.messaging.newcore.Message;
 
 /**
  * This aspect enforces the JBossMessaging JMS security policy.
@@ -145,18 +148,48 @@ public class SecurityAspect
       
       MethodInvocation mi = (MethodInvocation)invocation;
       
-      Message m = (Message)mi.getArguments()[0];
-      Destination dest = m.getJMSDestination();
+      org.jboss.messaging.newcore.Message m = (org.jboss.messaging.newcore.Message)mi.getArguments()[0];
+      org.jboss.messaging.newcore.Destination dest =
+         (org.jboss.messaging.newcore.Destination)m.getHeader(org.jboss.messaging.newcore.Message.TEMP_DEST_HEADER_NAME);
 
       SessionAdvised del = (SessionAdvised)invocation.getTargetObject();
       ServerSessionEndpoint se = (ServerSessionEndpoint)del.getEndpoint();
       ServerConnectionEndpoint ce = se.getConnectionEndpoint();
-                        
-      check(dest, CheckType.WRITE, ce);
+                            
+      check(convert(dest), CheckType.WRITE, ce);
             
       return invocation.invokeNext();
    }
 
+   //FIXME - temp until refactoring is complete
+   //All server side security should involve core destinations not JBossDestinations           
+   private JBossDestination convert(org.jboss.messaging.newcore.Destination dest)
+   {
+      JBossDestination jbdest;
+      if (dest.isTemporary())
+      {
+         if ("Queue".equals(dest.getType()))
+         {
+            jbdest = new JBossTemporaryQueue(dest.getName());
+         }
+         else
+         {
+            jbdest = new JBossTemporaryTopic(dest.getName());  
+         }
+      }
+      else
+      {
+         if ("Topic".equals(dest.getType()))
+         {
+            jbdest = new JBossQueue(dest.getName());
+         }
+         else
+         {
+            jbdest = new JBossTopic(dest.getName());  
+         }
+      }
+      return jbdest;
+   }
 
    // An aspect over ConnectionAdvised
    public Object handleSendTransaction(Invocation invocation) throws Throwable
@@ -170,24 +203,30 @@ public class SecurityAspect
 
       ClientTransaction txState = t.getState();
 
+      //FIXME - can't we optimise this??
       if (txState != null)
       {
          // distinct list of destinations...
-         HashSet destinations = new HashSet();
+         HashSet<org.jboss.messaging.newcore.Destination> destinations = new HashSet<org.jboss.messaging.newcore.Destination>();
 
          for (Iterator i = txState.getSessionStates().iterator(); i.hasNext(); )
          {
             ClientTransaction.SessionTxState sessionState = (ClientTransaction.SessionTxState)i.next();
             for (Iterator j = sessionState.getMsgs().iterator(); j.hasNext(); )
             {
-               JBossMessage message = (JBossMessage)j.next();
-               destinations.add(message.getJMSDestination());
+               Message message = (Message)j.next();
+               
+               org.jboss.messaging.newcore.Destination dest =
+                  (org.jboss.messaging.newcore.Destination)message.getHeader(org.jboss.messaging.newcore.Message.TEMP_DEST_HEADER_NAME);
+
+               
+               destinations.add(dest);
             }
          }
          for (Iterator iterDestinations = destinations.iterator();iterDestinations.hasNext();)
          {
-            Destination destination = (Destination) iterDestinations.next();
-            check(destination, CheckType.WRITE, ce);
+            org.jboss.messaging.newcore.Destination destination = (org.jboss.messaging.newcore.Destination) iterDestinations.next();
+            check(convert(destination), CheckType.WRITE, ce);
          }
 
       }

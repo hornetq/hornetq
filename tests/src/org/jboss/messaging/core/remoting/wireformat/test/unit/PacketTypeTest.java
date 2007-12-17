@@ -87,11 +87,9 @@ import org.jboss.jms.delegate.TopologyResult;
 import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.destination.JBossQueue;
 import org.jboss.jms.destination.JBossTopic;
-import org.jboss.jms.message.JBossMessage;
 import org.jboss.jms.tx.ClientTransaction;
 import org.jboss.jms.tx.MessagingXid;
 import org.jboss.jms.tx.TransactionRequest;
-import org.jboss.messaging.core.contract.Message;
 import org.jboss.messaging.core.remoting.codec.AbstractPacketCodec;
 import org.jboss.messaging.core.remoting.codec.AcknowledgeDeliveriesRequestCodec;
 import org.jboss.messaging.core.remoting.codec.AcknowledgeDeliveryRequestCodec;
@@ -185,6 +183,8 @@ import org.jboss.messaging.core.remoting.wireformat.StopConnectionMessage;
 import org.jboss.messaging.core.remoting.wireformat.TextPacket;
 import org.jboss.messaging.core.remoting.wireformat.UnsubscribeMessage;
 import org.jboss.messaging.core.remoting.wireformat.UpdateCallbackMessage;
+import org.jboss.messaging.newcore.Message;
+import org.jboss.messaging.newcore.impl.MessageImpl;
 import org.jboss.messaging.util.Version;
 
 /**
@@ -667,8 +667,7 @@ public class PacketTypeTest extends TestCase
 
    public void testSendMessage() throws Exception
    {
-      SendMessage packet = new SendMessage(new JBossMessage(System
-            .currentTimeMillis()), true, randomLong());
+      SendMessage packet = new SendMessage(new MessageImpl(), true, randomLong());
       addVersion(packet);
       AbstractPacketCodec codec = new SendMessageCodec();
       SimpleRemotingBuffer buffer = encode(packet, codec);
@@ -858,7 +857,7 @@ public class PacketTypeTest extends TestCase
 
    public void testDeliverMessage() throws Exception
    {
-      Message msg = new JBossMessage(randomLong());
+      Message msg = new MessageImpl();
       DeliverMessage message = new DeliverMessage(msg, randomString(),
             randomLong(), 23);
       addVersion(message);
@@ -1296,7 +1295,7 @@ public class PacketTypeTest extends TestCase
 
    public void testBrowserNextMessageResponse() throws Exception
    {
-      JBossMessage msg = new JBossMessage(randomLong());
+      Message msg = new MessageImpl();
       BrowserNextMessageResponse response = new BrowserNextMessageResponse(msg);
       addVersion(response);
       AbstractPacketCodec codec = new BrowserNextMessageResponseCodec();
@@ -1333,8 +1332,8 @@ public class PacketTypeTest extends TestCase
 
    public void testBrowserNextMessageBlockResponse() throws Exception
    {
-      JBossMessage[] messages = new JBossMessage[] {
-            new JBossMessage(randomLong()), new JBossMessage(randomLong()) };
+      Message[] messages = new Message[] {
+            new MessageImpl(), new MessageImpl() };
 
       BrowserNextMessageBlockResponse response = new BrowserNextMessageBlockResponse(
             messages);

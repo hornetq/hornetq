@@ -8,7 +8,7 @@ package org.jboss.messaging.core.remoting.wireformat;
 
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_SENDMESSAGE;
 
-import org.jboss.jms.message.JBossMessage;
+import org.jboss.messaging.newcore.Message;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -22,7 +22,7 @@ public class SendMessage extends AbstractPacket
 
    // Attributes ----------------------------------------------------
 
-   private final JBossMessage message;
+   private final Message message;
    private final boolean checkForDuplicates;
    private final long sequence;
 
@@ -30,7 +30,7 @@ public class SendMessage extends AbstractPacket
 
    // Constructors --------------------------------------------------
 
-   public SendMessage(JBossMessage message, boolean checkForDuplicates,
+   public SendMessage(Message message, boolean checkForDuplicates,
          long sequence)
    {
       super(MSG_SENDMESSAGE);
@@ -44,7 +44,7 @@ public class SendMessage extends AbstractPacket
 
    // Public --------------------------------------------------------
 
-   public JBossMessage getMessage()
+   public Message getMessage()
    {
       return message;
    }

@@ -32,8 +32,6 @@ import javax.jms.TemporaryTopic;
 import javax.jms.TextMessage;
 import javax.naming.NamingException;
 
-import org.jboss.jms.message.MessageProxy;
-
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
@@ -344,8 +342,7 @@ public class TemporaryDestinationTest extends JMSTestCase
 	      final String messageText = "This is a message";
 	
 	      final Message m = producerSession.createTextMessage(messageText);
-	      log.trace("Message reliable:" + ((MessageProxy)m).getMessage().isReliable());
-	
+
 	      Thread t = new Thread(new Runnable()
 	      {
 	         public void run()

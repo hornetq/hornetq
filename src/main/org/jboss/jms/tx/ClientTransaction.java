@@ -33,9 +33,9 @@ import java.util.Map;
 import org.jboss.jms.delegate.Ack;
 import org.jboss.jms.delegate.DefaultAck;
 import org.jboss.jms.delegate.DeliveryInfo;
-import org.jboss.jms.message.JBossMessage;
 import org.jboss.logging.Logger;
-import org.jboss.messaging.core.impl.message.MessageFactory;
+import org.jboss.messaging.newcore.Message;
+import org.jboss.messaging.newcore.impl.MessageImpl;
 
 /**
  * Holds the state of a transaction on the client side
@@ -91,7 +91,7 @@ public class ClientTransaction
       return state;
    }
 
-   public void addMessage(String sessionId, JBossMessage msg)
+   public void addMessage(String sessionId, Message msg)
    {
       if (!clientSide)
       {
@@ -112,7 +112,7 @@ public class ClientTransaction
 
       sessionTxState.addAck(info);
       
-      if (info.getMessageProxy().getMessage().isReliable())
+      if (info.getMessage().getCoreMessage().isReliable())
       {
          hasPersistentAcks = true;
       }
@@ -278,10 +278,8 @@ public class ClientTransaction
 
             while (iter2.hasNext())
             {
-               JBossMessage m = (JBossMessage)iter2.next();
+               Message m = (Message)iter2.next();
 
-               out.writeByte(m.getType());
-             
                m.write(out);
             }
 
@@ -297,7 +295,7 @@ public class ClientTransaction
                if (ack.isShouldAck())
                {
                	//We only need the delivery id written
-               	out.writeLong(ack.getMessageProxy().getDeliveryId());
+               	out.writeLong(ack.getMessage().getDeliveryId());
                }
             }
             
@@ -332,13 +330,15 @@ public class ClientTransaction
 
          for (int j = 0; j < numMsgs; j++)
          {
-            byte type = in.readByte();
+            //byte type = in.readByte();
 
-            JBossMessage msg = (JBossMessage)MessageFactory.createMessage(type);
-
-            msg.read(in);
-
-            sessionState.addMessage(msg);
+            //FIXME - temp hack - need to refactor this class anyway
+            
+            Message m = new MessageImpl();
+            
+            m.read(in);
+            
+            sessionState.addMessage(m);
          }
 
          long l;
@@ -394,7 +394,7 @@ public class ClientTransaction
          this.sessionID = sessionID;
       }
 
-      void addMessage(JBossMessage msg)
+      void addMessage(Message msg)
       {
          msgs.add(msg);
       }
@@ -436,7 +436,7 @@ public class ClientTransaction
             {
                DeliveryInfo di = (DeliveryInfo)i.next();
 
-               if (!di.getMessageProxy().getMessage().isReliable())
+               if (!di.getMessage().getCoreMessage().isReliable())
                {
                   if (trace) { log.trace(this + " discarded non-persistent " + di + " on failover"); }
                   i.remove();

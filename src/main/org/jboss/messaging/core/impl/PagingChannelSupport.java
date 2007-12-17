@@ -28,8 +28,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.jboss.logging.Logger;
-import org.jboss.messaging.core.contract.Message;
-import org.jboss.messaging.core.contract.MessageReference;
+import org.jboss.messaging.newcore.Message;
+import org.jboss.messaging.newcore.MessageReference;
 import org.jboss.messaging.core.contract.MessageStore;
 import org.jboss.messaging.core.contract.PersistenceManager;
 import org.jboss.messaging.core.contract.PersistenceManager.InitialLoadInfo;

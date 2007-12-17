@@ -21,8 +21,8 @@
  */
 package org.jboss.messaging.newcore.impl.test.unit.fakes;
 
-import org.jboss.messaging.newcore.intf.Filter;
-import org.jboss.messaging.newcore.intf.Message;
+import org.jboss.messaging.newcore.Filter;
+import org.jboss.messaging.newcore.Message;
 
 /**
  * 

@@ -52,7 +52,7 @@ public interface Channel extends DeliveryObserver, Receiver
     * @return a List containing message references of messages whose state is maintained by this
     *         State instance. 
     */
-   List browse(Filter filter);
+   List browse(org.jboss.messaging.newcore.Filter filter);
 
    /**
     * Delivers as many references as possible to its router until receivers will accept no more

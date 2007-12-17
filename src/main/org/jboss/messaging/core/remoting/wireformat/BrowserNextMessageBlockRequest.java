@@ -22,16 +22,16 @@ public class BrowserNextMessageBlockRequest extends AbstractPacket
    // Attributes ----------------------------------------------------
 
    private final long maxMessages;
-   
+
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
    public BrowserNextMessageBlockRequest(long maxMessages)
    {
-    super(REQ_BROWSER_NEXTMESSAGEBLOCK);
-    
-    this.maxMessages = maxMessages;
+      super(REQ_BROWSER_NEXTMESSAGEBLOCK);
+
+      this.maxMessages = maxMessages;
    }
 
    // Public --------------------------------------------------------
@@ -40,13 +40,13 @@ public class BrowserNextMessageBlockRequest extends AbstractPacket
    {
       return maxMessages;
    }
-   
+
    @Override
    public String toString()
    {
       return getParentString() + ", maxMessages=" + maxMessages + "]";
    }
-   
+
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------

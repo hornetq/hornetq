@@ -24,7 +24,7 @@ package org.jboss.jms.server.endpoint.advised;
 import javax.jms.JMSException;
 
 import org.jboss.jms.delegate.BrowserEndpoint;
-import org.jboss.jms.message.JBossMessage;
+import org.jboss.messaging.newcore.Message;
 
 /**
  * The server-side advised instance corresponding to a Browser. It is bound to the AOP
@@ -75,12 +75,12 @@ public class BrowserAdvised extends AdvisedSupport implements BrowserEndpoint
       return endpoint.hasNextMessage();
    }
 
-   public JBossMessage nextMessage() throws JMSException
+   public Message nextMessage() throws JMSException
    {
       return endpoint.nextMessage();
    }
 
-   public JBossMessage[] nextMessageBlock(int maxMessages) throws JMSException
+   public Message[] nextMessageBlock(int maxMessages) throws JMSException
    {
       return endpoint.nextMessageBlock(maxMessages);
    }

@@ -236,7 +236,7 @@ public class AcknowledgementTest extends JMSTestCase
 	      int count = 0;
 	      while (true)
 	      {
-	         Message m = consumer.receive(200);
+	         Message m = consumer.receive(1000);
 	         if (m == null) break;
 	         count++;
 	      }
@@ -1226,7 +1226,7 @@ public class AcknowledgementTest extends JMSTestCase
                   
             TextMessage tm = (TextMessage)m;
             
-            log.trace("Got message: " + tm.getText());            
+            //log.info("Got message: " + tm.getText());            
                       
             // Receive first three messages then recover() session
             // Only last message should be redelivered
@@ -1276,6 +1276,7 @@ public class AcknowledgementTest extends JMSTestCase
          }
          catch (Exception e)
          {
+            e.printStackTrace();
             failed = true;
             latch.release();
          }

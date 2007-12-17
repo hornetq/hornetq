@@ -21,7 +21,7 @@
   */
 package org.jboss.jms.delegate;
 
-import org.jboss.jms.message.MessageProxy;
+import org.jboss.jms.message.JBossMessage;
 
 /**
  * Struct like class for holding information regarding a delivery 
@@ -44,7 +44,7 @@ public class DeliveryInfo implements Ack
    //consumer gets the message
    private String consumerId;      
 
-   private MessageProxy msg;
+   private JBossMessage msg;
    
    //For messages in non durable subscriptions - there is no need to ack on the server
    private boolean shouldAck;
@@ -62,7 +62,7 @@ public class DeliveryInfo implements Ack
    
    // Constructors --------------------------------------------------
    
-   public DeliveryInfo(MessageProxy msg, String consumerId, String queueName,
+   public DeliveryInfo(JBossMessage msg, String consumerId, String queueName,
                        SessionDelegate connectionConsumerSession, boolean shouldAck)
    {      
       this.msg = msg;
@@ -88,7 +88,7 @@ public class DeliveryInfo implements Ack
       return consumerId;
    }
 
-   public MessageProxy getMessageProxy()
+   public JBossMessage getMessage()
    {
       return msg;
    }

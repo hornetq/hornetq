@@ -25,6 +25,9 @@ import java.util.List;
 
 import org.jboss.messaging.core.impl.tx.Transaction;
 
+
+
+
 /**
  * The interface to the persistence manager.
  *
@@ -39,13 +42,13 @@ import org.jboss.messaging.core.impl.tx.Transaction;
  */
 public interface PersistenceManager extends MessagingComponent
 {
-   void addReference(long channelID, MessageReference ref, Transaction tx) throws Exception;
+   void addReference(long channelID, org.jboss.messaging.newcore.MessageReference ref, Transaction tx) throws Exception;
    
-   void moveReference(long sourceChannelID, long destChannelID, MessageReference ref) throws Exception;
+   void moveReference(long sourceChannelID, long destChannelID, org.jboss.messaging.newcore.MessageReference ref) throws Exception;
 
-   void removeReference(long channelID, MessageReference ref, Transaction tx) throws Exception;
+   void removeReference(long channelID, org.jboss.messaging.newcore.MessageReference ref, Transaction tx) throws Exception;
    
-   void updateDeliveryCount(long channelID, MessageReference ref) throws Exception;
+   void updateDeliveryCount(long channelID, org.jboss.messaging.newcore.MessageReference ref) throws Exception;
    
    // XA Recovery functionality
    
@@ -89,18 +92,18 @@ public interface PersistenceManager extends MessagingComponent
 
    class MessageChannelPair
    {
-      private Message message;
+      private org.jboss.messaging.newcore.Message message;
       
       private long channelId;
       
-      public MessageChannelPair(Message message, long channelId)
+      public MessageChannelPair(org.jboss.messaging.newcore.Message message, long channelId)
       {
          this.message = message;
          
          this.channelId = channelId;
       }
       
-      public Message getMessage()
+      public org.jboss.messaging.newcore.Message getMessage()
       {
          return message;
       }

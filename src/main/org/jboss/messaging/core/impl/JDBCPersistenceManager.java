@@ -21,24 +21,42 @@
  */
 package org.jboss.messaging.core.impl;
 
+import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.InputStream;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.sql.Types;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import javax.transaction.xa.Xid;
+
 import org.jboss.jms.tx.MessagingXid;
 import org.jboss.logging.Logger;
-import org.jboss.messaging.core.contract.Message;
-import org.jboss.messaging.core.contract.MessageReference;
 import org.jboss.messaging.core.contract.PersistenceManager;
-import org.jboss.messaging.core.impl.message.MessageFactory;
-import org.jboss.messaging.core.impl.message.MessageSupport;
 import org.jboss.messaging.core.impl.tx.PreparedTxInfo;
 import org.jboss.messaging.core.impl.tx.Transaction;
 import org.jboss.messaging.core.impl.tx.TxCallback;
+import org.jboss.messaging.newcore.Message;
+import org.jboss.messaging.newcore.MessageReference;
 import org.jboss.messaging.util.JDBCUtil;
 import org.jboss.messaging.util.StreamUtils;
 import org.jboss.messaging.util.Util;
-
-import javax.transaction.xa.Xid;
-import java.io.*;
-import java.sql.*;
-import java.util.*;
 
 /**
  * JDBC implementation of PersistenceManager
@@ -107,10 +125,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements
 
             String warn = "\n\n"
                   + "JBoss Messaging Warning: DataSource connection transaction isolation should be READ_COMMITTED, but it is currently "
-                  + Util.transactionIsolationToString(level)
-                  + ".\n"
-                  + "                         Using an isolation level less strict than READ_COMMITTED may lead to data consistency problems.\n"
-                  + "                         Using an isolation level more strict than READ_COMMITTED may lead to deadlock.\n";
+                  + Util.transactionIsolationToString(level);
             log.warn(warn);
          }
 
@@ -492,17 +507,15 @@ public class JDBCPersistenceManager extends JDBCSupport implements
 
                         byte priority = rs.getByte(5);
 
-                        byte[] bytes = getBytes(rs, 6);
-
-                        HashMap headers = bytesToMap(bytes);
+                        byte[] headers = getBytes(rs, 6);
 
                         byte[] payload = getBytes(rs, 7);
 
-                        byte type = rs.getByte(8);
-
-                        Message m = MessageFactory.createMessage(messageId,
-                              reliable, expiration, timestamp, priority,
-                              headers, payload, type);
+                        int type = rs.getByte(8);
+                        
+                        Message m = new org.jboss.messaging.newcore.impl.MessageImpl(messageId, type, reliable, expiration,
+                                       timestamp, priority, headers, payload);
+                                               
                         msgs.add(m);
                      }
 
@@ -2090,7 +2103,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements
       ps.setLong(3, m.getExpiration());
       ps.setLong(4, m.getTimestamp());
       ps.setByte(5, m.getPriority());
-      ps.setByte(6, m.getType());
+      ps.setByte(6, (byte)m.getType());
 
       if (bindBlobs)
       {
@@ -2133,7 +2146,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements
          int payloadPosition) throws Exception
    {
       // headers
-      byte[] bytes = mapToBytes(((MessageSupport) m).getHeaders());
+      byte[] bytes = mapToBytes(m.getHeaders());
       if (bytes != null)
       {
          setBytes(ps, headerPosition, bytes);
@@ -2143,7 +2156,7 @@ public class JDBCPersistenceManager extends JDBCSupport implements
          ps.setNull(headerPosition, Types.LONGVARBINARY);
       }
 
-      byte[] payload = m.getPayloadAsByteArray();
+      byte[] payload = m.getPayload();
       if (payload != null)
       {
          setBytes(ps, payloadPosition, payload);

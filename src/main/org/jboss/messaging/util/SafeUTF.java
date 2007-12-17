@@ -56,24 +56,8 @@ public class SafeUTF
    private static final byte NULL = 0;
    
    private static final byte NOT_NULL = 1;
-   
-   public static SafeUTF instance = new SafeUTF(CHUNK_SIZE);
-   
-   private int chunkSize;
-   
-   private int lastReadBufferSize;
-   
-   public int getLastReadBufferSize()
-   {
-      return lastReadBufferSize;
-   }
-   
-   public SafeUTF(int chunkSize)
-   {
-      this.chunkSize = chunkSize;
-   }
-      
-   public void safeWriteUTF(DataOutputStream out, String str) throws IOException
+     
+   public static void safeWriteUTF(DataOutputStream out, String str) throws IOException
    {        
       if (str == null)
       {
@@ -91,7 +75,7 @@ public class SafeUTF
          }
          else
          {
-            numChunks = (short)(((len - 1) / chunkSize) + 1);
+            numChunks = (short)(((len - 1) / CHUNK_SIZE) + 1);
          }         
          
          out.writeByte(NOT_NULL);
@@ -101,22 +85,22 @@ public class SafeUTF
          int i = 0;
          while (len > 0)
          {
-            int beginCopy = i * chunkSize;
+            int beginCopy = i * CHUNK_SIZE;
             
-            int endCopy = len <= chunkSize ? beginCopy + len : beginCopy + chunkSize;
+            int endCopy = len <= CHUNK_SIZE ? beginCopy + len : beginCopy + CHUNK_SIZE;
      
             String theChunk = str.substring(beginCopy, endCopy);
                
             out.writeUTF(theChunk);
             
-            len -= chunkSize;
+            len -= CHUNK_SIZE;
             
             i++;
          }
       }
    }
    
-   public String safeReadUTF(DataInputStream in) throws IOException
+   public static String safeReadUTF(DataInputStream in) throws IOException
    {   
       boolean isNull = in.readByte() == NULL;
       
@@ -127,7 +111,7 @@ public class SafeUTF
       
       short numChunks = in.readShort();
       
-      int bufferSize = chunkSize * numChunks;
+      int bufferSize = CHUNK_SIZE * numChunks;
       
       // special handling for single chunk
       if (numChunks == 1)
@@ -146,8 +130,6 @@ public class SafeUTF
          }
 
          bufferSize = Math.min(inSize, bufferSize);
-         
-         lastReadBufferSize = bufferSize;
       }
         
       StringBuffer buff = new StringBuffer(bufferSize);

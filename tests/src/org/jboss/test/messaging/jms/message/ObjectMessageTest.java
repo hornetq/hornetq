@@ -111,7 +111,7 @@ public class ObjectMessageTest extends MessageTestBase
    }
 
 
-   public void testVecorOnObjectMessage() throws Exception
+   public void testVectorOnObjectMessage() throws Exception
    {
       java.util.Vector vectorOnMessage = new java.util.Vector();
       vectorOnMessage.add("world!");

@@ -28,11 +28,11 @@ import java.util.Map;
 import javax.transaction.xa.Xid;
 
 import org.jboss.logging.Logger;
+import org.jboss.messaging.newcore.Message;
+import org.jboss.messaging.newcore.MessageReference;
+import org.jboss.messaging.newcore.PersistenceManager;
+import org.jboss.messaging.newcore.Queue;
 import org.jboss.messaging.newcore.impl.MessageImpl;
-import org.jboss.messaging.newcore.intf.Message;
-import org.jboss.messaging.newcore.intf.MessageReference;
-import org.jboss.messaging.newcore.intf.PersistenceManager;
-import org.jboss.messaging.newcore.intf.Queue;
 import org.jboss.messaging.util.Pair;
 
 /**
@@ -173,6 +173,8 @@ public class BDBJEPersistenceManager implements PersistenceManager
          {
             if (trace) { log.trace("Failed to rollback", ignore); }
          }
+         
+         throw e;
       }            
    }
       
@@ -203,6 +205,8 @@ public class BDBJEPersistenceManager implements PersistenceManager
          {
             if (trace) { log.trace("Failed to rollback", ignore); }
          }
+         
+         throw e;
       }      
    }
 
@@ -245,7 +249,7 @@ public class BDBJEPersistenceManager implements PersistenceManager
       environment.rollback(xid);      
    }
    
-   public void deleteReference(MessageReference reference)
+   public void deleteReference(MessageReference reference) throws Exception
    {
       BDBJETransaction tx = null;
       
@@ -270,6 +274,8 @@ public class BDBJEPersistenceManager implements PersistenceManager
          {
             if (trace) { log.trace("Failed to rollback", ignore); }
          }
+         
+         throw e;
       }
    }
       
@@ -471,7 +477,7 @@ public class BDBJEPersistenceManager implements PersistenceManager
    {
       //First store the message
       
-      byte[] headers = message.getHeadersAsByteArray();
+      byte[] headers = message.getHeaderBytes();
       
       int headersLength = headers.length;
       

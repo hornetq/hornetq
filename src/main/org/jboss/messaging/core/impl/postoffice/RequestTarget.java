@@ -25,7 +25,7 @@ import java.io.Serializable;
 import java.util.Map;
 import java.util.Set;
 
-import org.jboss.messaging.core.contract.Message;
+import org.jboss.messaging.newcore.Message;
 import org.jgroups.Address;
 
 /**

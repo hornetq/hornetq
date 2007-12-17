@@ -10,7 +10,7 @@ import static org.jboss.messaging.core.remoting.wireformat.PacketType.RESP_BROWS
 
 import java.util.Arrays;
 
-import org.jboss.jms.message.JBossMessage;
+import org.jboss.messaging.newcore.Message;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -24,13 +24,13 @@ public class BrowserNextMessageBlockResponse extends AbstractPacket
 
    // Attributes ----------------------------------------------------
 
-   private final JBossMessage[] messages;
+   private final Message[] messages;
 
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public BrowserNextMessageBlockResponse(JBossMessage[] messages)
+   public BrowserNextMessageBlockResponse(Message[] messages)
    {
       super(RESP_BROWSER_NEXTMESSAGEBLOCK);
 
@@ -41,7 +41,7 @@ public class BrowserNextMessageBlockResponse extends AbstractPacket
 
    // Public --------------------------------------------------------
 
-   public JBossMessage[] getMessages()
+   public Message[] getMessages()
    {
       return messages;
    }

@@ -97,7 +97,7 @@ public class StreamUtils
             if (longStrings)
             {
                //We cope with >= 64K Strings
-               value = SafeUTF.instance.safeReadUTF(in);
+               value = SafeUTF.safeReadUTF(in);
             }
             else
             {
@@ -176,7 +176,7 @@ public class StreamUtils
          if (longStrings)
          {
             //We can cope with >=64K Strings
-            SafeUTF.instance.safeWriteUTF(out, (String)object);
+            SafeUTF.safeWriteUTF(out, (String)object);
          }
          else
          {

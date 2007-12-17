@@ -47,7 +47,6 @@ import org.jboss.jms.client.delegate.ClientSessionDelegate;
 import org.jboss.jms.client.remoting.JMSRemotingConnection;
 import org.jboss.jms.client.state.ConnectionState;
 import org.jboss.jms.client.state.SessionState;
-import org.jboss.jms.message.MessageProxy;
 import org.jboss.test.messaging.tools.ServerManagement;
 
 /**
@@ -759,11 +758,10 @@ public class HATest extends ClusteringTestBase
 
    private void receiveMessage(String text, MessageConsumer consumer, boolean shouldAssert, boolean shouldBeNull) throws Exception
    {
-      MessageProxy message = (MessageProxy) consumer.receive(3000);
-      TextMessage txtMessage = (TextMessage) message;
+      TextMessage message = (TextMessage) consumer.receive(3000);
       if (message != null)
       {
-         log.info(text + ": messageID from messageReceived=" + message.getMessage().getMessageID() + " message = " + message + " content=" + txtMessage.getText());
+         log.info(text + ": messageID from messageReceived=" + message.getJMSMessageID() + " message = " + message + " content=" + message.getText());
       }
       else
       {
