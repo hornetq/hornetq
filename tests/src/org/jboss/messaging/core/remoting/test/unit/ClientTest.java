@@ -50,19 +50,15 @@ public class ClientTest extends TestCase
       NIOSession session1 = createStrictMock(NIOSession.class);
       NIOSession session2 = createStrictMock(NIOSession.class);
       
-      expect(connector.connect()).andReturn(session1);
-      expect(connector.disconnect()).andReturn(true);
-      
-      expect(connector.connect()).andReturn(session2);
+      expect(connector.connect()).andReturn(session1).andReturn(session2);
+      expect(session1.isConnected()).andReturn(true);
       expect(session2.isConnected()).andReturn(true);
       
-      expect(connector.disconnect()).andReturn(true);
-      expect(connector.disconnect()).andReturn(false);
-
       replay(connector, session1, session2);
 
       Client client = new Client(connector, serverLocator);
       client.connect();
+      assertTrue(client.isConnected());
       assertTrue(client.disconnect());
       assertFalse(client.isConnected());
 
@@ -106,7 +102,6 @@ public class ClientTest extends TestCase
       expect(connector.connect()).andReturn(session);
       expect(session.isConnected()).andReturn(true);
       expect(session.getID()).andReturn(sessionID);
-      expect(connector.disconnect()).andReturn(true);
       
       replay(connector, session);
       
@@ -133,7 +128,6 @@ public class ClientTest extends TestCase
       expect(connector.getServerURI()).andReturn(null);
       expect(connector.connect()).andReturn(session);
       expect(connector.getServerURI()).andReturn("tcp://localhost:" + PORT);
-      expect(connector.disconnect()).andReturn(true);
       expect(connector.getServerURI()).andReturn(null);
       // no expectation for the session
       

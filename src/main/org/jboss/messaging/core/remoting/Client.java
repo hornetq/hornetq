@@ -64,8 +64,12 @@ public class Client
 
    public boolean disconnect() throws Exception
    {
+      if (session == null)
+      {
+         return false;         
+      }
       session = null;
-      return connector.disconnect();
+      return true;
    }
 
    public String getSessionID()

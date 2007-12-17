@@ -124,7 +124,7 @@ public class ServerLocator
    @Override
    public String toString()
    {
-      return "RemoteServiceLocator[uri=" + getURI() + "]";
+      return "ServerLocator[uri=" + getURI() + "]";
    }
 
    // Package protected ---------------------------------------------

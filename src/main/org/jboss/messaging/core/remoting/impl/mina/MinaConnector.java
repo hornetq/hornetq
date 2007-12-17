@@ -91,11 +91,10 @@ public class MinaConnector implements NIOConnector
       connector.getSessionConfig().setReuseAddress(true);
    }
 
-
    // NIOConnector implementation -----------------------------------
    
-   public NIOSession connect() throws IOException {
-   
+   public NIOSession connect() throws IOException 
+   {
       InetSocketAddress address = new InetSocketAddress(host, port);
       ConnectFuture future = connector.connect(address);
       connector.setDefaultRemoteAddress(address);

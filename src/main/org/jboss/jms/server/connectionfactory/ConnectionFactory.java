@@ -138,7 +138,7 @@ public class ConnectionFactory
                                       loadBalancingFactory, strictTck);               
          connectorManager.registerConnector(getName());
       
-         log.info(serverLocator + " has lease disabled");
+         log.info("Server locator is " + serverLocator);
          log.info(this + " started");
       }
       catch (Throwable t)

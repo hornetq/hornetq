@@ -211,6 +211,9 @@ public class ClientConnectionFactoryDelegate
       try
       {
          client.disconnect();
+         NIOConnector connector = ConnectorRegistry.removeConnector(new ServerLocator(serverLocatorURI));
+         if (connector != null)
+            connector.disconnect();
       } catch (Throwable t)
       {
          throw handleThrowable(t);
@@ -277,7 +280,7 @@ public class ClientConnectionFactoryDelegate
       try
       {
          ServerLocator locator = new ServerLocator(serverLocatorURI);
-         NIOConnector connector = ConnectorRegistry.get(locator);
+         NIOConnector connector = ConnectorRegistry.getConnector(locator);
          client = new Client(connector, locator);
          client.connect();
       }

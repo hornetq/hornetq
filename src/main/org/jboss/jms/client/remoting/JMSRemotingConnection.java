@@ -80,7 +80,7 @@ public class JMSRemotingConnection
 
       callbackManager = new CallbackManager();
 
-      NIOConnector connector = ConnectorRegistry.get(serverLocator);
+      NIOConnector connector = ConnectorRegistry.getConnector(serverLocator);
       client = new Client(connector, serverLocator);
       client.connect();
 
@@ -97,6 +97,9 @@ public class JMSRemotingConnection
       try
       {
          client.disconnect();
+         NIOConnector connector = ConnectorRegistry.removeConnector(serverLocator);
+         if (connector != null)
+            connector.disconnect();
       }
       catch (Throwable ignore)
       {        
