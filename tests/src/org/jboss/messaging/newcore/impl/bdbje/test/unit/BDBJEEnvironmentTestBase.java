@@ -44,9 +44,9 @@ public abstract class BDBJEEnvironmentTestBase extends UnitTestCase
    
    protected BDBJEDatabase database;
    
-   protected static final String ENV_DIR = "/home/tim/test-bdb-environment";
+   protected static final String ENV_DIR = "./test-bdb-environment";
    
-   protected static final String ENV_COPY_DIR = "/home/tim/test-bdb-environment-copy";
+   protected static final String ENV_COPY_DIR = "./test-bdb-environment-copy";
    
    protected static final String DB_NAME = "test-db";
    

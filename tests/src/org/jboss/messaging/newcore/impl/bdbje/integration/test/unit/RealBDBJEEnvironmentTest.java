@@ -1,6 +1,7 @@
 package org.jboss.messaging.newcore.impl.bdbje.integration.test.unit;
 
 import java.io.File;
+import java.io.FileOutputStream;
 
 import org.jboss.messaging.newcore.impl.bdbje.BDBJEEnvironment;
 import org.jboss.messaging.newcore.impl.bdbje.integration.RealBDBJEEnvironment;
@@ -48,11 +49,21 @@ public class RealBDBJEEnvironmentTest extends BDBJEEnvironmentTestBase
    
    protected void copyEnvironment() throws Exception
    {
+      File envDir = new File(ENV_DIR);
+      
       File envCopyDir = new File(ENV_COPY_DIR);
       
       deleteDirectory(envCopyDir);
       
-      copyRecursive(new File(ENV_DIR), envCopyDir);
+      copyRecursive(envDir, envCopyDir);
+      
+      deleteDirectory(envDir);
+      
+      //Need to sync
+      
+      FileOutputStream fos = new FileOutputStream(ENV_COPY_DIR + "/je.lck");
+      
+      fos.getFD().sync();
    }
    
    protected void copyBackEnvironment() throws Exception
@@ -66,5 +77,11 @@ public class RealBDBJEEnvironmentTest extends BDBJEEnvironmentTestBase
       copyRecursive(envCopyDir, envDir);
       
       deleteDirectory(envCopyDir);
+      
+      //Need to sync
+      
+      FileOutputStream fos = new FileOutputStream(ENV_DIR + "/je.lck");
+      
+      fos.getFD().sync();
    }    
 }

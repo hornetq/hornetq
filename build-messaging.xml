@@ -184,6 +184,7 @@
    <path id="compilation.classpath">
       <path refid="external.dependencies.classpath"/>
       <path refid="jboss.dependencies.classpath"/>
+      <pathelement location="${project.root}/lib/je-3.2.44.jar"/>
    </path>
 
    <!--
@@ -269,8 +270,6 @@
              failonerror="${javac.fail.onerror}">
          <src path="${source.java}"/>
          <include name="**/*.java"/>
-	 <exclude name="**/test/**"/>
-	 <exclude name="**/newcore/**"/>
          <classpath refid="compilation.classpath"/>
       </javac>
       
