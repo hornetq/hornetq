@@ -250,19 +250,22 @@ public class ProducerAspect
       org.jboss.messaging.newcore.Destination coreDest =
          new DestinationImpl(dest.isQueue() ? "Queue" : "Topic", dest.getName(), dest.isTemporary());
       
+      org.jboss.messaging.newcore.Message messageToSend = jbm.getCoreMessage();
+      
       //FIXME - temp - for now we set destination as a header - should really be an attribute of the 
       //send packet - along with scheduleddelivery time
       
-      jbm.getCoreMessage().putHeader(org.jboss.messaging.newcore.Message.TEMP_DEST_HEADER_NAME, coreDest);
+      messageToSend.putHeader(org.jboss.messaging.newcore.Message.TEMP_DEST_HEADER_NAME, coreDest);
 
-      // we now invoke the send(Message) method on the session, which will eventually be fielded
-      // by connection endpoint
-      ((SessionDelegate)sessionState.getDelegate()).send(jbm.getCoreMessage(), false);
-      
+      //We copy *before* sending
       //TODO for now we always copy - for INVM we can optimise (like we did in 1.4) by doing lazy copying
       //of message, header and properties
       jbm.copyMessage();
       
+      // we now invoke the send(Message) method on the session, which will eventually be fielded
+      // by connection endpoint
+      ((SessionDelegate)sessionState.getDelegate()).send(messageToSend, false);
+                  
       return null;
    }
    
