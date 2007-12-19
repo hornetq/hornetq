@@ -44,6 +44,8 @@ public abstract class BDBJEEnvironmentTestBase extends UnitTestCase
    
    protected BDBJEDatabase database;
    
+   protected static final String HOME_DIR = System.getProperty("user.home");
+   
    protected static final String ENV_DIR = "./test-bdb-environment";
    
    protected static final String ENV_COPY_DIR = "./test-bdb-environment-copy";
@@ -1194,7 +1196,7 @@ public abstract class BDBJEEnvironmentTestBase extends UnitTestCase
    {
       BDBJEEnvironment bdb = createEnvironment();
       
-      final String path = "/home/tim/test-path123";
+      final String path = HOME_DIR + "/test-path123";
       
       createDir(path);
       
@@ -1233,7 +1235,7 @@ public abstract class BDBJEEnvironmentTestBase extends UnitTestCase
    {
       BDBJEEnvironment bdb = createEnvironment();
       
-      final String path = "/home/tim/test-path123";
+      final String path = HOME_DIR + "/test-path123";
       
       createDir(path);
       
@@ -1273,7 +1275,7 @@ public abstract class BDBJEEnvironmentTestBase extends UnitTestCase
    {
       BDBJEEnvironment bdb = createEnvironment();
  
-      final String path = "/home/tim/test-path123";
+      final String path = HOME_DIR + "/test-path123";
       
       createDir(path);
       
@@ -1311,7 +1313,7 @@ public abstract class BDBJEEnvironmentTestBase extends UnitTestCase
    {
       BDBJEEnvironment bdb = createEnvironment();
       
-      final String path = "/home/tim/test-path123";
+      final String path = HOME_DIR + "/test-path123";
       
       bdb.setEnvironmentPath(path);
             
@@ -1349,7 +1351,7 @@ public abstract class BDBJEEnvironmentTestBase extends UnitTestCase
    {
       BDBJEEnvironment bdb = createEnvironment();
       
-      final String path = "/home/tim/test-path123";
+      final String path = HOME_DIR + "/test-path123";
       
       createDir(path);
       
@@ -1402,7 +1404,7 @@ public abstract class BDBJEEnvironmentTestBase extends UnitTestCase
          //OK
       }
       
-      final String path = "/home/tim/test-path123";
+      final String path = HOME_DIR + "/test-path123";
       
       createDir(path);
       
