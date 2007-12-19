@@ -331,6 +331,7 @@ public class ConnectionConsumerTest extends JMSTestCase
          stopServerPeer();
          connConsumer.close();
          startServerPeer();
+         deployAndLookupAdministeredObjects();
          connConsumer = null;
       }
       finally
