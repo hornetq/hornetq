@@ -14,6 +14,7 @@ import java.util.concurrent.ScheduledExecutorService;
 
 import org.apache.mina.common.DefaultIoFilterChainBuilder;
 import org.apache.mina.filter.codec.ProtocolCodecFilter;
+import org.apache.mina.filter.executor.ExecutorFilter;
 import org.apache.mina.filter.logging.LoggingFilter;
 import org.apache.mina.filter.logging.MdcInjectionFilter;
 import org.apache.mina.filter.reqres.RequestResponseFilter;
@@ -71,6 +72,13 @@ public class FilterChainSupport
       filter.setExceptionCaughtLogLevel(WARN);
 
       filterChain.addLast("logger", filter);
+   }
+   
+   static ExecutorFilter addExecutorFilter(DefaultIoFilterChainBuilder filterChain)
+   {
+      ExecutorFilter executorFilter = new ExecutorFilter();
+      filterChain.addLast("executor", executorFilter);
+      return executorFilter;
    }
    
    static ScheduledExecutorService addBlockingRequestResponseFilter(

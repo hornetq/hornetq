@@ -13,6 +13,7 @@ import static org.jboss.messaging.core.remoting.impl.mina.FilterChainSupport.add
 import java.net.InetSocketAddress;
 
 import org.apache.mina.common.DefaultIoFilterChainBuilder;
+import org.apache.mina.filter.executor.ExecutorFilter;
 import org.apache.mina.transport.socket.nio.NioSocketAcceptor;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.remoting.ConnectorRegistry;
@@ -41,6 +42,8 @@ public class MinaService
    private NioSocketAcceptor acceptor;
 
    private TransportType transport;
+
+   private ExecutorFilter executorFilter;
 
    // Static --------------------------------------------------------
 
@@ -78,8 +81,9 @@ public class MinaService
          
          addMDCFilter(filterChain);
          addCodecFilter(filterChain);
-         addLoggingFilter(acceptor.getFilterChain());
-
+         addLoggingFilter(filterChain);
+         executorFilter = FilterChainSupport.addExecutorFilter(filterChain);
+         
          // Bind
          acceptor.setLocalAddress(new InetSocketAddress(host, port));
          acceptor.setReuseAddress(true);
@@ -99,6 +103,7 @@ public class MinaService
       if (acceptor != null)
       {
          acceptor.unbind();
+         executorFilter.destroy();
          acceptor.dispose();
          acceptor = null;
          
