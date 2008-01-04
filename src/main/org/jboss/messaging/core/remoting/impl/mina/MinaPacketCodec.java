@@ -39,13 +39,13 @@ public class MinaPacketCodec<P extends AbstractPacket> implements
    private static final byte FALSE = (byte) 1;
 
    // used to terminate encoded Strings
-   private static final byte NULL_BYTE = (byte) 0;
+   public static final byte NULL_BYTE = (byte) 0;
 
-   private static final byte NULL_STRING = (byte) 0;
+   public static final byte NULL_STRING = (byte) 0;
 
-   private static final byte NOT_NULL_STRING = (byte) 1;
+   public static final byte NOT_NULL_STRING = (byte) 1;
 
-   private static final CharsetEncoder UTF_8_ENCODER = Charset.forName("UTF-8")
+   public static final CharsetEncoder UTF_8_ENCODER = Charset.forName("UTF-8")
          .newEncoder();
 
    private static final CharsetDecoder UTF_8_DECODER = Charset.forName("UTF-8")
@@ -136,9 +136,9 @@ public class MinaPacketCodec<P extends AbstractPacket> implements
 
    // Inner classes -------------------------------------------------
 
-   public static final class BufferWrapper implements RemotingBuffer
+   public static class BufferWrapper implements RemotingBuffer
    {
-      private final IoBuffer buffer;
+      protected final IoBuffer buffer;
 
       public BufferWrapper(IoBuffer buffer)
       {

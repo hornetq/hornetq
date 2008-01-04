@@ -8,6 +8,10 @@ package org.jboss.messaging.core.remoting.wireformat.test.unit;
 
 import static org.jboss.messaging.core.remoting.codec.AbstractPacketCodec.LONG_LENGTH;
 import static org.jboss.messaging.core.remoting.codec.AbstractPacketCodec.sizeof;
+import static org.jboss.messaging.core.remoting.impl.mina.MinaPacketCodec.NOT_NULL_STRING;
+import static org.jboss.messaging.core.remoting.impl.mina.MinaPacketCodec.NULL_BYTE;
+import static org.jboss.messaging.core.remoting.impl.mina.MinaPacketCodec.NULL_STRING;
+import static org.jboss.messaging.core.remoting.impl.mina.MinaPacketCodec.UTF_8_ENCODER;
 import static org.jboss.messaging.core.remoting.wireformat.AbstractPacket.NO_ID_SET;
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_ACKDELIVERIES;
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_ADDTEMPORARYDESTINATION;
@@ -60,12 +64,8 @@ import static org.jboss.messaging.core.remoting.wireformat.PacketType.RESP_GETTO
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.RESP_IDBLOCK;
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.TEXT;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
-import java.nio.charset.CharacterCodingException;
+import java.nio.CharBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -77,6 +77,7 @@ import javax.jms.JMSException;
 
 import junit.framework.TestCase;
 
+import org.apache.mina.common.IoBuffer;
 import org.jboss.jms.client.delegate.ClientConnectionFactoryDelegate;
 import org.jboss.jms.delegate.Ack;
 import org.jboss.jms.delegate.Cancel;
@@ -124,7 +125,6 @@ import org.jboss.messaging.core.remoting.codec.IDBlockRequestCodec;
 import org.jboss.messaging.core.remoting.codec.IDBlockResponseCodec;
 import org.jboss.messaging.core.remoting.codec.JMSExceptionMessageCodec;
 import org.jboss.messaging.core.remoting.codec.RecoverDeliveriesMessageCodec;
-import org.jboss.messaging.core.remoting.codec.RemotingBuffer;
 import org.jboss.messaging.core.remoting.codec.SendMessageCodec;
 import org.jboss.messaging.core.remoting.codec.SendTransactionMessageCodec;
 import org.jboss.messaging.core.remoting.codec.SetClientIDMessageCodec;
@@ -132,6 +132,7 @@ import org.jboss.messaging.core.remoting.codec.TextPacketCodec;
 import org.jboss.messaging.core.remoting.codec.UnsubscribeMessageCodec;
 import org.jboss.messaging.core.remoting.codec.UpdateCallbackMessageCodec;
 import org.jboss.messaging.core.remoting.impl.mina.PacketCodecFactory;
+import org.jboss.messaging.core.remoting.impl.mina.MinaPacketCodec.BufferWrapper;
 import org.jboss.messaging.core.remoting.wireformat.AbstractPacket;
 import org.jboss.messaging.core.remoting.wireformat.AcknowledgeDeliveriesMessage;
 import org.jboss.messaging.core.remoting.wireformat.AcknowledgeDeliveryRequest;
@@ -205,7 +206,7 @@ public class PacketTypeTest extends TestCase
 
    private static void addVersion(AbstractPacket packet)
    {
-      byte version = (byte)19;
+      byte version = (byte) 19;
       packet.setVersion(version);
    }
 
@@ -234,33 +235,71 @@ public class PacketTypeTest extends TestCase
       return randomString().getBytes();
    }
 
-   private static void checkHeader(RemotingBuffer buffer, AbstractPacket packet)
-         throws Exception
+   private static void checkHeader(SimpleRemotingBuffer buffer,
+         AbstractPacket packet) throws Exception
    {
+      checkHeaderBytes(packet, buffer);
+
       assertEquals(buffer.get(), packet.getType().byteValue());
       assertEquals(buffer.get(), packet.getVersion());
 
       String targetID = packet.getTargetID();
       if (NO_ID_SET.equals(packet.getTargetID()))
-            targetID = null;
+         targetID = null;
       String callbackID = packet.getCallbackID();
       if (NO_ID_SET.equals(packet.getCallbackID()))
          callbackID = null;
-           
-      int headerLength = LONG_LENGTH + sizeof(targetID)
-            + sizeof(callbackID);
+
+      int headerLength = LONG_LENGTH + sizeof(targetID) + sizeof(callbackID);
       assertEquals(buffer.getInt(), headerLength);
       assertEquals(buffer.getLong(), packet.getCorrelationID());
-      
+
       String bufferTargetID = buffer.getNullableString();
       if (bufferTargetID == null)
          bufferTargetID = NO_ID_SET;
       String bufferCallbackID = buffer.getNullableString();
       if (bufferCallbackID == null)
          bufferCallbackID = NO_ID_SET;
-      
+
       assertEquals(bufferTargetID, packet.getTargetID());
       assertEquals(bufferCallbackID, packet.getCallbackID());
+   }
+
+   private static void checkHeaderBytes(AbstractPacket packet, SimpleRemotingBuffer actual)
+   {
+      String targetID = (packet.getTargetID().equals(NO_ID_SET)? null : packet.getTargetID());
+      String callbackID = (packet.getCallbackID().equals(NO_ID_SET)? null : packet.getCallbackID());
+
+      IoBuffer expected = IoBuffer.allocate(256);
+      expected.setAutoExpand(true);
+      expected.put(packet.getType().byteValue());
+      expected.put(packet.getVersion());
+      
+      expected.putInt(LONG_LENGTH + sizeof(targetID) + sizeof(callbackID));
+      expected.putLong(packet.getCorrelationID());
+      if (targetID == null)
+      {
+         expected.put(NULL_STRING);
+      } else 
+      {
+         expected.put(NOT_NULL_STRING);
+         UTF_8_ENCODER.reset();
+         UTF_8_ENCODER.encode(CharBuffer.wrap(targetID), expected.buf(), true);
+         expected.put(NULL_BYTE);
+      }
+      if (callbackID == null)
+      {
+         expected.put(NULL_STRING);         
+      } else 
+      {
+         expected.put(NOT_NULL_STRING);
+         UTF_8_ENCODER.reset();
+         UTF_8_ENCODER.encode(CharBuffer.wrap(callbackID), expected.buf(), true);
+         expected.put(NULL_BYTE);
+      }
+      expected.flip();
+
+      assertEqualsByteArrays(expected.remaining(), expected.array(), actual.buffer().array());
    }
 
    private static void assertEqualsAcks(List<Ack> expected, List<Ack> actual)
@@ -329,7 +368,19 @@ public class PacketTypeTest extends TestCase
       assertEquals(expected.length, actual.length);
       for (int i = 0; i < expected.length; i++)
       {
-         assertEquals(expected[i], actual[i]);
+         assertEquals("byte at index " + i, expected[i], actual[i]);
+      }
+   }
+   
+   private static void assertEqualsByteArrays(int length, byte[] expected, byte[] actual)
+   {
+      // we check only for the given length (the arrays might be
+      // larger)
+      assertTrue(expected.length >= length);
+      assertTrue(actual.length >= length);
+      for (int i = 0; i < length; i++)
+      {
+         assertEquals("byte at index " + i, expected[i], actual[i]);
       }
    }
 
@@ -371,9 +422,11 @@ public class PacketTypeTest extends TestCase
             .createCodecForEmptyPacket(NULL, NullPacket.class);
 
       SimpleRemotingBuffer buffer = encode(packet, codec);
+
       checkHeader(buffer, packet);
       // no body
       assertEquals(0, buffer.getInt());
+
       buffer.rewind();
 
       AbstractPacket decodedPacket = codec.decode(buffer);
@@ -417,6 +470,7 @@ public class PacketTypeTest extends TestCase
       AbstractPacketCodec<TextPacket> codec = new TextPacketCodec();
 
       SimpleRemotingBuffer buffer = encode(packet, codec);
+
       checkHeader(buffer, packet);
       assertEquals(buffer.getInt(), sizeof(packet.getText()));
       assertEquals(buffer.getNullableString(), packet.getText());
@@ -667,7 +721,8 @@ public class PacketTypeTest extends TestCase
 
    public void testSendMessage() throws Exception
    {
-      SendMessage packet = new SendMessage(new MessageImpl(), true, randomLong());
+      SendMessage packet = new SendMessage(new MessageImpl(), true,
+            randomLong());
       addVersion(packet);
       AbstractPacketCodec codec = new SendMessageCodec();
       SimpleRemotingBuffer buffer = encode(packet, codec);
@@ -1332,8 +1387,7 @@ public class PacketTypeTest extends TestCase
 
    public void testBrowserNextMessageBlockResponse() throws Exception
    {
-      Message[] messages = new Message[] {
-            new MessageImpl(), new MessageImpl() };
+      Message[] messages = new Message[] { new MessageImpl(), new MessageImpl() };
 
       BrowserNextMessageBlockResponse response = new BrowserNextMessageBlockResponse(
             messages);
@@ -1424,7 +1478,10 @@ public class PacketTypeTest extends TestCase
    private SimpleRemotingBuffer encode(AbstractPacket packet,
          AbstractPacketCodec codec) throws Exception
    {
-      SimpleRemotingBuffer buf = new SimpleRemotingBuffer();
+      IoBuffer b = IoBuffer.allocate(256);
+      b.setAutoExpand(true);
+
+      SimpleRemotingBuffer buf = new SimpleRemotingBuffer(b);
 
       codec.encode(packet, buf);
       buf.flip();
@@ -1432,217 +1489,32 @@ public class PacketTypeTest extends TestCase
       return buf;
    }
 
-   private final class SimpleRemotingBuffer implements RemotingBuffer
+   private final class SimpleRemotingBuffer extends BufferWrapper
    {
-      private static final byte NON_NULL_STRING = (byte) 0;
-      private static final byte NULL_STRING = (byte) 1;
 
-      ByteArrayOutputStream baos = new ByteArrayOutputStream();
-      DataOutputStream dos = new DataOutputStream(baos);
+      public SimpleRemotingBuffer(IoBuffer buffer)
+      {
+         super(buffer);
+      }
 
-      DataInputStream dais;
+      IoBuffer buffer()
+      {
+         return buffer;
+      }
 
-      /**
-       * the buffer is can no longer be written but just read
-       */
       public void flip()
       {
-         dos = null;
-         dais = new DataInputStream(
-               new ByteArrayInputStream(baos.toByteArray()));
-         dais.mark(1024);
+         buffer.flip();
       }
 
       public void rewind() throws IOException
       {
-         dais.reset();
-      }
-
-      public byte get()
-      {
-         try
-         {
-            return dais.readByte();
-         } catch (IOException e)
-         {
-            fail();
-            return -1;
-         }
-      }
-
-      public void get(byte[] b)
-      {
-         try
-         {
-            dais.readFully(b);
-         } catch (IOException e)
-         {
-            fail();
-         }
-      }
-
-      public boolean getBoolean()
-      {
-         try
-         {
-            return dais.readBoolean();
-         } catch (IOException e)
-         {
-            fail();
-            return false;
-         }
-      }
-
-      public float getFloat()
-      {
-         try
-         {
-            return dais.readFloat();
-         } catch (IOException e)
-         {
-            fail();
-            return -1;
-         }
-      }
-
-      public int getInt()
-      {
-         try
-         {
-            return dais.readInt();
-         } catch (IOException e)
-         {
-            fail();
-            return -1;
-         }
-      }
-
-      public long getLong()
-      {
-         try
-         {
-            return dais.readLong();
-         } catch (IOException e)
-         {
-            fail();
-            return -1;
-         }
-      }
-
-      public String getNullableString() throws CharacterCodingException
-      {
-         try
-         {
-            byte check = dais.readByte();
-            if (check == NULL_STRING)
-            {
-               return null;
-            } else
-            {
-               return dais.readUTF();
-            }
-         } catch (IOException e)
-         {
-            fail();
-            return null;
-         }
-      }
-
-      public void put(byte byteValue)
-      {
-         try
-         {
-            dos.writeByte(byteValue);
-         } catch (IOException e)
-         {
-            fail();
-         }
-      }
-
-      public void put(byte[] bytes)
-      {
-         try
-         {
-            dos.write(bytes);
-         } catch (IOException e)
-         {
-            fail();
-         }
-      }
-
-      public void putBoolean(boolean b)
-      {
-         try
-         {
-            dos.writeBoolean(b);
-         } catch (IOException e)
-         {
-            fail();
-         }
-      }
-
-      public void putFloat(float floatValue)
-      {
-         try
-         {
-            dos.writeFloat(floatValue);
-         } catch (IOException e)
-         {
-            fail();
-         }
-      }
-
-      public void putInt(int intValue)
-      {
-         try
-         {
-            dos.writeInt(intValue);
-         } catch (IOException e)
-         {
-            fail();
-         }
-      }
-
-      public void putLong(long longValue)
-      {
-         try
-         {
-            dos.writeLong(longValue);
-         } catch (IOException e)
-         {
-            fail();
-         }
-      }
-
-      public void putNullableString(String nullableString)
-            throws CharacterCodingException
-      {
-         try
-         {
-            if (nullableString == null)
-            {
-               dos.writeByte(NULL_STRING);
-            } else
-            {
-               dos.writeByte(NON_NULL_STRING);
-               dos.writeUTF(nullableString);
-            }
-         } catch (IOException e)
-         {
-            fail();
-         }
+         buffer.rewind();
       }
 
       public int remaining()
       {
-         try
-         {
-            return dais.available();
-         } catch (IOException e)
-         {
-            fail();
-            return -1;
-         }
+         return buffer.remaining();
       }
    }
 
