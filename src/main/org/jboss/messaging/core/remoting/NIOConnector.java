@@ -18,17 +18,13 @@ import org.jboss.jms.client.remoting.ConsolidatedRemotingConnectionListener;
  */
 public interface NIOConnector
 {
+   NIOSession connect() throws IOException;
 
-   public abstract NIOSession connect() throws IOException;
+   boolean disconnect();
 
-   public abstract boolean disconnect();
+   void addConnectionListener(ConsolidatedRemotingConnectionListener listener);
 
-   public abstract void addConnectionListener(
-         final ConsolidatedRemotingConnectionListener listener);
+   void removeConnectionListener(ConsolidatedRemotingConnectionListener listener);
 
-   public abstract void removeConnectionListener(
-         ConsolidatedRemotingConnectionListener listener);
-
-   public abstract String getServerURI();
-
+   String getServerURI();
 }

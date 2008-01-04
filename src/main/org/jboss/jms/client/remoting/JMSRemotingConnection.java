@@ -21,9 +21,10 @@
   */
 package org.jboss.jms.client.remoting;
 
+import static org.jboss.messaging.core.remoting.ConnectorRegistrySingleton.REGISTRY;
+
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.remoting.Client;
-import org.jboss.messaging.core.remoting.ConnectorRegistry;
 import org.jboss.messaging.core.remoting.NIOConnector;
 import org.jboss.messaging.core.remoting.ServerLocator;
 
@@ -80,7 +81,7 @@ public class JMSRemotingConnection
 
       callbackManager = new CallbackManager();
 
-      NIOConnector connector = ConnectorRegistry.getConnector(serverLocator);
+      NIOConnector connector = REGISTRY.getConnector(serverLocator);
       client = new Client(connector, serverLocator);
       client.connect();
 
@@ -97,7 +98,7 @@ public class JMSRemotingConnection
       try
       {
          client.disconnect();
-         NIOConnector connector = ConnectorRegistry.removeConnector(serverLocator);
+         NIOConnector connector = REGISTRY.removeConnector(serverLocator);
          if (connector != null)
             connector.disconnect();
       }

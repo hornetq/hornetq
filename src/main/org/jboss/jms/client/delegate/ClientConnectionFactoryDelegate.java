@@ -21,6 +21,8 @@
  */
 package org.jboss.jms.client.delegate;
 
+import static org.jboss.messaging.core.remoting.ConnectorRegistrySingleton.REGISTRY;
+
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.Serializable;
@@ -34,7 +36,6 @@ import org.jboss.jms.delegate.CreateConnectionResult;
 import org.jboss.jms.delegate.TopologyResult;
 import org.jboss.jms.exception.MessagingNetworkFailureException;
 import org.jboss.messaging.core.remoting.Client;
-import org.jboss.messaging.core.remoting.ConnectorRegistry;
 import org.jboss.messaging.core.remoting.NIOConnector;
 import org.jboss.messaging.core.remoting.ServerLocator;
 import org.jboss.messaging.core.remoting.wireformat.CreateConnectionRequest;
@@ -211,7 +212,7 @@ public class ClientConnectionFactoryDelegate
       try
       {
          client.disconnect();
-         NIOConnector connector = ConnectorRegistry.removeConnector(new ServerLocator(serverLocatorURI));
+         NIOConnector connector = REGISTRY.removeConnector(new ServerLocator(serverLocatorURI));
          if (connector != null)
             connector.disconnect();
       } catch (Throwable t)
@@ -280,7 +281,7 @@ public class ClientConnectionFactoryDelegate
       try
       {
          ServerLocator locator = new ServerLocator(serverLocatorURI);
-         NIOConnector connector = ConnectorRegistry.getConnector(locator);
+         NIOConnector connector = REGISTRY.getConnector(locator);
          client = new Client(connector, locator);
          client.connect();
       }

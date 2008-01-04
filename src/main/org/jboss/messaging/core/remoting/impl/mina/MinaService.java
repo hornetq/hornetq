@@ -6,6 +6,7 @@
  */
 package org.jboss.messaging.core.remoting.impl.mina;
 
+import static org.jboss.messaging.core.remoting.ConnectorRegistrySingleton.REGISTRY;
 import static org.jboss.messaging.core.remoting.impl.mina.FilterChainSupport.addCodecFilter;
 import static org.jboss.messaging.core.remoting.impl.mina.FilterChainSupport.addLoggingFilter;
 import static org.jboss.messaging.core.remoting.impl.mina.FilterChainSupport.addMDCFilter;
@@ -16,7 +17,6 @@ import org.apache.mina.common.DefaultIoFilterChainBuilder;
 import org.apache.mina.filter.executor.ExecutorFilter;
 import org.apache.mina.transport.socket.nio.NioSocketAcceptor;
 import org.jboss.logging.Logger;
-import org.jboss.messaging.core.remoting.ConnectorRegistry;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.ServerLocator;
 import org.jboss.messaging.core.remoting.TransportType;
@@ -94,7 +94,7 @@ public class MinaService
          acceptor.setHandler(new MinaHandler(PacketDispatcher.server));
          acceptor.bind();
          
-         ConnectorRegistry.register(getLocator());
+         REGISTRY.register(getLocator());
       } 
    }
 
@@ -107,7 +107,7 @@ public class MinaService
          acceptor.dispose();
          acceptor = null;
          
-         ConnectorRegistry.unregister(getLocator());
+         REGISTRY.unregister(getLocator());
       }    
    }
    
