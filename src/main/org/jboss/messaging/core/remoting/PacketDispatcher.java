@@ -37,7 +37,7 @@ public class PacketDispatcher
 
    // Constructors --------------------------------------------------
 
-   private PacketDispatcher()
+   public PacketDispatcher()
    {
       handlers = new ConcurrentHashMap<String, PacketHandler>();
    }
