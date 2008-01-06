@@ -1430,48 +1430,10 @@ public class ServerSessionEndpoint implements SessionEndpoint
    	DeliverMessage m = new DeliverMessage(ref.getMessage(), consumer.getID(), deliveryID, ref.getDeliveryCount());
    	m.setVersion(getConnectionEndpoint().getUsingVersion());
    	consumer.deliver(m);
+   	
+   	//TODO - what if we get an exception from MINA? 
+   	//Surely we need to do exception logic too???
 
-//      ClientDelivery del = new ClientDelivery(ref.getMessage(), consumer.getID(), deliveryID, ref.getDeliveryCount());
-//
-//      Client callbackClient = callbackHandler.getCallbackClient();
-//
-//      Callback callback = new Callback(del);
-//
-//      try
-//      {
-//         // FIXME - due a design (flaw??) in the socket based transports, they use a pool of TCP
-//         // connections, so subsequent invocations can end up using different underlying
-//         // connections meaning that later invocations can overtake earlier invocations, if there
-//         // are more than one user concurrently invoking on the same transport. We need someway
-//         // of pinning the client object to the underlying invocation. For now we just serialize
-//         // all access so that only the first connection in the pool is ever used - but this is
-//         // far from ideal!!!
-//         // See http://jira.jboss.com/jira/browse/JBMESSAGING-789
-//
-//         Object invoker = null;
-//
-//         if (callbackClient != null)
-//         {
-//            invoker = callbackClient.getInvoker();                              
-//         }
-//         else
-//         {
-//            // TODO: dummy synchronization object, in case there's no clientInvoker. This will
-//            // happen during the first invocation anyway. It's a kludge, I know, but this whole
-//            // synchronization thing is a huge kludge. Needs to be reviewed.
-//            invoker = new Object();
-//         }
-//         
-//         synchronized (invoker)
-//         {
-//            // one way invocation, no acknowledgment sent back by the client
-//            if (trace) { log.trace(this + " submitting message " + ref.getMessage() + " to the remoting layer to be sent asynchronously"); }
-//            
-//            callbackHandler.handleCallbackOneway(callback);
-//                                    
-//            //We store the delivery id so we know to wait for any deliveries in transit on close
-//            consumer.setLastDeliveryID(deliveryID);
-//         }
 //      }
 //      catch (Throwable t)
 //      {

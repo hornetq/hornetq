@@ -554,8 +554,6 @@ public class LocalTestServer implements Server, Runnable
    public void undeployConnectionFactory(String objectName) throws Exception
    {
       ((ServerPeer) getJmsServer()).getConnectionFactoryManager().unregisterConnectionFactory(objectName, true, true);
-      ((ServerPeer) getJmsServer()).getConnectorManager().unregisterConnector(objectName);
-
    }
 
    public void configureSecurityForDestination(String destName, boolean isQueue, HashSet<Role> roles) throws Exception

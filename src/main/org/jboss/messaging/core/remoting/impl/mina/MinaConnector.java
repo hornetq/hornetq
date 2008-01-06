@@ -25,6 +25,7 @@ import org.apache.mina.common.IdleStatus;
 import org.apache.mina.common.IoService;
 import org.apache.mina.common.IoServiceListener;
 import org.apache.mina.common.IoSession;
+import org.apache.mina.filter.executor.ExecutorFilter;
 import org.apache.mina.transport.socket.nio.NioSocketConnector;
 import org.jboss.jms.client.remoting.ConsolidatedRemotingConnectionListener;
 import org.jboss.logging.Logger;
@@ -59,6 +60,8 @@ public class MinaConnector implements NIOConnector
 
    private Map<ConsolidatedRemotingConnectionListener, IoServiceListener> listeners = new HashMap<ConsolidatedRemotingConnectionListener, IoServiceListener>();
 
+   private ExecutorFilter executorFilter;
+
 
    // Static --------------------------------------------------------
 
@@ -85,6 +88,8 @@ public class MinaConnector implements NIOConnector
       blockingScheduler = addBlockingRequestResponseFilter(filterChain);
 
       addLoggingFilter(filterChain);
+      
+      executorFilter = FilterChainSupport.addExecutorFilter(filterChain);
 
       connector.setHandler(new MinaHandler(PacketDispatcher.client));
       connector.getSessionConfig().setKeepAlive(true);
@@ -124,6 +129,8 @@ public class MinaConnector implements NIOConnector
       connector = null;
       blockingScheduler = null;
       session = null;
+      
+      this.executorFilter.destroy();
 
       return closed;
    }

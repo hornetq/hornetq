@@ -37,7 +37,6 @@ import org.jboss.aop.microcontainer.aspects.jmx.JMX;
 import org.jboss.jms.server.connectionfactory.ConnectionFactoryDeployer;
 import org.jboss.jms.server.connectionfactory.ConnectionFactoryJNDIMapper;
 import org.jboss.jms.server.connectionmanager.SimpleConnectionManager;
-import org.jboss.jms.server.connectormanager.SimpleConnectorManager;
 import org.jboss.jms.server.destination.DestinationDeployer;
 import org.jboss.jms.server.destination.ManagedQueue;
 import org.jboss.jms.server.destination.ManagedTopic;
@@ -116,7 +115,6 @@ public class ServerPeer implements JmsServer
    private ConnectionFactoryJNDIMapper connFactoryJNDIMapper;
    private TransactionRepository txRepository;
    private SimpleConnectionManager connectionManager;
-   private ConnectorManager connectorManager;
    private IDManager messageIDManager;
    private IDManager channelIDManager;
    private IDManager transactionIDManager;
@@ -198,7 +196,6 @@ public class ServerPeer implements JmsServer
          destinationJNDIMapper = new DestinationJNDIMapper(this);
          connFactoryJNDIMapper = new ConnectionFactoryJNDIMapper(this);
          connectionManager = new SimpleConnectionManager();
-         connectorManager = new SimpleConnectorManager();
          memoryManager = new SimpleMemoryManager();
          destinationDeployer = new DestinationDeployer(this);
          connectionFactoryDeployer = new ConnectionFactoryDeployer(this, minaService);
@@ -241,7 +238,6 @@ public class ServerPeer implements JmsServer
          destinationJNDIMapper.start();
          connFactoryJNDIMapper.start();
          connectionManager.start();
-         connectorManager.start();
          memoryManager.start();
          securityStore.setSuckerPassword(configuration.getSuckerPassword());
          securityStore.start();
@@ -321,8 +317,6 @@ public class ServerPeer implements JmsServer
          connFactoryJNDIMapper = null;
          connectionManager.stop();
          connectionManager = null;
-         connectorManager.start();
-         connectorManager = null;
          memoryManager.stop();
          memoryManager = null;
          securityStore.stop();
@@ -660,11 +654,6 @@ public class ServerPeer implements JmsServer
    public ConnectionManager getConnectionManager()
    {
       return connectionManager;
-   }
-
-   public ConnectorManager getConnectorManager()
-   {
-      return connectorManager;
    }
 
    public MessageStore getMessageStore()

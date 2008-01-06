@@ -70,7 +70,7 @@
 	<classpathentry kind="lib" path="thirdparty/jboss/jbosssx-client/lib/jbosssx-client.jar"/>
 	<classpathentry kind="lib" path="lib/je-3.2.44.jar"/>
 	<classpathentry kind="lib" path="tests/lib/easymock.jar"/>
-	<classpathentry kind="lib" path="thirdparty/apache-mina/lib/mina-core.jar"/>
+	<classpathentry kind="lib" path="thirdparty/apache-mina/lib/mina-core.jar" sourcepath="/home/tim/workspace/mina-trunk/core/src/main/java"/>
 	<classpathentry kind="lib" path="thirdparty/slf4j/log4j/lib/slf4j-log4j12.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

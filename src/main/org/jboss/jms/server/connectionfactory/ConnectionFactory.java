@@ -12,7 +12,6 @@ import java.util.Map;
 import org.jboss.jms.client.plugin.LoadBalancingFactory;
 import org.jboss.jms.server.ConnectionFactoryManager;
 import org.jboss.jms.server.ConnectionManager;
-import org.jboss.jms.server.ConnectorManager;
 import org.jboss.jms.server.ServerPeer;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.remoting.ServerLocator;
@@ -66,8 +65,6 @@ public class ConnectionFactory
    private ServerPeer serverPeer;
    
    private ConnectionFactoryManager connectionFactoryManager;
-   
-   private ConnectorManager connectorManager;
    
    private ConnectionManager connectionManager;
       
@@ -125,7 +122,6 @@ public class ConnectionFactory
          }
          
          connectionFactoryManager = serverPeer.getConnectionFactoryManager();
-         connectorManager = serverPeer.getConnectorManager();
          connectionManager = serverPeer.getConnectionManager();
 
          // We use the MBean service name to uniquely identify the connection factory
@@ -136,7 +132,6 @@ public class ConnectionFactory
                                       defaultTempQueueFullSize, defaultTempQueuePageSize,                                      
                                       defaultTempQueueDownCacheSize, dupsOKBatchSize, supportsFailover, supportsLoadBalancing,
                                       loadBalancingFactory, strictTck);               
-         connectorManager.registerConnector(getName());
       
          log.info("Server locator is " + serverLocator);
          log.info(this + " started");
@@ -155,7 +150,6 @@ public class ConnectionFactory
          
          connectionFactoryManager.
             unregisterConnectionFactory(getName(), supportsFailover, supportsLoadBalancing);
-         connectorManager.unregisterConnector(getName());
          
          log.info(this + " undeployed");
       }

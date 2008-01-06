@@ -213,8 +213,7 @@ public class ClientConsumer
    private boolean shouldAck;
    private boolean handleFlowControl;
    private long redeliveryDelay;
-   private volatile int currentToken;
-   
+
    // Constructors ---------------------------------------------------------------------------------
 
    public ClientConsumer(boolean isCC, int ackMode,                                
@@ -261,14 +260,35 @@ public class ClientConsumer
     */
    public void handleMessage(final JBossMessage message) throws Exception
    {
-      //TODO - we temporarily need to execute on a different thread to avoid a deadlock situation in
-      //       failover where a message is sent then the valve is locked, and the message send cause
-      //       a message delivery back to the same client which tries to ack but can't get through
-      //       the valve. This won't be necessary when we move to a non blocking transport
-   	
-      sessionExecutor.execute(new HandleMessageRunnable(currentToken, message));         
+      synchronized (mainLock)
+      {
+         if (closed)
+         {
+            // Sanity - this should never happen - we should always wait for all deliveries to arrive
+            // when closing
+            throw new IllegalStateException(this + " is closed, so ignoring message");
+         }
+
+         message.setSessionDelegate(sessionDelegate, isConnectionConsumer);
+
+         message.doBeforeReceive();
+
+         //Add it to the buffer
+         buffer.addLast(message, message.getJMSPriority());
+
+         lastDeliveryId = message.getDeliveryId();
+
+         if (trace) { log.trace(this + " added message(s) to the buffer are now " + buffer.size() + " messages"); }
+
+         messageAdded();
+
+         if (handleFlowControl)
+         {
+            checkStop();
+         }
+      }
    }
-   
+
    public void setMessageListener(MessageListener listener) throws JMSException
    {     
       synchronized (mainLock)
@@ -555,8 +575,6 @@ public class ClientConsumer
     */
    public void synchronizeWith(ClientConsumer newHandler)
    {
-      currentToken++;
-   	
       consumerID = newHandler.consumerID;
 
       // Clear the buffer. This way the non persistent messages that managed to arrive are
@@ -851,67 +869,6 @@ public class ClientConsumer
          result.setResult(null);
 
          if (trace) { log.trace("Closer finished run"); }
-      }
-   }
-   
-   private class HandleMessageRunnable implements Runnable
-   {
-   	private int token;
-   	
-   	private JBossMessage message;
-   	
-   	HandleMessageRunnable(int token, JBossMessage message)
-   	{
-   		this.token = token;
-   		
-   		this.message = message;
-   	}
-   	
-   	public void run()
-      {
-         try
-         {
-             if (trace) { log.trace(this + " receiving message " + message + " from the remoting layer"); }
-
-             synchronized (mainLock)
-             {
-                if (closed)
-                {
-                   // Sanity - this should never happen - we should always wait for all deliveries to arrive
-                   // when closing
-                   throw new IllegalStateException(this + " is closed, so ignoring message");
-                }
-                
-                if (token != currentToken)
-                {
-               	 //This message was queued up from before failover - we don't want to add it
-               	 log.trace("Ignoring message " + message);
-               	 return;
-                }
-                
-                message.setSessionDelegate(sessionDelegate, isConnectionConsumer);
-
-                message.doBeforeReceive();
-
-                //Add it to the buffer
-                buffer.addLast(message, message.getJMSPriority());
-
-                lastDeliveryId = message.getDeliveryId();
-                
-                if (trace) { log.trace(this + " added message(s) to the buffer are now " + buffer.size() + " messages"); }
-
-                messageAdded();
-
-                if (handleFlowControl)
-                {
-                	checkStop();
-                }
-             }
-         }
-         catch (Exception e)
-         {
-            log.error("Failed to handle message", e);
-         }
       }
    }
    
