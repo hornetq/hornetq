@@ -32,6 +32,19 @@ public class RecoverDeliveriesMessageCodec extends
 
    // Static --------------------------------------------------------
 
+   public static byte[] encode(List<DeliveryRecovery> deliveries)
+   throws Exception
+   {
+      ByteArrayOutputStream baos = new ByteArrayOutputStream();
+      DataOutputStream dos = new DataOutputStream(baos);
+      for (DeliveryRecovery delivery : deliveries)
+      {
+         delivery.write(dos);
+      }
+      baos.flush();
+      return baos.toByteArray();
+   }
+
    // Constructors --------------------------------------------------
 
    public RecoverDeliveriesMessageCodec()
@@ -87,19 +100,6 @@ public class RecoverDeliveriesMessageCodec extends
    // Protected -----------------------------------------------------
 
    // Private -------------------------------------------------------
-
-   private static byte[] encode(List<DeliveryRecovery> deliveries)
-         throws Exception
-   {
-      ByteArrayOutputStream baos = new ByteArrayOutputStream();
-      DataOutputStream dos = new DataOutputStream(baos);
-      for (DeliveryRecovery delivery : deliveries)
-      {
-         delivery.write(dos);
-      }
-      baos.flush();
-      return baos.toByteArray();
-   }
 
    private List<DeliveryRecovery> decode(int size, byte[] encodedDeliveries)
          throws Exception

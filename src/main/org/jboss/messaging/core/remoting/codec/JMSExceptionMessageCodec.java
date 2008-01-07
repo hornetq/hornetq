@@ -8,6 +8,7 @@ package org.jboss.messaging.core.remoting.codec;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
@@ -32,6 +33,26 @@ public class JMSExceptionMessageCodec extends
 
    // Static --------------------------------------------------------
 
+   public static byte[] encodeJMSException(JMSException exception)
+         throws IOException
+   {
+      ByteArrayOutputStream baos = new ByteArrayOutputStream();
+      ObjectOutputStream oos = new ObjectOutputStream(baos);
+      oos.writeObject(exception);
+
+      byte[] encodedException = baos.toByteArray();
+      return encodedException;
+   }
+
+   public static JMSException decodeJMSException(byte[] b)
+   throws IOException, ClassNotFoundException
+   {
+      ByteArrayInputStream bais = new ByteArrayInputStream(b);
+      ObjectInputStream ois = new ObjectInputStream(bais);
+      JMSException exception = (JMSException) ois.readObject();
+      return exception;
+   }
+   
    // Constructors --------------------------------------------------
 
    public JMSExceptionMessageCodec()
@@ -46,13 +67,7 @@ public class JMSExceptionMessageCodec extends
    @Override
    protected void encodeBody(JMSExceptionMessage message, RemotingBuffer out) throws Exception
    {
-      JMSException exception = message.getException();
-     
-      ByteArrayOutputStream baos = new ByteArrayOutputStream();
-      ObjectOutputStream oos = new ObjectOutputStream(baos);
-      oos.writeObject(exception);
-
-      byte[] encodedException = baos.toByteArray();
+      byte[] encodedException = encodeJMSException(message.getException());
       
       int bodyLength = INT_LENGTH + encodedException.length;
 
@@ -70,18 +85,15 @@ public class JMSExceptionMessageCodec extends
       {
          return null;
       }
-      
+
       int encodedExceptionLength = in.getInt();
       byte[] b = new byte[encodedExceptionLength];
       in.get(b);
-      
-      ByteArrayInputStream bais = new ByteArrayInputStream(b);
-      ObjectInputStream ois = new ObjectInputStream(bais);
-      JMSException exception = (JMSException) ois.readObject();
+
+      JMSException exception = decodeJMSException(b);
       
       return new JMSExceptionMessage(exception);
    }
-
 
    // Package protected ---------------------------------------------
 

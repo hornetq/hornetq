@@ -28,6 +28,19 @@ public class BrowserNextMessageBlockResponseCodec extends AbstractPacketCodec<Br
 
    // Static --------------------------------------------------------
 
+   public static byte[] encode(Message[] messages) throws Exception
+   {
+      ByteArrayOutputStream baos = new ByteArrayOutputStream();
+      DataOutputStream daos = new DataOutputStream(baos);
+      
+      for (int i = 0; i < messages.length; i++)
+      {
+         Message message = messages[i];
+         message.write(daos);
+      }
+      return baos.toByteArray();
+   }
+
    // Constructors --------------------------------------------------
 
    public BrowserNextMessageBlockResponseCodec()
@@ -78,19 +91,6 @@ public class BrowserNextMessageBlockResponseCodec extends AbstractPacketCodec<Br
    // Protected -----------------------------------------------------
 
    // Private ----------------------------------------------------
-
-   private byte[] encode(Message[] messages) throws Exception
-   {
-      ByteArrayOutputStream baos = new ByteArrayOutputStream();
-      DataOutputStream daos = new DataOutputStream(baos);
-      
-      for (int i = 0; i < messages.length; i++)
-      {
-         Message message = messages[i];
-         message.write(daos);
-      }
-      return baos.toByteArray();
-   }
 
    private Message[] decode(int numOfMessages, byte[] encodedMessages) throws Exception
    {

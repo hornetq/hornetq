@@ -27,6 +27,16 @@ public class AcknowledgeDeliveriesRequestCodec extends
 
    // Static --------------------------------------------------------
 
+   public static long[] convert(List<Ack> acks)
+   {
+      long[] deliveryIDs = new long[acks.size()];
+      for (int i = 0; i < acks.size(); i++)
+      {
+         deliveryIDs[i] = acks.get(i).getDeliveryID();
+      }
+      return deliveryIDs;
+   }
+
    // Constructors --------------------------------------------------
 
    public AcknowledgeDeliveriesRequestCodec()
@@ -78,16 +88,6 @@ public class AcknowledgeDeliveriesRequestCodec extends
    // Protected -----------------------------------------------------
 
    // Private -------------------------------------------------------
-
-   private static long[] convert(List<Ack> acks)
-   {
-      long[] deliveryIDs = new long[acks.size()];
-      for (int i = 0; i < acks.size(); i++)
-      {
-         deliveryIDs[i] = acks.get(i).getDeliveryID();
-      }
-      return deliveryIDs;
-   }
 
    private List<Ack> convert(long[] deliveryIDs)
    {

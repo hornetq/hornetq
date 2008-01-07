@@ -6,6 +6,9 @@
  */
 package org.jboss.messaging.core.remoting.impl.mina;
 
+import static org.jboss.messaging.core.remoting.codec.AbstractPacketCodec.FALSE;
+import static org.jboss.messaging.core.remoting.codec.AbstractPacketCodec.TRUE;
+
 import java.nio.charset.CharacterCodingException;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
@@ -33,10 +36,6 @@ public class MinaPacketCodec<P extends AbstractPacket> implements
       MessageEncoder<P>, MessageDecoder
 {
    // Constants -----------------------------------------------------
-
-   private static final byte TRUE = (byte) 0;
-
-   private static final byte FALSE = (byte) 1;
 
    // used to terminate encoded Strings
    public static final byte NULL_BYTE = (byte) 0;

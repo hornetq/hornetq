@@ -28,6 +28,24 @@ public class GetTopologyResponseCodec extends
 
    // Static --------------------------------------------------------
 
+   public byte[] encode(TopologyResult topology) throws Exception
+   {
+      ByteArrayOutputStream baos = new ByteArrayOutputStream();
+      DataOutputStream dos = new DataOutputStream(baos);
+      topology.write(dos);
+      return baos.toByteArray();
+   }
+
+   public TopologyResult decodeTopology(byte[] encodedTopology)
+         throws Exception
+   {
+      ByteArrayInputStream bais = new ByteArrayInputStream(encodedTopology);
+      DataInputStream dis = new DataInputStream(bais);
+      TopologyResult topology = new TopologyResult();
+      topology.read(dis);
+      return topology;
+   }
+
    // Constructors --------------------------------------------------
 
    public GetTopologyResponseCodec()
@@ -74,24 +92,6 @@ public class GetTopologyResponseCodec extends
    // Protected -----------------------------------------------------
 
    // Private ----------------------------------------------------
-
-   private byte[] encode(TopologyResult topology) throws Exception
-   {
-      ByteArrayOutputStream baos = new ByteArrayOutputStream();
-      DataOutputStream dos = new DataOutputStream(baos);
-      topology.write(dos);
-      return baos.toByteArray();
-   }
-
-   private TopologyResult decodeTopology(byte[] encodedTopology)
-         throws Exception
-   {
-      ByteArrayInputStream bais = new ByteArrayInputStream(encodedTopology);
-      DataInputStream dis = new DataInputStream(bais);
-      TopologyResult topology = new TopologyResult();
-      topology.read(dis);
-      return topology;
-   }
 
    // Inner classes -------------------------------------------------
 }

@@ -27,6 +27,14 @@ public class SendTransactionMessageCodec extends AbstractPacketCodec<SendTransac
 
    // Static --------------------------------------------------------
 
+   public static byte[] encodeTransactionRequest(TransactionRequest tr) throws Exception
+   {
+      ByteArrayOutputStream baos = new ByteArrayOutputStream();
+      tr.write(new DataOutputStream(baos));
+      baos.flush();
+      return baos.toByteArray();
+   }
+
    // Constructors --------------------------------------------------
 
    public SendTransactionMessageCodec()
@@ -76,14 +84,6 @@ public class SendTransactionMessageCodec extends AbstractPacketCodec<SendTransac
    // Protected -----------------------------------------------------
 
    // Private ----------------------------------------------------
-
-   private static byte[] encodeTransactionRequest(TransactionRequest tr) throws Exception
-   {
-      ByteArrayOutputStream baos = new ByteArrayOutputStream();
-      tr.write(new DataOutputStream(baos));
-      baos.flush();
-      return baos.toByteArray();
-   }
 
    private static TransactionRequest decodeTransactionRequest(byte[] b) throws Exception
    {

@@ -28,6 +28,18 @@ public class GetPreparedTransactionsResponseCodec extends
 
    // Static --------------------------------------------------------
 
+   public static byte[] encode(MessagingXid[] xids) throws Exception
+   {
+      ByteArrayOutputStream baos = new ByteArrayOutputStream();
+      DataOutputStream dos = new DataOutputStream(baos);
+      for (int i = 0; i < xids.length; i++)
+      {
+         MessagingXid xid = xids[i];
+         xid.write(dos);
+      }
+      return baos.toByteArray();
+   }
+
    // Constructors --------------------------------------------------
 
    public GetPreparedTransactionsResponseCodec()
@@ -79,18 +91,6 @@ public class GetPreparedTransactionsResponseCodec extends
    // Protected -----------------------------------------------------
 
    // Private -------------------------------------------------------
-
-   private static byte[] encode(MessagingXid[] xids) throws Exception
-   {
-      ByteArrayOutputStream baos = new ByteArrayOutputStream();
-      DataOutputStream dos = new DataOutputStream(baos);
-      for (int i = 0; i < xids.length; i++)
-      {
-         MessagingXid xid = xids[i];
-         xid.write(dos);
-      }
-      return baos.toByteArray();
-   }
 
    private MessagingXid[] decode(int numOfXids, byte[] encodedXids) throws Exception
    {

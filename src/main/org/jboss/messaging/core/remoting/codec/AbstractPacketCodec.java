@@ -34,6 +34,10 @@ public abstract class AbstractPacketCodec<P extends AbstractPacket>
 {
    // Constants -----------------------------------------------------
 
+   public static final byte TRUE = (byte) 0;
+
+   public static final byte FALSE = (byte) 1;
+
    public static final int INT_LENGTH = 4;
 
    public static final int FLOAT_LENGTH = 4;
@@ -46,6 +50,25 @@ public abstract class AbstractPacketCodec<P extends AbstractPacket>
    // Attributes ----------------------------------------------------
 
    private PacketType type;
+
+   // Static --------------------------------------------------------
+   
+   public static byte[] encodeMessage(Message message) throws Exception
+   {
+      ByteArrayOutputStream baos = new ByteArrayOutputStream();
+      message.write(new DataOutputStream(baos));
+      baos.flush();
+      return baos.toByteArray();
+   }
+
+   public static byte[] encode(JBossDestination destination)
+   throws Exception
+   {
+      ByteArrayOutputStream baos = new ByteArrayOutputStream();
+      writeDestination(new DataOutputStream(baos), destination);
+      baos.flush();
+      return baos.toByteArray();
+   }
 
    // Constructors --------------------------------------------------
 
@@ -207,27 +230,10 @@ public abstract class AbstractPacketCodec<P extends AbstractPacket>
 
    protected abstract P decodeBody(RemotingBuffer buffer) throws Exception;
 
-   protected static byte[] encode(JBossDestination destination)
-         throws Exception
-   {
-      ByteArrayOutputStream baos = new ByteArrayOutputStream();
-      writeDestination(new DataOutputStream(baos), destination);
-      baos.flush();
-      return baos.toByteArray();
-   }
-
    protected static JBossDestination decode(byte[] b) throws Exception
    {
       ByteArrayInputStream bais = new ByteArrayInputStream(b);
       return readDestination(new DataInputStream(bais));
-   }
-
-   protected static byte[] encodeMessage(Message message) throws Exception
-   {
-      ByteArrayOutputStream baos = new ByteArrayOutputStream();
-      message.write(new DataOutputStream(baos));
-      baos.flush();
-      return baos.toByteArray();
    }
 
    protected static Message decodeMessage(byte[] b) throws Exception
