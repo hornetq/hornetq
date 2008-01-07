@@ -19,22 +19,23 @@
   * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   */
-package org.jboss.test.messaging.util.prioritylinkedlist;
+package org.jboss.messaging.newcore.impl.test.unit;
 
 import java.util.Iterator;
 import java.util.ListIterator;
 
-import org.jboss.messaging.util.prioritylinkedlist.BasicPriorityLinkedList;
-import org.jboss.test.messaging.MessagingTestCase;
+import org.jboss.messaging.newcore.PriorityLinkedList;
+import org.jboss.messaging.newcore.impl.PriorityLinkedListImpl;
+import org.jboss.messaging.test.unit.UnitTestCase;
 
 /**
  * @author <a href="tim.fox@jboss.com>Tim Fox</a>
  *
  * $Id$
  */
-public class PriorityLinkedListTest extends MessagingTestCase
+public class PriorityLinkedListTest extends UnitTestCase
 {
-   protected BasicPriorityLinkedList list;
+   protected PriorityLinkedList<Wibble> list;
    
    protected Wibble a;
    protected Wibble b;
@@ -63,16 +64,11 @@ public class PriorityLinkedListTest extends MessagingTestCase
    protected Wibble y;   
    protected Wibble z;
    
-   public PriorityLinkedListTest(String name)
-   {
-      super(name);
-   }
-   
    public void setUp() throws Exception
    {
       super.setUp();
       
-      list = new BasicPriorityLinkedList(10);
+      list = new PriorityLinkedListImpl<Wibble>(10);
       
       a = new Wibble("a");
       b = new Wibble("b");
@@ -107,29 +103,7 @@ public class PriorityLinkedListTest extends MessagingTestCase
    {
       super.tearDown();
    }
-   
-   public void testSpeed() throws Exception
-   {
-      final int NUM_MESSAGES = 1000000;
-      
-      long start = System.currentTimeMillis();
-      
-      for (int i = 0; i < NUM_MESSAGES; i++)
-      {
-         list.addLast(new Object(), i % 10);
-      }
-      
-      for (int i = 0; i < NUM_MESSAGES; i++)
-      {
-         list.removeFirst();
-      }
-      
-      long end = System.currentTimeMillis();
-      
-      log.info("That took " + (end -start) + " ms");
-      
-   }
-    
+         
    public void testAddFirst() throws Exception
    {
       list.addFirst(a, 0);

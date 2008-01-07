@@ -765,19 +765,6 @@ public class JBMServerTestCase extends JBMBaseTestCase
       servers.get(server).undeployConnectionFactory(objectName);
    }
 
-   public void resetAllSuckers() throws Exception
-   {
-      for (int i = 0; i < getServerCount(); i++)
-      {
-         resetAllSuckers(i);
-      }
-   }
-
-   public void resetAllSuckers(int server) throws Exception
-   {
-      servers.get(server).resetAllSuckers();
-   }
-
    private void clearDatabase() throws Exception
    {
       if (databaseClearer == null)

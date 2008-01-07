@@ -40,8 +40,8 @@ import org.jboss.messaging.core.impl.tx.TransactionException;
 import org.jboss.messaging.core.impl.tx.TxCallback;
 import org.jboss.messaging.newcore.Filter;
 import org.jboss.messaging.newcore.MessageReference;
-import org.jboss.messaging.util.prioritylinkedlist.BasicPriorityLinkedList;
-import org.jboss.messaging.util.prioritylinkedlist.PriorityLinkedList;
+import org.jboss.messaging.newcore.PriorityLinkedList;
+import org.jboss.messaging.newcore.impl.PriorityLinkedListImpl;
 import org.jboss.util.timeout.Timeout;
 import org.jboss.util.timeout.TimeoutTarget;
 
@@ -76,7 +76,7 @@ public abstract class ChannelSupport implements Channel
 
    protected boolean receiversReady;
 
-   protected PriorityLinkedList messageRefs;
+   protected PriorityLinkedList<MessageReference> messageRefs;
 
    protected boolean recoverable;
 
@@ -114,7 +114,7 @@ public abstract class ChannelSupport implements Channel
 
       this.recoverable = recoverable;
 
-      messageRefs = new BasicPriorityLinkedList(10);
+      messageRefs = new PriorityLinkedListImpl<MessageReference>(10);
 
       lock = new Object();
 

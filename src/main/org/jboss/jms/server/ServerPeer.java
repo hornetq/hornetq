@@ -54,10 +54,8 @@ import org.jboss.messaging.core.contract.PersistenceManager;
 import org.jboss.messaging.core.contract.PostOffice;
 import org.jboss.messaging.core.contract.Queue;
 import org.jboss.messaging.core.contract.Replicator;
-import org.jboss.messaging.core.impl.FailoverWaiter;
 import org.jboss.messaging.core.impl.IDManager;
 import org.jboss.messaging.core.impl.JDBCPersistenceManager;
-import org.jboss.messaging.core.impl.clusterconnection.ClusterConnectionManager;
 import org.jboss.messaging.core.impl.memory.SimpleMemoryManager;
 import org.jboss.messaging.core.impl.postoffice.MessagingPostOffice;
 import org.jboss.messaging.core.impl.tx.TransactionRepository;
@@ -120,9 +118,7 @@ public class ServerPeer implements JmsServer
    private IDManager transactionIDManager;
    private MemoryManager memoryManager;
    private MessageCounterManager messageCounterManager;
-   private ClusterConnectionManager clusterConnectionManager;
    private ClusterNotifier clusterNotifier;
-   private FailoverWaiter failoverWaiter;
 
    // plugins
 
@@ -215,19 +211,10 @@ public class ServerPeer implements JmsServer
 
          clusterNotifier.registerListener(connectionManager);
          clusterNotifier.registerListener(connFactoryJNDIMapper);
-         failoverWaiter = new FailoverWaiter(configuration.getServerPeerID(), configuration.getFailoverStartTimeout(), configuration.getFailoverCompleteTimeout(), txRepository);
-         clusterNotifier.registerListener(failoverWaiter);
 
          if (configuration.getSuckerPassword() == null)
          {
             configuration.setSuckerPassword(SecurityMetadataStore.DEFAULT_SUCKER_USER_PASSWORD);
-         }
-         if (configuration.getClusterPullConnectionFactoryName() != null)
-         {
-            clusterConnectionManager = new ClusterConnectionManager(configuration.isUseXAForMessagePull(), configuration.getServerPeerID(),
-                    configuration.getClusterPullConnectionFactoryName(), configuration.isDefaultPreserveOrdering(),
-                    SecurityMetadataStore.SUCKER_USER, configuration.getSuckerPassword());
-            clusterNotifier.registerListener(clusterConnectionManager);
          }
 
          // Start the wired components
@@ -242,7 +229,6 @@ public class ServerPeer implements JmsServer
          securityStore.setSuckerPassword(configuration.getSuckerPassword());
          securityStore.start();
          txRepository.start();
-         clusterConnectionManager.start();
 
          // Note we do not start the message counter manager by default. This must be done
          // explicitly by the user by calling enableMessageCounters(). This is because message
@@ -257,15 +243,7 @@ public class ServerPeer implements JmsServer
 
             connFactoryJNDIMapper.injectReplicator(rep);
 
-            // Also inject into the cluster connection manager
-
-            this.clusterConnectionManager.injectPostOffice(postOffice);
-
-            this.clusterConnectionManager.injectReplicator((Replicator) postOffice);
-
-            this.connectionManager.injectReplicator((Replicator) postOffice);
-
-
+            connectionManager.injectReplicator((Replicator) postOffice);
          }
          //we inject the server peer because the post office needs it for clustering and the tx repository.
          // This is crap and needs changing
@@ -325,8 +303,6 @@ public class ServerPeer implements JmsServer
          txRepository = null;
          messageCounterManager.stop();
          messageCounterManager = null;
-         clusterConnectionManager.stop();
-         clusterConnectionManager = null;
          //postOffice = null;
 
          unloadServerAOPConfig();
@@ -518,11 +494,6 @@ public class ServerPeer implements JmsServer
 
    // Public ---------------------------------------------------------------------------------------
 
-   public void resetAllSuckers()
-   {
-      clusterConnectionManager.resetAllSuckers();
-   }
-
    public byte[] getClientAOPStack()
    {
       return clientAOPStack;
@@ -707,11 +678,6 @@ public class ServerPeer implements JmsServer
    public void setClusterNotifier(ClusterNotifier clusterNotifier)
    {
       this.clusterNotifier = clusterNotifier;
-   }
-
-   public FailoverWaiter getFailoverWaiter()
-   {
-      return failoverWaiter;
    }
 
    public boolean isSupportsFailover()

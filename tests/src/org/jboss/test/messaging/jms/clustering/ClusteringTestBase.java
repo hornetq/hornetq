@@ -223,8 +223,6 @@ public class ClusteringTestBase extends JBMServerTestCase
 	      // Check no subscriptions left lying around
 	            
 	      checkNoSubscriptions(topic[i], i);	
-	      
-	      resetAllSuckers(i);
       }
       
       if (changed)

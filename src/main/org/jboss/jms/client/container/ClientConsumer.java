@@ -38,9 +38,9 @@ import org.jboss.jms.delegate.SessionDelegate;
 import org.jboss.jms.message.JBossMessage;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.newcore.Message;
+import org.jboss.messaging.newcore.PriorityLinkedList;
+import org.jboss.messaging.newcore.impl.PriorityLinkedListImpl;
 import org.jboss.messaging.util.Future;
-import org.jboss.messaging.util.prioritylinkedlist.BasicPriorityLinkedList;
-import org.jboss.messaging.util.prioritylinkedlist.PriorityLinkedList;
 
 import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
 
@@ -191,7 +191,7 @@ public class ClientConsumer
     * then if messages were sitting waiting to be consumed on the client side, then higher
     * priority messages might be behind lower priority messages and thus get consumed out of order
     */
-   private PriorityLinkedList buffer;
+   private PriorityLinkedList<JBossMessage> buffer;
    private SessionDelegate sessionDelegate;
    private ConsumerDelegate consumerDelegate;
    private String consumerID;
@@ -228,7 +228,7 @@ public class ClientConsumer
          throw new IllegalArgumentException(this + " bufferSize must be > 0");
       }
               
-      buffer = new BasicPriorityLinkedList(10);
+      buffer = new PriorityLinkedListImpl<JBossMessage>(10);
       isConnectionConsumer = isCC;
       this.ackMode = ackMode;
       this.sessionDelegate = sess;

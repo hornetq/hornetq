@@ -36,15 +36,14 @@ import org.jboss.logging.Logger;
 import org.jboss.messaging.core.contract.Delivery;
 import org.jboss.messaging.core.contract.DeliveryObserver;
 import org.jboss.messaging.core.contract.Distributor;
-import org.jboss.messaging.newcore.Filter;
-import org.jboss.messaging.newcore.Message;
-import org.jboss.messaging.newcore.MessageReference;
 import org.jboss.messaging.core.contract.MessageStore;
 import org.jboss.messaging.core.contract.PersistenceManager;
 import org.jboss.messaging.core.contract.Queue;
 import org.jboss.messaging.core.contract.Receiver;
-import org.jboss.messaging.core.impl.clusterconnection.MessageSucker;
 import org.jboss.messaging.core.impl.tx.Transaction;
+import org.jboss.messaging.newcore.Filter;
+import org.jboss.messaging.newcore.Message;
+import org.jboss.messaging.newcore.MessageReference;
 import org.jboss.util.timeout.Timeout;
 import org.jboss.util.timeout.TimeoutTarget;
 
@@ -357,42 +356,42 @@ public class MessagingQueue extends PagingChannelSupport implements Queue
    	
    }
    
-   public void registerSucker(MessageSucker sucker)
-   {
-   	if (trace) { log.trace(this + " Registering sucker " + sucker); }
-   	
-   	synchronized (lock)
-   	{
-   		if (!suckers.contains(sucker))
-   		{
-   			suckers.add(sucker);
-	   	
-   			handleFlowControlForConsumers = true;
-   			
-   			if (getReceiversReady() && localDistributor.getNumberOfReceivers() > 0)
-   			{   				
-   				if (trace) { log.trace(this + " receivers ready so setting consumer to true"); }
-   			
-   				sucker.setConsuming(true);
-   			}
-   		}
-   	}
-   }
-   
-   public boolean unregisterSucker(MessageSucker sucker)
-   {
-   	synchronized (lock)
-   	{
-	   	boolean removed = suckers.remove(sucker);
-	   	
-	   	if (removed && suckers.isEmpty())
-	   	{
-	   		handleFlowControlForConsumers = false;
-	   	}
-	   	
-	   	return removed;
-   	}
-   }
+//   public void registerSucker(MessageSucker sucker)
+//   {
+//   	if (trace) { log.trace(this + " Registering sucker " + sucker); }
+//   	
+//   	synchronized (lock)
+//   	{
+//   		if (!suckers.contains(sucker))
+//   		{
+//   			suckers.add(sucker);
+//	   	
+//   			handleFlowControlForConsumers = true;
+//   			
+//   			if (getReceiversReady() && localDistributor.getNumberOfReceivers() > 0)
+//   			{   				
+//   				if (trace) { log.trace(this + " receivers ready so setting consumer to true"); }
+//   			
+//   				sucker.setConsuming(true);
+//   			}
+//   		}
+//   	}
+//   }
+//   
+//   public boolean unregisterSucker(MessageSucker sucker)
+//   {
+//   	synchronized (lock)
+//   	{
+//	   	boolean removed = suckers.remove(sucker);
+//	   	
+//	   	if (removed && suckers.isEmpty())
+//	   	{
+//	   		handleFlowControlForConsumers = false;
+//	   	}
+//	   	
+//	   	return removed;
+//   	}
+//   }
    
    public int getFullSize()
    {
@@ -558,12 +557,12 @@ public class MessagingQueue extends PagingChannelSupport implements Queue
    {
    	Iterator iter = suckers.iterator();
    	
-   	while (iter.hasNext())
-   	{
-   		MessageSucker sucker = (MessageSucker)iter.next();
-   		
-   		sucker.setConsuming(consume);
-   	}
+//   	while (iter.hasNext())
+//   	{
+//   		MessageSucker sucker = (MessageSucker)iter.next();
+//   		
+//   		sucker.setConsuming(consume);
+//   	}
    }
    
    // Inner classes -------------------------------------------------   

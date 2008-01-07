@@ -624,11 +624,6 @@ public class LocalTestServer implements Server, Runnable
       //sc.flushManagedConnectionPool();
    }
 
-   public void resetAllSuckers() throws Exception
-   {
-      getServerPeer().resetAllSuckers();
-   }
-
    // Public ---------------------------------------------------------------------------------------
 
    // Package protected ----------------------------------------------------------------------------

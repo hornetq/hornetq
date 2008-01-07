@@ -503,11 +503,6 @@ public class RMITestServer extends UnicastRemoteObject implements Server
    	server.flushManagedConnectionPool();
    }
    
-   public void resetAllSuckers() throws Exception
-   {
-   	server.resetAllSuckers();
-   }   
-   
    // Public --------------------------------------------------------
 
    // Package protected ---------------------------------------------

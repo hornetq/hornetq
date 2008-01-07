@@ -156,39 +156,12 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
    {
       try
       {
-         if (failedNodeID == -1)
-         {
-            // Just a standard createConnection
-            ClientConnectionDelegate cd =
-               createConnectionDelegateInternal(username, password, failedNodeID,
-                                                remotingSessionID, clientVMID,
-                                                versionToUse);
-            return new CreateConnectionResult(cd);
-         }
-         else
-         {
-            log.trace(this + " received client-side failover request. Creating failover "+
-               "connection to replace connection to failed node " + failedNodeID);
-
-            // Wait for server side failover to complete
-            int failoverNodeID = serverPeer.getFailoverWaiter().waitForFailover(failedNodeID);
-
-            if (failoverNodeID == -1 || failoverNodeID != serverPeer.getConfiguration().getServerPeerID())
-            {
-               log.trace(this + " realized that we are on the wrong node or no failover has occured");
-               return new CreateConnectionResult(failoverNodeID);
-            }
-            else
-            {
-               log.trace(this + " received notification that server-side failover completed, " +
-                  "creating connection delegate ...");
-               ClientConnectionDelegate cd =
-                  createConnectionDelegateInternal(username, password, failedNodeID,
-                                                   remotingSessionID, clientVMID,
-                                                   versionToUse);
-               return new CreateConnectionResult(cd);
-            }
-         }
+         // Just a standard createConnection
+         ClientConnectionDelegate cd =
+            createConnectionDelegateInternal(username, password, failedNodeID,
+                                             remotingSessionID, clientVMID,
+                                             versionToUse);
+         return new CreateConnectionResult(cd);         
       }
       catch (Throwable t)
       {

@@ -275,8 +275,6 @@ public interface Server extends Remote
    
    void flushManagedConnectionPool() throws Exception;
    
-   void resetAllSuckers() throws Exception;   
-   
    void deployConnectionFactory(String objectName, String[] jndiBindings, boolean strictTck) throws Exception;
 
    JmsServer getJmsServer() throws Exception;

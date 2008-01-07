@@ -24,8 +24,6 @@ package org.jboss.messaging.core.contract;
 import java.util.List;
 import java.util.Map;
 
-import org.jboss.messaging.core.impl.clusterconnection.MessageSucker;
-
 
 /**
  * A Queue
@@ -70,10 +68,6 @@ public interface Queue extends Channel
    Distributor getLocalDistributor();
    
    Distributor getRemoteDistributor();   
-   
-   void registerSucker(MessageSucker sucker);
-   
-   boolean unregisterSucker(MessageSucker sucker);
    
    void addToRecoveryArea(int nodeID, long messageID, String sessionID);
    
