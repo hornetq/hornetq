@@ -23,13 +23,14 @@ package org.jboss.jms.client.state;
 
 import java.util.Set;
 
+import org.jboss.jms.client.Closeable;
 import org.jboss.jms.client.delegate.DelegateSupport;
 import org.jboss.messaging.util.Version;
 
 /**
  * Any state that is Hierarchical in nature implements this interface (e.g. a connection has child
  * sessions). Or, a session has child consumers, producers and browsers.
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
@@ -37,17 +38,19 @@ import org.jboss.messaging.util.Version;
  *
  * $Id$
  */
-public interface HierarchicalState
+public interface HierarchicalState<ParentType extends HierarchicalState, DelegateType extends DelegateSupport<?>>
 {
-   Set getChildren();
-   
-   DelegateSupport getDelegate();
-   
-   void setDelegate(DelegateSupport delegate);
+   Set<HierarchicalState> getChildren();
 
-   HierarchicalState getParent();
-   
-   void setParent(HierarchicalState parent);
+   DelegateType getDelegate();
+
+   Closeable getCloseableDelegate();
+
+   void setDelegate(DelegateType delegate);
+
+   ParentType getParent();
+
+   void setParent(ParentType parent);
 
    Version getVersionToUse();
 

@@ -22,14 +22,11 @@
 package org.jboss.jms.server.container;
 
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
 
 import javax.jms.Destination;
 import javax.jms.JMSSecurityException;
 
-import org.jboss.aop.joinpoint.Invocation;
-import org.jboss.aop.joinpoint.MethodInvocation;
 import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.destination.JBossQueue;
 import org.jboss.jms.destination.JBossTemporaryQueue;
@@ -37,17 +34,9 @@ import org.jboss.jms.destination.JBossTemporaryTopic;
 import org.jboss.jms.destination.JBossTopic;
 import org.jboss.jms.server.SecurityStore;
 import org.jboss.jms.server.endpoint.ServerConnectionEndpoint;
-import org.jboss.jms.server.endpoint.ServerConsumerEndpoint;
-import org.jboss.jms.server.endpoint.ServerSessionEndpoint;
-import org.jboss.jms.server.endpoint.advised.ConnectionAdvised;
-import org.jboss.jms.server.endpoint.advised.ConsumerAdvised;
-import org.jboss.jms.server.endpoint.advised.SessionAdvised;
 import org.jboss.jms.server.security.CheckType;
 import org.jboss.jms.server.security.SecurityMetadata;
-import org.jboss.jms.tx.ClientTransaction;
-import org.jboss.jms.tx.TransactionRequest;
 import org.jboss.logging.Logger;
-import org.jboss.messaging.newcore.Message;
 
 /**
  * This aspect enforces the JBossMessaging JMS security policy.
@@ -102,68 +91,9 @@ public class SecurityAspect
       createCache = new HashSet();
    }
    
-   public Object handleCreateConsumerDelegate(Invocation invocation) throws Throwable
-   {
-      MethodInvocation mi = (MethodInvocation)invocation;
-      
-      // read permission required on the destination
-      Destination dest = (Destination)mi.getArguments()[0];
-      
-      SessionAdvised del = (SessionAdvised)invocation.getTargetObject();
-      ServerSessionEndpoint sess = (ServerSessionEndpoint)del.getEndpoint();
-      
-      check(dest, CheckType.READ, sess.getConnectionEndpoint());
-      
-      // if creating a durable subscription then need create permission
-      
-      String subscriptionName = (String)mi.getArguments()[3];
-      if (subscriptionName != null)
-      {
-         // durable
-         check(dest, CheckType.CREATE, sess.getConnectionEndpoint());
-      }
-      
-      return invocation.invokeNext();
-   }   
-   
-   public Object handleCreateBrowserDelegate(Invocation invocation) throws Throwable
-   {
-      // read permission required on the destination
-      
-      MethodInvocation mi = (MethodInvocation)invocation;
-      
-      Destination dest = (Destination)mi.getArguments()[0];
-      
-      SessionAdvised del = (SessionAdvised)invocation.getTargetObject();
-      ServerSessionEndpoint sess = (ServerSessionEndpoint)del.getEndpoint();
-                  
-      check(dest, CheckType.READ, sess.getConnectionEndpoint());
-      
-      return invocation.invokeNext();
-   }
-   
-   public Object handleSend(Invocation invocation) throws Throwable
-   {
-      // anonymous producer - if destination is not null then write permissions required
-      
-      MethodInvocation mi = (MethodInvocation)invocation;
-      
-      org.jboss.messaging.newcore.Message m = (org.jboss.messaging.newcore.Message)mi.getArguments()[0];
-      org.jboss.messaging.newcore.Destination dest =
-         (org.jboss.messaging.newcore.Destination)m.getHeader(org.jboss.messaging.newcore.Message.TEMP_DEST_HEADER_NAME);
-
-      SessionAdvised del = (SessionAdvised)invocation.getTargetObject();
-      ServerSessionEndpoint se = (ServerSessionEndpoint)del.getEndpoint();
-      ServerConnectionEndpoint ce = se.getConnectionEndpoint();
-                            
-      check(convert(dest), CheckType.WRITE, ce);
-            
-      return invocation.invokeNext();
-   }
-
    //FIXME - temp until refactoring is complete
-   //All server side security should involve core destinations not JBossDestinations           
-   private JBossDestination convert(org.jboss.messaging.newcore.Destination dest)
+   //All server side security should involve core destinations not JBossDestinations
+   public JBossDestination convert(org.jboss.messaging.newcore.Destination dest)
    {
       JBossDestination jbdest;
       if (dest.isTemporary())
@@ -174,7 +104,7 @@ public class SecurityAspect
          }
          else
          {
-            jbdest = new JBossTemporaryTopic(dest.getName());  
+            jbdest = new JBossTemporaryTopic(dest.getName());
          }
       }
       else
@@ -185,74 +115,20 @@ public class SecurityAspect
          }
          else
          {
-            jbdest = new JBossTopic(dest.getName());  
+            jbdest = new JBossTopic(dest.getName());
          }
       }
       return jbdest;
    }
 
-   // An aspect over ConnectionAdvised
-   public Object handleSendTransaction(Invocation invocation) throws Throwable
-   {
-      ConnectionAdvised del = (ConnectionAdvised)invocation.getTargetObject();
-      ServerConnectionEndpoint ce = (ServerConnectionEndpoint)del.getEndpoint();
 
-      MethodInvocation mi = (MethodInvocation)invocation;
-
-      TransactionRequest t = (TransactionRequest)mi.getArguments()[0];
-
-      ClientTransaction txState = t.getState();
-
-      //FIXME - can't we optimise this??
-      if (txState != null)
-      {
-         // distinct list of destinations...
-         HashSet<org.jboss.messaging.newcore.Destination> destinations = new HashSet<org.jboss.messaging.newcore.Destination>();
-
-         for (Iterator i = txState.getSessionStates().iterator(); i.hasNext(); )
-         {
-            ClientTransaction.SessionTxState sessionState = (ClientTransaction.SessionTxState)i.next();
-            for (Iterator j = sessionState.getMsgs().iterator(); j.hasNext(); )
-            {
-               Message message = (Message)j.next();
-               
-               org.jboss.messaging.newcore.Destination dest =
-                  (org.jboss.messaging.newcore.Destination)message.getHeader(org.jboss.messaging.newcore.Message.TEMP_DEST_HEADER_NAME);
-
-               
-               destinations.add(dest);
-            }
-         }
-         for (Iterator iterDestinations = destinations.iterator();iterDestinations.hasNext();)
-         {
-            org.jboss.messaging.newcore.Destination destination = (org.jboss.messaging.newcore.Destination) iterDestinations.next();
-            check(convert(destination), CheckType.WRITE, ce);
-         }
-
-      }
-
-      return invocation.invokeNext();
-   }
-
-
-   
-   protected void checkConsumerAccess(Invocation invocation) throws Throwable
-   {
-      ConsumerAdvised del = (ConsumerAdvised)invocation.getTargetObject();
-      ServerConsumerEndpoint cons = (ServerConsumerEndpoint)del.getEndpoint();
-      ServerConnectionEndpoint conn = cons.getSessionEndpoint().getConnectionEndpoint();
-      JBossDestination dest = cons.getDestination();
-      
-      check(dest, CheckType.READ, conn);
-   }
-   
    // Package protected ---------------------------------------------
    
    // Protected -----------------------------------------------------
    
    // Private -------------------------------------------------------
          
-   private boolean checkCached(Destination dest, CheckType checkType)
+   public boolean checkCached(Destination dest, CheckType checkType)
    {
       long now = System.currentTimeMillis();
       
@@ -297,7 +173,7 @@ public class SecurityAspect
       return granted;
    }
    
-   private void check(Destination dest, CheckType checkType, ServerConnectionEndpoint conn)
+   public void check(Destination dest, CheckType checkType, ServerConnectionEndpoint conn)
       throws JMSSecurityException
    {
       JBossDestination jbd = (JBossDestination)dest;

@@ -22,6 +22,14 @@
 
 package org.jboss.test.messaging.jms.clustering;
 
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import javax.jms.Connection;
+import javax.jms.Queue;
+import javax.jms.Topic;
+import javax.naming.InitialContext;
+
 import EDU.oswego.cs.dl.util.concurrent.LinkedQueue;
 import org.jboss.jms.client.FailoverEvent;
 import org.jboss.jms.client.FailoverListener;
@@ -31,17 +39,10 @@ import org.jboss.jms.client.delegate.ClientClusteredConnectionFactoryDelegate;
 import org.jboss.jms.client.delegate.DelegateSupport;
 import org.jboss.jms.client.state.ConnectionState;
 import org.jboss.jms.tx.ResourceManagerFactory;
+import org.jboss.messaging.util.ProxyFactory;
 import org.jboss.test.messaging.JBMServerTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
 import org.jboss.test.messaging.tools.container.ServiceAttributeOverrides;
-
-import javax.jms.Connection;
-import javax.jms.Queue;
-import javax.jms.Topic;
-import javax.naming.InitialContext;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.org">Tim Fox</a>
@@ -309,14 +310,12 @@ public class ClusteringTestBase extends JBMServerTestCase
 
    protected String getObjectId(Connection conn)
    {
-      return ((DelegateSupport) ((JBossConnection) conn).
-         getDelegate()).getID();
+      return getDelegate(conn).getID();
    }
 
    protected ConnectionState getConnectionState(Connection conn)
    {
-      return (ConnectionState) (((DelegateSupport) ((JBossConnection) conn).
-         getDelegate()).getState());
+      return getDelegate(conn).getState();
    }
   
    protected void waitForFailoverComplete(int serverID, Connection conn1)
@@ -366,8 +365,7 @@ public class ClusteringTestBase extends JBMServerTestCase
    {
       for(int i = 0; i < conn.length; i++)
       {
-         ConnectionState state = (ConnectionState)(((DelegateSupport)((JBossConnection)conn[i]).
-            getDelegate()).getState());
+         ConnectionState state = getDelegate(conn[i]).getState();
 
          if (state.getServerID() == serverId)
          {
@@ -383,8 +381,7 @@ public class ClusteringTestBase extends JBMServerTestCase
       int[] serverID = new int[conn.length];
       for(int i = 0; i < conn.length; i++)
       {
-         ConnectionState state = (ConnectionState)(((DelegateSupport)((JBossConnection)conn[i]).
-            getDelegate()).getState());
+         ConnectionState state = getDelegate(conn[i]).getState();
          serverID[i] = state.getServerID();
       }
 

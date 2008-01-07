@@ -131,8 +131,7 @@ public class ClusterLeakTest extends ClusteringTestBase
 
          // make sure we're connecting to node 1
 
-         int nodeID = ((ConnectionState)((DelegateSupport)((JBossConnection)conn).
-            getDelegate()).getState()).getServerID();
+         int nodeID = getDelegate(conn).getState().getServerID(); 
 
          assertEquals(1, nodeID);
 

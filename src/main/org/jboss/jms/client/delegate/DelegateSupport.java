@@ -27,10 +27,14 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.Set;
+import java.util.HashSet;
+import java.util.Iterator;
 
 import javax.jms.JMSException;
 
 import org.jboss.jms.client.state.HierarchicalState;
+import org.jboss.jms.client.Closeable;
 import org.jboss.jms.exception.MessagingJMSException;
 import org.jboss.jms.exception.MessagingNetworkFailureException;
 import org.jboss.logging.Logger;
@@ -60,16 +64,16 @@ import org.jgroups.persistence.CannotConnectException;
  *
  * $Id$
  */
-public abstract class DelegateSupport implements Streamable, Serializable
+public abstract class DelegateSupport<T extends HierarchicalState> implements Streamable, Serializable
 {
    // Constants ------------------------------------------------------------------------------------
-      
+
 	private static final long serialVersionUID = -1362079381836473747L;
 
 	private static final Logger log = Logger.getLogger(DelegateSupport.class);
-   
+
    private static boolean trace = log.isTraceEnabled();
-   
+
    // Attributes -----------------------------------------------------------------------------------
 
    // This is set on the server.
@@ -79,10 +83,10 @@ public abstract class DelegateSupport implements Streamable, Serializable
    // The reason we don't use the meta-data to store the state for the delegate is to avoid the
    // extra HashMap lookup that would entail. This can be significant since the state could be
    // queried for many aspects in an a single invocation.
-   protected transient HierarchicalState state;
-   
+   protected transient T state;
+
    protected transient byte version;
-   
+
    protected transient Client client;
 
    // Static ---------------------------------------------------------------------------------------
@@ -107,9 +111,9 @@ public abstract class DelegateSupport implements Streamable, Serializable
       // Neede a meaninful name to change the aop stack programatically (HA uses that)
       return this.getClass().getName();
    }
-   
+
    // Streamable implementation --------------------------------------------------------------------
-   
+
    public void read(DataInputStream in) throws Exception
    {
       id = in.readUTF();
@@ -122,15 +126,15 @@ public abstract class DelegateSupport implements Streamable, Serializable
 
    // Public ---------------------------------------------------------------------------------------
 
-   public HierarchicalState getState()
+   public T getState()
    {
       return state;
    }
-   
-   public void setState(HierarchicalState state)
+
+   public void setState(T state)
    {
       this.state = state;
-      
+
       this.version = state.getVersionToUse().getProviderIncrementingVersion();
    }
 
@@ -145,37 +149,37 @@ public abstract class DelegateSupport implements Streamable, Serializable
     * "failed" connection delegate will have to assume the ID of the new connection endpoint, the
     * new RemotingConnection instance, etc.
     */
-   public void synchronizeWith(DelegateSupport newDelegate) throws Exception
+   public void synchronizeWith(DelegateSupport<T> newDelegate) throws Exception
    {
       id = newDelegate.getID();
    }
 
    // Package protected ----------------------------------------------------------------------------
 
-   // Protected ------------------------------------------------------------------------------------     
-   
-   protected void sendOneWay(AbstractPacket packet) throws JMSException 
+   // Protected ------------------------------------------------------------------------------------
+
+   protected void sendOneWay(AbstractPacket packet) throws JMSException
    {
       sendOneWay(client, id, version, packet);
    }
-   
+
    protected static void sendOneWay(Client client, String targetID, byte version, AbstractPacket packet) throws JMSException
    {
       assert client != null;
       assertValidID(targetID);
       assert packet != null;
-      
+
       packet.setVersion(version);
       packet.setTargetID(targetID);
-      
-      client.sendOneWay(packet);      
+
+      client.sendOneWay(packet);
    }
-   
+
    protected AbstractPacket sendBlocking(AbstractPacket request) throws JMSException
    {
       return sendBlocking(client, id, version, request);
    }
-   
+
    protected static AbstractPacket sendBlocking(Client client, String targetID, byte version, AbstractPacket request) throws JMSException
    {
       assert client != null;
@@ -200,8 +204,46 @@ public abstract class DelegateSupport implements Streamable, Serializable
       }
    }
 
+   protected void closeChildren()
+   {
+         Set<HierarchicalState> clone;
+
+         Set<HierarchicalState> children = state.getChildren();
+
+         if (children == null)
+         {
+            if (trace) { log.trace(this + " has no children"); }
+            return;
+         }
+
+         synchronized (children)
+         {
+            clone = new HashSet<HierarchicalState>(children);
+         }
+
+         // Cycle through the children this will do a depth first close
+         for (HierarchicalState child: clone)
+         {
+            Closeable del = (Closeable)child.getCloseableDelegate();
+            try
+            {
+               del.closing(-1);
+               del.close();
+            }
+            catch (Throwable t)
+            {
+               //We swallow exceptions in close/closing, this is because if the connection fails, it is naturally for code to then close
+               //in a finally block, it would not then be appropriate to throw an exception. This is a common technique
+               if (trace)
+               {
+                  log.trace("Failed to close", t);
+               }
+            }
+         }
+   }
+
    // Private --------------------------------------------------------------------------------------
-   
+
    public static JMSException handleThrowable(Throwable t)
    {
       // ConnectionFailedException could happen during ConnectionFactory.createConnection.
@@ -222,9 +264,9 @@ public abstract class DelegateSupport implements Streamable, Serializable
       else if (t instanceof RuntimeException)
       {
          RuntimeException re = (RuntimeException)t;
-         
+
          Throwable initCause = re.getCause();
-         
+
          if (initCause != null)
          {
             do
@@ -239,9 +281,9 @@ public abstract class DelegateSupport implements Streamable, Serializable
             while (initCause != null);
          }
       }
-         
-      return new MessagingJMSException("Failed to invoke", t);      
+
+      return new MessagingJMSException("Failed to invoke", t);
    }
-   
+
    // Inner classes --------------------------------------------------------------------------------
 }

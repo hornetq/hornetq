@@ -32,7 +32,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.jboss.aop.AspectXmlLoader;
 import org.jboss.aop.microcontainer.aspects.jmx.JMX;
 import org.jboss.jms.server.connectionfactory.ConnectionFactoryDeployer;
 import org.jboss.jms.server.connectionfactory.ConnectionFactoryJNDIMapper;
@@ -92,7 +91,6 @@ public class ServerPeer implements JmsServer
 
    // Attributes -----------------------------------------------------------------------------------
 
-   private byte[] clientAOPStack;
    private Version version;
 
 
@@ -136,7 +134,6 @@ public class ServerPeer implements JmsServer
    private MinaService minaService;
    
    private Configuration configuration;
-   private static boolean aopLoaded =false;
 
 
    // Constructors ---------------------------------------------------------------------------------
@@ -170,13 +167,6 @@ public class ServerPeer implements JmsServer
          }
 
          log.debug(this + " starting");
-
-         if(!aopLoaded)
-         {
-            loadClientAOPConfig();
-            loadServerAOPConfig();
-            aopLoaded = true;
-         }
 
          ((JDBCPersistenceManager) persistenceManager).injectNodeID(configuration.getServerPeerID());
 
@@ -304,10 +294,6 @@ public class ServerPeer implements JmsServer
          messageCounterManager.stop();
          messageCounterManager = null;
          //postOffice = null;
-
-         unloadServerAOPConfig();
-
-         // TODO unloadClientAOPConfig();
 
          MessagingTimeoutFactory.instance.reset();
 
@@ -493,11 +479,6 @@ public class ServerPeer implements JmsServer
    }
 
    // Public ---------------------------------------------------------------------------------------
-
-   public byte[] getClientAOPStack()
-   {
-      return clientAOPStack;
-   }
 
    public MessageCounterManager getMessageCounterManager()
    {
@@ -705,51 +686,6 @@ public class ServerPeer implements JmsServer
    // Protected ------------------------------------------------------------------------------------
 
    // Private --------------------------------------------------------------------------------------
-
-   private void loadServerAOPConfig() throws Exception
-   {
-      URL url = this.getClass().getClassLoader().getResource("aop-messaging-server.xml");
-      AspectXmlLoader.deployXML(url, this.getClass().getClassLoader());
-   }
-
-   private void unloadServerAOPConfig() throws Exception
-   {
-      URL url = this.getClass().getClassLoader().getResource("aop-messaging-server.xml");
-      AspectXmlLoader.undeployXML(url);
-   }
-
-   private void loadClientAOPConfig() throws Exception
-   {
-      // Note the file is called aop-messaging-client.xml NOT messaging-client-aop.xml. This is
-      // because the JBoss will automatically deploy any files ending with aop.xml; we do not want
-      // this to happen for the client config
-
-      URL url = this.getClass().getClassLoader().getResource("aop-messaging-client.xml");
-      InputStream is = null;
-      ByteArrayOutputStream os = new ByteArrayOutputStream();
-      try
-      {
-         is = url.openStream();
-         int b;
-         while ((b = is.read()) != -1)
-         {
-            os.write(b);
-         }
-         os.flush();
-         clientAOPStack = os.toByteArray();
-      }
-      finally
-      {
-         if (is != null)
-         {
-            is.close();
-         }
-         if (os != null)
-         {
-            os.close();
-         }
-      }
-   }
 
    public List listAllMessages(String queueName) throws Exception
    {

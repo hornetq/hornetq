@@ -152,9 +152,7 @@ public class StressTestBase extends JBMServerTestCase
    
    protected void tweakXASession(XASession sess)
    {
-      JBossSession jsess = (JBossSession)sess;
-      
-      SessionState sstate = (SessionState)((DelegateSupport)jsess.getDelegate()).getState();
+      SessionState sstate = getDelegate(sess).getState();
       
       sstate.setTreatAsNonTransactedWhenNotEnlisted(false);
    }

@@ -544,7 +544,7 @@ public class ClientConsumer
        this.consumerID = consumerId;
    }
    
-   public void addToFrontOfBuffer(JBossMessage proxy) throws Exception
+   public void addToFrontOfBuffer(JBossMessage proxy) throws JMSException
    {
       synchronized (mainLock)
       {

@@ -39,6 +39,7 @@ import org.jboss.jms.client.delegate.ClientConsumerDelegate;
 import org.jboss.jms.client.delegate.ClientProducerDelegate;
 import org.jboss.jms.client.delegate.ClientSessionDelegate;
 import org.jboss.jms.client.delegate.DelegateSupport;
+import org.jboss.jms.client.Closeable;
 import org.jboss.jms.delegate.DeliveryInfo;
 import org.jboss.jms.delegate.DeliveryRecovery;
 import org.jboss.jms.delegate.SessionDelegate;
@@ -62,7 +63,7 @@ import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
  *
  * $Id$
  */
-public class SessionState extends HierarchicalStateSupport
+public class SessionState extends HierarchicalStateSupport<ConnectionState, ClientSessionDelegate>
 {
 
    // Constants ------------------------------------------------------------------------------------
@@ -74,7 +75,8 @@ public class SessionState extends HierarchicalStateSupport
    // Attributes -----------------------------------------------------------------------------------
 
    private ConnectionState parent;
-   private SessionDelegate delegate;
+   private ClientSessionDelegate delegate;
+   private SessionDelegate proxyDelegate;
 
    private String sessionID;
    private int acknowledgeMode;
@@ -113,11 +115,13 @@ public class SessionState extends HierarchicalStateSupport
    
    // Constructors ---------------------------------------------------------------------------------
 
-   public SessionState(ConnectionState parent, ClientSessionDelegate delegate,
+   public SessionState(ConnectionState parent, ClientSessionDelegate delegate, SessionDelegate proxyDelegate,
                        boolean transacted, int ackMode, boolean xa,
                        int dupsOKBatchSize)
    {
-      super(parent, (DelegateSupport)delegate);
+      super(parent, delegate);
+
+      this.proxyDelegate = proxyDelegate;
 
       this.sessionID = delegate.getID();
 
@@ -154,24 +158,30 @@ public class SessionState extends HierarchicalStateSupport
 
    // HierarchicalState implementation -------------------------------------------------------------
 
-   public DelegateSupport getDelegate()
+
+   public Closeable getCloseableDelegate()
    {
-      return (DelegateSupport)delegate;
+      return proxyDelegate;
    }
 
-   public void setDelegate(DelegateSupport delegate)
+   public ClientSessionDelegate getDelegate()
    {
-      this.delegate = (SessionDelegate)delegate;
+      return delegate;
    }
 
-   public HierarchicalState getParent()
+   public void setDelegate(ClientSessionDelegate delegate)
+   {
+      this.delegate = delegate;
+   }
+
+   public ConnectionState getParent()
    {
       return parent;
    }
 
-   public void setParent(HierarchicalState parent)
+   public void setParent(ConnectionState parent)
    {
-      this.parent = (ConnectionState)parent;
+      this.parent = parent;
    }
 
    public Version getVersionToUse()

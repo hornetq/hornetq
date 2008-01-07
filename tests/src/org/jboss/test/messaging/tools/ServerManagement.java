@@ -606,32 +606,6 @@ public class ServerManagement
       }
    }
 
-   /**
-    * Install dynamically an AOP advice that will do "bad things" on the server, simulating all
-    * sorts of failures. I expect the name of this method to be refactored as we learn more about
-    * this type of testing.
-    *
-    * @return a reference to the server that has been poisoned. Use this reference to kill the
-    *         server after use.
-    */
-   public static Server poisonTheServer(int serverIndex, int type) throws Exception
-   {
-
-      Server poisoned = servers.get(serverIndex);
-
-      //We set the server to null so it can be recreated again, but ONLY for those poisons that cause the server to get killed
-      //We do not do this for other poisons that don't
-
-      /*if (type != PoisonInterceptor.LONG_SEND && type != PoisonInterceptor.NULL)
-      {
-         servers.get(0) = null;
-      }*/
-
-      poisoned.poisonTheServer(type);
-
-      return poisoned;
-   }
-
    public static UserTransaction getUserTransaction() throws Exception
    {
 

@@ -21,6 +21,18 @@
   */
 package org.jboss.test.messaging.jms;
 
+import javax.jms.Connection;
+import javax.jms.ConnectionMetaData;
+import javax.jms.ExceptionListener;
+import javax.jms.JMSException;
+import javax.jms.QueueConnection;
+import javax.jms.QueueConnectionFactory;
+import javax.jms.ServerSessionPool;
+import javax.jms.Session;
+import javax.jms.Topic;
+import javax.jms.TopicConnection;
+import javax.jms.TopicConnectionFactory;
+
 import org.jboss.jms.client.JBossConnection;
 import org.jboss.jms.client.delegate.ClientConnectionDelegate;
 import org.jboss.jms.client.state.ConnectionState;
@@ -29,8 +41,7 @@ import org.jboss.jms.message.MessageIdGeneratorFactory;
 import org.jboss.jms.tx.ResourceManager;
 import org.jboss.jms.tx.ResourceManagerFactory;
 import org.jboss.logging.Logger;
-
-import javax.jms.*;
+import org.jboss.messaging.util.ProxyFactory;
 
 
 /**
@@ -68,7 +79,7 @@ public class ConnectionTest extends JMSTestCase
    {
       Connection conn1 = cf.createConnection();      
             
-      ClientConnectionDelegate del1 = (ClientConnectionDelegate)((JBossConnection)conn1).getDelegate();
+      ClientConnectionDelegate del1 = getDelegate(conn1);
       
       ConnectionState state1 = (ConnectionState)del1.getState();
       
@@ -76,7 +87,7 @@ public class ConnectionTest extends JMSTestCase
       
       Connection conn2 = cf.createConnection();      
       
-      ClientConnectionDelegate del2 = (ClientConnectionDelegate)((JBossConnection)conn2).getDelegate();
+      ClientConnectionDelegate del2 = getDelegate(conn2);
       
       ConnectionState state2 = (ConnectionState)del2.getState();
       
@@ -159,7 +170,7 @@ public class ConnectionTest extends JMSTestCase
    {
       Connection conn1 = cf.createConnection();      
             
-      ClientConnectionDelegate del1 = (ClientConnectionDelegate)((JBossConnection)conn1).getDelegate();
+      ClientConnectionDelegate del1 = getDelegate(conn1);
       
       ConnectionState state1 = (ConnectionState)del1.getState();
       
@@ -167,7 +178,7 @@ public class ConnectionTest extends JMSTestCase
       
       Connection conn2 = cf.createConnection();      
       
-      ClientConnectionDelegate del2 = (ClientConnectionDelegate)((JBossConnection)conn2).getDelegate();
+      ClientConnectionDelegate del2 = getDelegate(conn2);
       
       ConnectionState state2 = (ConnectionState)del2.getState();
       

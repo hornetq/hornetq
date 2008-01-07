@@ -29,14 +29,18 @@ import javax.jms.Message;
 import javax.jms.MessageListener;
 
 import org.jboss.jms.client.state.ConnectionState;
-import org.jboss.jms.client.state.HierarchicalState;
+import org.jboss.jms.client.state.ConsumerState;
+import org.jboss.jms.client.state.SessionState;
+import org.jboss.jms.client.remoting.CallbackManager;
 import org.jboss.jms.delegate.ConsumerDelegate;
 import org.jboss.jms.destination.JBossDestination;
+import org.jboss.jms.exception.MessagingShutdownException;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.remoting.wireformat.ChangeRateMessage;
 import org.jboss.messaging.core.remoting.wireformat.CloseMessage;
 import org.jboss.messaging.core.remoting.wireformat.ClosingRequest;
 import org.jboss.messaging.core.remoting.wireformat.ClosingResponse;
+import org.jboss.messaging.core.remoting.PacketDispatcher;
 
 /**
  * The client-side Consumer delegate class.
@@ -49,7 +53,7 @@ import org.jboss.messaging.core.remoting.wireformat.ClosingResponse;
  *
  * $Id$
  */
-public class ClientConsumerDelegate extends DelegateSupport implements ConsumerDelegate
+public class ClientConsumerDelegate extends DelegateSupport<ConsumerState> implements ConsumerDelegate
 {
    // Constants ------------------------------------------------------------------------------------
 
@@ -106,7 +110,7 @@ public class ClientConsumerDelegate extends DelegateSupport implements ConsumerD
 
    }
 
-   public void setState(HierarchicalState state)
+   public void setState(ConsumerState state)
    {
       super.setState(state);
 
@@ -121,7 +125,60 @@ public class ClientConsumerDelegate extends DelegateSupport implements ConsumerD
       sendBlocking(new CloseMessage());
    }
 
+
    public long closing(long sequence) throws JMSException
+   {
+      ConsumerState consumerState = getState();
+      try
+      {
+
+         // We make sure closing is called on the ServerConsumerEndpoint.
+         // This returns us the last delivery id sent
+
+         long lastDeliveryId = invokeClosing(sequence);
+
+         // First we call close on the ClientConsumer which waits for onMessage invocations
+         // to complete and the last delivery to arrive
+         consumerState.getClientConsumer().close(lastDeliveryId);
+
+         SessionState sessionState = (SessionState) consumerState.getParent();
+         ConnectionState connectionState = (ConnectionState) sessionState.getParent();
+
+         sessionState.removeCallbackHandler(consumerState.getClientConsumer());
+
+         CallbackManager cm = connectionState.getRemotingConnection().getCallbackManager();
+         cm.unregisterHandler(consumerState.getConsumerID());
+
+         PacketDispatcher.client.unregister(consumerState.getConsumerID());
+
+         //And then we cancel any messages still in the message callback handler buffer
+         consumerState.getClientConsumer().cancelBuffer();
+
+         return lastDeliveryId;
+
+      }
+      catch (Exception proxiedException)
+      {
+         ConnectionState connectionState = (ConnectionState) (consumerState.getParent().getParent());
+         // if ServerPeer is shutdown or
+         // if there is no failover in place... we just close the consumerState as well
+         if (proxiedException instanceof MessagingShutdownException ||
+                 (connectionState.getFailoverCommandCenter() == null))
+
+
+         {
+            if (!consumerState.getClientConsumer().isClosed())
+            {
+               consumerState.getClientConsumer().close(-1);
+            }
+         }
+         JMSException ex = new JMSException(proxiedException.toString());
+         ex.initCause(proxiedException);
+         throw ex;
+      }
+   }
+
+   private long invokeClosing(long sequence) throws JMSException
    {
       ClosingRequest request = new ClosingRequest(sequence);
       ClosingResponse response = (ClosingResponse) sendBlocking(request);
@@ -141,7 +198,7 @@ public class ClientConsumerDelegate extends DelegateSupport implements ConsumerD
     */
    public MessageListener getMessageListener()
    {
-      throw new IllegalStateException("This invocation should not be handled here!");
+      return state.getClientConsumer().getMessageListener();
    }
 
    /**
@@ -150,16 +207,16 @@ public class ClientConsumerDelegate extends DelegateSupport implements ConsumerD
     */
    public Message receive(long timeout) throws JMSException
    {
-      throw new IllegalStateException("This invocation should not be handled here!");
+      return state.getClientConsumer().receive(timeout);
    }
 
    /**
     * This invocation should either be handled by the client-side interceptor chain or by the
     * server-side endpoint.
     */
-   public void setMessageListener(MessageListener listener)
+   public void setMessageListener(MessageListener listener) throws JMSException
    {
-      throw new IllegalStateException("This invocation should not be handled here!");
+      state.getClientConsumer().setMessageListener(listener);
    }
 
    /**
@@ -168,7 +225,7 @@ public class ClientConsumerDelegate extends DelegateSupport implements ConsumerD
     */
    public boolean getNoLocal()
    {
-      throw new IllegalStateException("This invocation should not be handled here!");
+      return getState().isNoLocal();
    }
 
    /**
@@ -177,7 +234,7 @@ public class ClientConsumerDelegate extends DelegateSupport implements ConsumerD
     */
    public JBossDestination getDestination()
    {
-      throw new IllegalStateException("This invocation should not be handled here!");
+      return state.getDestination();
    }
 
    /**
@@ -186,7 +243,7 @@ public class ClientConsumerDelegate extends DelegateSupport implements ConsumerD
     */
    public String getMessageSelector()
    {
-      throw new IllegalStateException("This invocation should not be handled here!");
+      return state.getSelector();
    }
 
    // Streamable implementation ----------------------------------------------------------

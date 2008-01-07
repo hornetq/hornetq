@@ -21,11 +21,23 @@
   */
 package org.jboss.test.messaging.jms;
 
+import javax.jms.Connection;
+import javax.jms.ConnectionFactory;
+import javax.jms.DeliveryMode;
+import javax.jms.Message;
+import javax.jms.MessageConsumer;
+import javax.jms.MessageListener;
+import javax.jms.MessageProducer;
+import javax.jms.Session;
+import javax.jms.TextMessage;
+import javax.jms.TopicConnection;
+import javax.jms.TopicPublisher;
+import javax.jms.TopicSession;
+import javax.jms.TopicSubscriber;
+
 import EDU.oswego.cs.dl.util.concurrent.Latch;
 import org.jboss.jms.client.JBossSession;
-import org.jboss.jms.client.delegate.ClientSessionDelegate;
-
-import javax.jms.*;
+import org.jboss.jms.delegate.SessionDelegate;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -675,7 +687,7 @@ public class AcknowledgementTest extends JMSTestCase
 	      
 	      JBossSession sess = (JBossSession)conn.createSession(false, Session.DUPS_OK_ACKNOWLEDGE);
 	      
-	      ClientSessionDelegate del = (ClientSessionDelegate)sess.getDelegate();
+	      SessionDelegate del = getDelegate(sess);
 	      
 	      assertEquals(1000, del.getDupsOKBatchSize());
       }
@@ -1226,7 +1238,7 @@ public class AcknowledgementTest extends JMSTestCase
                   
             TextMessage tm = (TextMessage)m;
             
-            //log.info("Got message: " + tm.getText());            
+            //log.info("Got message: " + tm.getText());
                       
             // Receive first three messages then recover() session
             // Only last message should be redelivered
@@ -1299,7 +1311,7 @@ public class AcknowledgementTest extends JMSTestCase
             count++;
                   
             TextMessage tm = (TextMessage)m;
-                       
+
             // Receive first three messages then recover() session
             // Only last message should be redelivered
             if (count == 1)

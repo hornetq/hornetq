@@ -896,20 +896,4 @@ public class JBMServerTestCase extends JBMBaseTestCase
       }
    }
 
-   protected Server poisonTheServer(int serverIndex, int type) throws Exception
-   {
-      Server poisoned = servers.get(serverIndex);
-
-      //We set the server to null so it can be recreated again, but ONLY for those poisons that cause the server to get killed
-      //We do not do this for other poisons that don't
-
-      /*if (type != PoisonInterceptor.LONG_SEND && type != PoisonInterceptor.NULL)
-      {
-         servers.get(0) = null;
-      }*/
-
-      poisoned.poisonTheServer(type);
-
-      return poisoned;
-   }
 }

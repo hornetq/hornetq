@@ -187,24 +187,12 @@ public class JBossConnectionFactory implements
                                                       boolean isXA, int type)
       throws JMSException
    {
-      try
-      {
-         ClientAOPStackLoader.getInstance().load(delegate);
-      }
-      catch(Exception e)
-      {
-         // Need to log message since no guarantee that client will log it
-         final String msg = "Failed to download and/or install client side AOP stack";
-         log.error(msg, e);
-         throw new RuntimeException(msg, e);
-      }
-
       // The version used by the connection is the minimum of the server version for the
       // connection factory and the client code version
 
       CreateConnectionResult res = delegate.createConnectionDelegate(username, password, -1);
 
-      return new JBossConnection(res.getDelegate(), type);
+      return new JBossConnection(res.getProxiedDelegate(), type);
    }
    
    // Private --------------------------------------------------------------------------------------

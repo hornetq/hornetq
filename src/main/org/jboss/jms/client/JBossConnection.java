@@ -22,7 +22,6 @@
 package org.jboss.jms.client;
 
 import java.io.Serializable;
-
 import javax.jms.Connection;
 import javax.jms.ConnectionConsumer;
 import javax.jms.ConnectionMetaData;
@@ -45,10 +44,10 @@ import javax.jms.XATopicConnection;
 import javax.jms.XATopicSession;
 
 import org.jboss.jms.client.delegate.ClientConnectionDelegate;
-import org.jboss.jms.client.delegate.DelegateSupport;
 import org.jboss.jms.client.state.ConnectionState;
 import org.jboss.jms.delegate.ConnectionDelegate;
 import org.jboss.jms.delegate.SessionDelegate;
+import org.jboss.messaging.util.ProxyFactory;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
@@ -236,7 +235,7 @@ public class JBossConnection implements
     */
    public int getServerID()
    {
-      return ((ConnectionState)((DelegateSupport)delegate).getState()).getServerID();
+      return ((ConnectionState)(ProxyFactory.getDelegate(delegate)).getState()).getServerID();
    }
 
    public void registerFailoverListener(FailoverListener listener)

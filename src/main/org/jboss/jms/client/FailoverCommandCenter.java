@@ -139,7 +139,7 @@ public class FailoverCommandCenter
          else
          {      
             // recursively synchronize state
-            ClientConnectionDelegate newDelegate = (ClientConnectionDelegate)res.getDelegate();
+            ClientConnectionDelegate newDelegate = (ClientConnectionDelegate)res.getInternalDelegate();
             
             log.trace("Synchronizing state");
             state.getDelegate().synchronizeWith(newDelegate);

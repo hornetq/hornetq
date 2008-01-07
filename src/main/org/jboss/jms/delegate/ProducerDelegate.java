@@ -58,7 +58,7 @@ public interface ProducerDelegate extends Closeable
    
    JBossDestination getDestination() throws JMSException;
    
-   void setDestination(JBossDestination dest);
+   void setDestination(JBossDestination dest) throws JMSException;
 
    /**
     * This method is only handled by the advice stack, the corresponding invocation is never sent

@@ -25,7 +25,7 @@ package org.jboss.test.messaging.jms.clustering;
 import java.lang.reflect.Method;
 import java.util.Map;
 
-import org.jboss.jms.client.container.ClusteringAspect;
+import org.jboss.jms.client.delegate.ClientClusteredConnectionFactoryDelegate;
 import org.jboss.test.messaging.MessagingTestCase;
 
 /**
@@ -92,7 +92,7 @@ public class ClusteringAspectInternalTest extends MessagingTestCase
     */
    private Integer callGuessFailoverID(Map map, Integer value) throws Exception
    {
-      Method method = ClusteringAspect.class.getDeclaredMethod("guessFailoverID",
+      Method method = ClientClusteredConnectionFactoryDelegate.class.getDeclaredMethod("guessFailoverID",
          new Class[]{Map.class, Integer.class});
 
       method.setAccessible(true);

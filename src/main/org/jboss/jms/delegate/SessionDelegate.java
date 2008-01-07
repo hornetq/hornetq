@@ -72,17 +72,17 @@ public interface SessionDelegate extends SessionEndpoint
 
    void setMessageListener(MessageListener listener) throws JMSException;
 
-   void run();
+   void run() throws JMSException;
 
    XAResource getXAResource();
 
    void addAsfMessage(JBossMessage m, String consumerID, String queueName,
                       int maxDeliveries, SessionDelegate connectionConsumerDelegate,
-                      boolean shouldAck);
+                      boolean shouldAck) throws JMSException;
 
-   boolean getTransacted();
+   boolean getTransacted() throws JMSException;
 
-   int getAcknowledgeMode();
+   int getAcknowledgeMode() throws JMSException;
 
    void commit() throws JMSException;
 

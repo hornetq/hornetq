@@ -29,7 +29,6 @@ import org.jboss.jms.client.delegate.ClientClusteredConnectionFactoryDelegate;
 import org.jboss.jms.client.delegate.ClientConnectionFactoryDelegate;
 import org.jboss.jms.exception.MessagingNetworkFailureException;
 import org.jboss.test.messaging.tools.ServerManagement;
-import org.jboss.test.messaging.tools.aop.PoisonInterceptor;
 import org.jboss.test.messaging.tools.container.ServiceAttributeOverrides;
 import org.jboss.test.messaging.tools.container.ServiceContainer;
 
@@ -64,50 +63,6 @@ public class ClusteredConnectionFactoryTest extends ClusteringTestBase
    	super.setUp();
    }
    
-   public void testGetAOPBroken() throws Exception
-   {      
-      ServerManagement.kill(1);
-      ServerManagement.kill(0);
-
-      try
-      {
-         assertNotNull(((JBossConnectionFactory)cf).getDelegate().getClientAOPStack());
-         fail("This should throw an exception as every server is down");
-      }
-      catch (MessagingNetworkFailureException e)
-      {
-         log.trace(e.toString(), e);
-      }
-   }
-   
-   public void testLoadAOP() throws Exception
-   {
-      Connection conn = null;
-
-      try
-      {
-         ServerManagement.kill(1);
-         
-         assertNotNull(((JBossConnectionFactory)cf).getDelegate().getClientAOPStack());
-
-         conn = cf.createConnection();
-         assertEquals(0, getServerId(conn));
-      }
-      finally
-      {
-         if (conn != null)
-         {
-            try
-            {
-               conn.close();
-            }
-            catch (Exception ignored)
-            {
-            }
-         }
-      }
-   }
-      
    public void testCreateConnectionOnBrokenServer() throws Exception
    {
       Connection conn = null;
@@ -141,39 +96,40 @@ public class ClusteredConnectionFactoryTest extends ClusteringTestBase
       }
    }
 
-   public void testPoisonCFs() throws Exception
-   {
-      Connection conn = null;
-
-      try
-      {
-         conn = createConnectionOnServer(cf, 0);
-         conn.close();
-         
-         // Poison the server
-         ServerManagement.poisonTheServer(1, PoisonInterceptor.CF_CREATE_CONNECTION);
-
-         // this should break on server1
-         conn = cf.createConnection();
-         
-         assertEquals(0, getServerId(conn));
-         
-         conn.close();
-         
-         conn = cf.createConnection();
-         
-         assertEquals(0, getServerId(conn));
-         
-         conn.close();
-      }
-      finally
-      {
-         if (conn != null)
-         {
-            conn.close();
-         }
-      }
-   }
+   // TODO: What to do with this test?
+//   public void testPoisonCFs() throws Exception
+//   {
+//      Connection conn = null;
+//
+//      try
+//      {
+//         conn = createConnectionOnServer(cf, 0);
+//         conn.close();
+//
+//         // Poison the server
+//         ServerManagement.poisonTheServer(1, PoisonInterceptor.CF_CREATE_CONNECTION);
+//
+//         // this should break on server1
+//         conn = cf.createConnection();
+//
+//         assertEquals(0, getServerId(conn));
+//
+//         conn.close();
+//
+//         conn = cf.createConnection();
+//
+//         assertEquals(0, getServerId(conn));
+//
+//         conn.close();
+//      }
+//      finally
+//      {
+//         if (conn != null)
+//         {
+//            conn.close();
+//         }
+//      }
+//   }
 
    public void testRestartServer() throws Exception
    {

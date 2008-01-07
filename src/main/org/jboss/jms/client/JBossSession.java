@@ -22,7 +22,6 @@
 package org.jboss.jms.client;
 
 import java.io.Serializable;
-
 import javax.jms.BytesMessage;
 import javax.jms.Destination;
 import javax.jms.IllegalStateException;
@@ -53,7 +52,6 @@ import javax.jms.XASession;
 import javax.jms.XATopicSession;
 import javax.transaction.xa.XAResource;
 
-import org.jboss.jms.client.delegate.DelegateSupport;
 import org.jboss.jms.client.state.SessionState;
 import org.jboss.jms.delegate.BrowserDelegate;
 import org.jboss.jms.delegate.ConsumerDelegate;
@@ -66,6 +64,7 @@ import org.jboss.jms.destination.JBossTemporaryTopic;
 import org.jboss.jms.destination.JBossTopic;
 import org.jboss.jms.message.JBossMessage;
 import org.jboss.logging.Logger;
+import org.jboss.messaging.util.ProxyFactory;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
@@ -108,7 +107,7 @@ public class JBossSession implements
    }
 
    // Session implementation ----------------------------------------
-
+                                                                        
    public BytesMessage createBytesMessage() throws JMSException
    {
    	return delegate.createBytesMessage();
@@ -195,8 +194,16 @@ public class JBossSession implements
 
    public void run()
    {
-      if (log.isTraceEnabled()) { log.trace("run() called"); }
-      delegate.run();
+      try
+      {
+         if (log.isTraceEnabled()) { log.trace("run() called"); }
+         delegate.run();
+      }
+      catch (JMSException e)
+      {
+         // TODO: What to do on this case?
+         log.error(e, e);
+      }
    }
 
    public MessageProducer createProducer(Destination d) throws JMSException
@@ -381,7 +388,7 @@ public class JBossSession implements
    
    public Session getSession() throws JMSException
    {      
-      SessionState state = (SessionState)((DelegateSupport)delegate).getState();
+      SessionState state = (SessionState)(ProxyFactory.getDelegate(delegate)).getState();
       if (!state.isXA())
       {
          throw new IllegalStateException("Isn't an XASession");
@@ -463,7 +470,7 @@ public class JBossSession implements
     * with messages to be processed by the session's run() method
     */
    void addAsfMessage(JBossMessage m, String consumerID, String queueName, int maxDeliveries,
-                      SessionDelegate connectionConsumerSession, boolean shouldAck)
+                      SessionDelegate connectionConsumerSession, boolean shouldAck) throws JMSException
    {
       delegate.addAsfMessage(m, consumerID, queueName, maxDeliveries, connectionConsumerSession, shouldAck);
    }

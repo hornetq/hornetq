@@ -66,7 +66,7 @@ public class SessionTest extends JBMServerTestCase
       cons.receive();
       sess.commit();
       
-      ClientSessionDelegate del = (ClientSessionDelegate)((JBossSession)sess).getDelegate();
+      ClientSessionDelegate del = getDelegate(sess);
       
       SessionState state = (SessionState)del.getState();
       ConnectionState cState = (ConnectionState)state.getParent();

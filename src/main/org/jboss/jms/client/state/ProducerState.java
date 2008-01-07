@@ -27,6 +27,8 @@ import javax.jms.DeliveryMode;
 import javax.jms.Destination;
 
 import org.jboss.jms.client.delegate.DelegateSupport;
+import org.jboss.jms.client.delegate.ClientProducerDelegate;
+import org.jboss.jms.client.Closeable;
 import org.jboss.jms.delegate.ProducerDelegate;
 import org.jboss.messaging.util.Version;
 
@@ -41,7 +43,7 @@ import org.jboss.messaging.util.Version;
  *
  * $Id$
  */
-public class ProducerState extends HierarchicalStateSupport
+public class ProducerState extends HierarchicalStateSupport<SessionState, ClientProducerDelegate>
 {
    // Constants ------------------------------------------------------------------------------------
 
@@ -59,35 +61,42 @@ public class ProducerState extends HierarchicalStateSupport
    private int strictTCK; // cache here
 
    private SessionState parent;
-   private ProducerDelegate delegate;
+   private ClientProducerDelegate delegate;
+   private ProducerDelegate proxyDelegate;
 
    // Constructors ---------------------------------------------------------------------------------
 
-   public ProducerState(SessionState parent, ProducerDelegate delegate, Destination dest)
+   public ProducerState(SessionState parent, ClientProducerDelegate delegate, ProducerDelegate proxyDelegate, Destination dest)
    {
-      super(parent, (DelegateSupport)delegate);
+      super(parent, delegate);
+      this.proxyDelegate = proxyDelegate;
       children = Collections.EMPTY_SET;
       this.destination = dest;
    }
 
    // HierarchicalState implementation -------------------------------------------------------------
 
-   public DelegateSupport getDelegate()
+   public Closeable getCloseableDelegate()
    {
-      return (DelegateSupport)delegate;
+      return proxyDelegate;
    }
 
-   public void setDelegate(DelegateSupport delegate)
+   public ClientProducerDelegate getDelegate()
    {
-      this.delegate=(ProducerDelegate)delegate;
+      return delegate;
    }
 
-   public void setParent(HierarchicalState parent)
+   public void setDelegate(ClientProducerDelegate delegate)
    {
-      this.parent = (SessionState)parent;
+      this.delegate=delegate;
    }
 
-   public HierarchicalState getParent()
+   public void setParent(SessionState parent)
+   {
+      this.parent = parent;
+   }
+
+   public SessionState getParent()
    {
       return parent;
    }

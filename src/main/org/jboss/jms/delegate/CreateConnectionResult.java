@@ -25,6 +25,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 
 import org.jboss.jms.client.delegate.ClientConnectionDelegate;
+import org.jboss.messaging.util.ProxyFactory;
 import org.jboss.messaging.util.Streamable;
 
 /**
@@ -53,6 +54,10 @@ public class CreateConnectionResult implements Streamable
 
    private int actualFailoverNodeID;
 
+   // TODO: Get rid of this
+   transient private ConnectionDelegate proxiedDelegate;
+
+
    // Constructors --------------------------------------------------
    
    public CreateConnectionResult()
@@ -78,9 +83,20 @@ public class CreateConnectionResult implements Streamable
 
    // Public --------------------------------------------------------
 
-   public ClientConnectionDelegate getDelegate()
+   public ClientConnectionDelegate getInternalDelegate()
    {
       return delegate;
+   }
+
+   public ConnectionDelegate getProxiedDelegate()
+   {
+      // TODO: Get rid of this Proxy
+      if (proxiedDelegate == null)
+      {
+         proxiedDelegate = (ConnectionDelegate) ProxyFactory.proxy(delegate, ConnectionDelegate.class);
+
+      }
+      return proxiedDelegate;
    }
 
    public int getActualFailoverNodeID()

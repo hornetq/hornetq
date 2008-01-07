@@ -21,6 +21,28 @@
   */
 package org.jboss.test.messaging.jms;
 
+import java.util.ArrayList;
+import javax.jms.Connection;
+import javax.jms.DeliveryMode;
+import javax.jms.JMSException;
+import javax.jms.Message;
+import javax.jms.MessageConsumer;
+import javax.jms.MessageListener;
+import javax.jms.MessageProducer;
+import javax.jms.ServerSession;
+import javax.jms.ServerSessionPool;
+import javax.jms.Session;
+import javax.jms.TextMessage;
+import javax.jms.XAConnection;
+import javax.jms.XAConnectionFactory;
+import javax.jms.XASession;
+import javax.naming.InitialContext;
+import javax.transaction.Transaction;
+import javax.transaction.TransactionManager;
+import javax.transaction.xa.XAException;
+import javax.transaction.xa.XAResource;
+import javax.transaction.xa.Xid;
+
 import com.arjuna.ats.internal.jta.transaction.arjunacore.TransactionManagerImple;
 import org.jboss.jms.client.JBossConnection;
 import org.jboss.jms.client.JBossConnectionFactory;
@@ -29,22 +51,18 @@ import org.jboss.jms.client.delegate.ClientConnectionDelegate;
 import org.jboss.jms.client.delegate.DelegateSupport;
 import org.jboss.jms.client.state.ConnectionState;
 import org.jboss.jms.client.state.SessionState;
-import org.jboss.jms.tx.*;
+import org.jboss.jms.tx.LocalTx;
+import org.jboss.jms.tx.MessagingXAResource;
+import org.jboss.jms.tx.MessagingXid;
+import org.jboss.jms.tx.ResourceManager;
+import org.jboss.jms.tx.ResourceManagerFactory;
 import org.jboss.logging.Logger;
+import org.jboss.messaging.util.ProxyFactory;
 import org.jboss.test.messaging.JBMServerTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
 import org.jboss.test.messaging.tools.container.ServiceContainer;
 import org.jboss.tm.TransactionManagerLocator;
 import org.jboss.tm.TxUtils;
-
-import javax.jms.*;
-import javax.naming.InitialContext;
-import javax.transaction.Transaction;
-import javax.transaction.TransactionManager;
-import javax.transaction.xa.XAException;
-import javax.transaction.xa.XAResource;
-import javax.transaction.xa.Xid;
-import java.util.ArrayList;
 
 /**
  *
@@ -263,8 +281,7 @@ public class XATest extends JBMServerTestCase
 
          Transaction trans = tm.getTransaction();
 
-         JBossSession session = (JBossSession)xasession;
-         SessionState state = (SessionState)((DelegateSupport)session.getDelegate()).getState();
+         SessionState state = getDelegate(xasession).getState();
 
          // Validates TX convertion
          assertTrue(state.getCurrentTxId() instanceof LocalTx);
@@ -564,9 +581,9 @@ public class XATest extends JBMServerTestCase
 
          JBossConnection jbConn = (JBossConnection)xaConn;
 
-         ClientConnectionDelegate del = (ClientConnectionDelegate)jbConn.getDelegate();
+         ClientConnectionDelegate del = getDelegate(jbConn);
 
-         ConnectionState state = (ConnectionState)del.getState();
+         ConnectionState state = del.getState();
 
          ResourceManager rm = state.getResourceManager();
 
@@ -626,7 +643,7 @@ public class XATest extends JBMServerTestCase
 
          JBossConnection jbConn = (JBossConnection)xaConn;
 
-         ClientConnectionDelegate del = (ClientConnectionDelegate)jbConn.getDelegate();
+         ClientConnectionDelegate del = getDelegate(xaConn);
 
          ConnectionState state = (ConnectionState)del.getState();
 

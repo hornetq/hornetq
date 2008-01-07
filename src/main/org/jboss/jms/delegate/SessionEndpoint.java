@@ -118,5 +118,10 @@ public interface SessionEndpoint extends Closeable
     * failover.
     */
    void recoverDeliveries(List createInfos, String oldSessionID) throws JMSException;
+
+
+   int getDupsOKBatchSize();
+
+   public boolean isStrictTck();
 }
 

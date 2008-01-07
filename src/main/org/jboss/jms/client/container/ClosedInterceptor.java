@@ -21,38 +21,32 @@
   */
 package org.jboss.jms.client.container;
 
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
-
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import javax.jms.IllegalStateException;
 
-import org.jboss.aop.advice.Interceptor;
-import org.jboss.aop.joinpoint.Invocation;
-import org.jboss.aop.joinpoint.MethodInvocation;
-import org.jboss.jms.client.Closeable;
-import org.jboss.jms.client.delegate.DelegateSupport;
-import org.jboss.jms.client.state.HierarchicalState;
 import org.jboss.logging.Logger;
 
 
 /**
  * An interceptor for checking closed state. It waits for other invocations to complete before
  * allowing the close. I.e. it performs the function of a "valve".
- * 
+ *
  * This interceptor is PER_INSTANCE.
- * 
+ *
  * @author <a href="mailto:adrian@jboss.org>Adrian Brock</a>
  * @author <a href="mailto:tim.fox@jboss.com>Tim Fox</a>
  * @author <a href="mailto:ovidiu@feodorov.com>Ovidiu Feodorov</a>
  *
  * $Id$
  */
-public class ClosedInterceptor implements Interceptor
+public class ClosedInterceptor implements InvocationHandler
 {
    // Constants -----------------------------------------------------
 
    private static final Logger log = Logger.getLogger(ClosedInterceptor.class);
+   private static boolean trace = log.isTraceEnabled();
 
    private static final int NOT_CLOSED = 0;
    private static final int IN_CLOSING = 1;
@@ -62,7 +56,6 @@ public class ClosedInterceptor implements Interceptor
 
    // Attributes ----------------------------------------------------
 
-   private boolean trace = log.isTraceEnabled();
 
    // The current state of the object guarded by this interceptor
    private int state = NOT_CLOSED;
@@ -70,8 +63,8 @@ public class ClosedInterceptor implements Interceptor
    // The inuse count
    private int inUseCount;
 
-   // The identity of the delegate this interceptor is associated with
-   private DelegateIdentity id;
+
+   private Object target;
 
    // Static --------------------------------------------------------
 
@@ -86,27 +79,24 @@ public class ClosedInterceptor implements Interceptor
 
    // Constructors --------------------------------------------------
 
-   public ClosedInterceptor()
+   public ClosedInterceptor(Object target)
    {
       state = NOT_CLOSED;
       inUseCount = 0;
-      id = null;
+      this.target=target;
    }
 
    // Public --------------------------------------------------------
 
+
+   public Object getTarget()
+   {
+      return target;
+   }
+
    public String toString()
    {
-      StringBuffer sb = new StringBuffer("ClosedInterceptor.");
-      if (id == null)
-      {
-         sb.append("UNINITIALIZED");
-      }
-      else
-      {
-         sb.append(id.getType()).append("[").append(id.getID()).append("]");
-      }
-      return sb.toString();
+      return "ClosedInterceptor for (" + target + ")";
    }
 
    // Interceptor implementation -----------------------------------
@@ -116,62 +106,39 @@ public class ClosedInterceptor implements Interceptor
       return "ClosedInterceptor";
    }
 
-   public Object invoke(Invocation invocation) throws Throwable
+   public Object invoke(Object o, Method method, Object[] args) throws Throwable
    {
-      // maintain the identity of the delegate that sends invocation through this interceptor, for
-      // logging purposes. It makes sense, since it's an PER_INSTANCE interceptor
-      if (id == null)
-      {
-         id = DelegateIdentity.getIdentity(invocation);
-      }
-
-      String methodName = ((MethodInvocation)invocation).getMethod().getName();
+      String methodName = method.getName();
 
       boolean isClosing = methodName.equals("closing");
       boolean isClose = methodName.equals("close");
 
-      if (isClosing)
+      synchronized(this)
       {
-         if (checkClosingAlreadyDone())
+         // object "in use", increment inUseCount
+         if (state == IN_CLOSE || state == CLOSED)
          {
-            return new Long(-1);
-         }
-      }
-      else if (isClose)
-      {
-         if(checkCloseAlreadyDone())
-         {
-            return null;
-         }
-      }
-      else
-      {
-         synchronized(this)
-         {
-            // object "in use", increment inUseCount
-            if (state == IN_CLOSE || state == CLOSED)
+            if (isClosing || isClose)
             {
-               log.error(this + ": method " + methodName + "() did not go through, " +
-                                "the interceptor is " + stateToString(state));
-
-               throw new IllegalStateException("The object is closed");
+               return new Long(-1);
             }
-            ++inUseCount;
-         }
-      }
+            log.error(this + ": method " + methodName + "() did not go through, " +
+                             "the interceptor is " + stateToString(state));
 
-      if (isClosing)
-      {
-         maintainRelatives(invocation);
+            throw new IllegalStateException("The object is closed");
+         }
+         ++inUseCount;
       }
 
       try
       {
-         return invocation.invokeNext();
+         return method.invoke(target, args);
       }
-      catch (Exception t)
+      catch (InvocationTargetException exT)
       {
-      	if (isClosing || isClose)
+         Throwable t = exT.getCause();
+
+         if (isClosing || isClose)
       	{
 	      	//We swallow exceptions in close/closing, this is because if the connection fails, it is naturally for code to then close
 	      	//in a finally block, it would not then be appropriate to throw an exception. This is a common technique
@@ -182,17 +149,7 @@ public class ClosedInterceptor implements Interceptor
       }
       finally
       {
-         if (isClosing)
-         {
-            // We make sure we remove ourself AFTER the invocation has been made otherwise in a
-            // failover situation we would end up divorced from the hierarchy and failover will not
-            // occur properly since failover would not be able to traverse the hierarchy and update
-            // the delegates properly
-            removeSelf(invocation);
-
-            closing();
-         }
-         else if (isClose)
+         if (isClose)
          {
             closed();
          }
@@ -265,71 +222,6 @@ public class ClosedInterceptor implements Interceptor
       if (--inUseCount == 0)
       {
          notifyAll();
-      }
-   }
-
-   /**
-    * Close children and remove from parent
-    *
-    * @param invocation the invocation
-    */
-   protected void maintainRelatives(Invocation invocation)
-   {                  
-      HierarchicalState state = ((DelegateSupport)invocation.getTargetObject()).getState();
-            
-      // We use a clone to avoid a deadlock where requests are made to close parent and child
-      // concurrently
-      
-      Set clone;
-
-      Set children = state.getChildren();
-      
-      if (children == null)
-      {
-         if (trace) { log.trace(this + " has no children"); }
-         return;
-      }
-      
-      synchronized (children)
-      {
-         clone = new HashSet(children);
-      }
-      
-      // Cycle through the children this will do a depth first close
-      for (Iterator i = clone.iterator(); i.hasNext();)
-      {
-         HierarchicalState child = (HierarchicalState)i.next();      
-         Closeable del = (Closeable)child.getDelegate();
-         try
-         {
-            del.closing(-1);
-            del.close();
-         }
-         catch (Throwable t)
-         {
-         	//We swallow exceptions in close/closing, this is because if the connection fails, it is naturally for code to then close
-         	//in a finally block, it would not then be appropriate to throw an exception. This is a common technique
-            if (trace)
-            {
-               log.trace("Failed to close", t);
-            }
-         }
-      }
-   }
-   
-   /**
-    * Remove from parent
-    * 
-    * @param invocation the invocation
-    */
-   protected void removeSelf(Invocation invocation)
-   {                  
-      HierarchicalState state = ((DelegateSupport)invocation.getTargetObject()).getState();
-            
-      HierarchicalState parent = state.getParent();
-      if (parent != null)
-      {                  
-         parent.getChildren().remove(state);
       }
    }
 

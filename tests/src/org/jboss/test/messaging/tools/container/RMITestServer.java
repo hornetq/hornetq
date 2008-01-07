@@ -493,11 +493,6 @@ public class RMITestServer extends UnicastRemoteObject implements Server
       return pl.drain();
    }
 
-   public void poisonTheServer(int type) throws Exception
-   {
-      server.poisonTheServer(type);
-   }
-   
    public void flushManagedConnectionPool()
    {
    	server.flushManagedConnectionPool();

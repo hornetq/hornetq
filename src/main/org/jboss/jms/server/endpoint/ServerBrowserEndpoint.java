@@ -265,9 +265,14 @@ public class ServerBrowserEndpoint implements BrowserEndpoint
       return msgs.iterator();
    }
 
+   public PacketHandler newHandler()
+   {
+      return new ServerBrowserEndpointHandler();
+   }
+
    // Inner classes --------------------------------------------------------------------------------
    
-   class ServerBrowserEndpointHandler implements PacketHandler {
+   private class ServerBrowserEndpointHandler implements PacketHandler {
 
       public String getID()
       {

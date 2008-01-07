@@ -304,7 +304,7 @@ public class MultiThreadFailoverTest extends ClusteringTestBase
             JBossConnection connTest = (JBossConnection)
                getConnection(new Connection[]{conn1, conn2, conn3}, i);
 
-            String locator = ((ClientConnectionDelegate) connTest.getDelegate()).
+            String locator = getDelegate(connTest).
                getRemotingConnection().getRemotingClient().getURI();
 
             log.info("Server " + i + " has locator=" + locator);

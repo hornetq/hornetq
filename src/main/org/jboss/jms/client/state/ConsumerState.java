@@ -28,6 +28,7 @@ import org.jboss.jms.client.delegate.ClientConnectionDelegate;
 import org.jboss.jms.client.delegate.ClientConsumerPacketHandler;
 import org.jboss.jms.client.delegate.DelegateSupport;
 import org.jboss.jms.client.remoting.CallbackManager;
+import org.jboss.jms.client.Closeable;
 import org.jboss.jms.delegate.ConsumerDelegate;
 import org.jboss.jms.destination.JBossDestination;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
@@ -59,6 +60,7 @@ public class ConsumerState extends HierarchicalStateSupport
    private boolean noLocal;
    private boolean isConnectionConsumer;
    private ClientConsumer clientConsumer;
+   private ConsumerDelegate proxyDelegate;
    private int bufferSize;
    private int maxDeliveries;
    private long redeliveryDelay;
@@ -70,11 +72,12 @@ public class ConsumerState extends HierarchicalStateSupport
    
    // Constructors ---------------------------------------------------------------------------------
 
-   public ConsumerState(SessionState parent, ConsumerDelegate delegate, JBossDestination dest,
+   public ConsumerState(SessionState parent, ConsumerDelegate delegate, ConsumerDelegate proxyDelegate, JBossDestination dest,
                         String selector, boolean noLocal, String subscriptionName, String consumerID,
                         boolean isCC, int bufferSize, int maxDeliveries, long redeliveryDelay)
    {
       super(parent, (DelegateSupport)delegate);
+      this.proxyDelegate = proxyDelegate;
       children = Collections.EMPTY_SET;
       this.destination = dest;
       this.selector = selector;
@@ -99,6 +102,12 @@ public class ConsumerState extends HierarchicalStateSupport
    }
 
    // HierarchicalState implementation -------------------------------------------------------------
+
+
+   public Closeable getCloseableDelegate()
+   {
+      return proxyDelegate;
+   }
 
    public DelegateSupport getDelegate()
    {

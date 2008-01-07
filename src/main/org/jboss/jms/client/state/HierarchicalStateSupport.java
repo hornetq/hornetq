@@ -21,18 +21,21 @@
   */
 package org.jboss.jms.client.state;
 
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Proxy;
 import java.util.Set;
 
+import org.jboss.jms.client.container.ClosedInterceptor;
 import org.jboss.jms.client.delegate.DelegateSupport;
 
 /**
  * Base implementation of HierarchicalState.
- * 
+ *
  * State is created and maintained by the StateCreationAspect. The state is placed in the meta data
  * for the invocation, so that it is available in any of the interceptors/aspects, this enables each
  * interceptor/aspect to access the state for it's delegate without having to add multiple get/set
  * methods on the delegate API.
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
@@ -41,20 +44,21 @@ import org.jboss.jms.client.delegate.DelegateSupport;
  *
  * $Id$
  */
-public abstract class HierarchicalStateSupport implements HierarchicalState
+public abstract class HierarchicalStateSupport<ParentType extends HierarchicalState, DelegateType extends DelegateSupport<?>>
+         implements HierarchicalState<ParentType, DelegateType>
 {
    // Constants ------------------------------------------------------------------------------------
 
    // Attributes -----------------------------------------------------------------------------------
 
    // Set<HierarchicalState>
-   protected Set children;
+   protected Set<HierarchicalState> children;
 
    // Static ---------------------------------------------------------------------------------------
 
    // Constructors ---------------------------------------------------------------------------------
 
-   public HierarchicalStateSupport(HierarchicalState parent, DelegateSupport delegate)
+   public HierarchicalStateSupport(ParentType parent, DelegateType delegate)
    {
       setParent(parent);
       setDelegate(delegate); // TODO - find a more elegant solution, delegate must implement an interface that has getID()
@@ -69,15 +73,17 @@ public abstract class HierarchicalStateSupport implements HierarchicalState
    /**
     * @return Set<HierarchicalState>
     */
-   public Set getChildren()
+   public Set<HierarchicalState> getChildren()
    {
       return children;
    }
 
    // Public ---------------------------------------------------------------------------------------
 
+
    // Protected ------------------------------------------------------------------------------------
 
+   // TODO: Get rid of this
    // Package Private ------------------------------------------------------------------------------
 
    // Private --------------------------------------------------------------------------------------

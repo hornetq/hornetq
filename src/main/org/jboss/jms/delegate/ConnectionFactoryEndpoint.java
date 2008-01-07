@@ -46,7 +46,5 @@ public interface ConnectionFactoryEndpoint
 
    /** Get the current Cluster topology associated with a ClusteredConnectionFactory */
    TopologyResult getTopology() throws JMSException;
-   
-   byte[] getClientAOPStack() throws JMSException;
 }
 

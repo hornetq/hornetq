@@ -21,20 +21,37 @@
  */
 package org.jboss.jms.server.bridge;
 
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.Map;
+import javax.jms.Connection;
+import javax.jms.ConnectionFactory;
+import javax.jms.Destination;
+import javax.jms.ExceptionListener;
+import javax.jms.JMSException;
+import javax.jms.Message;
+import javax.jms.MessageConsumer;
+import javax.jms.MessageListener;
+import javax.jms.MessageProducer;
+import javax.jms.Session;
+import javax.jms.Topic;
+import javax.jms.XAConnection;
+import javax.jms.XAConnectionFactory;
+import javax.jms.XASession;
+import javax.transaction.Transaction;
+import javax.transaction.TransactionManager;
+import javax.transaction.xa.XAResource;
+
 import org.jboss.jms.client.JBossSession;
 import org.jboss.jms.client.delegate.DelegateSupport;
 import org.jboss.jms.client.state.SessionState;
 import org.jboss.jms.message.JBossMessage;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.contract.MessagingComponent;
+import org.jboss.messaging.util.ProxyFactory;
 import org.jboss.tm.TransactionManagerLocator;
-
-import javax.jms.*;
-import javax.transaction.Transaction;
-import javax.transaction.TransactionManager;
-import javax.transaction.xa.XAResource;
-import java.lang.IllegalStateException;
-import java.util.*;
 
 /**
  * 
@@ -974,8 +991,9 @@ public class Bridge implements MessagingComponent
          if (forwardMode == FORWARD_MODE_XA && sourceSession instanceof JBossSession)
          {
          	JBossSession jsession = (JBossSession)sourceSession;
-         	
-         	SessionState sstate = (SessionState)((DelegateSupport)jsession.getDelegate()).getState();
+
+            ;
+            SessionState sstate = (SessionState)ProxyFactory.getDelegate(sourceSession).getState();
             
          	sstate.setTreatAsNonTransactedWhenNotEnlisted(false);
          }

@@ -26,7 +26,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
-
 import javax.jms.Connection;
 import javax.jms.Destination;
 import javax.jms.Message;
@@ -47,6 +46,7 @@ import org.jboss.jms.client.delegate.ClientSessionDelegate;
 import org.jboss.jms.client.remoting.JMSRemotingConnection;
 import org.jboss.jms.client.state.ConnectionState;
 import org.jboss.jms.client.state.SessionState;
+import org.jboss.messaging.util.ProxyFactory;
 import org.jboss.test.messaging.tools.ServerManagement;
 
 /**
@@ -377,12 +377,10 @@ public class HATest extends ClusteringTestBase
       {
          conn = createConnectionOnServer(cf, 1);
 
-         JBossConnection jbc = (JBossConnection)conn;
-         
          SimpleFailoverListener failoverListener = new SimpleFailoverListener();
          ((JBossConnection)conn).registerFailoverListener(failoverListener);
 
-         ClientConnectionDelegate del = (ClientConnectionDelegate)jbc.getDelegate();
+         ClientConnectionDelegate del = getDelegate(conn);
 
          ConnectionState state = (ConnectionState)del.getState();
 
@@ -503,9 +501,7 @@ public class HATest extends ClusteringTestBase
          SimpleFailoverListener failoverListener = new SimpleFailoverListener();
          ((JBossConnection)conn).registerFailoverListener(failoverListener);
 
-         JBossConnection jbc = (JBossConnection)conn;
-
-         ClientConnectionDelegate del = (ClientConnectionDelegate)jbc.getDelegate();
+         ClientConnectionDelegate del = getDelegate(conn);
 
          ConnectionState state = (ConnectionState)del.getState();
 
@@ -624,7 +620,7 @@ public class HATest extends ClusteringTestBase
       try
       {
          JBossSession session = (JBossSession) conn.createSession(true, Session.SESSION_TRANSACTED);
-         ClientSessionDelegate clientSessionDelegate = (ClientSessionDelegate) session.getDelegate();
+         ClientSessionDelegate clientSessionDelegate = getDelegate(session);
          SessionState sessionState = (SessionState) clientSessionDelegate.getState();
 
          MessageConsumer consumerHA = session.createDurableSubscriber((Topic) destination, "T1");
@@ -643,7 +639,7 @@ public class HATest extends ClusteringTestBase
 
          producer.send(session.createTextMessage("Hello again before failover"));
 
-         ClientConnectionDelegate delegate = (ClientConnectionDelegate) conn.getDelegate();
+         ClientConnectionDelegate delegate = getDelegate(conn);
 
          JMSRemotingConnection originalRemoting = delegate.getRemotingConnection();
 

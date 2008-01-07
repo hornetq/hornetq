@@ -41,15 +41,15 @@ import org.jboss.jms.destination.JBossDestination;
  */
 public interface ConsumerDelegate extends ConsumerEndpoint
 {
-   MessageListener getMessageListener();
+   MessageListener getMessageListener() throws JMSException;
 
-   void setMessageListener(MessageListener listener);
+   void setMessageListener(MessageListener listener) throws JMSException;
 
-   JBossDestination getDestination();
+   JBossDestination getDestination() throws JMSException;
 
-   boolean getNoLocal();
+   boolean getNoLocal() throws JMSException;
 
-   String getMessageSelector();
+   String getMessageSelector() throws JMSException;
 
    Message receive(long timeout) throws JMSException;
 }

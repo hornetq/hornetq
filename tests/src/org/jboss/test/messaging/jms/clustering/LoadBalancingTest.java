@@ -145,8 +145,7 @@ public class LoadBalancingTest extends ClusteringTestBase
 
    protected ConnectionState getConnectionState(Connection conn)
    {
-      return (ConnectionState) (((DelegateSupport) ((JBossConnection) conn).
-         getDelegate()).getState());
+      return getDelegate(conn).getState();
    }
 
    protected void setUp() throws Exception

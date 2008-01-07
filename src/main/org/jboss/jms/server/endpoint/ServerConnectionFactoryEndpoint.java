@@ -26,18 +26,30 @@ import java.util.Map;
 
 import javax.jms.JMSException;
 
-import org.jboss.aop.AspectManager;
 import org.jboss.jms.client.delegate.ClientConnectionDelegate;
 import org.jboss.jms.client.delegate.ClientConnectionFactoryDelegate;
 import org.jboss.jms.delegate.ConnectionFactoryEndpoint;
 import org.jboss.jms.delegate.CreateConnectionResult;
 import org.jboss.jms.delegate.TopologyResult;
 import org.jboss.jms.server.ServerPeer;
-import org.jboss.jms.server.endpoint.advised.ConnectionAdvised;
+import org.jboss.jms.exception.MessagingJMSException;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.PacketSender;
+import org.jboss.messaging.core.remoting.PacketHandler;
+import org.jboss.messaging.core.remoting.Assert;
 import org.jboss.messaging.core.remoting.wireformat.GetTopologyResponse;
+import org.jboss.messaging.core.remoting.wireformat.AbstractPacket;
+import org.jboss.messaging.core.remoting.wireformat.PacketType;
+import org.jboss.messaging.core.remoting.wireformat.CreateConnectionRequest;
+import org.jboss.messaging.core.remoting.wireformat.CreateConnectionResponse;
+import org.jboss.messaging.core.remoting.wireformat.GetClientAOPStackResponse;
+import org.jboss.messaging.core.remoting.wireformat.UpdateCallbackMessage;
+import org.jboss.messaging.core.remoting.wireformat.JMSExceptionMessage;
+import static org.jboss.messaging.core.remoting.wireformat.PacketType.REQ_CREATECONNECTION;
+import static org.jboss.messaging.core.remoting.wireformat.PacketType.REQ_GETCLIENTAOPSTACK;
+import static org.jboss.messaging.core.remoting.wireformat.PacketType.REQ_GETTOPOLOGY;
+import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_UPDATECALLBACK;
 import org.jboss.messaging.util.ExceptionUtil;
 import org.jboss.messaging.util.Version;
 
@@ -219,39 +231,13 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
 
       final String connectionID = endpoint.getConnectionID();
 
-      ConnectionAdvised connAdvised;
-      
-      // Need to synchronized to prevent a deadlock
-      // See http://jira.jboss.com/jira/browse/JBMESSAGING-797
-      synchronized (AspectManager.instance())
-      {       
-         connAdvised = new ConnectionAdvised(endpoint);
-      }
-      
-      PacketDispatcher.server.register(connAdvised.new ConnectionAdvisedPacketHandler(connectionID));
+      PacketDispatcher.server.register(endpoint.newHandler(connectionID));
 
       log.trace("created and registered " + endpoint);
 
-      // Need to synchronized to prevent a deadlock
-      // See http://jira.jboss.com/jira/browse/JBMESSAGING-797
-      synchronized (AspectManager.instance())
-      {         
-         return new ClientConnectionDelegate(connectionID, serverPeer.getConfiguration().getServerPeerID());
-      }
+      return new ClientConnectionDelegate(connectionID, serverPeer.getConfiguration().getServerPeerID());
    }
       
-   public byte[] getClientAOPStack() throws JMSException
-   {
-      try
-      {
-         return serverPeer.getClientAOPStack();
-      }
-      catch (Throwable t)
-      {
-         throw ExceptionUtil.handleJMSInvocation(t, this + " getClientAOPStack");
-      }
-   }
-   
    public void addSender(String VMID, String remotingSessionID,
          PacketSender sender) throws JMSException
    {
@@ -339,6 +325,11 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
       return "ConnectionFactoryEndpoint[" + id + "]";
    }
 
+   public PacketHandler newHandler()
+   {
+      return new ConnectionFactoryAdvisedPacketHandler();
+   }
+
    // Package protected ----------------------------------------------------------------------------
    
    boolean isSupportsFailover()
@@ -351,4 +342,75 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
    // Private --------------------------------------------------------------------------------------
 
    // Inner classes --------------------------------------------------------------------------------
+
+
+   private final class ConnectionFactoryAdvisedPacketHandler implements
+           PacketHandler
+   {
+      public String getID()
+      {
+         return ServerConnectionFactoryEndpoint.this.id;
+      }
+
+      public void handle(AbstractPacket packet, PacketSender sender)
+      {
+         try
+         {
+            AbstractPacket response = null;
+
+            PacketType type = packet.getType();
+            if (type == REQ_CREATECONNECTION)
+            {
+               CreateConnectionRequest request = (CreateConnectionRequest) packet;
+               CreateConnectionResult del = createConnectionDelegate(request
+                     .getUsername(), request.getPassword(), request
+                     .getFailedNodeID(), request.getRemotingSessionID(),
+                     request.getClientVMID(), request.getVersion());
+
+               response = new CreateConnectionResponse(del.getInternalDelegate()
+                     .getID(), del.getInternalDelegate().getServerID());
+            }
+            else if (type == REQ_GETTOPOLOGY)
+            {
+               TopologyResult topology = getTopology();
+
+               response = new GetTopologyResponse(topology);
+            } else if (type == MSG_UPDATECALLBACK)
+            {
+               UpdateCallbackMessage message = (UpdateCallbackMessage) packet;
+               if (message.isAdd())
+               {
+                  addSender(message.getClientVMID(), message.getRemotingSessionID(), sender);
+               } else {
+                  removeSender(message.getClientVMID(), message.getRemotingSessionID(), sender);
+               }
+            } else
+            {
+               response = new JMSExceptionMessage(new MessagingJMSException(
+                     "Unsupported packet for browser: " + packet));
+            }
+
+            // reply if necessary
+            if (response != null)
+            {
+               response.normalize(packet);
+               sender.send(response);
+            }
+
+         } catch (JMSException e)
+         {
+            JMSExceptionMessage message = new JMSExceptionMessage(e);
+            message.normalize(packet);
+            sender.send(message);
+         }
+      }
+
+      @Override
+      public String toString()
+      {
+         return "ConnectionFactoryAdvisedPacketHandler[id=" + id + "]";
+      }
+
+   }
+
 }

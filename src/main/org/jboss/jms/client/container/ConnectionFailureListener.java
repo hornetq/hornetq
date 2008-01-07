@@ -39,7 +39,7 @@ public class ConnectionFailureListener implements FailureDetector
 
    // Constructors ---------------------------------------------------------------------------------
 
-   ConnectionFailureListener(FailoverCommandCenter fcc, JMSRemotingConnection remotingConnection)
+   public ConnectionFailureListener(FailoverCommandCenter fcc, JMSRemotingConnection remotingConnection)
    {
       this.fcc = fcc;
       this.remotingConnection = remotingConnection;
@@ -63,7 +63,7 @@ public class ConnectionFailureListener implements FailureDetector
       catch (Throwable e)
       {
          log.error("Caught exception in handling failure", e);
-         
+
          return false;
       }
    }

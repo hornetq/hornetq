@@ -23,10 +23,28 @@ package org.jboss.jms.client.delegate;
 
 import javax.jms.JMSException;
 import javax.jms.Message;
+import javax.jms.Destination;
+import javax.jms.MessageFormatException;
+import javax.jms.BytesMessage;
+import javax.jms.MapMessage;
+import javax.jms.ObjectMessage;
+import javax.jms.StreamMessage;
+import javax.jms.TextMessage;
 
+import org.jboss.jms.client.state.ProducerState;
+import org.jboss.jms.client.state.SessionState;
+import org.jboss.jms.client.state.ConnectionState;
 import org.jboss.jms.delegate.ProducerDelegate;
+import org.jboss.jms.delegate.ConnectionDelegate;
 import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.message.JBossMessage;
+import org.jboss.jms.message.JBossBytesMessage;
+import org.jboss.jms.message.JBossMapMessage;
+import org.jboss.jms.message.JBossObjectMessage;
+import org.jboss.jms.message.JBossStreamMessage;
+import org.jboss.jms.message.JBossTextMessage;
+import org.jboss.messaging.newcore.impl.DestinationImpl;
+import org.jboss.logging.Logger;
 
 /**
  * The client-side Producer delegate class.
@@ -38,13 +56,16 @@ import org.jboss.jms.message.JBossMessage;
  *
  * $Id$
  */
-public class ClientProducerDelegate extends DelegateSupport implements ProducerDelegate
+public class ClientProducerDelegate extends DelegateSupport<ProducerState> implements ProducerDelegate
 {
    // Constants ------------------------------------------------------------------------------------
 
    private static final long serialVersionUID = -6976930316308905681L;
+   private static final Logger log = Logger.getLogger(ClientProducerDelegate.class);
 
    // Attributes -----------------------------------------------------------------------------------
+
+   private boolean trace = log.isTraceEnabled();
 
    // Static ---------------------------------------------------------------------------------------
 
@@ -73,7 +94,7 @@ public class ClientProducerDelegate extends DelegateSupport implements ProducerD
     */
    public void close() throws JMSException
    {
-      throw new IllegalStateException("This invocation should not be handled here!");
+      return;
    }
 
    /**
@@ -82,77 +103,217 @@ public class ClientProducerDelegate extends DelegateSupport implements ProducerD
     */
    public long closing(long sequence) throws JMSException
    {
-      throw new IllegalStateException("This invocation should not be handled here!");
+      return -1;
    }
 
-   /**
-    * This invocation should either be handled by the client-side interceptor chain or by the
-    * server-side endpoint.
-    */
-   public int getDeliveryMode() throws JMSException
+   public void setDestination(JBossDestination dest)
    {
-      throw new IllegalStateException("This invocation should not be handled here!");
+      state.setDestination(dest);
    }
 
-   /**
-    * This invocation should either be handled by the client-side interceptor chain or by the
-    * server-side endpoint.
-    */
    public JBossDestination getDestination() throws JMSException
    {
-      throw new IllegalStateException("This invocation should not be handled here!");
+      return (JBossDestination)state.getDestination();
    }
 
    /**
     * This invocation should either be handled by the client-side interceptor chain or by the
     * server-side endpoint.
     */
-   public boolean getDisableMessageID() throws JMSException
-   {
-      throw new IllegalStateException("This invocation should not be handled here!");
-   }
-
-   /**
-    * This invocation should either be handled by the client-side interceptor chain or by the
-    * server-side endpoint.
-    */
-   public boolean getDisableMessageTimestamp() throws JMSException
-   {
-      throw new IllegalStateException("This invocation should not be handled here!");
-   }
-
-   /**
-    * This invocation should either be handled by the client-side interceptor chain or by the
-    * server-side endpoint.
-    */
-   public int getPriority() throws JMSException
-   {
-      throw new IllegalStateException("This invocation should not be handled here!");
-   }
-
-   /**
-    * This invocation should either be handled by the client-side interceptor chain or by the
-    * server-side endpoint.
-    */
-   public long getTimeToLive() throws JMSException
-   {
-      throw new IllegalStateException("This invocation should not be handled here!");
-   }
-
-   /**
-    * This invocation should either be handled by the client-side interceptor chain or by the
-    * server-side endpoint.
-    */
-   public void send(JBossDestination destination, Message message, int deliveryMode,
+   public void send(JBossDestination destination, Message m, int deliveryMode,
                     int priority, long timeToLive) throws JMSException
    {
-      throw new IllegalStateException("This invocation should not be handled here!");
+      send(destination, m, deliveryMode, priority, timeToLive, false);
    }
 
 
-   public void send(JBossDestination destination, Message message, int deliveryMode, int priority, long timeToLive, boolean keepOriginalID) throws JMSException
+   public void send(JBossDestination destination, Message m, int deliveryMode, int priority, long timeToLive, boolean keepID) throws JMSException
    {
-      throw new IllegalStateException("This invocation should not be handled here!");
+
+      // configure the message for sending, using attributes stored as metadata
+
+      ProducerState producerState = getState();
+
+      if (deliveryMode == -1)
+      {
+         // Use the delivery mode of the producer
+         deliveryMode = producerState.getDeliveryMode();
+         if (trace) { log.trace("Using producer's default delivery mode: " + deliveryMode); }
+      }
+      m.setJMSDeliveryMode(deliveryMode);
+
+      if (priority == -1)
+      {
+         // Use the priority of the producer
+         priority = producerState.getPriority();
+         if (trace) { log.trace("Using producer's default priority: " + priority); }
+      }
+      if (priority < 0 || priority > 9)
+      {
+         throw new MessageFormatException("Invalid message priority (" + priority + "). " +
+                                          "Valid priorities are 0-9");
+      }
+      m.setJMSPriority(priority);
+
+      if (producerState.isDisableMessageTimestamp())
+      {
+         m.setJMSTimestamp(0l);
+      }
+      else
+      {
+         m.setJMSTimestamp(System.currentTimeMillis());
+      }
+
+      if (timeToLive == Long.MIN_VALUE)
+      {
+         // Use time to live value from producer
+         timeToLive = producerState.getTimeToLive();
+         if (trace) { log.trace("Using producer's default timeToLive: " + timeToLive); }
+      }
+
+      if (timeToLive == 0)
+      {
+         // Zero implies never expires
+         m.setJMSExpiration(0);
+      }
+      else
+      {
+         m.setJMSExpiration(System.currentTimeMillis() + timeToLive);
+      }
+
+      if (destination == null)
+      {
+         // use destination from producer
+         destination = (JBossDestination)producerState.getDestination();
+
+         if (destination == null)
+         {
+            throw new UnsupportedOperationException("Destination not specified");
+         }
+
+         if (trace) { log.trace("Using producer's default destination: " + destination); }
+      }
+      else
+      {
+         // if a default destination was already specified then this must be same destination as
+         // that specified in the arguments
+
+         if (producerState.getDestination() != null &&
+             !producerState.getDestination().equals(destination))
+         {
+            throw new UnsupportedOperationException("Where a default destination is specified " +
+                                                    "for the sender and a destination is " +
+                                                    "specified in the arguments to the send, " +
+                                                    "these destinations must be equal");
+         }
+      }
+
+      SessionState sessionState = (SessionState)producerState.getParent();
+
+      // Generate the message id
+      ConnectionState connectionState = (ConnectionState)sessionState.getParent();
+
+      JBossMessage jbm;
+
+      boolean foreign = false;
+
+      //First convert from foreign message if appropriate
+      if (!(m instanceof JBossMessage))
+      {
+         // it's a foreign message
+
+         // JMS 1.1 Sect. 3.11.4: A provider must be prepared to accept, from a client,
+         // a message whose implementation is not one of its own.
+
+         // create a matching JBossMessage Type from JMS Type
+         if (m instanceof BytesMessage)
+         {
+            jbm = new JBossBytesMessage((BytesMessage)m);
+         }
+         else if (m instanceof MapMessage)
+         {
+            jbm = new JBossMapMessage((MapMessage)m);
+         }
+         else if (m instanceof ObjectMessage)
+         {
+            jbm = new JBossObjectMessage((ObjectMessage)m);
+         }
+         else if (m instanceof StreamMessage)
+         {
+            jbm = new JBossStreamMessage((StreamMessage)m);
+         }
+         else if (m instanceof TextMessage)
+         {
+            jbm = new JBossTextMessage((TextMessage)m);
+         }
+         else
+         {
+            jbm = new JBossMessage(m);
+         }
+
+         //Set the destination on the original message
+         m.setJMSDestination(destination);
+
+         foreign = true;
+      }
+      else
+      {
+         jbm = (JBossMessage)m;
+      }
+
+      if (!keepID)
+      {
+         // Generate a new id
+         long id = connectionState.getIdGenerator().getId((ConnectionDelegate)connectionState.getDelegate());
+
+         jbm.getCoreMessage().setMessageID(id);
+
+         //Set to null - this will cause the next call to getJMSMessageID() on the jbm to recalculate
+         //it - need to do this to prevent any old cached value being retained
+
+         jbm.setJMSMessageID(null);
+      }
+
+      if (foreign)
+      {
+         m.setJMSMessageID(jbm.getJMSMessageID());
+      }
+
+      jbm.setJMSDestination(destination);
+
+
+      try
+      {
+         jbm.doBeforeSend();
+      }
+      catch (Exception e)
+      {
+         JMSException exthrown = new JMSException (e.toString());
+         exthrown.initCause(e);
+         throw exthrown;
+      }
+
+      JBossDestination dest = (JBossDestination)destination;
+
+      //Set the destination on the core message - TODO temp for refactoring
+      org.jboss.messaging.newcore.Destination coreDest =
+         new DestinationImpl(dest.isQueue() ? "Queue" : "Topic", dest.getName(), dest.isTemporary());
+
+      org.jboss.messaging.newcore.Message messageToSend = jbm.getCoreMessage();
+
+      //FIXME - temp - for now we set destination as a header - should really be an attribute of the
+      //send packet - along with scheduleddelivery time
+
+      messageToSend.putHeader(org.jboss.messaging.newcore.Message.TEMP_DEST_HEADER_NAME, coreDest);
+
+      //We copy *before* sending
+      //TODO for now we always copy - for INVM we can optimise (like we did in 1.4) by doing lazy copying
+      //of message, header and properties
+      jbm.copyMessage();
+
+      // we now invoke the send(Message) method on the session, which will eventually be fielded
+      // by connection endpoint
+      sessionState.getDelegate().send(messageToSend, false);
    }
 
    /**
@@ -164,58 +325,57 @@ public class ClientProducerDelegate extends DelegateSupport implements ProducerD
       throw new IllegalStateException("This invocation should not be handled here!");  
    }
 
-   /**
-    * This invocation should either be handled by the client-side interceptor chain or by the
-    * server-side endpoint.
-    */
    public void setDeliveryMode(int deliveryMode) throws JMSException
    {
-      throw new IllegalStateException("This invocation should not be handled here!");
+      getState().setDeliveryMode(deliveryMode);
    }
 
-   /**
-    * This invocation should either be handled by the client-side interceptor chain or by the
-    * server-side endpoint.
-    */
-   public void setDestination(JBossDestination dest)
+   public int getDeliveryMode() throws JMSException
    {
-      throw new IllegalStateException("This invocation should not be handled here!");
+      return getState().getDeliveryMode();
    }
 
-   /**
-    * This invocation should either be handled by the client-side interceptor chain or by the
-    * server-side endpoint.
-    */
+   
+
+   public boolean getDisableMessageID() throws JMSException
+   {
+      return getState().isDisableMessageID();
+   }
+
    public void setDisableMessageID(boolean value) throws JMSException
    {
-      throw new IllegalStateException("This invocation should not be handled here!");
+      getState().setDisableMessageID(value);   
    }
 
-   /**
-    * This invocation should either be handled by the client-side interceptor chain or by the
-    * server-side endpoint.
-    */
+   public boolean getDisableMessageTimestamp() throws JMSException
+   {
+      return getState().isDisableMessageTimestamp();
+   }
+
    public void setDisableMessageTimestamp(boolean value) throws JMSException
    {
-      throw new IllegalStateException("This invocation should not be handled here!");
+      getState().setDisableMessageTimestamp(value);
    }
 
-   /**
-    * This invocation should either be handled by the client-side interceptor chain or by the
-    * server-side endpoint.
-    */
-   public void setPriority(int defaultPriority) throws JMSException
+   public void setPriority(int priotiy) throws JMSException
    {
-      throw new IllegalStateException("This invocation should not be handled here!");
+      state.setPriority(priotiy);
    }
 
-   /**
-    * This invocation should either be handled by the client-side interceptor chain or by the
-    * server-side endpoint.
-    */
+   public int getPriority() throws JMSException
+   {
+      return state.getPriority();
+   }
+
+   public long getTimeToLive() throws JMSException
+   {
+        return state.getTimeToLive();
+   }
+
+
    public void setTimeToLive(long timeToLive) throws JMSException
    {
-      throw new IllegalStateException("This invocation should not be handled here!");
+      state.setTimeToLive(timeToLive);
    }
 
    // Public ---------------------------------------------------------------------------------------

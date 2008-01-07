@@ -29,28 +29,27 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
 import javax.jms.Destination;
 import javax.jms.IllegalStateException;
 import javax.jms.JMSException;
 import javax.jms.Session;
 
-import org.jboss.aop.AspectManager;
 import org.jboss.jms.client.delegate.ClientSessionDelegate;
 import org.jboss.jms.delegate.ConnectionEndpoint;
 import org.jboss.jms.delegate.IDBlock;
 import org.jboss.jms.delegate.SessionDelegate;
 import org.jboss.jms.destination.JBossDestination;
-import org.jboss.jms.message.JBossMessage;
+import org.jboss.jms.exception.MessagingJMSException;
 import org.jboss.jms.server.ConnectionManager;
 import org.jboss.jms.server.JMSCondition;
 import org.jboss.jms.server.SecurityStore;
 import org.jboss.jms.server.ServerPeer;
-import org.jboss.jms.server.endpoint.advised.SessionAdvised;
+import org.jboss.jms.server.container.SecurityAspect;
+import org.jboss.jms.server.security.CheckType;
 import org.jboss.jms.tx.ClientTransaction;
+import org.jboss.jms.tx.ClientTransaction.SessionTxState;
 import org.jboss.jms.tx.MessagingXid;
 import org.jboss.jms.tx.TransactionRequest;
-import org.jboss.jms.tx.ClientTransaction.SessionTxState;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.contract.Binding;
 import org.jboss.messaging.core.contract.Delivery;
@@ -59,7 +58,34 @@ import org.jboss.messaging.core.contract.PostOffice;
 import org.jboss.messaging.core.contract.Queue;
 import org.jboss.messaging.core.impl.tx.Transaction;
 import org.jboss.messaging.core.impl.tx.TransactionRepository;
+import static org.jboss.messaging.core.remoting.Assert.assertValidID;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
+import org.jboss.messaging.core.remoting.PacketHandler;
+import org.jboss.messaging.core.remoting.PacketSender;
+import org.jboss.messaging.core.remoting.wireformat.AbstractPacket;
+import org.jboss.messaging.core.remoting.wireformat.ClosingRequest;
+import org.jboss.messaging.core.remoting.wireformat.ClosingResponse;
+import org.jboss.messaging.core.remoting.wireformat.CreateSessionRequest;
+import org.jboss.messaging.core.remoting.wireformat.CreateSessionResponse;
+import org.jboss.messaging.core.remoting.wireformat.GetClientIDResponse;
+import org.jboss.messaging.core.remoting.wireformat.GetPreparedTransactionsResponse;
+import org.jboss.messaging.core.remoting.wireformat.IDBlockRequest;
+import org.jboss.messaging.core.remoting.wireformat.IDBlockResponse;
+import org.jboss.messaging.core.remoting.wireformat.JMSExceptionMessage;
+import org.jboss.messaging.core.remoting.wireformat.NullPacket;
+import org.jboss.messaging.core.remoting.wireformat.PacketType;
+import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_CLOSE;
+import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_SENDTRANSACTION;
+import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_SETCLIENTID;
+import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_STARTCONNECTION;
+import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_STOPCONNECTION;
+import static org.jboss.messaging.core.remoting.wireformat.PacketType.REQ_CLOSING;
+import static org.jboss.messaging.core.remoting.wireformat.PacketType.REQ_CREATESESSION;
+import static org.jboss.messaging.core.remoting.wireformat.PacketType.REQ_GETCLIENTID;
+import static org.jboss.messaging.core.remoting.wireformat.PacketType.REQ_GETPREPAREDTRANSACTIONS;
+import static org.jboss.messaging.core.remoting.wireformat.PacketType.REQ_IDBLOCK;
+import org.jboss.messaging.core.remoting.wireformat.SendTransactionMessage;
+import org.jboss.messaging.core.remoting.wireformat.SetClientIDMessage;
 import org.jboss.messaging.newcore.Message;
 import org.jboss.messaging.newcore.MessageReference;
 import org.jboss.messaging.util.ExceptionUtil;
@@ -87,6 +113,8 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
    private static boolean trace = log.isTraceEnabled();
 
    // Attributes -----------------------------------------------------------------------------------
+
+   private SecurityAspect security = new SecurityAspect();
 
    private String id;
 
@@ -221,20 +249,9 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
             sessions.put(sessionID, ep);
          }
 
-         SessionAdvised advised;
-
-         // Need to synchronized to prevent a deadlock
-         // See http://jira.jboss.com/jira/browse/JBMESSAGING-797
-         synchronized (AspectManager.instance())
-         {
-            advised = new SessionAdvised(ep);
-         }
-
-         SessionAdvised sessionAdvised = advised;
-
          serverPeer.addSession(sessionID, ep);
 
-         PacketDispatcher.server.register(advised.new SessionAdvisedPacketHandler(sessionID));
+         PacketDispatcher.server.register(ep.newHandler());
          
          log.trace("created and registered " + ep);
 
@@ -407,9 +424,45 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
       return -1;
    }
 
+   private void checkSecurityOnSendTransaction(TransactionRequest t) throws JMSException
+   {
+      ClientTransaction txState = t.getState();
+
+      //FIXME - can't we optimise this??
+      if (txState != null)
+      {
+         // distinct list of destinations...
+         HashSet<org.jboss.messaging.newcore.Destination> destinations = new HashSet<org.jboss.messaging.newcore.Destination>();
+
+         for (Iterator i = txState.getSessionStates().iterator(); i.hasNext(); )
+         {
+            ClientTransaction.SessionTxState sessionState = (ClientTransaction.SessionTxState)i.next();
+            for (Iterator j = sessionState.getMsgs().iterator(); j.hasNext(); )
+            {
+               Message message = (Message)j.next();
+
+               org.jboss.messaging.newcore.Destination dest =
+                  (org.jboss.messaging.newcore.Destination)message.getHeader(org.jboss.messaging.newcore.Message.TEMP_DEST_HEADER_NAME);
+
+
+               destinations.add(dest);
+            }
+         }
+         for (Iterator iterDestinations = destinations.iterator();iterDestinations.hasNext();)
+         {
+            org.jboss.messaging.newcore.Destination destination = (org.jboss.messaging.newcore.Destination) iterDestinations.next();
+            security.check(security.convert(destination), CheckType.WRITE, this);
+         }
+
+      }
+
+   }
+
    public void sendTransaction(TransactionRequest request,
                                boolean checkForDuplicates) throws JMSException
    {
+
+      checkSecurityOnSendTransaction(request);
       try
       {
          if (closed)
@@ -529,6 +582,11 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
          list.addAll(sessions.values());
       }
       return list;
+   }
+
+   public PacketHandler newHandler(String id)
+   {
+      return new ConnectionPacketHandler(id);
    }
 
    public String toString()
@@ -784,5 +842,114 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
 
 
    // Inner classes --------------------------------------------------------------------------------
+
+   private class ConnectionPacketHandler implements PacketHandler
+   {
+
+      private final String id;
+
+      public ConnectionPacketHandler(String id)
+      {
+         assertValidID(id);
+
+         this.id = id;
+      }
+
+      public String getID()
+      {
+         return id;
+      }
+
+      public void handle(AbstractPacket packet, PacketSender sender)
+      {
+         try
+         {
+            AbstractPacket response = null;
+
+            PacketType type = packet.getType();
+            if (type == REQ_CREATESESSION)
+            {
+               CreateSessionRequest request = (CreateSessionRequest) packet;
+               ClientSessionDelegate sessionDelegate = (ClientSessionDelegate) createSessionDelegate(
+                     request.isTransacted(), request.getAcknowledgementMode(),
+                     request.isXA());
+
+               response = new CreateSessionResponse(sessionDelegate.getID(),
+                     sessionDelegate.getDupsOKBatchSize(), sessionDelegate
+                           .isStrictTck());
+            } else if (type == REQ_IDBLOCK)
+            {
+               IDBlockRequest request = (IDBlockRequest) packet;
+               IDBlock idBlock = getIdBlock(request.getSize());
+
+               response = new IDBlockResponse(idBlock.getLow(), idBlock
+                     .getHigh());
+            } else if (type == MSG_STARTCONNECTION)
+            {
+               start();
+            } else if (type == MSG_STOPCONNECTION)
+            {
+               stop();
+
+               response = new NullPacket();
+            } else if (type == REQ_CLOSING)
+            {
+               ClosingRequest request = (ClosingRequest) packet;
+               long id = closing(request.getSequence());
+
+               response = new ClosingResponse(id);
+            } else if (type == MSG_CLOSE)
+            {
+               close();
+
+               response = new NullPacket();
+            } else if (type == MSG_SENDTRANSACTION)
+            {
+               SendTransactionMessage message = (SendTransactionMessage) packet;
+               sendTransaction(message.getTransactionRequest(), message
+                     .checkForDuplicates());
+
+               response = new NullPacket();
+            } else if (type == REQ_GETPREPAREDTRANSACTIONS)
+            {
+               MessagingXid[] xids = getPreparedTransactions();
+
+               response = new GetPreparedTransactionsResponse(xids);
+            } else if (type == REQ_GETCLIENTID)
+            {
+               response = new GetClientIDResponse(getClientID());
+            } else if (type == MSG_SETCLIENTID)
+            {
+               SetClientIDMessage message = (SetClientIDMessage) packet;
+               setClientID(message.getClientID());
+
+               response = new NullPacket();
+            } else
+            {
+               response = new JMSExceptionMessage(new MessagingJMSException(
+                     "Unsupported packet for browser: " + packet));
+            }
+
+            // reply if necessary
+            if (response != null)
+            {
+               response.normalize(packet);
+               sender.send(response);
+            }
+
+         } catch (JMSException e)
+         {
+            JMSExceptionMessage message = new JMSExceptionMessage(e);
+            message.normalize(packet);
+            sender.send(message);
+         }
+      }
+
+      @Override
+      public String toString()
+      {
+         return "ConnectionAdvisedPacketHandler[id=" + id + "]";
+      }
+   }
 
 }

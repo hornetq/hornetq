@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project version="4" relativePaths="false">
+<project relativePaths="false" version="4">
   <component name="AntConfiguration">
     <defaultAnt bundledAnt="true" />
     <buildFile url="file://$PROJECT_DIR$/tests/build.xml">
@@ -157,11 +157,12 @@
       <entry name="?*.tld" />
     </wildcardResourcePatterns>
   </component>
-  <component name="DataSourceManagerImpl" />
   <component name="DependenciesAnalyzeManager">
     <option name="myForwardDirection" value="false" />
   </component>
-  <component name="DependencyValidationManager" />
+  <component name="DependencyValidationManager">
+    <option name="SKIP_IMPORT_STATEMENTS" value="false" />
+  </component>
   <component name="EclipseCompilerSettings">
     <option name="DEBUGGING_INFO" value="true" />
     <option name="GENERATE_NO_WARNINGS" value="true" />
@@ -177,14 +178,13 @@
     <option name="MAXIMUM_HEAP_SIZE" value="128" />
   </component>
   <component name="EntryPointsManager">
-    <entry_points />
+    <entry_points version="2.0" />
   </component>
   <component name="ExportToHTMLSettings">
     <option name="PRINT_LINE_NUMBERS" value="false" />
     <option name="OPEN_IN_BROWSER" value="false" />
     <option name="OUTPUT_DIRECTORY" />
   </component>
-  <component name="GUI Designer component loader factory" />
   <component name="IdProvider" IDEtalkID="6A074DEDEA8BB8F84C6214EB1D2AF8C8" />
   <component name="InspectionProjectProfileManager">
     <option name="PROJECT_PROFILE" value="Project Default" />
@@ -194,83 +194,9 @@
       <profile version="1.0" is_locked="false">
         <option name="myName" value="Project Default" />
         <option name="myLocal" value="false" />
-        <used_levels>
-          <error>
-            <option name="myName" value="ERROR" />
-            <option name="myVal" value="400" />
-          </error>
-          <warning>
-            <option name="myName" value="WARNING" />
-            <option name="myVal" value="300" />
-          </warning>
-          <information>
-            <option name="myName" value="INFO" />
-            <option name="myVal" value="200" />
-          </information>
-          <server>
-            <option name="myName" value="SERVER PROBLEM" />
-            <option name="myVal" value="100" />
-          </server>
-        </used_levels>
       </profile>
     </profiles>
-  </component>
-  <component name="IntelliJadProjectConfigComponent">
-    <config>
-      <i type="boolean">false</i>
-      <dead type="boolean">false</dead>
-      <b type="boolean">false</b>
-      <decompile-on-navigation type="string">Ask</decompile-on-navigation>
-      <lradix type="integer">10</lradix>
-      <pv type="integer">3</pv>
-      <l type="integer">64</l>
-      <noinner type="boolean">false</noinner>
-      <ff type="boolean">false</ff>
-      <sort type="boolean">false</sort>
-      <nolvt type="boolean">false</nolvt>
-      <jad-path type="string">/home/andy/devtools/jad/jad</jad-path>
-      <nocode type="boolean">false</nocode>
-      <decompile-to-memory type="boolean">true</decompile-to-memory>
-      <nonlb type="boolean">false</nonlb>
-      <nl type="boolean">false</nl>
-      <nodos type="boolean">false</nodos>
-      <f type="boolean">false</f>
-      <nofd type="boolean">false</nofd>
-      <v type="boolean">false</v>
-      <noclass type="boolean">false</noclass>
-      <nocast type="boolean">false</nocast>
-      <af type="boolean">false</af>
-      <space type="boolean">false</space>
-      <d type="string" />
-      <pl type="string">_lcl</pl>
-      <pm type="string">_mth</pm>
-      <a type="boolean">false</a>
-      <pa type="string" />
-      <noctor type="boolean">false</noctor>
-      <use-project-specific-settings type="boolean">false</use-project-specific-settings>
-      <indentation type="integer">4</indentation>
-      <read-only type="boolean">false</read-only>
-      <reformat-according-to-style type="boolean">false</reformat-according-to-style>
-      <clear type="boolean">false</clear>
-      <pc type="string">_cls</pc>
-      <dis type="boolean">false</dis>
-      <s type="string">java</s>
-      <create-output-directory type="boolean">false</create-output-directory>
-      <exclusion-table-model type="table-model" model-class="net.stevechaloner.intellijad.config.ExclusionTableModel" content-types="string,boolean,boolean" />
-      <lnc type="boolean">false</lnc>
-      <stat type="boolean">false</stat>
-      <pp type="string">_prm</pp>
-      <t type="boolean">false</t>
-      <pf type="string">_fld</pf>
-      <always-exclude-recursively type="boolean">false</always-exclude-recursively>
-      <radix type="integer">10</radix>
-      <pe type="string">_ex</pe>
-      <safe type="boolean">false</safe>
-      <clear-and-close-console-on-success type="boolean">false</clear-and-close-console-on-success>
-      <o type="boolean">false</o>
-      <r type="boolean">false</r>
-      <noconv type="boolean">false</noconv>
-    </config>
+    <list size="0" />
   </component>
   <component name="JavacSettings">
     <option name="DEBUGGING_INFO" value="true" />
@@ -431,13 +357,20 @@
       </item>
     </group>
   </component>
+  <component name="ProjectFileVersion" converted="true" />
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/messaging.iml" filepath="$PROJECT_DIR$/messaging.iml" />
     </modules>
   </component>
   <component name="ProjectRootManager" version="2" assert-keyword="true" jdk-15="true" project-jdk-name="1.5" project-jdk-type="JavaSDK" />
-  <component name="ProjectRunConfigurationManager" />
+  <component name="ResourceManagerContainer">
+    <option name="myResourceBundles">
+      <value>
+        <list size="0" />
+      </value>
+    </option>
+  </component>
   <component name="RmicSettings">
     <option name="IS_EANABLED" value="false" />
     <option name="DEBUGGING_INFO" value="true" />
@@ -445,8 +378,11 @@
     <option name="GENERATE_IIOP_STUBS" value="false" />
     <option name="ADDITIONAL_OPTIONS_STRING" value="" />
   </component>
-  <component name="StarteamVcsAdapter" />
-  <component name="VssVcs" />
+  <component name="VcsDirectoryMappings">
+    <mapping directory="" vcs="" />
+    <mapping directory="$PROJECT_DIR$" vcs="svn" />
+  </component>
+  <component name="WebServicesPlugin" addRequiredLibraries="true" />
   <component name="com.intellij.jsf.UserDefinedFacesConfigs">
     <option name="USER_DEFINED_CONFIGS">
       <value>
@@ -499,38 +435,13 @@
       <JAVADOC />
       <SOURCES />
     </library>
-    <library name="jboss-remoting">
-      <CLASSES>
-        <root url="jar://$PROJECT_DIR$/thirdparty/jboss/remoting/lib/jboss-remoting.jar!/" />
-      </CLASSES>
-      <JAVADOC />
-      <SOURCES>
-        <root url="file:///home/andy/projects/JBossRemoting/src/main" />
-      </SOURCES>
-    </library>
     <library name="jbossas">
       <CLASSES>
-        <root url="jar://$PROJECT_DIR$/thirdparty/jbossas/core-libs/lib/jboss-common-jdbc-wrapper.jar!/" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/jbossas/core-libs/lib/jboss-common.jar!/" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/jbossas/core-libs/lib/jboss-j2ee.jar!/" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/jbossas/core-libs/lib/jboss-jca.jar!/" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/jbossas/core-libs/lib/jboss-jmx.jar!/" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/jbossas/core-libs/lib/jboss-local-jdbc.jar!/" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/jbossas/core-libs/lib/jboss-system.jar!/" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/jbossas/core-libs/lib/jboss-transaction-client.jar!/" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/jbossas/core-libs/lib/jboss.jar!/" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/jbossas/core-libs/lib/jbosscx-client.jar!/" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/jbossas/core-libs/lib/jbosssx-client.jar!/" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/jbossas/core-libs/lib/jms-ra.jar!/" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/jbossas/core-libs/lib/jboss-xml-binding.jar!/" />
-        <root url="jar:///home/andy/projects/jbossas/build/output/jboss-5.0.0.Beta3/client/jbossall-client.jar!/" />
         <root url="jar://$PROJECT_DIR$/thirdparty/jboss/jbossxb/lib/jboss-xml-binding.jar!/" />
+        <root url="jar://$PROJECT_DIR$/lib/jbossall-client.jar!/" />
       </CLASSES>
       <JAVADOC />
-      <SOURCES>
-        <root url="file:///home/andy/projects/jboss-5.0.0.Beta2-src/connector/src/main" />
-        <root url="intellijad://intellijad" />
-      </SOURCES>
+      <SOURCES />
     </library>
     <library name="jboss-ts">
       <CLASSES>
@@ -543,12 +454,7 @@
         <root url="jar://$PROJECT_DIR$/thirdparty/jboss/integration/lib/jboss-transaction-spi.jar!/" />
       </CLASSES>
       <JAVADOC />
-      <SOURCES>
-        <root url="file:///home/andy/projects/jbossts4.2.3.sp3/ArjunaCore/tsmx/classes" />
-        <root url="file:///home/andy/projects/jbossts4.2.3.sp3/ArjunaJTA/jta/classes" />
-        <root url="file:///home/andy/projects/jbossts4.2.3.sp3/atsintegration/classes" />
-        <root url="intellijad://intellijad" />
-      </SOURCES>
+      <SOURCES />
     </library>
     <library name="jboss-profiler-leaksfinder">
       <CLASSES>
@@ -559,8 +465,8 @@
     </library>
     <library name="ant-junit">
       <CLASSES>
-        <root url="jar:///home/andy/devtools/apache-ant-1.7.0/lib/ant.jar!/" />
-        <root url="jar:///home/andy/devtools/apache-ant-1.7.0/lib/ant-junit.jar!/" />
+        <root url="jar:///usr/share/apache-ant-1.7.0/lib/ant.jar!/" />
+        <root url="jar:///usr/share/apache-ant-1.7.0/lib/ant-junit.jar!/" />
       </CLASSES>
       <JAVADOC />
       <SOURCES />
@@ -596,14 +502,13 @@
         <root url="jar://$PROJECT_DIR$/thirdparty/apache-xml-commons/lib/resolver.jar!/" />
         <root url="jar://$PROJECT_DIR$/thirdparty/commons-el/lib/commons-el.jar!/" />
         <root url="jar://$PROJECT_DIR$/thirdparty/apache-xerces/lib/xercesImpl.jar!/" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/apache-xerces/lib/xml-apis.jar!/" />
       </CLASSES>
       <JAVADOC />
       <SOURCES />
     </library>
     <library name="jdbc-drivers">
       <CLASSES>
-        <root url="jar://$PROJECT_DIR$/tests/lib/jdbc-drivers/mysql-connector-java-5.0.7-bin.jar!/" />
+        <root url="jar://$PROJECT_DIR$/tests/lib/jdbc-drivers/mysql-driver-3.0.17.GA.jar!/" />
       </CLASSES>
       <JAVADOC />
       <SOURCES />
@@ -668,24 +573,32 @@
       <JAVADOC />
       <SOURCES>
         <root url="jar://$PROJECT_DIR$/thirdparty/jboss/microcontainer/lib/jboss-aop-mc-int-sources.jar!/" />
-        <root url="intellijad://intellijad" />
       </SOURCES>
     </library>
-    <library name="microcontainer1.0.2">
+    <library name="mina">
       <CLASSES>
-        <root url="jar://$PROJECT_DIR$/thirdparty/jboss/microcontainer/lib/jboss-container.jar!/" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/jboss/microcontainer/lib/jboss-dependency.jar!/" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/jboss/microcontainer/lib/jboss-microcontainer.jar!/" />
+        <root url="jar://$PROJECT_DIR$/thirdparty/slf4j/log4j/lib/slf4j-log4j12.jar!/" />
+        <root url="jar://$PROJECT_DIR$/thirdparty/apache-logging/lib/commons-logging.jar!/" />
+        <root url="jar://$PROJECT_DIR$/thirdparty/slf4j/api/lib/slf4j-api-1.4.3.jar!/" />
+        <root url="jar://$PROJECT_DIR$/thirdparty/apache-mina/lib/mina-core.jar!/" />
+      </CLASSES>
+      <JAVADOC />
+      <SOURCES />
+    </library>
+    <library name="bdb">
+      <CLASSES>
+        <root url="jar://$PROJECT_DIR$/lib/je-3.2.44.jar!/" />
+      </CLASSES>
+      <JAVADOC />
+      <SOURCES />
+    </library>
+    <library name="easymock">
+      <CLASSES>
+        <root url="jar://$PROJECT_DIR$/tests/lib/easymock.jar!/" />
       </CLASSES>
       <JAVADOC />
       <SOURCES />
     </library>
   </component>
-  <component name="uidesigner-configuration">
-    <option name="INSTRUMENT_CLASSES" value="true" />
-    <option name="COPY_FORMS_RUNTIME_TO_OUTPUT" value="true" />
-    <option name="DEFAULT_LAYOUT_MANAGER" value="GridLayoutManager" />
-  </component>
-  <UsedPathMacros />
 </project>
 

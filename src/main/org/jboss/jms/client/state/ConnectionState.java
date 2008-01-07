@@ -25,6 +25,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 
 import org.jboss.jms.client.FailoverCommandCenter;
+import org.jboss.jms.client.Closeable;
 import org.jboss.jms.client.delegate.ClientConnectionDelegate;
 import org.jboss.jms.client.delegate.ClientSessionDelegate;
 import org.jboss.jms.client.delegate.DelegateSupport;
@@ -51,7 +52,7 @@ import EDU.oswego.cs.dl.util.concurrent.WriterPreferenceReadWriteLock;
  *
  * $Id$
  */
-public class ConnectionState extends HierarchicalStateSupport
+public class ConnectionState extends HierarchicalStateSupport<HierarchicalState, ClientConnectionDelegate>
 {
    // Constants ------------------------------------------------------------------------------------
 
@@ -65,7 +66,9 @@ public class ConnectionState extends HierarchicalStateSupport
 
    private Version versionToUse;
 
-   private ConnectionDelegate delegate;
+   private ClientConnectionDelegate delegate;
+
+   private ConnectionDelegate proxyDelegate;
 
    protected boolean started;
 
@@ -92,13 +95,14 @@ public class ConnectionState extends HierarchicalStateSupport
 
    // Constructors ---------------------------------------------------------------------------------
 
-   public ConnectionState(int serverID, ConnectionDelegate delegate,
+   public ConnectionState(int serverID, ClientConnectionDelegate delegate, ConnectionDelegate proxyDelegate,
                           JMSRemotingConnection remotingConnection,
                           Version versionToUse,
                           MessageIdGenerator gen)
-      throws Exception
    {
-      super(null, (DelegateSupport)delegate);
+      super(null, delegate);
+
+      this.proxyDelegate = proxyDelegate;
 
       if (log.isTraceEnabled()) { log.trace(this + " constructing connection state"); }
 
@@ -118,14 +122,20 @@ public class ConnectionState extends HierarchicalStateSupport
 
    // HierarchicalState implementation -------------------------------------------------------------
 
-   public DelegateSupport getDelegate()
+
+   public Closeable getCloseableDelegate()
    {
-      return (DelegateSupport) delegate;
+      return proxyDelegate;
    }
 
-   public void setDelegate(DelegateSupport delegate)
+   public ClientConnectionDelegate getDelegate()
    {
-      this.delegate = (ConnectionDelegate) delegate;
+      return delegate;
+   }
+
+   public void setDelegate(ClientConnectionDelegate delegate)
+   {
+      this.delegate =  delegate;
    }
 
    public HierarchicalState getParent()

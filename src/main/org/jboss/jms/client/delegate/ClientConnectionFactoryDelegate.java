@@ -26,22 +26,24 @@ import static org.jboss.messaging.core.remoting.ConnectorRegistrySingleton.REGIS
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.Serializable;
-
 import javax.jms.JMSException;
 
 import org.jboss.jms.client.container.JMSClientVMIdentifier;
+import org.jboss.jms.client.remoting.ConsolidatedRemotingConnectionListener;
 import org.jboss.jms.client.remoting.JMSRemotingConnection;
+import org.jboss.jms.client.state.ConnectionState;
+import org.jboss.jms.delegate.ConnectionDelegate;
 import org.jboss.jms.delegate.ConnectionFactoryDelegate;
 import org.jboss.jms.delegate.CreateConnectionResult;
 import org.jboss.jms.delegate.TopologyResult;
 import org.jboss.jms.exception.MessagingNetworkFailureException;
+import org.jboss.jms.message.MessageIdGenerator;
+import org.jboss.jms.message.MessageIdGeneratorFactory;
 import org.jboss.messaging.core.remoting.Client;
 import org.jboss.messaging.core.remoting.NIOConnector;
 import org.jboss.messaging.core.remoting.ServerLocator;
 import org.jboss.messaging.core.remoting.wireformat.CreateConnectionRequest;
 import org.jboss.messaging.core.remoting.wireformat.CreateConnectionResponse;
-import org.jboss.messaging.core.remoting.wireformat.GetClientAOPStackRequest;
-import org.jboss.messaging.core.remoting.wireformat.GetClientAOPStackResponse;
 import org.jboss.messaging.util.Version;
 
 /**
@@ -123,7 +125,38 @@ public class ClientConnectionFactoryDelegate
    {      
    }
 
-   // ConnectionFactoryDelegate implementation -----------------------------------------------------
+   private ConnectionState createConnectionState(ClientConnectionDelegate connectionDelegate, ConnectionDelegate proxyDelegate) throws JMSException
+   {
+      int serverID = connectionDelegate.getServerID();
+      Version versionToUse = connectionDelegate.getVersionToUse();
+      JMSRemotingConnection remotingConnection = connectionDelegate.getRemotingConnection();
+
+      // install the consolidated remoting connection listener; it will be de-installed on
+      // connection closing by ConnectionAspect
+
+      ConsolidatedRemotingConnectionListener listener =
+         new ConsolidatedRemotingConnectionListener();
+
+      if (remotingConnection!=null)remotingConnection.addConnectionListener(listener);
+
+      if (versionToUse == null)
+      {
+         throw new IllegalStateException("Connection version is null");
+      }
+
+      // We have one message id generator per unique server
+      MessageIdGenerator idGenerator =
+         MessageIdGeneratorFactory.instance.checkOutGenerator(serverID);
+
+      ConnectionState connectionState =
+         new ConnectionState(serverID, connectionDelegate, proxyDelegate, 
+                             remotingConnection, versionToUse, idGenerator);
+
+      listener.setConnectionState(connectionState);
+
+      return connectionState;
+   }
+
 
    public CreateConnectionResult createConnectionDelegate(String username,
                                                           String password,
@@ -159,6 +192,8 @@ public class ClientConnectionFactoryDelegate
          CreateConnectionRequest request = new CreateConnectionRequest(v, sessionID, JMSClientVMIdentifier.instance, failedNodeID, username, password);
          CreateConnectionResponse response = (CreateConnectionResponse) sendBlocking(request);
          ClientConnectionDelegate connectionDelegate = new ClientConnectionDelegate(response.getConnectionID(), response.getServerID());
+
+         connectionDelegate.setVersionToUse(version);
          res = new CreateConnectionResult(connectionDelegate);
       } catch (Throwable t)
       {
@@ -175,13 +210,11 @@ public class ClientConnectionFactoryDelegate
          throw handleThrowable(t);
       }
          
-      ClientConnectionDelegate connectionDelegate = (ClientConnectionDelegate)res.getDelegate();
+      ClientConnectionDelegate connectionDelegate = res.getInternalDelegate();
       
       if (connectionDelegate != null)
       {
          connectionDelegate.setRemotingConnection(remotingConnection);
-         
-         connectionDelegate.setVersionToUse(version);
       }
       else
       {
@@ -196,33 +229,12 @@ public class ClientConnectionFactoryDelegate
          }
       }
 
+
+      connectionDelegate.setState(createConnectionState(connectionDelegate, res.getProxiedDelegate()));
+      
       return res;
    }
    
-   public byte[] getClientAOPStack() throws JMSException
-   {
-      Version version = getVersionToUse(serverVersion);
-      
-      byte v = version.getProviderIncrementingVersion();
-      
-      Client client = createClient();
-
-      GetClientAOPStackResponse response = (GetClientAOPStackResponse) sendBlocking(client, id, v, new GetClientAOPStackRequest());
-
-      try
-      {
-         client.disconnect();
-         NIOConnector connector = REGISTRY.removeConnector(new ServerLocator(serverLocatorURI));
-         if (connector != null)
-            connector.disconnect();
-      } catch (Throwable t)
-      {
-         throw handleThrowable(t);
-      }
-
-      return response.getStack();
-   }
-
    public TopologyResult getTopology() throws JMSException
    {
       throw new IllegalStateException("This invocation should not be handled here!");

@@ -21,23 +21,36 @@
    */
 package org.jboss.test.messaging;
 
-import org.jboss.jms.client.JBossConnection;
-import org.jboss.jms.server.microcontainer.JBMBootstrapServer;
-import org.jboss.logging.Logger;
-import org.jboss.test.messaging.util.ProxyAssertSupport;
-import org.jboss.tm.TransactionManagerLocator;
-
-import javax.jms.*;
-import javax.naming.InitialContext;
-import javax.sql.DataSource;
-import javax.transaction.TransactionManager;
-import java.lang.IllegalStateException;
 import java.lang.ref.WeakReference;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+import javax.jms.Connection;
+import javax.jms.ConnectionFactory;
+import javax.jms.Destination;
+import javax.jms.Message;
+import javax.jms.MessageConsumer;
+import javax.jms.Session;
+import javax.jms.Topic;
+import javax.jms.XAConnection;
+import javax.jms.XAConnectionFactory;
+import javax.naming.InitialContext;
+import javax.sql.DataSource;
+import javax.transaction.TransactionManager;
+
+import org.jboss.jms.client.JBossConnection;
+import org.jboss.jms.client.JBossSession;
+import org.jboss.jms.client.JBossMessageConsumer;
+import org.jboss.jms.client.delegate.ClientConnectionDelegate;
+import org.jboss.jms.client.delegate.ClientSessionDelegate;
+import org.jboss.jms.client.delegate.ClientConsumerDelegate;
+import org.jboss.jms.server.microcontainer.JBMBootstrapServer;
+import org.jboss.logging.Logger;
+import org.jboss.messaging.util.ProxyFactory;
+import org.jboss.test.messaging.util.ProxyAssertSupport;
+import org.jboss.tm.TransactionManagerLocator;
 
 /**
  * @author <a href="mailto:adrian@jboss.org">Adrian Brock</a>
@@ -151,6 +164,21 @@ public class JBMBaseTestCase extends ProxyAssertSupport
       }
 
       return msgIds;
+   }
+
+   public ClientConsumerDelegate getDelegate(MessageConsumer cons)
+   {
+      return (ClientConsumerDelegate) ProxyFactory.getDelegate(((JBossMessageConsumer)cons).getDelegate());
+   }
+
+   public ClientSessionDelegate getDelegate(Session sess)
+   {
+      return (ClientSessionDelegate) ProxyFactory.getDelegate(((JBossSession)sess).getDelegate());
+   }
+
+   public ClientConnectionDelegate getDelegate(Connection conn)
+   {
+      return (ClientConnectionDelegate) ProxyFactory.getDelegate(((JBossConnection)conn).getDelegate());
    }
 
       protected List getReferenceIds(long channelId) throws Throwable

@@ -463,6 +463,11 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
       return sessionEndpoint;
    }
 
+   public PacketHandler newHandler()
+   {
+      return new ServerConsumerEndpointPacketHandler();
+   }
+
    // Package protected ----------------------------------------------------------------------------
    
    boolean isRemote()
@@ -684,11 +689,11 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
 
    // Inner classes --------------------------------------------------------------------------------
    
-   public class ServerConsumerEndpointPacketHandler implements PacketHandler {
+   private class ServerConsumerEndpointPacketHandler implements PacketHandler {
 
       public String getID()
       {
-         return id;
+         return ServerConsumerEndpoint.this.id;
       }
 
       public void handle(AbstractPacket packet, PacketSender sender)

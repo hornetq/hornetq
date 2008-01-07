@@ -271,8 +271,6 @@ public interface Server extends Remote
     */
    List pollNotificationListener(long listenerID) throws Exception;
 
-   void poisonTheServer(int type) throws Exception;
-   
    void flushManagedConnectionPool() throws Exception;
    
    void deployConnectionFactory(String objectName, String[] jndiBindings, boolean strictTck) throws Exception;

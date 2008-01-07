@@ -28,7 +28,6 @@ import javax.jms.JMSException;
 import javax.jms.Queue;
 import javax.jms.QueueBrowser;
 
-import org.jboss.jms.client.container.BrowserAspect;
 import org.jboss.jms.delegate.BrowserDelegate;
 import org.jboss.jms.message.JBossMessage;
 import org.jboss.logging.Logger;

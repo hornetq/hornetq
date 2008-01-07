@@ -40,7 +40,6 @@ import javax.sql.DataSource;
 import javax.transaction.TransactionManager;
 import javax.transaction.UserTransaction;
 
-import org.jboss.aop.AspectXmlLoader;
 import org.jboss.jms.message.MessageIdGeneratorFactory;
 import org.jboss.jms.server.DestinationManager;
 import org.jboss.jms.server.JmsServer;
@@ -55,7 +54,6 @@ import org.jboss.messaging.core.contract.MessageStore;
 import org.jboss.messaging.core.contract.PersistenceManager;
 import org.jboss.test.messaging.tools.ConfigurationHelper;
 import org.jboss.test.messaging.tools.ServerManagement;
-import org.jboss.test.messaging.tools.aop.PoisonInterceptor;
 import org.jboss.test.messaging.tools.jboss.MBeanConfigurationElement;
 import org.jboss.tm.TransactionManagerLocator;
 
@@ -607,16 +605,6 @@ public class LocalTestServer implements Server, Runnable
    {
       throw new IllegalStateException("Poll doesn't make sense on a local server. " +
               "Register listeners directly instead.");
-   }
-
-   public void poisonTheServer(int type) throws Exception
-   {
-      URL url = this.getClass().getClassLoader().getResource("poison.xml");
-      AspectXmlLoader.deployXML(url);
-
-      log.debug(url + " deployed");
-
-      PoisonInterceptor.setType(type);
    }
 
    public void flushManagedConnectionPool()

@@ -187,14 +187,6 @@
       <pathelement location="${project.root}/lib/je-3.2.44.jar"/>
    </path>
 
-   <!--
-        The AOPC classpath.
-   -->
-   <path id="aopc.classpath">
-      <path refid="compilation.classpath"/>
-      <pathelement path="${build.classes}"/>
-   </path>
-
    <!-- ======================================================================================== -->
    <!-- Local Dependencies Override Tasks                                                        -->
    <!-- ======================================================================================== -->
@@ -242,18 +234,6 @@
       </javac>
    </target>
 
-   <target name="instrument-classes">
-      <taskdef name="aopc" classname="org.jboss.aop.ant.AopC" classpathref="jboss.aop.classpath"/>
-      <echo message="NOTE: aopc incremental compilation might fail, if so do an ant clean first (see JBMESSAGING-271)"/>
-      <aopc compilerclasspathref="aopc.classpath"
-            classpathref="aopc.classpath"
-            optimized="false">
-         <classpath refid="aopc.classpath"/>
-         <src path="${build.classes}/org/jboss/jms"/>
-         <aoppath path="src/etc/prepare-aop.xml"/>
-      </aopc>
-   </target>
-
    <target name="compile-classes">
       <mkdir dir="${build.classes}"/>
       <!--<display-path path="compilation.classpath"/>-->
@@ -272,8 +252,6 @@
          <include name="**/*.java"/>
          <classpath refid="compilation.classpath"/>
       </javac>
-      
-      <antcall target="instrument-classes" />
    </target>
 
    <target name="compile-etc">
@@ -360,7 +338,6 @@
       <jar jarfile="${build.lib}/jboss-${module.name}.sar" manifest="${build.etc}/default.mf">
          <fileset dir="${build.sar}" includes="**"/>
          <fileset dir="${build.jar}">
-            <exclude name="aop-messaging-*.xml"/>
             <exclude name="VERSION"/>
             <exclude name="xmdesc/**"/>
          </fileset>
@@ -374,8 +351,6 @@
       <mkdir dir="${build.jar}/META-INF"/>
       <mkdir dir="${build.jar}/xmdesc"/>
       <copy file="${build.etc}/VERSION" toFile="${build.jar}/VERSION"/>
-      <copy todir="${build.jar}" file="${source.etc}/aop-messaging-server.xml"/>
-      <copy todir="${build.jar}" file="${source.etc}/aop-messaging-client.xml"/>
    </target>
 
    <target name="sar-structure" depends="jar-structure">
@@ -466,9 +441,6 @@
             <include name="jbossjta.jar"/>
             <include name="jbossts-common.jar"/>
             <include name="jbossjta-integration.jar"/>
-         </fileset>
-         <fileset dir="${jboss.aop.lib}">
-            <include name="jboss-aop-jdk50.jar"/>
          </fileset>
          <fileset dir="${trove.lib}">
             <include name="trove.jar"/>

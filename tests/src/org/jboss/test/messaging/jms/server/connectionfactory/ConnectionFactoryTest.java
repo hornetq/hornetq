@@ -142,8 +142,8 @@ public class ConnectionFactoryTest extends JBMServerTestCase
 	      
 	      JBossMessageConsumer cons = (JBossMessageConsumer)sess.createConsumer(queue1);
 	      
-	      ClientConsumerDelegate del = (ClientConsumerDelegate)cons.getDelegate();
-	      
+	      ClientConsumerDelegate del = getDelegate(cons);
+
 	      ConsumerState state = (ConsumerState)del.getState();
 	      
 	      int size = state.getBufferSize();

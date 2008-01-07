@@ -23,7 +23,6 @@ package org.jboss.jms.client;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import javax.jms.ConnectionConsumer;
 import javax.jms.JMSException;
 import javax.jms.Message;
@@ -32,7 +31,7 @@ import javax.jms.ServerSession;
 import javax.jms.ServerSessionPool;
 import javax.jms.Session;
 
-import org.jboss.jms.client.delegate.DelegateSupport;
+import EDU.oswego.cs.dl.util.concurrent.SynchronizedInt;
 import org.jboss.jms.client.state.ConsumerState;
 import org.jboss.jms.delegate.ConnectionDelegate;
 import org.jboss.jms.delegate.ConsumerDelegate;
@@ -41,8 +40,7 @@ import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.message.JBossMessage;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.util.MessageQueueNameHelper;
-
-import EDU.oswego.cs.dl.util.concurrent.SynchronizedInt;
+import org.jboss.messaging.util.ProxyFactory;
 
 /**
  * This class implements javax.jms.ConnectionConsumer
@@ -124,7 +122,7 @@ public class JBossConnectionConsumer implements ConnectionConsumer, Runnable
           
       cons = sess.createConsumerDelegate(dest, messageSelector, false, subName, true, true);
 
-      ConsumerState state = (ConsumerState)((DelegateSupport)cons).getState();
+      ConsumerState state = (ConsumerState)(ProxyFactory.getDelegate(cons)).getState();
 
       this.consumerID = state.getConsumerID();      
         

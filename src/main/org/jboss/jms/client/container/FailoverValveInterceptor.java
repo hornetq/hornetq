@@ -6,9 +6,10 @@
  */
 package org.jboss.jms.client.container;
 
-import org.jboss.aop.advice.Interceptor;
-import org.jboss.aop.joinpoint.Invocation;
-import org.jboss.aop.joinpoint.MethodInvocation;
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+
 import org.jboss.jms.client.FailoverCommandCenter;
 import org.jboss.jms.client.FailoverValve2;
 import org.jboss.jms.client.FailureDetector;
@@ -39,7 +40,7 @@ import org.jboss.logging.Logger;
  * @version <tt>$Revision$</tt>
  * $Id$
  */
-public class FailoverValveInterceptor implements Interceptor, FailureDetector
+public class FailoverValveInterceptor implements InvocationHandler, FailureDetector
 {
    // Constants ------------------------------------------------------------------------------------
 
@@ -58,6 +59,11 @@ public class FailoverValveInterceptor implements Interceptor, FailureDetector
    //             occurs and if we cache them we wil end up using the old ones.
    private ConnectionState connectionState;
 
+   public FailoverValveInterceptor (DelegateSupport delegate)
+   {
+      this.delegate = delegate;
+   }
+
    // Constructors ---------------------------------------------------------------------------------
 
    // Interceptor implemenation --------------------------------------------------------------------
@@ -66,99 +72,102 @@ public class FailoverValveInterceptor implements Interceptor, FailureDetector
    {
       return "FailoverValveInterceptor";
    }
-   
-   public Object invoke(Invocation invocation) throws Throwable
-   {      
+
+   public DelegateSupport getDelegate()
+   {
+      return delegate;
+   }
+
+   public Object invoke(Object proxy, Method method, Object[] args) throws Throwable
+   {
       // maintain a reference to connectionState, so we can ensure we have already tested for fcc.
       // As fcc can be null on non-clustered connections we have to cache connectionState instead
       if (connectionState == null)
       {
-         delegate = (DelegateSupport)invocation.getTargetObject();
-
          HierarchicalState hs = delegate.getState();
          while (hs != null && !(hs instanceof ConnectionState))
          {
             hs = hs.getParent();
          }
-         
+
          connectionState = (ConnectionState)hs;
       }
-      
+
       FailoverCommandCenter fcc = connectionState.getFailoverCommandCenter();
-            
+
       // non clustered, send the invocation forward
       if (fcc == null)
       {
-         return invocation.invokeNext();
+         return internalInvoke(method, args);
       }
-      
+
       FailoverValve2 valve = fcc.getValve();
-      
+
       JMSRemotingConnection remotingConnection = null;
-      String methodName = ((MethodInvocation)invocation).getMethod().getName();
-      
+      String methodName = method.getName();
+
       if (methodName.equals("startAfterFailover"))
       {
          //We don't use the valve on this method
-         return invocation.invokeNext();
+         return internalInvoke(method, args);
       }
 
       boolean left = false;
-      
+
       try
       {
          valve.enter();
 
          // it's important to retrieve the remotingConnection while inside the Valve
          remotingConnection = fcc.getRemotingConnection();
-         return invocation.invokeNext();
+         return internalInvoke(method, args);
       }
-      catch (MessagingNetworkFailureException e)
-      {
-         valve.leave();
-         left = true;
-         
-         log.debug(this + " detected network failure, putting " + methodName +
-         "() on hold until failover completes");
-      
-         fcc.failureDetected(e, this, remotingConnection);
-         
-         // Set retry flag as true on send() and sendTransaction()
-         // more details at http://jira.jboss.org/jira/browse/JBMESSAGING-809
-
-         if ((invocation.getTargetObject() instanceof ClientSessionDelegate && methodName.equals("send")) ||
-         	(invocation.getTargetObject() instanceof ClientConnectionDelegate && methodName.equals("sendTransaction")))
-         {
-            log.trace(this + " caught " + methodName + "() invocation, enabling check for duplicates");
-
-            Object[] arguments = ((MethodInvocation)invocation).getArguments();
-            arguments[1] = Boolean.TRUE;
-            ((MethodInvocation)invocation).setArguments(arguments);
-         }
-
-         // We don't retry the following invocations:
-         // cancelDelivery(), cancelDeliveries(), cancelInflightMessages() - the deliveries will
-         // already be cancelled after failover.
-
-         if (methodName.equals("cancelDelivery") ||
-            methodName.equals("cancelDeliveries"))
-         {
-            log.trace(this + " NOT resuming " + methodName + "(), let it wither and die");
-            
-            return null;
-         }
-         else
-         {            
-            log.trace(this + " resuming " + methodName + "()");
-            
-            return invocation.invokeNext();
-         }
-      } 
       catch (Throwable e)
       {
-         // not failover-triggering, rethrow
-         if (trace) { log.trace(this + " caught not failover-triggering throwable, rethrowing " + e); }
-         throw e;
+         if (e instanceof MessagingNetworkFailureException)
+         {
+            valve.leave();
+            left = true;
+
+            log.debug(this + " detected network failure, putting " + methodName +
+            "() on hold until failover completes");
+
+            fcc.failureDetected(e, this, remotingConnection);
+
+            // Set retry flag as true on send() and sendTransaction()
+            // more details at http://jira.jboss.org/jira/browse/JBMESSAGING-809
+
+            if ((delegate instanceof ClientSessionDelegate && methodName.equals("send")) ||
+                (delegate instanceof ClientConnectionDelegate && methodName.equals("sendTransaction")))
+            {
+               log.trace(this + " caught " + methodName + "() invocation, enabling check for duplicates");
+
+               args[1] = Boolean.TRUE;
+            }
+
+            // We don't retry the following invocations:
+            // cancelDelivery(), cancelDeliveries(), cancelInflightMessages() - the deliveries will
+            // already be cancelled after failover.
+
+            if (methodName.equals("cancelDelivery") ||
+               methodName.equals("cancelDeliveries"))
+            {
+               log.trace(this + " NOT resuming " + methodName + "(), let it wither and die");
+
+               return null;
+            }
+            else
+            {
+               log.trace(this + " resuming " + methodName + "()");
+
+               return method.invoke(delegate, args);
+            }
+         }
+         else
+         {
+            if (trace) { log.trace(this + " caught not failover-triggering throwable, rethrowing " + e); }
+            throw e;
+         }
       }
       finally
       {
@@ -168,7 +177,7 @@ public class FailoverValveInterceptor implements Interceptor, FailureDetector
          }
       }
    }
-   
+
    // Public ---------------------------------------------------------------------------------------
 
    public String toString()
@@ -181,6 +190,20 @@ public class FailoverValveInterceptor implements Interceptor, FailureDetector
    // Protected ------------------------------------------------------------------------------------
 
    // Private --------------------------------------------------------------------------------------
+   private Object internalInvoke(Method method, Object[] args)
+           throws Throwable
+   {
+      try
+      {
+            return method.invoke(delegate, args);
+      }
+      catch (InvocationTargetException e)
+      {
+         throw e.getCause();
+      }
+   }
+
 
    // Inner classes --------------------------------------------------------------------------------
+
 }

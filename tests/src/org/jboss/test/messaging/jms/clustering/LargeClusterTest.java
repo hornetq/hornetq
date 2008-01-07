@@ -287,56 +287,49 @@ public class LargeClusterTest extends ClusteringTestBase
       try
       {
          conn0 = this.createConnectionOnServer(cf, 0);
-         assertEquals(0, ((ClientConnectionDelegate)((JBossConnection)conn0).
-            getDelegate()).getServerID());
+         assertEquals(0, getDelegate(conn0).getServerID());
          Session s0 = conn0.createSession(false, Session.AUTO_ACKNOWLEDGE);
          SimpleMessageListener m0 = new SimpleMessageListener();
          s0.createConsumer(topic[0]).setMessageListener(m0);
          conn0.start();
 
          conn1 = cf.createConnection();
-         assertEquals(1, ((ClientConnectionDelegate)((JBossConnection)conn1).
-            getDelegate()).getServerID());
+         assertEquals(1, getDelegate(conn1).getServerID());
          Session s1 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
          SimpleMessageListener m1 = new SimpleMessageListener();
          s1.createConsumer(topic[1]).setMessageListener(m1);
          conn1.start();
 
          conn2 = cf.createConnection();
-         assertEquals(2, ((ClientConnectionDelegate)((JBossConnection)conn2).
-            getDelegate()).getServerID());
+         assertEquals(2, getDelegate(conn2).getServerID());
          Session s2 = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
          SimpleMessageListener m2 = new SimpleMessageListener();
          s2.createConsumer(topic[2]).setMessageListener(m2);
          conn2.start();
 
          conn3 = cf.createConnection();
-         assertEquals(3, ((ClientConnectionDelegate)((JBossConnection)conn3).
-            getDelegate()).getServerID());
+         assertEquals(3, getDelegate(conn3).getServerID());
          Session s3 = conn3.createSession(false, Session.AUTO_ACKNOWLEDGE);
          SimpleMessageListener m3 = new SimpleMessageListener();
          s3.createConsumer(topic[3]).setMessageListener(m3);
          conn3.start();
 
          conn4 = cf.createConnection();
-         assertEquals(4, ((ClientConnectionDelegate)((JBossConnection)conn4).
-            getDelegate()).getServerID());
+         assertEquals(4, getDelegate(conn4).getServerID());
          Session s4 = conn4.createSession(false, Session.AUTO_ACKNOWLEDGE);
          SimpleMessageListener m4 = new SimpleMessageListener();
          s4.createConsumer(topic[4]).setMessageListener(m4);
          conn4.start();
 
          conn5 = cf.createConnection();
-         assertEquals(5, ((ClientConnectionDelegate)((JBossConnection)conn5).
-            getDelegate()).getServerID());
+         assertEquals(5, getDelegate(conn5).getServerID());
          Session s5 = conn5.createSession(false, Session.AUTO_ACKNOWLEDGE);
          SimpleMessageListener m5 = new SimpleMessageListener();
          s5.createConsumer(topic[5]).setMessageListener(m5);
          conn5.start();
 
          conn6 = cf.createConnection();
-         assertEquals(6, ((ClientConnectionDelegate)((JBossConnection)conn6).
-            getDelegate()).getServerID());
+         assertEquals(6, getDelegate(conn6).getServerID());
          Session s6 = conn6.createSession(false, Session.AUTO_ACKNOWLEDGE);
          SimpleMessageListener m6 = new SimpleMessageListener();
          s6.createConsumer(topic[6]).setMessageListener(m6);
