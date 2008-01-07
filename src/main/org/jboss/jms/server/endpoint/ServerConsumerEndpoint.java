@@ -127,13 +127,19 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
 
    private ServerPeer sp;
    
+   private int prefetchSize;
+   
+   private volatile int sendCount;
+   
+   private boolean firstTime = true;
+   
    // Constructors ---------------------------------------------------------------------------------
 
    ServerConsumerEndpoint(ServerPeer sp,String id, Queue messageQueue, String queueName,
 					           ServerSessionEndpoint sessionEndpoint, String selector,
 					           boolean noLocal, JBossDestination dest, Queue dlq,
 					           Queue expiryQueue, long redeliveryDelay, int maxDeliveryAttempts,
-					           boolean remote, boolean replicating) throws InvalidSelectorException
+					           boolean remote, boolean replicating, int prefetchSize) throws InvalidSelectorException
    {
       if (trace)
       {
@@ -170,6 +176,16 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
       this.preserveOrdering = sp.getConfiguration().isDefaultPreserveOrdering();
       
       this.replicating = replicating;
+      
+      this.prefetchSize = prefetchSize;
+      
+      boolean slow = sessionEndpoint.getConnectionEndpoint().getConnectionFactoryEndpoint().isSlowConsumers();
+      
+      if (slow)
+      {
+         //Slow is same as setting prefetch size to 1 - can deprecate this in 2.0
+         prefetchSize = 1;
+      }      
       
       this.slow = sessionEndpoint.getConnectionEndpoint().getConnectionFactoryEndpoint().isSlowConsumers();
       
@@ -307,17 +323,23 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
             }            
          }
                   
-         if (slow)
+         sendCount++;
+         
+         int num = prefetchSize;
+         
+         if (firstTime)
          {
-         	//If this is a slow consumer, we do not want to do any message buffering, so we immediately
-         	//set clientAccepting to false
-         	//When the client has consumed the message it will send a changeRate + message which will set
-         	//clientAccepting to true again
-         	//We cannot just rely on setting the prefetchSize to 1, since this is not a hard guarantee that only one message
-         	//will be buffered at once due to the asynchronous nature of sending changeRate
-         	this.clientAccepting = false;
+            //We make sure we have a little extra buffer on the client side
+            num = num + num / 3 ;
          }
          
+         if (sendCount == num)
+         {
+            clientAccepting = false;
+            
+            firstTime = false;
+         }          
+                   
          try
          {
          	sessionEndpoint.handleDelivery(delivery, this);
@@ -402,21 +424,10 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
 
       try
       {
-         // For now we just support a binary on/off.
-         // The client will send newRate = 0, to say it does not want any more messages when its
-         // client side buffer gets full or it will send an arbitrary non zero number to say it
-         // does want more messages, when its client side buffer empties to half its full size.
-         // Note the client does not wait until the client side buffer is empty before sending a
-         // newRate(+ve) message since this would add extra latency.
-
-         // In the future we can fine tune this by allowing the client to specify an actual rate in
-         // the newRate value so this is basically a placeholder for the future so we don't have to
-         // change the wire format when we support it.
-
-         // No need to synchronize - clientAccepting is volatile.
-
          if (newRate > 0)
          {
+            sendCount = 0;
+            
             clientAccepting = true;
          }
          else

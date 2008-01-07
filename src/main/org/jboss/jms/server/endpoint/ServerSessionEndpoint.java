@@ -66,8 +66,6 @@ import org.jboss.messaging.core.contract.Channel;
 import org.jboss.messaging.core.contract.Condition;
 import org.jboss.messaging.core.contract.Delivery;
 import org.jboss.messaging.core.contract.DeliveryObserver;
-import org.jboss.messaging.newcore.Message;
-import org.jboss.messaging.newcore.MessageReference;
 import org.jboss.messaging.core.contract.MessageStore;
 import org.jboss.messaging.core.contract.PersistenceManager;
 import org.jboss.messaging.core.contract.PostOffice;
@@ -81,6 +79,8 @@ import org.jboss.messaging.core.impl.tx.TransactionRepository;
 import org.jboss.messaging.core.impl.tx.TxCallback;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.wireformat.DeliverMessage;
+import org.jboss.messaging.newcore.Message;
+import org.jboss.messaging.newcore.MessageReference;
 import org.jboss.messaging.util.ExceptionUtil;
 import org.jboss.messaging.util.GUIDGenerator;
 import org.jboss.messaging.util.MessageQueueNameHelper;
@@ -379,12 +379,6 @@ public class ServerSessionEndpoint implements SessionEndpoint
       {                
       	if (thisSequence != -1)
       	{
-      		//Need to make sure it is in correct order since np messages are sent
-      		//one way so they can arrive out of sequence
-      		
-      		//This is a workaround to allow us to use one way messages for np messages for performance
-      		//reasons
-      		
       		synchronized (waitLock)
       		{	      		      	        
    				connectionEndpoint.sendMessage(message, null, checkForDuplicates); 
@@ -1776,7 +1770,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
       ServerConsumerEndpoint ep =
          new ServerConsumerEndpoint(sp, consumerID, binding.queue,
                                     binding.queue.getName(), this, selectorString, false,
-                                    dest, null, null, 0, -1, true, false);
+                                    dest, null, null, 0, -1, true, false, prefetchSize);
       
       ConsumerAdvised advised;
       
@@ -2078,7 +2072,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
          new ServerConsumerEndpoint(sp, consumerID, queue,
                                     queue.getName(), this, selectorString, noLocal,
                                     jmsDestination, dlqToUse, expiryQueueToUse, redeliveryDelayToUse,
-                                    maxDeliveryAttemptsToUse, false, replicating);
+                                    maxDeliveryAttemptsToUse, false, replicating, prefetchSize);
       
       if (queue.isClustered() && sp.getConfiguration().isClustered() && jmsDestination.isTopic() && subscriptionName != null)
       {

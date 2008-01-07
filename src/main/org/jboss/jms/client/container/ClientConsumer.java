@@ -201,18 +201,18 @@ public class ClientConsumer
    private int ackMode;
    private boolean closed;
    private Object mainLock;
-   private int maxBufferSize;
-   private int minBufferSize;
    private QueuedExecutor sessionExecutor;
    private boolean listenerRunning;
    private int maxDeliveries;
    private String queueName;
    private long lastDeliveryId = -1;
-   private volatile boolean serverSending = true;
    private boolean waitingForLastDelivery;
    private boolean shouldAck;
-   private boolean handleFlowControl;
    private long redeliveryDelay;
+   private boolean paused;      
+   private int consumeCount;
+   private boolean firstTime = true;
+   private int bufferSize;
 
    // Constructors ---------------------------------------------------------------------------------
 
@@ -228,8 +228,6 @@ public class ClientConsumer
          throw new IllegalArgumentException(this + " bufferSize must be > 0");
       }
               
-      this.maxBufferSize = bufferSize;
-      this.minBufferSize = bufferSize / 2;
       buffer = new BasicPriorityLinkedList(10);
       isConnectionConsumer = isCC;
       this.ackMode = ackMode;
@@ -241,8 +239,8 @@ public class ClientConsumer
       this.sessionExecutor = sessionExecutor;
       this.maxDeliveries = maxDeliveries;
       this.shouldAck = shouldAck;
-      this.handleFlowControl = handleFlowControl;
       this.redeliveryDelay = redeliveryDelay;
+      this.bufferSize = bufferSize;
    }
         
    // Public ---------------------------------------------------------------------------------------
@@ -281,11 +279,6 @@ public class ClientConsumer
          if (trace) { log.trace(this + " added message(s) to the buffer are now " + buffer.size() + " messages"); }
 
          messageAdded();
-
-         if (handleFlowControl)
-         {
-            checkStop();
-         }
       }
    }
 
@@ -526,13 +519,6 @@ public class ClientConsumer
          }
       } 
       
-      //This needs to be outside the lock
-
-      if (handleFlowControl)
-      {
-      	checkStart();
-      }
-      
       if (trace) { log.trace(this + " receive() returning " + m); }
       
       return m;
@@ -564,6 +550,8 @@ public class ClientConsumer
       {
          buffer.addFirst(proxy, proxy.getJMSPriority());
          
+         consumeCount--;
+         
          messageAdded();
       }
    }
@@ -583,8 +571,7 @@ public class ClientConsumer
 
       buffer.clear();
       
-      // need to reset toggle state
-      serverSending = true;
+      consumeCount = 0;
    }
    
    public long getRedeliveryDelay()
@@ -592,12 +579,55 @@ public class ClientConsumer
    	return redeliveryDelay;
    }
    
+   public void pause()
+   {
+      synchronized (mainLock)
+      {
+         paused = true;
+
+         sendChangeRateMessage(0f);         
+      }
+   }
+
+   public void resume()
+   {
+      synchronized (mainLock)
+      {
+         paused = false;
+
+         if (firstTime)
+         {
+            consumeCount = 0;
+
+            firstTime = false;
+         }
+         else
+         {
+            consumeCount = bufferSize / 3 - buffer.size();
+         }
+
+         sendChangeRateMessage(1f);
+      }
+   }
+
    
    // Package protected ----------------------------------------------------------------------------
    
    // Protected ------------------------------------------------------------------------------------
             
    // Private --------------------------------------------------------------------------------------
+
+   private void checkSendChangeRate()
+   {
+      consumeCount++;
+      
+      if (!paused && consumeCount == bufferSize)
+      {
+         consumeCount = 0;
+
+         sendChangeRateMessage(1.0f);
+      }
+   }
 
    /*
     * Wait for the last delivery to arrive
@@ -645,39 +675,6 @@ public class ClientConsumer
             waitingForLastDelivery = false;
          }
       }
-   }
-   
-   private void checkStop()
-   {
-      int size = buffer.size();
-      
-      if (serverSending && size >= maxBufferSize)
-      {
-         //Our buffer is full - we need to tell the server to stop sending if we haven't
-         //done so already
-         
-         sendChangeRateMessage(0f);
-         
-         if (trace) { log.trace("Sent changeRate 0 message"); }
-         
-         serverSending = false;
-      }
-   }
-   
-   private void checkStart()
-   {
-      int size = buffer.size();
-      
-      if (!serverSending && size <= minBufferSize)
-      {
-         //We need more messages - we need to tell the server this if we haven't done so already
-         
-         sendChangeRateMessage(1.0f);
-         
-         if (trace) { log.trace("Sent changeRate 1.0 message"); }
-         
-         serverSending = true;
-      }      
    }
    
    private void sendChangeRateMessage(float newRate) 
@@ -842,6 +839,8 @@ public class ClientConsumer
       if (!closed && !buffer.isEmpty())
       {
          m = (JBossMessage)buffer.removeFirst();
+         
+         checkSendChangeRate();
       }
 
       return m;
@@ -898,7 +897,9 @@ public class ClientConsumer
             
             // remove a message from the buffer
 
-            msg = (JBossMessage)buffer.removeFirst();                                       
+            msg = (JBossMessage)buffer.removeFirst();                
+            
+            checkSendChangeRate();
          }
          
          /*
@@ -946,11 +947,6 @@ public class ClientConsumer
             }   
          }
                   
-         if (handleFlowControl)
-         {
-         	checkStart();                                                   
-         }
-         
          if (trace) { log.trace("Exiting run()"); }
       }
    }   
