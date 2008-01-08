@@ -74,11 +74,10 @@ public class FilterChainSupport
       filterChain.addLast("logger", filter);
    }
    
-   static ExecutorFilter addExecutorFilter(DefaultIoFilterChainBuilder filterChain)
+   static void addExecutorFilter(DefaultIoFilterChainBuilder filterChain)
    {
       ExecutorFilter executorFilter = new ExecutorFilter();
       filterChain.addLast("executor", executorFilter);
-      return executorFilter;
    }
    
    static ScheduledExecutorService addBlockingRequestResponseFilter(

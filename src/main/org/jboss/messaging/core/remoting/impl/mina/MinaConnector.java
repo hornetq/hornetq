@@ -9,6 +9,7 @@ package org.jboss.messaging.core.remoting.impl.mina;
 import static org.jboss.messaging.core.remoting.TransportType.TCP;
 import static org.jboss.messaging.core.remoting.impl.mina.FilterChainSupport.addBlockingRequestResponseFilter;
 import static org.jboss.messaging.core.remoting.impl.mina.FilterChainSupport.addCodecFilter;
+import static org.jboss.messaging.core.remoting.impl.mina.FilterChainSupport.addExecutorFilter;
 import static org.jboss.messaging.core.remoting.impl.mina.FilterChainSupport.addLoggingFilter;
 import static org.jboss.messaging.core.remoting.impl.mina.FilterChainSupport.addMDCFilter;
 
@@ -16,6 +17,7 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledExecutorService;
 
 import org.apache.mina.common.CloseFuture;
@@ -60,9 +62,6 @@ public class MinaConnector implements NIOConnector
 
    private Map<ConsolidatedRemotingConnectionListener, IoServiceListener> listeners = new HashMap<ConsolidatedRemotingConnectionListener, IoServiceListener>();
 
-   private ExecutorFilter executorFilter;
-
-
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
@@ -82,14 +81,10 @@ public class MinaConnector implements NIOConnector
       DefaultIoFilterChainBuilder filterChain = connector.getFilterChain();
       
       addMDCFilter(filterChain);
-
       addCodecFilter(filterChain);
-
-      blockingScheduler = addBlockingRequestResponseFilter(filterChain);
-
       addLoggingFilter(filterChain);
-      
-      executorFilter = FilterChainSupport.addExecutorFilter(filterChain);
+      blockingScheduler = addBlockingRequestResponseFilter(filterChain);
+      addExecutorFilter(filterChain);
 
       connector.setHandler(new MinaHandler(PacketDispatcher.client));
       connector.getSessionConfig().setKeepAlive(true);
@@ -125,12 +120,10 @@ public class MinaConnector implements NIOConnector
 
       connector.dispose();
       blockingScheduler.shutdown();
-
+      
       connector = null;
       blockingScheduler = null;
       session = null;
-      
-      this.executorFilter.destroy();
 
       return closed;
    }
