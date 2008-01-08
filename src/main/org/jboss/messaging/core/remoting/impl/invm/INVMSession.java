@@ -32,6 +32,7 @@ public class INVMSession implements NIOSession
 
    private long id;
    private ExecutorService executor;
+   private long correlationCounter;
 
    // Static --------------------------------------------------------
 
@@ -42,6 +43,7 @@ public class INVMSession implements NIOSession
       // FIXME have a real ID
       this.id = System.currentTimeMillis();
       this.executor = Executors.newSingleThreadExecutor();
+      this.correlationCounter = 0;
    }
 
    // Public --------------------------------------------------------
@@ -81,13 +83,12 @@ public class INVMSession implements NIOSession
             });
    }
 
-   public Object writeAndBlock(long requestID, final Object request,
+   public Object writeAndBlock(final AbstractPacket request,
          long timeout, TimeUnit timeUnit) throws Throwable
    {
-      assert request instanceof AbstractPacket;
-
+      request.setCorrelationID(correlationCounter++);
       Future<AbstractPacket> future = executor
-            .submit(new PacketDispatcherCallable((AbstractPacket) request));
+            .submit(new PacketDispatcherCallable(request));
       return future.get(timeout, timeUnit);
    }
 

@@ -156,6 +156,23 @@ public abstract class ClientTestBase extends TestCase
       }
    }
    
+   public void testCorrelationCounter() throws Exception
+   {
+      TextPacket request = new TextPacket("testSendBlocking");
+      request.setVersion((byte) 1);
+      request.setTargetID(serverPacketHandler.getID());
+
+      AbstractPacket receivedPacket = client.sendBlocking(request);
+      long correlationID = request.getCorrelationID();
+      
+      assertNotNull(receivedPacket);      
+      assertEquals(request.getCorrelationID(), receivedPacket.getCorrelationID());
+      
+      receivedPacket = client.sendBlocking(request);
+      assertEquals(correlationID + 1, request.getCorrelationID());
+      assertEquals(correlationID + 1, receivedPacket.getCorrelationID());      
+   }
+
    public void testClientHandlePacketSentByServer() throws Exception
    {
       TestPacketHandler clientHandler = new TestPacketHandler();

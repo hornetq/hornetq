@@ -12,6 +12,7 @@ import org.apache.mina.common.IoSession;
 import org.apache.mina.filter.reqres.Request;
 import org.apache.mina.filter.reqres.Response;
 import org.jboss.messaging.core.remoting.NIOSession;
+import org.jboss.messaging.core.remoting.wireformat.AbstractPacket;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -27,6 +28,8 @@ public class MinaSession implements NIOSession
 
    private final IoSession session;
 
+   private long correlationCounter;
+   
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
@@ -36,6 +39,7 @@ public class MinaSession implements NIOSession
       assert session != null;
 
       this.session = session;
+      correlationCounter = 0;
    }
 
    // Public --------------------------------------------------------
@@ -50,10 +54,11 @@ public class MinaSession implements NIOSession
       session.write(object);
    }
 
-   public Object writeAndBlock(long requestID, Object object, long timeout,
+   public Object writeAndBlock(AbstractPacket packet, long timeout,
          TimeUnit timeUnit) throws Throwable
    {
-      Request req = new Request(requestID, object, timeout, timeUnit);
+      packet.setCorrelationID(correlationCounter++);
+      Request req = new Request(packet.getCorrelationID(), packet, timeout, timeUnit);
       session.write(req);
       Response response = req.awaitResponse();
       return response.getMessage();

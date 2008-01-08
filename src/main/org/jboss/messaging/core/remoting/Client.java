@@ -41,7 +41,7 @@ public class Client
    // By default, a blocking request will timeout after 5 seconds
    private int blockingRequestTimeout = 5;
    private TimeUnit blockingRequestTimeUnit = SECONDS;
-
+   
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
@@ -95,14 +95,10 @@ public class Client
       assert packet != null;
       checkConnected();
 
-      // FIXME: must use a real counter for correlation ID
-      packet.setCorrelationID(System.nanoTime());
-
       try
       {
-         AbstractPacket response = (AbstractPacket) session.writeAndBlock(
-               packet.getCorrelationID(), packet, blockingRequestTimeout,
-               blockingRequestTimeUnit);
+         AbstractPacket response = (AbstractPacket) session.writeAndBlock(packet, 
+               blockingRequestTimeout, blockingRequestTimeUnit);
          return response;
       } catch (Throwable t)
       {
