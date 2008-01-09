@@ -74,6 +74,8 @@ You can safely comment them out if your post office is non clustered -->
       <channel-partition-name>${jboss.partition.name:DefaultPartition}-JMS</channel-partition-name>-->
 
       <remoting-bind-address>5400</remoting-bind-address>
+      <!--  timeout in seconds -->
+      <remoting-timeout>5</remoting-timeout>
 
    </configuration>
 

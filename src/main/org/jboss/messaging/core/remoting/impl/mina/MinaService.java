@@ -13,9 +13,10 @@ import static org.jboss.messaging.core.remoting.impl.mina.FilterChainSupport.add
 import static org.jboss.messaging.core.remoting.impl.mina.FilterChainSupport.addMDCFilter;
 
 import java.net.InetSocketAddress;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.mina.common.DefaultIoFilterChainBuilder;
-import org.apache.mina.filter.executor.ExecutorFilter;
 import org.apache.mina.transport.socket.nio.NioSocketAcceptor;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
@@ -36,13 +37,17 @@ public class MinaService
 
    // Attributes ----------------------------------------------------
 
-   private final int port;
+   private TransportType transport;
 
    private final String host;
+
+   private final int port;
+   
+   private Map<String, String> parameters;
    
    private NioSocketAcceptor acceptor;
 
-   private TransportType transport;
+   private int blockingRequestTimeout = 5;
 
    // Static --------------------------------------------------------
 
@@ -62,13 +67,21 @@ public class MinaService
       this.transport = transport;
       this.host = host;
       this.port = port;
+      this.parameters = new HashMap<String, String>();
    }
 
    // Public --------------------------------------------------------
+   
+   public void setParameters(Map<String, String> parameters)
+   {
+      assert parameters != null;
+      
+      this.parameters = parameters;
+   }
 
    public ServerLocator getLocator()
    {
-      return new ServerLocator(transport, host, port);
+      return new ServerLocator(transport, host, port, parameters);
    }
    
    public void start() throws Exception

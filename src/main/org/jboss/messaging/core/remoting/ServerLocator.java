@@ -8,6 +8,11 @@ package org.jboss.messaging.core.remoting;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.StringTokenizer;
+import java.util.Map.Entry;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -24,6 +29,7 @@ public class ServerLocator
    private TransportType transport;
    private String host;
    private int port;
+   private Map<String, String> parameters = new HashMap<String, String>();
 
    // Static --------------------------------------------------------
 
@@ -51,13 +57,38 @@ public class ServerLocator
       }
       this.host = u.getHost();
       this.port = u.getPort();
+      
+      String query = u.getQuery();
+      if (query != null)
+      {
+         StringTokenizer tok = new StringTokenizer(query, "&");
+         while(tok.hasMoreTokens())
+         {
+            String token = tok.nextToken();
+            int eq = token.indexOf("=");
+            String name = (eq > -1) ? token.substring(0, eq) : token;
+            String value = (eq > -1) ? token.substring(eq + 1) : "";
+            parameters.put(name, value);
+         }
+      }
    }
-
+  
    public ServerLocator(TransportType transport, String host, int port)
    {
+      this(transport, host, port, new HashMap<String, String>());
+   }
+   
+   public ServerLocator(TransportType transport, String host, int port, Map<String, String> parameters)
+   {
+      assert transport != null;
+      assert host != null;
+      assert port > 0;
+      assert parameters != null;
+      
       this.transport = transport;
       this.host = host;
       this.port = port;
+      this.parameters = parameters;
    }
 
    // Public --------------------------------------------------------
@@ -76,49 +107,29 @@ public class ServerLocator
    {
       return port;
    }
-
-   @Override
-   public int hashCode()
+   
+   public Map<String, String> getParameters()
    {
-      final int prime = 31;
-      int result = 1;
-      result = prime * result + ((host == null) ? 0 : host.hashCode());
-      result = prime * result + port;
-      result = prime * result
-            + ((transport == null) ? 0 : transport.hashCode());
-      return result;
-   }
-
-   @Override
-   public boolean equals(Object obj)
-   {
-      if (this == obj)
-         return true;
-      if (obj == null)
-         return false;
-      if (getClass() != obj.getClass())
-         return false;
-      final ServerLocator other = (ServerLocator) obj;
-      if (host == null)
-      {
-         if (other.host != null)
-            return false;
-      } else if (!host.equals(other.host))
-         return false;
-      if (port != other.port)
-         return false;
-      if (transport == null)
-      {
-         if (other.transport != null)
-            return false;
-      } else if (!transport.equals(other.transport))
-         return false;
-      return true;
+      return parameters;
    }
 
    public String getURI()
    {
-      return transport + "://" + host + ":" + port;
+      String uri = transport + "://" + host + ":" + port + ((parameters.size() != 0) ? "?" : "");
+      if(parameters.size() != 0)
+      {
+         Iterator<Entry<String, String>> iter = parameters.entrySet().iterator();
+         while(iter.hasNext())
+         {
+            Entry<String, String> entry = iter.next();
+            uri += entry.getKey() + "=" + entry.getValue();
+            if(iter.hasNext())
+            {
+               uri += "&";
+            }
+         }
+      }
+      return uri;
    }
 
    @Override

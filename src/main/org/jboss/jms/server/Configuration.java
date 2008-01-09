@@ -107,6 +107,8 @@ public class Configuration implements Serializable
 
    private Integer _remotingBindAddress;
 
+   private String _remotingTimeout;
+
    //default confog file location
    private String configurationUrl = "jbm-configuration.xml";
 
@@ -147,6 +149,7 @@ public class Configuration implements Serializable
       _channelPartitionName = getString(e, "channel-partition-name", _channelPartitionName);
       _maxConcurrentReplications = getInteger(e, "max-concurrent-replications", _maxConcurrentReplications);
       _remotingBindAddress = getInteger(e, "remoting-bind-address", _remotingBindAddress);
+      _remotingTimeout = getString(e, "remoting-timeout", _remotingTimeout);
       NodeList security = e.getElementsByTagName("default-security-config");
       if (security.getLength() > 0)
       {
@@ -550,13 +553,17 @@ public class Configuration implements Serializable
    {
       return _remotingBindAddress;
    }
-
+   
    public void setRemotingBindAddress(Integer remotingBindAddress)
    {
       this._remotingBindAddress = remotingBindAddress;
    }
 
-
+   public String getRemotingTimeout()
+   {
+      return _remotingTimeout;
+   }
+   
    public String getConfigurationUrl()
    {
       return configurationUrl;

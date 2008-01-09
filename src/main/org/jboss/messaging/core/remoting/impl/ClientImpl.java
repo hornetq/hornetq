@@ -57,6 +57,11 @@ public class ClientImpl implements Client
       
       this.connector = connector;
       this.serverLocator = locator;
+      if (locator.getParameters().containsKey("timeout"))
+      {
+         int timeout = Integer.parseInt(locator.getParameters().get("timeout"));
+         setBlockingRequestTimeout(timeout, SECONDS);
+      }
    }
 
    // Public --------------------------------------------------------

@@ -354,6 +354,16 @@
             <inject bean="Configuration" property="remotingBindAddress"/>
          </parameter>
       </constructor>
+      <property name="parameters">
+         <map class="java.util.HashMap" keyClass="java.lang.String" valueClass="java.lang.String">
+            <entry>
+               <key>timeout</key>
+               <value>
+                 <inject bean="Configuration" property="remotingTimeout" />
+               </value>
+            </entry>
+          </map>
+      </property>
    </bean>
       
    <bean name="ClusterNotifier" class="org.jboss.messaging.core.impl.DefaultClusterNotifier"/>
