@@ -21,10 +21,9 @@
   */
 package org.jboss.jms.message;
 
+import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.io.Serializable;
 
 import javax.jms.JMSException;
@@ -93,7 +92,6 @@ public class JBossObjectMessage extends JBossMessage implements ObjectMessage
    
    public void doBeforeReceive() throws Exception
    {
-      beforeReceive();
    }
    
    
@@ -106,11 +104,32 @@ public class JBossObjectMessage extends JBossMessage implements ObjectMessage
       this.object = object;
    }
 
+   // lazy deserialize the Object the first time the client requests it
    public Serializable getObject() throws JMSException
    {
-      return object;
+      if (object != null)
+      {
+         return object;
+      }
+      else if (message.getPayload() != null)
+      {
+         DataInputStream dais = new DataInputStream(new ByteArrayInputStream(message.getPayload()));
+         try
+         {
+            readPayload(dais);
+         }
+         catch (Exception e)
+         {
+            RuntimeException e2 = new RuntimeException(e.getMessage());
+            e2.setStackTrace(e.getStackTrace());
+            throw e2;
+         }         
+         return object;
+      } else {
+         return null;
+      }
    }
-   
+
    public void clearBody() throws JMSException
    {
       super.clearBody();
@@ -124,15 +143,12 @@ public class JBossObjectMessage extends JBossMessage implements ObjectMessage
    
    protected void writePayload(DataOutputStream daos) throws Exception
    {
-      ObjectOutputStream oos = new ObjectOutputStream(daos);               
-      oos.writeObject(object);
-      oos.flush();
+      StreamUtils.writeObject(daos, object, false, true);
    }
    
    protected void readPayload(DataInputStream dais) throws Exception
    {
-      ObjectInputStream ois = new ObjectInputStream(dais);
-      object = (Serializable)ois.readObject();
+      object = (Serializable)StreamUtils.readObject(dais, true);
    }
 
    // Private -------------------------------------------------------
