@@ -42,6 +42,7 @@ import org.jboss.jms.message.MessageIdGeneratorFactory;
 import org.jboss.messaging.core.remoting.Client;
 import org.jboss.messaging.core.remoting.NIOConnector;
 import org.jboss.messaging.core.remoting.ServerLocator;
+import org.jboss.messaging.core.remoting.impl.ClientImpl;
 import org.jboss.messaging.core.remoting.wireformat.CreateConnectionRequest;
 import org.jboss.messaging.core.remoting.wireformat.CreateConnectionResponse;
 import org.jboss.messaging.util.Version;
@@ -294,7 +295,7 @@ public class ClientConnectionFactoryDelegate
       {
          ServerLocator locator = new ServerLocator(serverLocatorURI);
          NIOConnector connector = REGISTRY.getConnector(locator);
-         client = new Client(connector, locator);
+         client = new ClientImpl(connector, locator);
          client.connect();
       }
       catch (Exception e)

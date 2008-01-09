@@ -49,7 +49,7 @@ public abstract class ClientTestBase extends TestCase
 
    public void testConnected() throws Exception
    {
-      Client client = new Client(createNIOConnector(), createServerLocator());
+      Client client = new ClientImpl(createNIOConnector(), createServerLocator());
       
       assertFalse(client.isConnected());
 
@@ -216,7 +216,7 @@ public abstract class ClientTestBase extends TestCase
       
       ServerLocator serverLocator = createServerLocator();
       NIOConnector connector = createNIOConnector();
-      client = new Client(connector, serverLocator);
+      client = new ClientImpl(connector, serverLocator);
       client.connect();
       
       serverPacketHandler = new ReversePacketHandler();

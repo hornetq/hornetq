@@ -23,6 +23,7 @@ import org.jboss.messaging.core.remoting.Client;
 import org.jboss.messaging.core.remoting.NIOConnector;
 import org.jboss.messaging.core.remoting.NIOSession;
 import org.jboss.messaging.core.remoting.ServerLocator;
+import org.jboss.messaging.core.remoting.impl.ClientImpl;
 import org.jboss.messaging.core.remoting.wireformat.NullPacket;
 
 /**
@@ -56,7 +57,7 @@ public class ClientTest extends TestCase
       
       replay(connector, session1, session2);
 
-      Client client = new Client(connector, serverLocator);
+      Client client = new ClientImpl(connector, serverLocator);
       client.connect();
       assertTrue(client.isConnected());
       assertTrue(client.disconnect());
@@ -79,7 +80,7 @@ public class ClientTest extends TestCase
 
       replay(connector);
 
-      Client client = new Client(connector, serverLocator);
+      Client client = new ClientImpl(connector, serverLocator);
       
       try
       {
@@ -105,7 +106,7 @@ public class ClientTest extends TestCase
       
       replay(connector, session);
       
-      Client client = new Client(connector, serverLocator);
+      Client client = new ClientImpl(connector, serverLocator);
       
       assertNull(client.getSessionID());
       client.connect();
@@ -133,7 +134,7 @@ public class ClientTest extends TestCase
       
       replay(connector, session);
       
-      Client client = new Client(connector, serverLocator);
+      Client client = new ClientImpl(connector, serverLocator);
       
       assertNull(client.getURI());
       client.connect();
@@ -151,7 +152,7 @@ public class ClientTest extends TestCase
       // connector is not expected to be called at all;
       replay(connector);
       
-      Client client = new Client(connector, serverLocator);
+      Client client = new ClientImpl(connector, serverLocator);
       try
       {
          client.sendOneWay(new NullPacket());

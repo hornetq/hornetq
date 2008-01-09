@@ -27,6 +27,7 @@ import org.jboss.logging.Logger;
 import org.jboss.messaging.core.remoting.Client;
 import org.jboss.messaging.core.remoting.NIOConnector;
 import org.jboss.messaging.core.remoting.ServerLocator;
+import org.jboss.messaging.core.remoting.impl.ClientImpl;
 
 /**
  * Encapsulates the state and behaviour from MINA needed for a JMS connection.
@@ -82,7 +83,7 @@ public class JMSRemotingConnection
       callbackManager = new CallbackManager();
 
       NIOConnector connector = REGISTRY.getConnector(serverLocator);
-      client = new Client(connector, serverLocator);
+      client = new ClientImpl(connector, serverLocator);
       client.connect();
 
       if (log.isDebugEnabled())

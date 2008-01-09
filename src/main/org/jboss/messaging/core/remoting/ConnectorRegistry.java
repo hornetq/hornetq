@@ -6,6 +6,7 @@
  */
 package org.jboss.messaging.core.remoting;
 
+import org.jboss.messaging.core.remoting.impl.ClientImpl;
 import org.jboss.messaging.core.remoting.impl.invm.INVMConnector;
 import org.jboss.messaging.core.remoting.impl.mina.MinaService;
 
@@ -15,7 +16,7 @@ import org.jboss.messaging.core.remoting.impl.mina.MinaService;
  * 
  * When a {@link MinaService} is started, it register its {@link ServerLocator}.
  * 
- * When a {@link Client} is created, it gets its {@link NIOConnector} from the
+ * When a {@link ClientImpl} is created, it gets its {@link NIOConnector} from the
  * ConnectorRegistry using the {@link ServerLocator} corresponding to the server
  * it wants to connect to. If the ConnectionRegistry contains this locator, it
  * implies that the Client is in the same VM than the server. In that case, we
