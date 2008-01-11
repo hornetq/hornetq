@@ -6,7 +6,6 @@
  */
 package org.jboss.messaging.core.remoting.wireformat;
 
-import static org.jboss.messaging.core.remoting.Assert.assertValidID;
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.RESP_GETCLIENTID;
 
 /**
@@ -30,8 +29,6 @@ public class GetClientIDResponse extends AbstractPacket
    public GetClientIDResponse(String clientID)
    {
       super(RESP_GETCLIENTID);
-
-      assertValidID(clientID);
 
       this.clientID = clientID;
    }
