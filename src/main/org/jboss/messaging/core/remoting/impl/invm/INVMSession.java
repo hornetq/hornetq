@@ -6,6 +6,8 @@
  */
 package org.jboss.messaging.core.remoting.impl.invm;
 
+import static java.util.UUID.randomUUID;
+
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
@@ -30,7 +32,7 @@ public class INVMSession implements NIOSession
 
    // Attributes ----------------------------------------------------
 
-   private long id;
+   private String id;
    private ExecutorService executor;
    private long correlationCounter;
 
@@ -40,8 +42,7 @@ public class INVMSession implements NIOSession
 
    public INVMSession()
    {
-      // FIXME have a real ID
-      this.id = System.currentTimeMillis();
+      this.id = randomUUID().toString();
       this.executor = Executors.newSingleThreadExecutor();
       this.correlationCounter = 0;
    }
@@ -58,7 +59,7 @@ public class INVMSession implements NIOSession
 
    // NIOSession implementation -------------------------------------
 
-   public long getID()
+   public String getID()
    {
       return id;
    }

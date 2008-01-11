@@ -19,7 +19,7 @@ import org.jboss.messaging.core.remoting.wireformat.AbstractPacket;
 public interface NIOSession
 {
 
-   long getID();
+   String getID();
 
    void write(Object object);
 

@@ -6,6 +6,7 @@
  */
 package org.jboss.messaging.core.remoting.test.unit;
 
+import static java.util.UUID.randomUUID;
 import static org.easymock.EasyMock.createStrictMock;
 import static org.easymock.EasyMock.expect;
 import static org.easymock.EasyMock.replay;
@@ -95,7 +96,7 @@ public class ClientTest extends TestCase
 
    public void testSessionID() throws Exception
    {
-      long sessionID = System.currentTimeMillis();
+      String sessionID = randomUUID().toString();
       
       NIOConnector connector = createStrictMock(NIOConnector.class);
       NIOSession session = createStrictMock(NIOSession.class);
@@ -114,7 +115,7 @@ public class ClientTest extends TestCase
       String actualSessionID = client.getSessionID();
       
       assertNotNull(actualSessionID);
-      assertEquals(Long.toString(sessionID), actualSessionID);
+      assertEquals(sessionID, actualSessionID);
       client.disconnect();
       assertNull(client.getSessionID());
       

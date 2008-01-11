@@ -96,7 +96,7 @@ public class ClientImpl implements Client
       {
          return null;
       }
-      return Long.toString(session.getID());
+      return session.getID();
    }
 
    /* (non-Javadoc)

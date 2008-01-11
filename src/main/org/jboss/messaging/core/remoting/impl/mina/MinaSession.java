@@ -44,9 +44,9 @@ public class MinaSession implements NIOSession
 
    // Public --------------------------------------------------------
 
-   public long getID()
+   public String getID()
    {
-      return session.getId();
+      return Long.toString(session.getId());
    }
 
    public void write(Object object)
