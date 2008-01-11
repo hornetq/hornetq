@@ -21,6 +21,10 @@
   */
 package org.jboss.jms.server.endpoint;
 
+import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_UPDATECALLBACK;
+import static org.jboss.messaging.core.remoting.wireformat.PacketType.REQ_CREATECONNECTION;
+import static org.jboss.messaging.core.remoting.wireformat.PacketType.REQ_GETTOPOLOGY;
+
 import java.util.List;
 import java.util.Map;
 
@@ -31,25 +35,18 @@ import org.jboss.jms.client.delegate.ClientConnectionFactoryDelegate;
 import org.jboss.jms.delegate.ConnectionFactoryEndpoint;
 import org.jboss.jms.delegate.CreateConnectionResult;
 import org.jboss.jms.delegate.TopologyResult;
-import org.jboss.jms.server.ServerPeer;
 import org.jboss.jms.exception.MessagingJMSException;
+import org.jboss.jms.server.ServerPeer;
 import org.jboss.logging.Logger;
-import org.jboss.messaging.core.remoting.PacketDispatcher;
-import org.jboss.messaging.core.remoting.PacketSender;
 import org.jboss.messaging.core.remoting.PacketHandler;
-import org.jboss.messaging.core.remoting.Assert;
-import org.jboss.messaging.core.remoting.wireformat.GetTopologyResponse;
+import org.jboss.messaging.core.remoting.PacketSender;
 import org.jboss.messaging.core.remoting.wireformat.AbstractPacket;
-import org.jboss.messaging.core.remoting.wireformat.PacketType;
 import org.jboss.messaging.core.remoting.wireformat.CreateConnectionRequest;
 import org.jboss.messaging.core.remoting.wireformat.CreateConnectionResponse;
-import org.jboss.messaging.core.remoting.wireformat.GetClientAOPStackResponse;
-import org.jboss.messaging.core.remoting.wireformat.UpdateCallbackMessage;
+import org.jboss.messaging.core.remoting.wireformat.GetTopologyResponse;
 import org.jboss.messaging.core.remoting.wireformat.JMSExceptionMessage;
-import static org.jboss.messaging.core.remoting.wireformat.PacketType.REQ_CREATECONNECTION;
-import static org.jboss.messaging.core.remoting.wireformat.PacketType.REQ_GETCLIENTAOPSTACK;
-import static org.jboss.messaging.core.remoting.wireformat.PacketType.REQ_GETTOPOLOGY;
-import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_UPDATECALLBACK;
+import org.jboss.messaging.core.remoting.wireformat.PacketType;
+import org.jboss.messaging.core.remoting.wireformat.UpdateCallbackMessage;
 import org.jboss.messaging.util.ExceptionUtil;
 import org.jboss.messaging.util.Version;
 
@@ -231,7 +228,7 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
 
       final String connectionID = endpoint.getConnectionID();
 
-      PacketDispatcher.server.register(endpoint.newHandler(connectionID));
+      serverPeer.getMinaService().getDispatcher().register(endpoint.newHandler(connectionID));
 
       log.trace("created and registered " + endpoint);
 

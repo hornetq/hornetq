@@ -216,7 +216,7 @@ public class ConnectionFactoryJNDIMapper
 
       // Registering with the dispatcher should always be the last thing otherwise a client could
       // use a partially initialised object
-      PacketDispatcher.server.register(endpoint.newHandler());
+      serverPeer.getMinaService().getDispatcher().register(endpoint.newHandler());
       
       // Replicate the change - we will ignore this locally
 
@@ -265,7 +265,7 @@ public class ConnectionFactoryJNDIMapper
          }
       }
 
-      PacketDispatcher.server.unregister(endpoint.getID());
+      serverPeer.getMinaService().getDispatcher().unregister(endpoint.getID());
    }
 
    // MessagingComponent implementation ------------------------------------------------------------

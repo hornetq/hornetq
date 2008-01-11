@@ -10,6 +10,7 @@ import static org.jboss.messaging.core.remoting.TransportType.TCP;
 import static org.jboss.messaging.core.remoting.impl.mina.integration.test.TestSupport.PORT;
 
 import org.jboss.messaging.core.remoting.NIOConnector;
+import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.ServerLocator;
 import org.jboss.messaging.core.remoting.impl.ClientTestBase;
 import org.jboss.messaging.core.remoting.impl.mina.MinaConnector;
@@ -51,10 +52,11 @@ public class MinaClientTest extends ClientTestBase
    }
 
    @Override
-   protected void startServer() throws Exception
+   protected PacketDispatcher startServer() throws Exception
    {
       service = new MinaService(TCP, "localhost", PORT);
       service.start();
+      return service.getDispatcher();
    }
 
    @Override

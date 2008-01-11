@@ -10,6 +10,7 @@ import static org.jboss.messaging.core.remoting.TransportType.INVM;
 import static org.jboss.messaging.core.remoting.impl.mina.integration.test.TestSupport.PORT;
 
 import org.jboss.messaging.core.remoting.NIOConnector;
+import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.ServerLocator;
 import org.jboss.messaging.core.remoting.impl.ClientTestBase;
 import org.jboss.messaging.core.remoting.impl.invm.INVMConnector;
@@ -26,6 +27,7 @@ public class INVMClientTest extends ClientTestBase
 
    // Attributes ----------------------------------------------------
 
+   PacketDispatcher dispatcher = new PacketDispatcher();
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
@@ -37,7 +39,7 @@ public class INVMClientTest extends ClientTestBase
    @Override
    protected NIOConnector createNIOConnector()
    {
-      return new INVMConnector("localhost", PORT);
+      return new INVMConnector("localhost", PORT, dispatcher);
    }
    
    @Override
@@ -47,15 +49,15 @@ public class INVMClientTest extends ClientTestBase
    }
    
    @Override
-   protected void startServer() throws Exception
+   protected PacketDispatcher startServer() throws Exception
    {
-      // no op
+      return dispatcher;
    }
    
    @Override
    protected void stopServer()
    {
-      // no op
+      dispatcher = null;
    }
 
    // Package protected ---------------------------------------------

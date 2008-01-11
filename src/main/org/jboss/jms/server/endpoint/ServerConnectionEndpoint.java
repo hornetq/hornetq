@@ -59,7 +59,6 @@ import org.jboss.messaging.core.contract.Queue;
 import org.jboss.messaging.core.impl.tx.Transaction;
 import org.jboss.messaging.core.impl.tx.TransactionRepository;
 import static org.jboss.messaging.core.remoting.Assert.assertValidID;
-import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.PacketHandler;
 import org.jboss.messaging.core.remoting.PacketSender;
 import org.jboss.messaging.core.remoting.wireformat.AbstractPacket;
@@ -251,7 +250,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
 
          serverPeer.addSession(sessionID, ep);
 
-         PacketDispatcher.server.register(ep.newHandler());
+         serverPeer.getMinaService().getDispatcher().register(ep.newHandler());
          
          log.trace("created and registered " + ep);
 
@@ -407,7 +406,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
 
          cm.unregisterConnection(jmsClientVMID, remotingClientSessionID);
 
-         PacketDispatcher.server.unregister(id);
+         serverPeer.getMinaService().getDispatcher().unregister(id);
 
          closed = true;
       }

@@ -33,14 +33,16 @@ import org.jboss.messaging.core.remoting.wireformat.TextPacket;
  */
 public abstract class ClientTestBase extends TestCase
 {
-   private ReversePacketHandler serverPacketHandler;
-
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
 
    private Client client;
-   
+ 
+   private ReversePacketHandler serverPacketHandler;
+
+   private PacketDispatcher serverDispatcher;
+
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
@@ -212,7 +214,7 @@ public abstract class ClientTestBase extends TestCase
    @Override
    protected void setUp() throws Exception
    {
-      startServer();
+      serverDispatcher = startServer();
       
       ServerLocator serverLocator = createServerLocator();
       NIOConnector connector = createNIOConnector();
@@ -220,25 +222,26 @@ public abstract class ClientTestBase extends TestCase
       client.connect();
       
       serverPacketHandler = new ReversePacketHandler();
-      PacketDispatcher.server.register(serverPacketHandler);
+      serverDispatcher.register(serverPacketHandler);
    }
 
    @Override
    protected void tearDown() throws Exception
    {
-      PacketDispatcher.server.unregister(serverPacketHandler.getID());
+      serverDispatcher.unregister(serverPacketHandler.getID());
 
       client.disconnect();
       stopServer();
       
       client = null;
+      serverDispatcher = null;
    }
    
    protected abstract ServerLocator createServerLocator();
    
    protected abstract NIOConnector createNIOConnector();
 
-   protected abstract void startServer() throws Exception;
+   protected abstract PacketDispatcher startServer() throws Exception;
    
    protected abstract void stopServer();
 }

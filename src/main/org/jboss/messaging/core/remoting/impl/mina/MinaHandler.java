@@ -47,8 +47,9 @@ public class MinaHandler extends IoHandlerAdapter
    public void exceptionCaught(IoSession session, Throwable cause)
          throws Exception
    {
+      // FIXME ugly way to know we're on the server side
       // close session only on the server side
-      if (dispatcher == PacketDispatcher.server)
+      if (dispatcher != PacketDispatcher.client)
       {
          session.close();
       }

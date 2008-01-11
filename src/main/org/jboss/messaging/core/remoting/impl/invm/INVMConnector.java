@@ -13,6 +13,7 @@ import java.io.IOException;
 import org.jboss.jms.client.remoting.ConsolidatedRemotingConnectionListener;
 import org.jboss.messaging.core.remoting.NIOConnector;
 import org.jboss.messaging.core.remoting.NIOSession;
+import org.jboss.messaging.core.remoting.PacketDispatcher;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -31,6 +32,8 @@ public class INVMConnector implements NIOConnector
    private int port;
 
    private INVMSession session;
+
+   private PacketDispatcher serverDispatcher;
  
    // Static --------------------------------------------------------
 
@@ -38,12 +41,14 @@ public class INVMConnector implements NIOConnector
 
    // Public --------------------------------------------------------
 
-   public INVMConnector(String host, int port)
+   public INVMConnector(String host, int port, PacketDispatcher serverDispatcher)
    {
       assert host != null;
+      assert serverDispatcher != null;
       
       this.host = host;
       this.port = port;
+      this.serverDispatcher = serverDispatcher;
    }
 
    // NIOConnector implementation -----------------------------------
@@ -51,7 +56,7 @@ public class INVMConnector implements NIOConnector
    public NIOSession connect()
          throws IOException
    {
-      this.session = new INVMSession();
+      this.session = new INVMSession(serverDispatcher);
       return session;
    }
 

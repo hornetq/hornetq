@@ -35,16 +35,20 @@ public class INVMSession implements NIOSession
    private String id;
    private ExecutorService executor;
    private long correlationCounter;
+   private PacketDispatcher serverDispatcher;
 
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public INVMSession()
+   public INVMSession(PacketDispatcher serverDispatcher)
    {
+      assert serverDispatcher != null;
+      
       this.id = randomUUID().toString();
       this.executor = Executors.newSingleThreadExecutor();
       this.correlationCounter = 0;
+      this.serverDispatcher = serverDispatcher;
    }
 
    // Public --------------------------------------------------------
@@ -73,7 +77,7 @@ public class INVMSession implements NIOSession
    {
       assert object instanceof AbstractPacket;
 
-      PacketDispatcher.server.dispatch((AbstractPacket) object,
+      serverDispatcher.dispatch((AbstractPacket) object,
             new PacketSender()
             {
 
@@ -116,7 +120,7 @@ public class INVMSession implements NIOSession
          final CountDownLatch latch = new CountDownLatch(1);
          final AbstractPacket[] responses = new AbstractPacket[1];
 
-         PacketDispatcher.server.dispatch((AbstractPacket) packet,
+         serverDispatcher.dispatch((AbstractPacket) packet,
                new PacketSender()
                {
                   public void send(AbstractPacket response)

@@ -39,7 +39,6 @@ import org.jboss.jms.exception.MessagingJMSException;
 import org.jboss.jms.server.selector.Selector;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.contract.Channel;
-import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.PacketHandler;
 import org.jboss.messaging.core.remoting.PacketSender;
 import org.jboss.messaging.core.remoting.wireformat.AbstractPacket;
@@ -249,7 +248,7 @@ public class ServerBrowserEndpoint implements BrowserEndpoint
       
       iterator = null;
       
-      PacketDispatcher.server.unregister(id);
+      session.getConnectionEndpoint().getServerPeer().getMinaService().getDispatcher().unregister(id);
       
       closed = true;
    }

@@ -13,6 +13,7 @@ import junit.framework.TestCase;
 
 import org.jboss.messaging.core.remoting.ConnectorRegistry;
 import org.jboss.messaging.core.remoting.NIOConnector;
+import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.ServerLocator;
 import org.jboss.messaging.core.remoting.impl.ConnectorRegistryImpl;
 
@@ -35,11 +36,13 @@ public class ConnectorRegistryTest extends TestCase
    // Public --------------------------------------------------------
    
    private ConnectorRegistry registry;
+   private PacketDispatcher dispatcher;
 
    @Override
    protected void setUp() throws Exception
    {
       registry = new ConnectorRegistryImpl();
+      dispatcher = new PacketDispatcher();
       assertEquals(0, registry.getRegisteredLocators().length);
    }
    
@@ -54,13 +57,13 @@ public class ConnectorRegistryTest extends TestCase
    {
       ServerLocator locator = new ServerLocator(TCP, "localhost", PORT);
       
-      assertTrue(registry.register(locator));
-      assertFalse(registry.register(locator));
+      assertTrue(registry.register(locator, dispatcher));
+      assertFalse(registry.register(locator, dispatcher));
       
       assertTrue(registry.unregister(locator));
       assertFalse(registry.unregister(locator));
 
-      assertTrue(registry.register(locator));
+      assertTrue(registry.register(locator, dispatcher));
       assertTrue(registry.unregister(locator));
    }
    
@@ -69,7 +72,7 @@ public class ConnectorRegistryTest extends TestCase
       ServerLocator locator = new ServerLocator(TCP, "localhost", PORT);
       
       // locator is registered -> client and server are in the same vm
-      assertTrue(registry.register(locator));
+      assertTrue(registry.register(locator, dispatcher));
       
       NIOConnector connector = registry.getConnector(locator);
       

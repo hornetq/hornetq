@@ -35,7 +35,7 @@ public interface ConnectorRegistry
     * @return <code>true</code> if this locator has not already been
     *         registered, <code>false</code> else
     */
-   boolean register(ServerLocator locator);
+   boolean register(ServerLocator locator, PacketDispatcher serverDispatcher);
 
    /**
     * @return <code>true</code> if this locator was registered,

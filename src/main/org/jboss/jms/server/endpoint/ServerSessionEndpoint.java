@@ -21,6 +21,21 @@
   */
 package org.jboss.jms.server.endpoint;
 
+import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_ACKDELIVERIES;
+import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_ADDTEMPORARYDESTINATION;
+import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_CANCELDELIVERIES;
+import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_CANCELDELIVERY;
+import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_CLOSE;
+import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_DELETETEMPORARYDESTINATION;
+import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_RECOVERDELIVERIES;
+import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_SENDMESSAGE;
+import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_UNSUBSCRIBE;
+import static org.jboss.messaging.core.remoting.wireformat.PacketType.REQ_ACKDELIVERY;
+import static org.jboss.messaging.core.remoting.wireformat.PacketType.REQ_CLOSING;
+import static org.jboss.messaging.core.remoting.wireformat.PacketType.REQ_CREATEBROWSER;
+import static org.jboss.messaging.core.remoting.wireformat.PacketType.REQ_CREATECONSUMER;
+import static org.jboss.messaging.core.remoting.wireformat.PacketType.REQ_CREATEDESTINATION;
+
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -32,28 +47,26 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
 import javax.jms.Destination;
 import javax.jms.IllegalStateException;
 import javax.jms.InvalidDestinationException;
 import javax.jms.JMSException;
 
-import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
-import EDU.oswego.cs.dl.util.concurrent.LinkedQueue;
-import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
-import EDU.oswego.cs.dl.util.concurrent.SynchronizedLong;
 import org.jboss.jms.client.delegate.ClientBrowserDelegate;
 import org.jboss.jms.client.delegate.ClientConsumerDelegate;
 import org.jboss.jms.delegate.Ack;
 import org.jboss.jms.delegate.BrowserDelegate;
 import org.jboss.jms.delegate.Cancel;
 import org.jboss.jms.delegate.ConsumerDelegate;
+import org.jboss.jms.delegate.DefaultAck;
 import org.jboss.jms.delegate.DeliveryInfo;
 import org.jboss.jms.delegate.DeliveryRecovery;
 import org.jboss.jms.delegate.SessionEndpoint;
-import org.jboss.jms.delegate.DefaultAck;
 import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.destination.JBossQueue;
 import org.jboss.jms.destination.JBossTopic;
+import org.jboss.jms.exception.MessagingJMSException;
 import org.jboss.jms.server.DestinationManager;
 import org.jboss.jms.server.JMSCondition;
 import org.jboss.jms.server.ServerPeer;
@@ -64,7 +77,6 @@ import org.jboss.jms.server.destination.ManagedTopic;
 import org.jboss.jms.server.messagecounter.MessageCounter;
 import org.jboss.jms.server.security.CheckType;
 import org.jboss.jms.server.selector.Selector;
-import org.jboss.jms.exception.MessagingJMSException;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.contract.Binding;
 import org.jboss.messaging.core.contract.Channel;
@@ -82,51 +94,41 @@ import org.jboss.messaging.core.impl.tx.Transaction;
 import org.jboss.messaging.core.impl.tx.TransactionException;
 import org.jboss.messaging.core.impl.tx.TransactionRepository;
 import org.jboss.messaging.core.impl.tx.TxCallback;
-import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.PacketHandler;
 import org.jboss.messaging.core.remoting.PacketSender;
-import org.jboss.messaging.core.remoting.wireformat.DeliverMessage;
 import org.jboss.messaging.core.remoting.wireformat.AbstractPacket;
-import org.jboss.messaging.core.remoting.wireformat.PacketType;
-import org.jboss.messaging.core.remoting.wireformat.SendMessage;
-import org.jboss.messaging.core.remoting.wireformat.NullPacket;
+import org.jboss.messaging.core.remoting.wireformat.AcknowledgeDeliveriesMessage;
+import org.jboss.messaging.core.remoting.wireformat.AcknowledgeDeliveryRequest;
+import org.jboss.messaging.core.remoting.wireformat.AcknowledgeDeliveryResponse;
+import org.jboss.messaging.core.remoting.wireformat.AddTemporaryDestinationMessage;
+import org.jboss.messaging.core.remoting.wireformat.CancelDeliveriesMessage;
+import org.jboss.messaging.core.remoting.wireformat.CancelDeliveryMessage;
+import org.jboss.messaging.core.remoting.wireformat.ClosingRequest;
+import org.jboss.messaging.core.remoting.wireformat.ClosingResponse;
+import org.jboss.messaging.core.remoting.wireformat.CreateBrowserRequest;
+import org.jboss.messaging.core.remoting.wireformat.CreateBrowserResponse;
 import org.jboss.messaging.core.remoting.wireformat.CreateConsumerRequest;
 import org.jboss.messaging.core.remoting.wireformat.CreateConsumerResponse;
 import org.jboss.messaging.core.remoting.wireformat.CreateDestinationRequest;
 import org.jboss.messaging.core.remoting.wireformat.CreateDestinationResponse;
-import org.jboss.messaging.core.remoting.wireformat.CreateBrowserRequest;
-import org.jboss.messaging.core.remoting.wireformat.CreateBrowserResponse;
-import org.jboss.messaging.core.remoting.wireformat.AcknowledgeDeliveryRequest;
-import org.jboss.messaging.core.remoting.wireformat.AcknowledgeDeliveryResponse;
-import org.jboss.messaging.core.remoting.wireformat.AcknowledgeDeliveriesMessage;
-import org.jboss.messaging.core.remoting.wireformat.RecoverDeliveriesMessage;
-import org.jboss.messaging.core.remoting.wireformat.CancelDeliveryMessage;
-import org.jboss.messaging.core.remoting.wireformat.CancelDeliveriesMessage;
-import org.jboss.messaging.core.remoting.wireformat.ClosingRequest;
-import org.jboss.messaging.core.remoting.wireformat.ClosingResponse;
-import org.jboss.messaging.core.remoting.wireformat.UnsubscribeMessage;
-import org.jboss.messaging.core.remoting.wireformat.AddTemporaryDestinationMessage;
 import org.jboss.messaging.core.remoting.wireformat.DeleteTemporaryDestinationMessage;
+import org.jboss.messaging.core.remoting.wireformat.DeliverMessage;
 import org.jboss.messaging.core.remoting.wireformat.JMSExceptionMessage;
-import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_SENDMESSAGE;
-import static org.jboss.messaging.core.remoting.wireformat.PacketType.REQ_CREATECONSUMER;
-import static org.jboss.messaging.core.remoting.wireformat.PacketType.REQ_CREATEDESTINATION;
-import static org.jboss.messaging.core.remoting.wireformat.PacketType.REQ_CREATEBROWSER;
-import static org.jboss.messaging.core.remoting.wireformat.PacketType.REQ_ACKDELIVERY;
-import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_ACKDELIVERIES;
-import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_RECOVERDELIVERIES;
-import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_CANCELDELIVERY;
-import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_CANCELDELIVERIES;
-import static org.jboss.messaging.core.remoting.wireformat.PacketType.REQ_CLOSING;
-import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_CLOSE;
-import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_UNSUBSCRIBE;
-import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_ADDTEMPORARYDESTINATION;
-import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_DELETETEMPORARYDESTINATION;
+import org.jboss.messaging.core.remoting.wireformat.NullPacket;
+import org.jboss.messaging.core.remoting.wireformat.PacketType;
+import org.jboss.messaging.core.remoting.wireformat.RecoverDeliveriesMessage;
+import org.jboss.messaging.core.remoting.wireformat.SendMessage;
+import org.jboss.messaging.core.remoting.wireformat.UnsubscribeMessage;
 import org.jboss.messaging.newcore.Message;
 import org.jboss.messaging.newcore.MessageReference;
 import org.jboss.messaging.util.ExceptionUtil;
 import org.jboss.messaging.util.GUIDGenerator;
 import org.jboss.messaging.util.MessageQueueNameHelper;
+
+import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
+import EDU.oswego.cs.dl.util.concurrent.LinkedQueue;
+import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
+import EDU.oswego.cs.dl.util.concurrent.SynchronizedLong;
 
 /**
  * The server side representation of a JMS session.
@@ -382,7 +384,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
          
          connectionEndpoint.removeSession(id);
          
-         PacketDispatcher.server.unregister(id);
+         sp.getMinaService().getDispatcher().unregister(id);
       }
       catch (Throwable t)
       {
@@ -1843,7 +1845,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
                                     binding.queue.getName(), this, selectorString, false,
                                     dest, null, null, 0, -1, true, false, prefetchSize);
       
-      PacketDispatcher.server.register(ep.newHandler());
+      sp.getMinaService().getDispatcher().register(ep.newHandler());
       
       ClientConsumerDelegate stub =
          new ClientConsumerDelegate(consumerID, prefetchSize, -1, 0);
@@ -2150,7 +2152,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
       	rep.put(queue.getName(), DUR_SUB_STATE_CONSUMERS);
       }
       
-      PacketDispatcher.server.register(ep.newHandler());
+      sp.getMinaService().getDispatcher().register(ep.newHandler());
 
       ClientConsumerDelegate stub =
          new ClientConsumerDelegate(consumerID, prefetchSize, maxDeliveryAttemptsToUse, redeliveryDelayToUse);
@@ -2208,7 +2210,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
          browsers.put(browserID, ep);
       }
 
-      PacketDispatcher.server.register(ep.newHandler());
+      sp.getMinaService().getDispatcher().register(ep.newHandler());
       
       ClientBrowserDelegate stub = new ClientBrowserDelegate(browserID);
 

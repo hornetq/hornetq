@@ -49,6 +49,8 @@ public class MinaService
 
    private int blockingRequestTimeout = 5;
 
+   private PacketDispatcher dispatcher;
+
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
@@ -68,6 +70,7 @@ public class MinaService
       this.host = host;
       this.port = port;
       this.parameters = new HashMap<String, String>();
+      this.dispatcher = new PacketDispatcher();
    }
 
    // Public --------------------------------------------------------
@@ -82,6 +85,11 @@ public class MinaService
    public ServerLocator getLocator()
    {
       return new ServerLocator(transport, host, port, parameters);
+   }
+   
+   public PacketDispatcher getDispatcher()
+   {
+      return dispatcher;
    }
    
    public void start() throws Exception
@@ -103,10 +111,10 @@ public class MinaService
          acceptor.getSessionConfig().setKeepAlive(true);
          acceptor.setDisconnectOnUnbind(false);
 
-         acceptor.setHandler(new MinaHandler(PacketDispatcher.server));
+         acceptor.setHandler(new MinaHandler(dispatcher));
          acceptor.bind();
          
-         REGISTRY.register(getLocator());
+         REGISTRY.register(getLocator(), dispatcher);
       } 
    }
 

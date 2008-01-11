@@ -33,7 +33,6 @@ public class PacketDispatcher
    // Static --------------------------------------------------------
 
    public static final PacketDispatcher client = new PacketDispatcher();
-   public static final PacketDispatcher server = new PacketDispatcher();
 
    // Constructors --------------------------------------------------
 

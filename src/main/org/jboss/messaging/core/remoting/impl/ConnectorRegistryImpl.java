@@ -10,13 +10,13 @@ import static org.jboss.messaging.core.remoting.TransportType.INVM;
 import static org.jboss.messaging.core.remoting.TransportType.TCP;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.remoting.ConnectorRegistry;
 import org.jboss.messaging.core.remoting.NIOConnector;
+import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.ServerLocator;
 import org.jboss.messaging.core.remoting.TransportType;
 import org.jboss.messaging.core.remoting.impl.invm.INVMConnector;
@@ -36,7 +36,7 @@ public class ConnectorRegistryImpl implements ConnectorRegistry
 
    // Attributes ----------------------------------------------------
 
-   public Set<ServerLocator> locators = new HashSet<ServerLocator>();
+   public Map<ServerLocator, PacketDispatcher> locators = new HashMap<ServerLocator, PacketDispatcher>();
 
    public Map<ServerLocator, NIOConnectorHolder> connectors = new HashMap<ServerLocator, NIOConnectorHolder>();
 
@@ -46,9 +46,13 @@ public class ConnectorRegistryImpl implements ConnectorRegistry
     * @return <code>true</code> if this locator has not already been registered,
     *         <code>false</code> else
     */
-   public boolean register(ServerLocator locator)
+   public boolean register(ServerLocator locator, PacketDispatcher serverDispatcher)
    {
-      return locators.add(locator);
+      assert locator != null;
+      assert serverDispatcher != null;
+      
+      PacketDispatcher previousDispatcher = locators.put(locator, serverDispatcher);
+      return (previousDispatcher == null);
    }
 
    /**
@@ -57,7 +61,8 @@ public class ConnectorRegistryImpl implements ConnectorRegistry
     */  
    public boolean unregister(ServerLocator locator)
    {
-      return locators.remove(locator);
+       PacketDispatcher dispatcher = locators.remove(locator);
+       return (dispatcher != null);
    }
 
    public synchronized NIOConnector getConnector(ServerLocator locator)
@@ -78,10 +83,10 @@ public class ConnectorRegistryImpl implements ConnectorRegistry
       }
 
       // check if the server is in the same vm than the client
-      if (locators.contains(locator))
+      if (locators.containsKey(locator))
       {
          NIOConnector connector = new INVMConnector(locator.getHost(), locator
-               .getPort());
+               .getPort(), locators.get(locator));
 
          if (log.isDebugEnabled())
             log.debug("Created " + connector.getServerURI() + " to connect to "
@@ -102,7 +107,7 @@ public class ConnectorRegistryImpl implements ConnectorRegistry
                .getHost(), locator.getPort());
       } else if (transport == INVM)
       {
-         connector = new INVMConnector(locator.getHost(), locator.getPort());
+         connector = new INVMConnector(locator.getHost(), locator.getPort(), locators.get(locator));
       }
 
       if (connector == null)
