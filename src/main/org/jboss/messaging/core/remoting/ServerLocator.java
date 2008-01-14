@@ -138,6 +138,55 @@ public class ServerLocator
       return "ServerLocator[uri=" + getURI() + "]";
    }
 
+   @Override
+   public int hashCode()
+   {
+      final int prime = 31;
+      int result = 1;
+      result = prime * result + ((host == null) ? 0 : host.hashCode());
+      result = prime * result
+            + ((parameters == null) ? 0 : parameters.hashCode());
+      result = prime * result + port;
+      result = prime * result
+            + ((transport == null) ? 0 : transport.hashCode());
+      return result;
+   }
+
+   @Override
+   public boolean equals(Object obj)
+   {
+      if (this == obj)
+         return true;
+      if (obj == null)
+         return false;
+      if (getClass() != obj.getClass())
+         return false;
+      final ServerLocator other = (ServerLocator) obj;
+      if (host == null)
+      {
+         if (other.host != null)
+            return false;
+      } else if (!host.equals(other.host))
+         return false;
+      if (parameters == null)
+      {
+         if (other.parameters != null)
+            return false;
+      } else if (!parameters.equals(other.parameters))
+         return false;
+      if (port != other.port)
+         return false;
+      if (transport == null)
+      {
+         if (other.transport != null)
+            return false;
+      } else if (!transport.equals(other.transport))
+         return false;
+      return true;
+   }
+   
+   
+
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------

@@ -145,6 +145,30 @@ public class ConnectorRegistryTest extends TestCase
       assertNotNull(registry.removeConnector(locator1));
       assertNotNull(registry.removeConnector(locator2));
    }
+   
+   /**
+    * Check that 2 ServerLocators which are equals (but not the same object) will
+    * return the same NIOConnector
+    */
+   public void testServerLocatorEquality() throws Exception
+   {
+      ServerLocator locator1 = new ServerLocator(TCP, "localhost", PORT);
+      ServerLocator locator2 = new ServerLocator(TCP, "localhost", PORT);
+
+      assertNotSame(locator1, locator2);
+      assertEquals(locator1, locator2);
+
+      NIOConnector connector1 = registry.getConnector(locator1);
+      assertEquals(1, registry.getConnectorCount(locator1));
+
+      NIOConnector connector2 = registry.getConnector(locator2);
+      assertEquals(2, registry.getConnectorCount(locator2));
+
+      assertSame(connector1, connector2);
+
+      assertNull(registry.removeConnector(locator1));
+      assertNotNull(registry.removeConnector(locator2));
+   }
 
    // Package protected ---------------------------------------------
 
