@@ -6,12 +6,10 @@
  */
 package org.jboss.messaging.core.remoting.impl;
 
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.jboss.messaging.core.remoting.impl.mina.integration.test.TestSupport.MANY_MESSAGES;
 import static org.jboss.messaging.core.remoting.impl.mina.integration.test.TestSupport.reverse;
 
-import java.io.IOException;
 import java.util.List;
 
 import junit.framework.TestCase;
@@ -37,11 +35,11 @@ public abstract class ClientTestBase extends TestCase
 
    // Attributes ----------------------------------------------------
 
-   private Client client;
+   protected Client client;
  
-   private ReversePacketHandler serverPacketHandler;
+   protected ReversePacketHandler serverPacketHandler;
 
-   private PacketDispatcher serverDispatcher;
+   protected PacketDispatcher serverDispatcher;
 
    // Static --------------------------------------------------------
 
@@ -62,6 +60,18 @@ public abstract class ClientTestBase extends TestCase
       assertFalse(client.isConnected());
       assertFalse(client.disconnect());
    }
+   
+   public void testConnectIsIdempotent() throws Exception
+   {
+      Client client = new ClientImpl(createNIOConnector(), createServerLocator());
+      
+      assertFalse(client.isConnected());
+
+      client.connect();
+      String sessionID = client.getSessionID();
+      client.connect();
+      assertEquals(sessionID, client.getSessionID());      
+   }      
       
    public void testSendOneWay() throws Exception
    {
@@ -137,25 +147,6 @@ public abstract class ClientTestBase extends TestCase
       assertTrue(receivedPacket instanceof TextPacket);
       TextPacket response = (TextPacket) receivedPacket;
       assertEquals(reverse(request.getText()), response.getText());
-   }
-
-   public void testSendBlockingWithTimeout() throws Exception
-   {
-      client.setBlockingRequestTimeout(500, MILLISECONDS);
-      serverPacketHandler.setSleepTime(1000, MILLISECONDS);
-
-      AbstractPacket packet = new TextPacket("testSendBlockingWithTimeout");
-      packet.setTargetID(serverPacketHandler.getID());
-      
-      packet.setVersion((byte) 1);
-
-      try
-      {
-         client.sendBlocking(packet);
-         fail("a IOException should be thrown");
-      } catch (IOException e)
-      {
-      }
    }
    
    public void testCorrelationCounter() throws Exception

@@ -8,11 +8,6 @@ package org.jboss.messaging.core.remoting.impl.invm;
 
 import static java.util.UUID.randomUUID;
 
-import java.util.concurrent.Callable;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 import org.jboss.messaging.core.remoting.NIOSession;
@@ -33,7 +28,6 @@ public class INVMSession implements NIOSession
    // Attributes ----------------------------------------------------
 
    private String id;
-   private ExecutorService executor;
    private long correlationCounter;
    private PacketDispatcher serverDispatcher;
 
@@ -46,7 +40,6 @@ public class INVMSession implements NIOSession
       assert serverDispatcher != null;
       
       this.id = randomUUID().toString();
-      this.executor = Executors.newSingleThreadExecutor();
       this.correlationCounter = 0;
       this.serverDispatcher = serverDispatcher;
    }
@@ -55,9 +48,6 @@ public class INVMSession implements NIOSession
 
    public boolean close()
    {
-      if (executor.isShutdown())
-         return true;
-      executor.shutdown();
       return true;
    }
 
@@ -92,9 +82,20 @@ public class INVMSession implements NIOSession
          long timeout, TimeUnit timeUnit) throws Throwable
    {
       request.setCorrelationID(correlationCounter++);
-      Future<AbstractPacket> future = executor
-            .submit(new PacketDispatcherCallable(request));
-      return future.get(timeout, timeUnit);
+      final AbstractPacket[] responses = new AbstractPacket[1];
+
+      serverDispatcher.dispatch(request,
+            new PacketSender()
+            {
+               public void send(AbstractPacket response)
+               {
+                  responses[0] = response;
+               }
+            });
+
+      assert responses[0] != null;
+
+      return responses[0];
    }
 
    // Package protected ---------------------------------------------
@@ -104,37 +105,4 @@ public class INVMSession implements NIOSession
    // Private -------------------------------------------------------
 
    // Inner classes -------------------------------------------------
-
-   private final class PacketDispatcherCallable implements
-         Callable<AbstractPacket>
-   {
-      private final AbstractPacket packet;
-
-      private PacketDispatcherCallable(AbstractPacket packet)
-      {
-         this.packet = packet;
-      }
-
-      public AbstractPacket call() throws Exception
-      {
-         final CountDownLatch latch = new CountDownLatch(1);
-         final AbstractPacket[] responses = new AbstractPacket[1];
-
-         serverDispatcher.dispatch((AbstractPacket) packet,
-               new PacketSender()
-               {
-                  public void send(AbstractPacket response)
-                  {
-                     responses[0] = response;
-                     latch.countDown();
-                  }
-               });
-
-         latch.await();
-
-         assert responses[0] != null;
-
-         return responses[0];
-      }
-   }
 }
