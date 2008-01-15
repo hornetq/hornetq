@@ -13,9 +13,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 
+import org.jboss.messaging.core.Message;
+import org.jboss.messaging.core.impl.MessageImpl;
 import org.jboss.messaging.core.remoting.wireformat.BrowserNextMessageBlockResponse;
-import org.jboss.messaging.newcore.Message;
-import org.jboss.messaging.newcore.impl.MessageImpl;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>.

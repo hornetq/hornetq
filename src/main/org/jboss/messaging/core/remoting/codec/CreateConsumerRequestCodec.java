@@ -8,7 +8,7 @@ package org.jboss.messaging.core.remoting.codec;
 
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.REQ_CREATECONSUMER;
 
-import org.jboss.jms.destination.JBossDestination;
+import org.jboss.messaging.core.Destination;
 import org.jboss.messaging.core.remoting.wireformat.CreateConsumerRequest;
 
 /**
@@ -42,10 +42,9 @@ public class CreateConsumerRequestCodec extends
       boolean noLocal = request.isNoLocal();
       String subName = request.getSubscriptionName();
       boolean connectionConsumer = request.isConnectionConsumer();
-      boolean autoFlowControl = request.isAutoFlowControl();
 
       int bodyLength = INT_LENGTH + destination.length + sizeof(selector)
-            + sizeof(subName) + 3;
+            + sizeof(subName) + 2;
 
       out.putInt(bodyLength);
       out.putInt(destination.length);
@@ -54,7 +53,6 @@ public class CreateConsumerRequestCodec extends
       out.putBoolean(noLocal);
       out.putNullableString(subName);
       out.putBoolean(connectionConsumer);
-      out.putBoolean(autoFlowControl);
    }
 
    @Override
@@ -70,15 +68,14 @@ public class CreateConsumerRequestCodec extends
       int destinationLength = in.getInt();
       byte[] b = new byte[destinationLength];
       in.get(b);
-      JBossDestination destination = decode(b);
+      Destination destination = decode(b);
       String selector = in.getNullableString();
       boolean noLocal = in.getBoolean();
       String subName = in.getNullableString();
       boolean connectionConsumer = in.getBoolean();
-      boolean autoflowControl = in.getBoolean();
-
+ 
       return new CreateConsumerRequest(destination, selector, noLocal, subName,
-            connectionConsumer, autoflowControl);
+            connectionConsumer);
    }
 
    // Package protected ---------------------------------------------

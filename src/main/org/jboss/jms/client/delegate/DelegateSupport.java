@@ -130,7 +130,6 @@ public abstract class DelegateSupport<T extends HierarchicalState> implements St
    {
       return state;
    }
-
    public void setState(T state)
    {
       this.state = state;

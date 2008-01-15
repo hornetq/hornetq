@@ -24,7 +24,7 @@ package org.jboss.jms.delegate;
 import javax.jms.JMSException;
 
 import org.jboss.jms.client.Closeable;
-import org.jboss.messaging.newcore.Message;
+import org.jboss.messaging.core.Message;
 
 /**
  * Represents the set of methods from the BrowserDelegate that are handled on the server. The rest

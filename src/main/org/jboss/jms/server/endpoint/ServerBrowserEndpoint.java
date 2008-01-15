@@ -38,7 +38,10 @@ import org.jboss.jms.delegate.BrowserEndpoint;
 import org.jboss.jms.exception.MessagingJMSException;
 import org.jboss.jms.server.selector.Selector;
 import org.jboss.logging.Logger;
-import org.jboss.messaging.core.contract.Channel;
+import org.jboss.messaging.core.Filter;
+import org.jboss.messaging.core.Message;
+import org.jboss.messaging.core.MessageReference;
+import org.jboss.messaging.core.Queue;
 import org.jboss.messaging.core.remoting.PacketHandler;
 import org.jboss.messaging.core.remoting.PacketSender;
 import org.jboss.messaging.core.remoting.wireformat.AbstractPacket;
@@ -49,8 +52,6 @@ import org.jboss.messaging.core.remoting.wireformat.ClosingResponse;
 import org.jboss.messaging.core.remoting.wireformat.JMSExceptionMessage;
 import org.jboss.messaging.core.remoting.wireformat.NullPacket;
 import org.jboss.messaging.core.remoting.wireformat.PacketType;
-import org.jboss.messaging.newcore.Filter;
-import org.jboss.messaging.newcore.Message;
 import org.jboss.messaging.util.ExceptionUtil;
 
 /**
@@ -77,14 +78,14 @@ public class ServerBrowserEndpoint implements BrowserEndpoint
    private String id;
    private boolean closed;
    private ServerSessionEndpoint session;
-   private Channel destination;
+   private Queue destination;
    private Filter filter;
    private Iterator iterator;
 
    // Constructors ---------------------------------------------------------------------------------
 
    ServerBrowserEndpoint(ServerSessionEndpoint session, String id,
-                         Channel destination, String messageSelector) throws JMSException
+                         Queue destination, String messageSelector) throws JMSException
    {     
       this.session = session;
       this.id = id;
@@ -248,7 +249,7 @@ public class ServerBrowserEndpoint implements BrowserEndpoint
       
       iterator = null;
       
-      session.getConnectionEndpoint().getServerPeer().getMinaService().getDispatcher().unregister(id);
+      session.getConnectionEndpoint().getMessagingServer().getMinaService().getDispatcher().unregister(id);
       
       closed = true;
    }
@@ -259,7 +260,14 @@ public class ServerBrowserEndpoint implements BrowserEndpoint
 
    private Iterator createIterator()
    {
-      List<Message> msgs = destination.browse(filter);
+      List<MessageReference> refs = destination.list(filter);
+      
+      List<Message> msgs = new ArrayList<Message>();
+      
+      for (MessageReference ref: refs)
+      {
+         msgs.add(ref.getMessage());
+      }
       
       return msgs.iterator();
    }

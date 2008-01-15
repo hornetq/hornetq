@@ -21,10 +21,10 @@
   */
 package org.jboss.jms.client.state;
 
-import org.jboss.jms.client.delegate.DelegateSupport;
 import org.jboss.jms.client.Closeable;
+import org.jboss.jms.client.delegate.DelegateSupport;
 import org.jboss.jms.delegate.BrowserDelegate;
-import org.jboss.jms.destination.JBossDestination;
+import org.jboss.messaging.core.Destination;
 import org.jboss.messaging.util.Version;
 
 /**
@@ -51,13 +51,13 @@ public class BrowserState extends HierarchicalStateSupport
    private BrowserDelegate proxyDelegate;
 
    // data used to recreate the Browser in case of failover
-   private JBossDestination jmsDestination;
+   private Destination jmsDestination;
    private String messageSelector;
 
    // Constructors ---------------------------------------------------------------------------------
 
    public BrowserState(SessionState parent, BrowserDelegate delegate, BrowserDelegate proxyDelegate,
-                       JBossDestination jmsDestination, String selector)
+                       Destination jmsDestination, String selector)
    {
       super(parent, (DelegateSupport)delegate);
       this.proxyDelegate = proxyDelegate;
@@ -105,7 +105,7 @@ public class BrowserState extends HierarchicalStateSupport
 
    // Public ---------------------------------------------------------------------------------------
 
-   public org.jboss.jms.destination.JBossDestination getJmsDestination()
+   public Destination getJmsDestination()
    {
       return jmsDestination;
    }

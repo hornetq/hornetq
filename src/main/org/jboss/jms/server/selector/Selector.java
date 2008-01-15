@@ -28,8 +28,8 @@ import javax.jms.InvalidSelectorException;
 import javax.jms.JMSException;
 
 import org.jboss.logging.Logger;
-import org.jboss.messaging.newcore.Filter;
-import org.jboss.messaging.newcore.Message;
+import org.jboss.messaging.core.Filter;
+import org.jboss.messaging.core.Message;
 
 
 /**
@@ -202,7 +202,7 @@ public class Selector implements Filter
       //
       if (idName.equals("JMSDeliveryMode"))
       {
-         return mess.isReliable() ? "PERSISTENT" : "NON_PERSISTENT";
+         return mess.isDurable() ? "PERSISTENT" : "NON_PERSISTENT";
       }
       else if (idName.equals("JMSPriority"))
          return new Integer(mess.getPriority());

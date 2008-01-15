@@ -21,7 +21,7 @@
   */
 package org.jboss.test.messaging.jms;
 
-import org.jboss.jms.server.destination.SubscriptionInfo;
+import org.jboss.messaging.core.impl.server.SubscriptionInfo;
 
 import javax.jms.*;
 import javax.jms.IllegalStateException;
@@ -290,103 +290,7 @@ public class DurableSubscriptionTest extends JMSTestCase
       }
    }
 
-   /**
-    * Topic undeployment/redeployment has an activation/deactivation semantic, so undeploying a
-    * topic for which there are durable subscriptions preserves the content of those durable
-    * subscriptions, which can be then access upon topic redeployment.
-    * @throws Exception
-    */
-   public void testDurableSubscriptionOnTopicRedeployment() throws Exception
-   {
-      try
-      {
-         ic.lookup("/topic/TopicToBeRedeployed");
-         fail("should throw exception, topic shouldn't be deployed on the server");
-      }
-      catch(NamingException e)
-      {
-         // OK
-      }
-
-      deployTopic("TopicToBeRedeployed");
-
-      Topic topic = (Topic)ic.lookup("/topic/TopicToBeRedeployed");
-
-      Connection conn = null;
-      
-      try
-      {
-	      
-	      conn = cf.createConnection();
-	      conn.setClientID("brookeburke");
-	
-	      Session s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-	      MessageProducer prod = s.createProducer(topic);
-	      prod.setDeliveryMode(DeliveryMode.PERSISTENT);
-	      MessageConsumer ds = s.createDurableSubscriber(topic, "monicabelucci");
-	      conn.start();
-	
-	      prod.send(s.createTextMessage("one"));
-	      prod.send(s.createTextMessage("two"));
-	      
-	      TextMessage tm = (TextMessage)ds.receive();
-	      assertEquals("one", tm.getText());
-	      conn.close();
-	
-	      undeployTopic("TopicToBeRedeployed");
-	      log.debug("topic undeployed");
-	
-	      try
-	      {
-	         topic = (Topic)ic.lookup("/topic/TopicToBeRedeployed");
-	         fail("should throw exception");
-	      }
-	      catch(NamingException e)
-	      {
-	         // OK
-	      }
-	
-	      conn = cf.createConnection();
-	      conn.setClientID("brookeburke");
-	
-	      s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-	
-	      try
-	      {
-	         s.createDurableSubscriber(topic, "monicabelucci");
-	         fail("should throw exception");
-	      }
-	      catch(JMSException e)
-	      {
-	         // OK
-	      }
-	
-	      deployTopic("TopicToBeRedeployed");
-	      log.debug("topic redeployed");
-	
-	      // since redeployment has an activation semantic, I expect to find the messages there
-	
-	      topic = (Topic)ic.lookup("/topic/TopicToBeRedeployed");
-	      ds =  s.createDurableSubscriber(topic, "monicabelucci");
-	      conn.start();
-	
-	      tm = (TextMessage)ds.receive(1000);
-	      assertEquals("two", tm.getText());
-	      
-	      ds.close();
-	      
-	      s.unsubscribe("monicabelucci");
-      }
-      finally
-      {
-      	if (conn != null)
-      	{
-      		conn.close();
-      	}
-      	undeployTopic("TopicToBeRedeployed");
-      }
-   }
-
+  
    public void testUnsubscribeDurableSubscription() throws Exception
    {
       Connection conn = null;
@@ -543,10 +447,6 @@ public class DurableSubscriptionTest extends JMSTestCase
 	
 	      TopicSubscriber subscriber = s.createDurableSubscriber(topic1, ".subscription.name.with.periods.");
 	      
-	      undeployTopic("Topic1");
-	      deployTopic("Topic1");
-	      
-	      topic1 = (Topic)ic.lookup("/topic/Topic1");
 	      s.createProducer(topic1).send(s.createTextMessage("Subscription test"));
 	      
 	      conn.start();

@@ -36,14 +36,10 @@ import org.jboss.messaging.core.remoting.codec.CreateSessionRequestCodec;
 import org.jboss.messaging.core.remoting.codec.CreateSessionResponseCodec;
 import org.jboss.messaging.core.remoting.codec.DeleteTemporaryDestinationMessageCodec;
 import org.jboss.messaging.core.remoting.codec.DeliverMessageCodec;
-import org.jboss.messaging.core.remoting.codec.GetClientAOPStackResponseCodec;
 import org.jboss.messaging.core.remoting.codec.GetClientIDResponseCodec;
 import org.jboss.messaging.core.remoting.codec.GetPreparedTransactionsResponseCodec;
 import org.jboss.messaging.core.remoting.codec.GetTopologyResponseCodec;
-import org.jboss.messaging.core.remoting.codec.IDBlockRequestCodec;
-import org.jboss.messaging.core.remoting.codec.IDBlockResponseCodec;
 import org.jboss.messaging.core.remoting.codec.JMSExceptionMessageCodec;
-import org.jboss.messaging.core.remoting.codec.RecoverDeliveriesMessageCodec;
 import org.jboss.messaging.core.remoting.codec.RemotingBuffer;
 import org.jboss.messaging.core.remoting.codec.SendMessageCodec;
 import org.jboss.messaging.core.remoting.codec.SendTransactionMessageCodec;
@@ -81,20 +77,15 @@ import org.jboss.messaging.core.remoting.wireformat.CreateSessionRequest;
 import org.jboss.messaging.core.remoting.wireformat.CreateSessionResponse;
 import org.jboss.messaging.core.remoting.wireformat.DeleteTemporaryDestinationMessage;
 import org.jboss.messaging.core.remoting.wireformat.DeliverMessage;
-import org.jboss.messaging.core.remoting.wireformat.GetClientAOPStackRequest;
-import org.jboss.messaging.core.remoting.wireformat.GetClientAOPStackResponse;
 import org.jboss.messaging.core.remoting.wireformat.GetClientIDRequest;
 import org.jboss.messaging.core.remoting.wireformat.GetClientIDResponse;
 import org.jboss.messaging.core.remoting.wireformat.GetPreparedTransactionsRequest;
 import org.jboss.messaging.core.remoting.wireformat.GetPreparedTransactionsResponse;
 import org.jboss.messaging.core.remoting.wireformat.GetTopologyRequest;
 import org.jboss.messaging.core.remoting.wireformat.GetTopologyResponse;
-import org.jboss.messaging.core.remoting.wireformat.IDBlockRequest;
-import org.jboss.messaging.core.remoting.wireformat.IDBlockResponse;
 import org.jboss.messaging.core.remoting.wireformat.JMSExceptionMessage;
 import org.jboss.messaging.core.remoting.wireformat.NullPacket;
 import org.jboss.messaging.core.remoting.wireformat.PacketType;
-import org.jboss.messaging.core.remoting.wireformat.RecoverDeliveriesMessage;
 import org.jboss.messaging.core.remoting.wireformat.SendMessage;
 import org.jboss.messaging.core.remoting.wireformat.SendTransactionMessage;
 import org.jboss.messaging.core.remoting.wireformat.SetClientIDMessage;
@@ -135,12 +126,6 @@ public class PacketCodecFactory extends DemuxingProtocolCodecFactory
       addCodec(CreateConnectionResponse.class,
             ConnectionFactoryCreateConnectionResponseCodec.class);
 
-      addCodecForEmptyPacket(PacketType.REQ_GETCLIENTAOPSTACK,
-            GetClientAOPStackRequest.class);
-
-      addCodec(GetClientAOPStackResponse.class,
-            GetClientAOPStackResponseCodec.class);
-
       addCodecForEmptyPacket(PacketType.REQ_GETTOPOLOGY,
             GetTopologyRequest.class);
 
@@ -151,10 +136,6 @@ public class PacketCodecFactory extends DemuxingProtocolCodecFactory
       addCodec(CreateSessionRequest.class, CreateSessionRequestCodec.class);
 
       addCodec(CreateSessionResponse.class, CreateSessionResponseCodec.class);
-
-      addCodec(IDBlockRequest.class, IDBlockRequestCodec.class);
-
-      addCodec(IDBlockResponse.class, IDBlockResponseCodec.class);
 
       addCodecForEmptyPacket(PacketType.REQ_GETCLIENTID,
             GetClientIDRequest.class);
@@ -197,9 +178,6 @@ public class PacketCodecFactory extends DemuxingProtocolCodecFactory
 
       addCodec(AcknowledgeDeliveriesMessage.class,
             AcknowledgeDeliveriesRequestCodec.class);
-
-      addCodec(RecoverDeliveriesMessage.class,
-            RecoverDeliveriesMessageCodec.class);
 
       addCodec(CancelDeliveryMessage.class, CancelDeliveryMessageCodec.class);
 

@@ -1,0 +1,204 @@
+/*
+ * JBoss, Home of Professional Open Source
+ * Copyright 2005, JBoss Inc., and individual contributors as indicated
+ * by the @authors tag. See the copyright.txt in the distribution for a
+ * full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
+package org.jboss.messaging.core.impl.test.concurrent;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.jboss.messaging.core.HandleStatus;
+import org.jboss.messaging.core.Message;
+import org.jboss.messaging.core.MessageReference;
+import org.jboss.messaging.core.Queue;
+import org.jboss.messaging.core.impl.QueueImpl;
+import org.jboss.messaging.core.impl.test.unit.fakes.FakeConsumer;
+import org.jboss.messaging.test.unit.UnitTestCase;
+
+/**
+ * 
+ * A concurrent QueueTest
+ * 
+ * All the concurrent queue tests go in here 
+ * 
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ *
+ */
+public class QueueTest extends UnitTestCase
+{
+   // The tests ----------------------------------------------------------------
+
+   /*
+    * Concurrent set consumer not busy, busy then, call deliver while messages are being added and consumed
+    */
+   public void testConcurrentAddsDeliver() throws Exception
+   {
+      Queue queue = new QueueImpl(1, "queue1", null, false, true, false, -1);
+      
+      FakeConsumer consumer = new FakeConsumer();
+      
+      queue.addConsumer(consumer);
+      
+      final long testTime = 5000;
+      
+      Sender sender = new Sender(queue, testTime);
+      
+      Toggler toggler = new Toggler(queue, consumer, testTime);
+      
+      sender.start();
+      
+      toggler.start();
+      
+      sender.join();
+      
+      toggler.join();
+      
+      consumer.setStatusImmediate(HandleStatus.HANDLED);
+      
+      queue.deliver();
+      
+      if (sender.getException() != null)
+      {
+         throw sender.getException();
+      }
+      
+      if (toggler.getException() != null)
+      {
+         throw toggler.getException();
+      }
+      
+      assertRefListsIdenticalRefs(sender.getReferences(), consumer.getReferences());
+      
+      System.out.println("num refs: " + sender.getReferences().size());
+      
+      System.out.println("num toggles: " + toggler.getNumToggles());
+      
+   }
+   
+   // Inner classes ---------------------------------------------------------------
+   
+   class Sender extends Thread
+   {
+      private volatile Exception e;
+      
+      private Queue queue;
+      
+      private long testTime;
+      
+      private volatile int i;
+      
+      public Exception getException()
+      {
+         return e;
+      }
+      
+      private List<MessageReference> refs = new ArrayList<MessageReference>();
+      
+      public List<MessageReference> getReferences()
+      {
+         return refs;
+      }
+      
+      Sender(Queue queue, long testTime)
+      {
+         this.testTime = testTime;
+         
+         this.queue = queue;
+      }
+      
+      public void run()
+      {
+         long start = System.currentTimeMillis();
+         
+         while (System.currentTimeMillis() - start < testTime)
+         {
+            Message message = generateMessage(i);
+            
+            MessageReference ref = message.createReference(queue);
+            
+            queue.addLast(ref);
+            
+            refs.add(ref);
+            
+            i++;
+         }
+      }
+   }
+   
+   class Toggler extends Thread
+   {
+      private volatile Exception e;
+      
+      private Queue queue;
+      
+      private FakeConsumer consumer;
+      
+      private long testTime;
+      
+      private boolean toggle;
+      
+      private volatile int numToggles;
+      
+      public int getNumToggles()
+      {
+         return numToggles;
+      }
+      
+      public Exception getException()
+      {
+         return e;
+      }
+      
+      Toggler(Queue queue, FakeConsumer consumer, long testTime)
+      {
+         this.testTime = testTime;
+         
+         this.queue = queue;
+         
+         this.consumer = consumer;
+      }
+      
+      public void run()
+      {
+         long start = System.currentTimeMillis();
+         
+         while (System.currentTimeMillis() - start < testTime)
+         {
+            if (toggle)
+            {
+               consumer.setStatusImmediate(HandleStatus.BUSY);              
+            }
+            else
+            {
+               consumer.setStatusImmediate(HandleStatus.HANDLED);
+               
+               queue.deliver();
+            }
+            toggle = !toggle;
+            
+            numToggles++;
+         }
+      }
+   }
+      
+}
+
+
+

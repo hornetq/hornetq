@@ -49,7 +49,7 @@ import org.jboss.jms.client.delegate.DelegateSupport;
 import org.jboss.jms.client.state.SessionState;
 import org.jboss.jms.message.JBossMessage;
 import org.jboss.logging.Logger;
-import org.jboss.messaging.core.contract.MessagingComponent;
+import org.jboss.messaging.core.MessagingComponent;
 import org.jboss.messaging.util.ProxyFactory;
 import org.jboss.tm.TransactionManagerLocator;
 

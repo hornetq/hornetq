@@ -65,8 +65,8 @@ public class OpenCloseStressTest extends JBMServerTestCase
       ic = getInitialContext();
       cf = (JBossConnectionFactory)ic.lookup("/ConnectionFactory");
 
-      undeployTopic("TestTopic");
-      deployTopic("TestTopic");
+      destroyTopic("TestTopic");
+      createTopic("TestTopic");
 
       topic = (Topic) ic.lookup("topic/TestTopic");
 
@@ -75,7 +75,7 @@ public class OpenCloseStressTest extends JBMServerTestCase
 
    public void tearDown() throws Exception
    {
-      undeployQueue("TestQueue");
+      destroyQueue("TestQueue");
 
       super.tearDown();
 

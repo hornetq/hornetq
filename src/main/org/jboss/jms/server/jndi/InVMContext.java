@@ -21,8 +21,8 @@
    */
 package org.jboss.jms.server.jndi;
 
-import org.jboss.jms.server.microcontainer.NonSerializableFactory;
 import org.jboss.logging.Logger;
+import org.jboss.messaging.microcontainer.NonSerializableFactory;
 import org.jboss.messaging.util.NotYetImplementedException;
 
 import javax.naming.*;

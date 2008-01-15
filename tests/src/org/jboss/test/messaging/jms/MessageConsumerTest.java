@@ -545,7 +545,7 @@ public class MessageConsumerTest extends JMSTestCase
          }
       }
    }
-
+   
    //
    // closed consumer tests
    //

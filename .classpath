@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="docs/examples/queue-failover/src"/>
+	<classpathentry kind="src" path="output/gen-parsers"/>
 	<classpathentry kind="src" path="docs/examples/bridge/src"/>
 	<classpathentry kind="src" path="docs/examples/stateless-clustered/src"/>
 	<classpathentry kind="src" path="docs/examples/mdb-failure/src"/>
 	<classpathentry kind="src" path="docs/examples/distributed-queue/src"/>
-	<classpathentry kind="src" path="output/gen-parsers"/>
 	<classpathentry kind="src" path="docs/examples/common/src"/>
 	<classpathentry kind="src" path="docs/examples/distributed-topic/src"/>
 	<classpathentry kind="src" path="docs/examples/http/src"/>
@@ -16,7 +16,6 @@
 	<classpathentry kind="src" path="docs/examples/topic/src"/>
 	<classpathentry excluding="**/.svn/**/*" kind="src" path="src/main"/>
 	<classpathentry excluding="**/.svn/**/*" kind="src" path="tests/src"/>
-	<classpathentry kind="src" path="output/etc"/>
 	<classpathentry kind="lib" path="thirdparty/oswego-concurrent/lib/concurrent.jar"/>
 	<classpathentry kind="lib" path="thirdparty/jgroups/lib/jgroups.jar"/>
 	<classpathentry kind="lib" path="thirdparty/apache-log4j/lib/log4j.jar"/>
@@ -76,6 +75,5 @@
 	<classpathentry kind="lib" path="tests/etc"/>
 	<classpathentry kind="lib" path="src/etc/server/default/config"/>
 	<classpathentry kind="lib" path="src/etc/server/default/deploy"/>
-	<classpathentry kind="var" path="MYSQL_DRIVER_JAR"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

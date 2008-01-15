@@ -25,26 +25,25 @@ import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_CHANGE
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_CLOSE;
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.REQ_CLOSING;
 
-import javax.jms.IllegalStateException;
 import javax.jms.InvalidSelectorException;
 import javax.jms.JMSException;
 
 import org.jboss.jms.delegate.ConsumerEndpoint;
-import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.exception.MessagingJMSException;
-import org.jboss.jms.server.ServerPeer;
-import org.jboss.jms.server.destination.ManagedDestination;
-import org.jboss.jms.server.messagecounter.MessageCounter;
 import org.jboss.jms.server.selector.Selector;
 import org.jboss.logging.Logger;
-import org.jboss.messaging.core.contract.Delivery;
-import org.jboss.messaging.core.contract.DeliveryObserver;
-import org.jboss.messaging.core.contract.PostOffice;
-import org.jboss.messaging.core.contract.Queue;
-import org.jboss.messaging.core.contract.Receiver;
-import org.jboss.messaging.core.contract.Replicator;
-import org.jboss.messaging.core.impl.SimpleDelivery;
-import org.jboss.messaging.core.impl.tx.Transaction;
+import org.jboss.messaging.core.Condition;
+import org.jboss.messaging.core.Consumer;
+import org.jboss.messaging.core.Destination;
+import org.jboss.messaging.core.DestinationType;
+import org.jboss.messaging.core.HandleStatus;
+import org.jboss.messaging.core.Message;
+import org.jboss.messaging.core.MessageReference;
+import org.jboss.messaging.core.MessagingServer;
+import org.jboss.messaging.core.PersistenceManager;
+import org.jboss.messaging.core.PostOffice;
+import org.jboss.messaging.core.Queue;
+import org.jboss.messaging.core.impl.ConditionImpl;
 import org.jboss.messaging.core.remoting.PacketHandler;
 import org.jboss.messaging.core.remoting.PacketSender;
 import org.jboss.messaging.core.remoting.wireformat.AbstractPacket;
@@ -55,20 +54,22 @@ import org.jboss.messaging.core.remoting.wireformat.DeliverMessage;
 import org.jboss.messaging.core.remoting.wireformat.JMSExceptionMessage;
 import org.jboss.messaging.core.remoting.wireformat.NullPacket;
 import org.jboss.messaging.core.remoting.wireformat.PacketType;
-import org.jboss.messaging.newcore.Message;
-import org.jboss.messaging.newcore.MessageReference;
 import org.jboss.messaging.util.ExceptionUtil;
 
 /**
- * Concrete implementation of ConsumerEndpoint. Lives on the boundary between Messaging Core and the
- * JMS Facade. Handles delivery of messages from the server to the client side consumer.
+ * Concrete implementation of a Consumer. 
+ * 
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
+ * 
+ * Partially derived from JBM 1.x version by:
  * 
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
+ * 
  * @version <tt>$Revision$</tt> $Id$
  */
-public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
+public class ServerConsumerEndpoint implements Consumer, ConsumerEndpoint
 {
    // Constants ------------------------------------------------------------------------------------
 
@@ -92,7 +93,7 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
 
    private Selector messageSelector;
 
-   private JBossDestination destination;
+   private Destination destination;
 
    private Queue dlq;
 
@@ -114,18 +115,8 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
    
    private long lastDeliveryID = -1;
    
-   private boolean remote;
-   
-   private boolean preserveOrdering;
-   
-   private boolean replicating;
-   
-   private boolean slow;
-   
    private volatile boolean dead;
 
-   private ServerPeer sp;
-   
    private int prefetchSize;
    
    private volatile int sendCount;
@@ -134,17 +125,17 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
    
    // Constructors ---------------------------------------------------------------------------------
 
-   ServerConsumerEndpoint(ServerPeer sp,String id, Queue messageQueue, String queueName,
+   ServerConsumerEndpoint(MessagingServer sp, String id, Queue messageQueue, String queueName,
 					           ServerSessionEndpoint sessionEndpoint, String selector,
-					           boolean noLocal, JBossDestination dest, Queue dlq,
+					           boolean noLocal, Destination destination, Queue dlq,
 					           Queue expiryQueue, long redeliveryDelay, int maxDeliveryAttempts,
-					           boolean remote, boolean replicating, int prefetchSize) throws InvalidSelectorException
+					           int prefetchSize) throws InvalidSelectorException
    {
       if (trace)
       {
          log.trace("constructing consumer endpoint " + id);
       }
-      this.sp = sp;
+
       this.id = id;
 
       this.messageQueue = messageQueue;
@@ -155,7 +146,7 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
 
       this.noLocal = noLocal;
 
-      this.destination = dest;
+      this.destination = destination;
 
       this.dlq = dlq;
 
@@ -168,27 +159,13 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
       // Always start as false - wait for consumer to initiate.
       this.clientAccepting = false;
       
-      this.remote = remote;
-
       this.startStopLock = new Object();
 
-      this.preserveOrdering = sp.getConfiguration().isDefaultPreserveOrdering();
-      
-      this.replicating = replicating;
-      
       this.prefetchSize = prefetchSize;
-      
-      boolean slow = sessionEndpoint.getConnectionEndpoint().getConnectionFactoryEndpoint().isSlowConsumers();
-      
-      if (slow)
-      {
-         //Slow is same as setting prefetch size to 1 - can deprecate this in 2.0
-         prefetchSize = 1;
-      }      
-      
-      this.slow = sessionEndpoint.getConnectionEndpoint().getConnectionFactoryEndpoint().isSlowConsumers();
-      
-      if (dest.isTopic() && !messageQueue.isRecoverable())
+                
+      //FIXME - we shouldn't have checks like this on the server side
+      //It should be the jms client that decides whether to retain deliveries or not
+      if (destination.getType() == DestinationType.TOPIC && !messageQueue.isDurable())
       {
          // This is a consumer of a non durable topic subscription. We don't need to store
          // deliveries since if the consumer is closed or dies the refs go too.
@@ -210,68 +187,47 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
       this.started = this.sessionEndpoint.getConnectionEndpoint().isStarted();
       
       // adding the consumer to the queue
-      if (remote)
-      {
-      	this.messageQueue.getRemoteDistributor().add(this);
-      }
-      else
-      {
-      	this.messageQueue.getLocalDistributor().add(this);
-      }
-
-      // We don't need to prompt delivery - this will come from the client in a changeRate request
+      messageQueue.addConsumer(this);
 
       log.trace(this + " constructed");
    }
 
    // Receiver implementation ----------------------------------------------------------------------
 
-   /*
-    * The queue ensures that handle is never called concurrently by more than
-    * one thread.
-    */
-   public Delivery handle(DeliveryObserver observer, MessageReference ref, Transaction tx)
+   public HandleStatus handle(MessageReference ref) throws Exception
    {
       if (trace)
       {
          log.trace(this + " receives " + ref + " for delivery");
       }
-
+      
       // This is ok to have outside lock - is volatile
       if (!clientAccepting)
       {
-         if (trace) { log.trace(this + "'s client is NOT accepting messages!"); }
+         if (trace) { log.trace(this + " is NOT accepting messages!"); }
 
-         return null;
+         return HandleStatus.BUSY;
       }
 
       if (ref.getMessage().isExpired())
-      {
-         SimpleDelivery delivery = new SimpleDelivery(observer, ref, true, false);
-
-         try
-         {
-            sessionEndpoint.expireDelivery(delivery, expiryQueue);
-         }
-         catch (Throwable t)
-         {
-            log.error("Failed to expire delivery: " + delivery, t);
-         }
-
-         return delivery;
+      {         
+         sessionEndpoint.expireDelivery(ref, expiryQueue);
+         
+         return HandleStatus.HANDLED;
       }
       
-      if (preserveOrdering && remote)
-      {
-      	//If the header exists it means the message has already been sucked once - so reject.
-      	
-      	if (ref.getMessage().getHeader(Message.CLUSTER_SUCKED) != null)
-      	{
-      		if (trace) { log.trace("Message has already been sucked once - not sucking again"); }
-      		
-      		return null;
-      	}      	    
-      }
+// TODO re-implement preserve ordering      
+//      if (preserveOrdering && remote)
+//      {
+//      	//If the header exists it means the message has already been sucked once - so reject.
+//      	
+//      	if (ref.getMessage().getHeader(Message.CLUSTER_SUCKED) != null)
+//      	{
+//      		if (trace) { log.trace("Message has already been sucked once - not sucking again"); }
+//      		
+//      		return null;
+//      	}      	    
+//      }
 
       synchronized (startStopLock)
       {
@@ -279,22 +235,18 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
          // queue for delivery later.
          if (!started)
          {
-            if (trace) { log.trace(this + " NOT started!"); }
+            if (trace) { log.trace(this + " NOT started"); }
 
-            return null;
+            return HandleStatus.BUSY;
          }
          
          if (trace) { log.trace(this + " has startStopLock lock, preparing the message for delivery"); }
 
          Message message = ref.getMessage();
          
-         boolean selectorRejected = !this.accept(message);
-         
-         SimpleDelivery delivery = new SimpleDelivery(observer, ref, !selectorRejected, false);
-
-         if (selectorRejected)
+         if (!accept(message))
          {
-            return delivery;
+            return HandleStatus.NO_MATCH;
          }
          
          if (noLocal)
@@ -307,18 +259,11 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
             {
             	if (trace) { log.trace("Message from local connection so rejecting"); }
             	
-            	try
-             	{
-             		delivery.acknowledge(null);
-             	}
-             	catch (Throwable t)
-             	{
-             		log.error("Failed to acknowledge delivery", t);
-             		
-             		return null;
-             	}
-             	
-             	return delivery;
+            	PersistenceManager pm = sessionEndpoint.getConnectionEndpoint().getMessagingServer().getPersistenceManager();
+            	            	            	
+            	ref.acknowledge(pm);
+            	
+             	return HandleStatus.HANDLED;
             }            
          }
                   
@@ -341,7 +286,7 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
                    
          try
          {
-         	sessionEndpoint.handleDelivery(delivery, this);
+         	sessionEndpoint.handleDelivery(ref, this);
          }
          catch (Exception e)
          {
@@ -350,7 +295,7 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
          	this.started = false; // DO NOT return null or the message might get delivered more than once
          }
                           
-         return delivery;
+         return HandleStatus.HANDLED;
       }
    }
    
@@ -360,7 +305,9 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
    {
       boolean accept = true;
 
-      if (destination.isQueue())
+      //FIXME - we shouldn't have checks like this - it should be the client side which decides whether
+      //to have a selector on the consumer
+      if (destination.getType() == DestinationType.QUEUE)
       {
          // For subscriptions message selection is handled in the Subscription itself we do not want
          // to do the check twice
@@ -452,15 +399,15 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
       return "ConsumerEndpoint[" + id + "]";
    }
 
-   public JBossDestination getDestination()
-   {
-      return destination;
-   }
-
-   public ServerSessionEndpoint getSessionEndpoint()
-   {
-      return sessionEndpoint;
-   }
+//   public Destination getDestination()
+//   {
+//      return destination;
+//   }
+//
+//   public ServerSessionEndpoint getSessionEndpoint()
+//   {
+//      return sessionEndpoint;
+//   }
 
    public PacketHandler newHandler()
    {
@@ -468,16 +415,6 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
    }
 
    // Package protected ----------------------------------------------------------------------------
-   
-   boolean isRemote()
-   {
-      return this.remote;
-   }       
-   
-   boolean isReplicating()
-   {
-   	return replicating;
-   }
    
    String getID()
    {
@@ -535,65 +472,61 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
    	return queueName;
    }
 
-   void localClose() throws Throwable
+   void localClose() throws Exception
    {
       if (trace) { log.trace(this + " grabbed the main lock in close() " + this); }
 
-      if (remote)
-      {
-      	messageQueue.getRemoteDistributor().remove(this);
-      }
-      else
-      {
-      	messageQueue.getLocalDistributor().remove(this);
-      }
-
-      sp.getMinaService().getDispatcher().unregister(id);
+      messageQueue.removeConsumer(this);
       
+      sessionEndpoint.getConnectionEndpoint().getMessagingServer().getMinaService().getDispatcher().unregister(id);
+            
       // If this is a consumer of a non durable subscription then we want to unbind the
       // subscription and delete all its data.
 
-      if (destination.isTopic())
+      //FIXME - We shouldn't have checks like this on the server side - it should the jms client
+      //which decides whether to delete it or not
+      if (destination.getType() == DestinationType.TOPIC)
       {
-         PostOffice postOffice = sessionEndpoint.getConnectionEndpoint().getServerPeer().getPostOffice();
+         PostOffice postOffice = sessionEndpoint.getConnectionEndpoint().getMessagingServer().getPostOffice();
                   
-         ServerPeer sp = sessionEndpoint.getConnectionEndpoint().getServerPeer();
+         MessagingServer sp = sessionEndpoint.getConnectionEndpoint().getMessagingServer();
          
-         Queue queue = postOffice.getBindingForQueueName(queueName).queue;        
-         
-         ManagedDestination mDest = sp.getDestinationManager().getDestination(destination.getName(), false);
-         
-         if (!queue.isRecoverable())
+         if (!messageQueue.isDurable())
          {
-            postOffice.removeBinding(queueName, false);            
+            Condition condition = new ConditionImpl(destination.getType(), destination.getName());
+            
+            postOffice.removeQueue(condition, messageQueue.getName(), false);
 
-            if (!mDest.isTemporary())
-            {
-	            String counterName = ManagedDestination.SUBSCRIPTION_MESSAGECOUNTER_PREFIX + queueName;
-	
-	            MessageCounter counter = sp.getMessageCounterManager().unregisterMessageCounter(counterName);
-	
-	            if (counter == null)
-	            {
-	               throw new IllegalStateException("Cannot find counter to remove " + counterName);
-	            }
-            }
+            //TODO message counters are handled elsewhere
+            
+//            if (!messageQueue.isTemporary())
+//            {
+//	            String counterName = ManagedDestination.SUBSCRIPTION_MESSAGECOUNTER_PREFIX + queueName;
+//	
+//	            MessageCounter counter = sp.getMessageCounterManager().unregisterMessageCounter(counterName);
+//	
+//	            if (counter == null)
+//	            {
+//	               throw new IllegalStateException("Cannot find counter to remove " + counterName);
+//	            }
+//            }
          }
          else
          {
          	//Durable sub consumer
          	
-         	if (queue.isClustered() && sp.getConfiguration().isClustered())
-            {
-            	//Clustered durable sub consumer created - we need to remove this info from the replicator
-            	
-            	Replicator rep = (Replicator)postOffice;
-            	
-            	rep.remove(queue.getName());
-            }
+            //TODO - how do we ensure this for JBM 2.0 ?
+            
+//         	if (queue.isClustered() && sp.getConfiguration().isClustered())
+//            {
+//            	//Clustered durable sub consumer created - we need to remove this info from the replicator
+//            	
+//            	Replicator rep = (Replicator)postOffice;
+//            	
+//            	rep.remove(queue.getName());
+//            }
          }
       }
-
    }
 
    void start()
@@ -612,7 +545,7 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
       promptDelivery();
    }
 
-   void stop() throws Throwable
+   void stop() throws Exception
    {
       synchronized (startStopLock)
       {
@@ -650,11 +583,6 @@ public class ServerConsumerEndpoint implements Receiver, ConsumerEndpoint
          //
          // 9) Remoting connection listener is removed and remoting connection stopped.
 
-      }
-      
-      if (replicating)
-      {      	
-      	sessionEndpoint.waitForDeliveriesFromConsumer(id);
       }
    }
 

@@ -21,9 +21,6 @@
 */
 package org.jboss.test.messaging.tools.container;
 
-import org.jboss.jms.server.DestinationManager;
-import org.jboss.messaging.core.contract.MessageStore;
-import org.jboss.messaging.core.contract.PersistenceManager;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
@@ -49,29 +46,29 @@ public class RemoteTestServer extends LocalTestServer
 
    // Server implementation ------------------------------------------------------------------------
 
-   /**
-    * Only for in-VM use!
-    */
-   public MessageStore getMessageStore() throws Exception
-   {
-      throw new UnsupportedOperationException("This method shouldn't be invoked on a remote server");
-   }
+//   /**
+//    * Only for in-VM use!
+//    */
+//   public MessageStore getMessageStore() throws Exception
+//   {
+//      throw new UnsupportedOperationException("This method shouldn't be invoked on a remote server");
+//   }
 
-   /**
-    * Only for in-VM use!
-    */
-   public DestinationManager getDestinationManager() throws Exception
-   {
-      throw new UnsupportedOperationException("This method shouldn't be invoked on a remote server");
-   }
-
-   /**
-    * Only for in-VM use!
-    */
-   public PersistenceManager getPersistenceManager()
-   {
-      throw new UnsupportedOperationException("This method shouldn't be invoked on a remote server");
-   }
+//   /**
+//    * Only for in-VM use!
+//    */
+//   public DestinationManager getDestinationManager() throws Exception
+//   {
+//      throw new UnsupportedOperationException("This method shouldn't be invoked on a remote server");
+//   }
+//
+//   /**
+//    * Only for in-VM use!
+//    */
+//   public PersistenceManager getPersistenceManager()
+//   {
+//      throw new UnsupportedOperationException("This method shouldn't be invoked on a remote server");
+//   }
 
 
    // Public ---------------------------------------------------------------------------------------

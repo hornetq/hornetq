@@ -37,9 +37,9 @@ import org.jboss.jms.delegate.DeliveryInfo;
 import org.jboss.jms.delegate.SessionDelegate;
 import org.jboss.jms.message.JBossMessage;
 import org.jboss.logging.Logger;
-import org.jboss.messaging.newcore.Message;
-import org.jboss.messaging.newcore.PriorityLinkedList;
-import org.jboss.messaging.newcore.impl.PriorityLinkedListImpl;
+import org.jboss.messaging.core.Message;
+import org.jboss.messaging.core.PriorityLinkedList;
+import org.jboss.messaging.core.impl.PriorityLinkedListImpl;
 import org.jboss.messaging.util.Future;
 
 import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
@@ -220,7 +220,7 @@ public class ClientConsumer
                          SessionDelegate sess, ConsumerDelegate cons, String consumerID,
                          String queueName,
                          int bufferSize, QueuedExecutor sessionExecutor,
-                         int maxDeliveries, boolean shouldAck, boolean handleFlowControl,
+                         int maxDeliveries, boolean shouldAck,
                          long redeliveryDelay)
    {
       if (bufferSize < 1)

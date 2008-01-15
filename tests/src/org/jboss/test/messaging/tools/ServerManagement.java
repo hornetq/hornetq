@@ -21,21 +21,30 @@
 */
 package org.jboss.test.messaging.tools;
 
-import org.jboss.jms.server.DestinationManager;
-import org.jboss.jms.server.JmsServer;
-import org.jboss.logging.Logger;
-import org.jboss.messaging.core.contract.MessageStore;
-import org.jboss.messaging.core.contract.PersistenceManager;
-import org.jboss.test.messaging.tools.container.*;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.rmi.Naming;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 import javax.management.Notification;
 import javax.management.NotificationListener;
 import javax.management.ObjectName;
 import javax.transaction.UserTransaction;
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.rmi.Naming;
-import java.util.*;
+
+import org.jboss.jms.server.DestinationManager;
+import org.jboss.logging.Logger;
+import org.jboss.test.messaging.tools.container.InVMInitialContextFactory;
+import org.jboss.test.messaging.tools.container.LocalTestServer;
+import org.jboss.test.messaging.tools.container.NotificationListenerID;
+import org.jboss.test.messaging.tools.container.RMITestServer;
+import org.jboss.test.messaging.tools.container.RemoteInitialContextFactory;
+import org.jboss.test.messaging.tools.container.Server;
+import org.jboss.test.messaging.tools.container.ServiceAttributeOverrides;
 
 /**
  * Collection of static methods to use to start/stop and interact with the in-memory JMS server. It
@@ -677,11 +686,11 @@ public class ServerManagement
       servers.get(0).stopServerPeer();
    }
 
-   public static boolean isServerPeerStarted() throws Exception
-   {
-
-      return servers.get(0).isServerPeerStarted();
-   }
+//   public static boolean isServerPeerStarted() throws Exception
+//   {
+//
+//      return servers.get(0).isServerPeerStarted();
+//   }
 
    public static ObjectName getServerPeerObjectName() throws Exception
    {
@@ -689,25 +698,25 @@ public class ServerManagement
       return servers.get(0).getServerPeerObjectName();
    }
 
-   public static MessageStore getMessageStore() throws Exception
-   {
+//   public static MessageStore getMessageStore() throws Exception
+//   {
+//
+//      return servers.get(0).getMessageStore();
+//   }
 
-      return servers.get(0).getMessageStore();
-   }
-
-   public static DestinationManager getDestinationManager()
-           throws Exception
-   {
-
-      return servers.get(0).getDestinationManager();
-   }
-
-   public static PersistenceManager getPersistenceManager()
-           throws Exception
-   {
-
-      return servers.get(0).getPersistenceManager();
-   }
+//   public static DestinationManager getDestinationManager()
+//           throws Exception
+//   {
+//
+//      return servers.get(0).getDestinationManager();
+//   }
+//
+//   public static PersistenceManager getPersistenceManager()
+//           throws Exception
+//   {
+//
+//      return servers.get(0).getPersistenceManager();
+//   }
 
    public static void configureSecurityForDestination(String destName, String config)
            throws Exception
@@ -814,24 +823,24 @@ public class ServerManagement
    // Private -------------------------------------------------------
 
 
-   private static JmsServer getJmsServer(int id)
-   {
-      try
-      {
-         if (isLocal())
-         {
-            return servers.get(id).getJmsServer();
-         }
-         else
-         {
-            return null;
-         }
-      }
-      catch (Exception e)
-      {
-         throw new RuntimeException();
-      }
-   }
+//   private static JmsServer getJmsServer(int id)
+//   {
+//      try
+//      {
+//         if (isLocal())
+//         {
+//            return servers.get(id).getJmsServer();
+//         }
+//         else
+//         {
+//            return null;
+//         }
+//      }
+//      catch (Exception e)
+//      {
+//         throw new RuntimeException();
+//      }
+//   }
    // Inner classes -------------------------------------------------
 
    private static long listenerIDCounter = 0;

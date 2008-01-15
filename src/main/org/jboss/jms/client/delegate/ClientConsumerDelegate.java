@@ -28,19 +28,19 @@ import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageListener;
 
+import org.jboss.jms.client.remoting.CallbackManager;
 import org.jboss.jms.client.state.ConnectionState;
 import org.jboss.jms.client.state.ConsumerState;
 import org.jboss.jms.client.state.SessionState;
-import org.jboss.jms.client.remoting.CallbackManager;
 import org.jboss.jms.delegate.ConsumerDelegate;
-import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.exception.MessagingShutdownException;
 import org.jboss.logging.Logger;
+import org.jboss.messaging.core.Destination;
+import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.wireformat.ChangeRateMessage;
 import org.jboss.messaging.core.remoting.wireformat.CloseMessage;
 import org.jboss.messaging.core.remoting.wireformat.ClosingRequest;
 import org.jboss.messaging.core.remoting.wireformat.ClosingResponse;
-import org.jboss.messaging.core.remoting.PacketDispatcher;
 
 /**
  * The client-side Consumer delegate class.
@@ -160,7 +160,7 @@ public class ClientConsumerDelegate extends DelegateSupport<ConsumerState> imple
       catch (Exception proxiedException)
       {
          ConnectionState connectionState = (ConnectionState) (consumerState.getParent().getParent());
-         // if ServerPeer is shutdown or
+         // if MessagingServer is shutdown or
          // if there is no failover in place... we just close the consumerState as well
          if (proxiedException instanceof MessagingShutdownException ||
                  (connectionState.getFailoverCommandCenter() == null))
@@ -232,7 +232,7 @@ public class ClientConsumerDelegate extends DelegateSupport<ConsumerState> imple
     * This invocation should either be handled by the client-side interceptor chain or by the
     * server-side endpoint.
     */
-   public JBossDestination getDestination()
+   public Destination getDestination()
    {
       return state.getDestination();
    }

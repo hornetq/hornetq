@@ -51,10 +51,8 @@ public interface ConnectionEndpoint extends Closeable
 
    void stop() throws JMSException;
 
-   void sendTransaction(TransactionRequest request, boolean checkForDuplicates) throws JMSException;
+   void sendTransaction(TransactionRequest request) throws JMSException;
 
-   MessagingXid[] getPreparedTransactions() throws JMSException; 
-   
-   IDBlock getIdBlock(int size) throws JMSException;
+   MessagingXid[] getPreparedTransactions() throws JMSException; ;
 }
 

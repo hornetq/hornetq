@@ -76,7 +76,7 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage
       super(JBossBytesMessage.TYPE);
    }
 
-   public JBossBytesMessage(org.jboss.messaging.newcore.Message message,
+   public JBossBytesMessage(org.jboss.messaging.core.Message message,
          long deliveryID, int deliveryCount)
    {
       super(message, deliveryID, deliveryCount);

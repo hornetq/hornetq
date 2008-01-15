@@ -12,8 +12,8 @@ import java.util.Map;
 import org.jboss.jms.client.plugin.LoadBalancingFactory;
 import org.jboss.jms.server.ConnectionFactoryManager;
 import org.jboss.jms.server.ConnectionManager;
-import org.jboss.jms.server.ServerPeer;
 import org.jboss.logging.Logger;
+import org.jboss.messaging.core.MessagingServer;
 import org.jboss.messaging.core.remoting.ServerLocator;
 import org.jboss.messaging.core.remoting.impl.mina.MinaService;
 import org.jboss.messaging.util.ExceptionUtil;
@@ -62,12 +62,10 @@ public class ConnectionFactory
    
    private int dupsOKBatchSize = 1000;
 
-   private ServerPeer serverPeer;
+   private MessagingServer messagingServer;
    
    private ConnectionFactoryManager connectionFactoryManager;
    
-   private ConnectionManager connectionManager;
-      
    private MinaService minaService;
 
    private boolean started;
@@ -108,27 +106,21 @@ public class ConnectionFactory
                                                "each Connection Factory");
          }
          
-         if (serverPeer == null)
+         if (messagingServer == null)
          {
-            throw new IllegalArgumentException("ServerPeer must be specified for " +
+            throw new IllegalArgumentException("MessagingServer must be specified for " +
                                                "each Connection Factory");
          }
       
          ServerLocator serverLocator = minaService.getLocator();
 
-         if (!serverPeer.isSupportsFailover())
-         {
-            this.supportsFailover = false;
-         }
-         
-         connectionFactoryManager = serverPeer.getConnectionFactoryManager();
-         connectionManager = serverPeer.getConnectionManager();
+         connectionFactoryManager = messagingServer.getConnectionFactoryManager();
 
          // We use the MBean service name to uniquely identify the connection factory
          
          connectionFactoryManager.
             registerConnectionFactory(getName(), clientID, jndiBindings,
-                                      serverLocator.getURI(), false, prefetchSize, slowConsumers,
+                                      serverLocator.getURI(), false, prefetchSize, 
                                       defaultTempQueueFullSize, defaultTempQueuePageSize,                                      
                                       defaultTempQueueDownCacheSize, dupsOKBatchSize, supportsFailover, supportsLoadBalancing,
                                       loadBalancingFactory, strictTck);               
@@ -149,7 +141,7 @@ public class ConnectionFactory
          started = false;
          
          connectionFactoryManager.
-            unregisterConnectionFactory(getName(), supportsFailover, supportsLoadBalancing);
+            unregisterConnectionFactory(getName());
          
          log.info(this + " undeployed");
       }
@@ -230,22 +222,22 @@ public class ConnectionFactory
       return jndiBindings;
    }
 
-   public ServerPeer getServerPeer()
-    {
-        return serverPeer;
-    }
+   public MessagingServer getMessagingServer()
+   {
+      return messagingServer;
+   }
 
-    public void setServerPeer(ServerPeer serverPeer)
-    {
-        this.serverPeer = serverPeer;
-    }
-    
-    public void setMinaService(MinaService service)
-    {
-       this.minaService = service;
-    }
+   public void setMessagingServer(MessagingServer messagingServer)
+   {
+      this.messagingServer = messagingServer;
+   }
 
-    public boolean isSupportsFailover()
+   public void setMinaService(MinaService service)
+   {
+      this.minaService = service;
+   }
+
+   public boolean isSupportsFailover()
    {
       return supportsFailover;
    }

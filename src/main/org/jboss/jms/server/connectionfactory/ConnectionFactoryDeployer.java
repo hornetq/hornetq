@@ -25,7 +25,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.jboss.jms.server.ServerPeer;
+import org.jboss.messaging.core.MessagingServer;
 import org.jboss.messaging.core.remoting.impl.mina.MinaService;
 import org.jboss.messaging.util.XMLUtil;
 import org.w3c.dom.Element;
@@ -56,14 +56,14 @@ public class ConnectionFactoryDeployer
    private static final String BIDING = "binding";
 
    private List<ConnectionFactory> connectionFactories = new ArrayList<ConnectionFactory>();
-   private ServerPeer serverPeer;
+   private MessagingServer messagingServer;
    private MinaService minaService;
 //   private Connector connector;
 
 
-   public ConnectionFactoryDeployer(ServerPeer serverPeer, MinaService minaService)
+   public ConnectionFactoryDeployer(MessagingServer messagingServer, MinaService minaService)
    {
-      this.serverPeer = serverPeer;
+      this.messagingServer = messagingServer;
       this.minaService = minaService;
    }
 
@@ -138,7 +138,7 @@ public class ConnectionFactoryDeployer
             }
 
          }
-         connectionFactory.setServerPeer(serverPeer);
+         connectionFactory.setMessagingServer(messagingServer);
          connectionFactory.setMinaService(minaService);
          connectionFactory.start();
       }

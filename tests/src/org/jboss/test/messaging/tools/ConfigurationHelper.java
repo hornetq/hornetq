@@ -21,16 +21,16 @@
    */
 package org.jboss.test.messaging.tools;
 
-import org.jboss.jms.server.Configuration;
-import org.jboss.kernel.spi.dependency.KernelControllerContext;
-import org.jboss.kernel.spi.dependency.KernelControllerContextAware;
-import org.jboss.test.messaging.tools.container.JBMPropertyKernelConfig;
-
 import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Set;
+
+import org.jboss.kernel.spi.dependency.KernelControllerContext;
+import org.jboss.kernel.spi.dependency.KernelControllerContextAware;
+import org.jboss.messaging.core.Configuration;
+import org.jboss.test.messaging.tools.container.JBMPropertyKernelConfig;
 
 /**
  * This is class is used in test environments. it will intercept the creation of the configuration and change certain
@@ -68,7 +68,7 @@ public class ConfigurationHelper implements KernelControllerContextAware
       JBMPropertyKernelConfig config = (JBMPropertyKernelConfig) kernelControllerContext.getKernel().getConfig();
       HashMap<String, Object> configuration = configs.get(config.getServerID());
       Configuration actualConfiguration = (Configuration) kernelControllerContext.getKernel().getRegistry().getEntry("Configuration").getTarget();
-      actualConfiguration.setServerPeerID(config.getServerID());
+      actualConfiguration.setMessagingServerID(config.getServerID());
       actualConfiguration.setRemotingBindAddress(actualConfiguration.getRemotingBindAddress() + config.getServerID());
       alterConfig(actualConfiguration, configuration);
    }
@@ -83,7 +83,7 @@ public class ConfigurationHelper implements KernelControllerContextAware
    {
       Hashtable<String, Serializable> env = new Hashtable<String, Serializable>();
       env.put("java.naming.factory.initial", "org.jboss.test.messaging.tools.container.InVMInitialContextFactory");
-      env.put("jboss.messaging.test.server.index", "" + configuration.getServerPeerID());
+      env.put("jboss.messaging.test.server.index", "" + configuration.getMessagingServerID());
       return env;
    }
 

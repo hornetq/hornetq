@@ -42,19 +42,12 @@ public class PersistenceTest extends JMSTestCase
    // Attributes ----------------------------------------------------
 
    // Constructors --------------------------------------------------
-   private Queue queue1;
    public PersistenceTest(String name)
    {
       super(name);
    }
 
    // TestCase overrides -------------------------------------------
-
-   protected void setUp() throws Exception
-   {
-      super.setUp();
-      queue1 = (Queue) getInitialContext().lookup("/queue/testQueue");
-   }
 
    // Public --------------------------------------------------------
 
@@ -83,7 +76,7 @@ public class PersistenceTest extends JMSTestCase
 
 	      stop();
 
-	      start();
+	      startNoDelete();
 
 	      // Messaging server restart implies new ConnectionFactory lookup
 	      deployAndLookupAdministeredObjects();
@@ -95,6 +88,7 @@ public class PersistenceTest extends JMSTestCase
 	      for (int i = 0; i < 10; i++)
 	      {
 	         TextMessage tm = (TextMessage)cons.receive(3000);
+	         
 	         assertNotNull(tm);
 	         if (tm == null)
 	         {
@@ -172,7 +166,7 @@ public class PersistenceTest extends JMSTestCase
 
 	      stop();
 
-	      start();
+	      startNoDelete();
 
 	      // Messaging server restart implies new ConnectionFactory lookup
 	      deployAndLookupAdministeredObjects();
@@ -243,7 +237,7 @@ public class PersistenceTest extends JMSTestCase
 
 	      stop();
 
-	      start();
+	      startNoDelete();
 
 	      // Messaging server restart implies new ConnectionFactory lookup
 	      deployAndLookupAdministeredObjects();
@@ -358,7 +352,7 @@ public class PersistenceTest extends JMSTestCase
 
 	      stop();
 
-	      start();
+	      startNoDelete();
 
 	      deployAndLookupAdministeredObjects();
 
@@ -458,7 +452,7 @@ public class PersistenceTest extends JMSTestCase
 
 	      stop();
 
-	      start();
+	      startNoDelete();
 
 	      deployAndLookupAdministeredObjects();
 
@@ -520,7 +514,7 @@ public class PersistenceTest extends JMSTestCase
 
 	      stop();
 
-	      start();
+	      startNoDelete();
 
          // Messaging server restart implies new ConnectionFactory lookup
 	      deployAndLookupAdministeredObjects();

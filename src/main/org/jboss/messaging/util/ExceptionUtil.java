@@ -21,6 +21,8 @@
  */
 package org.jboss.messaging.util;
 
+import java.util.UUID;
+
 import javax.jms.JMSException;
 
 import org.jboss.jms.exception.MessagingJMSException;
@@ -58,7 +60,7 @@ public class ExceptionUtil
       //We create a GUID and log it and send it in the client exception.
       //This allows what is received at the client to be correlated if necessary
       //to what is logged in the server logs
-      String id = GUIDGenerator.generateGUID();
+      String id = UUID.randomUUID().toString();
       
       //First we log the Throwable
       log.error(msg + " [" + id + "]", t);

@@ -21,11 +21,12 @@
   */
 package org.jboss.jms.destination;
 
+import java.util.UUID;
+
 import javax.jms.JMSException;
 import javax.jms.TemporaryTopic;
 
 import org.jboss.jms.delegate.SessionDelegate;
-import org.jboss.messaging.util.GUIDGenerator;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -49,7 +50,8 @@ public class JBossTemporaryTopic extends JBossTopic implements TemporaryTopic
    
    public JBossTemporaryTopic(SessionDelegate delegate)
    {
-      super(GUIDGenerator.generateGUID());
+      super(UUID.randomUUID().toString());
+      
       this.delegate = delegate;
    }
     
@@ -62,7 +64,7 @@ public class JBossTemporaryTopic extends JBossTopic implements TemporaryTopic
    
    public void delete() throws JMSException
    {
-      if (delegate != null) delegate.deleteTemporaryDestination(this);
+      if (delegate != null) delegate.deleteTemporaryDestination(this.toCoreDestination());
    }
    
    // JBossDestination overrides ------------------------------------

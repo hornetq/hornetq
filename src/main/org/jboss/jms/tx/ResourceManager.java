@@ -42,7 +42,7 @@ import org.jboss.jms.exception.MessagingXAException;
 import org.jboss.jms.message.JBossMessage;
 import org.jboss.jms.tx.ClientTransaction.SessionTxState;
 import org.jboss.logging.Logger;
-import org.jboss.messaging.newcore.Message;
+import org.jboss.messaging.core.Message;
 
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
 
@@ -206,7 +206,7 @@ public class ResourceManager
       
       try
       {
-         connection.sendTransaction(request, false);
+         connection.sendTransaction(request);
          
          // If we get this far we can remove the transaction
          
@@ -634,7 +634,7 @@ public class ResourceManager
    {
       try
       {
-         connection.sendTransaction(request, false);
+         connection.sendTransaction(request);
       }
       catch (JMSSecurityException security)
       {

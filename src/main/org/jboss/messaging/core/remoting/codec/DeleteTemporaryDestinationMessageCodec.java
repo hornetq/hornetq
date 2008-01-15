@@ -8,7 +8,7 @@ package org.jboss.messaging.core.remoting.codec;
 
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_DELETETEMPORARYDESTINATION;
 
-import org.jboss.jms.destination.JBossDestination;
+import org.jboss.messaging.core.Destination;
 import org.jboss.messaging.core.remoting.wireformat.DeleteTemporaryDestinationMessage;
 
 /**
@@ -60,7 +60,7 @@ public class DeleteTemporaryDestinationMessageCodec extends
       int destinationLength = in.getInt();
       byte[] b = new byte[destinationLength];
       in.get(b);
-      JBossDestination destination = decode(b);
+      Destination destination = decode(b);
 
       return new DeleteTemporaryDestinationMessage(destination);
    }

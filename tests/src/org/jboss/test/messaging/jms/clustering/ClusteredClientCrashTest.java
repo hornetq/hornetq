@@ -70,92 +70,92 @@ public class ClusteredClientCrashTest extends ClusteringTestBase
    {
       super.tearDown();
    }
-
-   /**
-    * Test that when a remote jms client crashes, server side resources for connections are
-    * cleaned-up.
-    */
-   public void testClientCrash() throws Exception
-   {    
-      ServerManagement.create(2);
-      Server remoteServer = ServerManagement.getServer(2);
-
-      // We need to make sure that any previously downloaded CF should be released
-      WeakReference ref = new WeakReference(ic[0].lookup("/ClusteredConnectionFactory"));
-      int count=0;
-      while (ref.get() != null)
-      {
-         System.gc();
-         Thread.sleep(1000);
-         if ((count++>10) && ref.get() != null)
-         {
-            fail("Thre is a leak on ClusteredConnectionFactory");
-         }
-      }
-       
-      ClientClusteredConnectionFactoryDelegate cfDelegate =  (ClientClusteredConnectionFactoryDelegate)cf.getDelegate();
-
-      cfDelegate.closeCallback();
-
-      ClusterClientCrash command = new ClusterClientCrash(cf);
-
-      assertEquals("OK", remoteServer.executeCommand(command));
-
-      assertEquals(new Integer(1),ServerManagement.getServer(1).executeCommand(new VerifySizeOfCFClients(cfDelegate.getUniqueName())));
-
-      ServerManagement.kill(2);
-      Thread.sleep((long)(60000));
-
-      assertEquals(new Integer(0), ServerManagement.getServer(0).executeCommand(new VerifySizeOfCFClients(cfDelegate.getUniqueName())));
-      assertEquals(new Integer(0), ServerManagement.getServer(1).executeCommand(new VerifySizeOfCFClients(cfDelegate.getUniqueName())));
-   }
-
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-
-   // Inner classes -------------------------------------------------
-
-   public static class ClusterClientCrash implements Command
-   {
-
-      ConnectionFactory cf = null;
-
-      public ClusterClientCrash(ConnectionFactory cf)
-      {
-         this.cf = cf;
-      }
-
-      public Object execute(Server server) throws Exception
-      {
-         Connection conn = cf.createConnection();
-         conn.start();
-
-         return "OK";
-      }
-   }
-
-   public static class VerifySizeOfCFClients implements Command
-   {
-
-      String uniqueName;
-
-      public VerifySizeOfCFClients(String uniqueName)
-      {
-         this.uniqueName = uniqueName;
-      }
-
-      public Object execute(Server server) throws Exception
-      {
-
-         int size = server.getServerPeer().getConnectionManager().getConnectionFactorySenders(uniqueName).length;
-
-         return new Integer(size);
-      }
-   }
+//
+//   /**
+//    * Test that when a remote jms client crashes, server side resources for connections are
+//    * cleaned-up.
+//    */
+//   public void testClientCrash() throws Exception
+//   {    
+//      ServerManagement.create(2);
+//      Server remoteServer = ServerManagement.getServer(2);
+//
+//      // We need to make sure that any previously downloaded CF should be released
+//      WeakReference ref = new WeakReference(ic[0].lookup("/ClusteredConnectionFactory"));
+//      int count=0;
+//      while (ref.get() != null)
+//      {
+//         System.gc();
+//         Thread.sleep(1000);
+//         if ((count++>10) && ref.get() != null)
+//         {
+//            fail("Thre is a leak on ClusteredConnectionFactory");
+//         }
+//      }
+//       
+//      ClientClusteredConnectionFactoryDelegate cfDelegate =  (ClientClusteredConnectionFactoryDelegate)cf.getDelegate();
+//
+//      cfDelegate.closeCallback();
+//
+//      ClusterClientCrash command = new ClusterClientCrash(cf);
+//
+//      assertEquals("OK", remoteServer.executeCommand(command));
+//
+//      assertEquals(new Integer(1),ServerManagement.getServer(1).executeCommand(new VerifySizeOfCFClients(cfDelegate.getUniqueName())));
+//
+//      ServerManagement.kill(2);
+//      Thread.sleep((long)(60000));
+//
+//      assertEquals(new Integer(0), ServerManagement.getServer(0).executeCommand(new VerifySizeOfCFClients(cfDelegate.getUniqueName())));
+//      assertEquals(new Integer(0), ServerManagement.getServer(1).executeCommand(new VerifySizeOfCFClients(cfDelegate.getUniqueName())));
+//   }
+//
+//
+//   // Package protected ---------------------------------------------
+//
+//   // Protected -----------------------------------------------------
+//
+//   // Private -------------------------------------------------------
+//
+//
+//   // Inner classes -------------------------------------------------
+//
+//   public static class ClusterClientCrash implements Command
+//   {
+//
+//      ConnectionFactory cf = null;
+//
+//      public ClusterClientCrash(ConnectionFactory cf)
+//      {
+//         this.cf = cf;
+//      }
+//
+//      public Object execute(Server server) throws Exception
+//      {
+//         Connection conn = cf.createConnection();
+//         conn.start();
+//
+//         return "OK";
+//      }
+//   }
+//
+//   public static class VerifySizeOfCFClients implements Command
+//   {
+//
+//      String uniqueName;
+//
+//      public VerifySizeOfCFClients(String uniqueName)
+//      {
+//         this.uniqueName = uniqueName;
+//      }
+//
+//      public Object execute(Server server) throws Exception
+//      {
+//
+//         int size = server.getServerPeer().getConnectionManager().getConnectionFactorySenders(uniqueName).length;
+//
+//         return new Integer(size);
+//      }
+//   }
 
 }

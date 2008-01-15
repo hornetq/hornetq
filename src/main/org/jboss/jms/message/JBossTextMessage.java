@@ -68,7 +68,7 @@ public class JBossTextMessage extends JBossMessage implements TextMessage
       super(JBossTextMessage.TYPE);
    }
    
-   public JBossTextMessage(org.jboss.messaging.newcore.Message message, long deliveryID, int deliveryCount)
+   public JBossTextMessage(org.jboss.messaging.core.Message message, long deliveryID, int deliveryCount)
    {
       super(message, deliveryID, deliveryCount);
    }

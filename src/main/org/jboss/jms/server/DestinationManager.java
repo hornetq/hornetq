@@ -21,10 +21,8 @@
   */
 package org.jboss.jms.server;
 
-import java.util.Set;
-
-import org.jboss.jms.server.destination.ManagedDestination;
-import org.jboss.messaging.core.contract.MessagingComponent;
+import org.jboss.messaging.core.Destination;
+import org.jboss.messaging.core.MessagingComponent;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
@@ -34,23 +32,8 @@ import org.jboss.messaging.core.contract.MessagingComponent;
  * $Id$
  */
 public interface DestinationManager extends MessagingComponent
-{
-   /**
-    * Method called by a destination service to register itself with the server peer. The server
-    * peer will create and maintain state on behalf of the destination until the destination
-    * unregisters itself.
-    *
-    * @return the name under which the destination was bound in JNDI.
-    */
-   void registerDestination(ManagedDestination destination) throws Exception;
+{   
+   void registerDestination(Destination destination, String jndiName) throws Exception;
 
-   /**
-    * Method called by a destination service to unregister itself from the server peer. The server
-    * peer is supposed to clean up the state maintained on behalf of the unregistered destination.
-    */
-   void unregisterDestination(ManagedDestination destination) throws Exception;
-   
-   ManagedDestination getDestination(String name, boolean isQueue);
-   
-   Set getDestinations();   
+   void unregisterDestination(Destination destination, String jndiName) throws Exception;
 }

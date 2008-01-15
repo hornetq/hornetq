@@ -28,7 +28,6 @@ import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_CLOSE;
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_DELETETEMPORARYDESTINATION;
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_DELIVERMESSAGE;
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_JMSEXCEPTION;
-import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_RECOVERDELIVERIES;
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_SENDMESSAGE;
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_SENDTRANSACTION;
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_SETCLIENTID;
@@ -47,11 +46,9 @@ import static org.jboss.messaging.core.remoting.wireformat.PacketType.REQ_CREATE
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.REQ_CREATECONSUMER;
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.REQ_CREATEDESTINATION;
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.REQ_CREATESESSION;
-import static org.jboss.messaging.core.remoting.wireformat.PacketType.REQ_GETCLIENTAOPSTACK;
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.REQ_GETCLIENTID;
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.REQ_GETPREPAREDTRANSACTIONS;
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.REQ_GETTOPOLOGY;
-import static org.jboss.messaging.core.remoting.wireformat.PacketType.REQ_IDBLOCK;
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.RESP_ACKDELIVERY;
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.RESP_BROWSER_HASNEXTMESSAGE;
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.RESP_BROWSER_NEXTMESSAGE;
@@ -62,16 +59,13 @@ import static org.jboss.messaging.core.remoting.wireformat.PacketType.RESP_CREAT
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.RESP_CREATECONSUMER;
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.RESP_CREATEDESTINATION;
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.RESP_CREATESESSION;
-import static org.jboss.messaging.core.remoting.wireformat.PacketType.RESP_GETCLIENTAOPSTACK;
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.RESP_GETCLIENTID;
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.RESP_GETPREPAREDTRANSACTIONS;
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.RESP_GETTOPOLOGY;
-import static org.jboss.messaging.core.remoting.wireformat.PacketType.RESP_IDBLOCK;
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.TEXT;
 import static org.jboss.messaging.core.remoting.wireformat.test.unit.CodecAssert.assertEqualsAcks;
 import static org.jboss.messaging.core.remoting.wireformat.test.unit.CodecAssert.assertEqualsByteArrays;
 import static org.jboss.messaging.core.remoting.wireformat.test.unit.CodecAssert.assertEqualsCancels;
-import static org.jboss.messaging.core.remoting.wireformat.test.unit.CodecAssert.assertEqualsDeliveries;
 import static org.jboss.messaging.core.remoting.wireformat.test.unit.CodecAssert.assertSameTopology;
 import static org.jboss.messaging.core.remoting.wireformat.test.unit.CodecAssert.assertSameXids;
 import static org.jboss.messaging.core.remoting.wireformat.test.unit.RandomUtil.randomByte;
@@ -98,7 +92,6 @@ import org.jboss.jms.delegate.Ack;
 import org.jboss.jms.delegate.Cancel;
 import org.jboss.jms.delegate.DefaultAck;
 import org.jboss.jms.delegate.DefaultCancel;
-import org.jboss.jms.delegate.DeliveryRecovery;
 import org.jboss.jms.delegate.TopologyResult;
 import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.destination.JBossQueue;
@@ -106,6 +99,11 @@ import org.jboss.jms.destination.JBossTopic;
 import org.jboss.jms.tx.ClientTransaction;
 import org.jboss.jms.tx.MessagingXid;
 import org.jboss.jms.tx.TransactionRequest;
+import org.jboss.messaging.core.Destination;
+import org.jboss.messaging.core.DestinationType;
+import org.jboss.messaging.core.Message;
+import org.jboss.messaging.core.impl.DestinationImpl;
+import org.jboss.messaging.core.impl.MessageImpl;
 import org.jboss.messaging.core.remoting.codec.AbstractPacketCodec;
 import org.jboss.messaging.core.remoting.codec.AcknowledgeDeliveriesRequestCodec;
 import org.jboss.messaging.core.remoting.codec.AcknowledgeDeliveryRequestCodec;
@@ -132,14 +130,10 @@ import org.jboss.messaging.core.remoting.codec.CreateSessionRequestCodec;
 import org.jboss.messaging.core.remoting.codec.CreateSessionResponseCodec;
 import org.jboss.messaging.core.remoting.codec.DeleteTemporaryDestinationMessageCodec;
 import org.jboss.messaging.core.remoting.codec.DeliverMessageCodec;
-import org.jboss.messaging.core.remoting.codec.GetClientAOPStackResponseCodec;
 import org.jboss.messaging.core.remoting.codec.GetClientIDResponseCodec;
 import org.jboss.messaging.core.remoting.codec.GetPreparedTransactionsResponseCodec;
 import org.jboss.messaging.core.remoting.codec.GetTopologyResponseCodec;
-import org.jboss.messaging.core.remoting.codec.IDBlockRequestCodec;
-import org.jboss.messaging.core.remoting.codec.IDBlockResponseCodec;
 import org.jboss.messaging.core.remoting.codec.JMSExceptionMessageCodec;
-import org.jboss.messaging.core.remoting.codec.RecoverDeliveriesMessageCodec;
 import org.jboss.messaging.core.remoting.codec.RemotingBuffer;
 import org.jboss.messaging.core.remoting.codec.SendMessageCodec;
 import org.jboss.messaging.core.remoting.codec.SendTransactionMessageCodec;
@@ -179,19 +173,14 @@ import org.jboss.messaging.core.remoting.wireformat.CreateSessionRequest;
 import org.jboss.messaging.core.remoting.wireformat.CreateSessionResponse;
 import org.jboss.messaging.core.remoting.wireformat.DeleteTemporaryDestinationMessage;
 import org.jboss.messaging.core.remoting.wireformat.DeliverMessage;
-import org.jboss.messaging.core.remoting.wireformat.GetClientAOPStackRequest;
-import org.jboss.messaging.core.remoting.wireformat.GetClientAOPStackResponse;
 import org.jboss.messaging.core.remoting.wireformat.GetClientIDRequest;
 import org.jboss.messaging.core.remoting.wireformat.GetClientIDResponse;
 import org.jboss.messaging.core.remoting.wireformat.GetPreparedTransactionsRequest;
 import org.jboss.messaging.core.remoting.wireformat.GetPreparedTransactionsResponse;
 import org.jboss.messaging.core.remoting.wireformat.GetTopologyRequest;
 import org.jboss.messaging.core.remoting.wireformat.GetTopologyResponse;
-import org.jboss.messaging.core.remoting.wireformat.IDBlockRequest;
-import org.jboss.messaging.core.remoting.wireformat.IDBlockResponse;
 import org.jboss.messaging.core.remoting.wireformat.JMSExceptionMessage;
 import org.jboss.messaging.core.remoting.wireformat.NullPacket;
-import org.jboss.messaging.core.remoting.wireformat.RecoverDeliveriesMessage;
 import org.jboss.messaging.core.remoting.wireformat.SendMessage;
 import org.jboss.messaging.core.remoting.wireformat.SendTransactionMessage;
 import org.jboss.messaging.core.remoting.wireformat.SetClientIDMessage;
@@ -200,8 +189,6 @@ import org.jboss.messaging.core.remoting.wireformat.StopConnectionMessage;
 import org.jboss.messaging.core.remoting.wireformat.TextPacket;
 import org.jboss.messaging.core.remoting.wireformat.UnsubscribeMessage;
 import org.jboss.messaging.core.remoting.wireformat.UpdateCallbackMessage;
-import org.jboss.messaging.newcore.Message;
-import org.jboss.messaging.newcore.impl.MessageImpl;
 import org.jboss.messaging.util.Version;
 
 /**
@@ -491,45 +478,7 @@ public class PacketTypeTest extends TestCase
       assertEquals(response.getServerID(), decodedResponse.getServerID());
    }
 
-   public void testGetClientAOPStackRequest() throws Exception
-   {
-      GetClientAOPStackRequest request = new GetClientAOPStackRequest();
-      addVersion(request);
-
-      AbstractPacketCodec codec = PacketCodecFactory.createCodecForEmptyPacket(
-            REQ_GETCLIENTAOPSTACK, GetClientAOPStackRequest.class);
-      SimpleRemotingBuffer buffer = encode(request, codec);
-      checkHeader(buffer, request);
-      checkBodyIsEmpty(buffer);
-      buffer.rewind();
-      
-      AbstractPacket decodedPacket = codec.decode(buffer);
-
-      assertTrue(decodedPacket instanceof GetClientAOPStackRequest);
-      assertEquals(REQ_GETCLIENTAOPSTACK, decodedPacket.getType());
-   }
-
-   public void testGetClientAOPStackResponse() throws Exception
-   {
-      byte[] stack = randomBytes();
-
-      GetClientAOPStackResponse response = new GetClientAOPStackResponse(stack);
-      addVersion(response);
-      
-      AbstractPacketCodec codec = new GetClientAOPStackResponseCodec();
-      SimpleRemotingBuffer buffer = encode(response, codec);
-      checkHeader(buffer, response);
-      checkBody(buffer, response.getStack());
-      buffer.rewind();
-
-      AbstractPacket decodedPacket = codec.decode(buffer);
-
-      assertTrue(decodedPacket instanceof GetClientAOPStackResponse);
-      GetClientAOPStackResponse decodedResponse = (GetClientAOPStackResponse) decodedPacket;
-      assertEquals(RESP_GETCLIENTAOPSTACK, decodedResponse.getType());
-      assertEqualsByteArrays(response.getStack(), decodedResponse.getStack());
-   }
-
+   
    public void testGetTopologyRequest() throws Exception
    {
       GetTopologyRequest request = new GetTopologyRequest();
@@ -645,56 +594,16 @@ public class PacketTypeTest extends TestCase
       assertEquals(response.isStrictTCK(), decodedResponse.isStrictTCK());
    }
 
-   public void testIDBlockRequest() throws Exception
-   {
-      IDBlockRequest request = new IDBlockRequest(23);
-      addVersion(request);
-      
-      AbstractPacketCodec codec = new IDBlockRequestCodec();
-      SimpleRemotingBuffer buffer = encode(request, codec);
-      checkHeader(buffer, request);
-      checkBody(buffer, request.getSize());
-      buffer.rewind();
-
-      AbstractPacket decodedPacket = codec.decode(buffer);
-
-      assertTrue(decodedPacket instanceof IDBlockRequest);
-      IDBlockRequest decodedRequest = (IDBlockRequest) decodedPacket;
-      assertEquals(REQ_IDBLOCK, decodedRequest.getType());
-      assertEquals(request.getSize(), decodedRequest.getSize());
-   }
-
-   public void testIDBlockResponse() throws Exception
-   {
-      IDBlockResponse response = new IDBlockResponse(randomLong(),
-            randomLong() * 2);
-      addVersion(response);
-      
-      AbstractPacketCodec codec = new IDBlockResponseCodec();
-      SimpleRemotingBuffer buffer = encode(response, codec);
-      checkHeader(buffer, response);
-      checkBody(buffer, response.getLow(), response.getHigh());
-      buffer.rewind();
-
-      AbstractPacket decodedPacket = codec.decode(buffer);
-
-      assertTrue(decodedPacket instanceof IDBlockResponse);
-      IDBlockResponse decodedResponse = (IDBlockResponse) decodedPacket;
-      assertEquals(RESP_IDBLOCK, decodedResponse.getType());
-      assertEquals(response.getLow(), decodedResponse.getLow());
-      assertEquals(response.getHigh(), decodedResponse.getHigh());
-   }
-
    public void testSendMessage() throws Exception
    {
-      SendMessage packet = new SendMessage(new MessageImpl(), true,
+      SendMessage packet = new SendMessage(new MessageImpl(), 
             randomLong());
       addVersion(packet);
       
       AbstractPacketCodec codec = new SendMessageCodec();
       SimpleRemotingBuffer buffer = encode(packet, codec);
       checkHeader(buffer, packet);
-      checkBody(buffer, encodeMessage(packet.getMessage()), packet.checkForDuplicates(), packet.getSequence());
+      checkBody(buffer, encodeMessage(packet.getMessage()), packet.getSequence());
       buffer.rewind();
 
       AbstractPacket p = codec.decode(buffer);
@@ -702,8 +611,6 @@ public class PacketTypeTest extends TestCase
       assertTrue(p instanceof SendMessage);
       SendMessage decodedPacket = (SendMessage) p;
       assertEquals(MSG_SENDMESSAGE, decodedPacket.getType());
-      assertEquals(packet.checkForDuplicates(), decodedPacket
-            .checkForDuplicates());
       assertEquals(packet.getSequence(), decodedPacket.getSequence());
       assertEquals(packet.getMessage().getMessageID(), decodedPacket
             .getMessage().getMessageID());
@@ -711,18 +618,16 @@ public class PacketTypeTest extends TestCase
 
    public void testCreateConsumerRequest() throws Exception
    {
-      JBossDestination destination = new JBossQueue(
-            "testCreateConsumerRequest", true);
+      Destination destination = new DestinationImpl(DestinationType.QUEUE, "testCreateConsumerRequest", false);
       CreateConsumerRequest request = new CreateConsumerRequest(destination,
-            "color = 'red'", false, "subscription", false, false);
+            "color = 'red'", false, "subscription", false);
       addVersion(request);
       
       AbstractPacketCodec codec = new CreateConsumerRequestCodec();
       SimpleRemotingBuffer buffer = encode(request, codec);
       checkHeader(buffer, request);
       checkBody(buffer, AbstractPacketCodec.encode(destination), request.getSelector(),
-            request.isNoLocal(), request.getSubscriptionName(), request.isConnectionConsumer(),
-            request.isAutoFlowControl());
+            request.isNoLocal(), request.getSubscriptionName(), request.isConnectionConsumer());
       buffer.rewind();
 
       AbstractPacket decodedPacket = codec.decode(buffer);
@@ -736,9 +641,7 @@ public class PacketTypeTest extends TestCase
       assertEquals(request.getSubscriptionName(), decodedRequest
             .getSubscriptionName());
       assertEquals(request.isConnectionConsumer(), decodedRequest
-            .isConnectionConsumer());
-      assertEquals(request.isAutoFlowControl(), decodedRequest
-            .isAutoFlowControl());
+            .isConnectionConsumer());;
    }
 
    public void testCreateDestinationRequest() throws Exception
@@ -764,8 +667,8 @@ public class PacketTypeTest extends TestCase
 
    public void testCreateDestinationResponseForQueue() throws Exception
    {
-      JBossDestination destination = new JBossQueue("testCreateQueueResponse",
-            true);
+      JBossQueue destination = new JBossQueue("testCreateQueueResponse");
+
       CreateDestinationResponse response = new CreateDestinationResponse(
             destination);
       addVersion(response);
@@ -773,7 +676,7 @@ public class PacketTypeTest extends TestCase
       AbstractPacketCodec codec = new CreateDestinationResponseCodec();
       SimpleRemotingBuffer buffer = encode(response, codec);
       checkHeader(buffer, response);
-      checkBody(buffer, AbstractPacketCodec.encode(destination));
+      checkBody(buffer, AbstractPacketCodec.encodeJBossDestination(destination));
       buffer.rewind();
 
       AbstractPacket decodedPacket = codec.decode(buffer);
@@ -787,8 +690,8 @@ public class PacketTypeTest extends TestCase
 
    public void testCreateDestinationResponseForTopic() throws Exception
    {
-      JBossDestination destination = new JBossTopic(
-            "testCreateDestinationResponseForTopic");
+      JBossTopic destination = new JBossTopic("testCreateDestinationResponseForTopic");
+
       CreateDestinationResponse response = new CreateDestinationResponse(
             destination);
       addVersion(response);
@@ -796,7 +699,7 @@ public class PacketTypeTest extends TestCase
       AbstractPacketCodec codec = new CreateDestinationResponseCodec();
       SimpleRemotingBuffer buffer = encode(response, codec);
       checkHeader(buffer, response);
-      checkBody(buffer, AbstractPacketCodec.encode(destination));
+      checkBody(buffer, AbstractPacketCodec.encodeJBossDestination(destination));
       buffer.rewind();
 
       AbstractPacket decodedPacket = codec.decode(buffer);
@@ -1043,13 +946,13 @@ public class PacketTypeTest extends TestCase
       MessagingXid xid = new MessagingXid(randomBytes(), randomInt(), randomBytes());
       TransactionRequest tr = new TransactionRequest(
             TransactionRequest.ONE_PHASE_COMMIT_REQUEST, xid, tx);
-      SendTransactionMessage message = new SendTransactionMessage(tr, true);
+      SendTransactionMessage message = new SendTransactionMessage(tr);
       addVersion(message);
       
       AbstractPacketCodec codec = new SendTransactionMessageCodec();
       SimpleRemotingBuffer buffer = encode(message, codec);
       checkHeader(buffer, message);
-      checkBody(buffer, encodeTransactionRequest(tr), message.checkForDuplicates());
+      checkBody(buffer, encodeTransactionRequest(tr));
       buffer.rewind();
 
       AbstractPacket decodedPacket = codec.decode(buffer);
@@ -1057,8 +960,6 @@ public class PacketTypeTest extends TestCase
       assertTrue(decodedPacket instanceof SendTransactionMessage);
       SendTransactionMessage decodedMessage = (SendTransactionMessage) decodedPacket;
       assertEquals(MSG_SENDTRANSACTION, decodedMessage.getType());
-      assertEquals(message.checkForDuplicates(), decodedMessage
-            .checkForDuplicates());
       TransactionRequest expectedTxReq = message.getTransactionRequest();
       TransactionRequest actualTxReq = decodedMessage.getTransactionRequest();
       assertEquals(expectedTxReq.getRequestType(), actualTxReq.getRequestType());
@@ -1162,37 +1063,7 @@ public class PacketTypeTest extends TestCase
       assertEquals(MSG_SETCLIENTID, decodedMessage.getType());
       assertEquals(message.getClientID(), decodedMessage.getClientID());
    }
-
-   public void testRecoverDeliveriesMessage() throws Exception
-   {
-      List<DeliveryRecovery> deliveries = new ArrayList<DeliveryRecovery>();
-      deliveries.add(new DeliveryRecovery(randomLong(), randomLong(),
-            randomString()));
-      deliveries.add(new DeliveryRecovery(randomLong(), randomLong(),
-            randomString()));
-      deliveries.add(new DeliveryRecovery(randomLong(), randomLong(),
-            randomString()));
-      RecoverDeliveriesMessage message = new RecoverDeliveriesMessage(
-            deliveries, randomString());
-      addVersion(message);
-      
-      AbstractPacketCodec codec = new RecoverDeliveriesMessageCodec();
-      SimpleRemotingBuffer buffer = encode(message, codec);
-      checkHeader(buffer, message);
-      checkBody(buffer, deliveries.size(), RecoverDeliveriesMessageCodec.encode(deliveries),
-            message.getSessionID());
-      buffer.rewind();
-
-      AbstractPacket decodedPacket = codec.decode(buffer);
-
-      assertTrue(decodedPacket instanceof RecoverDeliveriesMessage);
-      RecoverDeliveriesMessage decodedMessage = (RecoverDeliveriesMessage) decodedPacket;
-      assertEquals(MSG_RECOVERDELIVERIES, decodedMessage.getType());
-      assertEqualsDeliveries(message.getDeliveries(), decodedMessage
-            .getDeliveries());
-      assertEquals(message.getSessionID(), decodedMessage.getSessionID());
-   }
-
+ 
    public void testCancelDeliveryMessage() throws Exception
    {
       Cancel cancel = new DefaultCancel(randomLong(), randomInt(), true, false);
@@ -1243,8 +1114,7 @@ public class PacketTypeTest extends TestCase
 
    public void testCreateBrowserRequest() throws Exception
    {
-      JBossDestination destination = new JBossQueue("testCreateBrowserRequest",
-            true);
+      Destination destination = new DestinationImpl(DestinationType.QUEUE, "testCreateBrowserRequest", false);
       CreateBrowserRequest request = new CreateBrowserRequest(destination,
             "color = 'red'");
       addVersion(request);
@@ -1444,8 +1314,7 @@ public class PacketTypeTest extends TestCase
 
    public void testAddTemporaryDestinationMessage() throws Exception
    {
-      JBossDestination destination = new JBossQueue(
-            "testAddTemporaryDestinationMessage", true);
+      Destination destination = new DestinationImpl(DestinationType.QUEUE, "testAddTemporaryDestinationMessage", false);
       AddTemporaryDestinationMessage message = new AddTemporaryDestinationMessage(
             destination);
       addVersion(message);
@@ -1466,8 +1335,7 @@ public class PacketTypeTest extends TestCase
 
    public void testDeleteTemporaryDestinationMessage() throws Exception
    {
-      JBossDestination destination = new JBossQueue(
-            "testDeleteTemporaryDestinationMessage", true);
+      Destination destination = new DestinationImpl(DestinationType.QUEUE, "testDeleteTemporaryDestinationMessage", false);;
       DeleteTemporaryDestinationMessage message = new DeleteTemporaryDestinationMessage(
             destination);
       addVersion(message);

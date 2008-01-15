@@ -36,8 +36,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.jboss.jms.destination.JBossDestination;
-
 /**
  * A StreamUtils
  *
@@ -78,9 +76,7 @@ public class StreamUtils
    public static final byte LIST = 11;
    
    public static final byte SERIALIZABLE = 12;
-   
-   public static final byte DESTINATION = 13;
-           
+            
    public static Object readObject(DataInputStream in, boolean longStrings)
       throws IOException, ClassNotFoundException
    {
@@ -94,22 +90,17 @@ public class StreamUtils
             break;
          }
          case STRING :
-            if (longStrings)
-            {
-               //We cope with >= 64K Strings
-               value = SafeUTF.safeReadUTF(in);
-            }
-            else
-            {
-               //Limited to < 64K Strings
-               value = in.readUTF();
-            }
-            break;
-         case DESTINATION:
+         if (longStrings)
          {
-            value = JBossDestination.readDestination(in);
-            break;
+            //We cope with >= 64K Strings
+            value = SafeUTF.safeReadUTF(in);
          }
+         else
+         {
+            //Limited to < 64K Strings
+            value = in.readUTF();
+         }
+         break;      
          case MAP:
          {
             value = readMap(in, false);
@@ -183,11 +174,6 @@ public class StreamUtils
             //Limited to < 64K Strings
             out.writeUTF((String)object);
          }
-      }
-      else if (object instanceof JBossDestination)
-      {
-         out.writeByte(DESTINATION);
-         JBossDestination.writeDestination(out, (JBossDestination)object);
       }
       else if (containerTypes && object instanceof Map)
       {

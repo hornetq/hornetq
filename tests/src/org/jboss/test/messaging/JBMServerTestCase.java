@@ -21,25 +21,6 @@
    */
 package org.jboss.test.messaging;
 
-import org.jboss.jms.client.JBossConnectionFactory;
-import org.jboss.jms.message.MessageIdGeneratorFactory;
-import org.jboss.jms.server.JmsServer;
-import org.jboss.jms.server.JmsServerStatistics;
-import org.jboss.jms.server.microcontainer.JBMBootstrapServer;
-import org.jboss.jms.server.security.Role;
-import org.jboss.jms.tx.ResourceManagerFactory;
-import org.jboss.messaging.core.contract.PersistenceManager;
-import org.jboss.test.messaging.tools.ServerManagement;
-import org.jboss.test.messaging.tools.container.DatabaseClearer;
-import org.jboss.test.messaging.tools.container.Server;
-import org.jboss.tm.TransactionManagerLocator;
-
-import javax.jms.Queue;
-import javax.jms.Topic;
-import javax.management.ObjectName;
-import javax.naming.InitialContext;
-import javax.sql.DataSource;
-import javax.transaction.TransactionManager;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -47,6 +28,24 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+
+import javax.jms.Queue;
+import javax.jms.Topic;
+import javax.management.ObjectName;
+import javax.naming.InitialContext;
+import javax.sql.DataSource;
+import javax.transaction.TransactionManager;
+
+import org.jboss.jms.client.JBossConnectionFactory;
+import org.jboss.jms.server.security.Role;
+import org.jboss.jms.tx.ResourceManagerFactory;
+import org.jboss.messaging.core.MessagingServer;
+import org.jboss.messaging.core.MessagingServerManagement;
+import org.jboss.messaging.microcontainer.JBMBootstrapServer;
+import org.jboss.test.messaging.tools.ServerManagement;
+import org.jboss.test.messaging.tools.container.DatabaseClearer;
+import org.jboss.test.messaging.tools.container.Server;
+import org.jboss.tm.TransactionManagerLocator;
 
 /**
  * @author <a href="mailto:adrian@jboss.org">Adrian Brock</a>
@@ -93,6 +92,14 @@ public class JBMServerTestCase extends JBMBaseTestCase
    protected void setUp() throws Exception
    {
       super.setUp();
+      
+      String banner =
+         "####################################################### Start " +
+         (isRemote() ? "REMOTE" : "IN-VM") + " test: " + getName();
+
+      log.info(banner);
+
+    
       if (getClearDatabase())
       {
          clearDatabase();
@@ -138,16 +145,16 @@ public class JBMServerTestCase extends JBMBaseTestCase
                }
                else
                {
-                  try
-                  {
+//                  try
+//                  {
                      servers.get(i).start(getContainerConfig(), getConfiguration(), getClearDatabase() && i == 0);
-                  }
-                  catch (Exception e)
-                  {
-                     //if we are remote we will need recreating if we get here
-                     servers.set(i, ServerManagement.create(i));
-                     servers.get(i).start(getContainerConfig(), getConfiguration(), getClearDatabase() && i == 0);
-                  }
+//                  }
+//                  catch (Exception e)
+//                  {
+//                     //if we are remote we will need recreating if we get here
+//                     servers.set(i, ServerManagement.create(i));
+//                     servers.get(i).start(getContainerConfig(), getConfiguration(), getClearDatabase() && i == 0);
+//                  }
                }
                //deploy the objects for this test
                deployAdministeredObjects(i);
@@ -182,7 +189,13 @@ public class JBMServerTestCase extends JBMBaseTestCase
          servers.get(i).clear();
       }
       ResourceManagerFactory.instance.clear();
-      MessageIdGeneratorFactory.instance.clear();
+      
+      if (isRemote())
+      {
+         // log the test start in the remote log, this will make hunting through logs so much easier
+         ServerManagement.log(ServerManagement.INFO, banner);
+      }
+      
    }
 
 
@@ -193,6 +206,11 @@ public class JBMServerTestCase extends JBMBaseTestCase
       assertEquals(0, servers.get(0).getResourceManagerFactorySize());
    }
 
+   protected boolean isRemote()
+   {
+      return ServerManagement.isRemote();
+   }
+   
    public void stop() throws Exception
    {
       for (int i = 0; i < getServerCount(); i++)
@@ -207,6 +225,16 @@ public class JBMServerTestCase extends JBMBaseTestCase
       for (int i = 0; i < getServerCount(); i++)
       {
          servers.get(i).start(getContainerConfig(), getConfiguration(), i != 0);
+      }
+      //deployAdministeredObjects();
+   }
+   
+   public void startNoDelete() throws Exception
+   {
+      System.setProperty("java.naming.factory.initial", getContextFactory());
+      for (int i = 0; i < getServerCount(); i++)
+      {
+         servers.get(i).start(getContainerConfig(), getConfiguration(), false);
       }
       //deployAdministeredObjects();
    }
@@ -257,26 +285,26 @@ public class JBMServerTestCase extends JBMBaseTestCase
 
    protected void deployAndLookupAdministeredObjects() throws Exception
    {
-      deployTopic("Topic1");
-      deployTopic("Topic2");
-      deployTopic("Topic3");
-      deployQueue("Queue1");
-      deployQueue("Queue2");
-      deployQueue("Queue3");
-      deployQueue("Queue4");
+      createTopic("Topic1");
+      createTopic("Topic2");
+      createTopic("Topic3");
+      createQueue("Queue1");
+      createQueue("Queue2");
+      createQueue("Queue3");
+      createQueue("Queue4");
 
       lookUp();
    }
 
    protected void deployAdministeredObjects(int i) throws Exception
    {
-      deployTopic("Topic1", i);
-      deployTopic("Topic2", i);
-      deployTopic("Topic3", i);
-      deployQueue("Queue1", i);
-      deployQueue("Queue2", i);
-      deployQueue("Queue3", i);
-      deployQueue("Queue4", i);
+      createTopic("Topic1", i);
+      createTopic("Topic2", i);
+      createTopic("Topic3", i);
+      createQueue("Queue1", i);
+      createQueue("Queue2", i);
+      createQueue("Queue3", i);
+      createQueue("Queue4", i);
    }
 
    private void lookUp()
@@ -302,13 +330,13 @@ public class JBMServerTestCase extends JBMBaseTestCase
       removeAllMessages("Queue3", true);
       removeAllMessages("Queue4", true);
 
-      undeployTopic("Topic1");
-      undeployTopic("Topic2");
-      undeployTopic("Topic3");
-      undeployQueue("Queue1");
-      undeployQueue("Queue2");
-      undeployQueue("Queue3");
-      undeployQueue("Queue4");
+      destroyTopic("Topic1");
+      destroyTopic("Topic2");
+      destroyTopic("Topic3");
+      destroyQueue("Queue1");
+      destroyQueue("Queue2");
+      destroyQueue("Queue3");
+      destroyQueue("Queue4");
    }
 
 
@@ -317,19 +345,19 @@ public class JBMServerTestCase extends JBMBaseTestCase
          return new String[]{"datasource.xml", "transaction-manager.xml", "invm-beans.xml", "jbm-beans.xml"};
    }
 
-   protected JmsServer getJmsServer() throws Exception
+   protected MessagingServer getJmsServer() throws Exception
    {
-      return servers.get(0).getJmsServer();
+      return servers.get(0).getMessagingServer();
    }
 
-   protected JmsServerStatistics getJmsServerStatistics() throws Exception
+   protected MessagingServerManagement getJmsServerStatistics() throws Exception
    {
-      return servers.get(0).getJmsServerStatistics();
+      return servers.get(0).getMessagingServerManagement();
    }
 
-   protected JmsServerStatistics getJmsServerStatistics(int serverId) throws Exception
+   protected MessagingServerManagement getJmsServerStatistics(int serverId) throws Exception
    {
-      return servers.get(serverId).getJmsServerStatistics();
+      return servers.get(serverId).getMessagingServerManagement();
    }
 
    /*protected void tearDown() throws Exception
@@ -367,133 +395,181 @@ public class JBMServerTestCase extends JBMBaseTestCase
    {
       servers.get(0).configureSecurityForDestination(destName, isQueue, roles);
    }
-
-   public void deployQueue(String name) throws Exception
+   
+   public void createQueue(String name) throws Exception
    {
       for (int i = 0; i < getServerCount(); i++)
       {
-         servers.get(i).deployQueue(name, null, i != 0);
+         servers.get(i).createQueue(name, null);
       }
    }
-
-   public void deployQueue(String name, String jndiName) throws Exception
+   
+   public void createTopic(String name) throws Exception
    {
       for (int i = 0; i < getServerCount(); i++)
       {
-         servers.get(i).deployQueue(name, jndiName, i != 0);
+         servers.get(i).createTopic(name, null);
       }
    }
-
-   public void deployQueue(String name, int server) throws Exception
-   {
-      servers.get(server).deployQueue(name, null, true);
-
-   }
-
-   public void deployQueue(String name, int fullSize, int pageSize, int downCacheSize) throws Exception
+   
+   public void destroyQueue(String name) throws Exception
    {
       for (int i = 0; i < getServerCount(); i++)
       {
-         servers.get(i).deployQueue(name, null, fullSize, pageSize, downCacheSize, i != 0);
+         servers.get(i).destroyQueue(name, null);
       }
    }
-
-   public void deployQueue(String name, String jndiName, int fullSize, int pageSize,
-                           int downCacheSize, int serverIndex, boolean clustered) throws Exception
-   {
-      servers.get(serverIndex).deployQueue(name, jndiName, fullSize, pageSize, downCacheSize, clustered);
-
-   }
-
-   public void deployTopic(String name) throws Exception
+   
+   public void destroyTopic(String name) throws Exception
    {
       for (int i = 0; i < getServerCount(); i++)
       {
-         servers.get(i).deployTopic(name, null, i != 0);
+         servers.get(i).destroyTopic(name, null);
       }
    }
-
-   public void deployTopic(String name, String jndiName) throws Exception
+   
+   
+   public void createQueue(String name, int i) throws Exception
    {
-      for (int i = 0; i < getServerCount(); i++)
-      {
-         servers.get(i).deployTopic(name, jndiName, i != 0);
-      }
+      servers.get(i).createQueue(name, null);      
+   }
+   
+   public void createTopic(String name, int i) throws Exception
+   {
+      servers.get(i).createTopic(name, null);      
+   }
+   
+   public void destroyQueue(String name, int i) throws Exception
+   {
+      servers.get(i).destroyQueue(name, null);      
    }
 
-   public void deployTopic(String name, int server) throws Exception
-   {
-      servers.get(server).deployTopic(name, null, server != 0);
-
-   }
-
-   public void deployTopic(String name, int fullSize, int pageSize, int downCacheSize) throws Exception
-   {
-      for (int i = 0; i < getServerCount(); i++)
-      {
-         servers.get(i).deployTopic(name, null, fullSize, pageSize, downCacheSize, i != 0);
-      }
-   }
-
-   public void deployTopic(String name, String jndiName, int fullSize, int pageSize,
-                           int downCacheSize, int serverIndex, boolean clustered) throws Exception
-   {
-      servers.get(serverIndex).deployTopic(name, jndiName, fullSize, pageSize, downCacheSize, clustered);
-
-   }
-
-   public void undeployQueue(String name) throws Exception
-   {
-      for (int i = 0; i < getServerCount(); i++)
-      {
-         try
-         {
-            servers.get(i).undeployDestination(true, name);
-         }
-         catch (Exception e)
-         {
-            log.info("did not undeploy " + name);
-         }
-      }
-   }
-
-   public void undeployQueue(String name, int server) throws Exception
-   {
-      servers.get(server).undeployDestination(true, name);
-
-   }
-
-   public void undeployTopic(String name) throws Exception
-   {
-      for (int i = 0; i < getServerCount(); i++)
-      {
-         try
-         {
-            servers.get(i).undeployDestination(false, name);
-         }
-         catch (Exception e)
-         {
-            log.info("did not undeploy " + name);
-         }
-      }
-   }
-
-   public void undeployTopic(String name, int server) throws Exception
-   {
-      servers.get(server).undeployDestination(false, name);
-
-   }
-
-   public static boolean destroyTopic(String name) throws Exception
-   {
-      return servers.get(0).undeployDestinationProgrammatically(false, name);
-   }
-
-   public static boolean destroyQueue(String name) throws Exception
-   {
-      return servers.get(0).undeployDestinationProgrammatically(true, name);
-   }
-
+//   public void deployQueue(String name) throws Exception
+//   {
+//      for (int i = 0; i < getServerCount(); i++)
+//      {
+//         servers.get(i).deployQueue(name, null, i != 0);
+//      }
+//   }
+//
+//   public void deployQueue(String name, String jndiName) throws Exception
+//   {
+//      for (int i = 0; i < getServerCount(); i++)
+//      {
+//         servers.get(i).deployQueue(name, jndiName, i != 0);
+//      }
+//   }
+//
+//   public void deployQueue(String name, int server) throws Exception
+//   {
+//      servers.get(server).deployQueue(name, null, true);
+//
+//   }
+//
+//   public void deployQueue(String name, int fullSize, int pageSize, int downCacheSize) throws Exception
+//   {
+//      for (int i = 0; i < getServerCount(); i++)
+//      {
+//         servers.get(i).deployQueue(name, null, fullSize, pageSize, downCacheSize, i != 0);
+//      }
+//   }
+//
+//   public void deployQueue(String name, String jndiName, int fullSize, int pageSize,
+//                           int downCacheSize, int serverIndex, boolean clustered) throws Exception
+//   {
+//      servers.get(serverIndex).deployQueue(name, jndiName, fullSize, pageSize, downCacheSize, clustered);
+//
+//   }
+//
+//   public void deployTopic(String name) throws Exception
+//   {
+//      for (int i = 0; i < getServerCount(); i++)
+//      {
+//         servers.get(i).deployTopic(name, null, i != 0);
+//      }
+//   }
+//
+//   public void deployTopic(String name, String jndiName) throws Exception
+//   {
+//      for (int i = 0; i < getServerCount(); i++)
+//      {
+//         servers.get(i).deployTopic(name, jndiName, i != 0);
+//      }
+//   }
+//
+//   public void deployTopic(String name, int server) throws Exception
+//   {
+//      servers.get(server).deployTopic(name, null, server != 0);
+//
+//   }
+//
+//   public void deployTopic(String name, int fullSize, int pageSize, int downCacheSize) throws Exception
+//   {
+//      for (int i = 0; i < getServerCount(); i++)
+//      {
+//         servers.get(i).deployTopic(name, null, fullSize, pageSize, downCacheSize, i != 0);
+//      }
+//   }
+//
+//   public void deployTopic(String name, String jndiName, int fullSize, int pageSize,
+//                           int downCacheSize, int serverIndex, boolean clustered) throws Exception
+//   {
+//      servers.get(serverIndex).deployTopic(name, jndiName, fullSize, pageSize, downCacheSize, clustered);
+//
+//   }
+//
+//   public void undeployQueue(String name) throws Exception
+//   {
+//      for (int i = 0; i < getServerCount(); i++)
+//      {
+//         try
+//         {
+//            servers.get(i).undeployDestination(true, name);
+//         }
+//         catch (Exception e)
+//         {
+//            log.info("did not undeploy " + name);
+//         }
+//      }
+//   }
+//
+//   public void undeployQueue(String name, int server) throws Exception
+//   {
+//      servers.get(server).undeployDestination(true, name);
+//
+//   }
+//
+//   public void undeployTopic(String name) throws Exception
+//   {
+//      for (int i = 0; i < getServerCount(); i++)
+//      {
+//         try
+//         {
+//            servers.get(i).undeployDestination(false, name);
+//         }
+//         catch (Exception e)
+//         {
+//            log.info("did not undeploy " + name);
+//         }
+//      }
+//   }
+//
+//   public void undeployTopic(String name, int server) throws Exception
+//   {
+//      servers.get(server).undeployDestination(false, name);
+//
+//   }
+//
+//   public static boolean destroyTopic(String name) throws Exception
+//   {
+//      return servers.get(0).undeployDestinationProgrammatically(false, name);
+//   }
+//
+//   public static boolean destroyQueue(String name) throws Exception
+//   {
+//      return servers.get(0).undeployDestinationProgrammatically(true, name);
+//   }
+//
 
    public boolean checkNoMessageData()
    {
@@ -554,18 +630,18 @@ public class JBMServerTestCase extends JBMBaseTestCase
    }
 
 
-   public PersistenceManager getPersistenceManager()
-   {
-      try
-      {
-         return servers.get(0).getPersistenceManager();
-      }
-      catch (Exception e)
-      {
-         //will never happen as always is local
-         return null;
-      }
-   }
+//   public PersistenceManager getPersistenceManager()
+//   {
+//      try
+//      {
+//         return servers.get(0).getPersistenceManager();
+//      }
+//      catch (Exception e)
+//      {
+//         //will never happen as always is local
+//         return null;
+//      }
+//   }
 
    protected void dropAllTables() throws Exception
    {
@@ -673,7 +749,6 @@ public class JBMServerTestCase extends JBMBaseTestCase
    protected boolean assertRemainingMessages(int expected) throws Exception
    {
       Integer messageCount = servers.get(0).getMessageCountForQueue("Queue1");
-      log.trace("There are " + messageCount + " messages");
 
       assertEquals(expected, messageCount.intValue());
       return expected == messageCount.intValue();

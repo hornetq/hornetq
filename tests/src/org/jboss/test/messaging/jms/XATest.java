@@ -1139,7 +1139,7 @@ public class XATest extends JBMServerTestCase
 
    public void test2PCSendCommit1PCOptimization() throws Exception
    {
-      //Since both resources have some RM, TM will probably use 1PC optimization
+      //Since both resources have same RM, TM will probably use 1PC optimization
 
       XAConnection conn = null;
       Connection conn2 = null;
@@ -1230,7 +1230,9 @@ public class XATest extends JBMServerTestCase
          tx.delistResource(res, XAResource.TMSUCCESS);
          tx.delistResource(res2, XAResource.TMSUCCESS);
 
+         log.info("Committing***");
          tm.commit();
+         log.info("Committed****");
 
          conn2 = cf.createConnection();
          conn2.start();

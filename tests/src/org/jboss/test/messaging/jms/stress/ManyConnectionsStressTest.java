@@ -64,14 +64,14 @@ public class ManyConnectionsStressTest extends JBMServerTestCase
       
       ic = getInitialContext();
       
-      deployTopic("StressTestTopic");
+      createTopic("StressTestTopic");
 
       log.debug("setup done");
    }
 
    protected void tearDown() throws Exception
    {
-      undeployTopic("StressTestTopic");
+      destroyTopic("StressTestTopic");
       
       ic.close();
       

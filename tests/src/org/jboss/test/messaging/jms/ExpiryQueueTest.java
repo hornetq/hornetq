@@ -105,11 +105,11 @@ public class ExpiryQueueTest extends JMSTestCase
 
       try
       {
-         deployQueue("DefaultExpiry");
+         createQueue("DefaultExpiry");
 
-         deployQueue("OverrideExpiry");
+         createQueue("OverrideExpiry");
 
-         deployQueue("expTestQueue");
+         createQueue("expTestQueue");
 
          String defaultExpiryObjectName = "DefaultExpiry";
 
@@ -232,11 +232,11 @@ public class ExpiryQueueTest extends JMSTestCase
       { //
          //ServerManagement.setAttribute(serverPeerObjectName, "DefaultExpiryQueue", "jboss.messaging.destination:service=Queue,name=ExpiryQueue");
 
-         undeployQueue("DefaultDLQ");
+         destroyQueue("DefaultDLQ");
 
-         undeployQueue("OverrideDLQ");
+         destroyQueue("OverrideDLQ");
 
-         undeployQueue("TestQueue");
+         destroyQueue("TestQueue");
 
          if (conn != null)
          {
@@ -253,7 +253,7 @@ public class ExpiryQueueTest extends JMSTestCase
 
       try
       {
-         deployQueue("ExpiryQueue");
+         createQueue("ExpiryQueue");
 
          String defaultExpiryObjectName = "jboss.messaging.destination:service=Queue,name=ExpiryQueue";
 
@@ -362,7 +362,7 @@ public class ExpiryQueueTest extends JMSTestCase
       }
       finally
       {
-         undeployQueue("ExpiryQueue");
+         destroyQueue("ExpiryQueue");
 
          if (conn != null)
          {
@@ -468,7 +468,7 @@ public class ExpiryQueueTest extends JMSTestCase
       try
       {
 
-         deployQueue("ExpiryQueue");
+         createQueue("ExpiryQueue");
 
          Queue expiryQueue = (Queue) ic.lookup("/queue/ExpiryQueue");
 
@@ -523,7 +523,7 @@ public class ExpiryQueueTest extends JMSTestCase
       }
       finally
       {
-         undeployQueue("ExpiryQueue");
+         destroyQueue("ExpiryQueue");
 
          if (conn != null) conn.close();
       }
@@ -531,7 +531,7 @@ public class ExpiryQueueTest extends JMSTestCase
 
    public void testExpirationTransfer() throws Exception
    {
-      deployQueue("ExpiryQueue");
+      createQueue("ExpiryQueue");
 
       Object originalValue = ServerManagement.getAttribute(ServerManagement.getServerPeerObjectName(), "DefaultExpiryQueue");
 

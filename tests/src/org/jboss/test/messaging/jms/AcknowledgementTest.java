@@ -156,7 +156,7 @@ public class AcknowledgementTest extends JMSTestCase
          m2 = (TextMessage)cons.receive(3000);
          assertNotNull(m2);
          assertEquals("testing123", m2.getText());
-         
+           
          conn.close();
          
          conn = cf.createTopicConnection();
@@ -165,7 +165,9 @@ public class AcknowledgementTest extends JMSTestCase
          //test 2
          
          TopicSession newsess = conn.createTopicSession(true, 0);
+         
          TopicPublisher newpub = newsess.createPublisher(topic1);
+                  
          TopicSubscriber newcons = newsess.createSubscriber(topic1);
          
          Message m3 = newsess.createTextMessage("testing456");
@@ -1029,7 +1031,6 @@ public class AcknowledgementTest extends JMSTestCase
          {
             conn.close();
          }
-         undeployQueue("MyQueue2");
       }
    }
 

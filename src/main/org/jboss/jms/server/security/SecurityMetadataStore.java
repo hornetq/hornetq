@@ -21,18 +21,6 @@
   */
 package org.jboss.jms.server.security;
 
-import org.jboss.jms.server.SecurityStore;
-import org.jboss.jms.server.ServerPeer;
-import org.jboss.logging.Logger;
-import org.jboss.security.AuthenticationManager;
-import org.jboss.security.RealmMapping;
-import org.jboss.security.SimplePrincipal;
-import org.jboss.security.SubjectSecurityManager;
-
-import javax.jms.JMSSecurityException;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
-import javax.security.auth.Subject;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.security.Principal;
@@ -40,6 +28,19 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+
+import javax.jms.JMSSecurityException;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+import javax.security.auth.Subject;
+
+import org.jboss.jms.server.SecurityStore;
+import org.jboss.logging.Logger;
+import org.jboss.messaging.core.MessagingServer;
+import org.jboss.security.AuthenticationManager;
+import org.jboss.security.RealmMapping;
+import org.jboss.security.SimplePrincipal;
+import org.jboss.security.SubjectSecurityManager;
 
 /**
  * A security metadate store for JMS. Stores security information for destinations and delegates
@@ -76,19 +77,19 @@ public class SecurityMetadataStore implements SecurityStore
 
    private String suckerPassword;
 
-   private ServerPeer serverPeer;
+   private MessagingServer messagingServer;
 
    // Static --------------------------------------------------------
    
    // Constructors --------------------------------------------------
 
-   public SecurityMetadataStore(ServerPeer serverPeer)
+   public SecurityMetadataStore(MessagingServer messagingServer)
    {
-      this.serverPeer = serverPeer;
+      this.messagingServer = messagingServer;
       queueSecurityConf = new HashMap<String, SecurityMetadata>();
       topicSecurityConf = new HashMap<String, SecurityMetadata>();
       //add a property change listener then we can update the default security config
-      serverPeer.getConfiguration().addPropertyChangeListener(new PropertyChangeListener()
+      messagingServer.getConfiguration().addPropertyChangeListener(new PropertyChangeListener()
          {
             public void propertyChange(PropertyChangeEvent evt)
             {
@@ -132,12 +133,12 @@ public class SecurityMetadataStore implements SecurityStore
    private SecurityMetadata getDefaultSecurityConfig(String destName)
    {
       SecurityMetadata m;
-      if (serverPeer.getConfiguration().getSecurityConfig() != null)
+      if (messagingServer.getConfiguration().getSecurityConfig() != null)
       {
          log.debug("No SecurityMetadadata was available for " + destName + ", using default security config");
          try
          {
-            m = new SecurityMetadata(serverPeer.getConfiguration().getSecurityConfig());
+            m = new SecurityMetadata(messagingServer.getConfiguration().getSecurityConfig());
          }
          catch (Exception e)
          {
@@ -272,7 +273,7 @@ public class SecurityMetadataStore implements SecurityStore
 
       try
       {
-         Object mgr = ic.lookup(serverPeer.getConfiguration().getSecurityDomain());
+         Object mgr = ic.lookup(messagingServer.getConfiguration().getSecurityDomain());
 
          log.debug("JaasSecurityManager is " + mgr);
 
@@ -284,12 +285,12 @@ public class SecurityMetadataStore implements SecurityStore
       catch (NamingException e)
       {
          // Apparently there is no security context, try adding java:/jaas
-         log.warn("Failed to lookup securityDomain " + serverPeer.getConfiguration().getSecurityDomain(), e);
+         log.warn("Failed to lookup securityDomain " + messagingServer.getConfiguration().getSecurityDomain(), e);
 
-         if (!serverPeer.getConfiguration().getSecurityDomain().startsWith("java:/jaas/"))
+         if (!messagingServer.getConfiguration().getSecurityDomain().startsWith("java:/jaas/"))
          {
             authenticationManager =
-               (SubjectSecurityManager)ic.lookup("java:/jaas/" + serverPeer.getConfiguration().getSecurityDomain());
+               (SubjectSecurityManager)ic.lookup("java:/jaas/" + messagingServer.getConfiguration().getSecurityDomain());
          }
          else
          {

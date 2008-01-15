@@ -73,7 +73,7 @@ public class JBossStreamMessage extends JBossMessage implements StreamMessage
       super(JBossStreamMessage.TYPE);
    }
    
-   public JBossStreamMessage(org.jboss.messaging.newcore.Message message, long deliveryID, int deliveryCount)
+   public JBossStreamMessage(org.jboss.messaging.core.Message message, long deliveryID, int deliveryCount)
    {
       super(message, deliveryID, deliveryCount);
    }

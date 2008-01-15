@@ -25,8 +25,7 @@ import java.util.AbstractSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
-
-import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * 
@@ -47,10 +46,10 @@ public class ConcurrentHashSet<E> extends AbstractSet<E>
    
    public ConcurrentHashSet()
    {
-      theMap = new ConcurrentHashMap();
+      theMap = new ConcurrentHashMap<E, Object>();
    }
    
-   public ConcurrentHashSet(Set other)
+   public ConcurrentHashSet(Set<E> other)
    {
    	this();
    	
@@ -59,7 +58,7 @@ public class ConcurrentHashSet<E> extends AbstractSet<E>
    
    public ConcurrentHashSet(int size)
    {
-   	theMap = new ConcurrentHashMap(size);
+   	theMap = new ConcurrentHashMap<E, Object>(size);
    }
    
    public int size()
@@ -67,7 +66,7 @@ public class ConcurrentHashSet<E> extends AbstractSet<E>
       return theMap.size();
    }
    
-   public Iterator iterator()
+   public Iterator<E> iterator()
    {
       return theMap.keySet().iterator();
    }

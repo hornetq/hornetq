@@ -22,6 +22,9 @@
 package org.jboss.test.messaging.jms;
 
 import javax.jms.*;
+import javax.management.ObjectName;
+
+import org.jboss.test.messaging.tools.container.ServiceContainer;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
@@ -135,7 +138,7 @@ public class ConnectionFactoryTest extends JMSTestCase
    {
       deployConnectionFactory("TestConnectionFactory1","cfTest", new String[]{"/TestDurableCF"});
 
-      deployTopic("TestSubscriber");
+      createTopic("TestSubscriber");
 
       Connection conn = null;
 
@@ -183,130 +186,144 @@ public class ConnectionFactoryTest extends JMSTestCase
 
    }
 
-   /*public void testSlowConsumers() throws Exception
+
+   public void testSlowConsumers() throws Exception
    {
-     // ObjectName cf1 = deployConnectionFactory("jboss.messaging.destination:service=TestConnectionFactorySlowConsumers",
-      		                                   //ServiceContainer.REMOTING_OBJECT_NAME.getCanonicalName(), "/TestSlowConsumersCF", null, true);
-      deployConnectionFactory(null, "TestSlowConsumersCF", new String[]{"TestSlowConsumersCF"});
+      deployConnectionFactory(0, "TestSlowConsumersCF", new String[]{"TestSlowConsumersCF"}, 1);
 
       Connection conn = null;
 
       try
       {
          ConnectionFactory cf = (ConnectionFactory) ic.lookup("/TestSlowConsumersCF");
-         
+
          conn = cf.createConnection();
 
          Session session1 = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         
+
          Session session2 = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         
+
          final Object waitLock = new Object();
-         
+
          final int numMessages = 500;
-               
+
          class FastListener implements MessageListener
          {
-         	volatile int processed;
-         	
-         	public void onMessage(Message msg)
-				{
-         		processed++;
-         		
-         		TextMessage tm = (TextMessage)msg;
-         		
-         		try
-         		{
-         			log.info("Fast listener got message " + tm.getText());
-         		}
-               catch (JMSException e)
-               {               	
-               }
-               
-         		if (processed == numMessages - 1)
-         		{
-         			synchronized (waitLock)
-         			{
-         				log.info("Notifying");
-         				waitLock.notifyAll();
-         			}
-         		}
-				}
-         }
-         
-         final FastListener fast = new FastListener();
-         
-         class SlowListener implements MessageListener
-         {
+            volatile int processed;
 
-				public void onMessage(Message msg)
-				{
+            public void onMessage(Message msg)
+            {
+               processed++;
+
                TextMessage tm = (TextMessage)msg;
-         		
+
                try
                {
-               	log.info("Slow listener got message " + tm.getText());
+                  log.info("Fast listener got message " + tm.getText());
                }
                catch (JMSException e)
-               {               	
+               {
                }
-					
+
+               if (processed == numMessages - 2)
+               {
+                  synchronized (waitLock)
+                  {
+                     log.info("Notifying");
+                     waitLock.notifyAll();
+                  }
+               }
+            }
+         }
+
+         final FastListener fast = new FastListener();
+
+         class SlowListener implements MessageListener
+         {
+            volatile int processed;
+
+            public void onMessage(Message msg)
+            {
+               TextMessage tm = (TextMessage)msg;
+               
+               processed++;
+
+               try
+               {
+                  log.info("Slow listener got message " + tm.getText());
+               }
+               catch (JMSException e)
+               {
+               }
+
                synchronized (waitLock)
                {
-               	//Should really cope with spurious wakeups
-               	while (fast.processed != numMessages - 1)
-               	{
-               		log.info("Waiting");
-               		try
-               		{
-               			waitLock.wait(20000);
-               		}
-               		catch (InterruptedException e)
-               		{               			
-               		}
-               		log.info("Waited");
-               	}
+                  //Should really cope with spurious wakeups
+                  while (fast.processed != numMessages - 2)
+                  {
+                     log.info("Waiting");
+                     try
+                     {
+                        waitLock.wait(20000);
+                     }
+                     catch (InterruptedException e)
+                     {
+                     }
+                     log.info("Waited");
+                  }
+                  
+                  waitLock.notify();
                }
-				}         	
+            }
          }
          
+         final SlowListener slow = new SlowListener();
 
          MessageConsumer cons1 = session1.createConsumer(queue1);
-         
-         cons1.setMessageListener(new SlowListener());
-         
+
+         cons1.setMessageListener(slow);
+
          MessageConsumer cons2 = session2.createConsumer(queue1);
-         
+
          cons2.setMessageListener(fast);
-         
-   
+
+
          Session sessSend = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         
+
          MessageProducer prod = sessSend.createProducer(queue1);
-         
+
          conn.start();
-         
+
          for (int i = 0; i < numMessages; i++)
          {
-         	TextMessage tm = sessSend.createTextMessage("message" + i);
-         	
-         	prod.send(tm);
+            TextMessage tm = sessSend.createTextMessage("message" + i);
+
+            prod.send(tm);
          }
-         
+
          //All the messages bar one should be consumed by the fast listener  - since the slow listener shouldn't buffer any.
-         
+
          synchronized (waitLock)
          {
-         	//Should really cope with spurious wakeups
-         	while (fast.processed != numMessages - 1)
-         	{
-         		log.info("Waiting");
-         		waitLock.wait(20000);
-         		log.info("Waited");
-         	}
+            //Should really cope with spurious wakeups
+            while (fast.processed != numMessages - 2)
+            {
+               log.info("Waiting");
+               waitLock.wait(20000);
+               log.info("Waited");
+            }
+            
+            while (slow.processed != 2)
+            {
+               log.info("Waiting");
+               waitLock.wait(20000);
+               log.info("Waited");
+            }
          }
+
+         assertTrue(fast.processed == numMessages - 2);
          
-         assertTrue(fast.processed == numMessages - 1);
+        // Thread.sleep(10000);
          
       }
       finally
@@ -315,7 +332,7 @@ public class ConnectionFactoryTest extends JMSTestCase
          {
             if (conn != null)
             {
-            	log.info("Closing connection");
+               log.info("Closing connection");
                conn.close();
                log.info("Closed connection");
             }
@@ -337,8 +354,7 @@ public class ConnectionFactoryTest extends JMSTestCase
 
       }
 
-   }*/
-   
+   }
    
    // Package protected ---------------------------------------------
 

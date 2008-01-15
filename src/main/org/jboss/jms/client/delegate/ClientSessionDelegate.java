@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+
 import javax.jms.IllegalStateException;
 import javax.jms.JMSException;
 import javax.jms.MessageListener;
@@ -35,7 +36,6 @@ import javax.jms.Session;
 import javax.jms.TransactionInProgressException;
 import javax.transaction.xa.XAResource;
 
-import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
 import org.jboss.jms.client.container.ClientConsumer;
 import org.jboss.jms.client.remoting.CallbackManager;
 import org.jboss.jms.client.remoting.JMSRemotingConnection;
@@ -65,6 +65,9 @@ import org.jboss.jms.message.JBossTextMessage;
 import org.jboss.jms.tx.LocalTx;
 import org.jboss.jms.tx.ResourceManager;
 import org.jboss.logging.Logger;
+import org.jboss.messaging.core.Destination;
+import org.jboss.messaging.core.DestinationType;
+import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.wireformat.AcknowledgeDeliveriesMessage;
 import org.jboss.messaging.core.remoting.wireformat.AcknowledgeDeliveryRequest;
@@ -82,12 +85,12 @@ import org.jboss.messaging.core.remoting.wireformat.CreateConsumerResponse;
 import org.jboss.messaging.core.remoting.wireformat.CreateDestinationRequest;
 import org.jboss.messaging.core.remoting.wireformat.CreateDestinationResponse;
 import org.jboss.messaging.core.remoting.wireformat.DeleteTemporaryDestinationMessage;
-import org.jboss.messaging.core.remoting.wireformat.RecoverDeliveriesMessage;
 import org.jboss.messaging.core.remoting.wireformat.SendMessage;
 import org.jboss.messaging.core.remoting.wireformat.UnsubscribeMessage;
-import org.jboss.messaging.newcore.Message;
 import org.jboss.messaging.util.MessageQueueNameHelper;
 import org.jboss.messaging.util.ProxyFactory;
+
+import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
 
 /**
  * The client-side Session delegate class.
@@ -317,10 +320,11 @@ public class ClientSessionDelegate extends DelegateSupport<SessionState> impleme
    {
       AcknowledgeDeliveryRequest request = new AcknowledgeDeliveryRequest(ack.getDeliveryID());
          AcknowledgeDeliveryResponse  response = (AcknowledgeDeliveryResponse) sendBlocking(request);
-         return response.isAcknowledged();
+         
+      return response.isAcknowledged();
    }
 
-   public void acknowledgeDeliveries(List acks) throws JMSException
+   public void acknowledgeDeliveries(List<Ack> acks) throws JMSException
    {
       sendBlocking(new AcknowledgeDeliveriesMessage(acks));
    }
@@ -341,7 +345,7 @@ public class ClientSessionDelegate extends DelegateSupport<SessionState> impleme
       }
    }
 
-   public void addTemporaryDestination(JBossDestination destination) throws JMSException
+   public void addTemporaryDestination(Destination destination) throws JMSException
    {
       sendBlocking(new AddTemporaryDestinationMessage(destination));
    }
@@ -376,7 +380,8 @@ public class ClientSessionDelegate extends DelegateSupport<SessionState> impleme
    }
 
 
-   public BrowserState createBrowserState(ClientBrowserDelegate browserDelegate, BrowserDelegate proxyDelegate, JBossDestination destination, String selector )
+   public BrowserState createBrowserState(ClientBrowserDelegate browserDelegate, BrowserDelegate proxyDelegate,
+         Destination destination, String selector )
    {
 
       SessionState sessionState = getState();
@@ -387,7 +392,7 @@ public class ClientSessionDelegate extends DelegateSupport<SessionState> impleme
       return state;
    }
 
-   public BrowserDelegate createBrowserDelegate(JBossDestination queue, String messageSelector)
+   public BrowserDelegate createBrowserDelegate(Destination queue, String messageSelector)
       throws JMSException
    {
       CreateBrowserRequest request = new CreateBrowserRequest(queue, messageSelector);
@@ -409,7 +414,7 @@ public class ClientSessionDelegate extends DelegateSupport<SessionState> impleme
    }
 
 
-   private ConsumerState createConsumerState(ClientConsumerDelegate consumerDelegate,ConsumerDelegate proxyDelegate,  JBossDestination dest,
+   private ConsumerState createConsumerState(ClientConsumerDelegate consumerDelegate,ConsumerDelegate proxyDelegate, Destination dest,
                                              String selector, boolean noLocal, String subscriptionName,
                                              boolean connectionConsumer )
    {
@@ -432,12 +437,14 @@ public class ClientSessionDelegate extends DelegateSupport<SessionState> impleme
 
 
 
-   public ConsumerDelegate createConsumerDelegate(JBossDestination destination, String selector,
+   public ConsumerDelegate createConsumerDelegate(Destination destination, String selector,
                                                   boolean noLocal, String subscriptionName,
-                                                  boolean isCC, boolean started) throws JMSException
+                                                  boolean isCC) throws JMSException
    {
 
-      CreateConsumerRequest request = new CreateConsumerRequest(destination, selector, noLocal, subscriptionName, isCC, started);
+      CreateConsumerRequest request =
+         new CreateConsumerRequest(destination, selector, noLocal, subscriptionName, isCC);
+      
       CreateConsumerResponse response = (CreateConsumerResponse) sendBlocking(request);
 
       ClientConsumerDelegate consumerDelegate = new ClientConsumerDelegate(response.getConsumerID(), response.getBufferSize(), response.getMaxDeliveries(), response.getRedeliveryDelay());
@@ -469,18 +476,16 @@ public class ClientSessionDelegate extends DelegateSupport<SessionState> impleme
             createSubscriptionName(((ConnectionDelegate)connectionState.getDelegate()).getClientID(),
                                    consumerState.getSubscriptionName());
       }
-      else if (consumerState.getDestination().isQueue())
+      else if (consumerState.getDestination().getType() == DestinationType.QUEUE);
       {
          queueName = consumerState.getDestination().getName();
       }
-
-      boolean autoFlowControl = started;
 
       final ClientConsumer messageHandler =
          new ClientConsumer(isCC, sessionState.getAcknowledgeMode(),
                             sessionDelegate, consumerDelegate, consumerID, queueName,
                             prefetchSize, sessionExecutor, maxDeliveries, consumerState.isShouldAck(),
-                            autoFlowControl, redeliveryDelay);
+                            redeliveryDelay);
 
       sessionState.addCallbackHandler(messageHandler);
 
@@ -491,14 +496,10 @@ public class ClientSessionDelegate extends DelegateSupport<SessionState> impleme
 
       consumerState.setClientConsumer(messageHandler);
 
-      if (autoFlowControl)
-      {
-	      //Now we have finished creating the client consumer, we can tell the SCD
-	      //we are ready
-	      consumerDelegate.changeRate(1);
-      }
-
-
+      //Now we have finished creating the client consumer, we can tell the SCD
+      //we are ready
+      consumerDelegate.changeRate(1);
+      
       return proxy;
    }
 
@@ -594,7 +595,7 @@ public class ClientSessionDelegate extends DelegateSupport<SessionState> impleme
       return (JBossTopic) response.getDestination();
    }
 
-   public void deleteTemporaryDestination(JBossDestination destination) throws JMSException
+   public void deleteTemporaryDestination(Destination destination) throws JMSException
    {
       sendBlocking(new DeleteTemporaryDestinationMessage(destination));
    }
@@ -1013,7 +1014,7 @@ public class ClientSessionDelegate extends DelegateSupport<SessionState> impleme
       getState().getASFMessages().add(holder);
    }
 
-   public void send(Message m, boolean checkForDuplicates) throws JMSException
+   public void send(Message m) throws JMSException
    {
       Object txID = state.getCurrentTxId();
 
@@ -1040,15 +1041,15 @@ public class ClientSessionDelegate extends DelegateSupport<SessionState> impleme
 
       if (trace) { log.trace("sending message NON-transactionally"); }
 
-      invokeSend(m, checkForDuplicates);
+      invokeSend(m);
 
    }
    
-   private void invokeSend(Message m, boolean checkForDuplicates) throws JMSException
+   private void invokeSend(Message m) throws JMSException
    {   	
    	long seq;
    	
-   	if (m.isReliable() || strictTck)
+   	if (m.isDurable() || strictTck)
    	{
    		seq = -1;
    	}
@@ -1061,7 +1062,7 @@ public class ClientSessionDelegate extends DelegateSupport<SessionState> impleme
    		sstate.incNpSendSequence();
    	}
    	
-   	SendMessage message = new SendMessage(m, checkForDuplicates, seq);
+   	SendMessage message = new SendMessage(m, seq);
    	
    	if (seq == -1)
    	{
@@ -1081,11 +1082,6 @@ public class ClientSessionDelegate extends DelegateSupport<SessionState> impleme
    public void cancelDelivery(Cancel cancel) throws JMSException
    {
       sendBlocking(new CancelDeliveryMessage(cancel));
-   }
-
-   public void recoverDeliveries(List deliveries, String sessionID) throws JMSException
-   {
-      sendBlocking(new RecoverDeliveriesMessage(deliveries, sessionID));
    }
 
    // Streamable overrides -------------------------------------------------------------------------

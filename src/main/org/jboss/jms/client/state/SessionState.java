@@ -238,11 +238,11 @@ public class SessionState extends HierarchicalStateSupport<ConnectionState, Clie
 
             // create a new consumer over the new session for each consumer on the old session
             ClientConsumerDelegate newConsDelegate = (ClientConsumerDelegate)newDelegate.
-               createConsumerDelegate((JBossDestination)consState.getDestination(),
+               createConsumerDelegate(consState.getDestination(),
                                       consState.getSelector(),
                                       consState.isNoLocal(),
                                       consState.getSubscriptionName(),
-                                      consState.isConnectionConsumer(), true);
+                                      consState.isConnectionConsumer());
             log.trace(this + " created new consumer " + newConsDelegate);
 
             consDelegate.synchronizeWith(newConsDelegate);
@@ -305,7 +305,7 @@ public class SessionState extends HierarchicalStateSupport<ConnectionState, Clie
             for(Iterator i = getClientAckList().iterator(); i.hasNext(); )
             {
                DeliveryInfo info = (DeliveryInfo)i.next();
-               if (!info.getMessage().getCoreMessage().isReliable())
+               if (!info.getMessage().getCoreMessage().isDurable())
                {
                   i.remove();
                   log.trace("removed non persistent delivery " + info);
@@ -319,7 +319,7 @@ public class SessionState extends HierarchicalStateSupport<ConnectionState, Clie
             DeliveryInfo autoAck = getAutoAckInfo();
             if (autoAck != null)
             {
-               if (!autoAck.getMessage().getCoreMessage().isReliable())
+               if (!autoAck.getMessage().getCoreMessage().isDurable())
                {
                   // unreliable, discard
                   setAutoAckInfo(null);
@@ -358,16 +358,6 @@ public class SessionState extends HierarchicalStateSupport<ConnectionState, Clie
          }         
       }
 
-      //Note! We ALWAYS call recoverDeliveries even if there are no deliveries since it also does other stuff
-      //like remove from recovery Area refs corresponding to messages in client consumer buffers
-      
-      log.trace(this + " sending delivery recovery " + recoveryInfos + " on failover");
-      
-      //Note we only recover sessions that are transacted or client ack
-      if (transacted || xa || acknowledgeMode == Session.CLIENT_ACKNOWLEDGE)
-      {
-      	newDelegate.recoverDeliveries(recoveryInfos, oldSessionID);
-      }
    }
    
    // Public ---------------------------------------------------------------------------------------

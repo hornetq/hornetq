@@ -26,6 +26,7 @@ import static org.jboss.messaging.core.remoting.ConnectorRegistrySingleton.REGIS
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.Serializable;
+
 import javax.jms.JMSException;
 
 import org.jboss.jms.client.container.JMSClientVMIdentifier;
@@ -37,8 +38,6 @@ import org.jboss.jms.delegate.ConnectionFactoryDelegate;
 import org.jboss.jms.delegate.CreateConnectionResult;
 import org.jboss.jms.delegate.TopologyResult;
 import org.jboss.jms.exception.MessagingNetworkFailureException;
-import org.jboss.jms.message.MessageIdGenerator;
-import org.jboss.jms.message.MessageIdGeneratorFactory;
 import org.jboss.messaging.core.remoting.Client;
 import org.jboss.messaging.core.remoting.NIOConnector;
 import org.jboss.messaging.core.remoting.ServerLocator;
@@ -145,13 +144,9 @@ public class ClientConnectionFactoryDelegate
          throw new IllegalStateException("Connection version is null");
       }
 
-      // We have one message id generator per unique server
-      MessageIdGenerator idGenerator =
-         MessageIdGeneratorFactory.instance.checkOutGenerator(serverID);
-
       ConnectionState connectionState =
          new ConnectionState(serverID, connectionDelegate, proxyDelegate, 
-                             remotingConnection, versionToUse, idGenerator);
+                             remotingConnection, versionToUse);
 
       listener.setConnectionState(connectionState);
 

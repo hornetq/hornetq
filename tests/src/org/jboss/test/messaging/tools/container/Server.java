@@ -21,20 +21,19 @@
 */
 package org.jboss.test.messaging.tools.container;
 
-import org.jboss.jms.server.DestinationManager;
-import org.jboss.jms.server.JmsServer;
-import org.jboss.jms.server.JmsServerStatistics;
-import org.jboss.jms.server.ServerPeer;
-import org.jboss.jms.server.security.Role;
-import org.jboss.messaging.core.contract.MessageStore;
-import org.jboss.messaging.core.contract.PersistenceManager;
+import java.rmi.Remote;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 
 import javax.management.NotificationListener;
 import javax.management.ObjectName;
 import javax.naming.InitialContext;
 import javax.transaction.UserTransaction;
-import java.rmi.Remote;
-import java.util.*;
+
+import org.jboss.jms.server.security.Role;
+import org.jboss.messaging.core.MessagingServer;
+import org.jboss.messaging.core.MessagingServerManagement;
 
 /**
  * The remote interface exposed by TestServer.
@@ -127,62 +126,71 @@ public interface Server extends Remote
    /**
     * Only for in-VM use!
     */
-   MessageStore getMessageStore() throws Exception;
+  // MessageStore getMessageStore() throws Exception;
 
    /**
     * Only for in-VM use!
     */
-   DestinationManager getDestinationManager() throws Exception;
+  // DestinationManager getDestinationManager() throws Exception;
 
-   PersistenceManager getPersistenceManager() throws Exception;
+//   PersistenceManager getPersistenceManager() throws Exception;
+//
+//   /**
+//    * Only for in-VM use
+//    */
+   MessagingServer getServerPeer() throws Exception;
 
-   /**
-    * Only for in-VM use
-    */
-   ServerPeer getServerPeer() throws Exception;
-
-   /**
-    * Simulates a topic deployment (copying the topic descriptor in the deploy directory).
-    */
-   void deployTopic(String name, String jndiName, boolean clustered) throws Exception;
-
-   /**
-    * Simulates a topic deployment (copying the topic descriptor in the deploy directory).
-    */
-   void deployTopic(String name, String jndiName, int fullSize, int pageSize,
-                    int downCacheSize, boolean clustered) throws Exception;
-
-   /**
-    * Creates a topic programatically.
-    */
-   void deployTopicProgrammatically(String name, String jndiName) throws Exception;
-
-   /**
-    * Simulates a queue deployment (copying the queue descriptor in the deploy directory).
-    */
-   void deployQueue(String name, String jndiName, boolean clustered) throws Exception;
-
-   /**
-    * Simulates a queue deployment (copying the queue descriptor in the deploy directory).
-    */
-   void deployQueue(String name, String jndiName, int fullSize, int pageSize,
-                    int downCacheSize, boolean clustered) throws Exception;
-
-   /**
-    * Creates a queue programatically.
-    */
-   void deployQueueProgrammatically(String name, String jndiName) throws Exception;
+   void createQueue(String name, String jndiName) throws Exception;
+   
+   void destroyQueue(String name, String jndiName) throws Exception;
+   
+   void createTopic(String name, String jndiName) throws Exception;
+   
+   void destroyTopic(String name, String jndiName) throws Exception;
+   
+   
+//   /**
+//    * Simulates a topic deployment (copying the topic descriptor in the deploy directory).
+//    */
+//   void deployTopic(String name, String jndiName, boolean clustered) throws Exception;
+//
+//   /**
+//    * Simulates a topic deployment (copying the topic descriptor in the deploy directory).
+//    */
+//   void deployTopic(String name, String jndiName, int fullSize, int pageSize,
+//                    int downCacheSize, boolean clustered) throws Exception;
+//
+//   /**
+//    * Creates a topic programatically.
+//    */
+//   void deployTopicProgrammatically(String name, String jndiName) throws Exception;
+//
+//   /**
+//    * Simulates a queue deployment (copying the queue descriptor in the deploy directory).
+//    */
+//   void deployQueue(String name, String jndiName, boolean clustered) throws Exception;
+//
+//   /**
+//    * Simulates a queue deployment (copying the queue descriptor in the deploy directory).
+//    */
+//   void deployQueue(String name, String jndiName, int fullSize, int pageSize,
+//                    int downCacheSize, boolean clustered) throws Exception;
+//
+//   /**
+//    * Creates a queue programatically.
+//    */
+//   void deployQueueProgrammatically(String name, String jndiName) throws Exception;
 
    /**
     * Simulates a destination un-deployment (deleting the destination descriptor from the deploy
     * directory).
     */
-   void undeployDestination(boolean isQueue, String name) throws Exception;
+   //void undeployDestination(boolean isQueue, String name) throws Exception;
 
    /**
     * Destroys a programatically created destination.
     */
-   boolean undeployDestinationProgrammatically(boolean isQueue, String name) throws Exception;
+   //boolean undeployDestinationProgrammatically(boolean isQueue, String name) throws Exception;
 
    public void deployConnectionFactory(String clientId,
                                         String objectName,
@@ -258,13 +266,13 @@ public interface Server extends Remote
     *
     * USE IT ONLY FOR CLUSTERING TESTS!
     */
-   Set getNodeIDView() throws Exception;
-   
-   Map getFailoverMap() throws Exception;
-   
-   Map getRecoveryArea(String queueName) throws Exception;
-   
-   int getRecoveryMapSize(String queueName) throws Exception;
+//   Set getNodeIDView() throws Exception;
+//   
+//   Map getFailoverMap() throws Exception;
+//   
+//   Map getRecoveryArea(String queueName) throws Exception;
+//   
+//   int getRecoveryMapSize(String queueName) throws Exception;
 
    /**
     * @return List<Notification>
@@ -275,9 +283,9 @@ public interface Server extends Remote
    
    void deployConnectionFactory(String objectName, String[] jndiBindings, boolean strictTck) throws Exception;
 
-   JmsServer getJmsServer() throws Exception;
+   MessagingServer getMessagingServer() throws Exception;
 
-   JmsServerStatistics getJmsServerStatistics() throws Exception;
+   MessagingServerManagement getMessagingServerManagement() throws Exception;
 
    InitialContext getInitialContext() throws Exception;
 

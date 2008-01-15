@@ -34,8 +34,8 @@ import org.jboss.jms.delegate.Ack;
 import org.jboss.jms.delegate.DefaultAck;
 import org.jboss.jms.delegate.DeliveryInfo;
 import org.jboss.logging.Logger;
-import org.jboss.messaging.newcore.Message;
-import org.jboss.messaging.newcore.impl.MessageImpl;
+import org.jboss.messaging.core.Message;
+import org.jboss.messaging.core.impl.MessageImpl;
 
 /**
  * Holds the state of a transaction on the client side
@@ -60,11 +60,10 @@ public class ClientTransaction
 
    private byte state = TX_OPEN;
 
-   // Map<Integer(sessionID) - SessionTxState> maintained on the client side
-   private Map sessionStatesMap;
+   private Map<String, SessionTxState> sessionStatesMap;
 
    // Read from on the server side
-   private List sessionStatesList;
+   private List<SessionTxState> sessionStatesList;
 
    private boolean clientSide;
    
@@ -112,7 +111,7 @@ public class ClientTransaction
 
       sessionTxState.addAck(info);
       
-      if (info.getMessage().getCoreMessage().isReliable())
+      if (info.getMessage().getCoreMessage().isDurable())
       {
          hasPersistentAcks = true;
       }
@@ -144,9 +143,8 @@ public class ClientTransaction
       {
          // This can be null if the tx was recreated on the client side due to recovery
 
-         for(Iterator i = sessionStatesMap.values().iterator(); i.hasNext(); )
+         for (SessionTxState sessionTxState: sessionStatesMap.values())
          {
-            SessionTxState sessionTxState = (SessionTxState)i.next();
             sessionTxState.clearMessages();
          }
       }
@@ -161,7 +159,7 @@ public class ClientTransaction
       this.state = state;
    }
 
-   public List getSessionStates()
+   public List<SessionTxState> getSessionStates()
    {
       if (sessionStatesList != null)
       {
@@ -169,8 +167,14 @@ public class ClientTransaction
       }
       else
       {
-         return sessionStatesMap == null ?
-            Collections.EMPTY_LIST : new ArrayList(sessionStatesMap.values());
+         if (sessionStatesMap == null)
+         {
+            return Collections.emptyList();
+         }
+         else
+         {
+            return new ArrayList<SessionTxState>(sessionStatesMap.values());
+         }
       }
    }
 
@@ -187,21 +191,19 @@ public class ClientTransaction
       // Note we have to do this in one go since there may be overlap between old and new session
       // IDs and we don't want to overwrite keys in the map.
 
-      Map tmpMap = null;
+      Map<String, SessionTxState> tmpMap = null;
 
       if (sessionStatesMap != null)
       {
-         for(Iterator i = sessionStatesMap.values().iterator(); i.hasNext();)
+         for (SessionTxState state: sessionStatesMap.values())
          {
-            SessionTxState state = (SessionTxState)i.next();
-            
             boolean handled = state.handleFailover(newServerID, oldSessionID, newSessionID);
 
             if (handled)
             {
 	            if (tmpMap == null)
 	            {
-	               tmpMap = new LinkedHashMap();
+	               tmpMap = new LinkedHashMap<String, SessionTxState>();
 	            }
 	            tmpMap.put(newSessionID, state);
             }
@@ -316,7 +318,7 @@ public class ClientTransaction
       
       //Read in as a list since we don't want the extra overhead of putting into a map
       //which won't be used on the server side
-      sessionStatesList = new ArrayList(numSessions);
+      sessionStatesList = new ArrayList<SessionTxState>(numSessions);
 
       for (int i = 0; i < numSessions; i++)
       {
@@ -360,7 +362,7 @@ public class ClientTransaction
    {
       if (sessionStatesMap == null)
       {
-         sessionStatesMap = new LinkedHashMap();
+         sessionStatesMap = new LinkedHashMap<String, SessionTxState>();
       }
 
       SessionTxState sessionTxState = (SessionTxState)sessionStatesMap.get(sessionID);
@@ -386,8 +388,8 @@ public class ClientTransaction
       // session ID. This prevents the ID being failed over more than once for the same server.
       private int serverID = -1;
 
-      private List msgs = new ArrayList();
-      private List acks = new ArrayList();
+      private List<Message> msgs = new ArrayList<Message>();
+      private List<Ack> acks = new ArrayList<Ack>();
 
       SessionTxState(String sessionID)
       {
@@ -404,12 +406,12 @@ public class ClientTransaction
          acks.add(ack);
       }
 
-      public List getMsgs()
+      public List<Message> getMsgs()
       {
          return msgs;
       }
 
-      public List getAcks()
+      public List<Ack> getAcks()
       {
          return acks;
       }
@@ -419,7 +421,7 @@ public class ClientTransaction
          return sessionID;
       }
       
-      public void setAcks(List acks)
+      public void setAcks(List<Ack> acks)
       {
       	this.acks = acks;
       }
@@ -436,7 +438,7 @@ public class ClientTransaction
             {
                DeliveryInfo di = (DeliveryInfo)i.next();
 
-               if (!di.getMessage().getCoreMessage().isReliable())
+               if (!di.getMessage().getCoreMessage().isDurable())
                {
                   if (trace) { log.trace(this + " discarded non-persistent " + di + " on failover"); }
                   i.remove();

@@ -21,7 +21,7 @@
   */
 package org.jboss.jms.client.container;
 
-import org.jboss.messaging.util.GUIDGenerator;
+import java.util.UUID;
 
 /**
  * 
@@ -34,5 +34,5 @@ import org.jboss.messaging.util.GUIDGenerator;
  */
 public class JMSClientVMIdentifier
 {
-   public static String instance = GUIDGenerator.generateGUID();
+   public static String instance = UUID.randomUUID().toString();
 }

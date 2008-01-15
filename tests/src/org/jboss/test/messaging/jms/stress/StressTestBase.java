@@ -82,28 +82,28 @@ public class StressTestBase extends JBMServerTestCase
       
       final int downCacheSize = 300;
       
-      deployQueue("Queue1", fullSize, pageSize, downCacheSize);
-      deployQueue("Queue2", fullSize, pageSize, downCacheSize);
-      deployQueue("Queue3", fullSize, pageSize, downCacheSize);
-      deployQueue("Queue4", fullSize, pageSize, downCacheSize);
-      
-      deployTopic("Topic1", fullSize, pageSize, downCacheSize);
-      deployTopic("Topic2", fullSize, pageSize, downCacheSize);
-      deployTopic("Topic3", fullSize, pageSize, downCacheSize);
-      deployTopic("Topic4", fullSize, pageSize, downCacheSize);
-            
-      InitialContext ic = getInitialContext();
-      cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
-      
-      queue1 = (Destination)ic.lookup("/queue/Queue1");
-      queue2 = (Destination)ic.lookup("/queue/Queue2");
-      queue3 = (Destination)ic.lookup("/queue/Queue3");
-      queue4 = (Destination)ic.lookup("/queue/Queue4");
-
-      topic1 = (Topic)ic.lookup("/topic/Topic1");
-      topic2 = (Topic)ic.lookup("/topic/Topic2");
-      topic3 = (Topic)ic.lookup("/topic/Topic3");
-      topic4 = (Topic)ic.lookup("/topic/Topic4");            
+//      createQueue("Queue1", fullSize, pageSize, downCacheSize);
+//      createQueue("Queue2", fullSize, pageSize, downCacheSize);
+//      createQueue("Queue3", fullSize, pageSize, downCacheSize);
+//      createQueue("Queue4", fullSize, pageSize, downCacheSize);
+//      
+//      deployTopic("Topic1", fullSize, pageSize, downCacheSize);
+//      deployTopic("Topic2", fullSize, pageSize, downCacheSize);
+//      deployTopic("Topic3", fullSize, pageSize, downCacheSize);
+//      deployTopic("Topic4", fullSize, pageSize, downCacheSize);
+//            
+//      InitialContext ic = getInitialContext();
+//      cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
+//      
+//      queue1 = (Destination)ic.lookup("/queue/Queue1");
+//      queue2 = (Destination)ic.lookup("/queue/Queue2");
+//      queue3 = (Destination)ic.lookup("/queue/Queue3");
+//      queue4 = (Destination)ic.lookup("/queue/Queue4");
+//
+//      topic1 = (Topic)ic.lookup("/topic/Topic1");
+//      topic2 = (Topic)ic.lookup("/topic/Topic2");
+//      topic3 = (Topic)ic.lookup("/topic/Topic3");
+//      topic4 = (Topic)ic.lookup("/topic/Topic4");            
    }
 
    public void tearDown() throws Exception
@@ -113,15 +113,15 @@ public class StressTestBase extends JBMServerTestCase
    		fail("Message data still exists");
    	}
    	
-      undeployQueue("Queue1");
-      undeployQueue("Queue2");
-      undeployQueue("Queue3");
-      undeployQueue("Queue4");
-
-      undeployTopic("Topic1");
-      undeployTopic("Topic2");
-      undeployTopic("Topic3");
-      undeployTopic("Topic4");
+//      undeployQueue("Queue1");
+//      undeployQueue("Queue2");
+//      undeployQueue("Queue3");
+//      undeployQueue("Queue4");
+//
+//      undeployTopic("Topic1");
+//      undeployTopic("Topic2");
+//      undeployTopic("Topic3");
+//      undeployTopic("Topic4");
       
       super.tearDown();            
    }

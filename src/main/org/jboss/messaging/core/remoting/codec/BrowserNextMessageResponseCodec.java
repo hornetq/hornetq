@@ -9,8 +9,8 @@ package org.jboss.messaging.core.remoting.codec;
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.RESP_BROWSER_NEXTMESSAGE;
 
 import org.jboss.jms.message.JBossMessage;
+import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.remoting.wireformat.BrowserNextMessageResponse;
-import org.jboss.messaging.newcore.Message;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>.

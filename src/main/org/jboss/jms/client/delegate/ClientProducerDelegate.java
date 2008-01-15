@@ -21,30 +21,32 @@
   */
 package org.jboss.jms.client.delegate;
 
-import javax.jms.JMSException;
-import javax.jms.Message;
-import javax.jms.Destination;
-import javax.jms.MessageFormatException;
+import java.util.UUID;
+
 import javax.jms.BytesMessage;
+import javax.jms.JMSException;
 import javax.jms.MapMessage;
+import javax.jms.Message;
+import javax.jms.MessageFormatException;
 import javax.jms.ObjectMessage;
 import javax.jms.StreamMessage;
 import javax.jms.TextMessage;
 
+import org.jboss.jms.client.state.ConnectionState;
 import org.jboss.jms.client.state.ProducerState;
 import org.jboss.jms.client.state.SessionState;
-import org.jboss.jms.client.state.ConnectionState;
-import org.jboss.jms.delegate.ProducerDelegate;
 import org.jboss.jms.delegate.ConnectionDelegate;
+import org.jboss.jms.delegate.ProducerDelegate;
 import org.jboss.jms.destination.JBossDestination;
-import org.jboss.jms.message.JBossMessage;
 import org.jboss.jms.message.JBossBytesMessage;
 import org.jboss.jms.message.JBossMapMessage;
+import org.jboss.jms.message.JBossMessage;
 import org.jboss.jms.message.JBossObjectMessage;
 import org.jboss.jms.message.JBossStreamMessage;
 import org.jboss.jms.message.JBossTextMessage;
-import org.jboss.messaging.newcore.impl.DestinationImpl;
 import org.jboss.logging.Logger;
+import org.jboss.messaging.core.DestinationType;
+import org.jboss.messaging.core.impl.DestinationImpl;
 
 /**
  * The client-side Producer delegate class.
@@ -263,15 +265,12 @@ public class ClientProducerDelegate extends DelegateSupport<ProducerState> imple
 
       if (!keepID)
       {
-         // Generate a new id
-         long id = connectionState.getIdGenerator().getId((ConnectionDelegate)connectionState.getDelegate());
+         //Generate an id
+         
+         String id = UUID.randomUUID().toString();
+         
+         jbm.setJMSMessageID("ID:" + id);
 
-         jbm.getCoreMessage().setMessageID(id);
-
-         //Set to null - this will cause the next call to getJMSMessageID() on the jbm to recalculate
-         //it - need to do this to prevent any old cached value being retained
-
-         jbm.setJMSMessageID(null);
       }
 
       if (foreign)
@@ -280,7 +279,6 @@ public class ClientProducerDelegate extends DelegateSupport<ProducerState> imple
       }
 
       jbm.setJMSDestination(destination);
-
 
       try
       {
@@ -296,24 +294,20 @@ public class ClientProducerDelegate extends DelegateSupport<ProducerState> imple
       JBossDestination dest = (JBossDestination)destination;
 
       //Set the destination on the core message - TODO temp for refactoring
-      org.jboss.messaging.newcore.Destination coreDest =
-         new DestinationImpl(dest.isQueue() ? "Queue" : "Topic", dest.getName(), dest.isTemporary());
-
-      org.jboss.messaging.newcore.Message messageToSend = jbm.getCoreMessage();
+      org.jboss.messaging.core.Destination coreDest =
+         new DestinationImpl(dest.isQueue() ? DestinationType.QUEUE : DestinationType.TOPIC, dest.getName(), dest.isTemporary());
+      
+      //TODO - can optimise this copy to do copy lazily.
+      org.jboss.messaging.core.Message messageToSend = jbm.getCoreMessage().copy();
 
       //FIXME - temp - for now we set destination as a header - should really be an attribute of the
       //send packet - along with scheduleddelivery time
 
-      messageToSend.putHeader(org.jboss.messaging.newcore.Message.TEMP_DEST_HEADER_NAME, coreDest);
-
-      //We copy *before* sending
-      //TODO for now we always copy - for INVM we can optimise (like we did in 1.4) by doing lazy copying
-      //of message, header and properties
-      jbm.copyMessage();
+      messageToSend.putHeader(org.jboss.messaging.core.Message.TEMP_DEST_HEADER_NAME, coreDest);
 
       // we now invoke the send(Message) method on the session, which will eventually be fielded
       // by connection endpoint
-      sessionState.getDelegate().send(messageToSend, false);
+      sessionState.getDelegate().send(messageToSend);
    }
 
    /**

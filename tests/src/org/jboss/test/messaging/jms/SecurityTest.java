@@ -860,8 +860,8 @@ public class SecurityTest extends JMSTestCase
 
    public void testSecurityForQueuesAndTopicsWithTheSameName() throws Exception
    {
-      deployQueue("Accounting");
-      deployTopic("Accounting");
+      createQueue("Accounting");
+      createTopic("Accounting");
 
       Connection conn = null;
 
@@ -887,8 +887,8 @@ public class SecurityTest extends JMSTestCase
       }
       finally
       {
-         undeployQueue("Accounting");
-         undeployTopic("Accounting");
+         destroyQueue("Accounting");
+         destroyTopic("Accounting");
          if (conn != null)
          {
             conn.close();
@@ -1156,7 +1156,7 @@ public class SecurityTest extends JMSTestCase
             {
                xaconn.close();
             }
-            undeployQueue("MyQueue2");
+            destroyQueue("MyQueue2");
          }
          catch (Throwable ignored)
          {

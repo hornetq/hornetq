@@ -21,21 +21,18 @@ public class SendTransactionMessage extends AbstractPacket
    // Attributes ----------------------------------------------------
 
    private final TransactionRequest transactionRequest;
-   private final boolean checkForDuplicates;
 
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public SendTransactionMessage(TransactionRequest transactionRequest,
-         boolean checkForDuplicates)
+   public SendTransactionMessage(TransactionRequest transactionRequest)
    {
       super(PacketType.MSG_SENDTRANSACTION);
 
       assert transactionRequest != null;
 
       this.transactionRequest = transactionRequest;
-      this.checkForDuplicates = checkForDuplicates;
    }
 
    // Public --------------------------------------------------------
@@ -45,16 +42,11 @@ public class SendTransactionMessage extends AbstractPacket
       return transactionRequest;
    }
 
-   public boolean checkForDuplicates()
-   {
-      return checkForDuplicates;
-   }
-
    @Override
    public String toString()
    {
       return getParentString() + ", transactionRequest=" + transactionRequest
-            + ", checkForDuplicates=" + checkForDuplicates + "]";
+            + "]";
    }
 
    // Package protected ---------------------------------------------

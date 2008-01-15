@@ -24,15 +24,13 @@ package org.jboss.jms.client.state;
 import java.util.HashSet;
 import java.util.Iterator;
 
-import org.jboss.jms.client.FailoverCommandCenter;
 import org.jboss.jms.client.Closeable;
+import org.jboss.jms.client.FailoverCommandCenter;
 import org.jboss.jms.client.delegate.ClientConnectionDelegate;
 import org.jboss.jms.client.delegate.ClientSessionDelegate;
-import org.jboss.jms.client.delegate.DelegateSupport;
 import org.jboss.jms.client.remoting.JMSRemotingConnection;
 import org.jboss.jms.delegate.ConnectionDelegate;
 import org.jboss.jms.delegate.ConnectionFactoryDelegate;
-import org.jboss.jms.message.MessageIdGenerator;
 import org.jboss.jms.tx.ResourceManager;
 import org.jboss.jms.tx.ResourceManagerFactory;
 import org.jboss.logging.Logger;
@@ -78,7 +76,6 @@ public class ConnectionState extends HierarchicalStateSupport<HierarchicalState,
 
    private JMSRemotingConnection remotingConnection;
    private ResourceManager resourceManager;
-   private MessageIdGenerator idGenerator;
 
    // Cached by the connection state in case ClusteringAspect needs to re-try establishing
    // connection on a different node
@@ -97,8 +94,7 @@ public class ConnectionState extends HierarchicalStateSupport<HierarchicalState,
 
    public ConnectionState(int serverID, ClientConnectionDelegate delegate, ConnectionDelegate proxyDelegate,
                           JMSRemotingConnection remotingConnection,
-                          Version versionToUse,
-                          MessageIdGenerator gen)
+                          Version versionToUse)
    {
       super(null, delegate);
 
@@ -116,7 +112,6 @@ public class ConnectionState extends HierarchicalStateSupport<HierarchicalState,
       // to per connection.
       this.resourceManager = ResourceManagerFactory.instance.checkOutResourceManager(serverID);
 
-      this.idGenerator = gen;
       this.serverID = serverID;
    }
 
@@ -159,7 +154,6 @@ public class ConnectionState extends HierarchicalStateSupport<HierarchicalState,
       ConnectionState newState = (ConnectionState)ns;
 
       remotingConnection = newState.remotingConnection;
-      idGenerator = newState.idGenerator;
       serverID = newState.serverID;
       versionToUse = newState.versionToUse;
 
@@ -194,11 +188,6 @@ public class ConnectionState extends HierarchicalStateSupport<HierarchicalState,
    public ResourceManager getResourceManager()
    {
       return resourceManager;
-   }
-
-   public MessageIdGenerator getIdGenerator()
-   {
-      return idGenerator;
    }
 
    public JMSRemotingConnection getRemotingConnection()

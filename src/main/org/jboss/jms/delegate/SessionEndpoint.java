@@ -30,7 +30,8 @@ import org.jboss.jms.client.Closeable;
 import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.destination.JBossQueue;
 import org.jboss.jms.destination.JBossTopic;
-import org.jboss.messaging.newcore.Message;
+import org.jboss.messaging.core.Destination;
+import org.jboss.messaging.core.Message;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -43,11 +44,11 @@ import org.jboss.messaging.newcore.Message;
  */
 public interface SessionEndpoint extends Closeable
 {
-   ConsumerDelegate createConsumerDelegate(JBossDestination destination, String selector,
+   ConsumerDelegate createConsumerDelegate(Destination destination, String selector,
                                            boolean noLocal, String subscriptionName,
-                                           boolean connectionConsumer, boolean autoFlowControl) throws JMSException;
+                                           boolean connectionConsumer) throws JMSException;
    
-   BrowserDelegate createBrowserDelegate(JBossDestination queue, String messageSelector) throws JMSException;
+   BrowserDelegate createBrowserDelegate(Destination queue, String messageSelector) throws JMSException;
 
    /**
     * Creates a queue identity given a Queue name. Does NOT create the physical queue. The physical
@@ -67,7 +68,7 @@ public interface SessionEndpoint extends Closeable
     * Acknowledge a list of deliveries
     * @throws JMSException
     */
-   void acknowledgeDeliveries(List acks) throws JMSException;
+   void acknowledgeDeliveries(List<Ack> acks) throws JMSException;
    
    /**
     * Acknowledge a delivery
@@ -78,7 +79,7 @@ public interface SessionEndpoint extends Closeable
    /**
     * Cancel a list of deliveries.
     */
-   void cancelDeliveries(List cancels) throws JMSException;
+   void cancelDeliveries(List<Cancel> cancels) throws JMSException;
          
    /**
     * Cancel a delivery
@@ -90,12 +91,12 @@ public interface SessionEndpoint extends Closeable
    /**
     * Add a temporary destination.
     */
-   void addTemporaryDestination(JBossDestination destination) throws JMSException;
+   void addTemporaryDestination(Destination destination) throws JMSException;
    
    /**
     * Delete a temporary destination
     */
-   void deleteTemporaryDestination(JBossDestination destination) throws JMSException;
+   void deleteTemporaryDestination(Destination destination) throws JMSException;
    
    /**
     * Unsubscribe the client from the durable subscription
@@ -111,15 +112,8 @@ public interface SessionEndpoint extends Closeable
     * @param message The message to send
     * @throws JMSException
     */
-   void send(Message message, boolean checkForDuplicates) throws JMSException;
+   void send(Message message) throws JMSException;
    
-   /**
-    * Send delivery info to the server so the delivery lists can be repopulated. Used only in
-    * failover.
-    */
-   void recoverDeliveries(List createInfos, String oldSessionID) throws JMSException;
-
-
    int getDupsOKBatchSize();
 
    public boolean isStrictTck();

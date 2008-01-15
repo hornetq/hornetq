@@ -5,8 +5,7 @@
       <property name="configuration"><inject bean="Configuration"/> </property>
    </bean>
 
-
-   <bean name="JaasBinding" class="org.jboss.jms.server.microcontainer.JndiBinder">
+   <bean name="JaasBinding" class="org.jboss.messaging.microcontainer.JndiBinder">
       <property name="jndiProperties">
          <inject bean="ConfigurationHelper" property="environment"/>
       </property>
@@ -18,7 +17,7 @@
 
    <bean name="Jaas" class="org.jboss.test.messaging.tools.container.MockJBossSecurityManager"/>
 
-   <bean name="DSBinding" class="org.jboss.jms.server.microcontainer.JndiBinder">
+   <bean name="DSBinding" class="org.jboss.messaging.microcontainer.JndiBinder">
       <property name="jndiProperties">
          <inject bean="ConfigurationHelper" property="environment"/>
       </property>
@@ -28,7 +27,7 @@
       <property name="bindTo">java:/DefaultDS</property>
    </bean>
 
-   <bean name="TMBinding" class="org.jboss.jms.server.microcontainer.JndiBinder">
+   <bean name="TMBinding" class="org.jboss.messaging.microcontainer.JndiBinder">
       <property name="jndiProperties">
          <inject bean="ConfigurationHelper" property="environment"/>
       </property>
@@ -37,17 +36,21 @@
       </property>
       <property name="bindTo">java:/TransactionManager</property>
    </bean>
+      
 
+   <!--
    <bean class="org.jgroups.JChannelFactory" name="JChannelFactory">
+   -->
       <!--mbean code="org.jgroups.JChannelFactory" name="jgroups.mux:name=Multiplexer" xmbean-dd="resource:META-INF/multiplexer-xmbean.xml" -->
-      <property name="domain">jgroups.mux</property>
+      <!-- <property name="domain">jgroups.mux</property>
       <property name="multiplexerConfig">multiplexer-stacks.xml</property>
       <property name="exposeChannels">false</property>
       <property name="exposeProtocols">false</property>
+      -->
 
       <!-- The address used to determine the node name  -->
       <!-- <attribute name="NodeAddress">${jboss.bind.address}</attribute> -->
-
-   </bean>
+   <!--
+   </bean> -->
 
 </deployment>

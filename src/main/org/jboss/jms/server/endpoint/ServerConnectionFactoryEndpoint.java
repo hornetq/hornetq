@@ -36,8 +36,8 @@ import org.jboss.jms.delegate.ConnectionFactoryEndpoint;
 import org.jboss.jms.delegate.CreateConnectionResult;
 import org.jboss.jms.delegate.TopologyResult;
 import org.jboss.jms.exception.MessagingJMSException;
-import org.jboss.jms.server.ServerPeer;
 import org.jboss.logging.Logger;
+import org.jboss.messaging.core.MessagingServer;
 import org.jboss.messaging.core.remoting.PacketHandler;
 import org.jboss.messaging.core.remoting.PacketSender;
 import org.jboss.messaging.core.remoting.wireformat.AbstractPacket;
@@ -70,7 +70,7 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
 
    // Attributes -----------------------------------------------------------------------------------
 
-   private ServerPeer serverPeer;
+   private MessagingServer messagingServer;
 
    private String clientID;
 
@@ -89,11 +89,7 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
    private int defaultTempQueueDownCacheSize;
 
    private int dupsOKBatchSize;
-   
-   private boolean supportsFailover;
-   
-   private boolean slowConsumers;
-
+     
    /** Cluster Topology on ClusteredConnectionFactories
        Information to failover to other connections on clients **/
    ClientConnectionFactoryDelegate[] delegates;
@@ -103,26 +99,23 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
    Map failoverMap;
 
    
-
    // Constructors ---------------------------------------------------------------------------------
 
    /**
     * @param jndiBindings - names under which the corresponding JBossConnectionFactory is bound in
     *        JNDI.
     */
-   public ServerConnectionFactoryEndpoint(String uniqueName, String id, ServerPeer serverPeer,
+   public ServerConnectionFactoryEndpoint(String uniqueName, String id, MessagingServer messagingServer,
                                           String defaultClientID,
                                           List<String> jndiBindings,
-                                          int preFetchSize,
-                                          boolean slowConsumers,
+                                          int preFetchSize,                                          
                                           int defaultTempQueueFullSize,
                                           int defaultTempQueuePageSize,
                                           int defaultTempQueueDownCacheSize,
-                                          int dupsOKBatchSize,
-                                          boolean supportsFailover)
+                                          int dupsOKBatchSize)
    {
       this.uniqueName = uniqueName;
-      this.serverPeer = serverPeer;
+      this.messagingServer = messagingServer;
       this.clientID = defaultClientID;
       this.id = id;
       this.jndiBindings = jndiBindings;
@@ -131,12 +124,6 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
       this.defaultTempQueuePageSize = defaultTempQueuePageSize;
       this.defaultTempQueueDownCacheSize = defaultTempQueueDownCacheSize;
       this.dupsOKBatchSize = dupsOKBatchSize;
-      this.supportsFailover = supportsFailover;
-      this.slowConsumers = slowConsumers;
-      if (slowConsumers)
-      {
-      	this.prefetchSize = 1;
-      }
    }
 
    // ConnectionFactoryDelegate implementation -----------------------------------------------------
@@ -198,7 +185,7 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
       // up thread local immediately after we used the information, otherwise some other people
       // security my be screwed up, on account of thread local security stack being corrupted.
 
-      serverPeer.getSecurityManager().authenticate(username, password);
+      messagingServer.getSecurityManager().authenticate(username, password);
 
       // We don't need the SubjectContext on thread local anymore, clean it up
       SecurityActions.popSubjectContext();
@@ -209,7 +196,7 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
       if (username != null)
       {
          String preconfClientID =
-            serverPeer.getJmsUserManagerInstance().getPreConfiguredClientID(username);
+            messagingServer.getJmsUserManagerInstance().getPreConfiguredClientID(username);
 
          if (preconfClientID != null)
          {
@@ -220,7 +207,7 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
       // create the corresponding "server-side" connection endpoint and register it with the
       // server peer's ClientManager
       final ServerConnectionEndpoint endpoint =
-         new ServerConnectionEndpoint(serverPeer, clientIDUsed, username, password, prefetchSize,
+         new ServerConnectionEndpoint(messagingServer, clientIDUsed, username, password, prefetchSize,
                                       defaultTempQueueFullSize, defaultTempQueuePageSize,
                                       defaultTempQueueDownCacheSize, failedNodeID, this,
                                       remotingSessionID, clientVMID, versionToUse,
@@ -228,25 +215,25 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
 
       final String connectionID = endpoint.getConnectionID();
 
-      serverPeer.getMinaService().getDispatcher().register(endpoint.newHandler(connectionID));
+      messagingServer.getMinaService().getDispatcher().register(endpoint.newHandler(connectionID));
 
       log.trace("created and registered " + endpoint);
 
-      return new ClientConnectionDelegate(connectionID, serverPeer.getConfiguration().getServerPeerID());
+      return new ClientConnectionDelegate(connectionID, messagingServer.getConfiguration().getMessagingServerID());
    }
       
    public void addSender(String VMID, String remotingSessionID,
          PacketSender sender) throws JMSException
    {
       log.debug("Adding PacketSender on ConnectionFactory");
-      serverPeer.getConnectionManager().addConnectionFactoryCallback(this.uniqueName, VMID, remotingSessionID, sender);
+      messagingServer.getConnectionManager().addConnectionFactoryCallback(this.uniqueName, VMID, remotingSessionID, sender);
    }
    
    public void removeSender(String VMID, String remotingSessionID,
          PacketSender sender) throws JMSException
    {
       log.debug("Removing PacketSender on ConnectionFactory");
-      serverPeer.getConnectionManager().removeConnectionFactoryCallback(this.uniqueName, VMID, sender);
+      messagingServer.getConnectionManager().removeConnectionFactoryCallback(this.uniqueName, VMID, sender);
    }
 
    public TopologyResult getTopology() throws JMSException
@@ -266,9 +253,9 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
       return jndiBindings;
    }
 
-   public ServerPeer getServerPeer()
+   public MessagingServer getMessagingServer()
    {
-      return serverPeer;
+      return messagingServer;
    }
 
    /**
@@ -282,7 +269,7 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
    {
       updateTopology(delegates, failoverMap);
 
-      PacketSender[] senders = serverPeer.getConnectionManager().getConnectionFactorySenders(uniqueName);
+      PacketSender[] senders = messagingServer.getConnectionManager().getConnectionFactorySenders(uniqueName);
       log.debug("updateClusteredClients being called!!! clientFactoriesToUpdate.size = " + senders.length);
 
       GetTopologyResponse packet = new GetTopologyResponse(getTopology());
@@ -312,11 +299,6 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
       this.failoverMap = failoverMap;
    }
    
-   public boolean isSlowConsumers()
-   {
-   	return slowConsumers;
-   }
-
    public String toString()
    {
       return "ConnectionFactoryEndpoint[" + id + "]";
@@ -329,11 +311,6 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
 
    // Package protected ----------------------------------------------------------------------------
    
-   boolean isSupportsFailover()
-   {
-   	return supportsFailover;
-   }
-
    // Protected ------------------------------------------------------------------------------------
 
    // Private --------------------------------------------------------------------------------------

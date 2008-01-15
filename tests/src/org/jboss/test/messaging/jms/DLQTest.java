@@ -23,7 +23,7 @@ package org.jboss.test.messaging.jms;
 
 import org.jboss.jms.destination.JBossQueue;
 import org.jboss.jms.message.JBossMessage;
-import org.jboss.jms.server.ServerPeer;
+import org.jboss.messaging.core.impl.server.MessagingServerImpl;
 import org.jboss.test.messaging.tools.ServerManagement;
 
 import javax.jms.*;
@@ -64,7 +64,7 @@ public class DLQTest extends JMSTestCase
       }
 
 
-      assertNotNull(((ServerPeer)getJmsServer()).getDefaultDLQInstance());
+      assertNotNull(((MessagingServerImpl)getJmsServer()).getDefaultDLQInstance());
 
       String name = getJmsServer().getConfiguration().getDefaultDLQ();
 
@@ -618,7 +618,7 @@ public class DLQTest extends JMSTestCase
       }
       finally
       {
-         undeployQueue("DLQ");
+         destroyQueue("DLQ");
 
          if (conn != null) conn.close();
       }
@@ -712,7 +712,7 @@ public class DLQTest extends JMSTestCase
       }
       finally
       {
-         undeployQueue("DLQ");
+         destroyQueue("DLQ");
 
          if (conn != null) conn.close();
       }

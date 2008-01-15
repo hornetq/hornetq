@@ -216,7 +216,7 @@ public class SeveralClientsStressTest extends JBMServerTestCase
       if (startServer)
       {
          ServerManagement.start(0, "all", null, true);
-         deployQueue("testQueue");
+         createQueue("testQueue");
       }
 
       clearMessages();

@@ -31,6 +31,8 @@ import javax.naming.NamingException;
 import javax.naming.Reference;
 
 import org.jboss.jms.referenceable.SerializableObjectRefAddr;
+import org.jboss.messaging.core.DestinationType;
+import org.jboss.messaging.core.impl.DestinationImpl;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
@@ -56,6 +58,32 @@ public abstract class JBossDestination implements Destination, Serializable /*, 
    private static final byte TEMP_TOPIC = 4;
    
    // Static --------------------------------------------------------
+   
+   public static JBossDestination fromCoreDestination(org.jboss.messaging.core.Destination destination)
+   {
+      if (destination.isTemporary())
+      {
+         if (destination.getType() == DestinationType.QUEUE)
+         {
+            return new JBossQueue(destination.getName());
+         }
+         else
+         {
+            return new JBossTopic(destination.getName());
+         }
+      }
+      else
+      {
+         if (destination.getType() == DestinationType.QUEUE)
+         {
+            return new JBossTemporaryQueue(destination.getName());
+         }
+         else
+         {
+            return new JBossTemporaryTopic(destination.getName());
+         }
+      }
+   }
    
    public static void writeDestination(DataOutputStream out, Destination dest) throws IOException
    {
@@ -90,7 +118,6 @@ public abstract class JBossDestination implements Destination, Serializable /*, 
             }
          }
          out.writeUTF(jb.getName());
-         out.writeBoolean(jb.direct);
       }
    }
    
@@ -106,8 +133,6 @@ public abstract class JBossDestination implements Destination, Serializable /*, 
       {
          String name = in.readUTF();
          
-         boolean direct = in.readBoolean();
-
          JBossDestination dest;
          
          if (b == QUEUE)
@@ -131,8 +156,6 @@ public abstract class JBossDestination implements Destination, Serializable /*, 
             throw new IllegalStateException("Invalid value:" + b);
          }
          
-         dest.direct = direct;
-         
          return dest;
       }
    }
@@ -141,8 +164,6 @@ public abstract class JBossDestination implements Destination, Serializable /*, 
    // Attributes ----------------------------------------------------
 
    protected String name;
-   
-   protected boolean direct;
    
    // Constructors --------------------------------------------------
 
@@ -169,6 +190,7 @@ public abstract class JBossDestination implements Destination, Serializable /*, 
    }
 
    public abstract boolean isTopic();
+   
    public abstract boolean isQueue();
    
    public boolean isTemporary()
@@ -176,11 +198,6 @@ public abstract class JBossDestination implements Destination, Serializable /*, 
       return false;
    }
    
-   public boolean isDirect()
-   {
-   	return direct;
-   }
-
    public boolean equals(Object o)
    {
       if (this == o)
@@ -218,6 +235,14 @@ public abstract class JBossDestination implements Destination, Serializable /*, 
          hash = code + (isTopic() ? 37 : 71);
          return hash;
       }           
+   }
+   
+   public org.jboss.messaging.core.Destination toCoreDestination()
+   {
+      org.jboss.messaging.core.Destination dest =
+         new DestinationImpl(this.isQueue() ? DestinationType.QUEUE: DestinationType.TOPIC, name, isTemporary());
+      
+      return dest;
    }
    
    // Package protected ---------------------------------------------

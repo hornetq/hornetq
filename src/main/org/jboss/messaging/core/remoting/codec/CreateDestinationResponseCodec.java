@@ -37,7 +37,7 @@ public class CreateDestinationResponseCodec extends
    @Override
    protected void encodeBody(CreateDestinationResponse response, RemotingBuffer out) throws Exception
    {
-      byte[] destination = encode(response.getDestination());
+      byte[] destination = encodeJBossDestination(response.getDestination());
 
       int bodyLength = INT_LENGTH + destination.length;
 
@@ -59,7 +59,7 @@ public class CreateDestinationResponseCodec extends
       int destinationLength = in.getInt();
       byte[] b = new byte[destinationLength];
       in.get(b);
-      JBossDestination destination = decode(b);
+      JBossDestination destination = decodeJBossDestination(b);
 
       return new CreateDestinationResponse(destination);
    }

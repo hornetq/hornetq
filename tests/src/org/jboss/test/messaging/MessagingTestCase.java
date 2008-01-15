@@ -21,24 +21,32 @@
 */
 package org.jboss.test.messaging;
 
-import org.jboss.jms.client.JBossConnection;
-import org.jboss.jms.message.MessageIdGeneratorFactory;
-import org.jboss.logging.Logger;
-import org.jboss.test.messaging.tools.ServerManagement;
-import org.jboss.test.messaging.util.ProxyAssertSupport;
-import org.jboss.tm.TransactionManagerLocator;
-
-import javax.jms.*;
-import javax.management.ObjectName;
-import javax.naming.InitialContext;
-import javax.sql.DataSource;
-import javax.transaction.TransactionManager;
-import java.lang.IllegalStateException;
 import java.lang.ref.WeakReference;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.jms.Connection;
+import javax.jms.ConnectionFactory;
+import javax.jms.Destination;
+import javax.jms.Message;
+import javax.jms.MessageConsumer;
+import javax.jms.Queue;
+import javax.jms.Session;
+import javax.jms.Topic;
+import javax.jms.XAConnection;
+import javax.jms.XAConnectionFactory;
+import javax.management.ObjectName;
+import javax.naming.InitialContext;
+import javax.sql.DataSource;
+import javax.transaction.TransactionManager;
+
+import org.jboss.jms.client.JBossConnection;
+import org.jboss.logging.Logger;
+import org.jboss.test.messaging.tools.ServerManagement;
+import org.jboss.test.messaging.util.ProxyAssertSupport;
+import org.jboss.tm.TransactionManagerLocator;
 
 /**
  * The base case for messaging tests.
@@ -95,8 +103,6 @@ public class MessagingTestCase extends ProxyAssertSupport
          // log the test start in the remote log, this will make hunting through logs so much easier
          ServerManagement.log(ServerManagement.INFO, banner);
       }
-      
-      MessageIdGeneratorFactory.instance.clear();
    }
 
    protected void tearDown() throws Exception

@@ -8,7 +8,7 @@ package org.jboss.messaging.core.remoting.codec;
 
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.REQ_CREATEBROWSER;
 
-import org.jboss.jms.destination.JBossDestination;
+import org.jboss.messaging.core.Destination;
 import org.jboss.messaging.core.remoting.wireformat.CreateBrowserRequest;
 
 /**
@@ -61,7 +61,7 @@ public class CreateBrowserRequestCodec extends
       int destinationLength = in.getInt();
       byte[] b = new byte[destinationLength];
       in.get(b);
-      JBossDestination destination = decode(b);
+      Destination destination = decode(b);
       String selector = in.getNullableString();
 
       return new CreateBrowserRequest(destination, selector);

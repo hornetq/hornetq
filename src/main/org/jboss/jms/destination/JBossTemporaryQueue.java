@@ -21,11 +21,12 @@
   */
 package org.jboss.jms.destination;
 
+import java.util.UUID;
+
 import javax.jms.JMSException;
 import javax.jms.TemporaryQueue;
 
 import org.jboss.jms.delegate.SessionDelegate;
-import org.jboss.messaging.util.GUIDGenerator;
 
 
 /**
@@ -51,7 +52,8 @@ public class JBossTemporaryQueue extends JBossQueue implements TemporaryQueue
    
    public JBossTemporaryQueue(SessionDelegate delegate)
    {
-      super(GUIDGenerator.generateGUID());
+      super(UUID.randomUUID().toString());
+      
       this.delegate = delegate;
    }
    
@@ -66,7 +68,7 @@ public class JBossTemporaryQueue extends JBossQueue implements TemporaryQueue
    {
       if (delegate != null)
       {
-         delegate.deleteTemporaryDestination(this);
+         delegate.deleteTemporaryDestination(this.toCoreDestination());
       }
    }
    

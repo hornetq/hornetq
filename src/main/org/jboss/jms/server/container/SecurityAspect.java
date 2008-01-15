@@ -24,19 +24,16 @@ package org.jboss.jms.server.container;
 import java.util.HashSet;
 import java.util.Set;
 
-import javax.jms.Destination;
 import javax.jms.JMSSecurityException;
 
-import org.jboss.jms.destination.JBossDestination;
-import org.jboss.jms.destination.JBossQueue;
-import org.jboss.jms.destination.JBossTemporaryQueue;
-import org.jboss.jms.destination.JBossTemporaryTopic;
-import org.jboss.jms.destination.JBossTopic;
 import org.jboss.jms.server.SecurityStore;
 import org.jboss.jms.server.endpoint.ServerConnectionEndpoint;
 import org.jboss.jms.server.security.CheckType;
 import org.jboss.jms.server.security.SecurityMetadata;
 import org.jboss.logging.Logger;
+import org.jboss.messaging.core.Destination;
+import org.jboss.messaging.core.DestinationType;
+import org.jboss.security.SimplePrincipal;
 
 /**
  * This aspect enforces the JBossMessaging JMS security policy.
@@ -68,11 +65,11 @@ public class SecurityAspect
    
    private boolean trace = log.isTraceEnabled();
    
-   private Set readCache;
+   private Set<Destination> readCache;
    
-   private Set writeCache;
+   private Set<Destination> writeCache;
    
-   private Set createCache;
+   private Set<Destination> createCache;
    
    //TODO Make this configurable
    private static final long INVALIDATION_INTERVAL = 15000;
@@ -84,44 +81,13 @@ public class SecurityAspect
    // Public --------------------------------------------------------
    public SecurityAspect()
    {
-      readCache = new HashSet();
+      readCache = new HashSet<Destination>();
       
-      writeCache = new HashSet();
+      writeCache = new HashSet<Destination>();
       
-      createCache = new HashSet();
+      createCache = new HashSet<Destination>();
    }
    
-   //FIXME - temp until refactoring is complete
-   //All server side security should involve core destinations not JBossDestinations
-   public JBossDestination convert(org.jboss.messaging.newcore.Destination dest)
-   {
-      JBossDestination jbdest;
-      if (dest.isTemporary())
-      {
-         if ("Queue".equals(dest.getType()))
-         {
-            jbdest = new JBossTemporaryQueue(dest.getName());
-         }
-         else
-         {
-            jbdest = new JBossTemporaryTopic(dest.getName());
-         }
-      }
-      else
-      {
-         if ("Topic".equals(dest.getType()))
-         {
-            jbdest = new JBossQueue(dest.getName());
-         }
-         else
-         {
-            jbdest = new JBossTopic(dest.getName());
-         }
-      }
-      return jbdest;
-   }
-
-
    // Package protected ---------------------------------------------
    
    // Protected -----------------------------------------------------
@@ -176,9 +142,7 @@ public class SecurityAspect
    public void check(Destination dest, CheckType checkType, ServerConnectionEndpoint conn)
       throws JMSSecurityException
    {
-      JBossDestination jbd = (JBossDestination)dest;
-
-      if (jbd.isTemporary())
+      if (dest.isTemporary())
       {
          if (trace) { log.trace("skipping permission check on temporary destination " + dest); }
          return;
@@ -192,8 +156,10 @@ public class SecurityAspect
          return;
       }
 
-      boolean isQueue = jbd.isQueue();
-      String name = jbd.getName();
+      
+      //FIXME - this check does not belong here
+      boolean isQueue = dest.getType() == DestinationType.QUEUE;
+      String name = dest.getName();
 
       SecurityStore sm = conn.getSecurityManager();
       SecurityMetadata securityMetadata = sm.getSecurityMetadata(isQueue, name);
@@ -211,7 +177,7 @@ public class SecurityAspect
       sm.authenticate(conn.getUsername(), conn.getPassword());
 
       // Authorize
-      Set principals = checkType == CheckType.READ ? securityMetadata.getReadPrincipals() :
+      Set<SimplePrincipal> principals = checkType == CheckType.READ ? securityMetadata.getReadPrincipals() :
                        checkType == CheckType.WRITE ? securityMetadata.getWritePrincipals() :
                        securityMetadata.getCreatePrincipals();
       try

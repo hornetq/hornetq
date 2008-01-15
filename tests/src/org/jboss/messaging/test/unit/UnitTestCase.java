@@ -37,10 +37,10 @@ import javax.transaction.xa.Xid;
 import junit.framework.TestCase;
 
 import org.jboss.jms.tx.MessagingXid;
-import org.jboss.messaging.newcore.Message;
-import org.jboss.messaging.newcore.MessageReference;
-import org.jboss.messaging.newcore.Queue;
-import org.jboss.messaging.newcore.impl.MessageImpl;
+import org.jboss.messaging.core.Message;
+import org.jboss.messaging.core.MessageReference;
+import org.jboss.messaging.core.Queue;
+import org.jboss.messaging.core.impl.MessageImpl;
 
 /**
  * 
@@ -201,7 +201,9 @@ public class UnitTestCase extends TestCase
          
    protected Message generateMessage(long id)
    {
-      Message message = new MessageImpl(id, 0, true, 0, System.currentTimeMillis(), (byte)4);
+      Message message = new MessageImpl(0, true, 0, System.currentTimeMillis(), (byte)4);
+      
+      message.setMessageID(id);
       
       byte[] bytes = new byte[1024];
       
@@ -224,9 +226,14 @@ public class UnitTestCase extends TestCase
    
    protected void assertEquivalent(Message msg1, Message msg2)
    {
+      assertEquivalent(msg1, msg2, true);
+   }
+   
+   protected void assertEquivalent(Message msg1, Message msg2, boolean exactQueue)
+   {
       assertEquals(msg1.getMessageID(), msg2.getMessageID());
       
-      assertEquals(msg1.isReliable(), msg2.isReliable());
+      assertEquals(msg1.isDurable(), msg2.isDurable());
       
       assertEquals(msg1.getExpiration(), msg2.getExpiration());
       
@@ -259,7 +266,15 @@ public class UnitTestCase extends TestCase
          
          assertEquals(ref1.getDeliveryCount(), ref2.getDeliveryCount());
          
-         assertEquals(ref1.getQueue(), ref2.getQueue());
+         if (exactQueue)
+         {
+            assertTrue(ref1.getQueue() == ref2.getQueue());
+         }
+         else
+         {
+            assertEquals(ref1.getQueue().getPersistenceID(), ref2.getQueue().getPersistenceID());
+            assertEquals(ref1.getQueue().getName(), ref2.getQueue().getName());
+         }
       }
    }
    
@@ -273,13 +288,15 @@ public class UnitTestCase extends TestCase
       }
    }
    
-   protected Xid generateXid()
+   protected MessagingXid generateXid()
    {      
       String id1 = java.util.UUID.randomUUID().toString();
       
       String id2 = java.util.UUID.randomUUID().toString();
       
-      Xid xid = new MessagingXid(id1.getBytes(), 123, id2.getBytes());
+      int id = (int)(Math.random() * 100);
+      
+      MessagingXid xid = new MessagingXid(id1.getBytes(), id, id2.getBytes());
       
       return xid;
    }

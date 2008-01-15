@@ -8,7 +8,7 @@ package org.jboss.messaging.core.remoting.wireformat;
 
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_SENDMESSAGE;
 
-import org.jboss.messaging.newcore.Message;
+import org.jboss.messaging.core.Message;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -23,22 +23,19 @@ public class SendMessage extends AbstractPacket
    // Attributes ----------------------------------------------------
 
    private final Message message;
-   private final boolean checkForDuplicates;
    private final long sequence;
 
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public SendMessage(Message message, boolean checkForDuplicates,
-         long sequence)
+   public SendMessage(Message message, long sequence)
    {
       super(MSG_SENDMESSAGE);
 
       assert message != null;
 
       this.message = message;
-      this.checkForDuplicates = checkForDuplicates;
       this.sequence = sequence;
    }
 
@@ -47,11 +44,6 @@ public class SendMessage extends AbstractPacket
    public Message getMessage()
    {
       return message;
-   }
-
-   public boolean checkForDuplicates()
-   {
-      return checkForDuplicates;
    }
 
    public long getSequence()
@@ -63,7 +55,7 @@ public class SendMessage extends AbstractPacket
    public String toString()
    {
       return getParentString() + ", message=" + message
-            + ", checkForDuplicates=" + checkForDuplicates + ", sequence="
+            + ", sequence="
             + sequence + "]";
    }
    

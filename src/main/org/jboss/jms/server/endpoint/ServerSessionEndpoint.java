@@ -27,7 +27,6 @@ import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_CANCEL
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_CANCELDELIVERY;
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_CLOSE;
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_DELETETEMPORARYDESTINATION;
-import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_RECOVERDELIVERIES;
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_SENDMESSAGE;
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_UNSUBSCRIBE;
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.REQ_ACKDELIVERY;
@@ -38,17 +37,14 @@ import static org.jboss.messaging.core.remoting.wireformat.PacketType.REQ_CREATE
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.UUID;
 
-import javax.jms.Destination;
 import javax.jms.IllegalStateException;
 import javax.jms.InvalidDestinationException;
 import javax.jms.JMSException;
@@ -61,39 +57,30 @@ import org.jboss.jms.delegate.Cancel;
 import org.jboss.jms.delegate.ConsumerDelegate;
 import org.jboss.jms.delegate.DefaultAck;
 import org.jboss.jms.delegate.DeliveryInfo;
-import org.jboss.jms.delegate.DeliveryRecovery;
 import org.jboss.jms.delegate.SessionEndpoint;
 import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.destination.JBossQueue;
 import org.jboss.jms.destination.JBossTopic;
 import org.jboss.jms.exception.MessagingJMSException;
 import org.jboss.jms.server.DestinationManager;
-import org.jboss.jms.server.JMSCondition;
-import org.jboss.jms.server.ServerPeer;
 import org.jboss.jms.server.container.SecurityAspect;
-import org.jboss.jms.server.destination.ManagedDestination;
-import org.jboss.jms.server.destination.ManagedQueue;
-import org.jboss.jms.server.destination.ManagedTopic;
-import org.jboss.jms.server.messagecounter.MessageCounter;
 import org.jboss.jms.server.security.CheckType;
 import org.jboss.jms.server.selector.Selector;
 import org.jboss.logging.Logger;
-import org.jboss.messaging.core.contract.Binding;
-import org.jboss.messaging.core.contract.Channel;
-import org.jboss.messaging.core.contract.Condition;
-import org.jboss.messaging.core.contract.Delivery;
-import org.jboss.messaging.core.contract.DeliveryObserver;
-import org.jboss.messaging.core.contract.MessageStore;
-import org.jboss.messaging.core.contract.PersistenceManager;
-import org.jboss.messaging.core.contract.PostOffice;
-import org.jboss.messaging.core.contract.Queue;
-import org.jboss.messaging.core.contract.Replicator;
-import org.jboss.messaging.core.impl.IDManager;
-import org.jboss.messaging.core.impl.MessagingQueue;
-import org.jboss.messaging.core.impl.tx.Transaction;
-import org.jboss.messaging.core.impl.tx.TransactionException;
-import org.jboss.messaging.core.impl.tx.TransactionRepository;
-import org.jboss.messaging.core.impl.tx.TxCallback;
+import org.jboss.messaging.core.Binding;
+import org.jboss.messaging.core.Condition;
+import org.jboss.messaging.core.Destination;
+import org.jboss.messaging.core.DestinationType;
+import org.jboss.messaging.core.Message;
+import org.jboss.messaging.core.MessageReference;
+import org.jboss.messaging.core.MessagingServer;
+import org.jboss.messaging.core.PostOffice;
+import org.jboss.messaging.core.Queue;
+import org.jboss.messaging.core.Transaction;
+import org.jboss.messaging.core.TransactionSynchronization;
+import org.jboss.messaging.core.impl.ConditionImpl;
+import org.jboss.messaging.core.impl.TransactionImpl;
+import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.PacketHandler;
 import org.jboss.messaging.core.remoting.PacketSender;
 import org.jboss.messaging.core.remoting.wireformat.AbstractPacket;
@@ -116,13 +103,9 @@ import org.jboss.messaging.core.remoting.wireformat.DeliverMessage;
 import org.jboss.messaging.core.remoting.wireformat.JMSExceptionMessage;
 import org.jboss.messaging.core.remoting.wireformat.NullPacket;
 import org.jboss.messaging.core.remoting.wireformat.PacketType;
-import org.jboss.messaging.core.remoting.wireformat.RecoverDeliveriesMessage;
 import org.jboss.messaging.core.remoting.wireformat.SendMessage;
 import org.jboss.messaging.core.remoting.wireformat.UnsubscribeMessage;
-import org.jboss.messaging.newcore.Message;
-import org.jboss.messaging.newcore.MessageReference;
 import org.jboss.messaging.util.ExceptionUtil;
-import org.jboss.messaging.util.GUIDGenerator;
 import org.jboss.messaging.util.MessageQueueNameHelper;
 
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
@@ -131,18 +114,11 @@ import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
 import EDU.oswego.cs.dl.util.concurrent.SynchronizedLong;
 
 /**
- * The server side representation of a JMS session.
+ * Session implementation
  * 
- * A user must not invoke methods of a session concurrently on different threads, however there are
- * situations where multiple threads may access this object concurrently, for instance:
- * - A session can be closed when it's connection is closed by the user which might be called on a
- *   different thread.
- * - A session can be closed when the server determines the connection is dead.
- *
- * If the session represents a connection consumer's session then the connection consumer will farm
- * off messages to different sessions obtained from a pool, these may then cancel/ack etc on
- * different threads, but the acks/cancels/etc will end up back here on the connection consumer
- * session instance.
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * 
+ * Parts derived from JBM 1.x ServerSessionEndpoint by
  * 
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -180,26 +156,19 @@ public class ServerSessionEndpoint implements SessionEndpoint
 
    private ServerConnectionEndpoint connectionEndpoint;
    
-   private ServerPeer sp;
+   private MessagingServer sp;
 
    private Map consumers;
    private Map browsers;
 
-   private PersistenceManager pm;
-   private MessageStore ms;
-
    private DestinationManager dm;
-   private IDManager idm;
-   private TransactionRepository tr;
    private PostOffice postOffice;
    private int nodeId;
    private int defaultMaxDeliveryAttempts;
    private long defaultRedeliveryDelay;
    private Queue defaultDLQ;
    private Queue defaultExpiryQueue;
-   private boolean supportsFailover;
-   private boolean replicating;
-   
+
    private Object deliveryLock = new Object();
       
    // Map <deliveryID, Delivery>
@@ -218,32 +187,19 @@ public class ServerSessionEndpoint implements SessionEndpoint
    
    // Constructors ---------------------------------------------------------------------------------
 
-   ServerSessionEndpoint(String sessionID, ServerConnectionEndpoint connectionEndpoint,
-   		                boolean replicating) throws Exception
+   ServerSessionEndpoint(String sessionID, ServerConnectionEndpoint connectionEndpoint) throws Exception
    {
       this.id = sessionID;
 
       this.connectionEndpoint = connectionEndpoint;
-      
-      this.replicating = replicating;
-      
-      sp = connectionEndpoint.getServerPeer();
+       
+      sp = connectionEndpoint.getMessagingServer();
 
-      pm = sp.getPersistenceManagerInstance();
-      
-      ms = sp.getMessageStore();
-      
       dm = sp.getDestinationManager();
       
       postOffice = sp.getPostOffice(); 
       
-      supportsFailover = connectionEndpoint.getConnectionFactoryEndpoint().isSupportsFailover() && sp.getConfiguration().isClustered();
-      
-      idm = sp.getChannelIDManager();
-      
-      nodeId = sp.getConfiguration().getServerPeerID();
-      
-      tr = sp.getTxRepository();
+      nodeId = sp.getConfiguration().getMessagingServerID();
       
       consumers = new HashMap();
       
@@ -252,8 +208,6 @@ public class ServerSessionEndpoint implements SessionEndpoint
       defaultDLQ = sp.getDefaultDLQInstance();
       
       defaultExpiryQueue = sp.getDefaultExpiryQueueInstance();
-      
-      tr = sp.getTxRepository();
       
       defaultMaxDeliveryAttempts = sp.getConfiguration().getDefaultMaxDeliveryAttempts();
       
@@ -280,31 +234,18 @@ public class ServerSessionEndpoint implements SessionEndpoint
       }
    }
 
-
-
-   public ConsumerDelegate createConsumerDelegate(JBossDestination jmsDestination,
+   public ConsumerDelegate createConsumerDelegate(Destination destination,
                                                   String selector,
                                                   boolean noLocal,
                                                   String subscriptionName,
-                                                  boolean isCC,
-                                                  boolean autoFlowControl) throws JMSException
+                                                  boolean isCC) throws JMSException
    {
-      checkSecurityCreateConsumerDelegate(jmsDestination, subscriptionName);
+      
+      checkSecurityCreateConsumerDelegate(destination, subscriptionName);
+      
       try
       {
-      	//TODO This is a temporary kludge to allow creation of consumers directly on core queues for 
-      	//cluster connections
-      	//This will disappear once we move all JMS knowledge to the client side
-      	
-      	if (jmsDestination.isDirect())
-      	{
-      		return createConsumerDelegateDirect(jmsDestination.getName(), selector);
-      	}
-      	else
-      	{      	      	
-	         return createConsumerDelegateInternal(jmsDestination, selector,
-	                                               noLocal, subscriptionName);
-      	}
+      	return createConsumerDelegateInternal(destination, selector, noLocal, subscriptionName);      	
       }
       catch (Throwable t)
       {
@@ -312,15 +253,15 @@ public class ServerSessionEndpoint implements SessionEndpoint
       }
    }
 
-	public BrowserDelegate createBrowserDelegate(JBossDestination jmsDestination,
+	public BrowserDelegate createBrowserDelegate(Destination destination,
                                                 String selector)
       throws JMSException
 	{
-      security.check(jmsDestination, CheckType.READ, this.getConnectionEndpoint());
+      security.check(destination, CheckType.READ, this.getConnectionEndpoint());
 
       try
       {
-         return createBrowserDelegateInternal(jmsDestination, selector);
+         return createBrowserDelegateInternal(destination, selector);
       }
       catch (Throwable t)
       {
@@ -337,14 +278,16 @@ public class ServerSessionEndpoint implements SessionEndpoint
             throw new IllegalStateException("Session is closed");
          }
          
-         ManagedDestination dest = (ManagedDestination)dm.getDestination(name, true);
+         //FIXME - this method should not exist on the server
          
-         if (dest == null)
+         Condition condition = new ConditionImpl(DestinationType.QUEUE, name);
+         
+         if (!postOffice.containsCondition(condition))
          {
             throw new JMSException("There is no administratively defined queue with name:" + name);
-         }        
-   
-         return new JBossQueue(dest.getName());
+         }    
+
+         return new JBossQueue(name);
       }
       catch (Throwable t)
       {
@@ -360,10 +303,12 @@ public class ServerSessionEndpoint implements SessionEndpoint
          {
             throw new IllegalStateException("Session is closed");
          }
-         
-         ManagedDestination dest = (ManagedDestination)dm.getDestination(name, false);
+              
+         //FIXME - this method should not exist on the server
                   
-         if (dest == null)
+         Condition condition = new ConditionImpl(DestinationType.TOPIC, name);
+         
+         if (!postOffice.containsCondition(condition))
          {
             throw new JMSException("There is no administratively defined topic with name:" + name);
          }        
@@ -384,7 +329,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
          
          connectionEndpoint.removeSession(id);
          
-         sp.getMinaService().getDispatcher().unregister(id);
+         connectionEndpoint.getMessagingServer().getMinaService().getDispatcher().unregister(id);
       }
       catch (Throwable t)
       {
@@ -429,13 +374,12 @@ public class ServerSessionEndpoint implements SessionEndpoint
  
    private volatile long expectedSequence = 0;
    
-
-   public void send(Message message, boolean checkForDuplicates) throws JMSException
+   public void send(Message message) throws JMSException
    {
    	throw new IllegalStateException("Should not be handled on the server");
    }
    
-   public void send(Message message, boolean checkForDuplicates, long thisSequence) throws JMSException
+   public void send(Message message, long thisSequence) throws JMSException
    {
       try
       {                
@@ -443,7 +387,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
       	{
       		synchronized (waitLock)
       		{	      		      	        
-   				connectionEndpoint.sendMessage(message, null, checkForDuplicates); 
+   				connectionEndpoint.sendMessage(message); 
    				
       			expectedSequence++;
      			
@@ -452,8 +396,15 @@ public class ServerSessionEndpoint implements SessionEndpoint
       	}
       	else
       	{
-      		connectionEndpoint.sendMessage(message, null, checkForDuplicates);
+      		connectionEndpoint.sendMessage(message);
       	}        
+      	
+      	if (message.isDurable())
+      	{
+      	   sp.getPersistenceManager().addMessage(message);
+      	}
+      	
+      	message.send();
       }
       catch (Throwable t)
       {
@@ -469,7 +420,9 @@ public class ServerSessionEndpoint implements SessionEndpoint
       }
       catch (Throwable t)
       {
-         throw ExceptionUtil.handleJMSInvocation(t, this + " acknowledgeDelivery");
+         JMSException e = ExceptionUtil.handleJMSInvocation(t, this + " acknowledgeDelivery");
+         
+         throw e;
       }
    }     
          
@@ -496,198 +449,47 @@ public class ServerSessionEndpoint implements SessionEndpoint
              
    public void cancelDelivery(Cancel cancel) throws JMSException
    {
-      if (trace) {log.trace(this + " cancelDelivery " + cancel); }
-      
       try
       {
-         Delivery del = cancelDeliveryInternal(cancel);
+         if (trace) {log.trace(this + " cancelDelivery " + cancel); }
          
-         if (del != null)
-         {         
-	         //Prompt delivery
-	         promptDelivery((Channel)del.getObserver());
-         }
+         cancelDeliveryInternal(cancel);          
       }
       catch (Throwable t)
       {
-         throw ExceptionUtil.handleJMSInvocation(t, this + " cancelDelivery");
-      }     
+         throw ExceptionUtil.handleJMSInvocation(t, this + " acknowledgeDeliveries");
+      }
    }            
 
    public void cancelDeliveries(List cancels) throws JMSException
    {
       if (trace) {log.trace(this + " cancels deliveries " + cancels); }
         
+      log.info("Cancelling deliveries " + cancels.size());
+      
       try
       {
          // deliveries must be cancelled in reverse order
-
-         Set channels = new HashSet();
-                          
+                   
          for (int i = cancels.size() - 1; i >= 0; i--)
          {
             Cancel cancel = (Cancel)cancels.get(i);       
             
             if (trace) { log.trace(this + " cancelling delivery " + cancel.getDeliveryId()); }
                         
-            Delivery del = cancelDeliveryInternal(cancel);
-            
-            if (del != null)
-            {            	
-            	channels.add(del.getObserver());
-            }
+            cancelDeliveryInternal(cancel);
          }
                  
          if (trace) { log.trace("Cancelled deliveries"); }
          
-         // need to prompt delivery for all affected channels
-         
-         promptDelivery(channels);
       }
       catch (Throwable t)
       {
          throw ExceptionUtil.handleJMSInvocation(t, this + " cancelDeliveries");
       }
    }         
-   
-   public void recoverDeliveries(List deliveryRecoveryInfos, String oldSessionID) throws JMSException
-   {
-      if (trace) { log.trace(this + " recovers deliveries " + deliveryRecoveryInfos); }
-
-      try
-      {
-         if (!sp.getConfiguration().isClustered())
-         {
-            throw new IllegalStateException("Recovering deliveries but post office is not clustered!");
-         }
-         
-         long maxDeliveryId = 0;
-                  
-         //Sort into different list for each channel
-         Map ackMap = new HashMap();
-                  
-         for (Iterator iter = deliveryRecoveryInfos.iterator(); iter.hasNext(); )
-         {
-            DeliveryRecovery deliveryInfo = (DeliveryRecovery)iter.next();
-                
-            String queueName = deliveryInfo.getQueueName();
-
-            List acks = (List)ackMap.get(queueName);
-            
-            if (acks == null)
-            {
-               acks = new ArrayList();
-               
-               ackMap.put(queueName, acks);
-            }
-            
-            acks.add(deliveryInfo);
-         }  
-
-         Iterator iter = ackMap.entrySet().iterator();
-         
-         while (iter.hasNext())
-         {
-            Map.Entry entry = (Map.Entry)iter.next();
-            
-            String queueName = (String)entry.getKey();
-            
-            //Look up the queue
-
-            Binding binding = postOffice.getBindingForQueueName(queueName);
-            
-            Queue queue = binding.queue;
-            
-            if (queue == null)
-            {
-               throw new IllegalStateException("Cannot find queue with queue name: " + queueName);
-            }
-            
-            List acks = (List)entry.getValue();
-            
-            List ids = new ArrayList(acks.size());
-            
-            for (Iterator iter2 = acks.iterator(); iter2.hasNext(); )
-            {
-               DeliveryRecovery info = (DeliveryRecovery)iter2.next();
-               
-               ids.add(new Long(info.getMessageID()));
-            }
-            
-            JMSCondition cond = (JMSCondition)binding.condition;
-            
-            ManagedDestination dest =
-               sp.getDestinationManager().getDestination(cond.getName(), cond.isQueue());
-            
-            if (dest == null)
-            {
-               throw new IllegalStateException("Cannot find managed destination with name " +
-                  cond.getName() + " isQueue" + cond.isQueue());
-            }
-            
-            Queue dlqToUse =
-               dest.getDLQ() == null ? defaultDLQ : dest.getDLQ();
-            
-            Queue expiryQueueToUse =
-               dest.getExpiryQueue() == null ? defaultExpiryQueue : dest.getExpiryQueue();
-            
-            int maxDeliveryAttemptsToUse =
-               dest.getMaxDeliveryAttempts() == -1 ? defaultMaxDeliveryAttempts : dest.getMaxDeliveryAttempts();
-
-            List dels = queue.recoverDeliveries(ids);
-
-            Iterator iter2 = dels.iterator();
-            
-            Iterator iter3 = acks.iterator();
-            
-            while (iter2.hasNext())
-            {
-               Delivery del = (Delivery)iter2.next();
-               
-               DeliveryRecovery info = (DeliveryRecovery)iter3.next();
-               
-               long deliveryId = info.getDeliveryID();
-               
-               maxDeliveryId = Math.max(maxDeliveryId, deliveryId);
-               
-               if (trace) { log.trace(this + " Recovered delivery " + deliveryId + ", " + del); }
-               
-               deliveries.put(new Long(deliveryId),
-                              new DeliveryRecord(del, dlqToUse, expiryQueueToUse, dest.getRedeliveryDelay(),
-                              		maxDeliveryAttemptsToUse, queueName, supportsFailover, deliveryId));
-               
-               //We want to replicate the deliveries to the new backup, but we don't want a response since that would cause actual delivery
-               //to occur, which we don't want since the client already has the deliveries
-               
-               if (supportsFailover)
-               {
-               	postOffice.sendReplicateDeliveryMessage(queueName, id, del.getReference().getMessage().getMessageID(), deliveryId, false, true);
-               }
-            }
-         }
-         
-         iter = postOffice.getAllBindings().iterator();
-         
-         while (iter.hasNext())
-         {
-         	Binding binding = (Binding)iter.next();
-         	
-         	if (binding.queue.isClustered() && binding.queue.isRecoverable())
-         	{
-         		// Remove any stranded refs corresponding to refs that might have been in the client buffer but not consumed
-         		binding.queue.removeStrandedReferences(oldSessionID);
-         	}
-         }
-         
-         this.deliveryIdSequence = new SynchronizedLong(maxDeliveryId + 1);
-      }
-      catch (Throwable t)
-      {
-         throw ExceptionUtil.handleJMSInvocation(t, this + " recoverDeliveries");
-      }
-   }
-   
-   public void addTemporaryDestination(JBossDestination dest) throws JMSException
+      
+   public void addTemporaryDestination(Destination dest) throws JMSException
    {
       try
       {
@@ -695,53 +497,26 @@ public class ServerSessionEndpoint implements SessionEndpoint
          {
             throw new IllegalStateException("Session is closed");
          }
+         
          if (!dest.isTemporary())
          {
-            throw new InvalidDestinationException("Destination:" + dest +
-               " is not a temporary destination");
+            throw new InvalidDestinationException("Destination:" + dest + " is not a temporary destination");
          }
 
          connectionEndpoint.addTemporaryDestination(dest);
          
-         // Register with the destination manager
+         Condition condition = new ConditionImpl(dest.getType(), dest.getName());
          
-         ManagedDestination mDest;
-         
-         int fullSize = connectionEndpoint.getDefaultTempQueueFullSize();
-         int pageSize = connectionEndpoint.getDefaultTempQueuePageSize();
-         int downCacheSize = connectionEndpoint.getDefaultTempQueueDownCacheSize();
-         
-         //Temporary destinations are clustered if the post office is clustered
-
-         if (dest.isTopic())
-         {
-            mDest = new ManagedTopic(dest.getName(), fullSize, pageSize, downCacheSize, sp.getConfiguration().isClustered());
-         }
-         else
-         {
-            mDest = new ManagedQueue(dest.getName(), fullSize, pageSize, downCacheSize, sp.getConfiguration().isClustered());
-         }
-         
-         mDest.setTemporary(true);
-         
-         dm.registerDestination(mDest);
-         
-         if (dest.isQueue())
-         {            
-            Queue coreQueue = new MessagingQueue(nodeId, dest.getName(),
-            												 idm.getID(), ms, pm, false, -1, null,
-										                   fullSize, pageSize, downCacheSize, sp.getConfiguration().isClustered(),
-										                   sp.getConfiguration().getRecoverDeliveriesTimeout());
-
-        
-            Condition cond = new JMSCondition(true, dest.getName());
+         postOffice.addCondition(condition);
+                        
+         //FIXME - comparisons like this do not belong on the server side
+         //They should be computed on the client side
+         if (dest.getType() == DestinationType.QUEUE)
+         {                     
             
-         	// make a binding for this temporary queue
-            
-            // temporary queues need to bound on ALL nodes of the cluster
-            postOffice.addBinding(new Binding(cond, coreQueue, true), sp.getConfiguration().isClustered());
-            
-            coreQueue.activate();
+            postOffice.addQueue(condition, dest.getName(), null,
+                                false, true, sp.getConfiguration().isClustered());
+                        
          }         
       }
       catch (Throwable t)
@@ -750,7 +525,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
       }
    }
    
-   public void deleteTemporaryDestination(JBossDestination dest) throws JMSException
+   public void deleteTemporaryDestination(Destination dest) throws JMSException
    {
       try
       {
@@ -765,37 +540,36 @@ public class ServerSessionEndpoint implements SessionEndpoint
                                                   " is not a temporary destination");
          }
          
-         ManagedDestination mDest = dm.getDestination(dest.getName(), dest.isQueue());
-         
-         if (mDest == null)
+         Condition condition = new ConditionImpl(dest.getType(), dest.getName());
+                       
+         //FIXME - comparisons like this should be done on the jms client not here
+         if (dest.getType() == DestinationType.QUEUE)
          {
-            throw new InvalidDestinationException("No such destination: " + dest);
-         }
-                  
-         if (dest.isQueue())
-         {
-         	Binding binding = postOffice.getBindingForQueueName(dest.getName());
-         	
-         	if (binding == null)
+            List<Binding> bindings = postOffice.getBindingsForQueueName(dest.getName());
+                     	
+         	if (bindings.isEmpty())
          	{
          		throw new IllegalStateException("Cannot find binding for queue " + dest.getName());
          	}
          	
-         	if (binding.queue.getLocalDistributor().getNumberOfReceivers() != 0)
+         	Binding binding = bindings.get(0);
+         	
+         	if (binding.getQueue().getConsumerCount() != 0)
          	{
          		throw new IllegalStateException("Cannot delete temporary queue if it has consumer(s)");
          	}
          	
          	// temporary queues must be unbound on ALL nodes of the cluster
          	
-            postOffice.removeBinding(dest.getName(), sp.getConfiguration().isClustered());
+         	postOffice.removeQueue(condition, dest.getName(), sp.getConfiguration().isClustered());
          }
          else
          {
-            //Topic            
-            Collection queues = postOffice.getQueuesForCondition(new JMSCondition(false, dest.getName()), true);         	
-                           
-            if (!queues.isEmpty())
+            //FIXME - this should be evaluated on the client side
+            
+            List<Binding> bindings = postOffice.getBindingsForCondition(new ConditionImpl(dest.getType(), dest.getName()));
+            
+            if (!bindings.isEmpty())
          	{
             	throw new IllegalStateException("Cannot delete temporary topic if it has consumer(s)");
          	}
@@ -805,9 +579,9 @@ public class ServerSessionEndpoint implements SessionEndpoint
             // Note that you cannot create surable subs on a temp topic
          }
          
-         connectionEndpoint.removeTemporaryDestination(dest);         
+         postOffice.removeCondition(condition);
          
-         dm.unregisterDestination(mDest);                             
+         connectionEndpoint.removeTemporaryDestination(dest);                                
       }
       catch (Throwable t)
       {
@@ -837,24 +611,28 @@ public class ServerSessionEndpoint implements SessionEndpoint
             throw new JMSException("null clientID on connection");
          }
          
+         //FIXME - this should be done on the client side
+         
          String queueName = MessageQueueNameHelper.createSubscriptionName(clientID, subscriptionName);
+                  
+         List<Binding> bindings = postOffice.getBindingsForQueueName(queueName);
          
-         Binding binding = postOffice.getBindingForQueueName(queueName);
-         
-         if (binding == null)
+         if (bindings.isEmpty())
          {
             throw new InvalidDestinationException("Cannot find durable subscription with name " +
                                                   subscriptionName + " to unsubscribe");
          }
          
-         Queue sub = binding.queue;         
+         Queue sub = bindings.get(0).getQueue(); 
+         
+         //FIXME all this should be done on the jms client
          
          // Section 6.11. JMS 1.1.
          // "It is erroneous for a client to delete a durable subscription while it has an active
          // TopicSubscriber for it or while a message received by it is part of a current
          // transaction or has not been acknowledged in the session."
          
-         if (sub.getLocalDistributor().getNumberOfReceivers() != 0)
+         if (sub.getConsumerCount() != 0)
          {
             throw new IllegalStateException("Cannot unsubscribe durable subscription " +
                                             subscriptionName + " since it has active subscribers");
@@ -862,29 +640,40 @@ public class ServerSessionEndpoint implements SessionEndpoint
          
          //Also if it is clustered we must disallow unsubscribing if it has active consumers on other nodes
 
-         if (sub.isClustered() && sp.getConfiguration().isClustered())
-         {
-         	Replicator rep = (Replicator)postOffice;
-         	
-         	Map map = rep.get(sub.getName());
-         	
-         	if (!map.isEmpty())
-         	{
-         		throw new IllegalStateException("Cannot unsubscribe durable subscription " +
-                     subscriptionName + " since it has active subscribers on other nodes");
-         	}
-         }
+         //TODO - reimplement this for JBM2
+//         if (sub.isClustered() && sp.getConfiguration().isClustered())
+//         {
+//         	Replicator rep = (Replicator)postOffice;
+//         	
+//         	Map map = rep.get(sub.getName());
+//         	
+//         	if (!map.isEmpty())
+//         	{
+//         		throw new IllegalStateException("Cannot unsubscribe durable subscription " +
+//                     subscriptionName + " since it has active subscribers on other nodes");
+//         	}
+//         }
          
-         postOffice.removeBinding(sub.getName(), sub.isClustered() && sp.getConfiguration().isClustered());
+         //FIXME - again all this should be done on the client side jms client
          
-         String counterName = ManagedDestination.SUBSCRIPTION_MESSAGECOUNTER_PREFIX + sub.getName();
+         Condition condition = bindings.get(0).getCondition();
          
-         MessageCounter counter = sp.getMessageCounterManager().unregisterMessageCounter(counterName);
+         postOffice.removeQueue(condition, sub.getName(), sub.isClustered() && sp.getConfiguration().isClustered());
          
-         if (counter == null)
-         {
-            throw new IllegalStateException("Cannot find counter to remove " + counterName);
-         }
+         sp.getPersistenceManager().deleteAllReferences(sub);
+         
+         sub.removeAllReferences();
+         
+         //TODO - message counters should be handled automatically by the destination
+         
+//         String counterName = ManagedDestination.SUBSCRIPTION_MESSAGECOUNTER_PREFIX + sub.getName();
+//         
+//         MessageCounter counter = sp.getMessageCounterManager().unregisterMessageCounter(counterName);
+//         
+//         if (counter == null)
+//         {
+//            throw new IllegalStateException("Cannot find counter to remove " + counterName);
+//         }
       }
       catch (Throwable t)
       {
@@ -901,7 +690,6 @@ public class ServerSessionEndpoint implements SessionEndpoint
    {
       throw new RuntimeException("information only available on client side");
    }
-
    
    // Public ---------------------------------------------------------------------------------------
    
@@ -915,256 +703,26 @@ public class ServerSessionEndpoint implements SessionEndpoint
       return "SessionEndpoint[" + id + "]";
    }
    
-   public void deliverAnyWaitingDeliveries(String queueName) throws Exception
-   {
-   	//	First deliver any waiting deliveries
-   	
-   	if (trace) { log.trace("Delivering any waiting deliveries: " + queueName); }
-   	
-   	List toAddBack = null;
-   	
-   	while (true)
-   	{
-   		DeliveryRecord dr = (DeliveryRecord)toDeliver.poll(0);
-   		
-   		if (dr == null)
-   		{
-   			break;
-   		}
-   		
-   		if (trace) { log.trace("Considering " + dr); } 
-   		
-   		if (queueName == null || dr.queueName.equals(queueName))
-   		{   		
-   			//Need to synchronized to prevent the delivery being performed twice
-   			synchronized (dr)
-   			{   				
-		   		performDelivery(dr.del.getReference(), dr.deliveryID, dr.getConsumer()); 
-					
-			   	dr.waitingForResponse = false;
-   			}
-   		}
-   		else
-   		{
-   			if (toAddBack == null)
-   			{
-   				toAddBack = new ArrayList();
-   			}
-   			
-   			toAddBack.add(dr);
-   		}
-   	}
-   	
-   	if (toAddBack != null)
-   	{
-   		Iterator iter = toAddBack.iterator();
-   		
-   		while (iter.hasNext())
-   		{
-   			toDeliver.put(iter.next());
-   		}
-   	}
-   	
-   	if (trace) { log.trace("Done delivering"); }
-   }
-   
-   public boolean collectDeliveries(Map map, boolean firstNode, String queueName) throws Exception
-   {
-   	if (trace) { log.trace("Collecting deliveries"); }
-   	
-   	boolean gotSome = false;
-   	   	
-   	if (!firstNode && replicating)
-   	{	   	
-	   	if (trace) { log.trace("Now collecting"); }
-	   	   	
-	   	Iterator iter = deliveries.entrySet().iterator();
-	   	
-	   	while (iter.hasNext())
-	   	{
-	   		Map.Entry entry = (Map.Entry)iter.next();
-	   		
-	   		Long l = (Long)entry.getKey();
-	   		
-	   		long deliveryID = l.longValue();
-	   		
-	   		DeliveryRecord rec = (DeliveryRecord)entry.getValue();
-	   		
-	   		if (rec.replicating && (queueName == null || rec.queueName.equals(queueName)))
-	   		{
-	   			Map ids = (Map)map.get(rec.queueName);
-	   			
-	   			if (ids == null)
-	   			{
-	   				ids = new HashMap();
-	   				
-	   				map.put(rec.queueName, ids);
-	   			}
-	   			
-	   			ids.put(new Long(rec.del.getReference().getMessage().getMessageID()), id);
-	   			
-	   			gotSome = true;
-	   			
-	   			boolean notify = false;
-	   			
-	   			//Need to synchronize to prevent delivery occurring more than once - e.g.
-	   			//if replicateDeliveryResponseReceived occurs curently with this
-	   			synchronized (rec)
-	   			{
-		   			if (rec.waitingForResponse)
-		   			{
-		   				//Do the delivery now
-		   				
-		   				performDelivery(rec.del.getReference(), deliveryID, rec.getConsumer());   	   	
-		   		   	
-		   		   	rec.waitingForResponse = false;
-		   		   	
-		   		   	notify = true;
-		   			}
-	   			}
-	   		   	
-	   			if (notify)
-	   			{
-	   		   	synchronized (deliveryLock)
-	   		   	{
-	   		   		if (waitingToClose)
-	   		   		{
-	   		   			deliveryLock.notifyAll();
-	   		   		}
-	   		   	}   					   			
-	   			}
-	   		}
-	   	}
-   	}
-   	
-   	if (trace) { log.trace("Collected " + map.size() + " deliveries"); }
-   	
-   	return gotSome;
-   }
-      
-   public void replicateDeliveryResponseReceived(long deliveryID) throws Exception
-   {
-   	//We look up the delivery in the list and actually perform the delivery
-   	
-   	if (trace) { log.trace(this + " replicate delivery response received for delivery " + deliveryID); }
-   	
-   	DeliveryRecord rec = (DeliveryRecord)deliveries.get(new Long(deliveryID));
-   	
-   	if (rec == null)
-   	{
-   		//This is ok - may happen at failover
-         
-   	   // This can happen when the failover node is being changed
-         // E.g. failover node changes, replicates start getting sent to the new failover node,
-         // then the new node requests to collect the deliveries from this node, at which point we deliver
-         // all waiting deliveries. Then the responses to the original ones come back.
-         // So we can ignore them
-         
-         return;
-   	}
-   	   	
-   	boolean delivered = false;   	
-   	
-		while (true)
-   	{
-   		DeliveryRecord dr = (DeliveryRecord)toDeliver.peek();
-   		      	      		
-   		if (dr == null)
-   		{
-   			if (trace) { log.trace("No more deliveries in list"); }
-   			
-   			break;
-   		}
-   		
-   		if (trace) { log.trace("Peeked delivery record: " + dr.deliveryID); }
-   		
-   		//Needs to be synchronized to prevent delivery occurring twice e.g. if this occurs at same time as collectDeliveries
-   		synchronized (dr)
-   		{	   		
-	   		boolean performDelivery = false;
-	   		
-	   		if (dr.waitingForResponse)
-	   		{
-	   			if (dr == rec)
-	   			{
-	   				if (trace) { log.trace("Found our delivery"); }
-	   				
-	   				performDelivery = true;
-	   			}
-	   			else
-	   			{
-	   				if (!delivered)
-	   				{
-   	   				// Response has come back out of order - this can happen when the failover node is being changed
-	   					// E.g. failover node changes, replicates start getting sent to the new failover node,
-	   					// then the new node requests to collect the deliveries from this node, at which point we deliver
-	   					// all waiting deliveries. Then the responses to the original ones come back.
-	   					// So we can ignore them
-	   					break;
-	   				}
-	   				else
-	   				{
-	   					//We have delivered ours and possibly any non replicated deliveries too   	   					   	   					
-	   	   	   	
-	   					break;
-	   				}
-	   			}
-	   		}
-	   		else
-	   		{
-	   			//Non replicated delivery
-	   			
-	   			if (trace) { log.trace("Non replicated delivery"); }
-	   			
-	   			performDelivery = true;
-	   		}
-	   		
-	   		if (performDelivery)
-	   		{
-	   			toDeliver.take();
-	   			
-	   			performDelivery(dr.del.getReference(), dr.deliveryID, dr.getConsumer()); 
-	   			
-	   			delivered = true;
-	   	   	
-	   	   	dr.waitingForResponse = false;
-	   	   	
-	   	   	delivered = true;
-	   		}
-   		}	
-   	}   	  	      	
-   	
-   	if (delivered)
-   	{
-	   	synchronized (deliveryLock)
-	   	{
-	   		if (waitingToClose)
-	   		{
-	   			deliveryLock.notifyAll();
-	   		}
-	   	}
-   	}   	   	   	   
-   }
-
    // Package protected ----------------------------------------------------------------------------
    
-   void expireDelivery(Delivery del, Queue expiryQueue) throws Throwable
+   void expireDelivery(MessageReference ref, Queue expiryQueue) throws Exception
    {
-      if (trace) { log.trace(this + " detected expired message " + del.getReference()); }
+      if (trace) { log.trace(this + " detected expired message " + ref); }
       
       if (expiryQueue != null)
       {
          if (trace) { log.trace(this + " sending expired message to expiry queue " + expiryQueue); }
          
-         Message copy = makeCopyForDLQOrExpiry(true, del);
+         Message copy = makeCopyForDLQOrExpiry(true, ref);
          
-         moveInTransaction(copy, del, expiryQueue, true);
+         moveInTransaction(copy, ref, expiryQueue, true);
       }
       else
       {
-         log.warn("No expiry queue has been configured so removing expired " +  del.getReference());
+         log.warn("No expiry queue has been configured so removing expired " + ref);
          
-         del.acknowledge(null);
+         //TODO - tidy up these references - ugly
+         ref.acknowledge(this.getConnectionEndpoint().getMessagingServer().getPersistenceManager());
       }
    }
       
@@ -1190,12 +748,14 @@ public class ServerSessionEndpoint implements SessionEndpoint
       }
    }
     
-   void localClose() throws Throwable
+   void localClose() throws Exception
    {
       if (closed)
       {
          throw new IllegalStateException("Session is already closed");
       }
+      
+      log.info("** session close");
       
       if (trace) log.trace(this + " close()");
             
@@ -1250,9 +810,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
                        });
 
       Iterator iter = entries.iterator();
-            
-      Set channels = new HashSet();
-      
+              
       if (trace) { log.trace(this + " cancelling " + entries.size() + " deliveries"); }
       
       while (iter.hasNext())
@@ -1262,13 +820,11 @@ public class ServerSessionEndpoint implements SessionEndpoint
          if (trace) { log.trace(this + " cancelling delivery with delivery id: " + entry.getKey()); }
          
          DeliveryRecord rec = (DeliveryRecord)entry.getValue();
+
+         log.info("Cancelling delivery " + rec.ref);
          
-         rec.del.cancel();
-         
-         channels.add(rec.del.getObserver());
+         rec.ref.cancel(this.sp.getPersistenceManager());         
       }
-      
-      promptDelivery(channels);
       
       //Close down the executor
       
@@ -1287,7 +843,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
       closed = true;
    }            
    
-   void cancelDelivery(long deliveryId) throws Throwable
+   void cancelDelivery(long deliveryId) throws Exception
    {
       DeliveryRecord rec = (DeliveryRecord)deliveries.remove(new Long(deliveryId));
       
@@ -1296,81 +852,14 @@ public class ServerSessionEndpoint implements SessionEndpoint
          throw new IllegalStateException("Cannot find delivery to cancel " + deliveryId);
       }
       
-      rec.del.cancel();
+      rec.ref.cancel(this.sp.getPersistenceManager());
    }         
-   
-   /*
-    * When a consumer closes there may be deliveries where the replication messages has gone out to the backup
-    * but the response hasn't been received yet so the messages hasn't actually been delivered.
-    * When closing we must wait for these to be delivered before closing, or the message will be "lost" until
-    * the session is closed.
-    */
-   void waitForDeliveriesFromConsumer(String consumerID) throws Exception
-   {   
-		long toWait = DELIVERY_WAIT_TIMEOUT;
-		
-		boolean wait;
-		
-   	synchronized (deliveryLock)
-   	{   		
-   		do
-   		{
-   			wait = false;
-   			
-   			long start = System.currentTimeMillis();
-   			
-	   		Iterator iter = deliveries.values().iterator();
-	   		
-	   		while (iter.hasNext())
-	   		{
-	   			DeliveryRecord rec = (DeliveryRecord)iter.next();
-	   			
-	   			ServerConsumerEndpoint consumer = rec.getConsumer();
-	   			
-	   			if (consumer != null && consumer.getID().equals(consumerID) && rec.waitingForResponse)
-	   			{
-	   				wait = true;
-	   				
-	   				break;
-	   			}
-	   		}
-	   		
-	   		if (wait)
-	   		{
-	   			waitingToClose = true;
-	   			try
-	   			{
-	   				deliveryLock.wait(toWait);
-	   			}
-	   			catch (InterruptedException e)
-	   			{
-	   				//Ignore
-	   			}
-	   			toWait -= (System.currentTimeMillis() - start);
-	   		}
-   		}
-   		while (wait && toWait > 0);
-   		
-   		if (toWait <= 0)
-   		{
-   			//Clear toDeliver
-   			while (toDeliver.poll(0) != null)
-   			{
-   			}
-   			
-   			log.warn("Timed out waiting for response to arrive");
-   		}   		
-   		waitingToClose = false;
-   	}
-   }
-  
+      
    //TODO NOTE! This needs to be synchronized to prevent deliveries coming back
    //out of order! There maybe some better way of doing this 
-   synchronized void handleDelivery(Delivery delivery, ServerConsumerEndpoint consumer) throws Exception
+   synchronized void handleDelivery(MessageReference ref, ServerConsumerEndpoint consumer) throws Exception
    {
    	 long deliveryId = -1;
-   	 
-   	 if (trace) { log.trace(this + " handling delivery " + delivery); }
    	 
    	 DeliveryRecord rec = null;
    	 
@@ -1383,11 +872,11 @@ public class ServerSessionEndpoint implements SessionEndpoint
        {      	 
       	 // Add a delivery
 
-      	 rec = new DeliveryRecord(delivery, consumer, deliveryId);
+      	 rec = new DeliveryRecord(ref, consumer, deliveryId);
           
           deliveries.put(new Long(deliveryId), rec);
           
-          if (trace) { log.trace(this + " added delivery " + deliveryId + ": " + delivery); }
+          if (trace) { log.trace(this + " added delivery " + deliveryId + ": " + ref); }
        }
        else
        {
@@ -1397,8 +886,8 @@ public class ServerSessionEndpoint implements SessionEndpoint
        		//This basically just releases the memory reference
        		
        		if (trace) { log.trace("Acknowledging delivery now"); }
-       		
-       		delivery.acknowledge(null);
+       		     		
+       		ref.acknowledge(connectionEndpoint.getMessagingServer().getPersistenceManager());
        	}
        	catch (Throwable t)
        	{
@@ -1406,72 +895,8 @@ public class ServerSessionEndpoint implements SessionEndpoint
        	}
        }
        
-       Message message = delivery.getReference().getMessage();
-       
-       //Note that we only replicate transacted or client acknowledge sessions
-       //There is no point in replicating AUTO_ACK or DUPS_OK
-       if (!consumer.isReplicating() || !replicating)
-       {
-      	 if (trace) { log.trace(this + " doing the delivery straight away"); }
-      	 
-      	 //Actually do the delivery now
-      	 performDelivery(delivery.getReference(), deliveryId, consumer); 	           
-       }
-       else if (!message.isReliable())
-       {
-      	 if (!toDeliver.isEmpty())
-      	 {
-      		 if (trace) { log.trace("Message is unreliable and there are refs in the toDeliver so adding to list"); }
-      		 
-      		 //We need to add to the list to prevent non persistent messages overtaking persistent messages from the same
-      		 //producer in flight (since np don't need to be replicated)
-      		 toDeliver.put(rec);
-      		 
-      		 //Race check (there's a small chance the message in the queue got removed between the empty check
-      		 //and the put so we do another check:
-      		 if (toDeliver.peek() == rec)
-      		 {
-      			 toDeliver.take();
 
-      			 performDelivery(delivery.getReference(), deliveryId, consumer);
-      		 }
-      	 }
-      	 else
-      	 {
-      		 if (trace) { log.trace("Message is unreliable, but no deliveries in list so performing delivery now"); }
-      		 
-      		 // Actually do the delivery now
-         	 performDelivery(delivery.getReference(), deliveryId, consumer); 
-      	 }
-       }
-       else
-       {
-      	 if (!postOffice.isFirstNode())
-      	 {
-         	 //We wait for the replication response to come back before actually performing delivery
-         	 
-         	 if (trace) { log.trace(this + " deferring delivery until we know it's been replicated"); }
-         	 
-         	 rec.waitingForResponse = true;      	 
-         	 
-         	 toDeliver.put(rec);
-         	  
-         	 postOffice.sendReplicateDeliveryMessage(consumer.getQueueName(), id,
-                                                     delivery.getReference().getMessage().getMessageID(),
-                                                     deliveryId, true, false);
-      	 }
-      	 else
-      	 {
-      		 //Only node in the cluster so deliver now
-      	 
-      		 rec.waitingForResponse = false;
-      		 
-      		 if (trace) { log.trace("First node so actually doing delivery now"); }
-      		 
-      		 // Actually do the delivery now - we are only node in the cluster
-         	 performDelivery(delivery.getReference(), deliveryId, consumer); 	  
-      	 }
-       }       
+       performDelivery(ref, deliveryId, consumer); 	                             
    }
    
    void performDelivery(MessageReference ref, long deliveryID, ServerConsumerEndpoint consumer)
@@ -1525,23 +950,15 @@ public class ServerSessionEndpoint implements SessionEndpoint
 //      }
    }
    
-   void acknowledgeTransactionally(List acks, Transaction tx) throws Throwable
+   List<MessageReference> acknowledgeTransactionally(List<Ack> acks, Transaction tx) throws Exception
    {
       if (trace) { log.trace(this + " acknowledging transactionally " + acks.size() + " messages for " + tx); }
+             
+      List<MessageReference> refs = new ArrayList<MessageReference>();
       
-      DeliveryCallback deliveryCallback = (DeliveryCallback)tx.getCallback(this);
-      
-      if (deliveryCallback == null)
+      for(Ack ack: acks)
       {
-         deliveryCallback = new DeliveryCallback();
-         tx.addCallback(deliveryCallback, this);
-      }
-            
-      for(Iterator i = acks.iterator(); i.hasNext(); )
-      {
-         Ack ack = (Ack)i.next();
-         
-         Long id = new Long(ack.getDeliveryID());
+         long id = ack.getDeliveryID();
          
          //TODO - do this more elegantly
          if (ack instanceof DeliveryInfo)
@@ -1555,22 +972,26 @@ public class ServerSessionEndpoint implements SessionEndpoint
          }
          
          DeliveryRecord rec = (DeliveryRecord)deliveries.get(id);
+          
+         DeliveryCallback cb = new DeliveryCallback(id);
          
-         if (rec == null)
+         tx.addSynchronization(cb);
+         
+         refs.add(rec.ref);
+         
+         if (rec.ref.getMessage().isDurable())
          {
-            log.warn("Cannot find delivery to acknowledge " + ack);
-            continue;
+            tx.setContainsPersistent(true);
          }
-                           
-         deliveryCallback.addDeliveryId(id);
-         rec.del.acknowledge(tx);
-      }      
+      }  
+      
+      return refs;
    }
    
    /**
     * Starts this session's Consumers
     */
-   void setStarted(boolean s) throws Throwable
+   void setStarted(boolean s) throws Exception
    {
       //We clone to prevent deadlock http://jira.jboss.org/jira/browse/JBMESSAGING-836
       Map consumersClone;
@@ -1593,9 +1014,9 @@ public class ServerSessionEndpoint implements SessionEndpoint
       }      
    } 
 
-   void promptDelivery(final Channel channel)
+   void promptDelivery(final Queue queue)
    {
-   	if (trace) { log.trace("Prompting delivery on " + channel); }
+   	if (trace) { log.trace("Prompting delivery on " + queue); }
    	
       try
       {
@@ -1604,7 +1025,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
          //cancelDeliveries because remoting one way invocations can 
          //overtake each other in flight - this problem will
          //go away when we have our own transport and our dedicated connection
-         this.executor.execute(new Runnable() { public void run() { channel.deliver();} } );
+         this.executor.execute(new Runnable() { public void run() { queue.deliver();} } );
          
       }
       catch (Throwable t)
@@ -1613,14 +1034,15 @@ public class ServerSessionEndpoint implements SessionEndpoint
       }
    }
    
-
    // Protected ------------------------------------------------------------------------------------
 
    // Private --------------------------------------------------------------------------------------
    
-   private Delivery cancelDeliveryInternal(Cancel cancel) throws Throwable
+   private void cancelDeliveryInternal(Cancel cancel) throws Exception
    {
-      DeliveryRecord rec = (DeliveryRecord)deliveries.remove(new Long(cancel.getDeliveryId()));
+      log.info("Cancelling delivery " + cancel);
+      
+      DeliveryRecord rec = (DeliveryRecord)deliveries.remove(cancel.getDeliveryId());
       
       if (rec == null)
       {
@@ -1630,13 +1052,15 @@ public class ServerSessionEndpoint implements SessionEndpoint
       	{
       		log.trace("Cannot find delivery to cancel, session probably failed over and is not replicated");
       	}
-      	return null;
+      	return;
       }
                  
+      MessageReference ref = rec.ref;      
+      
       //Note we check the flag *and* evaluate again, this is because the server and client clocks may
       //be out of synch and don't want to send back to the client a message it thought it has sent to
       //the expiry queue  
-      boolean expired = cancel.isExpired() || rec.del.getReference().getMessage().isExpired();
+      boolean expired = cancel.isExpired() || ref.getMessage().isExpired();
       
       //Note we check the flag *and* evaluate again, this is because the server value of maxDeliveries
       //might get changed after the client has sent the cancel - and we don't want to end up cancelling
@@ -1644,23 +1068,23 @@ public class ServerSessionEndpoint implements SessionEndpoint
       boolean reachedMaxDeliveryAttempts =
          cancel.isReachedMaxDeliveryAttempts() || cancel.getDeliveryCount() >= rec.maxDeliveryAttempts;
                     
-      Delivery del = rec.del;   
-         
       if (!expired && !reachedMaxDeliveryAttempts)
       {
          //Normal cancel back to the queue
          
-         del.getReference().setDeliveryCount(cancel.getDeliveryCount());
+         ref.setDeliveryCount(cancel.getDeliveryCount());
          
          //Do we need to set a redelivery delay?
          
          if (rec.redeliveryDelay != 0)
          {
-            del.getReference().setScheduledDeliveryTime(System.currentTimeMillis() + rec.redeliveryDelay);
+            ref.setScheduledDeliveryTime(System.currentTimeMillis() + rec.redeliveryDelay);
          }
          
          if (trace) { log.trace("Cancelling delivery " + cancel.getDeliveryId()); }
-         del.cancel();
+         
+         ref.cancel(sp.getPersistenceManager());
+         
       }
       else
       {                  
@@ -1668,27 +1092,22 @@ public class ServerSessionEndpoint implements SessionEndpoint
          {
             //Sent to expiry queue
             
-            Message copy = makeCopyForDLQOrExpiry(true, del);
+            Message copy = makeCopyForDLQOrExpiry(true, ref);
             
-            moveInTransaction(copy, del, rec.expiryQueue, false);
+            moveInTransaction(copy, ref, rec.expiryQueue, false);
          }
          else
          {
             //Send to DLQ
          	
-            Message copy = makeCopyForDLQOrExpiry(false, del);
+            Message copy = makeCopyForDLQOrExpiry(false, ref);
             
-            moveInTransaction(copy, del, rec.dlq, true);
+            moveInTransaction(copy, ref, rec.dlq, true);
          }
       }      
-      
-      //Need to send a message to the replicant to remove the id
-      postOffice.sendReplicateAckMessage(rec.queueName, del.getReference().getMessage().getMessageID());
-      
-      return rec.del;
    }      
    
-   private Message makeCopyForDLQOrExpiry(boolean expiry, Delivery del) throws Exception
+   private Message makeCopyForDLQOrExpiry(boolean expiry, MessageReference ref) throws Exception
    {
       //We copy the message and send that to the dlq/expiry queue - this is because
       //otherwise we may end up with a ref with the same message id in the queue more than once
@@ -1696,13 +1115,13 @@ public class ServerSessionEndpoint implements SessionEndpoint
       //subscriptions of a topic for example
       //We set headers that hold the original message destination, expiry time and original message id
       
-   	if (trace) { log.trace("Making copy of message for DLQ or expiry " + del); }
+   	if (trace) { log.trace("Making copy of message for DLQ or expiry " + ref); }
    	
-      Message msg = del.getReference().getMessage();
+      Message msg = ref.getMessage();
       
       Message copy = msg.copy();
       
-      long newMessageId = sp.getMessageIDManager().getID();
+      long newMessageId = sp.getPersistenceManager().generateMessageID();
       
       copy.setMessageID(newMessageId);
       
@@ -1730,141 +1149,69 @@ public class ServerSessionEndpoint implements SessionEndpoint
       return copy;
    }
    
-   private void moveInTransaction(Message msg, Delivery del, Queue queue, boolean dlq) throws Throwable
+   private void moveInTransaction(Message msg, MessageReference ref, Queue queue, boolean dlq) throws Exception
    {
-      Transaction tx = tr.createTransaction();
+      List<Message> msgs = new ArrayList<Message>();
       
-      MessageReference ref = msg.createReference();
-                    
-      try
-      {               
-         if (queue != null)
-         {          
-            queue.handle(null, ref, tx);
-            del.acknowledge(tx);
-         }
-         else
-         {
-            log.warn("No " + (dlq ? "DLQ" : "expiry queue") + " has been specified so the message will be removed");
-            
-            del.acknowledge(tx);
-         }             
-         
-         tx.commit();         
-      }
-      catch (Throwable t)
-      {
-         tx.rollback();
-         throw t;
-      } 
+      msgs.add(msg);
       
-      //Need to prompt delivery on the dlq/expiry queue
+      List<MessageReference> refs = new ArrayList<MessageReference>();
       
-      //TODO - are we sure this is the right place to prompt delivery?
-      if (queue != null)
-      {
-         promptDelivery(queue);
-      }
+      refs.add(ref);
+                  
+      Transaction tx = new TransactionImpl(msgs, refs, msg.isDurable());
+      
+      //FIXME - clear up these ugly refs to the pm
+      tx.commit(getConnectionEndpoint().getMessagingServer().getPersistenceManager());
+      
+//      MessageReference ref = msg.createReference();
+//                    
+//      try
+//      {               
+//         if (queue != null)
+//         {          
+//            queue.handle(null, ref, tx);
+//            del.acknowledge(tx);
+//         }
+//         else
+//         {
+//            log.warn("No " + (dlq ? "DLQ" : "expiry queue") + " has been specified so the message will be removed");
+//            
+//            del.acknowledge(tx);
+//         }             
+//         
+//         tx.commit();         
+//      }
+//      catch (Throwable t)
+//      {
+//         tx.rollback();
+//         throw t;
+//      }       
    }
    
-   private boolean acknowledgeDeliveryInternal(Ack ack) throws Throwable
+   private boolean acknowledgeDeliveryInternal(Ack ack) throws Exception
    {
       if (trace) { log.trace(this + " acknowledging delivery " + ack); }
 
-      DeliveryRecord rec = (DeliveryRecord)deliveries.remove(new Long(ack.getDeliveryID()));
+      DeliveryRecord rec = (DeliveryRecord)deliveries.remove(ack.getDeliveryID());
       
-      if (rec == null)
+      if (rec != null)
       {
-      	//This can happen if an ack comes in after failover
-         log.debug("Cannot find " + ack + " to acknowledge, it was probably acknowledged before");
-         return false;
-      }
-      
-      ServerConsumerEndpoint consumer = rec.getConsumer();
-      
-      if (consumer != null && consumer.isRemote())
-      {
-         //Optimisation for shared DB - we don't ack in DB - we move
-         rec.del.getObserver().acknowledgeNoPersist(rec.del);
-      }
-      else
-      {      
-         rec.del.acknowledge(null);
-      }
-           
-      //Now replicate the ack
-      
-      if (rec.replicating && replicating)
-      {
-      	postOffice.sendReplicateAckMessage(rec.queueName, rec.del.getReference().getMessage().getMessageID());
-      }
-      
-      if (trace) { log.trace(this + " acknowledged delivery " + ack); }
-      
-      return true;
-   }
-   
-   /* TODO We can combine this with createConsumerDelegateInternal once we move the distinction between queues and topics
-    * to the client side, so the server side just deals with queues named by string - i.e MessagingQueue instances
-    */
-   private ConsumerDelegate createConsumerDelegateDirect(String queueName, String selectorString) throws Throwable
-   {
-   	if (closed)
-      {
-         throw new IllegalStateException("Session is closed");
-      }
-      
-      if ("".equals(selectorString))
-      {
-         selectorString = null;
-      }
-      
-      if (trace)
-      {
-         log.trace(this + " creating direct consumer for " + queueName +
-            (selectorString == null ? "" : ", selector '" + selectorString + "'"));
-      }
-      
-      Binding binding =  postOffice.getBindingForQueueName(queueName);
-      
-      if (binding == null)
-      {
-      	throw new IllegalArgumentException("Cannot find queue with name " + queueName);
-      }
-      
-      String consumerID = GUIDGenerator.generateGUID();
-            
-      int prefetchSize = connectionEndpoint.getPrefetchSize();
-      
-      JBossDestination dest = new JBossQueue(queueName);
-      
-      //We don't care about redelivery delays and number of attempts for a direct consumer
-      
-      ServerConsumerEndpoint ep =
-         new ServerConsumerEndpoint(sp, consumerID, binding.queue,
-                                    binding.queue.getName(), this, selectorString, false,
-                                    dest, null, null, 0, -1, true, false, prefetchSize);
-      
-      sp.getMinaService().getDispatcher().register(ep.newHandler());
-      
-      ClientConsumerDelegate stub =
-         new ClientConsumerDelegate(consumerID, prefetchSize, -1, 0);
-      
-      synchronized (consumers)
-      {
-         consumers.put(consumerID, ep);
-      }
+         rec.ref.acknowledge(this.sp.getPersistenceManager());
          
-      log.trace(this + " created and registered " + ep);    
+         if (trace) { log.trace(this + " acknowledged delivery " + ack); }
+         
+         return true;
+      }
       
-      return stub;
+      return false;      
    }
-
-   private ConsumerDelegate createConsumerDelegateInternal(JBossDestination jmsDestination,
+      
+   private ConsumerDelegate createConsumerDelegateInternal(Destination destination,
                                                            String selectorString,
                                                            boolean noLocal,
                                                            String subscriptionName)
-      throws Throwable
+      throws Exception
    {
       if (closed)
       {
@@ -1878,24 +1225,24 @@ public class ServerSessionEndpoint implements SessionEndpoint
       
       if (trace)
       {
-         log.trace(this + " creating consumer for " + jmsDestination +
+         log.trace(this + " creating consumer for " + destination +
             (selectorString == null ? "" : ", selector '" + selectorString + "'") +
             (subscriptionName == null ? "" : ", subscription '" + subscriptionName + "'") +
             (noLocal ? ", noLocal" : ""));
       }
 
-      ManagedDestination mDest = dm.getDestination(jmsDestination.getName(), jmsDestination.isQueue());
-      
-      if (mDest == null)
+      Condition condition = new ConditionImpl(destination.getType(), destination.getName());
+            
+      if (!postOffice.containsCondition(condition))
       {
-         throw new InvalidDestinationException("No such destination: " + jmsDestination + " has it been deployed?");
+         throw new InvalidDestinationException("No such destination: " + destination.getName() + " has it been deployed?");
       }
       
-      if (jmsDestination.isTemporary())
+      if (destination.isTemporary())
       {
          // Can only create a consumer for a temporary destination on the same connection
          // that created it
-         if (!connectionEndpoint.hasTemporaryDestination(jmsDestination))
+         if (!connectionEndpoint.hasTemporaryDestination(destination))
          {
             String msg = "Cannot create a message consumer on a different connection " +
                          "to that which created the temporary destination";
@@ -1903,7 +1250,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
          }
       }
       
-      String consumerID = GUIDGenerator.generateGUID();
+      String consumerID = UUID.randomUUID().toString();
       
       // Always validate the selector first
       Selector selector = null;
@@ -1915,50 +1262,23 @@ public class ServerSessionEndpoint implements SessionEndpoint
       
       Queue queue;
       
-      if (jmsDestination.isTopic())
+      //FIXME - all this logic belongs on the jms client side
+      
+      if (destination.getType() == DestinationType.TOPIC)
       {         
          if (subscriptionName == null)
          {
             // non-durable subscription
-            if (log.isTraceEnabled()) { log.trace(this + " creating new non-durable subscription on " + jmsDestination); }
-            
-            // Create the non durable sub
-            
-            queue = new MessagingQueue(nodeId, GUIDGenerator.generateGUID(),
-							                  idm.getID(), ms, pm, false,
-							                  mDest.getMaxSize(), selector,
-							                  mDest.getFullSize(),
-							                  mDest.getPageSize(),
-							                  mDest.getDownCacheSize(),
-							                  mDest.isClustered(),
-							                  sp.getConfiguration().getRecoverDeliveriesTimeout());
-            
-            JMSCondition topicCond = new JMSCondition(false, jmsDestination.getName());
-                        
-            postOffice.addBinding(new Binding(topicCond, queue, false), false);   
-            
-            queue.activate();
+            if (log.isTraceEnabled()) { log.trace(this + " creating new non-durable subscription on " + destination); }
+                    
+            queue = postOffice.addQueue(condition, UUID.randomUUID().toString(), selector, false, false, false);
 
-            String counterName = ManagedDestination.SUBSCRIPTION_MESSAGECOUNTER_PREFIX + queue.getName();
-  
-            int dayLimitToUse = mDest.getMessageCounterHistoryDayLimit();
-            if (dayLimitToUse == -1)
-            {
-               //Use override on server peer
-               dayLimitToUse = sp.getConfiguration().getDefaultMessageCounterHistoryDayLimit();
-            }
+            //TODO - message counters should be applied by the queue configurator factory
             
-            //We don't create message counters on temp topics
-            if (!mDest.isTemporary())
-            {
-	            MessageCounter counter =  new MessageCounter(counterName, null, queue, true, false, dayLimitToUse);
-	            
-	            sp.getMessageCounterManager().registerMessageCounter(counterName, counter);
-            }
          }
          else
          {
-            if (jmsDestination.isTemporary())
+            if (destination.isTemporary())
             {
                throw new InvalidDestinationException("Cannot create a durable subscription on a temporary topic");
             }
@@ -1974,70 +1294,45 @@ public class ServerSessionEndpoint implements SessionEndpoint
             
             String name = MessageQueueNameHelper.createSubscriptionName(clientID, subscriptionName);
             
-            Binding binding = postOffice.getBindingForQueueName(name);
+            List<Binding> bindings = postOffice.getBindingsForQueueName(name);
+            
+            Binding binding = null;
+            
+            if (!bindings.isEmpty())
+            {
+               binding = bindings.get(0);
+            }
             
             if (binding == null)
             {
                // Does not already exist
                
-               if (trace) { log.trace(this + " creating new durable subscription on " + jmsDestination); }
-                              
-               queue = new MessagingQueue(nodeId, name, idm.getID(),
-                                          ms, pm, true,
-                                          mDest.getMaxSize(), selector,
-                                          mDest.getFullSize(),
-                                          mDest.getPageSize(),
-                                          mDest.getDownCacheSize(),
-                                          mDest.isClustered(),
-                                          sp.getConfiguration().getRecoverDeliveriesTimeout());
+               if (trace) { log.trace(this + " creating new durable subscription on " + destination); }
+                               
+               queue = postOffice.addQueue(condition, name, selector, true, false,
+                                           sp.getConfiguration().isClustered());
+                 
+               //TODO message counters handled by queue configurator
                
-               // Durable subs must be bound on ALL nodes of the cluster (if clustered)
-               
-               postOffice.addBinding(new Binding(new JMSCondition(false, jmsDestination.getName()), queue, true),
-                                     sp.getConfiguration().isClustered() && mDest.isClustered());
-               
-               queue.activate();
-                  
-               //We don't create message counters on temp topics
-               if (!mDest.isTemporary())
-               {	               
-	               String counterName = ManagedDestination.SUBSCRIPTION_MESSAGECOUNTER_PREFIX + queue.getName();
-	                       
-	               MessageCounter counter =
-	                  new MessageCounter(counterName, subscriptionName, queue, true, true,
-	                                     mDest.getMessageCounterHistoryDayLimit());
-	               
-	               sp.getMessageCounterManager().registerMessageCounter(counterName, counter);
-               }
             }
             else
             {
                //Durable sub already exists
             	
-            	queue = binding.queue;
+            	queue = binding.getQueue();
             	
                if (trace) { log.trace(this + " subscription " + subscriptionName + " already exists"); }
                
             	//Check if it is already has a subscriber
             	//We can't have more than one subscriber at a time on the durable sub
                
-               if (queue.getLocalDistributor().getNumberOfReceivers() > 0)
+               if (queue.getConsumerCount() > 0)
                {
                	throw new IllegalStateException("Cannot create a subscriber on the durable subscription since it already has subscriber(s)");
                }
                
-               // If the durable sub exists because it is clustered and was created on this node due to a bind on another node
-               // then it will have no message counter
+               //TODO - apply message counters on the queue configurator
                
-               String counterName = ManagedDestination.SUBSCRIPTION_MESSAGECOUNTER_PREFIX + queue.getName();
-               
-               boolean createCounter = false;
-               
-               if (sp.getMessageCounterManager().getMessageCounter(counterName) == null)
-               {
-               	createCounter = true;
-               }
-                              
                // From javax.jms.Session Javadoc (and also JMS 1.1 6.11.1):
                // A client can change an existing durable subscription by creating a durable
                // TopicSubscriber with the same name and a new topic and/or message selector.
@@ -2054,9 +1349,11 @@ public class ServerSessionEndpoint implements SessionEndpoint
                
                if (trace) { log.trace("selector " + (selectorChanged ? "has" : "has NOT") + " changed"); }
                
-               String oldTopicName = ((JMSCondition)binding.condition).getName();
+               //FIXME - all this needs to be on the jms client
                
-               boolean topicChanged = !oldTopicName.equals(jmsDestination.getName());
+               String oldTopicName = binding.getCondition().getKey();
+               
+               boolean topicChanged = !oldTopicName.equals(destination.getName());
                
                if (log.isTraceEnabled()) { log.trace("topic " + (topicChanged ? "has" : "has NOT") + " changed"); }
                
@@ -2068,39 +1365,18 @@ public class ServerSessionEndpoint implements SessionEndpoint
                   
                   // Durable subs must be unbound on ALL nodes of the cluster
                   
-                  postOffice.removeBinding(queue.getName(), sp.getConfiguration().isClustered() && mDest.isClustered());
+                  postOffice.removeQueue(binding.getCondition(), queue.getName(), sp.getConfiguration().isClustered());
                   
-                  // create a fresh new subscription
-                                    
-                  queue = new MessagingQueue(nodeId, name, idm.getID(), ms, pm, true,
-					                              mDest.getMaxSize(), selector,
-					                              mDest.getFullSize(),
-					                              mDest.getPageSize(),
-					                              mDest.getDownCacheSize(),
-					                              mDest.isClustered(),
-					                              sp.getConfiguration().getRecoverDeliveriesTimeout());
+                  sp.getPersistenceManager().deleteAllReferences(queue);
                   
-                  // Durable subs must be bound on ALL nodes of the cluster
+                  queue.removeAllReferences();
                   
-                  postOffice.addBinding(new Binding(new JMSCondition(false, jmsDestination.getName()), queue, true),
-                  		                sp.getConfiguration().isClustered() && mDest.isClustered());
-  
-                  queue.activate();                  
+                  queue = postOffice.addQueue(condition, name, selector, true, false, sp.getConfiguration().isClustered());
                   
-                  if (!mDest.isTemporary())
-                  {
-	                  createCounter = true;
-                  }
                }
                
-               if (createCounter)
-               {
-               	MessageCounter counter =
-                     new MessageCounter(counterName, subscriptionName, queue, true, true,
-                                        mDest.getMessageCounterHistoryDayLimit());
-                  
-                  sp.getMessageCounterManager().registerMessageCounter(counterName, counter);
-               }
+               //TODO counter creation is handled in the queue configurator
+               
             }
          }
       }
@@ -2108,52 +1384,49 @@ public class ServerSessionEndpoint implements SessionEndpoint
       {
          // Consumer on a jms queue
          
-         // Let's find the queue
-      	
-      	queue = postOffice.getBindingForQueueName(jmsDestination.getName()).queue;
+      	List<Binding> bindings = postOffice.getBindingsForQueueName(destination.getName());
          
-         if (queue == null)
+         if (bindings.isEmpty())
          {
-            throw new IllegalStateException("Cannot find queue: " + jmsDestination.getName());
+            throw new IllegalStateException("Cannot find queue: " + destination.getName());
          }
+         
+         queue = bindings.get(0).getQueue();
       }
-      
+         
       int prefetchSize = connectionEndpoint.getPrefetchSize();
       
-      Queue dlqToUse = mDest.getDLQ() == null ? defaultDLQ : mDest.getDLQ();
+      Queue dlqToUse = queue.getDLQ() == null ? defaultDLQ : queue.getDLQ();
       
-      Queue expiryQueueToUse = mDest.getExpiryQueue() == null ? defaultExpiryQueue : mDest.getExpiryQueue();
+      Queue expiryQueueToUse = queue.getExpiryQueue() == null ? defaultExpiryQueue : queue.getExpiryQueue();
       
-      int maxDeliveryAttemptsToUse = mDest.getMaxDeliveryAttempts() == -1 ? defaultMaxDeliveryAttempts : mDest.getMaxDeliveryAttempts();
+      int maxDeliveryAttemptsToUse = queue.getMaxDeliveryAttempts() == -1 ? defaultMaxDeliveryAttempts : queue.getMaxDeliveryAttempts();
           
-      long redeliveryDelayToUse = mDest.getRedeliveryDelay() == -1 ? defaultRedeliveryDelay : mDest.getRedeliveryDelay();
-      
-      //Is the consumer going to have its session state replicated onto a backup node?      
-      
-      boolean replicating = supportsFailover && queue.isClustered() && !(jmsDestination.isTopic() && !queue.isRecoverable());
+      long redeliveryDelayToUse = queue.getRedeliveryDelay() == -1 ? defaultRedeliveryDelay : queue.getRedeliveryDelay();
       
       ServerConsumerEndpoint ep =
          new ServerConsumerEndpoint(sp, consumerID, queue,
                                     queue.getName(), this, selectorString, noLocal,
-                                    jmsDestination, dlqToUse, expiryQueueToUse, redeliveryDelayToUse,
-                                    maxDeliveryAttemptsToUse, false, replicating, prefetchSize);
+                                    destination, dlqToUse, expiryQueueToUse, redeliveryDelayToUse,
+                                    maxDeliveryAttemptsToUse, prefetchSize);
       
-      if (queue.isClustered() && sp.getConfiguration().isClustered() && jmsDestination.isTopic() && subscriptionName != null)
-      {
-      	//Clustered durable sub consumer created - we need to add this info in the replicator - it is needed by other nodes
-      	
-      	//This is also used to prevent a possible race condition where a clustered durable sub is bound on all nodes
-      	//but then unsubscribed before the bind is complete on all nodes, leaving it bound on some nodes and not on others
-      	//The bind all is synchronous so by the time we add the x to the replicator we know it is bound on all nodes
-      	//and same to unsubscribe
-      	
-      	Replicator rep = (Replicator)postOffice;
-      	
-      	rep.put(queue.getName(), DUR_SUB_STATE_CONSUMERS);
-      }
+      //TODO implements this for JBM2
       
-      sp.getMinaService().getDispatcher().register(ep.newHandler());
-
+//      if (queue.isClustered() && sp.getConfiguration().isClustered() && jmsDestination.isTopic() && subscriptionName != null)
+//      {
+//      	//Clustered durable sub consumer created - we need to add this info in the replicator - it is needed by other nodes
+//      	
+//      	//This is also used to prevent a possible race condition where a clustered durable sub is bound on all nodes
+//      	//but then unsubscribed before the bind is complete on all nodes, leaving it bound on some nodes and not on others
+//      	//The bind all is synchronous so by the time we add the x to the replicator we know it is bound on all nodes
+//      	//and same to unsubscribe
+//      	
+//      	Replicator rep = (Replicator)postOffice;
+//      	
+//      	rep.put(queue.getName(), DUR_SUB_STATE_CONSUMERS);
+//      }
+      connectionEndpoint.getMessagingServer().getMinaService().getDispatcher().register(ep.newHandler());
+      
       ClientConsumerDelegate stub =
          new ClientConsumerDelegate(consumerID, prefetchSize, maxDeliveryAttemptsToUse, redeliveryDelayToUse);
       
@@ -2167,42 +1440,43 @@ public class ServerSessionEndpoint implements SessionEndpoint
       return stub;
    }   
 
-   private BrowserDelegate createBrowserDelegateInternal(JBossDestination jmsDestination,
-                                                         String selector) throws Throwable
+   private BrowserDelegate createBrowserDelegateInternal(Destination destination,
+                                                         String selector) throws Exception
    {
       if (closed)
       {
          throw new IllegalStateException("Session is closed");
       }
 
-      if (jmsDestination == null)
+      if (destination == null)
       {
          throw new InvalidDestinationException("null destination");
       }
 
-      if (jmsDestination.isTopic())
+      //FIXME - this belongs in JMS client - not here
+      
+      if (destination.getType() == DestinationType.TOPIC)
       {
          throw new IllegalStateException("Cannot browse a topic");
       }
 
-      if (dm.getDestination(jmsDestination.getName(), jmsDestination.isQueue()) == null)
+      Condition condition = new ConditionImpl(DestinationType.QUEUE, destination.getName());
+      
+      List<Binding> bindings = this.postOffice.getBindingsForCondition(condition);
+      
+      if (bindings.isEmpty())
       {
-         throw new InvalidDestinationException("No such destination: " + jmsDestination);
+         throw new InvalidDestinationException("No such destination: " + destination);
       }
 
-      log.trace(this + " creating browser for " + jmsDestination +
+      log.trace(this + " creating browser for " + destination +
          (selector == null ? "" : ", selector '" + selector + "'"));
 
-      Binding binding = postOffice.getBindingForQueueName(jmsDestination.getName());
+      Binding binding = bindings.get(0);
       
-      if (binding == null)
-      {
-      	throw new IllegalStateException("Cannot find queue with name " + jmsDestination.getName());
-      }
-      
-      String browserID = GUIDGenerator.generateGUID();
+      String browserID = UUID.randomUUID().toString();
 
-      ServerBrowserEndpoint ep = new ServerBrowserEndpoint(this, browserID, binding.queue, selector);
+      ServerBrowserEndpoint ep = new ServerBrowserEndpoint(this, browserID, binding.getQueue(), selector);
 
       // still need to synchronized since close() can come in on a different thread
       synchronized (browsers)
@@ -2210,7 +1484,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
          browsers.put(browserID, ep);
       }
 
-      sp.getMinaService().getDispatcher().register(ep.newHandler());
+      connectionEndpoint.getMessagingServer().getMinaService().getDispatcher().register(ep.newHandler());
       
       ClientBrowserDelegate stub = new ClientBrowserDelegate(browserID);
 
@@ -2219,19 +1493,6 @@ public class ServerSessionEndpoint implements SessionEndpoint
       return stub;
    }
 
-   private void promptDelivery(Set channels)
-   {
-      //Now prompt delivery on the channels
-      Iterator iter = channels.iterator();
-      
-      while (iter.hasNext())
-      {
-         DeliveryObserver observer = (DeliveryObserver)iter.next();
-         
-         promptDelivery((Channel)observer);
-      }
-   }
-   
    // Inner classes --------------------------------------------------------------------------------
    
    /*
@@ -2250,7 +1511,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
    {
    	// We need to cache the attributes here  since the consumer may get gc'd BEFORE the delivery is acked   	
    	
-      Delivery del;
+      MessageReference ref;
         
       Queue dlq;
       
@@ -2282,10 +1543,10 @@ public class ServerSessionEndpoint implements SessionEndpoint
       	}
       }
             
-      DeliveryRecord(Delivery del, Queue dlq, Queue expiryQueue, long redeliveryDelay, int maxDeliveryAttempts,
-      		         String queueName, boolean replicating, long deliveryID)
+      private DeliveryRecord(MessageReference ref, Queue dlq, Queue expiryQueue, long redeliveryDelay, int maxDeliveryAttempts,
+      		         String queueName, long deliveryID)
       {
-      	this.del = del;
+      	this.ref = ref;
       	
       	this.dlq = dlq;
       	
@@ -2297,15 +1558,13 @@ public class ServerSessionEndpoint implements SessionEndpoint
       	
       	this.queueName = queueName;
       	
-      	this.replicating = replicating;
-      	
       	this.deliveryID = deliveryID;
       }
       
-      DeliveryRecord(Delivery del, ServerConsumerEndpoint consumer, long deliveryID)
+      DeliveryRecord(MessageReference ref, ServerConsumerEndpoint consumer, long deliveryID)
       {
-      	this (del, consumer.getDLQ(), consumer.getExpiryQueue(), consumer.getRedliveryDelay(), consumer.getMaxDeliveryAttempts(),
-      			consumer.getQueueName(), consumer.isReplicating(), deliveryID);
+      	this (ref, consumer.getDLQ(), consumer.getExpiryQueue(), consumer.getRedliveryDelay(), consumer.getMaxDeliveryAttempts(),
+      			consumer.getQueueName(), deliveryID);
 
       	// We need to cache the attributes here  since the consumer may get gc'd BEFORE the delivery is acked
          
@@ -2314,12 +1573,14 @@ public class ServerSessionEndpoint implements SessionEndpoint
          //for the response to come back from the replicant before actually performing delivery
          //We need a weak ref since when the consumer closes deliveries may still and remain and we don't want that to prevent
          //the consumer being gc'd
+      	
+      	//FIXME - do we still need this??
          this.consumerRef = new WeakReference(consumer);
       }            
       
    	public String toString()
    	{
-   		return "DeliveryRecord " + System.identityHashCode(this) + " del: " + del + " queueName: " + queueName;
+   		return "DeliveryRecord " + System.identityHashCode(this) + " ref: " + ref + " queueName: " + queueName;
    	}
    }
    
@@ -2329,67 +1590,35 @@ public class ServerSessionEndpoint implements SessionEndpoint
     * Each transaction has once instance of this per SCE
     *
     */
-   private class DeliveryCallback implements TxCallback
-   {
-      List delList = new ArrayList();
-         
-      public void beforePrepare()
-      {         
-         //NOOP
-      }
+   private class DeliveryCallback implements TransactionSynchronization
+   { 
+      private long deliveryId;
       
-      public void beforeCommit(boolean onePhase)
-      {         
-         //NOOP
-      }
-      
-      public void beforeRollback(boolean onePhase)
-      {         
-         //NOOP
-      }
-      
-      public void afterPrepare()
-      {         
-         //NOOP
-      }
-      
-      public synchronized void afterCommit(boolean onePhase) throws TransactionException
+      DeliveryCallback(long deliveryId)
       {
-         // Remove the deliveries from the delivery map.
-         Iterator iter = delList.iterator();
-         while (iter.hasNext())
-         {
-            Long deliveryId = (Long)iter.next();
-            
-            DeliveryRecord del = (DeliveryRecord)deliveries.remove(deliveryId);
-            
-            if (del != null && del.replicating)
-            {
-            	//TODO - we could batch this in one message
-            	try
-            	{
-            		postOffice.sendReplicateAckMessage(del.queueName, del.del.getReference().getMessage().getMessageID());
-            	}
-            	catch (Exception e)
-            	{            		
-            		throw new TransactionException("Failed to handle send ack", e);
-            	}
-            }
-         }
+         this.deliveryId = deliveryId;
       }
       
-      public void afterRollback(boolean onePhase) throws TransactionException
-      {                            
-         //One phase rollbacks never hit the server - they are dealt with locally only
+      public void afterCommit() throws Exception
+      {
+         deliveries.remove(deliveryId);
+      }
+
+      public void afterRollback() throws Exception
+      {
+       //One phase rollbacks never hit the server - they are dealt with locally only
          //so this would only ever be executed for a two phase rollback.
 
          //We don't do anything since cancellation is driven from the client.
       }
-      
-      synchronized void addDeliveryId(Long deliveryId)
+
+      public void beforeCommit() throws Exception
       {
-         delList.add(deliveryId);
       }
+
+      public void beforeRollback() throws Exception
+      {       
+      }   
    }
 
    public PacketHandler newHandler()
@@ -2425,7 +1654,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
                SendMessage message = (SendMessage) packet;
 
                long sequence = message.getSequence();
-               send(message.getMessage(), message.checkForDuplicates(), sequence);
+               send(message.getMessage(), sequence);
 
                // a response is required only if seq == -1 -> reliable message or strict TCK
                if (sequence == -1)
@@ -2439,7 +1668,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
                ClientConsumerDelegate consumer = (ClientConsumerDelegate) createConsumerDelegate(
                      request.getDestination(), request.getSelector(), request
                            .isNoLocal(), request.getSubscriptionName(), request
-                           .isConnectionConsumer(), request.isAutoFlowControl());
+                           .isConnectionConsumer());
 
                response = new CreateConsumerResponse(consumer.getID(), consumer
                      .getBufferSize(), consumer.getMaxDeliveries(), consumer
@@ -2475,13 +1704,6 @@ public class ServerSessionEndpoint implements SessionEndpoint
             {
                AcknowledgeDeliveriesMessage message = (AcknowledgeDeliveriesMessage) packet;
                acknowledgeDeliveries(message.getAcks());
-
-               response = new NullPacket();
-            } else if (type == MSG_RECOVERDELIVERIES)
-            {
-               RecoverDeliveriesMessage message = (RecoverDeliveriesMessage) packet;
-               recoverDeliveries(message.getDeliveries(), message
-                     .getSessionID());
 
                response = new NullPacket();
             } else if (type == MSG_CANCELDELIVERY)

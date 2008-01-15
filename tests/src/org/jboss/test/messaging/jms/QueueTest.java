@@ -90,7 +90,6 @@ public class QueueTest extends JMSTestCase
       {      
 	      conn = cf.createConnection();
 	      Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         Queue queue1 = (Queue) getInitialContext().lookup("/queue/testQueue");
          MessageProducer prod = sess.createProducer(queue1);
 	      prod.setDeliveryMode(DeliveryMode.PERSISTENT);
 	      
@@ -107,7 +106,7 @@ public class QueueTest extends JMSTestCase
 	      
 	      stop();
 	      
-	      start();
+	      startNoDelete();
 	      
 	      // Messaging server restart implies new ConnectionFactory lookup
 	      deployAndLookupAdministeredObjects();
@@ -228,7 +227,6 @@ public class QueueTest extends JMSTestCase
          conn = cf.createConnection();
 
          Session s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         Queue queue1 = (Queue) getInitialContext().lookup("/queue/testQueue");
          MessageProducer p = s.createProducer(queue1);
          MessageConsumer c = s.createConsumer(queue1);
          conn.start();
@@ -242,7 +240,7 @@ public class QueueTest extends JMSTestCase
 
          stop();
 
-         start();
+         startNoDelete();
 
          deployAndLookupAdministeredObjects();
 

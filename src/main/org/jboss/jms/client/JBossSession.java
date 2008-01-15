@@ -242,7 +242,7 @@ public class JBossSession implements
       log.trace("attempting to create consumer for destination:" + d + (messageSelector == null ? "" : ", messageSelector: " + messageSelector) + (noLocal ? ", noLocal = true" : ""));
 
       ConsumerDelegate cd = delegate.
-         createConsumerDelegate((JBossDestination)d, messageSelector, noLocal, null, false, true);
+         createConsumerDelegate(((JBossDestination)d).toCoreDestination(), messageSelector, noLocal, null, false);
 
       return new JBossMessageConsumer(cd);
    }
@@ -284,7 +284,7 @@ public class JBossSession implements
       }
 
       ConsumerDelegate cd =
-         delegate.createConsumerDelegate((JBossTopic)topic, null, false, name, false, true);
+         delegate.createConsumerDelegate(((JBossTopic)topic).toCoreDestination(), null, false, name, false);
 
       return new JBossMessageConsumer(cd);
    }
@@ -314,7 +314,7 @@ public class JBossSession implements
       }
 
       ConsumerDelegate cd = delegate.
-         createConsumerDelegate((JBossTopic)topic, messageSelector, noLocal, name, false, true);
+         createConsumerDelegate(((JBossTopic)topic).toCoreDestination(), messageSelector, noLocal, name, false);
 
       return new JBossMessageConsumer(cd);
    }
@@ -345,7 +345,7 @@ public class JBossSession implements
       }
 
       BrowserDelegate del =
-         delegate.createBrowserDelegate((JBossQueue)queue, messageSelector);
+         delegate.createBrowserDelegate(((JBossQueue)queue).toCoreDestination(), messageSelector);
 
       return new JBossQueueBrowser(queue, messageSelector, del);
    }
@@ -358,7 +358,7 @@ public class JBossSession implements
          throw new IllegalStateException("Cannot create a temporary queue using a TopicSession");
       }
       JBossTemporaryQueue queue = new JBossTemporaryQueue(delegate);
-      delegate.addTemporaryDestination(queue);
+      delegate.addTemporaryDestination(queue.toCoreDestination());
       return queue;
    }
 
@@ -370,7 +370,7 @@ public class JBossSession implements
          throw new IllegalStateException("Cannot create a temporary topic on a QueueSession");
       }
       JBossTemporaryTopic topic = new JBossTemporaryTopic(delegate);
-      delegate.addTemporaryDestination(topic);
+      delegate.addTemporaryDestination(topic.toCoreDestination());
       return topic;
    }
 

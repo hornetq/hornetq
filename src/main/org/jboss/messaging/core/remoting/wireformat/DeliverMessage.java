@@ -9,7 +9,7 @@ package org.jboss.messaging.core.remoting.wireformat;
 import static org.jboss.messaging.core.remoting.Assert.assertValidID;
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_DELIVERMESSAGE;
 
-import org.jboss.messaging.newcore.Message;
+import org.jboss.messaging.core.Message;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>

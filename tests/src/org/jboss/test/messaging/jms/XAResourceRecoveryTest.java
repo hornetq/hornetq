@@ -96,7 +96,7 @@ public class XAResourceRecoveryTest extends JBMServerTestCase
 
 		assertTrue(tm instanceof TransactionManagerImple);
 
-		deployQueue("OtherQueue", 1);
+		createQueue("OtherQueue", 1);
 
 		//Hashtable props1 = ServerManagement.getJNDIEnvironment(1);
 
@@ -127,7 +127,7 @@ public class XAResourceRecoveryTest extends JBMServerTestCase
 	{
 		try
 		{
-			undeployQueue("OtherQueue", 1);
+			destroyQueue("OtherQueue", 1);
 		} catch (Exception ignore)
 		{
 		}

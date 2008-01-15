@@ -94,7 +94,7 @@ public class MemLeakTest extends JBMServerTestCase
       InitialContext initialContext = getInitialContext();
       ConnectionFactory cf = (JBossConnectionFactory)initialContext.lookup("/ConnectionFactory");
 
-      deployQueue("Queue", 10000, 1000, 1000);
+      createQueue("Queue");
       
       Queue queue = (Queue)initialContext.lookup("/queue/Queue");
       
@@ -173,7 +173,7 @@ public class MemLeakTest extends JBMServerTestCase
       InitialContext initialContext = getInitialContext();
       ConnectionFactory cf = (JBossConnectionFactory)initialContext.lookup("/ConnectionFactory");
 
-      deployQueue("Queue", 10000, 1000, 1000);
+      createQueue("Queue");
       
       Queue queue = (Queue)initialContext.lookup("/queue/Queue");
       

@@ -6,7 +6,7 @@
  */
 package org.jboss.messaging.core.remoting.wireformat;
 
-import org.jboss.jms.destination.JBossDestination;
+import org.jboss.messaging.core.Destination;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -20,20 +20,18 @@ public class CreateConsumerRequest extends AbstractPacket
 
    // Attributes ----------------------------------------------------
 
-   private final JBossDestination destination;
+   private final Destination destination;
    private final String selector;
    private final boolean noLocal;
    private final String subscriptionName;
    private final boolean connectionConsumer;
-   private final boolean autoFlowControl;
 
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public CreateConsumerRequest(JBossDestination destination, String selector,
-         boolean noLocal, String subscriptionName, boolean connectionConsumer,
-         boolean autoFlowControl)
+   public CreateConsumerRequest(Destination destination, String selector,
+         boolean noLocal, String subscriptionName, boolean connectionConsumer)
    {
       super(PacketType.REQ_CREATECONSUMER);
 
@@ -44,12 +42,11 @@ public class CreateConsumerRequest extends AbstractPacket
       this.noLocal = noLocal;
       this.subscriptionName = subscriptionName;
       this.connectionConsumer = connectionConsumer;
-      this.autoFlowControl = autoFlowControl;
    }
 
    // Public --------------------------------------------------------
 
-   public JBossDestination getDestination()
+   public Destination getDestination()
    {
       return destination;
    }
@@ -74,11 +71,6 @@ public class CreateConsumerRequest extends AbstractPacket
       return connectionConsumer;
    }
 
-   public boolean isAutoFlowControl()
-   {
-      return autoFlowControl;
-   }
-
    @Override
    public String toString()
    {
@@ -88,7 +80,6 @@ public class CreateConsumerRequest extends AbstractPacket
       buff.append(", noLocal=" + noLocal);
       buff.append(", subName=" + subscriptionName);
       buff.append(", connectionConsumer=" + connectionConsumer);
-      buff.append(", autoFlowControl=" + autoFlowControl);
       buff.append("]");
       return buff.toString();
    }

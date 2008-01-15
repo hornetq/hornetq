@@ -33,6 +33,7 @@ import javax.jms.Topic;
 import javax.jms.TopicSubscriber;
 
 import org.jboss.jms.delegate.ConsumerDelegate;
+import org.jboss.jms.destination.JBossDestination;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
@@ -102,14 +103,14 @@ public class JBossMessageConsumer implements MessageConsumer, QueueReceiver, Top
 
    public Queue getQueue() throws JMSException
    {
-      return (Queue)delegate.getDestination();
+      return (Queue)JBossDestination.fromCoreDestination(delegate.getDestination());
    }
 
    // TopicSubscriber implementation --------------------------------
 
    public Topic getTopic() throws JMSException
    {
-      return (Topic)delegate.getDestination();
+      return (Topic)JBossDestination.fromCoreDestination(delegate.getDestination());
    }
 
 

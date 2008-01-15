@@ -22,7 +22,7 @@
 package org.jboss.messaging.core.impl;
 
 import org.jboss.logging.Logger;
-import org.jboss.messaging.core.contract.MessagingComponent;
+import org.jboss.messaging.core.MessagingComponent;
 
 import javax.sql.DataSource;
 import javax.transaction.Status;

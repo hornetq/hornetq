@@ -29,7 +29,7 @@
       </constructor>
    </bean>
 
-   <bean name="JaasBinding" class="org.jboss.jms.server.microcontainer.JndiBinder">
+   <bean name="JaasBinding" class="org.jboss.messaging.microcontainer.JndiBinder">
       <property name="jndiProperties">
          <inject bean="InitialContextProperties"/>
       </property>
@@ -39,14 +39,14 @@
       <property name="bindTo">java:/jaas/messaging</property>
    </bean>
 
-   <bean name="Jaas" class="org.jboss.jms.server.microcontainer.AuthenticationManager"/>
+   <bean name="Jaas" class="org.jboss.messaging.microcontainer.AuthenticationManager"/>
 
    <bean name="jboss.jca:name=DefaultDS,service=DataSourceBinding" class="com.mysql.jdbc.jdbc2.optional.MysqlDataSource">
       <property name="url">jdbc:mysql://localhost/messaging</property>
       <property name="user">sa</property>
    </bean>
 
-   <bean name="DSBinding" class="org.jboss.jms.server.microcontainer.JndiBinder">
+   <bean name="DSBinding" class="org.jboss.messaging.microcontainer.JndiBinder">
       <property name="jndiProperties">
          <inject bean="InitialContextProperties"/>
       </property>
@@ -56,7 +56,7 @@
       <property name="bindTo">java:/DefaultDS</property>
    </bean>
 
-   <bean name="TMBinding" class="org.jboss.jms.server.microcontainer.JndiBinder">
+   <bean name="TMBinding" class="org.jboss.messaging.microcontainer.JndiBinder">
       <property name="jndiProperties">
          <inject bean="InitialContextProperties"/>
       </property>

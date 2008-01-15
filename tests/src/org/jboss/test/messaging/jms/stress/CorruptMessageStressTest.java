@@ -89,14 +89,14 @@ public class CorruptMessageStressTest extends JBMServerTestCase
 
       //ServerManagement.start("all");
       ic = getInitialContext();
-      deployQueue("StressTestQueue");
+      createQueue("StressTestQueue");
 
       log.debug("setup done");
    }
 
    protected void tearDown() throws Exception
    {
-      undeployQueue("StressTestQueue");
+      destroyQueue("StressTestQueue");
       ic.close();
       super.tearDown();
    }

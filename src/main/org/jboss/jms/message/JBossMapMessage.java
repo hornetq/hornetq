@@ -69,7 +69,7 @@ public class JBossMapMessage extends JBossMessage implements MapMessage
       super(JBossMapMessage.TYPE);
    }
    
-   public JBossMapMessage(org.jboss.messaging.newcore.Message message, long deliveryID, int deliveryCount)
+   public JBossMapMessage(org.jboss.messaging.core.Message message, long deliveryID, int deliveryCount)
    {
       super(message, deliveryID, deliveryCount);
    }

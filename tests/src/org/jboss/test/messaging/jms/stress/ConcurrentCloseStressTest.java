@@ -61,8 +61,8 @@ public class ConcurrentCloseStressTest extends JBMServerTestCase
       ic = getInitialContext();
       cf = (JBossConnectionFactory)ic.lookup("/ConnectionFactory");
 
-      undeployQueue("TestQueue");
-      deployQueue("TestQueue");
+      destroyQueue("TestQueue");
+      createQueue("TestQueue");
 
       queue = (Queue) ic.lookup("queue/TestQueue");
 
@@ -71,7 +71,7 @@ public class ConcurrentCloseStressTest extends JBMServerTestCase
 
    public void tearDown() throws Exception
    {
-      undeployQueue("TestQueue");
+      destroyQueue("TestQueue");
 
       super.tearDown();
 

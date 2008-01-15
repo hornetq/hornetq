@@ -21,7 +21,7 @@
   */
 package org.jboss.jms.tx;
 
-import org.jboss.messaging.util.GUIDGenerator;
+import java.util.UUID;
 
 /**
  * 
@@ -34,7 +34,7 @@ import org.jboss.messaging.util.GUIDGenerator;
  */
 public class LocalTx
 {
-   private String id = GUIDGenerator.generateGUID();
+   private String id = UUID.randomUUID().toString();
    
    public String toString()
    {

@@ -50,14 +50,14 @@ public class RelayStressTest extends JBMServerTestCase
 
       //ServerManagement.start("all");
       ic = getInitialContext();
-      deployTopic("StressTestTopic");
+      createTopic("StressTestTopic");
 
       log.debug("setup done");
    }
 
    protected void tearDown() throws Exception
    {
-      undeployTopic("StressTestTopic");
+      destroyTopic("StressTestTopic");
       ic.close();
       super.tearDown();
    }

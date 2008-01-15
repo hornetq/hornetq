@@ -19,16 +19,12 @@ public enum PacketType
 
    // Connection factory
    REQ_CREATECONNECTION           ((byte)10),
-   RESP_CREATECONNECTION          ((byte)11),
-   REQ_GETCLIENTAOPSTACK          ((byte)12),
-   RESP_GETCLIENTAOPSTACK         ((byte)13),
+   RESP_CREATECONNECTION          ((byte)11), 
    REQ_GETTOPOLOGY                ((byte)14),
    RESP_GETTOPOLOGY               ((byte)15), 
    MSG_UPDATECALLBACK             ((byte)16),
    
    // Connection
-   REQ_IDBLOCK                    ((byte)20),
-   RESP_IDBLOCK                   ((byte)21),
    REQ_CREATESESSION              ((byte)22),
    RESP_CREATESESSION             ((byte)23),
    MSG_STARTCONNECTION            ((byte)24),
@@ -56,7 +52,6 @@ public enum PacketType
    RESP_ACKDELIVERY               ((byte)51),
    MSG_ACKDELIVERIES              ((byte)52),
    RESP_ACKDELIVERIES             ((byte)53),
-   MSG_RECOVERDELIVERIES          ((byte)54),
    MSG_CANCELDELIVERY             ((byte)55),
    MSG_CANCELDELIVERIES           ((byte)56),
    MSG_UNSUBSCRIBE                ((byte)57),

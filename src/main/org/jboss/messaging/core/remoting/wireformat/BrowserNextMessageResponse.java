@@ -6,7 +6,7 @@
  */
 package org.jboss.messaging.core.remoting.wireformat;
 
-import org.jboss.messaging.newcore.Message;
+import org.jboss.messaging.core.Message;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>

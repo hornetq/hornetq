@@ -54,157 +54,157 @@ public class NoFailoverTest extends ClusteringTestBase
    {
       super(name);
    }
-
-   // Public ---------------------------------------------------------------------------------------
-
-   public void testCrashNoFailover() throws Exception
-   {
-      Connection conn = null;
-
-      try
-      {
-         assertFalse(((ClientClusteredConnectionFactoryDelegate)((JBossConnectionFactory)cf).getDelegate()).isSupportsFailover());
-         
-         log.info("dump 1");
-         ResourceManagerFactory.instance.dump();
-
-         conn = createConnectionOnServer(cf, 1);
-         
-         log.info("dump 2");
-         ResourceManagerFactory.instance.dump();
-
-      	MyListener listener = new MyListener();
-
-      	conn.setExceptionListener(listener);
-
-         assertEquals(1, getServerId(conn));
-
-         Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-
-         MessageProducer prod = sess.createProducer(queue[1]);
-
-         prod.send(sess.createTextMessage("Before Crash"));
-
-         //Now kill server 1
-
-         log.info("KILLING SERVER 1");
-         ServerManagement.kill(1);
-         log.info("KILLED SERVER 1");
-
-         JMSException e = listener.waitForException(20000);
-         
-         log.info("dump 3");
-         ResourceManagerFactory.instance.dump();
-
-         assertNotNull(e);
-
-         assertTrue(e.getMessage().equals("Failure on underlying remoting connection"));
-
-         // Connection should still be on server 1 (no client failover taken)
-         assertEquals(1, getServerId(conn));
-
-         //Now try and recreate connection on different node
-
-         conn.close();
-
-         conn = createConnectionOnServer(cf, 2); 
-
-         sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-
-         prod = sess.createProducer(queue[2]);
-
-         MessageConsumer cons = sess.createConsumer(queue[2]);
-
-         conn.start();
-
-         TextMessage tm = sess.createTextMessage("After Crash");
-
-         prod.send(tm);
-
-         TextMessage rm = (TextMessage)cons.receive(1000);
-
-         assertNotNull(rm);
-
-         assertEquals(tm.getText(), rm.getText());
-
-         rm = (TextMessage)cons.receive(1000);
-
-         assertNull(rm);
-
-         conn.close();
-
-         // Restarting the server
-         ServerManagement.start(1, "all", false);
-         deployQueue("testDistributedQueue", 1);
-         deployTopic("testDistributedTopic", 1);
-         InitialContext ic = getInitialContext();
-         ConnectionFactory cf = (ConnectionFactory)ic.lookup("/ClusteredConnectionFactory");
-
-         conn = createConnectionOnServer(cf, 1);
-
-         sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-
-         cons = sess.createConsumer(queue[2]);
-
-         conn.start();
-
-         // message should still be on server.. no server failover taken
-         rm = (TextMessage) cons.receive(1000);
-
-         assertEquals(rm.getText(), "Before Crash");
-         
-         log.info("Got to end");
-      }
-      finally
-      {
-         if (conn != null)
-         {
-            conn.close();
-         }
-      }
-   }
-
-
-   // Package protected ----------------------------------------------------------------------------
-
-   // Protected ------------------------------------------------------------------------------------
-
-   protected void setUp() throws Exception
-   {
-      this.nodeCount = 3;
-      
-      this.overrides = new ServiceAttributeOverrides();
-      
-      overrides.put(ServiceContainer.SERVER_PEER_OBJECT_NAME, "SupportsFailover", "false");
-            
-      super.setUp();
-   }
-
-   // Private --------------------------------------------------------------------------------------
-
-   // Inner classes --------------------------------------------------------------------------------
-   // Inner classes --------------------------------------------------------------------------------
-
-	private class MyListener implements ExceptionListener
-   {
-		private JMSException e;
-
-		Latch l = new Latch();
-
-		public void onException(JMSException e)
-		{
-			this.e = e;
-
-			l.release();
-		}
-
-		JMSException waitForException(long timeout) throws Exception
-		{
-			l.attempt(timeout);
-
-			return e;
-		}
-
-	}
+//
+//   // Public ---------------------------------------------------------------------------------------
+//
+//   public void testCrashNoFailover() throws Exception
+//   {
+//      Connection conn = null;
+//
+//      try
+//      {
+//         assertFalse(((ClientClusteredConnectionFactoryDelegate)((JBossConnectionFactory)cf).getDelegate()).isSupportsFailover());
+//         
+//         log.info("dump 1");
+//         ResourceManagerFactory.instance.dump();
+//
+//         conn = createConnectionOnServer(cf, 1);
+//         
+//         log.info("dump 2");
+//         ResourceManagerFactory.instance.dump();
+//
+//      	MyListener listener = new MyListener();
+//
+//      	conn.setExceptionListener(listener);
+//
+//         assertEquals(1, getServerId(conn));
+//
+//         Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+//
+//         MessageProducer prod = sess.createProducer(queue[1]);
+//
+//         prod.send(sess.createTextMessage("Before Crash"));
+//
+//         //Now kill server 1
+//
+//         log.info("KILLING SERVER 1");
+//         ServerManagement.kill(1);
+//         log.info("KILLED SERVER 1");
+//
+//         JMSException e = listener.waitForException(20000);
+//         
+//         log.info("dump 3");
+//         ResourceManagerFactory.instance.dump();
+//
+//         assertNotNull(e);
+//
+//         assertTrue(e.getMessage().equals("Failure on underlying remoting connection"));
+//
+//         // Connection should still be on server 1 (no client failover taken)
+//         assertEquals(1, getServerId(conn));
+//
+//         //Now try and recreate connection on different node
+//
+//         conn.close();
+//
+//         conn = createConnectionOnServer(cf, 2); 
+//
+//         sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+//
+//         prod = sess.createProducer(queue[2]);
+//
+//         MessageConsumer cons = sess.createConsumer(queue[2]);
+//
+//         conn.start();
+//
+//         TextMessage tm = sess.createTextMessage("After Crash");
+//
+//         prod.send(tm);
+//
+//         TextMessage rm = (TextMessage)cons.receive(1000);
+//
+//         assertNotNull(rm);
+//
+//         assertEquals(tm.getText(), rm.getText());
+//
+//         rm = (TextMessage)cons.receive(1000);
+//
+//         assertNull(rm);
+//
+//         conn.close();
+//
+//         // Restarting the server
+//         ServerManagement.start(1, "all", false);
+//         deployQueue("testDistributedQueue", 1);
+//         deployTopic("testDistributedTopic", 1);
+//         InitialContext ic = getInitialContext();
+//         ConnectionFactory cf = (ConnectionFactory)ic.lookup("/ClusteredConnectionFactory");
+//
+//         conn = createConnectionOnServer(cf, 1);
+//
+//         sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+//
+//         cons = sess.createConsumer(queue[2]);
+//
+//         conn.start();
+//
+//         // message should still be on server.. no server failover taken
+//         rm = (TextMessage) cons.receive(1000);
+//
+//         assertEquals(rm.getText(), "Before Crash");
+//         
+//         log.info("Got to end");
+//      }
+//      finally
+//      {
+//         if (conn != null)
+//         {
+//            conn.close();
+//         }
+//      }
+//   }
+//
+//
+//   // Package protected ----------------------------------------------------------------------------
+//
+//   // Protected ------------------------------------------------------------------------------------
+//
+//   protected void setUp() throws Exception
+//   {
+//      this.nodeCount = 3;
+//      
+//      this.overrides = new ServiceAttributeOverrides();
+//      
+//      overrides.put(ServiceContainer.SERVER_PEER_OBJECT_NAME, "SupportsFailover", "false");
+//            
+//      super.setUp();
+//   }
+//
+//   // Private --------------------------------------------------------------------------------------
+//
+//   // Inner classes --------------------------------------------------------------------------------
+//   // Inner classes --------------------------------------------------------------------------------
+//
+//	private class MyListener implements ExceptionListener
+//   {
+//		private JMSException e;
+//
+//		Latch l = new Latch();
+//
+//		public void onException(JMSException e)
+//		{
+//			this.e = e;
+//
+//			l.release();
+//		}
+//
+//		JMSException waitForException(long timeout) throws Exception
+//		{
+//			l.attempt(timeout);
+//
+//			return e;
+//		}
+//
+//	}
 
 }

@@ -78,13 +78,13 @@ public class BridgeTestBase extends JBMServerTestCase
 
       	//ServerManagement.start(1, "all", false);
 
-      	deployQueue("sourceQueue", 0);
+      	createQueue("sourceQueue", 0);
 
-      	deployTopic("sourceTopic", 0);
+      	createTopic("sourceTopic", 0);
 
-      	deployQueue("localTargetQueue", 0);
+      	createQueue("localTargetQueue", 0);
 
-      	deployQueue("targetQueue", 1);
+      	createQueue("targetQueue", 1);
       	
       	setUpAdministeredObjects();
       	

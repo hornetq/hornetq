@@ -25,7 +25,7 @@ import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageListener;
 
-import org.jboss.jms.destination.JBossDestination;
+import org.jboss.messaging.core.Destination;
 
 /**
  * Represents the minimal set of operations to provide consumer
@@ -45,7 +45,7 @@ public interface ConsumerDelegate extends ConsumerEndpoint
 
    void setMessageListener(MessageListener listener) throws JMSException;
 
-   JBossDestination getDestination() throws JMSException;
+   Destination getDestination() throws JMSException;
 
    boolean getNoLocal() throws JMSException;
 

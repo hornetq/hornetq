@@ -21,13 +21,14 @@
    */
 package org.jboss.jms.server.test.unit;
 
-import junit.framework.TestCase;
-import org.jboss.jms.server.Configuration;
-import org.jboss.jms.server.security.Role;
-
-import java.util.HashSet;
-import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.HashSet;
+
+import junit.framework.TestCase;
+
+import org.jboss.jms.server.security.Role;
+import org.jboss.messaging.core.Configuration;
 
 /**
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
@@ -51,7 +52,7 @@ public class ConfigurationTest extends TestCase
 
    public void testSetServerPeerId() throws Exception
    {
-      assertEquals("failed to set ServerPeerId", new Integer(10), configuration.getServerPeerID());
+      assertEquals("failed to set ServerPeerId", new Integer(10), configuration.getMessagingServerID());
    }
 
    public void testSetDefaultQueueJndiContext() throws Exception
@@ -131,44 +132,9 @@ public class ConfigurationTest extends TestCase
       assertEquals("failed to set Message Counter sample period", 50000, configuration.getMessageCounterSamplePeriod());
    }
 
-   public void testSetFailoverStartTimeout() throws Exception
-   {
-      assertEquals("failed to set failover start timeout", new Long(600000), configuration.getFailoverStartTimeout());
-   }
-
-   public void testSetFailoverCompleteTimeout() throws Exception
-   {
-      assertEquals("failed to set failover complete timeout", new Long(900000), configuration.getFailoverCompleteTimeout());
-   }
-
    public void testSetDefaultMessageCounterHistory() throws Exception
    {
       assertEquals("failed to set default message counter history", new Integer(21), configuration.getDefaultMessageCounterHistoryDayLimit());
-   }
-
-   public void testSetClusterPollCFName() throws Exception
-   {
-      assertEquals("failed to set Cluster pull cf name", "jboss.messaging.connectionfactory:service=ClusterPullConnectionFactorytest", configuration.getClusterPullConnectionFactoryName());
-   }
-
-   public void testSetUseXAForMessagePull() throws Exception
-   {
-      assertEquals("failed to set use xa for message pull", Boolean.FALSE, configuration.isUseXAForMessagePull());
-   }
-
-   public void testSetPreserveOrdering() throws Exception
-   {
-      assertEquals("failed to set use preserve ordering", Boolean.TRUE, configuration.isDefaultPreserveOrdering());
-   }
-
-   public void testSetRecoveryDelTimeout() throws Exception
-   {
-      assertEquals("failed to set recovery deliveries timeout", new Long(600000), configuration.getRecoverDeliveriesTimeout());
-   }
-
-   public void testSetSuckerPassword() throws Exception
-   {
-      assertEquals("failed to set sucker password", "suckaaa", configuration.getSuckerPassword());
    }
 
    public void testSetStrictTck() throws Exception

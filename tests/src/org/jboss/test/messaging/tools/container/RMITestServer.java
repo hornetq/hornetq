@@ -21,23 +21,25 @@
   */
 package org.jboss.test.messaging.tools.container;
 
-import org.jboss.jms.server.DestinationManager;
-import org.jboss.jms.server.JmsServer;
-import org.jboss.jms.server.JmsServerStatistics;
-import org.jboss.jms.server.ServerPeer;
-import org.jboss.jms.server.security.Role;
-import org.jboss.logging.Logger;
-import org.jboss.messaging.core.contract.MessageStore;
-import org.jboss.messaging.core.contract.PersistenceManager;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
+import java.rmi.server.UnicastRemoteObject;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Hashtable;
+import java.util.List;
+import java.util.Map;
 
 import javax.management.NotificationListener;
 import javax.management.ObjectName;
 import javax.naming.InitialContext;
 import javax.transaction.UserTransaction;
-import java.rmi.registry.LocateRegistry;
-import java.rmi.registry.Registry;
-import java.rmi.server.UnicastRemoteObject;
-import java.util.*;
+
+import org.jboss.jms.server.security.Role;
+import org.jboss.logging.Logger;
+import org.jboss.messaging.core.MessagingServer;
+import org.jboss.messaging.core.MessagingServerManagement;
 
 /**
  * An RMI wrapper to access the ServiceContainer from a different address space.
@@ -300,74 +302,94 @@ public class RMITestServer extends UnicastRemoteObject implements Server
       return server.isStarted();
    }
 
-   public MessageStore getMessageStore() throws Exception
-   {
-      return server.getMessageStore();
-   }
+//   public MessageStore getMessageStore() throws Exception
+//   {
+//      return server.getMessageStore();
+//   }
+//
+//   public DestinationManager getDestinationManager() throws Exception
+//   {
+//      return server.getDestinationManager();
+//   }
+//
+//   public PersistenceManager getPersistenceManager()
+//   {
+//      return server.getPersistenceManager();
+//   }
 
-   public DestinationManager getDestinationManager() throws Exception
-   {
-      return server.getDestinationManager();
-   }
-
-   public PersistenceManager getPersistenceManager()
-   {
-      return server.getPersistenceManager();
-   }
-
-   public ServerPeer getServerPeer() throws Exception
+   public MessagingServer getServerPeer() throws Exception
    {
       return server.getServerPeer();
    }
 
-   public void deployTopic(String name, String jndiName, boolean clustered) throws Exception
+//   public void deployTopic(String name, String jndiName, boolean clustered) throws Exception
+//   {
+//      server.deployTopic(name, jndiName, clustered);
+//   }
+//
+//   public void deployTopic(String name,
+//                           String jndiName,
+//                           int fullSize,
+//                           int pageSize,
+//                           int downCacheSize,
+//                           boolean clustered) throws Exception
+//   {
+//      server.deployTopic(name, jndiName, fullSize, pageSize, downCacheSize, clustered);
+//   }
+//
+//   public void deployTopicProgrammatically(String name, String jndiName) throws Exception
+//   {
+//      server.deployTopicProgrammatically(name, jndiName);
+//   }
+//
+//   public void deployQueue(String name, String jndiName, boolean clustered) throws Exception
+//   {
+//      server.deployQueue(name, jndiName, clustered);
+//   }
+//
+//   public void deployQueue(String name,
+//                           String jndiName,
+//                           int fullSize,
+//                           int pageSize,
+//                           int downCacheSize,
+//                           boolean clustered) throws Exception
+//   {
+//      server.deployQueue(name, jndiName, fullSize, pageSize, downCacheSize, clustered);
+//   }
+//
+//   public void deployQueueProgrammatically(String name, String jndiName) throws Exception
+//   {
+//      server.deployQueueProgrammatically(name, jndiName);
+//   }
+//
+//   public void undeployDestination(boolean isQueue, String name) throws Exception
+//   {
+//      server.undeployDestination(isQueue, name);
+//   }
+//
+//   public boolean undeployDestinationProgrammatically(boolean isQueue, String name) throws Exception
+//   {
+//      return server.undeployDestinationProgrammatically(isQueue, name);
+//   }
+   
+   public void destroyQueue(String name, String jndiName) throws Exception
    {
-      server.deployTopic(name, jndiName, clustered);
+      server.destroyQueue(name, jndiName);
    }
-
-   public void deployTopic(String name,
-                           String jndiName,
-                           int fullSize,
-                           int pageSize,
-                           int downCacheSize,
-                           boolean clustered) throws Exception
+   
+   public void destroyTopic(String name, String jndiName) throws Exception
    {
-      server.deployTopic(name, jndiName, fullSize, pageSize, downCacheSize, clustered);
+      server.destroyTopic(name, jndiName);
    }
-
-   public void deployTopicProgrammatically(String name, String jndiName) throws Exception
+   
+   public void createQueue(String name, String jndiName) throws Exception
    {
-      server.deployTopicProgrammatically(name, jndiName);
+      server.createQueue(name, jndiName);
    }
-
-   public void deployQueue(String name, String jndiName, boolean clustered) throws Exception
+   
+   public void createTopic(String name, String jndiName) throws Exception
    {
-      server.deployQueue(name, jndiName, clustered);
-   }
-
-   public void deployQueue(String name,
-                           String jndiName,
-                           int fullSize,
-                           int pageSize,
-                           int downCacheSize,
-                           boolean clustered) throws Exception
-   {
-      server.deployQueue(name, jndiName, fullSize, pageSize, downCacheSize, clustered);
-   }
-
-   public void deployQueueProgrammatically(String name, String jndiName) throws Exception
-   {
-      server.deployQueueProgrammatically(name, jndiName);
-   }
-
-   public void undeployDestination(boolean isQueue, String name) throws Exception
-   {
-      server.undeployDestination(isQueue, name);
-   }
-
-   public boolean undeployDestinationProgrammatically(boolean isQueue, String name) throws Exception
-   {
-      return server.undeployDestinationProgrammatically(isQueue, name);
+      server.createTopic(name, jndiName);
    }
 
    public void deployConnectionFactory(String objectName, String[] jndiBindings)
@@ -456,25 +478,25 @@ public class RMITestServer extends UnicastRemoteObject implements Server
       return server.getUserTransaction();
    }
 
-   public Set getNodeIDView() throws Exception
-   {
-      return server.getNodeIDView();
-   }
-   
-   public Map getFailoverMap() throws Exception
-   {
-   	return server.getFailoverMap();
-   }
-   
-   public Map getRecoveryArea(String queueName) throws Exception
-   {
-   	return server.getRecoveryArea(queueName);
-   }
-   
-   public int getRecoveryMapSize(String queueName) throws Exception
-   {
-   	return server.getRecoveryMapSize(queueName);
-   }
+//   public Set getNodeIDView() throws Exception
+//   {
+//      return server.getNodeIDView();
+//   }
+//   
+//   public Map getFailoverMap() throws Exception
+//   {
+//   	return server.getFailoverMap();
+//   }
+//   
+//   public Map getRecoveryArea(String queueName) throws Exception
+//   {
+//   	return server.getRecoveryArea(queueName);
+//   }
+//   
+//   public int getRecoveryMapSize(String queueName) throws Exception
+//   {
+//   	return server.getRecoveryMapSize(queueName);
+//   }
    
    public List pollNotificationListener(long listenerID) throws Exception
    {
@@ -511,32 +533,32 @@ public class RMITestServer extends UnicastRemoteObject implements Server
       return namingDelegate;
    }
 
-   public JmsServer getJmsServer() throws Exception
+   public MessagingServer getMessagingServer() throws Exception
    {
-      return server.getJmsServer();
+      return server.getMessagingServer();
    }
 
 
-   public JmsServerStatistics getJmsServerStatistics() throws Exception
+   public MessagingServerManagement getMessagingServerManagement() throws Exception
    {
-      return server.getJmsServerStatistics();
+      return server.getMessagingServerManagement();
    }
 
 
    public void removeAllMessagesForQueue(String destName) throws Exception
    {
-      getJmsServer().removeAllMessagesForQueue(destName);
+      server.removeAllMessagesForQueue(destName);
    }
 
    public void removeAllMessagesForTopic(String destName) throws Exception
    {
-      getJmsServer().removeAllMessagesForTopic(destName);
+      server.removeAllMessagesForTopic(destName);
    }
 
 
    public Integer getMessageCountForQueue(String queueName) throws Exception
    {
-      return getJmsServerStatistics().getMessageCountForQueue(queueName);
+      return getMessagingServerManagement().getMessageCountForQueue(queueName);
    }
 
 

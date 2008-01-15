@@ -23,14 +23,16 @@ package org.jboss.jms.client.state;
 
 import java.util.Collections;
 
+import org.jboss.jms.client.Closeable;
 import org.jboss.jms.client.container.ClientConsumer;
 import org.jboss.jms.client.delegate.ClientConnectionDelegate;
 import org.jboss.jms.client.delegate.ClientConsumerPacketHandler;
 import org.jboss.jms.client.delegate.DelegateSupport;
 import org.jboss.jms.client.remoting.CallbackManager;
-import org.jboss.jms.client.Closeable;
 import org.jboss.jms.delegate.ConsumerDelegate;
 import org.jboss.jms.destination.JBossDestination;
+import org.jboss.messaging.core.Destination;
+import org.jboss.messaging.core.DestinationType;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.util.Version;
 
@@ -54,7 +56,7 @@ public class ConsumerState extends HierarchicalStateSupport
    // Attributes -----------------------------------------------------------------------------------
 
    private String consumerID;
-   private JBossDestination destination;
+   private Destination destination;
    private String selector;
    private String subscriptionName;
    private boolean noLocal;
@@ -72,7 +74,7 @@ public class ConsumerState extends HierarchicalStateSupport
    
    // Constructors ---------------------------------------------------------------------------------
 
-   public ConsumerState(SessionState parent, ConsumerDelegate delegate, ConsumerDelegate proxyDelegate, JBossDestination dest,
+   public ConsumerState(SessionState parent, ConsumerDelegate delegate, ConsumerDelegate proxyDelegate, Destination dest,
                         String selector, boolean noLocal, String subscriptionName, String consumerID,
                         boolean isCC, int bufferSize, int maxDeliveries, long redeliveryDelay)
    {
@@ -91,7 +93,7 @@ public class ConsumerState extends HierarchicalStateSupport
     
       //We don't store deliveries if this a non durable subscriber
       
-      if (dest.isTopic() && subscriptionName == null)
+      if (dest.getType() == DestinationType.TOPIC && subscriptionName == null)
       {
          storingDeliveries = false;                 
       }
@@ -162,7 +164,7 @@ public class ConsumerState extends HierarchicalStateSupport
 
    // Public ---------------------------------------------------------------------------------------
 
-   public JBossDestination getDestination()
+   public Destination getDestination()
    {
       return destination;
    }
@@ -227,7 +229,7 @@ public class ConsumerState extends HierarchicalStateSupport
    	//If e are a non durable subscriber to a topic then there is no need
    	//to send acks to the server - we wouldn't have stored them on the server side anyway
    	
-      return !(destination.isTopic() && subscriptionName == null);      
+      return !(destination.getType() == DestinationType.TOPIC && subscriptionName == null);      
    }
    
    public long getRedeliveryDelay()

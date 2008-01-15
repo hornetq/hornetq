@@ -50,14 +50,12 @@ public class SendTransactionMessageCodec extends AbstractPacketCodec<SendTransac
    protected void encodeBody(SendTransactionMessage request, RemotingBuffer out) throws Exception
    {
       byte[] encodedTxReq = encodeTransactionRequest(request.getTransactionRequest());
-      boolean checkForDuplicates = request.checkForDuplicates();
 
-      int bodyLength = INT_LENGTH + encodedTxReq.length + 1;
+      int bodyLength = INT_LENGTH + encodedTxReq.length;
       
       out.putInt(bodyLength);
       out.putInt(encodedTxReq.length);
       out.put(encodedTxReq);
-      out.putBoolean(checkForDuplicates);
    }
 
    @Override
@@ -74,9 +72,8 @@ public class SendTransactionMessageCodec extends AbstractPacketCodec<SendTransac
       byte[] encodedTxReq = new byte[txReqLength];
       in.get(encodedTxReq);
       TransactionRequest tr = decodeTransactionRequest(encodedTxReq);
-      boolean checkForDuplicates = in.getBoolean();
 
-      return new SendTransactionMessage(tr, checkForDuplicates);
+      return new SendTransactionMessage(tr);
    }
 
    // Package protected ---------------------------------------------

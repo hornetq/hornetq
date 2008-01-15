@@ -21,23 +21,24 @@
   */
 package org.jboss.test.messaging.jms.server.connectionmanager;
 
+import java.util.Iterator;
+import java.util.Map;
+
+import javax.jms.ConnectionFactory;
+import javax.jms.JMSException;
+import javax.jms.Session;
+
 import org.jboss.jms.client.JBossConnection;
 import org.jboss.jms.client.JBossConnectionFactory;
 import org.jboss.jms.delegate.ConnectionEndpoint;
 import org.jboss.jms.delegate.IDBlock;
 import org.jboss.jms.delegate.SessionDelegate;
 import org.jboss.jms.server.ConnectionManager;
-import org.jboss.jms.server.ServerPeer;
 import org.jboss.jms.server.connectionmanager.SimpleConnectionManager;
 import org.jboss.jms.tx.MessagingXid;
 import org.jboss.jms.tx.TransactionRequest;
+import org.jboss.messaging.core.impl.server.MessagingServerImpl;
 import org.jboss.test.messaging.jms.JMSTestCase;
-
-import javax.jms.ConnectionFactory;
-import javax.jms.JMSException;
-import javax.jms.Session;
-import java.util.Iterator;
-import java.util.Map;
 
 /**
  * 
@@ -83,7 +84,7 @@ public class SimpleConnectionManagerTest extends JMSTestCase
 	      conn2 = (JBossConnection)cf.createConnection();
 	      Session sess2 = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
 	      
-	      ServerPeer peer = (ServerPeer) getJmsServer();
+	      MessagingServerImpl peer = (MessagingServerImpl) getJmsServer();
 	      
 	      SimpleConnectionManager cm = (SimpleConnectionManager)peer.getConnectionManager();
 	      
@@ -246,7 +247,7 @@ public class SimpleConnectionManagerTest extends JMSTestCase
          return null;
       }
 
-      public void sendTransaction(TransactionRequest request, boolean retry) throws JMSException
+      public void sendTransaction(TransactionRequest request) throws JMSException
       {
       }
 

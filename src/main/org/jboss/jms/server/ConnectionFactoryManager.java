@@ -22,7 +22,7 @@
 package org.jboss.jms.server;
 
 import org.jboss.jms.client.plugin.LoadBalancingFactory;
-import org.jboss.messaging.core.contract.MessagingComponent;
+import org.jboss.messaging.core.MessagingComponent;
 
 import java.util.List;
 
@@ -42,8 +42,7 @@ public interface ConnectionFactoryManager extends MessagingComponent
     */
    void registerConnectionFactory(String uniqueName, String clientID,  List<String> jndiBindings,
                                  String serverURI, boolean clientPing,
-                                 int prefetchSize,
-                                 boolean slowConsumers,
+                                 int prefetchSize,                           
                                  int defaultTempQueueFullSize,
                                  int defaultTempQueuePageSize,
                                  int defaultTempQueueDownCacheSize,
@@ -53,5 +52,5 @@ public interface ConnectionFactoryManager extends MessagingComponent
                                  LoadBalancingFactory loadBalancingPolicy,
                                  boolean strictTck) throws Exception;
 
-   void unregisterConnectionFactory(String uniqueName, boolean supportsFailover, boolean supportsLoadBalancing) throws Exception;
+   void unregisterConnectionFactory(String uniqueName) throws Exception;
 }

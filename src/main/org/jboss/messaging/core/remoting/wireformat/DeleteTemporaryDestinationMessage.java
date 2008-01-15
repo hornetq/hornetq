@@ -8,7 +8,7 @@ package org.jboss.messaging.core.remoting.wireformat;
 
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_DELETETEMPORARYDESTINATION;
 
-import org.jboss.jms.destination.JBossDestination;
+import org.jboss.messaging.core.Destination;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -23,13 +23,13 @@ public class DeleteTemporaryDestinationMessage extends AbstractPacket
 
    // Attributes ----------------------------------------------------
 
-   private final JBossDestination destination;
+   private final Destination destination;
 
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public DeleteTemporaryDestinationMessage(JBossDestination destination)
+   public DeleteTemporaryDestinationMessage(Destination destination)
    {
       super(MSG_DELETETEMPORARYDESTINATION);
 
@@ -40,7 +40,7 @@ public class DeleteTemporaryDestinationMessage extends AbstractPacket
 
    // Public --------------------------------------------------------
 
-   public JBossDestination getDestination()
+   public Destination getDestination()
    {
       return destination;
    }

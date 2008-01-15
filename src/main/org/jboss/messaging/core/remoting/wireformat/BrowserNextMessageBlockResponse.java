@@ -10,7 +10,7 @@ import static org.jboss.messaging.core.remoting.wireformat.PacketType.RESP_BROWS
 
 import java.util.Arrays;
 
-import org.jboss.messaging.newcore.Message;
+import org.jboss.messaging.core.Message;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>

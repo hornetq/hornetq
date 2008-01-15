@@ -41,7 +41,7 @@ import javax.jms.MessageNotWriteableException;
 import org.jboss.jms.delegate.SessionDelegate;
 import org.jboss.jms.exception.MessagingJMSException;
 import org.jboss.logging.Logger;
-import org.jboss.messaging.newcore.impl.MessageImpl;
+import org.jboss.messaging.core.impl.MessageImpl;
 import org.jboss.util.Primitives;
 import org.jboss.util.Strings;
 
@@ -125,7 +125,7 @@ public class JBossMessage implements javax.jms.Message
    private static final Logger log = Logger.getLogger(JBossMessage.class);
 
    
-   public static JBossMessage createMessage(org.jboss.messaging.newcore.Message message,
+   public static JBossMessage createMessage(org.jboss.messaging.core.Message message,
                                             long deliveryID, int deliveryCount)
    {
       int type = message.getType();
@@ -152,7 +152,7 @@ public class JBossMessage implements javax.jms.Message
    // Attributes ----------------------------------------------------
 
    //The underlying message
-   protected org.jboss.messaging.newcore.Message message;
+   protected org.jboss.messaging.core.Message message;
    
    //The SessionDelegate - we need this when acknowledging the message directly
    private SessionDelegate delegate;
@@ -173,8 +173,7 @@ public class JBossMessage implements javax.jms.Message
      
    protected JBossMessage(int type)
    {
-      message =
-         new MessageImpl(-1, type, true, 0, System.currentTimeMillis(), (byte)4);
+      message = new MessageImpl(type, true, 0, System.currentTimeMillis(), (byte)4);
    }
    
    public JBossMessage()
@@ -185,7 +184,7 @@ public class JBossMessage implements javax.jms.Message
    /**
     * Constructor for when receiving a message from the server
     */
-   public JBossMessage(org.jboss.messaging.newcore.Message message, long deliveryID, int deliveryCount)
+   public JBossMessage(org.jboss.messaging.core.Message message, long deliveryID, int deliveryCount)
    {
       this.message = message;
       
@@ -247,18 +246,7 @@ public class JBossMessage implements javax.jms.Message
    
    public String getJMSMessageID()
    {
-      String id = (String)message.getHeader(JBM_MESSAGE_ID);
-      
-      if (id == null)
-      {
-         id = "ID:JBM-" + message.getMessageID();
-         
-         //We cache the JMSMessageID in the header - this is because when moving a message between clusters
-         //the underlying message id can change but we want to preserve the JMSMessageID
-         message.putHeader(JBM_MESSAGE_ID, id);
-      }
-      
-      return id;
+      return (String)message.getHeader(JBM_MESSAGE_ID);     
    }
 
    public void setJMSMessageID(String jmsMessageID) throws JMSException
@@ -337,18 +325,18 @@ public class JBossMessage implements javax.jms.Message
    
    public int getJMSDeliveryMode() throws JMSException
    {
-      return message.isReliable() ? DeliveryMode.PERSISTENT : DeliveryMode.NON_PERSISTENT;
+      return message.isDurable() ? DeliveryMode.PERSISTENT : DeliveryMode.NON_PERSISTENT;
    }
 
    public void setJMSDeliveryMode(int deliveryMode) throws JMSException
    {
       if (deliveryMode == DeliveryMode.PERSISTENT)
       {
-         message.setReliable(true);
+         message.setDurable(true);
       }
       else if (deliveryMode == DeliveryMode.NON_PERSISTENT)
       {
-         message.setReliable(false);
+         message.setDurable(false);
       }
       else
       {
@@ -771,7 +759,7 @@ public class JBossMessage implements javax.jms.Message
     
    // Public --------------------------------------------------------
    
-   public org.jboss.messaging.newcore.Message getCoreMessage()
+   public org.jboss.messaging.core.Message getCoreMessage()
    {
       return message;
    }
@@ -856,7 +844,7 @@ public class JBossMessage implements javax.jms.Message
       sb.append("");
       sb.append(getJMSMessageID());
       sb.append("]:");
-      sb.append(message.isReliable() ? "PERSISTENT" : "NON-PERSISTENT");
+      sb.append(message.isDurable() ? "PERSISTENT" : "NON-PERSISTENT");
       return sb.toString();
    }
       

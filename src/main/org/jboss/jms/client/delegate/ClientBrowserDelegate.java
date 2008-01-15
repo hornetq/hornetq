@@ -29,6 +29,7 @@ import javax.jms.JMSException;
 import org.jboss.jms.client.state.ConnectionState;
 import org.jboss.jms.client.state.HierarchicalState;
 import org.jboss.jms.delegate.BrowserDelegate;
+import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.remoting.wireformat.BrowserHasNextMessageRequest;
 import org.jboss.messaging.core.remoting.wireformat.BrowserHasNextMessageResponse;
 import org.jboss.messaging.core.remoting.wireformat.BrowserNextMessageBlockRequest;
@@ -38,7 +39,6 @@ import org.jboss.messaging.core.remoting.wireformat.BrowserResetMessage;
 import org.jboss.messaging.core.remoting.wireformat.CloseMessage;
 import org.jboss.messaging.core.remoting.wireformat.ClosingRequest;
 import org.jboss.messaging.core.remoting.wireformat.ClosingResponse;
-import org.jboss.messaging.newcore.Message;
 
 /**
  * The client-side Browser delegate class.

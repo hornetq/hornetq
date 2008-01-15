@@ -63,7 +63,7 @@ public class JBossObjectMessage extends JBossMessage implements ObjectMessage
       super(JBossObjectMessage.TYPE);
    }
    
-   public JBossObjectMessage(org.jboss.messaging.newcore.Message message, long deliveryID, int deliveryCount)
+   public JBossObjectMessage(org.jboss.messaging.core.Message message, long deliveryID, int deliveryCount)
    {
       super(message, deliveryID, deliveryCount);
    }

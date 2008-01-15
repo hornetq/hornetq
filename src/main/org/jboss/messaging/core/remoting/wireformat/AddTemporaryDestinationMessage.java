@@ -6,7 +6,7 @@
  */
 package org.jboss.messaging.core.remoting.wireformat;
 
-import org.jboss.jms.destination.JBossDestination;
+import org.jboss.messaging.core.Destination;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -21,13 +21,13 @@ public class AddTemporaryDestinationMessage extends AbstractPacket
 
    // Attributes ----------------------------------------------------
 
-   private final JBossDestination destination;
+   private final Destination destination;
 
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public AddTemporaryDestinationMessage(JBossDestination destination)
+   public AddTemporaryDestinationMessage(Destination destination)
    {
       super(PacketType.MSG_ADDTEMPORARYDESTINATION);
 
@@ -38,7 +38,7 @@ public class AddTemporaryDestinationMessage extends AbstractPacket
 
    // Public --------------------------------------------------------
 
-   public JBossDestination getDestination()
+   public Destination getDestination()
    {
       return destination;
    }

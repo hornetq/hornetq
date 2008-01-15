@@ -74,7 +74,7 @@ public class ClientExitTest extends JBMServerTestCase
       {
 
          //localServer.start("all", true);
-         deployQueue("Queue", null);
+         createQueue("Queue");
 
          // lookup the connection factory and the queue which we'll send to the client VM via a
          // serialized instances saved in file

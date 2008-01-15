@@ -23,6 +23,7 @@ package org.jboss.jms.client.delegate;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+
 import javax.jms.ConnectionMetaData;
 import javax.jms.Destination;
 import javax.jms.ExceptionListener;
@@ -38,10 +39,8 @@ import org.jboss.jms.client.remoting.JMSRemotingConnection;
 import org.jboss.jms.client.state.ConnectionState;
 import org.jboss.jms.client.state.SessionState;
 import org.jboss.jms.delegate.ConnectionDelegate;
-import org.jboss.jms.delegate.IDBlock;
 import org.jboss.jms.delegate.SessionDelegate;
 import org.jboss.jms.destination.JBossDestination;
-import org.jboss.jms.message.MessageIdGeneratorFactory;
 import org.jboss.jms.tx.MessagingXid;
 import org.jboss.jms.tx.ResourceManagerFactory;
 import org.jboss.jms.tx.TransactionRequest;
@@ -55,8 +54,6 @@ import org.jboss.messaging.core.remoting.wireformat.GetClientIDRequest;
 import org.jboss.messaging.core.remoting.wireformat.GetClientIDResponse;
 import org.jboss.messaging.core.remoting.wireformat.GetPreparedTransactionsRequest;
 import org.jboss.messaging.core.remoting.wireformat.GetPreparedTransactionsResponse;
-import org.jboss.messaging.core.remoting.wireformat.IDBlockRequest;
-import org.jboss.messaging.core.remoting.wireformat.IDBlockResponse;
 import org.jboss.messaging.core.remoting.wireformat.SendTransactionMessage;
 import org.jboss.messaging.core.remoting.wireformat.SetClientIDMessage;
 import org.jboss.messaging.core.remoting.wireformat.StartConnectionMessage;
@@ -183,9 +180,6 @@ public class ClientConnectionDelegate extends DelegateSupport<ConnectionState> i
          // Finished with the connection - we need to shutdown callback server
          remotingConnection.stop();
 
-         // Remove reference to message ID generator
-         MessageIdGeneratorFactory.instance.checkInGenerator(state.getServerID());
-
          // And to resource manager
          ResourceManagerFactory.instance.checkInResourceManager(state.getServerID());
       }
@@ -301,10 +295,9 @@ public class ClientConnectionDelegate extends DelegateSupport<ConnectionState> i
       return state.getRemotingConnection().getConnectionListener().getJMSExceptionListener();
    }
 
-   public void sendTransaction(TransactionRequest tr,
-                               boolean checkForDuplicates) throws JMSException
+   public void sendTransaction(TransactionRequest tr) throws JMSException
    {
-      sendBlocking(new SendTransactionMessage(tr, checkForDuplicates));
+      sendBlocking(new SendTransactionMessage(tr));
    }
 
 
@@ -386,14 +379,7 @@ public class ClientConnectionDelegate extends DelegateSupport<ConnectionState> i
    public boolean unregisterFailoverListener(FailoverListener listener)
    {
       return state.getFailoverCommandCenter().unregisterFailoverListener(listener);
-   }
-   
-   public IDBlock getIdBlock(int size) throws JMSException
-   {
-      IDBlockRequest request = new IDBlockRequest(size);
-      IDBlockResponse response = (IDBlockResponse) sendBlocking(request);
-      return new IDBlock(response.getLow(), response.getHigh());
-   }
+   }   
 
    // Public ---------------------------------------------------------------------------------------
 

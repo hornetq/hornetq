@@ -8,7 +8,7 @@ package org.jboss.messaging.core.remoting.wireformat;
 
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.REQ_CREATEBROWSER;
 
-import org.jboss.jms.destination.JBossDestination;
+import org.jboss.messaging.core.Destination;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -23,14 +23,14 @@ public class CreateBrowserRequest extends AbstractPacket
 
    // Attributes ----------------------------------------------------
 
-   private final JBossDestination destination;
+   private final Destination destination;
    private final String selector;
 
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public CreateBrowserRequest(JBossDestination destination, String selector)
+   public CreateBrowserRequest(Destination destination, String selector)
    {
       super(REQ_CREATEBROWSER);
 
@@ -42,7 +42,7 @@ public class CreateBrowserRequest extends AbstractPacket
 
    // Public --------------------------------------------------------
 
-   public JBossDestination getDestination()
+   public Destination getDestination()
    {
       return destination;
    }

@@ -6,8 +6,6 @@
  */
 package org.jboss.messaging.core.remoting.codec;
 
-import static org.jboss.jms.destination.JBossDestination.readDestination;
-import static org.jboss.jms.destination.JBossDestination.writeDestination;
 import static org.jboss.messaging.core.remoting.codec.DecoderStatus.NEED_DATA;
 import static org.jboss.messaging.core.remoting.codec.DecoderStatus.NOT_OK;
 import static org.jboss.messaging.core.remoting.codec.DecoderStatus.OK;
@@ -22,10 +20,12 @@ import java.nio.charset.CharacterCodingException;
 
 import org.jboss.jms.destination.JBossDestination;
 import org.jboss.logging.Logger;
+import org.jboss.messaging.core.Destination;
+import org.jboss.messaging.core.Message;
+import org.jboss.messaging.core.impl.DestinationImpl;
+import org.jboss.messaging.core.impl.MessageImpl;
 import org.jboss.messaging.core.remoting.wireformat.AbstractPacket;
 import org.jboss.messaging.core.remoting.wireformat.PacketType;
-import org.jboss.messaging.newcore.Message;
-import org.jboss.messaging.newcore.impl.MessageImpl;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>.
@@ -61,12 +61,27 @@ public abstract class AbstractPacketCodec<P extends AbstractPacket>
       return baos.toByteArray();
    }
 
-   public static byte[] encode(JBossDestination destination)
+   public static byte[] encode(Destination destination)
    throws Exception
    {
       ByteArrayOutputStream baos = new ByteArrayOutputStream();
-      writeDestination(new DataOutputStream(baos), destination);
+      
+      destination.write(new DataOutputStream(baos));
+      
       baos.flush();
+      
+      return baos.toByteArray();
+   }
+   
+   public static byte[] encodeJBossDestination(JBossDestination destination)
+   throws Exception
+   {
+      ByteArrayOutputStream baos = new ByteArrayOutputStream();
+      
+      JBossDestination.writeDestination(new DataOutputStream(baos), destination);
+      
+      baos.flush();
+      
       return baos.toByteArray();
    }
 
@@ -230,10 +245,24 @@ public abstract class AbstractPacketCodec<P extends AbstractPacket>
 
    protected abstract P decodeBody(RemotingBuffer buffer) throws Exception;
 
-   protected static JBossDestination decode(byte[] b) throws Exception
+   protected static Destination decode(byte[] b) throws Exception
    {
       ByteArrayInputStream bais = new ByteArrayInputStream(b);
-      return readDestination(new DataInputStream(bais));
+      
+      Destination destination = new DestinationImpl();
+      
+      destination.read(new DataInputStream(bais));
+      
+      return destination;
+   }
+   
+   protected static JBossDestination decodeJBossDestination(byte[] b) throws Exception
+   {
+      ByteArrayInputStream bais = new ByteArrayInputStream(b);
+      
+      JBossDestination destination = JBossDestination.readDestination(new DataInputStream(bais));
+      
+      return destination;
    }
 
    protected static Message decodeMessage(byte[] b) throws Exception

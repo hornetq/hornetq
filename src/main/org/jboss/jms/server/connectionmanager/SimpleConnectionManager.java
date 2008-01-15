@@ -21,19 +21,24 @@
   */
 package org.jboss.jms.server.connectionmanager;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+
+import javax.jms.JMSException;
+
 import org.jboss.jms.delegate.ConnectionEndpoint;
 import org.jboss.jms.server.ConnectionManager;
 import org.jboss.logging.Logger;
-import org.jboss.messaging.core.contract.ClusterNotification;
-import org.jboss.messaging.core.contract.ClusterNotificationListener;
-import org.jboss.messaging.core.contract.Replicator;
 import org.jboss.messaging.core.remoting.PacketSender;
 import org.jboss.messaging.util.ConcurrentHashSet;
 import org.jboss.messaging.util.Util;
-
-import javax.jms.JMSException;
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
@@ -42,7 +47,7 @@ import java.util.concurrent.ConcurrentHashMap;
  *
  * $Id$
  */
-public class SimpleConnectionManager implements ConnectionManager, ClusterNotificationListener
+public class SimpleConnectionManager implements ConnectionManager
 {
    // Constants ------------------------------------------------------------------------------------
 
@@ -64,8 +69,6 @@ public class SimpleConnectionManager implements ConnectionManager, ClusterNotifi
 
    private Map</** CFUniqueName*/ String, ConnectionFactoryCallbackInformation> cfCallbackInfo;
    
-   private Replicator replicator;
-
    // Constructors ---------------------------------------------------------------------------------
 
    public SimpleConnectionManager()
@@ -181,60 +184,6 @@ public class SimpleConnectionManager implements ConnectionManager, ClusterNotifi
       return getCFInfo(uniqueName).getAllSenders();
    }
 
-   // ClusterNotificationListener implementation ---------------------------------------------------
-
-
-   /**
-    * Closing connections that are coming from a failed node
-    * @param notification
-    */
-   public void notify(ClusterNotification notification)
-	{	
-		if (notification.type == ClusterNotification.TYPE_NODE_LEAVE)
-		{
-
-         log.trace("SimpleConnectionManager was notified about node leaving from node " +
-                    notification.nodeID);
-         
-         try
-			{
-				//We remove any consumers with the same JVMID as the node that just failed
-				//This will remove any message suckers from a failed node
-				//This is important to workaround a remoting bug where sending messages down a broken connection
-				//can cause a deadlock with the bisocket transport
-				
-				//Get the jvm id for the failed node
-				
-				Map ids = replicator.get(Replicator.JVM_ID_KEY);
-				
-				if (ids == null)
-				{
-               log.trace("Cannot find jvmid map");
-					throw new IllegalStateException("Cannot find jvmid map");
-				}
-				
-				int failedNodeID = notification.nodeID;
-				
-				String clientVMID = (String)ids.get(new Integer(failedNodeID));
-					
-				if (clientVMID == null)
-				{
-               log.error("Cannot find ClientVMID for failed node " + failedNodeID);
-					throw new IllegalStateException("Cannot find clientVMID for failed node " + failedNodeID);
-				}
-				
-				//Close the consumers corresponding to that VM
-
-            log.trace("Closing consumers for clientVMID=" + clientVMID);
-
-            closeConsumersForClientVMID(clientVMID);
-			}
-			catch (Exception e)
-			{
-				log.error("Failed to process failover start", e);
-			}
-		}		
-	}
    
    // MessagingComponent implementation ------------------------------------------------------------
    
@@ -266,12 +215,6 @@ public class SimpleConnectionManager implements ConnectionManager, ClusterNotifi
       return Collections.unmodifiableMap(jmsClients);
    }
    
-   public void injectReplicator(Replicator replicator)
-   {
-   	this.replicator = replicator;
-   }
-
-
    public String toString()
    {
       return "ConnectionManager[" + Integer.toHexString(hashCode()) + "]";
