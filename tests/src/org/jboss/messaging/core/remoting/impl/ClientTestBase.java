@@ -59,19 +59,7 @@ public abstract class ClientTestBase extends TestCase
       assertTrue(client.disconnect());
       assertFalse(client.isConnected());
       assertFalse(client.disconnect());
-   }
-   
-   public void testConnectIsIdempotent() throws Exception
-   {
-      Client client = new ClientImpl(createNIOConnector(), createServerLocator());
-      
-      assertFalse(client.isConnected());
-
-      client.connect();
-      String sessionID = client.getSessionID();
-      client.connect();
-      assertEquals(sessionID, client.getSessionID());      
-   }      
+   }    
       
    public void testSendOneWay() throws Exception
    {
