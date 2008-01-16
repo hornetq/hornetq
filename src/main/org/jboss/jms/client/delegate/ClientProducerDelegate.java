@@ -388,11 +388,18 @@ public class ClientProducerDelegate extends CommunicationSupport<ClientProducerD
    // Protected ------------------------------------------------------------------------------------
    
 
+   @Override
    protected Client getClient()
    {
       return connection.getClient();
    }
    // Package Private ------------------------------------------------------------------------------
+
+   @Override
+   protected byte getVersion()
+   {
+      return connection.getVersion();
+   }
 
    // Private --------------------------------------------------------------------------------------
 

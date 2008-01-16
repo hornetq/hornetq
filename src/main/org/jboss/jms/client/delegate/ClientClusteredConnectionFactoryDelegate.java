@@ -178,6 +178,12 @@ public class ClientClusteredConnectionFactoryDelegate extends CommunicationSuppo
       sendOneWay(remoting.getRemotingClient(), currentDelegate.getID(), Version.instance().getProviderIncrementingVersion(), message);
    }
 
+   @Override
+   protected byte getVersion()
+   {
+      return Version.instance().getProviderIncrementingVersion();
+   }
+
    protected void finalize() throws Throwable
    {
       super.finalize();

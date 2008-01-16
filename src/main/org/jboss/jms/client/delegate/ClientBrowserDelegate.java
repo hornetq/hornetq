@@ -164,10 +164,19 @@ public class ClientBrowserDelegate extends CommunicationSupport<ClientBrowserDel
 
    // Protected ------------------------------------------------------------------------------------
 
+   @Override
    protected Client getClient()
    {
       return this.session.getConnection().getClient();
    }
+
+   @Override
+   protected byte getVersion()
+   {
+      return this.session.getConnection().getVersion();
+   }
+   
+   
    
 
    // Package Private ------------------------------------------------------------------------------

@@ -24,6 +24,7 @@ import org.jboss.messaging.core.remoting.wireformat.AbstractPacket;
 import org.jboss.messaging.core.remoting.wireformat.JMSExceptionMessage;
 import org.jboss.messaging.util.Streamable;
 import org.jgroups.persistence.CannotConnectException;
+import org.jboss.messaging.util.Version;
 
 /**
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
@@ -40,8 +41,12 @@ public abstract class CommunicationSupport <T extends CommunicationSupport<?>> i
    // This is set on the server.
    protected String id;
    
-   // TODO move this to Client class
-   protected byte version;
+   
+   transient private boolean firstTime = true;
+   
+   
+   // getVersion cached (instead of calling it every time)
+   transient private byte cacheVersion;
 
    public CommunicationSupport(String id)
    {
@@ -72,6 +77,11 @@ public abstract class CommunicationSupport <T extends CommunicationSupport<?>> i
 
    protected abstract Client getClient();
    
+   protected byte getVersion()
+   {
+      return Version.instance().getProviderIncrementingVersion();
+   }
+   
    public String getID()
    {
       return id;
@@ -82,12 +92,6 @@ public abstract class CommunicationSupport <T extends CommunicationSupport<?>> i
       this.id = id;
    }
    
-   public void setState(Client client, byte version)
-   {
-      //this.client = client;
-      this.version = version;
-   }
-
    public void synchronizeWith(T nd) throws Exception
    {
       this.id = nd.getID();
@@ -99,29 +103,11 @@ public abstract class CommunicationSupport <T extends CommunicationSupport<?>> i
    
    // Protected Methods-----------------------------------------------------------------------------
    
-   // TODO: Refactor these methods into ConnectionImpl/Jeff's Client class
-   
-   public byte getVersion()
-   {
-      return version;
-   }
-
-   public void setVersion(byte version)
-   {
-      this.version = version;
-   }
-
    protected void sendOneWay(AbstractPacket packet) throws JMSException
    {
-      sendOneWay(getClient(), id, version, packet);
+      sendOneWay(getClient(), id, lookupVersion(), packet);
    }
    
-   protected void sendOneWay(Client client, AbstractPacket packet) throws JMSException
-   {
-      sendOneWay(client, id, version, packet);
-   }
-   
-
    protected static void sendOneWay(Client client, String targetID, byte version, AbstractPacket packet) throws JMSException
    {
       assert client != null;
@@ -133,15 +119,11 @@ public abstract class CommunicationSupport <T extends CommunicationSupport<?>> i
 
       client.sendOneWay(packet);
    }
-
-   protected AbstractPacket sendBlocking(AbstractPacket request) throws JMSException
+   
+   
+   protected  AbstractPacket sendBlocking(AbstractPacket request) throws JMSException
    {
-      return sendBlocking(getClient(), id, version, request);
-   }
-
-   protected AbstractPacket sendBlocking(Client client, AbstractPacket request) throws JMSException
-   {
-      return sendBlocking(client, id, version, request);
+      return sendBlocking(getClient(), id, lookupVersion(), request);
    }
 
    protected static AbstractPacket sendBlocking(Client client, String targetID, byte version, AbstractPacket request) throws JMSException
@@ -166,6 +148,16 @@ public abstract class CommunicationSupport <T extends CommunicationSupport<?>> i
       {
          throw handleThrowable(t);
       }
+   }
+   
+   private byte lookupVersion()
+   {
+      if (firstTime)
+      {
+         firstTime=false;
+         cacheVersion = getVersion();
+      }
+      return cacheVersion;
    }
    
    protected static JMSException handleThrowable(Throwable t)

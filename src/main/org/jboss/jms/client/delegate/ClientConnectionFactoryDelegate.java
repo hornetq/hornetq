@@ -162,7 +162,7 @@ public class ClientConnectionFactoryDelegate
          String sessionID = client.getSessionID();
          
          CreateConnectionRequest request = new CreateConnectionRequest(v, sessionID, JMSClientVMIdentifier.instance, failedNodeID, username, password);
-         CreateConnectionResponse response = (CreateConnectionResponse) sendBlocking(client, request);
+         CreateConnectionResponse response = (CreateConnectionResponse) sendBlocking(client, this.getID(), this.getVersion(), request);
          ClientConnectionDelegate connectionDelegate = new ClientConnectionDelegate(response.getConnectionID(), response.getServerID());
          connectionDelegate.setStrictTck(strictTck);
 

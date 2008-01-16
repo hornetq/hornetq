@@ -120,6 +120,12 @@ public class ClientConsumerDelegate extends CommunicationSupport<ClientConsumerD
 
    // DelegateSupport overrides --------------------------------------------------------------------
 
+   @Override
+   protected byte getVersion()
+   {
+      return session.getConnection().getVersion();
+   }
+
    protected Client getClient()
    {
       return this.session.getConnection().getClient();

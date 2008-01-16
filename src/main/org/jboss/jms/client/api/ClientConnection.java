@@ -76,6 +76,8 @@ public interface ClientConnection extends Closeable
    
    public String getID();
    
+   public byte getVersion();
+   
    
    
 }

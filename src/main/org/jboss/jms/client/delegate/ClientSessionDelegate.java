@@ -1124,10 +1124,20 @@ public class ClientSessionDelegate extends CommunicationSupport<ClientSessionDel
 
    // Protected ------------------------------------------------------------------------------------
 
+   @Override
    protected Client getClient()
    {
       return connection.getClient();
    }
+   
+   @Override
+   protected byte getVersion()
+   {
+      return connection.getVersion();
+   }
+
+   
+   
    // Package Private ------------------------------------------------------------------------------
 
    // Private --------------------------------------------------------------------------------------

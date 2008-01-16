@@ -426,6 +426,18 @@ public class ClientConnectionDelegate extends CommunicationSupport<ClientConnect
       }
    }
 
+   
+   @Override
+   public byte getVersion()
+   {
+      if (versionToUse == null)
+      {
+         log.warn("Version to use it null");
+      }
+      return versionToUse.getProviderIncrementingVersion();
+   }
+
+   
    // Streamable implementation -------------------------------------------------------------------
 
    public void read(DataInputStream in) throws Exception
@@ -451,6 +463,8 @@ public class ClientConnectionDelegate extends CommunicationSupport<ClientConnect
    {
       this.resourceManager = resourceManager;
    }
+   
+   
    
    
 
