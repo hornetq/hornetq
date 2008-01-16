@@ -88,106 +88,106 @@ public class FailoverStressTest extends ClusteringTestBase
     * either sends or receives messages from a queue. Then kills the node.
     * All connections should successfully fail over to the failover node.
     */
-   public void testFailoverManyConnections() throws Exception
-   {
-      Connection connections[] = new Connection[CONNECTION_COUNT];
-      ConnectionWorker workers[] = new ConnectionWorker[CONNECTION_COUNT];
-      
-      try
-      {
-         log.info("creating " + CONNECTION_COUNT + " threads to connect to server " + CONNECT_NODE);
-
-         for (int i = 0; i < CONNECTION_COUNT; i++)
-         {
-            connections[i] = createConnectionOnServer(cf, CONNECT_NODE);
-            if (i % 2 == 0)
-            {
-               workers[i] = new ConnectionSenderThread(i, connections[i], queue[CONNECT_NODE]);
-            }
-            else
-            {
-               workers[i] = new ConnectionReceiverThread(i, connections[i], queue[CONNECT_NODE]);
-            }
-         }
-         
-         for (int i = 0; i < CONNECTION_COUNT; i++)
-         {
-            workers[i].start();
-         }
-         
-         log.info("waiting for a few seconds so that threads begin working");
-         
-         Thread.sleep(PAUSE_BEFORE_KILL);
-
-         log.info("killing node " + CONNECT_NODE);
-
-         killAndWaitForFailover(connections);
-         
-         for (int i = 0; i < CONNECTION_COUNT; i++)
-         {
-            assertEquals("Connection #" + i + " did not fail over", FAILOVER_NODE, getServerId(connections[i]));
-         }
-
-         log.info("waiting for connection threads to finish");
-
-         boolean fail = false;
-         for (int i = 0; i < CONNECTION_COUNT; i++)
-         {
-            workers[i].join();
-            Exception e = workers[i].getException();
-            if (e != null)
-            {
-               log.error("Thread " + workers[i].getName() + " terminated abnormally:", e);
-               fail = true;
-            }
-         }
-         
-         if (fail) { fail("Some threads terminated abnormally"); }
-      }
-      finally
-      {
-         for (int i = 0; i < CONNECTION_COUNT; i++)
-         {
-            if (connections[i] != null)
-            {
-               connections[i].close();
-            }
-         }
-      }
-   }
-
+//   public void testFailoverManyConnections() throws Exception
+//   {
+//      Connection connections[] = new Connection[CONNECTION_COUNT];
+//      ConnectionWorker workers[] = new ConnectionWorker[CONNECTION_COUNT];
+//      
+//      try
+//      {
+//         log.info("creating " + CONNECTION_COUNT + " threads to connect to server " + CONNECT_NODE);
+//
+//         for (int i = 0; i < CONNECTION_COUNT; i++)
+//         {
+//            connections[i] = createConnectionOnServer(cf, CONNECT_NODE);
+//            if (i % 2 == 0)
+//            {
+//               workers[i] = new ConnectionSenderThread(i, connections[i], queue[CONNECT_NODE]);
+//            }
+//            else
+//            {
+//               workers[i] = new ConnectionReceiverThread(i, connections[i], queue[CONNECT_NODE]);
+//            }
+//         }
+//         
+//         for (int i = 0; i < CONNECTION_COUNT; i++)
+//         {
+//            workers[i].start();
+//         }
+//         
+//         log.info("waiting for a few seconds so that threads begin working");
+//         
+//         Thread.sleep(PAUSE_BEFORE_KILL);
+//
+//         log.info("killing node " + CONNECT_NODE);
+//
+//         killAndWaitForFailover(connections);
+//         
+//         for (int i = 0; i < CONNECTION_COUNT; i++)
+//         {
+//            assertEquals("Connection #" + i + " did not fail over", FAILOVER_NODE, getServerId(connections[i]));
+//         }
+//
+//         log.info("waiting for connection threads to finish");
+//
+//         boolean fail = false;
+//         for (int i = 0; i < CONNECTION_COUNT; i++)
+//         {
+//            workers[i].join();
+//            Exception e = workers[i].getException();
+//            if (e != null)
+//            {
+//               log.error("Thread " + workers[i].getName() + " terminated abnormally:", e);
+//               fail = true;
+//            }
+//         }
+//         
+//         if (fail) { fail("Some threads terminated abnormally"); }
+//      }
+//      finally
+//      {
+//         for (int i = 0; i < CONNECTION_COUNT; i++)
+//         {
+//            if (connections[i] != null)
+//            {
+//               connections[i].close();
+//            }
+//         }
+//      }
+//   }
+//
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
 
    // Private -------------------------------------------------------
    
-   private void killAndWaitForFailover(Connection[] connections) throws Exception
-   {
-      // register a failover listener
-      LoggingFailoverListener failoverListener = new LoggingFailoverListener();
-      
-      for (int i = 0; i < connections.length; i++)
-      {
-         ((JBossConnection)connections[i]).registerFailoverListener(failoverListener);
-      }
-
-      int serverId = getServerId(connections[0]);
-
-      ServerManagement.kill(serverId);
-
-      log.info("killed node " + serverId + ", now waiting for all connections to fail over");
-      
-      long killTime = System.currentTimeMillis();
-      while (failoverListener.getFailoverCount() < connections.length
-            && System.currentTimeMillis() - killTime <= FAILOVER_TIMEOUT)
-      {
-         Thread.sleep(3000L);
-      }
-      
-      assertEquals("Not all connections have failed over successfully",
-            connections.length, failoverListener.getFailoverCount());
-   }
+//   private void killAndWaitForFailover(Connection[] connections) throws Exception
+//   {
+//      // register a failover listener
+//      LoggingFailoverListener failoverListener = new LoggingFailoverListener();
+//      
+//      for (int i = 0; i < connections.length; i++)
+//      {
+//         ((JBossConnection)connections[i]).registerFailoverListener(failoverListener);
+//      }
+//
+//      int serverId = getServerId(connections[0]);
+//
+//      ServerManagement.kill(serverId);
+//
+//      log.info("killed node " + serverId + ", now waiting for all connections to fail over");
+//      
+//      long killTime = System.currentTimeMillis();
+//      while (failoverListener.getFailoverCount() < connections.length
+//            && System.currentTimeMillis() - killTime <= FAILOVER_TIMEOUT)
+//      {
+//         Thread.sleep(3000L);
+//      }
+//      
+//      assertEquals("Not all connections have failed over successfully",
+//            connections.length, failoverListener.getFailoverCount());
+//   }
 
    // Inner classes -------------------------------------------------
    

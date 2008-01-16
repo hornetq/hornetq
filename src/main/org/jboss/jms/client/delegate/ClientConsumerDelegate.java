@@ -28,19 +28,20 @@ import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageListener;
 
+import org.jboss.jms.client.api.Consumer;
+import org.jboss.jms.client.api.ClientSession;
+import org.jboss.jms.client.container.ClientConsumer;
 import org.jboss.jms.client.remoting.CallbackManager;
-import org.jboss.jms.client.state.ConnectionState;
-import org.jboss.jms.client.state.ConsumerState;
-import org.jboss.jms.client.state.SessionState;
-import org.jboss.jms.delegate.ConsumerDelegate;
 import org.jboss.jms.exception.MessagingShutdownException;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Destination;
+import org.jboss.messaging.core.DestinationType;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.wireformat.ChangeRateMessage;
 import org.jboss.messaging.core.remoting.wireformat.CloseMessage;
 import org.jboss.messaging.core.remoting.wireformat.ClosingRequest;
 import org.jboss.messaging.core.remoting.wireformat.ClosingResponse;
+import org.jboss.messaging.core.remoting.Client;
 
 /**
  * The client-side Consumer delegate class.
@@ -48,12 +49,13 @@ import org.jboss.messaging.core.remoting.wireformat.ClosingResponse;
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
+ * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  *
  * @version <tt>$Revision$</tt>
  *
  * $Id$
  */
-public class ClientConsumerDelegate extends DelegateSupport<ConsumerState> implements ConsumerDelegate
+public class ClientConsumerDelegate extends CommunicationSupport<ClientConsumerDelegate> implements Consumer
 {
    // Constants ------------------------------------------------------------------------------------
 
@@ -63,14 +65,29 @@ public class ClientConsumerDelegate extends DelegateSupport<ConsumerState> imple
 
    // Attributes -----------------------------------------------------------------------------------
 
+	private ClientSession session;
    private int bufferSize;
    private int maxDeliveries;
    private long redeliveryDelay;
 
+   // State attributes -----------------------------------------------------------------------------
+
+   private String consumerID;
+   private Destination destination;
+   private String selector;
+   private String subscriptionName;
+   private boolean noLocal;
+   private boolean isConnectionConsumer;
+   private ClientConsumer clientConsumer;
+   private boolean storingDeliveries;
+   
+   
+
+   
+   
    // Static ---------------------------------------------------------------------------------------
 
    // Constructors ---------------------------------------------------------------------------------
-
    public ClientConsumerDelegate(String objectID, int bufferSize, int maxDeliveries, long redeliveryDelay)
    {
       super(objectID);
@@ -79,13 +96,36 @@ public class ClientConsumerDelegate extends DelegateSupport<ConsumerState> imple
       this.redeliveryDelay = redeliveryDelay;
    }
 
+   public ClientConsumerDelegate(ClientSession session, String objectID, int bufferSize, int maxDeliveries, long redeliveryDelay,
+         Destination dest,
+         String selector, boolean noLocal, String subscriptionName, String consumerID,
+         boolean isCC)
+   {
+      super(objectID);
+      this.session = session;
+      this.bufferSize = bufferSize;
+      this.maxDeliveries = maxDeliveries;
+      this.redeliveryDelay = redeliveryDelay;
+      this.destination = dest;
+      this.selector = selector;
+      this.noLocal = noLocal;
+      this.subscriptionName = subscriptionName;
+      this.consumerID = consumerID;
+      this.isConnectionConsumer = isCC;
+   }
+
    public ClientConsumerDelegate()
    {
    }
 
    // DelegateSupport overrides --------------------------------------------------------------------
 
-   public void synchronizeWith(DelegateSupport nd) throws Exception
+   protected Client getClient()
+   {
+      return this.session.getConnection().getClient();
+   }
+   
+   public void synchronizeWith(ClientConsumerDelegate nd) throws Exception
    {
       log.trace(this + " synchronizing with " + nd);
 
@@ -93,29 +133,11 @@ public class ClientConsumerDelegate extends DelegateSupport<ConsumerState> imple
 
       ClientConsumerDelegate newDelegate = (ClientConsumerDelegate)nd;
 
-      // The client needs to be set first
-      client = ((ConnectionState)state.getParent().getParent()).getRemotingConnection().
-      getRemotingClient();
-
-      // synchronize server endpoint state
-
-      // synchronize (recursively) the client-side state
-
-      state.synchronizeWith(newDelegate.getState());
-
       // synchronize the delegates
 
       bufferSize = newDelegate.getBufferSize();
       maxDeliveries = newDelegate.getMaxDeliveries();
 
-   }
-
-   public void setState(ConsumerState state)
-   {
-      super.setState(state);
-
-      client = ((ConnectionState)state.getParent().getParent()).getRemotingConnection().
-      getRemotingClient();
    }
 
    // Closeable implementation ---------------------------------------------------------------------
@@ -128,7 +150,6 @@ public class ClientConsumerDelegate extends DelegateSupport<ConsumerState> imple
 
    public long closing(long sequence) throws JMSException
    {
-      ConsumerState consumerState = getState();
       try
       {
 
@@ -139,37 +160,33 @@ public class ClientConsumerDelegate extends DelegateSupport<ConsumerState> imple
 
          // First we call close on the ClientConsumer which waits for onMessage invocations
          // to complete and the last delivery to arrive
-         consumerState.getClientConsumer().close(lastDeliveryId);
+         getClientConsumer().close(lastDeliveryId);
 
-         SessionState sessionState = (SessionState) consumerState.getParent();
-         ConnectionState connectionState = (ConnectionState) sessionState.getParent();
+         session.removeCallbackHandler(getClientConsumer());
 
-         sessionState.removeCallbackHandler(consumerState.getClientConsumer());
+         CallbackManager cm = session.getConnection().getRemotingConnection().getCallbackManager();
+         cm.unregisterHandler(getConsumerID());
 
-         CallbackManager cm = connectionState.getRemotingConnection().getCallbackManager();
-         cm.unregisterHandler(consumerState.getConsumerID());
-
-         PacketDispatcher.client.unregister(consumerState.getConsumerID());
+         PacketDispatcher.client.unregister(getConsumerID());
 
          //And then we cancel any messages still in the message callback handler buffer
-         consumerState.getClientConsumer().cancelBuffer();
+         getClientConsumer().cancelBuffer();
 
          return lastDeliveryId;
 
       }
       catch (Exception proxiedException)
       {
-         ConnectionState connectionState = (ConnectionState) (consumerState.getParent().getParent());
          // if MessagingServer is shutdown or
          // if there is no failover in place... we just close the consumerState as well
-         if (proxiedException instanceof MessagingShutdownException ||
-                 (connectionState.getFailoverCommandCenter() == null))
+         if (proxiedException instanceof MessagingShutdownException /* ||
+                 (connectionState.getFailoverCommandCenter() == null ) */ )
 
 
          {
-            if (!consumerState.getClientConsumer().isClosed())
+            if (!getClientConsumer().isClosed())
             {
-               consumerState.getClientConsumer().close(-1);
+               getClientConsumer().close(-1);
             }
          }
          JMSException ex = new JMSException(proxiedException.toString());
@@ -198,7 +215,7 @@ public class ClientConsumerDelegate extends DelegateSupport<ConsumerState> imple
     */
    public MessageListener getMessageListener()
    {
-      return state.getClientConsumer().getMessageListener();
+      return getClientConsumer().getMessageListener();
    }
 
    /**
@@ -207,7 +224,7 @@ public class ClientConsumerDelegate extends DelegateSupport<ConsumerState> imple
     */
    public Message receive(long timeout) throws JMSException
    {
-      return state.getClientConsumer().receive(timeout);
+      return getClientConsumer().receive(timeout);
    }
 
    /**
@@ -216,7 +233,7 @@ public class ClientConsumerDelegate extends DelegateSupport<ConsumerState> imple
     */
    public void setMessageListener(MessageListener listener) throws JMSException
    {
-      state.getClientConsumer().setMessageListener(listener);
+      getClientConsumer().setMessageListener(listener);
    }
 
    /**
@@ -225,7 +242,7 @@ public class ClientConsumerDelegate extends DelegateSupport<ConsumerState> imple
     */
    public boolean getNoLocal()
    {
-      return getState().isNoLocal();
+      return this.noLocal;
    }
 
    /**
@@ -234,7 +251,7 @@ public class ClientConsumerDelegate extends DelegateSupport<ConsumerState> imple
     */
    public Destination getDestination()
    {
-      return state.getDestination();
+      return this.destination;
    }
 
    /**
@@ -243,7 +260,7 @@ public class ClientConsumerDelegate extends DelegateSupport<ConsumerState> imple
     */
    public String getMessageSelector()
    {
-      return state.getSelector();
+      return this.selector;
    }
 
    // Streamable implementation ----------------------------------------------------------
@@ -292,6 +309,63 @@ public class ClientConsumerDelegate extends DelegateSupport<ConsumerState> imple
    	return redeliveryDelay;
    }
 
+   
+
+   public String getSelector()
+   {
+      return selector;
+   }
+
+   public boolean isNoLocal()
+   {
+      return noLocal;
+   }
+
+   public String getConsumerID()
+   {
+      return consumerID;
+   }
+
+   public boolean isConnectionConsumer()
+   {
+      return isConnectionConsumer;
+   }
+
+   public void setClientConsumer(ClientConsumer handler)
+   {
+      this.clientConsumer = handler;
+   }
+
+   public ClientConsumer getClientConsumer()
+   {
+      return clientConsumer;
+   }
+
+   public String getSubscriptionName()
+   {
+      return subscriptionName;
+   }
+
+   public void setSubscriptionName(String subscriptionName)
+   {
+      this.subscriptionName = subscriptionName;
+   }
+
+   public boolean isStoringDeliveries()
+   {
+      return storingDeliveries;
+   }
+   
+   public boolean isShouldAck()
+   {
+      //If e are a non durable subscriber to a topic then there is no need
+      //to send acks to the server - we wouldn't have stored them on the server side anyway
+      
+      return !(destination.getType() == DestinationType.TOPIC && subscriptionName == null);      
+   }
+
+  
+   
    // Protected ------------------------------------------------------------------------------------
 
    // Package Private ------------------------------------------------------------------------------

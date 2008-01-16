@@ -26,7 +26,7 @@ import java.util.UUID;
 import javax.jms.JMSException;
 import javax.jms.TemporaryQueue;
 
-import org.jboss.jms.delegate.SessionDelegate;
+import org.jboss.jms.client.api.ClientSession;
 
 
 /**
@@ -43,14 +43,14 @@ public class JBossTemporaryQueue extends JBossQueue implements TemporaryQueue
       
    // Attributes ----------------------------------------------------
    
-   private transient SessionDelegate delegate;
+   private transient ClientSession delegate;
    
    
    // Static --------------------------------------------------------
    
    // Constructors --------------------------------------------------
    
-   public JBossTemporaryQueue(SessionDelegate delegate)
+   public JBossTemporaryQueue(ClientSession delegate)
    {
       super(UUID.randomUUID().toString());
       

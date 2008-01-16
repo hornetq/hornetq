@@ -33,13 +33,9 @@ import javax.naming.InitialContext;
 import EDU.oswego.cs.dl.util.concurrent.LinkedQueue;
 import org.jboss.jms.client.FailoverEvent;
 import org.jboss.jms.client.FailoverListener;
-import org.jboss.jms.client.JBossConnection;
 import org.jboss.jms.client.JBossConnectionFactory;
 import org.jboss.jms.client.delegate.ClientClusteredConnectionFactoryDelegate;
-import org.jboss.jms.client.delegate.DelegateSupport;
-import org.jboss.jms.client.state.ConnectionState;
 import org.jboss.jms.tx.ResourceManagerFactory;
-import org.jboss.messaging.util.ProxyFactory;
 import org.jboss.test.messaging.JBMServerTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
 import org.jboss.test.messaging.tools.container.ServiceAttributeOverrides;
@@ -304,8 +300,7 @@ public class ClusteringTestBase extends JBMServerTestCase
 
    protected String getLocatorURL(Connection conn)
    {
-      return getConnectionState(conn).getRemotingConnection().
-         getRemotingClient().getURI();
+      return getDelegate(conn).getRemotingConnection().getRemotingClient().getURI(); 
    }
 
    protected String getObjectId(Connection conn)
@@ -313,16 +308,11 @@ public class ClusteringTestBase extends JBMServerTestCase
       return getDelegate(conn).getID();
    }
 
-   protected ConnectionState getConnectionState(Connection conn)
-   {
-      return getDelegate(conn).getState();
-   }
-  
    protected void waitForFailoverComplete(int serverID, Connection conn1)
       throws Exception
    {
 
-      assertEquals(serverID, ((JBossConnection)conn1).getServerID());
+/*      assertEquals(serverID, ((JBossConnection)conn1).getServerID());
 
       // register a failover listener
       SimpleFailoverListener failoverListener = new SimpleFailoverListener();
@@ -352,7 +342,7 @@ public class ClusteringTestBase extends JBMServerTestCase
       }
 
       // failover complete
-      log.info("failover completed");
+      log.info("failover completed"); */
    }
 
 
@@ -365,9 +355,7 @@ public class ClusteringTestBase extends JBMServerTestCase
    {
       for(int i = 0; i < conn.length; i++)
       {
-         ConnectionState state = getDelegate(conn[i]).getState();
-
-         if (state.getServerID() == serverId)
+         if (getDelegate(conn[i]).getServerID() == serverId)
          {
             return conn[i];
          }
@@ -381,8 +369,7 @@ public class ClusteringTestBase extends JBMServerTestCase
       int[] serverID = new int[conn.length];
       for(int i = 0; i < conn.length; i++)
       {
-         ConnectionState state = getDelegate(conn[i]).getState();
-         serverID[i] = state.getServerID();
+         serverID[i] = getDelegate(conn[i]).getServerID();
       }
 
       for(int i = 0; i < nodeCount; i++)

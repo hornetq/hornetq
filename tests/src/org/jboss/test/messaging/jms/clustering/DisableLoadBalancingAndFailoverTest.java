@@ -77,10 +77,10 @@ public class DisableLoadBalancingAndFailoverTest extends ClusteringTestBase
    	this.loadBalancing(lbCF1);
    }
    
-   public void testFailoverNoLoadBalancing1() throws Exception
+   /*public void testFailoverNoLoadBalancing1() throws Exception
    {
    	this.failover(foCF);
-   }
+   } */
    	
    public void testFailoverNoLoadBalancing2() throws Exception
    {
@@ -300,7 +300,7 @@ public class DisableLoadBalancingAndFailoverTest extends ClusteringTestBase
       }
    }
    
-   protected void failover(ConnectionFactory theCF) throws Exception
+/*   protected void failover(ConnectionFactory theCF) throws Exception
    {
       Connection conn = null;      
 
@@ -363,7 +363,7 @@ public class DisableLoadBalancingAndFailoverTest extends ClusteringTestBase
             conn.close();
          }
       }
-   }
+   } */
    
    protected void setUp() throws Exception
    {

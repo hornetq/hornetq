@@ -105,88 +105,88 @@ public class FailoverOverDistributionStressTest extends ClusteringTestBase
     * either sends or receives messages from a queue. Then kills the node.
     * All connections should successfully fail over to the failover node.
     */
-   public void testFailoverManyConnections() throws Exception
-   {
-      produced = 0;
-      consumed = 0;
-
-      Connection connections[] = new Connection[CONNECTION_COUNT];
-      FailoverOverDistributionStressTest.ConnectionWorker workers[] = new FailoverOverDistributionStressTest.ConnectionWorker[CONNECTION_COUNT];
-
-      try
-      {
-         log.info("creating " + CONNECTION_COUNT + " threads to connect to server " + CONNECT_NODE);
-
-         for (int i = 0; i < CONNECTION_COUNT; i++)
-         {
-            if (i % 2 == 0)
-            {
-               connections[i] = createConnectionOnServer(cf, 1);
-               workers[i] = new FailoverOverDistributionStressTest.ConnectionSenderThread(i, connections[i], queue[CONNECT_NODE]);
-            }
-            else
-            {
-               connections[i] = createConnectionOnServer(cf, 0);
-               workers[i] = new FailoverOverDistributionStressTest.ConnectionReceiverThread(i, connections[i], queue[CONNECT_NODE]);
-            }
-         }
-
-         for (int i = 0; i < CONNECTION_COUNT; i++)
-         {
-            workers[i].start();
-         }
-
-         log.info("waiting for a few seconds so that threads begin working");
-
-         while (true)
-         {
-            int produced = getProduced();
-            if (produced > (MESSAGE_COUNT_PER_CONNECTION * (CONNECTION_COUNT/2))/2 )
-            {
-               killAndWaitForFailover(connections);
-               break;
-            }
-            else
-            {
-               log.info("Produced " + produced + " messages.. Consumed (" + getConsumed() + ")" );
-            }
-            Thread.sleep(500);
-         }
-
-         for (int i = 0; i < CONNECTION_COUNT; i++)
-         {
-            assertEquals("Connection #" + i + " did not fail over", FAILOVER_NODE, getServerId(connections[i]));
-         }
-
-         log.info("waiting for connection threads to finish");
-
-         boolean fail = false;
-         for (int i = 0; i < CONNECTION_COUNT; i++)
-         {
-            workers[i].join();
-            Exception e = workers[i].getException();
-            if (e != null)
-            {
-               log.error("Thread " + workers[i].getName() + " terminated abnormally:", e);
-               fail = true;
-            }
-         }
-
-         if (fail) { fail("Some threads terminated abnormally"); }
-
-         assertEquals(produced, consumed);
-      }
-      finally
-      {
-         for (int i = 0; i < CONNECTION_COUNT; i++)
-         {
-            if (connections[i] != null)
-            {
-               connections[i].close();
-            }
-         }
-      }
-   }
+//   public void testFailoverManyConnections() throws Exception
+//   {
+//      produced = 0;
+//      consumed = 0;
+//
+//      Connection connections[] = new Connection[CONNECTION_COUNT];
+//      FailoverOverDistributionStressTest.ConnectionWorker workers[] = new FailoverOverDistributionStressTest.ConnectionWorker[CONNECTION_COUNT];
+//
+//      try
+//      {
+//         log.info("creating " + CONNECTION_COUNT + " threads to connect to server " + CONNECT_NODE);
+//
+//         for (int i = 0; i < CONNECTION_COUNT; i++)
+//         {
+//            if (i % 2 == 0)
+//            {
+//               connections[i] = createConnectionOnServer(cf, 1);
+//               workers[i] = new FailoverOverDistributionStressTest.ConnectionSenderThread(i, connections[i], queue[CONNECT_NODE]);
+//            }
+//            else
+//            {
+//               connections[i] = createConnectionOnServer(cf, 0);
+//               workers[i] = new FailoverOverDistributionStressTest.ConnectionReceiverThread(i, connections[i], queue[CONNECT_NODE]);
+//            }
+//         }
+//
+//         for (int i = 0; i < CONNECTION_COUNT; i++)
+//         {
+//            workers[i].start();
+//         }
+//
+//         log.info("waiting for a few seconds so that threads begin working");
+//
+//         while (true)
+//         {
+//            int produced = getProduced();
+//            if (produced > (MESSAGE_COUNT_PER_CONNECTION * (CONNECTION_COUNT/2))/2 )
+//            {
+//               killAndWaitForFailover(connections);
+//               break;
+//            }
+//            else
+//            {
+//               log.info("Produced " + produced + " messages.. Consumed (" + getConsumed() + ")" );
+//            }
+//            Thread.sleep(500);
+//         }
+//
+//         for (int i = 0; i < CONNECTION_COUNT; i++)
+//         {
+//            assertEquals("Connection #" + i + " did not fail over", FAILOVER_NODE, getServerId(connections[i]));
+//         }
+//
+//         log.info("waiting for connection threads to finish");
+//
+//         boolean fail = false;
+//         for (int i = 0; i < CONNECTION_COUNT; i++)
+//         {
+//            workers[i].join();
+//            Exception e = workers[i].getException();
+//            if (e != null)
+//            {
+//               log.error("Thread " + workers[i].getName() + " terminated abnormally:", e);
+//               fail = true;
+//            }
+//         }
+//
+//         if (fail) { fail("Some threads terminated abnormally"); }
+//
+//         assertEquals(produced, consumed);
+//      }
+//      finally
+//      {
+//         for (int i = 0; i < CONNECTION_COUNT; i++)
+//         {
+//            if (connections[i] != null)
+//            {
+//               connections[i].close();
+//            }
+//         }
+//      }
+//   }
 
    // Package protected ---------------------------------------------
 
@@ -194,35 +194,35 @@ public class FailoverOverDistributionStressTest extends ClusteringTestBase
 
    // Private -------------------------------------------------------
 
-   private void killAndWaitForFailover(Connection[] connections) throws Exception
-   {
-      // register a failover listener
-      FailoverOverDistributionStressTest.LoggingFailoverListener failoverListener = new FailoverOverDistributionStressTest.LoggingFailoverListener();
-
-      int numConnections=0;
-      for (int i = 0; i < connections.length; i++)
-      {
-         if (getServerId(connections[i]) == 1)
-         {
-            ((JBossConnection)connections[i]).registerFailoverListener(failoverListener);
-            numConnections ++;
-         }
-      }
-
-      ServerManagement.kill(1);
-
-      log.info("killed node 1, now waiting for all connections to fail over");
-
-      long killTime = System.currentTimeMillis();
-      while (failoverListener.getFailoverCount() < numConnections
-            && System.currentTimeMillis() - killTime <= FAILOVER_TIMEOUT)
-      {
-         Thread.sleep(3000L);
-      }
-
-      assertEquals("Not all connections have failed over successfully",
-            numConnections, failoverListener.getFailoverCount());
-   }
+//   private void killAndWaitForFailover(Connection[] connections) throws Exception
+//   {
+//      // register a failover listener
+//      FailoverOverDistributionStressTest.LoggingFailoverListener failoverListener = new FailoverOverDistributionStressTest.LoggingFailoverListener();
+//
+//      int numConnections=0;
+//      for (int i = 0; i < connections.length; i++)
+//      {
+//         if (getServerId(connections[i]) == 1)
+//         {
+//            ((JBossConnection)connections[i]).registerFailoverListener(failoverListener);
+//            numConnections ++;
+//         }
+//      }
+//
+//      ServerManagement.kill(1);
+//
+//      log.info("killed node 1, now waiting for all connections to fail over");
+//
+//      long killTime = System.currentTimeMillis();
+//      while (failoverListener.getFailoverCount() < numConnections
+//            && System.currentTimeMillis() - killTime <= FAILOVER_TIMEOUT)
+//      {
+//         Thread.sleep(3000L);
+//      }
+//
+//      assertEquals("Not all connections have failed over successfully",
+//            numConnections, failoverListener.getFailoverCount());
+//   }
 
    // Inner classes -------------------------------------------------
 

@@ -94,7 +94,7 @@ public class MessageWithReadResolveTest extends JMSTestCase
 	      
 	      TestMessage tm2 = (TestMessage)om2.getObject();
 	      
-	      assertEquals(123, tm2.getId());
+	      assertEquals(123, tm2.getID());
 	      
 	      conn.close();
       }
@@ -176,7 +176,7 @@ public class MessageWithReadResolveTest extends JMSTestCase
         return sb.toString();
       }
       
-      public long getId()
+      public long getID()
       {
          return id;
       }

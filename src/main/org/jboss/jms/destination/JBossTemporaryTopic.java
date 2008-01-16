@@ -26,7 +26,7 @@ import java.util.UUID;
 import javax.jms.JMSException;
 import javax.jms.TemporaryTopic;
 
-import org.jboss.jms.delegate.SessionDelegate;
+import org.jboss.jms.client.api.ClientSession;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -42,13 +42,13 @@ public class JBossTemporaryTopic extends JBossTopic implements TemporaryTopic
       
    // Attributes ----------------------------------------------------
    
-   private transient SessionDelegate delegate;
+   private transient ClientSession delegate;
    
    // Static --------------------------------------------------------
    
    // Constructors --------------------------------------------------
    
-   public JBossTemporaryTopic(SessionDelegate delegate)
+   public JBossTemporaryTopic(ClientSession delegate)
    {
       super(UUID.randomUUID().toString());
       

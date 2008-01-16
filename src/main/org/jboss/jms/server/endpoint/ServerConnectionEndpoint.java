@@ -47,6 +47,7 @@ import javax.jms.InvalidDestinationException;
 import javax.jms.JMSException;
 import javax.transaction.xa.Xid;
 
+import org.jboss.jms.client.api.ClientSession;
 import org.jboss.jms.client.delegate.ClientSessionDelegate;
 import org.jboss.jms.delegate.Ack;
 import org.jboss.jms.delegate.ConnectionEndpoint;
@@ -214,7 +215,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
 
    // ConnectionDelegate implementation ------------------------------------------------------------
 
-   public SessionDelegate createSessionDelegate(boolean transacted,
+   public ClientSession createSessionDelegate(boolean transacted,
                                                 int acknowledgmentMode,
                                                 boolean isXA)
       throws JMSException
@@ -249,7 +250,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
          
          log.trace("created and registered " + ep);
 
-         ClientSessionDelegate d = new ClientSessionDelegate(sessionID, dupsOKBatchSize);
+         org.jboss.jms.client.api.ClientSession d = new ClientSessionDelegate(null, sessionID, dupsOKBatchSize);
 
          log.trace("created " + d);
 

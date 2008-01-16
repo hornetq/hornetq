@@ -24,6 +24,7 @@ package org.jboss.jms.delegate;
 import javax.jms.JMSException;
 
 import org.jboss.jms.client.Closeable;
+import org.jboss.jms.client.api.ClientSession;
 import org.jboss.jms.tx.MessagingXid;
 import org.jboss.jms.tx.TransactionRequest;
 
@@ -39,7 +40,7 @@ import org.jboss.jms.tx.TransactionRequest;
  */
 public interface ConnectionEndpoint extends Closeable
 {
-   SessionDelegate createSessionDelegate(boolean transacted,
+   ClientSession createSessionDelegate(boolean transacted,
                                          int acknowledgmentMode,
                                          boolean isXA) throws JMSException;
 

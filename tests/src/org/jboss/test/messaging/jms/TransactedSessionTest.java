@@ -31,10 +31,8 @@ import javax.management.ObjectName;
 
 import org.jboss.jms.client.JBossConnection;
 import org.jboss.jms.client.delegate.ClientConnectionDelegate;
-import org.jboss.jms.client.state.ConnectionState;
 import org.jboss.jms.tx.ResourceManager;
 import org.jboss.jms.tx.ResourceManagerFactory;
-import org.jboss.messaging.util.ProxyFactory;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -70,9 +68,7 @@ public class TransactedSessionTest extends JMSTestCase
 
          ClientConnectionDelegate del = getDelegate(jbConn);
 
-         ConnectionState state = del.getState();
-
-         ResourceManager rm = state.getResourceManager();
+         ResourceManager rm = del.getResourceManager();
 
          Session session = conn.createSession(true, Session.SESSION_TRANSACTED);
 
@@ -112,9 +108,7 @@ public class TransactedSessionTest extends JMSTestCase
 
          ClientConnectionDelegate del = getDelegate(conn);
 
-         ConnectionState state = (ConnectionState)del.getState();
-
-         ResourceManager rm = state.getResourceManager();
+         ResourceManager rm = del.getResourceManager();
 
          Session session = conn.createSession(true, Session.SESSION_TRANSACTED);
 

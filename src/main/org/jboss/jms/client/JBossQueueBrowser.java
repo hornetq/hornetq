@@ -28,7 +28,7 @@ import javax.jms.JMSException;
 import javax.jms.Queue;
 import javax.jms.QueueBrowser;
 
-import org.jboss.jms.delegate.BrowserDelegate;
+import org.jboss.jms.client.api.ClientBrowser;
 import org.jboss.jms.message.JBossMessage;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Message;
@@ -51,13 +51,13 @@ public class JBossQueueBrowser implements QueueBrowser, Serializable
 
    // Attributes -----------------------------------------------------------------------------------
 
-   private BrowserDelegate delegate;
+   private ClientBrowser delegate;
    private Queue queue;
    private String messageSelector;
 
    // Constructors ---------------------------------------------------------------------------------
 
-   JBossQueueBrowser(Queue queue, String messageSelector, BrowserDelegate delegate)
+   JBossQueueBrowser(Queue queue, String messageSelector, ClientBrowser delegate)
    {
       this.delegate = delegate;
       this.queue = queue;
@@ -95,7 +95,7 @@ public class JBossQueueBrowser implements QueueBrowser, Serializable
       return "JBossQueueBrowser->" + delegate;
    }
 
-   public BrowserDelegate getDelegate()
+   public ClientBrowser getDelegate()
    {
       return delegate;
    }

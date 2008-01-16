@@ -30,11 +30,11 @@ import javax.jms.JMSException;
 import javax.jms.MessageListener;
 import javax.jms.Session;
 
+import org.jboss.jms.client.api.ClientSession;
+import org.jboss.jms.client.api.Consumer;
 import org.jboss.jms.delegate.Cancel;
-import org.jboss.jms.delegate.ConsumerDelegate;
 import org.jboss.jms.delegate.DefaultCancel;
 import org.jboss.jms.delegate.DeliveryInfo;
-import org.jboss.jms.delegate.SessionDelegate;
 import org.jboss.jms.message.JBossMessage;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Message;
@@ -47,6 +47,7 @@ import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox/a>
+ * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  * @version <tt>$Revision: 2774 $</tt>
  *
  * $Id: MessageCallbackHandler.java 2774 2007-06-12 22:43:54Z timfox $
@@ -71,7 +72,7 @@ public class ClientConsumer
    }
    
    private static boolean checkExpiredOrReachedMaxdeliveries(JBossMessage jbm,
-                                                             SessionDelegate del,
+                                                             ClientSession del,
                                                              int maxDeliveries, boolean shouldCancel)
    {
       Message msg = jbm.getCoreMessage();
@@ -117,7 +118,7 @@ public class ClientConsumer
    }
         
    //This is static so it can be called by the asf layer too
-   public static void callOnMessage(SessionDelegate sess,
+   public static void callOnMessage(ClientSession sess,
                                     MessageListener listener,
                                     String consumerID,
                                     String queueName,
@@ -125,7 +126,7 @@ public class ClientConsumer
                                     JBossMessage m,
                                     int ackMode,
                                     int maxDeliveries,
-                                    SessionDelegate connectionConsumerSession,
+                                    ClientSession connectionConsumerSession,
                                     boolean shouldAck)
       throws JMSException
    {      
@@ -192,8 +193,8 @@ public class ClientConsumer
     * priority messages might be behind lower priority messages and thus get consumed out of order
     */
    private PriorityLinkedList<JBossMessage> buffer;
-   private SessionDelegate sessionDelegate;
-   private ConsumerDelegate consumerDelegate;
+   private ClientSession sessionDelegate;
+   private Consumer consumerDelegate;
    private String consumerID;
    private boolean isConnectionConsumer;
    private volatile Thread receiverThread;
@@ -217,7 +218,7 @@ public class ClientConsumer
    // Constructors ---------------------------------------------------------------------------------
 
    public ClientConsumer(boolean isCC, int ackMode,                                
-                         SessionDelegate sess, ConsumerDelegate cons, String consumerID,
+                         ClientSession sess, Consumer cons, String consumerID,
                          String queueName,
                          int bufferSize, QueuedExecutor sessionExecutor,
                          int maxDeliveries, boolean shouldAck,

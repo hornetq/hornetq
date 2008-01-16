@@ -8,16 +8,12 @@ package org.jboss.example.jms.common;
 
 import javax.jms.Connection;
 import javax.jms.ConnectionMetaData;
-import javax.jms.ConnectionFactory;
 import javax.naming.InitialContext;
 
 import org.jboss.example.jms.common.bean.Management;
 import org.jboss.example.jms.common.bean.ManagementHome;
 import org.jboss.jms.client.JBossConnection;
-import org.jboss.jms.client.JBossConnectionFactory;
-import org.jboss.jms.client.delegate.DelegateSupport;
-import org.jboss.jms.client.delegate.ClientClusteredConnectionFactoryDelegate;
-import org.jboss.jms.client.state.ConnectionState;
+import org.jboss.jms.client.api.ClientConnection;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
@@ -43,11 +39,9 @@ public abstract class ExampleSupport
       
       JBossConnection jbconn = (JBossConnection)conn;
       
-      DelegateSupport del = (DelegateSupport)jbconn.getDelegate();
+      ClientConnection del = jbconn.getDelegate();
       
-      ConnectionState state = (ConnectionState)del.getState();
-      
-      return state.getServerID();
+      return del.getServerID();
    }
    
    public static void assertEquals(Object o, Object o2)

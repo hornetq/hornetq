@@ -9,8 +9,8 @@ package org.jboss.jms.client.remoting;
 import javax.jms.ExceptionListener;
 import javax.jms.JMSException;
 
+import org.jboss.jms.client.api.ClientConnection;
 import org.jboss.jms.client.container.ConnectionFailureListener;
-import org.jboss.jms.client.state.ConnectionState;
 import org.jboss.logging.Logger;
 
 /**
@@ -35,16 +35,18 @@ public class ConsolidatedRemotingConnectionListener
 
    // Attributes -----------------------------------------------------------------------------------
 
-   private ConnectionState state;
+   private ClientConnection connection;
 
    private ExceptionListener jmsExceptionListener;
 
    private ConnectionFailureListener remotingListener;
+   
 
    // Constructors ---------------------------------------------------------------------------------
 
-   public ConsolidatedRemotingConnectionListener()
+   public ConsolidatedRemotingConnectionListener(ClientConnection connection)
    {
+      this.connection = connection;
    }
 
    // ConnectionListener implementation ------------------------------------------------------------
@@ -147,18 +149,18 @@ public class ConsolidatedRemotingConnectionListener
       log.trace(this + " cleared");
    }
 
-   public void setConnectionState(ConnectionState state)
+   public void setConnection(ClientConnection connection)
    {
-      this.state = state;
+      this.connection = connection;
    }
 
    public String toString()
    {
-      if (state == null)
+      if (connection == null)
       {
          return "ConsolidatedListener(UNINITIALIZED)";
       }
-      return state + ".ConsolidatedListener";
+      return connection + ".ConsolidatedListener";
    }
 
    // Package protected ----------------------------------------------------------------------------

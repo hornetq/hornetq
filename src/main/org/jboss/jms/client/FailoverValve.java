@@ -238,7 +238,7 @@ public class FailoverValve
       return "FailoverValve[" +
          (fcc == null ?
             "UNINITIALIZED" :
-            "connectionID=" + fcc.getConnectionState().getDelegate().getID()) +
+            "connectionID=" + fcc.getConnection()) +
          "]";
    }
 

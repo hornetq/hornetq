@@ -24,6 +24,7 @@ package org.jboss.jms.client.delegate;
 import java.util.UUID;
 
 import javax.jms.BytesMessage;
+import javax.jms.DeliveryMode;
 import javax.jms.JMSException;
 import javax.jms.MapMessage;
 import javax.jms.Message;
@@ -31,12 +32,9 @@ import javax.jms.MessageFormatException;
 import javax.jms.ObjectMessage;
 import javax.jms.StreamMessage;
 import javax.jms.TextMessage;
-
-import org.jboss.jms.client.state.ConnectionState;
-import org.jboss.jms.client.state.ProducerState;
-import org.jboss.jms.client.state.SessionState;
-import org.jboss.jms.delegate.ConnectionDelegate;
-import org.jboss.jms.delegate.ProducerDelegate;
+import org.jboss.jms.client.api.ClientConnection;
+import org.jboss.jms.client.api.ClientProducer;
+import org.jboss.jms.client.api.ClientSession;
 import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.message.JBossBytesMessage;
 import org.jboss.jms.message.JBossMapMessage;
@@ -44,6 +42,7 @@ import org.jboss.jms.message.JBossMessage;
 import org.jboss.jms.message.JBossObjectMessage;
 import org.jboss.jms.message.JBossStreamMessage;
 import org.jboss.jms.message.JBossTextMessage;
+import org.jboss.messaging.core.remoting.Client;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.DestinationType;
 import org.jboss.messaging.core.impl.DestinationImpl;
@@ -53,12 +52,13 @@ import org.jboss.messaging.core.impl.DestinationImpl;
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
+ * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  *
  * @version <tt>$Revision$</tt>
  *
  * $Id$
  */
-public class ClientProducerDelegate extends DelegateSupport<ProducerState> implements ProducerDelegate
+public class ClientProducerDelegate extends CommunicationSupport<ClientProducerDelegate> implements ClientProducer
 {
    // Constants ------------------------------------------------------------------------------------
 
@@ -68,24 +68,47 @@ public class ClientProducerDelegate extends DelegateSupport<ProducerState> imple
    // Attributes -----------------------------------------------------------------------------------
 
    private boolean trace = log.isTraceEnabled();
+   
+   private ClientConnection connection;
+   private ClientSession session;
+   private JBossDestination destination;
+
+   private boolean disableMessageID = false;
+   private boolean disableMessageTimestamp = false;
+   private int priority = 4;
+   private long timeToLive = 0;
+   private int deliveryMode = DeliveryMode.PERSISTENT;
+
+   
 
    // Static ---------------------------------------------------------------------------------------
 
    // Constructors ---------------------------------------------------------------------------------
+   
+   
 
    // DelegateSupport overrides --------------------------------------------------------------------
 
-   public void synchronizeWith(DelegateSupport nd) throws Exception
+   public ClientProducerDelegate(ClientConnection connection,
+         ClientSession session, JBossDestination destination)
+   {
+      super();
+      this.connection = connection;
+      this.session = session;
+      this.destination = destination;
+   }
+
+   public void synchronizeWith(ClientProducerDelegate nd) throws Exception
    {
       super.synchronizeWith(nd);
 
-      ClientProducerDelegate newDelegate = (ClientProducerDelegate)nd;
+      /*ClientProducerDelegate newDelegate = (ClientProducerDelegate)nd;
 
       // synchronize server endpoint state
 
       // synchronize (recursively) the client-side state
 
-      state.synchronizeWith(newDelegate.getState());
+      state.synchronizeWith(newDelegate.getState()); */
    }
 
    // ProducerDelegate implementation --------------------------------------------------------------
@@ -110,12 +133,12 @@ public class ClientProducerDelegate extends DelegateSupport<ProducerState> imple
 
    public void setDestination(JBossDestination dest)
    {
-      state.setDestination(dest);
+      this.destination = dest;
    }
 
    public JBossDestination getDestination() throws JMSException
    {
-      return (JBossDestination)state.getDestination();
+      return this.destination;
    }
 
    /**
@@ -134,12 +157,10 @@ public class ClientProducerDelegate extends DelegateSupport<ProducerState> imple
 
       // configure the message for sending, using attributes stored as metadata
 
-      ProducerState producerState = getState();
-
       if (deliveryMode == -1)
       {
          // Use the delivery mode of the producer
-         deliveryMode = producerState.getDeliveryMode();
+         deliveryMode = getDeliveryMode();
          if (trace) { log.trace("Using producer's default delivery mode: " + deliveryMode); }
       }
       m.setJMSDeliveryMode(deliveryMode);
@@ -147,7 +168,7 @@ public class ClientProducerDelegate extends DelegateSupport<ProducerState> imple
       if (priority == -1)
       {
          // Use the priority of the producer
-         priority = producerState.getPriority();
+         priority = getPriority();
          if (trace) { log.trace("Using producer's default priority: " + priority); }
       }
       if (priority < 0 || priority > 9)
@@ -157,7 +178,7 @@ public class ClientProducerDelegate extends DelegateSupport<ProducerState> imple
       }
       m.setJMSPriority(priority);
 
-      if (producerState.isDisableMessageTimestamp())
+      if (this.isDisableMessageTimestamp())
       {
          m.setJMSTimestamp(0l);
       }
@@ -169,7 +190,7 @@ public class ClientProducerDelegate extends DelegateSupport<ProducerState> imple
       if (timeToLive == Long.MIN_VALUE)
       {
          // Use time to live value from producer
-         timeToLive = producerState.getTimeToLive();
+         timeToLive = getTimeToLive();
          if (trace) { log.trace("Using producer's default timeToLive: " + timeToLive); }
       }
 
@@ -186,7 +207,7 @@ public class ClientProducerDelegate extends DelegateSupport<ProducerState> imple
       if (destination == null)
       {
          // use destination from producer
-         destination = (JBossDestination)producerState.getDestination();
+         destination = (JBossDestination)getDestination();
 
          if (destination == null)
          {
@@ -200,8 +221,8 @@ public class ClientProducerDelegate extends DelegateSupport<ProducerState> imple
          // if a default destination was already specified then this must be same destination as
          // that specified in the arguments
 
-         if (producerState.getDestination() != null &&
-             !producerState.getDestination().equals(destination))
+         if (getDestination() != null &&
+             !getDestination().equals(destination))
          {
             throw new UnsupportedOperationException("Where a default destination is specified " +
                                                     "for the sender and a destination is " +
@@ -209,11 +230,6 @@ public class ClientProducerDelegate extends DelegateSupport<ProducerState> imple
                                                     "these destinations must be equal");
          }
       }
-
-      SessionState sessionState = (SessionState)producerState.getParent();
-
-      // Generate the message id
-      ConnectionState connectionState = (ConnectionState)sessionState.getParent();
 
       JBossMessage jbm;
 
@@ -270,7 +286,6 @@ public class ClientProducerDelegate extends DelegateSupport<ProducerState> imple
          String id = UUID.randomUUID().toString();
          
          jbm.setJMSMessageID("ID:" + id);
-
       }
 
       if (foreign)
@@ -307,69 +322,60 @@ public class ClientProducerDelegate extends DelegateSupport<ProducerState> imple
 
       // we now invoke the send(Message) method on the session, which will eventually be fielded
       // by connection endpoint
-      sessionState.getDelegate().send(messageToSend);
-   }
-
-   /**
-    * This invocation should either be handled by the client-side interceptor chain or by the
-    * server-side endpoint.
-    */
-   public void send(JBossMessage message) throws JMSException
-   {
-      throw new IllegalStateException("This invocation should not be handled here!");  
+      session.send(messageToSend);
    }
 
    public void setDeliveryMode(int deliveryMode) throws JMSException
    {
-      getState().setDeliveryMode(deliveryMode);
+      this.deliveryMode = deliveryMode;
    }
 
    public int getDeliveryMode() throws JMSException
    {
-      return getState().getDeliveryMode();
+      return this.deliveryMode;
    }
 
    
 
-   public boolean getDisableMessageID() throws JMSException
+   public boolean isDisableMessageID() throws JMSException
    {
-      return getState().isDisableMessageID();
+      return this.disableMessageID;
    }
 
    public void setDisableMessageID(boolean value) throws JMSException
    {
-      getState().setDisableMessageID(value);   
+      this.disableMessageID = value;   
    }
 
-   public boolean getDisableMessageTimestamp() throws JMSException
+   public boolean isDisableMessageTimestamp() throws JMSException
    {
-      return getState().isDisableMessageTimestamp();
+      return this.disableMessageTimestamp;
    }
 
    public void setDisableMessageTimestamp(boolean value) throws JMSException
    {
-      getState().setDisableMessageTimestamp(value);
+      this.disableMessageTimestamp = value;
    }
 
-   public void setPriority(int priotiy) throws JMSException
+   public void setPriority(int priority) throws JMSException
    {
-      state.setPriority(priotiy);
+      this.priority = priority;
    }
 
    public int getPriority() throws JMSException
    {
-      return state.getPriority();
+      return this.priority;
    }
 
    public long getTimeToLive() throws JMSException
    {
-        return state.getTimeToLive();
+        return this.timeToLive;
    }
 
 
    public void setTimeToLive(long timeToLive) throws JMSException
    {
-      state.setTimeToLive(timeToLive);
+      this.timeToLive = timeToLive;
    }
 
    // Public ---------------------------------------------------------------------------------------
@@ -381,6 +387,11 @@ public class ClientProducerDelegate extends DelegateSupport<ProducerState> imple
 
    // Protected ------------------------------------------------------------------------------------
    
+
+   protected Client getClient()
+   {
+      return connection.getClient();
+   }
    // Package Private ------------------------------------------------------------------------------
 
    // Private --------------------------------------------------------------------------------------

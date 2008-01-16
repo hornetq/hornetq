@@ -25,9 +25,13 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.jms.IllegalStateException;
 import javax.jms.JMSException;
@@ -35,24 +39,19 @@ import javax.jms.MessageListener;
 import javax.jms.Session;
 import javax.jms.TransactionInProgressException;
 import javax.transaction.xa.XAResource;
-
+import org.jboss.jms.client.Closeable;
+import org.jboss.jms.client.api.ClientBrowser;
+import org.jboss.jms.client.api.ClientConnection;
+import org.jboss.jms.client.api.ClientSession;
+import org.jboss.jms.client.api.Consumer;
+import org.jboss.jms.client.api.ClientProducer;
 import org.jboss.jms.client.container.ClientConsumer;
 import org.jboss.jms.client.remoting.CallbackManager;
 import org.jboss.jms.client.remoting.JMSRemotingConnection;
-import org.jboss.jms.client.state.BrowserState;
-import org.jboss.jms.client.state.ConnectionState;
-import org.jboss.jms.client.state.ConsumerState;
-import org.jboss.jms.client.state.ProducerState;
-import org.jboss.jms.client.state.SessionState;
 import org.jboss.jms.delegate.Ack;
-import org.jboss.jms.delegate.BrowserDelegate;
 import org.jboss.jms.delegate.Cancel;
-import org.jboss.jms.delegate.ConnectionDelegate;
-import org.jboss.jms.delegate.ConsumerDelegate;
 import org.jboss.jms.delegate.DefaultCancel;
 import org.jboss.jms.delegate.DeliveryInfo;
-import org.jboss.jms.delegate.ProducerDelegate;
-import org.jboss.jms.delegate.SessionDelegate;
 import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.destination.JBossQueue;
 import org.jboss.jms.destination.JBossTopic;
@@ -63,11 +62,13 @@ import org.jboss.jms.message.JBossObjectMessage;
 import org.jboss.jms.message.JBossStreamMessage;
 import org.jboss.jms.message.JBossTextMessage;
 import org.jboss.jms.tx.LocalTx;
+import org.jboss.jms.tx.MessagingXAResource;
 import org.jboss.jms.tx.ResourceManager;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Destination;
 import org.jboss.messaging.core.DestinationType;
 import org.jboss.messaging.core.Message;
+import org.jboss.messaging.core.remoting.Client;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.wireformat.AcknowledgeDeliveriesMessage;
 import org.jboss.messaging.core.remoting.wireformat.AcknowledgeDeliveryRequest;
@@ -87,9 +88,12 @@ import org.jboss.messaging.core.remoting.wireformat.CreateDestinationResponse;
 import org.jboss.messaging.core.remoting.wireformat.DeleteTemporaryDestinationMessage;
 import org.jboss.messaging.core.remoting.wireformat.SendMessage;
 import org.jboss.messaging.core.remoting.wireformat.UnsubscribeMessage;
+import org.jboss.messaging.util.ClearableQueuedExecutor;
+import org.jboss.messaging.util.ConcurrentHashSet;
 import org.jboss.messaging.util.MessageQueueNameHelper;
 import org.jboss.messaging.util.ProxyFactory;
 
+import EDU.oswego.cs.dl.util.concurrent.LinkedQueue;
 import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
 
 /**
@@ -104,7 +108,7 @@ import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
  *
  * $Id$
  */
-public class ClientSessionDelegate extends DelegateSupport<SessionState> implements SessionDelegate
+public class ClientSessionDelegate extends CommunicationSupport<ClientSessionDelegate> implements ClientSession
 {
    // Constants ------------------------------------------------------------------------------------
 
@@ -119,24 +123,87 @@ public class ClientSessionDelegate extends DelegateSupport<SessionState> impleme
    private int dupsOKBatchSize;
    
    private boolean strictTck;
+   
+   private ClientConnection connection;
+   
+   // Attributes that used to live on SessionState -------------------------------------------------
+   
+   protected Set<Closeable> children = new ConcurrentHashSet<Closeable>();
+
+   
+   private int acknowledgeMode;
+   private boolean transacted;
+   private boolean xa;
+
+   private MessagingXAResource xaResource;
+   private Object currentTxId;
+
+   // Executor used for executing onMessage methods
+   private ClearableQueuedExecutor executor;
+
+   private boolean recoverCalled;
+   
+   // List<DeliveryInfo>
+   private List<Ack> clientAckList;
+
+   private DeliveryInfo autoAckInfo;
+   private Map callbackHandlers = new ConcurrentHashMap();
+   
+   private LinkedList asfMessages = new LinkedList();
+   
+   //The distinguished message listener - for ASF
+   private MessageListener sessionListener;
+   
+   //This is somewhat strange - but some of the MQ and TCK tests expect an XA session to behavior as AUTO_ACKNOWLEDGE when not enlisted in
+   //a transaction
+   //This is the opposite behavior as what is required when the XA session handles MDB delivery or when using the message bridge.
+   //In that case we want it to act as transacted, so when the session is subsequently enlisted the work can be converted into the
+   //XA transaction
+   private boolean treatAsNonTransactedWhenNotEnlisted = true;
+   
+   private long npSendSequence;
+   
+   // Constructors ---------------------------------------------------------------------------------
+   
 
    // Static ---------------------------------------------------------------------------------------
 
    // Constructors ---------------------------------------------------------------------------------
 
-   public ClientSessionDelegate(String objectID, int dupsOKBatchSize)
+   public ClientSessionDelegate(ClientConnection connection, String objectID, int dupsOKBatchSize)
    {
       super(objectID);
-
+      this.connection = connection;
       this.dupsOKBatchSize = dupsOKBatchSize;
    }
    
-   public ClientSessionDelegate(String objectID, int dupsOKBatchSize, boolean strictTCK)
+   public ClientSessionDelegate(ClientConnectionDelegate connection, String objectID, int dupsOKBatchSize, boolean strictTCK,
+         boolean transacted, int acknowledgmentMode, boolean xa)
    {
       super(objectID);
 
+      this.connection = connection;
       this.dupsOKBatchSize = dupsOKBatchSize;
       this.strictTck = strictTCK;
+      this.transacted = transacted;
+      this.xa = xa;
+      this.acknowledgeMode = acknowledgmentMode;
+      executor = new ClearableQueuedExecutor(new LinkedQueue());
+      
+      if (xa)
+      {
+         // Create an XA resource
+         xaResource = new MessagingXAResource(connection.getResourceManager(), this);
+      }
+
+      
+      if (transacted)
+      {
+         // Create a local tx
+         currentTxId = connection.getResourceManager().createLocalTx();
+      }
+      
+      clientAckList = new ArrayList();
    }
 
    public ClientSessionDelegate()
@@ -145,36 +212,13 @@ public class ClientSessionDelegate extends DelegateSupport<SessionState> impleme
 
    // DelegateSupport overrides --------------------------------------------------------------------
 
-   public void synchronizeWith(DelegateSupport nd) throws Exception
+   
+   public void synchronizeWith(ClientSessionDelegate nd) throws Exception
    {
       log.trace(this + " synchronizing with " + nd);
 
       super.synchronizeWith(nd);
 
-      DelegateSupport newDelegate = (DelegateSupport)nd;
-
-      // synchronize server endpoint state
-
-      // synchronize (recursively) the client-side state
-
-      state.synchronizeWith(newDelegate.getState());
-      
-      JMSRemotingConnection conn = ((ConnectionState)state.getParent()).getRemotingConnection();
-      
-      client = conn.getRemotingClient();
-      
-      strictTck = conn.isStrictTck();
-   }
-
-   public void setState(SessionState state)
-   {
-      super.setState(state);
-      
-      JMSRemotingConnection conn = ((ConnectionState)state.getParent()).getRemotingConnection();
-      
-      client = conn.getRemotingClient();
-      
-      strictTck = conn.isStrictTck();
    }
 
    // Closeable implementation ---------------------------------------------------------------------
@@ -183,26 +227,35 @@ public class ClientSessionDelegate extends DelegateSupport<SessionState> impleme
    {
       sendBlocking(new CloseMessage());
 
-      Object xid = state.getCurrentTxId();
+      Object xid = getCurrentTxId();
 
       if (xid != null)
       {
          //Remove transaction from the resource manager
-         getState().getParent().getResourceManager().removeTx(xid);
+         connection.getResourceManager().removeTx(xid);
       }
 
       // We must explicitly shutdown the executor
 
-      state.getExecutor().shutdownNow();
+      getExecutor().shutdownNow();
 
    }
 
    private long invokeClosing(long sequence) throws JMSException
    {   	   
-      long seq = ((SessionState)state).getNPSendSequence();
+      long seq = getNPSendSequence();
       ClosingRequest request = new ClosingRequest(seq);
       ClosingResponse response = (ClosingResponse) sendBlocking(request);
       return response.getID();
+   }
+   
+   private void closeChildren() throws JMSException
+   {
+      for (Closeable child: children)
+      {
+         child.closing(-1);
+         child.close();
+      }
    }
 
    public long closing(long sequence) throws JMSException
@@ -212,13 +265,11 @@ public class ClientSessionDelegate extends DelegateSupport<SessionState> impleme
       closeChildren();
       
       //Sanity check
-      if (state.isXA() && !isXAAndConsideredNonTransacted(state))
+      if (isXA() && !isXAAndConsideredNonTransacted())
       {
          if (trace) { log.trace("Session is XA"); }
 
-         ConnectionState connState = (ConnectionState)state.getParent();
-
-         ResourceManager rm = connState.getResourceManager();
+         ResourceManager rm = connection.getResourceManager();
 
          // An XASession should never be closed if there is prepared ack work that has not yet been
          // committed or rolled back. Imagine if messages had been consumed in the session, and
@@ -229,24 +280,24 @@ public class ClientSessionDelegate extends DelegateSupport<SessionState> impleme
          // and the original transaction is committed, then this means the same message has been
          // delivered twice which breaks the once and only once delivery guarantee.
 
-         if (rm.checkForAcksInSession(state.getSessionID()))
+         if (rm.checkForAcksInSession(this.getID()))
          {
             throw new javax.jms.IllegalStateException(
                "Attempt to close an XASession when there are still uncommitted acknowledgements!");
          }
       }
 
-      int ackMode = state.getAcknowledgeMode();
+      int ackMode = getAcknowledgeMode();
 
       //We need to either ack (for auto_ack) or cancel (for client_ack)
       //any deliveries - this is because the message listener might have closed
       //before on message had finished executing
 
-      if (ackMode == Session.AUTO_ACKNOWLEDGE || isXAAndConsideredNonTransacted(state))
+      if (ackMode == Session.AUTO_ACKNOWLEDGE || isXAAndConsideredNonTransacted())
       {
          //Acknowledge or cancel any outstanding auto ack
 
-         DeliveryInfo remainingAutoAck = state.getAutoAckInfo();
+         DeliveryInfo remainingAutoAck = getAutoAckInfo();
 
          if (remainingAutoAck != null)
          {
@@ -260,7 +311,7 @@ public class ClientSessionDelegate extends DelegateSupport<SessionState> impleme
             }
             finally
             {
-               state.setAutoAckInfo(null);
+               setAutoAckInfo(null);
             }
          }
       }
@@ -268,17 +319,17 @@ public class ClientSessionDelegate extends DelegateSupport<SessionState> impleme
       {
          //Ack any remaining deliveries
 
-         if (!state.getClientAckList().isEmpty())
+         if (!getClientAckList().isEmpty())
          {
             try
             {
-               acknowledgeDeliveries(state.getClientAckList());
+               acknowledgeDeliveries(getClientAckList());
             }
             finally
             {
-               state.getClientAckList().clear();
+               getClientAckList().clear();
 
-               state.setAutoAckInfo(null);
+               setAutoAckInfo(null);
             }
          }
       }
@@ -292,20 +343,16 @@ public class ClientSessionDelegate extends DelegateSupport<SessionState> impleme
          // CLIENT_ACKNOWLEDGE cannot be used with MDBs (i.e. no connection consumer)
          // so is always safe to cancel on this session
 
-         internalCancelDeliveries(state.getClientAckList());
+         internalCancelDeliveries(getClientAckList());
 
-         state.getClientAckList().clear();
+         getClientAckList().clear();
       }
-      else if (state.isTransacted() && !state.isXA())
+      else if (isTransacted() && !isXA())
       {
          //We need to explicitly cancel any deliveries back to the server
          //from the resource manager, otherwise delivery count won't be updated
 
-         ConnectionState connState = (ConnectionState)state.getParent();
-
-         ResourceManager rm = connState.getResourceManager();
-
-         List dels = rm.getDeliveriesForSession(state.getSessionID());
+         List dels = connection.getResourceManager().getDeliveriesForSession(this.getID());
 
          internalCancelDeliveries(dels);
       }
@@ -316,6 +363,17 @@ public class ClientSessionDelegate extends DelegateSupport<SessionState> impleme
 
    // SessionDelegate implementation ---------------------------------------------------------------
 
+   public ClientConnection getConnection()
+   {
+      return connection;
+   }
+
+   public void setConnection(ClientConnection connection)
+   {
+      this.connection = connection;
+   }
+
+   
    public boolean acknowledgeDelivery(Ack ack) throws JMSException
    {
       AcknowledgeDeliveryRequest request = new AcknowledgeDeliveryRequest(ack.getDeliveryID());
@@ -335,13 +393,13 @@ public class ClientSessionDelegate extends DelegateSupport<SessionState> impleme
     */
    public void acknowledgeAll() throws JMSException
    {
-      if (!state.getClientAckList().isEmpty())
+      if (!getClientAckList().isEmpty())
       {
          //CLIENT_ACKNOWLEDGE can't be used with a MDB so it is safe to always acknowledge all
          //on this session (rather than the connection consumer session)
-         acknowledgeDeliveries(state.getClientAckList());
+         acknowledgeDeliveries(getClientAckList());
 
-         state.getClientAckList().clear();
+         getClientAckList().clear();
       }
    }
 
@@ -352,54 +410,37 @@ public class ClientSessionDelegate extends DelegateSupport<SessionState> impleme
 
    public void commit() throws JMSException
    {
-      if (!state.isTransacted())
+      if (!isTransacted())
       {
          throw new IllegalStateException("Cannot commit a non-transacted session");
       }
 
-      if (state.isXA())
+      if (isXA())
       {
          throw new TransactionInProgressException("Cannot call commit on an XA session");
       }
 
-      ConnectionState connState = (ConnectionState)state.getParent();
-      ConnectionDelegate conn = (ConnectionDelegate)connState.getDelegate();
-
       try
       {
-         connState.getResourceManager().commitLocal((LocalTx)state.getCurrentTxId(), conn);
+         connection.getResourceManager().commitLocal((LocalTx)getCurrentTxId(), connection);
       }
       finally
       {
          //Start new local tx
-         Object xid = connState.getResourceManager().createLocalTx();
-
-         state.setCurrentTxId(xid);
+         setCurrentTxId( connection.getResourceManager().createLocalTx() );
       }
 
    }
 
 
-   public BrowserState createBrowserState(ClientBrowserDelegate browserDelegate, BrowserDelegate proxyDelegate,
-         Destination destination, String selector )
-   {
-
-      SessionState sessionState = getState();
-
-      BrowserState state =
-         new BrowserState(sessionState, browserDelegate, proxyDelegate, destination, selector);
-
-      return state;
-   }
-
-   public BrowserDelegate createBrowserDelegate(Destination queue, String messageSelector)
+   public ClientBrowser createBrowserDelegate(Destination queue, String messageSelector)
       throws JMSException
    {
       CreateBrowserRequest request = new CreateBrowserRequest(queue, messageSelector);
       CreateBrowserResponse response = (CreateBrowserResponse) sendBlocking(request);
-      ClientBrowserDelegate delegate = new ClientBrowserDelegate(response.getBrowserID());
-      BrowserDelegate proxy = (BrowserDelegate)ProxyFactory.proxy(delegate, BrowserDelegate.class);
-      delegate.setState(createBrowserState(delegate, proxy,  queue, messageSelector));
+      ClientBrowserDelegate delegate = new ClientBrowserDelegate(this, response.getBrowserID(), queue, messageSelector);
+      ClientBrowser proxy = (ClientBrowser)ProxyFactory.proxy(delegate, ClientBrowser.class);
+      children.add(proxy);
       return proxy;
    }
 
@@ -414,30 +455,7 @@ public class ClientSessionDelegate extends DelegateSupport<SessionState> impleme
    }
 
 
-   private ConsumerState createConsumerState(ClientConsumerDelegate consumerDelegate,ConsumerDelegate proxyDelegate, Destination dest,
-                                             String selector, boolean noLocal, String subscriptionName,
-                                             boolean connectionConsumer )
-   {
-
-      SessionState sessionState = state;
-
-      String consumerID = consumerDelegate.getID();
-      int bufferSize = consumerDelegate.getBufferSize();
-      int maxDeliveries = consumerDelegate.getMaxDeliveries();
-      long redeliveryDelay = consumerDelegate.getRedeliveryDelay();
-
-      ConsumerState consumerState =
-         new ConsumerState(sessionState, consumerDelegate, proxyDelegate, dest, selector, noLocal,
-                           subscriptionName, consumerID, connectionConsumer, bufferSize,
-                           maxDeliveries, redeliveryDelay);
-
-      return consumerState;
-   }
-
-
-
-
-   public ConsumerDelegate createConsumerDelegate(Destination destination, String selector,
+   public Consumer createConsumerDelegate(Destination destination, String selector,
                                                   boolean noLocal, String subscriptionName,
                                                   boolean isCC) throws JMSException
    {
@@ -447,25 +465,17 @@ public class ClientSessionDelegate extends DelegateSupport<SessionState> impleme
       
       CreateConsumerResponse response = (CreateConsumerResponse) sendBlocking(request);
 
-      ClientConsumerDelegate consumerDelegate = new ClientConsumerDelegate(response.getConsumerID(), response.getBufferSize(), response.getMaxDeliveries(), response.getRedeliveryDelay());
+      ClientConsumerDelegate consumerDelegate = new ClientConsumerDelegate(this, response.getConsumerID(), response.getBufferSize(), response.getMaxDeliveries(), response.getRedeliveryDelay(),
+            destination,
+            selector, noLocal, subscriptionName, response.getConsumerID(),isCC);      
 
-      ConsumerDelegate proxy = (ConsumerDelegate)ProxyFactory.proxy(consumerDelegate, ConsumerDelegate.class);
-      consumerDelegate.setState(createConsumerState(consumerDelegate, proxy, destination, selector, noLocal, subscriptionName, isCC));
-
-      // Create the message handler
-      SessionState sessionState = this.getState();
-      ConnectionState connectionState = sessionState.getParent();
-      SessionDelegate sessionDelegate = this;
-      ConsumerState consumerState = consumerDelegate.getState();
-      final String consumerID = consumerState.getConsumerID();
-      int prefetchSize = consumerState.getBufferSize();
-      QueuedExecutor sessionExecutor = sessionState.getExecutor();
-      int maxDeliveries = consumerState.getMaxDeliveries();
-      long redeliveryDelay = consumerState.getRedeliveryDelay();
+      Consumer proxy = (Consumer)ProxyFactory.proxy(consumerDelegate, Consumer.class);
+      
+      children.add(proxy);
 
       //We need the queue name for recovering any deliveries after failover
       String queueName = null;
-      if (consumerState.getSubscriptionName() != null)
+      if (subscriptionName != null)
       {
          // I have to use the clientID from connectionDelegate instead of connectionState...
          // this is because when a pre configured CF is used we need to get the clientID from
@@ -473,28 +483,27 @@ public class ClientSessionDelegate extends DelegateSupport<SessionState> impleme
          // This was a condition verified by the TCK and it was fixed as part of
          // http://jira.jboss.com/jira/browse/JBMESSAGING-939
          queueName = MessageQueueNameHelper.
-            createSubscriptionName(((ConnectionDelegate)connectionState.getDelegate()).getClientID(),
-                                   consumerState.getSubscriptionName());
+            createSubscriptionName(this.getID(),subscriptionName);
       }
-      else if (consumerState.getDestination().getType() == DestinationType.QUEUE);
+      else if (destination.getType() == DestinationType.QUEUE)
       {
-         queueName = consumerState.getDestination().getName();
+         queueName = destination.getName();
       }
 
       final ClientConsumer messageHandler =
-         new ClientConsumer(isCC, sessionState.getAcknowledgeMode(),
-                            sessionDelegate, consumerDelegate, consumerID, queueName,
-                            prefetchSize, sessionExecutor, maxDeliveries, consumerState.isShouldAck(),
-                            redeliveryDelay);
+         new ClientConsumer(isCC, this.getAcknowledgeMode(),
+                            this, consumerDelegate, consumerDelegate.getID(), queueName,
+                            consumerDelegate.getBufferSize(), this.getExecutor(), consumerDelegate.getMaxDeliveries(), consumerDelegate.isShouldAck(),
+                            consumerDelegate.getRedeliveryDelay());
 
-      sessionState.addCallbackHandler(messageHandler);
+      this.addCallbackHandler(messageHandler);
 
-      PacketDispatcher.client.register(new ClientConsumerPacketHandler(messageHandler, consumerID));
+      PacketDispatcher.client.register(new ClientConsumerPacketHandler(messageHandler, consumerDelegate.getID()));
 
-      CallbackManager cm = connectionState.getRemotingConnection().getCallbackManager();
-      cm.registerHandler(consumerID, messageHandler);
+      CallbackManager cm = connection.getRemotingConnection().getCallbackManager();
+      cm.registerHandler(consumerDelegate.getID(), messageHandler);
 
-      consumerState.setClientConsumer(messageHandler);
+      consumerDelegate.setClientConsumer(messageHandler);
 
       //Now we have finished creating the client consumer, we can tell the SCD
       //we are ready
@@ -549,16 +558,13 @@ public class ClientSessionDelegate extends DelegateSupport<SessionState> impleme
     * This invocation should either be handled by the client-side interceptor chain or by the
     * server-side endpoint.
     */
-   public ProducerDelegate createProducerDelegate(JBossDestination destination) throws JMSException
+   public ClientProducer createProducerDelegate(JBossDestination destination) throws JMSException
    {
       // ProducerDelegates are not created on the server
 
-      ClientProducerDelegate producerDelegate = new ClientProducerDelegate();
-      ProducerDelegate proxy = (ProducerDelegate) ProxyFactory.proxy(producerDelegate, ProducerDelegate.class);
-      ProducerState producerState = new ProducerState(this.getState(), producerDelegate, proxy, destination);
-
-      producerDelegate.setState(producerState);
-
+      ClientProducerDelegate producerDelegate = new ClientProducerDelegate(connection, this, destination );
+      ClientProducer proxy = (ClientProducer) ProxyFactory.proxy(producerDelegate, ClientProducer.class);
+      children.add(proxy);
       return proxy;
    }
 
@@ -606,20 +612,20 @@ public class ClientSessionDelegate extends DelegateSupport<SessionState> impleme
     */
    public boolean postDeliver() throws JMSException
    {
-      int ackMode = state.getAcknowledgeMode();
+      int ackMode = getAcknowledgeMode();
 
       boolean res = true;
 
       // if XA and there is no transaction enlisted on XA we will act as AutoAcknowledge
       // However if it's a MDB (if there is a DistinguishedListener) we should behaved as transacted
-      if (ackMode == Session.AUTO_ACKNOWLEDGE || isXAAndConsideredNonTransacted(state))
+      if (ackMode == Session.AUTO_ACKNOWLEDGE || isXAAndConsideredNonTransacted())
       {
          // It is possible that session.recover() is called inside a message listener onMessage
          // method - i.e. between the invocations of preDeliver and postDeliver. In this case we
          // don't want to acknowledge the last delivered messages - since it will be redelivered.
-         if (!state.isRecoverCalled())
+         if (!isRecoverCalled())
          {
-            DeliveryInfo delivery = state.getAutoAckInfo();
+            DeliveryInfo delivery = getAutoAckInfo();
 
             if (delivery == null)
             {
@@ -641,23 +647,23 @@ public class ClientSessionDelegate extends DelegateSupport<SessionState> impleme
             }
             finally
             {
-               state.setAutoAckInfo(null);
+               setAutoAckInfo(null);
             }
          }
          else
          {
             if (trace) { log.trace(this + " recover called, so NOT acknowledging"); }
 
-            state.setRecoverCalled(false);
+            setRecoverCalled(false);
          }
       }
       else if (ackMode == Session.DUPS_OK_ACKNOWLEDGE)
       {
-         List acks = state.getClientAckList();
+         List acks = getClientAckList();
 
-         if (!state.isRecoverCalled())
+         if (!isRecoverCalled())
          {
-            if (acks.size() >= state.getDupsOKBatchSize())
+            if (acks.size() >= getDupsOKBatchSize())
             {
                // We clear the state in a finally
                // http://jira.jboss.org/jira/browse/JBMESSAGING-852
@@ -669,7 +675,7 @@ public class ClientSessionDelegate extends DelegateSupport<SessionState> impleme
                finally
                {
                   acks.clear();
-                  state.setAutoAckInfo(null);
+                  setAutoAckInfo(null);
                }
             }
          }
@@ -677,9 +683,9 @@ public class ClientSessionDelegate extends DelegateSupport<SessionState> impleme
          {
             if (trace) { log.trace(this + " recover called, so NOT acknowledging"); }
 
-            state.setRecoverCalled(false);
+            setRecoverCalled(false);
          }
-         state.setAutoAckInfo(null);
+         setAutoAckInfo(null);
       }
 
       return Boolean.valueOf(res);
@@ -691,7 +697,7 @@ public class ClientSessionDelegate extends DelegateSupport<SessionState> impleme
     */
    public void preDeliver(DeliveryInfo info) throws JMSException
    {
-      int ackMode = state.getAcknowledgeMode();
+      int ackMode = getAcknowledgeMode();
 
       if (ackMode == Session.CLIENT_ACKNOWLEDGE)
       {
@@ -706,38 +712,36 @@ public class ClientSessionDelegate extends DelegateSupport<SessionState> impleme
                "CLIENT_ACKNOWLEDGE cannot be used with a connection consumer");
          }
 
-         state.getClientAckList().add(info);
+         getClientAckList().add(info);
       }
       // if XA and there is no transaction enlisted on XA we will act as AutoAcknowledge
       // However if it's a MDB (if there is a DistinguishedListener) we should behaved as transacted
-      else if (ackMode == Session.AUTO_ACKNOWLEDGE || isXAAndConsideredNonTransacted(state))
+      else if (ackMode == Session.AUTO_ACKNOWLEDGE || isXAAndConsideredNonTransacted())
       {
          // We collect the single acknowledgement in the state.
 
          if (trace) { log.trace(this + " added " + info + " to session state"); }
 
-         state.setAutoAckInfo(info);
+         setAutoAckInfo(info);
       }
       else if (ackMode == Session.DUPS_OK_ACKNOWLEDGE)
       {
          if (trace) { log.trace(this + " added to DUPS_OK_ACKNOWLEDGE list delivery " + info); }
 
-         state.getClientAckList().add(info);
+         getClientAckList().add(info);
 
          //Also set here - this would be used for recovery in a message listener
-         state.setAutoAckInfo(info);
+         setAutoAckInfo(info);
       }
       else
       {
-         Object txID = state.getCurrentTxId();
+         Object txID = getCurrentTxId();
 
          if (txID != null)
          {
             // the session is non-XA and transacted, or XA and enrolled in a global transaction. An
             // XA session that has not been enrolled in a global transaction behaves as a
             // transacted session.
-
-            ConnectionState connState = (ConnectionState)state.getParent();
 
             if (trace) { log.trace("sending acknowlegment transactionally, queueing on resource manager"); }
 
@@ -746,15 +750,13 @@ public class ClientSessionDelegate extends DelegateSupport<SessionState> impleme
             // session ID
 
 
-            //TODO: This shouldn't be using the ProxyFactory, and the ID should be exposed through the interface
-
-            ClientSessionDelegate connectionConsumerDelegate =
-               (ClientSessionDelegate)ProxyFactory.getDelegate(info.getConnectionConsumerSession());
+            ClientSession connectionConsumerDelegate =
+               info.getConnectionConsumerSession();
 
             String sessionId = connectionConsumerDelegate != null ?
-               connectionConsumerDelegate.getID() : state.getSessionID();
+               connectionConsumerDelegate.getID() : this.getID();
 
-            connState.getResourceManager().addAck(txID, sessionId, info);
+            connection.getResourceManager().addAck(txID, sessionId, info);
          }
       }
    }
@@ -767,28 +769,28 @@ public class ClientSessionDelegate extends DelegateSupport<SessionState> impleme
    {
       if (trace) { log.trace("recover called"); }
 
-      if (state.isTransacted() && !isXAAndConsideredNonTransacted(state))
+      if (isTransacted() && !isXAAndConsideredNonTransacted())
       {
          throw new IllegalStateException("Cannot recover a transacted session");
       }
 
       if (trace) { log.trace("recovering the session"); }
 
-      int ackMode = state.getAcknowledgeMode();
+      int ackMode = getAcknowledgeMode();
 
       if (ackMode == Session.CLIENT_ACKNOWLEDGE)
       {
-         List dels = state.getClientAckList();
+         List dels = getClientAckList();
 
-         state.setClientAckList(new ArrayList());
+         setClientAckList(new ArrayList());
 
          redeliver(dels);
 
-         state.setRecoverCalled(true);
+         setRecoverCalled(true);
       }
-      else if (ackMode == Session.AUTO_ACKNOWLEDGE || ackMode == Session.DUPS_OK_ACKNOWLEDGE || isXAAndConsideredNonTransacted(state))
+      else if (ackMode == Session.AUTO_ACKNOWLEDGE || ackMode == Session.DUPS_OK_ACKNOWLEDGE || isXAAndConsideredNonTransacted())
       {
-         DeliveryInfo info = state.getAutoAckInfo();
+         DeliveryInfo info = getAutoAckInfo();
 
          //Don't recover if it's already to cancel
 
@@ -800,9 +802,9 @@ public class ClientSessionDelegate extends DelegateSupport<SessionState> impleme
 
             redeliver(redels);
 
-            state.setAutoAckInfo(null);
+            setAutoAckInfo(null);
 
-            state.setRecoverCalled(true);
+            setRecoverCalled(true);
          }
       }
    }
@@ -849,7 +851,7 @@ public class ClientSessionDelegate extends DelegateSupport<SessionState> impleme
          DeliveryInfo info = (DeliveryInfo)toRedeliver.get(i);
          JBossMessage msg = info.getMessage();
 
-         ClientConsumer handler = state.getCallbackHandler(info.getConsumerId());
+         ClientConsumer handler = getCallbackHandler(info.getConsumerId());
 
          if (handler == null)
          {
@@ -872,6 +874,23 @@ public class ClientSessionDelegate extends DelegateSupport<SessionState> impleme
       }
 
    }
+   
+   public ClientConsumer getCallbackHandler(String consumerID)
+   {
+      return (ClientConsumer)callbackHandlers.get(consumerID);
+   }
+
+   public void addCallbackHandler(ClientConsumer handler)
+   {
+      callbackHandlers.put(handler.getConsumerId(), handler);
+   }
+
+   public void removeCallbackHandler(ClientConsumer handler)
+   {
+      callbackHandlers.remove(handler.getConsumerId());
+   }
+
+   
 
    /**
     * This invocation should either be handled by the client-side interceptor chain or by the
@@ -879,27 +898,26 @@ public class ClientSessionDelegate extends DelegateSupport<SessionState> impleme
     */
    public void rollback() throws JMSException
    {
-      if (!state.isTransacted())
+      if (!isTransacted())
       {
          throw new IllegalStateException("Cannot rollback a non-transacted session");
       }
 
-      if (state.isXA())
+      if (isXA())
       {
          throw new TransactionInProgressException("Cannot call rollback on an XA session");
       }
 
-      ConnectionState connState = (ConnectionState)state.getParent();
-      ResourceManager rm = connState.getResourceManager();
+      ResourceManager rm = connection.getResourceManager();
       try
       {
-         rm.rollbackLocal(state.getCurrentTxId());
+         rm.rollbackLocal(getCurrentTxId());
       }
       finally
       {
          // startnew local tx
          Object xid = rm.createLocalTx();
-         state.setCurrentTxId(xid);
+         setCurrentTxId(xid);
       }
    }
 
@@ -911,9 +929,9 @@ public class ClientSessionDelegate extends DelegateSupport<SessionState> impleme
    {
       if (trace) { log.trace("run()"); }
 
-      int ackMode = state.getAcknowledgeMode();
+      int ackMode = getAcknowledgeMode();
 
-      LinkedList msgs = state.getASFMessages();
+      LinkedList msgs = getAsfMessages();
 
       while (msgs.size() > 0)
       {
@@ -921,7 +939,7 @@ public class ClientSessionDelegate extends DelegateSupport<SessionState> impleme
 
          if (trace) { log.trace("sending " + holder.msg + " to the message listener" ); }
 
-         ClientConsumer.callOnMessage(this, state.getDistinguishedListener(), holder.consumerID,
+         ClientConsumer.callOnMessage(this, getDistinguishedListener(), holder.consumerID,
                                               holder.queueName, false,
                                               holder.msg, ackMode, holder.maxDeliveries,
                                               holder.connectionConsumerDelegate, holder.shouldAck);
@@ -941,7 +959,7 @@ public class ClientSessionDelegate extends DelegateSupport<SessionState> impleme
          throw new IllegalStateException("Cannot set a null MessageListener on the session");
       }
 
-      getState().setDistinguishedListener(listener);
+      setDistinguishedListener(listener);
    }
 
    /**
@@ -952,7 +970,7 @@ public class ClientSessionDelegate extends DelegateSupport<SessionState> impleme
    {
       if (trace) { log.trace("getMessageListener()"); }
 
-      return getState().getDistinguishedListener();
+      return getDistinguishedListener();
    }
 
    
@@ -968,7 +986,7 @@ public class ClientSessionDelegate extends DelegateSupport<SessionState> impleme
     */
    public XAResource getXAResource()
    {
-      return state.getXAResource();
+      return xaResource;
    }
 
    /**
@@ -977,16 +995,7 @@ public class ClientSessionDelegate extends DelegateSupport<SessionState> impleme
     */
    public int getAcknowledgeMode()
    {
-      return state.getAcknowledgeMode();
-   }
-
-   /**
-    * This invocation should either be handled by the client-side interceptor chain or by the
-    * server-side endpoint.
-    */
-   public boolean getTransacted()
-   {
-      return getState().isTransacted();
+      return acknowledgeMode;
    }
 
    /**
@@ -994,7 +1003,7 @@ public class ClientSessionDelegate extends DelegateSupport<SessionState> impleme
     * server-side endpoint.
     */
    public void addAsfMessage(JBossMessage m, String theConsumerID, String queueName, int maxDeliveries,
-                             SessionDelegate connectionConsumerDelegate, boolean shouldAck) throws JMSException
+                             ClientSession connectionConsumerDelegate, boolean shouldAck) throws JMSException
    {
       // Load the session with a message to be processed during a subsequent call to run()
 
@@ -1011,29 +1020,27 @@ public class ClientSessionDelegate extends DelegateSupport<SessionState> impleme
       holder.connectionConsumerDelegate = connectionConsumerDelegate;
       holder.shouldAck = shouldAck;
 
-      getState().getASFMessages().add(holder);
+      getAsfMessages().add(holder);
    }
 
    public void send(Message m) throws JMSException
    {
-      Object txID = state.getCurrentTxId();
+      Object txID = getCurrentTxId();
 
       // If there is no GlobalTransaction we run it as local transacted
       // as discussed at http://www.jboss.com/index.html?module=bb&op=viewtopic&t=98577
       // http://jira.jboss.org/jira/browse/JBMESSAGING-946
       // and
       // http://jira.jboss.org/jira/browse/JBMESSAGING-410
-      if ((!state.isXA() && state.isTransacted()) || (state.isXA() && !(txID instanceof LocalTx)))
+      if ((!isXA() && isTransacted()) || (isXA() && !(txID instanceof LocalTx)))
       {
          // the session is non-XA and transacted, or XA and enrolled in a global transaction, so
          // we add the message to a transaction instead of sending it now. An XA session that has
          // not been enrolled in a global transaction behaves as a non-transacted session.
 
-         ConnectionState connState = state.getParent();
+         if (trace) { log.trace("sending message " + m + " transactionally, queueing on resource manager txID=" + txID + " sessionID= " + getID()); }
 
-         if (trace) { log.trace("sending message " + m + " transactionally, queueing on resource manager txID=" + txID + " sessionID= " + state.getSessionID()); }
-
-         connState.getResourceManager().addMessage(txID, state.getSessionID(), m);
+         connection.getResourceManager().addMessage(txID, this.getID(), m);
 
          // ... and we don't invoke any further interceptors in the stack
          return;
@@ -1055,11 +1062,9 @@ public class ClientSessionDelegate extends DelegateSupport<SessionState> impleme
    	}
    	else
    	{
-   		SessionState sstate = (SessionState)state;
+   		seq = this.getNPSendSequence();
    		
-   		seq = sstate.getNPSendSequence();
-   		
-   		sstate.incNpSendSequence();
+   		this.incNpSendSequence();
    	}
    	
    	SendMessage message = new SendMessage(m, seq);
@@ -1074,7 +1079,7 @@ public class ClientSessionDelegate extends DelegateSupport<SessionState> impleme
    	}
    }
 
-   public void cancelDeliveries(List cancels) throws JMSException
+   public void cancelDeliveries(List<Cancel> cancels) throws JMSException
    {
       sendBlocking(new CancelDeliveriesMessage(cancels));
    }
@@ -1119,6 +1124,10 @@ public class ClientSessionDelegate extends DelegateSupport<SessionState> impleme
 
    // Protected ------------------------------------------------------------------------------------
 
+   protected Client getClient()
+   {
+      return connection.getClient();
+   }
    // Package Private ------------------------------------------------------------------------------
 
    // Private --------------------------------------------------------------------------------------
@@ -1138,10 +1147,10 @@ public class ClientSessionDelegate extends DelegateSupport<SessionState> impleme
     *    integration tests and TCK!!! Hence getTreatAsNonTransactedWhenNotEnlisted()
     *
     * */
-   private boolean isXAAndConsideredNonTransacted(SessionState state)
+   private boolean isXAAndConsideredNonTransacted()
    {
-      return state.isXA() && (state.getCurrentTxId() instanceof LocalTx) && state.getTreatAsNonTransactedWhenNotEnlisted()
-             && state.getDistinguishedListener() == null;
+      return isXA() && (getCurrentTxId() instanceof LocalTx) && getTreatAsNonTransactedWhenNotEnlisted()
+             && getDistinguishedListener() == null;
    }
 
 
@@ -1149,12 +1158,12 @@ public class ClientSessionDelegate extends DelegateSupport<SessionState> impleme
    {
    	if (delivery.isShouldAck())
    	{
-	      SessionDelegate connectionConsumerSession = delivery.getConnectionConsumerSession();
+	      ClientSession connectionConsumerSession = delivery.getConnectionConsumerSession();
 
 	      //If the delivery was obtained via a connection consumer we need to ack via that
 	      //otherwise we just use this session
 
-	      SessionDelegate sessionToUse = connectionConsumerSession != null ? connectionConsumerSession : this;
+	      ClientSession sessionToUse = connectionConsumerSession != null ? connectionConsumerSession : this;
 
 	      return sessionToUse.acknowledgeDelivery(delivery);
    	}
@@ -1168,12 +1177,12 @@ public class ClientSessionDelegate extends DelegateSupport<SessionState> impleme
    {
    	if (delivery.isShouldAck())
    	{
-	      SessionDelegate connectionConsumerSession = delivery.getConnectionConsumerSession();
+   	   ClientSession connectionConsumerSession = delivery.getConnectionConsumerSession();
 
 	      //If the delivery was obtained via a connection consumer we need to cancel via that
 	      //otherwise we just use this session
 
-	      SessionDelegate sessionToUse = connectionConsumerSession != null ? connectionConsumerSession : this;
+   	   ClientSession sessionToUse = connectionConsumerSession != null ? connectionConsumerSession : this;
 
 	      sessionToUse.cancelDelivery(new DefaultCancel(delivery.getDeliveryID(),
 	                                  delivery.getMessage().getDeliveryCount(), false, false));
@@ -1204,7 +1213,7 @@ public class ClientSessionDelegate extends DelegateSupport<SessionState> impleme
       }
    }
 
-   private void acknowledgeDeliveries(SessionDelegate del, List deliveryInfos) throws JMSException
+   private void acknowledgeDeliveries(ClientSession del, List deliveryInfos) throws JMSException
    {
       List acks = new ArrayList();
 
@@ -1233,8 +1242,171 @@ public class ClientSessionDelegate extends DelegateSupport<SessionState> impleme
       private String consumerID;
       private String queueName;
       private int maxDeliveries;
-      private SessionDelegate connectionConsumerDelegate;
+      private ClientSession connectionConsumerDelegate;
       private boolean shouldAck;
    }
+
+   
+   // TODO verify what should be exposed or not!
+   public boolean isXA()
+   {
+      return xa;
+   }
+
+   public void setXA(boolean xa)
+   {
+      this.xa = xa;
+   }
+
+   public Object getCurrentTxId()
+   {
+      return currentTxId;
+   }
+
+   public void setCurrentTxId(Object currentTxId)
+   {
+      this.currentTxId = currentTxId;
+   }
+
+   public boolean isRecoverCalled()
+   {
+      return recoverCalled;
+   }
+
+   public void setRecoverCalled(boolean recoverCalled)
+   {
+      this.recoverCalled = recoverCalled;
+   }
+
+   public List<Ack> getClientAckList()
+   {
+      return clientAckList;
+   }
+
+   public void setClientAckList(List<Ack> clientAckList)
+   {
+      this.clientAckList = clientAckList;
+   }
+
+   public DeliveryInfo getAutoAckInfo()
+   {
+      return autoAckInfo;
+   }
+
+   public void setAutoAckInfo(DeliveryInfo autoAckInfo)
+   {
+      this.autoAckInfo = autoAckInfo;
+   }
+
+   public Map getCallbackHandlers()
+   {
+      return callbackHandlers;
+   }
+
+   public void setCallbackHandlers(Map callbackHandlers)
+   {
+      this.callbackHandlers = callbackHandlers;
+   }
+
+   public LinkedList getAsfMessages()
+   {
+      return asfMessages;
+   }
+
+   public void setAsfMessages(LinkedList asfMessages)
+   {
+      this.asfMessages = asfMessages;
+   }
+
+   public MessageListener getSessionListener()
+   {
+      return sessionListener;
+   }
+
+   public void setSessionListener(MessageListener sessionListener)
+   {
+      this.sessionListener = sessionListener;
+   }
+
+   public boolean isTreatAsNonTransactedWhenNotEnlisted()
+   {
+      return treatAsNonTransactedWhenNotEnlisted;
+   }
+
+   public void setTreatAsNonTransactedWhenNotEnlisted(
+         boolean treatAsNonTransactedWhenNotEnlisted)
+   {
+      this.treatAsNonTransactedWhenNotEnlisted = treatAsNonTransactedWhenNotEnlisted;
+   }
+
+   public long getNpSendSequence()
+   {
+      return npSendSequence;
+   }
+
+   public void setNpSendSequence(long npSendSequence)
+   {
+      this.npSendSequence = npSendSequence;
+   }
+
+   public ClearableQueuedExecutor getExecutor()
+   {
+      return executor;
+   }
+
+   public void setDupsOKBatchSize(int dupsOKBatchSize)
+   {
+      this.dupsOKBatchSize = dupsOKBatchSize;
+   }
+
+   public void setStrictTck(boolean strictTck)
+   {
+      this.strictTck = strictTck;
+   }
+
+   public void setAcknowledgeMode(int acknowledgeMode)
+   {
+      this.acknowledgeMode = acknowledgeMode;
+   }
+   
+   public boolean isTransacted()
+   {
+      return transacted;
+   }
+
+   
+
+   
+   public void setTransacted(boolean transacted)
+   {
+      this.transacted = transacted;
+   }
+
+   public long getNPSendSequence()
+   {
+      return npSendSequence;
+   }
+   
+   public void incNpSendSequence()
+   {
+      npSendSequence++;
+   }
+   
+   public boolean getTreatAsNonTransactedWhenNotEnlisted()
+   {
+      return treatAsNonTransactedWhenNotEnlisted;
+   }
+   
+
+   public MessageListener getDistinguishedListener()
+   {
+      return this.sessionListener;
+   }
+   
+   public void setDistinguishedListener(MessageListener listener)
+   {
+      this.sessionListener = listener;
+   }
+   
 
 }

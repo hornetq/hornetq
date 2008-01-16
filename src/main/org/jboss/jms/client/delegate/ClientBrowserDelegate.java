@@ -26,9 +26,10 @@ import java.io.DataOutputStream;
 
 import javax.jms.JMSException;
 
-import org.jboss.jms.client.state.ConnectionState;
-import org.jboss.jms.client.state.HierarchicalState;
-import org.jboss.jms.delegate.BrowserDelegate;
+import org.jboss.jms.client.api.ClientBrowser;
+import org.jboss.jms.client.api.ClientSession;
+import org.jboss.messaging.core.remoting.Client;
+import org.jboss.messaging.core.Destination;
 import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.remoting.wireformat.BrowserHasNextMessageRequest;
 import org.jboss.messaging.core.remoting.wireformat.BrowserHasNextMessageResponse;
@@ -45,12 +46,13 @@ import org.jboss.messaging.core.remoting.wireformat.ClosingResponse;
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
+ * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  *
  * @version <tt>$Revision$</tt>
  *
  * $Id$
  */
-public class ClientBrowserDelegate extends DelegateSupport implements BrowserDelegate
+public class ClientBrowserDelegate extends CommunicationSupport<ClientBrowserDelegate> implements ClientBrowser
 {
    // Constants ------------------------------------------------------------------------------------
 
@@ -58,11 +60,23 @@ public class ClientBrowserDelegate extends DelegateSupport implements BrowserDel
 	
    // Attributes -----------------------------------------------------------------------------------
 
+	private ClientSession session;
+   private Destination jmsDestination;
+   private String messageSelector;
+
    // Static ---------------------------------------------------------------------------------------
 
    // Constructors ---------------------------------------------------------------------------------
 
-	public ClientBrowserDelegate(String objectID)
+   public ClientBrowserDelegate(ClientSession session, String objectID, Destination jmsDestination, String messageSelector)
+   {
+      super(objectID);
+      this.session = session;
+      this.jmsDestination = jmsDestination;
+      this.messageSelector = messageSelector;
+   }
+
+   public ClientBrowserDelegate(String objectID)
    {
       super(objectID);
    }
@@ -73,7 +87,7 @@ public class ClientBrowserDelegate extends DelegateSupport implements BrowserDel
 
    // DelegateSupport overrides --------------------------------------------------------------------
 
-   public void synchronizeWith(DelegateSupport nd) throws Exception
+   public void synchronizeWith(ClientBrowserDelegate nd) throws Exception
    {
       super.synchronizeWith(nd);
 
@@ -83,20 +97,7 @@ public class ClientBrowserDelegate extends DelegateSupport implements BrowserDel
 
       // synchronize (recursively) the client-side state
 
-      state.synchronizeWith(newDelegate.getState());
-
-      client = ((ConnectionState)state.getParent().getParent()).getRemotingConnection().
-         getRemotingClient();
    }
-
-   public void setState(HierarchicalState state)
-   {
-      super.setState(state);
-
-      client = ((ConnectionState)state.getParent().getParent()).getRemotingConnection().
-         getRemotingClient();
-   }
-
 
    // Closeable implementation ---------------------------------------------------------------------
 
@@ -162,6 +163,12 @@ public class ClientBrowserDelegate extends DelegateSupport implements BrowserDel
    }
 
    // Protected ------------------------------------------------------------------------------------
+
+   protected Client getClient()
+   {
+      return this.session.getConnection().getClient();
+   }
+   
 
    // Package Private ------------------------------------------------------------------------------
 

@@ -45,8 +45,6 @@ import javax.transaction.TransactionManager;
 import javax.transaction.xa.XAResource;
 
 import org.jboss.jms.client.JBossSession;
-import org.jboss.jms.client.delegate.DelegateSupport;
-import org.jboss.jms.client.state.SessionState;
 import org.jboss.jms.message.JBossMessage;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.MessagingComponent;
@@ -992,10 +990,9 @@ public class Bridge implements MessagingComponent
          {
          	JBossSession jsession = (JBossSession)sourceSession;
 
-            ;
-            SessionState sstate = (SessionState)ProxyFactory.getDelegate(sourceSession).getState();
+         	org.jboss.jms.client.api.ClientSession session = jsession.getDelegate();
             
-         	sstate.setTreatAsNonTransactedWhenNotEnlisted(false);
+         	session.setTreatAsNonTransactedWhenNotEnlisted(false);
          }
             
          if (subName == null)

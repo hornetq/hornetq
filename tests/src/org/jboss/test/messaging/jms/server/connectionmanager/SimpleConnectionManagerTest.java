@@ -30,6 +30,7 @@ import javax.jms.Session;
 
 import org.jboss.jms.client.JBossConnection;
 import org.jboss.jms.client.JBossConnectionFactory;
+import org.jboss.jms.client.api.ClientSession;
 import org.jboss.jms.delegate.ConnectionEndpoint;
 import org.jboss.jms.delegate.IDBlock;
 import org.jboss.jms.delegate.SessionDelegate;
@@ -232,7 +233,7 @@ public class SimpleConnectionManagerTest extends JMSTestCase
          return closed;
       }
 
-      public SessionDelegate createSessionDelegate(boolean transacted, int acknowledgmentMode, boolean isXA) throws JMSException
+      public ClientSession createSessionDelegate(boolean transacted, int acknowledgmentMode, boolean isXA) throws JMSException
       {
          return null;
       }

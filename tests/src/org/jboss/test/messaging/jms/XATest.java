@@ -48,9 +48,6 @@ import org.jboss.jms.client.JBossConnection;
 import org.jboss.jms.client.JBossConnectionFactory;
 import org.jboss.jms.client.JBossSession;
 import org.jboss.jms.client.delegate.ClientConnectionDelegate;
-import org.jboss.jms.client.delegate.DelegateSupport;
-import org.jboss.jms.client.state.ConnectionState;
-import org.jboss.jms.client.state.SessionState;
 import org.jboss.jms.tx.LocalTx;
 import org.jboss.jms.tx.MessagingXAResource;
 import org.jboss.jms.tx.MessagingXid;
@@ -281,17 +278,17 @@ public class XATest extends JBMServerTestCase
 
          Transaction trans = tm.getTransaction();
 
-         SessionState state = getDelegate(xasession).getState();
+         org.jboss.jms.client.api.ClientSession clientSession = getDelegate(xasession);
 
          // Validates TX convertion
-         assertTrue(state.getCurrentTxId() instanceof LocalTx);
+         assertTrue(clientSession.getCurrentTxId() instanceof LocalTx);
 
          // Enlist the transaction... as supposed to be happening on JBossAS with the
          // default listener (enlist happening after message is received)
          trans.enlistResource(resource);
 
          // Validates TX convertion
-         assertFalse(state.getCurrentTxId() instanceof LocalTx);
+         assertFalse(clientSession.getCurrentTxId() instanceof LocalTx);
 
          trans.delistResource(resource, XAResource.TMSUCCESS);
 
@@ -583,9 +580,7 @@ public class XATest extends JBMServerTestCase
 
          ClientConnectionDelegate del = getDelegate(jbConn);
 
-         ConnectionState state = del.getState();
-
-         ResourceManager rm = state.getResourceManager();
+         ResourceManager rm = del.getResourceManager();
 
          XASession xaSession = xaConn.createXASession();
 
@@ -645,9 +640,7 @@ public class XATest extends JBMServerTestCase
 
          ClientConnectionDelegate del = getDelegate(xaConn);
 
-         ConnectionState state = (ConnectionState)del.getState();
-
-         ResourceManager rm = state.getResourceManager();
+         ResourceManager rm = del.getResourceManager();
 
          XASession xaSession = xaConn.createXASession();
 

@@ -43,6 +43,7 @@ import javax.transaction.TransactionManager;
 import org.jboss.jms.client.JBossConnection;
 import org.jboss.jms.client.JBossSession;
 import org.jboss.jms.client.JBossMessageConsumer;
+import org.jboss.jms.client.api.Consumer;
 import org.jboss.jms.client.delegate.ClientConnectionDelegate;
 import org.jboss.jms.client.delegate.ClientSessionDelegate;
 import org.jboss.jms.client.delegate.ClientConsumerDelegate;
@@ -168,17 +169,17 @@ public class JBMBaseTestCase extends ProxyAssertSupport
 
    public ClientConsumerDelegate getDelegate(MessageConsumer cons)
    {
-      return (ClientConsumerDelegate) ProxyFactory.getDelegate(((JBossMessageConsumer)cons).getDelegate());
+      return (ClientConsumerDelegate)ProxyFactory.getDelegate(((JBossMessageConsumer)cons).getDelegate());
    }
 
    public ClientSessionDelegate getDelegate(Session sess)
    {
-      return (ClientSessionDelegate) ProxyFactory.getDelegate(((JBossSession)sess).getDelegate());
+      return (ClientSessionDelegate)ProxyFactory.getDelegate(((JBossSession)sess).getDelegate());
    }
 
    public ClientConnectionDelegate getDelegate(Connection conn)
    {
-      return (ClientConnectionDelegate) ProxyFactory.getDelegate(((JBossConnection)conn).getDelegate());
+      return (ClientConnectionDelegate)ProxyFactory.getDelegate(((JBossConnection)conn).getDelegate());
    }
 
       protected List getReferenceIds(long channelId) throws Throwable

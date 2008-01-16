@@ -36,9 +36,6 @@ import org.jboss.jms.client.JBossConnection;
 import org.jboss.jms.client.JBossMessageProducer;
 import org.jboss.jms.client.container.ClientConsumer;
 import org.jboss.jms.client.delegate.ClientConnectionDelegate;
-import org.jboss.jms.client.delegate.DelegateSupport;
-import org.jboss.jms.client.state.ConnectionState;
-import org.jboss.jms.client.state.ProducerState;
 import org.jboss.profiler.jvmti.InventoryDataPoint;
 import org.jboss.profiler.jvmti.JVMTIInterface;
 import org.jboss.test.messaging.tools.ServerManagement;
@@ -131,7 +128,7 @@ public class ClusterLeakTest extends ClusteringTestBase
 
          // make sure we're connecting to node 1
 
-         int nodeID = getDelegate(conn).getState().getServerID(); 
+         int nodeID = getDelegate(conn).getServerID(); 
 
          assertEquals(1, nodeID);
 
@@ -178,9 +175,7 @@ public class ClusterLeakTest extends ClusteringTestBase
          Map inventory2 = jvmti.produceInventory();
 
          validateInstances(jvmti, ClientConnectionDelegate.class, inventory2, 1);
-         validateInstances(jvmti, ConnectionState.class, inventory2, 1);
          validateInstances(jvmti, MessageConsumer.class, inventory2, 1);
-         validateInstances(jvmti, ProducerState.class, inventory2, 1);
          validateInstances(jvmti, FailoverValve2.class, inventory2, 1);
          validateInstances(jvmti, ClientConsumer.class, inventory2, 1);
 

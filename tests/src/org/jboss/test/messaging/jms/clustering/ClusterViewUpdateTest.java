@@ -25,7 +25,6 @@ package org.jboss.test.messaging.jms.clustering;
 import org.jboss.jms.client.JBossConnectionFactory;
 import org.jboss.jms.client.delegate.ClientClusteredConnectionFactoryDelegate;
 import org.jboss.jms.client.delegate.ClientConnectionFactoryDelegate;
-import org.jboss.jms.client.state.ConnectionState;
 import org.jboss.jms.delegate.TopologyResult;
 import org.jboss.test.messaging.tools.ServerManagement;
 
@@ -454,11 +453,8 @@ public class ClusterViewUpdateTest extends ClusteringTestBase
       
       assertEquals(0, getServerId(conn2));
 
-      ConnectionState state = this.getConnectionState(conn1);
-
-      // Disable Leasing for Failover
-      state.getRemotingConnection().removeConnectionListener();
-
+      getDelegate(conn1).getRemotingConnection().removeConnectionListener();
+      
       ServerManagement.kill(1);
 
       Thread.sleep(5000);

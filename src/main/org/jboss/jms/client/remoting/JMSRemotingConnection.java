@@ -30,6 +30,8 @@ import org.jboss.messaging.core.remoting.ServerLocator;
 import org.jboss.messaging.core.remoting.impl.ClientImpl;
 
 /**
+ * 
+ * TODO: This class should disappear in favor of Connection/Client
  * Encapsulates the state and behaviour from MINA needed for a JMS connection.
  * 
  * Each JMS connection maintains a single Client instance for invoking on the server.
@@ -55,7 +57,6 @@ public class JMSRemotingConnection
    private Client client;
 
    private CallbackManager callbackManager;
-   private boolean strictTck;
 
    // When a failover is performed, this flag is set to true
    protected boolean failed = false;
@@ -66,10 +67,9 @@ public class JMSRemotingConnection
 
    // Constructors ---------------------------------------------------------------------------------
 
-   public JMSRemotingConnection(String serverLocatorURI, boolean strictTck) throws Exception
+   public JMSRemotingConnection(String serverLocatorURI) throws Exception
    {
       this.serverLocator = new ServerLocator(serverLocatorURI);
-      this.strictTck = strictTck;
 
       log.trace(this + " created");
    }
@@ -123,11 +123,6 @@ public class JMSRemotingConnection
       return callbackManager;
    }
 
-
-   public boolean isStrictTck()
-   {
-       return strictTck;
-   }
 
     public synchronized boolean isFailed()
    {

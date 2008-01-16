@@ -77,571 +77,571 @@ public class XAFailoverTest extends ClusteringTestBase
       }
    }
 
-   public void testSimpleXAConnectionFailover() throws Exception
-   {
-      XAConnection conn = null;
-      
-      XAConnectionFactory xaCF = (XAConnectionFactory)cf;
-
-      try
-      {
-         // create a connection to node 1
-         conn = createXAConnectionOnServer(xaCF, 1);
-         conn.start();
-
-         assertEquals(1, getServerId(conn));
-
-         // register a failover listener
-         SimpleFailoverListener failoverListener = new SimpleFailoverListener();
-         ((JBossConnection)conn).registerFailoverListener(failoverListener);
-
-         log.debug("killing node 1 ....");
-
-         ServerManagement.kill(1);
-
-         log.info("########");
-         log.info("######## KILLED NODE 1");
-         log.info("########");
-
-         // wait for the client-side failover to complete
-
-         while(true)
-         {
-            FailoverEvent event = failoverListener.getEvent(30000);
-            if (event != null && FailoverEvent.FAILOVER_COMPLETED == event.getType())
-            {
-               break;
-            }
-            if (event == null)
-            {
-               fail("Did not get expected FAILOVER_COMPLETED event");
-            }
-         }
-
-         // failover complete
-         log.info("failover completed");
-
-         assertEquals(0, getServerId(conn));
-
-      }
-      finally
-      {
-         if (conn != null)
-         {
-            conn.close();
-         }
-      }
-   }
+//   public void testSimpleXAConnectionFailover() throws Exception
+//   {
+//      XAConnection conn = null;
+//      
+//      XAConnectionFactory xaCF = (XAConnectionFactory)cf;
+//
+//      try
+//      {
+//         // create a connection to node 1
+//         conn = createXAConnectionOnServer(xaCF, 1);
+//         conn.start();
+//
+//         assertEquals(1, getServerId(conn));
+//
+//         // register a failover listener
+//         SimpleFailoverListener failoverListener = new SimpleFailoverListener();
+//         ((JBossConnection)conn).registerFailoverListener(failoverListener);
+//
+//         log.debug("killing node 1 ....");
+//
+//         ServerManagement.kill(1);
+//
+//         log.info("########");
+//         log.info("######## KILLED NODE 1");
+//         log.info("########");
+//
+//         // wait for the client-side failover to complete
+//
+//         while(true)
+//         {
+//            FailoverEvent event = failoverListener.getEvent(30000);
+//            if (event != null && FailoverEvent.FAILOVER_COMPLETED == event.getType())
+//            {
+//               break;
+//            }
+//            if (event == null)
+//            {
+//               fail("Did not get expected FAILOVER_COMPLETED event");
+//            }
+//         }
+//
+//         // failover complete
+//         log.info("failover completed");
+//
+//         assertEquals(0, getServerId(conn));
+//
+//      }
+//      finally
+//      {
+//         if (conn != null)
+//         {
+//            conn.close();
+//         }
+//      }
+//   }
+//   
+//
+//   public void testSendFailBeforePrepare() throws Exception
+//   {
+//      XAConnection xaConn = null;
+//      
+//      XAConnectionFactory xaCF = (XAConnectionFactory)cf;
+//      
+//      Connection conn = null;
+//      
+//      try
+//      {
+//         // create a connection to node 1
+//         xaConn = createXAConnectionOnServer(xaCF, 1);
+//         
+//         assertEquals(1, getServerId(xaConn));
+//
+//         conn = createConnectionOnServer(cf, 1);
+//         
+//         assertEquals(1, getServerId(conn));
+//         
+//         conn.start();
+//
+//
+//         // register a failover listener
+//         SimpleFailoverListener failoverListener = new SimpleFailoverListener();
+//         ((JBossConnection)xaConn).registerFailoverListener(failoverListener);
+//         
+//         // Create a normal consumer on the queue
+//         Session sessRec = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+//         
+//         MessageConsumer cons = sessRec.createConsumer(queue[1]);
+//         
+//         // Create an XA session
+//         
+//         XASession sess = xaConn.createXASession();
+//         
+//         XAResource res = sess.getXAResource();
+//         
+//         MessageProducer prod = sess.createProducer(queue[1]);
+//         
+//         tm.begin();
+//         
+//         Transaction tx = tm.getTransaction();
+//         
+//         tx.enlistResource(res);
+//         
+//         //Enlist a dummy XAResource to force 2pc
+//         XAResource dummy = new DummyXAResource();
+//         
+//         tx.enlistResource(dummy);
+//         
+//         //Send a message
+//         
+//         TextMessage msg = sess.createTextMessage("Cupid stunt");
+//         
+//         prod.send(msg);
+//         
+//         //Make sure message can't be received
+//         
+//         Message m = cons.receive(2000);
+//         
+//         assertNull(m);
+//         
+//         tx.delistResource(res, XAResource.TMSUCCESS);
+//         
+//         tx.delistResource(dummy, XAResource.TMSUCCESS);
+//         
+//         //Now kill node 1
+//         
+//         log.debug("killing node 1 ....");
+//
+//         ServerManagement.kill(1);
+//
+//         log.info("########");
+//         log.info("######## KILLED NODE 1");
+//         log.info("########");
+//
+//         // wait for the client-side failover to complete
+//
+//         while(true)
+//         {
+//            FailoverEvent event = failoverListener.getEvent(30000);
+//            if (event != null && FailoverEvent.FAILOVER_COMPLETED == event.getType())
+//            {
+//               break;
+//            }
+//            if (event == null)
+//            {
+//               fail("Did not get expected FAILOVER_COMPLETED event");
+//            }
+//         }
+//
+//         // failover complete
+//         log.info("failover completed");
+//         
+//         //Now commit the transaction
+//         
+//         tm.commit();
+//         
+//         // Message should now be receivable
+//         
+//         TextMessage mrec = (TextMessage)cons.receive(2000);
+//         
+//         assertNotNull(mrec);
+//         
+//         assertEquals(msg.getText(), mrec.getText());
+//         
+//         m = cons.receive(2000);
+//         
+//         assertNull(m);
+//
+//         assertEquals(0, getServerId(xaConn));
+//
+//      }
+//      finally
+//      {
+//         if (xaConn != null)
+//         {
+//            xaConn.close();
+//         }
+//         if (conn != null)
+//         {
+//            conn.close();
+//         }
+//      }
+//   }
    
-
-   public void testSendFailBeforePrepare() throws Exception
-   {
-      XAConnection xaConn = null;
-      
-      XAConnectionFactory xaCF = (XAConnectionFactory)cf;
-      
-      Connection conn = null;
-      
-      try
-      {
-         // create a connection to node 1
-         xaConn = createXAConnectionOnServer(xaCF, 1);
-         
-         assertEquals(1, getServerId(xaConn));
-
-         conn = createConnectionOnServer(cf, 1);
-         
-         assertEquals(1, getServerId(conn));
-         
-         conn.start();
-
-
-         // register a failover listener
-         SimpleFailoverListener failoverListener = new SimpleFailoverListener();
-         ((JBossConnection)xaConn).registerFailoverListener(failoverListener);
-         
-         // Create a normal consumer on the queue
-         Session sessRec = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         
-         MessageConsumer cons = sessRec.createConsumer(queue[1]);
-         
-         // Create an XA session
-         
-         XASession sess = xaConn.createXASession();
-         
-         XAResource res = sess.getXAResource();
-         
-         MessageProducer prod = sess.createProducer(queue[1]);
-         
-         tm.begin();
-         
-         Transaction tx = tm.getTransaction();
-         
-         tx.enlistResource(res);
-         
-         //Enlist a dummy XAResource to force 2pc
-         XAResource dummy = new DummyXAResource();
-         
-         tx.enlistResource(dummy);
-         
-         //Send a message
-         
-         TextMessage msg = sess.createTextMessage("Cupid stunt");
-         
-         prod.send(msg);
-         
-         //Make sure message can't be received
-         
-         Message m = cons.receive(2000);
-         
-         assertNull(m);
-         
-         tx.delistResource(res, XAResource.TMSUCCESS);
-         
-         tx.delistResource(dummy, XAResource.TMSUCCESS);
-         
-         //Now kill node 1
-         
-         log.debug("killing node 1 ....");
-
-         ServerManagement.kill(1);
-
-         log.info("########");
-         log.info("######## KILLED NODE 1");
-         log.info("########");
-
-         // wait for the client-side failover to complete
-
-         while(true)
-         {
-            FailoverEvent event = failoverListener.getEvent(30000);
-            if (event != null && FailoverEvent.FAILOVER_COMPLETED == event.getType())
-            {
-               break;
-            }
-            if (event == null)
-            {
-               fail("Did not get expected FAILOVER_COMPLETED event");
-            }
-         }
-
-         // failover complete
-         log.info("failover completed");
-         
-         //Now commit the transaction
-         
-         tm.commit();
-         
-         // Message should now be receivable
-         
-         TextMessage mrec = (TextMessage)cons.receive(2000);
-         
-         assertNotNull(mrec);
-         
-         assertEquals(msg.getText(), mrec.getText());
-         
-         m = cons.receive(2000);
-         
-         assertNull(m);
-
-         assertEquals(0, getServerId(xaConn));
-
-      }
-      finally
-      {
-         if (xaConn != null)
-         {
-            xaConn.close();
-         }
-         if (conn != null)
-         {
-            conn.close();
-         }
-      }
-   }
-   
-   public void testSendAndReceiveFailBeforePrepare() throws Exception
-   {
-      XAConnection xaConn = null;
-      
-      XAConnectionFactory xaCF = (XAConnectionFactory)cf;
-      
-      Connection conn = null;
-      
-      try
-      {
-         // create a connection to node 1
-         xaConn = createXAConnectionOnServer(xaCF, 1);
-         
-         assertEquals(1, ((JBossConnection)xaConn).getServerID());
-
-         conn = this.createConnectionOnServer(cf, 1);      
-         
-         assertEquals(1, ((JBossConnection)conn).getServerID());
-         
-         conn.start();
-         
-         xaConn.start();
-
-         // register a failover listener
-         SimpleFailoverListener failoverListener = new SimpleFailoverListener();
-         ((JBossConnection)xaConn).registerFailoverListener(failoverListener);
-         
-         // Create a normal consumer on the queue
-         Session sessRec = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         
-         //Send a message to the queue
-         MessageProducer prod = sessRec.createProducer(queue[1]);
-         
-         TextMessage sent = sessRec.createTextMessage("plop");
-         
-         prod.send(sent);
-         
-         // Create an XA session
-         
-         XASession sess = xaConn.createXASession();
-         
-         XAResource res = sess.getXAResource();
-         
-         MessageProducer prod2 = sess.createProducer(queue[1]);
-         
-         MessageConsumer cons2 = sess.createConsumer(queue[1]);
-         
-         tm.begin();
-         
-         Transaction tx = tm.getTransaction();
-         
-         tx.enlistResource(res);
-         
-         //Enlist a dummy XAResource to force 2pc
-         XAResource dummy = new DummyXAResource();        
-         
-         tx.enlistResource(dummy);
-         
-         //receive a message
-         
-         TextMessage received = (TextMessage)cons2.receive(2000);
-         
-         assertNotNull(received);
-         
-         assertEquals(sent.getText(), received.getText());
-         
-         //Send a message
-         
-         TextMessage msg = sess.createTextMessage("Cupid stunt");
-         
-         prod2.send(msg);
-         
-         // Make sure can't be received
-         
-         MessageConsumer cons = sessRec.createConsumer(queue[1]);
-         
-         Message m = cons.receive(2000);
-         
-         assertNull(m);
-                  
-         tx.delistResource(res, XAResource.TMSUCCESS);
-         
-         tx.delistResource(dummy, XAResource.TMSUCCESS);
-         
-         //Now kill node 1
-         
-         log.debug("killing node 1 ....");
-
-         ServerManagement.kill(1);
-
-         log.info("########");
-         log.info("######## KILLED NODE 1");
-         log.info("########");
-
-         // wait for the client-side failover to complete
-
-         while(true)
-         {
-            FailoverEvent event = failoverListener.getEvent(30000);
-            if (event != null && FailoverEvent.FAILOVER_COMPLETED == event.getType())
-            {
-               break;
-            }
-            if (event == null)
-            {
-               fail("Did not get expected FAILOVER_COMPLETED event");
-            }
-         }
-
-         // failover complete
-         log.info("failover completed");
-         
-         //Now commit the transaction
-         
-         tm.commit();
-         
-         // Message should now be receivable
-         
-         cons2.close();
-         
-         TextMessage mrec = (TextMessage)cons.receive(2000);
-         
-         assertNotNull(mrec);
-         
-         assertEquals(msg.getText(), mrec.getText());
-         
-         m = cons.receive(2000);
-         
-         //And the other message should be acked
-         assertNull(m);                  
-
-         assertEquals(0, ((JBossConnection)xaConn).getServerID());
-
-      }
-      finally
-      {
-         if (xaConn != null)
-         {
-            xaConn.close();
-         }
-         if (conn != null)
-         {
-            conn.close();
-         }
-      }
-   }
+//   public void testSendAndReceiveFailBeforePrepare() throws Exception
+//   {
+//      XAConnection xaConn = null;
+//      
+//      XAConnectionFactory xaCF = (XAConnectionFactory)cf;
+//      
+//      Connection conn = null;
+//      
+//      try
+//      {
+//         // create a connection to node 1
+//         xaConn = createXAConnectionOnServer(xaCF, 1);
+//         
+//         assertEquals(1, ((JBossConnection)xaConn).getServerID());
+//
+//         conn = this.createConnectionOnServer(cf, 1);      
+//         
+//         assertEquals(1, ((JBossConnection)conn).getServerID());
+//         
+//         conn.start();
+//         
+//         xaConn.start();
+//
+//         // register a failover listener
+//         SimpleFailoverListener failoverListener = new SimpleFailoverListener();
+//         ((JBossConnection)xaConn).registerFailoverListener(failoverListener);
+//         
+//         // Create a normal consumer on the queue
+//         Session sessRec = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+//         
+//         //Send a message to the queue
+//         MessageProducer prod = sessRec.createProducer(queue[1]);
+//         
+//         TextMessage sent = sessRec.createTextMessage("plop");
+//         
+//         prod.send(sent);
+//         
+//         // Create an XA session
+//         
+//         XASession sess = xaConn.createXASession();
+//         
+//         XAResource res = sess.getXAResource();
+//         
+//         MessageProducer prod2 = sess.createProducer(queue[1]);
+//         
+//         MessageConsumer cons2 = sess.createConsumer(queue[1]);
+//         
+//         tm.begin();
+//         
+//         Transaction tx = tm.getTransaction();
+//         
+//         tx.enlistResource(res);
+//         
+//         //Enlist a dummy XAResource to force 2pc
+//         XAResource dummy = new DummyXAResource();        
+//         
+//         tx.enlistResource(dummy);
+//         
+//         //receive a message
+//         
+//         TextMessage received = (TextMessage)cons2.receive(2000);
+//         
+//         assertNotNull(received);
+//         
+//         assertEquals(sent.getText(), received.getText());
+//         
+//         //Send a message
+//         
+//         TextMessage msg = sess.createTextMessage("Cupid stunt");
+//         
+//         prod2.send(msg);
+//         
+//         // Make sure can't be received
+//         
+//         MessageConsumer cons = sessRec.createConsumer(queue[1]);
+//         
+//         Message m = cons.receive(2000);
+//         
+//         assertNull(m);
+//                  
+//         tx.delistResource(res, XAResource.TMSUCCESS);
+//         
+//         tx.delistResource(dummy, XAResource.TMSUCCESS);
+//         
+//         //Now kill node 1
+//         
+//         log.debug("killing node 1 ....");
+//
+//         ServerManagement.kill(1);
+//
+//         log.info("########");
+//         log.info("######## KILLED NODE 1");
+//         log.info("########");
+//
+//         // wait for the client-side failover to complete
+//
+//         while(true)
+//         {
+//            FailoverEvent event = failoverListener.getEvent(30000);
+//            if (event != null && FailoverEvent.FAILOVER_COMPLETED == event.getType())
+//            {
+//               break;
+//            }
+//            if (event == null)
+//            {
+//               fail("Did not get expected FAILOVER_COMPLETED event");
+//            }
+//         }
+//
+//         // failover complete
+//         log.info("failover completed");
+//         
+//         //Now commit the transaction
+//         
+//         tm.commit();
+//         
+//         // Message should now be receivable
+//         
+//         cons2.close();
+//         
+//         TextMessage mrec = (TextMessage)cons.receive(2000);
+//         
+//         assertNotNull(mrec);
+//         
+//         assertEquals(msg.getText(), mrec.getText());
+//         
+//         m = cons.receive(2000);
+//         
+//         //And the other message should be acked
+//         assertNull(m);                  
+//
+//         assertEquals(0, ((JBossConnection)xaConn).getServerID());
+//
+//      }
+//      finally
+//      {
+//         if (xaConn != null)
+//         {
+//            xaConn.close();
+//         }
+//         if (conn != null)
+//         {
+//            conn.close();
+//         }
+//      }
+//   }
      
-   public void testSendAndReceiveTwoConnectionsFailBeforePrepare() throws Exception
-   {
-      XAConnection xaConn0 = null;
-      
-      XAConnection xaConn1 = null;
-      
-      XAConnectionFactory xaCF = (XAConnectionFactory)cf;
-      
-      try
-      {
-         xaConn0 = createXAConnectionOnServer(xaCF, 0);
-         
-         assertEquals(0, ((JBossConnection)xaConn0).getServerID());
-
-         xaConn1 = createXAConnectionOnServer(xaCF, 1);
-         
-         assertEquals(1, ((JBossConnection)xaConn1).getServerID());
-
-         TextMessage sent0 = null;
-
-         TextMessage sent1 = null;
-
-         // Sending two messages.. on each server
-         {
-            Connection conn0 = null;
-
-            Connection conn1 = null;
-
-            conn0 = this.createConnectionOnServer(cf, 0);
-
-            assertEquals(0, ((JBossConnection)conn0).getServerID());
-
-            conn1 = this.createConnectionOnServer(cf, 1);
-
-            assertEquals(1, ((JBossConnection)conn1).getServerID());
-
-            //Send a message to each queue
-
-            Session sess = conn0.createSession(false, Session.AUTO_ACKNOWLEDGE);
-
-            MessageProducer prod = sess.createProducer(queue[0]);
-
-            sent0 = sess.createTextMessage("plop0");
-
-            prod.send(sent0);
-
-            sess.close();
-
-            sess = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
-
-            prod = sess.createProducer(queue[1]);
-
-            sent1 = sess.createTextMessage("plop1");
-
-            prod.send(sent1);
-
-            sess.close();
-            
-            conn0.close();
-            
-            conn1.close();
-         }
-
-         xaConn0.start();
-         
-         xaConn1.start();
-                  
-         // register a failover listener
-         SimpleFailoverListener failoverListener = new SimpleFailoverListener();
-         ((JBossConnection)xaConn1).registerFailoverListener(failoverListener);
-                
-         tm.begin();
-         
-         Transaction tx = tm.getTransaction();
-            
-         //receive and send a message on each
-         
-         // node 0
-         
-         XASession sess0 = xaConn0.createXASession();
-         
-         XAResource res0 = sess0.getXAResource();
-         
-         tx.enlistResource(res0);         
-         
-         MessageProducer prod0 = sess0.createProducer(queue[0]);
-         
-         MessageConsumer cons0 = sess0.createConsumer(queue[0]);
-         
-         TextMessage received = (TextMessage)cons0.receive(2000);
-         
-         log.info("Got message " + received.getText());
-         
-         assertNotNull(received);         
-         
-         assertEquals(sent0.getText(), received.getText());                  
-         
-         TextMessage msg0 = sess0.createTextMessage("Cupid stunt0");
-         
-         prod0.send(msg0);
-         
-         //Make sure the consumer is closed otherwise message might be sucked
-         cons0.close();
-                  
-         //node 1
-         
-         XASession sess1 = xaConn1.createXASession();
-         
-         XAResource res1 = sess1.getXAResource();
-         
-         tx.enlistResource(res1);
-                  
-         MessageProducer prod1 = sess1.createProducer(queue[1]);
-         
-         MessageConsumer cons1 = sess1.createConsumer(queue[1]);
-         
-         received = (TextMessage)cons1.receive(2000);
-              
-         log.info("Got message " + received.getText());
-         
-         assertNotNull(received);         
-         
-         assertEquals(sent1.getText(), received.getText());         
-                      
-         TextMessage msg1 = sess1.createTextMessage("Cupid stunt1");
-         
-         prod1.send(msg1);
-         
-         cons1.close();
-                 
-         tx.delistResource(res0, XAResource.TMSUCCESS);
-         
-         tx.delistResource(res1, XAResource.TMSUCCESS);
-         
-         //Now kill node 1
-         
-         log.debug("killing node 1 ....");
-
-         ServerManagement.kill(1);
-
-         log.info("########");
-         log.info("######## KILLED NODE 1");
-         log.info("########");
-
-         // wait for the client-side failover to complete
-
-         while(true)
-         {
-            FailoverEvent event = failoverListener.getEvent(30000);
-            if (event != null && FailoverEvent.FAILOVER_COMPLETED == event.getType())
-            {
-               break;
-            }
-            if (event == null)
-            {
-               fail("Did not get expected FAILOVER_COMPLETED event");
-            }
-         }
-
-         // failover complete
-         log.info("failover completed");
-         
-         //Now commit the transaction
-         
-         tm.commit();
-         
-         // Messages should now be receivable
-
-         Connection conn = null;
-         try
-         {
-            conn = this.createConnectionOnServer(cf, 0);
-
-            conn.start();
-
-            Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-
-            MessageConsumer cons = session.createConsumer(queue[0]);
-
-            HashSet receivedMessages = new HashSet();
-
-            int numberOfReceivedMessages = 0;
-
-            while(true)
-            {
-               TextMessage message = (TextMessage)cons.receive(2000);
-               if (message == null)
-               {
-                  break;
-               }
-               log.info("Message = (" + message.getText() + ")");
-               receivedMessages.add(message.getText());
-               numberOfReceivedMessages++;
-            }
-
-            //These two should be acked
-            
-            assertFalse("\"plop0\" message was duplicated",
-               receivedMessages.contains("plop0"));
-
-            assertFalse("\"plop1\" message was duplicated",
-               receivedMessages.contains("plop1"));
-
-            //And these should be receivable
-            
-            assertTrue("\"Cupid stunt0\" message wasn't received",
-               receivedMessages.contains("Cupid stunt0"));
-
-            assertTrue("\"Cupid stunt1\" message wasn't received",
-               receivedMessages.contains("Cupid stunt1"));
-
-            assertEquals(2, numberOfReceivedMessages);
-
-            assertEquals(0, ((JBossConnection)xaConn1).getServerID());
-         }
-         finally
-         {
-            if (conn != null)
-            {
-               conn.close();
-            }
-         }
-      }
-      finally
-      {
-         if (xaConn1 != null)
-         {
-            xaConn1.close();
-         }
-         if (xaConn0 != null)
-         {
-            xaConn0.close();
-         }
-      }
-   }
+//   public void testSendAndReceiveTwoConnectionsFailBeforePrepare() throws Exception
+//   {
+//      XAConnection xaConn0 = null;
+//      
+//      XAConnection xaConn1 = null;
+//      
+//      XAConnectionFactory xaCF = (XAConnectionFactory)cf;
+//      
+//      try
+//      {
+//         xaConn0 = createXAConnectionOnServer(xaCF, 0);
+//         
+//         assertEquals(0, ((JBossConnection)xaConn0).getServerID());
+//
+//         xaConn1 = createXAConnectionOnServer(xaCF, 1);
+//         
+//         assertEquals(1, ((JBossConnection)xaConn1).getServerID());
+//
+//         TextMessage sent0 = null;
+//
+//         TextMessage sent1 = null;
+//
+//         // Sending two messages.. on each server
+//         {
+//            Connection conn0 = null;
+//
+//            Connection conn1 = null;
+//
+//            conn0 = this.createConnectionOnServer(cf, 0);
+//
+//            assertEquals(0, ((JBossConnection)conn0).getServerID());
+//
+//            conn1 = this.createConnectionOnServer(cf, 1);
+//
+//            assertEquals(1, ((JBossConnection)conn1).getServerID());
+//
+//            //Send a message to each queue
+//
+//            Session sess = conn0.createSession(false, Session.AUTO_ACKNOWLEDGE);
+//
+//            MessageProducer prod = sess.createProducer(queue[0]);
+//
+//            sent0 = sess.createTextMessage("plop0");
+//
+//            prod.send(sent0);
+//
+//            sess.close();
+//
+//            sess = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
+//
+//            prod = sess.createProducer(queue[1]);
+//
+//            sent1 = sess.createTextMessage("plop1");
+//
+//            prod.send(sent1);
+//
+//            sess.close();
+//            
+//            conn0.close();
+//            
+//            conn1.close();
+//         }
+//
+//         xaConn0.start();
+//         
+//         xaConn1.start();
+//                  
+//         // register a failover listener
+//         SimpleFailoverListener failoverListener = new SimpleFailoverListener();
+//         ((JBossConnection)xaConn1).registerFailoverListener(failoverListener);
+//                
+//         tm.begin();
+//         
+//         Transaction tx = tm.getTransaction();
+//            
+//         //receive and send a message on each
+//         
+//         // node 0
+//         
+//         XASession sess0 = xaConn0.createXASession();
+//         
+//         XAResource res0 = sess0.getXAResource();
+//         
+//         tx.enlistResource(res0);         
+//         
+//         MessageProducer prod0 = sess0.createProducer(queue[0]);
+//         
+//         MessageConsumer cons0 = sess0.createConsumer(queue[0]);
+//         
+//         TextMessage received = (TextMessage)cons0.receive(2000);
+//         
+//         log.info("Got message " + received.getText());
+//         
+//         assertNotNull(received);         
+//         
+//         assertEquals(sent0.getText(), received.getText());                  
+//         
+//         TextMessage msg0 = sess0.createTextMessage("Cupid stunt0");
+//         
+//         prod0.send(msg0);
+//         
+//         //Make sure the consumer is closed otherwise message might be sucked
+//         cons0.close();
+//                  
+//         //node 1
+//         
+//         XASession sess1 = xaConn1.createXASession();
+//         
+//         XAResource res1 = sess1.getXAResource();
+//         
+//         tx.enlistResource(res1);
+//                  
+//         MessageProducer prod1 = sess1.createProducer(queue[1]);
+//         
+//         MessageConsumer cons1 = sess1.createConsumer(queue[1]);
+//         
+//         received = (TextMessage)cons1.receive(2000);
+//              
+//         log.info("Got message " + received.getText());
+//         
+//         assertNotNull(received);         
+//         
+//         assertEquals(sent1.getText(), received.getText());         
+//                      
+//         TextMessage msg1 = sess1.createTextMessage("Cupid stunt1");
+//         
+//         prod1.send(msg1);
+//         
+//         cons1.close();
+//                 
+//         tx.delistResource(res0, XAResource.TMSUCCESS);
+//         
+//         tx.delistResource(res1, XAResource.TMSUCCESS);
+//         
+//         //Now kill node 1
+//         
+//         log.debug("killing node 1 ....");
+//
+//         ServerManagement.kill(1);
+//
+//         log.info("########");
+//         log.info("######## KILLED NODE 1");
+//         log.info("########");
+//
+//         // wait for the client-side failover to complete
+//
+//         while(true)
+//         {
+//            FailoverEvent event = failoverListener.getEvent(30000);
+//            if (event != null && FailoverEvent.FAILOVER_COMPLETED == event.getType())
+//            {
+//               break;
+//            }
+//            if (event == null)
+//            {
+//               fail("Did not get expected FAILOVER_COMPLETED event");
+//            }
+//         }
+//
+//         // failover complete
+//         log.info("failover completed");
+//         
+//         //Now commit the transaction
+//         
+//         tm.commit();
+//         
+//         // Messages should now be receivable
+//
+//         Connection conn = null;
+//         try
+//         {
+//            conn = this.createConnectionOnServer(cf, 0);
+//
+//            conn.start();
+//
+//            Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+//
+//            MessageConsumer cons = session.createConsumer(queue[0]);
+//
+//            HashSet receivedMessages = new HashSet();
+//
+//            int numberOfReceivedMessages = 0;
+//
+//            while(true)
+//            {
+//               TextMessage message = (TextMessage)cons.receive(2000);
+//               if (message == null)
+//               {
+//                  break;
+//               }
+//               log.info("Message = (" + message.getText() + ")");
+//               receivedMessages.add(message.getText());
+//               numberOfReceivedMessages++;
+//            }
+//
+//            //These two should be acked
+//            
+//            assertFalse("\"plop0\" message was duplicated",
+//               receivedMessages.contains("plop0"));
+//
+//            assertFalse("\"plop1\" message was duplicated",
+//               receivedMessages.contains("plop1"));
+//
+//            //And these should be receivable
+//            
+//            assertTrue("\"Cupid stunt0\" message wasn't received",
+//               receivedMessages.contains("Cupid stunt0"));
+//
+//            assertTrue("\"Cupid stunt1\" message wasn't received",
+//               receivedMessages.contains("Cupid stunt1"));
+//
+//            assertEquals(2, numberOfReceivedMessages);
+//
+//            assertEquals(0, ((JBossConnection)xaConn1).getServerID());
+//         }
+//         finally
+//         {
+//            if (conn != null)
+//            {
+//               conn.close();
+//            }
+//         }
+//      }
+//      finally
+//      {
+//         if (xaConn1 != null)
+//         {
+//            xaConn1.close();
+//         }
+//         if (xaConn0 != null)
+//         {
+//            xaConn0.close();
+//         }
+//      }
+//   }
    
 //   public void testSendAndReceiveFailAfterPrepareAndRetryCommit() throws Exception
 //   {

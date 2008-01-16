@@ -34,7 +34,6 @@ import javax.jms.TopicConnection;
 import javax.jms.TopicConnectionFactory;
 
 import org.jboss.jms.client.delegate.ClientConnectionDelegate;
-import org.jboss.jms.client.state.ConnectionState;
 import org.jboss.jms.tx.ResourceManager;
 import org.jboss.jms.tx.ResourceManagerFactory;
 import org.jboss.logging.Logger;
@@ -77,32 +76,28 @@ public class ConnectionTest extends JMSTestCase
             
       ClientConnectionDelegate del1 = getDelegate(conn1);
       
-      ConnectionState state1 = (ConnectionState)del1.getState();
-      
-      ResourceManager rm1 = state1.getResourceManager();
+      ResourceManager rm1 = del1.getResourceManager();
       
       Connection conn2 = cf.createConnection();      
       
       ClientConnectionDelegate del2 = getDelegate(conn2);
       
-      ConnectionState state2 = (ConnectionState)del2.getState();
-      
-      ResourceManager rm2 = state2.getResourceManager();
+      ResourceManager rm2 = del2.getResourceManager();
 
       //Two connections for same server should share the same resource manager
       
       assertTrue(rm1 == rm2);
       
-      assertTrue(ResourceManagerFactory.instance.containsResourceManager(state2.getServerID()));
+      assertTrue(ResourceManagerFactory.instance.containsResourceManager(del2.getServerID()));
       
       conn1.close();
       
       //Check reference counting
-      assertTrue(ResourceManagerFactory.instance.containsResourceManager(state2.getServerID()));
+      assertTrue(ResourceManagerFactory.instance.containsResourceManager(del2.getServerID()));
            
       conn2.close();
       
-      assertFalse(ResourceManagerFactory.instance.containsResourceManager(state2.getServerID()));  
+      assertFalse(ResourceManagerFactory.instance.containsResourceManager(del2.getServerID()));  
       
       assertEquals(0, ResourceManagerFactory.instance.size());
    }
@@ -161,7 +156,6 @@ public class ConnectionTest extends JMSTestCase
          conn.close();        
       }
    }     
-   
    
 
    //

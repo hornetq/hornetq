@@ -26,6 +26,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.jms.IllegalStateException;
 import javax.jms.JMSException;
@@ -34,9 +35,9 @@ import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
 
-import org.jboss.jms.delegate.ConnectionDelegate;
+import org.jboss.jms.client.api.ClientConnection;
+import org.jboss.jms.client.api.ClientSession;
 import org.jboss.jms.delegate.DeliveryInfo;
-import org.jboss.jms.delegate.SessionDelegate;
 import org.jboss.jms.exception.MessagingTransactionRolledBackException;
 import org.jboss.jms.exception.MessagingXAException;
 import org.jboss.jms.message.JBossMessage;
@@ -44,7 +45,6 @@ import org.jboss.jms.tx.ClientTransaction.SessionTxState;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Message;
 
-import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
 
 /**
  * The ResourceManager manages work done in both local and global (XA) transactions.
@@ -189,7 +189,7 @@ public class ResourceManager
       tx.addAck(sessionId, ackInfo);
    }
          
-   public void commitLocal(LocalTx xid, ConnectionDelegate connection) throws JMSException
+   public void commitLocal(LocalTx xid, ClientConnection connection) throws JMSException
    {
       if (trace) { log.trace("committing " + xid); }
       
@@ -323,7 +323,7 @@ public class ResourceManager
       state.setState(ClientTransaction.TX_ENDED);
    }
    
-   int prepare(Xid xid, ConnectionDelegate connection) throws XAException
+   int prepare(Xid xid, ClientConnection connection) throws XAException
    {
       if (trace) { log.trace("preparing " + xid); }
       
@@ -346,7 +346,7 @@ public class ResourceManager
       return XAResource.XA_OK;
    }
    
-   void commit(Xid xid, boolean onePhase, ConnectionDelegate connection) throws XAException
+   void commit(Xid xid, boolean onePhase, ClientConnection connection) throws XAException
    {
       if (trace) { log.trace("commiting xid " + xid + ", onePhase=" + onePhase); }
       
@@ -399,7 +399,7 @@ public class ResourceManager
       }
    }
       
-   void rollback(Xid xid, ConnectionDelegate connection) throws XAException
+   void rollback(Xid xid, ClientConnection connection) throws XAException
    {
       if (trace) { log.trace("rolling back xid " + xid); }
       
@@ -539,7 +539,7 @@ public class ResourceManager
    }
  
    
-   Xid[] recover(int flags, ConnectionDelegate conn) throws XAException
+   Xid[] recover(int flags, ClientConnection conn) throws XAException
    {
       if (trace) { log.trace("calling recover with flags: " + flags); }
       
@@ -617,7 +617,7 @@ public class ResourceManager
             
             JBossMessage mp = info.getMessage();
             
-            SessionDelegate del = mp.getSessionDelegate();
+            ClientSession del = mp.getSessionDelegate();
             
             del.redeliver(acks);
          }
@@ -629,7 +629,7 @@ public class ResourceManager
       return new LocalTx();
    }
      
-   private void sendTransactionXA(TransactionRequest request, ConnectionDelegate connection)
+   private void sendTransactionXA(TransactionRequest request, ClientConnection connection)
       throws XAException
    {
       try

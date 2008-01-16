@@ -32,7 +32,9 @@ import javax.jms.QueueReceiver;
 import javax.jms.Topic;
 import javax.jms.TopicSubscriber;
 
-import org.jboss.jms.delegate.ConsumerDelegate;
+import org.jboss.jms.client.api.Consumer;
+
+
 import org.jboss.jms.destination.JBossDestination;
 
 /**
@@ -51,51 +53,51 @@ public class JBossMessageConsumer implements MessageConsumer, QueueReceiver, Top
 
    // Attributes ----------------------------------------------------
 
-   protected ConsumerDelegate delegate;
+   protected Consumer consumer;
 
    // Constructors --------------------------------------------------
 
-   public JBossMessageConsumer(ConsumerDelegate delegate)
+   public JBossMessageConsumer(Consumer consumer)
    {      
-      this.delegate = delegate;
+      this.consumer = consumer;
    }
 
    // MessageConsumer implementation --------------------------------
 
    public String getMessageSelector() throws JMSException
    {
-      return delegate.getMessageSelector();
+      return consumer.getMessageSelector();
    }
 
    public MessageListener getMessageListener() throws JMSException
    {
-      return delegate.getMessageListener();
+      return consumer.getMessageListener();
    }
 
    public void setMessageListener(MessageListener listener) throws JMSException
    {
-      delegate.setMessageListener(listener);
+      consumer.setMessageListener(listener);
    }
 
    public Message receive() throws JMSException
    {
-      return delegate.receive(0);
+      return consumer.receive(0);
    }
 
    public Message receive(long timeout) throws JMSException
    {
-      return delegate.receive(timeout);
+      return consumer.receive(timeout);
    }
 
    public Message receiveNoWait() throws JMSException
    {
-      return delegate.receive(-1);
+      return consumer.receive(-1);
    }
 
    public void close() throws JMSException
    {
-      delegate.closing(-1);
-      delegate.close();
+      consumer.closing(-1);
+      consumer.close();
    }
 
    // QueueReceiver implementation ----------------------------------
@@ -103,32 +105,32 @@ public class JBossMessageConsumer implements MessageConsumer, QueueReceiver, Top
 
    public Queue getQueue() throws JMSException
    {
-      return (Queue)JBossDestination.fromCoreDestination(delegate.getDestination());
+      return (Queue)JBossDestination.fromCoreDestination(consumer.getDestination());
    }
 
    // TopicSubscriber implementation --------------------------------
 
    public Topic getTopic() throws JMSException
    {
-      return (Topic)JBossDestination.fromCoreDestination(delegate.getDestination());
+      return (Topic)JBossDestination.fromCoreDestination(consumer.getDestination());
    }
 
 
    public boolean getNoLocal() throws JMSException
    {
-      return delegate.getNoLocal();
+      return consumer.getNoLocal();
    }
 
-   public ConsumerDelegate getDelegate()
+   public Consumer getDelegate()
    {
-       return delegate;
+       return consumer;
    }
 
    // Public --------------------------------------------------------
 
    public String toString()
    {
-      return "JBossMessageConsumer->" + delegate;
+      return "JBossMessageConsumer->" + consumer;
    }
 
    // Package protected ---------------------------------------------

@@ -1,0 +1,214 @@
+/*
+ * JBoss, Home of Professional Open Source
+ *
+ * Distributable under LGPL license.
+ * See terms of license at gnu.org.
+ */
+
+package org.jboss.jms.client.delegate;
+
+import static org.jboss.messaging.core.remoting.Assert.assertValidID;
+
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.io.Serializable;
+
+import javax.jms.JMSException;
+
+import org.jboss.jms.exception.MessagingJMSException;
+import org.jboss.jms.exception.MessagingNetworkFailureException;
+import org.jboss.logging.Logger;
+import org.jboss.messaging.core.remoting.Client;
+import org.jboss.messaging.core.remoting.wireformat.AbstractPacket;
+import org.jboss.messaging.core.remoting.wireformat.JMSExceptionMessage;
+import org.jboss.messaging.util.Streamable;
+import org.jgroups.persistence.CannotConnectException;
+
+/**
+ * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
+ * // TODO find a better name for this class
+ */
+public abstract class CommunicationSupport <T extends CommunicationSupport<?>> implements Streamable, Serializable 
+{
+   private static final Logger log = Logger.getLogger(CommunicationSupport.class);
+
+   private static boolean trace = log.isTraceEnabled();
+
+   // Attributes -----------------------------------------------------------------------------------
+
+   // This is set on the server.
+   protected String id;
+   
+   // TODO move this to Client class
+   protected byte version;
+
+   public CommunicationSupport(String id)
+   {
+      super();
+      this.id = id;
+   }
+
+   public CommunicationSupport()
+   {
+      this("NO_ID_SET");
+   }
+   
+   
+   
+   // Streamable implementation --------------------------------------------------------------------
+
+   public void read(DataInputStream in) throws Exception
+   {
+      id = in.readUTF();
+   }
+
+   public void write(DataOutputStream out) throws Exception
+   {
+      out.writeUTF(id);
+   }
+   
+   // Fields ---------------------------------------------------------------------------------------
+
+   protected abstract Client getClient();
+   
+   public String getID()
+   {
+      return id;
+   }
+
+   public void setId(String id)
+   {
+      this.id = id;
+   }
+   
+   public void setState(Client client, byte version)
+   {
+      //this.client = client;
+      this.version = version;
+   }
+
+   public void synchronizeWith(T nd) throws Exception
+   {
+      this.id = nd.getID();
+      //this.client = nd.getClient();
+   }
+   
+   
+   
+   
+   // Protected Methods-----------------------------------------------------------------------------
+   
+   // TODO: Refactor these methods into ConnectionImpl/Jeff's Client class
+   
+   public byte getVersion()
+   {
+      return version;
+   }
+
+   public void setVersion(byte version)
+   {
+      this.version = version;
+   }
+
+   protected void sendOneWay(AbstractPacket packet) throws JMSException
+   {
+      sendOneWay(getClient(), id, version, packet);
+   }
+   
+   protected void sendOneWay(Client client, AbstractPacket packet) throws JMSException
+   {
+      sendOneWay(client, id, version, packet);
+   }
+   
+
+   protected static void sendOneWay(Client client, String targetID, byte version, AbstractPacket packet) throws JMSException
+   {
+      assert client != null;
+      assertValidID(targetID);
+      assert packet != null;
+
+      packet.setVersion(version);
+      packet.setTargetID(targetID);
+
+      client.sendOneWay(packet);
+   }
+
+   protected AbstractPacket sendBlocking(AbstractPacket request) throws JMSException
+   {
+      return sendBlocking(getClient(), id, version, request);
+   }
+
+   protected AbstractPacket sendBlocking(Client client, AbstractPacket request) throws JMSException
+   {
+      return sendBlocking(client, id, version, request);
+   }
+
+   protected static AbstractPacket sendBlocking(Client client, String targetID, byte version, AbstractPacket request) throws JMSException
+   {
+      assert client != null;
+      assertValidID(targetID);
+      assert request != null;
+
+      request.setVersion(version);
+      request.setTargetID(targetID);
+      try
+      {
+         AbstractPacket response = (AbstractPacket) client.sendBlocking(request);
+         if (response instanceof JMSExceptionMessage)
+         {
+            JMSExceptionMessage message = (JMSExceptionMessage) response;
+            throw message.getException();
+         } else {
+            return response;
+         }
+      } catch (Throwable t)
+      {
+         throw handleThrowable(t);
+      }
+   }
+   
+   protected static JMSException handleThrowable(Throwable t)
+   {
+      // ConnectionFailedException could happen during ConnectionFactory.createConnection.
+      // IOException could happen during an interrupted exception.
+      // CannotConnectionException could happen during a communication error between a connected
+      // remoting client and the server (what means any new invocation).
+
+      if (t instanceof JMSException)
+      {
+         return (JMSException)t;
+      }
+      else if ((t instanceof IOException))
+      {
+         return new MessagingNetworkFailureException((Exception)t);
+      }
+      //This can occur if failure happens when Client.connect() is called
+      //Ideally remoting should have a consistent API
+      else if (t instanceof RuntimeException)
+      {
+         RuntimeException re = (RuntimeException)t;
+
+         Throwable initCause = re.getCause();
+
+         if (initCause != null)
+         {
+            do
+            {
+               if ((initCause instanceof CannotConnectException) ||
+                        (initCause instanceof IOException))
+               {
+                  return new MessagingNetworkFailureException((Exception)initCause);
+               }
+               initCause = initCause.getCause();
+            }
+            while (initCause != null);
+         }
+      }
+
+      return new MessagingJMSException("Failed to invoke", t);
+   }
+
+   
+
+}

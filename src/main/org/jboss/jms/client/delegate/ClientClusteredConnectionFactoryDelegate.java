@@ -32,11 +32,11 @@ import java.util.Iterator;
 
 import javax.jms.JMSException;
 
+import org.jboss.jms.client.api.ClientConnection;
 import org.jboss.jms.client.container.JMSClientVMIdentifier;
 import org.jboss.jms.client.container.ConnectionFailureListener;
 import org.jboss.jms.client.plugin.LoadBalancingPolicy;
 import org.jboss.jms.client.remoting.JMSRemotingConnection;
-import org.jboss.jms.client.state.ConnectionState;
 import org.jboss.jms.client.FailoverCommandCenter;
 import org.jboss.jms.delegate.ConnectionFactoryDelegate;
 import org.jboss.jms.delegate.CreateConnectionResult;
@@ -44,6 +44,7 @@ import org.jboss.jms.delegate.IDBlock;
 import org.jboss.jms.delegate.TopologyResult;
 import org.jboss.jms.exception.MessagingNetworkFailureException;
 import org.jboss.logging.Logger;
+import org.jboss.messaging.core.remoting.Client;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.PacketHandler;
 import org.jboss.messaging.core.remoting.PacketSender;
@@ -70,7 +71,7 @@ import org.jboss.messaging.util.WeakHashSet;
  *
  * $Id$
  */
-public class ClientClusteredConnectionFactoryDelegate extends DelegateSupport
+public class ClientClusteredConnectionFactoryDelegate extends CommunicationSupport
    implements Serializable, ConnectionFactoryDelegate
 {
    // Constants ------------------------------------------------------------------------------------
@@ -109,7 +110,7 @@ public class ClientClusteredConnectionFactoryDelegate extends DelegateSupport
          {
             String serverlocatorURI = delegates[server].getServerLocatorURI();
             
-            remoting = new JMSRemotingConnection(serverlocatorURI, delegates[server].getStrictTck());
+            remoting = new JMSRemotingConnection(serverlocatorURI);
             remoting.start();
             currentDelegate = delegates[server];
             if (trace) log.trace("Adding callback");
@@ -300,7 +301,7 @@ public class ClientClusteredConnectionFactoryDelegate extends DelegateSupport
             CreateConnectionResult res = delegate.
                createConnectionDelegate(username, password, failedNodeIDToServer);
 
-            ClientConnectionDelegate cd = res.getInternalDelegate();
+            ClientConnection cd = res.getInternalDelegate();
 
             if (cd != null)
             {
@@ -308,7 +309,7 @@ public class ClientClusteredConnectionFactoryDelegate extends DelegateSupport
 
                log.trace(this + " got local connection delegate " + cd);
 
-               if (supportsFailover)
+               /*if (supportsFailover)
                {
 	               cd.getState().initializeFailoverCommandCenter();
 
@@ -331,7 +332,7 @@ public class ClientClusteredConnectionFactoryDelegate extends DelegateSupport
 	               cd.getState().setClusteredConnectionFactoryDeleage(this);
 
 	               log.trace("Successfully initialised new connection");
-               }
+               } */
 
                return res;
             }
@@ -510,6 +511,10 @@ public class ClientClusteredConnectionFactoryDelegate extends DelegateSupport
 
    // Protected ------------------------------------------------------------------------------------
 
+   protected Client getClient()
+   {
+      return currentDelegate.getClient();
+   }
    // Private --------------------------------------------------------------------------------------
 
    private void dumpFailoverMap(Map failoverMap)

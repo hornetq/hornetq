@@ -21,8 +21,7 @@
   */
 package org.jboss.jms.tx;
 
-import org.jboss.jms.client.state.SessionState;
-import org.jboss.jms.delegate.ConnectionDelegate;
+import org.jboss.jms.client.api.ClientSession;
 import org.jboss.jms.exception.MessagingXAException;
 import org.jboss.logging.Logger;
 
@@ -62,9 +61,7 @@ public class MessagingXAResource implements XAResource
 
    private ResourceManager rm;
    
-   private SessionState sessionState;
-   
-   private ConnectionDelegate connection;
+   private ClientSession session;
    
    //For testing only
    private boolean preventJoining;
@@ -73,13 +70,11 @@ public class MessagingXAResource implements XAResource
    
    // Constructors ---------------------------------------------------------------------------------
 
-   public MessagingXAResource(ResourceManager rm, SessionState sessionState)
+   public MessagingXAResource(ResourceManager rm, ClientSession session)
    { 
       this.rm = rm;
       
-      this.sessionState = sessionState;
-      
-      this.connection = (ConnectionDelegate)(sessionState.getParent()).getDelegate();
+      this.session = session;
    }
    
    // XAResource implementation --------------------------------------------------------------------
@@ -128,7 +123,7 @@ public class MessagingXAResource implements XAResource
 
       boolean convertTx = false;
       
-      Object currentXid = sessionState.getCurrentTxId();
+      Object currentXid = session.getCurrentTxId();
       
       // Sanity check
       if (currentXid == null)
@@ -136,7 +131,7 @@ public class MessagingXAResource implements XAResource
          throw new MessagingXAException(XAException.XAER_RMFAIL, "Current xid is not set");
       }
       
-      if (flags == TMNOFLAGS && sessionState.getCurrentTxId() instanceof LocalTx)
+      if (flags == TMNOFLAGS && session.getCurrentTxId() instanceof LocalTx)
       {
          convertTx = true;
          
@@ -158,7 +153,7 @@ public class MessagingXAResource implements XAResource
                   // context of a tx, so we convert.
                   // Also for an transacted delivery in a MDB we need to do this as discussed
                   // in fallbackToLocalTx()
-                  setCurrentTransactionId(rm.convertTx((LocalTx)sessionState.getCurrentTxId(), xid));
+                  setCurrentTransactionId(rm.convertTx((LocalTx)session.getCurrentTxId(), xid));
                }
                else
                {                  
@@ -221,7 +216,7 @@ public class MessagingXAResource implements XAResource
          xid = new MessagingXid(xid);
       }
 
-      return rm.prepare(xid, connection);
+      return rm.prepare(xid, session.getConnection());
    }
    
    public void commit(Xid xid, boolean onePhase) throws XAException
@@ -235,7 +230,7 @@ public class MessagingXAResource implements XAResource
          xid = new MessagingXid(xid);
       }
 
-      rm.commit(xid, onePhase, connection);
+      rm.commit(xid, onePhase, session.getConnection());
    }
    
    public void rollback(Xid xid) throws XAException
@@ -249,7 +244,7 @@ public class MessagingXAResource implements XAResource
          xid = new MessagingXid(xid);
       }
 
-      rm.rollback(xid, connection);
+      rm.rollback(xid, session.getConnection());
    }
    
    public void forget(Xid xid) throws XAException
@@ -261,7 +256,7 @@ public class MessagingXAResource implements XAResource
    {
       if (trace) { log.trace(this + " recovering, flags: " + flags); }
 
-      Xid[] xids = rm.recover(flags, connection);
+      Xid[] xids = rm.recover(flags, session.getConnection());
       
       if (trace) { log.trace("Recovered txs: " + xids); }
       
@@ -272,7 +267,7 @@ public class MessagingXAResource implements XAResource
 
    public String toString()
    {
-      return "MessagingXAResource[" + sessionState.getDelegate().getID()+ "]";
+      return "MessagingXAResource[" + session.getID() + "]";
    }
    
    /*
@@ -294,9 +289,9 @@ public class MessagingXAResource implements XAResource
    
    private void setCurrentTransactionId(Object xid)
    {
-      if (trace) { log.trace(this + " setting current xid to " + xid + ",  previous " + sessionState.getCurrentTxId()); }
+      if (trace) { log.trace(this + " setting current xid to " + xid + ",  previous " + session.getCurrentTxId()); }
 
-      sessionState.setCurrentTxId(xid);
+      session.setCurrentTxId(xid);
    }
    
    private void unsetCurrentTransactionId(Object xid)
@@ -306,11 +301,11 @@ public class MessagingXAResource implements XAResource
          throw new IllegalArgumentException("xid must be not null");
       }
 
-      if (trace) { log.trace(this + " unsetting current xid " + xid + ",  previous " + sessionState.getCurrentTxId()); }
+      if (trace) { log.trace(this + " unsetting current xid " + xid + ",  previous " + session.getCurrentTxId()); }
 
       // Don't unset the xid if it has previously been suspended.  The session could have been
       // recycled
-      if (xid.equals(sessionState.getCurrentTxId()))
+      if (xid.equals(session.getCurrentTxId()))
       {
          // When a transaction association ends we fall back to acting as if in a local tx
          // This is because for MDBs, the message is received before the global tx
@@ -321,7 +316,7 @@ public class MessagingXAResource implements XAResource
          // So in other words - when the session is not enlisted in a global tx
          // it will always have a local xid set
          
-         sessionState.setCurrentTxId(rm.createLocalTx());
+         session.setCurrentTxId(rm.createLocalTx());
       }
    }
    

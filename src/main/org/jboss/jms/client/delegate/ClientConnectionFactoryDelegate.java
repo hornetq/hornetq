@@ -29,15 +29,15 @@ import java.io.Serializable;
 
 import javax.jms.JMSException;
 
+import org.jboss.jms.client.api.ClientConnection;
 import org.jboss.jms.client.container.JMSClientVMIdentifier;
 import org.jboss.jms.client.remoting.ConsolidatedRemotingConnectionListener;
 import org.jboss.jms.client.remoting.JMSRemotingConnection;
-import org.jboss.jms.client.state.ConnectionState;
-import org.jboss.jms.delegate.ConnectionDelegate;
 import org.jboss.jms.delegate.ConnectionFactoryDelegate;
 import org.jboss.jms.delegate.CreateConnectionResult;
 import org.jboss.jms.delegate.TopologyResult;
 import org.jboss.jms.exception.MessagingNetworkFailureException;
+import org.jboss.jms.tx.ResourceManagerFactory;
 import org.jboss.messaging.core.remoting.Client;
 import org.jboss.messaging.core.remoting.NIOConnector;
 import org.jboss.messaging.core.remoting.ServerLocator;
@@ -51,6 +51,7 @@ import org.jboss.messaging.util.Version;
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
+ * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  *
  * @version <tt>$Revision$</tt>
@@ -58,7 +59,7 @@ import org.jboss.messaging.util.Version;
  * $Id$
  */
 public class ClientConnectionFactoryDelegate
-   extends DelegateSupport implements ConnectionFactoryDelegate, Serializable
+   extends CommunicationSupport<ClientConnectionFactoryDelegate> implements ConnectionFactoryDelegate, Serializable
 {
    // Constants ------------------------------------------------------------------------------------
 
@@ -87,7 +88,7 @@ public class ClientConnectionFactoryDelegate
     * The client itself has a version, but we also support other versions of servers lower if the
     * connection version is lower (backwards compatibility)
     */
-   public static Version getVersionToUse(Version connectionVersion)
+   private static Version getVersionToUse(Version connectionVersion)
    {
       Version clientVersion = Version.instance();
 
@@ -122,37 +123,13 @@ public class ClientConnectionFactoryDelegate
    }
    
    public ClientConnectionFactoryDelegate()
-   {      
-   }
-
-   private ConnectionState createConnectionState(ClientConnectionDelegate connectionDelegate, ConnectionDelegate proxyDelegate) throws JMSException
    {
-      int serverID = connectionDelegate.getServerID();
-      Version versionToUse = connectionDelegate.getVersionToUse();
-      JMSRemotingConnection remotingConnection = connectionDelegate.getRemotingConnection();
-
-      // install the consolidated remoting connection listener; it will be de-installed on
-      // connection closing by ConnectionAspect
-
-      ConsolidatedRemotingConnectionListener listener =
-         new ConsolidatedRemotingConnectionListener();
-
-      if (remotingConnection!=null)remotingConnection.addConnectionListener(listener);
-
-      if (versionToUse == null)
-      {
-         throw new IllegalStateException("Connection version is null");
-      }
-
-      ConnectionState connectionState =
-         new ConnectionState(serverID, connectionDelegate, proxyDelegate, 
-                             remotingConnection, versionToUse);
-
-      listener.setConnectionState(connectionState);
-
-      return connectionState;
    }
-
+   
+   protected Client getClient()
+   {
+      return null;
+   }
 
    public CreateConnectionResult createConnectionDelegate(String username,
                                                           String password,
@@ -173,23 +150,30 @@ public class ClientConnectionFactoryDelegate
       
       byte v = version.getProviderIncrementingVersion();
                        
-      JMSRemotingConnection remotingConnection = null;
-      
       CreateConnectionResult res;
       
+      JMSRemotingConnection remotingConnection = null;
       try
       {
-         remotingConnection = new JMSRemotingConnection(serverLocatorURI, strictTck);
+         remotingConnection = new JMSRemotingConnection(serverLocatorURI);
        
          remotingConnection.start();
-         client = remotingConnection.getRemotingClient();
+         Client client = remotingConnection.getRemotingClient(); 
          String sessionID = client.getSessionID();
          
          CreateConnectionRequest request = new CreateConnectionRequest(v, sessionID, JMSClientVMIdentifier.instance, failedNodeID, username, password);
-         CreateConnectionResponse response = (CreateConnectionResponse) sendBlocking(request);
+         CreateConnectionResponse response = (CreateConnectionResponse) sendBlocking(client, request);
          ClientConnectionDelegate connectionDelegate = new ClientConnectionDelegate(response.getConnectionID(), response.getServerID());
+         connectionDelegate.setStrictTck(strictTck);
 
          connectionDelegate.setVersionToUse(version);
+         connectionDelegate.setResourceManager(ResourceManagerFactory.instance.checkOutResourceManager(connectionDelegate.getServerID()));
+
+         ConsolidatedRemotingConnectionListener listener =
+            new ConsolidatedRemotingConnectionListener(connectionDelegate);
+
+         if (remotingConnection!=null)remotingConnection.addConnectionListener(listener);
+         
          res = new CreateConnectionResult(connectionDelegate);
       } catch (Throwable t)
       {
@@ -206,7 +190,7 @@ public class ClientConnectionFactoryDelegate
          throw handleThrowable(t);
       }
          
-      ClientConnectionDelegate connectionDelegate = res.getInternalDelegate();
+      ClientConnection connectionDelegate = res.getInternalDelegate();
       
       if (connectionDelegate != null)
       {
@@ -225,9 +209,6 @@ public class ClientConnectionFactoryDelegate
          }
       }
 
-
-      connectionDelegate.setState(createConnectionState(connectionDelegate, res.getProxiedDelegate()));
-      
       return res;
    }
    
@@ -263,6 +244,11 @@ public class ClientConnectionFactoryDelegate
    {
       return serverVersion;
    }
+   
+   public String getName()
+   {
+      return uniqueName;
+   }
 
 
    public boolean getStrictTck()
@@ -270,7 +256,7 @@ public class ClientConnectionFactoryDelegate
        return strictTck;
    }
 
-    public void synchronizeWith(DelegateSupport newDelegate) throws Exception
+    public void synchronizeWith(ClientConnectionFactoryDelegate newDelegate) throws Exception
    {
       super.synchronizeWith(newDelegate);
    }
@@ -307,6 +293,8 @@ public class ClientConnectionFactoryDelegate
    {      
       super.read(in);
       
+      uniqueName = in.readUTF();
+      
       serverLocatorURI = in.readUTF();
       
       serverVersion = new Version();
@@ -323,6 +311,8 @@ public class ClientConnectionFactoryDelegate
    public void write(DataOutputStream out) throws Exception
    {
       super.write(out);
+      
+      out.writeUTF(uniqueName);
       
       out.writeUTF(serverLocatorURI);
       

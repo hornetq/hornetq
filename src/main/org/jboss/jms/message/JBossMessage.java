@@ -38,7 +38,6 @@ import javax.jms.MessageFormatException;
 import javax.jms.MessageNotReadableException;
 import javax.jms.MessageNotWriteableException;
 
-import org.jboss.jms.delegate.SessionDelegate;
 import org.jboss.jms.exception.MessagingJMSException;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.impl.MessageImpl;
@@ -155,7 +154,7 @@ public class JBossMessage implements javax.jms.Message
    protected org.jboss.messaging.core.Message message;
    
    //The SessionDelegate - we need this when acknowledging the message directly
-   private SessionDelegate delegate;
+   private org.jboss.jms.client.api.ClientSession delegate;
    
    //From a connection consumer?   
    private boolean cc;
@@ -807,13 +806,13 @@ public class JBossMessage implements javax.jms.Message
       return JBossMessage.TYPE;
    }   
    
-   public void setSessionDelegate(SessionDelegate sd, boolean isConnectionConsumer)
+   public void setSessionDelegate(org.jboss.jms.client.api.ClientSession sd, boolean isConnectionConsumer)
    {
       this.delegate = sd;
       this.cc = isConnectionConsumer;
    }
    
-   public SessionDelegate getSessionDelegate()
+   public org.jboss.jms.client.api.ClientSession getSessionDelegate()
    {
       return delegate;
    }

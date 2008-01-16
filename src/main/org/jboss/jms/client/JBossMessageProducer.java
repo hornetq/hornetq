@@ -33,7 +33,6 @@ import javax.jms.QueueSender;
 import javax.jms.Topic;
 import javax.jms.TopicPublisher;
 
-import org.jboss.jms.delegate.ProducerDelegate;
 import org.jboss.jms.destination.JBossDestination;
 import org.jboss.logging.Logger;
 
@@ -56,13 +55,13 @@ public class JBossMessageProducer implements MessageProducer, QueueSender, Topic
    
    // Attributes ----------------------------------------------------
    
-   protected ProducerDelegate delegate;
+   protected org.jboss.jms.client.api.ClientProducer producer;
 
    // Constructors --------------------------------------------------
    
-   public JBossMessageProducer(ProducerDelegate delegate)
+   public JBossMessageProducer(org.jboss.jms.client.api.ClientProducer producer)
    {
-      this.delegate = delegate;     
+      this.producer = producer;     
    }
    
    // MessageProducer implementation --------------------------------
@@ -71,63 +70,63 @@ public class JBossMessageProducer implements MessageProducer, QueueSender, Topic
    {
       log.warn("JBoss Messaging does not support disabling message ID generation");
 
-      delegate.setDisableMessageID(value);
+      producer.setDisableMessageID(value);
    }
    
    public boolean getDisableMessageID() throws JMSException
    {
-      return delegate.getDisableMessageID();
+      return producer.isDisableMessageID();
    }
    
    public void setDisableMessageTimestamp(boolean value) throws JMSException
    {
-      delegate.setDisableMessageTimestamp(value);
+      producer.setDisableMessageTimestamp(value);
    }
    
    public boolean getDisableMessageTimestamp() throws JMSException
    {
-      return delegate.getDisableMessageTimestamp();
+      return producer.isDisableMessageTimestamp();
    }
    
    public void setDeliveryMode(int deliveryMode) throws JMSException
    {
-      delegate.setDeliveryMode(deliveryMode);
+      producer.setDeliveryMode(deliveryMode);
    }
    
    public int getDeliveryMode() throws JMSException
    {
-      return delegate.getDeliveryMode();
+      return producer.getDeliveryMode();
    }
    
    public void setPriority(int defaultPriority) throws JMSException
    {
-      delegate.setPriority(defaultPriority);
+      producer.setPriority(defaultPriority);
    }
    
    public int getPriority() throws JMSException
    {
-      return delegate.getPriority();
+      return producer.getPriority();
    }
    
    public void setTimeToLive(long timeToLive) throws JMSException
    {
-      delegate.setTimeToLive(timeToLive);
+      producer.setTimeToLive(timeToLive);
    }
    
    public long getTimeToLive() throws JMSException
    {
-      return delegate.getTimeToLive();
+      return producer.getTimeToLive();
    }
    
    public Destination getDestination() throws JMSException
    {
-      return delegate.getDestination();
+      return producer.getDestination();
    }
    
    public void close() throws JMSException
    {
-      delegate.closing(-1);
-      delegate.close();
+      producer.closing(-1);
+      producer.close();
    }
    
    public void send(Message message) throws JMSException
@@ -161,7 +160,7 @@ public class JBossMessageProducer implements MessageProducer, QueueSender, Topic
          throw new InvalidDestinationException("Not a JBossDestination:" + destination);
       }
 
-      delegate.send((JBossDestination)destination, m, deliveryMode, priority, timeToLive);
+      producer.send((JBossDestination)destination, m, deliveryMode, priority, timeToLive);
    }
 
 
@@ -214,14 +213,14 @@ public class JBossMessageProducer implements MessageProducer, QueueSender, Topic
    
    // Public --------------------------------------------------------
 
-   public ProducerDelegate getDelegate()
+   public org.jboss.jms.client.api.ClientProducer getDelegate()
    {
-      return delegate;
+      return producer;
    }
 
    public String toString()
    {
-      return "JBossMessageProducer->" + delegate;
+      return "JBossMessageProducer->" + producer;
    }
 
    // Package protected ---------------------------------------------

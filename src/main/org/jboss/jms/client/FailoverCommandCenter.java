@@ -6,9 +6,9 @@
  */
 package org.jboss.jms.client;
 
+import org.jboss.jms.client.api.ClientConnection;
 import org.jboss.jms.client.delegate.ClientConnectionDelegate;
 import org.jboss.jms.client.remoting.JMSRemotingConnection;
-import org.jboss.jms.client.state.ConnectionState;
 import org.jboss.jms.delegate.ConnectionFactoryDelegate;
 import org.jboss.jms.delegate.CreateConnectionResult;
 import org.jboss.logging.Logger;
@@ -37,7 +37,7 @@ public class FailoverCommandCenter
 
    // Attributes-----------------------------------------------------------------------------------
 
-   private ConnectionState state;
+   private ClientConnection connection;
 
    private FailoverValve2 valve;
 
@@ -45,9 +45,9 @@ public class FailoverCommandCenter
    
    // Constructors ---------------------------------------------------------------------------------
 
-   public FailoverCommandCenter(ConnectionState state)
+   public FailoverCommandCenter(ClientConnection conn)
    {
-      this.state = state;
+      this.connection = conn;;
       failoverListeners = new ArrayList();
       
       valve = new FailoverValve2();
@@ -55,9 +55,9 @@ public class FailoverCommandCenter
 
    // Public ---------------------------------------------------------------------------------------
    
-   public void setState(ConnectionState state)
+   public void setState(ClientConnection conn)
    {
-      this.state = state;
+      this.connection = conn;
    }
    
    /**
@@ -71,7 +71,8 @@ public class FailoverCommandCenter
                                   JMSRemotingConnection remotingConnection)
       throws Exception
    {
-      log.debug("failure detected by " + source, reason);
+      return true;
+      /*log.debug("failure detected by " + source, reason);
 
       // generate a FAILURE_DETECTED event
       broadcastFailoverEvent(new FailoverEvent(FailoverEvent.FAILURE_DETECTED, source));
@@ -120,7 +121,7 @@ public class FailoverCommandCenter
          // to insure the client-side stack is in a deterministic state
          broadcastFailoverEvent(new FailoverEvent(FailoverEvent.FAILOVER_STARTED, this));        
          
-         int failedNodeID = state.getServerID();
+         //int failedNodeID = connection.getServerID();
                   
          ConnectionFactoryDelegate clusteredDelegate = state.getClusteredConnectionFactoryDelegate();
                            
@@ -204,7 +205,7 @@ public class FailoverCommandCenter
             
             broadcastFailoverEvent(new FailoverEvent(FailoverEvent.FAILOVER_FAILED, this));
          }
-      }
+      } */
    }
 
    public void registerFailoverListener(FailoverListener listener)
@@ -230,19 +231,19 @@ public class FailoverCommandCenter
 
    public JMSRemotingConnection getRemotingConnection()
    {
-      return state.getRemotingConnection();
+      return connection.getRemotingConnection();
    }
 
    public String toString()
    {
-      return "FailoverCommandCenter[" + state + "]";
+      return "FailoverCommandCenter[" + connection + "]";
    }
 
    // Package protected ----------------------------------------------------------------------------
 
-   ConnectionState getConnectionState()
+   ClientConnection getConnection()
    {
-      return state;
+      return connection;
    }
 
    // Protected ------------------------------------------------------------------------------------

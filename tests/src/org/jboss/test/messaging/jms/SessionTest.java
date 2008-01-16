@@ -21,10 +21,7 @@
   */
 package org.jboss.test.messaging.jms;
 
-import org.jboss.jms.client.JBossSession;
 import org.jboss.jms.client.delegate.ClientSessionDelegate;
-import org.jboss.jms.client.state.ConnectionState;
-import org.jboss.jms.client.state.SessionState;
 import org.jboss.jms.tx.ResourceManagerFactory;
 import org.jboss.test.messaging.JBMServerTestCase;
 
@@ -68,24 +65,24 @@ public class SessionTest extends JBMServerTestCase
       
       ClientSessionDelegate del = getDelegate(sess);
       
-      SessionState state = (SessionState)del.getState();
-      ConnectionState cState = (ConnectionState)state.getParent();
+      //SessionState state = (SessionState)del.getState();
+      //ConnectionState cState = (ConnectionState)state.getParent();
       
-      Object xid = state.getCurrentTxId();
+      Object xid = del.getCurrentTxId();
       assertNotNull(xid);
-      assertNotNull(cState.getResourceManager().getTx(xid));
+      assertNotNull(del.getConnection().getResourceManager().getTx(xid));
       
       //Now close the session
       sess.close();
       
       //Session should be removed from resource manager
-      xid = state.getCurrentTxId();
+      xid = del.getCurrentTxId();
       assertNotNull(xid);
-      assertNull(cState.getResourceManager().getTx(xid));
+      assertNull(del.getConnection().getResourceManager().getTx(xid));
       
       conn.close();
       
-      assertEquals(0, cState.getResourceManager().size());
+      assertEquals(0, del.getConnection().getResourceManager().size());
    }
 
    public void testCreateProducer() throws Exception

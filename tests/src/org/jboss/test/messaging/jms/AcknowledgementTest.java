@@ -37,7 +37,7 @@ import javax.jms.TopicSubscriber;
 
 import EDU.oswego.cs.dl.util.concurrent.Latch;
 import org.jboss.jms.client.JBossSession;
-import org.jboss.jms.delegate.SessionDelegate;
+
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -689,7 +689,7 @@ public class AcknowledgementTest extends JMSTestCase
 	      
 	      JBossSession sess = (JBossSession)conn.createSession(false, Session.DUPS_OK_ACKNOWLEDGE);
 	      
-	      SessionDelegate del = getDelegate(sess);
+	      org.jboss.jms.client.api.ClientSession del = getDelegate(sess);
 	      
 	      assertEquals(1000, del.getDupsOKBatchSize());
       }

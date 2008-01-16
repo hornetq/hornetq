@@ -49,6 +49,8 @@ import javax.jms.IllegalStateException;
 import javax.jms.InvalidDestinationException;
 import javax.jms.JMSException;
 
+import org.jboss.jms.client.api.ClientBrowser;
+import org.jboss.jms.client.api.Consumer;
 import org.jboss.jms.client.delegate.ClientBrowserDelegate;
 import org.jboss.jms.client.delegate.ClientConsumerDelegate;
 import org.jboss.jms.delegate.Ack;
@@ -234,7 +236,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
       }
    }
 
-   public ConsumerDelegate createConsumerDelegate(Destination destination,
+   public Consumer createConsumerDelegate(Destination destination,
                                                   String selector,
                                                   boolean noLocal,
                                                   String subscriptionName,
@@ -253,7 +255,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
       }
    }
 
-	public BrowserDelegate createBrowserDelegate(Destination destination,
+	public ClientBrowser createBrowserDelegate(Destination destination,
                                                 String selector)
       throws JMSException
 	{
@@ -755,8 +757,6 @@ public class ServerSessionEndpoint implements SessionEndpoint
          throw new IllegalStateException("Session is already closed");
       }
       
-      log.info("** session close");
-      
       if (trace) log.trace(this + " close()");
             
       //We clone to avoid deadlock http://jira.jboss.org/jira/browse/JBMESSAGING-836
@@ -1207,7 +1207,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
       return false;      
    }
       
-   private ConsumerDelegate createConsumerDelegateInternal(Destination destination,
+   private Consumer createConsumerDelegateInternal(Destination destination,
                                                            String selectorString,
                                                            boolean noLocal,
                                                            String subscriptionName)
@@ -1440,7 +1440,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
       return stub;
    }   
 
-   private BrowserDelegate createBrowserDelegateInternal(Destination destination,
+   private ClientBrowser createBrowserDelegateInternal(Destination destination,
                                                          String selector) throws Exception
    {
       if (closed)

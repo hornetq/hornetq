@@ -301,7 +301,7 @@ public class CTSMiscellaneousTest extends JBMServerTestCase
 			for (int i = 0; i < numMessages; i++)
 			{
 				p.send(s.createMessage());
-			}			
+			}	
 			
 			this.assertRemainingMessages(numMessages);					
 		}

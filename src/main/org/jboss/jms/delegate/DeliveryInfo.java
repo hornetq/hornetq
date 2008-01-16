@@ -21,6 +21,7 @@
   */
 package org.jboss.jms.delegate;
 
+import org.jboss.jms.client.api.ClientSession;
 import org.jboss.jms.message.JBossMessage;
 
 /**
@@ -56,14 +57,14 @@ public class DeliveryInfo implements Ack
    //about the deliveries on the server side
    //Therefore if this delivery was done using a connection consumer then this attribute is set
    //to the connection consumer's session, otherwise it will be null
-   private SessionDelegate connectionConsumerSession;
+   private ClientSession connectionConsumerSession;
    
    // Static --------------------------------------------------------
    
    // Constructors --------------------------------------------------
    
    public DeliveryInfo(JBossMessage msg, String consumerId, String queueName,
-                       SessionDelegate connectionConsumerSession, boolean shouldAck)
+                       ClientSession connectionConsumerSession, boolean shouldAck)
    {      
       this.msg = msg;
       
@@ -93,7 +94,7 @@ public class DeliveryInfo implements Ack
       return msg;
    }
    
-   public SessionDelegate getConnectionConsumerSession()
+   public ClientSession getConnectionConsumerSession()
    {
       return connectionConsumerSession;
    }

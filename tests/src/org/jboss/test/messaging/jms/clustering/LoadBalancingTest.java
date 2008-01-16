@@ -6,12 +6,9 @@
  */
 package org.jboss.test.messaging.jms.clustering;
 
-import org.jboss.jms.client.JBossConnection;
 import org.jboss.jms.client.JBossConnectionFactory;
 import org.jboss.jms.client.delegate.ClientClusteredConnectionFactoryDelegate;
-import org.jboss.jms.client.delegate.DelegateSupport;
 import org.jboss.jms.client.plugin.RoundRobinLoadBalancingPolicy;
-import org.jboss.jms.client.state.ConnectionState;
 import org.jboss.jms.tx.ResourceManagerFactory;
 
 import javax.jms.Connection;
@@ -142,11 +139,6 @@ public class LoadBalancingTest extends ClusteringTestBase
    // Package protected ----------------------------------------------------------------------------
 
    // Protected ------------------------------------------------------------------------------------
-
-   protected ConnectionState getConnectionState(Connection conn)
-   {
-      return getDelegate(conn).getState();
-   }
 
    protected void setUp() throws Exception
    {

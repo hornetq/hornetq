@@ -43,11 +43,7 @@ import javax.jms.XASession;
 import javax.jms.XATopicConnection;
 import javax.jms.XATopicSession;
 
-import org.jboss.jms.client.delegate.ClientConnectionDelegate;
-import org.jboss.jms.client.state.ConnectionState;
-import org.jboss.jms.delegate.ConnectionDelegate;
-import org.jboss.jms.delegate.SessionDelegate;
-import org.jboss.messaging.util.ProxyFactory;
+import org.jboss.jms.client.api.ClientConnection;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
@@ -72,14 +68,14 @@ public class JBossConnection implements
 
    // Attributes -----------------------------------------------------------------------------------
 
-   protected ConnectionDelegate delegate;
+   protected ClientConnection connection;
    private int connectionType;
 
    // Constructors ---------------------------------------------------------------------------------
 
-   public JBossConnection(ConnectionDelegate delegate, int connectionType)
+   public JBossConnection(ClientConnection delegate, int connectionType)
    {
-      this.delegate = delegate;
+      this.connection = delegate;
       this.connectionType = connectionType;
    }
 
@@ -92,43 +88,43 @@ public class JBossConnection implements
 
    public String getClientID() throws JMSException
    {
-      return delegate.getClientID();
+      return connection.getClientID();
    }
 
    public void setClientID(String clientID) throws JMSException
    {
-      delegate.setClientID(clientID);
+      connection.setClientID(clientID);
    }
 
    public ConnectionMetaData getMetaData() throws JMSException
    {
-      return delegate.getConnectionMetaData();
+      return connection.getConnectionMetaData();
    }
 
    public ExceptionListener getExceptionListener() throws JMSException
    {
-      return delegate.getExceptionListener();
+      return connection.getExceptionListener();
    }
 
    public void setExceptionListener(ExceptionListener listener) throws JMSException
    {
-      delegate.setExceptionListener(listener);
+      connection.setExceptionListener(listener);
    }
 
    public void start() throws JMSException
    {
-      delegate.start();
+      connection.start();
    }
 
    public void stop() throws JMSException
    {
-      delegate.stop();
+      connection.stop();
    }
 
    public void close() throws JMSException
    {
-      delegate.closing(-1);
-      delegate.close();
+      connection.closing(-1);
+      connection.close();
    }
 
    public ConnectionConsumer createConnectionConsumer(Destination destination,
@@ -136,7 +132,7 @@ public class JBossConnection implements
                                                       ServerSessionPool sessionPool,
                                                       int maxMessages) throws JMSException
    {
-      return delegate.
+      return connection.
          createConnectionConsumer(destination, null, messageSelector, sessionPool, maxMessages);
    }
 
@@ -152,7 +148,7 @@ public class JBossConnection implements
          String msg = "Cannot create a durable connection consumer on a QueueConnection";
          throw new javax.jms.IllegalStateException(msg);
       }
-      return delegate.createConnectionConsumer(topic, subscriptionName, messageSelector,
+      return connection.createConnectionConsumer(topic, subscriptionName, messageSelector,
                                                sessionPool, maxMessages);
    }
 
@@ -169,7 +165,7 @@ public class JBossConnection implements
                                                       ServerSessionPool sessionPool,
                                                       int maxMessages) throws JMSException
     {
-      return delegate.
+      return connection.
          createConnectionConsumer(queue, null, messageSelector, sessionPool, maxMessages);
     }
 
@@ -186,7 +182,7 @@ public class JBossConnection implements
                                                       ServerSessionPool sessionPool,
                                                       int maxMessages) throws JMSException
    {
-      return delegate.
+      return connection.
          createConnectionConsumer(topic, null, messageSelector, sessionPool, maxMessages);
    }
 
@@ -220,14 +216,12 @@ public class JBossConnection implements
 
    public String getRemotingClientSessionID()
    {
-      ConnectionState state = (ConnectionState)((ClientConnectionDelegate)delegate).getState();
-      
-      return state.getRemotingConnection().getRemotingClient().getSessionID();
+      return connection.getRemotingConnection().getRemotingClient().getSessionID();
    }
 
-   public ConnectionDelegate getDelegate()
+   public org.jboss.jms.client.api.ClientConnection getDelegate()
    {
-      return delegate;
+      return connection;
    }
 
    /**
@@ -235,22 +229,23 @@ public class JBossConnection implements
     */
    public int getServerID()
    {
-      return ((ConnectionState)(ProxyFactory.getDelegate(delegate)).getState()).getServerID();
+      
+      return connection.getServerID(); 
    }
 
-   public void registerFailoverListener(FailoverListener listener)
+   /*public void registerFailoverListener(FailoverListener listener)
    {
-      delegate.registerFailoverListener(listener);
+      connection.registerFailoverListener(listener);
    }
 
    public synchronized boolean unregisterFailoverListener(FailoverListener listener)
    {
       return delegate.unregisterFailoverListener(listener);
-   }
+   } */
 
    public String toString()
    {
-      return "JBossConnection->" + delegate;
+      return "JBossConnection->" + connection;
    }
 
    // Package protected ----------------------------------------------------------------------------
@@ -265,9 +260,9 @@ public class JBossConnection implements
          acknowledgeMode = Session.SESSION_TRANSACTED;
       }
 
-      SessionDelegate sessionDelegate =
-         delegate.createSessionDelegate(transacted, acknowledgeMode, isXA);
-      return new JBossSession(sessionDelegate, type);
+      org.jboss.jms.client.api.ClientSession session =
+         connection.createSessionDelegate(transacted, acknowledgeMode, isXA);
+      return new JBossSession(session, type);
    }
 
    // Private --------------------------------------------------------------------------------------
