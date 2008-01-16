@@ -55,10 +55,10 @@ import org.jboss.messaging.core.PostOffice;
 import org.jboss.messaging.core.Queue;
 import org.jboss.messaging.core.impl.ConditionImpl;
 import org.jboss.messaging.core.impl.QueueFactoryImpl;
+import org.jboss.messaging.core.impl.memory.SimpleMemoryManager;
 import org.jboss.messaging.core.impl.messagecounter.MessageCounterManager;
 import org.jboss.messaging.core.impl.postoffice.PostOfficeImpl;
 import org.jboss.messaging.core.remoting.impl.mina.MinaService;
-import org.jboss.messaging.newcore.impl.memory.SimpleMemoryManager;
 import org.jboss.messaging.util.ExceptionUtil;
 import org.jboss.messaging.util.Version;
 
