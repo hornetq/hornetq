@@ -807,8 +807,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
                      request.isXA());
 
                response = new CreateSessionResponse(sessionDelegate.getID(),
-                     sessionDelegate.getDupsOKBatchSize(), sessionDelegate
-                           .isStrictTck());
+                     sessionDelegate.getDupsOKBatchSize());
             } else if (type == MSG_STARTCONNECTION)
             {
                start();

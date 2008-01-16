@@ -37,14 +37,12 @@ public class CreateSessionResponseCodec extends
    {
       String sessionID = response.getSessionID();
       int dupsOKBatchSize = response.getDupsOKBatchSize();
-      boolean strictTCK = response.isStrictTCK();
 
-      int bodyLength = sizeof(sessionID) + INT_LENGTH + 1;
+      int bodyLength = sizeof(sessionID) + INT_LENGTH;
 
       out.putInt(bodyLength);
       out.putNullableString(sessionID);
       out.putInt(dupsOKBatchSize);
-      out.putBoolean(strictTCK);
    }
 
    @Override
@@ -59,9 +57,8 @@ public class CreateSessionResponseCodec extends
 
       String sessionID = in.getNullableString();
       int dupsOKBatchSize = in.getInt();
-      boolean strictTCK = in.getBoolean();
 
-      return new CreateSessionResponse(sessionID, dupsOKBatchSize, strictTCK);
+      return new CreateSessionResponse(sessionID, dupsOKBatchSize);
    }
 
    // Package protected ---------------------------------------------

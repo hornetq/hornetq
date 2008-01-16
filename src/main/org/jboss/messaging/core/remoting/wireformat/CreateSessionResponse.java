@@ -24,14 +24,11 @@ public class CreateSessionResponse extends AbstractPacket
 
    private final int dupsOKBatchSize;
 
-   private final boolean strictTCK;
-
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public CreateSessionResponse(String sessionID, int dupsOKBatchSize,
-         boolean strictTCK)
+   public CreateSessionResponse(String sessionID, int dupsOKBatchSize)
    {
       super(PacketType.RESP_CREATESESSION);
 
@@ -39,7 +36,6 @@ public class CreateSessionResponse extends AbstractPacket
 
       this.sessionID = sessionID;
       this.dupsOKBatchSize = dupsOKBatchSize;
-      this.strictTCK = strictTCK;
    }
 
    // Public --------------------------------------------------------
@@ -54,17 +50,11 @@ public class CreateSessionResponse extends AbstractPacket
       return dupsOKBatchSize;
    }
 
-   public boolean isStrictTCK()
-   {
-      return strictTCK;
-   }
-
    @Override
    public String toString()
    {
       return getParentString() + ", sessionID=" + sessionID
-            + ", dupsOKBatchSize=" + dupsOKBatchSize + ", strictTCK="
-            + strictTCK + "]";
+            + ", dupsOKBatchSize=" + dupsOKBatchSize + "]";
    }
 
    // Package protected ---------------------------------------------

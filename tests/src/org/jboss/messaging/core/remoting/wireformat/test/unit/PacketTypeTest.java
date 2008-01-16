@@ -574,13 +574,13 @@ public class PacketTypeTest extends TestCase
    public void testCreateSessionResponse() throws Exception
    {
       CreateSessionResponse response = new CreateSessionResponse(
-            randomString(), 23, false);
+            randomString(), 23);
       addVersion(response);
       
       AbstractPacketCodec codec = new CreateSessionResponseCodec();
       SimpleRemotingBuffer buffer = encode(response, codec);
       checkHeader(buffer, response);
-      checkBody(buffer, response.getSessionID(), response.getDupsOKBatchSize(), response.isStrictTCK());
+      checkBody(buffer, response.getSessionID(), response.getDupsOKBatchSize());
       buffer.rewind();
 
       AbstractPacket decodedPacket = codec.decode(buffer);
@@ -591,7 +591,6 @@ public class PacketTypeTest extends TestCase
       assertEquals(response.getSessionID(), decodedResponse.getSessionID());
       assertEquals(response.getDupsOKBatchSize(), decodedResponse
             .getDupsOKBatchSize());
-      assertEquals(response.isStrictTCK(), decodedResponse.isStrictTCK());
    }
 
    public void testSendMessage() throws Exception
