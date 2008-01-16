@@ -283,7 +283,7 @@ public class ServerBrowserEndpoint implements BrowserEndpoint
 
       public String getID()
       {
-         return id;
+         return ServerBrowserEndpoint.this.id;
       }
       
       public void handle(AbstractPacket packet, PacketSender sender)

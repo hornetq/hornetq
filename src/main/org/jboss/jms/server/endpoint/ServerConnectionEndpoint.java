@@ -580,9 +580,9 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
       return list;
    }
 
-   public PacketHandler newHandler(String id)
+   public PacketHandler newHandler()
    {
-      return new ConnectionPacketHandler(id);
+      return new ConnectionPacketHandler();
    }
 
    public String toString()
@@ -777,19 +777,13 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
 
    private class ConnectionPacketHandler implements PacketHandler
    {
-
-      private final String id;
-
-      public ConnectionPacketHandler(String id)
+      public ConnectionPacketHandler()
       {
-         assertValidID(id);
-
-         this.id = id;
       }
 
       public String getID()
       {
-         return id;
+         return ServerConnectionEndpoint.this.id;
       }
 
       public void handle(AbstractPacket packet, PacketSender sender)

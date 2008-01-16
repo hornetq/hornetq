@@ -215,7 +215,7 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
 
       final String connectionID = endpoint.getConnectionID();
 
-      messagingServer.getMinaService().getDispatcher().register(endpoint.newHandler(connectionID));
+      messagingServer.getMinaService().getDispatcher().register(endpoint.newHandler());
 
       log.trace("created and registered " + endpoint);
 
