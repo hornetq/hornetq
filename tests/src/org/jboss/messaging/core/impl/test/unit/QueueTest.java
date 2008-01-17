@@ -840,106 +840,6 @@ public class QueueTest extends UnitTestCase
       assertEquals(2 * maxSize, queue.getMaxSize());      
    }
    
-   /* Queues don't have filters internally - this is evaulated by the post office
-   public void testQueueWithFilter()
-   {
-      Filter filter = new FakeFilter("fruit", "orange");
-      
-      Queue queue = new QueueImpl(1, "queue1", filter, false, true, false, -1);
-      
-      FakeConsumer consumer = new FakeConsumer();
-            
-      List<MessageReference> refs = new ArrayList<MessageReference>();
-      
-      MessageReference ref1 = generateReference(queue, 1);
-      
-      ref1.getMessage().putHeader("fruit", "banana");
-      
-      assertEquals(HandleStatus.NO_MATCH, queue.addLast(ref1));
-      
-      MessageReference ref2 = generateReference(queue, 2);
-      
-      ref2.getMessage().putHeader("cheese", "stilton");
-      
-      assertEquals(HandleStatus.NO_MATCH, queue.addLast(ref2));
-      
-      MessageReference ref3 = generateReference(queue, 3);
-      
-      ref3.getMessage().putHeader("cake", "sponge");
-      
-      assertEquals(HandleStatus.NO_MATCH, queue.addLast(ref3));
-      
-      MessageReference ref4 = generateReference(queue, 4);
-      
-      ref4.getMessage().putHeader("fruit", "orange");
-      
-      refs.add(ref4);
-      
-      assertEquals(HandleStatus.HANDLED, queue.addLast(ref4));
-      
-      MessageReference ref5 = generateReference(queue, 5);
-      
-      ref5.getMessage().putHeader("fruit", "apple");
-      
-      assertEquals(HandleStatus.NO_MATCH, queue.addLast(ref5));
-      
-      MessageReference ref6 = generateReference(queue, 6);
-      
-      ref6.getMessage().putHeader("fruit", "orange");
-      
-      refs.add(ref6);
-      
-      assertEquals(HandleStatus.HANDLED, queue.addLast(ref6));
-      
-      //Add a few first
-      
-      MessageReference ref7 = generateReference(queue, 7);
-      
-      ref7.getMessage().putHeader("fruit", "banana");
-      
-      assertEquals(HandleStatus.NO_MATCH, queue.addFirst(ref7));
-      
-      MessageReference ref8 = generateReference(queue, 8);
-      
-      ref8.getMessage().putHeader("fruit", "nectarine");
-      
-      assertEquals(HandleStatus.NO_MATCH, queue.addFirst(ref8));
-      
-      MessageReference ref9 = generateReference(queue, 9);
-      
-      ref9.getMessage().putHeader("fruit", "orange");
-      
-      assertEquals(HandleStatus.HANDLED, queue.addFirst(ref9));
-      
-      List<MessageReference> newRefs = new ArrayList<MessageReference>();
-      
-      newRefs.add(ref9);
-      newRefs.addAll(refs);
-      
-      queue.setFilter(null);
-      
-      MessageReference ref10 = generateReference(queue, 10);
-      
-      ref10.getMessage().putHeader("sport", "skiing");
-      
-      assertEquals(HandleStatus.HANDLED, queue.addLast(ref10));
-      
-      newRefs.add(ref10);
-                  
-      assertEquals(4, queue.getMessageCount());   
-      assertEquals(0, queue.getScheduledCount());
-      
-      queue.addConsumer(consumer);
-      
-      queue.deliver();      
-      
-      assertEquals(0, queue.getMessageCount());   
-      assertEquals(0, queue.getScheduledCount());
-      
-      assertRefListsIdenticalRefs(newRefs, consumer.getReferences()); 
-   }
-   */
-      
    public void testWithPriorities()
    {
       Queue queue = new QueueImpl(1, "queue1", null, false, true, false, -1);
@@ -1005,6 +905,15 @@ public class QueueTest extends UnitTestCase
    public void testConsumerWithFiltersQueueing()
    {
       testConsumerWithFilters(false);
+   }
+   
+   public void testConsumerWithFilterAddAndRemove()
+   {
+      Queue queue = new QueueImpl(1, "queue1", null, false, true, false, -1);
+      
+      Filter filter = new FakeFilter("fruit", "orange");
+      
+      FakeConsumer consumer = new FakeConsumer(filter);
    }
    
    public void testList()
@@ -1097,6 +1006,77 @@ public class QueueTest extends UnitTestCase
    }
    */
    
+   public void testConsumeWithFiltersAddAndRemoveConsumer()
+   {
+      Queue queue = new QueueImpl(1, "queue1", null, false, true, false, -1);
+      
+      Filter filter = new FakeFilter("fruit", "orange");
+      
+      FakeConsumer consumer = new FakeConsumer(filter);
+      
+      queue.addConsumer(consumer);
+                        
+      List<MessageReference> refs = new ArrayList<MessageReference>();
+      
+      MessageReference ref1 = generateReference(queue, 1);
+      
+      ref1.getMessage().putHeader("fruit", "banana");
+      
+      assertEquals(HandleStatus.HANDLED, queue.addLast(ref1));
+      
+      MessageReference ref2 = generateReference(queue, 2);
+      
+      ref2.getMessage().putHeader("fruit", "orange");
+      
+      assertEquals(HandleStatus.HANDLED, queue.addLast(ref2));     
+      
+      refs.add(ref2);
+      
+     
+      assertEquals(2, queue.getMessageCount());
+      
+      assertEquals(1, consumer.getReferences().size());
+      
+      assertEquals(1, queue.getDeliveringCount());
+            
+      assertRefListsIdenticalRefs(refs, consumer.getReferences()); 
+      
+      queue.referenceAcknowledged();
+
+      queue.removeConsumer(consumer);
+            
+      queue.addConsumer(consumer);
+      
+      queue.deliver();
+      
+
+      refs.clear();
+      
+      consumer.clearReferences();
+      
+      MessageReference ref3 = generateReference(queue, 3);
+      
+      ref3.getMessage().putHeader("fruit", "banana");
+      
+      assertEquals(HandleStatus.HANDLED, queue.addLast(ref3));
+      
+      MessageReference ref4 = generateReference(queue, 4);
+      
+      ref4.getMessage().putHeader("fruit", "orange");
+      
+      assertEquals(HandleStatus.HANDLED, queue.addLast(ref4)); 
+       
+      refs.add(ref4);
+      
+      assertEquals(3, queue.getMessageCount());
+      
+      assertEquals(1, consumer.getReferences().size());
+      
+      assertEquals(1, queue.getDeliveringCount());
+      
+      assertRefListsIdenticalRefs(refs, consumer.getReferences());
+   }
+   
    // Private ------------------------------------------------------------------------------
    
    private void testConsumerWithFilters(boolean direct)
@@ -1186,6 +1166,12 @@ public class QueueTest extends UnitTestCase
       
       assertEquals(4, queue.getDeliveringCount());
    }
+   
+   
+   
+  
+   
+   
    
    // Inner classes ---------------------------------------------------------------
         

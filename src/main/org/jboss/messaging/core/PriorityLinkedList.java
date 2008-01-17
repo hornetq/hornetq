@@ -55,6 +55,4 @@ public interface PriorityLinkedList<T>
    ListIterator<T> iterator();
    
    boolean isEmpty();
-   
-   void dump();
 }

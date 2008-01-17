@@ -54,11 +54,7 @@ public class QueueImpl implements Queue
    private static final Logger log = Logger.getLogger(QueueImpl.class);
 
    private static final boolean trace = log.isTraceEnabled();
-   
-   private boolean hashAssigned;
-   
-   private int hash;
-       
+      
    protected volatile long id = -1;
    
    protected String name;
@@ -195,10 +191,12 @@ public class QueueImpl implements Queue
          
          if (reference == null)
          {
-            if (iterator == null)
+            if (messageReferences.isEmpty())
             {
                //We delivered all the messages - go into direct delivery
                direct = true;
+               
+               promptDelivery = false;
             }
             return;
          }
@@ -368,14 +366,9 @@ public class QueueImpl implements Queue
               
    public boolean equals(Object other)
    {
-      if (!(other instanceof QueueImpl))
-      {
-         return false;
-      }
-      
       QueueImpl qother = (QueueImpl)other;
       
-      return this.id == qother.id && this.name.equals(qother.name);
+      return name.equals(qother.name);
    }
    
    public int hashCode()
@@ -418,8 +411,6 @@ public class QueueImpl implements Queue
             else if (status == HandleStatus.NO_MATCH)
             {
                add = true;
-               
-               promptDelivery = true;
             }
             
             if (add)
@@ -444,7 +435,7 @@ public class QueueImpl implements Queue
             }
             
             if (!direct && promptDelivery)
-            {
+            {               
                //We have consumers with filters which don't match, so we need to prompt delivery every time
                //a new message arrives - this is why you really shouldn't use filters with queues - in most cases
                //it's an ant-pattern since it would cause a queue scan on each message
@@ -536,6 +527,8 @@ public class QueueImpl implements Queue
          }
          else if (status == HandleStatus.NO_MATCH)
          {
+            promptDelivery = true;
+            
             filterRejected = true;
          }       
          

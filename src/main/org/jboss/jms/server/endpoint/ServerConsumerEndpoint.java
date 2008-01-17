@@ -188,6 +188,8 @@ public class ServerConsumerEndpoint implements Consumer, ConsumerEndpoint
       
       // adding the consumer to the queue
       messageQueue.addConsumer(this);
+      
+      messageQueue.deliver();
 
       log.trace(this + " constructed");
    }

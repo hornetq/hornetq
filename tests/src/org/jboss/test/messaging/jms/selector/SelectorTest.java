@@ -412,13 +412,13 @@ public class SelectorTest extends JBMServerTestCase
 
 	         for (int j = 0; j < 10; j++)
 	         {
-	            Message m = sess.createMessage();
+	            TextMessage m = sess.createTextMessage("message-a-" + j);
 
 	            m.setStringProperty("beatle", "john");
 
 	            prod.send(m);
 
-	            m = sess.createMessage();
+	            m = sess.createTextMessage("messag-b-" + j);
 
 	            m.setStringProperty("beatle", "kermit the frog");
 
@@ -429,7 +429,7 @@ public class SelectorTest extends JBMServerTestCase
 	         {
 	            Message m = cons1.receive(1000);
 	            
-	            log.info("Got message " + m);
+	          //  log.info("Got message " + m);
 
 	            assertNotNull(m);
 	         }

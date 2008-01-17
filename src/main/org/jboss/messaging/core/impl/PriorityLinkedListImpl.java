@@ -22,13 +22,11 @@
 package org.jboss.messaging.core.impl;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.NoSuchElementException;
 
-import org.jboss.logging.Logger;
 import org.jboss.messaging.core.PriorityLinkedList;
 
 /**
@@ -42,9 +40,7 @@ import org.jboss.messaging.core.PriorityLinkedList;
  * $Id: BasicPrioritizedDeque.java 1174 2006-08-02 14:14:32Z timfox $
  */
 public class PriorityLinkedListImpl<T> implements PriorityLinkedList<T>
-{      
-   private static final Logger log = Logger.getLogger(PriorityLinkedListImpl.class);
-   	
+{      	
    private List<LinkedList<T>> linkedLists;
    
    private int priorities;
@@ -179,26 +175,6 @@ public class PriorityLinkedListImpl<T> implements PriorityLinkedList<T>
       return new PriorityLinkedListIterator();
    }
    
-   public void dump()
-   {
-      log.debug("Dumping " + this);
-      log.debug("Size:" + size);
-      log.debug("===============");
-      
-      for (int i = 0; i < linkedLists.size(); i++)
-      {
-         log.debug("Priority:" + i);
-         log.debug("----------------");
-         
-         Iterator<T> iter = linkedLists.get(i).iterator();
-         
-         while (iter.hasNext())
-         {
-            log.debug("Ref: "+ iter.next());
-         }
-      }
-   }
-      
    private void initLists()
    {      
       linkedLists = new ArrayList<LinkedList<T>>();
