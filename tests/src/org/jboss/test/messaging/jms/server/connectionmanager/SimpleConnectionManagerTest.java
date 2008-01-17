@@ -32,8 +32,6 @@ import org.jboss.jms.client.JBossConnection;
 import org.jboss.jms.client.JBossConnectionFactory;
 import org.jboss.jms.client.api.ClientSession;
 import org.jboss.jms.delegate.ConnectionEndpoint;
-import org.jboss.jms.delegate.IDBlock;
-import org.jboss.jms.delegate.SessionDelegate;
 import org.jboss.jms.server.ConnectionManager;
 import org.jboss.jms.server.connectionmanager.SimpleConnectionManager;
 import org.jboss.jms.tx.TransactionRequest;
@@ -276,10 +274,6 @@ public class SimpleConnectionManagerTest extends JMSTestCase
          return -1;
       }
 
-      public IDBlock getIdBlock(int size) throws JMSException
-      {
-         return null;
-      }
    }
 }
 

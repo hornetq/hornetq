@@ -40,7 +40,6 @@ import org.jboss.jms.client.remoting.JMSRemotingConnection;
 import org.jboss.jms.client.FailoverCommandCenter;
 import org.jboss.jms.delegate.ConnectionFactoryDelegate;
 import org.jboss.jms.delegate.CreateConnectionResult;
-import org.jboss.jms.delegate.IDBlock;
 import org.jboss.jms.delegate.TopologyResult;
 import org.jboss.jms.exception.MessagingNetworkFailureException;
 import org.jboss.logging.Logger;
@@ -407,15 +406,6 @@ public class ClientClusteredConnectionFactoryDelegate extends CommunicationSuppo
 
       throw new JMSException("Maximum number of failover attempts exceeded. " +
                              "Cannot find a server to failover onto.");
-   }
-
-   /**
-    * This invocation should either be handled by the client-side interceptor chain or by the
-    * server-side endpoint.
-    */
-   public IDBlock getIdBlock(int size) throws JMSException
-   {
-      throw new IllegalStateException("This invocation should not be handled here!");
    }
 
    // Public ---------------------------------------------------------------------------------------
