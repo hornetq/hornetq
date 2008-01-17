@@ -191,13 +191,13 @@ public class QueueImpl implements Queue
          
          if (reference == null)
          {
-            if (messageReferences.isEmpty())
+            if (iterator == null)
             {
                //We delivered all the messages - go into direct delivery
                direct = true;
                
                promptDelivery = false;
-            }
+            } 
             return;
          }
          
