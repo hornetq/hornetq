@@ -13,8 +13,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 
-import org.jboss.jms.tx.MessagingXid;
 import org.jboss.messaging.core.remoting.wireformat.GetPreparedTransactionsResponse;
+import org.jboss.messaging.core.tx.MessagingXid;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>.

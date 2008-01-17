@@ -59,7 +59,6 @@ import org.jboss.jms.server.TransactionRepository;
 import org.jboss.jms.server.container.SecurityAspect;
 import org.jboss.jms.server.security.CheckType;
 import org.jboss.jms.tx.ClientTransaction;
-import org.jboss.jms.tx.MessagingXid;
 import org.jboss.jms.tx.TransactionRequest;
 import org.jboss.jms.tx.ClientTransaction.SessionTxState;
 import org.jboss.logging.Logger;
@@ -87,6 +86,7 @@ import org.jboss.messaging.core.remoting.wireformat.NullPacket;
 import org.jboss.messaging.core.remoting.wireformat.PacketType;
 import org.jboss.messaging.core.remoting.wireformat.SendTransactionMessage;
 import org.jboss.messaging.core.remoting.wireformat.SetClientIDMessage;
+import org.jboss.messaging.core.tx.MessagingXid;
 import org.jboss.messaging.util.ExceptionUtil;
 import org.jboss.messaging.util.Util;
 

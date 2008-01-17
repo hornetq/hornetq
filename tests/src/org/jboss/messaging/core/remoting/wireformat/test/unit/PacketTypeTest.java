@@ -68,11 +68,11 @@ import static org.jboss.messaging.core.remoting.wireformat.test.unit.CodecAssert
 import static org.jboss.messaging.core.remoting.wireformat.test.unit.CodecAssert.assertEqualsCancels;
 import static org.jboss.messaging.core.remoting.wireformat.test.unit.CodecAssert.assertSameTopology;
 import static org.jboss.messaging.core.remoting.wireformat.test.unit.CodecAssert.assertSameXids;
-import static org.jboss.messaging.core.remoting.wireformat.test.unit.RandomUtil.randomByte;
-import static org.jboss.messaging.core.remoting.wireformat.test.unit.RandomUtil.randomBytes;
-import static org.jboss.messaging.core.remoting.wireformat.test.unit.RandomUtil.randomInt;
-import static org.jboss.messaging.core.remoting.wireformat.test.unit.RandomUtil.randomLong;
-import static org.jboss.messaging.core.remoting.wireformat.test.unit.RandomUtil.randomString;
+import static org.jboss.messaging.test.unit.RandomUtil.randomByte;
+import static org.jboss.messaging.test.unit.RandomUtil.randomBytes;
+import static org.jboss.messaging.test.unit.RandomUtil.randomInt;
+import static org.jboss.messaging.test.unit.RandomUtil.randomLong;
+import static org.jboss.messaging.test.unit.RandomUtil.randomString;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -97,7 +97,6 @@ import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.destination.JBossQueue;
 import org.jboss.jms.destination.JBossTopic;
 import org.jboss.jms.tx.ClientTransaction;
-import org.jboss.jms.tx.MessagingXid;
 import org.jboss.jms.tx.TransactionRequest;
 import org.jboss.messaging.core.Destination;
 import org.jboss.messaging.core.DestinationType;
@@ -189,6 +188,7 @@ import org.jboss.messaging.core.remoting.wireformat.StopConnectionMessage;
 import org.jboss.messaging.core.remoting.wireformat.TextPacket;
 import org.jboss.messaging.core.remoting.wireformat.UnsubscribeMessage;
 import org.jboss.messaging.core.remoting.wireformat.UpdateCallbackMessage;
+import org.jboss.messaging.core.tx.MessagingXid;
 import org.jboss.messaging.util.Version;
 
 /**

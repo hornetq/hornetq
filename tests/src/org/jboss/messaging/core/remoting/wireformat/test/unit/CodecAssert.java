@@ -15,7 +15,7 @@ import org.jboss.jms.delegate.Ack;
 import org.jboss.jms.delegate.Cancel;
 import org.jboss.jms.delegate.DeliveryRecovery;
 import org.jboss.jms.delegate.TopologyResult;
-import org.jboss.jms.tx.MessagingXid;
+import org.jboss.messaging.core.tx.MessagingXid;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>

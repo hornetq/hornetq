@@ -39,8 +39,8 @@ import javax.transaction.xa.XAResource;
 
 import org.jboss.jms.exception.MessagingXAException;
 import org.jboss.jms.server.security.Role;
-import org.jboss.jms.tx.MessagingXid;
 import org.jboss.logging.Logger;
+import org.jboss.messaging.core.tx.MessagingXid;
 import org.jboss.messaging.util.XMLUtil;
 import org.jboss.test.messaging.tools.ServerManagement;
 

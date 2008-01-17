@@ -10,7 +10,7 @@ import static org.jboss.messaging.core.remoting.wireformat.PacketType.RESP_GETPR
 
 import java.util.Arrays;
 
-import org.jboss.jms.tx.MessagingXid;
+import org.jboss.messaging.core.tx.MessagingXid;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>

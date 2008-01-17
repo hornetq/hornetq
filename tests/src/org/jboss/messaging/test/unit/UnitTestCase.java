@@ -36,11 +36,11 @@ import javax.transaction.xa.Xid;
 
 import junit.framework.TestCase;
 
-import org.jboss.jms.tx.MessagingXid;
 import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.Queue;
 import org.jboss.messaging.core.impl.MessageImpl;
+import org.jboss.messaging.core.tx.MessagingXid;
 
 /**
  * 

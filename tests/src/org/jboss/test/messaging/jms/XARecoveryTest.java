@@ -23,8 +23,8 @@ package org.jboss.test.messaging.jms;
 
 import com.arjuna.ats.arjuna.common.Uid;
 import com.arjuna.ats.jta.xa.XidImple;
-import org.jboss.jms.tx.MessagingXid;
 import org.jboss.jms.tx.ResourceManagerFactory;
+import org.jboss.messaging.core.tx.MessagingXid;
 
 import javax.jms.*;
 import javax.transaction.xa.XAResource;

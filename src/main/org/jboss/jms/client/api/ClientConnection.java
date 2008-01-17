@@ -16,10 +16,10 @@ import javax.jms.ServerSessionPool;
 import org.jboss.jms.client.Closeable;
 import org.jboss.jms.client.JBossConnectionConsumer;
 import org.jboss.jms.client.remoting.JMSRemotingConnection;
-import org.jboss.jms.tx.MessagingXid;
 import org.jboss.jms.tx.ResourceManager;
 import org.jboss.jms.tx.TransactionRequest;
 import org.jboss.messaging.core.remoting.Client;
+import org.jboss.messaging.core.tx.MessagingXid;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>

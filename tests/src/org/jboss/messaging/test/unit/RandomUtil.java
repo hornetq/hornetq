@@ -4,7 +4,7 @@
  * Distributable under LGPL license.
  * See terms of license at gnu.org.
  */
-package org.jboss.messaging.core.remoting.wireformat.test.unit;
+package org.jboss.messaging.test.unit;
 
 import static java.util.UUID.randomUUID;
 
@@ -26,27 +26,27 @@ public class RandomUtil
 
    // Static --------------------------------------------------------
 
-   static String randomString()
+   public static String randomString()
    {
       return randomUUID().toString();
    }
 
-   static long randomLong()
+   public static long randomLong()
    {
       return random.nextLong();
    }
 
-   static int randomInt()
+   public static int randomInt()
    {
       return random.nextInt();
    }
 
-   static byte randomByte()
+   public static byte randomByte()
    {
       return Integer.valueOf(random.nextInt()).byteValue();
    }
 
-   static byte[] randomBytes()
+   public static byte[] randomBytes()
    {
       return randomString().getBytes();
    }

@@ -25,8 +25,8 @@ import javax.jms.JMSException;
 
 import org.jboss.jms.client.Closeable;
 import org.jboss.jms.client.api.ClientSession;
-import org.jboss.jms.tx.MessagingXid;
 import org.jboss.jms.tx.TransactionRequest;
+import org.jboss.messaging.core.tx.MessagingXid;
 
 
 /**
