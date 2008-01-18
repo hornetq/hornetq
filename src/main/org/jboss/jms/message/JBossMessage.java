@@ -66,22 +66,18 @@ public class JBossMessage implements javax.jms.Message
 {
    // Constants -----------------------------------------------------
 
-   private static final char PROPERTY_PREFIX_CHAR = 'P';
+   //FIXME - this will disappear
+   private static final String DESTINATION_HEADER_NAME = "JMSDestination2";
    
-   private static final String PROPERTY_PREFIX = "P";
+   private static final String REPLYTO_HEADER_NAME = "JMSReplyTo";
    
-   private static final String DESTINATION_HEADER_NAME = "H.DEST";
-   
-   private static final String REPLYTO_HEADER_NAME = "H.REPLYTO";
-   
-   private static final String CORRELATIONID_HEADER_NAME = "H.CORRELATIONID";
+   private static final String CORRELATIONID_HEADER_NAME = "JMSCorrelationID";
 
-   // When the message is sent through the cluster, it needs to keep the original messageID
-   private static final String JBM_MESSAGE_ID = "JBM_MESSAGE_ID";
+   private static final String JBM_MESSAGE_ID = "JMSMessageID";
    
-   private static final String CORRELATIONIDBYTES_HEADER_NAME = "H.CORRELATIONIDBYTES";
+   //private static final String CORRELATIONIDBYTES_HEADER_NAME = "JMSCorre";
    
-   private static final String TYPE_HEADER_NAME = "H.TYPE";
+   private static final String TYPE_HEADER_NAME = "JMSType";
    
    public static final String JMS_JBOSS_SCHEDULED_DELIVERY_PROP_NAME = "JMS_JBOSS_SCHEDULED_DELIVERY";
    
@@ -276,7 +272,16 @@ public class JBossMessage implements javax.jms.Message
 
    public byte[] getJMSCorrelationIDAsBytes() throws JMSException
    {
-      return (byte[]) message.getHeader(CORRELATIONIDBYTES_HEADER_NAME);
+      Object obj = message.getHeader(CORRELATIONID_HEADER_NAME);
+      
+      if (obj instanceof byte[])
+      {
+         return (byte[])obj;
+      }
+      else
+      {
+         return null;
+      }      
    }
 
    public void setJMSCorrelationIDAsBytes(byte[] correlationID) throws JMSException
@@ -285,21 +290,26 @@ public class JBossMessage implements javax.jms.Message
       {
          throw new JMSException("Please specify a non-zero length byte[]");
       }
-      message.putHeader(CORRELATIONIDBYTES_HEADER_NAME, correlationID);
-      
-      message.removeHeader(CORRELATIONID_HEADER_NAME);
+      message.putHeader(CORRELATIONID_HEADER_NAME, correlationID);
    }
 
    public void setJMSCorrelationID(String correlationID) throws JMSException
    {
       message.putHeader(CORRELATIONID_HEADER_NAME, correlationID);
-      
-      message.removeHeader(CORRELATIONIDBYTES_HEADER_NAME);
    }
 
    public String getJMSCorrelationID() throws JMSException
    {
-      return (String)message.getHeader(CORRELATIONID_HEADER_NAME);
+      Object obj = message.getHeader(CORRELATIONID_HEADER_NAME);
+      
+      if (obj instanceof String)
+      {
+         return (String)obj;
+      }
+      else
+      {
+         return null;
+      }   
    }
 
    public Destination getJMSReplyTo() throws JMSException
@@ -408,7 +418,20 @@ public class JBossMessage implements javax.jms.Message
       {
          String propName = iter.next();
          
-         if (propName.charAt(0) == PROPERTY_PREFIX_CHAR)
+         boolean remove = false;
+         if (!propName.startsWith("JMS"))
+         {
+            remove = true;
+         }
+         else
+         {
+            if (propName.startsWith("JMSX") || propName.startsWith("JMS_"))
+            {
+               remove = true;
+            }
+         }
+         
+         if (remove)
          {
             iter.remove();
          }
@@ -422,13 +445,13 @@ public class JBossMessage implements javax.jms.Message
 
    public boolean propertyExists(String name) throws JMSException
    {
-      return message.containsHeader(PROPERTY_PREFIX + name)
+      return message.containsHeader(name)
              || name.equals("JMSXDeliveryCount");
    }
 
    public boolean getBooleanProperty(String name) throws JMSException
    {
-      Object value = message.getHeader(PROPERTY_PREFIX + name);
+      Object value = message.getHeader(name);
       if (value == null)
          return Boolean.valueOf(null).booleanValue();
 
@@ -442,7 +465,7 @@ public class JBossMessage implements javax.jms.Message
 
    public byte getByteProperty(String name) throws JMSException
    {
-      Object value = message.getHeader(PROPERTY_PREFIX + name);
+      Object value = message.getHeader(name);
       if (value == null)
          throw new NumberFormatException("Message property '" + name + "' not set.");
 
@@ -456,7 +479,7 @@ public class JBossMessage implements javax.jms.Message
 
    public short getShortProperty(String name) throws JMSException
    {
-      Object value = message.getHeader(PROPERTY_PREFIX + name);
+      Object value = message.getHeader(name);
       if (value == null)
          throw new NumberFormatException("Message property '" + name + "' not set.");
 
@@ -477,7 +500,7 @@ public class JBossMessage implements javax.jms.Message
          return deliveryCount;
       }
       
-      Object value = message.getHeader(PROPERTY_PREFIX + name);
+      Object value = message.getHeader(name);
 
       if (value == null)
       {
@@ -513,7 +536,7 @@ public class JBossMessage implements javax.jms.Message
          return deliveryCount;
       }
       
-      Object value = message.getHeader(PROPERTY_PREFIX + name);
+      Object value = message.getHeader(name);
 
       if (value == null)
       {
@@ -548,7 +571,7 @@ public class JBossMessage implements javax.jms.Message
 
    public float getFloatProperty(String name) throws JMSException
    {
-      Object value = message.getHeader(PROPERTY_PREFIX + name);
+      Object value = message.getHeader(name);
       if (value == null)
          return Float.valueOf(null).floatValue();
 
@@ -562,7 +585,7 @@ public class JBossMessage implements javax.jms.Message
 
    public double getDoubleProperty(String name) throws JMSException
    {
-      Object value = message.getHeader(PROPERTY_PREFIX + name);
+      Object value = message.getHeader(name);
       if (value == null)
          return Double.valueOf(null).doubleValue();
 
@@ -583,7 +606,7 @@ public class JBossMessage implements javax.jms.Message
          return Integer.toString(deliveryCount);
       }
       
-      Object value = message.getHeader(PROPERTY_PREFIX + name);
+      Object value = message.getHeader(name);
       if (value == null)
          return null;
 
@@ -627,7 +650,7 @@ public class JBossMessage implements javax.jms.Message
 
    public Object getObjectProperty(String name) throws JMSException                                                              
    {
-      return message.getHeader(PROPERTY_PREFIX + name);
+      return message.getHeader(name);
    }
 
    public Enumeration getPropertyNames() throws JMSException
@@ -636,10 +659,22 @@ public class JBossMessage implements javax.jms.Message
       
       for (String propName: message.getHeaders().keySet())
       {
-         if (propName.charAt(0) == PROPERTY_PREFIX_CHAR)
+         boolean add = false;
+         if (!propName.startsWith("JMS"))
          {
-            String name = propName.substring(1);
-            set.add(name);
+            add = true;
+         }
+         else
+         {
+            if (propName.startsWith("JMSX") || propName.startsWith("JMS_"))
+            {
+               add = true;
+            }
+         }
+            
+         if (add)
+         {            
+            set.add(propName);
          }
       }
       
@@ -650,96 +685,72 @@ public class JBossMessage implements javax.jms.Message
    {
       Boolean b = Primitives.valueOf(value);
       checkProperty(name, b);
-      message.putHeader(PROPERTY_PREFIX + name, b);
+      message.putHeader(name, b);
    }
 
    public void setByteProperty(String name, byte value) throws JMSException
    {
       Byte b = new Byte(value);
       checkProperty(name, b);
-      message.putHeader(PROPERTY_PREFIX + name, b);
+      message.putHeader(name, b);
    }
 
    public void setShortProperty(String name, short value) throws JMSException
    {
       Short s = new Short(value);
       checkProperty(name, s);
-      message.putHeader(PROPERTY_PREFIX + name, s);
+      message.putHeader(name, s);
    }
 
    public void setIntProperty(String name, int value) throws JMSException
    {
       Integer i = new Integer(value);
       checkProperty(name, i);
-      message.putHeader(PROPERTY_PREFIX + name, i);
+      message.putHeader(name, i);
    }
 
    public void setLongProperty(String name, long value) throws JMSException
    {     
       Long l = new Long(value);
       checkProperty(name, l);
-      message.putHeader(PROPERTY_PREFIX + name, l);                
+      message.putHeader(name, l);                
    }
 
    public void setFloatProperty(String name, float value) throws JMSException
    {
       Float f = new Float(value);
       checkProperty(name, f);
-      message.putHeader(PROPERTY_PREFIX + name, f);
+      message.putHeader(name, f);
    }
 
    public void setDoubleProperty(String name, double value) throws JMSException
    {
       Double d = new Double(value);
       checkProperty(name, d);
-      message.putHeader(PROPERTY_PREFIX + name, d);
+      message.putHeader(name, d);
    }
 
    public void setStringProperty(String name, String value) throws JMSException
    {
       checkProperty(name, value);
-      message.putHeader(PROPERTY_PREFIX + name, value);
+      message.putHeader(name, value);
    }
 
    public void setObjectProperty(String name, Object value) throws JMSException
    {
       checkProperty(name, value);
 
-      if (value instanceof Boolean)
+      if ((value instanceof Boolean)
+         || (value instanceof Byte)
+         || (value instanceof Short)
+         || (value instanceof Integer)
+         || (value instanceof Long)
+         || (value instanceof Float)
+         || (value instanceof Double)
+         || (value instanceof String)
+         || (value == null))
       {
-         message.putHeader(PROPERTY_PREFIX + name, value);
-      }
-      else if (value instanceof Byte)
-      {
-         message.putHeader(PROPERTY_PREFIX + name, value);
-      }
-      else if (value instanceof Short)
-      {
-         message.putHeader(PROPERTY_PREFIX + name, value);
-      }
-      else if (value instanceof Integer)
-      {
-         message.putHeader(PROPERTY_PREFIX + name, value);
-      }
-      else if (value instanceof Long)
-      {
-         message.putHeader(PROPERTY_PREFIX + name, value);
-      }
-      else if (value instanceof Float)
-      {
-         message.putHeader(PROPERTY_PREFIX + name, value);
-      }
-      else if (value instanceof Double)
-      {
-         message.putHeader(PROPERTY_PREFIX + name, value);
-      }
-      else if (value instanceof String)
-      {
-         message.putHeader(PROPERTY_PREFIX + name, value);
-      }
-      else if (value == null)
-      {
-         message.putHeader(PROPERTY_PREFIX + name, null);
+         message.putHeader(name, value);
       }
       else
       {
@@ -894,14 +905,39 @@ public class JBossMessage implements javax.jms.Message
          throw new IllegalArgumentException("The property name '" + name +
                                             "' is reserved due to selector syntax.");
       }
-
-      if (name.startsWith("JMSX") &&
-         !name.equals("JMSXGroupID") &&
-         !name.equals("JMSXGroupSeq") &&
-         !name.equals("JMSXDeliveryCount"))
+      
+      if (name.startsWith("JMS"))
       {
-         throw new JMSException("Can only set JMSXGroupId, JMSXGroupSeq, JMSXDeliveryCount");
-      }           
+         if (name.length() > 3)
+         {
+            char c = name.charAt(3);
+            if (c == 'X')
+            {
+               if (!name.equals("JMSXGroupID") &&
+                   !name.equals("JMSXGroupSeq") &&
+                   !name.equals("JMSXDeliveryCount"))
+               {
+                  throw new JMSException("Can only set JMSXGroupId, JMSXGroupSeq, JMSXDeliveryCount");
+               }    
+            }
+            else if (c == '_')
+            {
+               //OK 
+            }
+            else
+            {
+               //See http://java.sun.com/javaee/5/docs/api/
+               //(java.jms.Message javadoc)
+               //"Property names must obey the rules for a message selector identifier"
+               //"Any name that does not begin with 'JMS' is an application-specific property name"
+               throw new IllegalArgumentException("The property name '" + name + "' is illegal since it starts with JMS");
+            }
+         }
+         else
+         {
+            throw new IllegalArgumentException("The property name '" + name + "' is illegal since it starts with JMS");
+         }
+      }
    }
    
    // Inner classes -------------------------------------------------

@@ -45,8 +45,8 @@ import org.jboss.messaging.core.Queue;
 import org.jboss.messaging.core.QueueFactory;
 import org.jboss.messaging.core.impl.BindingImpl;
 import org.jboss.messaging.core.impl.ConditionImpl;
-import org.jboss.messaging.core.impl.FilterImpl;
 import org.jboss.messaging.core.impl.MessageImpl;
+import org.jboss.messaging.core.impl.filter.FilterImpl;
 import org.jboss.messaging.util.Pair;
 
 /**

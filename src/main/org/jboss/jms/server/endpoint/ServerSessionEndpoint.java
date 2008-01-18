@@ -47,6 +47,7 @@ import java.util.UUID;
 
 import javax.jms.IllegalStateException;
 import javax.jms.InvalidDestinationException;
+import javax.jms.InvalidSelectorException;
 import javax.jms.JMSException;
 
 import org.jboss.jms.client.api.ClientBrowser;
@@ -54,9 +55,7 @@ import org.jboss.jms.client.api.Consumer;
 import org.jboss.jms.client.delegate.ClientBrowserDelegate;
 import org.jboss.jms.client.delegate.ClientConsumerDelegate;
 import org.jboss.jms.delegate.Ack;
-import org.jboss.jms.delegate.BrowserDelegate;
 import org.jboss.jms.delegate.Cancel;
-import org.jboss.jms.delegate.ConsumerDelegate;
 import org.jboss.jms.delegate.DefaultAck;
 import org.jboss.jms.delegate.DeliveryInfo;
 import org.jboss.jms.delegate.SessionEndpoint;
@@ -67,12 +66,12 @@ import org.jboss.jms.exception.MessagingJMSException;
 import org.jboss.jms.server.DestinationManager;
 import org.jboss.jms.server.container.SecurityAspect;
 import org.jboss.jms.server.security.CheckType;
-import org.jboss.jms.server.selector.Selector;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Binding;
 import org.jboss.messaging.core.Condition;
 import org.jboss.messaging.core.Destination;
 import org.jboss.messaging.core.DestinationType;
+import org.jboss.messaging.core.Filter;
 import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.MessagingServer;
@@ -82,7 +81,7 @@ import org.jboss.messaging.core.Transaction;
 import org.jboss.messaging.core.TransactionSynchronization;
 import org.jboss.messaging.core.impl.ConditionImpl;
 import org.jboss.messaging.core.impl.TransactionImpl;
-import org.jboss.messaging.core.remoting.PacketDispatcher;
+import org.jboss.messaging.core.impl.filter.FilterImpl;
 import org.jboss.messaging.core.remoting.PacketHandler;
 import org.jboss.messaging.core.remoting.PacketSender;
 import org.jboss.messaging.core.remoting.wireformat.AbstractPacket;
@@ -237,7 +236,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
    }
 
    public Consumer createConsumerDelegate(Destination destination,
-                                                  String selector,
+                                                  String filterString,
                                                   boolean noLocal,
                                                   String subscriptionName,
                                                   boolean isCC) throws JMSException
@@ -247,7 +246,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
       
       try
       {
-      	return createConsumerDelegateInternal(destination, selector, noLocal, subscriptionName);      	
+      	return createConsumerDelegateInternal(destination, filterString, noLocal, subscriptionName);      	
       }
       catch (Throwable t)
       {
@@ -256,14 +255,14 @@ public class ServerSessionEndpoint implements SessionEndpoint
    }
 
 	public ClientBrowser createBrowserDelegate(Destination destination,
-                                                String selector)
+                                                String filterString)
       throws JMSException
 	{
       security.check(destination, CheckType.READ, this.getConnectionEndpoint());
 
       try
       {
-         return createBrowserDelegateInternal(destination, selector);
+         return createBrowserDelegateInternal(destination, filterString);
       }
       catch (Throwable t)
       {
@@ -467,8 +466,6 @@ public class ServerSessionEndpoint implements SessionEndpoint
    {
       if (trace) {log.trace(this + " cancels deliveries " + cancels); }
         
-      log.info("Cancelling deliveries " + cancels.size());
-      
       try
       {
          // deliveries must be cancelled in reverse order
@@ -821,8 +818,6 @@ public class ServerSessionEndpoint implements SessionEndpoint
          
          DeliveryRecord rec = (DeliveryRecord)entry.getValue();
 
-         log.info("Cancelling delivery " + rec.ref);
-         
          rec.ref.cancel(this.sp.getPersistenceManager());         
       }
       
@@ -1040,8 +1035,6 @@ public class ServerSessionEndpoint implements SessionEndpoint
    
    private void cancelDeliveryInternal(Cancel cancel) throws Exception
    {
-      log.info("Cancelling delivery " + cancel);
-      
       DeliveryRecord rec = (DeliveryRecord)deliveries.remove(cancel.getDeliveryId());
       
       if (rec == null)
@@ -1208,9 +1201,9 @@ public class ServerSessionEndpoint implements SessionEndpoint
    }
       
    private Consumer createConsumerDelegateInternal(Destination destination,
-                                                           String selectorString,
-                                                           boolean noLocal,
-                                                           String subscriptionName)
+                                                  String filterString,
+                                                  boolean noLocal,
+                                                  String subscriptionName)
       throws Exception
    {
       if (closed)
@@ -1218,15 +1211,15 @@ public class ServerSessionEndpoint implements SessionEndpoint
          throw new IllegalStateException("Session is closed");
       }
       
-      if ("".equals(selectorString))
+      if ("".equals(filterString))
       {
-         selectorString = null;
+         filterString = null;
       }
       
       if (trace)
       {
          log.trace(this + " creating consumer for " + destination +
-            (selectorString == null ? "" : ", selector '" + selectorString + "'") +
+            (filterString == null ? "" : ", filter '" + filterString + "'") +
             (subscriptionName == null ? "" : ", subscription '" + subscriptionName + "'") +
             (noLocal ? ", noLocal" : ""));
       }
@@ -1252,12 +1245,19 @@ public class ServerSessionEndpoint implements SessionEndpoint
       
       String consumerID = UUID.randomUUID().toString();
       
-      // Always validate the selector first
-      Selector selector = null;
+      // Always validate the filter first
+      Filter filter = null;
       
-      if (selectorString != null)
+      if (filterString != null)
       {
-         selector = new Selector(selectorString);
+         try
+         {
+            filter = new FilterImpl(filterString);
+         }
+         catch (Exception e)
+         {
+            throw new InvalidSelectorException("Invalid selector " + filterString);
+         }
       }
       
       Queue queue;
@@ -1271,7 +1271,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
             // non-durable subscription
             if (log.isTraceEnabled()) { log.trace(this + " creating new non-durable subscription on " + destination); }
                     
-            queue = postOffice.addQueue(condition, UUID.randomUUID().toString(), selector, false, false, false);
+            queue = postOffice.addQueue(condition, UUID.randomUUID().toString(), filter, false, false, false);
 
             //TODO - message counters should be applied by the queue configurator factory
             
@@ -1309,7 +1309,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
                
                if (trace) { log.trace(this + " creating new durable subscription on " + destination); }
                                
-               queue = postOffice.addQueue(condition, name, selector, true, false,
+               queue = postOffice.addQueue(condition, name, filter, true, false,
                                            sp.getConfiguration().isClustered());
                  
                //TODO message counters handled by queue configurator
@@ -1339,13 +1339,13 @@ public class ServerSessionEndpoint implements SessionEndpoint
                // Changing a durable subscriber is equivalent to unsubscribing (deleting) the old
                // one and creating a new one.
                
-               String filterString = queue.getFilter() != null ? queue.getFilter().getFilterString() : null;
+               String oldFilterString = queue.getFilter() != null ? queue.getFilter().getFilterString() : null;
                
                boolean selectorChanged =
-                  (selectorString == null && filterString != null) ||
-                  (filterString == null && selectorString != null) ||
-                  (filterString != null && selectorString != null &&
-                           !filterString.equals(selectorString));
+                  (filterString == null && oldFilterString != null) ||
+                  (oldFilterString == null && filterString != null) ||
+                  (oldFilterString != null && filterString != null &&
+                           !oldFilterString.equals(filterString));
                
                if (trace) { log.trace("selector " + (selectorChanged ? "has" : "has NOT") + " changed"); }
                
@@ -1371,7 +1371,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
                   
                   queue.removeAllReferences();
                   
-                  queue = postOffice.addQueue(condition, name, selector, true, false, sp.getConfiguration().isClustered());
+                  queue = postOffice.addQueue(condition, name, filter, true, false, sp.getConfiguration().isClustered());
                   
                }
                
@@ -1406,7 +1406,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
       
       ServerConsumerEndpoint ep =
          new ServerConsumerEndpoint(sp, consumerID, queue,
-                                    queue.getName(), this, selectorString, noLocal,
+                                    queue.getName(), this, filter, noLocal,
                                     destination, dlqToUse, expiryQueueToUse, redeliveryDelayToUse,
                                     maxDeliveryAttemptsToUse, prefetchSize);
       

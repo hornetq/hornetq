@@ -314,19 +314,7 @@ public class ClientConsumerDelegate extends CommunicationSupport<ClientConsumerD
    {
    	return redeliveryDelay;
    }
-
    
-
-   public String getSelector()
-   {
-      return selector;
-   }
-
-   public boolean isNoLocal()
-   {
-      return noLocal;
-   }
-
    public String getConsumerID()
    {
       return consumerID;

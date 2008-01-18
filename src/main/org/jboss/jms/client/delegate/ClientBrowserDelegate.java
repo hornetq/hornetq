@@ -73,6 +73,7 @@ public class ClientBrowserDelegate extends CommunicationSupport<ClientBrowserDel
       super(objectID);
       this.session = session;
       this.jmsDestination = jmsDestination;
+                  
       this.messageSelector = messageSelector;
    }
 

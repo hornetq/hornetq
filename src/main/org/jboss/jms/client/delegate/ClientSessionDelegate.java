@@ -40,6 +40,7 @@ import javax.jms.Session;
 import javax.jms.TransactionInProgressException;
 import javax.transaction.xa.XAResource;
 import org.jboss.jms.client.Closeable;
+import org.jboss.jms.client.SelectorTranslator;
 import org.jboss.jms.client.api.ClientBrowser;
 import org.jboss.jms.client.api.ClientConnection;
 import org.jboss.jms.client.api.ClientSession;
@@ -436,7 +437,8 @@ public class ClientSessionDelegate extends CommunicationSupport<ClientSessionDel
    public ClientBrowser createBrowserDelegate(Destination queue, String messageSelector)
       throws JMSException
    {
-      CreateBrowserRequest request = new CreateBrowserRequest(queue, messageSelector);
+      String coreSelector = SelectorTranslator.convertToJBMFilterString(messageSelector);
+      CreateBrowserRequest request = new CreateBrowserRequest(queue, coreSelector);
       CreateBrowserResponse response = (CreateBrowserResponse) sendBlocking(request);
       ClientBrowserDelegate delegate = new ClientBrowserDelegate(this, response.getBrowserID(), queue, messageSelector);
       ClientBrowser proxy = (ClientBrowser)ProxyFactory.proxy(delegate, ClientBrowser.class);
@@ -459,9 +461,9 @@ public class ClientSessionDelegate extends CommunicationSupport<ClientSessionDel
                                                   boolean noLocal, String subscriptionName,
                                                   boolean isCC) throws JMSException
    {
-
+      String coreSelector = SelectorTranslator.convertToJBMFilterString(selector);
       CreateConsumerRequest request =
-         new CreateConsumerRequest(destination, selector, noLocal, subscriptionName, isCC);
+         new CreateConsumerRequest(destination, coreSelector, noLocal, subscriptionName, isCC);
       
       CreateConsumerResponse response = (CreateConsumerResponse) sendBlocking(request);
 

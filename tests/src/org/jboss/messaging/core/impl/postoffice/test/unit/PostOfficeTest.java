@@ -38,10 +38,10 @@ import org.jboss.messaging.core.QueueFactory;
 import org.jboss.messaging.core.Transaction;
 import org.jboss.messaging.core.impl.BindingImpl;
 import org.jboss.messaging.core.impl.ConditionImpl;
-import org.jboss.messaging.core.impl.FilterImpl;
 import org.jboss.messaging.core.impl.QueueFactoryImpl;
 import org.jboss.messaging.core.impl.QueueImpl;
 import org.jboss.messaging.core.impl.TransactionImpl;
+import org.jboss.messaging.core.impl.filter.FilterImpl;
 import org.jboss.messaging.core.impl.postoffice.PostOfficeImpl;
 import org.jboss.messaging.test.unit.UnitTestCase;
 

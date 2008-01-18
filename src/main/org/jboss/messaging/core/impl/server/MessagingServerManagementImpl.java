@@ -29,18 +29,20 @@ import java.util.List;
 import java.util.StringTokenizer;
 
 import org.jboss.aop.microcontainer.aspects.jmx.JMX;
+import org.jboss.jms.client.SelectorTranslator;
 import org.jboss.jms.server.endpoint.ServerConnectionEndpoint;
-import org.jboss.jms.server.selector.Selector;
 import org.jboss.messaging.core.Binding;
 import org.jboss.messaging.core.Condition;
 import org.jboss.messaging.core.Configuration;
 import org.jboss.messaging.core.DestinationType;
+import org.jboss.messaging.core.Filter;
 import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.MessagingServer;
 import org.jboss.messaging.core.MessagingServerManagement;
 import org.jboss.messaging.core.Queue;
 import org.jboss.messaging.core.impl.ConditionImpl;
+import org.jboss.messaging.core.impl.filter.FilterImpl;
 import org.jboss.messaging.core.impl.messagecounter.MessageCounter;
 import org.jboss.messaging.util.MessageQueueNameHelper;
 
@@ -633,23 +635,23 @@ public class MessagingServerManagementImpl implements MessagingServerManagement
    
     
    
-   private List<Message> listMessages(Queue queue, ListType type, String selector) throws Exception
-   {
-      Selector sel = null;
-                        
-      if (selector != null && "".equals(selector.trim()))
+   private List<Message> listMessages(Queue queue, ListType type, String jmsSelector) throws Exception
+   {                        
+      if (jmsSelector != null && "".equals(jmsSelector.trim()))
       {
-         selector = null;
+         jmsSelector = null;
       }
       
-      if (selector != null)
+      Filter filter = null;
+            
+      if (jmsSelector != null)
       {        
-         sel = new Selector(selector);
+         filter = new FilterImpl(SelectorTranslator.convertToJBMFilterString(jmsSelector));
       }
       
       List<Message> msgs = new ArrayList<Message>();
       
-      List<MessageReference> allRefs = queue.list(sel);
+      List<MessageReference> allRefs = queue.list(filter);
         
       for (MessageReference ref: allRefs)
       {
@@ -801,7 +803,7 @@ public class MessagingServerManagementImpl implements MessagingServerManagement
    }
    
   
-   private List<Message> listMessagesForSubscription(ListType type, String subId, String selector) throws Exception
+   private List<Message> listMessagesForSubscription(ListType type, String subId, String jmsSelector) throws Exception
    { 
       List<Message> msgs = new ArrayList<Message>();
       
@@ -817,16 +819,17 @@ public class MessagingServerManagementImpl implements MessagingServerManagement
          throw new IllegalArgumentException("Cannot find subscription with id " + subId);
       }
       
-      Selector sel = null;
       
-      if (selector != null && "".equals(selector.trim()))
+      if (jmsSelector != null && "".equals(jmsSelector.trim()))
       {
-         selector = null;
+         jmsSelector = null;
       }
-         
-      if (selector != null)
+      
+      Filter sel = null;
+               
+      if (jmsSelector != null)
       {  
-         sel = new Selector(selector);
+         sel = new FilterImpl(SelectorTranslator.convertToJBMFilterString(jmsSelector));
       }
       
       Binding binding = bindings.get(0);

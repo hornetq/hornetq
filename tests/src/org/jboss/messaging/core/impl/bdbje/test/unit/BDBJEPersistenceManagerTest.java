@@ -37,7 +37,6 @@ import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.Queue;
 import org.jboss.messaging.core.impl.BindingImpl;
 import org.jboss.messaging.core.impl.ConditionImpl;
-import org.jboss.messaging.core.impl.FilterImpl;
 import org.jboss.messaging.core.impl.MessageImpl;
 import org.jboss.messaging.core.impl.QueueFactoryImpl;
 import org.jboss.messaging.core.impl.QueueImpl;
@@ -45,6 +44,7 @@ import org.jboss.messaging.core.impl.bdbje.BDBJEDatabase;
 import org.jboss.messaging.core.impl.bdbje.BDBJEEnvironment;
 import org.jboss.messaging.core.impl.bdbje.BDBJEPersistenceManager;
 import org.jboss.messaging.core.impl.bdbje.test.unit.fakes.FakeBDBJEEnvironment;
+import org.jboss.messaging.core.impl.filter.FilterImpl;
 import org.jboss.messaging.test.unit.UnitTestCase;
 
 /**
@@ -665,13 +665,13 @@ public class BDBJEPersistenceManagerTest extends UnitTestCase
        
    public void testAddRemoveBindings() throws Exception
    {
-      Queue queue1 = new QueueImpl(1, "queue1", new FilterImpl("filter1"), false, true, false, -1);
+      Queue queue1 = new QueueImpl(1, "queue1", new FilterImpl("a=1"), false, true, false, -1);
       
-      Queue queue2 = new QueueImpl(2, "queue2", new FilterImpl("filter2"), false, true, false, -1);
+      Queue queue2 = new QueueImpl(2, "queue2", new FilterImpl("a=1"), false, true, false, -1);
             
-      Queue queue3 = new QueueImpl(3, "queue3", new FilterImpl("filter3"), false, true, false, -1);
+      Queue queue3 = new QueueImpl(3, "queue3", new FilterImpl("a=1"), false, true, false, -1);
       
-      Queue queue4 = new QueueImpl(4, "queue4", new FilterImpl("filter4"), false, true, false, -1);
+      Queue queue4 = new QueueImpl(4, "queue4", new FilterImpl("a=1"), false, true, false, -1);
       
       Condition condition1 = new ConditionImpl(DestinationType.QUEUE, "condition1");
       

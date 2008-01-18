@@ -39,7 +39,7 @@ import org.jboss.messaging.util.Streamable;
 public interface Message extends Streamable
 {
    //FIXME - temp
-   public static final String TEMP_DEST_HEADER_NAME = "DEST";
+   public static final String TEMP_DEST_HEADER_NAME = "JMSDestination";
    
    
 	/**

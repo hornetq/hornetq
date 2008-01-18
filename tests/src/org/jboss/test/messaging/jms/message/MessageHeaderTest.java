@@ -293,6 +293,9 @@ public class MessageHeaderTest extends MessageHeaderTestBase
       while (en.hasMoreElements())
       {
          String propName = (String)en.nextElement();
+         
+         log.info("Prop name is " + propName);
+         
          propNames.add(propName);
       }
 

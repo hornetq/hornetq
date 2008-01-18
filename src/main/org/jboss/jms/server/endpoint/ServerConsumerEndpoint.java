@@ -25,17 +25,16 @@ import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_CHANGE
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_CLOSE;
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.REQ_CLOSING;
 
-import javax.jms.InvalidSelectorException;
 import javax.jms.JMSException;
 
 import org.jboss.jms.delegate.ConsumerEndpoint;
 import org.jboss.jms.exception.MessagingJMSException;
-import org.jboss.jms.server.selector.Selector;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Condition;
 import org.jboss.messaging.core.Consumer;
 import org.jboss.messaging.core.Destination;
 import org.jboss.messaging.core.DestinationType;
+import org.jboss.messaging.core.Filter;
 import org.jboss.messaging.core.HandleStatus;
 import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.MessageReference;
@@ -44,6 +43,7 @@ import org.jboss.messaging.core.PersistenceManager;
 import org.jboss.messaging.core.PostOffice;
 import org.jboss.messaging.core.Queue;
 import org.jboss.messaging.core.impl.ConditionImpl;
+import org.jboss.messaging.core.impl.filter.FilterImpl;
 import org.jboss.messaging.core.remoting.PacketHandler;
 import org.jboss.messaging.core.remoting.PacketSender;
 import org.jboss.messaging.core.remoting.wireformat.AbstractPacket;
@@ -91,7 +91,7 @@ public class ServerConsumerEndpoint implements Consumer, ConsumerEndpoint
 
    private boolean noLocal;
 
-   private Selector messageSelector;
+   private Filter filter;
 
    private Destination destination;
 
@@ -126,10 +126,10 @@ public class ServerConsumerEndpoint implements Consumer, ConsumerEndpoint
    // Constructors ---------------------------------------------------------------------------------
 
    ServerConsumerEndpoint(MessagingServer sp, String id, Queue messageQueue, String queueName,
-					           ServerSessionEndpoint sessionEndpoint, String selector,
+					           ServerSessionEndpoint sessionEndpoint, Filter filter,
 					           boolean noLocal, Destination destination, Queue dlq,
 					           Queue expiryQueue, long redeliveryDelay, int maxDeliveryAttempts,
-					           int prefetchSize) throws InvalidSelectorException
+					           int prefetchSize)
    {
       if (trace)
       {
@@ -162,6 +162,8 @@ public class ServerConsumerEndpoint implements Consumer, ConsumerEndpoint
       this.startStopLock = new Object();
 
       this.prefetchSize = prefetchSize;
+      
+      this.filter = filter;
                 
       //FIXME - we shouldn't have checks like this on the server side
       //It should be the jms client that decides whether to retain deliveries or not
@@ -176,14 +178,6 @@ public class ServerConsumerEndpoint implements Consumer, ConsumerEndpoint
          this.retainDeliveries = true;
       }
       
-      if (selector != null)
-      {
-         if (trace) { log.trace("creating selector:" + selector); }
-
-         this.messageSelector = new Selector(selector);
-         if (trace) { log.trace("created selector"); }
-      }
-
       this.started = this.sessionEndpoint.getConnectionEndpoint().isStarted();
       
       // adding the consumer to the queue
@@ -308,16 +302,16 @@ public class ServerConsumerEndpoint implements Consumer, ConsumerEndpoint
       boolean accept = true;
 
       //FIXME - we shouldn't have checks like this - it should be the client side which decides whether
-      //to have a selector on the consumer
+      //to have a filter on the consumer
       if (destination.getType() == DestinationType.QUEUE)
       {
          // For subscriptions message selection is handled in the Subscription itself we do not want
          // to do the check twice
-         if (messageSelector != null)
+         if (filter != null)
          {
-            accept = messageSelector.match(msg);
+            accept = filter.match(msg);
 
-            if (trace) { log.trace("message selector " + (accept ? "accepts " : "DOES NOT accept ") + "the message"); }
+            if (trace) { log.trace("message filter " + (accept ? "accepts " : "DOES NOT accept ") + "the message"); }
          }
       }
       
