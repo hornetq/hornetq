@@ -16,6 +16,7 @@ public enum PacketType
    NULL                           ((byte) 1),
    MSG_JMSEXCEPTION               ((byte) 2),
    TEXT                           ((byte) 3),
+   BYTES                          ((byte) 4),
 
    // Connection factory
    REQ_CREATECONNECTION           ((byte)10),

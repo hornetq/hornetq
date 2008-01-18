@@ -519,6 +519,7 @@
                <exclude name="**/jms/JCAWrapperTest.class"/>
                <exclude name="**/jms/server/ServerPeerTest.class"/>
                <exclude name="**/jms/SecurityTest.class"/>
+               <exclude name="**/stress/PacketStressTest.class"/>
             </fileset>
          </batchtest>
       </junit>

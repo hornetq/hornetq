@@ -19,6 +19,7 @@ import org.jboss.messaging.core.remoting.codec.BrowserHasNextMessageResponseCode
 import org.jboss.messaging.core.remoting.codec.BrowserNextMessageBlockRequestCodec;
 import org.jboss.messaging.core.remoting.codec.BrowserNextMessageBlockResponseCodec;
 import org.jboss.messaging.core.remoting.codec.BrowserNextMessageResponseCodec;
+import org.jboss.messaging.core.remoting.codec.BytesPacketCodec;
 import org.jboss.messaging.core.remoting.codec.CancelDeliveriesMessageCodec;
 import org.jboss.messaging.core.remoting.codec.CancelDeliveryMessageCodec;
 import org.jboss.messaging.core.remoting.codec.ChangeRateMessageCodec;
@@ -59,6 +60,7 @@ import org.jboss.messaging.core.remoting.wireformat.BrowserNextMessageBlockRespo
 import org.jboss.messaging.core.remoting.wireformat.BrowserNextMessageRequest;
 import org.jboss.messaging.core.remoting.wireformat.BrowserNextMessageResponse;
 import org.jboss.messaging.core.remoting.wireformat.BrowserResetMessage;
+import org.jboss.messaging.core.remoting.wireformat.BytesPacket;
 import org.jboss.messaging.core.remoting.wireformat.CancelDeliveriesMessage;
 import org.jboss.messaging.core.remoting.wireformat.CancelDeliveryMessage;
 import org.jboss.messaging.core.remoting.wireformat.ChangeRateMessage;
@@ -119,6 +121,7 @@ public class PacketCodecFactory extends DemuxingProtocolCodecFactory
 
       // TextPacket are for testing purpose only!
       addCodec(TextPacket.class, TextPacketCodec.class);
+      addCodec(BytesPacket.class, BytesPacketCodec.class);
 
       addCodec(CreateConnectionRequest.class,
             ConnectionFactoryCreateConnectionRequestCodec.class);
