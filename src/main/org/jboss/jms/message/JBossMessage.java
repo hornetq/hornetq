@@ -41,7 +41,6 @@ import javax.jms.MessageNotWriteableException;
 import org.jboss.jms.exception.MessagingJMSException;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.impl.MessageImpl;
-import org.jboss.util.Primitives;
 import org.jboss.util.Strings;
 
 /**
@@ -683,7 +682,7 @@ public class JBossMessage implements javax.jms.Message
 
    public void setBooleanProperty(String name, boolean value) throws JMSException
    {
-      Boolean b = Primitives.valueOf(value);
+      Boolean b = Boolean.valueOf(value);
       checkProperty(name, b);
       message.putHeader(name, b);
    }

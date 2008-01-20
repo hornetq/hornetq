@@ -24,16 +24,15 @@ package org.jboss.messaging.core.impl.filter;
 
 import java.util.HashSet;
 
-import org.jboss.util.Primitives;
-
 /**
-* An operator for JBM filters
+* Implementations of the operators used in JBM filter expressions
 *
-* @author     Norbert Lataille (Norbert.Lataille@m4x.org)
-* @author     droy@boostmyscore.com
-* @author     Scott.Stark@jboss.org
-* @author     adrian@jboss.com
-* @version    $Revision: 2681 $
+* @author Norbert Lataille (Norbert.Lataille@m4x.org)
+* @author droy@boostmyscore.com
+* @author Scott.Stark@jboss.org
+* @author adrian@jboss.com
+* @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+* @version $Revision: 2681 $
 */
 public class Operator
 {
@@ -190,9 +189,9 @@ public class Operator
            if (arg2 == null)
               return null;
            if (class2 == LONG)
-              return Primitives.valueOf(((Number) arg1).longValue() == ((Number) arg2).longValue());
+              return Boolean.valueOf(((Number) arg1).longValue() == ((Number) arg2).longValue());
            if (class2 == DOUBLE)
-              return Primitives.valueOf(((Number) arg1).longValue() == ((Number) arg2).doubleValue());
+              return Boolean.valueOf(((Number) arg1).longValue() == ((Number) arg2).doubleValue());
            return Boolean.FALSE;
         case DOUBLE:
            computeArgument1();
@@ -202,9 +201,9 @@ public class Operator
            if (arg2 == null)
               return null;
            if (class2 == LONG)
-              return Primitives.valueOf(((Number) arg1).doubleValue() == ((Number) arg2).longValue());
+              return Boolean.valueOf(((Number) arg1).doubleValue() == ((Number) arg2).longValue());
            if (class2 == DOUBLE)
-              return Primitives.valueOf(((Number) arg1).doubleValue() == ((Number) arg2).doubleValue());
+              return Boolean.valueOf(((Number) arg1).doubleValue() == ((Number) arg2).doubleValue());
            return Boolean.FALSE;
         case STRING:
         case BOOLEAN:
@@ -213,7 +212,7 @@ public class Operator
               return Boolean.FALSE;
            if (class2 != class1)
               throwBadObjectException(class1, class2);
-           return Primitives.valueOf(arg1.equals(arg2));
+           return Boolean.valueOf(arg1.equals(arg2));
         default:
            throwBadObjectException(class1);
            return null;
@@ -322,9 +321,9 @@ public class Operator
         if (arg2 == null)
            return null;
         if (class2 == LONG)
-           return Primitives.valueOf(((Number) arg1).longValue() > ((Number) arg2).longValue());
+           return Boolean.valueOf(((Number) arg1).longValue() > ((Number) arg2).longValue());
         if (class2 == DOUBLE)
-           return Primitives.valueOf(((Number) arg1).longValue() > ((Number) arg2).doubleValue());
+           return Boolean.valueOf(((Number) arg1).longValue() > ((Number) arg2).doubleValue());
      }
      else if ( class1 == DOUBLE )
      {
@@ -332,9 +331,9 @@ public class Operator
         if (arg2 == null)
            return null;
         if (class2 == LONG)
-           return Primitives.valueOf(((Number) arg1).doubleValue() > ((Number) arg2).longValue());
+           return Boolean.valueOf(((Number) arg1).doubleValue() > ((Number) arg2).longValue());
         if (class2 == DOUBLE)
-           return Primitives.valueOf(((Number) arg1).doubleValue() > ((Number) arg2).doubleValue());
+           return Boolean.valueOf(((Number) arg1).doubleValue() > ((Number) arg2).doubleValue());
         return Boolean.FALSE;
      }
      return Boolean.FALSE;
@@ -353,9 +352,9 @@ public class Operator
         if (arg2 == null)
            return null;
         if (class2 == LONG)
-           return Primitives.valueOf(((Number) arg1).longValue() >= ((Number) arg2).longValue());
+           return Boolean.valueOf(((Number) arg1).longValue() >= ((Number) arg2).longValue());
         if (class2 == DOUBLE)
-           return Primitives.valueOf(((Number) arg1).longValue() >= ((Number) arg2).doubleValue());
+           return Boolean.valueOf(((Number) arg1).longValue() >= ((Number) arg2).doubleValue());
      }
      else if ( class1 == DOUBLE )
      {
@@ -363,9 +362,9 @@ public class Operator
         if (arg2 == null)
            return null;
         if (class2 == LONG)
-           return Primitives.valueOf(((Number) arg1).longValue() >= ((Number) arg2).longValue());
+           return Boolean.valueOf(((Number) arg1).longValue() >= ((Number) arg2).longValue());
         if (class2 == DOUBLE)
-           return Primitives.valueOf(((Number) arg1).doubleValue() >= ((Number) arg2).doubleValue());
+           return Boolean.valueOf(((Number) arg1).doubleValue() >= ((Number) arg2).doubleValue());
         return Boolean.FALSE;
      }
      return Boolean.FALSE;         
@@ -384,9 +383,9 @@ public class Operator
         if (arg2 == null)
            return null;
         if (class2 == LONG)
-           return Primitives.valueOf(((Number) arg1).longValue() < ((Number) arg2).longValue());
+           return Boolean.valueOf(((Number) arg1).longValue() < ((Number) arg2).longValue());
         if (class2 == DOUBLE)
-           return Primitives.valueOf(((Number) arg1).longValue() < ((Number) arg2).doubleValue());
+           return Boolean.valueOf(((Number) arg1).longValue() < ((Number) arg2).doubleValue());
      }
      else if (class1 == DOUBLE)
      {
@@ -394,9 +393,9 @@ public class Operator
         if (arg2 == null)
            return null;
         if (class2 == LONG)
-           return Primitives.valueOf(((Number) arg1).doubleValue() < ((Number) arg2).longValue());
+           return Boolean.valueOf(((Number) arg1).doubleValue() < ((Number) arg2).longValue());
         if (class2 == DOUBLE)
-           return Primitives.valueOf(((Number) arg1).doubleValue() < ((Number) arg2).doubleValue());
+           return Boolean.valueOf(((Number) arg1).doubleValue() < ((Number) arg2).doubleValue());
      }
 
      return Boolean.FALSE;
@@ -415,9 +414,9 @@ public class Operator
         if (arg2 == null)
            return null;
         if (class2 == LONG)
-           return Primitives.valueOf(((Number) arg1).longValue() <= ((Number) arg2).longValue());
+           return Boolean.valueOf(((Number) arg1).longValue() <= ((Number) arg2).longValue());
         if (class2 == DOUBLE)
-           return Primitives.valueOf(((Number) arg1).longValue() <= ((Number) arg2).doubleValue());
+           return Boolean.valueOf(((Number) arg1).longValue() <= ((Number) arg2).doubleValue());
      }
      else if (class1 == DOUBLE)
      {
@@ -425,9 +424,9 @@ public class Operator
         if (arg2 == null)
            return null;
         if (class2 == LONG)
-           return Primitives.valueOf(((Number) arg1).doubleValue() <= ((Number) arg2).longValue());
+           return Boolean.valueOf(((Number) arg1).doubleValue() <= ((Number) arg2).longValue());
         if (class2 == DOUBLE)
-           return Primitives.valueOf(((Number) arg1).doubleValue() <= ((Number) arg2).doubleValue());
+           return Boolean.valueOf(((Number) arg1).doubleValue() <= ((Number) arg2).doubleValue());
      }
      return Boolean.FALSE;
   }
@@ -449,9 +448,9 @@ public class Operator
            if (arg2 == null)
               return null;
            if (class2 == LONG)
-              return Primitives.valueOf(((Number) arg1).longValue() != ((Number) arg2).longValue());
+              return Boolean.valueOf(((Number) arg1).longValue() != ((Number) arg2).longValue());
            if (class2 == DOUBLE)
-              return Primitives.valueOf(((Number) arg1).longValue() != ((Number) arg2).doubleValue());
+              return Boolean.valueOf(((Number) arg1).longValue() != ((Number) arg2).doubleValue());
            return Boolean.FALSE;
         case DOUBLE:
            computeArgument1();
@@ -461,9 +460,9 @@ public class Operator
            if (arg2 == null)
               return null;
            if (class2 == LONG)
-              return Primitives.valueOf(((Number) arg1).doubleValue() != ((Number) arg2).longValue());
+              return Boolean.valueOf(((Number) arg1).doubleValue() != ((Number) arg2).longValue());
            if (class2 == DOUBLE)
-              return Primitives.valueOf(((Number) arg1).doubleValue() != ((Number) arg2).doubleValue());
+              return Boolean.valueOf(((Number) arg1).doubleValue() != ((Number) arg2).doubleValue());
            return Boolean.FALSE;
         case STRING:
         case BOOLEAN:
@@ -472,7 +471,7 @@ public class Operator
               return Boolean.FALSE;
            if (class2 != class1)
               throwBadObjectException(class1, class2);
-           return Primitives.valueOf(arg1.equals(arg2) == false);
+           return Boolean.valueOf(arg1.equals(arg2) == false);
         default:
            throwBadObjectException(class1);
      }
