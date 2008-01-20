@@ -35,7 +35,7 @@ import javax.naming.NamingException;
 import javax.security.auth.Subject;
 
 import org.jboss.jms.server.SecurityStore;
-import org.jboss.logging.Logger;
+import org.jboss.messaging.util.Logger;
 import org.jboss.messaging.core.MessagingServer;
 import org.jboss.security.AuthenticationManager;
 import org.jboss.security.RealmMapping;

@@ -42,7 +42,7 @@ import org.jboss.jms.exception.MessagingTransactionRolledBackException;
 import org.jboss.jms.exception.MessagingXAException;
 import org.jboss.jms.message.JBossMessage;
 import org.jboss.jms.tx.ClientTransaction.SessionTxState;
-import org.jboss.logging.Logger;
+import org.jboss.messaging.util.Logger;
 import org.jboss.messaging.core.Message;
 
 

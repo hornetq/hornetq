@@ -26,7 +26,7 @@ import java.util.HashSet;
 import java.util.List;
 
 import org.jboss.jms.server.security.Role;
-import org.jboss.logging.Logger;
+import org.jboss.messaging.util.Logger;
 import org.jboss.messaging.core.Binding;
 import org.jboss.messaging.core.Condition;
 import org.jboss.messaging.core.Destination;

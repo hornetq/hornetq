@@ -46,7 +46,7 @@ import javax.transaction.xa.XAResource;
 
 import org.jboss.jms.client.JBossSession;
 import org.jboss.jms.message.JBossMessage;
-import org.jboss.logging.Logger;
+import org.jboss.messaging.util.Logger;
 import org.jboss.messaging.core.MessagingComponent;
 import org.jboss.messaging.util.ProxyFactory;
 import org.jboss.tm.TransactionManagerLocator;

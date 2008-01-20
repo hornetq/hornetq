@@ -34,7 +34,7 @@ import javax.jms.Session;
 import EDU.oswego.cs.dl.util.concurrent.SynchronizedInt;
 import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.message.JBossMessage;
-import org.jboss.logging.Logger;
+import org.jboss.messaging.util.Logger;
 import org.jboss.messaging.util.MessageQueueNameHelper;
 
 /**

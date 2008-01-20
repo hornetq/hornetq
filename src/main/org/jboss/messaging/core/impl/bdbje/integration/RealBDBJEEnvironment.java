@@ -31,7 +31,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
 
-import org.jboss.logging.Logger;
+import org.jboss.messaging.util.Logger;
 import org.jboss.messaging.core.impl.bdbje.BDBJEDatabase;
 import org.jboss.messaging.core.impl.bdbje.BDBJEEnvironment;
 import org.jboss.messaging.core.impl.bdbje.BDBJETransaction;

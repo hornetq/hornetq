@@ -30,7 +30,7 @@ import org.jboss.jms.server.SecurityStore;
 import org.jboss.jms.server.endpoint.ServerConnectionEndpoint;
 import org.jboss.jms.server.security.CheckType;
 import org.jboss.jms.server.security.SecurityMetadata;
-import org.jboss.logging.Logger;
+import org.jboss.messaging.util.Logger;
 import org.jboss.messaging.core.Destination;
 import org.jboss.messaging.core.DestinationType;
 import org.jboss.security.SimplePrincipal;

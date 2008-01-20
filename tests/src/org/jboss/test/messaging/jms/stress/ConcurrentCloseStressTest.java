@@ -23,7 +23,7 @@
 package org.jboss.test.messaging.jms.stress;
 
 import org.jboss.jms.client.JBossConnectionFactory;
-import org.jboss.logging.Logger;
+import org.jboss.messaging.util.Logger;
 import org.jboss.test.messaging.JBMServerTestCase;
 import org.jboss.test.messaging.jms.ConnectionTest;
 

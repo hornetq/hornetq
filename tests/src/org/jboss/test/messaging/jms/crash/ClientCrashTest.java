@@ -23,7 +23,7 @@ package org.jboss.test.messaging.jms.crash;
 
 import org.jboss.jms.server.ConnectionManager;
 import org.jboss.jms.server.connectionmanager.SimpleConnectionManager;
-import org.jboss.logging.Logger;
+import org.jboss.messaging.util.Logger;
 import org.jboss.test.messaging.JBMServerTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
 import org.jboss.test.messaging.tools.container.LocalTestServer;

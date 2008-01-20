@@ -31,8 +31,6 @@ import javax.jms.MapMessage;
 import javax.jms.MessageFormatException;
 import javax.jms.MessageNotWriteableException;
 
-import org.jboss.util.Primitives;
-
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @version $Revision$
@@ -67,7 +65,7 @@ public class SimpleJMSMapMessage extends SimpleJMSMessage implements MapMessage
          throw new MessageNotWriteableException("Message is ReadOnly !");
       }
 
-      content.put(name, Primitives.valueOf(value));
+      content.put(name, Boolean.valueOf(value));
 
    }
 

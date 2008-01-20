@@ -18,7 +18,7 @@ import javax.jms.MessageProducer;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 
-import org.jboss.logging.Logger;
+import org.jboss.messaging.util.Logger;
 import org.jboss.test.messaging.jms.clustering.ClusteringTestBase;
 
 

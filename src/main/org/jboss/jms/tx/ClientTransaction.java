@@ -33,7 +33,7 @@ import java.util.Map;
 import org.jboss.jms.delegate.Ack;
 import org.jboss.jms.delegate.DefaultAck;
 import org.jboss.jms.delegate.DeliveryInfo;
-import org.jboss.logging.Logger;
+import org.jboss.messaging.util.Logger;
 import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.impl.MessageImpl;
 

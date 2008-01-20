@@ -26,7 +26,7 @@ import java.util.UUID;
 import javax.jms.JMSException;
 
 import org.jboss.jms.exception.MessagingJMSException;
-import org.jboss.logging.Logger;
+import org.jboss.messaging.util.Logger;
 
 /**
  * A ExceptionUtil

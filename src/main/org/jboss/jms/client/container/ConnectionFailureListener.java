@@ -9,7 +9,7 @@ package org.jboss.jms.client.container;
 import org.jboss.jms.client.FailoverCommandCenter;
 import org.jboss.jms.client.FailureDetector;
 import org.jboss.jms.client.remoting.JMSRemotingConnection;
-import org.jboss.logging.Logger;
+import org.jboss.messaging.util.Logger;
 
 /**
  * The listener that detects a connection failure and initiates the failover process. Each physical

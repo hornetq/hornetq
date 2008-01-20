@@ -27,7 +27,7 @@ import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.security.SecureRandom;
 
-import org.jboss.logging.Logger;
+import org.jboss.messaging.util.Logger;
 
 /**
  * PortUtil is a set of utilities for dealing with TCP/IP ports

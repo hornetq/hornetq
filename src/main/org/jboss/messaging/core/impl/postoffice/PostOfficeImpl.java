@@ -32,7 +32,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import javax.jms.TextMessage;
 
 import org.jboss.jms.message.JBossMessage;
-import org.jboss.logging.Logger;
+import org.jboss.messaging.util.Logger;
 import org.jboss.messaging.core.Binding;
 import org.jboss.messaging.core.Condition;
 import org.jboss.messaging.core.Filter;

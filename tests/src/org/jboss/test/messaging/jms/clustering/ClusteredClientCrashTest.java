@@ -28,7 +28,7 @@ import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 
 import org.jboss.jms.client.delegate.ClientClusteredConnectionFactoryDelegate;
-import org.jboss.logging.Logger;
+import org.jboss.messaging.util.Logger;
 import org.jboss.test.messaging.tools.ServerManagement;
 import org.jboss.test.messaging.tools.container.Command;
 import org.jboss.test.messaging.tools.container.Server;

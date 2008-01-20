@@ -21,7 +21,7 @@
 */
 package org.jboss.jms.server.recovery;
 
-import org.jboss.logging.Logger;
+import org.jboss.messaging.util.Logger;
 
 import javax.jms.*;
 import javax.transaction.xa.XAException;

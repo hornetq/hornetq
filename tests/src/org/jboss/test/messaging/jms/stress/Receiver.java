@@ -35,7 +35,7 @@ import javax.jms.ServerSession;
 import javax.jms.ServerSessionPool;
 import javax.jms.Session;
 
-import org.jboss.logging.Logger;
+import org.jboss.messaging.util.Logger;
 
 /**
  * 

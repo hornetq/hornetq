@@ -30,7 +30,7 @@ import javax.jms.QueueBrowser;
 
 import org.jboss.jms.client.api.ClientBrowser;
 import org.jboss.jms.message.JBossMessage;
-import org.jboss.logging.Logger;
+import org.jboss.messaging.util.Logger;
 import org.jboss.messaging.core.Message;
 
 /**

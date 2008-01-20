@@ -25,7 +25,7 @@ import java.util.StringTokenizer;
 
 import javax.transaction.xa.XAResource;
 
-import org.jboss.logging.Logger;
+import org.jboss.messaging.util.Logger;
 
 import com.arjuna.ats.jta.recovery.XAResourceRecovery;
 

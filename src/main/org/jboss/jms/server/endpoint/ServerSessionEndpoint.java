@@ -66,7 +66,7 @@ import org.jboss.jms.exception.MessagingJMSException;
 import org.jboss.jms.server.DestinationManager;
 import org.jboss.jms.server.container.SecurityAspect;
 import org.jboss.jms.server.security.CheckType;
-import org.jboss.logging.Logger;
+import org.jboss.messaging.util.Logger;
 import org.jboss.messaging.core.Binding;
 import org.jboss.messaging.core.Condition;
 import org.jboss.messaging.core.Destination;

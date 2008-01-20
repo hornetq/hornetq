@@ -18,7 +18,7 @@ import javax.jms.JMSException;
 
 import org.jboss.jms.exception.MessagingJMSException;
 import org.jboss.jms.exception.MessagingNetworkFailureException;
-import org.jboss.logging.Logger;
+import org.jboss.messaging.util.Logger;
 import org.jboss.messaging.core.remoting.Client;
 import org.jboss.messaging.core.remoting.wireformat.AbstractPacket;
 import org.jboss.messaging.core.remoting.wireformat.JMSExceptionMessage;

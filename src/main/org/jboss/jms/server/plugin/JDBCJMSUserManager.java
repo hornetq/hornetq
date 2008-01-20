@@ -22,7 +22,7 @@
 package org.jboss.jms.server.plugin;
 
 import org.jboss.jms.server.plugin.contract.JMSUserManager;
-import org.jboss.logging.Logger;
+import org.jboss.messaging.util.Logger;
 import org.jboss.messaging.core.impl.JDBCSupport;
 
 import java.sql.*;

@@ -37,7 +37,7 @@ import javax.naming.InitialContext;
 import javax.transaction.UserTransaction;
 
 import org.jboss.jms.server.security.Role;
-import org.jboss.logging.Logger;
+import org.jboss.messaging.util.Logger;
 import org.jboss.messaging.core.MessagingServer;
 import org.jboss.messaging.core.MessagingServerManagement;
 

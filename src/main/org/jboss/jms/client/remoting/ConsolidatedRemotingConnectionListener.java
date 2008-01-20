@@ -11,7 +11,7 @@ import javax.jms.JMSException;
 
 import org.jboss.jms.client.api.ClientConnection;
 import org.jboss.jms.client.container.ConnectionFailureListener;
-import org.jboss.logging.Logger;
+import org.jboss.messaging.util.Logger;
 
 /**
  * The ONLY remoting connection listener for a JMS connection's underlying remoting connection.

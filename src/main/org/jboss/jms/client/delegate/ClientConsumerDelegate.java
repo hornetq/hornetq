@@ -33,7 +33,7 @@ import org.jboss.jms.client.api.ClientSession;
 import org.jboss.jms.client.container.ClientConsumer;
 import org.jboss.jms.client.remoting.CallbackManager;
 import org.jboss.jms.exception.MessagingShutdownException;
-import org.jboss.logging.Logger;
+import org.jboss.messaging.util.Logger;
 import org.jboss.messaging.core.Destination;
 import org.jboss.messaging.core.DestinationType;
 import org.jboss.messaging.core.remoting.PacketDispatcher;

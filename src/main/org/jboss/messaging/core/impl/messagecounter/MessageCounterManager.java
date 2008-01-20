@@ -21,7 +21,7 @@
  */
 package org.jboss.messaging.core.impl.messagecounter;
 
-import org.jboss.logging.Logger;
+import org.jboss.messaging.util.Logger;
 import org.jboss.messaging.core.MessagingComponent;
 
 import java.util.*;

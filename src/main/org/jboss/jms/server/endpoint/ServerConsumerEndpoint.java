@@ -29,7 +29,6 @@ import javax.jms.JMSException;
 
 import org.jboss.jms.delegate.ConsumerEndpoint;
 import org.jboss.jms.exception.MessagingJMSException;
-import org.jboss.logging.Logger;
 import org.jboss.messaging.core.Condition;
 import org.jboss.messaging.core.Consumer;
 import org.jboss.messaging.core.Destination;
@@ -43,7 +42,6 @@ import org.jboss.messaging.core.PersistenceManager;
 import org.jboss.messaging.core.PostOffice;
 import org.jboss.messaging.core.Queue;
 import org.jboss.messaging.core.impl.ConditionImpl;
-import org.jboss.messaging.core.impl.filter.FilterImpl;
 import org.jboss.messaging.core.remoting.PacketHandler;
 import org.jboss.messaging.core.remoting.PacketSender;
 import org.jboss.messaging.core.remoting.wireformat.AbstractPacket;
@@ -55,6 +53,7 @@ import org.jboss.messaging.core.remoting.wireformat.JMSExceptionMessage;
 import org.jboss.messaging.core.remoting.wireformat.NullPacket;
 import org.jboss.messaging.core.remoting.wireformat.PacketType;
 import org.jboss.messaging.util.ExceptionUtil;
+import org.jboss.messaging.util.Logger;
 
 /**
  * Concrete implementation of a Consumer. 

@@ -47,7 +47,7 @@ import org.jboss.jms.client.api.Consumer;
 import org.jboss.jms.client.delegate.ClientConnectionDelegate;
 import org.jboss.jms.client.delegate.ClientSessionDelegate;
 import org.jboss.jms.client.delegate.ClientConsumerDelegate;
-import org.jboss.logging.Logger;
+import org.jboss.messaging.util.Logger;
 import org.jboss.messaging.microcontainer.JBMBootstrapServer;
 import org.jboss.messaging.util.ProxyFactory;
 import org.jboss.test.messaging.util.ProxyAssertSupport;

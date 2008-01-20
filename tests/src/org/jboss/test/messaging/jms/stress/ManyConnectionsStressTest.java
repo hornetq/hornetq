@@ -6,7 +6,7 @@
  */
 package org.jboss.test.messaging.jms.stress;
 
-import org.jboss.logging.Logger;
+import org.jboss.messaging.util.Logger;
 import org.jboss.test.messaging.JBMServerTestCase;
 
 import javax.jms.*;

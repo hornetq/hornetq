@@ -65,7 +65,7 @@ import org.jboss.jms.message.JBossTextMessage;
 import org.jboss.jms.tx.LocalTx;
 import org.jboss.jms.tx.MessagingXAResource;
 import org.jboss.jms.tx.ResourceManager;
-import org.jboss.logging.Logger;
+import org.jboss.messaging.util.Logger;
 import org.jboss.messaging.core.Destination;
 import org.jboss.messaging.core.DestinationType;
 import org.jboss.messaging.core.Message;

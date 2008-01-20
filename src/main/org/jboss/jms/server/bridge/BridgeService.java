@@ -21,7 +21,7 @@
  */
 package org.jboss.jms.server.bridge;
 
-import org.jboss.logging.Logger;
+import org.jboss.messaging.util.Logger;
 import org.jboss.messaging.core.MessagingComponent;
 
 import javax.management.ObjectName;

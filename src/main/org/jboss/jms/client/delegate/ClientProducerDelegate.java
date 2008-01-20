@@ -43,7 +43,7 @@ import org.jboss.jms.message.JBossObjectMessage;
 import org.jboss.jms.message.JBossStreamMessage;
 import org.jboss.jms.message.JBossTextMessage;
 import org.jboss.messaging.core.remoting.Client;
-import org.jboss.logging.Logger;
+import org.jboss.messaging.util.Logger;
 import org.jboss.messaging.core.DestinationType;
 import org.jboss.messaging.core.impl.DestinationImpl;
 

@@ -22,7 +22,7 @@
 package org.jboss.test.messaging.jms;
 
 import org.jboss.jms.client.JBossConnectionFactory;
-import org.jboss.logging.Logger;
+import org.jboss.messaging.util.Logger;
 import org.jboss.profiler.jvmti.InventoryDataPoint;
 import org.jboss.profiler.jvmti.JVMTIInterface;
 import org.jboss.remoting.*;

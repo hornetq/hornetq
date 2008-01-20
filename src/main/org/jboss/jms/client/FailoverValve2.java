@@ -24,7 +24,7 @@ package org.jboss.jms.client;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.jboss.logging.Logger;
+import org.jboss.messaging.util.Logger;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>

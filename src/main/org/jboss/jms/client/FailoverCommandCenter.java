@@ -11,7 +11,7 @@ import org.jboss.jms.client.delegate.ClientConnectionDelegate;
 import org.jboss.jms.client.remoting.JMSRemotingConnection;
 import org.jboss.jms.delegate.ConnectionFactoryDelegate;
 import org.jboss.jms.delegate.CreateConnectionResult;
-import org.jboss.logging.Logger;
+import org.jboss.messaging.util.Logger;
 
 import java.util.ArrayList;
 import java.util.Iterator;

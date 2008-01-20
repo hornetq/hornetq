@@ -19,7 +19,7 @@ import java.io.DataOutputStream;
 import java.nio.charset.CharacterCodingException;
 
 import org.jboss.jms.destination.JBossDestination;
-import org.jboss.logging.Logger;
+import org.jboss.messaging.util.Logger;
 import org.jboss.messaging.core.Destination;
 import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.impl.DestinationImpl;

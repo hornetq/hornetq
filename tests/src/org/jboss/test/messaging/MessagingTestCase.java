@@ -43,7 +43,7 @@ import javax.sql.DataSource;
 import javax.transaction.TransactionManager;
 
 import org.jboss.jms.client.JBossConnection;
-import org.jboss.logging.Logger;
+import org.jboss.messaging.util.Logger;
 import org.jboss.test.messaging.tools.ServerManagement;
 import org.jboss.test.messaging.util.ProxyAssertSupport;
 import org.jboss.tm.TransactionManagerLocator;

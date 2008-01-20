@@ -21,7 +21,7 @@
 */
 package org.jboss.test.messaging.tools.container;
 
-import org.jboss.logging.Logger;
+import org.jboss.messaging.util.Logger;
 
 import javax.naming.Context;
 import javax.naming.NamingException;

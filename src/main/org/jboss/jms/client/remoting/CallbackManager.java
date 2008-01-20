@@ -24,7 +24,7 @@ package org.jboss.jms.client.remoting;
 import java.util.Map;
 
 import org.jboss.jms.client.container.ClientConsumer;
-import org.jboss.logging.Logger;
+import org.jboss.messaging.util.Logger;
 
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentReaderHashMap;
 

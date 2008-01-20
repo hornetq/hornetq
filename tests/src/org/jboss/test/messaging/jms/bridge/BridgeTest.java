@@ -37,7 +37,7 @@ import javax.transaction.TransactionManager;
 
 import org.jboss.jms.message.JBossMessage;
 import org.jboss.jms.server.bridge.Bridge;
-import org.jboss.logging.Logger;
+import org.jboss.messaging.util.Logger;
 import org.jboss.tm.TransactionManagerLocator;
 
 /**

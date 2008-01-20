@@ -36,7 +36,7 @@ import org.jboss.jms.delegate.Cancel;
 import org.jboss.jms.delegate.DefaultCancel;
 import org.jboss.jms.delegate.DeliveryInfo;
 import org.jboss.jms.message.JBossMessage;
-import org.jboss.logging.Logger;
+import org.jboss.messaging.util.Logger;
 import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.PriorityLinkedList;
 import org.jboss.messaging.core.impl.PriorityLinkedListImpl;

@@ -36,7 +36,7 @@ import javax.jms.TopicConnectionFactory;
 import org.jboss.jms.client.delegate.ClientConnectionDelegate;
 import org.jboss.jms.tx.ResourceManager;
 import org.jboss.jms.tx.ResourceManagerFactory;
-import org.jboss.logging.Logger;
+import org.jboss.messaging.util.Logger;
 
 
 /**

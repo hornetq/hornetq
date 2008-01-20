@@ -39,9 +39,8 @@ import javax.jms.MessageNotReadableException;
 import javax.jms.MessageNotWriteableException;
 
 import org.jboss.jms.exception.MessagingJMSException;
-import org.jboss.logging.Logger;
+import org.jboss.messaging.util.Logger;
 import org.jboss.messaging.core.impl.MessageImpl;
-import org.jboss.util.Strings;
 
 /**
  * 
@@ -893,7 +892,7 @@ public class JBossMessage implements javax.jms.Message
          throw new IllegalArgumentException("The name of a property must not be an empty String.");
       }
 
-      if (!Strings.isValidJavaIdentifier(name))
+      if (!isValidJavaIdentifier(name))
       {
          throw new IllegalArgumentException("The property name '" + name +
                                             "' is not a valid java identifier.");
@@ -937,6 +936,31 @@ public class JBossMessage implements javax.jms.Message
             throw new IllegalArgumentException("The property name '" + name + "' is illegal since it starts with JMS");
          }
       }
+   }
+   
+   public boolean isValidJavaIdentifier(String s)
+   {
+      if (s == null || s.length() == 0)
+      {
+         return false;
+      }
+
+      char[] c = s.toCharArray();
+      
+      if (!Character.isJavaIdentifierStart(c[0]))
+      {
+         return false;
+      }
+
+      for (int i = 1; i < c.length; i++)
+      {
+         if (!Character.isJavaIdentifierPart(c[i]))
+         {
+            return false;
+         }
+      }
+
+      return true;
    }
    
    // Inner classes -------------------------------------------------

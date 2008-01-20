@@ -28,7 +28,7 @@ import java.io.DataOutputStream;
 import javax.jms.JMSException;
 import javax.jms.TextMessage;
 
-import org.jboss.logging.Logger;
+import org.jboss.messaging.util.Logger;
 import org.jboss.messaging.util.SafeUTF;
 
 /**

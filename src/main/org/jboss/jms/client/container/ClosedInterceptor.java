@@ -26,7 +26,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import javax.jms.IllegalStateException;
 
-import org.jboss.logging.Logger;
+import org.jboss.messaging.util.Logger;
 
 
 /**

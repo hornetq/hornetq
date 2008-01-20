@@ -21,7 +21,7 @@
   */
 package org.jboss.jms.server.security;
 
-import org.jboss.logging.Logger;
+import org.jboss.messaging.util.Logger;
 import org.jboss.security.SimplePrincipal;
 
 import java.util.HashSet;

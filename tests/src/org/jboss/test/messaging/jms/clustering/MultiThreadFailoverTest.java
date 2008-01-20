@@ -24,7 +24,7 @@ package org.jboss.test.messaging.jms.clustering;
 
 import org.jboss.jms.client.JBossConnection;
 import org.jboss.jms.client.delegate.ClientConnectionDelegate;
-import org.jboss.logging.Logger;
+import org.jboss.messaging.util.Logger;
 import org.jboss.test.messaging.tools.ServerManagement;
 
 import javax.jms.*;

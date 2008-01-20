@@ -12,7 +12,7 @@ import static org.jboss.messaging.core.remoting.wireformat.AbstractPacket.NO_ID_
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.jboss.logging.Logger;
+import org.jboss.messaging.util.Logger;
 import org.jboss.messaging.core.remoting.wireformat.AbstractPacket;
 
 /**

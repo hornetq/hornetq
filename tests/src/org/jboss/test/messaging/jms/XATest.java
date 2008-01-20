@@ -52,7 +52,7 @@ import org.jboss.jms.tx.LocalTx;
 import org.jboss.jms.tx.MessagingXAResource;
 import org.jboss.jms.tx.ResourceManager;
 import org.jboss.jms.tx.ResourceManagerFactory;
-import org.jboss.logging.Logger;
+import org.jboss.messaging.util.Logger;
 import org.jboss.messaging.core.tx.MessagingXid;
 import org.jboss.messaging.util.ProxyFactory;
 import org.jboss.test.messaging.JBMServerTestCase;

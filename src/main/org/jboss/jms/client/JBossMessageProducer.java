@@ -34,7 +34,7 @@ import javax.jms.Topic;
 import javax.jms.TopicPublisher;
 
 import org.jboss.jms.destination.JBossDestination;
-import org.jboss.logging.Logger;
+import org.jboss.messaging.util.Logger;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>

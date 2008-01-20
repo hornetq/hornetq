@@ -12,7 +12,7 @@ import java.io.InputStream;
 import java.io.Serializable;
 import java.util.Properties;
 
-import org.jboss.logging.Logger;
+import org.jboss.messaging.util.Logger;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>

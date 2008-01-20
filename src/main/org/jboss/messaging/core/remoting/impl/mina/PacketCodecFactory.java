@@ -9,7 +9,7 @@ package org.jboss.messaging.core.remoting.impl.mina;
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.NULL;
 
 import org.apache.mina.filter.codec.demux.DemuxingProtocolCodecFactory;
-import org.jboss.logging.Logger;
+import org.jboss.messaging.util.Logger;
 import org.jboss.messaging.core.remoting.codec.AbstractPacketCodec;
 import org.jboss.messaging.core.remoting.codec.AcknowledgeDeliveriesRequestCodec;
 import org.jboss.messaging.core.remoting.codec.AcknowledgeDeliveryRequestCodec;

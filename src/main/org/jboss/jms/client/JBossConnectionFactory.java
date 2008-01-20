@@ -42,7 +42,7 @@ import javax.naming.Reference;
 import org.jboss.jms.delegate.ConnectionFactoryDelegate;
 import org.jboss.jms.delegate.CreateConnectionResult;
 import org.jboss.jms.referenceable.SerializableObjectRefAddr;
-import org.jboss.logging.Logger;
+import org.jboss.messaging.util.Logger;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>

@@ -22,7 +22,7 @@
 package org.jboss.test.messaging.jms.manual;
 
 import junit.framework.TestCase;
-import org.jboss.logging.Logger;
+import org.jboss.messaging.util.Logger;
 
 import javax.jms.Message;
 import javax.jms.MessageListener;

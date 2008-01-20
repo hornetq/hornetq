@@ -42,7 +42,7 @@ import javax.transaction.UserTransaction;
 import org.jboss.jms.server.connectionfactory.ConnectionFactory;
 import org.jboss.jms.server.security.Role;
 import org.jboss.jms.tx.ResourceManagerFactory;
-import org.jboss.logging.Logger;
+import org.jboss.messaging.util.Logger;
 import org.jboss.messaging.core.Binding;
 import org.jboss.messaging.core.Condition;
 import org.jboss.messaging.core.DestinationType;

@@ -21,7 +21,7 @@
   */
 package org.jboss.messaging.core.impl;
 
-import org.jboss.logging.Logger;
+import org.jboss.messaging.util.Logger;
 import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.PersistenceManager;

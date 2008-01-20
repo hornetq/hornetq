@@ -36,7 +36,7 @@ import org.jboss.jms.client.plugin.LoadBalancingFactory;
 import org.jboss.jms.delegate.ConnectionFactoryDelegate;
 import org.jboss.jms.server.ConnectionFactoryManager;
 import org.jboss.jms.server.endpoint.ServerConnectionFactoryEndpoint;
-import org.jboss.logging.Logger;
+import org.jboss.messaging.util.Logger;
 import org.jboss.messaging.core.MessagingServer;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.util.JNDIUtil;

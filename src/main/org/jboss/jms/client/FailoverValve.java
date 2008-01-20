@@ -12,7 +12,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Stack;
 
-import org.jboss.logging.Logger;
+import org.jboss.messaging.util.Logger;
 
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
 import EDU.oswego.cs.dl.util.concurrent.ReadWriteLock;

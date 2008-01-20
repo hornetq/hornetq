@@ -29,7 +29,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.jboss.jms.server.MessagingTimeoutFactory;
-import org.jboss.logging.Logger;
+import org.jboss.messaging.util.Logger;
 import org.jboss.messaging.core.Consumer;
 import org.jboss.messaging.core.DistributionPolicy;
 import org.jboss.messaging.core.Filter;
