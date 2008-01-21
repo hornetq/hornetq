@@ -12,6 +12,7 @@ import javax.jms.Message;
 import javax.jms.MessageListener;
 
 import org.jboss.jms.client.Closeable;
+import org.jboss.jms.message.JBossMessage;
 import org.jboss.messaging.core.Destination;
 
 /**
@@ -19,13 +20,12 @@ import org.jboss.messaging.core.Destination;
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  */
-public interface Consumer extends Closeable
+public interface ClientConsumer extends Closeable
 {
+   String getID();
+   
    void changeRate(float newRate) throws JMSException;
 
-   // ConsumerEndpoint -------------------------------------------------------------------------
-   
-   // ConsumerDelegate --------------------------------------------------------------------------
    MessageListener getMessageListener() throws JMSException;
 
    void setMessageListener(MessageListener listener) throws JMSException;
@@ -38,10 +38,13 @@ public interface Consumer extends Closeable
 
    Message receive(long timeout) throws JMSException;
    
-   String getConsumerID();
-   
    int getMaxDeliveries();
    
    boolean isShouldAck();
-
+   
+   void handleMessage(JBossMessage message) throws Exception;
+   
+   void addToFrontOfBuffer(JBossMessage message) throws JMSException;
+   
+   long getRedeliveryDelay();
 }

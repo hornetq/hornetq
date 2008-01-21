@@ -29,13 +29,12 @@ import org.jboss.messaging.core.tx.MessagingXid;
 public interface ClientConnection extends Closeable
 {
    ClientSession createSessionDelegate(boolean transacted,
-         int acknowledgmentMode, boolean isXA) throws JMSException;
+                                       int acknowledgmentMode, boolean isXA) throws JMSException;
 
    String getClientID() throws JMSException;
 
    int getServerID();
    
-
    void setClientID(String id) throws JMSException;
 
    void start() throws JMSException;
@@ -59,11 +58,6 @@ public interface ClientConnection extends Closeable
                                                     ServerSessionPool sessionPool,
                                                     int maxMessages) throws JMSException;
 
-//   void registerFailoverListener(FailoverListener failoverListener);
-//   
-//   boolean unregisterFailoverListener(FailoverListener failoverListener);
-   
-   
    public void setRemotingConnection(JMSRemotingConnection conn);
    
    public Client getClient();
@@ -77,7 +71,4 @@ public interface ClientConnection extends Closeable
    public String getID();
    
    public byte getVersion();
-   
-   
-   
 }

@@ -2708,7 +2708,7 @@ public class MessageConsumerTest extends JMSTestCase
          assertEquals(Session.AUTO_ACKNOWLEDGE, sess3.getAcknowledgeMode());
          MessageConsumer consumer3 = sess3.createConsumer(topic1, null, true);
 
-         //Consumer 1 should not get the message but consumers 2 and 3 should
+         //ClientConsumer 1 should not get the message but consumers 2 and 3 should
 
          conn1.start();
          conn2.start();

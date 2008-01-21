@@ -1,5 +1,6 @@
 package org.jboss.jms.client.impl;
 
+import org.jboss.jms.client.api.ClientConsumer;
 import org.jboss.jms.message.JBossMessage;
 import org.jboss.messaging.core.remoting.PacketHandler;
 import org.jboss.messaging.core.remoting.PacketSender;
@@ -15,23 +16,18 @@ import org.jboss.messaging.core.remoting.wireformat.PacketType;
  */
 public class ClientConsumerPacketHandler implements PacketHandler
 {
-   /**
-    * 
-    */
-   private final ClientConsumer messageHandler;
-   /**
-    * 
-    */
+   private final ClientConsumer clientConsumer;
+
    private final String consumerID;
 
    /**
     * @param messageHandler
     * @param consumerID
     */
-   public ClientConsumerPacketHandler(ClientConsumer messageHandler,
+   public ClientConsumerPacketHandler(ClientConsumer clientConsumer,
          String consumerID)
    {
-      this.messageHandler = messageHandler;
+      this.clientConsumer = clientConsumer;
       this.consumerID = consumerID;
    }
 
@@ -53,7 +49,7 @@ public class ClientConsumerPacketHandler implements PacketHandler
             
             msg.doBeforeReceive();
             
-            messageHandler.handleMessage(msg);
+            clientConsumer.handleMessage(msg);
          }
       } catch (Exception e)
       {

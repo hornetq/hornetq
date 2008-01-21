@@ -56,7 +56,7 @@ public class JMSRemotingConnection
 
    private Client client;
 
-   private CallbackManager callbackManager;
+   //private CallbackManager callbackManager;
 
    // When a failover is performed, this flag is set to true
    protected boolean failed = false;
@@ -80,7 +80,7 @@ public class JMSRemotingConnection
    {
       if (log.isTraceEnabled()) { log.trace(this + " created client"); }
 
-      callbackManager = new CallbackManager();
+      //callbackManager = new CallbackManager();
 
       NIOConnector connector = REGISTRY.getConnector(serverLocator);
       client = new ClientImpl(connector, serverLocator);
@@ -118,11 +118,11 @@ public class JMSRemotingConnection
       return client;
    }
 
-   public CallbackManager getCallbackManager()
-   {
-      return callbackManager;
-   }
-
+//   public CallbackManager getCallbackManager()
+//   {
+//      return callbackManager;
+//   }
+//
 
     public synchronized boolean isFailed()
    {

@@ -56,7 +56,7 @@ public enum PacketType
    MSG_CANCELDELIVERIES           ((byte)56),
    MSG_UNSUBSCRIBE                ((byte)57),
    
-   // Consumer 
+   // ClientConsumer 
    MSG_CHANGERATE                 ((byte)70),
    
    // Browser

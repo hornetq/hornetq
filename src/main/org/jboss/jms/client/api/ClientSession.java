@@ -17,7 +17,6 @@ import javax.transaction.xa.XAResource;
 import org.jboss.jms.client.Closeable;
 import org.jboss.jms.client.impl.Ack;
 import org.jboss.jms.client.impl.Cancel;
-import org.jboss.jms.client.impl.ClientConsumer;
 import org.jboss.jms.client.impl.DeliveryInfo;
 import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.destination.JBossQueue;
@@ -38,21 +37,13 @@ import org.jboss.messaging.core.Message;
  */
 public interface ClientSession extends Closeable
 {
-
-
    ClientConnection getConnection();
-
-   ClientConsumer getCallbackHandler(String consumerID);
-
-   void addCallbackHandler(ClientConsumer handler);
-
-   void removeCallbackHandler(ClientConsumer handler);
 
    String getID();
    
    /// Methods that will perform a server invocation ----------------------------------------------------------
 
-   Consumer createConsumerDelegate(Destination destination, String selector,
+   ClientConsumer createConsumerDelegate(Destination destination, String selector,
          boolean noLocal, String subscriptionName,
          boolean isCC) throws JMSException;
    
@@ -187,8 +178,4 @@ public interface ClientSession extends Closeable
    public Object getCurrentTxId();
 
    public void setCurrentTxId(Object currentTxId);
-
-
-   
-
 }

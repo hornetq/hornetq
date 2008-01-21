@@ -52,7 +52,7 @@ import javax.jms.XASession;
 import javax.jms.XATopicSession;
 import javax.transaction.xa.XAResource;
 
-import org.jboss.jms.client.api.Consumer;
+import org.jboss.jms.client.api.ClientConsumer;
 import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.destination.JBossQueue;
 import org.jboss.jms.destination.JBossTemporaryQueue;
@@ -237,7 +237,7 @@ public class JBossSession implements
 
       log.trace("attempting to create consumer for destination:" + d + (messageSelector == null ? "" : ", messageSelector: " + messageSelector) + (noLocal ? ", noLocal = true" : ""));
 
-      org.jboss.jms.client.api.Consumer cd = session.
+      org.jboss.jms.client.api.ClientConsumer cd = session.
          createConsumerDelegate(((JBossDestination)d).toCoreDestination(), messageSelector, noLocal, null, false);
 
       return new JBossMessageConsumer(cd);
@@ -279,7 +279,7 @@ public class JBossSession implements
          throw new InvalidDestinationException("Not a JBossTopic:" + topic);
       }
 
-      Consumer cd =
+      ClientConsumer cd =
          session.createConsumerDelegate(((JBossTopic)topic).toCoreDestination(), null, false, name, false);
 
       return new JBossMessageConsumer(cd);
@@ -309,7 +309,7 @@ public class JBossSession implements
          messageSelector = null;
       }
 
-      Consumer cd = session.
+      ClientConsumer cd = session.
          createConsumerDelegate(((JBossTopic)topic).toCoreDestination(), messageSelector, noLocal, name, false);
 
       return new JBossMessageConsumer(cd);

@@ -24,7 +24,7 @@ package org.jboss.messaging.core;
 
 /**
  * 
- * A Consumer
+ * A ClientConsumer
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *

@@ -64,7 +64,7 @@ public class JBossConnectionConsumer implements ConnectionConsumer, Runnable
    
    // Attributes ----------------------------------------------------
    
-   private org.jboss.jms.client.api.Consumer cons;
+   private org.jboss.jms.client.api.ClientConsumer cons;
    
    private org.jboss.jms.client.api.ClientSession sess;
    
@@ -117,7 +117,7 @@ public class JBossConnectionConsumer implements ConnectionConsumer, Runnable
           
       cons = sess.createConsumerDelegate(dest.toCoreDestination(), messageSelector, false, subName, true);
 
-      this.consumerID = cons.getConsumerID();      
+      this.consumerID = cons.getID();      
         
       this.maxDeliveries = cons.getMaxDeliveries();
       
@@ -133,7 +133,7 @@ public class JBossConnectionConsumer implements ConnectionConsumer, Runnable
       }
 
       id = threadId.increment();
-      internalThread = new Thread(this, "Connection Consumer for dest " + dest + " id=" + id);
+      internalThread = new Thread(this, "Connection ClientConsumer for dest " + dest + " id=" + id);
       internalThread.start();
 
       if (trace) { log.trace(this + " created"); }

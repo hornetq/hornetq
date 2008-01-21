@@ -55,7 +55,7 @@ import org.jboss.messaging.util.ExceptionUtil;
 import org.jboss.messaging.util.Logger;
 
 /**
- * Concrete implementation of a Consumer. 
+ * Concrete implementation of a ClientConsumer. 
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>

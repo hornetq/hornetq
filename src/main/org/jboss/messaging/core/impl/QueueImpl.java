@@ -516,7 +516,7 @@ public class QueueImpl implements Queue
          
          if (status == null)
          {
-            throw new IllegalStateException("Consumer.handle() should never return null");
+            throw new IllegalStateException("ClientConsumer.handle() should never return null");
          }
          
          if (status == HandleStatus.HANDLED)

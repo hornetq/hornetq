@@ -365,7 +365,7 @@ public class ConnectionClosedTest extends JMSTestCase
          // OK
       }
 
-      // Consumer
+      // ClientConsumer
 
       try
       {

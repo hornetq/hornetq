@@ -29,7 +29,6 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import javax.jms.IllegalStateException;
@@ -43,10 +42,9 @@ import org.jboss.jms.client.Closeable;
 import org.jboss.jms.client.SelectorTranslator;
 import org.jboss.jms.client.api.ClientBrowser;
 import org.jboss.jms.client.api.ClientConnection;
+import org.jboss.jms.client.api.ClientConsumer;
 import org.jboss.jms.client.api.ClientProducer;
 import org.jboss.jms.client.api.ClientSession;
-import org.jboss.jms.client.api.Consumer;
-import org.jboss.jms.client.remoting.CallbackManager;
 import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.destination.JBossQueue;
 import org.jboss.jms.destination.JBossTopic;
@@ -60,7 +58,6 @@ import org.jboss.jms.tx.LocalTx;
 import org.jboss.jms.tx.MessagingXAResource;
 import org.jboss.jms.tx.ResourceManager;
 import org.jboss.messaging.core.Destination;
-import org.jboss.messaging.core.DestinationType;
 import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.remoting.Client;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
@@ -83,9 +80,7 @@ import org.jboss.messaging.core.remoting.wireformat.DeleteTemporaryDestinationMe
 import org.jboss.messaging.core.remoting.wireformat.SendMessage;
 import org.jboss.messaging.core.remoting.wireformat.UnsubscribeMessage;
 import org.jboss.messaging.util.ClearableQueuedExecutor;
-import org.jboss.messaging.util.ConcurrentHashSet;
 import org.jboss.messaging.util.Logger;
-import org.jboss.messaging.util.MessageQueueNameHelper;
 import org.jboss.messaging.util.ProxyFactory;
 
 import EDU.oswego.cs.dl.util.concurrent.LinkedQueue;
@@ -120,13 +115,12 @@ public class ClientSessionImpl extends CommunicationSupport<ClientSessionImpl> i
    
    private ClientConnection connection;
    
-   // Attributes that used to live on SessionState -------------------------------------------------
-   
-   protected Set<Closeable> children = new ConcurrentHashSet<Closeable>();
-
+   protected Map<String, Closeable> children = new ConcurrentHashMap<String, Closeable>();
    
    private int acknowledgeMode;
+   
    private boolean transacted;
+   
    private boolean xa;
 
    private MessagingXAResource xaResource;
@@ -141,7 +135,7 @@ public class ClientSessionImpl extends CommunicationSupport<ClientSessionImpl> i
    private List<Ack> clientAckList;
 
    private DeliveryInfo autoAckInfo;
-   private Map callbackHandlers = new ConcurrentHashMap();
+   //private Map callbackHandlers = new ConcurrentHashMap();
    
    private LinkedList asfMessages = new LinkedList();
    
@@ -159,11 +153,6 @@ public class ClientSessionImpl extends CommunicationSupport<ClientSessionImpl> i
    
    // Constructors ---------------------------------------------------------------------------------
    
-
-   // Static ---------------------------------------------------------------------------------------
-
-   // Constructors ---------------------------------------------------------------------------------
-
    public ClientSessionImpl(ClientConnection connection, String objectID, int dupsOKBatchSize)
    {
       super(objectID);
@@ -204,10 +193,6 @@ public class ClientSessionImpl extends CommunicationSupport<ClientSessionImpl> i
    {
    }
 
-   // DelegateSupport overrides --------------------------------------------------------------------
-
-   // Closeable implementation ---------------------------------------------------------------------
-
    public void close() throws JMSException
    {
       sendBlocking(new CloseMessage());
@@ -223,7 +208,6 @@ public class ClientSessionImpl extends CommunicationSupport<ClientSessionImpl> i
       // We must explicitly shutdown the executor
 
       getExecutor().shutdownNow();
-
    }
 
    private long invokeClosing(long sequence) throws JMSException
@@ -236,17 +220,19 @@ public class ClientSessionImpl extends CommunicationSupport<ClientSessionImpl> i
    
    private void closeChildren() throws JMSException
    {
-      for (Closeable child: children)
+      for (Closeable child: children.values())
       {
          child.closing(-1);
          child.close();
       }
+      
+      children.clear();
    }
 
    public long closing(long sequence) throws JMSException
    {
       if (trace) { log.trace("handleClosing()"); }
-
+      
       closeChildren();
       
       //Sanity check
@@ -426,7 +412,7 @@ public class ClientSessionImpl extends CommunicationSupport<ClientSessionImpl> i
       CreateBrowserResponse response = (CreateBrowserResponse) sendBlocking(request);
       ClientBrowserImpl delegate = new ClientBrowserImpl(this, response.getBrowserID(), queue, messageSelector);
       ClientBrowser proxy = (ClientBrowser)ProxyFactory.proxy(delegate, ClientBrowser.class);
-      children.add(proxy);
+      children.put(delegate.getID(), proxy);
       return proxy;
    }
 
@@ -441,7 +427,7 @@ public class ClientSessionImpl extends CommunicationSupport<ClientSessionImpl> i
    }
 
 
-   public Consumer createConsumerDelegate(Destination destination, String selector,
+   public ClientConsumer createConsumerDelegate(Destination destination, String selector,
                                                   boolean noLocal, String subscriptionName,
                                                   boolean isCC) throws JMSException
    {
@@ -451,45 +437,18 @@ public class ClientSessionImpl extends CommunicationSupport<ClientSessionImpl> i
       
       CreateConsumerResponse response = (CreateConsumerResponse) sendBlocking(request);
 
-      ClientConsumerImpl consumerDelegate = new ClientConsumerImpl(this, response.getConsumerID(), response.getBufferSize(), response.getMaxDeliveries(), response.getRedeliveryDelay(),
+      ClientConsumerImpl consumerDelegate =
+         new ClientConsumerImpl(this, response.getConsumerID(), response.getBufferSize(),
+               response.getMaxDeliveries(), response.getRedeliveryDelay(),
             destination,
-            selector, noLocal, subscriptionName, response.getConsumerID(),isCC);      
+            selector, noLocal, subscriptionName,
+            isCC, this.getExecutor());
 
-      Consumer proxy = (Consumer)ProxyFactory.proxy(consumerDelegate, Consumer.class);
+      ClientConsumer proxy = (ClientConsumer)ProxyFactory.proxy(consumerDelegate, ClientConsumer.class);
       
-      children.add(proxy);
+      children.put(consumerDelegate.getID(), proxy);
 
-      //We need the queue name for recovering any deliveries after failover
-      String queueName = null;
-      if (subscriptionName != null)
-      {
-         // I have to use the clientID from connectionDelegate instead of connectionState...
-         // this is because when a pre configured CF is used we need to get the clientID from
-         // server side.
-         // This was a condition verified by the TCK and it was fixed as part of
-         // http://jira.jboss.com/jira/browse/JBMESSAGING-939
-         queueName = MessageQueueNameHelper.
-            createSubscriptionName(this.getID(),subscriptionName);
-      }
-      else if (destination.getType() == DestinationType.QUEUE)
-      {
-         queueName = destination.getName();
-      }
-
-      final ClientConsumer messageHandler =
-         new ClientConsumer(isCC, this.getAcknowledgeMode(),
-                            this, consumerDelegate, consumerDelegate.getID(), queueName,
-                            consumerDelegate.getBufferSize(), this.getExecutor(), consumerDelegate.getMaxDeliveries(), consumerDelegate.isShouldAck(),
-                            consumerDelegate.getRedeliveryDelay());
-
-      this.addCallbackHandler(messageHandler);
-
-      PacketDispatcher.client.register(new ClientConsumerPacketHandler(messageHandler, consumerDelegate.getID()));
-
-      CallbackManager cm = connection.getRemotingConnection().getCallbackManager();
-      cm.registerHandler(consumerDelegate.getID(), messageHandler);
-
-      consumerDelegate.setClientConsumer(messageHandler);
+      PacketDispatcher.client.register(new ClientConsumerPacketHandler(consumerDelegate, consumerDelegate.getID()));
 
       //Now we have finished creating the client consumer, we can tell the SCD
       //we are ready
@@ -550,7 +509,7 @@ public class ClientSessionImpl extends CommunicationSupport<ClientSessionImpl> i
 
       ClientProducerImpl producerDelegate = new ClientProducerImpl(connection, this, destination );
       ClientProducer proxy = (ClientProducer) ProxyFactory.proxy(producerDelegate, ClientProducer.class);
-      children.add(proxy);
+      children.put(producerDelegate.getID(), proxy);
       return proxy;
    }
 
@@ -837,7 +796,7 @@ public class ClientSessionImpl extends CommunicationSupport<ClientSessionImpl> i
          DeliveryInfo info = (DeliveryInfo)toRedeliver.get(i);
          JBossMessage msg = info.getMessage();
 
-         ClientConsumer handler = getCallbackHandler(info.getConsumerId());
+         ClientConsumer handler = (ClientConsumer)children.get(info.getConsumerId());
 
          if (handler == null)
          {
@@ -861,23 +820,6 @@ public class ClientSessionImpl extends CommunicationSupport<ClientSessionImpl> i
 
    }
    
-   public ClientConsumer getCallbackHandler(String consumerID)
-   {
-      return (ClientConsumer)callbackHandlers.get(consumerID);
-   }
-
-   public void addCallbackHandler(ClientConsumer handler)
-   {
-      callbackHandlers.put(handler.getConsumerId(), handler);
-   }
-
-   public void removeCallbackHandler(ClientConsumer handler)
-   {
-      callbackHandlers.remove(handler.getConsumerId());
-   }
-
-   
-
    /**
     * This invocation should either be handled by the client-side interceptor chain or by the
     * server-side endpoint.
@@ -925,7 +867,7 @@ public class ClientSessionImpl extends CommunicationSupport<ClientSessionImpl> i
 
          if (trace) { log.trace("sending " + holder.msg + " to the message listener" ); }
 
-         ClientConsumer.callOnMessage(this, getDistinguishedListener(), holder.consumerID,
+         ClientConsumerImpl.callOnMessage(this, getDistinguishedListener(), holder.consumerID,
                                       false,
                                       holder.msg, ackMode, holder.maxDeliveries,
                                       holder.connectionConsumerDelegate, holder.shouldAck);
@@ -1294,15 +1236,15 @@ public class ClientSessionImpl extends CommunicationSupport<ClientSessionImpl> i
       this.autoAckInfo = autoAckInfo;
    }
 
-   public Map getCallbackHandlers()
-   {
-      return callbackHandlers;
-   }
-
-   public void setCallbackHandlers(Map callbackHandlers)
-   {
-      this.callbackHandlers = callbackHandlers;
-   }
+//   public Map getCallbackHandlers()
+//   {
+//      return callbackHandlers;
+//   }
+//
+//   public void setCallbackHandlers(Map callbackHandlers)
+//   {
+//      this.callbackHandlers = callbackHandlers;
+//   }
 
    public LinkedList getAsfMessages()
    {

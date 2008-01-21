@@ -232,7 +232,6 @@ public class ClientConnectionImpl extends CommunicationSupport<ClientConnectionI
          clientID = ((GetClientIDResponse) sendBlocking(new GetClientIDRequest())).getClientID();
       }
       return clientID;
-
    }
 
    /**
@@ -382,9 +381,10 @@ public class ClientConnectionImpl extends CommunicationSupport<ClientConnectionI
             {
                log.trace("Failed to close", t);
             }
-         }
-         
+         }         
       }
+      
+      children.clear();
    }
 
    

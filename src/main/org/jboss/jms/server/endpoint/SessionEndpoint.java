@@ -28,13 +28,13 @@ import javax.jms.JMSException;
 
 import org.jboss.jms.client.Closeable;
 import org.jboss.jms.client.api.ClientBrowser;
-import org.jboss.jms.client.api.Consumer;
 import org.jboss.jms.client.impl.Ack;
 import org.jboss.jms.client.impl.Cancel;
 import org.jboss.jms.destination.JBossQueue;
 import org.jboss.jms.destination.JBossTopic;
 import org.jboss.messaging.core.Destination;
 import org.jboss.messaging.core.Message;
+import org.jboss.messaging.core.remoting.wireformat.CreateConsumerResponse;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -47,7 +47,7 @@ import org.jboss.messaging.core.Message;
  */
 public interface SessionEndpoint extends Closeable
 {
-   Consumer createConsumerDelegate(Destination destination, String selector,
+   CreateConsumerResponse createConsumerDelegate(Destination destination, String selector,
                                            boolean noLocal, String subscriptionName,
                                            boolean connectionConsumer) throws JMSException;
    

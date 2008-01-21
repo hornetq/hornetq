@@ -43,7 +43,7 @@ import javax.transaction.TransactionManager;
 import org.jboss.jms.client.JBossConnection;
 import org.jboss.jms.client.JBossSession;
 import org.jboss.jms.client.JBossMessageConsumer;
-import org.jboss.jms.client.api.Consumer;
+import org.jboss.jms.client.api.ClientConsumer;
 import org.jboss.jms.client.impl.ClientConnectionImpl;
 import org.jboss.jms.client.impl.ClientConsumerImpl;
 import org.jboss.jms.client.impl.ClientSessionImpl;

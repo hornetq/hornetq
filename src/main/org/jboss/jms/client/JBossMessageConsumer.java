@@ -32,7 +32,7 @@ import javax.jms.QueueReceiver;
 import javax.jms.Topic;
 import javax.jms.TopicSubscriber;
 
-import org.jboss.jms.client.api.Consumer;
+import org.jboss.jms.client.api.ClientConsumer;
 
 
 import org.jboss.jms.destination.JBossDestination;
@@ -53,11 +53,11 @@ public class JBossMessageConsumer implements MessageConsumer, QueueReceiver, Top
 
    // Attributes ----------------------------------------------------
 
-   protected Consumer consumer;
+   protected ClientConsumer consumer;
 
    // Constructors --------------------------------------------------
 
-   public JBossMessageConsumer(Consumer consumer)
+   public JBossMessageConsumer(ClientConsumer consumer)
    {      
       this.consumer = consumer;
    }
@@ -102,7 +102,6 @@ public class JBossMessageConsumer implements MessageConsumer, QueueReceiver, Top
 
    // QueueReceiver implementation ----------------------------------
 
-
    public Queue getQueue() throws JMSException
    {
       return (Queue)JBossDestination.fromCoreDestination(consumer.getDestination());
@@ -121,7 +120,7 @@ public class JBossMessageConsumer implements MessageConsumer, QueueReceiver, Top
       return consumer.getNoLocal();
    }
 
-   public Consumer getDelegate()
+   public ClientConsumer getDelegate()
    {
        return consumer;
    }

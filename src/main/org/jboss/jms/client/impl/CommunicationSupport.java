@@ -58,9 +58,7 @@ public abstract class CommunicationSupport <T extends CommunicationSupport<?>> i
    {
       this("NO_ID_SET");
    }
-   
-   
-   
+         
    // Streamable implementation --------------------------------------------------------------------
 
    public void read(DataInputStream in) throws Exception

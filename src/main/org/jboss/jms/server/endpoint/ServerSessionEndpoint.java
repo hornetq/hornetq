@@ -51,12 +51,11 @@ import javax.jms.InvalidSelectorException;
 import javax.jms.JMSException;
 
 import org.jboss.jms.client.api.ClientBrowser;
-import org.jboss.jms.client.api.Consumer;
 import org.jboss.jms.client.impl.Ack;
+import org.jboss.jms.client.impl.AckImpl;
 import org.jboss.jms.client.impl.Cancel;
 import org.jboss.jms.client.impl.ClientBrowserImpl;
 import org.jboss.jms.client.impl.ClientConsumerImpl;
-import org.jboss.jms.client.impl.AckImpl;
 import org.jboss.jms.client.impl.DeliveryInfo;
 import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.destination.JBossQueue;
@@ -65,7 +64,6 @@ import org.jboss.jms.exception.MessagingJMSException;
 import org.jboss.jms.server.DestinationManager;
 import org.jboss.jms.server.container.SecurityAspect;
 import org.jboss.jms.server.security.CheckType;
-import org.jboss.messaging.util.Logger;
 import org.jboss.messaging.core.Binding;
 import org.jboss.messaging.core.Condition;
 import org.jboss.messaging.core.Destination;
@@ -106,6 +104,7 @@ import org.jboss.messaging.core.remoting.wireformat.PacketType;
 import org.jboss.messaging.core.remoting.wireformat.SendMessage;
 import org.jboss.messaging.core.remoting.wireformat.UnsubscribeMessage;
 import org.jboss.messaging.util.ExceptionUtil;
+import org.jboss.messaging.util.Logger;
 import org.jboss.messaging.util.MessageQueueNameHelper;
 
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
@@ -234,11 +233,11 @@ public class ServerSessionEndpoint implements SessionEndpoint
       }
    }
 
-   public Consumer createConsumerDelegate(Destination destination,
-                                                  String filterString,
-                                                  boolean noLocal,
-                                                  String subscriptionName,
-                                                  boolean isCC) throws JMSException
+   public CreateConsumerResponse createConsumerDelegate(Destination destination,
+                                                        String filterString,
+                                                        boolean noLocal,
+                                                        String subscriptionName,
+                                                        boolean isCC) throws JMSException
    {
       
       checkSecurityCreateConsumerDelegate(destination, subscriptionName);
@@ -1199,10 +1198,10 @@ public class ServerSessionEndpoint implements SessionEndpoint
       return false;      
    }
       
-   private Consumer createConsumerDelegateInternal(Destination destination,
-                                                  String filterString,
-                                                  boolean noLocal,
-                                                  String subscriptionName)
+   private CreateConsumerResponse createConsumerDelegateInternal(Destination destination,
+                                                                 String filterString,
+                                                                 boolean noLocal,
+                                                                 String subscriptionName)
       throws Exception
    {
       if (closed)
@@ -1381,7 +1380,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
       }
       else
       {
-         // Consumer on a jms queue
+         // ClientConsumer on a jms queue
          
       	List<Binding> bindings = postOffice.getBindingsForQueueName(destination.getName());
          
@@ -1425,9 +1424,9 @@ public class ServerSessionEndpoint implements SessionEndpoint
 //      	rep.put(queue.getName(), DUR_SUB_STATE_CONSUMERS);
 //      }
       connectionEndpoint.getMessagingServer().getMinaService().getDispatcher().register(ep.newHandler());
-      
-      ClientConsumerImpl stub =
-         new ClientConsumerImpl(consumerID, prefetchSize, maxDeliveryAttemptsToUse, redeliveryDelayToUse);
+        
+      CreateConsumerResponse response = new CreateConsumerResponse(consumerID, prefetchSize,
+                                                                   maxDeliveryAttemptsToUse, redeliveryDelayToUse );
       
       synchronized (consumers)
       {
@@ -1436,7 +1435,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
          
       log.trace(this + " created and registered " + ep);
       
-      return stub;
+      return response;
    }   
 
    private ClientBrowser createBrowserDelegateInternal(Destination destination,
@@ -1664,14 +1663,10 @@ public class ServerSessionEndpoint implements SessionEndpoint
             } else if (type == REQ_CREATECONSUMER)
             {
                CreateConsumerRequest request = (CreateConsumerRequest) packet;
-               ClientConsumerImpl consumer = (ClientConsumerImpl) createConsumerDelegate(
-                     request.getDestination(), request.getSelector(), request
+               response = createConsumerDelegate(
+                                request.getDestination(), request.getSelector(), request
                            .isNoLocal(), request.getSubscriptionName(), request
                            .isConnectionConsumer());
-
-               response = new CreateConsumerResponse(consumer.getID(), consumer
-                     .getBufferSize(), consumer.getMaxDeliveries(), consumer
-                     .getRedeliveryDelay());
             } else if (type == REQ_CREATEDESTINATION)
             {
                CreateDestinationRequest request = (CreateDestinationRequest) packet;

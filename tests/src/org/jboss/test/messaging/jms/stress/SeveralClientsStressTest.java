@@ -154,7 +154,7 @@ public class SeveralClientsStressTest extends JBMServerTestCase
                      else
                      if (finished.getWorker() instanceof SeveralClientsStressTest.Consumer)
                      {
-                        if (info) log.info("Scheduling new Consumer " + numberOfConsumers);
+                        if (info) log.info("Scheduling new ClientConsumer " + numberOfConsumers);
                         SeveralClientsStressTest.Consumer consumer = new SeveralClientsStressTest.Consumer(numberOfConsumers++, testChannel);
                         threads.add(consumer);
                         consumer.start();
@@ -378,7 +378,7 @@ public class SeveralClientsStressTest extends JBMServerTestCase
    {
       public Consumer(int consumerId, LinkedQueue messageQueue)
       {
-         super("Consumer:" + consumerId, consumerId, messageQueue);
+         super("ClientConsumer:" + consumerId, consumerId, messageQueue);
       }
 
       public void run()
@@ -395,7 +395,7 @@ public class SeveralClientsStressTest extends JBMServerTestCase
             Connection conn = cf.createConnection();
             Session sess = conn.createSession(true, Session.SESSION_TRANSACTED);
             MessageConsumer consumer = sess.createConsumer(queue);
-            if (info) log.info("Consumer was created");
+            if (info) log.info("ClientConsumer was created");
 
             conn.start();
 
