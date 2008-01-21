@@ -337,9 +337,7 @@ public class ClientConsumerDelegate extends CommunicationSupport<ClientConsumerD
       
       return !(destination.getType() == DestinationType.TOPIC && subscriptionName == null);      
    }
-
-  
-   
+     
    // Protected ------------------------------------------------------------------------------------
 
    // Package Private ------------------------------------------------------------------------------

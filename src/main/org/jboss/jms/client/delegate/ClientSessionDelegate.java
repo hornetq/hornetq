@@ -931,9 +931,9 @@ public class ClientSessionDelegate extends CommunicationSupport<ClientSessionDel
          if (trace) { log.trace("sending " + holder.msg + " to the message listener" ); }
 
          ClientConsumer.callOnMessage(this, getDistinguishedListener(), holder.consumerID,
-                                              holder.queueName, false,
-                                              holder.msg, ackMode, holder.maxDeliveries,
-                                              holder.connectionConsumerDelegate, holder.shouldAck);
+                                      false,
+                                      holder.msg, ackMode, holder.maxDeliveries,
+                                      holder.connectionConsumerDelegate, holder.shouldAck);
       }
    }
 

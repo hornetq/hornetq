@@ -121,7 +121,6 @@ public class ClientConsumer
    public static void callOnMessage(ClientSession sess,
                                     MessageListener listener,
                                     String consumerID,
-                                    String queueName,
                                     boolean isConnectionConsumer,
                                     JBossMessage m,
                                     int ackMode,
@@ -137,7 +136,7 @@ public class ClientConsumer
       }
       
       DeliveryInfo deliveryInfo =
-         new DeliveryInfo(m, consumerID, queueName, connectionConsumerSession, shouldAck);
+         new DeliveryInfo(m, consumerID, connectionConsumerSession, shouldAck);
             
       m.incDeliveryCount();
       
@@ -205,7 +204,6 @@ public class ClientConsumer
    private QueuedExecutor sessionExecutor;
    private boolean listenerRunning;
    private int maxDeliveries;
-   private String queueName;
    private long lastDeliveryId = -1;
    private boolean waitingForLastDelivery;
    private boolean shouldAck;
@@ -235,7 +233,6 @@ public class ClientConsumer
       this.sessionDelegate = sess;
       this.consumerDelegate = cons;
       this.consumerID = consumerID;
-      this.queueName = queueName;
       mainLock = new Object();
       this.sessionExecutor = sessionExecutor;
       this.maxDeliveries = maxDeliveries;
@@ -467,7 +464,7 @@ public class ClientConsumer
                
                if (!isConnectionConsumer && !ignore)
                {
-                  DeliveryInfo info = new DeliveryInfo(m, consumerID, queueName, null, shouldAck);
+                  DeliveryInfo info = new DeliveryInfo(m, consumerID, null, shouldAck);
                                                     
                   sessionDelegate.preDeliver(info);                  
                   
@@ -899,7 +896,7 @@ public class ClientConsumer
          {
             try
             {
-               callOnMessage(sessionDelegate, theListener, consumerID, queueName,
+               callOnMessage(sessionDelegate, theListener, consumerID,
                              false, msg, ackMode, maxDeliveries, null, shouldAck);
                
                if (trace) { log.trace("Called callonMessage"); }

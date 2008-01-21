@@ -10,10 +10,8 @@ import java.util.List;
 
 import junit.framework.Assert;
 
-import org.jboss.jms.client.delegate.ClientConnectionFactoryDelegate;
 import org.jboss.jms.delegate.Ack;
 import org.jboss.jms.delegate.Cancel;
-import org.jboss.jms.delegate.DeliveryRecovery;
 import org.jboss.messaging.core.tx.MessagingXid;
 
 /**
@@ -37,23 +35,6 @@ public class CodecAssert extends Assert
       {
          assertEquals(expected.get(i).getDeliveryID(), actual.get(i)
                .getDeliveryID());
-      }
-   }
-
-   static void assertEqualsDeliveries(List<DeliveryRecovery> expected,
-         List<DeliveryRecovery> actual)
-   {
-      assertEquals(expected.size(), actual.size());
-      for (int i = 0; i < expected.size(); i++)
-      {
-         DeliveryRecovery expectedDelivery = expected.get(i);
-         DeliveryRecovery actualDelivery = actual.get(i);
-         assertEquals(expectedDelivery.getDeliveryID(), actualDelivery
-               .getDeliveryID());
-         assertEquals(expectedDelivery.getMessageID(), actualDelivery
-               .getMessageID());
-         assertEquals(expectedDelivery.getQueueName(), actualDelivery
-               .getQueueName());
       }
    }
 

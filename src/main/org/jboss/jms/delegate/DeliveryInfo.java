@@ -39,8 +39,6 @@ public class DeliveryInfo implements Ack
    
    // Attributes ----------------------------------------------------
    
-   private String queueName;
-   
    //This is needed when doing local redelivery of messages, since we need to know which
    //consumer gets the message
    private String consumerId;      
@@ -63,14 +61,12 @@ public class DeliveryInfo implements Ack
    
    // Constructors --------------------------------------------------
    
-   public DeliveryInfo(JBossMessage msg, String consumerId, String queueName,
+   public DeliveryInfo(JBossMessage msg, String consumerId, 
                        ClientSession connectionConsumerSession, boolean shouldAck)
    {      
       this.msg = msg;
       
       this.consumerId = consumerId;
-      
-      this.queueName = queueName;
       
       this.connectionConsumerSession = connectionConsumerSession;
       
@@ -78,11 +74,6 @@ public class DeliveryInfo implements Ack
    }
 
    // Public --------------------------------------------------------
-   
-   public String getQueueName()
-   {
-      return queueName;
-   }
    
    public String getConsumerId()
    {
