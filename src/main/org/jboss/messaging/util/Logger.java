@@ -7,8 +7,9 @@ import java.util.concurrent.ConcurrentMap;
  * 
  * A Logger
  * 
- * For now just delegates to log4j.
- *
+ * For now just delegates to org.jboss.util.Logger
+ * 
+ * This class allows us to isolate all our logging dependencies in one place
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
@@ -25,7 +26,12 @@ public class Logger
       {
          logger = new Logger(clazz);
          
-         loggers.putIfAbsent(clazz, logger);
+         Logger oldLogger = loggers.putIfAbsent(clazz, logger);
+         
+         if (oldLogger != null)
+         {
+            logger = oldLogger;
+         }
       }      
       
       return logger;
