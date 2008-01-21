@@ -35,7 +35,6 @@ import javax.jms.IllegalStateException;
 import javax.jms.InvalidSelectorException;
 import javax.jms.JMSException;
 
-import org.jboss.jms.delegate.BrowserEndpoint;
 import org.jboss.jms.exception.MessagingJMSException;
 import org.jboss.messaging.util.Logger;
 import org.jboss.messaging.core.Filter;

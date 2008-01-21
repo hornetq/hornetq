@@ -27,7 +27,6 @@ import static org.jboss.messaging.core.remoting.wireformat.PacketType.REQ_CLOSIN
 
 import javax.jms.JMSException;
 
-import org.jboss.jms.delegate.ConsumerEndpoint;
 import org.jboss.jms.exception.MessagingJMSException;
 import org.jboss.messaging.core.Condition;
 import org.jboss.messaging.core.Consumer;

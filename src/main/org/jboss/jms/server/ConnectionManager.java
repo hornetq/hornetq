@@ -23,7 +23,7 @@ package org.jboss.jms.server;
 
 import java.util.List;
 
-import org.jboss.jms.delegate.ConnectionEndpoint;
+import org.jboss.jms.server.endpoint.ConnectionEndpoint;
 import org.jboss.messaging.core.MessagingComponent;
 import org.jboss.messaging.core.remoting.PacketSender;
 

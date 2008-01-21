@@ -48,7 +48,6 @@ import javax.transaction.xa.Xid;
 
 import org.jboss.jms.client.api.ClientSession;
 import org.jboss.jms.client.delegate.ClientSessionDelegate;
-import org.jboss.jms.delegate.ConnectionEndpoint;
 import org.jboss.jms.exception.MessagingJMSException;
 import org.jboss.jms.server.ConnectionManager;
 import org.jboss.jms.server.SecurityStore;

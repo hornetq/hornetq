@@ -31,7 +31,6 @@ import javax.jms.JMSException;
 
 import org.jboss.jms.client.delegate.ClientConnectionDelegate;
 import org.jboss.jms.client.delegate.ClientConnectionFactoryDelegate;
-import org.jboss.jms.delegate.ConnectionFactoryEndpoint;
 import org.jboss.jms.delegate.CreateConnectionResult;
 import org.jboss.jms.exception.MessagingJMSException;
 import org.jboss.messaging.core.MessagingServer;

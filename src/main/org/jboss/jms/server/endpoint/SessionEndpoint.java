@@ -19,7 +19,7 @@
   * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   */
-package org.jboss.jms.delegate;
+package org.jboss.jms.server.endpoint;
 
 
 import java.util.List;
@@ -29,6 +29,8 @@ import javax.jms.JMSException;
 import org.jboss.jms.client.Closeable;
 import org.jboss.jms.client.api.ClientBrowser;
 import org.jboss.jms.client.api.Consumer;
+import org.jboss.jms.delegate.Ack;
+import org.jboss.jms.delegate.Cancel;
 import org.jboss.jms.destination.JBossQueue;
 import org.jboss.jms.destination.JBossTopic;
 import org.jboss.messaging.core.Destination;

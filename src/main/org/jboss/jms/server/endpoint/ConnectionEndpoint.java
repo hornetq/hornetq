@@ -19,29 +19,41 @@
   * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   */
-package org.jboss.jms.delegate;
+package org.jboss.jms.server.endpoint;
 
 import javax.jms.JMSException;
 
+import org.jboss.jms.client.Closeable;
+import org.jboss.jms.client.api.ClientSession;
+import org.jboss.jms.tx.TransactionRequest;
+import org.jboss.messaging.core.tx.MessagingXid;
+
+
 /**
- * Represents the set of methods from the ConnectionFactoryDelegate that are handled on the server.
- * The rest of the methods are handled in the advice stack.
+ * Represents the set of methods from the ConnectionDelegate that are handled on the server. The
+ * rest of the methods are handled in the advice stack.
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  *
  * $Id$
  */
-public interface ConnectionFactoryEndpoint
+public interface ConnectionEndpoint extends Closeable
 {
-   /**
-    * @param failedNodeID - zero or positive values mean the connection creation attempt is result
-    *        of failover. Negative values are ignored (mean regular connection creation attempt).
-    */
-   CreateConnectionResult createConnectionDelegate(String username,
-                                                   String password, 
-                                                   int failedNodeID)
-      throws JMSException;
+   ClientSession createSessionDelegate(boolean transacted,
+                                         int acknowledgmentMode,
+                                         boolean isXA) throws JMSException;
+
+   String getClientID() throws JMSException;
+
+   void setClientID(String id) throws JMSException;
+
+   void start() throws JMSException;
+
+   void stop() throws JMSException;
+
+   void sendTransaction(TransactionRequest request) throws JMSException;
+
+   MessagingXid[] getPreparedTransactions() throws JMSException; ;
 }
 

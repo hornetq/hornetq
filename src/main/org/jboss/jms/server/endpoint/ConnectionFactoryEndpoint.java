@@ -19,27 +19,31 @@
   * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   */
-package org.jboss.jms.delegate;
+package org.jboss.jms.server.endpoint;
 
 import javax.jms.JMSException;
 
-import org.jboss.jms.client.Closeable;
+import org.jboss.jms.delegate.CreateConnectionResult;
 
 /**
- * Represents the set of methods from the ConsumerDelegate that are handled on the server.
+ * Represents the set of methods from the ConnectionFactoryDelegate that are handled on the server.
  * The rest of the methods are handled in the advice stack.
- *
+ * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
- *
  * @version <tt>$Revision$</tt>
  *
  * $Id$
  */
-public interface ConsumerEndpoint extends Closeable
-{  
+public interface ConnectionFactoryEndpoint
+{
    /**
-    * Sent to the server to specify a new maximum rate at which to send messages at
+    * @param failedNodeID - zero or positive values mean the connection creation attempt is result
+    *        of failover. Negative values are ignored (mean regular connection creation attempt).
     */
-   void changeRate(float newRate) throws JMSException;
+   CreateConnectionResult createConnectionDelegate(String username,
+                                                   String password, 
+                                                   int failedNodeID)
+      throws JMSException;
 }
+

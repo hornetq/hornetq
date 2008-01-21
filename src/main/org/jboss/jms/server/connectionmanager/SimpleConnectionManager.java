@@ -33,8 +33,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import javax.jms.JMSException;
 
-import org.jboss.jms.delegate.ConnectionEndpoint;
 import org.jboss.jms.server.ConnectionManager;
+import org.jboss.jms.server.endpoint.ConnectionEndpoint;
 import org.jboss.messaging.util.Logger;
 import org.jboss.messaging.core.remoting.PacketSender;
 import org.jboss.messaging.util.ConcurrentHashSet;

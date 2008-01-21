@@ -23,7 +23,6 @@ package org.jboss.jms.server.endpoint;
 
 import javax.jms.JMSException;
 
-import org.jboss.jms.delegate.SessionEndpoint;
 import org.jboss.messaging.core.Message;
 
 /**
