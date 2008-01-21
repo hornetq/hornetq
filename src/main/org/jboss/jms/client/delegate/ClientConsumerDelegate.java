@@ -81,10 +81,6 @@ public class ClientConsumerDelegate extends CommunicationSupport<ClientConsumerD
    private ClientConsumer clientConsumer;
    private boolean storingDeliveries;
    
-   
-
-   
-   
    // Static ---------------------------------------------------------------------------------------
 
    // Constructors ---------------------------------------------------------------------------------
@@ -131,21 +127,6 @@ public class ClientConsumerDelegate extends CommunicationSupport<ClientConsumerD
       return this.session.getConnection().getClient();
    }
    
-   public void synchronizeWith(ClientConsumerDelegate nd) throws Exception
-   {
-      log.trace(this + " synchronizing with " + nd);
-
-      super.synchronizeWith(nd);
-
-      ClientConsumerDelegate newDelegate = (ClientConsumerDelegate)nd;
-
-      // synchronize the delegates
-
-      bufferSize = newDelegate.getBufferSize();
-      maxDeliveries = newDelegate.getMaxDeliveries();
-
-   }
-
    // Closeable implementation ---------------------------------------------------------------------
 
    public void close() throws JMSException
@@ -158,7 +139,6 @@ public class ClientConsumerDelegate extends CommunicationSupport<ClientConsumerD
    {
       try
       {
-
          // We make sure closing is called on the ServerConsumerEndpoint.
          // This returns us the last delivery id sent
 

@@ -25,7 +25,6 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -39,16 +38,16 @@ import javax.jms.MessageListener;
 import javax.jms.Session;
 import javax.jms.TransactionInProgressException;
 import javax.transaction.xa.XAResource;
+
 import org.jboss.jms.client.Closeable;
 import org.jboss.jms.client.SelectorTranslator;
 import org.jboss.jms.client.api.ClientBrowser;
 import org.jboss.jms.client.api.ClientConnection;
+import org.jboss.jms.client.api.ClientProducer;
 import org.jboss.jms.client.api.ClientSession;
 import org.jboss.jms.client.api.Consumer;
-import org.jboss.jms.client.api.ClientProducer;
 import org.jboss.jms.client.container.ClientConsumer;
 import org.jboss.jms.client.remoting.CallbackManager;
-import org.jboss.jms.client.remoting.JMSRemotingConnection;
 import org.jboss.jms.delegate.Ack;
 import org.jboss.jms.delegate.Cancel;
 import org.jboss.jms.delegate.DefaultCancel;
@@ -65,7 +64,6 @@ import org.jboss.jms.message.JBossTextMessage;
 import org.jboss.jms.tx.LocalTx;
 import org.jboss.jms.tx.MessagingXAResource;
 import org.jboss.jms.tx.ResourceManager;
-import org.jboss.messaging.util.Logger;
 import org.jboss.messaging.core.Destination;
 import org.jboss.messaging.core.DestinationType;
 import org.jboss.messaging.core.Message;
@@ -91,11 +89,11 @@ import org.jboss.messaging.core.remoting.wireformat.SendMessage;
 import org.jboss.messaging.core.remoting.wireformat.UnsubscribeMessage;
 import org.jboss.messaging.util.ClearableQueuedExecutor;
 import org.jboss.messaging.util.ConcurrentHashSet;
+import org.jboss.messaging.util.Logger;
 import org.jboss.messaging.util.MessageQueueNameHelper;
 import org.jboss.messaging.util.ProxyFactory;
 
 import EDU.oswego.cs.dl.util.concurrent.LinkedQueue;
-import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
 
 /**
  * The client-side Session delegate class.
@@ -212,15 +210,6 @@ public class ClientSessionDelegate extends CommunicationSupport<ClientSessionDel
    }
 
    // DelegateSupport overrides --------------------------------------------------------------------
-
-   
-   public void synchronizeWith(ClientSessionDelegate nd) throws Exception
-   {
-      log.trace(this + " synchronizing with " + nd);
-
-      super.synchronizeWith(nd);
-
-   }
 
    // Closeable implementation ---------------------------------------------------------------------
 

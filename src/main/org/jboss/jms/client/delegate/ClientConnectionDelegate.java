@@ -107,7 +107,6 @@ public class ClientConnectionDelegate extends CommunicationSupport<ClientConnect
    private String clientID;
 
    private ResourceManager resourceManager;
-
    
    // Cached by the connection state in case ClusteringAspect needs to re-try establishing
    // connection on a different node
@@ -116,12 +115,6 @@ public class ClientConnectionDelegate extends CommunicationSupport<ClientConnect
    // Cached by the connection state in case ClusteringAspect needs to re-try establishing
    // connection on a different node
    private transient String password;
-
-
-   
-   
-   
-   
 
    // Static ---------------------------------------------------------------------------------------
 
@@ -140,39 +133,7 @@ public class ClientConnectionDelegate extends CommunicationSupport<ClientConnect
    }
 
    // DelegateSupport overrides --------------------------------------------------------------------
-
-   public void synchronizeWith(ClientConnectionDelegate nd) throws Exception
-   {
-      log.trace(this + " synchronizing with " + nd);
-
-      super.synchronizeWith(nd);
-
-      ClientConnectionDelegate newDelegate = (ClientConnectionDelegate)nd;
-
-      // synchronize the server endpoint state
-
-      // this is a bit counterintuitve, as we're not copying from new delegate, but modifying its
-      // state based on the old state. It makes sense, since in the end the state makes it to the
-      // server
-
-      if (getClientID() != null)
-      {
-         newDelegate.setClientID(getClientID());
-      }
-
-      // synchronize the delegates
-
-      remotingConnection = newDelegate.getRemotingConnection();
-      versionToUse = newDelegate.getVersionToUse();
-
-      // There is one RM per server, so we need to merge the rms if necessary
-      ResourceManagerFactory.instance.handleFailover(serverID, newDelegate.getServerID());
-
-      //client = remotingConnection.getRemotingClient();
-
-      serverID = newDelegate.getServerID();
-   }
-
+  
    // Closeable implementation ---------------------------------------------------------------------
 
    public void close() throws JMSException
@@ -464,10 +425,6 @@ public class ClientConnectionDelegate extends CommunicationSupport<ClientConnect
       this.resourceManager = resourceManager;
    }
    
-   
-   
-   
-
    // Package Private ------------------------------------------------------------------------------
 
    // Private --------------------------------------------------------------------------------------

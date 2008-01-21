@@ -557,24 +557,6 @@ public class ClientConsumer
       }
    }
 
-   /**
-    * Needed for failover
-    * Note this can't lock the mainLock since receive() also locks the main lock
-    * and this would prevent failover occuring when a consumer is blocked on receive()
-    */
-   public void synchronizeWith(ClientConsumer newHandler)
-   {
-      consumerID = newHandler.consumerID;
-
-      // Clear the buffer. This way the non persistent messages that managed to arrive are
-      // irredeemably lost, while the persistent ones are failed-over on the server and will be
-      // resent
-
-      buffer.clear();
-      
-      consumeCount = 0;
-   }
-   
    public long getRedeliveryDelay()
    {
    	return redeliveryDelay;

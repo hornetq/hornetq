@@ -98,19 +98,6 @@ public class ClientProducerDelegate extends CommunicationSupport<ClientProducerD
       this.destination = destination;
    }
 
-   public void synchronizeWith(ClientProducerDelegate nd) throws Exception
-   {
-      super.synchronizeWith(nd);
-
-      /*ClientProducerDelegate newDelegate = (ClientProducerDelegate)nd;
-
-      // synchronize server endpoint state
-
-      // synchronize (recursively) the client-side state
-
-      state.synchronizeWith(newDelegate.getState()); */
-   }
-
    // ProducerDelegate implementation --------------------------------------------------------------
 
    /**

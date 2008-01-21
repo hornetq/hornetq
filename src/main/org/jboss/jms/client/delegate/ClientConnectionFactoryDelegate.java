@@ -33,9 +33,7 @@ import org.jboss.jms.client.api.ClientConnection;
 import org.jboss.jms.client.container.JMSClientVMIdentifier;
 import org.jboss.jms.client.remoting.ConsolidatedRemotingConnectionListener;
 import org.jboss.jms.client.remoting.JMSRemotingConnection;
-import org.jboss.jms.delegate.ConnectionFactoryDelegate;
 import org.jboss.jms.delegate.CreateConnectionResult;
-import org.jboss.jms.delegate.TopologyResult;
 import org.jboss.jms.exception.MessagingNetworkFailureException;
 import org.jboss.jms.tx.ResourceManagerFactory;
 import org.jboss.messaging.core.remoting.Client;
@@ -59,7 +57,7 @@ import org.jboss.messaging.util.Version;
  * $Id$
  */
 public class ClientConnectionFactoryDelegate
-   extends CommunicationSupport<ClientConnectionFactoryDelegate> implements ConnectionFactoryDelegate, Serializable
+   extends CommunicationSupport<ClientConnectionFactoryDelegate> implements Serializable
 {
    // Constants ------------------------------------------------------------------------------------
 
@@ -212,11 +210,6 @@ public class ClientConnectionFactoryDelegate
       return res;
    }
    
-   public TopologyResult getTopology() throws JMSException
-   {
-      throw new IllegalStateException("This invocation should not be handled here!");
-   }
-
    // Public ---------------------------------------------------------------------------------------
 
    public String toString()
@@ -254,11 +247,6 @@ public class ClientConnectionFactoryDelegate
    public boolean getStrictTck()
    {
        return strictTck;
-   }
-
-    public void synchronizeWith(ClientConnectionFactoryDelegate newDelegate) throws Exception
-   {
-      super.synchronizeWith(newDelegate);
    }
 
    // Protected ------------------------------------------------------------------------------------

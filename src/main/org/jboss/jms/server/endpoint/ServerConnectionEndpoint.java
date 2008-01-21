@@ -21,7 +21,6 @@
   */
 package org.jboss.jms.server.endpoint;
 
-import static org.jboss.messaging.core.remoting.Assert.assertValidID;
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_CLOSE;
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_SENDTRANSACTION;
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_SETCLIENTID;
@@ -49,9 +48,7 @@ import javax.transaction.xa.Xid;
 
 import org.jboss.jms.client.api.ClientSession;
 import org.jboss.jms.client.delegate.ClientSessionDelegate;
-import org.jboss.jms.delegate.Ack;
 import org.jboss.jms.delegate.ConnectionEndpoint;
-import org.jboss.jms.delegate.SessionDelegate;
 import org.jboss.jms.exception.MessagingJMSException;
 import org.jboss.jms.server.ConnectionManager;
 import org.jboss.jms.server.SecurityStore;
@@ -61,7 +58,6 @@ import org.jboss.jms.server.security.CheckType;
 import org.jboss.jms.tx.ClientTransaction;
 import org.jboss.jms.tx.TransactionRequest;
 import org.jboss.jms.tx.ClientTransaction.SessionTxState;
-import org.jboss.messaging.util.Logger;
 import org.jboss.messaging.core.Binding;
 import org.jboss.messaging.core.Condition;
 import org.jboss.messaging.core.Destination;
@@ -88,6 +84,7 @@ import org.jboss.messaging.core.remoting.wireformat.SendTransactionMessage;
 import org.jboss.messaging.core.remoting.wireformat.SetClientIDMessage;
 import org.jboss.messaging.core.tx.MessagingXid;
 import org.jboss.messaging.util.ExceptionUtil;
+import org.jboss.messaging.util.Logger;
 import org.jboss.messaging.util.Util;
 
 /**

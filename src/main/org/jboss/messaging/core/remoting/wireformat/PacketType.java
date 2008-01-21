@@ -21,7 +21,6 @@ public enum PacketType
    // Connection factory
    REQ_CREATECONNECTION           ((byte)10),
    RESP_CREATECONNECTION          ((byte)11), 
-   REQ_GETTOPOLOGY                ((byte)14),
    RESP_GETTOPOLOGY               ((byte)15), 
    MSG_UPDATECALLBACK             ((byte)16),
    

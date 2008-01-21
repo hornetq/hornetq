@@ -22,7 +22,7 @@
 
 package org.jboss.jms.client.plugin;
 
-import org.jboss.jms.delegate.ConnectionFactoryDelegate;
+import org.jboss.jms.client.delegate.ClientConnectionFactoryDelegate;
 
 /**
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
@@ -44,7 +44,7 @@ public class RoundRobinLoadBalancingFactory extends LoadBalancingFactory
 
    // Public ---------------------------------------------------------------------------------------
 
-   public LoadBalancingPolicy createLoadBalancingPolicy(ConnectionFactoryDelegate[] view)
+   public LoadBalancingPolicy createLoadBalancingPolicy(ClientConnectionFactoryDelegate[] view)
    {
       return new RoundRobinLoadBalancingPolicy(view);
    }

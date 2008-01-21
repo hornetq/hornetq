@@ -48,7 +48,6 @@ import static org.jboss.messaging.core.remoting.wireformat.PacketType.REQ_CREATE
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.REQ_CREATESESSION;
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.REQ_GETCLIENTID;
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.REQ_GETPREPAREDTRANSACTIONS;
-import static org.jboss.messaging.core.remoting.wireformat.PacketType.REQ_GETTOPOLOGY;
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.RESP_ACKDELIVERY;
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.RESP_BROWSER_HASNEXTMESSAGE;
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.RESP_BROWSER_NEXTMESSAGE;
@@ -61,12 +60,10 @@ import static org.jboss.messaging.core.remoting.wireformat.PacketType.RESP_CREAT
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.RESP_CREATESESSION;
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.RESP_GETCLIENTID;
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.RESP_GETPREPAREDTRANSACTIONS;
-import static org.jboss.messaging.core.remoting.wireformat.PacketType.RESP_GETTOPOLOGY;
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.TEXT;
 import static org.jboss.messaging.core.remoting.wireformat.test.unit.CodecAssert.assertEqualsAcks;
 import static org.jboss.messaging.core.remoting.wireformat.test.unit.CodecAssert.assertEqualsByteArrays;
 import static org.jboss.messaging.core.remoting.wireformat.test.unit.CodecAssert.assertEqualsCancels;
-import static org.jboss.messaging.core.remoting.wireformat.test.unit.CodecAssert.assertSameTopology;
 import static org.jboss.messaging.core.remoting.wireformat.test.unit.CodecAssert.assertSameXids;
 import static org.jboss.messaging.test.unit.RandomUtil.randomByte;
 import static org.jboss.messaging.test.unit.RandomUtil.randomBytes;
@@ -78,7 +75,6 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 import javax.jms.InvalidDestinationException;
@@ -87,13 +83,10 @@ import javax.jms.JMSException;
 import junit.framework.TestCase;
 
 import org.apache.mina.common.IoBuffer;
-import org.jboss.jms.client.delegate.ClientConnectionFactoryDelegate;
 import org.jboss.jms.delegate.Ack;
 import org.jboss.jms.delegate.Cancel;
 import org.jboss.jms.delegate.DefaultAck;
 import org.jboss.jms.delegate.DefaultCancel;
-import org.jboss.jms.delegate.TopologyResult;
-import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.destination.JBossQueue;
 import org.jboss.jms.destination.JBossTopic;
 import org.jboss.jms.tx.ClientTransaction;
@@ -131,7 +124,6 @@ import org.jboss.messaging.core.remoting.codec.DeleteTemporaryDestinationMessage
 import org.jboss.messaging.core.remoting.codec.DeliverMessageCodec;
 import org.jboss.messaging.core.remoting.codec.GetClientIDResponseCodec;
 import org.jboss.messaging.core.remoting.codec.GetPreparedTransactionsResponseCodec;
-import org.jboss.messaging.core.remoting.codec.GetTopologyResponseCodec;
 import org.jboss.messaging.core.remoting.codec.JMSExceptionMessageCodec;
 import org.jboss.messaging.core.remoting.codec.RemotingBuffer;
 import org.jboss.messaging.core.remoting.codec.SendMessageCodec;
@@ -176,8 +168,6 @@ import org.jboss.messaging.core.remoting.wireformat.GetClientIDRequest;
 import org.jboss.messaging.core.remoting.wireformat.GetClientIDResponse;
 import org.jboss.messaging.core.remoting.wireformat.GetPreparedTransactionsRequest;
 import org.jboss.messaging.core.remoting.wireformat.GetPreparedTransactionsResponse;
-import org.jboss.messaging.core.remoting.wireformat.GetTopologyRequest;
-import org.jboss.messaging.core.remoting.wireformat.GetTopologyResponse;
 import org.jboss.messaging.core.remoting.wireformat.JMSExceptionMessage;
 import org.jboss.messaging.core.remoting.wireformat.NullPacket;
 import org.jboss.messaging.core.remoting.wireformat.SendMessage;
@@ -189,7 +179,6 @@ import org.jboss.messaging.core.remoting.wireformat.TextPacket;
 import org.jboss.messaging.core.remoting.wireformat.UnsubscribeMessage;
 import org.jboss.messaging.core.remoting.wireformat.UpdateCallbackMessage;
 import org.jboss.messaging.core.tx.MessagingXid;
-import org.jboss.messaging.util.Version;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>.
@@ -479,51 +468,6 @@ public class PacketTypeTest extends TestCase
    }
 
    
-   public void testGetTopologyRequest() throws Exception
-   {
-      GetTopologyRequest request = new GetTopologyRequest();
-      addVersion(request);
-
-      AbstractPacketCodec codec = PacketCodecFactory.createCodecForEmptyPacket(
-            REQ_GETTOPOLOGY, GetTopologyRequest.class);
-      SimpleRemotingBuffer buffer = encode(request, codec);
-      checkHeader(buffer, request);
-      checkBodyIsEmpty(buffer);
-      buffer.rewind();
-
-      AbstractPacket decodedPacket = codec.decode(buffer);
-
-      assertTrue(decodedPacket instanceof GetTopologyRequest);
-      assertEquals(REQ_GETTOPOLOGY, decodedPacket.getType());
-   }
-
-   @SuppressWarnings("unchecked")
-   public void testGetTopologyResponse() throws Exception
-   {
-      // FIXME should use mock objects with a correct interface
-      ClientConnectionFactoryDelegate[] delegates = new ClientConnectionFactoryDelegate[] {
-            new ClientConnectionFactoryDelegate(randomString(), randomString(),
-                  23, randomString(), Version.instance(), false, true),
-            new ClientConnectionFactoryDelegate(randomString(), randomString(),
-                  33, randomString(), Version.instance(), true, false) };
-      TopologyResult topology = new TopologyResult(randomString(), delegates,
-            new HashMap());
-      GetTopologyResponse response = new GetTopologyResponse(topology);
-      addVersion(response);
-      
-      GetTopologyResponseCodec codec = new GetTopologyResponseCodec();
-      SimpleRemotingBuffer buffer = encode(response, codec);
-      checkHeader(buffer, response);
-      checkBody(buffer, codec.encode(response.getTopology()));
-      buffer.rewind();
-
-      AbstractPacket decodedPacket = codec.decode(buffer);
-
-      assertTrue(decodedPacket instanceof GetTopologyResponse);
-      GetTopologyResponse decodedResponse = (GetTopologyResponse) decodedPacket;
-      assertEquals(RESP_GETTOPOLOGY, decodedPacket.getType());
-      assertSameTopology(response.getTopology(), decodedResponse.getTopology());
-   }
 
    public void testUpdateCallbackMessage() throws Exception
    {

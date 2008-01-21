@@ -23,7 +23,6 @@ package org.jboss.jms.server.endpoint;
 
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_UPDATECALLBACK;
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.REQ_CREATECONNECTION;
-import static org.jboss.messaging.core.remoting.wireformat.PacketType.REQ_GETTOPOLOGY;
 
 import java.util.List;
 import java.util.Map;
@@ -34,21 +33,18 @@ import org.jboss.jms.client.delegate.ClientConnectionDelegate;
 import org.jboss.jms.client.delegate.ClientConnectionFactoryDelegate;
 import org.jboss.jms.delegate.ConnectionFactoryEndpoint;
 import org.jboss.jms.delegate.CreateConnectionResult;
-import org.jboss.jms.delegate.TopologyResult;
 import org.jboss.jms.exception.MessagingJMSException;
-import org.jboss.messaging.util.Logger;
 import org.jboss.messaging.core.MessagingServer;
 import org.jboss.messaging.core.remoting.PacketHandler;
 import org.jboss.messaging.core.remoting.PacketSender;
 import org.jboss.messaging.core.remoting.wireformat.AbstractPacket;
 import org.jboss.messaging.core.remoting.wireformat.CreateConnectionRequest;
 import org.jboss.messaging.core.remoting.wireformat.CreateConnectionResponse;
-import org.jboss.messaging.core.remoting.wireformat.GetTopologyResponse;
 import org.jboss.messaging.core.remoting.wireformat.JMSExceptionMessage;
 import org.jboss.messaging.core.remoting.wireformat.PacketType;
 import org.jboss.messaging.core.remoting.wireformat.UpdateCallbackMessage;
 import org.jboss.messaging.util.ExceptionUtil;
-import org.jboss.messaging.util.Version;
+import org.jboss.messaging.util.Logger;
 
 /**
  * Concrete implementation of ConnectionFactoryEndpoint
@@ -236,11 +232,6 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
       messagingServer.getConnectionManager().removeConnectionFactoryCallback(this.uniqueName, VMID, sender);
    }
 
-   public TopologyResult getTopology() throws JMSException
-   {
-      return new TopologyResult(uniqueName, delegates, failoverMap);
-   }
-
    // Public ---------------------------------------------------------------------------------------
    
    public String getID()
@@ -258,47 +249,6 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
       return messagingServer;
    }
 
-   /**
-    * Sends a cluster view update message to its associated ClusteredConnectionFactories.
-    *
-    * Observation: It is placed here, because if we decide to lock the ServerEndpoint while we send
-    *              updates, we would need the method here to perform WriteLocks on objects.
-    */
-   public void updateClusteredClients(ClientConnectionFactoryDelegate[] delegates, Map failoverMap)
-      throws Exception
-   {
-      updateTopology(delegates, failoverMap);
-
-      PacketSender[] senders = messagingServer.getConnectionManager().getConnectionFactorySenders(uniqueName);
-      log.debug("updateClusteredClients being called!!! clientFactoriesToUpdate.size = " + senders.length);
-
-      GetTopologyResponse packet = new GetTopologyResponse(getTopology());
-      packet.setVersion(Version.instance().getProviderIncrementingVersion());
-      packet.setTargetID(id);
-      
-      for (PacketSender sender : senders)
-      {
-         sender.send(packet);
-      }
-      
-//      ConnectionFactoryUpdate message =
-//         new ConnectionFactoryUpdate(uniqueName, delegates, failoverMap);
-//
-//      Callback callback = new Callback(message);
-//
-//      for (ServerInvokerCallbackHandler o: clientFactoriesToUpdate)
-//      {
-//         log.debug("Updating CF on callback " + o);
-//         o.handleCallbackOneway(callback);
-//      }
-   }
-
-   public void updateTopology(ClientConnectionFactoryDelegate[] delegates, Map failoverMap)
-   {
-      this.delegates = delegates;
-      this.failoverMap = failoverMap;
-   }
-   
    public String toString()
    {
       return "ConnectionFactoryEndpoint[" + id + "]";
@@ -344,12 +294,7 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
                response = new CreateConnectionResponse(del.getInternalDelegate()
                      .getID(), del.getInternalDelegate().getServerID());
             }
-            else if (type == REQ_GETTOPOLOGY)
-            {
-               TopologyResult topology = getTopology();
-
-               response = new GetTopologyResponse(topology);
-            } else if (type == MSG_UPDATECALLBACK)
+            else if (type == MSG_UPDATECALLBACK)
             {
                UpdateCallbackMessage message = (UpdateCallbackMessage) packet;
                if (message.isAdd())

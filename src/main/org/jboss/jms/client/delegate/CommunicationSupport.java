@@ -92,15 +92,6 @@ public abstract class CommunicationSupport <T extends CommunicationSupport<?>> i
       this.id = id;
    }
    
-   public void synchronizeWith(T nd) throws Exception
-   {
-      this.id = nd.getID();
-      //this.client = nd.getClient();
-   }
-   
-   
-   
-   
    // Protected Methods-----------------------------------------------------------------------------
    
    protected void sendOneWay(AbstractPacket packet) throws JMSException

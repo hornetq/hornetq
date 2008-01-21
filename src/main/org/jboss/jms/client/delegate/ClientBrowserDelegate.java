@@ -88,18 +88,6 @@ public class ClientBrowserDelegate extends CommunicationSupport<ClientBrowserDel
 
    // DelegateSupport overrides --------------------------------------------------------------------
 
-   public void synchronizeWith(ClientBrowserDelegate nd) throws Exception
-   {
-      super.synchronizeWith(nd);
-
-      ClientBrowserDelegate newDelegate = (ClientBrowserDelegate)nd;
-
-      // synchronize server endpoint state
-
-      // synchronize (recursively) the client-side state
-
-   }
-
    // Closeable implementation ---------------------------------------------------------------------
 
    public void close() throws JMSException
@@ -177,9 +165,6 @@ public class ClientBrowserDelegate extends CommunicationSupport<ClientBrowserDel
       return this.session.getConnection().getVersion();
    }
    
-   
-   
-
    // Package Private ------------------------------------------------------------------------------
 
    // Private --------------------------------------------------------------------------------------

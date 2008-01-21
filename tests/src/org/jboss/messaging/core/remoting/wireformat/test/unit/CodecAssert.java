@@ -14,7 +14,6 @@ import org.jboss.jms.client.delegate.ClientConnectionFactoryDelegate;
 import org.jboss.jms.delegate.Ack;
 import org.jboss.jms.delegate.Cancel;
 import org.jboss.jms.delegate.DeliveryRecovery;
-import org.jboss.jms.delegate.TopologyResult;
 import org.jboss.messaging.core.tx.MessagingXid;
 
 /**
@@ -111,27 +110,7 @@ public class CodecAssert extends Assert
       }
    }
 
-   static void assertSameTopology(TopologyResult expected, TopologyResult actual)
-   {
-      assertEquals(expected.getUniqueName(), actual.getUniqueName());
-      assertEquals(expected.getFailoverMap(), actual.getFailoverMap());
-
-      ClientConnectionFactoryDelegate[] expectedDelegates = expected
-            .getDelegates();
-      ClientConnectionFactoryDelegate[] actualDelegates = actual.getDelegates();
-
-      assertEquals(expectedDelegates.length, actualDelegates.length);
-
-      for (int i = 0; i < expectedDelegates.length; i++)
-      {
-         ClientConnectionFactoryDelegate expectedDelegate = expectedDelegates[i];
-         ClientConnectionFactoryDelegate actualDelegate = actualDelegates[i];
-
-         assertEquals(expectedDelegate.getID(), actualDelegate.getID());
-         assertEquals(expectedDelegate.getName(), actualDelegate.getName());
-      }
-   }
-
+   
    // Constructors --------------------------------------------------
 
    // Public --------------------------------------------------------

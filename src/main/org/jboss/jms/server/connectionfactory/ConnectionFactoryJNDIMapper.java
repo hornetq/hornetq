@@ -33,13 +33,11 @@ import javax.naming.NamingException;
 import org.jboss.jms.client.JBossConnectionFactory;
 import org.jboss.jms.client.delegate.ClientConnectionFactoryDelegate;
 import org.jboss.jms.client.plugin.LoadBalancingFactory;
-import org.jboss.jms.delegate.ConnectionFactoryDelegate;
 import org.jboss.jms.server.ConnectionFactoryManager;
 import org.jboss.jms.server.endpoint.ServerConnectionFactoryEndpoint;
-import org.jboss.messaging.util.Logger;
 import org.jboss.messaging.core.MessagingServer;
-import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.util.JNDIUtil;
+import org.jboss.messaging.util.Logger;
 import org.jboss.messaging.util.Version;
 
 /**
@@ -125,7 +123,7 @@ public class ConnectionFactoryJNDIMapper implements ConnectionFactoryManager
       //The server peer strict setting overrides the connection factory
       boolean useStrict = messagingServer.getConfiguration().isStrictTck() || strictTck;
 
-      ConnectionFactoryDelegate delegate =
+      ClientConnectionFactoryDelegate delegate =
          new ClientConnectionFactoryDelegate(uniqueName, id, messagingServer.getConfiguration().getMessagingServerID(),
                                              serverLocatorURI, version, clientPing, useStrict);
 
@@ -197,7 +195,7 @@ public class ConnectionFactoryJNDIMapper implements ConnectionFactoryManager
    // Private --------------------------------------------------------------------------------------
 
    private void rebindConnectionFactory(Context ic, List<String> jndiBindings,
-                                        ConnectionFactoryDelegate delegate)
+                                        ClientConnectionFactoryDelegate delegate)
       throws NamingException
    {
       JBossConnectionFactory cf = new JBossConnectionFactory(delegate);

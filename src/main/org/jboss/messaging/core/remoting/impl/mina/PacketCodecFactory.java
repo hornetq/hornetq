@@ -9,7 +9,6 @@ package org.jboss.messaging.core.remoting.impl.mina;
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.NULL;
 
 import org.apache.mina.filter.codec.demux.DemuxingProtocolCodecFactory;
-import org.jboss.messaging.util.Logger;
 import org.jboss.messaging.core.remoting.codec.AbstractPacketCodec;
 import org.jboss.messaging.core.remoting.codec.AcknowledgeDeliveriesRequestCodec;
 import org.jboss.messaging.core.remoting.codec.AcknowledgeDeliveryRequestCodec;
@@ -39,7 +38,6 @@ import org.jboss.messaging.core.remoting.codec.DeleteTemporaryDestinationMessage
 import org.jboss.messaging.core.remoting.codec.DeliverMessageCodec;
 import org.jboss.messaging.core.remoting.codec.GetClientIDResponseCodec;
 import org.jboss.messaging.core.remoting.codec.GetPreparedTransactionsResponseCodec;
-import org.jboss.messaging.core.remoting.codec.GetTopologyResponseCodec;
 import org.jboss.messaging.core.remoting.codec.JMSExceptionMessageCodec;
 import org.jboss.messaging.core.remoting.codec.RemotingBuffer;
 import org.jboss.messaging.core.remoting.codec.SendMessageCodec;
@@ -83,8 +81,6 @@ import org.jboss.messaging.core.remoting.wireformat.GetClientIDRequest;
 import org.jboss.messaging.core.remoting.wireformat.GetClientIDResponse;
 import org.jboss.messaging.core.remoting.wireformat.GetPreparedTransactionsRequest;
 import org.jboss.messaging.core.remoting.wireformat.GetPreparedTransactionsResponse;
-import org.jboss.messaging.core.remoting.wireformat.GetTopologyRequest;
-import org.jboss.messaging.core.remoting.wireformat.GetTopologyResponse;
 import org.jboss.messaging.core.remoting.wireformat.JMSExceptionMessage;
 import org.jboss.messaging.core.remoting.wireformat.NullPacket;
 import org.jboss.messaging.core.remoting.wireformat.PacketType;
@@ -96,6 +92,7 @@ import org.jboss.messaging.core.remoting.wireformat.StopConnectionMessage;
 import org.jboss.messaging.core.remoting.wireformat.TextPacket;
 import org.jboss.messaging.core.remoting.wireformat.UnsubscribeMessage;
 import org.jboss.messaging.core.remoting.wireformat.UpdateCallbackMessage;
+import org.jboss.messaging.util.Logger;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>.
@@ -128,11 +125,6 @@ public class PacketCodecFactory extends DemuxingProtocolCodecFactory
 
       addCodec(CreateConnectionResponse.class,
             ConnectionFactoryCreateConnectionResponseCodec.class);
-
-      addCodecForEmptyPacket(PacketType.REQ_GETTOPOLOGY,
-            GetTopologyRequest.class);
-
-      addCodec(GetTopologyResponse.class, GetTopologyResponseCodec.class);
 
       addCodec(UpdateCallbackMessage.class, UpdateCallbackMessageCodec.class);
 

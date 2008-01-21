@@ -24,7 +24,7 @@ package org.jboss.jms.client.plugin;
 
 import java.io.Serializable;
 
-import org.jboss.jms.delegate.ConnectionFactoryDelegate;
+import org.jboss.jms.client.delegate.ClientConnectionFactoryDelegate;
 
 /**
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
@@ -51,7 +51,7 @@ public abstract class LoadBalancingFactory implements Serializable
    /**
     * A LoadBalancingPolicy will work on top of ConnectionFactoryDelegate.
     */
-   public abstract LoadBalancingPolicy createLoadBalancingPolicy(ConnectionFactoryDelegate[] view);
+   public abstract LoadBalancingPolicy createLoadBalancingPolicy(ClientConnectionFactoryDelegate[] view);
 
    public static LoadBalancingFactory getDefaultFactory()
    {
