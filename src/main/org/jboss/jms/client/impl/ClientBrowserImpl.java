@@ -19,7 +19,7 @@
   * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   */
-package org.jboss.jms.client.delegate;
+package org.jboss.jms.client.impl;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -48,11 +48,11 @@ import org.jboss.messaging.core.remoting.wireformat.ClosingResponse;
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  *
- * @version <tt>$Revision$</tt>
+ * @version <tt>$Revision: 3602 $</tt>
  *
- * $Id$
+ * $Id: ClientBrowserImpl.java 3602 2008-01-21 17:48:32Z timfox $
  */
-public class ClientBrowserDelegate extends CommunicationSupport<ClientBrowserDelegate> implements ClientBrowser
+public class ClientBrowserImpl extends CommunicationSupport<ClientBrowserImpl> implements ClientBrowser
 {
    // Constants ------------------------------------------------------------------------------------
 
@@ -68,7 +68,7 @@ public class ClientBrowserDelegate extends CommunicationSupport<ClientBrowserDel
 
    // Constructors ---------------------------------------------------------------------------------
 
-   public ClientBrowserDelegate(ClientSession session, String objectID, Destination jmsDestination, String messageSelector)
+   public ClientBrowserImpl(ClientSession session, String objectID, Destination jmsDestination, String messageSelector)
    {
       super(objectID);
       this.session = session;
@@ -77,12 +77,12 @@ public class ClientBrowserDelegate extends CommunicationSupport<ClientBrowserDel
       this.messageSelector = messageSelector;
    }
 
-   public ClientBrowserDelegate(String objectID)
+   public ClientBrowserImpl(String objectID)
    {
       super(objectID);
    }
 
-   public ClientBrowserDelegate()
+   public ClientBrowserImpl()
    {
    }
 

@@ -30,7 +30,7 @@ import javax.jms.TextMessage;
 import javax.management.ObjectName;
 
 import org.jboss.jms.client.JBossConnection;
-import org.jboss.jms.client.delegate.ClientConnectionDelegate;
+import org.jboss.jms.client.impl.ClientConnectionImpl;
 import org.jboss.jms.tx.ResourceManager;
 import org.jboss.jms.tx.ResourceManagerFactory;
 
@@ -66,7 +66,7 @@ public class TransactedSessionTest extends JMSTestCase
 
          JBossConnection jbConn = (JBossConnection)conn;
 
-         ClientConnectionDelegate del = getDelegate(jbConn);
+         ClientConnectionImpl del = getDelegate(jbConn);
 
          ResourceManager rm = del.getResourceManager();
 
@@ -106,7 +106,7 @@ public class TransactedSessionTest extends JMSTestCase
       {
          conn = cf.createConnection();
 
-         ClientConnectionDelegate del = getDelegate(conn);
+         ClientConnectionImpl del = getDelegate(conn);
 
          ResourceManager rm = del.getResourceManager();
 

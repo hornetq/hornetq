@@ -19,18 +19,18 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.jms.delegate;
+package org.jboss.jms.client.impl;
 
 /**
- * A DefaultAck
+ * A AckImpl
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * @version <tt>$Revision$</tt>
+ * @version <tt>$Revision: 2684 $</tt>
  *
- * $Id$
+ * $Id: AckImpl.java 2684 2007-05-15 07:31:30Z timfox $
  *
  */
-public class DefaultAck implements Ack
+public class AckImpl implements Ack
 {
 
    // Constants ------------------------------------------------------------------------------------
@@ -43,7 +43,7 @@ public class DefaultAck implements Ack
 
    // Constructors ---------------------------------------------------------------------------------
 
-   public DefaultAck(long deliveryId)
+   public AckImpl(long deliveryId)
    {
       this.deliveryID = deliveryId;
    }

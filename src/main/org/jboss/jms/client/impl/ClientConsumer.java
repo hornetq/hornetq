@@ -19,7 +19,7 @@
   * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   */
-package org.jboss.jms.client.container;
+package org.jboss.jms.client.impl;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -32,9 +32,6 @@ import javax.jms.Session;
 
 import org.jboss.jms.client.api.ClientSession;
 import org.jboss.jms.client.api.Consumer;
-import org.jboss.jms.delegate.Cancel;
-import org.jboss.jms.delegate.DefaultCancel;
-import org.jboss.jms.delegate.DeliveryInfo;
 import org.jboss.jms.message.JBossMessage;
 import org.jboss.messaging.util.Logger;
 import org.jboss.messaging.core.Message;
@@ -97,7 +94,7 @@ public class ClientConsumer
          
          if (shouldCancel)
          {	         
-	         final Cancel cancel = new DefaultCancel(jbm.getDeliveryId(), jbm.getDeliveryCount(),
+	         final Cancel cancel = new CancelImpl(jbm.getDeliveryId(), jbm.getDeliveryCount(),
 	                                                 expired, reachedMaxDeliveries);	         
 	         try
 	         {
@@ -329,8 +326,8 @@ public class ClientConsumer
             {
                JBossMessage mp = (JBossMessage)i.next();
                
-               DefaultCancel cancel =
-                  new DefaultCancel(mp.getDeliveryId(), mp.getDeliveryCount(), false, false);
+               CancelImpl cancel =
+                  new CancelImpl(mp.getDeliveryId(), mp.getDeliveryCount(), false, false);
                
                cancels.add(cancel);
             }

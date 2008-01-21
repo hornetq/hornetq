@@ -23,7 +23,7 @@ package org.jboss.jms.server.endpoint;
 
 import javax.jms.JMSException;
 
-import org.jboss.jms.delegate.CreateConnectionResult;
+import org.jboss.jms.client.impl.CreateConnectionResult;
 
 /**
  * Represents the set of methods from the ConnectionFactoryDelegate that are handled on the server.

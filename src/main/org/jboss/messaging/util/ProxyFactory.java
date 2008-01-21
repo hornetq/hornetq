@@ -2,7 +2,7 @@ package org.jboss.messaging.util;
 
 import java.lang.reflect.Proxy;
 
-import org.jboss.jms.client.container.ClosedInterceptor;
+import org.jboss.jms.client.impl.ClosedInterceptor;
 
 public class ProxyFactory
 {

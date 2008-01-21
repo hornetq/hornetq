@@ -10,8 +10,8 @@ import java.util.List;
 
 import junit.framework.Assert;
 
-import org.jboss.jms.delegate.Ack;
-import org.jboss.jms.delegate.Cancel;
+import org.jboss.jms.client.impl.Ack;
+import org.jboss.jms.client.impl.Cancel;
 import org.jboss.messaging.core.tx.MessagingXid;
 
 /**

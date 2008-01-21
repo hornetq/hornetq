@@ -5,7 +5,7 @@
  * See terms of license at gnu.org.
  */
 
-package org.jboss.jms.client.delegate;
+package org.jboss.jms.client.impl;
 
 import static org.jboss.messaging.core.remoting.Assert.assertValidID;
 

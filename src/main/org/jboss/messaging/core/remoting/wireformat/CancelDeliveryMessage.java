@@ -8,7 +8,7 @@ package org.jboss.messaging.core.remoting.wireformat;
 
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_CANCELDELIVERY;
 
-import org.jboss.jms.delegate.Cancel;
+import org.jboss.jms.client.impl.Cancel;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>

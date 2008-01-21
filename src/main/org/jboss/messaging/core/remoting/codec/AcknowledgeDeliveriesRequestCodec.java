@@ -11,8 +11,8 @@ import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_ACKDEL
 import java.util.ArrayList;
 import java.util.List;
 
-import org.jboss.jms.delegate.Ack;
-import org.jboss.jms.delegate.DefaultAck;
+import org.jboss.jms.client.impl.Ack;
+import org.jboss.jms.client.impl.AckImpl;
 import org.jboss.messaging.core.remoting.wireformat.AcknowledgeDeliveriesMessage;
 
 /**
@@ -94,7 +94,7 @@ public class AcknowledgeDeliveriesRequestCodec extends
       List<Ack> acks = new ArrayList<Ack>(deliveryIDs.length);
       for (long deliveryID : deliveryIDs)
       {
-         acks.add(new DefaultAck(deliveryID));
+         acks.add(new AckImpl(deliveryID));
       }
       return acks;
    }

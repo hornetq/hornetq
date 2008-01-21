@@ -31,7 +31,7 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import org.jboss.jms.client.JBossConnectionFactory;
-import org.jboss.jms.client.delegate.ClientConnectionFactoryDelegate;
+import org.jboss.jms.client.impl.ClientConnectionFactoryImpl;
 import org.jboss.jms.client.plugin.LoadBalancingFactory;
 import org.jboss.jms.server.ConnectionFactoryManager;
 import org.jboss.jms.server.endpoint.ServerConnectionFactoryEndpoint;
@@ -123,8 +123,8 @@ public class ConnectionFactoryJNDIMapper implements ConnectionFactoryManager
       //The server peer strict setting overrides the connection factory
       boolean useStrict = messagingServer.getConfiguration().isStrictTck() || strictTck;
 
-      ClientConnectionFactoryDelegate delegate =
-         new ClientConnectionFactoryDelegate(uniqueName, id, messagingServer.getConfiguration().getMessagingServerID(),
+      ClientConnectionFactoryImpl delegate =
+         new ClientConnectionFactoryImpl(uniqueName, id, messagingServer.getConfiguration().getMessagingServerID(),
                                              serverLocatorURI, version, clientPing, useStrict);
 
       log.debug(this + " created local delegate " + delegate);
@@ -195,7 +195,7 @@ public class ConnectionFactoryJNDIMapper implements ConnectionFactoryManager
    // Private --------------------------------------------------------------------------------------
 
    private void rebindConnectionFactory(Context ic, List<String> jndiBindings,
-                                        ClientConnectionFactoryDelegate delegate)
+                                        ClientConnectionFactoryImpl delegate)
       throws NamingException
    {
       JBossConnectionFactory cf = new JBossConnectionFactory(delegate);

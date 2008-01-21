@@ -8,7 +8,7 @@ package org.jboss.jms.client.plugin;
 
 import java.io.Serializable;
 
-import org.jboss.jms.client.delegate.ClientConnectionFactoryDelegate;
+import org.jboss.jms.client.impl.ClientConnectionFactoryImpl;
 
 /**
  * The interface that must be implemented by any load balancing policy plugin.
@@ -21,14 +21,14 @@ public interface LoadBalancingPolicy extends Serializable
 {
    static final long serialVersionUID = 328573973957394573L;
 
-   ClientConnectionFactoryDelegate getNext();
+   ClientConnectionFactoryImpl getNext();
    
    /**
     * This method should be called when updating the LoadBalancingFactory
     * @param delegates - a List<ConnectionFactoryDelegate> representing the lastest cluster view
     *        to chose delegates from
     */
-   void updateView(ClientConnectionFactoryDelegate[] delegates);
+   void updateView(ClientConnectionFactoryImpl[] delegates);
 
 
 }

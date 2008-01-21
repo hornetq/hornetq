@@ -37,7 +37,7 @@ import javax.transaction.xa.Xid;
 
 import org.jboss.jms.client.api.ClientConnection;
 import org.jboss.jms.client.api.ClientSession;
-import org.jboss.jms.delegate.DeliveryInfo;
+import org.jboss.jms.client.impl.DeliveryInfo;
 import org.jboss.jms.exception.MessagingTransactionRolledBackException;
 import org.jboss.jms.exception.MessagingXAException;
 import org.jboss.jms.message.JBossMessage;

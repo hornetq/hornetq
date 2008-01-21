@@ -30,9 +30,9 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.jboss.jms.delegate.Ack;
-import org.jboss.jms.delegate.DefaultAck;
-import org.jboss.jms.delegate.DeliveryInfo;
+import org.jboss.jms.client.impl.Ack;
+import org.jboss.jms.client.impl.AckImpl;
+import org.jboss.jms.client.impl.DeliveryInfo;
 import org.jboss.messaging.util.Logger;
 import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.impl.MessageImpl;
@@ -347,7 +347,7 @@ public class ClientTransaction
          
          while ((l = in.readLong()) != Long.MIN_VALUE)
          {
-         	sessionState.addAck(new DefaultAck(l));
+         	sessionState.addAck(new AckImpl(l));
          }
       }
    }

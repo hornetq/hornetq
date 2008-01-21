@@ -19,7 +19,7 @@
   * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   */
-package org.jboss.jms.delegate;
+package org.jboss.jms.client.impl;
 
 
 /**
@@ -33,12 +33,12 @@ package org.jboss.jms.delegate;
  * message can be sent to DLQ if appropriate
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * @version <tt>$Revision$</tt>
+ * @version <tt>$Revision: 3047 $</tt>
  *
- * $Id$
+ * $Id: CancelImpl.java 3047 2007-08-23 19:02:05Z clebert.suconic@jboss.com $
  *
  */
-public class DefaultCancel implements Cancel
+public class CancelImpl implements Cancel
 {
    // Constants -----------------------------------------------------
    
@@ -56,11 +56,11 @@ public class DefaultCancel implements Cancel
    
    // Constructors --------------------------------------------------
    
-   public DefaultCancel()
+   public CancelImpl()
    {      
    }
    
-   public DefaultCancel(long deliveryId, int deliveryCount, boolean expired, boolean maxDeliveries)
+   public CancelImpl(long deliveryId, int deliveryCount, boolean expired, boolean maxDeliveries)
    {      
       this.deliveryId = deliveryId;
       
@@ -95,7 +95,7 @@ public class DefaultCancel implements Cancel
 
    public String toString()
    {
-      return "DefaultCancel(deliveryId=" + deliveryId +
+      return "CancelImpl(deliveryId=" + deliveryId +
              ", deliveryCount=" + deliveryCount +
              ", expired=" + expired +
              ", reachedMaxDeliveryAttempts=" + reachedMaxDeliveryAttempts + ")";

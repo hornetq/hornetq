@@ -33,7 +33,7 @@ import javax.jms.Topic;
 import javax.jms.TopicConnection;
 import javax.jms.TopicConnectionFactory;
 
-import org.jboss.jms.client.delegate.ClientConnectionDelegate;
+import org.jboss.jms.client.impl.ClientConnectionImpl;
 import org.jboss.jms.tx.ResourceManager;
 import org.jboss.jms.tx.ResourceManagerFactory;
 import org.jboss.messaging.util.Logger;
@@ -74,13 +74,13 @@ public class ConnectionTest extends JMSTestCase
    {
       Connection conn1 = cf.createConnection();      
             
-      ClientConnectionDelegate del1 = getDelegate(conn1);
+      ClientConnectionImpl del1 = getDelegate(conn1);
       
       ResourceManager rm1 = del1.getResourceManager();
       
       Connection conn2 = cf.createConnection();      
       
-      ClientConnectionDelegate del2 = getDelegate(conn2);
+      ClientConnectionImpl del2 = getDelegate(conn2);
       
       ResourceManager rm2 = del2.getResourceManager();
 

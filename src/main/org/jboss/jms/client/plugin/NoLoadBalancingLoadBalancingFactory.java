@@ -22,7 +22,7 @@
 
 package org.jboss.jms.client.plugin;
 
-import org.jboss.jms.client.delegate.ClientConnectionFactoryDelegate;
+import org.jboss.jms.client.impl.ClientConnectionFactoryImpl;
 
 /**
  * 
@@ -37,12 +37,12 @@ public class NoLoadBalancingLoadBalancingFactory extends LoadBalancingFactory
 	
 	private LoadBalancingPolicy policy;
 	
-	public NoLoadBalancingLoadBalancingFactory(ClientConnectionFactoryDelegate del)
+	public NoLoadBalancingLoadBalancingFactory(ClientConnectionFactoryImpl del)
 	{
 		policy = new NoLoadBalancingLoadBalancingPolicy(del);
 	}
 
-	public LoadBalancingPolicy createLoadBalancingPolicy(ClientConnectionFactoryDelegate[] view)
+	public LoadBalancingPolicy createLoadBalancingPolicy(ClientConnectionFactoryImpl[] view)
 	{
 		return policy;
 	}

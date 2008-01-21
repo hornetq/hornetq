@@ -1,6 +1,5 @@
-package org.jboss.jms.client.delegate;
+package org.jboss.jms.client.impl;
 
-import org.jboss.jms.client.container.ClientConsumer;
 import org.jboss.jms.message.JBossMessage;
 import org.jboss.messaging.core.remoting.PacketHandler;
 import org.jboss.messaging.core.remoting.PacketSender;

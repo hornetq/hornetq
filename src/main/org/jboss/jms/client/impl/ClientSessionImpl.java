@@ -19,7 +19,7 @@
   * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   */
-package org.jboss.jms.client.delegate;
+package org.jboss.jms.client.impl;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -46,12 +46,7 @@ import org.jboss.jms.client.api.ClientConnection;
 import org.jboss.jms.client.api.ClientProducer;
 import org.jboss.jms.client.api.ClientSession;
 import org.jboss.jms.client.api.Consumer;
-import org.jboss.jms.client.container.ClientConsumer;
 import org.jboss.jms.client.remoting.CallbackManager;
-import org.jboss.jms.delegate.Ack;
-import org.jboss.jms.delegate.Cancel;
-import org.jboss.jms.delegate.DefaultCancel;
-import org.jboss.jms.delegate.DeliveryInfo;
 import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.destination.JBossQueue;
 import org.jboss.jms.destination.JBossTopic;
@@ -103,15 +98,15 @@ import EDU.oswego.cs.dl.util.concurrent.LinkedQueue;
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  *
- * @version <tt>$Revision$</tt>
+ * @version <tt>$Revision: 3603 $</tt>
  *
- * $Id$
+ * $Id: ClientSessionImpl.java 3603 2008-01-21 18:49:20Z timfox $
  */
-public class ClientSessionDelegate extends CommunicationSupport<ClientSessionDelegate> implements ClientSession
+public class ClientSessionImpl extends CommunicationSupport<ClientSessionImpl> implements ClientSession
 {
    // Constants ------------------------------------------------------------------------------------
 
-   private static final Logger log = Logger.getLogger(ClientSessionDelegate.class);
+   private static final Logger log = Logger.getLogger(ClientSessionImpl.class);
 
    private boolean trace = log.isTraceEnabled();
 
@@ -169,14 +164,14 @@ public class ClientSessionDelegate extends CommunicationSupport<ClientSessionDel
 
    // Constructors ---------------------------------------------------------------------------------
 
-   public ClientSessionDelegate(ClientConnection connection, String objectID, int dupsOKBatchSize)
+   public ClientSessionImpl(ClientConnection connection, String objectID, int dupsOKBatchSize)
    {
       super(objectID);
       this.connection = connection;
       this.dupsOKBatchSize = dupsOKBatchSize;
    }
    
-   public ClientSessionDelegate(ClientConnectionDelegate connection, String objectID, int dupsOKBatchSize, boolean strictTCK,
+   public ClientSessionImpl(ClientConnectionImpl connection, String objectID, int dupsOKBatchSize, boolean strictTCK,
          boolean transacted, int acknowledgmentMode, boolean xa)
    {
       super(objectID);
@@ -205,7 +200,7 @@ public class ClientSessionDelegate extends CommunicationSupport<ClientSessionDel
       clientAckList = new ArrayList();
    }
 
-   public ClientSessionDelegate()
+   public ClientSessionImpl()
    {
    }
 
@@ -429,7 +424,7 @@ public class ClientSessionDelegate extends CommunicationSupport<ClientSessionDel
       String coreSelector = SelectorTranslator.convertToJBMFilterString(messageSelector);
       CreateBrowserRequest request = new CreateBrowserRequest(queue, coreSelector);
       CreateBrowserResponse response = (CreateBrowserResponse) sendBlocking(request);
-      ClientBrowserDelegate delegate = new ClientBrowserDelegate(this, response.getBrowserID(), queue, messageSelector);
+      ClientBrowserImpl delegate = new ClientBrowserImpl(this, response.getBrowserID(), queue, messageSelector);
       ClientBrowser proxy = (ClientBrowser)ProxyFactory.proxy(delegate, ClientBrowser.class);
       children.add(proxy);
       return proxy;
@@ -456,7 +451,7 @@ public class ClientSessionDelegate extends CommunicationSupport<ClientSessionDel
       
       CreateConsumerResponse response = (CreateConsumerResponse) sendBlocking(request);
 
-      ClientConsumerDelegate consumerDelegate = new ClientConsumerDelegate(this, response.getConsumerID(), response.getBufferSize(), response.getMaxDeliveries(), response.getRedeliveryDelay(),
+      ClientConsumerImpl consumerDelegate = new ClientConsumerImpl(this, response.getConsumerID(), response.getBufferSize(), response.getMaxDeliveries(), response.getRedeliveryDelay(),
             destination,
             selector, noLocal, subscriptionName, response.getConsumerID(),isCC);      
 
@@ -553,7 +548,7 @@ public class ClientSessionDelegate extends CommunicationSupport<ClientSessionDel
    {
       // ProducerDelegates are not created on the server
 
-      ClientProducerDelegate producerDelegate = new ClientProducerDelegate(connection, this, destination );
+      ClientProducerImpl producerDelegate = new ClientProducerImpl(connection, this, destination );
       ClientProducer proxy = (ClientProducer) ProxyFactory.proxy(producerDelegate, ClientProducer.class);
       children.add(proxy);
       return proxy;
@@ -1185,7 +1180,7 @@ public class ClientSessionDelegate extends CommunicationSupport<ClientSessionDel
 
    	   ClientSession sessionToUse = connectionConsumerSession != null ? connectionConsumerSession : this;
 
-	      sessionToUse.cancelDelivery(new DefaultCancel(delivery.getDeliveryID(),
+	      sessionToUse.cancelDelivery(new CancelImpl(delivery.getDeliveryID(),
 	                                  delivery.getMessage().getDeliveryCount(), false, false));
    	}
    }
@@ -1200,7 +1195,7 @@ public class ClientSessionDelegate extends CommunicationSupport<ClientSessionDel
 
          if (ack.isShouldAck())
          {
-	         DefaultCancel cancel = new DefaultCancel(ack.getMessage().getDeliveryId(),
+	         CancelImpl cancel = new CancelImpl(ack.getMessage().getDeliveryId(),
 	                                                  ack.getMessage().getDeliveryCount(),
 	                                                  false, false);
 

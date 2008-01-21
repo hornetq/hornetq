@@ -29,9 +29,9 @@ import java.util.Map;
 
 import javax.jms.JMSException;
 
-import org.jboss.jms.client.delegate.ClientConnectionDelegate;
-import org.jboss.jms.client.delegate.ClientConnectionFactoryDelegate;
-import org.jboss.jms.delegate.CreateConnectionResult;
+import org.jboss.jms.client.impl.ClientConnectionImpl;
+import org.jboss.jms.client.impl.ClientConnectionFactoryImpl;
+import org.jboss.jms.client.impl.CreateConnectionResult;
 import org.jboss.jms.exception.MessagingJMSException;
 import org.jboss.messaging.core.MessagingServer;
 import org.jboss.messaging.core.remoting.PacketHandler;
@@ -87,7 +87,7 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
      
    /** Cluster Topology on ClusteredConnectionFactories
        Information to failover to other connections on clients **/
-   ClientConnectionFactoryDelegate[] delegates;
+   ClientConnectionFactoryImpl[] delegates;
 
    /** Cluster Topology on ClusteredConnectionFactories
        Information to failover to other connections on clients **/
@@ -148,7 +148,7 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
       try
       {
          // Just a standard createConnection
-         ClientConnectionDelegate cd =
+         ClientConnectionImpl cd =
             createConnectionDelegateInternal(username, password, failedNodeID,
                                              remotingSessionID, clientVMID,
                                              versionToUse);
@@ -165,7 +165,7 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
     * @param failedNodeID - zero or positive values mean connection creation attempt is result of
     *        failover. Negative values are ignored (mean regular connection creation attempt).
     */
-   private ClientConnectionDelegate
+   private ClientConnectionImpl
       createConnectionDelegateInternal(String username,
                                        String password,
                                        int failedNodeID,
@@ -214,7 +214,7 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
 
       log.trace("created and registered " + endpoint);
 
-      return new ClientConnectionDelegate(connectionID, messagingServer.getConfiguration().getMessagingServerID());
+      return new ClientConnectionImpl(connectionID, messagingServer.getConfiguration().getMessagingServerID());
    }
       
    public void addSender(String VMID, String remotingSessionID,

@@ -47,7 +47,7 @@ import com.arjuna.ats.internal.jta.transaction.arjunacore.TransactionManagerImpl
 import org.jboss.jms.client.JBossConnection;
 import org.jboss.jms.client.JBossConnectionFactory;
 import org.jboss.jms.client.JBossSession;
-import org.jboss.jms.client.delegate.ClientConnectionDelegate;
+import org.jboss.jms.client.impl.ClientConnectionImpl;
 import org.jboss.jms.tx.LocalTx;
 import org.jboss.jms.tx.MessagingXAResource;
 import org.jboss.jms.tx.ResourceManager;
@@ -578,7 +578,7 @@ public class XATest extends JBMServerTestCase
 
          JBossConnection jbConn = (JBossConnection)xaConn;
 
-         ClientConnectionDelegate del = getDelegate(jbConn);
+         ClientConnectionImpl del = getDelegate(jbConn);
 
          ResourceManager rm = del.getResourceManager();
 
@@ -638,7 +638,7 @@ public class XATest extends JBMServerTestCase
 
          JBossConnection jbConn = (JBossConnection)xaConn;
 
-         ClientConnectionDelegate del = getDelegate(xaConn);
+         ClientConnectionImpl del = getDelegate(xaConn);
 
          ResourceManager rm = del.getResourceManager();
 

@@ -23,7 +23,7 @@ package org.jboss.jms.server.endpoint;
 
 import javax.jms.JMSException;
 
-import org.jboss.jms.delegate.CreateConnectionResult;
+import org.jboss.jms.client.impl.CreateConnectionResult;
 
 /**
  * The interface only exists so the connection factory requests can call through the AOP stack

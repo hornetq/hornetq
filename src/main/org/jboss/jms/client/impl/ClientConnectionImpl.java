@@ -19,7 +19,7 @@
   * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   */
-package org.jboss.jms.client.delegate;
+package org.jboss.jms.client.impl;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -69,17 +69,17 @@ import org.jboss.messaging.util.Version;
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  *
- * @version <tt>$Revision$</tt>
+ * @version <tt>$Revision: 3602 $</tt>
  *
- * $Id$
+ * $Id: ClientConnectionImpl.java 3602 2008-01-21 17:48:32Z timfox $
  */
-public class ClientConnectionDelegate extends CommunicationSupport<ClientConnectionDelegate> implements ClientConnection
+public class ClientConnectionImpl extends CommunicationSupport<ClientConnectionImpl> implements ClientConnection
 {
    // Constants ------------------------------------------------------------------------------------
 
    private static final long serialVersionUID = -5485083713058725777L;
 
-   private static final Logger log = Logger.getLogger(ClientConnectionDelegate.class);
+   private static final Logger log = Logger.getLogger(ClientConnectionImpl.class);
 
    private static final boolean trace = log.isTraceEnabled();
 
@@ -120,14 +120,14 @@ public class ClientConnectionDelegate extends CommunicationSupport<ClientConnect
 
    // Constructors ---------------------------------------------------------------------------------
 
-   public ClientConnectionDelegate(String objectID, int serverID)
+   public ClientConnectionImpl(String objectID, int serverID)
    {
       super(objectID);
 
       this.serverID = serverID;
    }
 
-   public ClientConnectionDelegate()
+   public ClientConnectionImpl()
    {
       super();
    }
@@ -204,7 +204,7 @@ public class ClientConnectionDelegate extends CommunicationSupport<ClientConnect
 
       CreateSessionRequest request = new CreateSessionRequest(transacted, acknowledgmentMode, isXA);
       CreateSessionResponse response = (CreateSessionResponse) sendBlocking(request);         
-      ClientSessionDelegate delegate = new ClientSessionDelegate(this, response.getSessionID(), response.getDupsOKBatchSize(), isStrictTck(), 
+      ClientSessionImpl delegate = new ClientSessionImpl(this, response.getSessionID(), response.getDupsOKBatchSize(), isStrictTck(), 
             transacted, acknowledgmentMode, isXA);
       ClientSession proxy =(ClientSession) ProxyFactory.proxy(delegate, ClientSession.class);
       children.add(proxy);

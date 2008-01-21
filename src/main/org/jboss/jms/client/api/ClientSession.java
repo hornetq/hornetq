@@ -15,10 +15,10 @@ import javax.jms.MessageListener;
 import javax.transaction.xa.XAResource;
 
 import org.jboss.jms.client.Closeable;
-import org.jboss.jms.client.container.ClientConsumer;
-import org.jboss.jms.delegate.Ack;
-import org.jboss.jms.delegate.Cancel;
-import org.jboss.jms.delegate.DeliveryInfo;
+import org.jboss.jms.client.impl.Ack;
+import org.jboss.jms.client.impl.Cancel;
+import org.jboss.jms.client.impl.ClientConsumer;
+import org.jboss.jms.client.impl.DeliveryInfo;
 import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.destination.JBossQueue;
 import org.jboss.jms.destination.JBossTopic;

@@ -11,8 +11,8 @@ import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_CANCEL
 import java.util.ArrayList;
 import java.util.List;
 
-import org.jboss.jms.delegate.Cancel;
-import org.jboss.jms.delegate.DefaultCancel;
+import org.jboss.jms.client.impl.Cancel;
+import org.jboss.jms.client.impl.CancelImpl;
 import org.jboss.messaging.core.remoting.wireformat.CancelDeliveriesMessage;
 
 /**
@@ -80,7 +80,7 @@ public class CancelDeliveriesMessageCodec extends
          boolean expired = in.getBoolean();
          boolean reachedMaxDeliveryAttempts = in.getBoolean();
 
-         cancels.add(new DefaultCancel(deliveryID, deliveryCount, expired,
+         cancels.add(new CancelImpl(deliveryID, deliveryCount, expired,
                reachedMaxDeliveryAttempts));
       }
 

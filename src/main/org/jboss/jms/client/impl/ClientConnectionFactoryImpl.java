@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.jms.client.delegate;
+package org.jboss.jms.client.impl;
 
 import static org.jboss.messaging.core.remoting.ConnectorRegistrySingleton.REGISTRY;
 
@@ -30,10 +30,8 @@ import java.io.Serializable;
 import javax.jms.JMSException;
 
 import org.jboss.jms.client.api.ClientConnection;
-import org.jboss.jms.client.container.JMSClientVMIdentifier;
 import org.jboss.jms.client.remoting.ConsolidatedRemotingConnectionListener;
 import org.jboss.jms.client.remoting.JMSRemotingConnection;
-import org.jboss.jms.delegate.CreateConnectionResult;
 import org.jboss.jms.exception.MessagingNetworkFailureException;
 import org.jboss.jms.tx.ResourceManagerFactory;
 import org.jboss.messaging.core.remoting.Client;
@@ -52,12 +50,12 @@ import org.jboss.messaging.util.Version;
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  *
- * @version <tt>$Revision$</tt>
+ * @version <tt>$Revision: 3602 $</tt>
  *
- * $Id$
+ * $Id: ClientConnectionFactoryImpl.java 3602 2008-01-21 17:48:32Z timfox $
  */
-public class ClientConnectionFactoryDelegate
-   extends CommunicationSupport<ClientConnectionFactoryDelegate> implements Serializable
+public class ClientConnectionFactoryImpl
+   extends CommunicationSupport<ClientConnectionFactoryImpl> implements Serializable
 {
    // Constants ------------------------------------------------------------------------------------
 
@@ -107,7 +105,7 @@ public class ClientConnectionFactoryDelegate
 
    // Constructors ---------------------------------------------------------------------------------
 
-   public ClientConnectionFactoryDelegate(String uniqueName, String objectID, int serverID, 
+   public ClientConnectionFactoryImpl(String uniqueName, String objectID, int serverID, 
          String serverLocatorURI, Version serverVersion, boolean clientPing, boolean strictTck)
    {
       super(objectID);
@@ -120,7 +118,7 @@ public class ClientConnectionFactoryDelegate
       this.strictTck = strictTck;
    }
    
-   public ClientConnectionFactoryDelegate()
+   public ClientConnectionFactoryImpl()
    {
    }
    
@@ -161,7 +159,7 @@ public class ClientConnectionFactoryDelegate
          
          CreateConnectionRequest request = new CreateConnectionRequest(v, sessionID, JMSClientVMIdentifier.instance, failedNodeID, username, password);
          CreateConnectionResponse response = (CreateConnectionResponse) sendBlocking(client, this.getID(), this.getVersion(), request);
-         ClientConnectionDelegate connectionDelegate = new ClientConnectionDelegate(response.getConnectionID(), response.getServerID());
+         ClientConnectionImpl connectionDelegate = new ClientConnectionImpl(response.getConnectionID(), response.getServerID());
          connectionDelegate.setStrictTck(strictTck);
 
          connectionDelegate.setVersionToUse(version);

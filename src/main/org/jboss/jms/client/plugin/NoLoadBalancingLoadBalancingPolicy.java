@@ -21,7 +21,7 @@
    */
 package org.jboss.jms.client.plugin;
 
-import org.jboss.jms.client.delegate.ClientConnectionFactoryDelegate;
+import org.jboss.jms.client.impl.ClientConnectionFactoryImpl;
 
 /**
  * 
@@ -36,19 +36,19 @@ public class NoLoadBalancingLoadBalancingPolicy implements LoadBalancingPolicy
 {
 	private static final long serialVersionUID = -4683493821249921332L;
 	
-	private ClientConnectionFactoryDelegate del;
+	private ClientConnectionFactoryImpl del;
 	
-	public NoLoadBalancingLoadBalancingPolicy(ClientConnectionFactoryDelegate del)
+	public NoLoadBalancingLoadBalancingPolicy(ClientConnectionFactoryImpl del)
 	{
 		this.del = del;
 	}
 
-	public ClientConnectionFactoryDelegate getNext()
+	public ClientConnectionFactoryImpl getNext()
 	{
 		return del;
 	}
 
-	public void updateView(ClientConnectionFactoryDelegate[] delegates)
+	public void updateView(ClientConnectionFactoryImpl[] delegates)
 	{
 		// Do nothing
 	}

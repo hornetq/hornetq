@@ -83,10 +83,10 @@ import javax.jms.JMSException;
 import junit.framework.TestCase;
 
 import org.apache.mina.common.IoBuffer;
-import org.jboss.jms.delegate.Ack;
-import org.jboss.jms.delegate.Cancel;
-import org.jboss.jms.delegate.DefaultAck;
-import org.jboss.jms.delegate.DefaultCancel;
+import org.jboss.jms.client.impl.Ack;
+import org.jboss.jms.client.impl.Cancel;
+import org.jboss.jms.client.impl.AckImpl;
+import org.jboss.jms.client.impl.CancelImpl;
 import org.jboss.jms.destination.JBossQueue;
 import org.jboss.jms.destination.JBossTopic;
 import org.jboss.jms.tx.ClientTransaction;
@@ -784,9 +784,9 @@ public class PacketTypeTest extends TestCase
    public void testAcknowledgeDeliveriesRequest() throws Exception
    {
       List<Ack> acks = new ArrayList<Ack>();
-      acks.add(new DefaultAck(randomLong()));
-      acks.add(new DefaultAck(randomLong()));
-      acks.add(new DefaultAck(randomLong()));
+      acks.add(new AckImpl(randomLong()));
+      acks.add(new AckImpl(randomLong()));
+      acks.add(new AckImpl(randomLong()));
       AcknowledgeDeliveriesMessage request = new AcknowledgeDeliveriesMessage(
             acks);
       addVersion(request);
@@ -1009,7 +1009,7 @@ public class PacketTypeTest extends TestCase
  
    public void testCancelDeliveryMessage() throws Exception
    {
-      Cancel cancel = new DefaultCancel(randomLong(), randomInt(), true, false);
+      Cancel cancel = new CancelImpl(randomLong(), randomInt(), true, false);
       CancelDeliveryMessage message = new CancelDeliveryMessage(cancel);
       addVersion(message);
       AbstractPacketCodec codec = new CancelDeliveryMessageCodec();
@@ -1036,8 +1036,8 @@ public class PacketTypeTest extends TestCase
    public void testCancelDeliveriesMessage() throws Exception
    {
       List<Cancel> cancels = new ArrayList<Cancel>();
-      cancels.add(new DefaultCancel(randomLong(), 23, true, false));
-      cancels.add(new DefaultCancel(randomLong(), 33, false, true));
+      cancels.add(new CancelImpl(randomLong(), 23, true, false));
+      cancels.add(new CancelImpl(randomLong(), 33, false, true));
       CancelDeliveriesMessage message = new CancelDeliveriesMessage(cancels);
       addVersion(message);
       

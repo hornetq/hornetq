@@ -44,9 +44,9 @@ import org.jboss.jms.client.JBossConnection;
 import org.jboss.jms.client.JBossSession;
 import org.jboss.jms.client.JBossMessageConsumer;
 import org.jboss.jms.client.api.Consumer;
-import org.jboss.jms.client.delegate.ClientConnectionDelegate;
-import org.jboss.jms.client.delegate.ClientSessionDelegate;
-import org.jboss.jms.client.delegate.ClientConsumerDelegate;
+import org.jboss.jms.client.impl.ClientConnectionImpl;
+import org.jboss.jms.client.impl.ClientConsumerImpl;
+import org.jboss.jms.client.impl.ClientSessionImpl;
 import org.jboss.messaging.util.Logger;
 import org.jboss.messaging.microcontainer.JBMBootstrapServer;
 import org.jboss.messaging.util.ProxyFactory;
@@ -167,19 +167,19 @@ public class JBMBaseTestCase extends ProxyAssertSupport
       return msgIds;
    }
 
-   public ClientConsumerDelegate getDelegate(MessageConsumer cons)
+   public ClientConsumerImpl getDelegate(MessageConsumer cons)
    {
-      return (ClientConsumerDelegate)ProxyFactory.getDelegate(((JBossMessageConsumer)cons).getDelegate());
+      return (ClientConsumerImpl)ProxyFactory.getDelegate(((JBossMessageConsumer)cons).getDelegate());
    }
 
-   public ClientSessionDelegate getDelegate(Session sess)
+   public ClientSessionImpl getDelegate(Session sess)
    {
-      return (ClientSessionDelegate)ProxyFactory.getDelegate(((JBossSession)sess).getDelegate());
+      return (ClientSessionImpl)ProxyFactory.getDelegate(((JBossSession)sess).getDelegate());
    }
 
-   public ClientConnectionDelegate getDelegate(Connection conn)
+   public ClientConnectionImpl getDelegate(Connection conn)
    {
-      return (ClientConnectionDelegate)ProxyFactory.getDelegate(((JBossConnection)conn).getDelegate());
+      return (ClientConnectionImpl)ProxyFactory.getDelegate(((JBossConnection)conn).getDelegate());
    }
 
       protected List getReferenceIds(long channelId) throws Throwable

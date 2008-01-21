@@ -19,13 +19,12 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.jms.delegate;
+package org.jboss.jms.client.impl;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 
 import org.jboss.jms.client.api.ClientConnection;
-import org.jboss.jms.client.delegate.ClientConnectionDelegate;
 import org.jboss.messaging.util.ProxyFactory;
 import org.jboss.messaging.util.Streamable;
 
@@ -51,7 +50,7 @@ public class CreateConnectionResult implements Streamable
 
    // Attributes ----------------------------------------------------
 
-   private ClientConnectionDelegate delegate;
+   private ClientConnectionImpl delegate;
 
    private int actualFailoverNodeID;
 
@@ -65,7 +64,7 @@ public class CreateConnectionResult implements Streamable
    {      
    }
 
-   public CreateConnectionResult(ClientConnectionDelegate delegate)
+   public CreateConnectionResult(ClientConnectionImpl delegate)
    {
       this(delegate, Integer.MIN_VALUE);
    }
@@ -75,7 +74,7 @@ public class CreateConnectionResult implements Streamable
       this(null, actualFailoverNodeID);
    }
 
-   private CreateConnectionResult(ClientConnectionDelegate delegate,
+   private CreateConnectionResult(ClientConnectionImpl delegate,
                                   int actualFailoverNodeId)
    {
       this.delegate = delegate;
@@ -120,7 +119,7 @@ public class CreateConnectionResult implements Streamable
       
       if (b == NOT_NULL)
       {
-         delegate = new ClientConnectionDelegate();
+         delegate = new ClientConnectionImpl();
          
          delegate.read(in);
       }

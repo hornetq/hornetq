@@ -21,7 +21,7 @@
   */
 package org.jboss.test.messaging.jms;
 
-import org.jboss.jms.client.delegate.ClientSessionDelegate;
+import org.jboss.jms.client.impl.ClientSessionImpl;
 import org.jboss.jms.tx.ResourceManagerFactory;
 import org.jboss.test.messaging.JBMServerTestCase;
 
@@ -63,7 +63,7 @@ public class SessionTest extends JBMServerTestCase
       cons.receive();
       sess.commit();
       
-      ClientSessionDelegate del = getDelegate(sess);
+      ClientSessionImpl del = getDelegate(sess);
       
       //SessionState state = (SessionState)del.getState();
       //ConnectionState cState = (ConnectionState)state.getParent();

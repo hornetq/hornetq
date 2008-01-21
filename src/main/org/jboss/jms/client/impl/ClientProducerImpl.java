@@ -19,7 +19,7 @@
   * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   */
-package org.jboss.jms.client.delegate;
+package org.jboss.jms.client.impl;
 
 import java.util.UUID;
 
@@ -54,16 +54,16 @@ import org.jboss.messaging.core.impl.DestinationImpl;
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  *
- * @version <tt>$Revision$</tt>
+ * @version <tt>$Revision: 3602 $</tt>
  *
- * $Id$
+ * $Id: ClientProducerImpl.java 3602 2008-01-21 17:48:32Z timfox $
  */
-public class ClientProducerDelegate extends CommunicationSupport<ClientProducerDelegate> implements ClientProducer
+public class ClientProducerImpl extends CommunicationSupport<ClientProducerImpl> implements ClientProducer
 {
    // Constants ------------------------------------------------------------------------------------
 
    private static final long serialVersionUID = -6976930316308905681L;
-   private static final Logger log = Logger.getLogger(ClientProducerDelegate.class);
+   private static final Logger log = Logger.getLogger(ClientProducerImpl.class);
 
    // Attributes -----------------------------------------------------------------------------------
 
@@ -89,7 +89,7 @@ public class ClientProducerDelegate extends CommunicationSupport<ClientProducerD
 
    // DelegateSupport overrides --------------------------------------------------------------------
 
-   public ClientProducerDelegate(ClientConnection connection,
+   public ClientProducerImpl(ClientConnection connection,
          ClientSession session, JBossDestination destination)
    {
       super();

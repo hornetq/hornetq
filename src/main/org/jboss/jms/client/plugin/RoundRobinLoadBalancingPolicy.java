@@ -8,7 +8,7 @@ package org.jboss.jms.client.plugin;
 
 import java.util.Random;
 
-import org.jboss.jms.client.delegate.ClientConnectionFactoryDelegate;
+import org.jboss.jms.client.impl.ClientConnectionFactoryImpl;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
@@ -31,11 +31,11 @@ public class RoundRobinLoadBalancingPolicy implements LoadBalancingPolicy
    // The index of the next delegate to be used
    private int next;
 
-   private ClientConnectionFactoryDelegate[] delegates;
+   private ClientConnectionFactoryImpl[] delegates;
 
    // Constructors ---------------------------------------------------------------------------------
 
-   public RoundRobinLoadBalancingPolicy(ClientConnectionFactoryDelegate[] delegates)
+   public RoundRobinLoadBalancingPolicy(ClientConnectionFactoryImpl[] delegates)
    {
       next = -1;
       this.delegates = delegates;
@@ -43,7 +43,7 @@ public class RoundRobinLoadBalancingPolicy implements LoadBalancingPolicy
 
    // LoadBalancingPolicy implementation -----------------------------------------------------------
 
-   public synchronized ClientConnectionFactoryDelegate getNext()
+   public synchronized ClientConnectionFactoryImpl getNext()
    {
       if (next >= delegates.length)
       {
@@ -58,7 +58,7 @@ public class RoundRobinLoadBalancingPolicy implements LoadBalancingPolicy
       return delegates[next++];
    }
 
-   public synchronized void updateView(ClientConnectionFactoryDelegate[] delegates)
+   public synchronized void updateView(ClientConnectionFactoryImpl[] delegates)
    {
       next = -1;
       this.delegates = delegates;

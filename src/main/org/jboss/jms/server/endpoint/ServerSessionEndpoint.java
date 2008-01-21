@@ -52,12 +52,12 @@ import javax.jms.JMSException;
 
 import org.jboss.jms.client.api.ClientBrowser;
 import org.jboss.jms.client.api.Consumer;
-import org.jboss.jms.client.delegate.ClientBrowserDelegate;
-import org.jboss.jms.client.delegate.ClientConsumerDelegate;
-import org.jboss.jms.delegate.Ack;
-import org.jboss.jms.delegate.Cancel;
-import org.jboss.jms.delegate.DefaultAck;
-import org.jboss.jms.delegate.DeliveryInfo;
+import org.jboss.jms.client.impl.Ack;
+import org.jboss.jms.client.impl.Cancel;
+import org.jboss.jms.client.impl.ClientBrowserImpl;
+import org.jboss.jms.client.impl.ClientConsumerImpl;
+import org.jboss.jms.client.impl.AckImpl;
+import org.jboss.jms.client.impl.DeliveryInfo;
 import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.destination.JBossQueue;
 import org.jboss.jms.destination.JBossTopic;
@@ -1426,8 +1426,8 @@ public class ServerSessionEndpoint implements SessionEndpoint
 //      }
       connectionEndpoint.getMessagingServer().getMinaService().getDispatcher().register(ep.newHandler());
       
-      ClientConsumerDelegate stub =
-         new ClientConsumerDelegate(consumerID, prefetchSize, maxDeliveryAttemptsToUse, redeliveryDelayToUse);
+      ClientConsumerImpl stub =
+         new ClientConsumerImpl(consumerID, prefetchSize, maxDeliveryAttemptsToUse, redeliveryDelayToUse);
       
       synchronized (consumers)
       {
@@ -1485,7 +1485,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
 
       connectionEndpoint.getMessagingServer().getMinaService().getDispatcher().register(ep.newHandler());
       
-      ClientBrowserDelegate stub = new ClientBrowserDelegate(browserID);
+      ClientBrowserImpl stub = new ClientBrowserImpl(browserID);
 
       log.trace(this + " created and registered " + ep);
 
@@ -1664,7 +1664,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
             } else if (type == REQ_CREATECONSUMER)
             {
                CreateConsumerRequest request = (CreateConsumerRequest) packet;
-               ClientConsumerDelegate consumer = (ClientConsumerDelegate) createConsumerDelegate(
+               ClientConsumerImpl consumer = (ClientConsumerImpl) createConsumerDelegate(
                      request.getDestination(), request.getSelector(), request
                            .isNoLocal(), request.getSubscriptionName(), request
                            .isConnectionConsumer());
@@ -1688,14 +1688,14 @@ public class ServerSessionEndpoint implements SessionEndpoint
             } else if (type == REQ_CREATEBROWSER)
             {
                CreateBrowserRequest request = (CreateBrowserRequest) packet;
-               ClientBrowserDelegate browser = (ClientBrowserDelegate) createBrowserDelegate(
+               ClientBrowserImpl browser = (ClientBrowserImpl) createBrowserDelegate(
                      request.getDestination(), request.getSelector());
 
                response = new CreateBrowserResponse(browser.getID());
             } else if (type == REQ_ACKDELIVERY)
             {
                AcknowledgeDeliveryRequest request = (AcknowledgeDeliveryRequest) packet;
-               boolean acknowledged = acknowledgeDelivery(new DefaultAck(
+               boolean acknowledged = acknowledgeDelivery(new AckImpl(
                      request.getDeliveryID()));
 
                response = new AcknowledgeDeliveryResponse(acknowledged);

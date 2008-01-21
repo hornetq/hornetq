@@ -47,7 +47,7 @@ import javax.jms.JMSException;
 import javax.transaction.xa.Xid;
 
 import org.jboss.jms.client.api.ClientSession;
-import org.jboss.jms.client.delegate.ClientSessionDelegate;
+import org.jboss.jms.client.impl.ClientSessionImpl;
 import org.jboss.jms.exception.MessagingJMSException;
 import org.jboss.jms.server.ConnectionManager;
 import org.jboss.jms.server.SecurityStore;
@@ -246,7 +246,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
          
          log.trace("created and registered " + ep);
 
-         org.jboss.jms.client.api.ClientSession d = new ClientSessionDelegate(null, sessionID, dupsOKBatchSize);
+         org.jboss.jms.client.api.ClientSession d = new ClientSessionImpl(null, sessionID, dupsOKBatchSize);
 
          log.trace("created " + d);
 
@@ -792,7 +792,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
             if (type == REQ_CREATESESSION)
             {
                CreateSessionRequest request = (CreateSessionRequest) packet;
-               ClientSessionDelegate sessionDelegate = (ClientSessionDelegate) createSessionDelegate(
+               ClientSessionImpl sessionDelegate = (ClientSessionImpl) createSessionDelegate(
                      request.isTransacted(), request.getAcknowledgementMode(),
                      request.isXA());
 

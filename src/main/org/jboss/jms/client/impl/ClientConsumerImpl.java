@@ -19,7 +19,7 @@
   * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   */
-package org.jboss.jms.client.delegate;
+package org.jboss.jms.client.impl;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -30,7 +30,6 @@ import javax.jms.MessageListener;
 
 import org.jboss.jms.client.api.Consumer;
 import org.jboss.jms.client.api.ClientSession;
-import org.jboss.jms.client.container.ClientConsumer;
 import org.jboss.jms.client.remoting.CallbackManager;
 import org.jboss.jms.exception.MessagingShutdownException;
 import org.jboss.messaging.util.Logger;
@@ -51,17 +50,17 @@ import org.jboss.messaging.core.remoting.Client;
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  *
- * @version <tt>$Revision$</tt>
+ * @version <tt>$Revision: 3603 $</tt>
  *
- * $Id$
+ * $Id: ClientConsumerImpl.java 3603 2008-01-21 18:49:20Z timfox $
  */
-public class ClientConsumerDelegate extends CommunicationSupport<ClientConsumerDelegate> implements Consumer
+public class ClientConsumerImpl extends CommunicationSupport<ClientConsumerImpl> implements Consumer
 {
    // Constants ------------------------------------------------------------------------------------
 
 	private static final long serialVersionUID = 3253922610778321868L;
 
-	private static final Logger log = Logger.getLogger(ClientConsumerDelegate.class);
+	private static final Logger log = Logger.getLogger(ClientConsumerImpl.class);
 
    // Attributes -----------------------------------------------------------------------------------
 
@@ -84,7 +83,7 @@ public class ClientConsumerDelegate extends CommunicationSupport<ClientConsumerD
    // Static ---------------------------------------------------------------------------------------
 
    // Constructors ---------------------------------------------------------------------------------
-   public ClientConsumerDelegate(String objectID, int bufferSize, int maxDeliveries, long redeliveryDelay)
+   public ClientConsumerImpl(String objectID, int bufferSize, int maxDeliveries, long redeliveryDelay)
    {
       super(objectID);
       this.bufferSize = bufferSize;
@@ -92,7 +91,7 @@ public class ClientConsumerDelegate extends CommunicationSupport<ClientConsumerD
       this.redeliveryDelay = redeliveryDelay;
    }
 
-   public ClientConsumerDelegate(ClientSession session, String objectID, int bufferSize, int maxDeliveries, long redeliveryDelay,
+   public ClientConsumerImpl(ClientSession session, String objectID, int bufferSize, int maxDeliveries, long redeliveryDelay,
          Destination dest,
          String selector, boolean noLocal, String subscriptionName, String consumerID,
          boolean isCC)
@@ -110,7 +109,7 @@ public class ClientConsumerDelegate extends CommunicationSupport<ClientConsumerD
       this.isConnectionConsumer = isCC;
    }
 
-   public ClientConsumerDelegate()
+   public ClientConsumerImpl()
    {
    }
 
