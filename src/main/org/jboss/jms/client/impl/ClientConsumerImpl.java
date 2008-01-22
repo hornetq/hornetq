@@ -93,7 +93,6 @@ public class ClientConsumerImpl extends CommunicationSupport implements ClientCo
    private PriorityLinkedList<JBossMessage> buffer = new PriorityLinkedListImpl<JBossMessage>(10);
    private volatile Thread receiverThread;
    private MessageListener listener;
-   private int ackMode;
    private boolean closed;
    private Object mainLock = new Object();
    private QueuedExecutor sessionExecutor;
@@ -1060,7 +1059,7 @@ public class ClientConsumerImpl extends CommunicationSupport implements ClientCo
             try
             {
                callOnMessage(session, theListener, id,
-                             false, msg, ackMode, maxDeliveries, null, shouldAck);
+                             false, msg, session.getAcknowledgeMode(), maxDeliveries, null, shouldAck);
                
                if (trace) { log.trace("Called callonMessage"); }
             }
