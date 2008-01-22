@@ -1,0 +1,69 @@
+<deployment>
+
+   <security match="topics.testTopic">
+      <permission type="create" roles="durpublisher"/>
+      <permission type="read" roles="guest,publisher,durpublisher"/>
+      <permission type="write" roles="guest,publisher,durpublisher"/>
+   </security>
+
+   <security match="topics.securedTopic">
+      <permission type="write" roles="publisher"/>
+      <permission type="read" roles="publisher"/>
+   </security>
+
+   <security match="topics.testDurableTopic">
+      <permission type="create" roles="durpublisher"/>
+      <permission type="read" roles="guest,publisher,durpublisher"/>
+      <permission type="write" roles="guest,publisher,durpublisher"/>
+   </security>
+
+   <security match="queues.testQueue">
+      <permission type="read" roles="guest,publisher"/>
+      <permission type="write" roles="guest,publisher"/>
+   </security>
+
+   <!--default security to catch all-->
+   <security match="*">
+      <permission type="create" roles="guest"/>
+      <permission type="read" roles="guest"/>
+      <permission type="write" roles="guest"/>
+   </security>
+
+   <queue-settings match="queues.QueueWithOwnDLQAndExpiryQueue">
+      <dlq>PrivateDLQ</dlq>
+      <expiry-queue>PrivateExpiryQueue</expiry-queue>
+   </queue-settings>
+
+   <queue-settings match="topics.TopicWithOwnDLQAndExpiryQueue">
+      <dlq>PrivateDLQ</dlq>
+      <expiry-queue>PrivateExpiryQueue</expiry-queue>
+   </queue-settings>
+
+   <queue-settings match="queues.QueueWithOwnRedeliveryDelay">
+      <redelivery-delay>5000</redelivery-delay>
+   </queue-settings>
+
+   <queue-settings match="topics.TopicWithOwnRedeliveryDelay">
+      <redelivery-delay>5000</redelivery-delay>
+   </queue-settings>
+
+   <queue-settings match="queues.testDistributedQueue">
+      <clustered>true</clustered>
+   </queue-settings>
+
+   <queue-settings match="topics.testDistributedTopic">
+      <clustered>true</clustered>
+   </queue-settings>
+
+   <!--default for catch all-->
+   <queue-settings match="*">
+      <clustered>false</clustered>
+      <dlq>DLQ</dlq>
+      <expiry-queue>ExpiryQueue</expiry-queue>
+      <redelivery-delay>0</redelivery-delay>
+      <max-size>-1</max-size>
+      <distribution-policy-class>org.jboss.messaging.core.impl.RoundRobinDistributionPolicy</distribution-policy-class>
+      <message-counter-history-day-limit>10</message-counter-history-day-limit>
+   </queue-settings>
+
+</deployment>

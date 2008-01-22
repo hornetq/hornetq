@@ -1,0 +1,115 @@
+<deployment>
+
+   <connection-factory name="testConnectionFactory">
+      <entry name="testConnectionFactory"/>
+   </connection-factory>
+
+   <connection-factory name="ConnectionFactory">
+      <entry name="/ConnectionFactory"/>
+      <entry name="/XAConnectionFactory"/>
+      <entry name="java:/ConnectionFactory"/>
+      <entry name="java:/XAConnectionFactory"/>
+   </connection-factory>
+
+   <connection-factory name="ClusteredConnectionFactory">
+      <entry name="/ClusteredConnectionFactory"/>
+      <entry name="/ClusteredXAConnectionFactory"/>
+      <entry name="java:/ClusteredConnectionFactory"/>
+      <entry name="java:/ClusteredXAConnectionFactory"/>
+      <supports-failover>true</supports-failover>
+      <supports-load-balancing>true</supports-load-balancing>
+   </connection-factory>
+
+   <connection-factory name="jboss.messaging.connectionfactory:service=ClusterPullConnectionFactory">
+      <entry name="/ClusterPullConnectionFactory"/>
+      <entry name="java:/ClusterPullConnectionFactory"/>
+      <supports-failover>true</supports-failover>
+      <supports-load-balancing>true</supports-load-balancing>
+   </connection-factory>
+
+   <connection-factory name="jboss.messaging.connectionfactory:service=MyExampleConnectionFactory">
+      <entry name="/acme/MyExampleConnectionFactory"/>
+      <entry name="/acme/MyExampleConnectionFactoryDupe"/>
+      <entry name="java:/xyz/CF1"/>
+      <entry name="java:/connectionfactories/acme/connection_factory"/>
+      <!-- You can specify the default Client ID to use for connections created using this factory -->
+      <client-id>MyClientID</client-id>
+      <!-- PrefetchSize determines the approximate maximum number of messages the client consumer will buffer locally -->
+      <prefetch-size>150</prefetch-size>
+      <!-- Paging params to be used for temporary queues -->
+      <default-temp-queue-full-size>200000</default-temp-queue-full-size>
+      <default-temp-queue-page-size>2000</default-temp-queue-page-size>
+      <default-temp-queue-down-cache-size>2000</default-temp-queue-down-cache-size>
+      <!-- The batch size to use when using the DUPS_OK_ACKNOWLEDGE acknowledgement mode -->
+      <dups-ok-batch-size>5000</dups-ok-batch-size>
+      <!-- Does this connection factory support automatic failover? -->
+      <supports-failover>false</supports-failover>
+      <!-- Does this connection factory support automatic client side load balancing? -->
+      <supports-load-balancing>false</supports-load-balancing>
+      <!-- The class name of the factory used to create the load balancing policy to use on the client side -->
+      <load-balancing-factory>org.jboss.jms.client.plugin.RoundRobinLoadBalancingFactory</load-balancing-factory>
+      <!-- Whether we should be strict TCK compliant, i.e. how we deal with foreign messages, defaults to false-->
+      <strict-tck>true</strict-tck>
+      <!-- Disable JBoss Remoting Connector sanity checks - There is rarely a good reason to set this to true -->
+      <disable-remoting-checks>false</disable-remoting-checks>
+   </connection-factory>
+
+   <queue name="DLQ">
+      <entry name="/queue/DLQ"/>
+   </queue>
+   <queue name="ExpiryQueue">
+      <entry name="/queue/ExpiryQueue"/>
+   </queue>
+   <topic name="testTopic">
+      <entry name="/topic.testTopic"/>
+   </topic>
+   <topic name="securedTopic">
+      <entry name="/topic/securedTopic"/>
+   </topic>
+   <topic name="testDurableTopic">
+      <entry name="/topic/testDurableTopic"/>
+   </topic>
+   <queue name="testQueue">
+      <entry name="/queue/testQueue"/>
+   </queue>
+   <queue name="A">
+      <entry name="/queue/A"/>
+   </queue>
+   <queue name="B">
+      <entry name="/queue/B"/>
+   </queue>
+   <queue name="C">
+      <entry name="/queue/C"/>
+   </queue>
+   <queue name="D">
+      <entry name="/queue/D"/>
+   </queue>
+   <queue name="ex">
+      <entry name="/queue/ex"/>
+   </queue>
+   <queue name="PrivateDLQ">
+      <entry name="/queue/PrivateDLQ"/>
+   </queue>
+   <queue name="PrivateExpiryQueue">
+      <entry name="/queue/PrivateExpiryQueue"/>
+   </queue>
+   <queue name="QueueWithOwnDLQAndExpiryQueue">
+      <entry name="/queue/"/>
+   </queue>
+   <topic name="TopicWithOwnDLQAndExpiryQueue">
+      <entry name="/topic/QueueWithOwnDLQAndExpiryQueue"/>
+   </topic>
+   <queue name="QueueWithOwnRedeliveryDelay">
+      <entry name="/queue/QueueWithOwnRedeliveryDelay"/>
+   </queue>
+   <topic name="TopicWithOwnRedeliveryDelay">
+      <entry name="/queue/TopicWithOwnRedeliveryDelay"/>
+   </topic>
+   <queue name="testDistributedQueue">
+      <entry name="/topic/testDistributedQueue"/>
+   </queue>
+   <topic name="testDistributedTopic">
+      <entry name="/topic/testDistributedTopic"/>
+   </topic>
+
+</deployment>
