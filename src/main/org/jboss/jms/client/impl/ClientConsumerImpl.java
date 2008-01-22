@@ -64,7 +64,7 @@ import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
  *
  * $Id: ClientConsumerImpl.java 3603 2008-01-21 18:49:20Z timfox $
  */
-public class ClientConsumerImpl extends CommunicationSupport<ClientConsumerImpl> implements ClientConsumer
+public class ClientConsumerImpl extends CommunicationSupport implements ClientConsumer
 {
    // Constants ------------------------------------------------------------------------------------
 
@@ -256,7 +256,14 @@ public class ClientConsumerImpl extends CommunicationSupport<ClientConsumerImpl>
 
    public void close() throws JMSException
    {
-      sendBlocking(new CloseMessage());
+      try
+      {
+         sendBlocking(new CloseMessage());
+      }
+      finally
+      {
+         session.removeChild(this.getID());
+      }
    }
 
 
@@ -513,41 +520,48 @@ public class ClientConsumerImpl extends CommunicationSupport<ClientConsumerImpl>
       }
    }
    
-   public void close(long lastDeliveryId) throws JMSException
+   private void close(long lastDeliveryId) throws JMSException
    {     
-      log.trace(this + " close");
-            
-      //Wait for the last delivery to arrive
-      waitForLastDelivery(lastDeliveryId);
-      
-      //Important! We set the listener to null so the next ListenerRunner won't run
-      if (listener != null)
+      try
       {
-         setMessageListener(null);
-      }
-      
-      //Now we wait for any current listener runners to run.
-      waitForOnMessageToComplete();   
-      
-      synchronized (mainLock)
-      {         
-         if (closed)
+         log.trace(this + " close");
+            
+         //Wait for the last delivery to arrive
+         waitForLastDelivery(lastDeliveryId);
+         
+         //Important! We set the listener to null so the next ListenerRunner won't run
+         if (listener != null)
          {
-            return;
+            setMessageListener(null);
          }
          
-         closed = true;   
+         //Now we wait for any current listener runners to run.
+         waitForOnMessageToComplete();   
          
-         if (receiverThread != null)
-         {            
-            // Wake up any receive() thread that might be waiting
-            mainLock.notify();
-         }   
-         
-         this.listener = null;
+         synchronized (mainLock)
+         {         
+            if (closed)
+            {
+               return;
+            }
+            
+            closed = true;   
+            
+            if (receiverThread != null)
+            {            
+               // Wake up any receive() thread that might be waiting
+               mainLock.notify();
+            }   
+            
+            this.listener = null;
+         }
+                              
+         if (trace) { log.trace(this + " closed"); }
       }
-                           
-      if (trace) { log.trace(this + " closed"); }
+      finally
+      {
+         session.removeChild(this.getID());
+      }
    }
      
    /**

@@ -173,9 +173,12 @@ public interface ClientSession extends Closeable
    
    boolean isTreatAsNonTransactedWhenNotEnlisted();
    
-   public void setTreatAsNonTransactedWhenNotEnlisted(boolean treatAsNonTransactedWhenNotEnlisted);
+   void setTreatAsNonTransactedWhenNotEnlisted(boolean treatAsNonTransactedWhenNotEnlisted);
 
-   public Object getCurrentTxId();
+   Object getCurrentTxId();
 
-   public void setCurrentTxId(Object currentTxId);
+   void setCurrentTxId(Object currentTxId);
+   
+   /** This is a method used by children (Producer, Consumer and Browser) during close operations */
+   void removeChild(String key);
 }

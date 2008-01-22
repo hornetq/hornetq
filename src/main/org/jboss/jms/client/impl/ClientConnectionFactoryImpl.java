@@ -55,7 +55,7 @@ import org.jboss.messaging.util.Version;
  * $Id: ClientConnectionFactoryImpl.java 3602 2008-01-21 17:48:32Z timfox $
  */
 public class ClientConnectionFactoryImpl
-   extends CommunicationSupport<ClientConnectionFactoryImpl> implements Serializable
+   extends CommunicationSupport implements Serializable
 {
    // Constants ------------------------------------------------------------------------------------
 

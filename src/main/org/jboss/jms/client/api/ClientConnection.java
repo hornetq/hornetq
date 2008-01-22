@@ -58,17 +58,22 @@ public interface ClientConnection extends Closeable
                                                     ServerSessionPool sessionPool,
                                                     int maxMessages) throws JMSException;
 
-   public void setRemotingConnection(JMSRemotingConnection conn);
+   void setRemotingConnection(JMSRemotingConnection conn);
    
-   public Client getClient();
+   Client getClient();
 
-   public JMSRemotingConnection getRemotingConnection();
+   JMSRemotingConnection getRemotingConnection();
 
-   public ResourceManager getResourceManager();
+   ResourceManager getResourceManager();
 
-   public void setResourceManager(ResourceManager resourceManager);
+   void setResourceManager(ResourceManager resourceManager);
    
-   public String getID();
+   String getID();
    
-   public byte getVersion();
+   byte getVersion();
+   
+   
+   /** This is a method used by children Session during close operations */
+   void removeChild(String key);
+
 }

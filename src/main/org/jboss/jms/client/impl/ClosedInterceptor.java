@@ -116,7 +116,7 @@ public class ClosedInterceptor implements InvocationHandler
       synchronized(this)
       {
          // object "in use", increment inUseCount
-         if (state == IN_CLOSE || state == CLOSED)
+         if (state == CLOSED)
          {
             if (isClosing || isClose)
             {
@@ -140,6 +140,7 @@ public class ClosedInterceptor implements InvocationHandler
 
          if (isClosing || isClose)
       	{
+            log.warn(t.getMessage(), t);
 	      	//We swallow exceptions in close/closing, this is because if the connection fails, it is naturally for code to then close
 	      	//in a finally block, it would not then be appropriate to throw an exception. This is a common technique
 	      	//Close should ALWAYS (well apart from Errors) succeed irrespective of whether the actual connection to the server is alive.

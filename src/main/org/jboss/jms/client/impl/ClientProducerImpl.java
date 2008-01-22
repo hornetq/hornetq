@@ -58,7 +58,7 @@ import org.jboss.messaging.core.impl.DestinationImpl;
  *
  * $Id: ClientProducerImpl.java 3602 2008-01-21 17:48:32Z timfox $
  */
-public class ClientProducerImpl extends CommunicationSupport<ClientProducerImpl> implements ClientProducer
+public class ClientProducerImpl extends CommunicationSupport implements ClientProducer
 {
    // Constants ------------------------------------------------------------------------------------
 
@@ -92,7 +92,7 @@ public class ClientProducerImpl extends CommunicationSupport<ClientProducerImpl>
    public ClientProducerImpl(ClientConnection connection,
          ClientSession session, JBossDestination destination)
    {
-      super();
+      super(UUID.randomUUID().toString());
       this.connection = connection;
       this.session = session;
       this.destination = destination;
@@ -106,6 +106,7 @@ public class ClientProducerImpl extends CommunicationSupport<ClientProducerImpl>
     */
    public void close() throws JMSException
    {
+      session.removeChild(this.getID());
       return;
    }
 

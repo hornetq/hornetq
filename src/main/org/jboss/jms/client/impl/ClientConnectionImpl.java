@@ -23,7 +23,12 @@ package org.jboss.jms.client.impl;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+
 import javax.jms.ConnectionMetaData;
 import javax.jms.Destination;
 import javax.jms.ExceptionListener;
@@ -73,7 +78,7 @@ import org.jboss.messaging.util.Version;
  *
  * $Id: ClientConnectionImpl.java 3602 2008-01-21 17:48:32Z timfox $
  */
-public class ClientConnectionImpl extends CommunicationSupport<ClientConnectionImpl> implements ClientConnection
+public class ClientConnectionImpl extends CommunicationSupport implements ClientConnection
 {
    // Constants ------------------------------------------------------------------------------------
 
@@ -98,7 +103,7 @@ public class ClientConnectionImpl extends CommunicationSupport<ClientConnectionI
    
    // Attributes that used to be on ConnectionState
    
-   protected Set<ClientSession> children = new ConcurrentHashSet<ClientSession>();
+   protected Map<String, ClientSession> children = new ConcurrentHashMap<String, ClientSession>();
 
    protected boolean started;
 
@@ -207,7 +212,7 @@ public class ClientConnectionImpl extends CommunicationSupport<ClientConnectionI
       ClientSessionImpl delegate = new ClientSessionImpl(this, response.getSessionID(), response.getDupsOKBatchSize(), isStrictTck(), 
             transacted, acknowledgmentMode, isXA);
       ClientSession proxy =(ClientSession) ProxyFactory.proxy(delegate, ClientSession.class);
-      children.add(proxy);
+      children.put(proxy.getID(), proxy);
       return proxy;
    }
 
@@ -360,13 +365,21 @@ public class ClientConnectionImpl extends CommunicationSupport<ClientConnectionI
       return "ConnectionDelegate[" + System.identityHashCode(this) + ", ID=" + id +
          ", SID=" + serverID + "]";
    }
+   
+   // Package protected
+   
+   public void removeChild(String key)
+   {
+      children.remove(key);
+   }
 
    // Protected ------------------------------------------------------------------------------------
    
-   
    protected void closeChildren() throws JMSException
    {
-      for (ClientSession session: children)
+      Set<ClientSession> childrenClone = new HashSet<ClientSession>(children.values());
+      
+      for (ClientSession session: childrenClone)
       {
          try
          {
@@ -383,8 +396,6 @@ public class ClientConnectionImpl extends CommunicationSupport<ClientConnectionI
             }
          }         
       }
-      
-      children.clear();
    }
 
    

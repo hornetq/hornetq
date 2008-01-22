@@ -3726,7 +3726,7 @@ public class MessageConsumerTest extends JMSTestCase
 	
 	      listener.waitForMessages();
 	
-	      assertFalse(listener.failed);
+	      assertFalse(listener.message, listener.failed);
 	
 	      conn.close();
 	      
@@ -3772,7 +3772,8 @@ public class MessageConsumerTest extends JMSTestCase
 	
 	      listener.waitForMessages();
 	
-	      assertFalse(listener.failed);
+	      assertFalse(listener.message, listener.failed);
+	  	
 	
 	      conn.close();
 	      
@@ -3902,6 +3903,15 @@ public class MessageConsumerTest extends JMSTestCase
       private Session sess;
 
       private boolean failed;
+      
+      String message = "ok";
+      
+      private void failed(String msg)
+      {
+    	  log.warn(msg);
+    	  failed = true;
+    	  this.message = msg;
+      }
 
       public void waitForMessages() throws InterruptedException
       {
@@ -3927,8 +3937,7 @@ public class MessageConsumerTest extends JMSTestCase
             {
                if (!("a".equals(tm.getText())))
                {
-                  log.info("Should be a but was " + tm.getText());
-                  failed = true;
+                  failed("Should be a but was " + tm.getText());
                   latch.release();
                }
                log.info("Throwing exception");
@@ -3942,13 +3951,12 @@ public class MessageConsumerTest extends JMSTestCase
                   //Message should be immediately redelivered
                   if (!("a".equals(tm.getText())))
                   {
-                     log.info("Should be a but was " + tm.getText());
-                     failed = true;
+                	 failed("Should be a but was " + tm.getText());
                      latch.release();
                   }
                   if (!tm.getJMSRedelivered())
                   {
-                     failed = true;
+                	 failed("Message was supposed to be a redelivery");
                      latch.release();
                   }
                }
@@ -3957,8 +3965,7 @@ public class MessageConsumerTest extends JMSTestCase
                   //Transacted or CLIENT_ACKNOWLEDGE - next message should be delivered
                   if (!("b".equals(tm.getText())))
                   {
-                     log.info("Should be b but was " + tm.getText());
-                     failed = true;
+                     failed("Should be b but was " + tm.getText());
                      latch.release();
                   }
                }
@@ -3969,8 +3976,7 @@ public class MessageConsumerTest extends JMSTestCase
                {
                   if (!("b".equals(tm.getText())))
                   {
-                     log.info("Should be b but was " + tm.getText());
-                     failed = true;
+                     failed("Should be b but was " + tm.getText());
                      latch.release();
                   }
                }
@@ -3978,8 +3984,7 @@ public class MessageConsumerTest extends JMSTestCase
                {
                   if (!("c".equals(tm.getText())))
                   {
-                     log.info("Should be c but was " + tm.getText());
-                     failed = true;
+                     failed("Should be c but was " + tm.getText());
                      latch.release();
                   }
                   latch.release();
@@ -3992,8 +3997,7 @@ public class MessageConsumerTest extends JMSTestCase
                {
                   if (!("c".equals(tm.getText())))
                   {
-                     log.info("Should be c but was " + tm.getText());
-                     failed = true;
+                     failed("Should be c but was " + tm.getText());
                      latch.release();
                   }
                   latch.release();
@@ -4001,14 +4005,15 @@ public class MessageConsumerTest extends JMSTestCase
                else
                {
                   //Shouldn't get a 4th messge
-                  failed = true;
+            	  failed("Shouldn't get a 4th message");
                   latch.release();
                }
             }
          }
          catch (JMSException e)
          {
-            failed = true;
+         	log.error(e.getMessage(), e);
+        	failed("Got a JMSException " + e.toString());
             latch.release();
          }
       }

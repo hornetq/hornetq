@@ -30,7 +30,7 @@ import org.jboss.messaging.util.Version;
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  * // TODO find a better name for this class
  */
-public abstract class CommunicationSupport <T extends CommunicationSupport<?>> implements Streamable, Serializable 
+public abstract class CommunicationSupport implements Streamable, Serializable 
 {
    private static final Logger log = Logger.getLogger(CommunicationSupport.class);
 

@@ -52,7 +52,7 @@ import org.jboss.messaging.core.remoting.wireformat.ClosingResponse;
  *
  * $Id: ClientBrowserImpl.java 3602 2008-01-21 17:48:32Z timfox $
  */
-public class ClientBrowserImpl extends CommunicationSupport<ClientBrowserImpl> implements ClientBrowser
+public class ClientBrowserImpl extends CommunicationSupport implements ClientBrowser
 {
    // Constants ------------------------------------------------------------------------------------
 
@@ -92,7 +92,14 @@ public class ClientBrowserImpl extends CommunicationSupport<ClientBrowserImpl> i
 
    public void close() throws JMSException
    {
-      sendBlocking(new CloseMessage());
+      try
+      {
+         sendBlocking(new CloseMessage());
+      }
+      finally
+      {
+         session.removeChild(this.getID());
+      }
    }
 
    public long closing(long sequence) throws JMSException

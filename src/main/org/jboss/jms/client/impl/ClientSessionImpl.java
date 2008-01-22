@@ -25,10 +25,12 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import javax.jms.IllegalStateException;
@@ -97,7 +99,7 @@ import EDU.oswego.cs.dl.util.concurrent.LinkedQueue;
  *
  * $Id: ClientSessionImpl.java 3603 2008-01-21 18:49:20Z timfox $
  */
-public class ClientSessionImpl extends CommunicationSupport<ClientSessionImpl> implements ClientSession
+public class ClientSessionImpl extends CommunicationSupport implements ClientSession
 {
    // Constants ------------------------------------------------------------------------------------
 
@@ -195,19 +197,26 @@ public class ClientSessionImpl extends CommunicationSupport<ClientSessionImpl> i
 
    public void close() throws JMSException
    {
-      sendBlocking(new CloseMessage());
-
-      Object xid = getCurrentTxId();
-
-      if (xid != null)
+      try
       {
-         //Remove transaction from the resource manager
-         connection.getResourceManager().removeTx(xid);
+         sendBlocking(new CloseMessage());
+   
+         Object xid = getCurrentTxId();
+   
+         if (xid != null)
+         {
+            //Remove transaction from the resource manager
+            connection.getResourceManager().removeTx(xid);
+         }
+   
+         // We must explicitly shutdown the executor
+   
+         getExecutor().shutdownNow();
       }
-
-      // We must explicitly shutdown the executor
-
-      getExecutor().shutdownNow();
+      finally
+      {
+         connection.removeChild(this.getID());
+      }
    }
 
    private long invokeClosing(long sequence) throws JMSException
@@ -220,13 +229,12 @@ public class ClientSessionImpl extends CommunicationSupport<ClientSessionImpl> i
    
    private void closeChildren() throws JMSException
    {
-      for (Closeable child: children.values())
+      Set<Closeable> chilrenValues = new HashSet<Closeable>(children.values());
+      for (Closeable child: chilrenValues)
       {
          child.closing(-1);
          child.close();
       }
-      
-      children.clear();
    }
 
    public long closing(long sequence) throws JMSException
@@ -978,6 +986,11 @@ public class ClientSessionImpl extends CommunicationSupport<ClientSessionImpl> i
 
       invokeSend(m);
 
+   }
+   
+   public void removeChild(String key)
+   {
+      children.remove(key);
    }
    
    private void invokeSend(Message m) throws JMSException
