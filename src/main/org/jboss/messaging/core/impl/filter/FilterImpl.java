@@ -24,9 +24,9 @@ package org.jboss.messaging.core.impl.filter;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.jboss.messaging.util.Logger;
 import org.jboss.messaging.core.Filter;
 import org.jboss.messaging.core.Message;
+import org.jboss.messaging.util.Logger;
 
 /**
 * This class implements a JBoss Messaging filter

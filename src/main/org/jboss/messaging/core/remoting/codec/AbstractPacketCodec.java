@@ -19,13 +19,13 @@ import java.io.DataOutputStream;
 import java.nio.charset.CharacterCodingException;
 
 import org.jboss.jms.destination.JBossDestination;
-import org.jboss.messaging.util.Logger;
 import org.jboss.messaging.core.Destination;
 import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.impl.DestinationImpl;
 import org.jboss.messaging.core.impl.MessageImpl;
 import org.jboss.messaging.core.remoting.wireformat.AbstractPacket;
 import org.jboss.messaging.core.remoting.wireformat.PacketType;
+import org.jboss.messaging.util.Logger;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>.

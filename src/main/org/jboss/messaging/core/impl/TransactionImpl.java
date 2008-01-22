@@ -26,12 +26,12 @@ import java.util.List;
 
 import javax.transaction.xa.Xid;
 
-import org.jboss.messaging.util.Logger;
 import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.PersistenceManager;
 import org.jboss.messaging.core.Transaction;
 import org.jboss.messaging.core.TransactionSynchronization;
+import org.jboss.messaging.util.Logger;
 
 /**
  * 

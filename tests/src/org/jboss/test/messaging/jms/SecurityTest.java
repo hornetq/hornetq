@@ -21,7 +21,10 @@
   */
 package org.jboss.test.messaging.jms;
 
+import java.util.HashSet;
+
 import javax.jms.Connection;
+import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
 import javax.jms.IllegalStateException;
 import javax.jms.JMSSecurityException;
@@ -39,15 +42,9 @@ import javax.transaction.xa.XAResource;
 
 import org.jboss.jms.exception.MessagingXAException;
 import org.jboss.jms.server.security.Role;
-import org.jboss.messaging.util.Logger;
 import org.jboss.messaging.core.tx.MessagingXid;
-import org.jboss.messaging.util.XMLUtil;
+import org.jboss.messaging.util.Logger;
 import org.jboss.test.messaging.tools.ServerManagement;
-
-import javax.jms.*;
-import javax.jms.IllegalStateException;
-import javax.transaction.xa.XAResource;
-import java.util.HashSet;
 
 /**
  * Test JMS Security.

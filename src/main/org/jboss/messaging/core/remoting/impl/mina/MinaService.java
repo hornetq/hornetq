@@ -18,10 +18,10 @@ import java.util.Map;
 
 import org.apache.mina.common.DefaultIoFilterChainBuilder;
 import org.apache.mina.transport.socket.nio.NioSocketAcceptor;
-import org.jboss.messaging.util.Logger;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.ServerLocator;
 import org.jboss.messaging.core.remoting.TransportType;
+import org.jboss.messaging.util.Logger;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>

@@ -16,12 +16,12 @@ import javax.jms.JMSException;
 
 import org.jboss.jms.client.remoting.ConsolidatedRemotingConnectionListener;
 import org.jboss.jms.exception.MessagingNetworkFailureException;
-import org.jboss.messaging.util.Logger;
 import org.jboss.messaging.core.remoting.Client;
 import org.jboss.messaging.core.remoting.NIOConnector;
 import org.jboss.messaging.core.remoting.NIOSession;
 import org.jboss.messaging.core.remoting.ServerLocator;
 import org.jboss.messaging.core.remoting.wireformat.AbstractPacket;
+import org.jboss.messaging.util.Logger;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>.

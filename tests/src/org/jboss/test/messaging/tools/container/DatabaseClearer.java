@@ -21,13 +21,14 @@
    */
 package org.jboss.test.messaging.tools.container;
 
-import org.jboss.messaging.util.Logger;
-
-import javax.sql.DataSource;
-import javax.transaction.TransactionManager;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+
+import javax.sql.DataSource;
+import javax.transaction.TransactionManager;
+
+import org.jboss.messaging.util.Logger;
 
 /**
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>

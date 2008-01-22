@@ -21,17 +21,6 @@
   */
 package org.jboss.test.messaging.jms;
 
-import javax.jms.Connection;
-import javax.jms.DeliveryMode;
-import javax.jms.MapMessage;
-import javax.jms.Message;
-import javax.jms.MessageConsumer;
-import javax.jms.MessageProducer;
-import javax.jms.Session;
-
-import org.jboss.jms.destination.JBossQueue;
-import org.jboss.jms.message.JBossMessage;
-import org.jboss.test.messaging.tools.ServerManagement;
 
 /**
  * 

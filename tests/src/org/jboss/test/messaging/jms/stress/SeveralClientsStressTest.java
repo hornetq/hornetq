@@ -22,17 +22,26 @@
 
 package org.jboss.test.messaging.jms.stress;
 
-import EDU.oswego.cs.dl.util.concurrent.LinkedQueue;
-import EDU.oswego.cs.dl.util.concurrent.SynchronizedInt;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Random;
+
+import javax.jms.Connection;
+import javax.jms.ConnectionFactory;
+import javax.jms.DeliveryMode;
+import javax.jms.Message;
+import javax.jms.MessageConsumer;
+import javax.jms.MessageProducer;
+import javax.jms.Queue;
+import javax.jms.Session;
+import javax.naming.Context;
+
 import org.jboss.messaging.util.Logger;
 import org.jboss.test.messaging.JBMServerTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
 
-import javax.jms.*;
-import javax.naming.Context;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Random;
+import EDU.oswego.cs.dl.util.concurrent.LinkedQueue;
+import EDU.oswego.cs.dl.util.concurrent.SynchronizedInt;
 
 /**
  * In order for this test to run, you will need to edit /etc/security/limits.conf and change your max sockets to something bigger than 1024

@@ -21,14 +21,23 @@
   */
 package org.jboss.test.messaging.jms;
 
-import com.arjuna.ats.arjuna.common.Uid;
-import com.arjuna.ats.jta.xa.XidImple;
+import javax.jms.Connection;
+import javax.jms.Message;
+import javax.jms.MessageConsumer;
+import javax.jms.MessageProducer;
+import javax.jms.Session;
+import javax.jms.TextMessage;
+import javax.jms.Topic;
+import javax.jms.XAConnection;
+import javax.jms.XASession;
+import javax.transaction.xa.XAResource;
+import javax.transaction.xa.Xid;
+
 import org.jboss.jms.tx.ResourceManagerFactory;
 import org.jboss.messaging.core.tx.MessagingXid;
 
-import javax.jms.*;
-import javax.transaction.xa.XAResource;
-import javax.transaction.xa.Xid;
+import com.arjuna.ats.arjuna.common.Uid;
+import com.arjuna.ats.jta.xa.XidImple;
 
 /**
  * 

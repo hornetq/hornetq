@@ -19,11 +19,6 @@ import org.jboss.messaging.core.Message;
  */
 public interface ClientBrowser extends Closeable
 {
-   /**
-    * Reset the internal state of the browser endpoint so the following
-    * nextMessage()/hasNextMessage()/nextMessageBlock() invocations would reflect the state of the
-    * queue at the moment of the reset.
-    */
    void reset() throws JMSException;
 
    Message nextMessage() throws JMSException;

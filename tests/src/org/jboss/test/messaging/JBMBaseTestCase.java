@@ -27,6 +27,7 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
@@ -41,15 +42,8 @@ import javax.sql.DataSource;
 import javax.transaction.TransactionManager;
 
 import org.jboss.jms.client.JBossConnection;
-import org.jboss.jms.client.JBossSession;
-import org.jboss.jms.client.JBossMessageConsumer;
-import org.jboss.jms.client.api.ClientConsumer;
-import org.jboss.jms.client.impl.ClientConnectionImpl;
-import org.jboss.jms.client.impl.ClientConsumerImpl;
-import org.jboss.jms.client.impl.ClientSessionImpl;
-import org.jboss.messaging.util.Logger;
 import org.jboss.messaging.microcontainer.JBMBootstrapServer;
-import org.jboss.messaging.util.ProxyFactory;
+import org.jboss.messaging.util.Logger;
 import org.jboss.test.messaging.util.ProxyAssertSupport;
 import org.jboss.tm.TransactionManagerLocator;
 
@@ -167,22 +161,8 @@ public class JBMBaseTestCase extends ProxyAssertSupport
       return msgIds;
    }
 
-   public ClientConsumerImpl getDelegate(MessageConsumer cons)
-   {
-      return (ClientConsumerImpl)ProxyFactory.getDelegate(((JBossMessageConsumer)cons).getDelegate());
-   }
 
-   public ClientSessionImpl getDelegate(Session sess)
-   {
-      return (ClientSessionImpl)ProxyFactory.getDelegate(((JBossSession)sess).getDelegate());
-   }
-
-   public ClientConnectionImpl getDelegate(Connection conn)
-   {
-      return (ClientConnectionImpl)ProxyFactory.getDelegate(((JBossConnection)conn).getDelegate());
-   }
-
-      protected List getReferenceIds(long channelId) throws Throwable
+   protected List getReferenceIds(long channelId) throws Throwable
    {
       InitialContext ctx = getInitialContext();
 

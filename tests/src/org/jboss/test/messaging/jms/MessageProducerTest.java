@@ -26,14 +26,12 @@ import java.io.Serializable;
 import javax.jms.Connection;
 import javax.jms.DeliveryMode;
 import javax.jms.Destination;
-import javax.jms.InvalidDestinationException;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 
-import org.jboss.jms.destination.JBossTopic;
 import org.jboss.test.messaging.jms.message.SimpleJMSMessage;
 import org.jboss.test.messaging.jms.message.SimpleJMSTextMessage;
 

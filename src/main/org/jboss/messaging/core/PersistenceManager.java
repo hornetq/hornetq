@@ -25,8 +25,6 @@ import java.util.List;
 
 import javax.transaction.xa.Xid;
 
-import org.jboss.messaging.core.tx.MessagingXid;
-
 /**
  * 
  * A PersistenceManager

@@ -21,17 +21,24 @@
 */
 package org.jboss.test.messaging.tools.container;
 
-import org.jboss.messaging.util.Logger;
-import org.jboss.security.*;
-
-import javax.security.auth.Subject;
-import javax.security.auth.message.MessageInfo;
 import java.security.Principal;
 import java.security.acl.Group;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+
+import javax.security.auth.Subject;
+import javax.security.auth.message.MessageInfo;
+
+import org.jboss.messaging.util.Logger;
+import org.jboss.security.AnybodyPrincipal;
+import org.jboss.security.AuthenticationManager;
+import org.jboss.security.NobodyPrincipal;
+import org.jboss.security.RealmMapping;
+import org.jboss.security.SecurityAssociation;
+import org.jboss.security.SimpleGroup;
+import org.jboss.security.SimplePrincipal;
 
 
 /**

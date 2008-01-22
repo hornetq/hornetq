@@ -21,6 +21,15 @@
   */
 package org.jboss.jms.server.security;
 
+import java.security.Principal;
+import java.util.HashSet;
+import java.util.Set;
+
+import javax.jms.JMSSecurityException;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+import javax.security.auth.Subject;
+
 import org.jboss.jms.server.SecurityStore;
 import org.jboss.messaging.core.Destination;
 import org.jboss.messaging.core.DestinationType;
@@ -31,14 +40,6 @@ import org.jboss.security.AuthenticationManager;
 import org.jboss.security.RealmMapping;
 import org.jboss.security.SimplePrincipal;
 import org.jboss.security.SubjectSecurityManager;
-
-import javax.jms.JMSSecurityException;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
-import javax.security.auth.Subject;
-import java.security.Principal;
-import java.util.HashSet;
-import java.util.Set;
 
 /**
  * A security metadate store for JMS. Stores security information for destinations and delegates

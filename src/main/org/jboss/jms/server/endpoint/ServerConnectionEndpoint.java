@@ -46,8 +46,6 @@ import javax.jms.InvalidDestinationException;
 import javax.jms.JMSException;
 import javax.transaction.xa.Xid;
 
-import org.jboss.jms.client.api.ClientSession;
-import org.jboss.jms.client.impl.ClientSessionImpl;
 import org.jboss.jms.exception.MessagingJMSException;
 import org.jboss.jms.server.ConnectionManager;
 import org.jboss.jms.server.SecurityStore;
@@ -147,9 +145,6 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
 
    private byte usingVersion;
 
-   // a non-null value here means connection is a fail-over connection
-   private Integer failedNodeID;
-
    // Constructors ---------------------------------------------------------------------------------
 
    /**
@@ -160,8 +155,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
                                    String username, String password, int prefetchSize,
                                    int defaultTempQueueFullSize,
                                    int defaultTempQueuePageSize,
-                                   int defaultTempQueueDownCacheSize,
-                                   int failedNodeID,
+                                   int defaultTempQueueDownCacheSize,                                   
                                    ServerConnectionFactoryEndpoint cfendpoint,
                                    String remotingSessionID,
                                    String clientVMID,
@@ -195,11 +189,6 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
       this.username = username;
       this.password = password;
 
-      if (failedNodeID > 0)
-      {
-         this.failedNodeID = new Integer(failedNodeID);
-      }
-
       this.remotingClientSessionID = remotingSessionID;
 
       this.jmsClientVMID = clientVMID;
@@ -211,9 +200,9 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
 
    // ConnectionDelegate implementation ------------------------------------------------------------
 
-   public ClientSession createSessionDelegate(boolean transacted,
-                                                int acknowledgmentMode,
-                                                boolean isXA)
+   public CreateSessionResponse createSession(boolean transacted,
+                                              int acknowledgmentMode,
+                                              boolean isXA)
       throws JMSException
    {
       try
@@ -244,13 +233,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
 
          messagingServer.getMinaService().getDispatcher().register(ep.newHandler());
          
-         log.trace("created and registered " + ep);
-
-         org.jboss.jms.client.api.ClientSession d = new ClientSessionImpl(null, sessionID, dupsOKBatchSize);
-
-         log.trace("created " + d);
-
-         return d;
+         return new CreateSessionResponse(sessionID, dupsOKBatchSize);
       }
       catch (Throwable t)
       {
@@ -695,24 +678,6 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
    
    // Protected ------------------------------------------------------------------------------------
 
-   /**
-    * Give access to children enpoints to the failed node ID, in case this is a failover connection.
-    * Return null if the connection is regular (not failover).
-    */
-   Integer getFailedNodeID()
-   {
-      return failedNodeID;
-   }
-
-   /**
-    * Tell children enpoints (and anybody from this package, for that matter) whether this
-    * connection is a regular or failover connection.
-    */
-   boolean isFailoverConnection()
-   {
-      return failedNodeID != null;
-   }
-     
    // Private --------------------------------------------------------------------------------------
    
    private void setStarted(boolean s) throws Exception
@@ -792,12 +757,9 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
             if (type == REQ_CREATESESSION)
             {
                CreateSessionRequest request = (CreateSessionRequest) packet;
-               ClientSessionImpl sessionDelegate = (ClientSessionImpl) createSessionDelegate(
+               response = createSession(
                      request.isTransacted(), request.getAcknowledgementMode(),
                      request.isXA());
-
-               response = new CreateSessionResponse(sessionDelegate.getID(),
-                     sessionDelegate.getDupsOKBatchSize());
             } else if (type == MSG_STARTCONNECTION)
             {
                start();

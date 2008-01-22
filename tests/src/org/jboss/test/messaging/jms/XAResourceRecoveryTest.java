@@ -21,7 +21,11 @@
  */
 package org.jboss.test.messaging.jms;
 
-import com.arjuna.ats.internal.jta.transaction.arjunacore.TransactionManagerImple;
+import javax.jms.Queue;
+import javax.naming.InitialContext;
+import javax.transaction.Transaction;
+import javax.transaction.TransactionManager;
+
 import org.jboss.jms.client.JBossConnectionFactory;
 import org.jboss.jms.tx.ResourceManagerFactory;
 import org.jboss.test.messaging.JBMServerTestCase;
@@ -29,11 +33,7 @@ import org.jboss.test.messaging.tools.ServerManagement;
 import org.jboss.test.messaging.tools.container.ServiceContainer;
 import org.jboss.tm.TxUtils;
 
-import javax.jms.*;
-import javax.naming.InitialContext;
-import javax.transaction.Transaction;
-import javax.transaction.TransactionManager;
-import javax.transaction.xa.XAResource;
+import com.arjuna.ats.internal.jta.transaction.arjunacore.TransactionManagerImple;
 
 /**
  * 

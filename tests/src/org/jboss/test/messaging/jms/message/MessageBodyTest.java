@@ -21,12 +21,25 @@
  */
 package org.jboss.test.messaging.jms.message;
 
-import org.jboss.test.messaging.JBMServerTestCase;
-
-import javax.jms.*;
 import java.io.Serializable;
 import java.util.Enumeration;
 import java.util.HashSet;
+
+import javax.jms.BytesMessage;
+import javax.jms.Connection;
+import javax.jms.MapMessage;
+import javax.jms.MessageConsumer;
+import javax.jms.MessageEOFException;
+import javax.jms.MessageFormatException;
+import javax.jms.MessageNotReadableException;
+import javax.jms.MessageNotWriteableException;
+import javax.jms.MessageProducer;
+import javax.jms.ObjectMessage;
+import javax.jms.Session;
+import javax.jms.StreamMessage;
+import javax.jms.TextMessage;
+
+import org.jboss.test.messaging.JBMServerTestCase;
 
 /**
  * 

@@ -8,7 +8,6 @@ package org.jboss.messaging.core.remoting.codec;
 
 import static org.jboss.messaging.core.remoting.wireformat.PacketType.RESP_BROWSER_NEXTMESSAGE;
 
-import org.jboss.jms.message.JBossMessage;
 import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.remoting.wireformat.BrowserNextMessageResponse;
 

@@ -21,21 +21,27 @@
   */
 package org.jboss.jms.server.endpoint;
 
+
+import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_UPDATECALLBACK;
+import static org.jboss.messaging.core.remoting.wireformat.PacketType.REQ_CREATECONNECTION;
+
+import java.util.Map;
+
+import javax.jms.JMSException;
+
 import org.jboss.jms.client.impl.ClientConnectionFactoryImpl;
-import org.jboss.jms.client.impl.ClientConnectionImpl;
-import org.jboss.jms.client.impl.CreateConnectionResult;
 import org.jboss.jms.exception.MessagingJMSException;
 import org.jboss.messaging.core.MessagingServer;
 import org.jboss.messaging.core.remoting.PacketHandler;
 import org.jboss.messaging.core.remoting.PacketSender;
-import org.jboss.messaging.core.remoting.wireformat.*;
-import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_UPDATECALLBACK;
-import static org.jboss.messaging.core.remoting.wireformat.PacketType.REQ_CREATECONNECTION;
+import org.jboss.messaging.core.remoting.wireformat.AbstractPacket;
+import org.jboss.messaging.core.remoting.wireformat.CreateConnectionRequest;
+import org.jboss.messaging.core.remoting.wireformat.CreateConnectionResponse;
+import org.jboss.messaging.core.remoting.wireformat.JMSExceptionMessage;
+import org.jboss.messaging.core.remoting.wireformat.PacketType;
+import org.jboss.messaging.core.remoting.wireformat.UpdateCallbackMessage;
 import org.jboss.messaging.util.ExceptionUtil;
 import org.jboss.messaging.util.Logger;
-
-import javax.jms.JMSException;
-import java.util.Map;
 
 /**
  * Concrete implementation of ConnectionFactoryEndpoint
@@ -106,23 +112,8 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
 
    // ConnectionFactoryDelegate implementation -----------------------------------------------------
 
-   public CreateConnectionResult createConnectionDelegate(String username,
-                                                         String password,
-                                                         int failedNodeID)
-                                                        
-      throws JMSException      
-   {
-      //This is never called directly
-      throw new IllegalStateException("createConnectionDelegate should never be called directly");
-   }
-   
-   /**
-    * @param failedNodeID - zero or positive values mean connection creation attempt is result of
-    *        failover. -1 are ignored (mean regular connection creation attempt).
-    */
-   public CreateConnectionResult createConnectionDelegate(String username,
-                                                          String password,
-                                                          int failedNodeID,
+   public CreateConnectionResponse createConnectionDelegate(String username,
+                                                          String password,                                                          
                                                           String remotingSessionID,
                                                           String clientVMID,
                                                           byte versionToUse)
@@ -130,12 +121,10 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
    {
       try
       {
-         // Just a standard createConnection
-         ClientConnectionImpl cd =
-            createConnectionDelegateInternal(username, password, failedNodeID,
+         return
+            createConnectionDelegateInternal(username, password, 
                                              remotingSessionID, clientVMID,
-                                             versionToUse);
-         return new CreateConnectionResult(cd);         
+                                             versionToUse);        
       }
       catch (Throwable t)
       {
@@ -144,14 +133,9 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
       
    }
 
-   /**
-    * @param failedNodeID - zero or positive values mean connection creation attempt is result of
-    *        failover. Negative values are ignored (mean regular connection creation attempt).
-    */
-   private ClientConnectionImpl
+   private CreateConnectionResponse
       createConnectionDelegateInternal(String username,
-                                       String password,
-                                       int failedNodeID,
+                                       String password,                                       
                                        String remotingSessionID, String clientVMID,
                                        byte versionToUse)
       throws Exception
@@ -187,17 +171,17 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
       final ServerConnectionEndpoint endpoint =
          new ServerConnectionEndpoint(messagingServer, clientIDUsed, username, password, prefetchSize,
                                       defaultTempQueueFullSize, defaultTempQueuePageSize,
-                                      defaultTempQueueDownCacheSize, failedNodeID, this,
+                                      defaultTempQueueDownCacheSize, this,
                                       remotingSessionID, clientVMID, versionToUse,
                                       dupsOKBatchSize);
 
-      final String connectionID = endpoint.getConnectionID();
+      String connectionID = endpoint.getConnectionID();
 
       messagingServer.getMinaService().getDispatcher().register(endpoint.newHandler());
 
       log.trace("created and registered " + endpoint);
 
-      return new ClientConnectionImpl(connectionID, messagingServer.getConfiguration().getMessagingServerID());
+      return new CreateConnectionResponse(connectionID);
    }
       
    public void addSender(String VMID, String remotingSessionID,
@@ -263,13 +247,9 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
             if (type == REQ_CREATECONNECTION)
             {
                CreateConnectionRequest request = (CreateConnectionRequest) packet;
-               CreateConnectionResult del = createConnectionDelegate(request
-                     .getUsername(), request.getPassword(), request
-                     .getFailedNodeID(), request.getRemotingSessionID(),
+               response = createConnectionDelegate(request
+                     .getUsername(), request.getPassword(), request.getRemotingSessionID(),
                      request.getClientVMID(), request.getVersion());
-
-               response = new CreateConnectionResponse(del.getInternalDelegate()
-                     .getID(), del.getInternalDelegate().getServerID());
             }
             else if (type == MSG_UPDATECALLBACK)
             {

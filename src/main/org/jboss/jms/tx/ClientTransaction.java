@@ -33,9 +33,9 @@ import java.util.Map;
 import org.jboss.jms.client.impl.Ack;
 import org.jboss.jms.client.impl.AckImpl;
 import org.jboss.jms.client.impl.DeliveryInfo;
-import org.jboss.messaging.util.Logger;
 import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.impl.MessageImpl;
+import org.jboss.messaging.util.Logger;
 
 /**
  * Holds the state of a transaction on the client side

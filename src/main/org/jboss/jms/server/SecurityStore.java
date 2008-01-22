@@ -21,14 +21,16 @@
   */
 package org.jboss.jms.server;
 
+import java.util.HashSet;
+
+import javax.jms.JMSSecurityException;
+import javax.security.auth.Subject;
+
 import org.jboss.jms.server.security.CheckType;
 import org.jboss.jms.server.security.Role;
 import org.jboss.messaging.core.Destination;
 import org.jboss.messaging.util.HierarchicalRepository;
 
-import javax.jms.JMSSecurityException;
-import javax.security.auth.Subject;
-import java.util.HashSet;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>

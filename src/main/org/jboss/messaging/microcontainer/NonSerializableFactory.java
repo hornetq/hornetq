@@ -21,14 +21,20 @@
    */
 package org.jboss.messaging.microcontainer;
 
-import org.jboss.util.naming.Util;
-
-import javax.naming.*;
-import javax.naming.spi.ObjectFactory;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Map;
+
+import javax.naming.Context;
+import javax.naming.Name;
+import javax.naming.NamingException;
+import javax.naming.RefAddr;
+import javax.naming.Reference;
+import javax.naming.StringRefAddr;
+import javax.naming.spi.ObjectFactory;
+
+import org.jboss.util.naming.Util;
 
 /**
  * used by the default context when running in embedded local configuration

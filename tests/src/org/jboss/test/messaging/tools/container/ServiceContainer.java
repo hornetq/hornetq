@@ -21,9 +21,10 @@
 */
 package org.jboss.test.messaging.tools.container;
 
-import javax.management.ObjectName;
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.management.ObjectName;
 
 /**
  * An MBeanServer and a configurable set of services (TransactionManager, Remoting, etc) available

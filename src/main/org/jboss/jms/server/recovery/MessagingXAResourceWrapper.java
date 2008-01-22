@@ -21,12 +21,16 @@
 */
 package org.jboss.jms.server.recovery;
 
-import org.jboss.messaging.util.Logger;
-
-import javax.jms.*;
+import javax.jms.ExceptionListener;
+import javax.jms.JMSException;
+import javax.jms.XAConnection;
+import javax.jms.XAConnectionFactory;
+import javax.jms.XASession;
 import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
+
+import org.jboss.messaging.util.Logger;
 
 /**
  * XAResourceWrapper.

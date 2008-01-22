@@ -21,9 +21,9 @@
    */
 package org.jboss.test.messaging.tools.container;
 
-import org.jboss.kernel.plugins.config.property.PropertyKernelConfig;
-
 import java.util.Properties;
+
+import org.jboss.kernel.plugins.config.property.PropertyKernelConfig;
 
 /**
  * used for setting the server id and used by the configuration helper

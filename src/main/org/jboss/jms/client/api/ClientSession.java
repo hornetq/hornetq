@@ -11,7 +11,6 @@ import java.io.Serializable;
 import java.util.List;
 
 import javax.jms.JMSException;
-import javax.jms.MessageListener;
 import javax.transaction.xa.XAResource;
 
 import org.jboss.jms.client.Closeable;
@@ -40,86 +39,39 @@ public interface ClientSession extends Closeable
    ClientConnection getConnection();
 
    String getID();
-   
-   /// Methods that will perform a server invocation ----------------------------------------------------------
 
-   ClientConsumer createConsumerDelegate(Destination destination, String selector,
+   ClientConsumer createClientConsumer(Destination destination, String selector,
          boolean noLocal, String subscriptionName,
          boolean isCC) throws JMSException;
    
 
-   ClientBrowser createBrowserDelegate(Destination queue, String messageSelector) throws JMSException;
+   ClientBrowser createClientBrowser(Destination queue, String messageSelector) throws JMSException;
+   
+   ClientProducer createClientProducer(JBossDestination destination) throws JMSException;
 
-   /**
-    * Creates a queue identity given a Queue name. Does NOT create the physical queue. The physical
-    * creation of queues is an administrative task and is not to be initiated by the JMS API, with
-    * the exception of temporary queues.
-    */
    JBossQueue createQueue(String queueName) throws JMSException;
 
-   /**
-    * Creates a topic identity given a Queue name. Does NOT create the physical topic. The physical
-    * creation of topics is an administrative task and is not to be initiated by the JMS API, with
-    * the exception of temporary topics.
-    */
    JBossTopic createTopic(String topicName) throws JMSException;
 
-   /**
-    * Acknowledge a list of deliveries
-    * @throws JMSException
-    */
    void acknowledgeDeliveries(List<Ack> acks) throws JMSException;
 
-   /**
-    * Acknowledge a delivery
-    * @throws JMSException
-    */
    boolean acknowledgeDelivery(Ack ack) throws JMSException;
 
-   /**
-    * Cancel a list of deliveries.
-    */
    void cancelDeliveries(List<Cancel> cancels) throws JMSException;
  
-   /**
-    * Cancel a delivery
-    * @param cancelure 
-    * @throws JMSException
-    */
    void cancelDelivery(Cancel cancel) throws JMSException;
 
-   /**
-    * Add a temporary destination.
-    */
    void addTemporaryDestination(Destination destination) throws JMSException;
 
-   /**
-    * Delete a temporary destination
-    */
    void deleteTemporaryDestination(Destination destination) throws JMSException;
 
-   /**
-    * Unsubscribe the client from the durable subscription
-    * specified by subscriptionName
-    * 
-    * @param subscriptionName the Name of the durable subscription to unsubscribe from
-    * @throws JMSException if the unsubscribe fails
-    */
    void unsubscribe(String subscriptionName) throws JMSException;
 
-   /**
-    * Send a message
-    * @param message The message to send
-    * @throws JMSException
-    */
    void send(Message message) throws JMSException;
 
-   int getDupsOKBatchSize();
+   int getDupsOKBatchSize() throws JMSException;
 
-   public boolean isStrictTck();
-
-
-   /// Client methods -------------------------------------------------------------------------------
+   public boolean isStrictTck() throws JMSException;
 
    JBossMessage createMessage() throws JMSException;
 
@@ -141,17 +93,7 @@ public interface ClientSession extends Closeable
 
    boolean postDeliver() throws JMSException;
 
-   MessageListener getMessageListener() throws JMSException;
-
-   void setMessageListener(MessageListener listener) throws JMSException;
-
-   void run() throws JMSException;
-
    XAResource getXAResource();
-
-   void addAsfMessage(JBossMessage m, String consumerID, String queueName,
-         int maxDeliveries, ClientSession connectionConsumerDelegate,
-         boolean shouldAck) throws JMSException;
 
    boolean isTransacted() throws JMSException;
 
@@ -165,13 +107,9 @@ public interface ClientSession extends Closeable
 
    void redeliver(List deliveryInfos) throws JMSException;
 
-   ClientProducer createProducerDelegate(JBossDestination destination) throws JMSException;
-
    void acknowledgeAll() throws JMSException;
    
-   boolean isXA();
-   
-   boolean isTreatAsNonTransactedWhenNotEnlisted();
+   boolean isXA() throws JMSException;
    
    void setTreatAsNonTransactedWhenNotEnlisted(boolean treatAsNonTransactedWhenNotEnlisted);
 
@@ -180,5 +118,7 @@ public interface ClientSession extends Closeable
    void setCurrentTxId(Object currentTxId);
    
    /** This is a method used by children (Producer, Consumer and Browser) during close operations */
-   void removeChild(String key);
+   void removeChild(String id) throws JMSException;
+   
+   boolean isClosed();
 }

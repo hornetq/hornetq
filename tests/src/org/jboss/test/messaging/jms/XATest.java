@@ -22,6 +22,7 @@
 package org.jboss.test.messaging.jms;
 
 import java.util.ArrayList;
+
 import javax.jms.Connection;
 import javax.jms.DeliveryMode;
 import javax.jms.JMSException;
@@ -43,23 +44,24 @@ import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
 
-import com.arjuna.ats.internal.jta.transaction.arjunacore.TransactionManagerImple;
 import org.jboss.jms.client.JBossConnection;
 import org.jboss.jms.client.JBossConnectionFactory;
 import org.jboss.jms.client.JBossSession;
-import org.jboss.jms.client.impl.ClientConnectionImpl;
+import org.jboss.jms.client.api.ClientConnection;
+import org.jboss.jms.client.api.ClientSession;
 import org.jboss.jms.tx.LocalTx;
 import org.jboss.jms.tx.MessagingXAResource;
 import org.jboss.jms.tx.ResourceManager;
 import org.jboss.jms.tx.ResourceManagerFactory;
-import org.jboss.messaging.util.Logger;
 import org.jboss.messaging.core.tx.MessagingXid;
-import org.jboss.messaging.util.ProxyFactory;
+import org.jboss.messaging.util.Logger;
 import org.jboss.test.messaging.JBMServerTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
 import org.jboss.test.messaging.tools.container.ServiceContainer;
 import org.jboss.tm.TransactionManagerLocator;
 import org.jboss.tm.TxUtils;
+
+import com.arjuna.ats.internal.jta.transaction.arjunacore.TransactionManagerImple;
 
 /**
  *
@@ -278,8 +280,8 @@ public class XATest extends JBMServerTestCase
 
          Transaction trans = tm.getTransaction();
 
-         org.jboss.jms.client.api.ClientSession clientSession = getDelegate(xasession);
-
+         ClientSession clientSession = ((JBossSession)xasession).getDelegate();
+                  
          // Validates TX convertion
          assertTrue(clientSession.getCurrentTxId() instanceof LocalTx);
 
@@ -578,7 +580,7 @@ public class XATest extends JBMServerTestCase
 
          JBossConnection jbConn = (JBossConnection)xaConn;
 
-         ClientConnectionImpl del = getDelegate(jbConn);
+         ClientConnection del = ((JBossConnection)jbConn).getDelegate();
 
          ResourceManager rm = del.getResourceManager();
 
@@ -638,7 +640,7 @@ public class XATest extends JBMServerTestCase
 
          JBossConnection jbConn = (JBossConnection)xaConn;
 
-         ClientConnectionImpl del = getDelegate(xaConn);
+         ClientConnection del = ((JBossConnection)xaConn).getDelegate();
 
          ResourceManager rm = del.getResourceManager();
 
@@ -727,6 +729,7 @@ public class XATest extends JBMServerTestCase
 
          DummyListener listener = new DummyListener();
 
+         //We set the distinguised listener so it will convert
          xaSession.setMessageListener(listener);
 
          ServerSessionPool pool = new MockServerSessionPool(xaSession);

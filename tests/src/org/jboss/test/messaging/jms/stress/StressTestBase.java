@@ -21,13 +21,13 @@
   */
 package org.jboss.test.messaging.jms.stress;
 
-import org.jboss.test.messaging.JBMServerTestCase;
-
 import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
 import javax.jms.Topic;
 import javax.jms.XASession;
-import javax.naming.InitialContext;
+
+import org.jboss.jms.client.JBossSession;
+import org.jboss.test.messaging.JBMServerTestCase;
 
 /**
  * 
@@ -149,6 +149,6 @@ public class StressTestBase extends JBMServerTestCase
    
    protected void tweakXASession(XASession sess)
    {
-      getDelegate(sess).setTreatAsNonTransactedWhenNotEnlisted(false);
+      ((JBossSession)sess).getDelegate().setTreatAsNonTransactedWhenNotEnlisted(false);
    }
 }

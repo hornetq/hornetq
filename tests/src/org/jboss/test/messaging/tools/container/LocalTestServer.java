@@ -21,25 +21,17 @@
 */
 package org.jboss.test.messaging.tools.container;
 
-import org.jboss.jms.client.JBossConnectionFactory;
-import org.jboss.jms.client.impl.ClientConnectionFactoryImpl;
-import org.jboss.jms.destination.JBossQueue;
-import org.jboss.jms.destination.JBossTopic;
-import org.jboss.jms.server.connectionfactory.ConnectionFactory;
-import org.jboss.jms.server.endpoint.ServerConnectionFactoryEndpoint;
-import org.jboss.jms.server.security.Role;
-import org.jboss.jms.tx.ResourceManagerFactory;
-import org.jboss.logging.Logger;
-import org.jboss.messaging.core.*;
-import org.jboss.messaging.core.impl.ConditionImpl;
-import org.jboss.messaging.core.remoting.ServerLocator;
-import org.jboss.messaging.microcontainer.JBMBootstrapServer;
-import org.jboss.messaging.util.JNDIUtil;
-import org.jboss.messaging.util.Version;
-import org.jboss.test.messaging.tools.ConfigurationHelper;
-import org.jboss.test.messaging.tools.ServerManagement;
-import org.jboss.test.messaging.tools.jboss.MBeanConfigurationElement;
-import org.jboss.tm.TransactionManagerLocator;
+import java.io.File;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 
 import javax.jms.InvalidDestinationException;
 import javax.management.NotificationListener;
@@ -50,11 +42,30 @@ import javax.naming.NameNotFoundException;
 import javax.sql.DataSource;
 import javax.transaction.TransactionManager;
 import javax.transaction.UserTransaction;
-import java.io.File;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.util.*;
+
+import org.jboss.jms.client.JBossConnectionFactory;
+import org.jboss.jms.client.impl.ClientConnectionFactoryImpl;
+import org.jboss.jms.destination.JBossQueue;
+import org.jboss.jms.destination.JBossTopic;
+import org.jboss.jms.server.connectionfactory.ConnectionFactory;
+import org.jboss.jms.server.endpoint.ServerConnectionFactoryEndpoint;
+import org.jboss.jms.server.security.Role;
+import org.jboss.jms.tx.ResourceManagerFactory;
+import org.jboss.logging.Logger;
+import org.jboss.messaging.core.Binding;
+import org.jboss.messaging.core.Condition;
+import org.jboss.messaging.core.DestinationType;
+import org.jboss.messaging.core.MessagingServer;
+import org.jboss.messaging.core.MessagingServerManagement;
+import org.jboss.messaging.core.impl.ConditionImpl;
+import org.jboss.messaging.core.remoting.ServerLocator;
+import org.jboss.messaging.microcontainer.JBMBootstrapServer;
+import org.jboss.messaging.util.JNDIUtil;
+import org.jboss.messaging.util.Version;
+import org.jboss.test.messaging.tools.ConfigurationHelper;
+import org.jboss.test.messaging.tools.ServerManagement;
+import org.jboss.test.messaging.tools.jboss.MBeanConfigurationElement;
+import org.jboss.tm.TransactionManagerLocator;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
@@ -663,7 +674,7 @@ public class LocalTestServer implements Server, Runnable
       boolean useStrict = getMessagingServer().getConfiguration().isStrictTck() || connectionFactory.isStrictTck();
 
       ClientConnectionFactoryImpl delegate =
-              new ClientConnectionFactoryImpl(connectionFactory.getName(), id, getMessagingServer().getConfiguration().getMessagingServerID(),
+              new ClientConnectionFactoryImpl(id, getMessagingServer().getConfiguration().getMessagingServerID(),
                       serverLocator.getURI(), version, false, useStrict);
 
       log.debug(this + " created local delegate " + delegate);

@@ -21,11 +21,20 @@
   */
 package org.jboss.test.messaging.jms;
 
-import EDU.oswego.cs.dl.util.concurrent.Latch;
+import javax.jms.Connection;
+import javax.jms.JMSException;
+import javax.jms.Message;
+import javax.jms.MessageListener;
+import javax.jms.MessageProducer;
+import javax.jms.ServerSession;
+import javax.jms.ServerSessionPool;
+import javax.jms.Session;
+import javax.jms.TextMessage;
+
 import org.jboss.jms.client.JBossConnectionConsumer;
 import org.jboss.test.messaging.tools.ServerManagement;
 
-import javax.jms.*;
+import EDU.oswego.cs.dl.util.concurrent.Latch;
 
 
 /**

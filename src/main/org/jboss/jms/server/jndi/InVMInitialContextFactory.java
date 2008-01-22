@@ -21,10 +21,11 @@
    */
 package org.jboss.jms.server.jndi;
 
+import java.util.Hashtable;
+
 import javax.naming.Context;
 import javax.naming.NamingException;
 import javax.naming.spi.InitialContextFactory;
-import java.util.Hashtable;
 
 /**
  * The context factory we use when we run embedded in the default local configuration.

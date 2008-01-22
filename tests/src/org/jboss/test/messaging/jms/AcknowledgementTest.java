@@ -35,8 +35,10 @@ import javax.jms.TopicPublisher;
 import javax.jms.TopicSession;
 import javax.jms.TopicSubscriber;
 
-import EDU.oswego.cs.dl.util.concurrent.Latch;
 import org.jboss.jms.client.JBossSession;
+import org.jboss.jms.client.api.ClientSession;
+
+import EDU.oswego.cs.dl.util.concurrent.Latch;
 
 
 /**
@@ -344,7 +346,7 @@ public class AcknowledgementTest extends JMSTestCase
 	      
 	      assertRemainingMessages(NUM_MESSAGES);
 	
-			log.trace("Session recover called");
+			log.info("Session recover called");
 	
 	      Message m = null;
 	
@@ -352,8 +354,7 @@ public class AcknowledgementTest extends JMSTestCase
 	      for(; i < NUM_MESSAGES; i++)
 	      {
 	         m = consumer.receive();
-	         log.trace("Received message " + i);
-	
+	         log.trace("Received message " + i);	
 	      }
 	      
 	      assertRemainingMessages(NUM_MESSAGES);
@@ -689,7 +690,7 @@ public class AcknowledgementTest extends JMSTestCase
 	      
 	      JBossSession sess = (JBossSession)conn.createSession(false, Session.DUPS_OK_ACKNOWLEDGE);
 	      
-	      org.jboss.jms.client.api.ClientSession del = getDelegate(sess);
+	      ClientSession del = sess.getDelegate();
 	      
 	      assertEquals(1000, del.getDupsOKBatchSize());
       }

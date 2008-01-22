@@ -17,7 +17,6 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledExecutorService;
 
 import org.apache.mina.common.CloseFuture;
@@ -27,14 +26,13 @@ import org.apache.mina.common.IdleStatus;
 import org.apache.mina.common.IoService;
 import org.apache.mina.common.IoServiceListener;
 import org.apache.mina.common.IoSession;
-import org.apache.mina.filter.executor.ExecutorFilter;
 import org.apache.mina.transport.socket.nio.NioSocketConnector;
 import org.jboss.jms.client.remoting.ConsolidatedRemotingConnectionListener;
-import org.jboss.messaging.util.Logger;
 import org.jboss.messaging.core.remoting.NIOConnector;
 import org.jboss.messaging.core.remoting.NIOSession;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.TransportType;
+import org.jboss.messaging.util.Logger;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>

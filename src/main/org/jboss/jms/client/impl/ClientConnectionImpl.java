@@ -21,10 +21,7 @@
   */
 package org.jboss.jms.client.impl;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -41,13 +38,11 @@ import org.jboss.jms.client.JBossConnectionMetaData;
 import org.jboss.jms.client.api.ClientConnection;
 import org.jboss.jms.client.api.ClientSession;
 import org.jboss.jms.client.remoting.ConsolidatedRemotingConnectionListener;
-import org.jboss.jms.client.remoting.JMSRemotingConnection;
+import org.jboss.jms.client.remoting.MessagingRemotingConnection;
 import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.tx.ResourceManager;
 import org.jboss.jms.tx.ResourceManagerFactory;
 import org.jboss.jms.tx.TransactionRequest;
-import org.jboss.messaging.util.Logger;
-import org.jboss.messaging.core.remoting.Client;
 import org.jboss.messaging.core.remoting.wireformat.CloseMessage;
 import org.jboss.messaging.core.remoting.wireformat.ClosingRequest;
 import org.jboss.messaging.core.remoting.wireformat.ClosingResponse;
@@ -62,8 +57,7 @@ import org.jboss.messaging.core.remoting.wireformat.SetClientIDMessage;
 import org.jboss.messaging.core.remoting.wireformat.StartConnectionMessage;
 import org.jboss.messaging.core.remoting.wireformat.StopConnectionMessage;
 import org.jboss.messaging.core.tx.MessagingXid;
-import org.jboss.messaging.util.ConcurrentHashSet;
-import org.jboss.messaging.util.ProxyFactory;
+import org.jboss.messaging.util.Logger;
 import org.jboss.messaging.util.Version;
 
 /**
@@ -78,11 +72,9 @@ import org.jboss.messaging.util.Version;
  *
  * $Id: ClientConnectionImpl.java 3602 2008-01-21 17:48:32Z timfox $
  */
-public class ClientConnectionImpl extends CommunicationSupport implements ClientConnection
+public class ClientConnectionImpl implements ClientConnection
 {
    // Constants ------------------------------------------------------------------------------------
-
-   private static final long serialVersionUID = -5485083713058725777L;
 
    private static final Logger log = Logger.getLogger(ClientConnectionImpl.class);
 
@@ -90,22 +82,19 @@ public class ClientConnectionImpl extends CommunicationSupport implements Client
 
    // Attributes -----------------------------------------------------------------------------------
 
+   private String id;
+   
    protected JBossConnectionMetaData connMetaData;
 
    private int serverID;
 
-   private transient JMSRemotingConnection remotingConnection;
+   private MessagingRemotingConnection remotingConnection;
 
-   private transient Version versionToUse;
+   private Version versionToUse;
    
    private boolean strictTck;
-
    
-   // Attributes that used to be on ConnectionState
-   
-   protected Map<String, ClientSession> children = new ConcurrentHashMap<String, ClientSession>();
-
-   protected boolean started;
+   private Map<String, ClientSession> children = new ConcurrentHashMap<String, ClientSession>();
 
    private boolean justCreated = true;
 
@@ -113,45 +102,47 @@ public class ClientConnectionImpl extends CommunicationSupport implements Client
 
    private ResourceManager resourceManager;
    
-   // Cached by the connection state in case ClusteringAspect needs to re-try establishing
-   // connection on a different node
-   private transient String username;
-
-   // Cached by the connection state in case ClusteringAspect needs to re-try establishing
-   // connection on a different node
-   private transient String password;
+   private volatile boolean closed;
 
    // Static ---------------------------------------------------------------------------------------
 
    // Constructors ---------------------------------------------------------------------------------
 
-   public ClientConnectionImpl(String objectID, int serverID)
+   public ClientConnectionImpl(String id, int serverID, boolean strictTck, Version version, ResourceManager rm,
+                               MessagingRemotingConnection connection)
    {
-      super(objectID);
-
+      this.id = id;
+      
       this.serverID = serverID;
+      
+      this.strictTck = strictTck;
+      
+      this.versionToUse = version;
+      
+      this.resourceManager = rm;
+      
+      this.remotingConnection = connection;
    }
 
-   public ClientConnectionImpl()
-   {
-      super();
-   }
-
-   // DelegateSupport overrides --------------------------------------------------------------------
-  
    // Closeable implementation ---------------------------------------------------------------------
 
-   public void close() throws JMSException
+   public synchronized void close() throws JMSException
    {
+      if (closed)
+      {
+         return;
+      }
+      
       try
       {
-         sendBlocking(new CloseMessage());
+         remotingConnection.sendBlocking(id, new CloseMessage());
       }
       finally
       {
          // remove the consolidated remoting connection listener
 
          ConsolidatedRemotingConnectionListener l = remotingConnection.removeConnectionListener();
+         
          if (l != null)
          {
             l.clear();
@@ -161,24 +152,27 @@ public class ClientConnectionImpl extends CommunicationSupport implements Client
          remotingConnection.stop();
 
          // And to resource manager
-         ResourceManagerFactory.instance.checkInResourceManager(getServerID());
+         ResourceManagerFactory.instance.checkInResourceManager(serverID);
+         
+         closed = true;
       }
-
    }
 
-   public long closing(long sequence) throws JMSException
+   public synchronized long closing(long sequence) throws JMSException
    {
+      if (closed)
+      {
+         return -1;
+      }
+      
       closeChildren();
-      ClosingResponse response = (ClosingResponse) sendBlocking(new ClosingRequest(sequence));
+      
+      ClosingResponse response = (ClosingResponse)remotingConnection.sendBlocking(id, new ClosingRequest(sequence));
+      
       return response.getID();
    }
    
-   public Client getClient()
-   {
-      return this.getRemotingConnection().getRemotingClient();
-   }
-   
-   // Connection implementation ------------------------------------------------------------
+   // ClientConnection implementation ------------------------------------------------------------
 
    /**
     * This invocation should either be handled by the client-side interceptor chain or by the
@@ -190,30 +184,33 @@ public class ClientConnectionImpl extends CommunicationSupport implements Client
                                                            ServerSessionPool sessionPool,
                                                            int maxMessages) throws JMSException
    {
-      if (trace) { log.trace("createConnectionConsumer()"); }
-
-
-      return new JBossConnectionConsumer((ClientConnection)ProxyFactory.proxy(this, ClientConnection.class), (JBossDestination)dest,
+      checkClosed();
+      
+      return new JBossConnectionConsumer(this, (JBossDestination)dest,
                                          subscriptionName, messageSelector, sessionPool,
                                          maxMessages);
    }
 
 
 
-   public ClientSession createSessionDelegate(boolean transacted,
+   public ClientSession createClientSession(boolean transacted,
                                                 int acknowledgmentMode,
                                                 boolean isXA) throws JMSException
    {
-
+      checkClosed();
+            
       justCreated = false;
 
       CreateSessionRequest request = new CreateSessionRequest(transacted, acknowledgmentMode, isXA);
-      CreateSessionResponse response = (CreateSessionResponse) sendBlocking(request);         
-      ClientSessionImpl delegate = new ClientSessionImpl(this, response.getSessionID(), response.getDupsOKBatchSize(), isStrictTck(), 
+      
+      CreateSessionResponse response = (CreateSessionResponse)remotingConnection.sendBlocking(id, request);   
+      
+      ClientSession session = new ClientSessionImpl(this, response.getSessionID(), response.getDupsOKBatchSize(), isStrictTck(), 
             transacted, acknowledgmentMode, isXA);
-      ClientSession proxy =(ClientSession) ProxyFactory.proxy(delegate, ClientSession.class);
-      children.put(proxy.getID(), proxy);
-      return proxy;
+      
+      children.put(response.getSessionID(), session);
+      
+      return session;
    }
 
 
@@ -222,19 +219,16 @@ public class ClientConnectionImpl extends CommunicationSupport implements Client
       return strictTck;
    }
 
-   public void setStrictTck(boolean strictTck)
-   {
-      this.strictTck = strictTck;
-   }
-
    public String getClientID() throws JMSException
    {
+      checkClosed();
+      
       justCreated = false;
 
       if (clientID == null)
       {
          //Get from the server
-         clientID = ((GetClientIDResponse) sendBlocking(new GetClientIDRequest())).getClientID();
+         clientID = ((GetClientIDResponse)remotingConnection.sendBlocking(id, new GetClientIDRequest())).getClientID();
       }
       return clientID;
    }
@@ -245,7 +239,8 @@ public class ClientConnectionImpl extends CommunicationSupport implements Client
     */
    public ConnectionMetaData getConnectionMetaData() throws JMSException
    {
-
+      checkClosed();
+      
       justCreated = false;
 
       if (connMetaData == null)
@@ -269,12 +264,15 @@ public class ClientConnectionImpl extends CommunicationSupport implements Client
 
    public void sendTransaction(TransactionRequest tr) throws JMSException
    {
-      sendBlocking(new SendTransactionMessage(tr));
+      checkClosed();
+      
+      remotingConnection.sendBlocking(id, new SendTransactionMessage(tr));
    }
-
 
    public void setClientID(String clientID) throws JMSException
    {
+      checkClosed();
+      
       if (this.clientID != null)
       {
          throw new javax.jms.IllegalStateException("Client id has already been set");
@@ -285,23 +283,21 @@ public class ClientConnectionImpl extends CommunicationSupport implements Client
       }
 
       this.clientID = clientID;
+      
       this.justCreated = false;
 
-      // this gets invoked on the server too
-      invokeSetClientID(clientID);
-      
+      remotingConnection.sendBlocking(id, new SetClientIDMessage(clientID));  
    }
-   private void invokeSetClientID(String clientID) throws JMSException
-   {
-      sendBlocking(new SetClientIDMessage(clientID));
-   }
-
+   
+   
    /**
     * This invocation should either be handled by the client-side interceptor chain or by the
     * server-side endpoint.
     */
    public void setExceptionListener(ExceptionListener listener) throws JMSException
    {
+      checkClosed();
+      
       justCreated = false;
 
       remotingConnection.getConnectionListener().addJMSExceptionListener(listener);
@@ -309,38 +305,38 @@ public class ClientConnectionImpl extends CommunicationSupport implements Client
 
    public void start() throws JMSException
    {
-      started = true;
+      checkClosed();
+      
       justCreated = false;
-      sendOneWay(new StartConnectionMessage());
+      
+      remotingConnection.sendOneWay(id, new StartConnectionMessage());
    }
    
-   public void startAfterFailover() throws JMSException
-   {
-      sendOneWay(new StartConnectionMessage());
-   }
-
    public void stop() throws JMSException
    {
-      started = false;
+      checkClosed();
+      
       justCreated = false;
-      sendBlocking(new StopConnectionMessage());
+      
+      remotingConnection.sendBlocking(id, new StopConnectionMessage());
    }
 
    public MessagingXid[] getPreparedTransactions() throws JMSException
    {
-      GetPreparedTransactionsResponse response = (GetPreparedTransactionsResponse) sendBlocking(new GetPreparedTransactionsRequest());
+      checkClosed();
+      
+      GetPreparedTransactionsResponse response =
+         (GetPreparedTransactionsResponse)remotingConnection.sendBlocking(id, new GetPreparedTransactionsRequest());
       
       return response.getXids();
    }
-
-   // Public ---------------------------------------------------------------------------------------
-
-   public void setRemotingConnection(JMSRemotingConnection conn)
+   
+   public ResourceManager getResourceManager()
    {
-      this.remotingConnection = conn;
+      return resourceManager;
    }
-
-   public JMSRemotingConnection getRemotingConnection()
+   
+   public MessagingRemotingConnection getRemotingConnection()
    {
       return remotingConnection;
    }
@@ -349,96 +345,42 @@ public class ClientConnectionImpl extends CommunicationSupport implements Client
    {
       return serverID;
    }
-
-   public Version getVersionToUse()
-   {
-      return versionToUse;
-   }
-
-   public void setVersionToUse(Version versionToUse)
-   {
-      this.versionToUse = versionToUse;
-   }
-
-   public String toString()
-   {
-      return "ConnectionDelegate[" + System.identityHashCode(this) + ", ID=" + id +
-         ", SID=" + serverID + "]";
-   }
    
-   // Package protected
-   
-   public void removeChild(String key)
+   public void removeChild(String key) throws JMSException
    {
+      checkClosed();
+      
       children.remove(key);
    }
 
+   // Public ---------------------------------------------------------------------------------------
+
    // Protected ------------------------------------------------------------------------------------
+      
+   // Package Private ------------------------------------------------------------------------------
+
+   // Private --------------------------------------------------------------------------------------
    
-   protected void closeChildren() throws JMSException
+   private void checkClosed() throws IllegalStateException
    {
+      if (closed)
+      {
+         throw new IllegalStateException("Connection is closed");
+      }
+   }
+   
+   private void closeChildren() throws JMSException
+   {
+      //We copy the set of children to prevent ConcurrentModificationException which would occur
+      //when the child trues to remove itself from its parent
       Set<ClientSession> childrenClone = new HashSet<ClientSession>(children.values());
       
       for (ClientSession session: childrenClone)
       {
-         try
-         {
-            session.closing(-1);
-            session.close();
-         }
-         catch (Throwable t)
-         {
-            //We swallow exceptions in close/closing, this is because if the connection fails, it is naturally for code to then close
-            //in a finally block, it would not then be appropriate to throw an exception. This is a common technique
-            if (trace)
-            {
-               log.trace("Failed to close", t);
-            }
-         }         
+         session.closing(-1);
+         session.close(); 
       }
    }
-
-   
-   @Override
-   public byte getVersion()
-   {
-      if (versionToUse == null)
-      {
-         log.warn("Version to use it null");
-      }
-      return versionToUse.getProviderIncrementingVersion();
-   }
-
-   
-   // Streamable implementation -------------------------------------------------------------------
-
-   public void read(DataInputStream in) throws Exception
-   {
-      super.read(in);
-
-      serverID = in.readInt();
-   }
-
-   public void write(DataOutputStream out) throws Exception
-   {
-      super.write(out);
-
-      out.writeInt(serverID);
-   }
-
-   public ResourceManager getResourceManager()
-   {
-      return resourceManager;
-   }
-
-   public void setResourceManager(ResourceManager resourceManager)
-   {
-      this.resourceManager = resourceManager;
-   }
-   
-   // Package Private ------------------------------------------------------------------------------
-
-   // Private --------------------------------------------------------------------------------------
 
    // Inner Classes --------------------------------------------------------------------------------
 

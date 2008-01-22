@@ -21,14 +21,28 @@
  */
 package org.jboss.test.messaging.jms;
 
+import javax.jms.BytesMessage;
+import javax.jms.Connection;
+import javax.jms.DeliveryMode;
+import javax.jms.InvalidSelectorException;
+import javax.jms.Message;
+import javax.jms.MessageConsumer;
+import javax.jms.MessageProducer;
+import javax.jms.QueueConnection;
+import javax.jms.QueueReceiver;
+import javax.jms.QueueSender;
+import javax.jms.QueueSession;
+import javax.jms.Session;
+import javax.jms.TextMessage;
+import javax.jms.TopicConnection;
+import javax.jms.TopicSession;
+
 import org.jboss.jms.client.JBossConnectionFactory;
 import org.jboss.test.messaging.JBMServerTestCase;
 import org.jboss.test.messaging.jms.message.SimpleJMSBytesMessage;
 import org.jboss.test.messaging.jms.message.SimpleJMSMessage;
 import org.jboss.test.messaging.jms.message.SimpleJMSTextMessage;
 import org.jboss.test.messaging.tools.container.ServiceAttributeOverrides;
-
-import javax.jms.*;
 
 /**
  * Safeguards for previously detected TCK failures.

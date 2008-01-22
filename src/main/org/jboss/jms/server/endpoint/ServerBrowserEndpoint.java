@@ -36,7 +36,6 @@ import javax.jms.InvalidSelectorException;
 import javax.jms.JMSException;
 
 import org.jboss.jms.exception.MessagingJMSException;
-import org.jboss.messaging.util.Logger;
 import org.jboss.messaging.core.Filter;
 import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.MessageReference;
@@ -53,6 +52,7 @@ import org.jboss.messaging.core.remoting.wireformat.JMSExceptionMessage;
 import org.jboss.messaging.core.remoting.wireformat.NullPacket;
 import org.jboss.messaging.core.remoting.wireformat.PacketType;
 import org.jboss.messaging.util.ExceptionUtil;
+import org.jboss.messaging.util.Logger;
 
 /**
  * Concrete implementation of BrowserEndpoint.

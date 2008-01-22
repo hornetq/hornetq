@@ -42,8 +42,8 @@ import org.jboss.jms.exception.MessagingTransactionRolledBackException;
 import org.jboss.jms.exception.MessagingXAException;
 import org.jboss.jms.message.JBossMessage;
 import org.jboss.jms.tx.ClientTransaction.SessionTxState;
-import org.jboss.messaging.util.Logger;
 import org.jboss.messaging.core.Message;
+import org.jboss.messaging.util.Logger;
 
 
 /**
@@ -617,7 +617,7 @@ public class ResourceManager
             
             JBossMessage mp = info.getMessage();
             
-            ClientSession del = mp.getSessionDelegate();
+            ClientSession del = mp.getSession();
             
             del.redeliver(acks);
          }

@@ -21,10 +21,16 @@
  */
 package org.jboss.messaging.core.impl.messagecounter;
 
-import org.jboss.messaging.util.Logger;
-import org.jboss.messaging.core.MessagingComponent;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
 
-import java.util.*;
+import org.jboss.messaging.core.MessagingComponent;
+import org.jboss.messaging.util.Logger;
 
 /**
  * 

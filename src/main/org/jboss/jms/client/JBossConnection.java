@@ -22,6 +22,7 @@
 package org.jboss.jms.client;
 
 import java.io.Serializable;
+
 import javax.jms.Connection;
 import javax.jms.ConnectionConsumer;
 import javax.jms.ConnectionMetaData;
@@ -214,12 +215,13 @@ public class JBossConnection implements
 
    // Public ---------------------------------------------------------------------------------------
 
+   /* For testing only */
    public String getRemotingClientSessionID()
    {
-      return connection.getRemotingConnection().getRemotingClient().getSessionID();
+      return connection.getRemotingConnection().getSessionID();
    }
 
-   public org.jboss.jms.client.api.ClientConnection getDelegate()
+   public ClientConnection getDelegate()
    {
       return connection;
    }
@@ -232,16 +234,6 @@ public class JBossConnection implements
       
       return connection.getServerID(); 
    }
-
-   /*public void registerFailoverListener(FailoverListener listener)
-   {
-      connection.registerFailoverListener(listener);
-   }
-
-   public synchronized boolean unregisterFailoverListener(FailoverListener listener)
-   {
-      return delegate.unregisterFailoverListener(listener);
-   } */
 
    public String toString()
    {
@@ -261,7 +253,7 @@ public class JBossConnection implements
       }
 
       org.jboss.jms.client.api.ClientSession session =
-         connection.createSessionDelegate(transacted, acknowledgeMode, isXA);
+         connection.createClientSession(transacted, acknowledgeMode, isXA);
       return new JBossSession(session, type);
    }
 

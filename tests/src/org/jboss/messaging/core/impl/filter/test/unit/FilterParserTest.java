@@ -25,11 +25,11 @@ import java.io.ByteArrayInputStream;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.jboss.messaging.util.Logger;
 import org.jboss.messaging.core.impl.filter.FilterParser;
 import org.jboss.messaging.core.impl.filter.Identifier;
 import org.jboss.messaging.core.impl.filter.Operator;
 import org.jboss.messaging.test.unit.UnitTestCase;
+import org.jboss.messaging.util.Logger;
 
 /**
  Tests of the JavaCC LL(1) parser for the JBoss Messaging filters

@@ -33,8 +33,6 @@ import javax.jms.Topic;
 import javax.jms.TopicSubscriber;
 
 import org.jboss.jms.client.api.ClientConsumer;
-
-
 import org.jboss.jms.destination.JBossDestination;
 
 /**

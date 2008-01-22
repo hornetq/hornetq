@@ -21,10 +21,11 @@
  */
 package org.jboss.test.messaging.tools;
 
+import java.util.Properties;
+
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
-import java.util.Properties;
 
 //import org.jboss.jms.jndi.JMSProviderAdapter;
 

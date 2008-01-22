@@ -21,14 +21,24 @@
  */
 package org.jboss.test.messaging.jms;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.jms.Connection;
+import javax.jms.ConnectionFactory;
+import javax.jms.DeliveryMode;
+import javax.jms.Message;
+import javax.jms.MessageConsumer;
+import javax.jms.MessageListener;
+import javax.jms.MessageProducer;
+import javax.jms.Queue;
+import javax.jms.Session;
+import javax.jms.TextMessage;
+import javax.management.ObjectName;
+
 import org.jboss.jms.destination.JBossQueue;
 import org.jboss.jms.message.JBossMessage;
 import org.jboss.test.messaging.tools.ServerManagement;
-
-import javax.jms.*;
-import javax.management.ObjectName;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * A ExpiryQueueTest

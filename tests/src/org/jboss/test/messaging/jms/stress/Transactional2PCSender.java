@@ -26,8 +26,8 @@ import javax.jms.MessageProducer;
 import javax.jms.XASession;
 import javax.transaction.xa.XAResource;
 
-import org.jboss.messaging.util.Logger;
 import org.jboss.messaging.core.tx.MessagingXid;
+import org.jboss.messaging.util.Logger;
 import org.jboss.util.id.GUID;
 
 /**

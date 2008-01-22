@@ -21,10 +21,10 @@
    */
 package org.jboss.messaging.microcontainer.factory;
 
+import java.util.Map;
+
 import org.jboss.remoting.InvokerLocator;
 import org.jboss.remoting.ServerInvocationHandler;
-
-import java.util.Map;
 
 /**
  * The connector interface is onlyextended to allow the easy injection of the server invocation handler.

@@ -29,10 +29,6 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import javax.jms.TextMessage;
-
-import org.jboss.jms.message.JBossMessage;
-import org.jboss.messaging.util.Logger;
 import org.jboss.messaging.core.Binding;
 import org.jboss.messaging.core.Condition;
 import org.jboss.messaging.core.Filter;
@@ -45,6 +41,7 @@ import org.jboss.messaging.core.QueueFactory;
 import org.jboss.messaging.core.TransactionSynchronization;
 import org.jboss.messaging.core.impl.BindingImpl;
 import org.jboss.messaging.util.ConcurrentHashSet;
+import org.jboss.messaging.util.Logger;
 
 /**
  * 

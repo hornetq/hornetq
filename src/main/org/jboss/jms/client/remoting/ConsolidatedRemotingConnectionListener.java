@@ -13,14 +13,11 @@ import org.jboss.jms.client.api.ClientConnection;
 import org.jboss.messaging.util.Logger;
 
 /**
- * The ONLY remoting connection listener for a JMS connection's underlying remoting connection.
- * Added to the remoting connection when the JMS connection is created, and removed when the
- * JMS connection is closed. Any second tier listeners (the JMS connection ExceptionListener,
- * and the HA's connection failure detector) are registered with this consolidated listener and not
- * with the remoting connection directly.
  *
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
+ * 
+ * FIXME - get rid of this class - it's not needed
  *
  * $Id$
  */

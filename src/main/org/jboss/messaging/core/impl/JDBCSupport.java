@@ -21,18 +21,23 @@
  */
 package org.jboss.messaging.core.impl;
 
-import org.jboss.messaging.util.Logger;
-import org.jboss.messaging.core.MessagingComponent;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Properties;
 
 import javax.sql.DataSource;
 import javax.transaction.Status;
 import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.*;
+
+import org.jboss.messaging.core.MessagingComponent;
+import org.jboss.messaging.util.Logger;
 
 /**
  * Common functionality for messaging components that need to access a database.

@@ -27,13 +27,13 @@ import java.util.List;
 import javax.jms.JMSException;
 
 import org.jboss.jms.client.Closeable;
-import org.jboss.jms.client.api.ClientBrowser;
 import org.jboss.jms.client.impl.Ack;
 import org.jboss.jms.client.impl.Cancel;
 import org.jboss.jms.destination.JBossQueue;
 import org.jboss.jms.destination.JBossTopic;
 import org.jboss.messaging.core.Destination;
 import org.jboss.messaging.core.Message;
+import org.jboss.messaging.core.remoting.wireformat.CreateBrowserResponse;
 import org.jboss.messaging.core.remoting.wireformat.CreateConsumerResponse;
 
 /**
@@ -51,7 +51,7 @@ public interface SessionEndpoint extends Closeable
                                            boolean noLocal, String subscriptionName,
                                            boolean connectionConsumer) throws JMSException;
    
-   ClientBrowser createBrowserDelegate(Destination queue, String messageSelector) throws JMSException;
+   CreateBrowserResponse createBrowserDelegate(Destination queue, String messageSelector) throws JMSException;
 
    /**
     * Creates a queue identity given a Queue name. Does NOT create the physical queue. The physical

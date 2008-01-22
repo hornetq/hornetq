@@ -22,15 +22,22 @@
 
 package org.jboss.test.messaging.jms.stress;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+
+import javax.jms.Connection;
+import javax.jms.Destination;
+import javax.jms.MessageConsumer;
+import javax.jms.MessageProducer;
+import javax.jms.Queue;
+import javax.jms.Session;
+import javax.jms.TextMessage;
+import javax.naming.InitialContext;
+
 import org.jboss.jms.client.JBossConnectionFactory;
 import org.jboss.messaging.util.Logger;
 import org.jboss.test.messaging.JBMServerTestCase;
 import org.jboss.test.messaging.jms.ConnectionTest;
-
-import javax.jms.*;
-import javax.naming.InitialContext;
-import java.util.ArrayList;
-import java.util.Iterator;
 
 /**
  * This test was added to test regression on http://jira.jboss.com/jira/browse/JBMESSAGING-660

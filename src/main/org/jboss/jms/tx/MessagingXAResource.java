@@ -21,14 +21,14 @@
   */
 package org.jboss.jms.tx;
 
-import org.jboss.jms.client.api.ClientSession;
-import org.jboss.jms.exception.MessagingXAException;
-import org.jboss.messaging.util.Logger;
-import org.jboss.messaging.core.tx.MessagingXid;
-
 import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
+
+import org.jboss.jms.client.api.ClientSession;
+import org.jboss.jms.exception.MessagingXAException;
+import org.jboss.messaging.core.tx.MessagingXid;
+import org.jboss.messaging.util.Logger;
 
 /**
  * An XAResource implementation.

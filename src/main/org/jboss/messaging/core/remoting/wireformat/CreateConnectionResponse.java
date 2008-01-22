@@ -22,20 +22,18 @@ public class CreateConnectionResponse extends AbstractPacket
    // Attributes ----------------------------------------------------
 
    private final String connectionID;
-   private final int serverID;
-
+   
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public CreateConnectionResponse(String connectionID, int serverID)
+   public CreateConnectionResponse(String connectionID)
    {
       super(RESP_CREATECONNECTION);
 
       assertValidID(connectionID);
 
       this.connectionID = connectionID;
-      this.serverID = serverID;
    }
 
    // Public --------------------------------------------------------
@@ -45,17 +43,6 @@ public class CreateConnectionResponse extends AbstractPacket
       return connectionID;
    }
    
-   public int getServerID()
-   {
-      return serverID;
-   }
-
-   @Override
-   public String toString()
-   {
-      return getParentString() + ", id=" + connectionID + ", serverID=" + serverID + "]";
-   }
-
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------

@@ -202,7 +202,7 @@ public class JNDIObjectDeployer extends Deployer
          boolean useStrict = messagingServer.getConfiguration().isStrictTck() || connectionFactory.isStrictTck();
 
          ClientConnectionFactoryImpl delegate =
-                 new ClientConnectionFactoryImpl(connectionFactory.getName(), id, messagingServer.getConfiguration().getMessagingServerID(),
+                 new ClientConnectionFactoryImpl(id, messagingServer.getConfiguration().getMessagingServerID(),
                          serverLocator.getURI(), version, false, useStrict);
 
          log.debug(this + " created local delegate " + delegate);

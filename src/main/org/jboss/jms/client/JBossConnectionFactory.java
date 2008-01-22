@@ -39,8 +39,8 @@ import javax.jms.XATopicConnectionFactory;
 import javax.naming.NamingException;
 import javax.naming.Reference;
 
+import org.jboss.jms.client.api.ClientConnection;
 import org.jboss.jms.client.impl.ClientConnectionFactoryImpl;
-import org.jboss.jms.client.impl.CreateConnectionResult;
 import org.jboss.jms.referenceable.SerializableObjectRefAddr;
 import org.jboss.messaging.util.Logger;
 
@@ -187,12 +187,9 @@ public class JBossConnectionFactory implements
                                                       boolean isXA, int type)
       throws JMSException
    {
-      // The version used by the connection is the minimum of the server version for the
-      // connection factory and the client code version
+      ClientConnection res = delegate.createConnection(username, password);
 
-      CreateConnectionResult res = delegate.createConnectionDelegate(username, password, -1);
-
-      return new JBossConnection(res.getProxiedDelegate(), type);
+      return new JBossConnection(res, type);
    }
    
    // Private --------------------------------------------------------------------------------------

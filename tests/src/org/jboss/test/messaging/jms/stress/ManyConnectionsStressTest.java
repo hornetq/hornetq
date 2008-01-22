@@ -6,13 +6,23 @@
  */
 package org.jboss.test.messaging.jms.stress;
 
-import org.jboss.messaging.util.Logger;
-import org.jboss.test.messaging.JBMServerTestCase;
-
-import javax.jms.*;
-import javax.naming.InitialContext;
 import java.util.HashSet;
 import java.util.Set;
+
+import javax.jms.Connection;
+import javax.jms.ConnectionFactory;
+import javax.jms.JMSException;
+import javax.jms.Message;
+import javax.jms.MessageConsumer;
+import javax.jms.MessageListener;
+import javax.jms.MessageProducer;
+import javax.jms.Session;
+import javax.jms.TextMessage;
+import javax.jms.Topic;
+import javax.naming.InitialContext;
+
+import org.jboss.messaging.util.Logger;
+import org.jboss.test.messaging.JBMServerTestCase;
 
 
 /**

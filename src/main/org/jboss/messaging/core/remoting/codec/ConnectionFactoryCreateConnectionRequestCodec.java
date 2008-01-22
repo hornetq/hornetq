@@ -41,14 +41,12 @@ public class ConnectionFactoryCreateConnectionRequestCodec extends
       byte version = request.getVersion();
       String remotingSessionID = request.getRemotingSessionID();
       String clientVMID = request.getClientVMID();
-      int failedNodeID = request.getFailedNodeID();
       String username = request.getUsername();
       String password = request.getPassword();
 
       int bodyLength = 1 // version
             + sizeof(remotingSessionID)
             + sizeof(clientVMID)
-            + INT_LENGTH // failedNodeID
             + sizeof(username) 
             + sizeof(password);
 
@@ -56,7 +54,6 @@ public class ConnectionFactoryCreateConnectionRequestCodec extends
       out.put(version);
       out.putNullableString(remotingSessionID);
       out.putNullableString(clientVMID);
-      out.putInt(failedNodeID);
       out.putNullableString(username);
       out.putNullableString(password);
    }
@@ -73,12 +70,11 @@ public class ConnectionFactoryCreateConnectionRequestCodec extends
       byte version = in.get();
       String remotingSessionID = in.getNullableString();
       String clientVMID = in.getNullableString();
-      int failedNodeID = in.getInt();
       String username = in.getNullableString();
       String password = in.getNullableString();
 
       return new CreateConnectionRequest(version, remotingSessionID, 
-            clientVMID, failedNodeID, username, password);
+            clientVMID, username, password);
    }
 
    // Package protected ---------------------------------------------

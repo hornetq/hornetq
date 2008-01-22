@@ -21,12 +21,13 @@
    */
 package org.jboss.jms.server.jndi;
 
+import java.io.Serializable;
+import java.util.Properties;
+
 import javax.naming.CompoundName;
 import javax.naming.Name;
 import javax.naming.NameParser;
 import javax.naming.NamingException;
-import java.io.Serializable;
-import java.util.Properties;
 
 /**
  * used by the default context when running with thelocal configuration

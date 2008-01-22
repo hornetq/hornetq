@@ -6,11 +6,17 @@
  */
 package org.jboss.test.messaging.jms.stress;
 
+import javax.jms.Connection;
+import javax.jms.ConnectionFactory;
+import javax.jms.DeliveryMode;
+import javax.jms.Message;
+import javax.jms.MessageProducer;
+import javax.jms.Queue;
+import javax.jms.Session;
+import javax.naming.InitialContext;
+
 import org.jboss.messaging.util.Logger;
 import org.jboss.test.messaging.JBMServerTestCase;
-
-import javax.jms.*;
-import javax.naming.InitialContext;
 
 /**
  * A stress test written to investigate http://jira.jboss.org/jira/browse/JBMESSAGING-362

@@ -21,9 +21,15 @@
 */
 package org.jboss.test.messaging.jms;
 
-import javax.jms.*;
 import java.io.FileInputStream;
 import java.io.ObjectInputStream;
+
+import javax.jms.Connection;
+import javax.jms.ConnectionFactory;
+import javax.jms.MessageConsumer;
+import javax.jms.MessageProducer;
+import javax.jms.Queue;
+import javax.jms.Session;
 
 /**
  * Code to be run in an external VM, via main().

@@ -21,19 +21,29 @@
    */
 package org.jboss.messaging.microcontainer;
 
-import org.jboss.kernel.plugins.bootstrap.basic.BasicBootstrap;
-import org.jboss.kernel.plugins.deployment.xml.BeanXMLDeployer;
-import org.jboss.kernel.spi.config.KernelConfig;
-import org.jboss.kernel.spi.deployment.KernelDeployment;
-
-import javax.jms.*;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
 import java.net.URL;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Properties;
 import java.util.concurrent.CopyOnWriteArrayList;
+
+import javax.jms.Connection;
+import javax.jms.ConnectionFactory;
+import javax.jms.JMSException;
+import javax.jms.Message;
+import javax.jms.MessageConsumer;
+import javax.jms.MessageListener;
+import javax.jms.MessageProducer;
+import javax.jms.Queue;
+import javax.jms.Session;
+import javax.jms.TextMessage;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+
+import org.jboss.kernel.plugins.bootstrap.basic.BasicBootstrap;
+import org.jboss.kernel.plugins.deployment.xml.BeanXMLDeployer;
+import org.jboss.kernel.spi.config.KernelConfig;
+import org.jboss.kernel.spi.deployment.KernelDeployment;
 
 /**
  * This is the method in which the JBM server can be deployed externall outside of jBoss. Alternatively a user can embed

@@ -29,9 +29,6 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.management.ObjectName;
 
-import org.jboss.jms.client.JBossConnection;
-import org.jboss.jms.client.impl.ClientConnectionImpl;
-import org.jboss.jms.tx.ResourceManager;
 import org.jboss.jms.tx.ResourceManagerFactory;
 
 /**
@@ -56,89 +53,7 @@ public class TransactedSessionTest extends JMSTestCase
 
    // Public --------------------------------------------------------
 
-   public void testResourceManagerMemoryLeakOnCommit() throws Exception
-   {
-      Connection conn = null;
-
-      try
-      {
-         conn = cf.createConnection();
-
-         JBossConnection jbConn = (JBossConnection)conn;
-
-         ClientConnectionImpl del = getDelegate(jbConn);
-
-         ResourceManager rm = del.getResourceManager();
-
-         Session session = conn.createSession(true, Session.SESSION_TRANSACTED);
-
-         for (int i = 0; i < 100; i++)
-         {
-            assertEquals(1, rm.size());
-
-            session.commit();
-
-            assertEquals(1, rm.size());
-         }
-
-         assertEquals(1, rm.size());
-
-         conn.close();
-
-         conn = null;
-
-         assertEquals(0, rm.size());
-      }
-      finally
-      {
-         if (conn != null)
-         {
-            conn.close();
-         }
-      }
-   }
-
-   public void testResourceManagerMemoryLeakOnRollback() throws Exception
-   {
-      Connection conn = null;
-
-      try
-      {
-         conn = cf.createConnection();
-
-         ClientConnectionImpl del = getDelegate(conn);
-
-         ResourceManager rm = del.getResourceManager();
-
-         Session session = conn.createSession(true, Session.SESSION_TRANSACTED);
-
-         for (int i = 0; i < 100; i++)
-         {
-            assertEquals(1, rm.size());
-
-            session.commit();
-
-            assertEquals(1, rm.size());
-         }
-
-         assertEquals(1, rm.size());
-
-         conn.close();
-
-         conn = null;
-
-         assertEquals(0, rm.size());
-      }
-      finally
-      {
-         if (conn != null)
-         {
-            conn.close();
-         }
-      }
-   }
-
-
+  
    public void testSimpleRollback() throws Exception
    {
       // send a message

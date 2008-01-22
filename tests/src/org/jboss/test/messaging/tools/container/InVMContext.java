@@ -21,13 +21,29 @@
 */
 package org.jboss.test.messaging.tools.container;
 
-import org.jboss.messaging.util.Logger;
-import org.jboss.messaging.microcontainer.NonSerializableFactory;
-import org.jboss.messaging.util.NotYetImplementedException;
-
-import javax.naming.*;
 import java.io.Serializable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
+import javax.naming.Binding;
+import javax.naming.Context;
+import javax.naming.Name;
+import javax.naming.NameAlreadyBoundException;
+import javax.naming.NameNotFoundException;
+import javax.naming.NameParser;
+import javax.naming.NamingEnumeration;
+import javax.naming.NamingException;
+import javax.naming.RefAddr;
+import javax.naming.Reference;
+
+import org.jboss.messaging.microcontainer.NonSerializableFactory;
+import org.jboss.messaging.util.Logger;
+import org.jboss.messaging.util.NotYetImplementedException;
 
 
 /**

@@ -6,10 +6,14 @@
  */
 package org.jboss.test.messaging.jms.message;
 
+import javax.jms.Connection;
+import javax.jms.Message;
+import javax.jms.MessageConsumer;
+import javax.jms.MessageProducer;
+import javax.jms.Session;
+
 import org.jboss.messaging.util.Logger;
 import org.jboss.test.messaging.JBMServerTestCase;
-
-import javax.jms.*;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>

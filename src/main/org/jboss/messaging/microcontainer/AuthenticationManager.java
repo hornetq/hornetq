@@ -21,12 +21,13 @@
    */
 package org.jboss.messaging.microcontainer;
 
-import org.jboss.security.RealmMapping;
-
-import javax.security.auth.Subject;
 import java.security.Principal;
 import java.util.Map;
 import java.util.Set;
+
+import javax.security.auth.Subject;
+
+import org.jboss.security.RealmMapping;
 
 /**
  * This is an implementation of AuthenticationManager and RealmMapping to use when we run embedded. The one we use when in jBoss

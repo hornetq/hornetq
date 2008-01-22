@@ -23,7 +23,7 @@ package org.jboss.jms.server.endpoint;
 
 import javax.jms.JMSException;
 
-import org.jboss.jms.client.impl.CreateConnectionResult;
+import org.jboss.messaging.core.remoting.wireformat.CreateConnectionResponse;
 
 /**
  * Represents the set of methods from the ConnectionFactoryDelegate that are handled on the server.
@@ -37,13 +37,10 @@ import org.jboss.jms.client.impl.CreateConnectionResult;
  */
 public interface ConnectionFactoryEndpoint
 {
-   /**
-    * @param failedNodeID - zero or positive values mean the connection creation attempt is result
-    *        of failover. Negative values are ignored (mean regular connection creation attempt).
-    */
-   CreateConnectionResult createConnectionDelegate(String username,
-                                                   String password, 
-                                                   int failedNodeID)
-      throws JMSException;
+   CreateConnectionResponse createConnectionDelegate(String username,
+         String password,                                                          
+         String remotingSessionID,
+         String clientVMID,
+         byte versionToUse) throws JMSException;
 }
 

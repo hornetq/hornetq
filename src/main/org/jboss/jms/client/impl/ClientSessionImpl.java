@@ -21,13 +21,10 @@
   */
 package org.jboss.jms.client.impl;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -35,7 +32,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import javax.jms.IllegalStateException;
 import javax.jms.JMSException;
-import javax.jms.MessageListener;
 import javax.jms.Session;
 import javax.jms.TransactionInProgressException;
 import javax.transaction.xa.XAResource;
@@ -47,6 +43,7 @@ import org.jboss.jms.client.api.ClientConnection;
 import org.jboss.jms.client.api.ClientConsumer;
 import org.jboss.jms.client.api.ClientProducer;
 import org.jboss.jms.client.api.ClientSession;
+import org.jboss.jms.client.remoting.MessagingRemotingConnection;
 import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.destination.JBossQueue;
 import org.jboss.jms.destination.JBossTopic;
@@ -60,8 +57,8 @@ import org.jboss.jms.tx.LocalTx;
 import org.jboss.jms.tx.MessagingXAResource;
 import org.jboss.jms.tx.ResourceManager;
 import org.jboss.messaging.core.Destination;
+import org.jboss.messaging.core.DestinationType;
 import org.jboss.messaging.core.Message;
-import org.jboss.messaging.core.remoting.Client;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.wireformat.AcknowledgeDeliveriesMessage;
 import org.jboss.messaging.core.remoting.wireformat.AcknowledgeDeliveryRequest;
@@ -83,13 +80,10 @@ import org.jboss.messaging.core.remoting.wireformat.SendMessage;
 import org.jboss.messaging.core.remoting.wireformat.UnsubscribeMessage;
 import org.jboss.messaging.util.ClearableQueuedExecutor;
 import org.jboss.messaging.util.Logger;
-import org.jboss.messaging.util.ProxyFactory;
 
 import EDU.oswego.cs.dl.util.concurrent.LinkedQueue;
 
 /**
- * The client-side Session delegate class.
- *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
@@ -99,7 +93,7 @@ import EDU.oswego.cs.dl.util.concurrent.LinkedQueue;
  *
  * $Id: ClientSessionImpl.java 3603 2008-01-21 18:49:20Z timfox $
  */
-public class ClientSessionImpl extends CommunicationSupport implements ClientSession
+public class ClientSessionImpl implements ClientSession
 {
    // Constants ------------------------------------------------------------------------------------
 
@@ -107,17 +101,17 @@ public class ClientSessionImpl extends CommunicationSupport implements ClientSes
 
    private boolean trace = log.isTraceEnabled();
 
-   private static final long serialVersionUID = -8096852898620279131L;
-
    // Attributes -----------------------------------------------------------------------------------
 
+   private String id;
+   
    private int dupsOKBatchSize;
    
    private boolean strictTck;
    
    private ClientConnection connection;
    
-   protected Map<String, Closeable> children = new ConcurrentHashMap<String, Closeable>();
+   private Map<String, Closeable> children = new ConcurrentHashMap<String, Closeable>();
    
    private int acknowledgeMode;
    
@@ -126,6 +120,7 @@ public class ClientSessionImpl extends CommunicationSupport implements ClientSes
    private boolean xa;
 
    private MessagingXAResource xaResource;
+   
    private Object currentTxId;
 
    // Executor used for executing onMessage methods
@@ -133,17 +128,10 @@ public class ClientSessionImpl extends CommunicationSupport implements ClientSes
 
    private boolean recoverCalled;
    
-   // List<DeliveryInfo>
-   private List<Ack> clientAckList;
+   private List<Ack> clientAckList = new ArrayList<Ack>();
 
    private DeliveryInfo autoAckInfo;
-   //private Map callbackHandlers = new ConcurrentHashMap();
-   
-   private LinkedList asfMessages = new LinkedList();
-   
-   //The distinguished message listener - for ASF
-   private MessageListener sessionListener;
-   
+
    //This is somewhat strange - but some of the MQ and TCK tests expect an XA session to behavior as AUTO_ACKNOWLEDGE when not enlisted in
    //a transaction
    //This is the opposite behavior as what is required when the XA session handles MDB delivery or when using the message bridge.
@@ -153,26 +141,24 @@ public class ClientSessionImpl extends CommunicationSupport implements ClientSes
    
    private long npSendSequence;
    
+   private MessagingRemotingConnection remotingConnection;
+   
+   private volatile boolean closed;
+   
    // Constructors ---------------------------------------------------------------------------------
    
-   public ClientSessionImpl(ClientConnection connection, String objectID, int dupsOKBatchSize)
-   {
-      super(objectID);
-      this.connection = connection;
-      this.dupsOKBatchSize = dupsOKBatchSize;
-   }
-   
-   public ClientSessionImpl(ClientConnectionImpl connection, String objectID, int dupsOKBatchSize, boolean strictTCK,
+   public ClientSessionImpl(ClientConnection connection, String id, int dupsOKBatchSize, boolean strictTCK,
          boolean transacted, int acknowledgmentMode, boolean xa)
    {
-      super(objectID);
-
+      this.id = id;
       this.connection = connection;
+      this.remotingConnection = connection.getRemotingConnection();
       this.dupsOKBatchSize = dupsOKBatchSize;
       this.strictTck = strictTCK;
       this.transacted = transacted;
       this.xa = xa;
       this.acknowledgeMode = acknowledgmentMode;
+      
       executor = new ClearableQueuedExecutor(new LinkedQueue());
       
       if (xa)
@@ -180,26 +166,31 @@ public class ClientSessionImpl extends CommunicationSupport implements ClientSes
          // Create an XA resource
          xaResource = new MessagingXAResource(connection.getResourceManager(), this);
       }
-
       
       if (transacted)
       {
          // Create a local tx
          currentTxId = connection.getResourceManager().createLocalTx();
       }
-      
-      clientAckList = new ArrayList();
+   }
+   
+   // ClientSession implementation ----------------------------------------------------
+   
+   public String getID()
+   {
+      return id;
    }
 
-   public ClientSessionImpl()
+   public synchronized void close() throws JMSException
    {
-   }
+      if (closed)
+      {
+         return;
+      }
 
-   public void close() throws JMSException
-   {
       try
       {
-         sendBlocking(new CloseMessage());
+         remotingConnection.sendBlocking(id, new CloseMessage());
    
          Object xid = getCurrentTxId();
    
@@ -211,34 +202,23 @@ public class ClientSessionImpl extends CommunicationSupport implements ClientSes
    
          // We must explicitly shutdown the executor
    
-         getExecutor().shutdownNow();
+         executor.shutdownNow();
       }
       finally
       {
-         connection.removeChild(this.getID());
+         connection.removeChild(id);
+         
+         closed = true;
       }
    }
-
-   private long invokeClosing(long sequence) throws JMSException
-   {   	   
-      long seq = getNPSendSequence();
-      ClosingRequest request = new ClosingRequest(seq);
-      ClosingResponse response = (ClosingResponse) sendBlocking(request);
-      return response.getID();
-   }
-   
-   private void closeChildren() throws JMSException
-   {
-      Set<Closeable> chilrenValues = new HashSet<Closeable>(children.values());
-      for (Closeable child: chilrenValues)
-      {
-         child.closing(-1);
-         child.close();
-      }
-   }
-
+  
    public long closing(long sequence) throws JMSException
    {
+      if (closed)
+      {
+         return -1;
+      }
+      
       if (trace) { log.trace("handleClosing()"); }
       
       closeChildren();
@@ -276,21 +256,19 @@ public class ClientSessionImpl extends CommunicationSupport implements ClientSes
       {
          //Acknowledge or cancel any outstanding auto ack
 
-         DeliveryInfo remainingAutoAck = getAutoAckInfo();
-
-         if (remainingAutoAck != null)
+         if (autoAckInfo != null)
          {
-            if (trace) { log.trace(this + " handleClosing(). Found remaining auto ack. Will ack " + remainingAutoAck); }
+            if (trace) { log.trace(this + " handleClosing(). Found remaining auto ack. Will ack " + autoAckInfo); }
 
             try
             {
-               ackDelivery(remainingAutoAck);
+               ackDelivery(autoAckInfo);
 
                if (trace) { log.trace(this + " acked it"); }
             }
             finally
             {
-               setAutoAckInfo(null);
+               autoAckInfo = null;
             }
          }
       }
@@ -298,17 +276,17 @@ public class ClientSessionImpl extends CommunicationSupport implements ClientSes
       {
          //Ack any remaining deliveries
 
-         if (!getClientAckList().isEmpty())
+         if (!clientAckList.isEmpty())
          {
             try
             {
-               acknowledgeDeliveries(getClientAckList());
+               acknowledgeDeliveries(clientAckList);
             }
             finally
             {
-               getClientAckList().clear();
+               clientAckList.clear();
 
-               setAutoAckInfo(null);
+               autoAckInfo = null;
             }
          }
       }
@@ -322,9 +300,9 @@ public class ClientSessionImpl extends CommunicationSupport implements ClientSes
          // CLIENT_ACKNOWLEDGE cannot be used with MDBs (i.e. no connection consumer)
          // so is always safe to cancel on this session
 
-         internalCancelDeliveries(getClientAckList());
+         internalCancelDeliveries(clientAckList);
 
-         getClientAckList().clear();
+         clientAckList.clear();
       }
       else if (isTransacted() && !isXA())
       {
@@ -336,59 +314,62 @@ public class ClientSessionImpl extends CommunicationSupport implements ClientSes
          internalCancelDeliveries(dels);
       }
 
-      return invokeClosing(sequence);
-
+      ClosingRequest request = new ClosingRequest(npSendSequence);
+      
+      ClosingResponse response = (ClosingResponse)remotingConnection.sendBlocking(id, request);
+      
+      return response.getID();
    }
-
-   // SessionDelegate implementation ---------------------------------------------------------------
 
    public ClientConnection getConnection()
    {
       return connection;
    }
 
-   public void setConnection(ClientConnection connection)
-   {
-      this.connection = connection;
-   }
-
-   
    public boolean acknowledgeDelivery(Ack ack) throws JMSException
    {
+      checkClosed();
+      
       AcknowledgeDeliveryRequest request = new AcknowledgeDeliveryRequest(ack.getDeliveryID());
-         AcknowledgeDeliveryResponse  response = (AcknowledgeDeliveryResponse) sendBlocking(request);
+      
+      AcknowledgeDeliveryResponse  response =
+            (AcknowledgeDeliveryResponse)remotingConnection.sendBlocking(id, request);
          
       return response.isAcknowledged();
    }
 
    public void acknowledgeDeliveries(List<Ack> acks) throws JMSException
    {
-      sendBlocking(new AcknowledgeDeliveriesMessage(acks));
+      checkClosed();
+      
+      remotingConnection.sendBlocking(id, new AcknowledgeDeliveriesMessage(acks));
    }
 
-   /**
-    * This invocation should either be handled by the client-side interceptor chain or by the
-    * server-side endpoint.
-    */
    public void acknowledgeAll() throws JMSException
    {
-      if (!getClientAckList().isEmpty())
+      checkClosed();
+      
+      if (!clientAckList.isEmpty())
       {
          //CLIENT_ACKNOWLEDGE can't be used with a MDB so it is safe to always acknowledge all
          //on this session (rather than the connection consumer session)
-         acknowledgeDeliveries(getClientAckList());
+         acknowledgeDeliveries(clientAckList);
 
-         getClientAckList().clear();
+         clientAckList.clear();
       }
    }
 
    public void addTemporaryDestination(Destination destination) throws JMSException
    {
-      sendBlocking(new AddTemporaryDestinationMessage(destination));
+      checkClosed();
+      
+      remotingConnection.sendBlocking(id, new AddTemporaryDestinationMessage(destination));
    }
 
    public void commit() throws JMSException
    {
+      checkClosed();
+      
       if (!isTransacted())
       {
          throw new IllegalStateException("Cannot commit a non-transacted session");
@@ -411,160 +392,177 @@ public class ClientSessionImpl extends CommunicationSupport implements ClientSes
 
    }
 
-
-   public ClientBrowser createBrowserDelegate(Destination queue, String messageSelector)
+   public ClientBrowser createClientBrowser(Destination queue, String messageSelector)
       throws JMSException
    {
+      checkClosed();
+      
       String coreSelector = SelectorTranslator.convertToJBMFilterString(messageSelector);
+      
       CreateBrowserRequest request = new CreateBrowserRequest(queue, coreSelector);
-      CreateBrowserResponse response = (CreateBrowserResponse) sendBlocking(request);
-      ClientBrowserImpl delegate = new ClientBrowserImpl(this, response.getBrowserID(), queue, messageSelector);
-      ClientBrowser proxy = (ClientBrowser)ProxyFactory.proxy(delegate, ClientBrowser.class);
-      children.put(delegate.getID(), proxy);
-      return proxy;
+      
+      CreateBrowserResponse response = (CreateBrowserResponse)remotingConnection.sendBlocking(id, request);
+      
+      ClientBrowser browser = new ClientBrowserImpl(remotingConnection, this, response.getBrowserID());  
+      
+      children.put(response.getBrowserID(), browser);
+      
+      return browser;
    }
-
-   /**
-    * This invocation should either be handled by the client-side interceptor chain or by the
-    * server-side endpoint.
-    */
-   public JBossBytesMessage createBytesMessage() throws JMSException
-   {
-      JBossBytesMessage jbm = new JBossBytesMessage();
-      return jbm;
-   }
-
-
-   public ClientConsumer createConsumerDelegate(Destination destination, String selector,
+   
+   public ClientConsumer createClientConsumer(Destination destination, String selector,
                                                   boolean noLocal, String subscriptionName,
                                                   boolean isCC) throws JMSException
    {
+      checkClosed();
+      
       String coreSelector = SelectorTranslator.convertToJBMFilterString(selector);
+      
       CreateConsumerRequest request =
          new CreateConsumerRequest(destination, coreSelector, noLocal, subscriptionName, isCC);
       
-      CreateConsumerResponse response = (CreateConsumerResponse) sendBlocking(request);
+      CreateConsumerResponse response = (CreateConsumerResponse)remotingConnection.sendBlocking(id, request);
+      
+      boolean shouldAck = !(destination.getType() == DestinationType.TOPIC && subscriptionName == null);
 
-      ClientConsumerImpl consumerDelegate =
+      ClientConsumer consumer =
          new ClientConsumerImpl(this, response.getConsumerID(), response.getBufferSize(),
                response.getMaxDeliveries(), response.getRedeliveryDelay(),
             destination,
-            selector, noLocal, subscriptionName,
-            isCC, this.getExecutor());
+            selector, noLocal,
+            isCC, executor, remotingConnection, shouldAck);
 
-      ClientConsumer proxy = (ClientConsumer)ProxyFactory.proxy(consumerDelegate, ClientConsumer.class);
-      
-      children.put(consumerDelegate.getID(), proxy);
+      children.put(response.getConsumerID(), consumer);
 
-      PacketDispatcher.client.register(new ClientConsumerPacketHandler(consumerDelegate, consumerDelegate.getID()));
+      PacketDispatcher.client.register(new ClientConsumerPacketHandler(consumer, response.getConsumerID()));
 
       //Now we have finished creating the client consumer, we can tell the SCD
       //we are ready
-      consumerDelegate.changeRate(1);
+      consumer.changeRate(1);
       
-      return proxy;
+      return consumer;
+   }
+   
+   public JBossBytesMessage createBytesMessage() throws JMSException
+   {
+      checkClosed();
+      
+      JBossBytesMessage jbm = new JBossBytesMessage();
+      
+      return jbm;
    }
 
-   /**
-    * This invocation should either be handled by the client-side interceptor chain or by the
-    * server-side endpoint.
-    */
    public JBossMapMessage createMapMessage() throws JMSException
    {
+      checkClosed();
+      
       JBossMapMessage jbm = new JBossMapMessage();
+      
       return jbm;
    }
 
-   /**
-    * This invocation should either be handled by the client-side interceptor chain or by the
-    * server-side endpoint.
-    */
    public JBossMessage createMessage() throws JMSException
    {
+      checkClosed();
+      
       JBossMessage jbm = new JBossMessage();
+      
       return jbm;
    }
 
-   /**
-    * This invocation should either be handled by the client-side interceptor chain or by the
-    * server-side endpoint.
-    */
    public JBossObjectMessage createObjectMessage() throws JMSException
    {
+      checkClosed();
+   
       JBossObjectMessage jbm = new JBossObjectMessage();
+      
       return jbm;
    }
 
-   /**
-    * This invocation should either be handled by the client-side interceptor chain or by the
-    * server-side endpoint.
-    */
    public JBossObjectMessage createObjectMessage(Serializable object) throws JMSException
    {
+      checkClosed();
+      
       JBossObjectMessage jbm = new JBossObjectMessage();
+      
       jbm.setObject(object);
+      
       return jbm;
    }
 
-
-   /**
-    * This invocation should either be handled by the client-side interceptor chain or by the
-    * server-side endpoint.
-    */
-   public ClientProducer createProducerDelegate(JBossDestination destination) throws JMSException
+   public ClientProducer createClientProducer(JBossDestination destination) throws JMSException
    {
-      // ProducerDelegates are not created on the server
-
-      ClientProducerImpl producerDelegate = new ClientProducerImpl(connection, this, destination );
-      ClientProducer proxy = (ClientProducer) ProxyFactory.proxy(producerDelegate, ClientProducer.class);
-      children.put(producerDelegate.getID(), proxy);
-      return proxy;
+      checkClosed();
+      
+      ClientProducer producer = new ClientProducerImpl(this, destination);
+  
+      children.put(producer.getID(), producer);
+      
+      return producer;
    }
 
    public JBossQueue createQueue(String queueName) throws JMSException
    {
-      CreateDestinationRequest request = new CreateDestinationRequest(queueName, true);      
-      CreateDestinationResponse response = (CreateDestinationResponse) sendBlocking(request);
+      checkClosed();
+      
+      CreateDestinationRequest request = new CreateDestinationRequest(queueName, true);  
+      
+      CreateDestinationResponse response = (CreateDestinationResponse)remotingConnection.sendBlocking(id, request);
+      
       return (JBossQueue) response.getDestination();
    }
    
    public JBossStreamMessage createStreamMessage() throws JMSException
    {
+      checkClosed();
+      
       JBossStreamMessage jbm = new JBossStreamMessage();
+      
       return jbm;
    }
 
    public JBossTextMessage createTextMessage() throws JMSException
    {
+      checkClosed();
+      
       JBossTextMessage jbm = new JBossTextMessage();
+      
       return jbm;
    }
 
    public JBossTextMessage createTextMessage(String text) throws JMSException
    {
+      checkClosed();
+      
       JBossTextMessage jbm = new JBossTextMessage();
+      
       jbm.setText(text);
+      
       return jbm;
    }
 
    public JBossTopic createTopic(String topicName) throws JMSException
    {
-      CreateDestinationRequest request = new CreateDestinationRequest(topicName, false);      
-      CreateDestinationResponse response = (CreateDestinationResponse) sendBlocking(request);
+      checkClosed();
+      
+      CreateDestinationRequest request = new CreateDestinationRequest(topicName, false); 
+      
+      CreateDestinationResponse response = (CreateDestinationResponse)remotingConnection.sendBlocking(id, request);
+      
       return (JBossTopic) response.getDestination();
    }
 
    public void deleteTemporaryDestination(Destination destination) throws JMSException
    {
-      sendBlocking(new DeleteTemporaryDestinationMessage(destination));
+      checkClosed();
+      
+      remotingConnection.sendBlocking(id, new DeleteTemporaryDestinationMessage(destination));
    }
 
-   /**
-    * This invocation should either be handled by the client-side interceptor chain or by the
-    * server-side endpoint.
-    */
    public boolean postDeliver() throws JMSException
    {
+      checkClosed();
+      
       int ackMode = getAcknowledgeMode();
 
       boolean res = true;
@@ -576,16 +574,14 @@ public class ClientSessionImpl extends CommunicationSupport implements ClientSes
          // It is possible that session.recover() is called inside a message listener onMessage
          // method - i.e. between the invocations of preDeliver and postDeliver. In this case we
          // don't want to acknowledge the last delivered messages - since it will be redelivered.
-         if (!isRecoverCalled())
+         if (!recoverCalled)
          {
-            DeliveryInfo delivery = getAutoAckInfo();
-
-            if (delivery == null)
+            if (autoAckInfo == null)
             {
                throw new IllegalStateException("Cannot find delivery to AUTO_ACKNOWLEDGE");
             }
 
-            if (trace) { log.trace(this + " auto acknowledging delivery " + delivery); }
+            if (trace) { log.trace(this + " auto acknowledging delivery " + autoAckInfo); }
 
             // We clear the state in a finally so then we don't get a knock on
             // exception on the next ack since we haven't cleared the state. See
@@ -596,39 +592,38 @@ public class ClientSessionImpl extends CommunicationSupport implements ClientSes
 
             try
             {
-               res = ackDelivery(delivery);
+               res = ackDelivery(autoAckInfo);
             }
             finally
             {
-               setAutoAckInfo(null);
+               autoAckInfo = null;
             }
          }
          else
          {
             if (trace) { log.trace(this + " recover called, so NOT acknowledging"); }
 
-            setRecoverCalled(false);
+            recoverCalled = false;
          }
       }
       else if (ackMode == Session.DUPS_OK_ACKNOWLEDGE)
       {
-         List acks = getClientAckList();
-
-         if (!isRecoverCalled())
+         if (!recoverCalled)
          {
-            if (acks.size() >= getDupsOKBatchSize())
+            if (clientAckList.size() >= getDupsOKBatchSize())
             {
                // We clear the state in a finally
                // http://jira.jboss.org/jira/browse/JBMESSAGING-852
 
                try
                {
-                  acknowledgeDeliveries(acks);
+                  acknowledgeDeliveries(clientAckList);
                }
                finally
                {
-                  acks.clear();
-                  setAutoAckInfo(null);
+                  clientAckList.clear();
+                  
+                  autoAckInfo = null;
                }
             }
          }
@@ -636,20 +631,19 @@ public class ClientSessionImpl extends CommunicationSupport implements ClientSes
          {
             if (trace) { log.trace(this + " recover called, so NOT acknowledging"); }
 
-            setRecoverCalled(false);
+            recoverCalled = false;
          }
-         setAutoAckInfo(null);
+         
+         autoAckInfo = null;
       }
 
       return Boolean.valueOf(res);
    }
 
-   /**
-    * This invocation should either be handled by the client-side interceptor chain or by the
-    * server-side endpoint.
-    */
    public void preDeliver(DeliveryInfo info) throws JMSException
    {
+      checkClosed();
+      
       int ackMode = getAcknowledgeMode();
 
       if (ackMode == Session.CLIENT_ACKNOWLEDGE)
@@ -665,7 +659,7 @@ public class ClientSessionImpl extends CommunicationSupport implements ClientSes
                "CLIENT_ACKNOWLEDGE cannot be used with a connection consumer");
          }
 
-         getClientAckList().add(info);
+         clientAckList.add(info);
       }
       // if XA and there is no transaction enlisted on XA we will act as AutoAcknowledge
       // However if it's a MDB (if there is a DistinguishedListener) we should behaved as transacted
@@ -675,16 +669,16 @@ public class ClientSessionImpl extends CommunicationSupport implements ClientSes
 
          if (trace) { log.trace(this + " added " + info + " to session state"); }
 
-         setAutoAckInfo(info);
+         autoAckInfo = info;
       }
       else if (ackMode == Session.DUPS_OK_ACKNOWLEDGE)
       {
          if (trace) { log.trace(this + " added to DUPS_OK_ACKNOWLEDGE list delivery " + info); }
 
-         getClientAckList().add(info);
+         clientAckList.add(info);
 
          //Also set here - this would be used for recovery in a message listener
-         setAutoAckInfo(info);
+         autoAckInfo = info;
       }
       else
       {
@@ -703,25 +697,21 @@ public class ClientSessionImpl extends CommunicationSupport implements ClientSes
             // session ID
 
 
-            ClientSession connectionConsumerDelegate =
+            ClientSession connectionConsumerSession =
                info.getConnectionConsumerSession();
 
-            String sessionId = connectionConsumerDelegate != null ?
-               connectionConsumerDelegate.getID() : this.getID();
+            String sessionId = connectionConsumerSession != null ?
+               connectionConsumerSession.getID() : this.getID();
 
             connection.getResourceManager().addAck(txID, sessionId, info);
          }
       }
    }
 
-   /**
-    * This invocation should either be handled by the client-side interceptor chain or by the
-    * server-side endpoint.
-    */
    public void recover() throws JMSException
    {
-      if (trace) { log.trace("recover called"); }
-
+      checkClosed();
+      
       if (isTransacted() && !isXAAndConsideredNonTransacted())
       {
          throw new IllegalStateException("Cannot recover a transacted session");
@@ -733,67 +723,37 @@ public class ClientSessionImpl extends CommunicationSupport implements ClientSes
 
       if (ackMode == Session.CLIENT_ACKNOWLEDGE)
       {
-         List dels = getClientAckList();
+         List<Ack> dels = clientAckList;
 
-         setClientAckList(new ArrayList());
+         clientAckList = new ArrayList<Ack>();
 
          redeliver(dels);
 
-         setRecoverCalled(true);
+         recoverCalled = true;
       }
       else if (ackMode == Session.AUTO_ACKNOWLEDGE || ackMode == Session.DUPS_OK_ACKNOWLEDGE || isXAAndConsideredNonTransacted())
-      {
-         DeliveryInfo info = getAutoAckInfo();
-
+      { 
          //Don't recover if it's already to cancel
 
-         if (info != null)
+         if (autoAckInfo != null)
          {
-            List redels = new ArrayList();
+            List<Ack> redels = new ArrayList<Ack>();
 
-            redels.add(info);
+            redels.add(autoAckInfo);
 
             redeliver(redels);
 
-            setAutoAckInfo(null);
+            autoAckInfo = null;
 
-            setRecoverCalled(true);
+            recoverCalled = true;
          }
       }
    }
 
-   /**
-    * Redelivery occurs in two situations:
-    *
-    * 1) When session.recover() is called (JMS1.1 4.4.11)
-    *
-    * "A session's recover method is used to stop a session and restart it with its first
-    * unacknowledged message. In effect, the session's series of delivered messages is reset to the
-    * point after its last acknowledged message."
-    *
-    * An important note here is that session recovery is LOCAL to the session. Session recovery DOES
-    * NOT result in delivered messages being cancelled back to the channel where they can be
-    * redelivered - since that may result in them being picked up by another session, which would
-    * break the semantics of recovery as described in the spec.
-    *
-    * 2) When session rollback occurs (JMS1.1 4.4.7). On rollback of a session the spec is clear
-    * that session recovery occurs:
-    *
-    * "If a transaction rollback is done, its produced messages are destroyed and its consumed
-    * messages are automatically recovered. For more information on session recovery, see Section
-    * 4.4.11 'Message Acknowledgment.'"
-    *
-    * So on rollback we do session recovery (local redelivery) in the same as if session.recover()
-    * was called.
-    *
-    * All cancellation at rollback is driven from the client side - we always attempt to redeliver
-    * messages to their original consumers if they are still open, or then cancel them to the server
-    * if they are not. Cancelling them to the server explicitly allows the delivery count to be updated.
-    *
-    *
-    */
    public void redeliver(List toRedeliver) throws JMSException
    {
+      checkClosed();
+      
       // We put the messages back in the front of their appropriate consumer buffers
 
       if (trace) { log.trace(this + " handleRedeliver() called: " + toRedeliver); }
@@ -828,12 +788,10 @@ public class ClientSessionImpl extends CommunicationSupport implements ClientSes
 
    }
    
-   /**
-    * This invocation should either be handled by the client-side interceptor chain or by the
-    * server-side endpoint.
-    */
    public void rollback() throws JMSException
    {
+      checkClosed();
+      
       if (!isTransacted())
       {
          throw new IllegalStateException("Cannot rollback a non-transacted session");
@@ -857,110 +815,29 @@ public class ClientSessionImpl extends CommunicationSupport implements ClientSes
       }
    }
 
-   /**
-    * This invocation should either be handled by the client-side interceptor chain or by the
-    * server-side endpoint.
-    */
-   public void run() throws JMSException
-   {
-      if (trace) { log.trace("run()"); }
-
-      int ackMode = getAcknowledgeMode();
-
-      LinkedList msgs = getAsfMessages();
-
-      while (msgs.size() > 0)
-      {
-         AsfMessageHolder holder = (AsfMessageHolder)msgs.removeFirst();
-
-         if (trace) { log.trace("sending " + holder.msg + " to the message listener" ); }
-
-         ClientConsumerImpl.callOnMessage(this, getDistinguishedListener(), holder.consumerID,
-                                      false,
-                                      holder.msg, ackMode, holder.maxDeliveries,
-                                      holder.connectionConsumerDelegate, holder.shouldAck);
-      }
-   }
-
-   /**
-    * This invocation should either be handled by the client-side interceptor chain or by the
-    * server-side endpoint.
-    */
-   public void setMessageListener(MessageListener listener) throws JMSException
-   {
-      if (trace) { log.trace("setMessageListener()"); }
-
-      if (listener == null)
-      {
-         throw new IllegalStateException("Cannot set a null MessageListener on the session");
-      }
-
-      setDistinguishedListener(listener);
-   }
-
-   /**
-    * This invocation should either be handled by the client-side interceptor chain or by the
-    * server-side endpoint.
-    */
-   public MessageListener getMessageListener() throws JMSException
-   {
-      if (trace) { log.trace("getMessageListener()"); }
-
-      return getDistinguishedListener();
-   }
-
-   
-
    public void unsubscribe(String subscriptionName) throws JMSException
    {
-      sendBlocking(new UnsubscribeMessage(subscriptionName));
+      checkClosed();
+      
+      remotingConnection.sendBlocking(id, new UnsubscribeMessage(subscriptionName));
    }
 
-   /**
-    * This invocation should either be handled by the client-side interceptor chain or by the
-    * server-side endpoint.
-    */
    public XAResource getXAResource()
    {
       return xaResource;
    }
 
-   /**
-    * This invocation should either be handled by the client-side interceptor chain or by the
-    * server-side endpoint.
-    */
-   public int getAcknowledgeMode()
+   public int getAcknowledgeMode() throws JMSException
    {
+      checkClosed();
+      
       return acknowledgeMode;
-   }
-
-   /**
-    * This invocation should either be handled by the client-side interceptor chain or by the
-    * server-side endpoint.
-    */
-   public void addAsfMessage(JBossMessage m, String theConsumerID, String queueName, int maxDeliveries,
-                             ClientSession connectionConsumerDelegate, boolean shouldAck) throws JMSException
-   {
-      // Load the session with a message to be processed during a subsequent call to run()
-
-      if (m == null)
-      {
-         throw new IllegalStateException("Cannot add a null message to the session");
-      }
-
-      AsfMessageHolder holder = new AsfMessageHolder();
-      holder.msg = m;
-      holder.consumerID = theConsumerID;
-      holder.queueName = queueName;
-      holder.maxDeliveries = maxDeliveries;
-      holder.connectionConsumerDelegate = connectionConsumerDelegate;
-      holder.shouldAck = shouldAck;
-
-      getAsfMessages().add(holder);
    }
 
    public void send(Message m) throws JMSException
    {
+      checkClosed();
+      
       Object txID = getCurrentTxId();
 
       // If there is no GlobalTransaction we run it as local transacted
@@ -985,105 +862,131 @@ public class ClientSessionImpl extends CommunicationSupport implements ClientSes
       if (trace) { log.trace("sending message NON-transactionally"); }
 
       invokeSend(m);
-
    }
    
-   public void removeChild(String key)
+   public void removeChild(String key) throws JMSException
    {
+      checkClosed();
+      
       children.remove(key);
    }
-   
-   private void invokeSend(Message m) throws JMSException
-   {   	
-   	long seq;
-   	
-   	if (m.isDurable() || strictTck)
-   	{
-   		seq = -1;
-   	}
-   	else
-   	{
-   		seq = this.getNPSendSequence();
-   		
-   		this.incNpSendSequence();
-   	}
-   	
-   	SendMessage message = new SendMessage(m, seq);
-   	
-   	if (seq == -1)
-   	{
-   	   sendBlocking(message);
-   	}
-   	else
-   	{
-   	   sendOneWay(message);
-   	}
-   }
-
+     
    public void cancelDeliveries(List<Cancel> cancels) throws JMSException
    {
-      sendBlocking(new CancelDeliveriesMessage(cancels));
+      checkClosed();
+      
+      remotingConnection.sendBlocking(id, new CancelDeliveriesMessage(cancels));
    }
 
    public void cancelDelivery(Cancel cancel) throws JMSException
    {
-      sendBlocking(new CancelDeliveryMessage(cancel));
+      checkClosed();
+      
+      remotingConnection.sendBlocking(id, new CancelDeliveryMessage(cancel));
    }
-
-   // Streamable overrides -------------------------------------------------------------------------
-
-   public void read(DataInputStream in) throws Exception
+   
+   public int getDupsOKBatchSize() throws JMSException
    {
-      super.read(in);
-
-      dupsOKBatchSize = in.readInt();
-   }
-
-   public void write(DataOutputStream out) throws Exception
-   {
-      super.write(out);
-
-      out.writeInt(dupsOKBatchSize);
-   }
-
-   // Public ---------------------------------------------------------------------------------------
-
-   public int getDupsOKBatchSize()
-   {
+      checkClosed();
+      
       return dupsOKBatchSize;
    }
 
-   public boolean isStrictTck()
+   public boolean isStrictTck() throws JMSException
    {
+      checkClosed();
+      
       return strictTck;
    }
-
-   public String toString()
+   
+   public boolean isXA() throws JMSException
    {
-      return "SessionDelegate[" + System.identityHashCode(this) + ", ID=" + id + "]";
+      checkClosed();
+      
+      return xa;
+   }
+   
+   public Object getCurrentTxId()
+   {
+      return currentTxId;
+   }
+   
+   public void setCurrentTxId(Object currentTxId)
+   {
+      this.currentTxId = currentTxId;
    }
 
+   public void setTreatAsNonTransactedWhenNotEnlisted(
+         boolean treatAsNonTransactedWhenNotEnlisted)
+   {
+      this.treatAsNonTransactedWhenNotEnlisted = treatAsNonTransactedWhenNotEnlisted;
+   }
+   
+   public boolean isTransacted() throws JMSException
+   {
+      checkClosed();
+      
+      return transacted;
+   }
+   
+   public boolean isClosed()
+   {
+      return closed;
+   }
+
+   // Public ---------------------------------------------------------------------------------------
+  
    // Protected ------------------------------------------------------------------------------------
 
-   @Override
-   protected Client getClient()
-   {
-      return connection.getClient();
-   }
-   
-   @Override
-   protected byte getVersion()
-   {
-      return connection.getVersion();
-   }
-
-   
-   
    // Package Private ------------------------------------------------------------------------------
 
    // Private --------------------------------------------------------------------------------------
 
-   /** http://jira.jboss.org/jira/browse/JBMESSAGING-946 - To accomodate TCK and the MQ behavior
+   private void checkClosed() throws IllegalStateException
+   {
+      if (closed)
+      {
+         throw new IllegalStateException("Session is closed");
+      }
+   }
+   
+   private void invokeSend(Message m) throws JMSException
+   {     
+      long seq;
+      
+      if (m.isDurable() || strictTck)
+      {
+         seq = -1;
+      }
+      else
+      {
+         seq = npSendSequence++;
+      }
+      
+      SendMessage message = new SendMessage(m, seq);
+      
+      if (seq == -1)
+      {
+         remotingConnection.sendBlocking(id, message);
+      }
+      else
+      {
+         remotingConnection.sendOneWay(id, message);
+      }
+   }
+   
+   private void closeChildren() throws JMSException
+   {
+      Set<Closeable> chilrenValues = new HashSet<Closeable>(children.values());
+      for (Closeable child: chilrenValues)
+      {
+         child.closing(-1);
+         child.close();
+      }
+   }
+   
+   /** http://jira.jboss.org/jira/browse/JBMESSAGING-946 -
+    *    To accomodate TCK and the MQ behavior
     *    we should behave as non transacted, AUTO_ACK when there is no transaction enlisted
     *    However when the Session is being used by ASF we should consider the case where
     *    we will convert LocalTX to GlobalTransactions.
@@ -1098,10 +1001,10 @@ public class ClientSessionImpl extends CommunicationSupport implements ClientSes
     *    integration tests and TCK!!! Hence getTreatAsNonTransactedWhenNotEnlisted()
     *
     * */
-   private boolean isXAAndConsideredNonTransacted()
+   private boolean isXAAndConsideredNonTransacted() throws JMSException
    {
-      return isXA() && (getCurrentTxId() instanceof LocalTx) && getTreatAsNonTransactedWhenNotEnlisted()
-             && getDistinguishedListener() == null;
+      return isXA() && (getCurrentTxId() instanceof LocalTx)
+             && treatAsNonTransactedWhenNotEnlisted;          
    }
 
 
@@ -1185,179 +1088,5 @@ public class ClientSessionImpl extends CommunicationSupport implements ClientSes
    }
 
    // Inner Classes --------------------------------------------------------------------------------
-
-
-   private static class AsfMessageHolder
-   {
-      private JBossMessage msg;
-      private String consumerID;
-      private String queueName;
-      private int maxDeliveries;
-      private ClientSession connectionConsumerDelegate;
-      private boolean shouldAck;
-   }
-
-   
-   // TODO verify what should be exposed or not!
-   public boolean isXA()
-   {
-      return xa;
-   }
-
-   public void setXA(boolean xa)
-   {
-      this.xa = xa;
-   }
-
-   public Object getCurrentTxId()
-   {
-      return currentTxId;
-   }
-
-   public void setCurrentTxId(Object currentTxId)
-   {
-      this.currentTxId = currentTxId;
-   }
-
-   public boolean isRecoverCalled()
-   {
-      return recoverCalled;
-   }
-
-   public void setRecoverCalled(boolean recoverCalled)
-   {
-      this.recoverCalled = recoverCalled;
-   }
-
-   public List<Ack> getClientAckList()
-   {
-      return clientAckList;
-   }
-
-   public void setClientAckList(List<Ack> clientAckList)
-   {
-      this.clientAckList = clientAckList;
-   }
-
-   public DeliveryInfo getAutoAckInfo()
-   {
-      return autoAckInfo;
-   }
-
-   public void setAutoAckInfo(DeliveryInfo autoAckInfo)
-   {
-      this.autoAckInfo = autoAckInfo;
-   }
-
-//   public Map getCallbackHandlers()
-//   {
-//      return callbackHandlers;
-//   }
-//
-//   public void setCallbackHandlers(Map callbackHandlers)
-//   {
-//      this.callbackHandlers = callbackHandlers;
-//   }
-
-   public LinkedList getAsfMessages()
-   {
-      return asfMessages;
-   }
-
-   public void setAsfMessages(LinkedList asfMessages)
-   {
-      this.asfMessages = asfMessages;
-   }
-
-   public MessageListener getSessionListener()
-   {
-      return sessionListener;
-   }
-
-   public void setSessionListener(MessageListener sessionListener)
-   {
-      this.sessionListener = sessionListener;
-   }
-
-   public boolean isTreatAsNonTransactedWhenNotEnlisted()
-   {
-      return treatAsNonTransactedWhenNotEnlisted;
-   }
-
-   public void setTreatAsNonTransactedWhenNotEnlisted(
-         boolean treatAsNonTransactedWhenNotEnlisted)
-   {
-      this.treatAsNonTransactedWhenNotEnlisted = treatAsNonTransactedWhenNotEnlisted;
-   }
-
-   public long getNpSendSequence()
-   {
-      return npSendSequence;
-   }
-
-   public void setNpSendSequence(long npSendSequence)
-   {
-      this.npSendSequence = npSendSequence;
-   }
-
-   public ClearableQueuedExecutor getExecutor()
-   {
-      return executor;
-   }
-
-   public void setDupsOKBatchSize(int dupsOKBatchSize)
-   {
-      this.dupsOKBatchSize = dupsOKBatchSize;
-   }
-
-   public void setStrictTck(boolean strictTck)
-   {
-      this.strictTck = strictTck;
-   }
-
-   public void setAcknowledgeMode(int acknowledgeMode)
-   {
-      this.acknowledgeMode = acknowledgeMode;
-   }
-   
-   public boolean isTransacted()
-   {
-      return transacted;
-   }
-
-   
-
-   
-   public void setTransacted(boolean transacted)
-   {
-      this.transacted = transacted;
-   }
-
-   public long getNPSendSequence()
-   {
-      return npSendSequence;
-   }
-   
-   public void incNpSendSequence()
-   {
-      npSendSequence++;
-   }
-   
-   public boolean getTreatAsNonTransactedWhenNotEnlisted()
-   {
-      return treatAsNonTransactedWhenNotEnlisted;
-   }
-   
-
-   public MessageListener getDistinguishedListener()
-   {
-      return this.sessionListener;
-   }
-   
-   public void setDistinguishedListener(MessageListener listener)
-   {
-      this.sessionListener = listener;
-   }
-   
 
 }

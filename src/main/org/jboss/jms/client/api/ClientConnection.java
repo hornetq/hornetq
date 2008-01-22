@@ -15,10 +15,9 @@ import javax.jms.ServerSessionPool;
 
 import org.jboss.jms.client.Closeable;
 import org.jboss.jms.client.JBossConnectionConsumer;
-import org.jboss.jms.client.remoting.JMSRemotingConnection;
+import org.jboss.jms.client.remoting.MessagingRemotingConnection;
 import org.jboss.jms.tx.ResourceManager;
 import org.jboss.jms.tx.TransactionRequest;
-import org.jboss.messaging.core.remoting.Client;
 import org.jboss.messaging.core.tx.MessagingXid;
 
 /**
@@ -28,11 +27,12 @@ import org.jboss.messaging.core.tx.MessagingXid;
  */
 public interface ClientConnection extends Closeable
 {
-   ClientSession createSessionDelegate(boolean transacted,
-                                       int acknowledgmentMode, boolean isXA) throws JMSException;
+   ClientSession createClientSession(boolean transacted,
+                                     int acknowledgmentMode, boolean isXA) throws JMSException;
 
    String getClientID() throws JMSException;
 
+   //Only used for testing
    int getServerID();
    
    void setClientID(String id) throws JMSException;
@@ -58,22 +58,10 @@ public interface ClientConnection extends Closeable
                                                     ServerSessionPool sessionPool,
                                                     int maxMessages) throws JMSException;
 
-   void setRemotingConnection(JMSRemotingConnection conn);
-   
-   Client getClient();
-
-   JMSRemotingConnection getRemotingConnection();
+   MessagingRemotingConnection getRemotingConnection();
 
    ResourceManager getResourceManager();
 
-   void setResourceManager(ResourceManager resourceManager);
-   
-   String getID();
-   
-   byte getVersion();
-   
-   
    /** This is a method used by children Session during close operations */
-   void removeChild(String key);
-
+   void removeChild(String id) throws JMSException;
 }

@@ -23,7 +23,6 @@ package org.jboss.messaging.core.impl;
 
 import org.jboss.messaging.core.Binding;
 import org.jboss.messaging.core.Condition;
-import org.jboss.messaging.core.DestinationType;
 import org.jboss.messaging.core.Queue;
 
 /**

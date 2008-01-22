@@ -21,6 +21,14 @@
   */
 package org.jboss.messaging.core.impl.server;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
 import org.jboss.aop.microcontainer.aspects.jmx.JMX;
 import org.jboss.jms.server.ConnectionManager;
 import org.jboss.jms.server.MessagingTimeoutFactory;
@@ -32,7 +40,16 @@ import org.jboss.jms.server.plugin.contract.JMSUserManager;
 import org.jboss.jms.server.security.Role;
 import org.jboss.jms.server.security.SecurityMetadataStore;
 import org.jboss.logging.Logger;
-import org.jboss.messaging.core.*;
+import org.jboss.messaging.core.Binding;
+import org.jboss.messaging.core.Condition;
+import org.jboss.messaging.core.Configuration;
+import org.jboss.messaging.core.DestinationType;
+import org.jboss.messaging.core.MemoryManager;
+import org.jboss.messaging.core.MessagingServer;
+import org.jboss.messaging.core.PersistenceManager;
+import org.jboss.messaging.core.PostOffice;
+import org.jboss.messaging.core.Queue;
+import org.jboss.messaging.core.QueueSettings;
 import org.jboss.messaging.core.impl.ConditionImpl;
 import org.jboss.messaging.core.impl.QueueFactoryImpl;
 import org.jboss.messaging.core.impl.memory.SimpleMemoryManager;
@@ -45,14 +62,6 @@ import org.jboss.messaging.util.ExceptionUtil;
 import org.jboss.messaging.util.HierarchicalObjectRepository;
 import org.jboss.messaging.util.HierarchicalRepository;
 import org.jboss.messaging.util.Version;
-
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * A Messaging Server

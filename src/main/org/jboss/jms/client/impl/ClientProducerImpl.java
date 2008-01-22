@@ -25,6 +25,7 @@ import java.util.UUID;
 
 import javax.jms.BytesMessage;
 import javax.jms.DeliveryMode;
+import javax.jms.IllegalStateException;
 import javax.jms.JMSException;
 import javax.jms.MapMessage;
 import javax.jms.Message;
@@ -32,7 +33,7 @@ import javax.jms.MessageFormatException;
 import javax.jms.ObjectMessage;
 import javax.jms.StreamMessage;
 import javax.jms.TextMessage;
-import org.jboss.jms.client.api.ClientConnection;
+
 import org.jboss.jms.client.api.ClientProducer;
 import org.jboss.jms.client.api.ClientSession;
 import org.jboss.jms.destination.JBossDestination;
@@ -42,10 +43,9 @@ import org.jboss.jms.message.JBossMessage;
 import org.jboss.jms.message.JBossObjectMessage;
 import org.jboss.jms.message.JBossStreamMessage;
 import org.jboss.jms.message.JBossTextMessage;
-import org.jboss.messaging.core.remoting.Client;
-import org.jboss.messaging.util.Logger;
 import org.jboss.messaging.core.DestinationType;
 import org.jboss.messaging.core.impl.DestinationImpl;
+import org.jboss.messaging.util.Logger;
 
 /**
  * The client-side Producer delegate class.
@@ -58,91 +58,80 @@ import org.jboss.messaging.core.impl.DestinationImpl;
  *
  * $Id: ClientProducerImpl.java 3602 2008-01-21 17:48:32Z timfox $
  */
-public class ClientProducerImpl extends CommunicationSupport implements ClientProducer
+public class ClientProducerImpl implements ClientProducer
 {
    // Constants ------------------------------------------------------------------------------------
 
-   private static final long serialVersionUID = -6976930316308905681L;
    private static final Logger log = Logger.getLogger(ClientProducerImpl.class);
 
    // Attributes -----------------------------------------------------------------------------------
 
    private boolean trace = log.isTraceEnabled();
    
-   private ClientConnection connection;
    private ClientSession session;
+   
    private JBossDestination destination;
 
    private boolean disableMessageID = false;
-   private boolean disableMessageTimestamp = false;
-   private int priority = 4;
-   private long timeToLive = 0;
-   private int deliveryMode = DeliveryMode.PERSISTENT;
-
    
-
+   private boolean disableMessageTimestamp = false;
+   
+   private int priority = 4;
+   
+   private long timeToLive = 0;
+   
+   private int deliveryMode = DeliveryMode.PERSISTENT;
+   
+   private String id;
+   
+   private volatile boolean closed;
+   
    // Static ---------------------------------------------------------------------------------------
 
    // Constructors ---------------------------------------------------------------------------------
-   
-   
-
-   // DelegateSupport overrides --------------------------------------------------------------------
-
-   public ClientProducerImpl(ClientConnection connection,
-         ClientSession session, JBossDestination destination)
+      
+   public ClientProducerImpl(ClientSession session, JBossDestination destination)
    {
-      super(UUID.randomUUID().toString());
-      this.connection = connection;
       this.session = session;
+      
       this.destination = destination;
+      
+      this.id = UUID.randomUUID().toString();
    }
 
-   // ProducerDelegate implementation --------------------------------------------------------------
-
-   /**
-    * This invocation should either be handled by the client-side interceptor chain or by the
-    * server-side endpoint.
-    */
-   public void close() throws JMSException
+   public String getID()
    {
-      session.removeChild(this.getID());
-      return;
+      return id;
    }
 
-   /**
-    * This invocation should either be handled by the client-side interceptor chain or by the
-    * server-side endpoint.
-    */
-   public long closing(long sequence) throws JMSException
+   public synchronized void close() throws JMSException
+   {
+      if (closed)
+      {
+         return;         
+      }
+      session.removeChild(id);
+      
+      closed = true;
+   }
+
+   public synchronized long closing(long sequence) throws JMSException
    {
       return -1;
    }
 
-   public void setDestination(JBossDestination dest)
-   {
-      this.destination = dest;
-   }
-
    public JBossDestination getDestination() throws JMSException
    {
+      checkClosed();
+      
       return this.destination;
    }
 
-   /**
-    * This invocation should either be handled by the client-side interceptor chain or by the
-    * server-side endpoint.
-    */
-   public void send(JBossDestination destination, Message m, int deliveryMode,
-                    int priority, long timeToLive) throws JMSException
+   public void send(JBossDestination destination, Message m, int deliveryMode, int priority,
+                    long timeToLive) throws JMSException
    {
-      send(destination, m, deliveryMode, priority, timeToLive, false);
-   }
-
-
-   public void send(JBossDestination destination, Message m, int deliveryMode, int priority, long timeToLive, boolean keepID) throws JMSException
-   {
-
+      checkClosed();
+      
       // configure the message for sending, using attributes stored as metadata
 
       if (deliveryMode == -1)
@@ -267,6 +256,8 @@ public class ClientProducerImpl extends CommunicationSupport implements ClientPr
          jbm = (JBossMessage)m;
       }
 
+      final boolean keepID = false;
+      
       if (!keepID)
       {
          //Generate an id
@@ -315,82 +306,90 @@ public class ClientProducerImpl extends CommunicationSupport implements ClientPr
 
    public void setDeliveryMode(int deliveryMode) throws JMSException
    {
+      checkClosed();
+      
       this.deliveryMode = deliveryMode;
    }
 
    public int getDeliveryMode() throws JMSException
    {
+      checkClosed();
+      
       return this.deliveryMode;
    }
-
-   
-
+  
    public boolean isDisableMessageID() throws JMSException
    {
+      checkClosed();
+      
       return this.disableMessageID;
    }
 
    public void setDisableMessageID(boolean value) throws JMSException
    {
+      checkClosed();
+      
       this.disableMessageID = value;   
    }
 
    public boolean isDisableMessageTimestamp() throws JMSException
-   {
+   {      
+      checkClosed();
+      
       return this.disableMessageTimestamp;
    }
 
    public void setDisableMessageTimestamp(boolean value) throws JMSException
    {
+      checkClosed();
+      
       this.disableMessageTimestamp = value;
    }
 
    public void setPriority(int priority) throws JMSException
    {
+      checkClosed();
+      
       this.priority = priority;
    }
 
    public int getPriority() throws JMSException
    {
+      checkClosed();
+      
       return this.priority;
    }
 
    public long getTimeToLive() throws JMSException
    {
-        return this.timeToLive;
+      checkClosed();
+      
+      return this.timeToLive;
    }
-
 
    public void setTimeToLive(long timeToLive) throws JMSException
    {
+      checkClosed();
+      
       this.timeToLive = timeToLive;
    }
 
    // Public ---------------------------------------------------------------------------------------
 
-   public String toString()
-   {
-      return "ProducerDelegate[" + System.identityHashCode(this) + ", ID=" + id + "]";
-   }
-
    // Protected ------------------------------------------------------------------------------------
    
-
-   @Override
-   protected Client getClient()
-   {
-      return connection.getClient();
-   }
    // Package Private ------------------------------------------------------------------------------
-
-   @Override
-   protected byte getVersion()
-   {
-      return connection.getVersion();
-   }
 
    // Private --------------------------------------------------------------------------------------
 
+   private void checkClosed() throws IllegalStateException
+   {
+      if (closed)
+      {
+         throw new IllegalStateException("Producer is closed");
+      }
+   }
+   
    // Inner Classes --------------------------------------------------------------------------------
 
 }

@@ -21,8 +21,6 @@
   */
 package org.jboss.jms.client.impl;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -30,18 +28,15 @@ import java.util.List;
 import javax.jms.IllegalStateException;
 import javax.jms.JMSException;
 import javax.jms.MessageListener;
-import javax.jms.Session;
 
+import org.jboss.jms.client.MessageHandler;
 import org.jboss.jms.client.api.ClientConsumer;
 import org.jboss.jms.client.api.ClientSession;
-import org.jboss.jms.exception.MessagingShutdownException;
+import org.jboss.jms.client.remoting.MessagingRemotingConnection;
 import org.jboss.jms.message.JBossMessage;
 import org.jboss.messaging.core.Destination;
-import org.jboss.messaging.core.DestinationType;
-import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.PriorityLinkedList;
 import org.jboss.messaging.core.impl.PriorityLinkedListImpl;
-import org.jboss.messaging.core.remoting.Client;
 import org.jboss.messaging.core.remoting.PacketDispatcher;
 import org.jboss.messaging.core.remoting.wireformat.ChangeRateMessage;
 import org.jboss.messaging.core.remoting.wireformat.CloseMessage;
@@ -64,11 +59,9 @@ import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
  *
  * $Id: ClientConsumerImpl.java 3603 2008-01-21 18:49:20Z timfox $
  */
-public class ClientConsumerImpl extends CommunicationSupport implements ClientConsumer
+public class ClientConsumerImpl implements ClientConsumer
 {
    // Constants ------------------------------------------------------------------------------------
-
-	private static final long serialVersionUID = 3253922610778321868L;
 
 	private static final Logger log = Logger.getLogger(ClientConsumerImpl.class);
 	
@@ -76,157 +69,46 @@ public class ClientConsumerImpl extends CommunicationSupport implements ClientCo
 	
 	private static final int WAIT_TIMEOUT = 30000;
       
-
    // Attributes -----------------------------------------------------------------------------------
 
+	private String id;
 	private ClientSession session;
    private int bufferSize;
    private int maxDeliveries;
    private long redeliveryDelay;
    private Destination destination;
    private String selector;
-   private String subscriptionName;
    private boolean noLocal;
    private boolean isConnectionConsumer;
-   private boolean storingDeliveries;
-   
    private PriorityLinkedList<JBossMessage> buffer = new PriorityLinkedListImpl<JBossMessage>(10);
    private volatile Thread receiverThread;
    private MessageListener listener;
-   private boolean closed;
+   private volatile boolean closed;
+   private boolean closing;
    private Object mainLock = new Object();
    private QueuedExecutor sessionExecutor;
    private boolean listenerRunning;
    private long lastDeliveryId = -1;
    private boolean waitingForLastDelivery;
-   private boolean shouldAck;
-   private boolean paused;      
+   private boolean shouldAck;     
    private int consumeCount;
-   private boolean firstTime = true;
-
+   private MessagingRemotingConnection remotingConnection;
+   
+   //FIXME - revisit closed and closing flags
    
    // Static ---------------------------------------------------------------------------------------
-   
-   private static boolean checkExpiredOrReachedMaxdeliveries(JBossMessage jbm,
-         ClientSession del,
-         int maxDeliveries, boolean shouldCancel)
-   {
-      Message msg = jbm.getCoreMessage();
-
-      boolean expired = msg.isExpired();
-
-      boolean reachedMaxDeliveries = jbm.getDeliveryCount() == maxDeliveries;
-
-      if (expired || reachedMaxDeliveries)
-      {
-         if (trace)
-         {
-            if (expired)
-            {
-               log.trace(msg + " has expired, cancelling to server");
-            }
-            else
-            {
-               log.trace(msg + " has reached maximum delivery number " + maxDeliveries +", cancelling to server");
-            }
-         }
-
-         if (shouldCancel)
-         {           
-            final Cancel cancel = new CancelImpl(jbm.getDeliveryId(), jbm.getDeliveryCount(),
-                  expired, reachedMaxDeliveries);          
-            try
-            {
-               del.cancelDelivery(cancel);
-            }
-            catch (JMSException e)
-            {
-               log.error("Failed to cancel delivery", e);
-            }   
-         }
-
-         return true;
-      }
-      else
-      {
-         return false;
-      }
-   }
-
-   // This is static so it can be called by the asf layer too
-   public static void callOnMessage(ClientSession sess,
-         MessageListener listener,
-         String consumerID,
-         boolean isConnectionConsumer,
-         JBossMessage m,
-         int ackMode,
-         int maxDeliveries,
-         ClientSession connectionConsumerSession,
-         boolean shouldAck)
-   throws JMSException
-   {      
-      if (checkExpiredOrReachedMaxdeliveries(m, connectionConsumerSession!=null?connectionConsumerSession:sess, maxDeliveries, shouldAck))
-      {
-         // Message has been cancelled
-         return;
-      }
-
-      DeliveryInfo deliveryInfo =
-         new DeliveryInfo(m, consumerID, connectionConsumerSession, shouldAck);
-
-      m.incDeliveryCount();
-
-      // If this is the callback-handler for a connection consumer we don't want to acknowledge or
-      // add anything to the tx for this session.
-      if (!isConnectionConsumer)
-      {
-         // We need to call preDeliver, deliver the message then call postDeliver - this is because
-         // it is legal to call session.recover(), or session.rollback() from within the onMessage()
-         // method in which case the last message needs to be delivered so it needs to know about it
-         sess.preDeliver(deliveryInfo);
-      } 
-
-      try
-      {
-         if (trace) { log.trace("calling listener's onMessage(" + m + ")"); }
-
-         listener.onMessage(m);
-
-         if (trace) { log.trace("listener's onMessage() finished"); }
-      }
-      catch (RuntimeException e)
-      {
-         log.error("RuntimeException was thrown from onMessage, " + m.getJMSMessageID() + " will be redelivered", e);
-
-         // See JMS 1.1 spec 4.5.2
-
-         if (ackMode == Session.AUTO_ACKNOWLEDGE || ackMode == Session.DUPS_OK_ACKNOWLEDGE)
-         {              
-            sess.recover();
-         }
-      }   
-
-      // If this is the callback-handler for a connection consumer we don't want to acknowledge
-      //or add anything to the tx for this session
-      if (!isConnectionConsumer)
-      {
-         if (trace) { log.trace("Calling postDeliver"); }
-
-         sess.postDeliver();
-
-         if (trace) { log.trace("Called postDeliver"); }
-      }   
-   }
-
+      
    // Constructors ---------------------------------------------------------------------------------
 
-   public ClientConsumerImpl(ClientSession session, String objectID, int bufferSize,
+   public ClientConsumerImpl(ClientSession session, String id, int bufferSize,
                              int maxDeliveries, long redeliveryDelay,
                              Destination dest,
-                             String selector, boolean noLocal, String subscriptionName,
-                             boolean isCC, QueuedExecutor sessionExecutor)
+                             String selector, boolean noLocal,
+                             boolean isCC, QueuedExecutor sessionExecutor,
+                             MessagingRemotingConnection remotingConnection,
+                             boolean shouldAck)
    {
-      super(objectID);
+      this.id = id;
       this.session = session;
       this.bufferSize = bufferSize;
       this.maxDeliveries = maxDeliveries;
@@ -234,229 +116,87 @@ public class ClientConsumerImpl extends CommunicationSupport implements ClientCo
       this.destination = dest;
       this.selector = selector;
       this.noLocal = noLocal;
-      this.subscriptionName = subscriptionName;
       this.isConnectionConsumer = isCC;
       this.sessionExecutor = sessionExecutor;
-      this.shouldAck = !(destination.getType() == DestinationType.TOPIC && subscriptionName == null);  
+      this.shouldAck = shouldAck; 
+      this.remotingConnection = remotingConnection;
+      
    }
 
-   @Override
-   protected byte getVersion()
-   {
-      return session.getConnection().getVersion();
-   }
-
-   protected Client getClient()
-   {
-      return this.session.getConnection().getClient();
-   }
-   
    // Closeable implementation ---------------------------------------------------------------------
 
-   public void close() throws JMSException
+   public synchronized void close() throws JMSException
    {
+      if (closed)
+      {
+         return;
+      }
+      
       try
       {
-         sendBlocking(new CloseMessage());
+         remotingConnection.sendBlocking(id, new CloseMessage());
       }
       finally
       {
-         session.removeChild(this.getID());
+         session.removeChild(id);
+         
+         closed = true;
       }
    }
 
 
-   public long closing(long sequence) throws JMSException
+   public synchronized long closing(long sequence) throws JMSException
    {
-      try
+      if (closed)
       {
-         // We make sure closing is called on the ServerConsumerEndpoint.
-         // This returns us the last delivery id sent
-
-         long lastDeliveryId = invokeClosing(sequence);
-
-         // First we call close on the ClientConsumer which waits for onMessage invocations
-         // to complete and the last delivery to arrive
-         close(lastDeliveryId);
-
-         PacketDispatcher.client.unregister(id);
-
-         //And then we cancel any messages still in the message callback handler buffer
-         cancelBuffer();
-
-         return lastDeliveryId;
-
+         return -1;         
       }
-      catch (Exception proxiedException)
-      {
-         // if MessagingServer is shutdown or
-         // if there is no failover in place... we just close the consumerState as well
-         if (proxiedException instanceof MessagingShutdownException /* ||
-                 (connectionState.getFailoverCommandCenter() == null ) */ )
 
-         {
-            if (!this.isClosed())
-            {
-               close(-1);
-            }
-         }
-         JMSException ex = new JMSException(proxiedException.toString());
-         ex.initCause(proxiedException);
-         throw ex;
-      }
-   }
+      // We make sure closing is called on the ServerConsumerEndpoint.
+      // This returns us the last delivery id sent
 
-   private long invokeClosing(long sequence) throws JMSException
-   {
       ClosingRequest request = new ClosingRequest(sequence);
-      ClosingResponse response = (ClosingResponse) sendBlocking(request);
-      return response.getID();
+      ClosingResponse response = (ClosingResponse)remotingConnection.sendBlocking(id, request);
+      long lastDeliveryId =  response.getID();
+
+      // First we call close on the ClientConsumer which waits for onMessage invocations
+      // to complete and the last delivery to arrive
+      close(lastDeliveryId);
+
+      PacketDispatcher.client.unregister(id);
+
+      //And then we cancel any messages still in the message callback handler buffer
+      cancelBuffer();
+
+      return lastDeliveryId;
    }
 
-   public boolean isClosed()
-   {
-      return closed;
-   }
+
+   // ClientConsumer implementation --------------------------------------------------------------
    
+   public String getID()
+   {
+      return id;
+   }
+      
    public void changeRate(float newRate) throws JMSException
    {
-      sendOneWay(new ChangeRateMessage(newRate));
+      checkClosed();
+      
+      remotingConnection.sendOneWay(id, new ChangeRateMessage(newRate));
    }
    
-   public MessageListener getMessageListener()
+   public MessageListener getMessageListener() throws JMSException
    {
+      checkClosed();
+      
       return this.listener;
    }
-
-   /**
-    * This invocation should either be handled by the client-side interceptor chain or by the
-    * server-side endpoint.
-    */
-   public boolean getNoLocal()
-   {
-      return this.noLocal;
-   }
-
-   /**
-    * This invocation should either be handled by the client-side interceptor chain or by the
-    * server-side endpoint.
-    */
-   public Destination getDestination()
-   {
-      return this.destination;
-   }
-
-   /**
-    * This invocation should either be handled by the client-side interceptor chain or by the
-    * server-side endpoint.
-    */
-   public String getMessageSelector()
-   {
-      return this.selector;
-   }
-
-   // Streamable implementation ----------------------------------------------------------
-
-   public void read(DataInputStream in) throws Exception
-   {
-      super.read(in);
-
-      bufferSize = in.readInt();
-
-      maxDeliveries = in.readInt();
-      
-      redeliveryDelay = in.readLong();
-   }
-
-   public void write(DataOutputStream out) throws Exception
-   {
-      super.write(out);
-
-      out.writeInt(bufferSize);
-
-      out.writeInt(maxDeliveries);
-      
-      out.writeLong(redeliveryDelay);
-   }
-
-   // Public ---------------------------------------------------------------------------------------
-
-   public String toString()
-   {
-      return "ConsumerDelegate[" + System.identityHashCode(this) + ", ID=" + id + "]";
-   }
-
-   public int getBufferSize()
-   {
-      return bufferSize;
-   }
-
-   public int getMaxDeliveries()
-   {
-      return maxDeliveries;
-   }
    
-   public long getRedeliveryDelay()
-   {
-   	return redeliveryDelay;
-   }
-   
-   public boolean isConnectionConsumer()
-   {
-      return isConnectionConsumer;
-   }
- 
-   public String getSubscriptionName()
-   {
-      return subscriptionName;
-   }
-
-   public void setSubscriptionName(String subscriptionName)
-   {
-      this.subscriptionName = subscriptionName;
-   }
-
-   public boolean isStoringDeliveries()
-   {
-      return storingDeliveries;
-   }
-   
-   // Protected ------------------------------------------------------------------------------------
-
-   // Package Private ------------------------------------------------------------------------------
-
-   // Private --------------------------------------------------------------------------------------
-
-   // Inner Classes --------------------------------------------------------------------------------
-         
-   public void handleMessage(final JBossMessage message) throws Exception
-   {
-      synchronized (mainLock)
-      {
-         if (closed)
-         {
-            // Sanity - this should never happen - we should always wait for all deliveries to arrive
-            // when closing
-            throw new IllegalStateException(this + " is closed, so ignoring message");
-         }
-
-         message.setSessionDelegate(session, isConnectionConsumer);
-
-         message.doBeforeReceive();
-
-         //Add it to the buffer
-         buffer.addLast(message, message.getJMSPriority());
-
-         lastDeliveryId = message.getDeliveryId();
-
-         if (trace) { log.trace(this + " added message(s) to the buffer are now " + buffer.size() + " messages"); }
-
-         messageAdded();
-      }
-   }
-
    public void setMessageListener(MessageListener listener) throws JMSException
-   {     
+   {  
+      checkClosed();
+      
       synchronized (mainLock)
       {
          if (receiverThread != null)
@@ -477,94 +217,39 @@ public class ClientConsumerImpl extends CommunicationSupport implements ClientCo
       }   
    }
    
-   public void cancelBuffer() throws JMSException
+   public boolean getNoLocal() throws JMSException
    {
-      if (trace) { log.trace("Cancelling buffer: " + buffer.size()); }
+      checkClosed();
       
-      synchronized (mainLock)
-      {      
-         // Now we cancel anything left in the buffer. The reason we do this now is that otherwise
-         // the deliveries wouldn't get cancelled until session close (since we don't cancel
-         // consumer's deliveries until then), which is too late - since we need to preserve the
-         // order of messages delivered in a session.
-         
-         if (shouldAck && !buffer.isEmpty())
-         {                        
-            // Now we cancel any deliveries that might be waiting in our buffer. This is because
-            // otherwise the messages wouldn't get cancelled until the corresponding session died.
-            // So if another consumer in another session tried to consume from the channel before
-            // that session died it wouldn't receive those messages.
-            // We can't just cancel all the messages in the SCE since some of those messages might
-            // have actually been delivered (unlike these) and we may want to acknowledge them
-            // later, after this consumer has been closed
-   
-            List cancels = new ArrayList();
-   
-            for(Iterator i = buffer.iterator(); i.hasNext();)
-            {
-               JBossMessage mp = (JBossMessage)i.next();
-               
-               CancelImpl cancel =
-                  new CancelImpl(mp.getDeliveryId(), mp.getDeliveryCount(), false, false);
-               
-               cancels.add(cancel);
-            }
-                  
-            if (trace) { log.trace("Calling cancelDeliveries"); }
-            session.cancelDeliveries(cancels);
-            if (trace) { log.trace("Done call"); }
-            
-            buffer.clear();
-         }    
-      }
+      return this.noLocal;
+   }
+
+   public Destination getDestination() throws JMSException
+   {
+      checkClosed();
+      
+      return this.destination;
+   }
+
+   public String getMessageSelector() throws JMSException
+   {
+      checkClosed();
+      
+      return this.selector;
    }
    
-   private void close(long lastDeliveryId) throws JMSException
-   {     
-      try
-      {
-         log.trace(this + " close");
-            
-         //Wait for the last delivery to arrive
-         waitForLastDelivery(lastDeliveryId);
-         
-         //Important! We set the listener to null so the next ListenerRunner won't run
-         if (listener != null)
-         {
-            setMessageListener(null);
-         }
-         
-         //Now we wait for any current listener runners to run.
-         waitForOnMessageToComplete();   
-         
-         synchronized (mainLock)
-         {         
-            if (closed)
-            {
-               return;
-            }
-            
-            closed = true;   
-            
-            if (receiverThread != null)
-            {            
-               // Wake up any receive() thread that might be waiting
-               mainLock.notify();
-            }   
-            
-            this.listener = null;
-         }
-                              
-         if (trace) { log.trace(this + " closed"); }
-      }
-      finally
-      {
-         session.removeChild(this.getID());
-      }
+   public int getMaxDeliveries()
+   {
+      return maxDeliveries;
    }
-     
+   
+   public long getRedeliveryDelay()
+   {
+      return redeliveryDelay;
+   }
+         
    /**
-    * Method used by the client thread to get a Message, if available.
+    * Method used by the client thread to synchronously get a Message, if available.
     *
     * @param timeout - the timeout value in milliseconds. A zero timeount never expires, and the
     *        call blocks indefinitely. A -1 timeout means receiveNoWait(): return the next message
@@ -572,14 +257,16 @@ public class ClientConsumerImpl extends CommunicationSupport implements ClientCo
     *        concurrently closed.
     */
    public JBossMessage receive(long timeout) throws JMSException
-   {                
+   {      
+      checkClosed();
+      
       JBossMessage m = null;      
       
       synchronized (mainLock)
       {        
          if (trace) { log.trace(this + " receiving, timeout = " + timeout); }
          
-         if (closed)
+         if (closing)
          {
             // If consumer is closed or closing calling receive returns null
             if (trace) { log.trace(this + " closed, returning null"); }
@@ -642,7 +329,7 @@ public class ClientConsumerImpl extends CommunicationSupport implements ClientCo
                if (trace) { log.trace(this + " received " + m + " after being blocked on buffer"); }
                        
                boolean ignore =
-                  checkExpiredOrReachedMaxdeliveries(m, session, maxDeliveries, shouldAck);
+                  MessageHandler.checkExpiredOrReachedMaxdeliveries(m, session, maxDeliveries, shouldAck);
                
                if (!isConnectionConsumer && !ignore)
                {
@@ -703,9 +390,11 @@ public class ClientConsumerImpl extends CommunicationSupport implements ClientCo
       
       return m;
    } 
-         
+   
    public void addToFrontOfBuffer(JBossMessage proxy) throws JMSException
    {
+      checkClosed();
+      
       synchronized (mainLock)
       {
          buffer.addFirst(proxy, proxy.getJMSPriority());
@@ -715,55 +404,137 @@ public class ClientConsumerImpl extends CommunicationSupport implements ClientCo
          messageAdded();
       }
    }
-
-   public void pause()
-   {
-      synchronized (mainLock)
-      {
-         paused = true;
-
-         sendChangeRateMessage(0f);         
-      }
-   }
-
-   public void resume()
-   {
-      synchronized (mainLock)
-      {
-         paused = false;
-
-         if (firstTime)
-         {
-            consumeCount = 0;
-
-            firstTime = false;
-         }
-         else
-         {
-            consumeCount = bufferSize / 3 - buffer.size();
-         }
-
-         sendChangeRateMessage(1f);
-      }
-   }
    
    public boolean isShouldAck()
    {
       return this.shouldAck;
    }
-
    
+   public void handleMessage(final JBossMessage message) throws Exception
+   {
+      synchronized (mainLock)
+      {
+         if (closing)
+         {
+            // Sanity - this should never happen - we should always wait for all deliveries to arrive
+            // when closing
+            throw new IllegalStateException(this + " is closed, so ignoring message");
+         }
+
+         message.setSession(session, isConnectionConsumer);
+
+         message.doBeforeReceive();
+
+         //Add it to the buffer
+         buffer.addLast(message, message.getJMSPriority());
+
+         lastDeliveryId = message.getDeliveryId();
+
+         if (trace) { log.trace(this + " added message(s) to the buffer are now " + buffer.size() + " messages"); }
+
+         messageAdded();
+      }
+   }
+   
+   // Public ---------------------------------------------------------------------------------------
+     
    // Package protected ----------------------------------------------------------------------------
    
    // Protected ------------------------------------------------------------------------------------
             
    // Private --------------------------------------------------------------------------------------
+   
+   private void close(long lastDeliveryId) throws JMSException
+   {     
+      try
+      {
+         log.trace(this + " close");
+            
+         //Wait for the last delivery to arrive
+         waitForLastDelivery(lastDeliveryId);
+         
+         //Important! We set the listener to null so the next ListenerRunner won't run
+         if (listener != null)
+         {
+            setMessageListener(null);
+         }
+         
+         //Now we wait for any current listener runners to run.
+         waitForOnMessageToComplete();   
+         
+         synchronized (mainLock)
+         {         
+            if (closing)
+            {
+               return;
+            }
+            
+            closing = true;   
+            
+            if (receiverThread != null)
+            {            
+               // Wake up any receive() thread that might be waiting
+               mainLock.notify();
+            }   
+            
+            this.listener = null;
+         }
+                              
+         if (trace) { log.trace(this + " closed"); }
+      }
+      finally
+      {
+         session.removeChild(id);
+      }
+   }
+   
+   private void cancelBuffer() throws JMSException
+   {
+      if (trace) { log.trace("Cancelling buffer: " + buffer.size()); }
+      
+      synchronized (mainLock)
+      {      
+         // Now we cancel anything left in the buffer. The reason we do this now is that otherwise
+         // the deliveries wouldn't get cancelled until session close (since we don't cancel
+         // consumer's deliveries until then), which is too late - since we need to preserve the
+         // order of messages delivered in a session.
+         
+         if (shouldAck && !buffer.isEmpty())
+         {                        
+            // Now we cancel any deliveries that might be waiting in our buffer. This is because
+            // otherwise the messages wouldn't get cancelled until the corresponding session died.
+            // So if another consumer in another session tried to consume from the channel before
+            // that session died it wouldn't receive those messages.
+            // We can't just cancel all the messages in the SCE since some of those messages might
+            // have actually been delivered (unlike these) and we may want to acknowledge them
+            // later, after this consumer has been closed
+   
+            List cancels = new ArrayList();
+   
+            for(Iterator i = buffer.iterator(); i.hasNext();)
+            {
+               JBossMessage mp = (JBossMessage)i.next();
+               
+               CancelImpl cancel =
+                  new CancelImpl(mp.getDeliveryId(), mp.getDeliveryCount(), false, false);
+               
+               cancels.add(cancel);
+            }
+                  
+            if (trace) { log.trace("Calling cancelDeliveries"); }
+            session.cancelDeliveries(cancels);
+            if (trace) { log.trace("Done call"); }
+            
+            buffer.clear();
+         }    
+      }
+   }
 
    private void checkSendChangeRate()
    {
       consumeCount++;
       
-      if (!paused && consumeCount == bufferSize)
+      if (consumeCount == bufferSize)
       {
          consumeCount = 0;
 
@@ -823,8 +594,6 @@ public class ClientConsumerImpl extends CommunicationSupport implements ClientCo
    {
       try
       {
-         // this invocation will be sent asynchronously to the server; it's DelegateSupport.invoke()
-         // job to detect it and turn it into a remoting one way invocation.
          changeRate(newRate);
       }
       catch (JMSException e)
@@ -945,7 +714,7 @@ public class ClientConsumerImpl extends CommunicationSupport implements ClientCo
             if (timeout == 0)
             {
                // wait for ever potentially
-               while (!closed && buffer.isEmpty())
+               while (!closing && buffer.isEmpty())
                {
                   if (trace) { log.trace(this + " waiting on main lock, no timeout"); }
 
@@ -959,7 +728,7 @@ public class ClientConsumerImpl extends CommunicationSupport implements ClientCo
                // wait with timeout
                long toWait = timeout;
              
-               while (!closed && buffer.isEmpty() && toWait > 0)
+               while (!closing && buffer.isEmpty() && toWait > 0)
                {
                   if (trace) { log.trace(this + " waiting on main lock, timeout " + toWait + " ms"); }
 
@@ -978,7 +747,7 @@ public class ClientConsumerImpl extends CommunicationSupport implements ClientCo
 
       JBossMessage m = null;
              
-      if (!closed && !buffer.isEmpty())
+      if (!closing && !buffer.isEmpty())
       {
          m = (JBossMessage)buffer.removeFirst();
          
@@ -986,6 +755,14 @@ public class ClientConsumerImpl extends CommunicationSupport implements ClientCo
       }
 
       return m;
+   }
+   
+   private void checkClosed() throws IllegalStateException
+   {
+      if (closed)
+      {
+         throw new IllegalStateException("Consumer is closed");
+      }
    }
    
    // Inner classes --------------------------------------------------------------------------------
@@ -1058,7 +835,7 @@ public class ClientConsumerImpl extends CommunicationSupport implements ClientCo
          {
             try
             {
-               callOnMessage(session, theListener, id,
+               MessageHandler.callOnMessage(session, theListener, id,
                              false, msg, session.getAcknowledgeMode(), maxDeliveries, null, shouldAck);
                
                if (trace) { log.trace("Called callonMessage"); }
@@ -1092,6 +869,5 @@ public class ClientConsumerImpl extends CommunicationSupport implements ClientCo
          if (trace) { log.trace("Exiting run()"); }
       }
    }   
-   
-
+  
 }

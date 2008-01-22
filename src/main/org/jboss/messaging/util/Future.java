@@ -21,7 +21,6 @@
  */
 package org.jboss.messaging.util;
 
-import org.jboss.messaging.util.Logger;
 
 /**
  * A Future

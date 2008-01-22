@@ -21,9 +21,6 @@
  */
 package org.jboss.test.messaging.jms;
 
-import org.jboss.jms.message.JBossMessage;
-
-import javax.jms.*;
 
 /**
  * 

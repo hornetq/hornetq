@@ -21,8 +21,8 @@
  */
 package org.jboss.messaging.core.impl.memory;
 
-import org.jboss.messaging.util.Logger;
 import org.jboss.messaging.core.MemoryManager;
+import org.jboss.messaging.util.Logger;
 
 /**
  * A MemoryManager

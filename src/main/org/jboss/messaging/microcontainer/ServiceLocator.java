@@ -21,15 +21,15 @@
    */
 package org.jboss.messaging.microcontainer;
 
-import org.jboss.kernel.spi.dependency.KernelControllerContext;
-import org.jboss.kernel.spi.dependency.KernelControllerContextAware;
-import org.jboss.tm.TransactionManagerLocator;
-
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 import javax.naming.InitialContext;
 import javax.sql.DataSource;
 import javax.transaction.TransactionManager;
+
+import org.jboss.kernel.spi.dependency.KernelControllerContext;
+import org.jboss.kernel.spi.dependency.KernelControllerContextAware;
+import org.jboss.tm.TransactionManagerLocator;
 
 /**
  * This is a layer that is used for injecting services into other objects. depending on the configuration we are running

@@ -38,9 +38,10 @@ import javax.jms.MessageFormatException;
 import javax.jms.MessageNotReadableException;
 import javax.jms.MessageNotWriteableException;
 
+import org.jboss.jms.client.api.ClientSession;
 import org.jboss.jms.exception.MessagingJMSException;
-import org.jboss.messaging.util.Logger;
 import org.jboss.messaging.core.impl.MessageImpl;
+import org.jboss.messaging.util.Logger;
 
 /**
  * 
@@ -147,8 +148,7 @@ public class JBossMessage implements javax.jms.Message
    //The underlying message
    protected org.jboss.messaging.core.Message message;
    
-   //The SessionDelegate - we need this when acknowledging the message directly
-   private org.jboss.jms.client.api.ClientSession delegate;
+   private ClientSession session;
    
    //From a connection consumer?   
    private boolean cc;
@@ -761,7 +761,7 @@ public class JBossMessage implements javax.jms.Message
       if (!cc)
       {
          //Only acknowledge for client ack if is not in connection consumer
-         delegate.acknowledgeAll();
+         session.acknowledgeAll();
       }
    }
     
@@ -815,15 +815,16 @@ public class JBossMessage implements javax.jms.Message
       return JBossMessage.TYPE;
    }   
    
-   public void setSessionDelegate(org.jboss.jms.client.api.ClientSession sd, boolean isConnectionConsumer)
+   public void setSession(ClientSession sd, boolean isConnectionConsumer)
    {
-      this.delegate = sd;
+      this.session = sd;
+      
       this.cc = isConnectionConsumer;
    }
    
-   public org.jboss.jms.client.api.ClientSession getSessionDelegate()
+   public ClientSession getSession()
    {
-      return delegate;
+      return session;
    }
 
    public int getDeliveryCount()

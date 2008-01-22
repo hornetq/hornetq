@@ -31,12 +31,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Semaphore;
 
-import org.jboss.jms.message.JBossMessage;
-import org.jboss.jms.message.JBossTextMessage;
-import org.jboss.messaging.util.Logger;
 import org.jboss.messaging.core.Message;
 import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.Queue;
+import org.jboss.messaging.util.Logger;
 import org.jboss.messaging.util.StreamUtils;
 
 /**

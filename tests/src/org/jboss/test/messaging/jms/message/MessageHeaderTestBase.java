@@ -21,13 +21,31 @@
   */
 package org.jboss.test.messaging.jms.message;
 
-import org.jboss.jms.destination.JBossQueue;
-import org.jboss.jms.message.*;
-import org.jboss.test.messaging.JBMServerTestCase;
-
-import javax.jms.*;
 import java.util.Arrays;
 import java.util.Enumeration;
+
+import javax.jms.BytesMessage;
+import javax.jms.Connection;
+import javax.jms.DeliveryMode;
+import javax.jms.JMSException;
+import javax.jms.MapMessage;
+import javax.jms.Message;
+import javax.jms.MessageConsumer;
+import javax.jms.MessageEOFException;
+import javax.jms.MessageProducer;
+import javax.jms.ObjectMessage;
+import javax.jms.Session;
+import javax.jms.StreamMessage;
+import javax.jms.TextMessage;
+
+import org.jboss.jms.destination.JBossQueue;
+import org.jboss.jms.message.JBossBytesMessage;
+import org.jboss.jms.message.JBossMapMessage;
+import org.jboss.jms.message.JBossMessage;
+import org.jboss.jms.message.JBossObjectMessage;
+import org.jboss.jms.message.JBossStreamMessage;
+import org.jboss.jms.message.JBossTextMessage;
+import org.jboss.test.messaging.JBMServerTestCase;
 
 /**
  *

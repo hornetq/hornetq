@@ -21,6 +21,10 @@
  */
 package org.jboss.messaging.core;
 
+
+import java.util.Collection;
+import java.util.HashSet;
+
 import org.jboss.jms.server.ConnectionManager;
 import org.jboss.jms.server.SecurityStore;
 import org.jboss.jms.server.TransactionRepository;
@@ -30,9 +34,6 @@ import org.jboss.jms.server.security.Role;
 import org.jboss.messaging.core.remoting.impl.mina.MinaService;
 import org.jboss.messaging.util.HierarchicalRepository;
 import org.jboss.messaging.util.Version;
-
-import java.util.Collection;
-import java.util.HashSet;
 
 /**
  * This interface defines the internal interface of the Messaging Server exposed

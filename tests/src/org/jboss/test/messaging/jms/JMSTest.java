@@ -21,10 +21,17 @@
   */
 package org.jboss.test.messaging.jms;
 
-import EDU.oswego.cs.dl.util.concurrent.Slot;
-
-import javax.jms.*;
+import javax.jms.Connection;
+import javax.jms.DeliveryMode;
+import javax.jms.Message;
+import javax.jms.MessageConsumer;
+import javax.jms.MessageListener;
+import javax.jms.MessageProducer;
+import javax.jms.Session;
+import javax.jms.TextMessage;
 import javax.naming.InitialContext;
+
+import EDU.oswego.cs.dl.util.concurrent.Slot;
 
 /**
  * The most comprehensive, yet simple, unit test.

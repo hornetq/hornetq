@@ -33,8 +33,6 @@ import javax.jms.Topic;
 import javax.jms.TopicConnection;
 import javax.jms.TopicConnectionFactory;
 
-import org.jboss.jms.client.impl.ClientConnectionImpl;
-import org.jboss.jms.tx.ResourceManager;
 import org.jboss.jms.tx.ResourceManagerFactory;
 import org.jboss.messaging.util.Logger;
 
@@ -70,38 +68,7 @@ public class ConnectionTest extends JMSTestCase
 
    // Public --------------------------------------------------------
 
-   public void testResourceManagersForSameServer() throws Exception
-   {
-      Connection conn1 = cf.createConnection();      
-            
-      ClientConnectionImpl del1 = getDelegate(conn1);
-      
-      ResourceManager rm1 = del1.getResourceManager();
-      
-      Connection conn2 = cf.createConnection();      
-      
-      ClientConnectionImpl del2 = getDelegate(conn2);
-      
-      ResourceManager rm2 = del2.getResourceManager();
-
-      //Two connections for same server should share the same resource manager
-      
-      assertTrue(rm1 == rm2);
-      
-      assertTrue(ResourceManagerFactory.instance.containsResourceManager(del2.getServerID()));
-      
-      conn1.close();
-      
-      //Check reference counting
-      assertTrue(ResourceManagerFactory.instance.containsResourceManager(del2.getServerID()));
-           
-      conn2.close();
-      
-      assertFalse(ResourceManagerFactory.instance.containsResourceManager(del2.getServerID()));  
-      
-      assertEquals(0, ResourceManagerFactory.instance.size());
-   }
-   
+  
    public void testResourceManagerFactory()
    {
       ResourceManagerFactory.instance.checkOutResourceManager(1);

@@ -29,8 +29,8 @@ import java.util.GregorianCalendar;
 import java.util.Iterator;
 import java.util.List;
 
-import org.jboss.messaging.util.Logger;
 import org.jboss.messaging.core.Queue;
+import org.jboss.messaging.util.Logger;
 
 /**
  * This class stores message count informations for a given queue

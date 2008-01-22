@@ -23,8 +23,8 @@
 package org.jboss.messaging.util;
 
 import java.util.AbstractSet;
-import java.util.Map;
 import java.util.Iterator;
+import java.util.Map;
 
 /**
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>

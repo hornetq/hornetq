@@ -21,9 +21,14 @@
   */
 package org.jboss.test.messaging.jms.message;
 
-import org.jboss.test.messaging.JBMServerTestCase;
+import javax.jms.Connection;
+import javax.jms.Message;
+import javax.jms.MessageConsumer;
+import javax.jms.MessageFormatException;
+import javax.jms.MessageProducer;
+import javax.jms.Session;
 
-import javax.jms.*;
+import org.jboss.test.messaging.JBMServerTestCase;
 
 /**
  * 

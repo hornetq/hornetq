@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Map;
+
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
@@ -46,9 +47,8 @@ import javax.transaction.xa.XAResource;
 
 import org.jboss.jms.client.JBossSession;
 import org.jboss.jms.message.JBossMessage;
-import org.jboss.messaging.util.Logger;
 import org.jboss.messaging.core.MessagingComponent;
-import org.jboss.messaging.util.ProxyFactory;
+import org.jboss.messaging.util.Logger;
 import org.jboss.tm.TransactionManagerLocator;
 
 /**

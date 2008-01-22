@@ -21,10 +21,16 @@
   */
 package org.jboss.test.messaging.jms.message;
 
-import org.jboss.test.messaging.JBMServerTestCase;
-
-import javax.jms.*;
 import java.io.Serializable;
+
+import javax.jms.ObjectMessage;
+import javax.jms.Session;
+import javax.jms.TopicConnection;
+import javax.jms.TopicPublisher;
+import javax.jms.TopicSession;
+import javax.jms.TopicSubscriber;
+
+import org.jboss.test.messaging.JBMServerTestCase;
 
 
 /**

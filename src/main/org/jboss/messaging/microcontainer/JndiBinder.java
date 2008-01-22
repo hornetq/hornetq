@@ -21,12 +21,13 @@
    */
 package org.jboss.messaging.microcontainer;
 
-import org.jboss.util.naming.Util;
+import java.io.Serializable;
+import java.util.Hashtable;
 
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
-import java.io.Serializable;
-import java.util.Hashtable;
+
+import org.jboss.util.naming.Util;
 
 /**
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>

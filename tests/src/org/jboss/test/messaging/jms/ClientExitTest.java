@@ -21,14 +21,20 @@
 */
 package org.jboss.test.messaging.jms;
 
-import org.jboss.messaging.util.Logger;
-import org.jboss.test.messaging.JBMServerTestCase;
-
-import javax.jms.*;
-import javax.naming.InitialContext;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.ObjectOutputStream;
+
+import javax.jms.Connection;
+import javax.jms.ConnectionFactory;
+import javax.jms.MessageConsumer;
+import javax.jms.Queue;
+import javax.jms.Session;
+import javax.jms.TextMessage;
+import javax.naming.InitialContext;
+
+import org.jboss.messaging.util.Logger;
+import org.jboss.test.messaging.JBMServerTestCase;
 
 /**
  * A test that makes sure that a Messaging client gracefully exists after the last connection is

@@ -6,10 +6,10 @@
  */
 package org.jboss.jms.server.connectionfactory;
 
+import java.util.List;
+
 import org.jboss.jms.client.plugin.LoadBalancingFactory;
 import org.jboss.messaging.util.Logger;
-
-import java.util.List;
 
 /**
  * A deployable JBoss Messaging connection factory.

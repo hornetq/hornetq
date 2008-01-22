@@ -21,15 +21,16 @@
   */
 package org.jboss.jms.server.container;
 
+import java.util.HashSet;
+import java.util.Set;
+
+import javax.jms.JMSSecurityException;
+
 import org.jboss.jms.server.SecurityStore;
 import org.jboss.jms.server.endpoint.ServerConnectionEndpoint;
 import org.jboss.jms.server.security.CheckType;
 import org.jboss.messaging.core.Destination;
 import org.jboss.messaging.util.Logger;
-
-import javax.jms.JMSSecurityException;
-import java.util.HashSet;
-import java.util.Set;
 
 /**
  * This aspect enforces the JBossMessaging JMS security policy.

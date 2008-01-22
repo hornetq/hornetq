@@ -21,12 +21,13 @@
 */
 package org.jboss.test.messaging.tools.container;
 
-import org.jboss.messaging.util.Logger;
+import java.util.Hashtable;
 
 import javax.naming.Context;
 import javax.naming.NamingException;
 import javax.naming.spi.InitialContextFactory;
-import java.util.Hashtable;
+
+import org.jboss.messaging.util.Logger;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>

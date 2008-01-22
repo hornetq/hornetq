@@ -21,19 +21,18 @@
   */
 package org.jboss.test.messaging.jms.crash;
 
+import javax.jms.ConnectionFactory;
+import javax.jms.Queue;
+import javax.jms.Topic;
+import javax.naming.InitialContext;
+
 import org.jboss.jms.server.ConnectionManager;
 import org.jboss.jms.server.connectionmanager.SimpleConnectionManager;
 import org.jboss.messaging.util.Logger;
 import org.jboss.test.messaging.JBMServerTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
-import org.jboss.test.messaging.tools.container.LocalTestServer;
 import org.jboss.test.messaging.tools.container.Server;
 import org.jboss.test.messaging.tools.container.ServiceContainer;
-
-import javax.jms.ConnectionFactory;
-import javax.jms.Queue;
-import javax.jms.Topic;
-import javax.naming.InitialContext;
 
 /**
  * 

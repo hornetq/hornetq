@@ -21,12 +21,20 @@
  */
 package org.jboss.jms.server.plugin;
 
-import org.jboss.jms.server.plugin.contract.JMSUserManager;
-import org.jboss.messaging.util.Logger;
-import org.jboss.messaging.core.impl.JDBCSupport;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
-import java.sql.*;
-import java.util.*;
+import org.jboss.jms.server.plugin.contract.JMSUserManager;
+import org.jboss.messaging.core.impl.JDBCSupport;
+import org.jboss.messaging.util.Logger;
 
 /**
  * A JDBCJMSUserManager

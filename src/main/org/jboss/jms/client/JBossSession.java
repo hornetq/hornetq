@@ -22,6 +22,8 @@
 package org.jboss.jms.client;
 
 import java.io.Serializable;
+import java.util.LinkedList;
+
 import javax.jms.BytesMessage;
 import javax.jms.Destination;
 import javax.jms.IllegalStateException;
@@ -53,6 +55,8 @@ import javax.jms.XATopicSession;
 import javax.transaction.xa.XAResource;
 
 import org.jboss.jms.client.api.ClientConsumer;
+import org.jboss.jms.client.api.ClientProducer;
+import org.jboss.jms.client.api.ClientSession;
 import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.destination.JBossQueue;
 import org.jboss.jms.destination.JBossTemporaryQueue;
@@ -60,7 +64,6 @@ import org.jboss.jms.destination.JBossTemporaryTopic;
 import org.jboss.jms.destination.JBossTopic;
 import org.jboss.jms.message.JBossMessage;
 import org.jboss.messaging.util.Logger;
-import org.jboss.messaging.util.ProxyFactory;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
@@ -90,15 +93,20 @@ public class JBossSession implements
    
    // Attributes ----------------------------------------------------
    
-   protected org.jboss.jms.client.api.ClientSession session;
+   private ClientSession session;
 
-   protected int sessionType;
-
+   private int sessionType;
+   
+   private LinkedList<AsfMessageHolder> asfMessages;
+   
+   private MessageListener distinguishedListener;
+   
    // Constructors --------------------------------------------------
 
-   public JBossSession(org.jboss.jms.client.api.ClientSession sessionDelegate, int sessionType)
+   public JBossSession(ClientSession sessionDelegate, int sessionType)
    {
       this.session = sessionDelegate;
+      
       this.sessionType = sessionType;
    }
 
@@ -177,28 +185,52 @@ public class JBossSession implements
 
    public MessageListener getMessageListener() throws JMSException
    {
-      if (log.isTraceEnabled()) { log.trace("getMessageListener() called"); }
-      return session.getMessageListener();
+      if (session.isClosed())
+      {
+         throw new IllegalStateException("Session is closed");
+      }
+      return distinguishedListener;
    }
 
    public void setMessageListener(MessageListener listener) throws JMSException
    {
-      if (log.isTraceEnabled()) { log.trace("setMessageListener(" + listener + ") called"); }
-
-      session.setMessageListener(listener);
+      if (session.isClosed())
+      {
+         throw new IllegalStateException("Session is closed");
+      }
+      this.distinguishedListener = listener;
+      
+      //When we have a distinguised listener our behaviour is to fall back to local transacted
+      //when the session is not enlisted.
+      this.session.setTreatAsNonTransactedWhenNotEnlisted(false);
    }
 
+   /**
+    * This invocation should either be handled by the client-side interceptor chain or by the
+    * server-side endpoint.
+    */
    public void run()
    {
       try
       {
-         if (log.isTraceEnabled()) { log.trace("run() called"); }
-         session.run();
+         if (asfMessages != null)
+         {         
+            int ackMode = getAcknowledgeMode();
+      
+            while (asfMessages.size() > 0)
+            {
+               AsfMessageHolder holder = (AsfMessageHolder)asfMessages.removeFirst();
+      
+               MessageHandler.callOnMessage(session, distinguishedListener, holder.getConsumerID(),
+                                                false,
+                                                holder.getMsg(), ackMode, holder.getMaxDeliveries(),
+                                                holder.getConnectionConsumerSession(), holder.isShouldAck());
+            }
+         }
       }
-      catch (JMSException e)
+      catch (Exception e)
       {
-         // TODO: What to do on this case?
-         log.error(e, e);
+         log.error("Failed to process ASF messages", e);
       }
    }
 
@@ -209,7 +241,8 @@ public class JBossSession implements
          throw new InvalidDestinationException("Not a JBossDestination:" + d);
       }
            
-      org.jboss.jms.client.api.ClientProducer producerDelegate = session.createProducerDelegate((JBossDestination)d);
+      ClientProducer producerDelegate = session.createClientProducer((JBossDestination)d);
+      
       return new JBossMessageProducer(producerDelegate);
    }
 
@@ -235,10 +268,8 @@ public class JBossSession implements
          throw new InvalidDestinationException("Not a JBossDestination:" + d);
       }
 
-      log.trace("attempting to create consumer for destination:" + d + (messageSelector == null ? "" : ", messageSelector: " + messageSelector) + (noLocal ? ", noLocal = true" : ""));
-
       org.jboss.jms.client.api.ClientConsumer cd = session.
-         createConsumerDelegate(((JBossDestination)d).toCoreDestination(), messageSelector, noLocal, null, false);
+         createClientConsumer(((JBossDestination)d).toCoreDestination(), messageSelector, noLocal, null, false);
 
       return new JBossMessageConsumer(cd);
    }
@@ -280,7 +311,7 @@ public class JBossSession implements
       }
 
       ClientConsumer cd =
-         session.createConsumerDelegate(((JBossTopic)topic).toCoreDestination(), null, false, name, false);
+         session.createClientConsumer(((JBossTopic)topic).toCoreDestination(), null, false, name, false);
 
       return new JBossMessageConsumer(cd);
    }
@@ -310,7 +341,7 @@ public class JBossSession implements
       }
 
       ClientConsumer cd = session.
-         createConsumerDelegate(((JBossTopic)topic).toCoreDestination(), messageSelector, noLocal, name, false);
+         createClientConsumer(((JBossTopic)topic).toCoreDestination(), messageSelector, noLocal, name, false);
 
       return new JBossMessageConsumer(cd);
    }
@@ -341,7 +372,7 @@ public class JBossSession implements
       }
 
       org.jboss.jms.client.api.ClientBrowser del =
-         session.createBrowserDelegate(((JBossQueue)queue).toCoreDestination(), messageSelector);
+         session.createClientBrowser(((JBossQueue)queue).toCoreDestination(), messageSelector);
 
       return new JBossQueueBrowser(queue, messageSelector, del);
    }
@@ -466,9 +497,19 @@ public class JBossSession implements
     * with messages to be processed by the session's run() method
     */
    void addAsfMessage(JBossMessage m, String consumerID, String queueName, int maxDeliveries,
-                      org.jboss.jms.client.api.ClientSession connectionConsumerSession, boolean shouldAck) throws JMSException
+                      ClientSession connectionConsumerSession, boolean shouldAck) throws JMSException
    {
-      session.addAsfMessage(m, consumerID, queueName, maxDeliveries, connectionConsumerSession, shouldAck);
+      
+      AsfMessageHolder holder =
+         new AsfMessageHolder(m, consumerID, queueName, maxDeliveries,
+                              connectionConsumerSession, shouldAck);
+
+      if (asfMessages == null)
+      {
+         asfMessages = new LinkedList<AsfMessageHolder>();
+      }
+      
+      asfMessages.add(holder);      
    }
       
    // Protected -----------------------------------------------------
@@ -476,5 +517,5 @@ public class JBossSession implements
    // Private -------------------------------------------------------
 
    // Inner classes -------------------------------------------------
-    
+
 }

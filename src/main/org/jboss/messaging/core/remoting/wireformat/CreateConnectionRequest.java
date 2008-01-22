@@ -26,14 +26,13 @@ public class CreateConnectionRequest extends AbstractPacket
    private final String clientVMID;
    private final String username;
    private final String password;
-   private final int failedNodeID;
 
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
    public CreateConnectionRequest(byte version,
-         String remotingSessionID, String clientVMID, int failedNodeID, String username, String password)
+         String remotingSessionID, String clientVMID, String username, String password)
    {
       super(REQ_CREATECONNECTION);
 
@@ -43,7 +42,6 @@ public class CreateConnectionRequest extends AbstractPacket
       this.version = version;
       this.remotingSessionID = remotingSessionID;
       this.clientVMID = clientVMID;
-      this.failedNodeID = failedNodeID;
       this.username = username;
       this.password = password;
    }
@@ -65,11 +63,6 @@ public class CreateConnectionRequest extends AbstractPacket
       return clientVMID;
    }
 
-   public int getFailedNodeID()
-   {
-      return failedNodeID;
-   }
-
    public String getUsername()
    {
       return username;
@@ -87,7 +80,6 @@ public class CreateConnectionRequest extends AbstractPacket
       buf.append(", version=" + version);
       buf.append(", remotingSessionID=" + remotingSessionID);
       buf.append(", clientVMID=" + clientVMID);
-      buf.append(", failedNodeID=" + failedNodeID);
       buf.append(", username=" + username);
       buf.append(", password=" + password);
       buf.append("]");

@@ -21,19 +21,6 @@
  */
 package org.jboss.messaging.core.impl.bdbje.integration.test.unit;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.transaction.xa.Xid;
-
-import org.jboss.messaging.core.Message;
-import org.jboss.messaging.core.MessageReference;
-import org.jboss.messaging.core.Queue;
-import org.jboss.messaging.core.impl.MessageImpl;
-import org.jboss.messaging.core.impl.QueueImpl;
-import org.jboss.messaging.core.impl.bdbje.BDBJEPersistenceManager;
-import org.jboss.messaging.core.tx.MessagingXid;
 import org.jboss.messaging.test.unit.UnitTestCase;
 
 /**

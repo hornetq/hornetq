@@ -21,15 +21,22 @@
  */
 package org.jboss.test.messaging.jms.bridge;
 
+import java.io.ByteArrayOutputStream;
+import java.util.Properties;
+
+import javax.jms.Connection;
+import javax.jms.ConnectionFactory;
+import javax.jms.Destination;
+import javax.jms.MessageConsumer;
+import javax.jms.MessageProducer;
+import javax.jms.Session;
+import javax.jms.TextMessage;
+import javax.management.ObjectName;
+import javax.naming.InitialContext;
+
 import org.jboss.jms.server.bridge.Bridge;
 import org.jboss.messaging.util.Logger;
 import org.jboss.test.messaging.tools.ServerManagement;
-
-import javax.jms.*;
-import javax.management.ObjectName;
-import javax.naming.InitialContext;
-import java.io.ByteArrayOutputStream;
-import java.util.Properties;
 
 /**
  * A BridgeMBeanTest

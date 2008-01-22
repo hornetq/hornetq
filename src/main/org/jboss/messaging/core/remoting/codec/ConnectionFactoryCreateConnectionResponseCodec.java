@@ -39,13 +39,11 @@ public class ConnectionFactoryCreateConnectionResponseCodec extends
          throws Exception
    {
       String id = response.getConnectionID();
-      int serverID = response.getServerID();
-      
-      int bodyLength = sizeof(id) + INT_LENGTH;
+
+      int bodyLength = sizeof(id);
 
       out.putInt(bodyLength);
       out.putNullableString(id);
-      out.putInt(serverID);
    }
 
    @Override
@@ -58,9 +56,8 @@ public class ConnectionFactoryCreateConnectionResponseCodec extends
          return null;
       }
       String id = in.getNullableString();
-      int serverID = in.getInt();
-      
-      return new CreateConnectionResponse(id, serverID);
+
+      return new CreateConnectionResponse(id);
    }
 
    // Package protected ---------------------------------------------

@@ -21,11 +21,12 @@
 */
 package org.jboss.test.messaging.tools.container;
 
+import java.sql.Connection;
+import java.sql.ResultSet;
+
 import javax.naming.InitialContext;
 import javax.sql.DataSource;
 import javax.transaction.TransactionManager;
-import java.sql.Connection;
-import java.sql.ResultSet;
 
 /**
  * An example how to use ServiceContainer to get access to an in-memory database.

@@ -29,7 +29,6 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.jboss.jms.server.MessagingTimeoutFactory;
-import org.jboss.messaging.util.Logger;
 import org.jboss.messaging.core.Consumer;
 import org.jboss.messaging.core.DistributionPolicy;
 import org.jboss.messaging.core.Filter;
@@ -37,6 +36,7 @@ import org.jboss.messaging.core.HandleStatus;
 import org.jboss.messaging.core.MessageReference;
 import org.jboss.messaging.core.PriorityLinkedList;
 import org.jboss.messaging.core.Queue;
+import org.jboss.messaging.util.Logger;
 import org.jboss.util.timeout.Timeout;
 import org.jboss.util.timeout.TimeoutTarget;
 

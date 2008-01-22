@@ -21,13 +21,21 @@
   */
 package org.jboss.test.messaging.jms.selector;
 
-import EDU.oswego.cs.dl.util.concurrent.Latch;
-import org.jboss.test.messaging.JBMServerTestCase;
-
-import javax.jms.*;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+
+import javax.jms.Connection;
+import javax.jms.DeliveryMode;
+import javax.jms.Message;
+import javax.jms.MessageConsumer;
+import javax.jms.MessageProducer;
+import javax.jms.Session;
+import javax.jms.TextMessage;
+
+import org.jboss.test.messaging.JBMServerTestCase;
+
+import EDU.oswego.cs.dl.util.concurrent.Latch;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>

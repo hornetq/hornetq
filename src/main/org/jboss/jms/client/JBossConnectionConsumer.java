@@ -23,6 +23,7 @@ package org.jboss.jms.client;
 
 import java.util.ArrayList;
 import java.util.List;
+
 import javax.jms.ConnectionConsumer;
 import javax.jms.JMSException;
 import javax.jms.Message;
@@ -31,11 +32,12 @@ import javax.jms.ServerSession;
 import javax.jms.ServerSessionPool;
 import javax.jms.Session;
 
-import EDU.oswego.cs.dl.util.concurrent.SynchronizedInt;
 import org.jboss.jms.destination.JBossDestination;
 import org.jboss.jms.message.JBossMessage;
 import org.jboss.messaging.util.Logger;
 import org.jboss.messaging.util.MessageQueueNameHelper;
+
+import EDU.oswego.cs.dl.util.concurrent.SynchronizedInt;
 
 /**
  * This class implements javax.jms.ConnectionConsumer
@@ -113,9 +115,9 @@ public class JBossConnectionConsumer implements ConnectionConsumer, Runnable
 
       // Create a consumer. The ClientConsumer knows we are a connection consumer so will
       // not call pre or postDeliver so messages won't be acked, or stored in session/tx.
-      sess = conn.createSessionDelegate(false, Session.CLIENT_ACKNOWLEDGE, false);
+      sess = conn.createClientSession(false, Session.CLIENT_ACKNOWLEDGE, false);
           
-      cons = sess.createConsumerDelegate(dest.toCoreDestination(), messageSelector, false, subName, true);
+      cons = sess.createClientConsumer(dest.toCoreDestination(), messageSelector, false, subName, true);
 
       this.consumerID = cons.getID();      
         

@@ -12,8 +12,8 @@ import static org.jboss.messaging.core.remoting.wireformat.AbstractPacket.NO_ID_
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.jboss.messaging.util.Logger;
 import org.jboss.messaging.core.remoting.wireformat.AbstractPacket;
+import org.jboss.messaging.util.Logger;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>.

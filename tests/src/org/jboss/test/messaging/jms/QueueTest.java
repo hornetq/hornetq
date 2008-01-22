@@ -21,9 +21,16 @@
   */
 package org.jboss.test.messaging.jms;
 
-import javax.jms.*;
 import java.util.HashSet;
 import java.util.Set;
+
+import javax.jms.BytesMessage;
+import javax.jms.Connection;
+import javax.jms.DeliveryMode;
+import javax.jms.MessageConsumer;
+import javax.jms.MessageProducer;
+import javax.jms.Session;
+import javax.jms.TextMessage;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>

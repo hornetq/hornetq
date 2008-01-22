@@ -21,12 +21,13 @@
  */
 package org.jboss.test.messaging.jms.manual;
 
-import junit.framework.TestCase;
-import org.jboss.messaging.util.Logger;
-
 import javax.jms.Message;
 import javax.jms.MessageListener;
 import javax.jms.TextMessage;
+
+import junit.framework.TestCase;
+
+import org.jboss.messaging.util.Logger;
 
 public class FailoverTest extends TestCase
 {

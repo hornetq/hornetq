@@ -34,7 +34,6 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import javax.transaction.xa.Xid;
 
-import org.jboss.messaging.util.Logger;
 import org.jboss.messaging.core.Binding;
 import org.jboss.messaging.core.Condition;
 import org.jboss.messaging.core.Filter;
@@ -47,6 +46,7 @@ import org.jboss.messaging.core.impl.BindingImpl;
 import org.jboss.messaging.core.impl.ConditionImpl;
 import org.jboss.messaging.core.impl.MessageImpl;
 import org.jboss.messaging.core.impl.filter.FilterImpl;
+import org.jboss.messaging.util.Logger;
 import org.jboss.messaging.util.Pair;
 
 /**

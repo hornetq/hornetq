@@ -6,11 +6,20 @@
  */
 package org.jboss.test.messaging.jms.stress;
 
+import javax.jms.Connection;
+import javax.jms.ConnectionFactory;
+import javax.jms.DeliveryMode;
+import javax.jms.JMSException;
+import javax.jms.Message;
+import javax.jms.MessageConsumer;
+import javax.jms.MessageListener;
+import javax.jms.MessageProducer;
+import javax.jms.Session;
+import javax.jms.Topic;
+import javax.naming.InitialContext;
+
 import org.jboss.messaging.util.Logger;
 import org.jboss.test.messaging.JBMServerTestCase;
-
-import javax.jms.*;
-import javax.naming.InitialContext;
 
 /**
  * Send messages to a topic with selector1, consumer them with multiple consumers and relay them

@@ -21,25 +21,19 @@
  */
 package org.jboss.jms.client.impl;
 
-import static org.jboss.messaging.core.remoting.ConnectorRegistrySingleton.REGISTRY;
-
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.Serializable;
 
 import javax.jms.JMSException;
 
 import org.jboss.jms.client.api.ClientConnection;
 import org.jboss.jms.client.remoting.ConsolidatedRemotingConnectionListener;
-import org.jboss.jms.client.remoting.JMSRemotingConnection;
-import org.jboss.jms.exception.MessagingNetworkFailureException;
+import org.jboss.jms.client.remoting.MessagingRemotingConnection;
+import org.jboss.jms.exception.MessagingJMSException;
+import org.jboss.jms.tx.ResourceManager;
 import org.jboss.jms.tx.ResourceManagerFactory;
-import org.jboss.messaging.core.remoting.Client;
-import org.jboss.messaging.core.remoting.NIOConnector;
-import org.jboss.messaging.core.remoting.ServerLocator;
-import org.jboss.messaging.core.remoting.impl.ClientImpl;
 import org.jboss.messaging.core.remoting.wireformat.CreateConnectionRequest;
 import org.jboss.messaging.core.remoting.wireformat.CreateConnectionResponse;
+import org.jboss.messaging.util.Logger;
 import org.jboss.messaging.util.Version;
 
 /**
@@ -54,19 +48,18 @@ import org.jboss.messaging.util.Version;
  *
  * $Id: ClientConnectionFactoryImpl.java 3602 2008-01-21 17:48:32Z timfox $
  */
-public class ClientConnectionFactoryImpl
-   extends CommunicationSupport implements Serializable
+public class ClientConnectionFactoryImpl implements Serializable
 {
    // Constants ------------------------------------------------------------------------------------
 
    private static final long serialVersionUID = 2512460695662741413L;
+   
+   private static final Logger log = Logger.getLogger(ClientConnectionFactoryImpl.class);
 
    // Attributes -----------------------------------------------------------------------------------
 
-   //This data is needed in order to create a connection
-
-   private String uniqueName;
-
+   private String id;
+   
    private String serverLocatorURI;
 
    private Version serverVersion;
@@ -79,11 +72,6 @@ public class ClientConnectionFactoryImpl
    
    // Static ---------------------------------------------------------------------------------------
    
-   /*
-    * Calculate what version to use.
-    * The client itself has a version, but we also support other versions of servers lower if the
-    * connection version is lower (backwards compatibility)
-    */
    private static Version getVersionToUse(Version connectionVersion)
    {
       Version clientVersion = Version.instance();
@@ -105,12 +93,10 @@ public class ClientConnectionFactoryImpl
 
    // Constructors ---------------------------------------------------------------------------------
 
-   public ClientConnectionFactoryImpl(String uniqueName, String objectID, int serverID, 
+   public ClientConnectionFactoryImpl(String id, int serverID, 
          String serverLocatorURI, Version serverVersion, boolean clientPing, boolean strictTck)
    {
-      super(objectID);
-
-      this.uniqueName = uniqueName;
+      this.id = id;
       this.serverID = serverID;
       this.serverLocatorURI = serverLocatorURI;
       this.serverVersion = serverVersion;
@@ -122,56 +108,41 @@ public class ClientConnectionFactoryImpl
    {
    }
    
-   protected Client getClient()
+   public ClientConnection createConnection(String username, String password) throws JMSException
    {
-      return null;
-   }
-
-   public CreateConnectionResult createConnectionDelegate(String username,
-                                                          String password,
-                                                          int failedNodeID)
-      throws JMSException
-   {
-      // If the method being invoked is createConnectionDelegate() then we must invoke it on the
-      // same remoting client subsequently used by the connection. This is because we need to pass
-      // in the remoting session id in the call to createConnection. All other invocations can be
-      // invoked on an arbitrary client, which can be created for each invocation.
-      //
-      // If we disable pinging on the client then it is a reasonably light weight operation to
-      // create the client since it will use the already existing invoker. This prevents us from
-      // having to maintain a Client instance per connection factory, which gives difficulties in
-      // knowing when to close it.
-      
       Version version = getVersionToUse(serverVersion);
       
       byte v = version.getProviderIncrementingVersion();
                        
-      CreateConnectionResult res;
-      
-      JMSRemotingConnection remotingConnection = null;
+      MessagingRemotingConnection remotingConnection = null;
       try
       {
-         remotingConnection = new JMSRemotingConnection(serverLocatorURI);
+         remotingConnection = new MessagingRemotingConnection(version, serverLocatorURI);
        
          remotingConnection.start();
-         Client client = remotingConnection.getRemotingClient(); 
-         String sessionID = client.getSessionID();
          
-         CreateConnectionRequest request = new CreateConnectionRequest(v, sessionID, JMSClientVMIdentifier.instance, failedNodeID, username, password);
-         CreateConnectionResponse response = (CreateConnectionResponse) sendBlocking(client, this.getID(), this.getVersion(), request);
-         ClientConnectionImpl connectionDelegate = new ClientConnectionImpl(response.getConnectionID(), response.getServerID());
-         connectionDelegate.setStrictTck(strictTck);
-
-         connectionDelegate.setVersionToUse(version);
-         connectionDelegate.setResourceManager(ResourceManagerFactory.instance.checkOutResourceManager(connectionDelegate.getServerID()));
-
-         ConsolidatedRemotingConnectionListener listener =
-            new ConsolidatedRemotingConnectionListener(connectionDelegate);
-
-         if (remotingConnection!=null)remotingConnection.addConnectionListener(listener);
+         String sessionID = remotingConnection.getSessionID();
          
-         res = new CreateConnectionResult(connectionDelegate);
-      } catch (Throwable t)
+         CreateConnectionRequest request =
+            new CreateConnectionRequest(v, sessionID, JMSClientVMIdentifier.instance, username, password);
+         
+         CreateConnectionResponse response =
+            (CreateConnectionResponse)remotingConnection.sendBlocking(id, request);
+         
+         ResourceManager resourceManager = ResourceManagerFactory.instance.checkOutResourceManager(this.serverID);
+            
+         ClientConnectionImpl connection =
+            new ClientConnectionImpl(response.getConnectionID(), serverID, strictTck, version, resourceManager, remotingConnection);
+         
+         //FIXME - get rid of this stupid ConsolidatedThingamajug bollocks
+         
+         ConsolidatedRemotingConnectionListener listener = new ConsolidatedRemotingConnectionListener(connection);
+         
+         remotingConnection.addConnectionListener(listener);
+         
+         return connection;
+      }
+      catch (Throwable t)
       {
          if (remotingConnection != null)
          {
@@ -183,43 +154,21 @@ public class ClientConnectionFactoryImpl
             {
             }
          }
-         throw handleThrowable(t);
-      }
          
-      ClientConnection connectionDelegate = res.getInternalDelegate();
-      
-      if (connectionDelegate != null)
-      {
-         connectionDelegate.setRemotingConnection(remotingConnection);
+         //TODO - we will sort out exception handling further in the refactoring
+         
+         log.error("Failed to start connection ", t);
+         
+         throw new MessagingJMSException("Failed to start connection", t);
       }
-      else
-      {
-         //Wrong server redirect on failure
-         //close the remoting connection
-         try
-         {
-            remotingConnection.stop();
-         }
-         catch (Throwable ignore)
-         {
-         }
-      }
-
-      return res;
    }
    
    // Public ---------------------------------------------------------------------------------------
 
-   public String toString()
-   {
-      return "ConnectionFactoryDelegate[" + id + ", SID=" + serverID + "]";
-   }
-   
    public String getServerLocatorURI()
    {
       return serverLocatorURI;
    }
-
    
    public int getServerID()
    {
@@ -236,12 +185,6 @@ public class ClientConnectionFactoryImpl
       return serverVersion;
    }
    
-   public String getName()
-   {
-      return uniqueName;
-   }
-
-
    public boolean getStrictTck()
    {
        return strictTck;
@@ -253,64 +196,6 @@ public class ClientConnectionFactoryImpl
 
    // Private --------------------------------------------------------------------------------------
    
-   private Client createClient() throws JMSException
-   {
-      //We execute this on it's own client
-      Client client;
-      
-      try
-      {
-         ServerLocator locator = new ServerLocator(serverLocatorURI);
-         NIOConnector connector = REGISTRY.getConnector(locator);
-         client = new ClientImpl(connector, locator);
-         client.connect();
-      }
-      catch (Exception e)
-      {
-         throw new MessagingNetworkFailureException("Failed to connect client", e);
-      }
-      
-      return client;
-   }
-   
-   // Streamable implementation --------------------------------------------
-
-   public void read(DataInputStream in) throws Exception
-   {      
-      super.read(in);
-      
-      uniqueName = in.readUTF();
-      
-      serverLocatorURI = in.readUTF();
-      
-      serverVersion = new Version();
-      
-      serverVersion.read(in);
-      
-      serverID = in.readInt();
-      
-      clientPing = in.readBoolean();
-
-      strictTck = in.readBoolean();
-   }
-
-   public void write(DataOutputStream out) throws Exception
-   {
-      super.write(out);
-      
-      out.writeUTF(uniqueName);
-      
-      out.writeUTF(serverLocatorURI);
-      
-      serverVersion.write(out);
-      
-      out.writeInt(serverID);
-      
-      out.writeBoolean(clientPing);
-
-      out.writeBoolean(strictTck);
-   }
-
    // Inner Classes --------------------------------------------------------------------------------
 
 }

@@ -1,9 +1,9 @@
 package org.jboss.test.messaging.jms;
 
+import javax.naming.InitialContext;
+
 import org.jboss.jms.client.JBossConnectionFactory;
 import org.jboss.test.messaging.JBMServerTestCase;
-
-import javax.naming.InitialContext;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>

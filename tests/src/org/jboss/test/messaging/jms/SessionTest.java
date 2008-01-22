@@ -21,11 +21,27 @@
   */
 package org.jboss.test.messaging.jms;
 
-import org.jboss.jms.client.impl.ClientSessionImpl;
+import javax.jms.Connection;
+import javax.jms.DeliveryMode;
+import javax.jms.JMSException;
+import javax.jms.Message;
+import javax.jms.MessageConsumer;
+import javax.jms.MessageProducer;
+import javax.jms.Queue;
+import javax.jms.QueueConnection;
+import javax.jms.QueueSession;
+import javax.jms.Session;
+import javax.jms.TextMessage;
+import javax.jms.Topic;
+import javax.jms.TopicConnection;
+import javax.jms.TopicSession;
+import javax.jms.XAConnection;
+import javax.jms.XASession;
+
+import org.jboss.jms.client.JBossSession;
+import org.jboss.jms.client.api.ClientSession;
 import org.jboss.jms.tx.ResourceManagerFactory;
 import org.jboss.test.messaging.JBMServerTestCase;
-
-import javax.jms.*;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -63,7 +79,7 @@ public class SessionTest extends JBMServerTestCase
       cons.receive();
       sess.commit();
       
-      ClientSessionImpl del = getDelegate(sess);
+      ClientSession del = ((JBossSession)sess).getDelegate();
       
       //SessionState state = (SessionState)del.getState();
       //ConnectionState cState = (ConnectionState)state.getParent();

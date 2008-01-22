@@ -21,15 +21,16 @@
   */
 package org.jboss.test.messaging.jms.message;
 
-import javax.jms.DeliveryMode;
-import javax.jms.JMSException;
-import javax.jms.Message;
-import javax.jms.ObjectMessage;
 import java.io.File;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.StringTokenizer;
+
+import javax.jms.DeliveryMode;
+import javax.jms.JMSException;
+import javax.jms.Message;
+import javax.jms.ObjectMessage;
 
 /**
  * A test that sends/receives object messages to the JMS provider and verifies their integrity.

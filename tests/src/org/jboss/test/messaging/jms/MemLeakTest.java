@@ -21,21 +21,36 @@
   */
 package org.jboss.test.messaging.jms;
 
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Map;
+
+import javax.jms.Connection;
+import javax.jms.ConnectionFactory;
+import javax.jms.DeliveryMode;
+import javax.jms.JMSException;
+import javax.jms.MessageConsumer;
+import javax.jms.MessageProducer;
+import javax.jms.ObjectMessage;
+import javax.jms.Queue;
+import javax.jms.Session;
+import javax.jms.TextMessage;
+import javax.management.MBeanServer;
+import javax.naming.InitialContext;
+
 import org.jboss.jms.client.JBossConnectionFactory;
 import org.jboss.messaging.util.Logger;
 import org.jboss.profiler.jvmti.InventoryDataPoint;
 import org.jboss.profiler.jvmti.JVMTIInterface;
-import org.jboss.remoting.*;
+import org.jboss.remoting.Client;
+import org.jboss.remoting.ConnectionListener;
+import org.jboss.remoting.InvocationRequest;
+import org.jboss.remoting.InvokerLocator;
+import org.jboss.remoting.ServerInvocationHandler;
+import org.jboss.remoting.ServerInvoker;
 import org.jboss.remoting.callback.InvokerCallbackHandler;
 import org.jboss.remoting.transport.Connector;
 import org.jboss.test.messaging.JBMServerTestCase;
-
-import javax.jms.*;
-import javax.management.MBeanServer;
-import javax.naming.InitialContext;
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Map;
 
 /**
  * 

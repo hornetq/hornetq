@@ -20,6 +20,8 @@ import org.jboss.jms.destination.JBossDestination;
  */
 public interface ClientProducer extends Closeable
 {
+   String getID();
+   
    void setDisableMessageID(boolean value) throws JMSException;
    
    boolean isDisableMessageID() throws JMSException;
@@ -42,22 +44,10 @@ public interface ClientProducer extends Closeable
    
    JBossDestination getDestination() throws JMSException;
    
-   void setDestination(JBossDestination dest) throws JMSException;
-
-   /**
-    * This method is only handled by the advice stack, the corresponding invocation is never sent
-    * to the server.
-    */
    void send(JBossDestination destination,
              Message message,
              int deliveryMode,
              int priority,
              long timeToLive) throws JMSException;
-
-   void send(JBossDestination destination,
-             Message message,
-             int deliveryMode,
-             int priority,
-             long timeToLive, boolean keepOriginalID) throws JMSException;
 
 }

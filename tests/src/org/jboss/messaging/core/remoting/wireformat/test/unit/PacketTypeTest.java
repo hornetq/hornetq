@@ -84,8 +84,8 @@ import junit.framework.TestCase;
 
 import org.apache.mina.common.IoBuffer;
 import org.jboss.jms.client.impl.Ack;
-import org.jboss.jms.client.impl.Cancel;
 import org.jboss.jms.client.impl.AckImpl;
+import org.jboss.jms.client.impl.Cancel;
 import org.jboss.jms.client.impl.CancelImpl;
 import org.jboss.jms.destination.JBossQueue;
 import org.jboss.jms.destination.JBossTopic;
@@ -416,18 +416,17 @@ public class PacketTypeTest extends TestCase
       byte version = randomByte();
       String remotingSessionID = randomString();
       String clientVMID = randomString();
-      int failedNodeID = 0;
       String username = null;
       String password = null;
 
       CreateConnectionRequest request = new CreateConnectionRequest(version,
-            remotingSessionID, clientVMID, failedNodeID, username, password);
+            remotingSessionID, clientVMID, username, password);
       addVersion(request);
       
       AbstractPacketCodec<CreateConnectionRequest> codec = new ConnectionFactoryCreateConnectionRequestCodec();
       SimpleRemotingBuffer buffer = encode(request, codec);
       checkHeader(buffer, request);
-      checkBody(buffer, version, remotingSessionID, clientVMID, failedNodeID, username, password);      
+      checkBody(buffer, version, remotingSessionID, clientVMID, username, password);      
       buffer.rewind();
 
       AbstractPacket decodedPacket = codec.decode(buffer);
@@ -440,7 +439,6 @@ public class PacketTypeTest extends TestCase
       assertEquals(request.getRemotingSessionID(), decodedRequest
             .getRemotingSessionID());
       assertEquals(request.getClientVMID(), decodedRequest.getClientVMID());
-      assertEquals(request.getFailedNodeID(), decodedRequest.getFailedNodeID());
       assertEquals(request.getUsername(), decodedRequest.getUsername());
       assertEquals(request.getPassword(), decodedRequest.getPassword());
    }
@@ -448,13 +446,13 @@ public class PacketTypeTest extends TestCase
    public void testCreateConnectionResponse() throws Exception
    {
       CreateConnectionResponse response = new CreateConnectionResponse(
-            randomString(), randomInt());
+            randomString());
       addVersion(response);
       
       AbstractPacketCodec<CreateConnectionResponse> codec = new ConnectionFactoryCreateConnectionResponseCodec();
       SimpleRemotingBuffer buffer = encode(response, codec);
       checkHeader(buffer, response);
-      checkBody(buffer, response.getConnectionID(), response.getServerID());
+      checkBody(buffer, response.getConnectionID());
       buffer.rewind();
 
       AbstractPacket decodedPacket = codec.decode(buffer);
@@ -464,7 +462,6 @@ public class PacketTypeTest extends TestCase
       assertEquals(RESP_CREATECONNECTION, decodedResponse.getType());
       assertEquals(response.getConnectionID(), decodedResponse
             .getConnectionID());
-      assertEquals(response.getServerID(), decodedResponse.getServerID());
    }
 
    

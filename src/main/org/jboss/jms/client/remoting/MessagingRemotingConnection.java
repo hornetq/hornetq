@@ -23,11 +23,21 @@ package org.jboss.jms.client.remoting;
 
 import static org.jboss.messaging.core.remoting.ConnectorRegistrySingleton.REGISTRY;
 
-import org.jboss.messaging.util.Logger;
+import java.io.IOException;
+
+import javax.jms.JMSException;
+
+import org.jboss.jms.exception.MessagingJMSException;
+import org.jboss.jms.exception.MessagingNetworkFailureException;
 import org.jboss.messaging.core.remoting.Client;
 import org.jboss.messaging.core.remoting.NIOConnector;
 import org.jboss.messaging.core.remoting.ServerLocator;
 import org.jboss.messaging.core.remoting.impl.ClientImpl;
+import org.jboss.messaging.core.remoting.wireformat.AbstractPacket;
+import org.jboss.messaging.core.remoting.wireformat.JMSExceptionMessage;
+import org.jboss.messaging.util.Logger;
+import org.jboss.messaging.util.Version;
+import org.jgroups.persistence.CannotConnectException;
 
 /**
  * 
@@ -42,11 +52,11 @@ import org.jboss.messaging.core.remoting.impl.ClientImpl;
  * @version <tt>$Revision$</tt>
  * $Id$
  */
-public class JMSRemotingConnection
+public class MessagingRemotingConnection
 {
    // Constants ------------------------------------------------------------------------------------
 
-   private static final Logger log = Logger.getLogger(JMSRemotingConnection.class);
+   private static final Logger log = Logger.getLogger(MessagingRemotingConnection.class);
    
    // Static ---------------------------------------------------------------------------------------
 
@@ -56,21 +66,20 @@ public class JMSRemotingConnection
 
    private Client client;
 
-   //private CallbackManager callbackManager;
-
-   // When a failover is performed, this flag is set to true
-   protected boolean failed = false;
-
    // Maintaining a reference to the remoting connection listener for cases when we need to
    // explicitly remove it from the remoting client
    private ConsolidatedRemotingConnectionListener remotingConnectionListener;
-
+   
+   private Version version;
+     
    // Constructors ---------------------------------------------------------------------------------
 
-   public JMSRemotingConnection(String serverLocatorURI) throws Exception
+   public MessagingRemotingConnection(Version version, String serverLocatorURI) throws Exception
    {
-      this.serverLocator = new ServerLocator(serverLocatorURI);
-
+      this.version = version;
+      
+      serverLocator = new ServerLocator(serverLocatorURI);
+      
       log.trace(this + " created");
    }
 
@@ -113,48 +122,50 @@ public class JMSRemotingConnection
       log.trace(this + " closed");
    }
    
-   public Client getRemotingClient()
+   public String getSessionID()
    {
-      return client;
+      return client.getSessionID();
    }
-
-//   public CallbackManager getCallbackManager()
-//   {
-//      return callbackManager;
-//   }
-//
-
-    public synchronized boolean isFailed()
+   
+   public void sendOneWay(String id, AbstractPacket packet) throws JMSException
    {
-      return failed;
-   }
-
-   /**
-    * Used by the FailoverCommandCenter to mark this remoting connection as "condemned", following
-    * a failure detected by either a failed invocation, or the ConnectionListener.
-    */
-   public synchronized void setFailed()
-   {
-      failed = true;
+      packet.setTargetID(id);
       
-      stop();
+      packet.setVersion(version.getProviderIncrementingVersion());
+      
+      client.sendOneWay(packet);      
    }
-
-   /**
-    * @return true if the listener was correctly installed, or false if the add attepmt was ignored
-    *         because there is already another listener installed.
-    */
-   public synchronized boolean addConnectionListener(ConsolidatedRemotingConnectionListener listener)
+   
+   public AbstractPacket sendBlocking(String id, AbstractPacket packet) throws JMSException
    {
-      if (remotingConnectionListener != null)
+      packet.setTargetID(id);
+      
+      packet.setVersion(version.getProviderIncrementingVersion());
+      
+      try
       {
-         return false;
+         AbstractPacket response = (AbstractPacket) client.sendBlocking(packet);
+         
+         if (response instanceof JMSExceptionMessage)
+         {
+            JMSExceptionMessage message = (JMSExceptionMessage) response;
+            
+            throw message.getException();
+         }
+         else
+         {
+            return response;
+         }
       }
-
-      client.addConnectionListener(listener);
-      remotingConnectionListener = listener;
-
-      return true;
+      catch (Throwable t)
+      {
+         throw handleThrowable(t);
+      }
+   }
+   
+   public synchronized void addConnectionListener(ConsolidatedRemotingConnectionListener listener)
+   {
+      this.remotingConnectionListener = listener;
    }
 
    public synchronized ConsolidatedRemotingConnectionListener getConnectionListener()
@@ -180,16 +191,52 @@ public class JMSRemotingConnection
       return toReturn;
    }
 
-   public String toString()
-   {
-      return "JMSRemotingConnection[" + serverLocator.getURI() + "]";
-   }
-
    // Package protected ----------------------------------------------------------------------------
 
    // Protected ------------------------------------------------------------------------------------
 
    // Private --------------------------------------------------------------------------------------
+   
+   private JMSException handleThrowable(Throwable t)
+   {
+      // ConnectionFailedException could happen during ConnectionFactory.createConnection.
+      // IOException could happen during an interrupted exception.
+      // CannotConnectionException could happen during a communication error between a connected
+      // remoting client and the server (what means any new invocation).
+
+      if (t instanceof JMSException)
+      {
+         return (JMSException)t;
+      }
+      else if ((t instanceof IOException))
+      {
+         return new MessagingNetworkFailureException((Exception)t);
+      }
+      //This can occur if failure happens when Client.connect() is called
+      //Ideally remoting should have a consistent API
+      else if (t instanceof RuntimeException)
+      {
+         RuntimeException re = (RuntimeException)t;
+
+         Throwable initCause = re.getCause();
+
+         if (initCause != null)
+         {
+            do
+            {
+               if ((initCause instanceof CannotConnectException) ||
+                        (initCause instanceof IOException))
+               {
+                  return new MessagingNetworkFailureException((Exception)initCause);
+               }
+               initCause = initCause.getCause();
+            }
+            while (initCause != null);
+         }
+      }
+
+      return new MessagingJMSException("Failed to invoke", t);
+   }  
    
    // Inner classes --------------------------------------------------------------------------------
 
