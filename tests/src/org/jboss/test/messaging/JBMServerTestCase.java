@@ -21,21 +21,6 @@
    */
 package org.jboss.test.messaging;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-
-import javax.jms.Queue;
-import javax.jms.Topic;
-import javax.management.ObjectName;
-import javax.naming.InitialContext;
-import javax.sql.DataSource;
-import javax.transaction.TransactionManager;
-
 import org.jboss.jms.client.JBossConnectionFactory;
 import org.jboss.jms.server.security.Role;
 import org.jboss.jms.tx.ResourceManagerFactory;
@@ -46,6 +31,20 @@ import org.jboss.test.messaging.tools.ServerManagement;
 import org.jboss.test.messaging.tools.container.DatabaseClearer;
 import org.jboss.test.messaging.tools.container.Server;
 import org.jboss.tm.TransactionManagerLocator;
+
+import javax.jms.Queue;
+import javax.jms.Topic;
+import javax.management.ObjectName;
+import javax.naming.InitialContext;
+import javax.sql.DataSource;
+import javax.transaction.TransactionManager;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 
 /**
  * @author <a href="mailto:adrian@jboss.org">Adrian Brock</a>
@@ -257,21 +256,6 @@ public class JBMServerTestCase extends JBMBaseTestCase
       //deployAdministeredObjects();
    }
 
-   public synchronized void stopDestinationManager() throws Exception
-   {
-      for (int i = 0; i < getServerCount(); i++)
-      {
-         servers.get(i).stopDestinationManager();
-      }
-   }
-
-   public synchronized void startDestinationManager() throws Exception
-   {
-      for (int i = 0; i < getServerCount(); i++)
-      {
-         servers.get(i).startDestinationManager();
-      }
-   }
 
    protected boolean getClearDatabase()
    {

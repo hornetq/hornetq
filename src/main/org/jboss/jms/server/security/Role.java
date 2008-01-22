@@ -29,14 +29,18 @@ import java.io.Serializable;
  */
 public class Role implements Serializable
 {
-    String name;
+   public static final String WRITE_NAME="write";
+   public static final String READ_NAME="read";
+   public static final String CREATE_NAME="create";
+   String name;
     private boolean read = false;
     private boolean write = false;
     private boolean create = false;
 
 
-    public Role()
+    public Role(String name)
     {
+       this.name = name;
     }
 
     public Role(String name, boolean read, boolean write, boolean create)
@@ -88,9 +92,38 @@ public class Role implements Serializable
         this.create = create;
     }
 
+   public boolean isCheckType(CheckType checkType)
+   {
+      return checkType.equals(CheckType.TYPE_READ) ? read : checkType.equals(CheckType.TYPE_WRITE) ? write : create;
+   }
     public String toString()
     {
         return "Role {name=" + name + ";read=" + read + ";write=" + write + ";create=" + create + "}";
     }
 
+
+   public boolean equals(Object o)
+   {
+      if (this == o) return true;
+      if (o == null || getClass() != o.getClass()) return false;
+
+      Role role = (Role) o;
+
+      if (create != role.create) return false;
+      if (read != role.read) return false;
+      if (write != role.write) return false;
+      if (!name.equals(role.name)) return false;
+
+      return true;
+   }
+
+   public int hashCode()
+   {
+      int result;
+      result = name.hashCode();
+      result = 31 * result + (read ? 1 : 0);
+      result = 31 * result + (write ? 1 : 0);
+      result = 31 * result + (create ? 1 : 0);
+      return result;
+   }
 }

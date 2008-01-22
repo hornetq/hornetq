@@ -75,6 +75,16 @@
                <value>INSERT INTO JBM_USER (USER_ID,PASSWD,CLIENTID) VALUES ('dilbert','dogbert','dilbert-id')
                </value>
             </entry>
+            <entry>
+               <key>POPULATE.TABLES.2</key>
+               <value>INSERT INTO JBM_USER (USER_ID,PASSWD,CLIENTID) VALUES ('guest','guest')
+               </value>
+            </entry>
+            <entry>
+               <key>POPULATE.TABLES.3</key>
+               <value>INSERT INTO JBM_ROLE (ROLE_ID, USER_ID) VALUES ('guest','guest')
+               </value>
+            </entry>
          </map>
       </property>
    </bean>
@@ -102,6 +112,10 @@
       </property>
    </bean> 
    
-      
+   <bean name="JNDIObjectDeployer" class="org.jboss.jms.jndi.JNDIObjectDeployer">
+      <property name="messagingServer">
+         <inject bean="MessagingServer"/>
+      </property>
+   </bean>
  
 </deployment>

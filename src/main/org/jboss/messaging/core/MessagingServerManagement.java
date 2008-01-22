@@ -21,9 +21,9 @@
   */
 package org.jboss.messaging.core;
 
-import java.util.List;
-
 import org.jboss.messaging.core.impl.server.SubscriptionInfo;
+
+import java.util.List;
 
 /**
  * This interface describes the management interface exposed by the server
@@ -45,13 +45,13 @@ public interface MessagingServerManagement
    
    List<SubscriptionInfo> listAllSubscriptionsForTopic(String topicName) throws Exception;
    
-   void createQueue(String name, String jndiName) throws Exception;
+   void createQueue(String name) throws Exception;
    
-   void createTopic(String name, String jndiName) throws Exception;
+   void createTopic(String name) throws Exception;
    
-   void destroyQueue(String name, String jndiName) throws Exception;
+   void destroyQueue(String name) throws Exception;
    
-   void destroyTopic(String name, String jndiName) throws Exception;
+   void destroyTopic(String name) throws Exception;
    
    boolean isStarted();
 //

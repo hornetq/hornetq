@@ -305,6 +305,12 @@
     <target name="deploy" depends="jar, sar">
         <copy file="${build.lib}/jboss-${module.name}.jar"
             todir="${jboss.home}/server/${jboss.config}/lib"/>
+       <copy file="${source.etc}/server/default/deploy/jbm-configuration.xml"
+            todir="${jboss.home}/server/${jboss.config}/conf"/>
+       <copy file="${source.etc}/server/default/deploy/jbm-jndi.xml"
+            todir="${jboss.home}/server/${jboss.config}/conf"/>
+       <copy file="${source.etc}/server/default/deploy/queues.xml"
+            todir="${jboss.home}/server/${jboss.config}/conf"/>
        <!--<copy file="${build.lib}/jboss-${module.name}.sar"
             todir="${jboss.home}/server/${jboss.config}/deploy"/>-->
        <copy
@@ -355,7 +361,21 @@
 
    <target name="sar-structure" depends="jar-structure">
       <copy todir="${build.sar}/META-INF" file="${source.etc}/server/default/deploy/jbm-beans.xml"/>
-      <copy todir="${build.sar}" file="${source.etc}/server/default/deploy/jbm-configuration.xml"/>
+      <!--<copy todir="${build.sar}" file="${source.etc}/server/default/deploy/jbm-configuration.xml"/>-->
+            <copy todir="${build.sar}">
+         <fileset dir="${project.thirdparty}/apache-mina/lib">
+            <include name="mina-core.jar"/>
+         </fileset>
+         <fileset dir="${project.thirdparty}/slf4j/api/lib">
+            <include name="**.jar"/>
+         </fileset>
+         <fileset dir="${project.thirdparty}/slf4j/log4j/lib">
+            <include name="**.jar"/>
+         </fileset>
+         <fileset dir="${project.thirdparty}/jgroups/lib">
+            <include name="**.jar"/>
+         </fileset>
+      </copy>
    </target>
 
    <target name="embedded-structure" depends="jar-structure">
@@ -488,6 +508,8 @@
             <include name="org/jboss/messaging/util/**/*.class"/>
 	    <include name="org/jboss/messaging/core/impl/message/**/*.class"/>
             <include name="org/jboss/messaging/core/contract/**/*.class"/>
+            <include name="org/jboss/messaging/core/remoting/**/*.class"/>
+            <include name="org/jboss/messaging/core/**/*.class"/>
             <include name="org/jboss/jms/server/remoting/**/*.class"/>
          </fileset>
          <fileset dir="${build.etc}">

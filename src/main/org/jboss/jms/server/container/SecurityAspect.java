@@ -21,32 +21,28 @@
   */
 package org.jboss.jms.server.container;
 
-import java.util.HashSet;
-import java.util.Set;
-
-import javax.jms.JMSSecurityException;
-
 import org.jboss.jms.server.SecurityStore;
 import org.jboss.jms.server.endpoint.ServerConnectionEndpoint;
 import org.jboss.jms.server.security.CheckType;
-import org.jboss.jms.server.security.SecurityMetadata;
-import org.jboss.messaging.util.Logger;
 import org.jboss.messaging.core.Destination;
-import org.jboss.messaging.core.DestinationType;
-import org.jboss.security.SimplePrincipal;
+import org.jboss.messaging.util.Logger;
+
+import javax.jms.JMSSecurityException;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * This aspect enforces the JBossMessaging JMS security policy.
- * 
+ *
  * This aspect is PER_INSTANCE
- * 
+ *
  * For performance reasons we cache access rights in the interceptor for a maximum of
  * INVALIDATION_INTERVAL milliseconds.
  * This is because we don't want to do a full authentication and authorization on every send,
  * for example, since this will drastically reduce performance.
  * This means any changes to security data won't be reflected until INVALIDATION_INTERVAL
  * milliseconds later.
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @version <tt>$Revision 1.1 $</tt>
@@ -60,56 +56,56 @@ public class SecurityAspect
    private static final Logger log = Logger.getLogger(SecurityAspect.class);
 
    // Static --------------------------------------------------------
-   
+
    // Attributes ----------------------------------------------------
-   
+
    private boolean trace = log.isTraceEnabled();
-   
+
    private Set<Destination> readCache;
-   
+
    private Set<Destination> writeCache;
-   
-   private Set<Destination> createCache;
-   
+
+   private Set createCache;
+
    //TODO Make this configurable
    private static final long INVALIDATION_INTERVAL = 15000;
-   
+
    private long lastCheck;
-      
+
    // Constructors --------------------------------------------------
-   
+
    // Public --------------------------------------------------------
    public SecurityAspect()
    {
-      readCache = new HashSet<Destination>();
-      
-      writeCache = new HashSet<Destination>();
-      
-      createCache = new HashSet<Destination>();
+      readCache = new HashSet();
+
+      writeCache = new HashSet();
+
+      createCache = new HashSet();
    }
-   
+
    // Package protected ---------------------------------------------
-   
+
    // Protected -----------------------------------------------------
-   
+
    // Private -------------------------------------------------------
-         
+
    public boolean checkCached(Destination dest, CheckType checkType)
    {
       long now = System.currentTimeMillis();
-      
+
       boolean granted = false;
-      
+
       if (now - lastCheck > INVALIDATION_INTERVAL)
       {
          readCache.clear();
-         
+
          writeCache.clear();
-         
-         createCache.clear();         
+
+         createCache.clear();
       }
       else
-      {         
+      {
          switch (checkType.type)
          {
             case CheckType.TYPE_READ:
@@ -133,12 +129,12 @@ public class SecurityAspect
             }
          }
       }
-      
+
       lastCheck = now;
-      
+
       return granted;
    }
-   
+
    public void check(Destination dest, CheckType checkType, ServerConnectionEndpoint conn)
       throws JMSSecurityException
    {
@@ -149,40 +145,28 @@ public class SecurityAspect
       }
 
       if (trace) { log.trace("checking access permissions to " + dest); }
-      
+
       if (checkCached(dest, checkType))
       {
          // OK
          return;
       }
 
-      
-      //FIXME - this check does not belong here
-      boolean isQueue = dest.getType() == DestinationType.QUEUE;
       String name = dest.getName();
 
       SecurityStore sm = conn.getSecurityManager();
-      SecurityMetadata securityMetadata = sm.getSecurityMetadata(isQueue, name);
-
-      if (securityMetadata == null)
-      {
-         throw new JMSSecurityException("No security configuration avaliable for " + name);
-      }
 
       // Authenticate. Successful autentication will place a new SubjectContext on thread local,
       // which will be used in the authorization process. However, we need to make sure we clean up
       // thread local immediately after we used the information, otherwise some other people
       // security my be screwed up, on account of thread local security stack being corrupted.
-      
+
       sm.authenticate(conn.getUsername(), conn.getPassword());
 
       // Authorize
-      Set<SimplePrincipal> principals = checkType == CheckType.READ ? securityMetadata.getReadPrincipals() :
-                       checkType == CheckType.WRITE ? securityMetadata.getWritePrincipals() :
-                       securityMetadata.getCreatePrincipals();
       try
       {
-         if (!sm.authorize(conn.getUsername(), principals, checkType))
+         if (!sm.authorize(conn.getUsername(), dest, checkType))
          {
             String msg = "User: " + conn.getUsername() +
                " is not authorized to " +

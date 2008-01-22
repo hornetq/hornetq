@@ -23,12 +23,12 @@ package org.jboss.jms.server;
 
 import org.jboss.jms.server.security.CheckType;
 import org.jboss.jms.server.security.Role;
-import org.jboss.jms.server.security.SecurityMetadata;
+import org.jboss.messaging.core.Destination;
+import org.jboss.messaging.util.HierarchicalRepository;
 
 import javax.jms.JMSSecurityException;
 import javax.security.auth.Subject;
 import java.util.HashSet;
-import java.util.Set;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
@@ -38,15 +38,6 @@ import java.util.Set;
  */
 public interface SecurityStore
 {
-   /**
-    * @return the security meta-data for the given destination.
-    */
-   SecurityMetadata getSecurityMetadata(boolean isQueue, String destName);
-
-   void setSecurityConfig(boolean isQueue, String destName, HashSet<Role> conf) throws Exception;
-   
-   void clearSecurityConfig(boolean isQueue, String name) throws Exception;
-
    /**
     * Authenticate the specified user with the given password. Implementations are most likely to
     * delegates to a JBoss AuthenticationManager.
@@ -67,5 +58,7 @@ public interface SecurityStore
     * @param rolePrincipals - The set of roles allowed to read/write/create the destination.
     * @return true if the subject is authorized, or false if not.
     */
-   boolean authorize(String user, Set rolePrincipals, CheckType checkType);  
+   boolean authorize(String user,  Destination destination, CheckType checkType);
+
+   void setSecurityRepository(HierarchicalRepository<HashSet<Role>> securityRepository);
 }

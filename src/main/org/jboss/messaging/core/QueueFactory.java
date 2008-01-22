@@ -21,6 +21,8 @@
   */
 package org.jboss.messaging.core;
 
+import org.jboss.messaging.util.HierarchicalRepository;
+
 
 /**
  * 
@@ -36,4 +38,6 @@ public interface QueueFactory
 {
    Queue createQueue(long id, String name, Filter filter,
                      boolean durable, boolean temporary);
+   
+   void setQueueSettingsRepository(HierarchicalRepository<QueueSettings> queueSettingsRepository);
 }

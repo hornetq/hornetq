@@ -21,29 +21,21 @@
   */
 package org.jboss.jms.server.endpoint;
 
-import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_UPDATECALLBACK;
-import static org.jboss.messaging.core.remoting.wireformat.PacketType.REQ_CREATECONNECTION;
-
-import java.util.List;
-import java.util.Map;
-
-import javax.jms.JMSException;
-
-import org.jboss.jms.client.impl.ClientConnectionImpl;
 import org.jboss.jms.client.impl.ClientConnectionFactoryImpl;
+import org.jboss.jms.client.impl.ClientConnectionImpl;
 import org.jboss.jms.client.impl.CreateConnectionResult;
 import org.jboss.jms.exception.MessagingJMSException;
 import org.jboss.messaging.core.MessagingServer;
 import org.jboss.messaging.core.remoting.PacketHandler;
 import org.jboss.messaging.core.remoting.PacketSender;
-import org.jboss.messaging.core.remoting.wireformat.AbstractPacket;
-import org.jboss.messaging.core.remoting.wireformat.CreateConnectionRequest;
-import org.jboss.messaging.core.remoting.wireformat.CreateConnectionResponse;
-import org.jboss.messaging.core.remoting.wireformat.JMSExceptionMessage;
-import org.jboss.messaging.core.remoting.wireformat.PacketType;
-import org.jboss.messaging.core.remoting.wireformat.UpdateCallbackMessage;
+import org.jboss.messaging.core.remoting.wireformat.*;
+import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_UPDATECALLBACK;
+import static org.jboss.messaging.core.remoting.wireformat.PacketType.REQ_CREATECONNECTION;
 import org.jboss.messaging.util.ExceptionUtil;
 import org.jboss.messaging.util.Logger;
+
+import javax.jms.JMSException;
+import java.util.Map;
 
 /**
  * Concrete implementation of ConnectionFactoryEndpoint
@@ -73,8 +65,6 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
 
    private String id;
 
-   private List<String> jndiBindings;
-
    private int prefetchSize;
 
    private int defaultTempQueueFullSize;
@@ -95,15 +85,9 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
 
    
    // Constructors ---------------------------------------------------------------------------------
-
-   /**
-    * @param jndiBindings - names under which the corresponding JBossConnectionFactory is bound in
-    *        JNDI.
-    */
    public ServerConnectionFactoryEndpoint(String uniqueName, String id, MessagingServer messagingServer,
                                           String defaultClientID,
-                                          List<String> jndiBindings,
-                                          int preFetchSize,                                          
+                                          int preFetchSize,
                                           int defaultTempQueueFullSize,
                                           int defaultTempQueuePageSize,
                                           int defaultTempQueueDownCacheSize,
@@ -113,7 +97,6 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
       this.messagingServer = messagingServer;
       this.clientID = defaultClientID;
       this.id = id;
-      this.jndiBindings = jndiBindings;
       this.prefetchSize = preFetchSize;
       this.defaultTempQueueFullSize = defaultTempQueueFullSize;
       this.defaultTempQueuePageSize = defaultTempQueuePageSize;
@@ -236,11 +219,6 @@ public class ServerConnectionFactoryEndpoint implements ConnectionFactoryEndpoin
    public String getID()
    {
       return id;
-   }
-
-   public List<String> getJNDIBindings()
-   {
-      return jndiBindings;
    }
 
    public MessagingServer getMessagingServer()

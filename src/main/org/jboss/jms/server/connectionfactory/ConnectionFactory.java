@@ -6,17 +6,10 @@
  */
 package org.jboss.jms.server.connectionfactory;
 
-import java.util.List;
-import java.util.Map;
-
 import org.jboss.jms.client.plugin.LoadBalancingFactory;
-import org.jboss.jms.server.ConnectionFactoryManager;
-import org.jboss.jms.server.ConnectionManager;
 import org.jboss.messaging.util.Logger;
-import org.jboss.messaging.core.MessagingServer;
-import org.jboss.messaging.core.remoting.ServerLocator;
-import org.jboss.messaging.core.remoting.impl.mina.MinaService;
-import org.jboss.messaging.util.ExceptionUtil;
+
+import java.util.List;
 
 /**
  * A deployable JBoss Messaging connection factory.
@@ -62,14 +55,6 @@ public class ConnectionFactory
    
    private int dupsOKBatchSize = 1000;
 
-   private MessagingServer messagingServer;
-   
-   private ConnectionFactoryManager connectionFactoryManager;
-   
-   private MinaService minaService;
-
-   private boolean started;
-
    private boolean strictTck;
    
    private boolean disableRemotingChecks;
@@ -92,67 +77,15 @@ public class ConnectionFactory
 
    // ServiceMBeanSupport overrides ----------------------------------------------------------------
 
-   public synchronized void start() throws Exception
-   {
-      try
-      {
-         log.debug(this + " starting");
-
-         started = true;
-         
-         if (minaService == null)
-         {
-            throw new IllegalArgumentException("A MinaService must be specified for " +
-                                               "each Connection Factory");
-         }
-         
-         if (messagingServer == null)
-         {
-            throw new IllegalArgumentException("MessagingServer must be specified for " +
-                                               "each Connection Factory");
-         }
-      
-         ServerLocator serverLocator = minaService.getLocator();
-
-         connectionFactoryManager = messagingServer.getConnectionFactoryManager();
-
-         // We use the MBean service name to uniquely identify the connection factory
-         
-         connectionFactoryManager.
-            registerConnectionFactory(getName(), clientID, jndiBindings,
-                                      serverLocator.getURI(), false, prefetchSize, 
-                                      defaultTempQueueFullSize, defaultTempQueuePageSize,                                      
-                                      defaultTempQueueDownCacheSize, dupsOKBatchSize, supportsFailover, supportsLoadBalancing,
-                                      loadBalancingFactory, strictTck);               
-      
-         log.info("Server locator is " + serverLocator);
-         log.info(this + " started");
-      }
-      catch (Throwable t)
-      {
-         throw ExceptionUtil.handleJMXInvocation(t, this + " startService");
-      } 
-   }
-   
-   public synchronized void stop() throws Exception
-   {
-      try
-      {
-         started = false;
-         
-         connectionFactoryManager.
-            unregisterConnectionFactory(getName());
-         
-         log.info(this + " undeployed");
-      }
-      catch (Throwable t)
-      {
-         throw ExceptionUtil.handleJMXInvocation(t, this + " startService");
-      } 
-   }
 
    // JMX managed attributes -----------------------------------------------------------------------
-   
+
+
+   public void setClientID(String clientID)
+   {
+      this.clientID = clientID;
+   }
+
    public int getDefaultTempQueueFullSize()
    {
       return defaultTempQueueFullSize;
@@ -222,21 +155,6 @@ public class ConnectionFactory
       return jndiBindings;
    }
 
-   public MessagingServer getMessagingServer()
-   {
-      return messagingServer;
-   }
-
-   public void setMessagingServer(MessagingServer messagingServer)
-   {
-      this.messagingServer = messagingServer;
-   }
-
-   public void setMinaService(MinaService service)
-   {
-      this.minaService = service;
-   }
-
    public boolean isSupportsFailover()
    {
       return supportsFailover;
@@ -244,11 +162,6 @@ public class ConnectionFactory
    
    public void setSupportsFailover(boolean supportsFailover)
    {
-      if (started)
-      {
-         log.warn("supportsFailover can only be changed when connection factory is stopped");
-         return;
-      }
       this.supportsFailover = supportsFailover;
    }
    
@@ -259,11 +172,6 @@ public class ConnectionFactory
    
    public void setSupportsLoadBalancing(boolean supportsLoadBalancing)
    {
-      if (started)
-      {
-         log.warn("supportsLoadBalancing can only be changed when connection factory is stopped");
-         return;
-      }
       this.supportsLoadBalancing = supportsLoadBalancing;
    }
 
@@ -274,11 +182,6 @@ public class ConnectionFactory
 
    public void setLoadBalancingFactory(String factoryName) throws Exception
    {
-      if (started)
-      {
-         log.warn("Load balancing policy can only be changed when connection factory is stopped");
-         return;
-      }
       
       //We don't use Class.forName() since then it won't work with scoped deployments
       Class clz = Thread.currentThread().getContextClassLoader().loadClass(factoryName);
@@ -288,12 +191,6 @@ public class ConnectionFactory
    
    public void setDupsOKBatchSize(int size) throws Exception
    {
-      if (started)
-      {
-         log.warn("DupsOKBatchSize can only be changed when connection factory is stopped");
-         return;
-      }
-
       this.dupsOKBatchSize = size;
    }
 
@@ -309,12 +206,6 @@ public class ConnectionFactory
 
    public void setStrictTck(boolean strictTck)
    {
-      if (started)
-      {
-         log.warn("StrictTCK can only be changed when connection factory is stopped");
-         return;         
-      }
-      
    	this.strictTck = strictTck;
    }
    
@@ -325,12 +216,6 @@ public class ConnectionFactory
    
    public void setDisableRemotingChecks(boolean disable)
    {
-      if (started)
-      {
-         log.warn("DisableRemotingChecks can only be changed when connection factory is stopped");
-         return;
-      }
-      
    	this.disableRemotingChecks = disable;
    }
 
@@ -354,30 +239,6 @@ public class ConnectionFactory
 
    // Private --------------------------------------------------------------------------------------
 
-   private boolean checkParam(Map params, String key, String value)
-   {
-   	String val = (String)params.get(key);
-   	if (val == null)
-   	{
-   		log.error("Parameter " + key + " is not specified in the remoting congiguration");
-   		return false;
-   	}   	
-   	else if (!val.equals(value))
-   	{
-   		log.error("Parameter " + key + " has a different value ( " + val + ") to the default shipped with this version of " +
-   				    "JBM (" + value + "). " +
-   				    "There is rarely a valid reason to change this parameter value. " +
-   				    "If you are using ServiceBindingManager to supply the remoting configuration you should check " +
-   				    "that the parameter value specified there exactly matches the value in the configuration supplied with JBM. " +
-   				    "This connection factory will now not deploy. To override these checks set 'disableRemotingChecks' to " +
-   				    "true on the connection factory. Only do this if you are absolutely sure you know the consequences.");
-   		return false;
-   	}
-   	else
-   	{
-   		return true;
-   	}
-   }
    
    // Inner classes --------------------------------------------------------------------------------
 }

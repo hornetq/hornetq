@@ -80,6 +80,7 @@
          <fileset dir="${jboss.home}/server/${messaging.config.source}">
             <include name="conf/**"/>
             <include name="deploy/**"/>
+            <include name="deployers/**"/>
             <include name="lib/**"/>
 	    <include name="farm/**"/>
 	    <include name="deploy-hasingleton/**"/>
@@ -107,28 +108,30 @@
 
       <!-- copy jboss-messaging.jar to the lib directory. It needs to be in lib so it can be seen by the JTA
            recovery manager for example -->
-      <copy file="${artifacts.location}/${jar.name}" todir="${jboss.home}/server/${messaging.config.name}/lib"/>
+      <copy file="${artifacts.location}/${jar.name}" todir="${jboss.home}/server/${messaging.config.name}/lib" overwrite="true"/>
 
       <!-- Copy the default security properties files to conf/props-->
-      <copy todir="${jboss.home}/server/${messaging.config.name}/conf/props">
+      <!--<copy todir="${jboss.home}/server/${messaging.config.name}/conf/props">
           <fileset dir="../src/etc/server/default/config">
              <include name="messaging-*.properties"/>
           </fileset>
-      </copy>
+      </copy>-->
 
       <!-- Copy the JMS JCA resource adaptor -->
-      <copy file="${jboss.home}/server/${messaging.config.source}/deploy/jms/jms-ra.rar"
-            todir="${jboss.home}/server/${messaging.config.name}/deploy"/>
+      
+      <!--<copy file="${jboss.home}/server/${messaging.config.source}/deploy/jms/jms-ra.rar"
+            todir="${jboss.home}/server/${messaging.config.name}/deploy"/>-->
 
       <!-- Copy the JMS provider loader stuff -->
-      <copy todir="${jboss.home}/server/${messaging.config.name}/deploy">
+      <!--<copy todir="${jboss.home}/server/${messaging.config.name}/deploy">
          <fileset dir="${jboss.home}/server/${messaging.config.source}/deploy/jms" includes="jms-ds.xml,hajndi-jms-ds.xml"/>
          <filterset begintoken="&quot;" endtoken="&quot;">
             <filter token="jboss.mq:service=JMSProviderLoader,name=JMSProvider" value="&quot;jboss.messaging:service=JMSProviderLoader,name=JMSProvider&quot;"/>
             <filter token="jboss.mq:service=ServerSessionPoolMBean,name=StdJMSPool" value="&quot;jboss.messaging:service=ServerSessionPoolMBean,name=StdJMSPool&quot;"/>
          </filterset>
-      </copy>
-
+      </copy>-->
+      <echo message="Removing old JBoss Messaging deployment ${jboss.home}/server/deploy/${messaging.config.name}/messaging"/>
+      <delete dir="${jboss.home}/server/${messaging.config.name}/deploy/messaging"/>
    </target>
 
 

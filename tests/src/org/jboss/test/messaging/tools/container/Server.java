@@ -21,19 +21,18 @@
 */
 package org.jboss.test.messaging.tools.container;
 
-import java.rmi.Remote;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
+import org.jboss.jms.server.security.Role;
+import org.jboss.messaging.core.MessagingServer;
+import org.jboss.messaging.core.MessagingServerManagement;
 
 import javax.management.NotificationListener;
 import javax.management.ObjectName;
 import javax.naming.InitialContext;
 import javax.transaction.UserTransaction;
-
-import org.jboss.jms.server.security.Role;
-import org.jboss.messaging.core.MessagingServer;
-import org.jboss.messaging.core.MessagingServerManagement;
+import java.rmi.Remote;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 
 /**
  * The remote interface exposed by TestServer.
@@ -112,10 +111,6 @@ public interface Server extends Remote
                         boolean clustered) throws Exception;
 
    void stopServerPeer() throws Exception;
-
-   public void stopDestinationManager() throws Exception;
-
-   public void startDestinationManager() throws Exception;
 
    boolean isServerPeerStarted() throws Exception;
 

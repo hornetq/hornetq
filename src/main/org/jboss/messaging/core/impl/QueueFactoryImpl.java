@@ -24,6 +24,9 @@ package org.jboss.messaging.core.impl;
 import org.jboss.messaging.core.Filter;
 import org.jboss.messaging.core.Queue;
 import org.jboss.messaging.core.QueueFactory;
+import org.jboss.messaging.core.QueueSettings;
+import org.jboss.messaging.util.HierarchicalObjectRepository;
+import org.jboss.messaging.util.HierarchicalRepository;
 
 /**
  * 
@@ -34,20 +37,33 @@ import org.jboss.messaging.core.QueueFactory;
  */
 public class QueueFactoryImpl implements QueueFactory
 {
+   HierarchicalRepository<QueueSettings> queueSettingsRepository;
+
+
+   public QueueFactoryImpl()
+   {
+      queueSettingsRepository = new HierarchicalObjectRepository<QueueSettings>();
+      queueSettingsRepository.setDefault(new QueueSettings());
+   }
 
    public Queue createQueue(long id, String name, Filter filter,
                             boolean durable, boolean temporary)
    {
-      //TODO apply settings groups according to configuration
+      QueueSettings queueSettings = queueSettingsRepository.getMatch(name);
+
+      Queue queue =  new QueueImpl(id, name, filter, queueSettings.isClustered(), durable, temporary, queueSettings.getMaxSize());
       
-      Queue queue =  new QueueImpl(id, name, filter, false, durable, temporary, -1);
-      
-      //FIXME For now just hardcode some defaults
-      
-      queue.setMaxDeliveryAttempts(10);
-      
+      queue.setMaxDeliveryAttempts(queueSettings.getMaxDeliveryAttempts());
+      queue.setMessageCounterHistoryDayLimit(queueSettings.getMessageCounterHistoryDayLimit());
+      queue.setRedeliveryDelay(queueSettings.getRedeliveryDelay());                           
+      queue.setDistributionPolicy(queueSettings.getDistributionPolicy());
+
       return queue;
 
    }
 
+   public void setQueueSettingsRepository(HierarchicalRepository<QueueSettings> queueSettingsRepository)
+   {
+      this.queueSettingsRepository = queueSettingsRepository;
+   }
 }

@@ -21,30 +21,21 @@
    */
 package org.jboss.messaging.core.impl.server;
 
+import org.jboss.aop.microcontainer.aspects.jmx.JMX;
+import org.jboss.jms.client.SelectorTranslator;
+import org.jboss.jms.server.endpoint.ServerConnectionEndpoint;
+import org.jboss.messaging.core.*;
+import org.jboss.messaging.core.impl.ConditionImpl;
+import org.jboss.messaging.core.impl.filter.FilterImpl;
+import org.jboss.messaging.core.impl.messagecounter.MessageCounter;
+import org.jboss.messaging.util.MessageQueueNameHelper;
+
 import java.io.CharArrayWriter;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
-
-import org.jboss.aop.microcontainer.aspects.jmx.JMX;
-import org.jboss.jms.client.SelectorTranslator;
-import org.jboss.jms.server.endpoint.ServerConnectionEndpoint;
-import org.jboss.messaging.core.Binding;
-import org.jboss.messaging.core.Condition;
-import org.jboss.messaging.core.Configuration;
-import org.jboss.messaging.core.DestinationType;
-import org.jboss.messaging.core.Filter;
-import org.jboss.messaging.core.Message;
-import org.jboss.messaging.core.MessageReference;
-import org.jboss.messaging.core.MessagingServer;
-import org.jboss.messaging.core.MessagingServerManagement;
-import org.jboss.messaging.core.Queue;
-import org.jboss.messaging.core.impl.ConditionImpl;
-import org.jboss.messaging.core.impl.filter.FilterImpl;
-import org.jboss.messaging.core.impl.messagecounter.MessageCounter;
-import org.jboss.messaging.util.MessageQueueNameHelper;
 
 /**
  * This interface describes the properties and operations that comprise the management interface of the
@@ -82,24 +73,24 @@ public class MessagingServerManagementImpl implements MessagingServerManagement
       return messagingServer.isStarted();
    }
    
-   public void createQueue(String name, String jndiName) throws Exception
+   public void createQueue(String name) throws Exception
    {
-      messagingServer.createQueue(name, jndiName);
+      messagingServer.createQueue(name);
    }
    
-   public void createTopic(String name, String jndiName) throws Exception
+   public void createTopic(String name) throws Exception
    {
-      messagingServer.createTopic(name, jndiName);
+      messagingServer.createTopic(name);
    }
    
-   public void destroyQueue(String name, String jndiName) throws Exception
+   public void destroyQueue(String name) throws Exception
    {
-      messagingServer.destroyQueue(name, jndiName);
+      messagingServer.destroyQueue(name);
    }
    
-   public void destroyTopic(String name, String jndiName) throws Exception
+   public void destroyTopic(String name) throws Exception
    {
-      messagingServer.destroyTopic(name, jndiName);
+      messagingServer.destroyTopic(name);
    }
 
    public void removeAllMessagesForQueue(String queueName) throws Exception

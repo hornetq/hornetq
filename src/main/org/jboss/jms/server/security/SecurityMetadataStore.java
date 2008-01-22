@@ -21,26 +21,24 @@
   */
 package org.jboss.jms.server.security;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.security.Principal;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import org.jboss.jms.server.SecurityStore;
+import org.jboss.messaging.core.Destination;
+import org.jboss.messaging.core.DestinationType;
+import org.jboss.messaging.core.MessagingServer;
+import org.jboss.messaging.util.HierarchicalRepository;
+import org.jboss.messaging.util.Logger;
+import org.jboss.security.AuthenticationManager;
+import org.jboss.security.RealmMapping;
+import org.jboss.security.SimplePrincipal;
+import org.jboss.security.SubjectSecurityManager;
 
 import javax.jms.JMSSecurityException;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.security.auth.Subject;
-
-import org.jboss.jms.server.SecurityStore;
-import org.jboss.messaging.util.Logger;
-import org.jboss.messaging.core.MessagingServer;
-import org.jboss.security.AuthenticationManager;
-import org.jboss.security.RealmMapping;
-import org.jboss.security.SimplePrincipal;
-import org.jboss.security.SubjectSecurityManager;
+import java.security.Principal;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * A security metadate store for JMS. Stores security information for destinations and delegates
@@ -58,19 +56,17 @@ import org.jboss.security.SubjectSecurityManager;
 public class SecurityMetadataStore implements SecurityStore
 {
    // Constants -----------------------------------------------------
-   
+
    private static final Logger log = Logger.getLogger(SecurityMetadataStore.class);
 
    public static final String SUCKER_USER = "JBM.SUCKER";
-   
+
    public static final String DEFAULT_SUCKER_USER_PASSWORD = "CHANGE ME!!";
-   
+
    // Attributes ----------------------------------------------------
-   
+
    private boolean trace = log.isTraceEnabled();
-   
-   private Map<String, SecurityMetadata> queueSecurityConf;
-   private Map<String, SecurityMetadata> topicSecurityConf;
+   HierarchicalRepository<HashSet<Role>> securityRepository;
 
    private AuthenticationManager authenticationManager;
    private RealmMapping realmMapping;
@@ -80,122 +76,21 @@ public class SecurityMetadataStore implements SecurityStore
    private MessagingServer messagingServer;
 
    // Static --------------------------------------------------------
-   
+
    // Constructors --------------------------------------------------
 
    public SecurityMetadataStore(MessagingServer messagingServer)
    {
       this.messagingServer = messagingServer;
-      queueSecurityConf = new HashMap<String, SecurityMetadata>();
-      topicSecurityConf = new HashMap<String, SecurityMetadata>();
-      //add a property change listener then we can update the default security config
-      messagingServer.getConfiguration().addPropertyChangeListener(new PropertyChangeListener()
-         {
-            public void propertyChange(PropertyChangeEvent evt)
-            {
-               if(evt.getPropertyName().equals("securityConfig"))
-               {
-                  HashSet<Role> roles = (HashSet<Role>) evt.getNewValue();
-                  for (String key : queueSecurityConf.keySet())
-                  {
-                     if(evt.getNewValue() != null)
-                        queueSecurityConf.put(key, new SecurityMetadata(roles));
-                     else
-                        queueSecurityConf.put(key, new SecurityMetadata());
-                  }
-                  for (String key : topicSecurityConf.keySet())
-                  {
-                     if(evt.getNewValue() != null)
-                        topicSecurityConf.put(key, new SecurityMetadata(roles));
-                     else
-                        topicSecurityConf.put(key, new SecurityMetadata());
-                  }
-               }
-            }
-         });
    }
 
    // SecurityManager implementation --------------------------------
 
-   public SecurityMetadata getSecurityMetadata(boolean isQueue, String destName)
-   {
-      SecurityMetadata m = (isQueue ? queueSecurityConf.get(destName) : topicSecurityConf.get(destName));
 
-      if (m == null)
-      {
-         // No SecurityMetadata was configured for the destination, apply the default
-         m = getDefaultSecurityConfig(destName);
-
-      }
-      return m;
-   }
-
-   private SecurityMetadata getDefaultSecurityConfig(String destName)
-   {
-      SecurityMetadata m;
-      if (messagingServer.getConfiguration().getSecurityConfig() != null)
-      {
-         log.debug("No SecurityMetadadata was available for " + destName + ", using default security config");
-         try
-         {
-            m = new SecurityMetadata(messagingServer.getConfiguration().getSecurityConfig());
-         }
-         catch (Exception e)
-         {
-            log.warn("Unable to apply default security for destName, using guest " + destName, e);
-            m = new SecurityMetadata();
-         }
-      }
-      else
-      {
-         // default to guest
-         log.warn("No SecurityMetadadata was available for " + destName + ", adding guest");
-         m = new SecurityMetadata();
-      }
-      return m;
-   }
-
-   public void setSecurityConfig(boolean isQueue, String destName, HashSet<Role> conf) throws Exception
-   {
-      if (trace) { log.trace("adding security configuration for " + (isQueue ? "queue " : "topic ") + destName); }
-      
-      if (conf == null)
-      {
-      	clearSecurityConfig(isQueue, destName);
-      }
-      else
-      {	
-	      SecurityMetadata m = new SecurityMetadata(conf);
-	
-	      if (isQueue)
-	      {
-	         queueSecurityConf.put(destName, m);
-	      }
-	      else
-	      {
-	         topicSecurityConf.put(destName, m);
-	      }
-      }
-   }
-
-   public void clearSecurityConfig(boolean isQueue, String name) throws Exception
-   {
-      if (trace) { log.trace("clearing security configuration for " + (isQueue ? "queue " : "topic ") + name); }
-
-      if (isQueue)
-      {
-         queueSecurityConf.remove(name);
-      }
-      else
-      {
-         topicSecurityConf.remove(name);
-      }
-   }
-   
    public Subject authenticate(String user, String password) throws JMSSecurityException
    {
       if (trace) { log.trace("authenticating user " + user); }
-      
+
       SimplePrincipal principal = new SimplePrincipal(user);
       char[] passwordChars = null;
       if (password != null)
@@ -204,17 +99,17 @@ public class SecurityMetadataStore implements SecurityStore
       }
 
       Subject subject = new Subject();
-      
+
       boolean authenticated = false;
-      
+
       if (SUCKER_USER.equals(user))
       {
       	if (trace) { log.trace("Authenticating sucker user"); }
-      	
+
       	checkDefaultSuckerPassword(password);
-      	
+
       	// The special user SUCKER_USER is used for creating internal connections that suck messages between nodes
-      	
+
       	authenticated = suckerPassword.equals(password);
       }
       else
@@ -235,35 +130,55 @@ public class SecurityMetadataStore implements SecurityStore
       }
    }
 
-   public boolean authorize(String user, Set rolePrincipals, CheckType checkType)
+   public boolean authorize(String user, Destination destination, CheckType checkType)
    {
-      if (trace) { log.trace("authorizing user " + user + " for role(s) " + rolePrincipals.toString()); }
-      
+      if (trace) { log.trace("authorizing user " + user + " for destination " + destination.getName()); }
+
       if (SUCKER_USER.equals(user))
       {
       	//The special user SUCKER_USER is used for creating internal connections that suck messages between nodes
       	//It has automatic read/write access to all destinations
       	return (checkType.equals(CheckType.READ) || checkType.equals(CheckType.WRITE));
       }
+      StringBuilder match = new StringBuilder(destination.getType().equals(DestinationType.QUEUE) ? "queues/" : "topics/")
+              .append(destination.getName());
+
+      HashSet<Role> roles = securityRepository.getMatch(match.toString());
 
       Principal principal = user == null ? null : new SimplePrincipal(user);
-	
+      Set rolePrincipals = getRolePrincipals(checkType, roles);
       boolean hasRole = realmMapping.doesUserHaveRole(principal, rolePrincipals);
 
       if (trace) { log.trace("user " + user + (hasRole ? " is " : " is NOT ") + "authorized"); }
 
-      return hasRole;     
+      return hasRole;
    }
-   
+
+   private Set getRolePrincipals(CheckType checkType, HashSet<Role> roles)
+   {
+      Set<SimplePrincipal> principals = new HashSet<SimplePrincipal>();
+      for (Role role : roles)
+      {
+         SimplePrincipal principal = new SimplePrincipal(role.getName());
+         if((checkType.equals(CheckType.CREATE) && role.isCreate()) ||
+                 (checkType.equals(CheckType.WRITE) && role.isWrite()) ||
+                 (checkType.equals(CheckType.READ) && role.isRead()))
+         {
+            principals.add(new SimplePrincipal(role.getName()));
+         }
+      }
+      return principals;
+   }
+
    // Public --------------------------------------------------------
-   
+
    public void setSuckerPassword(String password)
-   {   	   	
+   {
    	checkDefaultSuckerPassword(password);
-   	   	
+
    	this.suckerPassword = password;
    }
-   
+
    public void start() throws NamingException
    {
       if (trace) { log.trace("initializing SecurityMetadataStore"); }
@@ -307,14 +222,17 @@ public class SecurityMetadataStore implements SecurityStore
    {
    }
 
-
+   public void setSecurityRepository(HierarchicalRepository<HashSet<Role>> securityRepository)
+   {
+      this.securityRepository = securityRepository;
+   }
 
    // Protected -----------------------------------------------------
 
    // Package Private -----------------------------------------------
 
    // Private -------------------------------------------------------
-   
+
    private void checkDefaultSuckerPassword(String password)
    {
    	// Sanity check

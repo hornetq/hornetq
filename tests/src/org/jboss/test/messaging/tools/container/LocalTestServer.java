@@ -21,39 +21,40 @@
 */
 package org.jboss.test.messaging.tools.container;
 
-import java.io.File;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-
-import javax.management.NotificationListener;
-import javax.management.ObjectName;
-import javax.naming.InitialContext;
-import javax.sql.DataSource;
-import javax.transaction.TransactionManager;
-import javax.transaction.UserTransaction;
-
+import org.jboss.jms.client.JBossConnectionFactory;
+import org.jboss.jms.client.impl.ClientConnectionFactoryImpl;
+import org.jboss.jms.destination.JBossQueue;
+import org.jboss.jms.destination.JBossTopic;
 import org.jboss.jms.server.connectionfactory.ConnectionFactory;
+import org.jboss.jms.server.endpoint.ServerConnectionFactoryEndpoint;
 import org.jboss.jms.server.security.Role;
 import org.jboss.jms.tx.ResourceManagerFactory;
-import org.jboss.messaging.util.Logger;
-import org.jboss.messaging.core.Binding;
-import org.jboss.messaging.core.Condition;
-import org.jboss.messaging.core.DestinationType;
-import org.jboss.messaging.core.MessagingServer;
-import org.jboss.messaging.core.MessagingServerManagement;
+import org.jboss.logging.Logger;
+import org.jboss.messaging.core.*;
 import org.jboss.messaging.core.impl.ConditionImpl;
+import org.jboss.messaging.core.remoting.ServerLocator;
 import org.jboss.messaging.microcontainer.JBMBootstrapServer;
+import org.jboss.messaging.util.JNDIUtil;
+import org.jboss.messaging.util.Version;
 import org.jboss.test.messaging.tools.ConfigurationHelper;
 import org.jboss.test.messaging.tools.ServerManagement;
 import org.jboss.test.messaging.tools.jboss.MBeanConfigurationElement;
 import org.jboss.tm.TransactionManagerLocator;
+
+import javax.jms.InvalidDestinationException;
+import javax.management.NotificationListener;
+import javax.management.ObjectName;
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NameNotFoundException;
+import javax.sql.DataSource;
+import javax.transaction.TransactionManager;
+import javax.transaction.UserTransaction;
+import java.io.File;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.util.*;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
@@ -69,6 +70,7 @@ public class LocalTestServer implements Server, Runnable
    private static final Logger log = Logger.getLogger(LocalTestServer.class);
    private boolean started = false;
    private Map<String, ConnectionFactory> factories = new HashMap<String, ConnectionFactory>();
+   private HashMap<String, List<String>> allBindings = new HashMap<String, List<String>>();
    // Static ---------------------------------------------------------------------------------------
 
    public static void setEnvironmentServerIndex(int serverIndex)
@@ -85,7 +87,7 @@ public class LocalTestServer implements Server, Runnable
 
    private ServiceContainer sc;
 
-   // service dependencies   
+   // service dependencies
    private ObjectName persistenceManagerObjectName;
    private ObjectName postOfficeObjectName;
    private ObjectName jmsUserManagerObjectName;
@@ -127,18 +129,18 @@ public class LocalTestServer implements Server, Runnable
       {
          return;
       }
-      
+
       if (clearDatabase)
-      {      
+      {
          //Delete the BDB environment
-         
+
          File dir = new File(System.getProperty("user.home") + "/bdbje/env");
-         
+
          boolean deleted = deleteDirectory(dir);
-         
+
          log.info("Deleted dir: " +dir.getAbsolutePath() + " deleted: " + deleted);
       }
-      
+
       ConfigurationHelper.addServerConfig(getServerID(), configuration);
 
       JBMPropertyKernelConfig propertyKernelConfig = new JBMPropertyKernelConfig(System.getProperties());
@@ -149,7 +151,7 @@ public class LocalTestServer implements Server, Runnable
       started = true;
 
    }
-   
+
    private static boolean deleteDirectory(File directory)
    {
       if (directory.isDirectory())
@@ -259,6 +261,7 @@ public class LocalTestServer implements Server, Runnable
    {
       bootstrap.shutDown();
       started=false;
+      unbindAll();
       return true;
    }
 
@@ -369,19 +372,23 @@ public class LocalTestServer implements Server, Runnable
    {
       System.setProperty(Constants.SERVER_INDEX_PROPERTY_NAME, "" + getServerID());
       getMessagingServer().stop();
+      //also unbind everything
+      unbindAll();
    }
 
-   public synchronized void stopDestinationManager() throws Exception
+   private void unbindAll()
+           throws Exception
    {
-      System.setProperty(Constants.SERVER_INDEX_PROPERTY_NAME, "" + getServerID());
-      getMessagingServer().getDestinationManager().stop();
+      Collection<List<String>> bindings = allBindings.values();
+      for (List<String> binding : bindings)
+      {
+         for (String s : binding)
+         {
+            getInitialContext().unbind(s);
+         }
+      }
    }
 
-   public synchronized void startDestinationManager() throws Exception
-   {
-      System.setProperty(Constants.SERVER_INDEX_PROPERTY_NAME, "" + getServerID());
-      getMessagingServer().getDestinationManager().start();
-   }
 
    public boolean isServerPeerStarted() throws Exception
    {
@@ -489,25 +496,67 @@ public class LocalTestServer implements Server, Runnable
 //         return getMessagingServer().undeployTopic(name);
 //   }
 
-   
+
    public void destroyQueue(String name, String jndiName) throws Exception
    {
-      this.getMessagingServerManagement().destroyQueue(name, jndiName);
+      this.getMessagingServerManagement().destroyQueue(name);
+      getInitialContext().unbind(jndiName);
    }
-   
+
    public void destroyTopic(String name, String jndiName) throws Exception
    {
-      this.getMessagingServerManagement().destroyTopic(name, jndiName);
+      this.getMessagingServerManagement().destroyTopic(name);
+      getInitialContext().unbind(jndiName);
    }
-   
+
    public void createQueue(String name, String jndiName) throws Exception
    {
-      this.getMessagingServerManagement().createQueue(name, jndiName);
+      this.getMessagingServerManagement().createQueue(name);
+      JBossQueue jBossQueue = new JBossQueue(name);
+      bindObject("/queue/" + (jndiName != null ? jndiName : name), jBossQueue);
+      List<String> bindings = new ArrayList<String>();
+      bindings.add("/queue/" + (jndiName != null ? jndiName : name));
+      allBindings.put(name, bindings);
    }
-   
+
    public void createTopic(String name, String jndiName) throws Exception
    {
-      this.getMessagingServerManagement().createTopic(name, jndiName);
+      this.getMessagingServerManagement().createTopic(name);
+      JBossTopic jBossTopic = new JBossTopic(name);
+      bindObject("/topic/" + (jndiName != null ? jndiName : name), jBossTopic);
+      List<String> bindings = new ArrayList<String>();
+      bindings.add("/topic/" + (jndiName != null ? jndiName : name));
+      allBindings.put(name, bindings);
+   }
+
+   private void bindObject(String jndiName, Object object)
+           throws Exception
+   {
+      String parentContext;
+      String jndiNameInContext;
+      int sepIndex = jndiName.lastIndexOf('/');
+      if (sepIndex == -1)
+      {
+         parentContext = "";
+      }
+      else
+      {
+         parentContext = jndiName.substring(0, sepIndex);
+      }
+      jndiNameInContext = jndiName.substring(sepIndex + 1);
+      try
+      {
+         getInitialContext().lookup(jndiName);
+         throw new InvalidDestinationException("Destination " + jndiName + " already exists");
+      }
+      catch (NameNotFoundException e)
+      {
+         // OK
+      }
+
+      Context c = JNDIUtil.createContext(getInitialContext(), parentContext);
+
+      c.rebind(jndiNameInContext, object);
    }
 
    public void deployConnectionFactory(String clientId, String objectName,
@@ -592,20 +641,60 @@ public class LocalTestServer implements Server, Runnable
       connectionFactory.setSupportsFailover(supportsFailover);
       connectionFactory.setSupportsLoadBalancing(supportsLoadBalancing);
       connectionFactory.setStrictTck(strictTck);
-      connectionFactory.setMessagingServer(getMessagingServer());
-      connectionFactory.setMinaService(getMessagingServer().getMinaService());
       factories.put(objectName, connectionFactory);
-      connectionFactory.start();
+      ServerLocator serverLocator = getMessagingServer().getMinaService().getLocator();
+
+      log.info("Server locator is " + serverLocator);
+      log.info(this + " started");
+      // See http://www.jboss.com/index.html?module=bb&op=viewtopic&p=4076040#4076040
+      final String id = connectionFactory.getName();
+
+      Version version = getMessagingServer().getVersion();
+
+      ServerConnectionFactoryEndpoint endpoint =
+              new ServerConnectionFactoryEndpoint(connectionFactory.getName(), id, getMessagingServer(), connectionFactory.getClientID(),
+                      connectionFactory.getPrefetchSize(),
+                      connectionFactory.getDefaultTempQueueFullSize(),
+                      connectionFactory.getDefaultTempQueuePageSize(),
+                      connectionFactory.getDefaultTempQueueDownCacheSize(),
+                      connectionFactory.getDupsOKBatchSize());
+
+      //The server peer strict setting overrides the connection factory
+      boolean useStrict = getMessagingServer().getConfiguration().isStrictTck() || connectionFactory.isStrictTck();
+
+      ClientConnectionFactoryImpl delegate =
+              new ClientConnectionFactoryImpl(connectionFactory.getName(), id, getMessagingServer().getConfiguration().getMessagingServerID(),
+                      serverLocator.getURI(), version, false, useStrict);
+
+      log.debug(this + " created local delegate " + delegate);
+
+      // Registering with the dispatcher should always be the last thing otherwise a client could
+      // use a partially initialised object
+
+      getMessagingServer().getMinaService().getDispatcher().register(endpoint.newHandler());
+      JBossConnectionFactory jBossConnectionFactory = new JBossConnectionFactory(delegate);
+      for (String binding : bindings)
+      {
+         bindObject(binding, jBossConnectionFactory);
+      }
+      allBindings.put(objectName, bindings);
    }
 
    public void undeployConnectionFactory(String objectName) throws Exception
    {
-      getMessagingServer().getConnectionFactoryManager().unregisterConnectionFactory(objectName);
+      getMessagingServer().getMinaService().getDispatcher().unregister(objectName);
+      List<String> bindings = allBindings.get(objectName);
+      for (String binding : bindings)
+      {
+         getInitialContext().unbind(binding);
+      }
+      allBindings.remove(objectName);
    }
 
    public void configureSecurityForDestination(String destName, boolean isQueue, HashSet<Role> roles) throws Exception
    {
-      getMessagingServer().getSecurityManager().setSecurityConfig(isQueue, destName, roles);
+      String prefix = isQueue ? "queues." : "topics";
+      getMessagingServer().getSecurityRepository().addMatch(prefix + destName, roles);
    }
 
    public void setDefaultSecurityConfig(String config) throws Exception
@@ -762,18 +851,19 @@ public class LocalTestServer implements Server, Runnable
 
    public void setSecurityConfigOnManager(boolean b, String s, HashSet<Role> conf) throws Exception
    {
-      getMessagingServer().getSecurityManager().setSecurityConfig(b, s, conf);
+      String prefix = b ? "queues." : "topics";
+      getMessagingServer().getSecurityRepository().addMatch(prefix + s, conf);
    }
 
 
    public void setRedeliveryDelayOnDestination(String dest, boolean queue, long delay) throws Exception
    {
       //getMessagingServer().getDestinationManager().getDestination(dest, queue).setRedeliveryDelay(delay);
-      
+
       Condition condition = new ConditionImpl(queue ? DestinationType.QUEUE : DestinationType.TOPIC, dest);
-      
+
       List<Binding> bindings = this.getMessagingServer().getPostOffice().getBindingsForCondition(condition);
-      
+
       bindings.get(0).getQueue().setRedeliveryDelay(delay);
    }
 
@@ -794,7 +884,6 @@ public class LocalTestServer implements Server, Runnable
    {
       return ResourceManagerFactory.instance.size();
    }
-
 
    // Inner classes --------------------------------------------------------------------------------
 

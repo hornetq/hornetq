@@ -21,19 +21,18 @@
  */
 package org.jboss.messaging.core;
 
-import java.util.Collection;
-import java.util.List;
-
-import org.jboss.jms.server.ConnectionFactoryManager;
 import org.jboss.jms.server.ConnectionManager;
-import org.jboss.jms.server.DestinationManager;
 import org.jboss.jms.server.SecurityStore;
 import org.jboss.jms.server.TransactionRepository;
 import org.jboss.jms.server.endpoint.ServerSessionEndpoint;
 import org.jboss.jms.server.plugin.contract.JMSUserManager;
-import org.jboss.messaging.core.impl.ConditionImpl;
+import org.jboss.jms.server.security.Role;
 import org.jboss.messaging.core.remoting.impl.mina.MinaService;
+import org.jboss.messaging.util.HierarchicalRepository;
 import org.jboss.messaging.util.Version;
+
+import java.util.Collection;
+import java.util.HashSet;
 
 /**
  * This interface defines the internal interface of the Messaging Server exposed
@@ -81,10 +80,6 @@ public interface MessagingServer extends MessagingComponent
 
    SecurityStore getSecurityManager();
 
-   DestinationManager getDestinationManager();
-
-   ConnectionFactoryManager getConnectionFactoryManager();
-
    ConnectionManager getConnectionManager();
 
    MemoryManager getMemoryManager();
@@ -101,15 +96,17 @@ public interface MessagingServer extends MessagingComponent
 
    PostOffice getPostOffice();
 
+   HierarchicalRepository<HashSet<Role>> getSecurityRepository();
+
    void setPostOffice(PostOffice postOffice);
    
-   void createQueue(String name, String jndiName) throws Exception;
+   void createQueue(String name) throws Exception;
    
-   void createTopic(String name, String jndiName) throws Exception;
+   void createTopic(String name) throws Exception;
    
-   void destroyQueue(String name, String jndiName) throws Exception;
+   void destroyQueue(String name) throws Exception;
    
-   void destroyTopic(String name, String jndiName) throws Exception;
+   void destroyTopic(String name) throws Exception;
    
    void enableMessageCounters();
 

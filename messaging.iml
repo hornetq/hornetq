@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<module relativePaths="true" type="JAVA_MODULE" version="4">
+<module version="4" relativePaths="true" type="JAVA_MODULE">
+  <component name="ModuleRootManager" />
   <component name="NewModuleRootManager" inherit-compiler-output="false">
     <output url="file://$MODULE_DIR$/output/classes" />
     <exclude-output />
@@ -48,17 +49,16 @@
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="aop 5.0" level="project" />
     <orderEntry type="library" name="microcontainer" level="project" />
-    <orderEntry type="library" name="deploy" level="project" />
     <orderEntry type="library" name="concurrent" level="project" />
     <orderEntry type="library" name="hsqldb" level="project" />
     <orderEntry type="library" name="javassist" level="project" />
     <orderEntry type="library" name="jboss-serialization" level="project" />
     <orderEntry type="library" name="jgroups" level="project" />
     <orderEntry type="library" name="junit" level="project" />
-    <orderEntry type="library" name="jbossas" level="project" />
     <orderEntry type="library" name="jboss-ts" level="project" />
     <orderEntry type="library" name="jboss-profiler-leaksfinder" level="project" />
     <orderEntry type="library" name="ant-junit" level="project" />
+    <orderEntry type="library" name="ant 1.7" level="application" />
     <orderEntry type="library" name="apache" level="project" />
     <orderEntry type="library" name="jdbc-drivers" level="project" />
     <orderEntry type="library" name="dom4j" level="project" />
@@ -66,6 +66,24 @@
       <library>
         <CLASSES>
           <root url="jar://$MODULE_DIR$/thirdparty/trove/lib/trove.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library>
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/../../Desktop/jboss-common-core.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library>
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/../../devtools/jboss-5.0.0.Beta2/lib/jboss-container.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
@@ -101,6 +119,15 @@
     <orderEntry type="module-library">
       <library>
         <CLASSES>
+          <root url="jar://$MODULE_DIR$/tests/lib/jdbc-drivers/mysql-connector-java-5.0.7-bin.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library>
+        <CLASSES>
           <root url="jar://$MODULE_DIR$/thirdparty/jboss/jnpserver/lib/jnpserver.jar!/" />
         </CLASSES>
         <JAVADOC />
@@ -118,10 +145,20 @@
         <SOURCES />
       </library>
     </orderEntry>
+    <orderEntry type="library" name="jboss" level="project" />
     <orderEntry type="library" name="mina" level="project" />
-    <orderEntry type="library" name="bdb" level="project" />
     <orderEntry type="library" name="easymock" level="project" />
+    <orderEntry type="library" name="bdb" level="project" />
     <orderEntry type="library" name="test-etc" level="project" />
+    <orderEntry type="module-library">
+      <library>
+        <CLASSES>
+          <root url="file://$MODULE_DIR$/src/etc/server/default/deploy" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
     <orderEntryProperties />
   </component>
   <component name="VcsManagerConfiguration">
