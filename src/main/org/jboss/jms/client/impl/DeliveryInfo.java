@@ -45,9 +45,6 @@ public class DeliveryInfo implements Ack
 
    private JBossMessage msg;
    
-   //For messages in non durable subscriptions - there is no need to ack on the server
-   private boolean shouldAck;
-   
    //When using the evil abomination known as a ConnectionConsumer, the connection consumer
    //will get from a session that it created, then pass them onto sessions got from the pool
    //this means when the messages are acked/cancelled then this needs to be done against
@@ -62,15 +59,13 @@ public class DeliveryInfo implements Ack
    // Constructors --------------------------------------------------
    
    public DeliveryInfo(JBossMessage msg, String consumerId, 
-                       ClientSession connectionConsumerSession, boolean shouldAck)
+                       ClientSession connectionConsumerSession)
    {      
       this.msg = msg;
       
       this.consumerId = consumerId;
       
       this.connectionConsumerSession = connectionConsumerSession;
-      
-      this.shouldAck = shouldAck;
    }
 
    // Public --------------------------------------------------------
@@ -88,11 +83,6 @@ public class DeliveryInfo implements Ack
    public ClientSession getConnectionConsumerSession()
    {
       return connectionConsumerSession;
-   }
-   
-   public boolean isShouldAck()
-   {
-   	return shouldAck;
    }
    
    public String toString()

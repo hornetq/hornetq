@@ -43,18 +43,15 @@ public class AsfMessageHolder
    
    private ClientSession connectionConsumerSession;
    
-   private boolean shouldAck;
-   
    public AsfMessageHolder(JBossMessage msg, String consumerID,
          String queueName, int maxDeliveries,
-         ClientSession connectionConsumerSession, boolean shouldAck)
+         ClientSession connectionConsumerSession)
    {
       this.msg = msg;
       this.consumerID = consumerID;
       this.queueName = queueName;
       this.maxDeliveries = maxDeliveries;
       this.connectionConsumerSession = connectionConsumerSession;
-      this.shouldAck = shouldAck;
    }
 
    public JBossMessage getMsg()
@@ -106,16 +103,4 @@ public class AsfMessageHolder
    {
       this.connectionConsumerSession = connectionConsumerSession;
    }
-
-   public boolean isShouldAck()
-   {
-      return shouldAck;
-   }
-
-   public void setShouldAck(boolean shouldAck)
-   {
-      this.shouldAck = shouldAck;
-   }
-
-   
 }

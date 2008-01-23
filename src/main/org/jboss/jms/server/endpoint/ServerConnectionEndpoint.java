@@ -202,14 +202,14 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
 
    public CreateSessionResponse createSession(boolean transacted,
                                               int acknowledgmentMode,
-                                              boolean isXA)
+                                              boolean xa)
       throws JMSException
    {
       try
       {
          log.trace(this + " creating " + (transacted ? "transacted" : "non transacted") +
             " session, " + Util.acknowledgmentMode(acknowledgmentMode) + ", " +
-            (isXA ? "XA": "non XA"));
+            (xa ? "XA": "non XA"));
 
          if (closed)
          {
@@ -222,7 +222,7 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
          // connection endpoint instance
 
          //Note we only replicate transacted and client acknowledge sessions.
-         ServerSessionEndpoint ep = new ServerSessionEndpoint(sessionID, this);
+         ServerSessionEndpoint ep = new ServerSessionEndpoint(sessionID, this, transacted, xa);
 
          synchronized (sessions)
          {

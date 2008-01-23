@@ -67,13 +67,6 @@ public class ClientTransaction
 
    private boolean clientSide;
    
-   private boolean hasPersistentAcks;
-   
-   private boolean failedOver;
-   
-   private boolean removeAcks;
-
-
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
@@ -109,27 +102,7 @@ public class ClientTransaction
       }
       SessionTxState sessionTxState = getSessionTxState(sessionId);
 
-      sessionTxState.addAck(info);
-      
-      if (info.getMessage().getCoreMessage().isDurable())
-      {
-         hasPersistentAcks = true;
-      }
-      
-      if (!info.isShouldAck())
-      {
-      	removeAcks = true;
-      }
-   }
-   
-   public boolean hasPersistentAcks()
-   {
-      return hasPersistentAcks;
-   }
-   
-   public boolean isFailedOver()
-   {
-      return failedOver;
+      sessionTxState.addAck(info);           
    }
    
    public void clearMessages()
@@ -178,46 +151,7 @@ public class ClientTransaction
       }
    }
 
-   /*
-   * Substitute newSessionID for oldSessionID
-   */
-   public void handleFailover(int newServerID, String oldSessionID, String newSessionID)
-   {
-      if (!clientSide)
-      {
-         throw new IllegalStateException("Cannot call this method on the server side");
-      }
-      
-      // Note we have to do this in one go since there may be overlap between old and new session
-      // IDs and we don't want to overwrite keys in the map.
-
-      Map<String, SessionTxState> tmpMap = null;
-
-      if (sessionStatesMap != null)
-      {
-         for (SessionTxState state: sessionStatesMap.values())
-         {
-            boolean handled = state.handleFailover(newServerID, oldSessionID, newSessionID);
-
-            if (handled)
-            {
-	            if (tmpMap == null)
-	            {
-	               tmpMap = new LinkedHashMap<String, SessionTxState>();
-	            }
-	            tmpMap.put(newSessionID, state);
-            }
-         }
-      }
-
-      if (tmpMap != null)
-      {
-         // swap
-         sessionStatesMap = tmpMap;
-      }
-      
-      failedOver = true;
-   }
+   
 
    /**
     * May return an empty list, but never null.
@@ -293,12 +227,8 @@ public class ClientTransaction
             {
                DeliveryInfo ack = (DeliveryInfo)iter2.next();
                
-               //We don't want to send acks for things like non durable subs which will have been already acked
-               if (ack.isShouldAck())
-               {
-               	//We only need the delivery id written
-               	out.writeLong(ack.getMessage().getDeliveryId());
-               }
+            	//We only need the delivery id written
+            	out.writeLong(ack.getMessage().getDeliveryId());               
             }
             
             //Marker for end of acks

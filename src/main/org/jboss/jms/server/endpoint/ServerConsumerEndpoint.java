@@ -109,12 +109,8 @@ public class ServerConsumerEndpoint implements Consumer, ConsumerEndpoint
    // Must be volatile
    private volatile boolean clientAccepting;
 
-   private boolean retainDeliveries;
-   
    private long lastDeliveryID = -1;
    
-   private volatile boolean dead;
-
    private int prefetchSize;
    
    private volatile int sendCount;
@@ -163,19 +159,6 @@ public class ServerConsumerEndpoint implements Consumer, ConsumerEndpoint
       
       this.filter = filter;
                 
-      //FIXME - we shouldn't have checks like this on the server side
-      //It should be the jms client that decides whether to retain deliveries or not
-      if (destination.getType() == DestinationType.TOPIC && !messageQueue.isDurable())
-      {
-         // This is a consumer of a non durable topic subscription. We don't need to store
-         // deliveries since if the consumer is closed or dies the refs go too.
-         this.retainDeliveries = false;
-      }
-      else
-      {
-         this.retainDeliveries = true;
-      }
-      
       this.started = this.sessionEndpoint.getConnectionEndpoint().isStarted();
       
       // adding the consumer to the queue
@@ -415,11 +398,6 @@ public class ServerConsumerEndpoint implements Consumer, ConsumerEndpoint
    	return this.id;
    }
 
-   boolean isRetainDeliveries()
-   {
-   	return this.retainDeliveries;
-   }
-   
    void setLastDeliveryID(long id)
    {
    	this.lastDeliveryID = id;
@@ -429,16 +407,6 @@ public class ServerConsumerEndpoint implements Consumer, ConsumerEndpoint
    {
       //No need to lock since caller already has the lock
       this.started = started;      
-   }
-   
-   void setDead()
-   {
-      dead = true;
-   }
-   
-   boolean isDead()
-   {
-      return dead;
    }
    
    Queue getDLQ()

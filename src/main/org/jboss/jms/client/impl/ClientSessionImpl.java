@@ -423,14 +423,12 @@ public class ClientSessionImpl implements ClientSession
       
       CreateConsumerResponse response = (CreateConsumerResponse)remotingConnection.sendBlocking(id, request);
       
-      boolean shouldAck = !(destination.getType() == DestinationType.TOPIC && subscriptionName == null);
-
       ClientConsumer consumer =
          new ClientConsumerImpl(this, response.getConsumerID(), response.getBufferSize(),
                response.getMaxDeliveries(), response.getRedeliveryDelay(),
             destination,
             selector, noLocal,
-            isCC, executor, remotingConnection, shouldAck);
+            isCC, executor, remotingConnection);
 
       children.put(response.getConsumerID(), consumer);
 
@@ -1010,37 +1008,27 @@ public class ClientSessionImpl implements ClientSession
 
    private boolean ackDelivery(DeliveryInfo delivery) throws JMSException
    {
-   	if (delivery.isShouldAck())
-   	{
-	      ClientSession connectionConsumerSession = delivery.getConnectionConsumerSession();
+   	ClientSession connectionConsumerSession = delivery.getConnectionConsumerSession();
 
-	      //If the delivery was obtained via a connection consumer we need to ack via that
-	      //otherwise we just use this session
+      //If the delivery was obtained via a connection consumer we need to ack via that
+      //otherwise we just use this session
 
-	      ClientSession sessionToUse = connectionConsumerSession != null ? connectionConsumerSession : this;
+      ClientSession sessionToUse = connectionConsumerSession != null ? connectionConsumerSession : this;
 
-	      return sessionToUse.acknowledgeDelivery(delivery);
-   	}
-   	else
-   	{
-   		return true;
-   	}
+      return sessionToUse.acknowledgeDelivery(delivery);
    }
 
    private void cancelDelivery(DeliveryInfo delivery) throws JMSException
    {
-   	if (delivery.isShouldAck())
-   	{
-   	   ClientSession connectionConsumerSession = delivery.getConnectionConsumerSession();
+	   ClientSession connectionConsumerSession = delivery.getConnectionConsumerSession();
 
-	      //If the delivery was obtained via a connection consumer we need to cancel via that
-	      //otherwise we just use this session
+      //If the delivery was obtained via a connection consumer we need to cancel via that
+      //otherwise we just use this session
 
-   	   ClientSession sessionToUse = connectionConsumerSession != null ? connectionConsumerSession : this;
+	   ClientSession sessionToUse = connectionConsumerSession != null ? connectionConsumerSession : this;
 
-	      sessionToUse.cancelDelivery(new CancelImpl(delivery.getDeliveryID(),
-	                                  delivery.getMessage().getDeliveryCount(), false, false));
-   	}
+      sessionToUse.cancelDelivery(new CancelImpl(delivery.getDeliveryID(),
+                                  delivery.getMessage().getDeliveryCount(), false, false));   	
    }
 
    private void internalCancelDeliveries( List deliveryInfos) throws JMSException
@@ -1051,14 +1039,11 @@ public class ClientSessionImpl implements ClientSession
       {
          DeliveryInfo ack = (DeliveryInfo)i.next();
 
-         if (ack.isShouldAck())
-         {
-	         CancelImpl cancel = new CancelImpl(ack.getMessage().getDeliveryId(),
-	                                                  ack.getMessage().getDeliveryCount(),
-	                                                  false, false);
+         CancelImpl cancel = new CancelImpl(ack.getMessage().getDeliveryId(),
+                                                  ack.getMessage().getDeliveryCount(),
+                                                  false, false);
 
-	         cancels.add(cancel);
-         }
+         cancels.add(cancel);         
       }
 
       if (!cancels.isEmpty())
@@ -1069,21 +1054,9 @@ public class ClientSessionImpl implements ClientSession
 
    private void acknowledgeDeliveries(ClientSession del, List deliveryInfos) throws JMSException
    {
-      List acks = new ArrayList();
-
-      for (Iterator i = deliveryInfos.iterator(); i.hasNext(); )
+      if (!deliveryInfos.isEmpty())
       {
-         DeliveryInfo ack = (DeliveryInfo)i.next();
-
-         if (ack.isShouldAck())
-         {
-	         acks.add(ack);
-         }
-      }
-
-      if (!acks.isEmpty())
-      {
-         del.acknowledgeDeliveries(acks);
+         del.acknowledgeDeliveries(deliveryInfos);
       }
    }
 

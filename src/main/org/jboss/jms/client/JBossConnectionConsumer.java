@@ -95,8 +95,6 @@ public class JBossConnectionConsumer implements ConnectionConsumer, Runnable
    
    private String queueName;
    
-   private boolean shouldAck;
-   
    // Static --------------------------------------------------------
    
    // Constructors --------------------------------------------------
@@ -122,9 +120,7 @@ public class JBossConnectionConsumer implements ConnectionConsumer, Runnable
       this.consumerID = cons.getID();      
         
       this.maxDeliveries = cons.getMaxDeliveries();
-      
-      shouldAck = cons.isShouldAck();      
-            
+         
       if (subName != null)
       {
          queueName = MessageQueueNameHelper.createSubscriptionName(conn.getClientID(), subName);
@@ -280,7 +276,7 @@ public class JBossConnectionConsumer implements ConnectionConsumer, Runnable
                for (int i = 0; i < mesList.size(); i++)
                {
                   JBossMessage m = (JBossMessage)mesList.get(i);
-                  session.addAsfMessage(m, consumerID, queueName, maxDeliveries, sess, shouldAck);
+                  session.addAsfMessage(m, consumerID, queueName, maxDeliveries, sess);
                   if (trace) { log.trace("added " + m + " to session"); }
                }
 

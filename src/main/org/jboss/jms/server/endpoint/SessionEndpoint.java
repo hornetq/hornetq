@@ -25,6 +25,7 @@ package org.jboss.jms.server.endpoint;
 import java.util.List;
 
 import javax.jms.JMSException;
+import javax.transaction.xa.Xid;
 
 import org.jboss.jms.client.Closeable;
 import org.jboss.jms.client.impl.Ack;
@@ -120,5 +121,27 @@ public interface SessionEndpoint extends Closeable
    int getDupsOKBatchSize();
 
    public boolean isStrictTck();
+   
+//   public void XAStart(Xid xid) throws JMSException;
+//   
+//   public void XAEnd(Xid xid) throws JMSException;
+//   
+//   public void XASuspend(Xid xid) throws JMSException;
+//   
+//   public void XAJoin(Xid xid) throws JMSException;
+//   
+//   public void XAResume(Xid xid) throws JMSException;
+//   
+//   public void XAPrepare(Xid xid) throws JMSException;
+//   
+//   public void XACommit(Xid xid, boolean onePhase) throws JMSException;
+//   
+//   public void XARollback(Xid xid) throws JMSException;
+//   
+//   public List<Xid> XARecover() throws JMSException;
+//   
+//   public void XASetTxTimeout(int seconds) throws JMSException;
+//   
+//   public int XAGetTimeout() throws JMSException;
 }
 

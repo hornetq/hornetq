@@ -54,18 +54,17 @@ public class MessageHandler
          JBossMessage m,
          int ackMode,
          int maxDeliveries,
-         ClientSession connectionConsumerSession,
-         boolean shouldAck)
+         ClientSession connectionConsumerSession)
    throws JMSException
    {      
-      if (checkExpiredOrReachedMaxdeliveries(m, connectionConsumerSession!=null?connectionConsumerSession:sess, maxDeliveries, shouldAck))
+      if (checkExpiredOrReachedMaxdeliveries(m, connectionConsumerSession!=null?connectionConsumerSession:sess, maxDeliveries))
       {
          // Message has been cancelled
          return;
       }
 
       DeliveryInfo deliveryInfo =
-         new DeliveryInfo(m, consumerID, connectionConsumerSession, shouldAck);
+         new DeliveryInfo(m, consumerID, connectionConsumerSession);
 
       m.incDeliveryCount();
 
@@ -114,7 +113,7 @@ public class MessageHandler
    
    public static boolean checkExpiredOrReachedMaxdeliveries(JBossMessage jbm,
          ClientSession del,
-         int maxDeliveries, boolean shouldCancel)
+         int maxDeliveries)
    {
       Message msg = jbm.getCoreMessage();
 
@@ -135,21 +134,18 @@ public class MessageHandler
                log.trace(msg + " has reached maximum delivery number " + maxDeliveries +", cancelling to server");
             }
          }
-
-         if (shouldCancel)
-         {           
-            final Cancel cancel = new CancelImpl(jbm.getDeliveryId(), jbm.getDeliveryCount(),
-                  expired, reachedMaxDeliveries);          
-            try
-            {
-               del.cancelDelivery(cancel);
-            }
-            catch (JMSException e)
-            {
-               log.error("Failed to cancel delivery", e);
-            }   
+      
+         final Cancel cancel = new CancelImpl(jbm.getDeliveryId(), jbm.getDeliveryCount(),
+               expired, reachedMaxDeliveries);          
+         try
+         {
+            del.cancelDelivery(cancel);
          }
-
+         catch (JMSException e)
+         {
+            log.error("Failed to cancel delivery", e);
+         }   
+         
          return true;
       }
       else

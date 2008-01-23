@@ -89,8 +89,7 @@ public class ClientConsumerImpl implements ClientConsumer
    private QueuedExecutor sessionExecutor;
    private boolean listenerRunning;
    private long lastDeliveryId = -1;
-   private boolean waitingForLastDelivery;
-   private boolean shouldAck;     
+   private boolean waitingForLastDelivery;   
    private int consumeCount;
    private MessagingRemotingConnection remotingConnection;
    
@@ -105,8 +104,7 @@ public class ClientConsumerImpl implements ClientConsumer
                              Destination dest,
                              String selector, boolean noLocal,
                              boolean isCC, QueuedExecutor sessionExecutor,
-                             MessagingRemotingConnection remotingConnection,
-                             boolean shouldAck)
+                             MessagingRemotingConnection remotingConnection)
    {
       this.id = id;
       this.session = session;
@@ -118,7 +116,6 @@ public class ClientConsumerImpl implements ClientConsumer
       this.noLocal = noLocal;
       this.isConnectionConsumer = isCC;
       this.sessionExecutor = sessionExecutor;
-      this.shouldAck = shouldAck; 
       this.remotingConnection = remotingConnection;
       
    }
@@ -329,11 +326,11 @@ public class ClientConsumerImpl implements ClientConsumer
                if (trace) { log.trace(this + " received " + m + " after being blocked on buffer"); }
                        
                boolean ignore =
-                  MessageHandler.checkExpiredOrReachedMaxdeliveries(m, session, maxDeliveries, shouldAck);
+                  MessageHandler.checkExpiredOrReachedMaxdeliveries(m, session, maxDeliveries);
                
                if (!isConnectionConsumer && !ignore)
                {
-                  DeliveryInfo info = new DeliveryInfo(m, id, null, shouldAck);
+                  DeliveryInfo info = new DeliveryInfo(m, id, null);
                                                     
                   session.preDeliver(info);                  
                   
@@ -403,11 +400,6 @@ public class ClientConsumerImpl implements ClientConsumer
          
          messageAdded();
       }
-   }
-   
-   public boolean isShouldAck()
-   {
-      return this.shouldAck;
    }
    
    public void handleMessage(final JBossMessage message) throws Exception
@@ -499,7 +491,7 @@ public class ClientConsumerImpl implements ClientConsumer
          // consumer's deliveries until then), which is too late - since we need to preserve the
          // order of messages delivered in a session.
          
-         if (shouldAck && !buffer.isEmpty())
+         if (!buffer.isEmpty())
          {                        
             // Now we cancel any deliveries that might be waiting in our buffer. This is because
             // otherwise the messages wouldn't get cancelled until the corresponding session died.
@@ -836,7 +828,7 @@ public class ClientConsumerImpl implements ClientConsumer
             try
             {
                MessageHandler.callOnMessage(session, theListener, id,
-                             false, msg, session.getAcknowledgeMode(), maxDeliveries, null, shouldAck);
+                             false, msg, session.getAcknowledgeMode(), maxDeliveries, null);
                
                if (trace) { log.trace("Called callonMessage"); }
             }

@@ -40,8 +40,6 @@ public interface ClientConsumer extends Closeable
    
    int getMaxDeliveries();
    
-   boolean isShouldAck();
-   
    void handleMessage(JBossMessage message) throws Exception;
    
    void addToFrontOfBuffer(JBossMessage message) throws JMSException;

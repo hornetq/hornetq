@@ -112,7 +112,6 @@ import EDU.oswego.cs.dl.util.concurrent.SynchronizedLong;
  * Session implementation
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- *
  * Parts derived from JBM 1.x ServerSessionEndpoint by
  *
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
@@ -133,8 +132,6 @@ public class ServerSessionEndpoint implements SessionEndpoint
 
    static final String TEMP_QUEUE_MESSAGECOUNTER_PREFIX = "TempQueue.";
 
-   private static final long DELIVERY_WAIT_TIMEOUT = 5 * 1000;
-
    private static final long CLOSE_WAIT_TIMEOUT = 5 * 1000;
 
    // Static ---------------------------------------------------------------------------------------
@@ -153,17 +150,14 @@ public class ServerSessionEndpoint implements SessionEndpoint
 
    private MessagingServer sp;
 
-   private Map consumers;
-   private Map browsers;
+   private Map consumers = new HashMap();
+   private Map browsers = new HashMap();
 
    private PostOffice postOffice;
-   private int nodeId;
    private int defaultMaxDeliveryAttempts;
    private long defaultRedeliveryDelay;
    private Queue defaultDLQ;
    private Queue defaultExpiryQueue;
-
-   private Object deliveryLock = new Object();
 
    // Map <deliveryID, Delivery>
    private Map deliveries;
@@ -173,15 +167,18 @@ public class ServerSessionEndpoint implements SessionEndpoint
    //Temporary until we have our own NIO transport
    QueuedExecutor executor = new QueuedExecutor(new LinkedQueue());
 
-   private LinkedQueue toDeliver = new LinkedQueue();
-
-   private boolean waitingToClose = false;
-
    private Object waitLock = new Object();
+   
+   private Transaction tx;
+   
+   private boolean transacted;
+   
+   private boolean xa;
 
    // Constructors ---------------------------------------------------------------------------------
 
-   ServerSessionEndpoint(String sessionID, ServerConnectionEndpoint connectionEndpoint) throws Exception
+   ServerSessionEndpoint(String sessionID, ServerConnectionEndpoint connectionEndpoint,
+                         boolean transacted, boolean xa) throws Exception
    {
       this.id = sessionID;
 
@@ -190,12 +187,6 @@ public class ServerSessionEndpoint implements SessionEndpoint
       sp = connectionEndpoint.getMessagingServer();
 
       postOffice = sp.getPostOffice();
-
-      nodeId = sp.getConfiguration().getMessagingServerID();
-
-      consumers = new HashMap();
-
-		browsers = new HashMap();
 
       defaultDLQ = sp.getDefaultDLQInstance();
 
@@ -208,6 +199,15 @@ public class ServerSessionEndpoint implements SessionEndpoint
       deliveries = new ConcurrentHashMap();
 
       deliveryIdSequence = new SynchronizedLong(0);
+      
+      this.transacted = transacted;
+      
+      this.xa = xa;
+      
+      if (transacted && !xa)
+      {
+         tx = new TransactionImpl();
+      }
    }
 
    // SessionDelegate implementation ---------------------------------------------------------------
@@ -853,34 +853,13 @@ public class ServerSessionEndpoint implements SessionEndpoint
 
    	 if (trace) { log.trace("Delivery id is now " + deliveryId); }
 
-   	 //TODO can't we combine flags isRetainDeliveries and isReplicating - surely they're mutually exclusive?
-       if (consumer.isRetainDeliveries())
-       {
-      	 // Add a delivery
+   	 // Add a delivery
 
-      	 rec = new DeliveryRecord(ref, consumer, deliveryId);
+   	 rec = new DeliveryRecord(ref, consumer, deliveryId);
 
-          deliveries.put(new Long(deliveryId), rec);
+       deliveries.put(new Long(deliveryId), rec);
 
-          if (trace) { log.trace(this + " added delivery " + deliveryId + ": " + ref); }
-       }
-       else
-       {
-       	//Acknowledge it now
-       	try
-       	{
-       		//This basically just releases the memory reference
-
-       		if (trace) { log.trace("Acknowledging delivery now"); }
-
-       		ref.acknowledge(connectionEndpoint.getMessagingServer().getPersistenceManager());
-       	}
-       	catch (Throwable t)
-       	{
-       		log.error("Failed to acknowledge delivery", t);
-       	}
-       }
-
+       if (trace) { log.trace(this + " added delivery " + deliveryId + ": " + ref); }
 
        performDelivery(ref, deliveryId, consumer);
    }
@@ -893,12 +872,6 @@ public class ServerSessionEndpoint implements SessionEndpoint
 
    		return;
    	}
-
-      if (consumer.isDead())
-      {
-         //Ignore any responses that come back after consumer has died
-         return;
-      }
 
    	if (trace) { log.trace(this + " performing delivery for " + ref); }
 
@@ -945,17 +918,6 @@ public class ServerSessionEndpoint implements SessionEndpoint
       for(Ack ack: acks)
       {
          long id = ack.getDeliveryID();
-
-         //TODO - do this more elegantly
-         if (ack instanceof DeliveryInfo)
-         {
-         	if (!((DeliveryInfo)ack).isShouldAck())
-         	{
-         		//If we are in VM then acks for non durable subs will still exist - this
-         		//won't happen remoptely since they are not written to the wire
-         		continue;
-         	}
-         }
 
          DeliveryRecord rec = (DeliveryRecord)deliveries.get(id);
 
@@ -1006,11 +968,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
 
       try
       {
-         //Prompting delivery must be asynchronous to avoid deadlock
-         //but we cannot use one way invocations on cancelDelivery and
-         //cancelDeliveries because remoting one way invocations can
-         //overtake each other in flight - this problem will
-         //go away when we have our own transport and our dedicated connection
+         //TODO - do we really need to prompt on a different thread?
          this.executor.execute(new Runnable() { public void run() { queue.deliver();} } );
 
       }

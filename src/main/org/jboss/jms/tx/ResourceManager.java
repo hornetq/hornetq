@@ -136,19 +136,7 @@ public class ResourceManager
       tx.addMessage(sessionId, m);
    }
    
-   /*
-    * Failover session from old session ID -> new session ID
-    */
-   public void handleFailover(int newServerID, String oldSessionID, String newSessionID)
-   {	
-      for (Iterator i = transactions.values().iterator(); i.hasNext(); )
-      {
-         ClientTransaction tx = (ClientTransaction)i.next();
-         
-         tx.handleFailover(newServerID, oldSessionID, newSessionID);
-      }                
-   }   
-   
+
    /*
     * Get all the deliveries corresponding to the session ID
     */
@@ -167,8 +155,7 @@ public class ResourceManager
       
       return ackInfos;
    }
-   
-   
+      
    /**
     * Add an acknowledgement to the transaction
     * 

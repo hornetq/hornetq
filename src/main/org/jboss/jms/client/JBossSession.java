@@ -224,7 +224,7 @@ public class JBossSession implements
                MessageHandler.callOnMessage(session, distinguishedListener, holder.getConsumerID(),
                                                 false,
                                                 holder.getMsg(), ackMode, holder.getMaxDeliveries(),
-                                                holder.getConnectionConsumerSession(), holder.isShouldAck());
+                                                holder.getConnectionConsumerSession());
             }
          }
       }
@@ -497,12 +497,12 @@ public class JBossSession implements
     * with messages to be processed by the session's run() method
     */
    void addAsfMessage(JBossMessage m, String consumerID, String queueName, int maxDeliveries,
-                      ClientSession connectionConsumerSession, boolean shouldAck) throws JMSException
+                      ClientSession connectionConsumerSession) throws JMSException
    {
       
       AsfMessageHolder holder =
          new AsfMessageHolder(m, consumerID, queueName, maxDeliveries,
-                              connectionConsumerSession, shouldAck);
+                              connectionConsumerSession);
 
       if (asfMessages == null)
       {
