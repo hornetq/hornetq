@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <deployment xmlns="urn:jboss:bean-deployer:2.0">
-      <bean name="jboss:service=TransactionManager"
+      <bean name="jbm:TransactionManager"
          class="com.arjuna.ats.internal.jta.transaction.arjunacore.TransactionManagerImple"/>
 </deployment>

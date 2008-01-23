@@ -19,7 +19,7 @@
    * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
    * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
    */
-package org.jboss.jms.server.destination.settings.test.unit;
+package org.jboss.messaging.deployers.queue.tests.unit;
 
 import junit.framework.TestCase;
 import org.easymock.EasyMock;
@@ -51,7 +51,7 @@ public class QueueSettingsDeployerTest extends TestCase
       queueSettingsDeployer = new QueueSettingsDeployer();
    }
 
-   public void testSimple() throws Exception
+   public void testDeploy() throws Exception
    {
       HierarchicalRepository<QueueSettings> repository = EasyMock.createStrictMock(HierarchicalRepository.class);
       queueSettingsDeployer.setQueueSettingsRepository(repository);
@@ -66,5 +66,14 @@ public class QueueSettingsDeployerTest extends TestCase
       repository.addMatch("queues.*", queueSettings);
       EasyMock.replay(repository);
       queueSettingsDeployer.deploy(XMLUtil.stringToElement(conf));
+   }
+
+   public void testUndeploy()
+   {
+      HierarchicalRepository<QueueSettings> repository = EasyMock.createStrictMock(HierarchicalRepository.class);
+      queueSettingsDeployer.setQueueSettingsRepository(repository);
+      repository.removeMatch(conf);
+      EasyMock.replay(repository);
+
    }
 }

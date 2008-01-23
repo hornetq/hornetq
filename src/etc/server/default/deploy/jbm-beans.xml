@@ -6,7 +6,7 @@
 
    <bean name="ServiceLocator" class="org.jboss.messaging.microcontainer.ServiceLocator">
       <demand>jboss.jca:name=DefaultDS,service=DataSourceBinding</demand>
-      <depends>jboss:service=TransactionManager</depends>
+      <!--<depends>jboss:service=TransactionManager</depends>-->
       <!-- <depends>jboss.jca:service=DataSourceBinding,name=DefaultDS</depends>-->
    </bean>
 
@@ -28,6 +28,9 @@
       </property> 
       <property name="configuration">
          <inject bean="Configuration"/>
+      </property>
+      <property name="authenticationManager">
+         <inject bean="ServiceLocator" property="authenticationManager"/>
       </property>
    </bean>
 

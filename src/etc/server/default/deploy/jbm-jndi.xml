@@ -61,7 +61,7 @@
       <entry name="/queue/ExpiryQueue"/>
    </queue>
    <topic name="testTopic">
-      <entry name="/topic.testTopic"/>
+      <entry name="/topic/testTopic"/>
    </topic>
    <topic name="securedTopic">
       <entry name="/topic/securedTopic"/>
@@ -94,7 +94,7 @@
       <entry name="/queue/PrivateExpiryQueue"/>
    </queue>
    <queue name="QueueWithOwnDLQAndExpiryQueue">
-      <entry name="/queue/"/>
+      <entry name="/queue/QueueWithOwnDLQAndExpiryQueue"/>
    </queue>
    <topic name="TopicWithOwnDLQAndExpiryQueue">
       <entry name="/topic/QueueWithOwnDLQAndExpiryQueue"/>

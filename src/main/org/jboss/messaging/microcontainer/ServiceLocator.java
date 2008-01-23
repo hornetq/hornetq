@@ -21,15 +21,17 @@
    */
 package org.jboss.messaging.microcontainer;
 
-import javax.management.MalformedObjectNameException;
-import javax.management.ObjectName;
-import javax.naming.InitialContext;
-import javax.sql.DataSource;
-import javax.transaction.TransactionManager;
-
+import org.jboss.dependency.spi.ControllerContext;
 import org.jboss.kernel.spi.dependency.KernelControllerContext;
 import org.jboss.kernel.spi.dependency.KernelControllerContextAware;
+import org.jboss.security.AuthenticationManager;
 import org.jboss.tm.TransactionManagerLocator;
+
+import javax.management.ObjectName;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+import javax.sql.DataSource;
+import javax.transaction.TransactionManager;
 
 /**
  * This is a layer that is used for injecting services into other objects. depending on the configuration we are running
@@ -41,6 +43,7 @@ public class ServiceLocator implements KernelControllerContextAware
 {
     private ObjectName multiplexer;
     private TransactionManager tm;
+    private org.jboss.security.AuthenticationManager authenticationManager;
     private DataSource dataSource;
     private KernelControllerContext kernelControllerContext;
 
@@ -54,11 +57,26 @@ public class ServiceLocator implements KernelControllerContextAware
         kernelControllerContext = null;
     }
 
-    public TransactionManager getTransactionManager() throws MalformedObjectNameException
+    public TransactionManager getTransactionManager() throws Exception
     {
         if(tm == null)
         {
-            tm = TransactionManagerLocator.locateTransactionManager();
+            ControllerContext controllerContext = kernelControllerContext.getController().getInstalledContext("jbm:TransactionManager");
+           if(controllerContext != null)
+           {
+              tm = (TransactionManager) controllerContext.getTarget();
+           }
+           else
+           {
+              try
+              {
+                 tm = TransactionManagerLocator.locateTransactionManager();
+              }
+              catch (Exception e)
+              {
+                 throw new Exception("TransactionManager unavailable", e);
+              }
+           }
         }
         return tm;
     }
@@ -72,16 +90,25 @@ public class ServiceLocator implements KernelControllerContextAware
     {
         if(dataSource == null)
         {
-           InitialContext ic = new InitialContext();
-           //try in the initial context, if its not there use the one that has been injected
-           try
+           ControllerContext controllerContext = kernelControllerContext.getController().getInstalledContext("jbm:DataSource");
+           if(controllerContext != null)
            {
-              dataSource = (DataSource)ic.lookup("java:/DefaultDS");
+              dataSource =  (DataSource) controllerContext.getTarget();
            }
-           catch (Exception e)
+           else
            {
-              dataSource = (DataSource) kernelControllerContext.getController().getInstalledContext("jboss.jca:name=DefaultDS,service=DataSourceBinding").getTarget();
+              InitialContext ic = new InitialContext();
+              //try in the initial context, if its not there use the one that has been injected
+              try
+              {
+                 dataSource = (DataSource) ic.lookup("java:/DefaultDS");
+              }
+              catch (Exception e)
+              {
+                 throw new Exception("DataSource unavailable", e);
+              }
            }
+
         }
         return dataSource;
     }
@@ -92,8 +119,47 @@ public class ServiceLocator implements KernelControllerContextAware
     }
 
 
+   public TransactionManager getTm()
+   {
+      return tm;
+   }
 
-    public ObjectName getMultiplexer()
+   public void setTm(TransactionManager tm)
+   {
+      this.tm = tm;
+   }
+
+   public AuthenticationManager getAuthenticationManager() throws Exception
+   {
+      if(authenticationManager == null)
+        {
+           ControllerContext controllerContext = kernelControllerContext.getController().getInstalledContext("jbm:AuthenticationManager");
+           if(controllerContext != null)
+           {
+              authenticationManager = (AuthenticationManager) controllerContext.getTarget();
+           }
+           else
+           {
+              try
+              {
+                 InitialContext ic = new InitialContext();
+                 authenticationManager = (AuthenticationManager)ic.lookup("java:/jaas/messaging");
+              }
+              catch (NamingException e)
+              {
+                 throw new Exception("AuthenticationManager unavailable", e);
+              }
+           }
+        }
+      return authenticationManager;
+   }
+
+   public void setAuthenticationManager(AuthenticationManager authenticationManager)
+   {
+      this.authenticationManager = authenticationManager;
+   }
+
+   public ObjectName getMultiplexer()
     {
         return multiplexer;
     }
@@ -102,16 +168,4 @@ public class ServiceLocator implements KernelControllerContextAware
     {
         this.multiplexer = multiplexer;
     }
-                /*if(mBeanServer != null)
-            {
-                TransactionManagerServiceMBean tms =
-                    (TransactionManagerServiceMBean) MBeanServerInvocationHandler.
-                            newProxyInstance(mBeanServer, new ObjectName("jboss:service=TransactionManager"), TransactionManagerServiceMBean.class, false);
-
-                tm = tms.getTransactionManager();
-            }
-            else
-            {
-                tm = (TransactionManager) kernelControllerContext.getKernel().getRegistry().getEntry("TransactionManager").getTarget();
-            }*/
 }

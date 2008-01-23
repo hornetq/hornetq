@@ -1,43 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <deployment xmlns="urn:jboss:bean-deployer:2.0">
+   
    <bean name="ConfigurationHelper" class="org.jboss.test.messaging.tools.ConfigurationHelper">
       <property name="configuration"><inject bean="Configuration"/> </property>
    </bean>
 
-   <bean name="JaasBinding" class="org.jboss.messaging.microcontainer.JndiBinder">
-      <property name="jndiProperties">
-         <inject bean="ConfigurationHelper" property="environment"/>
-      </property>
-      <property name="target">
-         <inject bean="Jaas"/>
-      </property>
-      <property name="bindTo">java:/jaas/messaging</property>
-   </bean>
+   <bean name="jbm:AuthenticationManager" class="org.jboss.test.messaging.tools.container.MockJBossSecurityManager"/>
 
-   <bean name="Jaas" class="org.jboss.test.messaging.tools.container.MockJBossSecurityManager"/>
-
-   <bean name="DSBinding" class="org.jboss.messaging.microcontainer.JndiBinder">
-      <property name="jndiProperties">
-         <inject bean="ConfigurationHelper" property="environment"/>
-      </property>
-      <property name="target">
-         <inject bean="jboss.jca:name=DefaultDS,service=DataSourceBinding"/>
-      </property>
-      <property name="bindTo">java:/DefaultDS</property>
-   </bean>
-
-   <bean name="TMBinding" class="org.jboss.messaging.microcontainer.JndiBinder">
-      <property name="jndiProperties">
-         <inject bean="ConfigurationHelper" property="environment"/>
-      </property>
-      <property name="target">
-         <inject bean="jboss:service=TransactionManager"/>
-      </property>
-      <property name="bindTo">java:/TransactionManager</property>
-   </bean>
-      
-
+   <!--this is just here to satisfy a demand in the main beans file-->
+   <bean name="jboss.jca:name=DefaultDS,service=DataSourceBinding" class="java.beans.Beans"/>
    <!--
    <bean class="org.jgroups.JChannelFactory" name="JChannelFactory">
    -->

@@ -21,15 +21,6 @@
   */
 package org.jboss.jms.server.security;
 
-import java.security.Principal;
-import java.util.HashSet;
-import java.util.Set;
-
-import javax.jms.JMSSecurityException;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
-import javax.security.auth.Subject;
-
 import org.jboss.jms.server.SecurityStore;
 import org.jboss.messaging.core.Destination;
 import org.jboss.messaging.core.DestinationType;
@@ -39,7 +30,12 @@ import org.jboss.messaging.util.Logger;
 import org.jboss.security.AuthenticationManager;
 import org.jboss.security.RealmMapping;
 import org.jboss.security.SimplePrincipal;
-import org.jboss.security.SubjectSecurityManager;
+
+import javax.jms.JMSSecurityException;
+import javax.security.auth.Subject;
+import java.security.Principal;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * A security metadate store for JMS. Stores security information for destinations and delegates
@@ -180,49 +176,6 @@ public class SecurityMetadataStore implements SecurityStore
    	this.suckerPassword = password;
    }
 
-   public void start() throws NamingException
-   {
-      if (trace) { log.trace("initializing SecurityMetadataStore"); }
-
-      // Get the JBoss security manager from JNDI
-      InitialContext ic = new InitialContext();
-
-      try
-      {
-         Object mgr = ic.lookup(messagingServer.getConfiguration().getSecurityDomain());
-
-         log.debug("JaasSecurityManager is " + mgr);
-
-         authenticationManager = (AuthenticationManager)mgr;
-         realmMapping = (RealmMapping)mgr;
-
-         log.trace("SecurityMetadataStore initialized");
-      }
-      catch (NamingException e)
-      {
-         // Apparently there is no security context, try adding java:/jaas
-         log.warn("Failed to lookup securityDomain " + messagingServer.getConfiguration().getSecurityDomain(), e);
-
-         if (!messagingServer.getConfiguration().getSecurityDomain().startsWith("java:/jaas/"))
-         {
-            authenticationManager =
-               (SubjectSecurityManager)ic.lookup("java:/jaas/" + messagingServer.getConfiguration().getSecurityDomain());
-         }
-         else
-         {
-            throw e;
-         }
-      }
-      finally
-      {
-         ic.close();
-      }
-   }
-
-   public void stop() throws Exception
-   {
-   }
-
    public void setSecurityRepository(HierarchicalRepository<HashSet<Role>> securityRepository)
    {
       this.securityRepository = securityRepository;
@@ -247,4 +200,9 @@ public class SecurityMetadataStore implements SecurityStore
 
    // Inner class ---------------------------------------------------      
 
+   public void setAuthenticationManager(AuthenticationManager authenticationManager)
+   {
+      this.authenticationManager = authenticationManager;
+      this.realmMapping = (RealmMapping) authenticationManager;
+   }
 }

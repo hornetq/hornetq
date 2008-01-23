@@ -21,14 +21,6 @@
   */
 package org.jboss.messaging.core.impl.server;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
 import org.jboss.aop.microcontainer.aspects.jmx.JMX;
 import org.jboss.jms.server.ConnectionManager;
 import org.jboss.jms.server.MessagingTimeoutFactory;
@@ -40,16 +32,7 @@ import org.jboss.jms.server.plugin.contract.JMSUserManager;
 import org.jboss.jms.server.security.Role;
 import org.jboss.jms.server.security.SecurityMetadataStore;
 import org.jboss.logging.Logger;
-import org.jboss.messaging.core.Binding;
-import org.jboss.messaging.core.Condition;
-import org.jboss.messaging.core.Configuration;
-import org.jboss.messaging.core.DestinationType;
-import org.jboss.messaging.core.MemoryManager;
-import org.jboss.messaging.core.MessagingServer;
-import org.jboss.messaging.core.PersistenceManager;
-import org.jboss.messaging.core.PostOffice;
-import org.jboss.messaging.core.Queue;
-import org.jboss.messaging.core.QueueSettings;
+import org.jboss.messaging.core.*;
 import org.jboss.messaging.core.impl.ConditionImpl;
 import org.jboss.messaging.core.impl.QueueFactoryImpl;
 import org.jboss.messaging.core.impl.memory.SimpleMemoryManager;
@@ -62,6 +45,15 @@ import org.jboss.messaging.util.ExceptionUtil;
 import org.jboss.messaging.util.HierarchicalObjectRepository;
 import org.jboss.messaging.util.HierarchicalRepository;
 import org.jboss.messaging.util.Version;
+import org.jboss.security.AuthenticationManager;
+
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * A Messaging Server
@@ -104,6 +96,7 @@ public class MessagingServerImpl implements MessagingServer
    private PostOffice postOffice;
    private SecurityDeployer securityDeployer;
    private QueueSettingsDeployer queueSettingsDeployer;
+   private AuthenticationManager authenticationManager;
 
    // plugins
 
@@ -155,6 +148,7 @@ public class MessagingServerImpl implements MessagingServer
          securityStore = new SecurityMetadataStore(this);
          securityRepository.setDefault(new HashSet<Role>());
          securityStore.setSecurityRepository(securityRepository);
+         securityStore.setAuthenticationManager(authenticationManager);
          securityDeployer = new SecurityDeployer();
          securityDeployer.setSecurityRepository(securityRepository);
          queueSettingsDeployer = new QueueSettingsDeployer();
@@ -180,7 +174,6 @@ public class MessagingServerImpl implements MessagingServer
          queueSettingsDeployer.start();
          connectionManager.start();
          memoryManager.start();
-         securityStore.start();
          postOffice.start();
 
          started = true;
@@ -213,7 +206,6 @@ public class MessagingServerImpl implements MessagingServer
          connectionManager = null;
          memoryManager.stop();
          memoryManager = null;
-         securityStore.stop();
          messageCounterManager.stop();
          messageCounterManager = null;
          postOffice.stop();
@@ -466,6 +458,12 @@ public class MessagingServerImpl implements MessagingServer
    public HierarchicalRepository<HashSet<Role>> getSecurityRepository()
    {
       return securityRepository;
+   }
+
+
+   public void setAuthenticationManager(AuthenticationManager authenticationManager)
+   {
+      this.authenticationManager = authenticationManager;
    }
 
    public String toString()

@@ -220,7 +220,7 @@ public class JNDIObjectDeployer extends Deployer
          return new JBossQueue(queueName);
 
       }
-      else if (node.equals(TOPIC_NODE_NAME))
+      else if (node.getNodeName().equals(TOPIC_NODE_NAME))
       {
          String topicName = node.getAttributes().getNamedItem(getKeyAttribute()).getNodeValue();
          messagingServer.createTopic(topicName);

@@ -5,7 +5,7 @@
       <property name="database">jdbc:hsqldb:file:myHSQLDBInstance</property>
       <property name="user">sa</property>
    </bean>-->
-   <bean name="jboss.jca:name=DefaultDS,service=DataSourceBinding" class="com.mysql.jdbc.jdbc2.optional.MysqlDataSource">
+   <bean name="jbm:DataSource" class="com.mysql.jdbc.jdbc2.optional.MysqlDataSource">
       <property name="url">jdbc:mysql://localhost/messaging</property>
       <property name="user">sa</property>
    </bean>

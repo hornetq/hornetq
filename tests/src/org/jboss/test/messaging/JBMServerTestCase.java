@@ -900,6 +900,10 @@ public class JBMServerTestCase extends JBMBaseTestCase
       servers.get(0).setDefaultRedeliveryDelay(delay);
    }
 
+   public TransactionManager getTransactionManager()
+   {
+      return databaseClearer.getTransactionManager();
+   }
    protected void kill(int i) throws Exception
    {
       log.info("Attempting to kill server " + i);

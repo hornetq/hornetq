@@ -21,29 +21,7 @@
   */
 package org.jboss.test.messaging.jms;
 
-import java.util.ArrayList;
-
-import javax.jms.Connection;
-import javax.jms.DeliveryMode;
-import javax.jms.JMSException;
-import javax.jms.Message;
-import javax.jms.MessageConsumer;
-import javax.jms.MessageListener;
-import javax.jms.MessageProducer;
-import javax.jms.ServerSession;
-import javax.jms.ServerSessionPool;
-import javax.jms.Session;
-import javax.jms.TextMessage;
-import javax.jms.XAConnection;
-import javax.jms.XAConnectionFactory;
-import javax.jms.XASession;
-import javax.naming.InitialContext;
-import javax.transaction.Transaction;
-import javax.transaction.TransactionManager;
-import javax.transaction.xa.XAException;
-import javax.transaction.xa.XAResource;
-import javax.transaction.xa.Xid;
-
+import com.arjuna.ats.internal.jta.transaction.arjunacore.TransactionManagerImple;
 import org.jboss.jms.client.JBossConnection;
 import org.jboss.jms.client.JBossConnectionFactory;
 import org.jboss.jms.client.JBossSession;
@@ -57,11 +35,16 @@ import org.jboss.messaging.core.tx.MessagingXid;
 import org.jboss.messaging.util.Logger;
 import org.jboss.test.messaging.JBMServerTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
-import org.jboss.test.messaging.tools.container.ServiceContainer;
-import org.jboss.tm.TransactionManagerLocator;
 import org.jboss.tm.TxUtils;
 
-import com.arjuna.ats.internal.jta.transaction.arjunacore.TransactionManagerImple;
+import javax.jms.*;
+import javax.naming.InitialContext;
+import javax.transaction.Transaction;
+import javax.transaction.TransactionManager;
+import javax.transaction.xa.XAException;
+import javax.transaction.xa.XAResource;
+import javax.transaction.xa.Xid;
+import java.util.ArrayList;
 
 /**
  *
@@ -113,7 +96,7 @@ public class XATest extends JBMServerTestCase
       {
          InitialContext localIc = getInitialContext();
 
-         tm = (TransactionManager)localIc.lookup(ServiceContainer.TRANSACTION_MANAGER_JNDI_NAME);
+         tm = getTransactionManager();
       }
 
 
@@ -202,7 +185,7 @@ public class XATest extends JBMServerTestCase
       {
          if (suspended != null)
          {
-            TransactionManagerLocator.getInstance().locate().resume(suspended);
+            tm.resume(suspended);
          }
       }
    }
@@ -308,7 +291,7 @@ public class XATest extends JBMServerTestCase
          }
          if (suspended != null)
          {
-            TransactionManagerLocator.getInstance().locate().resume(suspended);
+            tm.resume(suspended);
          }
       }
    }
@@ -384,7 +367,7 @@ public class XATest extends JBMServerTestCase
 
          if (suspended != null)
          {
-            TransactionManagerLocator.getInstance().locate().resume(suspended);
+            tm.resume(suspended);
          }
       }
    }
