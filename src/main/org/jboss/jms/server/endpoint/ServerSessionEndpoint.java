@@ -927,7 +927,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
 
          refs.add(rec.ref);
 
-         if (rec.ref.getMessage().isDurable())
+         if (rec.ref.getMessage().isDurable() && rec.getConsumer().getMessageQueue().isDurable())
          {
             tx.setContainsPersistent(true);
          }
@@ -1473,10 +1473,6 @@ public class ServerSessionEndpoint implements SessionEndpoint
 
       String queueName;
 
-      boolean replicating;
-
-      volatile boolean waitingForResponse;
-
       long deliveryID;
 
       ServerConsumerEndpoint getConsumer()
@@ -1492,7 +1488,7 @@ public class ServerSessionEndpoint implements SessionEndpoint
       }
 
       private DeliveryRecord(MessageReference ref, Queue dlq, Queue expiryQueue, long redeliveryDelay, int maxDeliveryAttempts,
-      		         String queueName, long deliveryID)
+      		                 String queueName, long deliveryID)
       {
       	this.ref = ref;
 

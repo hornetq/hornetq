@@ -117,6 +117,13 @@ public class ServerConsumerEndpoint implements Consumer, ConsumerEndpoint
    
    private boolean firstTime = true;
    
+   
+   //FIXME temp
+   public Queue getMessageQueue()
+   {
+      return messageQueue;
+   }
+   
    // Constructors ---------------------------------------------------------------------------------
 
    ServerConsumerEndpoint(MessagingServer sp, String id, Queue messageQueue, String queueName,
