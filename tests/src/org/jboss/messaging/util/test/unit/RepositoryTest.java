@@ -19,7 +19,7 @@
    * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
    * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
    */
-package org.jboss.jms.server.security.test.unit;
+package org.jboss.messaging.util.test.unit;
 
 import junit.framework.TestCase;
 import org.jboss.jms.server.security.Role;
@@ -31,7 +31,7 @@ import java.util.HashSet;
 /**
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  */
-public class SecurityRepositoryTest extends TestCase
+public class RepositoryTest extends TestCase
 {
    HierarchicalRepository<HashSet<Role>> securityRepository;
 
@@ -81,5 +81,43 @@ public class SecurityRepositoryTest extends TestCase
       securityRepository.addMatch("queues.2.aq", roles);
       HashSet<Role> hashSet = securityRepository.getMatch("queues.2.aq");
       assertEquals(hashSet.size(), 2);
+   }
+
+   public void testMultipleWildcards()
+   {
+      HierarchicalRepository<String> repository = new HierarchicalObjectRepository<String>();
+      repository.addMatch("a", "a");
+      repository.addMatch("a.*", "a.*");
+      repository.addMatch("a.b.c", "a.b.c");
+      repository.addMatch("a.*.c", "a.*.c");
+      repository.addMatch("a.d.c", "a.d.c");
+      repository.addMatch("a.b.*", "a.b.*");
+      repository.addMatch("a.b", "a.b");
+
+      repository.addMatch("a.b.c.*", "a.b.c.*");
+      repository.addMatch("a.b.c.d", "a.b.c.d");
+      repository.addMatch("a.*.*.d", "a.*.*.d");
+      repository.addMatch("a.*.d.*", "a.*.d.*");
+      String val = repository.getMatch("a.b");
+      assertEquals("a.b", val);
+      val = repository.getMatch("a.x");
+      assertEquals("a.*", val);
+      val = repository.getMatch("a.b.x");
+      assertEquals("a.b.*", val);
+      val = repository.getMatch("a.b.c");
+      assertEquals("a.b.c", val);
+      val = repository.getMatch("a.d.c");
+      assertEquals("a.d.c", val);
+      val = repository.getMatch("a.x.c");
+      assertEquals("a.*.c", val);
+      val = repository.getMatch("a.b.c.d");
+      assertEquals("a.b.c.d", val);
+      val = repository.getMatch("a.x.c.d");
+      assertEquals("a.*.*.d", val);
+      val = repository.getMatch("a.b.x.d");
+      assertEquals("a.b.*", val);
+      val = repository.getMatch("a.d.x.d");
+      assertEquals("a.*.*.d", val);
+
    }
 }

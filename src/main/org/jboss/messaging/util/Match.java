@@ -26,11 +26,11 @@ import java.util.regex.Pattern;
 /**
     * a Match is the holder for the match string and the object to hold against it.
  */
-public class Match
+public class Match<E>
 {
    private String match;
    private Pattern pattern;
-   private Object value;
+   private E value;
 
 
    public Match(String match)
@@ -63,12 +63,12 @@ public class Match
    }
 
 
-   public Object getValue()
+   public E getValue()
    {
       return value;
    }
 
-   public void setValue(Object value)
+   public void setValue(E value)
    {
       this.value = value;
    }

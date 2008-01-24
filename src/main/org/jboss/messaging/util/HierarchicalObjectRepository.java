@@ -54,7 +54,7 @@ public class HierarchicalObjectRepository<E> implements HierarchicalRepository<E
       }
       else
       {
-         Match match1 = new Match(match);
+         Match<E> match1 = new Match<E>(match);
          match1.setValue(value);
          matches.put(match, match1);
       }
@@ -65,18 +65,11 @@ public class HierarchicalObjectRepository<E> implements HierarchicalRepository<E
     * @param match the match to look for
     * @return the value
     */
-   //todo implement a better algorithm for returning a match!
    public E getMatch(String match)
    {
-      for (Match securityMatch : matches.values())
-      {
-         if(securityMatch.getPattern().matcher(match).matches())
-         {
-            //noinspection unchecked
-            return (E) securityMatch.getValue();
-         }
-      }
-      return defaultmatch;
+      HashMap<String, Match<E>> possibleMatches = getPossibleMatches(match);
+      E actualMatch  = getActualMatch(match, possibleMatches);
+      return actualMatch != null ? actualMatch:defaultmatch;
    }
 
    /**
@@ -96,4 +89,77 @@ public class HierarchicalObjectRepository<E> implements HierarchicalRepository<E
    {
       defaultmatch = defaultValue;
    }
+
+   private HashMap<String, Match<E>> getPossibleMatches(String match)
+   {
+      HashMap<String, Match<E>> possibleMatches = new HashMap<String, Match<E>>();
+      for(String key : matches.keySet())
+      {
+         if(matches.get(key).getPattern().matcher(match).matches())
+         {
+            //noinspection unchecked
+            possibleMatches.put(key, matches.get(key));
+         }
+      }
+      return possibleMatches;
+   }
+
+
+   private E getActualMatch(String match, HashMap<String, Match<E>> possibleMatches)
+   {
+      E value = null;
+      Match<E> currentVal = null;
+      for(String key : possibleMatches.keySet())
+      {
+         currentVal = compareMatches(match, currentVal, possibleMatches.get(key));
+      }
+      if(currentVal != null)
+      {
+         value = currentVal.getValue();
+      }
+      return value;
+   }
+
+   private Match<E> compareMatches(String match, Match<E> currentVal, Match<E> replacementVal)
+   {
+      boolean moreSpecific = false;
+      if(currentVal == null)
+      {
+         moreSpecific = true;
+      }
+      else
+      {
+         String[] parts = match.split("\\.");
+         for(int i = 0; i < parts.length; i++)
+         {
+            String left = getPart(i, currentVal.getMatch());
+            String right = getPart(i, replacementVal.getMatch());
+            if(!left.equals(right) && parts[i].equals(right))
+            {
+               moreSpecific = true;
+               if("*".equals(left))
+               {
+                  break;
+               }
+            }
+            else
+            {
+               moreSpecific = false;
+            }
+         }
+      }
+      return moreSpecific? replacementVal : currentVal;
+   }
+
+   private String getPart(int i, String match)
+   {
+      String[] parts = match.split("\\.");
+      if(parts != null &&  parts.length > i)
+      {
+         return parts[i];
+      }
+      return null;
+   }
+
+
 }
