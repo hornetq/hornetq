@@ -12,6 +12,7 @@ import static org.jboss.messaging.core.remoting.wireformat.PacketType.REQ_CREATE
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>.
+ * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  * 
  * @version <tt>$Revision$</tt>
  */
@@ -26,13 +27,17 @@ public class CreateConnectionRequest extends AbstractPacket
    private final String clientVMID;
    private final String username;
    private final String password;
+   private int prefetchSize;
+   private int dupsOKBatchSize;
+   private String clientID;
 
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
    public CreateConnectionRequest(byte version,
-         String remotingSessionID, String clientVMID, String username, String password)
+         String remotingSessionID, String clientVMID, String username, String password,
+         int prefetchSize, int dupsOKBatchSize, String clientID)
    {
       super(REQ_CREATECONNECTION);
 
@@ -44,6 +49,9 @@ public class CreateConnectionRequest extends AbstractPacket
       this.clientVMID = clientVMID;
       this.username = username;
       this.password = password;
+      this.prefetchSize = prefetchSize;
+      this.dupsOKBatchSize = dupsOKBatchSize;
+      this.clientID = clientID;
    }
 
    // Public --------------------------------------------------------
@@ -86,6 +94,36 @@ public class CreateConnectionRequest extends AbstractPacket
       return buf.toString();
    }
 
+   public int getPrefetchSize()
+   {
+      return prefetchSize;
+   }
+
+   public void setPrefetchSize(int prefetchSize)
+   {
+      this.prefetchSize = prefetchSize;
+   }
+
+   public int getDupsOKBatchSize()
+   {
+      return dupsOKBatchSize;
+   }
+
+   public void setDupsOKBatchSize(int dupsOKBatchSize)
+   {
+      this.dupsOKBatchSize = dupsOKBatchSize;
+   }
+
+   public String getClientID()
+   {
+      return clientID;
+   }
+
+   public void setClientID(String clientID)
+   {
+      this.clientID = clientID;
+   }
+
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
@@ -93,5 +131,6 @@ public class CreateConnectionRequest extends AbstractPacket
    // Private -------------------------------------------------------
 
    // Inner classes -------------------------------------------------
+
 
 }

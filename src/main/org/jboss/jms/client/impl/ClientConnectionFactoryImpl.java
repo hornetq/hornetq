@@ -21,11 +21,8 @@
  */
 package org.jboss.jms.client.impl;
 
-import java.io.Serializable;
-
-import javax.jms.JMSException;
-
 import org.jboss.jms.client.api.ClientConnection;
+import org.jboss.jms.client.plugin.LoadBalancingFactory;
 import org.jboss.jms.client.remoting.ConsolidatedRemotingConnectionListener;
 import org.jboss.jms.client.remoting.MessagingRemotingConnection;
 import org.jboss.jms.exception.MessagingJMSException;
@@ -36,6 +33,9 @@ import org.jboss.messaging.core.remoting.wireformat.CreateConnectionResponse;
 import org.jboss.messaging.util.Logger;
 import org.jboss.messaging.util.Version;
 
+import javax.jms.JMSException;
+import java.io.Serializable;
+
 /**
  * The client-side ConnectionFactory delegate class.
  *
@@ -43,6 +43,7 @@ import org.jboss.messaging.util.Version;
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
+ * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  *
  * @version <tt>$Revision: 3602 $</tt>
  *
@@ -51,14 +52,13 @@ import org.jboss.messaging.util.Version;
 public class ClientConnectionFactoryImpl implements Serializable
 {
    // Constants ------------------------------------------------------------------------------------
+   public  static final String id = "CONNECTION_FACTORY_ID";
 
    private static final long serialVersionUID = 2512460695662741413L;
    
    private static final Logger log = Logger.getLogger(ClientConnectionFactoryImpl.class);
 
    // Attributes -----------------------------------------------------------------------------------
-
-   private String id;
    
    private String serverLocatorURI;
 
@@ -67,6 +67,20 @@ public class ClientConnectionFactoryImpl implements Serializable
    private int serverID;
    
    private boolean clientPing;
+
+   private String clientID;
+
+   private int prefetchSize = 150;
+
+   private boolean slowConsumers;
+
+   private boolean supportsFailover;
+
+   private boolean supportsLoadBalancing;
+
+   private LoadBalancingFactory loadBalancingFactory;
+
+   private int dupsOKBatchSize = 1000;
 
    private boolean strictTck;
    
@@ -78,7 +92,7 @@ public class ClientConnectionFactoryImpl implements Serializable
 
       Version versionToUse;
 
-      if (connectionVersion.getProviderIncrementingVersion() <=
+      if (connectionVersion != null && connectionVersion.getProviderIncrementingVersion() <=
           clientVersion.getProviderIncrementingVersion())
       {
          versionToUse = connectionVersion;
@@ -93,17 +107,25 @@ public class ClientConnectionFactoryImpl implements Serializable
 
    // Constructors ---------------------------------------------------------------------------------
 
-   public ClientConnectionFactoryImpl(String id, int serverID, 
-         String serverLocatorURI, Version serverVersion, boolean clientPing, boolean strictTck)
+   public ClientConnectionFactoryImpl( int serverID,
+         String serverLocatorURI, Version serverVersion, boolean clientPing, boolean strictTck,
+         int prefetchSize, int dupsOKBatchSize, String clientID)
    {
-      this.id = id;
       this.serverID = serverID;
       this.serverLocatorURI = serverLocatorURI;
       this.serverVersion = serverVersion;
       this.clientPing = clientPing;
       this.strictTck = strictTck;
+      this.prefetchSize = prefetchSize;
+      this.dupsOKBatchSize = dupsOKBatchSize;
+      this.clientID = clientID;
    }
-   
+
+   public ClientConnectionFactoryImpl(String serverLocatorURI)
+   {
+      this.serverLocatorURI = serverLocatorURI;
+   }
+
    public ClientConnectionFactoryImpl()
    {
    }
@@ -124,7 +146,8 @@ public class ClientConnectionFactoryImpl implements Serializable
          String sessionID = remotingConnection.getSessionID();
          
          CreateConnectionRequest request =
-            new CreateConnectionRequest(v, sessionID, JMSClientVMIdentifier.instance, username, password);
+            new CreateConnectionRequest(v, sessionID, JMSClientVMIdentifier.instance, username, password,
+                  prefetchSize, dupsOKBatchSize, clientID);
          
          CreateConnectionResponse response =
             (CreateConnectionResponse)remotingConnection.sendBlocking(id, request);
@@ -190,6 +213,7 @@ public class ClientConnectionFactoryImpl implements Serializable
        return strictTck;
    }
 
+   
    // Protected ------------------------------------------------------------------------------------
 
    // Package Private ------------------------------------------------------------------------------

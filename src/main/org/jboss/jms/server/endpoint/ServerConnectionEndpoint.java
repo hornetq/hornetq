@@ -21,31 +21,6 @@
   */
 package org.jboss.jms.server.endpoint;
 
-import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_CLOSE;
-import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_SENDTRANSACTION;
-import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_SETCLIENTID;
-import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_STARTCONNECTION;
-import static org.jboss.messaging.core.remoting.wireformat.PacketType.MSG_STOPCONNECTION;
-import static org.jboss.messaging.core.remoting.wireformat.PacketType.REQ_CLOSING;
-import static org.jboss.messaging.core.remoting.wireformat.PacketType.REQ_CREATESESSION;
-import static org.jboss.messaging.core.remoting.wireformat.PacketType.REQ_GETCLIENTID;
-import static org.jboss.messaging.core.remoting.wireformat.PacketType.REQ_GETPREPAREDTRANSACTIONS;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
-
-import javax.jms.IllegalStateException;
-import javax.jms.InvalidDestinationException;
-import javax.jms.JMSException;
-import javax.transaction.xa.Xid;
-
 import org.jboss.jms.exception.MessagingJMSException;
 import org.jboss.jms.server.ConnectionManager;
 import org.jboss.jms.server.SecurityStore;
@@ -53,36 +28,25 @@ import org.jboss.jms.server.TransactionRepository;
 import org.jboss.jms.server.container.SecurityAspect;
 import org.jboss.jms.server.security.CheckType;
 import org.jboss.jms.tx.ClientTransaction;
-import org.jboss.jms.tx.TransactionRequest;
 import org.jboss.jms.tx.ClientTransaction.SessionTxState;
-import org.jboss.messaging.core.Binding;
-import org.jboss.messaging.core.Condition;
-import org.jboss.messaging.core.Destination;
-import org.jboss.messaging.core.DestinationType;
-import org.jboss.messaging.core.Message;
-import org.jboss.messaging.core.MessagingServer;
-import org.jboss.messaging.core.PostOffice;
-import org.jboss.messaging.core.Transaction;
+import org.jboss.jms.tx.TransactionRequest;
+import org.jboss.messaging.core.*;
 import org.jboss.messaging.core.impl.ConditionImpl;
 import org.jboss.messaging.core.impl.TransactionImpl;
 import org.jboss.messaging.core.remoting.PacketHandler;
 import org.jboss.messaging.core.remoting.PacketSender;
-import org.jboss.messaging.core.remoting.wireformat.AbstractPacket;
-import org.jboss.messaging.core.remoting.wireformat.ClosingRequest;
-import org.jboss.messaging.core.remoting.wireformat.ClosingResponse;
-import org.jboss.messaging.core.remoting.wireformat.CreateSessionRequest;
-import org.jboss.messaging.core.remoting.wireformat.CreateSessionResponse;
-import org.jboss.messaging.core.remoting.wireformat.GetClientIDResponse;
-import org.jboss.messaging.core.remoting.wireformat.GetPreparedTransactionsResponse;
-import org.jboss.messaging.core.remoting.wireformat.JMSExceptionMessage;
-import org.jboss.messaging.core.remoting.wireformat.NullPacket;
-import org.jboss.messaging.core.remoting.wireformat.PacketType;
-import org.jboss.messaging.core.remoting.wireformat.SendTransactionMessage;
-import org.jboss.messaging.core.remoting.wireformat.SetClientIDMessage;
+import org.jboss.messaging.core.remoting.wireformat.*;
+import static org.jboss.messaging.core.remoting.wireformat.PacketType.*;
 import org.jboss.messaging.core.tx.MessagingXid;
 import org.jboss.messaging.util.ExceptionUtil;
 import org.jboss.messaging.util.Logger;
 import org.jboss.messaging.util.Util;
+
+import javax.jms.IllegalStateException;
+import javax.jms.InvalidDestinationException;
+import javax.jms.JMSException;
+import javax.transaction.xa.Xid;
+import java.util.*;
 
 /**
  * Concrete implementation of ConnectionEndpoint.
@@ -136,12 +100,8 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
    private Set temporaryDestinations;
 
    private int prefetchSize;
-   private int defaultTempQueueFullSize;
-   private int defaultTempQueuePageSize;
-   private int defaultTempQueueDownCacheSize;
    private int dupsOKBatchSize;
 
-   private ServerConnectionFactoryEndpoint cfendpoint;
 
    private byte usingVersion;
 
@@ -153,10 +113,6 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
     */
    public ServerConnectionEndpoint(MessagingServer messagingServer, String clientID,
                                    String username, String password, int prefetchSize,
-                                   int defaultTempQueueFullSize,
-                                   int defaultTempQueuePageSize,
-                                   int defaultTempQueueDownCacheSize,                                   
-                                   ServerConnectionFactoryEndpoint cfendpoint,
                                    String remotingSessionID,
                                    String clientVMID,
                                    byte versionToUse,
@@ -164,7 +120,6 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
    {
       this.messagingServer = messagingServer;
 
-      this.cfendpoint = cfendpoint;
 
       sm = messagingServer.getSecurityManager();
       cm = messagingServer.getConnectionManager();
@@ -176,10 +131,6 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
       this.id = UUID.randomUUID().toString();
       this.clientID = clientID;
       this.prefetchSize = prefetchSize;
-
-      this.defaultTempQueueFullSize = defaultTempQueueFullSize;
-      this.defaultTempQueuePageSize = defaultTempQueuePageSize;
-      this.defaultTempQueueDownCacheSize = defaultTempQueueDownCacheSize;
 
       this.dupsOKBatchSize = dupsOKBatchSize;
 
@@ -544,10 +495,6 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
       return messagingServer;
    }
 
-   public ServerConnectionFactoryEndpoint getConnectionFactoryEndpoint()
-   {
-      return cfendpoint;
-   }
 
    public Collection getSessions()
    {
@@ -579,21 +526,6 @@ public class ServerConnectionEndpoint implements ConnectionEndpoint
    int getPrefetchSize()
    {
       return prefetchSize;
-   }
-
-   int getDefaultTempQueueFullSize()
-   {
-      return defaultTempQueueFullSize;
-   }
-
-   int getDefaultTempQueuePageSize()
-   {
-      return defaultTempQueuePageSize;
-   }
-
-   int getDefaultTempQueueDownCacheSize()
-   {
-      return defaultTempQueueDownCacheSize;
    }
 
    String getConnectionID()

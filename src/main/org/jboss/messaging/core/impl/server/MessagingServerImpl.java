@@ -27,6 +27,7 @@ import org.jboss.jms.server.MessagingTimeoutFactory;
 import org.jboss.jms.server.SecurityStore;
 import org.jboss.jms.server.TransactionRepository;
 import org.jboss.jms.server.connectionmanager.SimpleConnectionManager;
+import org.jboss.jms.server.endpoint.ConnectionFactoryAdvisedPacketHandler;
 import org.jboss.jms.server.endpoint.ServerSessionEndpoint;
 import org.jboss.jms.server.plugin.contract.JMSUserManager;
 import org.jboss.jms.server.security.Role;
@@ -175,7 +176,9 @@ public class MessagingServerImpl implements MessagingServer
          connectionManager.start();
          memoryManager.start();
          postOffice.start();
-
+         ConnectionFactoryAdvisedPacketHandler connectionFactoryAdvisedPacketHandler =
+                 new ConnectionFactoryAdvisedPacketHandler(this);
+         getMinaService().getDispatcher().register(connectionFactoryAdvisedPacketHandler);
          started = true;
          log.info("JBoss Messaging " + getVersion().getProviderVersion() + " server [" +
                  configuration.getMessagingServerID() + "] started");

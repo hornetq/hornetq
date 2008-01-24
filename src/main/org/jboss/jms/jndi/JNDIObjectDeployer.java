@@ -25,8 +25,6 @@ import org.jboss.jms.client.JBossConnectionFactory;
 import org.jboss.jms.client.impl.ClientConnectionFactoryImpl;
 import org.jboss.jms.destination.JBossQueue;
 import org.jboss.jms.destination.JBossTopic;
-import org.jboss.jms.server.connectionfactory.ConnectionFactory;
-import org.jboss.jms.server.endpoint.ServerConnectionFactoryEndpoint;
 import org.jboss.logging.Logger;
 import org.jboss.messaging.core.MessagingServer;
 import org.jboss.messaging.core.remoting.ServerLocator;
@@ -65,15 +63,11 @@ public class JNDIObjectDeployer extends Deployer
 
    private static final String CLIENTID_ELEMENT = "client-id";
    private static final String PREFETECH_SIZE_ELEMENT = "prefetch-size";
-   private static final String DEF_TEMP_Q_FULL_SIZE = "default-temp-queue-full-size";
-   private static final String DEF_TEMP_Q_PAGE_SIZE_SIZE = "default-temp-queue-page-size";
-   private static final String DEF_TEMP_Q_DOWN_CACHE_SIZE = "default-temp-queue-down-cache-size";
    private static final String DUPS_OK_BATCH_SIZE = "dups-ok-batch-size";
    private static final String SUPPORTS_FAILOVER = "supports-failover";
    private static final String SUPPORTS_LOAD_BALANCING = "supports-load-balancing";
    private static final String LOAD_BALANCING_FACTORY = "load-balancing-factory";
    private static final String STRICT_TCK = "strict-tck";
-   private static final String DISABLE_REMOTING_CHECKS = "disable-remoting-checks";
    private static final String ENTRY_NODE_NAME = "entry";
    private static final String CONNECTION_FACTORY_NODE_NAME = "connection-factory";
    private static final String QUEUE_NODE_NAME = "queue";
@@ -117,6 +111,7 @@ public class JNDIObjectDeployer extends Deployer
 
    /**
     * the names of the elements to deploy
+    *
     * @return the names of the elements todeploy
     */
    public String[] getElementTagName()
@@ -126,6 +121,7 @@ public class JNDIObjectDeployer extends Deployer
 
    /**
     * deploy an element
+    *
     * @param node the element to deploy
     * @throws Exception .
     */
@@ -172,6 +168,7 @@ public class JNDIObjectDeployer extends Deployer
 
    /**
     * creates the object to bind, this will either be a JBossConnectionFActory, JBossQueue or JBossTopic
+    *
     * @param node the config
     * @return the object to bind
     * @throws Exception .
@@ -180,37 +177,64 @@ public class JNDIObjectDeployer extends Deployer
    {
       if (node.getNodeName().equals(CONNECTION_FACTORY_NODE_NAME))
       {
-         ConnectionFactory connectionFactory = createConnectionFactory(node);
          ServerLocator serverLocator = messagingServer.getMinaService().getLocator();
 
          log.info("Server locator is " + serverLocator);
          log.info(this + " started");
          // See http://www.jboss.com/index.html?module=bb&op=viewtopic&p=4076040#4076040
-         final String id = connectionFactory.getName();
+         final String id = node.getAttributes().getNamedItem(getKeyAttribute()).getNodeValue();
 
          Version version = messagingServer.getVersion();
 
-         ServerConnectionFactoryEndpoint endpoint =
-                 new ServerConnectionFactoryEndpoint(connectionFactory.getName(), id, messagingServer, connectionFactory.getClientID(),
-                         connectionFactory.getPrefetchSize(),
-                         connectionFactory.getDefaultTempQueueFullSize(),
-                         connectionFactory.getDefaultTempQueuePageSize(),
-                         connectionFactory.getDefaultTempQueueDownCacheSize(),
-                         connectionFactory.getDupsOKBatchSize());
-
-         //The server peer strict setting overrides the connection factory
-         boolean useStrict = messagingServer.getConfiguration().isStrictTck() || connectionFactory.isStrictTck();
+         NodeList attributes = node.getChildNodes();
+         boolean cfStrictTck = false;
+         int prefetchSize = 150;
+         int dupsOKBatchSize = 1000;
+         String clientID = null;
+         for (int j = 0; j < attributes.getLength(); j++)
+         {
+            if (STRICT_TCK.equalsIgnoreCase(attributes.item(j).getNodeName()))
+            {
+               cfStrictTck = Boolean.parseBoolean(attributes.item(j).getTextContent().trim());
+            }
+            else if (PREFETECH_SIZE_ELEMENT.equalsIgnoreCase(attributes.item(j).getNodeName()))
+            {
+               prefetchSize = Integer.parseInt(attributes.item(j).getTextContent().trim());
+            }
+            else if (CLIENTID_ELEMENT.equalsIgnoreCase(attributes.item(j).getNodeName()))
+            {
+               clientID = attributes.item(j).getTextContent();
+            }
+            if (DUPS_OK_BATCH_SIZE.equalsIgnoreCase(attributes.item(j).getNodeName()))
+            {
+               dupsOKBatchSize = Integer.parseInt(attributes.item(j).getTextContent().trim());
+            }
+            if (SUPPORTS_FAILOVER.equalsIgnoreCase(attributes.item(j).getNodeName()))
+            {
+               //setSupportsFailover(Boolean.parseBoolean(attributes.item(j).getTextContent().trim()));
+            }
+            if (SUPPORTS_LOAD_BALANCING.equalsIgnoreCase(attributes.item(j).getNodeName()))
+            {
+               //setSupportsLoadBalancing(Boolean.parseBoolean(attributes.item(j).getTextContent().trim()));
+            }
+            if (LOAD_BALANCING_FACTORY.equalsIgnoreCase(attributes.item(j).getNodeName()))
+            {
+               //setLoadBalancingFactory(attributes.item(j).getTextContent().trim());
+            }
+         }
+//       The server peer strict setting overrides the connection factory
+         boolean useStrict = messagingServer.getConfiguration().isStrictTck() || cfStrictTck;
 
          ClientConnectionFactoryImpl delegate =
-                 new ClientConnectionFactoryImpl(id, messagingServer.getConfiguration().getMessagingServerID(),
-                         serverLocator.getURI(), version, false, useStrict);
+                 new ClientConnectionFactoryImpl(messagingServer.getConfiguration().getMessagingServerID(),
+                         serverLocator.getURI(), version, false, useStrict, prefetchSize, dupsOKBatchSize, clientID);
 
          log.debug(this + " created local delegate " + delegate);
 
          // Registering with the dispatcher should always be the last thing otherwise a client could
          // use a partially initialised object
 
-         messagingServer.getMinaService().getDispatcher().register(endpoint.newHandler());
+         //messagingServer.getMinaService().getDispatcher().register(endpoint.newHandler());
          return new JBossConnectionFactory(delegate);
       }
       else if (node.getNodeName().equals(QUEUE_NODE_NAME))
@@ -232,6 +256,7 @@ public class JNDIObjectDeployer extends Deployer
 
    /**
     * undeploys an element
+    *
     * @param node the element to undeploy
     * @throws Exception .
     */
@@ -248,73 +273,6 @@ public class JNDIObjectDeployer extends Deployer
    public String getConfigFileName()
    {
       return "jbm-jndi.xml";
-   }
-
-   /**
-    * creates a connection factory
-    * @param node the config
-    * @return a ConnectionFactory
-    * @throws Exception .
-    */
-   private ConnectionFactory createConnectionFactory(Node node) throws Exception
-   {
-      String clientId = null;
-      String name = node.getAttributes().getNamedItem(getKeyAttribute()).getNodeValue();
-      ConnectionFactory connectionFactory = new ConnectionFactory(clientId);
-      connectionFactory.setName(name);
-
-      NodeList attributes = node.getChildNodes();
-      for (int j = 0; j < attributes.getLength(); j++)
-      {
-         if (CLIENTID_ELEMENT.equalsIgnoreCase(attributes.item(j).getNodeName()))
-         {
-            clientId = attributes.item(j).getTextContent();
-            connectionFactory.setClientID(clientId);
-         }
-
-         if (PREFETECH_SIZE_ELEMENT.equalsIgnoreCase(attributes.item(j).getNodeName()))
-         {
-            connectionFactory.setPrefetchSize(Integer.parseInt(attributes.item(j).getTextContent().trim()));
-         }
-         if (DEF_TEMP_Q_FULL_SIZE.equalsIgnoreCase(attributes.item(j).getNodeName()))
-         {
-            connectionFactory.setDefaultTempQueueFullSize(Integer.parseInt(attributes.item(j).getTextContent().trim()));
-         }
-         if (DEF_TEMP_Q_PAGE_SIZE_SIZE.equalsIgnoreCase(attributes.item(j).getNodeName()))
-         {
-            connectionFactory.setDefaultTempQueuePageSize(Integer.parseInt(attributes.item(j).getTextContent().trim()));
-         }
-         if (DEF_TEMP_Q_DOWN_CACHE_SIZE.equalsIgnoreCase(attributes.item(j).getNodeName()))
-         {
-            connectionFactory.setDefaultTempQueueDownCacheSize(Integer.parseInt(attributes.item(j).getTextContent().trim()));
-         }
-         if (DUPS_OK_BATCH_SIZE.equalsIgnoreCase(attributes.item(j).getNodeName()))
-         {
-            connectionFactory.setDupsOKBatchSize(Integer.parseInt(attributes.item(j).getTextContent().trim()));
-         }
-         if (SUPPORTS_FAILOVER.equalsIgnoreCase(attributes.item(j).getNodeName()))
-         {
-            connectionFactory.setSupportsFailover(Boolean.parseBoolean(attributes.item(j).getTextContent().trim()));
-         }
-         if (SUPPORTS_LOAD_BALANCING.equalsIgnoreCase(attributes.item(j).getNodeName()))
-         {
-            connectionFactory.setSupportsLoadBalancing(Boolean.parseBoolean(attributes.item(j).getTextContent().trim()));
-         }
-         if (LOAD_BALANCING_FACTORY.equalsIgnoreCase(attributes.item(j).getNodeName()))
-         {
-            connectionFactory.setLoadBalancingFactory(attributes.item(j).getTextContent().trim());
-         }
-         if (STRICT_TCK.equalsIgnoreCase(attributes.item(j).getNodeName()))
-         {
-            connectionFactory.setStrictTck(Boolean.parseBoolean(attributes.item(j).getTextContent().trim()));
-         }
-         if (DISABLE_REMOTING_CHECKS.equalsIgnoreCase(attributes.item(j).getNodeName()))
-         {
-            connectionFactory.setDisableRemotingChecks(Boolean.parseBoolean(attributes.item(j).getTextContent().trim()));
-         }
-
-      }
-      return connectionFactory;
    }
 
 }

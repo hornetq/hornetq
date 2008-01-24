@@ -6,9 +6,8 @@
  */
 package org.jboss.messaging.core.remoting.codec;
 
-import static org.jboss.messaging.core.remoting.wireformat.PacketType.REQ_CREATECONNECTION;
-
 import org.jboss.messaging.core.remoting.wireformat.CreateConnectionRequest;
+import static org.jboss.messaging.core.remoting.wireformat.PacketType.REQ_CREATECONNECTION;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>.
@@ -43,12 +42,18 @@ public class ConnectionFactoryCreateConnectionRequestCodec extends
       String clientVMID = request.getClientVMID();
       String username = request.getUsername();
       String password = request.getPassword();
+      int prefetchSize = request.getPrefetchSize();
+      int dupOkBatchSize = request.getDupsOKBatchSize();
+      String clientID = request.getClientID();
 
       int bodyLength = 1 // version
             + sizeof(remotingSessionID)
             + sizeof(clientVMID)
             + sizeof(username) 
-            + sizeof(password);
+            + sizeof(password)
+            + INT_LENGTH
+            + INT_LENGTH
+            + sizeof(clientID);
 
       out.putInt(bodyLength);
       out.put(version);
@@ -56,6 +61,9 @@ public class ConnectionFactoryCreateConnectionRequestCodec extends
       out.putNullableString(clientVMID);
       out.putNullableString(username);
       out.putNullableString(password);
+      out.putInt(prefetchSize);
+      out.putInt(dupOkBatchSize);
+      out.putNullableString(clientID);
    }
 
    @Override
@@ -72,9 +80,12 @@ public class ConnectionFactoryCreateConnectionRequestCodec extends
       String clientVMID = in.getNullableString();
       String username = in.getNullableString();
       String password = in.getNullableString();
+      int prefetchSize = in.getInt();
+      int dupOkBatchSize = in.getInt();
+      String clientID = in.getNullableString();
 
-      return new CreateConnectionRequest(version, remotingSessionID, 
-            clientVMID, username, password);
+      return new CreateConnectionRequest(version, remotingSessionID,
+            clientVMID, username, password, prefetchSize, dupOkBatchSize, clientID);
    }
 
    // Package protected ---------------------------------------------

@@ -21,16 +21,16 @@
  */
 package org.jboss.messaging.core;
 
+import org.jboss.jms.server.security.Role;
+import org.jboss.messaging.util.XMLUtil;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
+
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.Serializable;
 import java.net.URL;
 import java.util.HashSet;
-
-import org.jboss.jms.server.security.Role;
-import org.jboss.messaging.util.XMLUtil;
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
 
 /**
  * This is the JBM configuration. It is used to configure the MessagingServer.
@@ -198,6 +198,10 @@ public class Configuration implements Serializable
    public  void addPropertyChangeListener(
          PropertyChangeListener listener)
    {
+      if(propertyChangeSupport == null)
+      {
+         propertyChangeSupport = new PropertyChangeSupport(this);
+      }
       propertyChangeSupport.addPropertyChangeListener(listener);
    }
 

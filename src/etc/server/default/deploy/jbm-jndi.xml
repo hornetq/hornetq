@@ -36,10 +36,6 @@
       <client-id>MyClientID</client-id>
       <!-- PrefetchSize determines the approximate maximum number of messages the client consumer will buffer locally -->
       <prefetch-size>150</prefetch-size>
-      <!-- Paging params to be used for temporary queues -->
-      <default-temp-queue-full-size>200000</default-temp-queue-full-size>
-      <default-temp-queue-page-size>2000</default-temp-queue-page-size>
-      <default-temp-queue-down-cache-size>2000</default-temp-queue-down-cache-size>
       <!-- The batch size to use when using the DUPS_OK_ACKNOWLEDGE acknowledgement mode -->
       <dups-ok-batch-size>5000</dups-ok-batch-size>
       <!-- Does this connection factory support automatic failover? -->
@@ -50,8 +46,6 @@
       <load-balancing-factory>org.jboss.jms.client.plugin.RoundRobinLoadBalancingFactory</load-balancing-factory>
       <!-- Whether we should be strict TCK compliant, i.e. how we deal with foreign messages, defaults to false-->
       <strict-tck>true</strict-tck>
-      <!-- Disable JBoss Remoting Connector sanity checks - There is rarely a good reason to set this to true -->
-      <disable-remoting-checks>false</disable-remoting-checks>
    </connection-factory>
 
    <queue name="DLQ">

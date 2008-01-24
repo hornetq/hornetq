@@ -21,17 +21,23 @@
 */
 package org.jboss.test.messaging.tools.container;
 
-import java.io.File;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
+import org.jboss.jms.client.JBossConnectionFactory;
+import org.jboss.jms.client.impl.ClientConnectionFactoryImpl;
+import org.jboss.jms.destination.JBossQueue;
+import org.jboss.jms.destination.JBossTopic;
+import org.jboss.jms.server.security.Role;
+import org.jboss.jms.tx.ResourceManagerFactory;
+import org.jboss.logging.Logger;
+import org.jboss.messaging.core.*;
+import org.jboss.messaging.core.impl.ConditionImpl;
+import org.jboss.messaging.core.remoting.ServerLocator;
+import org.jboss.messaging.microcontainer.JBMBootstrapServer;
+import org.jboss.messaging.util.JNDIUtil;
+import org.jboss.messaging.util.Version;
+import org.jboss.test.messaging.tools.ConfigurationHelper;
+import org.jboss.test.messaging.tools.ServerManagement;
+import org.jboss.test.messaging.tools.jboss.MBeanConfigurationElement;
+import org.jboss.tm.TransactionManagerLocator;
 
 import javax.jms.InvalidDestinationException;
 import javax.management.NotificationListener;
@@ -42,30 +48,11 @@ import javax.naming.NameNotFoundException;
 import javax.sql.DataSource;
 import javax.transaction.TransactionManager;
 import javax.transaction.UserTransaction;
-
-import org.jboss.jms.client.JBossConnectionFactory;
-import org.jboss.jms.client.impl.ClientConnectionFactoryImpl;
-import org.jboss.jms.destination.JBossQueue;
-import org.jboss.jms.destination.JBossTopic;
-import org.jboss.jms.server.connectionfactory.ConnectionFactory;
-import org.jboss.jms.server.endpoint.ServerConnectionFactoryEndpoint;
-import org.jboss.jms.server.security.Role;
-import org.jboss.jms.tx.ResourceManagerFactory;
-import org.jboss.logging.Logger;
-import org.jboss.messaging.core.Binding;
-import org.jboss.messaging.core.Condition;
-import org.jboss.messaging.core.DestinationType;
-import org.jboss.messaging.core.MessagingServer;
-import org.jboss.messaging.core.MessagingServerManagement;
-import org.jboss.messaging.core.impl.ConditionImpl;
-import org.jboss.messaging.core.remoting.ServerLocator;
-import org.jboss.messaging.microcontainer.JBMBootstrapServer;
-import org.jboss.messaging.util.JNDIUtil;
-import org.jboss.messaging.util.Version;
-import org.jboss.test.messaging.tools.ConfigurationHelper;
-import org.jboss.test.messaging.tools.ServerManagement;
-import org.jboss.test.messaging.tools.jboss.MBeanConfigurationElement;
-import org.jboss.tm.TransactionManagerLocator;
+import java.io.File;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.util.*;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
@@ -80,7 +67,6 @@ public class LocalTestServer implements Server, Runnable
 
    private static final Logger log = Logger.getLogger(LocalTestServer.class);
    private boolean started = false;
-   private Map<String, ConnectionFactory> factories = new HashMap<String, ConnectionFactory>();
    private HashMap<String, List<String>> allBindings = new HashMap<String, List<String>>();
    // Static ---------------------------------------------------------------------------------------
 
@@ -628,8 +614,7 @@ public class LocalTestServer implements Server, Runnable
                                        int dupsOkBatchSize) throws Exception
    {
       log.trace("deploying connection factory with name: " + objectName);
-      ConnectionFactory connectionFactory = new ConnectionFactory(clientId);
-      connectionFactory.setName(objectName);
+      //ConnectionFactory connectionFactory = new ConnectionFactory(clientId);
       List<String> bindings = new ArrayList<String>();
       if (jndiBindings != null)
       {
@@ -638,51 +623,44 @@ public class LocalTestServer implements Server, Runnable
             bindings.add(jndiBinding);
          }
       }
-      connectionFactory.setJNDIBindings(bindings);
-      if (prefetchSize > 0)
-         connectionFactory.setPrefetchSize(prefetchSize);
-      if (defaultTempQueueFullSize > 0)
-         connectionFactory.setDefaultTempQueueFullSize(defaultTempQueueFullSize);
-      if (defaultTempQueuePageSize > 0)
-         connectionFactory.setDefaultTempQueuePageSize(defaultTempQueuePageSize);
-      if (defaultTempQueueDownCacheSize > 0)
-         connectionFactory.setDefaultTempQueueDownCacheSize(defaultTempQueueDownCacheSize);
-      if (dupsOkBatchSize > 0)
-         connectionFactory.setDupsOKBatchSize(dupsOkBatchSize);
-      connectionFactory.setSupportsFailover(supportsFailover);
-      connectionFactory.setSupportsLoadBalancing(supportsLoadBalancing);
-      connectionFactory.setStrictTck(strictTck);
-      factories.put(objectName, connectionFactory);
+      //connectionFactory.setJNDIBindings(bindings);
+      //if (prefetchSize > 0)
+      //   connectionFactory.setPrefetchSize(prefetchSize);
+      //if (defaultTempQueueFullSize > 0) if (dupsOkBatchSize > 0)
+       //  connectionFactory.setDupsOKBatchSize(dupsOkBatchSize);
+     // connectionFactory.setSupportsFailover(supportsFailover);
+      //connectionFactory.setSupportsLoadBalancing(supportsLoadBalancing);
+      //connectionFactory.setStrictTck(strictTck);
       ServerLocator serverLocator = getMessagingServer().getMinaService().getLocator();
 
       log.info("Server locator is " + serverLocator);
       log.info(this + " started");
       // See http://www.jboss.com/index.html?module=bb&op=viewtopic&p=4076040#4076040
-      final String id = connectionFactory.getName();
+      final String id = objectName;
 
       Version version = getMessagingServer().getVersion();
 
-      ServerConnectionFactoryEndpoint endpoint =
+      /*ServerConnectionFactoryEndpoint endpoint =
               new ServerConnectionFactoryEndpoint(connectionFactory.getName(), id, getMessagingServer(), connectionFactory.getClientID(),
                       connectionFactory.getPrefetchSize(),
                       connectionFactory.getDefaultTempQueueFullSize(),
                       connectionFactory.getDefaultTempQueuePageSize(),
                       connectionFactory.getDefaultTempQueueDownCacheSize(),
-                      connectionFactory.getDupsOKBatchSize());
+                      connectionFactory.getDupsOKBatchSize());*/
 
       //The server peer strict setting overrides the connection factory
-      boolean useStrict = getMessagingServer().getConfiguration().isStrictTck() || connectionFactory.isStrictTck();
+      boolean useStrict = getMessagingServer().getConfiguration().isStrictTck() || strictTck;
 
       ClientConnectionFactoryImpl delegate =
-              new ClientConnectionFactoryImpl(id, getMessagingServer().getConfiguration().getMessagingServerID(),
-                      serverLocator.getURI(), version, false, useStrict);
+              new ClientConnectionFactoryImpl( getMessagingServer().getConfiguration().getMessagingServerID(),
+                      serverLocator.getURI(), version, false, useStrict, prefetchSize, dupsOkBatchSize, clientId);
 
       log.debug(this + " created local delegate " + delegate);
 
       // Registering with the dispatcher should always be the last thing otherwise a client could
       // use a partially initialised object
 
-      getMessagingServer().getMinaService().getDispatcher().register(endpoint.newHandler());
+      //getMessagingServer().getMinaService().getDispatcher().register(endpoint.newHandler());
       JBossConnectionFactory jBossConnectionFactory = new JBossConnectionFactory(delegate);
       for (String binding : bindings)
       {
